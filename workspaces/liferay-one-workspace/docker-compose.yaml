@@ -49,6 +49,30 @@ services:
         volumes:
             -   liferay_data:/opt/liferay/data
             -   liferay_routes:/opt/liferay/routes
+    liferay-one-etc-spring-boot:
+        container_name: liferay-one-etc-spring-boot
+        depends_on:
+            liferay:
+                condition: service_healthy
+        env_file:
+            -   ./client-extensions/liferay-one-etc-spring-boot/build/local.env
+            -   path: ./.env.local
+                required: false
+        environment:
+            LIFERAY_JAR_RUNNER_JAVA_OPTS: --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED
+            LIFERAY_ROUTES_CLIENT_EXTENSION: /opt/liferay/routes/default/liferay-one-etc-spring-boot
+            LIFERAY_ROUTES_DXP: /opt/liferay/routes/default/dxp
+        healthcheck:
+            interval: 10s
+            retries: 30
+            start_period: 60s
+            test: ["CMD", "curl", "--fail", "--silent", "http://localhost:58081/ready"]
+            timeout: 5s
+        image: liferay-one-etc-spring-boot:latest
+        network_mode: service:liferay
+        volumes:
+            -   liferay_routes:/opt/liferay/routes:ro
+            -   ./client-extensions/liferay-one-etc-spring-boot/scripts/wait-for-routes.sh:/usr/local/bin/liferay_jar_runner_set_up.sh:ro
 volumes:
     liferay_data:
     liferay_routes:
