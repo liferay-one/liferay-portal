@@ -77,7 +77,7 @@ const config = {
 			},
 		],
 		'@typescript-eslint/no-explicit-any': 'error',
-		'no-empty': ['error', {allowEmptyCatch: true}],
+		'no-empty': ['error', { allowEmptyCatch: true }],
 		'notice/notice': [
 			'error',
 			{
