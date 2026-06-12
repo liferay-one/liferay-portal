@@ -13,6 +13,4 @@ public class CommerceCatalogConstants {
 	public static final String EXTERNAL_REFERENCE_CODE_SALESFORCE_CATALOG =
 		"SALESFORCE_CATALOG";
 
-	public static final String PRODUCT_TYPE_SIMPLE = "simple";
-
 }
