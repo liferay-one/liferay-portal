@@ -26,7 +26,7 @@ export default function useGetBusinessEventTypesList(): {
 				const response = await getBusinessEventFieldOptions(JSM_FIELDS.eventType);
 
 				setBusinessEventTypesList(
-					response
+					response.items
 						.map((entry: any) => ({
 							label: entry.label,
 							value: entry.value,

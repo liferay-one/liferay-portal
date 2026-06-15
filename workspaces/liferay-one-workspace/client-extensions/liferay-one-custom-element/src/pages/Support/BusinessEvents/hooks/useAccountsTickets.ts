@@ -29,12 +29,12 @@ const useAccountsTickets = (
 				? parseAssociatedTickets(businessEvent.associatedTickets)
 				: undefined;
 
-			const response: ITicket[] = await getAccountTickets(
+			const response = await getAccountTickets(
 				externalReferenceCode,
 				ticketIds
 			);
 
-			setTickets(response);
+			setTickets(response.items as ITicket[]);
 
 			setLoading(false);
 		}

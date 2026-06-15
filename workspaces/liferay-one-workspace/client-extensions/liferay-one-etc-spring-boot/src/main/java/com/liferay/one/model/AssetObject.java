@@ -12,9 +12,9 @@ import org.json.JSONObject;
  */
 public class AssetObject {
 
-	public AssetObject(JSONObject assetObjectJSONObject) {
-		_id = assetObjectJSONObject.getString("id");
-		_name = assetObjectJSONObject.getString("name");
+	public AssetObject(JSONObject jsonObject) {
+		_id = jsonObject.getString("id");
+		_name = jsonObject.getString("name");
 	}
 
 	public String getId() {

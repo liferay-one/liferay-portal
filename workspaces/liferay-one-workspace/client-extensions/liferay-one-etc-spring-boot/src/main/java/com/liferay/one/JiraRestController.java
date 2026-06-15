@@ -8,9 +8,9 @@ package com.liferay.one;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.converter.BusinessEventConverter;
 import com.liferay.one.model.AssetObject;
+import com.liferay.one.model.AssetObjectFieldOption;
 import com.liferay.one.model.BusinessEvent;
 import com.liferay.one.model.BusinessEventVersion;
-import com.liferay.one.model.FieldOption;
 import com.liferay.one.model.JiraSupportIssue;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.JiraService;
@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -125,66 +126,29 @@ public class JiraRestController extends BaseRestController {
 		_businessEventPermission.check(
 			externalReferenceCode, ActionKeys.VIEW, jwt);
 
-		JSONArray ticketsJSONArray = new JSONArray();
-
-		List<JiraSupportIssue> jiraSupportIssues =
+		return _getResponseEntity(
 			_jiraService.getJSMJiraSupportIssues(
-				externalReferenceCode, ticketIds);
-
-		for (JiraSupportIssue jiraSupportIssue : jiraSupportIssues) {
-			ticketsJSONArray.put(jiraSupportIssue.toJSONObject());
-		}
-
-		return new ResponseEntity<>(ticketsJSONArray.toString(), HttpStatus.OK);
+				externalReferenceCode, ticketIds),
+			JiraSupportIssue::toJSONObject);
 	}
 
-	@GetMapping("/business-events/field-options/{fieldName}")
-	public ResponseEntity<String> getBusinessEventFieldOptions(
+	@GetMapping("/business-events/fields/{fieldName}/options")
+	public ResponseEntity<String> getBusinessEventsFieldsOptions(
 			@PathVariable("fieldName") String fieldName)
 		throws Exception {
 
-		try {
-			JSONArray fieldOptionsJSONArray = new JSONArray();
-
-			List<FieldOption> fieldOptions =
-				_jiraService.getBusinessEventFieldOptions(fieldName);
-
-			for (FieldOption fieldOption : fieldOptions) {
-				fieldOptionsJSONArray.put(fieldOption.toJSONObject());
-			}
-
-			return new ResponseEntity<>(
-				fieldOptionsJSONArray.toString(), HttpStatus.OK);
-		}
-		catch (Exception exception) {
-			_log.error(exception, exception);
-
-			return new ResponseEntity<>(
-				exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return _getResponseEntity(
+			_jiraService.getAssetObjectFieldOptions(
+				fieldName, _jiraBusinessEventAssetObjectTypeId),
+			AssetObjectFieldOption::toJSONObject);
 	}
 
 	@GetMapping("/product-versions")
 	public ResponseEntity<String> getProductVersions() throws Exception {
-		try {
-			JSONArray productVersionsJSONArray = new JSONArray();
-
-			List<AssetObject> productVersions = _jiraService.getAssetObjects(
-				_OBJECT_SCHEMA_BUSINESS_EVENTS, _OBJECT_TYPE_PRODUCT_VERSION);
-
-			for (AssetObject productVersion : productVersions) {
-				productVersionsJSONArray.put(productVersion.toJSONObject());
-			}
-
-			return new ResponseEntity<>(
-				productVersionsJSONArray.toString(), HttpStatus.OK);
-		}
-		catch (Exception exception) {
-			_log.error(exception, exception);
-
-			return new ResponseEntity<>(
-				exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return _getResponseEntity(
+			_jiraService.getAssetObjects(
+				_OBJECT_SCHEMA_BUSINESS_EVENTS, _OBJECT_TYPE_PRODUCT_VERSION),
+			AssetObject::toJSONObject);
 	}
 
 	@ExceptionHandler(Exception.class)
@@ -294,6 +258,9 @@ public class JiraRestController extends BaseRestController {
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
+
+	@Value("${liferay.one.jira.business.event.asset.object.type.id}")
+	private String _jiraBusinessEventAssetObjectTypeId;
 
 	@Autowired
 	private JiraService _jiraService;

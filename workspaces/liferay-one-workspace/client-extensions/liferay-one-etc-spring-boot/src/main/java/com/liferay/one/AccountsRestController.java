@@ -38,7 +38,7 @@ public class AccountsRestController extends BaseRestController {
 
 		try {
 			_businessEventPermission.check(
-				jwt, externalReferenceCode, ActionKeys.VIEW);
+				externalReferenceCode, ActionKeys.VIEW, jwt);
 
 			return new ResponseEntity<>(
 				_jiraService.getAccountObjectKey(externalReferenceCode),

@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Felipe Franca
  */
-public class FieldOption {
+public class AssetObjectFieldOption {
 
-	public FieldOption(String label, String value) {
+	public AssetObjectFieldOption(String label, String value) {
 		_label = label;
 		_value = value;
 	}
