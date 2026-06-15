@@ -26,12 +26,16 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
  * @author Kyle Bischof
  */
 @Component
+@ConditionalOnProperty(
+	havingValue = "true", name = "liferay.one.pubsub.subscriber.enabled"
+)
 public class SalesforceObjectSubscriber extends BasePubsubSubscriber {
 
 	@Override
