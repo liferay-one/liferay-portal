@@ -25,7 +25,7 @@ export default function useGetLiferayVersions(): {
 
 				setProductVersions(
 					sortLiferayVersions(
-						response.map((entry: any) => ({
+						response.items.map((entry: any) => ({
 							label: entry.name,
 							value: entry.id,
 						}))

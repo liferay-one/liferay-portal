@@ -24,7 +24,7 @@ export default function useGetUTCTimeZonesList(): {
 				const response = await getBusinessEventFieldOptions(JSM_FIELDS.timeZone);
 
 				setUTCTimeZonesList(
-					response.map((entry: any) => ({
+					response.items.map((entry: any) => ({
 						label: entry.label,
 						value: entry.value,
 					}))

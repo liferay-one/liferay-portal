@@ -73,10 +73,10 @@ export async function getBusinessEventById(
 }
 
 export async function getBusinessEventFieldOptions(fieldName: string) {
-	const response = await jiraFetch(`/business-events/field-options/${fieldName}`);
+	const response = await jiraFetch(`/business-events/fields/${fieldName}/options`);
 
 	if (!response.ok) {
-		return [];
+		return {items: []};
 	}
 
 	return response.json();
@@ -107,7 +107,7 @@ export async function getProductVersions() {
 	const response = await jiraFetch('/product-versions');
 
 	if (!response.ok) {
-		return [];
+		return {items: []};
 	}
 
 	return response.json();
