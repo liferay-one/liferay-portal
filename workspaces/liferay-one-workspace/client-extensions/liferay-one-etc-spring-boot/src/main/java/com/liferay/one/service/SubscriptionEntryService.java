@@ -15,6 +15,7 @@ import com.liferay.one.constants.ProductGroupConstants;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
@@ -134,7 +135,7 @@ public class SubscriptionEntryService extends OneBaseService {
 		throws Exception {
 
 		delete(
-			getAuthorization(), "",
+			getAuthorization(), StringPool.BLANK,
 			UriComponentsBuilder.fromPath(
 				"/o/c/subscriptionentries/" + subscriptionEntryId
 			).build(
@@ -196,7 +197,7 @@ public class SubscriptionEntryService extends OneBaseService {
 	private String _getLanguageId(UserAccount userAccount) {
 		String languageId = userAccount.getLanguageId();
 
-		if ((languageId != null) &&
+		if (Validator.isNotNull(languageId) &&
 			_supportedLanguageIds.contains(languageId)) {
 
 			return languageId;
