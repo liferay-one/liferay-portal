@@ -3,18 +3,18 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.pubsub;
+package com.liferay.one.salesforce.pubsub;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceList;
-import com.liferay.one.model.SalesforcePricebookEntry;
-import com.liferay.one.model.SalesforceProduct2;
+import com.liferay.one.pubsub.Message;
+import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
+import com.liferay.one.salesforce.model.PricebookEntry;
+import com.liferay.one.salesforce.model.Product2;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
-import com.liferay.osb.spring.boot.client.pubsub.Message;
-import com.liferay.osb.spring.boot.client.pubsub.subscriber.BasePubsubSubscriber;
 
 import java.util.Objects;
 
@@ -34,9 +34,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConditionalOnProperty(
-	havingValue = "true", name = "liferay.one.pubsub.subscriber.enabled"
+	havingValue = "true",
+	name = "liferay.one.salesforce.object.pubsub.subscriber.enabled"
 )
-public class SalesforceObjectSubscriber extends BasePubsubSubscriber {
+public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Override
 	protected String getProjectId() {
@@ -95,19 +96,16 @@ public class SalesforceObjectSubscriber extends BasePubsubSubscriber {
 			String action, JSONObject recordJSONObject)
 		throws Exception {
 
-		SalesforcePricebookEntry salesforcePricebookEntry =
-			new SalesforcePricebookEntry(recordJSONObject);
+		PricebookEntry pricebookEntry = new PricebookEntry(recordJSONObject);
 
 		if (Objects.equals(action, "delete")) {
-			_commercePriceEntryService.deletePriceEntry(
-				salesforcePricebookEntry.getId());
+			_commercePriceEntryService.deletePriceEntry(pricebookEntry.getId());
 
 			return;
 		}
 
 		String priceListExternalReferenceCode =
-			"SALESFORCE_PRICE_LIST_" +
-				salesforcePricebookEntry.getCurrencyIsoCode();
+			"SALESFORCE_PRICE_LIST_" + pricebookEntry.getCurrencyIsoCode();
 
 		PriceList priceList = _commercePriceListService.fetchPriceList(
 			priceListExternalReferenceCode);
@@ -122,45 +120,41 @@ public class SalesforceObjectSubscriber extends BasePubsubSubscriber {
 			return;
 		}
 
-		Sku sku = _commerceSkuService.fetchSku(
-			salesforcePricebookEntry.getProduct2Id());
+		Sku sku = _commerceSkuService.fetchSku(pricebookEntry.getProduct2Id());
 
 		if (sku == null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to find SKU for Salesforce product " +
-						salesforcePricebookEntry.getProduct2Id());
+						pricebookEntry.getProduct2Id());
 			}
 
 			return;
 		}
 
 		_commercePriceEntryService.addOrUpdatePriceEntry(
-			salesforcePricebookEntry.isActive(),
-			salesforcePricebookEntry.getId(),
-			salesforcePricebookEntry.getUnitPrice(),
-			priceListExternalReferenceCode, priceList.getId(), sku.getId());
+			pricebookEntry.isActive(), pricebookEntry.getId(),
+			pricebookEntry.getUnitPrice(), priceListExternalReferenceCode,
+			priceList.getId(), sku.getId());
 	}
 
 	private void _processProduct2(String action, JSONObject recordJSONObject)
 		throws Exception {
 
-		SalesforceProduct2 salesforceProduct2 = new SalesforceProduct2(
-			recordJSONObject);
+		Product2 product2 = new Product2(recordJSONObject);
 
 		if (Objects.equals(action, "delete")) {
-			_commerceProductService.deactivateProduct(
-				salesforceProduct2.getId());
+			_commerceProductService.deactivateProduct(product2.getId());
 		}
 		else {
 			_commerceProductService.addOrUpdateProduct(
-				salesforceProduct2.getDescription(), salesforceProduct2.getId(),
-				salesforceProduct2.getName());
+				product2.getDescription(), product2.getId(),
+				product2.getName());
 		}
 	}
 
 	private static final Log _log = LogFactory.getLog(
-		SalesforceObjectSubscriber.class);
+		SalesforceObjectPubsubSubscriber.class);
 
 	@Autowired
 	private CommercePriceEntryService _commercePriceEntryService;
@@ -174,10 +168,10 @@ public class SalesforceObjectSubscriber extends BasePubsubSubscriber {
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
 
-	@Value("${liferay.one.pubsub.subscriber.salesforce.object.project.id}")
+	@Value("${liferay.one.salesforce.object.pubsub.subscriber.project.id}")
 	private String _projectId;
 
-	@Value("${liferay.one.pubsub.subscriber.salesforce.object.subscription}")
+	@Value("${liferay.one.salesforce.object.pubsub.subscriber.subscription}")
 	private String _subscription;
 
 }
