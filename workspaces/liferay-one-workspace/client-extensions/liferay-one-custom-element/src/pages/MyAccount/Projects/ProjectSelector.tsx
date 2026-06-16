@@ -13,14 +13,15 @@ import EntitySelector, {
 } from '../../../components/EntitySelector/EntitySelector';
 import {useProject} from '../../../context/ProjectContext';
 import i18n from '../../../i18n';
-import {PROJECTS, getProject} from './projects';
 
 export default function ProjectSelector() {
-	const {projectId, setProjectId} = useProject();
+	const {loading, projectId, projects, setProjectId} = useProject();
 	const navigate = useNavigate();
 	const [searchValue, setSearchValue] = useState('');
 
-	const project = getProject(projectId);
+	const project = projects.find(
+		(option) => option.externalReferenceCode === projectId
+	);
 
 	function handleSelect(id: string) {
 		setSearchValue('');
@@ -32,17 +33,23 @@ export default function ProjectSelector() {
 		}
 	}
 
-	const items: SelectorItem[] = PROJECTS.filter((option) =>
-		option.name.toLowerCase().includes(searchValue.trim().toLowerCase())
-	).map((option) => ({id: option.id, name: option.name}));
+	const items: SelectorItem[] = projects
+		.filter((option) =>
+			option.name.toLowerCase().includes(searchValue.trim().toLowerCase())
+		)
+		.map((option) => ({
+			id: option.externalReferenceCode,
+			name: option.name,
+		}));
 
 	return (
 		<EntitySelector
 			ariaLabel={i18n.translate('select-project')}
-			badge={project?.status ? i18n.translate('active') : undefined}
+			emptyLabel="no-projects-yet"
 			items={items}
-			label={`${i18n.translate('project')} (${PROJECTS.length})`}
-			name={project?.name ?? projectId}
+			label={`${i18n.translate('project')} (${projects.length})`}
+			loading={loading}
+			name={project?.name ?? ''}
 			onSearchChange={setSearchValue}
 			onSelect={handleSelect}
 			searchValue={searchValue}

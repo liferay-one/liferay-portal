@@ -9,15 +9,17 @@ import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import Page from '../../../components/Page';
+import {useProject} from '../../../context/ProjectContext';
+import {
+	ProjectProduct,
+	useProjectProducts,
+} from '../../../hooks/data/useProjectCommerce';
 import i18n, {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
-import {PRODUCTS, Product} from './products';
+import {getStatusColor} from './tabData';
+import {getLogoColor, getProductIcon} from './visuals';
 
-const STATUS_DOT_COLORS: {[key: string]: string} = {
-	active: 'var(--color-success)',
-};
-
-function matchesSearch(product: Product, search: string): boolean {
+function matchesSearch(product: ProjectProduct, search: string): boolean {
 	return (
 		product.name.toLowerCase().includes(search) ||
 		product.publisher.toLowerCase().includes(search)
@@ -26,14 +28,25 @@ function matchesSearch(product: Product, search: string): boolean {
 
 export default function Products() {
 	const navigate = useNavigate();
+	const {projectId} = useProject();
 
-	const filters = useMemo<ListFilter<Product>[]>(() => {
+	const {error, loading, products} = useProjectProducts(projectId);
+
+	const liferayProducts = useMemo(
+		() =>
+			products.filter((product) =>
+				product.categoryNames.includes('liferay-product')
+			),
+		[products]
+	);
+
+	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const types = Array.from(
-			new Set(PRODUCTS.map((product) => product.type))
+			new Set(liferayProducts.map((product) => product.type))
 		).sort();
 
 		const statuses = Array.from(
-			new Set(PRODUCTS.map((product) => product.status))
+			new Set(liferayProducts.map((product) => product.status))
 		).sort();
 
 		return [
@@ -41,10 +54,7 @@ export default function Products() {
 				key: 'type',
 				label: 'type',
 				matches: (product, values) => values.includes(product.type),
-				options: types.map((type) => ({
-					label: translate(type as Word),
-					value: type,
-				})),
+				options: types.map((type) => ({label: type, value: type})),
 			},
 			{
 				key: 'status',
@@ -56,9 +66,9 @@ export default function Products() {
 				})),
 			},
 		];
-	}, []);
+	}, [liferayProducts]);
 
-	const columns: ListColumn<Product>[] = [
+	const columns: ListColumn<ProjectProduct>[] = [
 		{
 			heading: 'name',
 			key: 'name',
@@ -66,20 +76,14 @@ export default function Products() {
 				<span className="list-card-name">
 					<span
 						className="list-card-icon"
-						style={{backgroundColor: product.logoColor}}
+						style={{backgroundColor: getLogoColor(product.name)}}
 					>
-						<ClayIcon symbol={product.icon} />
+						<ClayIcon symbol={getProductIcon(product.type)} />
 					</span>
 
 					<span className="list-card-name-text">
 						<span className="list-card-name-label">
 							{product.name}
-
-							{product.badge && (
-								<span className="list-card-badge">
-									{translate(product.badge)}
-								</span>
-							)}
 						</span>
 
 						<span className="list-card-subtext">
@@ -92,7 +96,7 @@ export default function Products() {
 		{
 			heading: 'type',
 			key: 'type',
-			render: (product) => translate(product.type),
+			render: (product) => product.type,
 		},
 		{
 			heading: 'start-date',
@@ -107,9 +111,7 @@ export default function Products() {
 					<span
 						className="list-card-status-dot"
 						style={{
-							backgroundColor:
-								STATUS_DOT_COLORS[product.status] ??
-								'var(--color-neutral-6)',
+							backgroundColor: getStatusColor(product.status),
 						}}
 					/>
 
@@ -141,13 +143,14 @@ export default function Products() {
 			description={i18n.translate(
 				'manage-the-products-within-your-project'
 			)}
+			pageRendererProps={{error, isLoading: loading}}
 			title={i18n.translate('products')}
 		>
 			<FilterableListCard
 				columns={columns}
 				emptyLabel="no-products-yet"
 				filters={filters}
-				items={PRODUCTS}
+				items={liferayProducts}
 				matchesSearch={matchesSearch}
 				onItemClick={(product) => navigate(product.id)}
 				rowKey={(product) => product.id}

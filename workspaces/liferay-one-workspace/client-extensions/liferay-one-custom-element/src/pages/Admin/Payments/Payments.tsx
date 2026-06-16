@@ -72,7 +72,7 @@ const Payments = () => {
 					searchVisible: true,
 					visible: true,
 				}}
-				resource="/o/c/publishersalessummaries?nestedFields=accountToPublisher,publisherToCommerceOrder"
+				resource="/o/c/publishersalessummaries?nestedFields=accountEntryToPublisher,publisherToCommerceOrder"
 				tableProps={{
 					actions: [
 						{
