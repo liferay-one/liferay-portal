@@ -99,7 +99,7 @@ public class EntitlementDefinition {
 			}
 		}
 		catch (JSONException jsonException) {
-			_log.error(jsonException, jsonException);
+			_log.error(jsonException);
 		}
 
 		return productOptions;

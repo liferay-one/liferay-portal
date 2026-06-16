@@ -86,7 +86,7 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 				},
 				duration: form.duration,
 				projectId,
-				r_accountToTrialExtensionRequest_accountEntryId: accountId,
+				r_accountEntryToTrialExtensionRequest_accountEntryId: accountId,
 				r_orderToTrialExtensionRequest_commerceOrderId: order.id,
 				reason: form.reason,
 			};

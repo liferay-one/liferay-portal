@@ -3,70 +3,78 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-export type Project = {
-	creditLimit: string;
-	creditLimitPercent: number;
-	id: string;
-	name: string;
-	spendingLimit: string;
-	spendingLimitPercent: number;
-	status: string;
-	termRange: string;
-	termType: string;
-};
-
-export const PROJECTS: Project[] = [
-	{
-		creditLimit: '$1K / $3.5K',
-		creditLimitPercent: 34,
-		id: 'default',
-		name: 'North America Enterprise',
-		spendingLimit: '$1.7K / $2.5K',
-		spendingLimitPercent: 70,
-		status: 'active',
-		termRange: '08.09.2026 - 01.09.2027',
-		termType: 'annual',
-	},
-	{
-		creditLimit: '$0.5K / $2K',
-		creditLimitPercent: 25,
-		id: 'sandbox',
-		name: 'Sandbox',
-		spendingLimit: '$0.3K / $1K',
-		spendingLimitPercent: 30,
-		status: 'active',
-		termRange: '01.01.2026 - 31.12.2026',
-		termType: 'annual',
-	},
-	{
-		creditLimit: '$0.8K / $2K',
-		creditLimitPercent: 40,
-		id: 'staging',
-		name: 'Staging',
-		spendingLimit: '$1K / $2K',
-		spendingLimitPercent: 50,
-		status: 'active',
-		termRange: '01.03.2026 - 28.02.2027',
-		termType: 'annual',
-	},
-];
-
-export const DEFAULT_PROJECT_ID = PROJECTS[0].id;
+import {useFetch} from '../../../hooks/useFetch';
+import {Liferay} from '../../../liferay/liferay';
 
 export const LAST_PROJECT_STORAGE_KEY = 'liferay-one:last-project';
 
-export function resolveProjectId(id?: string): string {
-	if (id) {
-		return id;
-	}
-
-	return localStorage.getItem(LAST_PROJECT_STORAGE_KEY) ?? DEFAULT_PROJECT_ID;
+export function resolveProjectId(): string {
+	return localStorage.getItem(LAST_PROJECT_STORAGE_KEY) ?? '';
 }
 
-export function getProject(id: string): Project | undefined {
-	return PROJECTS.find((project) => project.id === id);
-}
+export type UserProject = {
+	externalReferenceCode: string;
+	id: number;
+	name: string;
+};
 
-export function getProjectName(id: string): string {
-	return getProject(id)?.name ?? id;
+type ProjectAPIItem = {
+	externalReferenceCode: string;
+	id: number;
+	name: string;
+};
+
+type ProjectMembershipAPIItem = {
+	r_projectToProjectMembership_c_projectERC: string;
+};
+
+// Returns the projects the current user is a member of within the currently
+// selected account. Projects are company scoped, so they are filtered by the
+// account relationship, then narrowed to the projects the user has a
+// ProjectMembership for. A user with a membership for every project in the
+// account (for example an administrator) sees all of them.
+
+export function useUserProjects(): {loading: boolean; projects: UserProject[]} {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+	const userId = Liferay.ThemeDisplay.getUserId();
+
+	const enabled = Boolean(accountId && userId);
+
+	const {data: membershipData, loading: membershipsLoading} = useFetch<
+		APIResponse<ProjectMembershipAPIItem>
+	>(enabled ? '/o/c/projectmemberships' : null, {
+		params: {
+			fields: 'r_projectToProjectMembership_c_projectERC',
+			filter: `r_accountEntryToProjectMembership_accountEntryId eq '${accountId}' and r_userToProjectMembership_userId eq '${userId}'`,
+			pageSize: 200,
+		},
+	});
+
+	const {data: projectData, loading: projectsLoading} = useFetch<
+		APIResponse<ProjectAPIItem>
+	>(enabled ? '/o/c/projects' : null, {
+		params: {
+			filter: `r_accountEntryToProject_accountEntryId eq '${accountId}'`,
+			pageSize: 200,
+			sort: 'name:asc',
+		},
+	});
+
+	const memberProjectExternalReferenceCodes = new Set(
+		(membershipData?.items ?? []).map(
+			(item) => item.r_projectToProjectMembership_c_projectERC
+		)
+	);
+
+	const projects: UserProject[] = (projectData?.items ?? [])
+		.filter((item) =>
+			memberProjectExternalReferenceCodes.has(item.externalReferenceCode)
+		)
+		.map((item) => ({
+			externalReferenceCode: item.externalReferenceCode,
+			id: item.id,
+			name: item.name,
+		}));
+
+	return {loading: membershipsLoading || projectsLoading, projects};
 }

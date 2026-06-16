@@ -3,22 +3,26 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLabel from '@clayui/label';
+import {format} from 'date-fns';
 import {ReactNode} from 'react';
 
 import {useProject} from '../../../context/ProjectContext';
+import {useProjectCommerce} from '../../../hooks/data/useProjectCommerce';
 import i18n from '../../../i18n';
-import {getProject} from './projects';
+
+function formatTermRange(startDate?: string, endDate?: string): string {
+	if (!startDate || !endDate) {
+		return '-';
+	}
+
+	return `${format(new Date(startDate), 'MM.dd.yyyy')} - ${format(
+		new Date(endDate),
+		'MM.dd.yyyy'
+	)}`;
+}
 
 const LABEL_COLOR = 'var(--color-neutral-7)';
 const VALUE_COLOR = 'var(--color-neutral-10)';
-
-function PercentBadge({percent}: {percent: number}) {
-	const displayType =
-		percent < 50 ? 'success' : percent < 80 ? 'warning' : 'danger';
-
-	return <ClayLabel displayType={displayType}>{percent}%</ClayLabel>;
-}
 
 type SectionProps = {
 	children: ReactNode;
@@ -66,7 +70,10 @@ function Section({children, first, label}: SectionProps) {
 export default function ProjectHeader() {
 	const {projectId} = useProject();
 
-	const project = getProject(projectId);
+	const {contract} = useProjectCommerce(projectId);
+
+	const termRange = formatTermRange(contract?.startDate, contract?.endDate);
+	const annualTerm = contract?.termMonths === 12;
 
 	return (
 		<div
@@ -78,37 +85,11 @@ export default function ProjectHeader() {
 			}}
 		>
 			<Section first label={i18n.translate('project-term')}>
-				{project?.termRange ?? '-'}
+				{termRange}
 			</Section>
 
 			<Section label={i18n.translate('term')}>
-				{project ? i18n.translate(project.termType as 'annual') : '-'}
-			</Section>
-
-			<Section label={i18n.translate('credit-limit')}>
-				<span
-					className="align-items-center d-flex"
-					style={{gap: 'var(--spacer-2)'}}
-				>
-					{project?.creditLimit ?? '-'}
-
-					{project ? (
-						<PercentBadge percent={project.creditLimitPercent} />
-					) : null}
-				</span>
-			</Section>
-
-			<Section label={i18n.translate('spending-limit')}>
-				<span
-					className="align-items-center d-flex"
-					style={{gap: 'var(--spacer-2)'}}
-				>
-					{project?.spendingLimit ?? '-'}
-
-					{project ? (
-						<PercentBadge percent={project.spendingLimitPercent} />
-					) : null}
-				</span>
+				{annualTerm ? i18n.translate('annual') : '-'}
 			</Section>
 
 			<Section label={i18n.translate('agreements')}>

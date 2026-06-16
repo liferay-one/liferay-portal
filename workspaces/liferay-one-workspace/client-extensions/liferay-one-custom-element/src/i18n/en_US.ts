@@ -263,8 +263,6 @@ export default {
 	'create-template': 'Create Template',
 	'created-at': 'Created At',
 	'created-by': 'Created By',
-	'credit-limit': 'Credit Limit',
-	'credit-note': 'Credit Note',
 	'currency-code': 'Currency Code',
 	'current-version': 'Current Version',
 	'customer-account': 'Customer Account',
@@ -313,7 +311,6 @@ export default {
 	'download': 'Download',
 	'download-app': 'Download App',
 	'download-in-progress': 'Download in Progress',
-	'download-invoice': 'Download Invoice',
 	'download-key': 'Download Key',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
@@ -496,11 +493,7 @@ export default {
 		'Invalid or non-existent ticket number.',
 	'invite-manage-roles-designate-incident-contacts':
 		'Invite, manage roles, designate incident contacts.',
-	'invoice': 'Invoice',
-	'invoice-id': 'Invoice ID',
 	'invoice-status': 'Invoice Status',
-	'invoices': 'Invoices',
-	'invoices-list': 'Invoices List',
 	'ip-addresses': 'IP Addresses',
 	'job-title': 'Job Title',
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
@@ -658,11 +651,11 @@ export default {
 	'no-further-edits-can-be-made-when-tickets-are-closed-please-open-a-new-support-ticket-if-assistance-is-needed':
 		'No further edits can be made when tickets are closed. Please open a new support ticket if assistance is needed.',
 	'no-history-of-activity-was-found': 'No history of activity was found.',
-	'no-invoices-yet': 'No Invoices Yet',
 	'no-licenses-yet': 'No Licenses Yet',
 	'no-orders-yet': 'No Orders Yet',
 	'no-products-yet': 'No Products Yet',
 	'no-projects-available-for-x': 'No projects available for {0}',
+	'no-projects-yet': 'No Projects Yet',
 	'no-publisher-catalog-found': 'No Publisher Catalog Found',
 	'no-publisher-profile-to-update': 'There is no publisher profile to update',
 	'no-results-found': 'No Results Found',
@@ -933,7 +926,6 @@ export default {
 	'sorry-there-are-no-results-found': 'Sorry, there are no results found.',
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Specify your app’s version. This will help the user understand the latest version of your app offered on the Marketplace.',
-	'spending-limit': 'Spending Limit',
 	'ssa-dashboard': 'SSA Dashboard',
 	'ssa-trial-installation-in-progress': 'SSA Trial Installation in Progress',
 	'ssa-trial-summary': 'SSA Trial Summary',
@@ -1134,7 +1126,6 @@ export default {
 	'video-url': 'Video URL',
 	'view': 'View',
 	'view-all': 'View All',
-	'view-all-account-invoices': 'View All Account Invoices',
 	'view-all-account-orders': 'View All Account Orders',
 	'view-details': 'View Details',
 	'view-request': 'View Request',

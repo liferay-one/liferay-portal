@@ -13,7 +13,7 @@ const useSSATrialsExtend = (account: Account) =>
 		HeadlessTrialExtensionRequest.getTrialExtensionRequest(
 			new URLSearchParams({
 				filter: SearchBuilder.eq(
-					'r_accountToTrialExtensionRequest_accountEntryId',
+					'r_accountEntryToTrialExtensionRequest_accountEntryId',
 					account.id
 				),
 				page: '1',

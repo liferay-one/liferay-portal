@@ -129,8 +129,8 @@ type PublisherSalesSummaryEntry = {
 	publisherToAccountERC: string;
 	publisherToCommerceOrder: Order[];
 	quarter: string;
-	r_accountToPublisher_accountEntryERC: string;
-	r_accountToPublisher_accountEntryId: number;
+	r_accountEntryToPublisher_accountEntryERC: string;
+	r_accountEntryToPublisher_accountEntryId: number;
 	scopeId: number;
 };
 
