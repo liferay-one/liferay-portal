@@ -8,16 +8,21 @@ import {
 	createContext,
 	useCallback,
 	useContext,
+	useEffect,
 	useState,
 } from 'react';
 
 import {
 	LAST_PROJECT_STORAGE_KEY,
+	UserProject,
 	resolveProjectId,
+	useUserProjects,
 } from '../pages/MyAccount/Projects/projects';
 
 type ProjectContextValue = {
+	loading: boolean;
 	projectId: string;
+	projects: UserProject[];
 	setProjectId: (projectId: string) => void;
 };
 
@@ -26,6 +31,8 @@ const ProjectContext = createContext<ProjectContextValue>(
 );
 
 export function ProjectProvider({children}: {children: ReactNode}) {
+	const {loading, projects} = useUserProjects();
+
 	const [projectId, setProjectIdState] = useState(() => resolveProjectId());
 
 	const setProjectId = useCallback((nextProjectId: string) => {
@@ -34,8 +41,24 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 		setProjectIdState(nextProjectId);
 	}, []);
 
+	useEffect(() => {
+		if (loading || !projects.length) {
+			return;
+		}
+
+		const accessible = projects.some(
+			(project) => project.externalReferenceCode === projectId
+		);
+
+		if (!accessible) {
+			setProjectId(projects[0].externalReferenceCode);
+		}
+	}, [loading, projectId, projects, setProjectId]);
+
 	return (
-		<ProjectContext.Provider value={{projectId, setProjectId}}>
+		<ProjectContext.Provider
+			value={{loading, projectId, projects, setProjectId}}
+		>
 			{children}
 		</ProjectContext.Provider>
 	);

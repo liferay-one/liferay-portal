@@ -6,7 +6,11 @@
 import Button from '../../../components/Button/Button';
 import {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn} from './FilterableListCard';
-import {DownloadItem} from './tabData';
+
+export type DownloadItem = {
+	id: string;
+	name: string;
+};
 
 type DownloadListCardProps = {
 	emptyLabel: Word;

@@ -9,32 +9,62 @@ import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import Page from '../../../components/Page';
+import {useProject} from '../../../context/ProjectContext';
+import {
+	ProjectProduct,
+	useProjectProducts,
+} from '../../../hooks/data/useProjectCommerce';
+import {useProjectOrders} from '../../../hooks/data/useProjectOrders';
 import i18n, {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
-import {APPLICATIONS, Application} from './applications';
+import {getStatusColor} from './tabData';
+import {getLogoColor} from './visuals';
 
-const STATUS_DOT_COLORS: {[key: string]: string} = {
-	completed: 'var(--color-success)',
-};
-
-function matchesSearch(application: Application, search: string): boolean {
+function matchesSearch(application: ProjectProduct, search: string): boolean {
 	return (
 		application.name.toLowerCase().includes(search) ||
-		application.providedBy.toLowerCase().includes(search) ||
-		application.orderId.toLowerCase().includes(search)
+		application.publisher.toLowerCase().includes(search)
 	);
 }
 
 export default function Applications() {
 	const navigate = useNavigate();
+	const {projectId, projects} = useProject();
 
-	const filters = useMemo<ListFilter<Application>[]>(() => {
+	const projectName = projects.find(
+		(project) => project.externalReferenceCode === projectId
+	)?.name;
+
+	const {error, loading, products} = useProjectProducts(projectId);
+	const {placedOrders} = useProjectOrders(projectName);
+
+	const applications = useMemo(
+		() =>
+			products.filter((product) => product.categoryNames.includes('app')),
+		[products]
+	);
+
+	const orderIdByProductName = useMemo(() => {
+		const map = new Map<string, string>();
+
+		for (const order of placedOrders) {
+			for (const item of order.placedOrderItems ?? []) {
+				if (!map.has(item.name)) {
+					map.set(item.name, String(order.id));
+				}
+			}
+		}
+
+		return map;
+	}, [placedOrders]);
+
+	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(
-			new Set(APPLICATIONS.map((application) => application.saleType))
+			new Set(applications.map((application) => application.saleType))
 		).sort();
 
 		const statuses = Array.from(
-			new Set(APPLICATIONS.map((application) => application.status))
+			new Set(applications.map((application) => application.status))
 		).sort();
 
 		return [
@@ -59,9 +89,9 @@ export default function Applications() {
 				})),
 			},
 		];
-	}, []);
+	}, [applications]);
 
-	const columns: ListColumn<Application>[] = [
+	const columns: ListColumn<ProjectProduct>[] = [
 		{
 			heading: 'name',
 			key: 'name',
@@ -69,7 +99,9 @@ export default function Applications() {
 				<span className="list-card-name">
 					<span
 						className="list-card-icon"
-						style={{backgroundColor: application.logoColor}}
+						style={{
+							backgroundColor: getLogoColor(application.name),
+						}}
 					>
 						{application.name.charAt(0)}
 					</span>
@@ -85,10 +117,10 @@ export default function Applications() {
 			key: 'provided-by',
 			render: (application) => (
 				<span className="d-flex flex-column">
-					<span>{application.providedBy}</span>
+					<span>{application.publisher}</span>
 
 					<span className="list-card-subtext">
-						{application.providedDate}
+						{application.startDate}
 					</span>
 				</span>
 			),
@@ -101,7 +133,8 @@ export default function Applications() {
 		{
 			heading: 'order-id',
 			key: 'order-id',
-			render: (application) => application.orderId,
+			render: (application) =>
+				orderIdByProductName.get(application.name) ?? '-',
 		},
 		{
 			heading: 'status',
@@ -111,9 +144,7 @@ export default function Applications() {
 					<span
 						className="list-card-status-dot"
 						style={{
-							backgroundColor:
-								STATUS_DOT_COLORS[application.status] ??
-								'var(--color-neutral-6)',
+							backgroundColor: getStatusColor(application.status),
 						}}
 					/>
 
@@ -145,13 +176,14 @@ export default function Applications() {
 			description={i18n.translate(
 				'manage-the-applications-within-your-project'
 			)}
+			pageRendererProps={{error, isLoading: loading}}
 			title={i18n.translate('applications')}
 		>
 			<FilterableListCard
 				columns={columns}
 				emptyLabel="no-applications-yet"
 				filters={filters}
-				items={APPLICATIONS}
+				items={applications}
 				matchesSearch={matchesSearch}
 				onItemClick={(application) => navigate(application.id)}
 				rowKey={(application) => application.id}

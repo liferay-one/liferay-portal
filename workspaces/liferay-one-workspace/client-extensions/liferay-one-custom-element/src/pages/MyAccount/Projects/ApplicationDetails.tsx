@@ -5,20 +5,53 @@
 
 import {useParams} from 'react-router-dom';
 
-import i18n, {Word} from '../../../i18n';
+import {useProject} from '../../../context/ProjectContext';
+import {useLiferayBundles} from '../../../hooks/data/useLiferayBundles';
+import {useDeliveryProduct} from '../../../hooks/data/useProduct';
+import {
+	getSpecificationValue,
+	getSpecificationValues,
+} from '../../../hooks/data/useProjectCommerce';
+import {
+	getProductOrderInfo,
+	useProjectOrders,
+} from '../../../hooks/data/useProjectOrders';
+import i18n from '../../../i18n';
+import {Liferay} from '../../../liferay/liferay';
 import ActivationKeysCard from './ActivationKeysCard';
 import DetailHeader from './DetailHeader';
 import DetailsCard from './DetailsCard';
 import DownloadListCard from './DownloadListCard';
 import HelpSupportCard from './HelpSupportCard';
 import ProjectDetailTabs, {DetailTab} from './ProjectDetailTabs';
-import {getApplication} from './applications';
-import {VERSIONS} from './tabData';
+import {getLogoColor} from './visuals';
 
 export default function ApplicationDetails() {
 	const {applicationId} = useParams();
+	const {projectId, projects} = useProject();
 
-	const application = getApplication(applicationId ?? '');
+	const projectName = projects.find(
+		(project) => project.externalReferenceCode === projectId
+	)?.name;
+
+	const {data: application, isLoading} = useDeliveryProduct(
+		applicationId ?? ''
+	);
+	const {placedOrders} = useProjectOrders(projectName);
+	const {bundles} = useLiferayBundles();
+
+	if (isLoading) {
+		return (
+			<ProjectDetailTabs
+				header={
+					<p className="text-neutral-7">
+						{i18n.translate('loading')}
+					</p>
+				}
+				tabs={[]}
+			/>
+		);
+	}
 
 	if (!application) {
 		return (
@@ -33,29 +66,36 @@ export default function ApplicationDetails() {
 		);
 	}
 
+	const projectType =
+		getSpecificationValue(application, 'license-term') ||
+		getSpecificationValues(application, 'liferay-products-categories')[0] ||
+		getSpecificationValue(application, 'price-model');
+
+	const orderInfo = getProductOrderInfo(placedOrders, application.name);
+
 	const detailsContent = (
 		<DetailsCard
 			rows={[
-				{label: i18n.translate('order-id'), value: application.orderId},
+				{label: i18n.translate('order-id'), value: orderInfo.orderId},
 				{
 					label: i18n.translate('order-date'),
-					value: application.orderDate,
+					value: orderInfo.orderDate,
 				},
 				{
 					label: i18n.translate('purchased-by'),
-					value: application.providedBy,
+					value: orderInfo.purchasedBy,
 				},
 				{
 					label: i18n.translate('purchase-number'),
-					value: application.purchaseNumber,
+					value: orderInfo.purchaseNumber,
 				},
 				{
 					label: i18n.translate('project-type'),
-					value: i18n.translate(application.projectType as Word),
+					value: projectType,
 				},
 				{
 					label: i18n.translate('customer-account'),
-					value: application.customerAccount,
+					value: Liferay.CommerceContext.account?.accountName ?? '',
 				},
 			]}
 		/>
@@ -64,7 +104,7 @@ export default function ApplicationDetails() {
 	const tabs: DetailTab[] = [
 		{content: detailsContent, key: 'details', label: 'details'},
 		{
-			content: <ActivationKeysCard />,
+			content: <ActivationKeysCard productName={application.name} />,
 			key: 'activation',
 			label: 'activation',
 		},
@@ -73,7 +113,7 @@ export default function ApplicationDetails() {
 				<DownloadListCard
 					emptyLabel="no-versions-yet"
 					heading="supported-version"
-					items={VERSIONS}
+					items={bundles}
 					title="versions-list"
 				/>
 			),
@@ -81,7 +121,11 @@ export default function ApplicationDetails() {
 			label: 'download',
 		},
 		{
-			content: <HelpSupportCard application={application} />,
+			content: (
+				<HelpSupportCard
+					specifications={application.productSpecifications}
+				/>
+			),
 			key: 'help-and-support',
 			label: 'help-and-support',
 		},
@@ -91,10 +135,13 @@ export default function ApplicationDetails() {
 		<ProjectDetailTabs
 			header={
 				<DetailHeader
-					logoColor={application.logoColor}
+					logoColor={getLogoColor(application.name)}
 					name={application.name}
-					publisher={application.publisher}
-					status={application.status}
+					publisher={getSpecificationValue(
+						application,
+						'publisher-name'
+					)}
+					status="active"
 				/>
 			}
 			tabs={tabs}

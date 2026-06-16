@@ -101,7 +101,7 @@ public class CommerceOrderItem extends LiferayObject {
 			}
 		}
 		catch (JSONException jsonException) {
-			_log.error(jsonException, jsonException);
+			_log.error(jsonException);
 		}
 
 		return productOptions;

@@ -44,10 +44,10 @@ const usePublisherSalesSummaryObject = (
 			const [publisherAccount, postalAddresses, placedOrders, orders] =
 				await Promise.all([
 					HeadlessAdminUser.getAccount(
-						publisherSalesSummary.r_accountToPublisher_accountEntryId
+						publisherSalesSummary.r_accountEntryToPublisher_accountEntryId
 					),
 					HeadlessAdminUser.getAccountPostalAddresses(
-						publisherSalesSummary.r_accountToPublisher_accountEntryId
+						publisherSalesSummary.r_accountEntryToPublisher_accountEntryId
 					),
 					Promise.all(
 						publisherSalesSummary.publisherToCommerceOrder.map(

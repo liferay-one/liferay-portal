@@ -7,19 +7,32 @@ import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {Link} from 'react-router-dom';
 
-import {Word, translate} from '../../../i18n';
+import {useProject} from '../../../context/ProjectContext';
+import {
+	ProjectOrder,
+	useProjectOrders,
+} from '../../../hooks/data/useProjectOrders';
+import {translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
 import RowActionsMenu from './RowActionsMenu';
-import {ORDERS, Order, getStatusColor} from './tabData';
+import {getStatusColor} from './tabData';
 
-function matchesSearch(order: Order, search: string): boolean {
+function matchesSearch(order: ProjectOrder, search: string): boolean {
 	return order.orderId.toLowerCase().includes(search);
 }
 
 export default function OrdersCard() {
-	const filters = useMemo<ListFilter<Order>[]>(() => {
+	const {projectId, projects} = useProject();
+
+	const projectName = projects.find(
+		(project) => project.externalReferenceCode === projectId
+	)?.name;
+
+	const {orders} = useProjectOrders(projectName);
+
+	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(
-			new Set(ORDERS.map((order) => order.status))
+			new Set(orders.map((order) => order.status))
 		).sort();
 
 		return [
@@ -28,14 +41,14 @@ export default function OrdersCard() {
 				label: 'status',
 				matches: (order, values) => values.includes(order.status),
 				options: statuses.map((status) => ({
-					label: translate(status as Word),
+					label: status,
 					value: status,
 				})),
 			},
 		];
-	}, []);
+	}, [orders]);
 
-	const columns: ListColumn<Order>[] = [
+	const columns: ListColumn<ProjectOrder>[] = [
 		{
 			heading: 'order-id',
 			key: 'order-id',
@@ -60,10 +73,14 @@ export default function OrdersCard() {
 				<span className="list-card-status">
 					<span
 						className="list-card-status-dot"
-						style={{backgroundColor: getStatusColor(order.status)}}
+						style={{
+							backgroundColor: getStatusColor(
+								order.status.toLowerCase()
+							),
+						}}
 					/>
 
-					{translate(order.status as Word)}
+					{order.status}
 				</span>
 			),
 		},
@@ -90,7 +107,7 @@ export default function OrdersCard() {
 			columns={columns}
 			emptyLabel="no-orders-yet"
 			filters={filters}
-			items={ORDERS}
+			items={orders}
 			matchesSearch={matchesSearch}
 			onItemClick={() => {}}
 			rowKey={(order) => order.id}

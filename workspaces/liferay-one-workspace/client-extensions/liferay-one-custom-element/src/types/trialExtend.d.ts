@@ -8,7 +8,7 @@ type TrialExtend = {
 	duration: number;
 	id: number;
 	projectId: string;
-	r_accountToTrialExtensionRequest_accountEntryId: number;
+	r_accountEntryToTrialExtensionRequest_accountEntryId: number;
 	r_orderToTrialExtensionRequest_commerceOrderId: number;
 	reason: string;
 };

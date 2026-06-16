@@ -8,28 +8,41 @@ import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 
 import Button from '../../../components/Button/Button';
+import {
+	ProjectActivationKey,
+	useProjectActivationKeys,
+} from '../../../hooks/data/useProjectActivationKeys';
 import {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
-import {ACTIVATION_KEYS, ActivationKey, getStatusColor} from './tabData';
+import {getStatusColor} from './tabData';
 
 const BADGE_COLORS: {[key: string]: {color: string; icon: string}} = {
 	'new-activation-key': {color: 'var(--color-success)', icon: 'check-circle'},
 	'to-be-renewed': {color: 'var(--color-warning)', icon: 'warning-full'},
 };
 
-function matchesSearch(activationKey: ActivationKey, search: string): boolean {
+type ActivationKeysCardProps = {
+	productName?: string;
+};
+
+function matchesSearch(
+	activationKey: ProjectActivationKey,
+	search: string
+): boolean {
 	return (
 		activationKey.name.toLowerCase().includes(search) ||
 		activationKey.domain.toLowerCase().includes(search)
 	);
 }
 
-export default function ActivationKeysCard() {
-	const filters = useMemo<ListFilter<ActivationKey>[]>(() => {
+export default function ActivationKeysCard({
+	productName,
+}: ActivationKeysCardProps) {
+	const {activationKeys} = useProjectActivationKeys(productName);
+
+	const filters = useMemo<ListFilter<ProjectActivationKey>[]>(() => {
 		const statuses = Array.from(
-			new Set(
-				ACTIVATION_KEYS.map((activationKey) => activationKey.status)
-			)
+			new Set(activationKeys.map((activationKey) => activationKey.status))
 		).sort();
 
 		return [
@@ -44,9 +57,9 @@ export default function ActivationKeysCard() {
 				})),
 			},
 		];
-	}, []);
+	}, [activationKeys]);
 
-	const columns: ListColumn<ActivationKey>[] = [
+	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
 			heading: 'activation-key',
 			key: 'activation-key',
@@ -152,7 +165,7 @@ export default function ActivationKeysCard() {
 			columns={columns}
 			emptyLabel="no-activation-keys-yet"
 			filters={filters}
-			items={ACTIVATION_KEYS}
+			items={activationKeys}
 			matchesSearch={matchesSearch}
 			onItemClick={() => {}}
 			rowKey={(activationKey) => activationKey.id}
