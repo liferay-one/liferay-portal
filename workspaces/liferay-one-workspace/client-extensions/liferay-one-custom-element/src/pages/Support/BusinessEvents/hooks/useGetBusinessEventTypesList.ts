@@ -23,7 +23,9 @@ export default function useGetBusinessEventTypesList(): {
 	useEffect(() => {
 		const fetchListTypeEntries = async () => {
 			try {
-				const response = await getBusinessEventFieldOptions(JSM_FIELDS.eventType);
+				const response = await getBusinessEventFieldOptions(
+					JSM_FIELDS.eventType
+				);
 
 				setBusinessEventTypesList(
 					response.items

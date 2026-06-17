@@ -165,6 +165,7 @@ type PlacedOrder = {
 	placedOrderBillingAddress: any;
 	placedOrderBillingAddressId: number;
 	placedOrderItems: PlacedOrderItems[];
+	purchaseOrderNumber?: string;
 	workflowStatusInfo: {
 		code: number;
 		label: string;

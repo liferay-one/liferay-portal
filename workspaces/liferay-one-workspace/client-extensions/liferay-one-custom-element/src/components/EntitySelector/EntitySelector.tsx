@@ -137,11 +137,10 @@ export default function EntitySelector({
 						<span
 							style={{
 								alignSelf: 'flex-start',
-								backgroundColor:
-									'var(--color-state-success-lighten-2)',
+								backgroundColor: 'var(--color-neutral-2)',
 								borderRadius:
 									'var(--border-radius-sm, 0.25rem)',
-								color: 'var(--color-state-success-darken-2)',
+								color: 'var(--color-neutral-7)',
 								fontSize: '0.6875rem',
 								fontWeight: 700,
 								marginTop: 'var(--spacer-1)',

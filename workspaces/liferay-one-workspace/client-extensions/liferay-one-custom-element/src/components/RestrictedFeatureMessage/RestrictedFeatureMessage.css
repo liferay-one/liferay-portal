@@ -1,0 +1,22 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+.restricted-feature-message {
+	align-items: center;
+	background-color: #fff;
+	border: 1px solid #e7e7ed;
+	border-radius: 12px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	padding: 3rem 1.5rem;
+	text-align: center;
+}
+
+.restricted-feature-message-icon {
+	color: var(--color-brand-primary, #0b5fff);
+	font-size: 2rem;
+	margin-bottom: 1rem;
+}

@@ -5,6 +5,8 @@
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useState} from 'react';
+import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
+import {useUserProjects} from '~/pages/MyAccount/Projects/projects';
 import {IUpload} from '~/utils/types';
 
 import useCheckAttachmentAccess from '../../hooks/useCheckAttachmentAccess';
@@ -53,16 +55,21 @@ const renderErrorComponent = (
 
 const AttachmentUploaderOutlet = () => {
 	const {errorCode, hasAccess, loading} = useCheckAttachmentAccess();
+	const {loading: projectsLoading, projects} = useUserProjects();
 	const [uploadStateData, setUploadStateData] = useState<IUpload | null>(
 		null
 	);
 
-	if (loading) {
+	if (loading || projectsLoading) {
 		return (
 			<div className="mx-auto">
 				<ClayLoadingIndicator size="sm" />
 			</div>
 		);
+	}
+
+	if (!projects.length) {
+		return <RestrictedFeatureMessage />;
 	}
 
 	if (uploadStateData?.errorCode === 'ATTACHMENT_ALREADY_EXISTS') {

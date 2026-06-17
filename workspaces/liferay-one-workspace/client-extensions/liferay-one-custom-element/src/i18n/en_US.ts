@@ -79,6 +79,7 @@ export default {
 	'an-app-build-is-your-compiled-or-non-compiled-code-submitted-on-behalf-of-your-account-to-the-marketplace-once-submitted-it-will-be-reviewed-and-tested-by-our-marketplace-administrators-for-approval-in-the-marketplace':
 		'An App Build is your compiled or non-compiled code submitted on behalf of your account to the Marketplace. Once submitted, it will be reviewed and tested by our Marketplace administrators for approval in the Marketplace.',
 	'an-unexpected-error-occurred': 'An unexpected error occurred.',
+	'analytics-group-id': 'Analytics Group ID',
 	'and': 'and',
 	'annual': 'Annual',
 	'annual-target': 'Annual Target',
@@ -276,6 +277,7 @@ export default {
 	'dashboard': 'Dashboard',
 	'data-center-location': 'Data Center Location',
 	'date': 'Date',
+	'date-added': 'Date Added',
 	'date-created': 'Date Created',
 	'deactivate': 'Deactivate',
 	'deactivated': 'Deactivated',
@@ -398,6 +400,7 @@ export default {
 	'failed-to-extend-trial': 'Failed to extend trial.',
 	'failed-to-reject-trial-extension': 'Failed to reject trial extension.',
 	'failure': 'Failure',
+	'file-name': 'File Name',
 	'file-not-available-for-download': 'File not available for download.',
 	'file-to-download-doesnt-exist-anymore':
 		"File to download doesn't exist anymore.",
@@ -633,6 +636,7 @@ export default {
 	'new-activation-key': 'New Activation Key',
 	'new-address': 'New Address',
 	'new-app': 'New App',
+	'new-attachment': 'New Attachment',
 	'new-key': 'New Key',
 	'new-potential-expiration-date': 'New Potential Expiration Date',
 	'new-projects-using-marketplace-apps':
@@ -648,18 +652,23 @@ export default {
 	'no-business-events-were-found': 'No business events were found.',
 	'no-cloud-projects-available': 'No Cloud Projects Available',
 	'no-data-found': 'No data found.',
+	'no-environment-information-yet': 'No Environment Information Yet',
 	'no-further-edits-can-be-made-when-tickets-are-closed-please-open-a-new-support-ticket-if-assistance-is-needed':
 		'No further edits can be made when tickets are closed. Please open a new support ticket if assistance is needed.',
 	'no-history-of-activity-was-found': 'No history of activity was found.',
 	'no-licenses-yet': 'No Licenses Yet',
 	'no-orders-yet': 'No Orders Yet',
 	'no-products-yet': 'No Products Yet',
+	'no-project-linked': 'No Project Linked',
 	'no-projects-available-for-x': 'No projects available for {0}',
 	'no-projects-yet': 'No Projects Yet',
 	'no-publisher-catalog-found': 'No Publisher Catalog Found',
 	'no-publisher-profile-to-update': 'There is no publisher profile to update',
 	'no-results-found': 'No Results Found',
+	'no-support-tickets-were-found': 'No support tickets were found.',
+	'no-ticket-attachments-were-found': 'No ticket attachments were found.',
 	'no-trials-yet': 'No Trials Yet',
+	'no-usage-data-yet': 'No Usage Data Yet',
 	'no-versions-yet': 'No Versions Yet',
 	'no-x': 'No {0}',
 	'not-installed': 'Not Installed',
@@ -679,6 +688,7 @@ export default {
 	'on-hold': 'On Hold',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'Once canceled, no further edits can be made to this event.',
+	'one-time-purchases': 'One-Time Purchases',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'Only GIF, JPG, JPEG, and PNG are allowed. Max file size is 5MB.',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':
@@ -694,9 +704,11 @@ export default {
 	'order-form': 'Order Form',
 	'order-id': 'Order ID',
 	'order-info': 'Order Info',
+	'order-items': 'Order Items',
 	'order-marked-as-paid': 'Order marked as paid.',
 	'order-received': 'Order Received',
 	'order-status': 'Order Status',
+	'order-summary': 'Order Summary',
 	'orders': 'Orders',
 	'orders-list': 'Orders List',
 	'organization': 'Organization',
@@ -771,6 +783,7 @@ export default {
 	'profile': 'Profile',
 	'project': 'Project',
 	'project-id': 'Project ID',
+	'project-name': 'Project Name',
 	'project-selected': 'Project Selected',
 	'project-selection': 'Project Selection',
 	'project-term': 'Project Term',
@@ -887,6 +900,7 @@ export default {
 		'Select a local file to upload. Only one file can be attached at a time.',
 	'select-a-server-to-store-your-data-this-could-have-implications-to-your-organizations-policy-on-user-data-storage':
 		"Select a server to store your data. This could have implications to your organization's policy on user data storage.",
+	'select-a-ticket': 'Select a Ticket',
 	'select-account': 'Select Account',
 	'select-an-option': 'Select an Option',
 	'select-areas': 'Select Areas',
@@ -897,6 +911,8 @@ export default {
 	'select-project': 'Select Project',
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
+	'select-the-account-and-ticket-you-want-to-attach-a-file-to':
+		'Select the account and ticket you want to attach a file to.',
 	'select-the-offering-of-liferay-your-app-is-compatible-with-the-compatibility-selections-will-determine-on-what-platforms-your-app-is-tested':
 		'Select the offering of Liferay your app is compatible with. The compatibility selections will determine on what platforms your app is tested.',
 	'select-the-option': 'Select the Option',
@@ -914,6 +930,8 @@ export default {
 	'showing-x-to-x-of-x': 'Showing {0} to {1} of {2}',
 	'sign-in-with-a-different-account': 'Sign in with a Different Account',
 	'site-initializer': 'Site Initializer',
+	'size': 'Size',
+	'sku': 'SKU',
 	'solution': 'Solution',
 	'solution-details': 'Solution Details',
 	'solution-header': 'Solution Header',
@@ -955,8 +973,6 @@ export default {
 	'support-email': 'Support Email',
 	'support-email-address': 'Support Email Address',
 	'support-phone-number': 'Support Phone Number',
-	'support-seat': 'Support Seat',
-	'support-seats': 'Support seats',
 	'support-url': 'Support URL',
 	'supported-version': 'Supported Version',
 	'tags': 'Tags',
@@ -1020,6 +1036,8 @@ export default {
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
+	'this-feature-is-not-included-in-your-current-plan':
+		'This feature is not included in your current plan',
 	'this-field-is-required': 'This field is required.',
 	'this-is-the-email-address-that-will-receive-the-ai-hub-account-management-invite':
 		'This is the email address that will receive the AI Hub account management invite.',
@@ -1038,6 +1056,8 @@ export default {
 	'this-table-allows-you-to-create-manage-and-track-your-business-events-please-note-that-business-events-closed-for-more-than-a-year-will-not-be-displayed-here':
 		'This table allows you to create, manage, and track your business events. Please note that business events closed for more than a year will not be displayed here.',
 	'this-ticket-has-been-closed': 'This ticket has been closed',
+	'ticket': 'Ticket',
+	'ticket-attachments': 'Ticket Attachments',
 	'tickets-impacting-this-event': 'Tickets Impacting This Event',
 	'time': 'Time',
 	'time-zone': 'Time Zone',
@@ -1089,6 +1109,8 @@ export default {
 	'unpaid': 'Unpaid',
 	'upgrade': 'Upgrade',
 	'upload': 'Upload',
+	'upload-and-download-large-files-associated-with-your-support-tickets':
+		'Upload and download large files associated with your support tickets.',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'Upload at least one image, or add a video URL',
 	'upload-confirmation': 'Upload Confirmation',
@@ -1096,6 +1118,7 @@ export default {
 	'upload-liferay-plugin-packages': 'Upload Liferay Plugin Packages',
 	'upload-zip-files': 'Upload ZIP Files',
 	'uploading': 'Uploading…',
+	'usage': 'Usage',
 	'use-any-build-from-any-available-liferay-experience-cloud-account-requires-lxc-account':
 		'Use any build from any available Liferay SaaS account (requires Liferay SaaS account) ',
 	'use-any-build-from-your-computer-connecting-with-a-github-provider':
@@ -1112,6 +1135,7 @@ export default {
 	'user-roles-successfully-updated': 'User roles successfully updated',
 	'users-requests-to-become-a-publisher':
 		'Users requests to become a publisher',
+	'utilization': 'Utilization',
 	'value-between-1-and-60': 'Value between 1 and 60.',
 	'vat': 'VAT',
 	'vat-id': 'VAT ID',

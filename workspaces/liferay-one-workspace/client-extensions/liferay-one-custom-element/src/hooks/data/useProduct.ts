@@ -9,7 +9,7 @@ import {Liferay} from '../../liferay/liferay';
 import HeadlessCommerceDeliveryCatalog from '../../services/rest/HeadlessCommerceDeliveryCatalog';
 
 const useDeliveryProduct = (productId: string) => {
-	return useSWR(`/delivery-product/${productId}`, () =>
+	return useSWR(productId ? `/delivery-product/${productId}` : null, () =>
 		HeadlessCommerceDeliveryCatalog.getProduct(
 			Liferay.CommerceContext.commerceChannelId,
 			productId,

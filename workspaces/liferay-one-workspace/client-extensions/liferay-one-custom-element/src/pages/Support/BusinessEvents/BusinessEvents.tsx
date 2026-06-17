@@ -17,9 +17,11 @@ import Table, {
 } from '../../../components/BusinessEventsTable/BusinessEventsTable';
 import TableHeader from '../../../components/BusinessEventsTable/TableHeader/TableHeader';
 import ButtonDropDown from '../../../components/ButtonDropDown/ButtonDropDown';
+import RestrictedFeatureMessage from '../../../components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {sub, translate} from '../../../i18n';
 import {Liferay} from '../../../liferay/liferay';
 import getKebabCase from '../../../utils/getKebabCase';
+import {useUserProjects} from '../../MyAccount/Projects/projects';
 import ManageEventModal from './components/ManageEventModal/ManageEventModal';
 import useFilters from './hooks/useFilters';
 import useGetBusinessEvents from './hooks/useGetBusinessEvents';
@@ -74,6 +76,8 @@ const BusinessEvents = () => {
 	);
 
 	const {isSaasOnly} = useIsSaasOnly();
+
+	const {loading: projectsLoading, projects} = useUserProjects();
 
 	const navigate = useNavigate();
 
@@ -405,23 +409,41 @@ const BusinessEvents = () => {
 		onOpenChange,
 	]);
 
-	return loading ? (
-		<div className="mx-auto">
-			<ClayLoadingIndicator size="sm" />
-		</div>
-	) : (
-		<div className="py-4">
-			<div>
-				<h1 className="font-weight-bold text-neutral-10">
-					{translate('business-events')}
-				</h1>
-
-				<h6 className="font-weight-normal text-neutral-7">
-					{translate(
-						'this-table-allows-you-to-create-manage-and-track-your-business-events-please-note-that-business-events-closed-for-more-than-a-year-will-not-be-displayed-here'
-					)}
-				</h6>
+	if (loading || projectsLoading) {
+		return (
+			<div className="mx-auto">
+				<ClayLoadingIndicator size="sm" />
 			</div>
+		);
+	}
+
+	const header = (
+		<div>
+			<h1 className="font-weight-bold text-neutral-10">
+				{translate('business-events')}
+			</h1>
+
+			<h6 className="font-weight-normal text-neutral-7">
+				{translate(
+					'this-table-allows-you-to-create-manage-and-track-your-business-events-please-note-that-business-events-closed-for-more-than-a-year-will-not-be-displayed-here'
+				)}
+			</h6>
+		</div>
+	);
+
+	if (!projects.length) {
+		return (
+			<div className="py-4">
+				{header}
+
+				<RestrictedFeatureMessage />
+			</div>
+		);
+	}
+
+	return (
+		<div className="py-4">
+			{header}
 
 			<div className="mb-1">
 				<TableHeader

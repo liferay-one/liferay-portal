@@ -20,10 +20,17 @@ export type ProjectOrder = {
 };
 
 export type ProductOrderInfo = {
+	environment: ProductEnvironmentInfo;
 	orderDate: string;
 	orderId: string;
+	orderType: string;
 	purchaseNumber: string;
 	purchasedBy: string;
+};
+
+export type ProductEnvironmentInfo = {
+	cloudProjectName: string;
+	projectName: string;
 };
 
 function getProjectName(order: PlacedOrder): string {
@@ -105,18 +112,30 @@ export function getProductOrderInfo(
 
 	if (!order) {
 		return {
+			environment: {
+				cloudProjectName: '',
+				projectName: '',
+			},
 			orderDate: '',
 			orderId: '',
+			orderType: '',
 			purchaseNumber: '',
 			purchasedBy: '',
 		};
 	}
 
+	const customFields = order.customFields ?? {};
+
 	return {
+		environment: {
+			cloudProjectName:
+				customFields[OrderCustomFields.CLOUD_PROJECT_NAME] ?? '',
+			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
+		},
 		orderDate: formatDate(order.createDate),
 		orderId: String(order.id),
-		purchaseNumber:
-			(order.customFields ?? {})[OrderCustomFields.ORDER_METADATA] ?? '',
+		orderType: order.orderTypeExternalReferenceCode ?? '',
+		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy: order.author ?? '',
 	};
 }

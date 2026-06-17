@@ -11,6 +11,7 @@ import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
 import {format} from 'date-fns';
 import {useMemo, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 
 import Button from '../../../components/Button/Button';
 import Page from '../../../components/Page';
@@ -29,7 +30,7 @@ import './Orders.css';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
-const STATUS_DOT_COLORS: {[key: string]: string} = {
+export const STATUS_DOT_COLORS: {[key: string]: string} = {
 	info: '#2e5aac',
 	secondary: '#6b6c7e',
 	success: '#287d3c',
@@ -48,7 +49,7 @@ type FilterCategory = 'invoice-status' | 'project';
 
 type FilterOption = {label: string; value: number | string};
 
-function getProjectName(order: PlacedOrder): string {
+export function getProjectName(order: PlacedOrder): string {
 	const customFields = order.customFields ?? {};
 
 	const projectName = customFields[OrderCustomFields.PROJECT_NAME];
@@ -65,7 +66,7 @@ function getProjectName(order: PlacedOrder): string {
 	return projects[0]?.name ?? '';
 }
 
-function getOrderTotal(order: PlacedOrder): string {
+export function getOrderTotal(order: PlacedOrder): string {
 	const {summary, totalFormatted} = order as PlacedOrder & {
 		summary?: {totalFormatted?: string};
 		totalFormatted?: string;
@@ -186,6 +187,8 @@ function FilterSubPanel({
 export default function Orders() {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 	const channelId = Liferay.CommerceContext?.commerceChannelId;
+
+	const navigate = useNavigate();
 
 	const [keywords, setKeywords] = useState('');
 	const [page, setPage] = useState(1);
@@ -484,8 +487,13 @@ export default function Orders() {
 													borderless
 													className="text-neutral-7"
 													displayType="unstyled"
+													onClick={() =>
+														navigate(
+															String(order.id)
+														)
+													}
 												>
-													<ClayIcon symbol="ellipsis-v" />
+													<ClayIcon symbol="shortcut" />
 												</ClayButton>
 											</ClayTable.Cell>
 										</ClayTable.Row>
