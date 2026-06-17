@@ -8,6 +8,7 @@ import {useMemo} from 'react';
 import useSWR from 'swr';
 
 import {Liferay} from '../../liferay/liferay';
+import {isUnassignedProject} from '../../pages/MyAccount/Projects/projects';
 import HeadlessCommerceDeliveryCatalog from '../../services/rest/HeadlessCommerceDeliveryCatalog';
 import {useFetch} from '../useFetch';
 
@@ -27,7 +28,6 @@ export type ProjectProduct = {
 	externalReferenceCode: string;
 	id: string;
 	name: string;
-	productId: number;
 	publisher: string;
 	saleType: string;
 	specifications: DeliveryProductSpecification[];
@@ -54,6 +54,7 @@ type ContractNode = {
 	endDate?: string;
 	externalReferenceCode: string;
 	name: string;
+	r_projectToContract_c_projectId?: number;
 	spendLimit?: number;
 	startDate?: string;
 };
@@ -61,6 +62,29 @@ type ContractNode = {
 type ProjectNode = {
 	projectToContract?: ContractNode[];
 };
+
+type ProductEntitlement = {
+	endDate?: string;
+	productExternalReferenceCode?: string;
+	startDate?: string;
+};
+
+// Flattens a contract's nested entitlements down to the product external
+// reference code each one grants, dropping entitlements not tied to a product.
+
+function toProductEntitlements(
+	contractNode?: ContractNode
+): ProductEntitlement[] {
+	return (contractNode?.contractToEntitlement ?? [])
+		.map((entitlement) => ({
+			endDate: entitlement.endDate,
+			productExternalReferenceCode:
+				entitlement.entitlementDefinitionToEntitlement
+					?.commerceProductToEntitlementDefinitionERC,
+			startDate: entitlement.startDate,
+		}))
+		.filter((entitlement) => entitlement.productExternalReferenceCode);
+}
 
 export function getSpecificationValue(
 	product: DeliveryProduct,
@@ -131,29 +155,64 @@ export function useProjectCommerce(projectExternalReferenceCode: string) {
 		termMonths: contractNode.contractTerm,
 	};
 
-	const entitlements = (contractNode?.contractToEntitlement ?? [])
-		.map((entitlement) => ({
-			endDate: entitlement.endDate,
-			productExternalReferenceCode:
-				entitlement.entitlementDefinitionToEntitlement
-					?.commerceProductToEntitlementDefinitionERC,
-			startDate: entitlement.startDate,
-		}))
-		.filter((entitlement) => entitlement.productExternalReferenceCode);
+	const entitlements = toProductEntitlements(contractNode);
 
 	return {contract, entitlements, error, loading};
+}
+
+// Resolves the products entitled through the account's contracts that are not
+// linked to any project. These are surfaced under the synthetic "One-Time
+// Purchases" bucket in the project selector. Pass enabled = false to skip the
+// request when a real project is selected.
+
+export function useUnassignedCommerce(enabled = true) {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+
+	const {data, error, loading} = useFetch<APIResponse<ContractNode>>(
+		enabled && accountId ? '/o/c/contracts' : null,
+		{
+			params: {
+				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
+				nestedFields:
+					'contractToEntitlement,entitlementDefinitionToEntitlement',
+				nestedFieldsDepth: 5,
+				pageSize: 100,
+			},
+		}
+	);
+
+	const entitlements = (data?.items ?? [])
+		.filter((contract) => !contract.r_projectToContract_c_projectId)
+		.flatMap((contract) => toProductEntitlements(contract));
+
+	return {entitlements, error, loading};
 }
 
 // Joins the project's entitlements with the live delivery catalog so each
 // entitled product is returned with its display metadata and specifications.
 
 export function useProjectProducts(projectExternalReferenceCode: string) {
+	const unassigned = isUnassignedProject(projectExternalReferenceCode);
+
 	const {
 		contract,
-		entitlements,
-		error: commerceError,
-		loading: commerceLoading,
-	} = useProjectCommerce(projectExternalReferenceCode);
+		entitlements: projectEntitlements,
+		error: projectError,
+		loading: projectLoading,
+	} = useProjectCommerce(unassigned ? '' : projectExternalReferenceCode);
+
+	const {
+		entitlements: unassignedEntitlements,
+		error: unassignedError,
+		loading: unassignedLoading,
+	} = useUnassignedCommerce(unassigned);
+
+	const entitlements = unassigned
+		? unassignedEntitlements
+		: projectEntitlements;
+
+	const commerceError = unassigned ? unassignedError : projectError;
+	const commerceLoading = unassigned ? unassignedLoading : projectLoading;
 
 	const {
 		data: productsData,
@@ -187,9 +246,8 @@ export function useProjectProducts(projectExternalReferenceCode: string) {
 					categoryNames,
 					description: product.description,
 					externalReferenceCode: product.externalReferenceCode,
-					id: String(product.id),
+					id: String(product.productId ?? product.id),
 					name: product.name,
-					productId: product.productId ?? product.id,
 					publisher: getSpecificationValue(product, 'publisher-name'),
 					saleType: getSpecificationValue(product, 'price-model'),
 					specifications: product.productSpecifications ?? [],
@@ -208,7 +266,7 @@ export function useProjectProducts(projectExternalReferenceCode: string) {
 	}, [entitlements, productsData]);
 
 	return {
-		contract,
+		contract: unassigned ? undefined : contract,
 		error: commerceError ?? productsError,
 		loading: commerceLoading || productsLoading,
 		products,

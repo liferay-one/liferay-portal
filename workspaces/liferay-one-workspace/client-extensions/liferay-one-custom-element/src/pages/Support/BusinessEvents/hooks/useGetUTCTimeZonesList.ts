@@ -21,7 +21,9 @@ export default function useGetUTCTimeZonesList(): {
 	useEffect(() => {
 		const fetchListTypeEntries = async () => {
 			try {
-				const response = await getBusinessEventFieldOptions(JSM_FIELDS.timeZone);
+				const response = await getBusinessEventFieldOptions(
+					JSM_FIELDS.timeZone
+				);
 
 				setUTCTimeZonesList(
 					response.items.map((entry: any) => ({

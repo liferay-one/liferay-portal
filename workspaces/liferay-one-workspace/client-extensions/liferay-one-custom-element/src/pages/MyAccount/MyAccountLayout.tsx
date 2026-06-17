@@ -4,24 +4,41 @@
  */
 
 import {useMemo} from 'react';
+import {useParams} from 'react-router-dom';
 
 import AppLayout from '../../components/AppLayout';
 import Breadcrumb from '../../components/Breadcrumb';
+import {useProject} from '../../context/ProjectContext';
 import {buildNavItems} from '../../utils/routes';
 import ProjectHeader from './Projects/ProjectHeader';
 import ProjectSelector from './Projects/ProjectSelector';
+import {isUnassignedProject} from './Projects/projects';
 import {projectDetailRoutes} from './myAccountRoutes';
 
 export default function MyAccountLayout() {
+	const {accountERC} = useParams();
+	const {projectId} = useProject();
+
 	const navItems = useMemo(
-		() => buildNavItems(projectDetailRoutes, '/project'),
-		[]
+		() =>
+			buildNavItems(
+				projectDetailRoutes,
+				`/${accountERC}/project/${projectId}`
+			),
+		[accountERC, projectId]
+	);
+
+	// The synthetic "One-Time Purchases" bucket has no single contract, so the
+	// project term and agreements header does not apply to it.
+
+	const contentHeader = isUnassignedProject(projectId) ? undefined : (
+		<ProjectHeader />
 	);
 
 	return (
 		<AppLayout
 			breadcrumb={<Breadcrumb />}
-			contentHeader={<ProjectHeader />}
+			contentHeader={contentHeader}
 			header={<ProjectSelector />}
 			navItems={navItems}
 		/>

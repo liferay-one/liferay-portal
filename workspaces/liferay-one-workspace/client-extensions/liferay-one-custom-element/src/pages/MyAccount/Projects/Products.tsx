@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
@@ -16,6 +15,7 @@ import {
 } from '../../../hooks/data/useProjectCommerce';
 import i18n, {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
+import RowActionsMenu from './RowActionsMenu';
 import {getStatusColor} from './tabData';
 import {getLogoColor, getProductIcon} from './visuals';
 
@@ -122,18 +122,15 @@ export default function Products() {
 		{
 			key: 'actions',
 			render: (product) => (
-				<ClayButton
-					aria-label={translate('product-details')}
-					borderless
-					className="text-neutral-7"
-					displayType="unstyled"
-					onClick={(event) => {
-						event.stopPropagation();
-						navigate(product.id);
-					}}
-				>
-					<ClayIcon symbol="ellipsis-v" />
-				</ClayButton>
+				<RowActionsMenu
+					actions={[
+						{
+							label: 'view-details',
+							onClick: () =>
+								navigate(product.externalReferenceCode),
+						},
+					]}
+				/>
 			),
 		},
 	];
@@ -152,7 +149,9 @@ export default function Products() {
 				filters={filters}
 				items={liferayProducts}
 				matchesSearch={matchesSearch}
-				onItemClick={(product) => navigate(product.id)}
+				onItemClick={(product) =>
+					navigate(product.externalReferenceCode)
+				}
 				rowKey={(product) => product.id}
 			/>
 		</Page>

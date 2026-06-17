@@ -4,6 +4,7 @@
  */
 
 import {lazy} from 'react';
+import {Navigate} from 'react-router-dom';
 
 import {AppRoute} from '../../../utils/routes';
 import Layout from './components/Layout';
@@ -14,11 +15,17 @@ const AttachmentDownloaderOutlet = lazy(
 const AttachmentUploaderOutlet = lazy(
 	() => import('./pages/AttachmentUploader/AttachmentUploaderOutlet')
 );
+const NewAttachment = lazy(() => import('./pages/NewAttachment/NewAttachment'));
+const TicketAttachmentsList = lazy(
+	() => import('./pages/TicketAttachmentsList/TicketAttachmentsList')
+);
 
 export const attachmentsRoutes: AppRoute[] = [
 	{
 		children: [
-			{element: <AttachmentUploaderOutlet />, path: ':ticketId'},
+			{element: <TicketAttachmentsList />, index: true},
+			{element: <NewAttachment />, path: 'new'},
+			{element: <AttachmentUploaderOutlet />, path: 'new/:ticketId'},
 			{
 				element: <AttachmentDownloaderOutlet />,
 				path: 'erc/:ticketAttachmentERC',
@@ -27,6 +34,8 @@ export const attachmentsRoutes: AppRoute[] = [
 				element: <AttachmentDownloaderOutlet />,
 				path: 'id/:ticketAttachmentId',
 			},
+			{element: <AttachmentUploaderOutlet />, path: ':ticketId'},
+			{element: <Navigate replace to="." />, path: '*'},
 		],
 		element: <Layout />,
 	},

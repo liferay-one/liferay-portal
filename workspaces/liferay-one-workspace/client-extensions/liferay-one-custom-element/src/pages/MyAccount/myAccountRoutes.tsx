@@ -10,11 +10,11 @@ import {AppRoute} from '../../utils/routes';
 
 const AccountDetails = lazy(() => import('./AccountDetails'));
 const AccountMembers = lazy(() => import('./AccountMembers'));
+const OrderDetails = lazy(() => import('./Orders/OrderDetails'));
 const OrderHistory = lazy(() => import('./Orders/OrderHistory'));
 const Orders = lazy(() => import('./Orders/Orders'));
-const ApplicationDetails = lazy(() => import('./Projects/ApplicationDetails'));
 const Applications = lazy(() => import('./Projects/Applications'));
-const ProductDetails = lazy(() => import('./Projects/ProductDetails'));
+const ProjectItemDetails = lazy(() => import('./Projects/ProjectItemDetails'));
 const Products = lazy(() => import('./Projects/Products'));
 
 export const projectDetailRoutes: AppRoute[] = [
@@ -22,7 +22,10 @@ export const projectDetailRoutes: AppRoute[] = [
 	{
 		children: [
 			{element: <Products />, index: true},
-			{element: <ProductDetails />, path: ':productId'},
+			{
+				element: <ProjectItemDetails kind="product" />,
+				path: ':productERC',
+			},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
 		nav: {icon: 'products', label: 'Products'},
@@ -31,7 +34,10 @@ export const projectDetailRoutes: AppRoute[] = [
 	{
 		children: [
 			{element: <Applications />, index: true},
-			{element: <ApplicationDetails />, path: ':applicationId'},
+			{
+				element: <ProjectItemDetails kind="application" />,
+				path: ':applicationERC',
+			},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
 		nav: {icon: 'applications', label: 'Applications'},
@@ -43,6 +49,7 @@ export const projectDetailRoutes: AppRoute[] = [
 const orderRoutes: AppRoute[] = [
 	{element: <Orders />, index: true},
 	{element: <OrderHistory />, path: 'history'},
+	{element: <OrderDetails />, path: ':orderId'},
 	{element: <Navigate replace to="." />, path: '*'},
 ];
 

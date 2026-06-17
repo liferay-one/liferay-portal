@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 
 import projectIconUrl from '../../../assets/icons/project.svg';
 import EntitySelector, {
@@ -15,7 +15,8 @@ import {useProject} from '../../../context/ProjectContext';
 import i18n from '../../../i18n';
 
 export default function ProjectSelector() {
-	const {loading, projectId, projects, setProjectId} = useProject();
+	const {loading, projectId, projects} = useProject();
+	const {accountERC} = useParams();
 	const navigate = useNavigate();
 	const [searchValue, setSearchValue] = useState('');
 
@@ -27,9 +28,7 @@ export default function ProjectSelector() {
 		setSearchValue('');
 
 		if (id !== projectId) {
-			setProjectId(id);
-
-			navigate('/project/products');
+			navigate(`/${accountERC}/project/${id}/products`);
 		}
 	}
 
@@ -40,14 +39,24 @@ export default function ProjectSelector() {
 		.map((option) => ({
 			id: option.externalReferenceCode,
 			name: option.name,
+			subtitle: option.unassigned
+				? i18n.translate('no-project-linked')
+				: undefined,
 		}));
+
+	const projectCount = projects.filter((option) => !option.unassigned).length;
 
 	return (
 		<EntitySelector
 			ariaLabel={i18n.translate('select-project')}
+			badge={
+				project?.unassigned
+					? i18n.translate('no-project-linked')
+					: undefined
+			}
 			emptyLabel="no-projects-yet"
 			items={items}
-			label={`${i18n.translate('project')} (${projects.length})`}
+			label={`${i18n.translate('project')} (${projectCount})`}
 			loading={loading}
 			name={project?.name ?? ''}
 			onSearchChange={setSearchValue}

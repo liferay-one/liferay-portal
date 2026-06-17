@@ -4,7 +4,7 @@
  */
 
 import ClayIcon from '@clayui/icon';
-import {Link, useLocation} from 'react-router-dom';
+import {Link, useLocation, useParams} from 'react-router-dom';
 
 import i18n, {Word} from '../i18n';
 
@@ -19,15 +19,15 @@ const SEPARATOR_COLOR = 'var(--color-neutral-4)';
 const TEXT_COLOR = 'var(--color-neutral-10)';
 
 function getCurrentLabel(pathname: string): Word {
-	if (pathname.startsWith('/orders')) {
+	if (pathname.includes('/orders')) {
 		return 'orders';
 	}
 
-	if (pathname.startsWith('/account-details')) {
+	if (pathname.includes('/account-details')) {
 		return 'account-details';
 	}
 
-	if (pathname.startsWith('/account-members')) {
+	if (pathname.includes('/account-members')) {
 		return 'account-members';
 	}
 
@@ -36,10 +36,11 @@ function getCurrentLabel(pathname: string): Word {
 
 export default function Breadcrumb() {
 	const {pathname} = useLocation();
+	const {accountERC} = useParams();
 
 	const trail: Crumb[] = [
 		{href: '/', label: 'home'},
-		{label: 'my-account', to: '/'},
+		{label: 'my-account', to: accountERC ? `/${accountERC}` : '/'},
 		{label: getCurrentLabel(pathname)},
 	];
 

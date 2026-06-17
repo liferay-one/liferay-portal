@@ -4,16 +4,21 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {Navigate} from 'react-router-dom';
+import {Navigate, useLocation} from 'react-router-dom';
 
 import {useFetch} from '../../hooks/useFetch';
 import {Liferay} from '../../liferay/liferay';
 
-// Resolves the current commerce account to its external reference code so the
-// account and project ERCs can drive the rest of the routes as linkable URLs.
+// Forwards an account-level deep link that omits the account external reference
+// code (such as the site navigation menu's /#/orders) to the same path under
+// the current commerce account. The account ERC became part of the route, so
+// these otherwise unprefixed links would match the :accountERC segment, fail to
+// resolve an account, and bounce back to the project page.
 
-export default function MyAccountIndex() {
+export default function CurrentAccountRedirect() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
+
+	const {pathname} = useLocation();
 
 	const {data: account, loading} = useFetch<Account>(
 		currentAccountId
@@ -25,7 +30,7 @@ export default function MyAccountIndex() {
 		return (
 			<Navigate
 				replace
-				to={`/${account.externalReferenceCode}/project`}
+				to={`/${account.externalReferenceCode}${pathname}`}
 			/>
 		);
 	}

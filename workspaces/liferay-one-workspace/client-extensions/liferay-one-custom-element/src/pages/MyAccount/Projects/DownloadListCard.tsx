@@ -9,6 +9,7 @@ import FilterableListCard, {ListColumn} from './FilterableListCard';
 
 export type DownloadItem = {
 	id: string;
+	link?: string;
 	name: string;
 };
 
@@ -39,10 +40,21 @@ export default function DownloadListCard({
 		},
 		{
 			key: 'download',
-			render: () => (
+			render: (item) => (
 				<Button
+					disabled={!item.link}
 					displayType="secondary"
-					onClick={(event) => event.stopPropagation()}
+					onClick={(event) => {
+						event.stopPropagation();
+
+						if (item.link) {
+							window.open(
+								item.link,
+								'_blank',
+								'noopener,noreferrer'
+							);
+						}
+					}}
 				>
 					{translate('download')}
 				</Button>

@@ -12,6 +12,7 @@ import EntitySelector, {
 import {useFetch} from '../../hooks/useFetch';
 import i18n from '../../i18n';
 import {Liferay} from '../../liferay/liferay';
+import {setCurrentAccount} from '../../utils/account';
 
 const SEARCH_DELAY = 400;
 
@@ -87,7 +88,7 @@ export default function AccountSelector() {
 		currentAccountId ? '/o/headless-admin-user/v1.0/accounts' : null,
 		{
 			params: {
-				fields: 'id,logoURL,name,type',
+				fields: 'externalReferenceCode,id,logoURL,name,type',
 				filter: debouncedSearch
 					? `contains(name, '${debouncedSearch.replace(/'/g, "''")}')`
 					: undefined,
@@ -117,18 +118,24 @@ export default function AccountSelector() {
 			return;
 		}
 
-		const body = new FormData();
+		await setCurrentAccount(accountId);
 
-		body.append('accountId', accountId);
+		// The My Account routes deep-link the account by external reference
+		// code. Realign that hash before reloading so its AccountGuard does not
+		// switch the commerce context back to the previously selected account.
 
-		await fetch(
-			`/o/commerce-ui/set-current-account?groupId=${Liferay.ThemeDisplay.getScopeGroupId()}&p_auth=${Liferay.authToken}`,
-			{
-				body,
-				headers: {'x-csrf-token': Liferay.authToken},
-				method: 'POST',
-			}
-		);
+		const externalReferenceCode = (data?.items ?? []).find(
+			(item) => String(item.id) === accountId
+		)?.externalReferenceCode;
+
+		if (
+			externalReferenceCode &&
+			document.querySelector(
+				'liferay-one-custom-element[route="my-account"]'
+			)
+		) {
+			window.location.hash = `#/${externalReferenceCode}`;
+		}
 
 		window.location.reload();
 	}

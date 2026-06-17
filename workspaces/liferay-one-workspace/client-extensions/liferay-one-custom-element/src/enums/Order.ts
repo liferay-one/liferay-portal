@@ -4,11 +4,9 @@
  */
 
 export enum OrderCustomFields {
-	ANALYTICS_GROUP_ID = 'analytics-group-id',
-	CLOUD_PROVISIONING = 'cloud-provisioning',
+	CLOUD_PROJECT_NAME = 'cloudProjectName',
 	KORONEIKI_PROJECT = 'koroneiki-project',
-	ORDER_METADATA = 'order-metadata',
-	PROJECT_NAME = 'project-name',
+	PROJECT_NAME = 'projectName',
 	TRIAL_END_DATE = 'trial-end-date',
 	TRIAL_ERROR = 'trial-error',
 	TRIAL_SETTINGS = 'trial-settings',
@@ -120,6 +118,14 @@ export const orderWorkflowStatusCodeLabels = {
 	[OrderWorkflowStatusCode.PROCESSING]: 'Processing',
 } as const;
 
+export const paymentStatusLabels = {
+	[PaymentStatus.CANCELED]: 'canceled',
+	[PaymentStatus.FAILED]: 'failed',
+	[PaymentStatus.PAID]: 'paid',
+	[PaymentStatus.PAYMENT_PENDING]: 'pending',
+	[PaymentStatus.PENDING]: 'unpaid',
+} as const;
+
 export const paymentWorkflowDisplayType = {
 	[PaymentStatus.PAID]: 'success',
 	[PaymentStatus.PENDING]: 'secondary',
@@ -127,6 +133,17 @@ export const paymentWorkflowDisplayType = {
 } as const;
 
 export function getOrderStatusLabel(order: PlacedOrder) {
+
+	// Delivery orders only populate orderStatusInfo.code; the human-readable
+	// label lives on workflowStatusInfo, so fall back to it before defaulting to
+	// an empty string. Never return undefined -- callers call toLowerCase on it.
+
+	const statusLabel =
+		order.orderStatusInfo?.label ||
+		order.workflowStatusInfo?.label_i18n ||
+		order.workflowStatusInfo?.label ||
+		'';
+
 	if (
 		[
 			OrderTypes.ADDONS,
@@ -143,7 +160,7 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 				[OrderWorkflowStatusCode.ON_HOLD]: 'Pending',
 				[OrderWorkflowStatusCode.PENDING]: 'Pending',
 				[OrderWorkflowStatusCode.PROCESSING]: 'Pending',
-			}[order.orderStatusInfo.code] || order.orderStatusInfo.label
+			}[order.orderStatusInfo.code] || statusLabel
 		);
 	}
 
@@ -153,5 +170,5 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		}
 	}
 
-	return order.orderStatusInfo.label;
+	return statusLabel;
 }
