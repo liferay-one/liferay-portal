@@ -6,8 +6,8 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
+import com.liferay.one.jira.service.JiraService;
 import com.liferay.one.permission.BusinessEventPermission;
-import com.liferay.one.service.JiraService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.apache.commons.logging.Log;

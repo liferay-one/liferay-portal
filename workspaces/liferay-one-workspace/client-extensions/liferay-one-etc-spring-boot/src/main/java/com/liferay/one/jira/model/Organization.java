@@ -3,18 +3,21 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.model;
-
-import org.json.JSONObject;
+package com.liferay.one.jira.model;
 
 /**
  * @author Felipe Franca
  */
-public class AssetObject {
+public class Organization {
 
-	public AssetObject(JSONObject jsonObject) {
-		_id = jsonObject.getString("id");
-		_name = jsonObject.getString("name");
+	public Organization(String externalKey, String id, String name) {
+		_externalKey = externalKey;
+		_id = id;
+		_name = name;
+	}
+
+	public String getExternalKey() {
+		return _externalKey;
 	}
 
 	public String getId() {
@@ -25,15 +28,7 @@ public class AssetObject {
 		return _name;
 	}
 
-	public JSONObject toJSONObject() {
-		return new JSONObject(
-		).put(
-			"id", _id
-		).put(
-			"name", _name
-		);
-	}
-
+	private final String _externalKey;
 	private final String _id;
 	private final String _name;
 

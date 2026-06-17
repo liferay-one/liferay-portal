@@ -6,14 +6,15 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
-import com.liferay.one.converter.BusinessEventConverter;
-import com.liferay.one.model.AssetObject;
-import com.liferay.one.model.AssetObjectFieldOption;
-import com.liferay.one.model.BusinessEvent;
-import com.liferay.one.model.BusinessEventVersion;
-import com.liferay.one.model.JiraSupportIssue;
+import com.liferay.one.jira.converter.BusinessEventConverter;
+import com.liferay.one.jira.model.AssetObject;
+import com.liferay.one.jira.model.AssetObjectFieldOption;
+import com.liferay.one.jira.model.BusinessEvent;
+import com.liferay.one.jira.model.BusinessEventVersion;
+import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.service.JiraService;
 import com.liferay.one.permission.BusinessEventPermission;
-import com.liferay.one.service.JiraService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -119,17 +120,16 @@ public class JiraRestController extends BaseRestController {
 	public ResponseEntity<String> getAccountsTickets(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@RequestParam(defaultValue = "", required = false) String[]
-				ticketIds)
+			@RequestParam(defaultValue = StringPool.BLANK, required = false)
+				String[] ticketIds)
 		throws Exception {
 
 		_businessEventPermission.check(
 			externalReferenceCode, ActionKeys.VIEW, jwt);
 
 		return _getResponseEntity(
-			_jiraService.getJSMJiraSupportIssues(
-				externalReferenceCode, ticketIds),
-			JiraSupportIssue::toJSONObject);
+			_jiraService.getSupportIssues(externalReferenceCode, ticketIds),
+			SupportIssue::toJSONObject);
 	}
 
 	@GetMapping("/business-events/fields/{fieldName}/options")

@@ -9,16 +9,16 @@ import com.google.cloud.storage.StorageException;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
-import com.liferay.one.constants.JiraIssueConstants;
 import com.liferay.one.exception.FileServerUnavailableException;
-import com.liferay.one.exception.JiraOrganizationNotFoundException;
 import com.liferay.one.exception.TicketAttachmentAlreadyApprovedException;
 import com.liferay.one.exception.TicketAttachmentNotFoundException;
-import com.liferay.one.model.JiraOrganization;
-import com.liferay.one.model.JiraSupportIssue;
+import com.liferay.one.jira.constants.IssueConstants;
+import com.liferay.one.jira.exception.OrganizationNotFoundException;
+import com.liferay.one.jira.model.Organization;
+import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.service.JiraService;
 import com.liferay.one.model.TicketAttachment;
 import com.liferay.one.service.GoogleCloudStorageService;
-import com.liferay.one.service.JiraService;
 import com.liferay.one.service.NotificationQueueEntryService;
 import com.liferay.one.service.TicketAttachmentService;
 import com.liferay.petra.function.UnsafeFunction;
@@ -48,6 +48,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,54 +69,40 @@ public class TicketAttachmentsRestController extends BaseRestController {
 
 	@DeleteMapping("/{ticketAttachmentId}")
 	public ResponseEntity<String> delete(
-		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable("ticketAttachmentId") long ticketAttachmentId) {
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("ticketAttachmentId") long ticketAttachmentId)
+		throws Exception {
+
+		TicketAttachment ticketAttachment =
+			_ticketAttachmentService.getTicketAttachment(
+				"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
+
+		_ticketAttachmentService.updateTicketAttachmentState(
+			"Bearer " + jwt.getTokenValue(), WorkflowConstants.STATUS_IN_TRASH,
+			ticketAttachmentId);
 
 		try {
-			TicketAttachment ticketAttachment =
-				_ticketAttachmentService.getTicketAttachment(
-					"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
+			_googleCloudStorageService.deleteObject(
+				ticketAttachment.getGCSBucketName(),
+				ticketAttachment.getGCSObjectName());
 
-			_ticketAttachmentService.updateTicketAttachmentState(
-				"Bearer " + jwt.getTokenValue(),
-				WorkflowConstants.STATUS_IN_TRASH, ticketAttachmentId);
+			_ticketAttachmentService.deleteTicketAttachment(
+				"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
 
-			try {
-				_googleCloudStorageService.deleteObject(
-					ticketAttachment.getGCSBucketName(),
-					ticketAttachment.getGCSObjectName());
-
-				_ticketAttachmentService.deleteTicketAttachment(
-					"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
-
-				return new ResponseEntity<>(HttpStatus.OK);
-			}
-			catch (Exception exception) {
-				_log.error(exception);
-
-				return new ResponseEntity<>("", HttpStatus.ACCEPTED);
-			}
-		}
-		catch (TicketAttachmentNotFoundException
-					ticketAttachmentNotFoundException) {
-
-			_log.error(ticketAttachmentNotFoundException);
-
-			return new ResponseEntity<>(
-				"ATTACHMENT_NOT_FOUND", HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		catch (Exception exception) {
 			_log.error(exception);
 
-			return new ResponseEntity<>(
-				"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(StringPool.BLANK, HttpStatus.ACCEPTED);
 		}
 	}
 
 	@GetMapping("/by-external-reference-code/{externalReferenceCode}/download")
 	public ResponseEntity<String> getByExternalReferenceCodeDownload(
-		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable("externalReferenceCode") String externalReferenceCode) {
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
 
 		return _getResponseEntity(
 			jwt,
@@ -125,7 +112,8 @@ public class TicketAttachmentsRestController extends BaseRestController {
 
 	@GetMapping("/by-id/{id}/download")
 	public ResponseEntity<String> getByIdDownload(
-		@AuthenticationPrincipal Jwt jwt, @PathVariable("id") long id) {
+			@AuthenticationPrincipal Jwt jwt, @PathVariable("id") long id)
+		throws Exception {
 
 		return _getResponseEntity(
 			jwt,
@@ -133,165 +121,192 @@ public class TicketAttachmentsRestController extends BaseRestController {
 				authorization, id));
 	}
 
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> handleException(Exception exception) {
+		_log.error(exception);
+
+		return new ResponseEntity<>(
+			"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(FileServerUnavailableException.class)
+	public ResponseEntity<String> handleException(
+		FileServerUnavailableException fileServerUnavailableException) {
+
+		_log.error(fileServerUnavailableException);
+
+		return new ResponseEntity<>(
+			"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
+	@ExceptionHandler(HttpClientErrorException.Forbidden.class)
+	public ResponseEntity<String> handleException(
+		HttpClientErrorException.Forbidden httpClientErrorException) {
+
+		_log.error(httpClientErrorException, httpClientErrorException);
+
+		return new ResponseEntity<>("FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
+	}
+
+	@ExceptionHandler(HttpServerErrorException.ServiceUnavailable.class)
+	public ResponseEntity<String> handleException(
+		HttpServerErrorException.ServiceUnavailable httpServerErrorException) {
+
+		_log.error(httpServerErrorException, httpServerErrorException);
+
+		return new ResponseEntity<>(
+			"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
+	@ExceptionHandler(OrganizationNotFoundException.class)
+	public ResponseEntity<String> handleException(
+		OrganizationNotFoundException organizationNotFoundException) {
+
+		_log.error(organizationNotFoundException);
+
+		return new ResponseEntity<>(
+			"JIRA_ORGANIZATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(StorageException.class)
+	public ResponseEntity<String> handleException(
+		StorageException storageException) {
+
+		_log.error(storageException);
+
+		if (storageException.getCode() == 404) {
+			return new ResponseEntity<>(
+				"FILE_NOT_FOUND_IN_STORAGE", HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity<>(
+			"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
+	}
+
+	@ExceptionHandler(TicketAttachmentAlreadyApprovedException.class)
+	public ResponseEntity<String> handleException(
+		TicketAttachmentAlreadyApprovedException
+			ticketAttachmentAlreadyApprovedException) {
+
+		_log.error(ticketAttachmentAlreadyApprovedException);
+
+		return new ResponseEntity<>(
+			"ATTACHMENT_ALREADY_EXISTS", HttpStatus.CONFLICT);
+	}
+
+	@ExceptionHandler(TicketAttachmentNotFoundException.class)
+	public ResponseEntity<String> handleException(
+		TicketAttachmentNotFoundException ticketAttachmentNotFoundException) {
+
+		_log.error(ticketAttachmentNotFoundException);
+
+		return new ResponseEntity<>(
+			"ATTACHMENT_NOT_FOUND", HttpStatus.NOT_FOUND);
+	}
+
 	@PostMapping("/{ticketAttachmentId}/complete-upload")
 	public ResponseEntity<String> postCompleteUpload(
-		@AuthenticationPrincipal Jwt jwt, @RequestBody String json,
-		@PathVariable("ticketAttachmentId") long ticketAttachmentId) {
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json,
+			@PathVariable("ticketAttachmentId") long ticketAttachmentId)
+		throws Exception {
+
+		TicketAttachment ticketAttachment =
+			_ticketAttachmentService.approveTicketAttachment(
+				"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		String jiraIssueCommentBody = _buildJiraIssueCommentBody(
+			jsonObject.optString("commentBody"), jwt, ticketAttachment);
 
 		try {
-			TicketAttachment ticketAttachment =
-				_ticketAttachmentService.approveTicketAttachment(
-					"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
+			_jiraService.addComment(
+				jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
 
-			JSONObject jsonObject = new JSONObject(json);
-
-			String jiraIssueCommentBody = _buildJiraIssueCommentBody(
-				jwt, ticketAttachment, jsonObject.optString("commentBody"));
-
-			try {
-				_jiraService.addComment(
-					jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
-
-				return new ResponseEntity<>(HttpStatus.OK);
-			}
-			catch (Exception exception) {
-				_log.error(exception);
-
-				_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
-					"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
-					ticketAttachmentId);
-
-				return new ResponseEntity<>(
-					"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
-			}
-		}
-		catch (HttpServerErrorException.ServiceUnavailable
-					httpServerErrorException) {
-
-			_log.error(httpServerErrorException, httpServerErrorException);
-
-			return new ResponseEntity<>(
-				"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
-		}
-		catch (TicketAttachmentAlreadyApprovedException
-					ticketAttachmentAlreadyApprovedException) {
-
-			_log.error(ticketAttachmentAlreadyApprovedException);
-
-			return new ResponseEntity<>(
-				"ATTACHMENT_ALREADY_EXISTS", HttpStatus.CONFLICT);
+			return new ResponseEntity<>(HttpStatus.OK);
 		}
 		catch (Exception exception) {
 			_log.error(exception);
 
+			_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
+				"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
+				ticketAttachmentId);
+
 			return new ResponseEntity<>(
-				"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+				"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
 		}
 	}
 
 	@PostMapping("/initiate-upload")
 	public ResponseEntity<String> postInitiateUpload(
-		@AuthenticationPrincipal Jwt jwt, @RequestBody String json,
-		@RequestHeader(name = HttpHeaders.ORIGIN) String origin) {
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json,
+			@RequestHeader(name = HttpHeaders.ORIGIN) String origin)
+		throws Exception {
 
-		try {
-			JSONObject jsonObject = new JSONObject(json);
+		JSONObject jsonObject = new JSONObject(json);
 
-			String fileName = jsonObject.getString("fileName");
-			String fileSize = jsonObject.getString("fileSize");
-			String gcsSessionURL = jsonObject.optString("gcsSessionURL");
-			String md5Checksum = jsonObject.optString("md5Checksum");
+		String fileName = jsonObject.getString("fileName");
+		String fileSize = jsonObject.getString("fileSize");
+		String gcsSessionURL = jsonObject.optString("gcsSessionURL");
+		String md5Checksum = jsonObject.optString("md5Checksum");
 
-			String ticketId = jsonObject.getString("ticketId");
+		String ticketId = jsonObject.getString("ticketId");
 
-			JiraSupportIssue jiraSupportIssue =
-				_jiraService.getJiraSupportIssue(ticketId);
+		SupportIssue supportIssue = _jiraService.getSupportIssue(ticketId);
 
-			if (jiraSupportIssue == null) {
-				return new ResponseEntity<>(
-					"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		if (supportIssue == null) {
+			return new ResponseEntity<>(
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		}
+
+		if (supportIssue.isClosed()) {
+			return new ResponseEntity<>(
+				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
+		}
+
+		Organization organization = supportIssue.getOrganization();
+
+		String accountKey = organization.getExternalKey();
+
+		TicketAttachment ticketAttachment =
+			_ticketAttachmentService.fetchTicketAttachment(
+				"Bearer " + jwt.getTokenValue(), fileName, ticketId,
+				md5Checksum);
+
+		if (ticketAttachment != null) {
+			if (ticketAttachment.isApproved()) {
+				throw new TicketAttachmentAlreadyApprovedException();
 			}
+		}
+		else {
+			ticketAttachment = _ticketAttachmentService.addTicketAttachment(
+				accountKey, "Bearer " + jwt.getTokenValue(),
+				jsonObject.optString("externalReferenceCode"), fileName,
+				fileSize, ticketId, md5Checksum, TicketAttachment.STATUS_DRAFT,
+				jsonObject.optString("type"));
+		}
 
-			if (jiraSupportIssue.isClosed()) {
-				return new ResponseEntity<>(
-					"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
-			}
+		JSONObject responseJSONObject = new JSONObject();
 
-			JiraOrganization jiraOrganization =
-				jiraSupportIssue.getJiraOrganization();
+		responseJSONObject.put(
+			"accountKey", accountKey
+		).put(
+			"ticketAttachmentId", ticketAttachment.getTicketAttachmentId()
+		);
 
-			String accountKey = jiraOrganization.getExternalKey();
-
-			TicketAttachment ticketAttachment =
-				_ticketAttachmentService.fetchTicketAttachment(
-					"Bearer " + jwt.getTokenValue(), fileName, ticketId,
-					md5Checksum);
-
-			if (ticketAttachment != null) {
-				if (ticketAttachment.isApproved()) {
-					return new ResponseEntity<>(
-						"ATTACHMENT_ALREADY_EXISTS", HttpStatus.CONFLICT);
-				}
-			}
-			else {
-				String externalReferenceCode = jsonObject.optString(
-					"externalReferenceCode");
-				String type = jsonObject.optString("type");
-
-				ticketAttachment = _ticketAttachmentService.addTicketAttachment(
-					accountKey, "Bearer " + jwt.getTokenValue(),
-					externalReferenceCode, fileName, fileSize, ticketId,
-					md5Checksum, TicketAttachment.STATUS_DRAFT, type);
-			}
-
-			JSONObject responseJSONObject = new JSONObject();
-
+		if (Validator.isNotNull(gcsSessionURL)) {
+			responseJSONObject.put("gcsSessionURL", gcsSessionURL);
+		}
+		else {
 			responseJSONObject.put(
-				"accountKey", accountKey
-			).put(
-				"ticketAttachmentId", ticketAttachment.getTicketAttachmentId()
-			);
-
-			if (!gcsSessionURL.equals("")) {
-				responseJSONObject.put("gcsSessionURL", gcsSessionURL);
-			}
-			else {
-				responseJSONObject.put(
-					"gcsSessionURL",
-					_googleCloudStorageService.getUploadSessionURL(
-						ticketAttachment.getGCSBucketName(), fileSize,
-						ticketAttachment.getGCSObjectName(), origin));
-			}
-
-			return new ResponseEntity<>(
-				responseJSONObject.toString(), HttpStatus.OK);
+				"gcsSessionURL",
+				_googleCloudStorageService.getUploadSessionURL(
+					ticketAttachment.getGCSBucketName(), fileSize,
+					ticketAttachment.getGCSObjectName(), origin));
 		}
-		catch (FileServerUnavailableException fileServerUnavailableException) {
-			_log.error(fileServerUnavailableException);
 
-			return new ResponseEntity<>(
-				"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
-		}
-		catch (HttpClientErrorException.Forbidden httpClientErrorException) {
-			_log.error(httpClientErrorException, httpClientErrorException);
-
-			return new ResponseEntity<>(
-				"FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
-		}
-		catch (JiraOrganizationNotFoundException
-					jiraOrganizationNotFoundException) {
-
-			_log.error(jiraOrganizationNotFoundException);
-
-			return new ResponseEntity<>(
-				"JIRA_ORGANIZATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-
-			return new ResponseEntity<>(
-				"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return new ResponseEntity<>(
+			responseJSONObject.toString(), HttpStatus.OK);
 	}
 
 	@Scheduled(cron = "0 0 0,12 * * *")
@@ -307,16 +322,16 @@ public class TicketAttachmentsRestController extends BaseRestController {
 		sb.append(StringPool.COMMA);
 		sb.append(_jiraSupportHCProject);
 		sb.append(")) and (status in ('");
-		sb.append(StringUtil.merge(JiraIssueConstants.STATUSES_CLOSED, "', '"));
+		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
 		sb.append("')) and (status changed to ('");
-		sb.append(StringUtil.merge(JiraIssueConstants.STATUSES_CLOSED, "', '"));
+		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
 		sb.append("') after -8d before -7d)");
 
-		List<JiraSupportIssue> jiraSupportIssues = _jiraService.search(
+		List<SupportIssue> supportIssues = _jiraService.search(
 			sb.toString(), new String[] {"key"});
 
-		for (JiraSupportIssue jiraSupportIssue : jiraSupportIssues) {
-			_deleteTicketAttachments(jiraSupportIssue.getKey());
+		for (SupportIssue supportIssue : supportIssues) {
+			_deleteTicketAttachments(supportIssue.getKey());
 		}
 	}
 
@@ -387,7 +402,7 @@ public class TicketAttachmentsRestController extends BaseRestController {
 	}
 
 	private String _buildJiraIssueCommentBody(
-			Jwt jwt, TicketAttachment ticketAttachment, String commentBody)
+			String commentBody, Jwt jwt, TicketAttachment ticketAttachment)
 		throws Exception {
 
 		StringBundler sb = new StringBundler(3);
@@ -595,52 +610,19 @@ public class TicketAttachmentsRestController extends BaseRestController {
 	}
 
 	private ResponseEntity<String> _getResponseEntity(
-		Jwt jwt,
-		UnsafeFunction<String, TicketAttachment, Exception> unsafeFunction) {
+			Jwt jwt,
+			UnsafeFunction<String, TicketAttachment, Exception> unsafeFunction)
+		throws Exception {
 
-		try {
-			String authorization = "Bearer " + jwt.getTokenValue();
+		String authorization = "Bearer " + jwt.getTokenValue();
 
-			TicketAttachment ticketAttachment = unsafeFunction.apply(
-				authorization);
+		TicketAttachment ticketAttachment = unsafeFunction.apply(authorization);
 
-			return new ResponseEntity<>(
-				_googleCloudStorageService.getDownloadURL(
-					ticketAttachment.getGCSBucketName(),
-					ticketAttachment.getGCSObjectName()),
-				HttpStatus.OK);
-		}
-		catch (FileServerUnavailableException fileServerUnavailableException) {
-			_log.error(fileServerUnavailableException);
-
-			return new ResponseEntity<>(
-				"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
-		}
-		catch (StorageException storageException) {
-			_log.error(storageException);
-
-			if (storageException.getCode() == 404) {
-				return new ResponseEntity<>(
-					"FILE_NOT_FOUND_IN_STORAGE", HttpStatus.NOT_FOUND);
-			}
-
-			return new ResponseEntity<>(
-				"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
-		}
-		catch (TicketAttachmentNotFoundException
-					ticketAttachmentNotFoundException) {
-
-			_log.error(ticketAttachmentNotFoundException);
-
-			return new ResponseEntity<>(
-				"ATTACHMENT_NOT_FOUND", HttpStatus.NOT_FOUND);
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-
-			return new ResponseEntity<>(
-				"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return new ResponseEntity<>(
+			_googleCloudStorageService.getDownloadURL(
+				ticketAttachment.getGCSBucketName(),
+				ticketAttachment.getGCSObjectName()),
+			HttpStatus.OK);
 	}
 
 	private static final String _URL_REGEX =

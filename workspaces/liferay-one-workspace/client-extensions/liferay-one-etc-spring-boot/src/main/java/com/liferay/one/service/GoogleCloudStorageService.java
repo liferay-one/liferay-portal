@@ -16,6 +16,7 @@ import com.google.cloud.storage.StorageOptions;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.exception.FileServerUnavailableException;
+import com.liferay.petra.string.StringPool;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -51,7 +52,7 @@ public class GoogleCloudStorageService extends BaseService {
 
 		try {
 			delete(
-				"Bearer " + _getAccessToken(), "",
+				"Bearer " + _getAccessToken(), StringPool.BLANK,
 				UriComponentsBuilder.fromUriString(
 					_getBaseURL() + "/storage/v1/b/{bucketName}/o/{objectName}"
 				).build(
@@ -118,7 +119,7 @@ public class GoogleCloudStorageService extends BaseService {
 			).uri(
 				UriComponentsBuilder.fromUriString(
 					_getBaseURL() + "/upload/storage/v1/b/{bucketName}" +
-						"/o?uploadType=resumable&name={objectName}"
+						"/o?name={objectName}&uploadType=resumable"
 				).build(
 					bucketName, objectName
 				)
@@ -143,7 +144,8 @@ public class GoogleCloudStorageService extends BaseService {
 
 			if (statusCode.is5xxServerError()) {
 				throw new FileServerUnavailableException(
-					"GCP server returned error status: " + statusCode, null);
+					"Google cloud server returned error status: " + statusCode,
+					null);
 			}
 
 			HttpHeaders httpHeaders = responseEntity.getHeaders();

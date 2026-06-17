@@ -14,10 +14,11 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.exception.JiraOrganizationNotFoundException;
-import com.liferay.one.model.JiraOrganization;
-import com.liferay.one.model.JiraSupportIssue;
-import com.liferay.one.service.JiraService;
+import com.liferay.one.jira.exception.OrganizationNotFoundException;
+import com.liferay.one.jira.model.Organization;
+import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.service.JiraService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
 import org.apache.commons.logging.Log;
@@ -29,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,61 +45,64 @@ public class TicketsTicketAttachmentsRestController extends BaseRestController {
 
 	@GetMapping("/download-access-check")
 	public ResponseEntity<String> getDownloadAccessCheck(
-		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable("ticketId") String ticketId) {
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("ticketId") String ticketId)
+		throws Exception {
 
 		return _getResponseEntity(true, jwt, ticketId);
 	}
 
 	@GetMapping("/upload-access-check")
 	public ResponseEntity<String> getUploadAccessCheck(
-		@AuthenticationPrincipal Jwt jwt,
-		@PathVariable("ticketId") String ticketId) {
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("ticketId") String ticketId)
+		throws Exception {
 
 		return _getResponseEntity(false, jwt, ticketId);
 	}
 
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<String> handleException(Exception exception) {
+		_log.error(exception);
+
+		return new ResponseEntity<>(
+			"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+	@ExceptionHandler(OrganizationNotFoundException.class)
+	public ResponseEntity<String> handleException(
+		OrganizationNotFoundException organizationNotFoundException) {
+
+		_log.error(organizationNotFoundException);
+
+		return new ResponseEntity<>(
+			"JIRA_ORGANIZATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
 	private ResponseEntity<String> _getResponseEntity(
-		boolean allowClosedTicket, Jwt jwt, String ticketId) {
+			boolean allowClosedTicket, Jwt jwt, String ticketId)
+		throws Exception {
 
-		try {
-			JiraSupportIssue jiraSupportIssue =
-				_jiraService.getJiraSupportIssue(ticketId);
+		SupportIssue supportIssue = _jiraService.getSupportIssue(ticketId);
 
-			if (jiraSupportIssue == null) {
-				return new ResponseEntity<>(
-					"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
-			}
-
-			if (jiraSupportIssue.isClosed() && !allowClosedTicket) {
-				return new ResponseEntity<>(
-					"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
-			}
-
-			JiraOrganization jiraOrganization =
-				jiraSupportIssue.getJiraOrganization();
-
-			if (!_hasViewPermission(jiraOrganization.getExternalKey(), jwt)) {
-				return new ResponseEntity<>(
-					"FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
-			}
-
-			return new ResponseEntity<>("", HttpStatus.OK);
-		}
-		catch (JiraOrganizationNotFoundException
-					jiraOrganizationNotFoundException) {
-
-			_log.error(jiraOrganizationNotFoundException);
-
+		if (supportIssue == null) {
 			return new ResponseEntity<>(
-				"JIRA_ORGANIZATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
 		}
-		catch (Exception exception) {
-			_log.error(exception);
 
+		if (supportIssue.isClosed() && !allowClosedTicket) {
 			return new ResponseEntity<>(
-				"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
 		}
+
+		Organization organization = supportIssue.getOrganization();
+
+		if (!_hasViewPermission(organization.getExternalKey(), jwt)) {
+			return new ResponseEntity<>(
+				"FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
+		}
+
+		return new ResponseEntity<>(StringPool.BLANK, HttpStatus.OK);
 	}
 
 	private boolean _hasViewPermission(
