@@ -18,7 +18,6 @@ import {
 import {useFetch} from '../../hooks/useFetch';
 import usePublisherCatalog from '../../hooks/usePublisherCatalog';
 import i18n, {Word} from '../../i18n';
-import {formatDate} from '../../utils/date';
 
 export const PRODUCTS_RESOURCE = `/o/headless-commerce-admin-catalog/v1.0/products?${new URLSearchParams(
 	{
@@ -174,7 +173,7 @@ export default function PublishedProductsListView({
 	return (
 		<Page
 			description={
-				countData?.totalCount != null
+				countData?.totalCount !== undefined
 					? i18n.sub(countWord, String(countData.totalCount))
 					: undefined
 			}

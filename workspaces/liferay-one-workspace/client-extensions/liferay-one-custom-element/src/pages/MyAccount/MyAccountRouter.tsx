@@ -8,8 +8,11 @@ import {HashRouter, Navigate, useRoutes} from 'react-router-dom';
 import ContentLayout from '../../components/ContentLayout';
 import {ProjectProvider} from '../../context/ProjectContext';
 import {toRouteObjects} from '../../utils/routes';
+import AccountGuard from './AccountGuard';
+import CurrentAccountRedirect from './CurrentAccountRedirect';
 import MyAccountIndex from './MyAccountIndex';
 import MyAccountLayout from './MyAccountLayout';
+import ProjectIndexRedirect from './Projects/ProjectIndexRedirect';
 import {accountRoutes, projectDetailRoutes} from './myAccountRoutes';
 
 function MyAccountRoutes() {
@@ -17,14 +20,41 @@ function MyAccountRoutes() {
 		{
 			children: [
 				{element: <MyAccountIndex />, index: true},
+				{element: <CurrentAccountRedirect />, path: 'account-details'},
+				{element: <CurrentAccountRedirect />, path: 'account-members'},
+				{element: <CurrentAccountRedirect />, path: 'orders/*'},
 				{
-					children: toRouteObjects(projectDetailRoutes),
-					element: <MyAccountLayout />,
-					path: 'project',
-				},
-				{
-					children: toRouteObjects(accountRoutes),
-					element: <ContentLayout />,
+					children: [
+						{
+							element: <Navigate replace to="project" />,
+							index: true,
+						},
+						{
+							children: [
+								{
+									element: <ProjectIndexRedirect />,
+									index: true,
+								},
+								{
+									children:
+										toRouteObjects(projectDetailRoutes),
+									path: ':projectERC',
+								},
+							],
+							element: (
+								<ProjectProvider>
+									<MyAccountLayout />
+								</ProjectProvider>
+							),
+							path: 'project',
+						},
+						{
+							children: toRouteObjects(accountRoutes),
+							element: <ContentLayout />,
+						},
+					],
+					element: <AccountGuard />,
+					path: ':accountERC',
 				},
 				{element: <Navigate replace to="/" />, path: '*'},
 			],
@@ -36,9 +66,7 @@ function MyAccountRoutes() {
 export default function MyAccountRouter() {
 	return (
 		<HashRouter>
-			<ProjectProvider>
-				<MyAccountRoutes />
-			</ProjectProvider>
+			<MyAccountRoutes />
 		</HashRouter>
 	);
 }

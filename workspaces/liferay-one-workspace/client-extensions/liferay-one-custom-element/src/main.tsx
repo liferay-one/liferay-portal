@@ -24,11 +24,16 @@ const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 		() => import('./pages/AccountSelector/AccountSelectorRouter')
 	),
 	'admin': React.lazy(() => import('./pages/Admin/AdminRouter')),
+	'business-events': React.lazy(
+		() => import('./pages/Support/BusinessEvents/BusinessEventsRouter')
+	),
 	'my-account': React.lazy(() => import('./pages/MyAccount/MyAccountRouter')),
 	'publisher-dashboard': React.lazy(
 		() => import('./pages/PublisherDashboard/PublisherDashboardRouter')
 	),
-	'support': React.lazy(() => import('./pages/Support/SupportRouter')),
+	'ticket-attachments': React.lazy(
+		() => import('./pages/Support/Attachments/TicketAttachmentsRouter')
+	),
 };
 
 class WebComponent extends HTMLElement {

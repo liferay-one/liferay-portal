@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 
 import {useProject} from '../../../context/ProjectContext';
 import {
@@ -23,6 +23,7 @@ function matchesSearch(order: ProjectOrder, search: string): boolean {
 
 export default function OrdersCard() {
 	const {projectId, projects} = useProject();
+	const {accountERC} = useParams();
 
 	const projectName = projects.find(
 		(project) => project.externalReferenceCode === projectId
@@ -97,7 +98,7 @@ export default function OrdersCard() {
 			action={
 				<Link
 					className="align-items-center d-flex gap-2 text-decoration-none"
-					to="/orders"
+					to={`/${accountERC}/orders`}
 				>
 					{translate('view-all-account-orders')}
 

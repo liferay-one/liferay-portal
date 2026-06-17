@@ -5,24 +5,24 @@
 
 import {HashRouter, useRoutes} from 'react-router-dom';
 
-import {toRouteObjects} from '../../utils/routes';
-import SupportLayout from './SupportLayout';
-import {supportRoutes} from './supportRoutes';
+import {toRouteObjects} from '../../../utils/routes';
+import SupportLayout from '../SupportLayout';
+import {attachmentsRoutes} from './attachmentsRoutes';
 
-function SupportRoutes() {
+function TicketAttachmentsRoutes() {
 	return useRoutes([
 		{
-			children: toRouteObjects(supportRoutes),
+			children: toRouteObjects(attachmentsRoutes),
 			element: <SupportLayout />,
 			path: '/',
 		},
 	]);
 }
 
-export default function SupportRouter() {
+export default function TicketAttachmentsRouter() {
 	return (
 		<HashRouter>
-			<SupportRoutes />
+			<TicketAttachmentsRoutes />
 		</HashRouter>
 	);
 }

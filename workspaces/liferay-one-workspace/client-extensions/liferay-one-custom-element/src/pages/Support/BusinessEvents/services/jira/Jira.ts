@@ -73,7 +73,9 @@ export async function getBusinessEventById(
 }
 
 export async function getBusinessEventFieldOptions(fieldName: string) {
-	const response = await jiraFetch(`/business-events/fields/${fieldName}/options`);
+	const response = await jiraFetch(
+		`/business-events/fields/${fieldName}/options`
+	);
 
 	if (!response.ok) {
 		return {items: []};

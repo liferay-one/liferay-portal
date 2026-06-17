@@ -13,9 +13,11 @@ import {useMemo, useState} from 'react';
 
 import Button from '../../components/Button/Button';
 import Page from '../../components/Page';
+import RestrictedFeatureMessage from '../../components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {useFetch} from '../../hooks/useFetch';
 import i18n, {sub, translate} from '../../i18n';
 import {Liferay} from '../../liferay/liferay';
+import {useUserProjects} from './Projects/projects';
 
 import './AccountMembers.css';
 
@@ -43,7 +45,6 @@ type AccountMemberRow = {
 	name: string;
 	roleKey: RoleKey;
 	status: number;
-	supportSeat: boolean;
 };
 
 const ROLE_OPTIONS: {key: RoleKey; label: string}[] = [
@@ -100,17 +101,15 @@ export default function AccountMembers() {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 	const currentUserId = Liferay.ThemeDisplay.getUserId();
 
+	const {loading: projectsLoading, projects} = useUserProjects();
+
 	const [keywords, setKeywords] = useState('');
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 	const [filterActive, setFilterActive] = useState(false);
 	const [selectedRoles, setSelectedRoles] = useState<RoleKey[]>([]);
 
-	const {
-		data: account,
-		error: accountError,
-		loading: accountLoading,
-	} = useFetch<Account>(
+	const {error: accountError, loading: accountLoading} = useFetch<Account>(
 		accountId ? `/o/headless-admin-user/v1.0/accounts/${accountId}` : null
 	);
 
@@ -133,17 +132,9 @@ export default function AccountMembers() {
 				name: userAccount.name,
 				roleKey,
 				status: (userAccount as {status?: number}).status ?? 0,
-				supportSeat:
-					roleKey === 'administrator' || roleKey === 'requester',
 			};
 		});
 	}, [currentUserId, data]);
-
-	const usedSeats = members.filter(({supportSeat}) => supportSeat).length;
-
-	const maxSeats = Number(
-		(account as {maxRequestors?: number})?.maxRequestors
-	);
 
 	const filteredMembers = useMemo(() => {
 		const search = keywords.trim().toLowerCase();
@@ -184,12 +175,18 @@ export default function AccountMembers() {
 		);
 	};
 
-	const seatsLabel = Number.isFinite(maxSeats)
-		? sub('x-of-x-available', [
-				String(Math.max(maxSeats - usedSeats, 0)),
-				String(maxSeats),
-			])
-		: sub('x-in-use', [String(usedSeats)]);
+	if (!projectsLoading && !projects.length) {
+		return (
+			<Page
+				description={i18n.translate(
+					'invite-manage-roles-designate-incident-contacts'
+				)}
+				title={i18n.translate('account-members')}
+			>
+				<RestrictedFeatureMessage />
+			</Page>
+		);
+	}
 
 	return (
 		<Page
@@ -198,7 +195,7 @@ export default function AccountMembers() {
 			)}
 			pageRendererProps={{
 				error: accountError || error,
-				isLoading: accountLoading || loading,
+				isLoading: accountLoading || loading || projectsLoading,
 			}}
 			title={i18n.translate('account-members')}
 		>
@@ -255,19 +252,6 @@ export default function AccountMembers() {
 							</ClayInput.GroupInsetItem>
 						</ClayInput.GroupItem>
 					</ClayInput.Group>
-
-					<div className="account-members-seats align-items-center d-flex">
-						<ClayIcon
-							className="account-members-seats-info mr-2"
-							symbol="info-circle"
-						/>
-
-						<span className="font-weight-semi-bold mr-1">
-							{translate('support-seats')}:
-						</span>
-
-						<span>{seatsLabel}</span>
-					</div>
 				</div>
 
 				{paginatedMembers.length ? (
@@ -289,10 +273,6 @@ export default function AccountMembers() {
 
 									<ClayTable.Cell headingCell>
 										{translate('status')}
-									</ClayTable.Cell>
-
-									<ClayTable.Cell headingCell>
-										{translate('support-seat')}
 									</ClayTable.Cell>
 
 									<ClayTable.Cell headingCell />
@@ -333,19 +313,6 @@ export default function AccountMembers() {
 
 												{translate('active')}
 											</span>
-										</ClayTable.Cell>
-
-										<ClayTable.Cell>
-											{member.supportSeat ? (
-												<ClayIcon
-													className="account-members-seat-check"
-													symbol="check-circle-full"
-												/>
-											) : (
-												<span className="account-members-seat-empty">
-													-
-												</span>
-											)}
 										</ClayTable.Cell>
 
 										<ClayTable.Cell>

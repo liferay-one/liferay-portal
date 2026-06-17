@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
-import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 
@@ -17,6 +15,8 @@ import {
 import {useProjectOrders} from '../../../hooks/data/useProjectOrders';
 import i18n, {Word, translate} from '../../../i18n';
 import FilterableListCard, {ListColumn, ListFilter} from './FilterableListCard';
+import RowActionsMenu from './RowActionsMenu';
+import {isUnassignedProject} from './projects';
 import {getStatusColor} from './tabData';
 import {getLogoColor} from './visuals';
 
@@ -31,9 +31,11 @@ export default function Applications() {
 	const navigate = useNavigate();
 	const {projectId, projects} = useProject();
 
-	const projectName = projects.find(
-		(project) => project.externalReferenceCode === projectId
-	)?.name;
+	const projectName = isUnassignedProject(projectId)
+		? undefined
+		: projects.find(
+				(project) => project.externalReferenceCode === projectId
+			)?.name;
 
 	const {error, loading, products} = useProjectProducts(projectId);
 	const {placedOrders} = useProjectOrders(projectName);
@@ -155,18 +157,15 @@ export default function Applications() {
 		{
 			key: 'actions',
 			render: (application) => (
-				<ClayButton
-					aria-label={translate('application-details')}
-					borderless
-					className="text-neutral-7"
-					displayType="unstyled"
-					onClick={(event) => {
-						event.stopPropagation();
-						navigate(application.id);
-					}}
-				>
-					<ClayIcon symbol="ellipsis-v" />
-				</ClayButton>
+				<RowActionsMenu
+					actions={[
+						{
+							label: 'view-details',
+							onClick: () =>
+								navigate(application.externalReferenceCode),
+						},
+					]}
+				/>
 			),
 		},
 	];
@@ -185,7 +184,9 @@ export default function Applications() {
 				filters={filters}
 				items={applications}
 				matchesSearch={matchesSearch}
-				onItemClick={(application) => navigate(application.id)}
+				onItemClick={(application) =>
+					navigate(application.externalReferenceCode)
+				}
 				rowKey={(application) => application.id}
 			/>
 		</Page>
