@@ -9,6 +9,7 @@ import com.liferay.one.exception.TicketAttachmentAlreadyApprovedException;
 import com.liferay.one.exception.TicketAttachmentNotFoundException;
 import com.liferay.one.model.TicketAttachment;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -65,7 +66,7 @@ public class TicketAttachmentService extends OneBaseService {
 			"type", type
 		);
 
-		if (!md5Checksum.equals("")) {
+		if (Validator.isNotNull(md5Checksum)) {
 			requestJSONObject.put("md5Checksum", md5Checksum);
 		}
 
@@ -121,7 +122,7 @@ public class TicketAttachmentService extends OneBaseService {
 		throws Exception {
 
 		delete(
-			authorization, "",
+			authorization, StringPool.BLANK,
 			UriComponentsBuilder.fromPath(
 				"/o/c/ticketattachments/" + ticketAttachmentId
 			).build(
@@ -133,21 +134,19 @@ public class TicketAttachmentService extends OneBaseService {
 			String md5Checksum)
 		throws Exception {
 
-		StringBundler sb = new StringBundler(9);
+		StringBundler sb = new StringBundler(8);
 
 		sb.append("fileName eq '");
 		sb.append(fileName);
+		sb.append("' and jiraIssueKey eq '");
+		sb.append(jiraIssueKey);
 		sb.append("'");
 
-		if (!md5Checksum.equals("")) {
+		if (Validator.isNotNull(md5Checksum)) {
 			sb.append(" and md5Checksum eq '");
 			sb.append(md5Checksum);
 			sb.append("'");
 		}
-
-		sb.append(" and jiraIssueKey eq '");
-		sb.append(jiraIssueKey);
-		sb.append("'");
 
 		String uriString =
 			"/o/c/ticketattachments?filter=" +
@@ -194,7 +193,9 @@ public class TicketAttachmentService extends OneBaseService {
 				httpClientErrorException);
 		}
 		catch (Exception exception) {
-			_log.error(exception);
+			_log.error(
+				"Unable to get ticket attachment " + ticketAttachmentId,
+				exception);
 
 			throw exception;
 		}
@@ -225,7 +226,9 @@ public class TicketAttachmentService extends OneBaseService {
 				httpClientErrorException);
 		}
 		catch (Exception exception) {
-			_log.error(exception);
+			_log.error(
+				"Unable to get ticket attachment " + externalReferenceCode,
+				exception);
 
 			throw exception;
 		}

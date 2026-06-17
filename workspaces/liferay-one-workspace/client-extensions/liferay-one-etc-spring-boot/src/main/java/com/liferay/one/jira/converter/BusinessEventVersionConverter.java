@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.converter;
+package com.liferay.one.jira.converter;
 
-import com.liferay.one.model.BusinessEventVersion;
+import com.liferay.one.jira.model.BusinessEventVersion;
 
 import org.json.JSONObject;
 
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  * @author Amos Fong
  */
 @Component
-public class BusinessEventVersionConverter extends JiraAssetObjectConverter {
+public class BusinessEventVersionConverter extends AssetObjectConverter {
 
 	public BusinessEventVersion toBusinessEventVersion(
 		JSONObject jiraAssetObjectJSONObject) {

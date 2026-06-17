@@ -3,14 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.constants;
+package com.liferay.one.jira.constants;
 
 import com.liferay.petra.string.StringPool;
 
 /**
  * @author Jenny Chen
  */
-public interface JiraIssueConstants {
+public interface IssueConstants {
 
 	public static final String STATUS_CLOSED = "Closed";
 

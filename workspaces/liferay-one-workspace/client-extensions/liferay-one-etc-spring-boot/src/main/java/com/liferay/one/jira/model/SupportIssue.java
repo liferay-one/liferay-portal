@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.model;
+package com.liferay.one.jira.model;
 
-import com.liferay.one.constants.JiraIssueConstants;
+import com.liferay.one.jira.constants.IssueConstants;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
@@ -18,17 +18,9 @@ import org.json.JSONObject;
 /**
  * @author Jenny Chen
  */
-public class JiraSupportIssue {
+public class SupportIssue {
 
-	public JiraSupportIssue(
-		JiraOrganization jiraOrganization, JSONObject jsonObject) {
-
-		this(jsonObject);
-
-		_jiraOrganization = jiraOrganization;
-	}
-
-	public JiraSupportIssue(JSONObject jsonObject) {
+	public SupportIssue(JSONObject jsonObject) {
 		_key = jsonObject.getString("key");
 
 		JSONObject fieldsJSONObject = jsonObject.getJSONObject("fields");
@@ -52,14 +44,16 @@ public class JiraSupportIssue {
 		_summary = fieldsJSONObject.optString("summary");
 	}
 
-	public JiraSupportIssue(JSONObject jsonObject, String ticketURL) {
+	public SupportIssue(JSONObject jsonObject, Organization organization) {
+		this(jsonObject);
+
+		_organization = organization;
+	}
+
+	public SupportIssue(JSONObject jsonObject, String ticketURL) {
 		this(jsonObject);
 
 		_ticketURL = ticketURL;
-	}
-
-	public JiraOrganization getJiraOrganization() {
-		return _jiraOrganization;
 	}
 
 	public String getKey() {
@@ -68,6 +62,10 @@ public class JiraSupportIssue {
 
 	public String[] getLabels() {
 		return _labels;
+	}
+
+	public Organization getOrganization() {
+		return _organization;
 	}
 
 	public String getStatus() {
@@ -83,7 +81,7 @@ public class JiraSupportIssue {
 	}
 
 	public boolean isClosed() {
-		return ArrayUtil.contains(JiraIssueConstants.STATUSES_CLOSED, _status);
+		return ArrayUtil.contains(IssueConstants.STATUSES_CLOSED, _status);
 	}
 
 	public JSONObject toJSONObject() {
@@ -99,9 +97,9 @@ public class JiraSupportIssue {
 		);
 	}
 
-	private JiraOrganization _jiraOrganization;
 	private final String _key;
 	private final String[] _labels;
+	private Organization _organization;
 	private final String _status;
 	private final String _summary;
 	private String _ticketURL = StringPool.BLANK;

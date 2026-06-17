@@ -3,20 +3,20 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.service;
+package com.liferay.one.jira.service;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
-import com.liferay.one.constants.JiraIssueConstants;
-import com.liferay.one.converter.BusinessEventConverter;
-import com.liferay.one.converter.BusinessEventVersionConverter;
-import com.liferay.one.converter.JiraOrganizationConverter;
-import com.liferay.one.exception.JiraOrganizationNotFoundException;
-import com.liferay.one.model.AssetObject;
-import com.liferay.one.model.AssetObjectFieldOption;
-import com.liferay.one.model.BusinessEvent;
-import com.liferay.one.model.BusinessEventVersion;
-import com.liferay.one.model.JiraOrganization;
-import com.liferay.one.model.JiraSupportIssue;
+import com.liferay.one.jira.constants.IssueConstants;
+import com.liferay.one.jira.converter.BusinessEventConverter;
+import com.liferay.one.jira.converter.BusinessEventVersionConverter;
+import com.liferay.one.jira.converter.OrganizationConverter;
+import com.liferay.one.jira.exception.OrganizationNotFoundException;
+import com.liferay.one.jira.model.AssetObject;
+import com.liferay.one.jira.model.AssetObjectFieldOption;
+import com.liferay.one.jira.model.BusinessEvent;
+import com.liferay.one.jira.model.BusinessEventVersion;
+import com.liferay.one.jira.model.Organization;
+import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -198,8 +198,8 @@ public class JiraService extends BaseService {
 		return businessEventVersions;
 	}
 
-	public JiraSupportIssue getJiraSupportIssue(String issueKey)
-		throws Exception {
+	public SupportIssue getSupportIssue(String issueKey)
+		throws OrganizationNotFoundException {
 
 		try {
 			JSONObject issueJSONObject = new JSONObject(
@@ -213,15 +213,13 @@ public class JiraService extends BaseService {
 					).build(
 					).toUri()));
 
-			JiraOrganization jiraOrganization = _getJiraOrganization(
+			Organization organization = _getOrganization(
 				issueJSONObject.optJSONObject("fields"));
 
-			return new JiraSupportIssue(jiraOrganization, issueJSONObject);
+			return new SupportIssue(issueJSONObject, organization);
 		}
-		catch (JiraOrganizationNotFoundException
-					jiraOrganizationNotFoundException) {
-
-			throw jiraOrganizationNotFoundException;
+		catch (OrganizationNotFoundException organizationNotFoundException) {
+			throw organizationNotFoundException;
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -233,7 +231,7 @@ public class JiraService extends BaseService {
 		return null;
 	}
 
-	public List<JiraSupportIssue> getJSMJiraSupportIssues(
+	public List<SupportIssue> getSupportIssues(
 			String externalReferenceCode, String[] issueKeys)
 		throws Exception {
 
@@ -243,14 +241,12 @@ public class JiraService extends BaseService {
 		sb.append(externalReferenceCode);
 		sb.append("\"') and (status not in ('");
 		sb.append(
-			StringUtil.merge(
-				JiraIssueConstants.STATUSES_SOLVED_AND_CLOSED, "','"));
+			StringUtil.merge(IssueConstants.STATUSES_SOLVED_AND_CLOSED, "','"));
 		sb.append("')) and ");
 		sb.append(
-			JiraIssueConstants.toJQLCustomField(
-				_jiraSupportHCFieldRequestType));
+			IssueConstants.toJQLCustomField(_jiraSupportHCFieldRequestType));
 		sb.append(" = '");
-		sb.append(JiraIssueConstants.TYPE_GENERAL_REQUEST);
+		sb.append(IssueConstants.TYPE_GENERAL_REQUEST);
 		sb.append("'");
 
 		if (ArrayUtil.isNotEmpty(issueKeys)) {
@@ -270,10 +266,10 @@ public class JiraService extends BaseService {
 	public void scheduledAssetObjectsCacheEviction() throws Exception {
 	}
 
-	public List<JiraSupportIssue> search(String jql, String[] returnFields)
+	public List<SupportIssue> search(String jql, String[] returnFields)
 		throws Exception {
 
-		List<JiraSupportIssue> jiraSupportIssues = new ArrayList<>();
+		List<SupportIssue> supportIssues = new ArrayList<>();
 
 		String nextPageToken = StringPool.BLANK;
 
@@ -301,10 +297,10 @@ public class JiraService extends BaseService {
 						_jiraSupportFLSPortalURL + StringPool.SLASH + issueKey;
 				}
 
-				JiraSupportIssue jiraSupportIssue = new JiraSupportIssue(
+				SupportIssue supportIssue = new SupportIssue(
 					issueJSONObject, ticketURL);
 
-				jiraSupportIssues.add(jiraSupportIssue);
+				supportIssues.add(supportIssue);
 			}
 
 			nextPageToken = searchResponseJSONObject.optString("nextPageToken");
@@ -314,7 +310,7 @@ public class JiraService extends BaseService {
 			}
 		}
 
-		return jiraSupportIssues;
+		return supportIssues;
 	}
 
 	public BusinessEvent updateBusinessEvent(
@@ -397,24 +393,6 @@ public class JiraService extends BaseService {
 		return "Basic " + encoder.encodeToString(credentials.getBytes());
 	}
 
-	private JiraOrganization _getJiraOrganization(JSONObject jsonObject)
-		throws JiraOrganizationNotFoundException {
-
-		try {
-			JSONArray jsonArray = jsonObject.optJSONArray(
-				_jiraSupportHCFieldOrganization);
-
-			JSONObject assetJSONObject = jsonArray.getJSONObject(0);
-
-			return _jiraOrganizationConverter.toJiraOrganization(
-				_getAssetObjectJSONObject(
-					assetJSONObject.getString("objectId")));
-		}
-		catch (Exception exception) {
-			throw new JiraOrganizationNotFoundException(exception);
-		}
-	}
-
 	private JSONArray _getObjectTypeAttributesJSONArray(String objectTypeId)
 		throws Exception {
 
@@ -428,6 +406,24 @@ public class JiraService extends BaseService {
 						"/attributes")
 				).build(
 				).toUri()));
+	}
+
+	private Organization _getOrganization(JSONObject jsonObject)
+		throws OrganizationNotFoundException {
+
+		try {
+			JSONArray jsonArray = jsonObject.optJSONArray(
+				_jiraSupportHCFieldOrganization);
+
+			JSONObject assetJSONObject = jsonArray.getJSONObject(0);
+
+			return _organizationConverter.toOrganization(
+				_getAssetObjectJSONObject(
+					assetJSONObject.getString("objectId")));
+		}
+		catch (Exception exception) {
+			throw new OrganizationNotFoundException(exception);
+		}
 	}
 
 	private JSONObject _searchAccountByExternalKeyJSONObject(
@@ -648,9 +644,6 @@ public class JiraService extends BaseService {
 	@Value("${liferay.one.jira.business.event.asset.object.type.id}")
 	private String _jiraBusinessEventAssetObjectTypeId;
 
-	@Autowired
-	private JiraOrganizationConverter _jiraOrganizationConverter;
-
 	@Value("${liferay.one.jira.support.fls.portal.url}")
 	private String _jiraSupportFLSPortalURL;
 
@@ -671,5 +664,8 @@ public class JiraService extends BaseService {
 
 	@Value("${liferay.one.jira.workspace.id}")
 	private String _jiraWorkspaceId;
+
+	@Autowired
+	private OrganizationConverter _organizationConverter;
 
 }
