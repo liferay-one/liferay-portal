@@ -39,7 +39,7 @@ const ProductPurchaseHeader = ({
 	);
 
 	return (
-		<div className="product-purchase-header-banner p-4">
+		<div className="p-4 product-purchase-header-banner">
 			<div className="d-flex flex-row justify-content-between">
 				<div className="d-flex flex-row">
 					<img
