@@ -51,17 +51,6 @@
 		}
 	}
 
-	&-tag {
-		background: var(--color-success-l5, #e7f6ea);
-		border-radius: 100px;
-		color: var(--color-success-d1, #1c6430);
-		display: inline-flex;
-		font-size: var(--text-paragraph-xs-font-size, 11px);
-		font-weight: 600;
-		padding: 0.25rem 0.75rem;
-		text-transform: uppercase;
-	}
-
 	&-subheading {
 		color: var(--color-neutral-9);
 		font-size: var(--h6-font-size, 14px);
