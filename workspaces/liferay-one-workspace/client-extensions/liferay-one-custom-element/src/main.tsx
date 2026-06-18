@@ -34,7 +34,6 @@ const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 	'publisher-dashboard': React.lazy(
 		() => import('./pages/PublisherDashboard/PublisherDashboardRouter')
 	),
-	'support': React.lazy(() => import('./pages/Support/SupportRouter')),
 	'ticket-attachments': React.lazy(
 		() => import('./pages/Support/Attachments/TicketAttachmentsRouter')
 	),
