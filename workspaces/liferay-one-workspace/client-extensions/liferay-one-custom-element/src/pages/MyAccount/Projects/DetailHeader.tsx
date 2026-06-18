@@ -77,7 +77,7 @@ export default function DetailHeader({
 					>
 						<span>
 							{showByPrefix
-								? `${i18n.translate('by')} ${publisher}`
+								? i18n.sub('by-x', publisher)
 								: publisher}
 						</span>
 
