@@ -109,7 +109,7 @@ export default function AccountDetails() {
 						</div>
 					</div>
 
-					<span className="account-details-tag mb-4">
+					<span className="badge badge-primary mb-4">
 						{i18n.translate('organization')}
 					</span>
 

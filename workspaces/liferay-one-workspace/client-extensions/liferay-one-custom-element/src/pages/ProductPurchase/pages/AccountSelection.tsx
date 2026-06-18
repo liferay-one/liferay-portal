@@ -118,7 +118,7 @@ const AccountSelection = () => {
 							</div>
 
 							{selected && (
-								<div className="mt-3 pt-3 product-purchase-account-card-summary">
+								<div className="mt-3 product-purchase-account-card-summary pt-3">
 									<small className="d-block font-weight-semi-bold mb-2 text-muted">
 										{i18n.translate('licenses-summary')}
 									</small>
@@ -159,7 +159,7 @@ const AccountSelection = () => {
 												{i18n.translate('free')}
 											</strong>
 
-											<span className="product-purchase-license-tag px-2 py-1">
+											<span className="badge badge-primary">
 												{getLicenseTagText(product)}
 											</span>
 										</div>
