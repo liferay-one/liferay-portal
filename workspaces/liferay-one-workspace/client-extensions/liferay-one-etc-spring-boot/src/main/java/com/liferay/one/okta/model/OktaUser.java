@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.model;
+package com.liferay.one.okta.model;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,18 +18,13 @@ import org.json.JSONObject;
 public class OktaUser {
 
 	public OktaUser(JSONObject jsonObject) {
-		JSONObject profileJSONObject = jsonObject.optJSONObject("profile");
-
-		if (profileJSONObject == null) {
-			profileJSONObject = new JSONObject();
-		}
+		JSONObject profileJSONObject = jsonObject.optJSONObject("profile", new JSONObject());
 
 		_email = profileJSONObject.optString("email");
-		_emailAddressVerified = _statusesVerified.contains(
-			jsonObject.optString("status"));
 		_firstName = profileJSONObject.optString("firstName");
 		_lastName = profileJSONObject.optString("lastName");
 		_middleName = profileJSONObject.optString("middleName");
+		_status = jsonObject.optString("status");
 		_uuid = profileJSONObject.optString("uuid");
 	}
 
@@ -52,20 +48,32 @@ public class OktaUser {
 		return _uuid;
 	}
 
-	public boolean isEmailAddressVerified() {
-		return _emailAddressVerified;
+	public boolean isDeactivated() {
+		return _statusesDeactivated.contains(_status);
 	}
 
+	public boolean isEmailAddressVerified() {
+		return _statusesVerified.contains(_status);
+	}
+
+	public boolean isPending() {
+		return _statusesPending.contains(_status);
+	}
+
+	private static final Set<String> _statusesDeactivated =
+		Collections.singleton("DEPROVISIONED");
+	private static final Set<String> _statusesPending = new HashSet<>(
+		Arrays.asList("PROVISIONED", "STAGED"));
 	private static final Set<String> _statusesVerified = new HashSet<>(
 		Arrays.asList(
 			"ACTIVE", "LOCKED_OUT", "PASSWORD_EXPIRED", "RECOVERY",
 			"SUSPENDED"));
 
 	private final String _email;
-	private final boolean _emailAddressVerified;
 	private final String _firstName;
 	private final String _lastName;
 	private final String _middleName;
+	private final String _status;
 	private final String _uuid;
 
 }
