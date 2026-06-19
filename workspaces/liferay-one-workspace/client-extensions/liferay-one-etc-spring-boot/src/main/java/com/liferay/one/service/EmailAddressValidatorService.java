@@ -5,13 +5,7 @@
 
 package com.liferay.one.service;
 
-import com.liferay.portal.kernel.util.StringUtil;
-
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,15 +29,7 @@ public class EmailAddressValidatorService {
 		}
 	}
 
-	@PostConstruct
-	protected void init() {
-		Collections.addAll(
-			_liferayDomains, StringUtil.split(_liferayDomainsString));
-	}
-
-	private final Set<String> _liferayDomains = new HashSet<>();
-
 	@Value("${liferay.one.email.address.validator.liferay.domains}")
-	private String _liferayDomainsString;
+	private Set<String> _liferayDomains;
 
 }
