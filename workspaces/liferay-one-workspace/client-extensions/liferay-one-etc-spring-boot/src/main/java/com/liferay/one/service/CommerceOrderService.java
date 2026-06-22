@@ -12,10 +12,8 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
-import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
+import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
-import com.liferay.one.model.CommerceOrder;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 
@@ -25,9 +23,9 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe Veloso
@@ -35,42 +33,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class CommerceOrderService extends OneBaseService {
 
-	public CommerceOrder fetchCommerceOrder(long commerceOrderId)
-		throws Exception {
-
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/headless-commerce-admin-order/v1.0/orders/" +
-					commerceOrderId
-			).queryParam(
-				"nestedFields", "customFields"
-			).build(
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			return null;
-		}
-
-		return new CommerceOrder(new JSONObject(response));
-	}
-
-	public Long getCommerceOrderAccountId(long commerceOrderId)
-		throws Exception {
-
-		Order order = _getOrderResource().getOrder(commerceOrderId);
-
-		Account account = order.getAccount();
-
-		if (account == null) {
-			return null;
-		}
-
-		return account.getId();
-	}
-
-	public void taxCalculate(long commerceOrderId) throws Exception {
-		OrderResource orderResource = _getOrderResource();
+	public void calculateTax(long commerceOrderId) throws Exception {
+		OrderResource orderResource = _buildOrderResource();
 
 		Order order = orderResource.getOrder(commerceOrderId);
 
@@ -82,6 +46,8 @@ public class CommerceOrderService extends OneBaseService {
 			return;
 		}
 
+		Map<String, String> customFields = _getCustomFields(order);
+
 		BigDecimal subtotalAmount = BigDecimal.valueOf(
 			order.getSubtotalAmount());
 
@@ -90,12 +56,20 @@ public class CommerceOrderService extends OneBaseService {
 
 		BigDecimal total = subtotalAmount.add(taxAmount);
 
-		OrderItemResource orderItemResource = _getOrderItemResource();
+		orderResource.patchOrder(
+			commerceOrderId,
+			new Order() {
+				{
+					setCustomFields(() -> customFields);
+					setTaxAmount(() -> taxAmount);
+					setTotal(() -> total);
+				}
+			});
 
 		for (OrderItem orderItem : order.getOrderItems()) {
 			BigDecimal finalPrice = orderItem.getFinalPrice();
 
-			orderItemResource.patchOrderItem(
+			_commerceOrderItemService.patchOrderItem(
 				orderItem.getId(),
 				new OrderItem() {
 					{
@@ -108,21 +82,26 @@ public class CommerceOrderService extends OneBaseService {
 					}
 				});
 		}
-
-		_setExchangeRate(order);
-
-		orderResource.patchOrder(
-			commerceOrderId,
-			new Order() {
-				{
-					setCustomFields(order::getCustomFields);
-					setTaxAmount(() -> taxAmount);
-					setTotal(() -> total);
-				}
-			});
 	}
 
-	private CurrencyResource _getCurrencyResource() {
+	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
+		OrderResource orderResource = _buildOrderResource();
+
+		try {
+			return orderResource.getOrder(commerceOrderId);
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				return null;
+			}
+
+			throw problemException;
+		}
+	}
+
+	private CurrencyResource _buildCurrencyResource() {
 		return CurrencyResource.builder(
 		).endpoint(
 			lxcDXPMainDomain, lxcDXPServerProtocol
@@ -131,16 +110,7 @@ public class CommerceOrderService extends OneBaseService {
 		).build();
 	}
 
-	private OrderItemResource _getOrderItemResource() {
-		return OrderItemResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-	}
-
-	private OrderResource _getOrderResource() {
+	private OrderResource _buildOrderResource() {
 		return OrderResource.builder(
 		).endpoint(
 			lxcDXPMainDomain, lxcDXPServerProtocol
@@ -149,6 +119,36 @@ public class CommerceOrderService extends OneBaseService {
 		).parameters(
 			"nestedFields", "account,billingAddress,customFields,orderItems"
 		).build();
+	}
+
+	private Map<String, String> _getCustomFields(Order order) throws Exception {
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.getOrDefault("order-metadata", "{}"));
+
+		if (orderMetadataJSONObject.has("exchangeRate")) {
+			return customFields;
+		}
+
+		CurrencyResource currencyResource = _buildCurrencyResource();
+
+		Currency currency = currencyResource.getCurrenciesPage(
+			null, "code eq 'EUR'", Pagination.of(1, 1), null
+		).fetchFirstItem();
+
+		if (currency == null) {
+			return customFields;
+		}
+
+		customFields.put(
+			"order-metadata",
+			orderMetadataJSONObject.put(
+				"exchangeRate", currency.getRate()
+			).toString());
+
+		return customFields;
 	}
 
 	private boolean _isTaxApplicable(
@@ -167,34 +167,6 @@ public class CommerceOrderService extends OneBaseService {
 		return false;
 	}
 
-	private void _setExchangeRate(Order order) throws Exception {
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFields.getOrDefault("order-metadata", "{}"));
-
-		if (orderMetadataJSONObject.has("exchangeRate")) {
-			return;
-		}
-
-		CurrencyResource currencyResource = _getCurrencyResource();
-
-		Currency currency = currencyResource.getCurrenciesPage(
-			null, "code eq 'EUR'", Pagination.of(1, 1), null
-		).fetchFirstItem();
-
-		if (currency == null) {
-			return;
-		}
-
-		customFields.put(
-			"order-metadata",
-			orderMetadataJSONObject.put(
-				"exchangeRate", currency.getRate()
-			).toString());
-	}
-
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
@@ -205,5 +177,8 @@ public class CommerceOrderService extends OneBaseService {
 		"AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR",
 		"HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO",
 		"SE", "SI", "SK");
+
+	@Autowired
+	private CommerceOrderItemService _commerceOrderItemService;
 
 }

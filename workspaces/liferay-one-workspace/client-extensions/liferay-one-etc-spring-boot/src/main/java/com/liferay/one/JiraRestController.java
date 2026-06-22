@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.converter.BusinessEventConverter;
 import com.liferay.one.jira.model.AssetObject;
 import com.liferay.one.jira.model.AssetObjectFieldOption;
@@ -14,6 +15,7 @@ import com.liferay.one.jira.model.BusinessEventVersion;
 import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.one.jira.service.JiraService;
 import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -43,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Jenny Chen
@@ -169,12 +170,11 @@ public class JiraRestController extends BaseRestController {
 		_businessEventPermission.check(
 			externalReferenceCode, ActionKeys.UPDATE, jwt);
 
-		JSONObject myUserAccountJSONObject = _getMyUserAccountJSONObject(jwt);
+		UserAccount userAccount = _getMyUserAccount(jwt);
 
 		_jiraService.createBusinessEvent(
 			_businessEventConverter.toBusinessEvent(
-				externalReferenceCode, json,
-				myUserAccountJSONObject.getString("emailAddress")));
+				externalReferenceCode, json, userAccount.getEmailAddress()));
 
 		return _getResponseEntity(
 			_jiraService.getBusinessEvents(externalReferenceCode),
@@ -195,11 +195,10 @@ public class JiraRestController extends BaseRestController {
 		_businessEventPermission.check(
 			externalReferenceCode, ActionKeys.UPDATE, jwt);
 
-		JSONObject myUserAccountJSONObject = _getMyUserAccountJSONObject(jwt);
+		UserAccount userAccount = _getMyUserAccount(jwt);
 
 		BusinessEvent businessEvent = _businessEventConverter.toBusinessEvent(
-			externalReferenceCode, json,
-			myUserAccountJSONObject.getString("emailAddress"));
+			externalReferenceCode, json, userAccount.getEmailAddress());
 
 		businessEvent = _jiraService.updateBusinessEvent(businessEvent, id);
 
@@ -209,15 +208,9 @@ public class JiraRestController extends BaseRestController {
 			HttpStatus.OK);
 	}
 
-	private JSONObject _getMyUserAccountJSONObject(Jwt jwt) throws Exception {
+	private UserAccount _getMyUserAccount(Jwt jwt) throws Exception {
 		try {
-			return new JSONObject(
-				get(
-					"Bearer " + jwt.getTokenValue(),
-					UriComponentsBuilder.fromPath(
-						"/o/headless-admin-user/v1.0/my-user-account"
-					).build(
-					).toUri()));
+			return _userAccountService.getMyUserAccount(jwt);
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -264,5 +257,8 @@ public class JiraRestController extends BaseRestController {
 
 	@Autowired
 	private JiraService _jiraService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }

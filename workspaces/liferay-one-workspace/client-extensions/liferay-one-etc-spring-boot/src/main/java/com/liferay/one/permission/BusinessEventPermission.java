@@ -10,15 +10,14 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
-import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.service.AccountService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
@@ -41,14 +40,7 @@ public class BusinessEventPermission {
 			String accountExternalReferenceCode, String actionId, Jwt jwt)
 		throws Exception {
 
-		UserAccountResource userAccountResource = UserAccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			_lxcDXPMainDomain, _lxcDXPServerProtocol
-		).build();
-
-		UserAccount userAccount = userAccountResource.getMyUserAccount();
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
@@ -86,15 +78,8 @@ public class BusinessEventPermission {
 			}
 		}
 
-		AccountResource accountResource = AccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			_lxcDXPMainDomain, _lxcDXPServerProtocol
-		).build();
-
-		Account account = accountResource.getAccountByExternalReferenceCode(
-			accountExternalReferenceCode);
+		Account account = _accountService.getAccount(
+			accountExternalReferenceCode, jwt);
 
 		for (OrganizationBrief organizationBrief :
 				userAccount.getOrganizationBriefs()) {
@@ -109,10 +94,10 @@ public class BusinessEventPermission {
 		return false;
 	}
 
-	@Value("${com.liferay.lxc.dxp.mainDomain}")
-	private String _lxcDXPMainDomain;
+	@Autowired
+	private AccountService _accountService;
 
-	@Value("${com.liferay.lxc.dxp.server.protocol}")
-	private String _lxcDXPServerProtocol;
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }

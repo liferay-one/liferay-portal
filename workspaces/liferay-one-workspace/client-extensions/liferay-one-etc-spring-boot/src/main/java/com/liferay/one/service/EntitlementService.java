@@ -5,14 +5,16 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.exception.DuplicateEntitlementException;
-import com.liferay.one.model.CommerceOrder;
-import com.liferay.one.model.CommerceOrderItem;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.OrderItem;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -110,11 +112,10 @@ public class EntitlementService extends OneBaseService {
 	public void generateEntitlements(long commerceOrderItemId)
 		throws Exception {
 
-		CommerceOrderItem commerceOrderItem =
-			_commerceOrderItemService.fetchCommerceOrderItem(
-				commerceOrderItemId);
+		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
+			commerceOrderItemId);
 
-		if (commerceOrderItem == null) {
+		if (orderItem == null) {
 			_log.error(
 				"Unable to find commerce order item " + commerceOrderItemId);
 
@@ -125,11 +126,10 @@ public class EntitlementService extends OneBaseService {
 			_entitlementDefinitionService.getEntitlementDefinitions(
 				StringBundler.concat(
 					"(r_commerceProductToEntitlementDefinition_CProductId eq '",
-					commerceOrderItem.getCProductId(),
-					"') and (active eq true)"),
-				commerceOrderItem.getProductOptions());
+					orderItem.getCProductId(), "') and (active eq true)"),
+				orderItem.getProductOptions());
 
-		long contractId = _getContractId(commerceOrderItem);
+		long contractId = _getContractId(orderItem);
 
 		for (EntitlementDefinition entitlementDefinition :
 				entitlementDefinitions) {
@@ -138,11 +138,11 @@ public class EntitlementService extends OneBaseService {
 				addEntitlement(
 					commerceOrderItemId, contractId,
 					entitlementDefinition.getEntitlementDefinitionId(),
-					commerceOrderItem.getEndDate(),
+					orderItem.getEndDate(),
 					entitlementDefinition.getGrantType(), null,
 					entitlementDefinition.getName(),
 					entitlementDefinition.getDefaultQuantity(),
-					commerceOrderItem.getStartDate());
+					orderItem.getStartDate());
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -161,17 +161,18 @@ public class EntitlementService extends OneBaseService {
 		return getAllItems("/o/c/entitlements", filterString, Entitlement::new);
 	}
 
-	private long _getContractId(CommerceOrderItem commerceOrderItem)
-		throws Exception {
+	private long _getContractId(OrderItem orderItem) throws Exception {
+		Order order = _commerceOrderService.fetchCommerceOrder(
+			orderItem.getOrderId());
 
-		CommerceOrder commerceOrder = _commerceOrderService.fetchCommerceOrder(
-			commerceOrderItem.getOrderId());
-
-		if (commerceOrder == null) {
+		if (order == null) {
 			return 0;
 		}
 
-		return commerceOrder.getContractId();
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		return GetterUtil.getLong(customFields.get("contractId"));
 	}
 
 	private static final Log _log = LogFactory.getLog(EntitlementService.class);
