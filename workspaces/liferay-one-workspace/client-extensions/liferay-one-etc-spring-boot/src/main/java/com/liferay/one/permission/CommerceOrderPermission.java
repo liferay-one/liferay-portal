@@ -8,16 +8,16 @@ package com.liferay.one.permission;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
@@ -34,14 +34,7 @@ public class CommerceOrderPermission {
 	}
 
 	private boolean _contains(long commerceOrderId, Jwt jwt) throws Exception {
-		UserAccountResource userAccountResource = UserAccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			_lxcDXPMainDomain, _lxcDXPServerProtocol
-		).build();
-
-		UserAccount userAccount = userAccountResource.getMyUserAccount();
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
@@ -53,15 +46,21 @@ public class CommerceOrderPermission {
 			}
 		}
 
-		Long accountId = _commerceOrderService.getCommerceOrderAccountId(
+		Order commerceOrder = _commerceOrderService.fetchCommerceOrder(
 			commerceOrderId);
 
-		if (accountId == null) {
+		if (commerceOrder == null) {
+			return false;
+		}
+
+		Account account = commerceOrder.getAccount();
+
+		if (account == null) {
 			return false;
 		}
 
 		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
-			if (Objects.equals(accountBrief.getId(), accountId)) {
+			if (Objects.equals(accountBrief.getId(), account.getId())) {
 				return true;
 			}
 		}
@@ -72,10 +71,7 @@ public class CommerceOrderPermission {
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
 
-	@Value("${com.liferay.lxc.dxp.mainDomain}")
-	private String _lxcDXPMainDomain;
-
-	@Value("${com.liferay.lxc.dxp.server.protocol}")
-	private String _lxcDXPServerProtocol;
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }

@@ -24,15 +24,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class CommerceOrdersRestController extends BaseRestController {
 
-	@PostMapping("/{commerceOrderId}/tax-calculate")
-	public void postTaxCalculate(
+	@PostMapping("/{commerceOrderId}/calculate-tax")
+	public void postCalculateTax(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("commerceOrderId") long commerceOrderId)
 		throws Exception {
 
 		_commerceOrderPermission.check(commerceOrderId, jwt);
 
-		_commerceOrderService.taxCalculate(commerceOrderId);
+		_commerceOrderService.calculateTax(commerceOrderId);
 	}
 
 	@Autowired
