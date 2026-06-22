@@ -18,14 +18,16 @@ import org.json.JSONObject;
 public class OktaUser {
 
 	public OktaUser(JSONObject jsonObject) {
-		JSONObject profileJSONObject = jsonObject.optJSONObject("profile", new JSONObject());
+		JSONObject profileJSONObject = jsonObject.optJSONObject(
+			"profile", new JSONObject());
 
 		_email = profileJSONObject.optString("email");
 		_firstName = profileJSONObject.optString("firstName");
 		_lastName = profileJSONObject.optString("lastName");
 		_middleName = profileJSONObject.optString("middleName");
-		_status = jsonObject.optString("status");
 		_uuid = profileJSONObject.optString("uuid");
+
+		_status = jsonObject.optString("status");
 	}
 
 	public String getEmail() {

@@ -25,6 +25,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -123,10 +124,15 @@ public class OktaService {
 			clientResponse -> clientResponse.toEntity(String.class)
 		).block();
 
-		if ((responseEntity == null) ||
-			(responseEntity.getStatusCode().value() == 404) ||
-			Validator.isNull(responseEntity.getBody())) {
+		if (responseEntity == null) {
+			return null;
+		}
 
+		HttpStatusCode httpStatusCode = responseEntity.getStatusCode();
+
+		int statusCode = httpStatusCode.value();
+
+		if ((statusCode == 404) || Validator.isNull(responseEntity.getBody())) {
 			return null;
 		}
 
@@ -185,8 +191,7 @@ public class OktaService {
 		List<OktaUser> oktaUsers = new ArrayList<>();
 
 		String url = StringBundler.concat(
-			_URL_API_REST_GROUPS, groupId, "/users",
-			"?limit=200");
+			_URL_API_REST_GROUPS, groupId, "/users?limit=200");
 
 		while (url != null) {
 			ResponseEntity<String> responseEntity = _webClient.get(
