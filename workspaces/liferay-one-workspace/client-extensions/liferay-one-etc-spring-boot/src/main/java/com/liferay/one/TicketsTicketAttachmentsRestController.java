@@ -11,13 +11,13 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
-import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.exception.OrganizationNotFoundException;
 import com.liferay.one.jira.model.Organization;
 import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.one.jira.service.JiraService;
+import com.liferay.one.service.AccountService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
@@ -25,7 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -109,14 +108,7 @@ public class TicketsTicketAttachmentsRestController extends BaseRestController {
 			String accountExternalReferenceCode, Jwt jwt)
 		throws Exception {
 
-		UserAccountResource userAccountResource = UserAccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).build();
-
-		UserAccount userAccount = userAccountResource.getMyUserAccount();
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
@@ -143,15 +135,8 @@ public class TicketsTicketAttachmentsRestController extends BaseRestController {
 			}
 		}
 
-		AccountResource accountResource = AccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).build();
-
-		Account account = accountResource.getAccountByExternalReferenceCode(
-			accountExternalReferenceCode);
+		Account account = _accountService.getAccount(
+			accountExternalReferenceCode, jwt);
 
 		for (OrganizationBrief organizationBrief :
 				userAccount.getOrganizationBriefs()) {
@@ -170,6 +155,12 @@ public class TicketsTicketAttachmentsRestController extends BaseRestController {
 		TicketsTicketAttachmentsRestController.class);
 
 	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
 	private JiraService _jiraService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }

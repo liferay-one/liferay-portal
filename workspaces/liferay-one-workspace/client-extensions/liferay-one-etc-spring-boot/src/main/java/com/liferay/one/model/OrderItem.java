@@ -5,6 +5,9 @@
 
 package com.liferay.one.model;
 
+import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
+import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashMap;
@@ -20,18 +23,23 @@ import org.json.JSONObject;
 /**
  * @author Felipe Veloso
  */
-public class CommerceOrderItem extends LiferayObject {
+public class OrderItem {
 
-	public CommerceOrderItem(JSONObject jsonObject) {
-		super(jsonObject);
+	public OrderItem(
+		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
+			orderItem) {
 
-		_cProductId = jsonObject.optLong("productId");
-		_commerceOrderItemId = jsonObject.getLong("id");
-		_endDate = getCustomFieldString("endDate");
-		_orderId = jsonObject.optLong("orderId");
-		_productOptions = _getProductOptions(jsonObject);
-		_sizing = getCustomFieldInteger("sizing");
-		_startDate = getCustomFieldString("startDate");
+		_cProductId = GetterUtil.getLong(orderItem.getProductId());
+		_commerceOrderItemId = GetterUtil.getLong(orderItem.getId());
+		_orderId = GetterUtil.getLong(orderItem.getOrderId());
+		_productOptions = _getProductOptions(orderItem.getOptions());
+
+		Map<String, Object> customFieldValues = _getCustomFieldValues(
+			orderItem);
+
+		_endDate = GetterUtil.getString(customFieldValues.get("endDate"));
+		_sizing = GetterUtil.getInteger(customFieldValues.get("sizing"));
+		_startDate = GetterUtil.getString(customFieldValues.get("startDate"));
 	}
 
 	public long getCommerceOrderItemId() {
@@ -62,6 +70,31 @@ public class CommerceOrderItem extends LiferayObject {
 		return _startDate;
 	}
 
+	private Map<String, Object> _getCustomFieldValues(
+		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
+			orderItem) {
+
+		Map<String, Object> customFieldValues = new HashMap<>();
+
+		CustomField[] customFields = orderItem.getCustomFields();
+
+		if (customFields == null) {
+			return customFieldValues;
+		}
+
+		for (CustomField customField : customFields) {
+			CustomValue customValue = customField.getCustomValue();
+
+			if (customValue == null) {
+				continue;
+			}
+
+			customFieldValues.put(customField.getName(), customValue.getData());
+		}
+
+		return customFieldValues;
+	}
+
 	private String _getOptionValue(JSONObject optionJSONObject) {
 		JSONArray valueJSONArray = optionJSONObject.optJSONArray("value");
 
@@ -76,10 +109,8 @@ public class CommerceOrderItem extends LiferayObject {
 		return optionJSONObject.optString("value", null);
 	}
 
-	private Map<String, String> _getProductOptions(JSONObject jsonObject) {
+	private Map<String, String> _getProductOptions(String optionsJSON) {
 		Map<String, String> productOptions = new HashMap<>();
-
-		String optionsJSON = jsonObject.optString("options");
 
 		if (Validator.isNull(optionsJSON)) {
 			return productOptions;
@@ -107,7 +138,7 @@ public class CommerceOrderItem extends LiferayObject {
 		return productOptions;
 	}
 
-	private static final Log _log = LogFactory.getLog(CommerceOrderItem.class);
+	private static final Log _log = LogFactory.getLog(OrderItem.class);
 
 	private final long _commerceOrderItemId;
 	private final long _cProductId;

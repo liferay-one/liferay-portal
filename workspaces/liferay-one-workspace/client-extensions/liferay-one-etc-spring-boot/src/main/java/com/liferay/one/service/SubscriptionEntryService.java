@@ -7,16 +7,12 @@ package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.admin.user.client.problem.Problem;
-import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
-import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.ProductGroupConstants;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -34,8 +30,6 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -142,31 +136,6 @@ public class SubscriptionEntryService extends OneBaseService {
 			).toUri());
 	}
 
-	private Account _fetchAccount(long accountEntryId) throws Exception {
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-
-		try {
-			return accountResource.getAccount(accountEntryId);
-		}
-		catch (Problem.ProblemException problemException) {
-			Problem problem = problemException.getProblem();
-
-			if ((problem != null) &&
-				(GetterUtil.getInteger(problem.getStatus()) ==
-					HttpStatus.NOT_FOUND.value())) {
-
-				return null;
-			}
-
-			throw problemException;
-		}
-	}
-
 	private String _getExpirationMessage(
 		String languageId, int days, String expirationDate,
 		String productGroup) {
@@ -206,22 +175,11 @@ public class SubscriptionEntryService extends OneBaseService {
 		return _DEFAULT_LANGUAGE_ID;
 	}
 
-	private UserAccount _getUserAccount(long userId) throws Exception {
-		UserAccountResource userAccountResource = UserAccountResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-
-		return userAccountResource.getUserAccount(userId);
-	}
-
 	private void _sendExpiringLicenseKeyEmail(
 			LicenseKey licenseKey, long userId, int days)
 		throws Exception {
 
-		UserAccount userAccount = _getUserAccount(userId);
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
 
 		if ((userAccount == null) ||
 			Validator.isNull(userAccount.getEmailAddress())) {
@@ -294,7 +252,8 @@ public class SubscriptionEntryService extends OneBaseService {
 				startDateLTCalendar.toInstant(), ")"));
 
 		for (LicenseKey licenseKey : licenseKeys) {
-			Account account = _fetchAccount(licenseKey.getAccountEntryId());
+			Account account = _accountService.fetchAccount(
+				licenseKey.getAccountEntryId());
 
 			if (account == null) {
 				continue;
@@ -325,6 +284,9 @@ public class SubscriptionEntryService extends OneBaseService {
 		"en_US", "es_ES", "ja_JP", "pt_BR");
 
 	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
 	private LicenseKeyService _licenseKeyService;
 
 	@Autowired
@@ -335,5 +297,8 @@ public class SubscriptionEntryService extends OneBaseService {
 
 	@Autowired
 	private NotificationTemplateService _notificationTemplateService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }
