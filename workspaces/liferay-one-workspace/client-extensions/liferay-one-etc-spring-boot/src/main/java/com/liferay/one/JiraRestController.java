@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.converter.BusinessEventConverter;
 import com.liferay.one.jira.model.AssetObject;
@@ -51,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/jira")
 @RestController
-public class JiraRestController extends BaseRestController {
+public class JiraRestController extends OneBaseRestController {
 
 	@DeleteMapping("/accounts/{externalReferenceCode}/business-events/{id}")
 	public ResponseEntity<String> deleteAccountsBusinessEvents(
@@ -150,14 +149,6 @@ public class JiraRestController extends BaseRestController {
 			_jiraService.getAssetObjects(
 				_OBJECT_SCHEMA_BUSINESS_EVENTS, _OBJECT_TYPE_PRODUCT_VERSION),
 			AssetObject::toJSONObject);
-	}
-
-	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleException(Exception exception) {
-		_log.error(exception);
-
-		return new ResponseEntity<>(
-			exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@PostMapping("/accounts/{externalReferenceCode}/business-events")

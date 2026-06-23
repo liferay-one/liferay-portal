@@ -13,38 +13,37 @@ import Page from '../../../components/Page';
 import {translate} from '../../../i18n';
 import {Liferay} from '../../../liferay/liferay';
 import FetcherError from '../../../services/fetcher/FetcherError';
-import useHasMessageQueuePermissions from './hooks/useHasMessageQueuePermissions';
+import useHasAdminPermissions from './hooks/useHasAdminPermissions';
 import {
-	RoutingKey,
+	Subscriber,
 	dispatchMessage,
-	getRoutingKeys,
-} from './services/MessageQueue';
+	getTopics,
+} from './services/Pubsub';
 
-export default function MessageQueue() {
+export default function Pubsub() {
+	const [attributes, setAttributes] = useState('');
 	const [dispatching, setDispatching] = useState(false);
-	const [message, setMessage] = useState('');
-	const [properties, setProperties] = useState('');
-	const [routingKey, setRoutingKey] = useState('');
-	const [routingKeys, setRoutingKeys] = useState<RoutingKey[]>([]);
+	const [payload, setPayload] = useState('');
+	const [topic, setTopic] = useState('');
+	const [topics, setTopics] = useState<Subscriber[]>([]);
 
-	const {hasMessageQueuePermissions, loading} =
-		useHasMessageQueuePermissions();
+	const {hasAdminPermissions, loading} = useHasAdminPermissions();
 
 	useEffect(() => {
-		if (!hasMessageQueuePermissions) {
+		if (!hasAdminPermissions) {
 			return;
 		}
 
-		getRoutingKeys()
+		getTopics()
 			.then((items) => {
-				setRoutingKeys(items);
+				setTopics(items);
 
 				if (items.length) {
-					setRoutingKey(items[0].routingKey);
+					setTopic(items[0].topic);
 				}
 			})
-			.catch(() => setRoutingKeys([]));
-	}, [hasMessageQueuePermissions]);
+			.catch(() => setTopics([]));
+	}, [hasAdminPermissions]);
 
 	const handleSubmit = async (event: {preventDefault: () => void}) => {
 		event.preventDefault();
@@ -52,7 +51,7 @@ export default function MessageQueue() {
 		setDispatching(true);
 
 		try {
-			await dispatchMessage({message, properties, routingKey});
+			await dispatchMessage({attributes, payload, topic});
 
 			Liferay.Util.openToast({
 				message: translate('success'),
@@ -75,12 +74,12 @@ export default function MessageQueue() {
 		}
 	};
 
-	if (!loading && !hasMessageQueuePermissions) {
+	if (!loading && !hasAdminPermissions) {
 		return (
-			<Page title={translate('message-queue')}>
+			<Page title={translate('pubsub')}>
 				<EmptyState
 					description={translate(
-						'you-do-not-have-access-to-the-message-queue'
+						'you-do-not-have-access-to-pubsub'
 					)}
 					title={translate('access-required')}
 					type="NO_ACCESS"
@@ -92,65 +91,65 @@ export default function MessageQueue() {
 	return (
 		<Page
 			pageRendererProps={{isLoading: loading}}
-			title={translate('message-queue')}
+			title={translate('pubsub')}
 		>
 			<form onSubmit={handleSubmit}>
 				<ClayForm.Group>
-					<label htmlFor="messageQueueRoutingKey">
-						{translate('routing-key')}
+					<label htmlFor="pubsubTopic">
+						{translate('topic')}
 					</label>
 
 					<ClaySelect
-						id="messageQueueRoutingKey"
+						id="pubsubTopic"
 						onChange={(event: {target: {value: string}}) =>
-							setRoutingKey(event.target.value)
+							setTopic(event.target.value)
 						}
 						required
-						value={routingKey}
+						value={topic}
 					>
 						<ClaySelect.Option
-							label={translate('select-a-routing-key')}
+							label={translate('select-a-topic')}
 							value=""
 						/>
 
-						{routingKeys.map((item) => (
+						{topics.map((item) => (
 							<ClaySelect.Option
-								key={`${item.routingKey}:${item.subscriber}`}
-								label={item.routingKey}
-								value={item.routingKey}
+								key={`${item.topic}:${item.name}`}
+								label={item.topic}
+								value={item.topic}
 							/>
 						))}
 					</ClaySelect>
 				</ClayForm.Group>
 
 				<ClayForm.Group>
-					<label htmlFor="messageQueueMessage">
-						{translate('message')}
+					<label htmlFor="pubsubPayload">
+						{translate('payload')}
 					</label>
 
 					<ClayInput
 						component="textarea"
-						id="messageQueueMessage"
+						id="pubsubPayload"
 						onChange={(event: {target: {value: string}}) =>
-							setMessage(event.target.value)
+							setPayload(event.target.value)
 						}
 						required
-						value={message}
+						value={payload}
 					/>
 				</ClayForm.Group>
 
 				<ClayForm.Group>
-					<label htmlFor="messageQueueProperties">
-						{translate('properties')}
+					<label htmlFor="pubsubAttributes">
+						{translate('attributes')}
 					</label>
 
 					<ClayInput
 						component="textarea"
-						id="messageQueueProperties"
+						id="pubsubAttributes"
 						onChange={(event: {target: {value: string}}) =>
-							setProperties(event.target.value)
+							setAttributes(event.target.value)
 						}
-						value={properties}
+						value={attributes}
 					/>
 				</ClayForm.Group>
 
@@ -159,34 +158,34 @@ export default function MessageQueue() {
 				</ClayButton>
 			</form>
 
-			{!!routingKeys.length && (
+			{!!topics.length && (
 				<div className="mt-4">
-					<h4>{translate('routing-keys')}</h4>
+					<h4>{translate('topics')}</h4>
 
 					<ClayTable>
 						<ClayTable.Head>
 							<ClayTable.Row>
 								<ClayTable.Cell headingCell>
-									{translate('routing-key')}
+									{translate('topic')}
 								</ClayTable.Cell>
 
 								<ClayTable.Cell headingCell>
-									{translate('subscriber')}
+									{translate('name')}
 								</ClayTable.Cell>
 							</ClayTable.Row>
 						</ClayTable.Head>
 
 						<ClayTable.Body>
-							{routingKeys.map((item) => (
+							{topics.map((item) => (
 								<ClayTable.Row
-									key={`${item.routingKey}:${item.subscriber}`}
+									key={`${item.topic}:${item.name}`}
 								>
 									<ClayTable.Cell>
-										{item.routingKey}
+										{item.topic}
 									</ClayTable.Cell>
 
 									<ClayTable.Cell>
-										{item.subscriber}
+										{item.name}
 									</ClayTable.Cell>
 								</ClayTable.Row>
 							))}

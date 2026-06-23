@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.service.EntitlementService;
 
 import org.json.JSONObject;
@@ -24,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/object/action/commerce/order/item/entitlement/generation")
 @RestController
 public class ObjectActionCommerceOrderItemEntitlementGenerationRestController
-	extends BaseRestController {
+	extends OneBaseRestController {
 
 	@PostMapping
 	public void post(@AuthenticationPrincipal Jwt jwt, @RequestBody String json)

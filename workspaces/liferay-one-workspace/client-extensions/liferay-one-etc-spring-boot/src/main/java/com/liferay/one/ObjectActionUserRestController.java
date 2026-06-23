@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.service.SubscriptionEntryService;
 
 import org.json.JSONObject;
@@ -21,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/object/action/user/delete")
 @RestController
-public class ObjectActionUserRestController extends BaseRestController {
+public class ObjectActionUserRestController extends OneBaseRestController {
 
 	@PostMapping
 	public void post(@RequestBody String json) throws Exception {

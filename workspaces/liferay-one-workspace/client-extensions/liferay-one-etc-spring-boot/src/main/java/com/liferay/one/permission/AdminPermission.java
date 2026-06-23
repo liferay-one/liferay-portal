@@ -7,12 +7,11 @@ package com.liferay.one.permission;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @author Kyle Bischof
  */
 @Component
-public class DebugMessageQueuePermission {
+public class AdminPermission {
 
 	public void check(Jwt jwt) throws Exception {
 		if (!_contains(jwt)) {
@@ -29,21 +28,13 @@ public class DebugMessageQueuePermission {
 	}
 
 	private boolean _contains(Jwt jwt) throws Exception {
-		UserAccountResource userAccountResource = UserAccountResource.builder(
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).endpoint(
-			_lxcDXPMainDomain, _lxcDXPServerProtocol
-		).build();
-
-		UserAccount userAccount = userAccountResource.getMyUserAccount();
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
-			String roleBriefName = roleBrief.getName();
+			String name = roleBrief.getName();
 
-			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
-				roleBriefName.equals(
-					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
+			if (name.equals(RoleConstants.NAME_ADMINISTRATOR) ||
+				name.equals(RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
 
 				return true;
 			}
@@ -52,10 +43,7 @@ public class DebugMessageQueuePermission {
 		return false;
 	}
 
-	@Value("${com.liferay.lxc.dxp.mainDomain}")
-	private String _lxcDXPMainDomain;
-
-	@Value("${com.liferay.lxc.dxp.server.protocol}")
-	private String _lxcDXPServerProtocol;
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }
