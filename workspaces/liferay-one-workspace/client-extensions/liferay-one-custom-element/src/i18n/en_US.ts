@@ -134,6 +134,7 @@ export default {
 	'attach-file-to-ticket-x': 'Attach File to Ticket #{0}',
 	'attachment': 'Attachment',
 	'attachment-already-exists': 'Attachment Already Exists',
+	'attributes': 'Attributes',
 	'available': 'Available',
 	'back': 'Back',
 	'back-to-apps': 'Back to Apps',
@@ -609,8 +610,6 @@ export default {
 	'marketplace-licensor-eula': 'Marketplace Licensor EULA',
 	'marketplace-orders': 'Marketplace Orders',
 	'maximum-number-of-uploads-reached': 'Maximum Number of Uploads Reached',
-	'message': 'Message',
-	'message-queue': 'Message Queue',
 	'migration': 'Migration',
 	'mm-dd-yyyy': 'MM-DD-YYYY',
 	'modified-date': 'Modified Date',
@@ -738,6 +737,7 @@ export default {
 	'password-policy': 'Password Policy',
 	'pay-with-bank-transfer': 'Pay with Bank Transfer',
 	'pay-with-card': 'Pay with Card',
+	'payload': 'Payload',
 	'payment': 'Payment',
 	'payment-method': 'Payment Method',
 	'payment-status': 'Payment Status',
@@ -806,7 +806,6 @@ export default {
 	'projects': 'Projects',
 	'projects-and-resources': 'Projects and Resources',
 	'prompt': 'Prompt',
-	'properties': 'Properties',
 	'provide-app-build': 'Provide App Build',
 	'provide-company-profile-details': 'Provide Company Profile Details',
 	'provide-contact-us-details': 'Provide Contact Us Details',
@@ -838,6 +837,7 @@ export default {
 	'publisher-with-apps-supporting-quarterly-release':
 		'Publisher With Apps Supporting Quarterly Release',
 	'publishers': 'Publishers',
+	'pubsub': 'Pub/Sub',
 	'purchase-and-install-new-apps-and-they-will-show-up-here':
 		'Purchase and install new apps and they will show up here.',
 	'purchase-app': 'Purchase App',
@@ -891,8 +891,6 @@ export default {
 		'Review the new publisher info and the Liferay Marketplace terms before proceeding.',
 	'role': 'Role',
 	'roles': 'Roles',
-	'routing-key': 'Routing Key',
-	'routing-keys': 'Routing Keys',
 	'saas-environments': 'SaaS Environments',
 	'saas-trials': 'SaaS Trials',
 	'sale-type': 'Sale Type',
@@ -916,10 +914,10 @@ export default {
 	'select-a-local-file-to-upload': 'Select a Local File to Upload',
 	'select-a-local-file-to-upload-only-one-file-can-be-attached-at-a-time':
 		'Select a local file to upload. Only one file can be attached at a time.',
-	'select-a-routing-key': 'Select a Routing Key',
 	'select-a-server-to-store-your-data-this-could-have-implications-to-your-organizations-policy-on-user-data-storage':
 		"Select a server to store your data. This could have implications to your organization's policy on user data storage.",
 	'select-a-ticket': 'Select a Ticket',
+	'select-a-topic': 'Select a Topic',
 	'select-account': 'Select Account',
 	'select-an-option': 'Select an Option',
 	'select-areas': 'Select Areas',
@@ -983,7 +981,6 @@ export default {
 	'submit-solution': 'Submit Solution',
 	'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome':
 		'Submit your request to join the beta program. All submissions will be reviewed, and you’ll receive an email with the outcome.',
-	'subscriber': 'Subscriber',
 	'subscription-type': 'Subscription Type',
 	'subtotal': 'Subtotal',
 	'subtotal-discount': 'Subtotal Discount',
@@ -1098,6 +1095,8 @@ export default {
 		'To join an existing business account, please contact your administrator, who can add you. Once added, you will automatically become part of that account and will be able to manage it and make purchases on Markeplace.',
 	'token-unavailable': 'Token Unavailable',
 	'tokens': 'Tokens',
+	'topic': 'Topic',
+	'topics': 'Topics',
 	'total': 'Total',
 	'transaction-details': 'Transaction Details',
 	'transaction-id': 'Transaction ID',
@@ -1242,8 +1241,8 @@ export default {
 		'You do not have access to a cloud project.',
 	'you-do-not-have-access-to-download-files':
 		'You do not have access to download files.',
-	'you-do-not-have-access-to-the-message-queue':
-		'You do not have access to the Message Queue.',
+	'you-do-not-have-access-to-pubsub':
+		'You do not have access to Pub/Sub.',
 	'you-do-not-have-access-to-upload-files':
 		'You do not have access to upload files.',
 	'you-have-reached-the-maximum-number-of-active-trials-allowed-to-start-a-new-trial-please-end-one-of-your-existing-trials-first':

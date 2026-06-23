@@ -8,17 +8,17 @@ import {AccountRoleType} from '../../../../enums/Account';
 
 const PROVISIONING_ADMINISTRATOR_ROLE = 'Provisioning Administrator';
 
-export default function useHasMessageQueuePermissions(): {
-	hasMessageQueuePermissions: boolean;
+export default function useHasAdminPermissions(): {
+	hasAdminPermissions: boolean;
 	loading: boolean;
 } {
 	const {myUserAccount} = useOneContext();
 
 	if (!myUserAccount) {
-		return {hasMessageQueuePermissions: false, loading: true};
+		return {hasAdminPermissions: false, loading: true};
 	}
 
-	const hasMessageQueuePermissions = Boolean(
+	const hasAdminPermissions = Boolean(
 		myUserAccount.roleBriefs?.some(
 			(role) =>
 				role.name === AccountRoleType.ADMINISTRATOR ||
@@ -26,5 +26,5 @@ export default function useHasMessageQueuePermissions(): {
 		)
 	);
 
-	return {hasMessageQueuePermissions, loading: false};
+	return {hasAdminPermissions, loading: false};
 }

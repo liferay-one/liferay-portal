@@ -16,7 +16,6 @@ const LicenseKeyUploads = lazy(
 const ManageSsaSaasUsers = lazy(
 	() => import('./ManageSsaSaasUsers/ManageSsaSaasUsers')
 );
-const MessageQueue = lazy(() => import('./MessageQueue/MessageQueue'));
 const MPFinanceOrders = lazy(() => import('./MPFinanceOrders/MPFinanceOrders'));
 const MPSummary = lazy(() => import('./MPSummary/MPSummary'));
 const MySsaSaasDemo = lazy(() => import('./MySsaSaasDemo/MySsaSaasDemo'));
@@ -28,6 +27,7 @@ const PublisherRequests = lazy(
 	() => import('./PublisherRequests/PublisherRequests')
 );
 const Publishers = lazy(() => import('./Publishers/Publishers'));
+const Pubsub = lazy(() => import('./Pubsub/Pubsub'));
 const Solutions = lazy(() => import('./Solutions/Solutions'));
 const TrialDetails = lazy(() => import('./SSADashboard/pages/TrialDetails'));
 const Trials = lazy(() => import('./Trials/Trials'));
@@ -108,9 +108,9 @@ export const adminRoutes: AppRoute[] = [
 		path: 'details/:orderId',
 	},
 	{
-		element: <MessageQueue />,
-		nav: {icon: 'message-boards', label: 'Message Queue'},
-		path: 'message-queue',
+		element: <Pubsub />,
+		nav: {icon: 'message-boards', label: 'Pub/Sub'},
+		path: 'pubsub',
 	},
 	{
 		element: <LicenseKeyUploads />,

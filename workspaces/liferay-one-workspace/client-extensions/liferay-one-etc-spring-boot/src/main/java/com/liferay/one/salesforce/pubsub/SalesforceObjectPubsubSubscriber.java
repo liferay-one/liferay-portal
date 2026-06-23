@@ -45,22 +45,7 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	}
 
 	@Override
-	protected String getProjectId() {
-		return _projectId;
-	}
-
-	@Override
-	protected String getSubscriptionName() {
-		return _subscription;
-	}
-
-	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
-	}
-
-	@Override
-	protected void receive(Message message) throws Exception {
+	public void receive(Message message) throws Exception {
 		if (_log.isDebugEnabled()) {
 			_log.debug("Parsing message: " + message.getPayload());
 		}
@@ -95,6 +80,21 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 				"Unable to process Salesforce message " + message.getPayload(),
 				exception);
 		}
+	}
+
+	@Override
+	protected String getProjectId() {
+		return _projectId;
+	}
+
+	@Override
+	protected String getSubscriptionName() {
+		return _subscription;
+	}
+
+	@Override
+	protected boolean isAutoCreateTopic() {
+		return false;
 	}
 
 	private void _processPricebookEntry(

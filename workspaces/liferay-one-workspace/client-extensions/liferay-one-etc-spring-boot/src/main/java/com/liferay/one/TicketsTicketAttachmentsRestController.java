@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
@@ -40,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/tickets/{ticketId}/ticket-attachments")
 @RestController
-public class TicketsTicketAttachmentsRestController extends BaseRestController {
+public class TicketsTicketAttachmentsRestController extends OneBaseRestController {
 
 	@GetMapping("/download-access-check")
 	public ResponseEntity<String> getDownloadAccessCheck(

@@ -7,7 +7,6 @@ package com.liferay.one;
 
 import com.google.cloud.storage.StorageException;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
 import com.liferay.one.exception.FileServerUnavailableException;
 import com.liferay.one.exception.TicketAttachmentAlreadyApprovedException;
@@ -65,7 +64,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @RequestMapping("/ticket-attachments")
 @RestController
-public class TicketAttachmentsRestController extends BaseRestController {
+public class TicketAttachmentsRestController extends OneBaseRestController {
 
 	@DeleteMapping("/{ticketAttachmentId}")
 	public ResponseEntity<String> delete(

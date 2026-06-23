@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.jira.service.JiraService;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -28,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/accounts")
 @RestController
-public class AccountsRestController extends BaseRestController {
+public class AccountsRestController extends OneBaseRestController {
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
 	public ResponseEntity<String> getJiraObjectKey(

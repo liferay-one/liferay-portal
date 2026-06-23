@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.service.EntitlementService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/entitlements")
 @RestController
-public class EntitlementsRestController extends BaseRestController {
+public class EntitlementsRestController extends OneBaseRestController {
 
 	@PostMapping("/generate")
 	public void postEntitlementsGenerate(@RequestParam long commerceOrderItemId)
