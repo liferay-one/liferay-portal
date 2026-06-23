@@ -29,6 +29,14 @@ public abstract class BaseDeadLetterPubsubSubscriber
 	public static final String SOURCE_SUBSCRIPTION_ATTRIBUTE_NAME =
 		"CloudPubSubDeadLetterSourceSubscription";
 
+	@Override
+	public final void receive(Message message) throws Exception {
+		onDeadLetter(
+			GetterUtil.getInteger(
+				message.get(SOURCE_DELIVERY_COUNT_ATTRIBUTE_NAME)),
+			message, message.get(SOURCE_SUBSCRIPTION_ATTRIBUTE_NAME));
+	}
+
 	protected String getSourceTopic(String sourceSubscriptionName)
 		throws Exception {
 
@@ -67,14 +75,6 @@ public abstract class BaseDeadLetterPubsubSubscriber
 	protected abstract void onDeadLetter(
 			int deliveryAttempt, Message message, String sourceSubscriptionName)
 		throws Exception;
-
-	@Override
-	protected final void receive(Message message) throws Exception {
-		onDeadLetter(
-			GetterUtil.getInteger(
-				message.get(SOURCE_DELIVERY_COUNT_ATTRIBUTE_NAME)),
-			message, message.get(SOURCE_SUBSCRIPTION_ATTRIBUTE_NAME));
-	}
 
 	private final Map<String, String> _topics = new ConcurrentHashMap<>();
 

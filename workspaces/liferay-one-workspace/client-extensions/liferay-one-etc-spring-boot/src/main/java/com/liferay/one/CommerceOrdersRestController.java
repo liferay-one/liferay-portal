@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.CommerceOrderService;
 
@@ -22,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RequestMapping("/commerce-orders")
 @RestController
-public class CommerceOrdersRestController extends BaseRestController {
+public class CommerceOrdersRestController extends OneBaseRestController {
 
 	@PostMapping("/{commerceOrderId}/calculate-tax")
 	public void postCalculateTax(

@@ -7,12 +7,12 @@ import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 
 import FetcherError from '../../../../services/fetcher/FetcherError';
 
-const BASE_PATH = '/admin/debug-message-queue';
+const BASE_PATH = '/admin';
 const OAUTH2_APP = 'liferay-one-etc-spring-boot-oaua';
 
-export type RoutingKey = {
-	routingKey: string;
-	subscriber: string;
+export type Subscriber = {
+	name: string;
+	topic: string;
 };
 
 async function parseError(response: Error | Response): Promise<Response> {
@@ -51,17 +51,17 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export function dispatchMessage(message: {
-	message: string;
-	properties: string;
-	routingKey: string;
+	attributes: string;
+	payload: string;
+	topic: string;
 }): Promise<void> {
-	return request('', {
+	return request('/pubsub/dispatch', {
 		body: JSON.stringify(message),
 		headers: {'Content-Type': 'application/json'},
 		method: 'POST',
 	});
 }
 
-export function getRoutingKeys(): Promise<RoutingKey[]> {
-	return request('/routing-keys');
+export function getTopics(): Promise<Subscriber[]> {
+	return request('/pubsub/subscribers');
 }
