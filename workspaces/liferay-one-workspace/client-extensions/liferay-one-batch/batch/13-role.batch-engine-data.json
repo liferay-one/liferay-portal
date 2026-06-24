@@ -146,11 +146,6 @@
 			"roleType": "account"
 		},
 		{
-			"externalReferenceCode": "C_PRIVACY_BREACH_CONTACT",
-			"name": "Privacy Breach Contact",
-			"roleType": "account"
-		},
-		{
 			"externalReferenceCode": "C_PROJECT_ADMIN",
 			"name": "Project Admin",
 			"roleType": "account"
