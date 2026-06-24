@@ -230,7 +230,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_ACCOUNT_NOTE",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Content"
+							},
+							"objectFieldName": "content",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Created By User ID"
+							},
+							"objectFieldName": "createdByUserId",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Created By User Name"
+							},
+							"objectFieldName": "createdByUserName",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Status"
+							},
+							"objectFieldName": "customStatus",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Format"
+							},
+							"objectFieldName": "format",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Account Notes"
 			},
@@ -460,7 +513,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Full Name"
+							},
+							"objectFieldName": "fullName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Administrator Email Address"
+							},
+							"objectFieldName": "administratorEmailAddress",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "AI Hub Account Name"
+							},
+							"objectFieldName": "aiHubAccountName",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Business Email Address"
+							},
+							"objectFieldName": "businessEmailAddress",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Company Name"
+							},
+							"objectFieldName": "companyName",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "AI Hub Beta Private Access Requests"
 			},
@@ -647,7 +753,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_COMMON_LICENSE_KEY",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "File Content"
+							},
+							"objectFieldName": "fileContent",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "End Date"
+							},
+							"objectFieldName": "endDate",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Environment Type"
+							},
+							"objectFieldName": "environmentType",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "File Name"
+							},
+							"objectFieldName": "fileName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "File Size"
+							},
+							"objectFieldName": "fileSize",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Common License Keys"
 			},
@@ -907,7 +1066,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_CONTRACT",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Owner Email Address"
+							},
+							"objectFieldName": "ownerEmailAddress",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Active Contract"
+							},
+							"objectFieldName": "activeContract",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Contract Billing Cadence"
+							},
+							"objectFieldName": "contractBillingCadence",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Contract Term"
+							},
+							"objectFieldName": "contractTerm",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Contract Type"
+							},
+							"objectFieldName": "contractType",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Contracts"
 			},
@@ -1191,7 +1403,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_DSR_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Accept EULA Agreement"
+							},
+							"objectFieldName": "acceptEulaAgreement",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Accept Terms and Conditions"
+							},
+							"objectFieldName": "acceptTermsAndConditions",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Corp Project Name"
+							},
+							"objectFieldName": "corpProjectName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Corp Project UUID"
+							},
+							"objectFieldName": "corpProjectUuid",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "DSR Requests"
 			},
@@ -1421,7 +1686,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_DXP_FREE_ACTIVATION_KEY_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Full Name"
+							},
+							"objectFieldName": "fullName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Business Email Address"
+							},
+							"objectFieldName": "businessEmailAddress",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Company Name"
+							},
+							"objectFieldName": "companyName",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Country"
+							},
+							"objectFieldName": "country",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Domain"
+							},
+							"objectFieldName": "domain",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "DXP Free Activation Key Requests"
 			},
@@ -1570,7 +1888,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_ENTITLEMENT",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "End Date"
+							},
+							"objectFieldName": "endDate",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Grant Type"
+							},
+							"objectFieldName": "grantType",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Max Quantity"
+							},
+							"objectFieldName": "maxQuantity",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Quantity"
+							},
+							"objectFieldName": "quantity",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Entitlements"
 			},
@@ -1748,7 +2119,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_ENTITLEMENT_DEFINITION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Active"
+							},
+							"objectFieldName": "active",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Default Quantity"
+							},
+							"objectFieldName": "defaultQuantity",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Display Name"
+							},
+							"objectFieldName": "displayName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Grant Type"
+							},
+							"objectFieldName": "grantType",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Entitlement Definitions"
 			},
@@ -1870,7 +2294,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_GET_APP_INFORMATION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Order ID"
+							},
+							"objectFieldName": "orderId",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Dashboard Link"
+							},
+							"objectFieldName": "dashboardLink",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Price Model"
+							},
+							"objectFieldName": "priceModel",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Product Name"
+							},
+							"objectFieldName": "productName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Product Type"
+							},
+							"objectFieldName": "productType",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Get App Information"
 			},
@@ -2471,7 +2948,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_LICENSE_KEY",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Account Name"
+							},
+							"objectFieldName": "accountName",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Active"
+							},
+							"objectFieldName": "active",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Cluster ID"
+							},
+							"objectFieldName": "clusterId",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Complimentary"
+							},
+							"objectFieldName": "complimentary",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "License Keys"
 			},
@@ -2539,7 +3069,39 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Standard"
+							},
+							"objectFieldName": "standard",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Developer"
+							},
+							"objectFieldName": "developer",
+							"priority": 2
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "License Types Descriptions"
 			},
@@ -2607,7 +3169,39 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_LIFERAY_BUNDLE",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Bundle Name"
+							},
+							"objectFieldName": "bundleName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Bundle Link"
+							},
+							"objectFieldName": "bundleLink",
+							"priority": 2
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Liferay Bundles"
 			},
@@ -2657,7 +3251,32 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_OAUTH2_DXP_AUTHORIZATION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Connection Source"
+							},
+							"objectFieldName": "connectionSource",
+							"priority": 1
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "OAuth2 DXP Authorizations"
 			},
@@ -2905,7 +3524,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PRODUCT_FEEDBACK",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Full Name"
+							},
+							"objectFieldName": "fullName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Company Name"
+							},
+							"objectFieldName": "companyName",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Email Address"
+							},
+							"objectFieldName": "emailAddress",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Job Title"
+							},
+							"objectFieldName": "jobTitle",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Notify"
+							},
+							"objectFieldName": "notify",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Product Feedbacks"
 			},
@@ -3458,7 +4130,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PUBLISHER_ACCOUNT_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Email Address"
+							},
+							"objectFieldName": "emailAddress",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Extension"
+							},
+							"objectFieldName": "extension",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "First Name"
+							},
+							"objectFieldName": "firstName",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Intl Code"
+							},
+							"objectFieldName": "intlCode",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Last Name"
+							},
+							"objectFieldName": "lastName",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Publisher Account Requests"
 			},
@@ -3508,7 +4233,32 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PUBLISHER_ASSET",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Version"
+							},
+							"objectFieldName": "version",
+							"priority": 1
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Publisher Assets"
 			},
@@ -3629,7 +4379,46 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PUBLISHER_ASSET_ATTACHMENT",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Processed"
+							},
+							"objectFieldName": "processed",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Publisher Asset Attachment Type"
+							},
+							"objectFieldName": "publisherAssetAttachmentType",
+							"priority": 3
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Publisher Asset Attachments"
 			},
@@ -3957,7 +4746,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PUBLISHER_DETAILS",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Publisher Name"
+							},
+							"objectFieldName": "publisherName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Catalog Id"
+							},
+							"objectFieldName": "catalogId",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Email"
+							},
+							"objectFieldName": "email",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Full Name"
+							},
+							"objectFieldName": "fullName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Location"
+							},
+							"objectFieldName": "location",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Publisher Details"
 			},
@@ -4080,7 +4922,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PUBLISHER_SALES_SUMMARY",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Publisher Name"
+							},
+							"objectFieldName": "publisherName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Paid By"
+							},
+							"objectFieldName": "paidBy",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Paid Date"
+							},
+							"objectFieldName": "paidDate",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Payment Status"
+							},
+							"objectFieldName": "paymentStatus",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Quarter"
+							},
+							"objectFieldName": "quarter",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Publisher Sales Summaries"
 			},
@@ -4148,7 +5043,39 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_REPORT",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Value"
+							},
+							"objectFieldName": "value",
+							"priority": 2
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Reports"
 			},
@@ -4270,7 +5197,46 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_SALES_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Email"
+							},
+							"objectFieldName": "email",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Account Name"
+							},
+							"objectFieldName": "accountName",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Name"
+							},
+							"objectFieldName": "name",
+							"priority": 3
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Sales Requests"
 			},
@@ -4357,7 +5323,46 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_SUBSCRIPTION_ENTRY",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Class PK"
+							},
+							"objectFieldName": "classPK",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Class Name"
+							},
+							"objectFieldName": "className",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "User ID"
+							},
+							"objectFieldName": "customUserId",
+							"priority": 3
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Subscription Entries"
 			},
@@ -4572,7 +5577,60 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_TICKET_ATTACHMENT",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "File Name"
+							},
+							"objectFieldName": "fileName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Account Key"
+							},
+							"objectFieldName": "accountKey",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "File Size"
+							},
+							"objectFieldName": "fileSize",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Google Cloud Storage Bucket Name"
+							},
+							"objectFieldName": "gcsBucketName",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Jira Issue"
+							},
+							"objectFieldName": "jiraIssueKey",
+							"priority": 5
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Ticket Attachments"
 			},
@@ -4677,7 +5735,53 @@
 			],
 			"objectValidationRules": [
 			],
-			"panelCategoryKey": "control_panel.object",
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_TRIAL_EXTENSION_REQUEST",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Project ID"
+							},
+							"objectFieldName": "projectId",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Due Status"
+							},
+							"objectFieldName": "dueStatus",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Duration"
+							},
+							"objectFieldName": "duration",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Reason"
+							},
+							"objectFieldName": "reason",
+							"priority": 4
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
 			"pluralLabel": {
 				"en_US": "Trial Extension Requests"
 			},
