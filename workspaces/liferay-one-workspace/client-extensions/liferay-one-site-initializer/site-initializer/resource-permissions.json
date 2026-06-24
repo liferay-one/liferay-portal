@@ -55,6 +55,17 @@
 	},
 	{
 		"actionIds": [
+			"ASSIGN_USERS",
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Project Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"ADD_CATEGORY"
 		],
 		"primKey": "0",
