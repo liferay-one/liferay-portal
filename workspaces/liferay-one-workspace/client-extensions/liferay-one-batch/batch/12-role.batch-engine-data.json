@@ -121,6 +121,21 @@
 			"roleType": "account"
 		},
 		{
+			"externalReferenceCode": "C_PROJECT_ADMIN",
+			"name": "Project Admin",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PROJECT_REQUESTER",
+			"name": "Project Requester",
+			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PROJECT_USER",
+			"name": "Project User",
+			"roleType": "account"
+		},
+		{
 			"externalReferenceCode": "C_PROVISIONING_ADMIN",
 			"name": "Provisioning Administrator",
 			"roleType": "regular"
