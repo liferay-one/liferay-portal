@@ -1638,24 +1638,31 @@
 						},
 						{
 							"label": {
+								"en_US": "Active Contract"
+							},
+							"objectFieldName": "activeContract",
+							"priority": 2
+						},
+						{
+							"label": {
 								"en_US": "Contract Billing Cadence"
 							},
 							"objectFieldName": "contractBillingCadence",
-							"priority": 2
+							"priority": 3
 						},
 						{
 							"label": {
 								"en_US": "Contract Term"
 							},
 							"objectFieldName": "contractTerm",
-							"priority": 3
+							"priority": 4
 						},
 						{
 							"label": {
 								"en_US": "Contract Type"
 							},
 							"objectFieldName": "contractType",
-							"priority": 4
+							"priority": 5
 						}
 					]
 				}
@@ -4640,6 +4647,106 @@
 			},
 			"system": false,
 			"titleObjectFieldName": "name"
+		},
+		{
+			"active": true,
+			"enableCategorization": false,
+			"enableComments": false,
+			"enableObjectEntryHistory": false,
+			"externalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION",
+			"label": {
+				"en_US": "License Types Description"
+			},
+			"name": "LicenseTypesDescription",
+			"objectFields": [
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION_DEVELOPER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Developer"
+					},
+					"name": "developer",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION_STANDARD",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Standard"
+					},
+					"name": "standard",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				}
+			],
+			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
+			"objectRelationships": [
+			],
+			"objectValidationRules": [
+			],
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Standard"
+							},
+							"objectFieldName": "standard",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Developer"
+							},
+							"objectFieldName": "developer",
+							"priority": 2
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
+			"pluralLabel": {
+				"en_US": "License Types Descriptions"
+			},
+			"portlet": true,
+			"restContextPath": "/o/c/licensetypesdescriptions",
+			"scope": "company",
+			"status": {
+				"code": 0,
+				"label": "approved",
+				"label_i18n": "Approved"
+			},
+			"system": false,
+			"titleObjectFieldName": "standard"
 		},
 		{
 			"active": true,
