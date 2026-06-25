@@ -20,24 +20,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class AssetSchemaService {
 
-	public String getAttributeId(
-		String schemaName, String objectTypeName, String attributeName) {
+	public Map<String, String> getAttributeIds(
+		String schemaName, String objectTypeName) {
 
-		Map<String, String> attributeIds = _assetSchemaLoader.getAttributeIds(
-			schemaName, objectTypeName);
-
-		String attributeId = attributeIds.get(attributeName);
-
-		if (attributeId == null) {
-			throw new JiraAssetSchemaException(
-				StringBundler.concat(
-					"Attribute \"", attributeName,
-					"\" not found on object type \"", objectTypeName,
-					"\" in schema \"", schemaName, "\". Available attributes: ",
-					new TreeSet<>(attributeIds.keySet())));
-		}
-
-		return attributeId;
+		return _assetSchemaLoader.getAttributeIds(
+			getObjectTypeId(schemaName, objectTypeName));
 	}
 
 	public String getObjectTypeId(String schemaName, String objectTypeName) {

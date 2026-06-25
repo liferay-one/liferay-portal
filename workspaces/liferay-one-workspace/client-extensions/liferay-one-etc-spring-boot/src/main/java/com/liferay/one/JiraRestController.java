@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.jira.constants.BusinessEventConstants;
 import com.liferay.one.jira.converter.BusinessEventConverter;
 import com.liferay.one.jira.model.AssetObject;
 import com.liferay.one.jira.model.AssetObjectFieldOption;
@@ -145,7 +146,8 @@ public class JiraRestController extends OneBaseRestController {
 	public ResponseEntity<String> getProductVersions() throws Exception {
 		return _getResponseEntity(
 			_jiraService.getAssetObjects(
-				_OBJECT_SCHEMA_BUSINESS_EVENTS, _OBJECT_TYPE_PRODUCT_VERSION),
+				BusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS,
+				BusinessEventConstants.OBJECT_TYPE_PRODUCT_VERSION),
 			AssetObject::toJSONObject);
 	}
 
@@ -226,12 +228,6 @@ public class JiraRestController extends OneBaseRestController {
 		return new ResponseEntity<>(
 			responseJSONObject.toString(), HttpStatus.OK);
 	}
-
-	private static final String _OBJECT_SCHEMA_BUSINESS_EVENTS =
-		"Business Events";
-
-	private static final String _OBJECT_TYPE_PRODUCT_VERSION =
-		"Product Version";
 
 	private static final Log _log = LogFactory.getLog(JiraRestController.class);
 
