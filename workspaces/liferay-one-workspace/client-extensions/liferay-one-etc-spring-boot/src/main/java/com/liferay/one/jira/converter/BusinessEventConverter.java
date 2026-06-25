@@ -5,8 +5,12 @@
 
 package com.liferay.one.jira.converter;
 
+import com.liferay.one.jira.constants.BusinessEventConstants;
 import com.liferay.one.jira.model.BusinessEvent;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -18,65 +22,71 @@ import org.springframework.stereotype.Component;
 @Component
 public class BusinessEventConverter extends AssetObjectConverter {
 
-	@Override
-	public String getObjectSchemaName() {
-		return Constants.OBJECT_SCHEMA_NAME;
-	}
-
-	@Override
-	public String getObjectTypeName() {
-		return Constants.OBJECT_TYPE_NAME;
-	}
-
 	public JSONObject toAttributesJSONObject(
 		String accountObjectKey, BusinessEvent businessEvent) {
 
+		Map<String, String> attributeIds = getAttributeIds();
+
 		JSONObject attributesJSONObject = new JSONObject();
 
-		attributesJSONObject.put(
-			attr(Constants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
-			businessEvent.getActualEventDate()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
-			businessEvent.getAssociatedTickets()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_CURRENT_VERSION),
-			businessEvent.getCurrentLiferayVersionKey()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_DESCRIPTION),
-			businessEvent.getDescription()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_EVENT_STATUS),
-			businessEvent.getEventStatusName()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_EVENT_TYPE),
-			businessEvent.getEventTypeName()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_LAST_COMMENT),
-			businessEvent.getLastComment()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR),
-			businessEvent.getLastUpdatedAuthorEmailAddress()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_NAME), businessEvent.getName()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_NEW_VERSION),
-			businessEvent.getNewLiferayVersionKey()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
-			businessEvent.getPlannedEventDate()
-		).put(
-			attr(Constants.ATTRIBUTE_NAME_TIME_ZONE),
-			businessEvent.getTimeZoneName()
-		);
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE,
+			businessEvent.getActualEventDate());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS,
+			businessEvent.getAssociatedTickets());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION,
+			businessEvent.getCurrentLiferayVersionKey());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION,
+			businessEvent.getDescription());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS,
+			businessEvent.getEventStatusName());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE,
+			businessEvent.getEventTypeName());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT,
+			businessEvent.getLastComment());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR,
+			businessEvent.getLastUpdatedAuthorEmailAddress());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_NAME,
+			businessEvent.getName());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION,
+			businessEvent.getNewLiferayVersionKey());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE,
+			businessEvent.getPlannedEventDate());
+		_put(
+			attributesJSONObject, attributeIds,
+			BusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE,
+			businessEvent.getTimeZoneName());
 
 		if (accountObjectKey != null) {
-			attributesJSONObject.put(
-				attr(Constants.ATTRIBUTE_NAME_ACCOUNT), accountObjectKey
-			).put(
-				attr(Constants.ATTRIBUTE_NAME_AUTHOR),
-				businessEvent.getAuthorEmailAddress()
-			);
+			_put(
+				attributesJSONObject, attributeIds,
+				BusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
+				accountObjectKey);
+			_put(
+				attributesJSONObject, attributeIds,
+				BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR,
+				businessEvent.getAuthorEmailAddress());
 		}
 
 		return attributesJSONObject;
@@ -86,52 +96,68 @@ public class BusinessEventConverter extends AssetObjectConverter {
 		String accountExternalReferenceCode,
 		JSONObject jiraAssetObjectJSONObject) {
 
+		Map<String, String> attributeIds = getAttributeIds();
+
 		return new BusinessEvent(
 			accountExternalReferenceCode,
 			getAttributeKey(
-				attr(Constants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_AUTHOR),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
 				jiraAssetObjectJSONObject),
 			jiraAssetObjectJSONObject.optString("id"),
 			getAttributeKey(
-				attr(Constants.ATTRIBUTE_NAME_CURRENT_VERSION),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_CURRENT_VERSION),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_DESCRIPTION),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_EVENT_STATUS),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_EVENT_TYPE),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_LAST_COMMENT),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_NAME), jiraAssetObjectJSONObject),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_NAME),
+				jiraAssetObjectJSONObject),
 			getAttributeKey(
-				attr(Constants.ATTRIBUTE_NAME_NEW_VERSION),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_NEW_VERSION),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
 				jiraAssetObjectJSONObject),
 			getAttributeKey(
-				attr(Constants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_TIME_ZONE),
+				attributeIds.get(
+					BusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE),
 				jiraAssetObjectJSONObject));
 	}
 
@@ -158,45 +184,25 @@ public class BusinessEventConverter extends AssetObjectConverter {
 			attributesJSONObject.optString("timeZone"));
 	}
 
-	public static class Constants {
+	@Override
+	protected String getObjectSchemaName() {
+		return BusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
+	}
 
-		public static final String ATTRIBUTE_NAME_ACCOUNT = "Account";
+	@Override
+	protected String getObjectTypeName() {
+		return BusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT;
+	}
 
-		public static final String ATTRIBUTE_NAME_ACTUAL_EVENT_DATE =
-			"Actual Event Date";
+	private void _put(
+		JSONObject attributesJSONObject, Map<String, String> attributeIds,
+		String attributeName, String value) {
 
-		public static final String ATTRIBUTE_NAME_ASSOCIATED_TICKETS =
-			"Associated Tickets";
+		String attributeId = attributeIds.get(attributeName);
 
-		public static final String ATTRIBUTE_NAME_AUTHOR = "Author";
-
-		public static final String ATTRIBUTE_NAME_CURRENT_VERSION =
-			"Current Version";
-
-		public static final String ATTRIBUTE_NAME_DESCRIPTION = "Description";
-
-		public static final String ATTRIBUTE_NAME_EVENT_STATUS = "Event Status";
-
-		public static final String ATTRIBUTE_NAME_EVENT_TYPE = "Event Type";
-
-		public static final String ATTRIBUTE_NAME_LAST_COMMENT = "Last Comment";
-
-		public static final String ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR =
-			"Last Updated Author";
-
-		public static final String ATTRIBUTE_NAME_NAME = "Name";
-
-		public static final String ATTRIBUTE_NAME_NEW_VERSION = "New Version";
-
-		public static final String ATTRIBUTE_NAME_PLANNED_EVENT_DATE =
-			"Planned Event Date";
-
-		public static final String ATTRIBUTE_NAME_TIME_ZONE = "Time Zone";
-
-		public static final String OBJECT_SCHEMA_NAME = "Business Events";
-
-		public static final String OBJECT_TYPE_NAME = "Business Event";
-
+		if (Validator.isNotNull(attributeId)) {
+			attributesJSONObject.put(attributeId, value);
+		}
 	}
 
 }

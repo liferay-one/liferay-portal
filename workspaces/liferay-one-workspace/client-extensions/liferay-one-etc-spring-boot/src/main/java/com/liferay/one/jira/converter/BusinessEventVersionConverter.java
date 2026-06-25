@@ -5,7 +5,10 @@
 
 package com.liferay.one.jira.converter;
 
+import com.liferay.one.jira.constants.BusinessEventConstants;
 import com.liferay.one.jira.model.BusinessEventVersion;
+
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -17,48 +20,34 @@ import org.springframework.stereotype.Component;
 @Component
 public class BusinessEventVersionConverter extends AssetObjectConverter {
 
-	@Override
-	public String getObjectSchemaName() {
-		return Constants.OBJECT_SCHEMA_NAME;
-	}
-
-	@Override
-	public String getObjectTypeName() {
-		return Constants.OBJECT_TYPE_NAME;
-	}
-
 	public BusinessEventVersion toBusinessEventVersion(
 		JSONObject jiraAssetObjectJSONObject) {
 
+		Map<String, String> attributeIds = getAttributeIds();
+
 		return new BusinessEventVersion(
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_AUTHOR),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_CHANGE),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_CHANGE),
 				jiraAssetObjectJSONObject),
 			getAttributeValue(
-				attr(Constants.ATTRIBUTE_NAME_COMMENT),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_COMMENT),
 				jiraAssetObjectJSONObject),
 			getAttributeKey(
-				attr(Constants.ATTRIBUTE_NAME_CREATED),
+				attributeIds.get(BusinessEventConstants.ATTRIBUTE_NAME_CREATED),
 				jiraAssetObjectJSONObject));
 	}
 
-	public static class Constants {
+	@Override
+	protected String getObjectSchemaName() {
+		return BusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
+	}
 
-		public static final String ATTRIBUTE_NAME_AUTHOR = "Author";
-
-		public static final String ATTRIBUTE_NAME_CHANGE = "Change";
-
-		public static final String ATTRIBUTE_NAME_COMMENT = "Comment";
-
-		public static final String ATTRIBUTE_NAME_CREATED = "Created";
-
-		public static final String OBJECT_SCHEMA_NAME = "Business Events";
-
-		public static final String OBJECT_TYPE_NAME = "Business Event Version";
-
+	@Override
+	protected String getObjectTypeName() {
+		return BusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT_VERSION;
 	}
 
 }
