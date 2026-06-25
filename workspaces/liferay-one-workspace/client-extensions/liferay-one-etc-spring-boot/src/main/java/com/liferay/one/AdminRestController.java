@@ -12,6 +12,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -146,7 +147,8 @@ public class AdminRestController extends OneBaseRestController {
 	@Autowired
 	private AdminPermission _adminPermission;
 
-	@Autowired
-	private List<BasePubsubSubscriber> _basePubsubSubscribers;
+	@Autowired(required = false)
+	private List<BasePubsubSubscriber> _basePubsubSubscribers =
+		Collections.emptyList();
 
 }
