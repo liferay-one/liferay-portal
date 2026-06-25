@@ -46,7 +46,7 @@ const PaymentMethod = () => {
 					shippingAddress: payment.billingAddress,
 				});
 
-				await CommerceOrders.taxCalculate(cartId).catch(console.error);
+				await CommerceOrders.calculateTax(cartId).catch(console.error);
 
 				productPurchaseCart.setCart(
 					await HeadlessCommerceDeliveryCart.getCart(cartId)

@@ -6,8 +6,8 @@
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
 class CommerceOrdersOAuth2 extends OneSpringBootOAuth2 {
-	async taxCalculate(orderId: number | string) {
-		await this.post(`/${orderId}/tax-calculate`);
+	async calculateTax(orderId: number | string) {
+		await this.post(`/${orderId}/calculate-tax`);
 	}
 }
 
