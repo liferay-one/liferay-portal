@@ -6,6 +6,7 @@
 package com.liferay.one.jira.converter;
 
 import com.liferay.one.jira.model.Organization;
+import com.liferay.petra.string.StringPool;
 
 import org.json.JSONObject;
 
@@ -17,6 +18,16 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class OrganizationConverter extends AssetObjectConverter {
+
+	@Override
+	public String getObjectSchemaName() {
+		return StringPool.BLANK;
+	}
+
+	@Override
+	public String getObjectTypeName() {
+		return StringPool.BLANK;
+	}
 
 	public Organization toOrganization(JSONObject assetObjectJSONObject) {
 		return new Organization(
