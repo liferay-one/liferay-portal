@@ -5,15 +5,37 @@
 
 package com.liferay.one.jira.converter;
 
+import com.liferay.one.jira.service.AssetSchemaService;
+import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * @author Amos Fong
  */
-public class AssetObjectConverter {
+public abstract class AssetObjectConverter {
+
+	public String attr(String attributeName) {
+		return _assetSchemaService.getAttributeId(
+			getObjectSchemaName(), getObjectTypeName(), attributeName);
+	}
+
+	public String getBaseAQL() {
+		return AQLUtil.getBaseAQL(getObjectSchemaName(), getObjectTypeName());
+	}
+
+	public abstract String getObjectSchemaName();
+
+	public String getObjectTypeId() {
+		return _assetSchemaService.getObjectTypeId(
+			getObjectSchemaName(), getObjectTypeName());
+	}
+
+	public abstract String getObjectTypeName();
 
 	protected String getAttributeKey(
 		String attributeId, JSONObject jsonObject) {
@@ -78,5 +100,8 @@ public class AssetObjectConverter {
 
 		return new JSONObject();
 	}
+
+	@Autowired
+	private AssetSchemaService _assetSchemaService;
 
 }
