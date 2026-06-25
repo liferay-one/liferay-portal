@@ -29,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -138,7 +137,7 @@ public class JiraRestController extends OneBaseRestController {
 
 		return _getResponseEntity(
 			_jiraService.getAssetObjectFieldOptions(
-				fieldName, _jiraBusinessEventAssetObjectTypeId),
+				fieldName, _businessEventConverter.getObjectTypeId()),
 			AssetObjectFieldOption::toJSONObject);
 	}
 
@@ -241,9 +240,6 @@ public class JiraRestController extends OneBaseRestController {
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
-
-	@Value("${liferay.one.jira.business.event.asset.object.type.id}")
-	private String _jiraBusinessEventAssetObjectTypeId;
 
 	@Autowired
 	private JiraService _jiraService;

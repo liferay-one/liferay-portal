@@ -17,6 +17,7 @@ import com.liferay.one.jira.model.BusinessEvent;
 import com.liferay.one.jira.model.BusinessEventVersion;
 import com.liferay.one.jira.model.Organization;
 import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -130,9 +131,7 @@ public class JiraService extends BaseService {
 
 		List<AssetObject> assetObjects = new ArrayList<>();
 
-		String aql = StringBundler.concat(
-			"objectSchema = \"", objectSchemaName, "\" AND objectType = \"",
-			objectTypeName, "\"");
+		String aql = AQLUtil.getBaseAQL(objectSchemaName, objectTypeName);
 
 		JSONArray assetsObjectsJSONArray = _searchAssetsObjectsJSONArray(aql);
 
@@ -156,8 +155,8 @@ public class JiraService extends BaseService {
 		List<BusinessEvent> businessEvents = new ArrayList<>();
 
 		String aql = StringBundler.concat(
-			"objectSchema = \"Business Events\" AND objectType = \"Business ",
-			"Event\" AND \"Account\".\"External Key\" = \"",
+			_businessEventConverter.getBaseAQL(),
+			" AND \"Account\".\"External Key\" = \"",
 			accountExternalReferenceCode, "\"");
 
 		JSONArray assetsObjectsJSONArray = _searchAssetsObjectsJSONArray(aql);
@@ -181,8 +180,8 @@ public class JiraService extends BaseService {
 		List<BusinessEventVersion> businessEventVersions = new ArrayList<>();
 
 		String aql = StringBundler.concat(
-			"objectSchema = \"Business Events\" AND objectType = \"Business ",
-			"Event Version\" AND \"Business Event\" = ", businessEventId,
+			_businessEventVersionConverter.getBaseAQL(),
+			" AND \"Business Event\" = ", businessEventId,
 			" ORDER BY Updated DESC");
 
 		JSONArray assetsObjectsJSONArray = _searchAssetsObjectsJSONArray(aql);
@@ -560,7 +559,7 @@ public class JiraService extends BaseService {
 					getAccountObjectKey(
 						businessEvent.getAccountExternalReferenceCode()),
 					businessEvent),
-				_jiraBusinessEventAssetObjectTypeId);
+				_businessEventConverter.getObjectTypeId());
 		}
 		else {
 			_updateAssetObjectJSONObject(
@@ -640,9 +639,6 @@ public class JiraService extends BaseService {
 
 	@Value("${liferay.one.jira.api.token}")
 	private String _jiraAPIToken;
-
-	@Value("${liferay.one.jira.business.event.asset.object.type.id}")
-	private String _jiraBusinessEventAssetObjectTypeId;
 
 	@Value("${liferay.one.jira.support.fls.portal.url}")
 	private String _jiraSupportFLSPortalURL;
