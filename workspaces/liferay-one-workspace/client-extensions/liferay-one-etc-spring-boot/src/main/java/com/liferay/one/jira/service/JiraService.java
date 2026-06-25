@@ -154,10 +154,11 @@ public class JiraService extends BaseService {
 
 		List<BusinessEvent> businessEvents = new ArrayList<>();
 
-		String aql = StringBundler.concat(
-			_businessEventConverter.getBaseAQL(),
-			" AND \"Account\".\"External Key\" = \"",
-			accountExternalReferenceCode, "\"");
+		String aql = AQLUtil.builder(
+			_businessEventConverter.getBaseAQL()
+		).andEquals(
+			accountExternalReferenceCode, "Account", "External Key"
+		).build();
 
 		JSONArray assetsObjectsJSONArray = _searchAssetsObjectsJSONArray(aql);
 
@@ -179,10 +180,17 @@ public class JiraService extends BaseService {
 
 		List<BusinessEventVersion> businessEventVersions = new ArrayList<>();
 
-		String aql = StringBundler.concat(
-			_businessEventVersionConverter.getBaseAQL(),
-			" AND \"Business Event\" = ", businessEventId,
-			" ORDER BY Updated DESC");
+		if (!Validator.isNumber(businessEventId)) {
+			return businessEventVersions;
+		}
+
+		String aql = AQLUtil.builder(
+			_businessEventVersionConverter.getBaseAQL()
+		).andEqualsObject(
+			businessEventId, "Business Event"
+		).orderByDescending(
+			"Updated"
+		).build();
 
 		JSONArray assetsObjectsJSONArray = _searchAssetsObjectsJSONArray(aql);
 
@@ -428,18 +436,17 @@ public class JiraService extends BaseService {
 	private JSONObject _searchAccountByExternalKeyJSONObject(
 		String externalKey) {
 
-		StringBundler sb = new StringBundler(4);
-
-		sb.append("objectSchema = \"Koroneiki\" AND objectType = \"Account\" ");
-		sb.append("AND \"External Key\" = \"");
-		sb.append(externalKey);
-		sb.append("\"");
+		String aql = AQLUtil.builder(
+			AQLUtil.getBaseAQL("Koroneiki", "Account")
+		).andEquals(
+			externalKey, "External Key"
+		).build();
 
 		return new JSONObject(
 			post(
 				new JSONObject(
 				).put(
-					"qlQuery", sb.toString()
+					"qlQuery", aql
 				).toString(),
 				HashMapBuilder.put(
 					HttpHeaders.AUTHORIZATION, _getAuthorization()
