@@ -9,7 +9,6 @@ import com.liferay.one.jira.model.BusinessEventVersion;
 
 import org.json.JSONObject;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,38 +17,48 @@ import org.springframework.stereotype.Component;
 @Component
 public class BusinessEventVersionConverter extends AssetObjectConverter {
 
+	@Override
+	public String getObjectSchemaName() {
+		return Constants.OBJECT_SCHEMA_NAME;
+	}
+
+	@Override
+	public String getObjectTypeName() {
+		return Constants.OBJECT_TYPE_NAME;
+	}
+
 	public BusinessEventVersion toBusinessEventVersion(
 		JSONObject jiraAssetObjectJSONObject) {
 
 		return new BusinessEventVersion(
-			getAttributeValue(_authorAttributeId, jiraAssetObjectJSONObject),
-			getAttributeValue(_changeAttributeId, jiraAssetObjectJSONObject),
-			getAttributeValue(_commentAttributeId, jiraAssetObjectJSONObject),
-			getAttributeKey(_createdAttributeId, jiraAssetObjectJSONObject));
+			getAttributeValue(
+				attr(Constants.ATTRIBUTE_NAME_AUTHOR),
+				jiraAssetObjectJSONObject),
+			getAttributeValue(
+				attr(Constants.ATTRIBUTE_NAME_CHANGE),
+				jiraAssetObjectJSONObject),
+			getAttributeValue(
+				attr(Constants.ATTRIBUTE_NAME_COMMENT),
+				jiraAssetObjectJSONObject),
+			getAttributeKey(
+				attr(Constants.ATTRIBUTE_NAME_CREATED),
+				jiraAssetObjectJSONObject));
 	}
 
-	@Value(
-		"${liferay.one.jira.business.event.version.asset.object.type." +
-			"attribute.author}"
-	)
-	private String _authorAttributeId;
+	public static class Constants {
 
-	@Value(
-		"${liferay.one.jira.business.event.version.asset.object.type." +
-			"attribute.change}"
-	)
-	private String _changeAttributeId;
+		public static final String ATTRIBUTE_NAME_AUTHOR = "Author";
 
-	@Value(
-		"${liferay.one.jira.business.event.version.asset.object.type." +
-			"attribute.comment}"
-	)
-	private String _commentAttributeId;
+		public static final String ATTRIBUTE_NAME_CHANGE = "Change";
 
-	@Value(
-		"${liferay.one.jira.business.event.version.asset.object.type." +
-			"attribute.created}"
-	)
-	private String _createdAttributeId;
+		public static final String ATTRIBUTE_NAME_COMMENT = "Comment";
+
+		public static final String ATTRIBUTE_NAME_CREATED = "Created";
+
+		public static final String OBJECT_SCHEMA_NAME = "Business Events";
+
+		public static final String OBJECT_TYPE_NAME = "Business Event Version";
+
+	}
 
 }
