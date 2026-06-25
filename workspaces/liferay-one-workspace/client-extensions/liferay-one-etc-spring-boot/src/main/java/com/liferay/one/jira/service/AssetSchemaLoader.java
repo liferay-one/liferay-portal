@@ -8,6 +8,8 @@ package com.liferay.one.jira.service;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.jira.exception.JiraAssetSchemaException;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -28,20 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AssetSchemaLoader extends BaseService {
 
 	@Cacheable("assetObjectTypeAttributeIds")
-	public Map<String, String> getAttributeIds(
-		String schemaName, String objectTypeName) {
-
-		Map<String, String> objectTypeIds = _loadObjectTypeIds(schemaName);
-
-		String objectTypeId = objectTypeIds.get(objectTypeName);
-
-		if (objectTypeId == null) {
-			throw new JiraAssetSchemaException(
-				StringBundler.concat(
-					"Object type \"", objectTypeName,
-					"\" not found in schema \"", schemaName, "\""));
-		}
-
+	public Map<String, String> getAttributeIds(String objectTypeId) {
 		return _toNameIdMap(
 			new JSONArray(
 				_get(
@@ -51,7 +40,13 @@ public class AssetSchemaLoader extends BaseService {
 
 	@Cacheable("assetObjectTypeIds")
 	public Map<String, String> getObjectTypeIds(String schemaName) {
-		return _loadObjectTypeIds(schemaName);
+		String schemaId = _resolveSchemaId(schemaName);
+
+		return _toNameIdMap(
+			new JSONArray(
+				_get(
+					StringBundler.concat(
+						"objectschema/", schemaId, "/objecttypes"))));
 	}
 
 	private String _get(String path) {
@@ -74,33 +69,42 @@ public class AssetSchemaLoader extends BaseService {
 	private String _getAuthorization() {
 		Base64.Encoder encoder = Base64.getEncoder();
 
-		String credentials = _jiraAPIEmailAddress + ":" + _jiraAPIToken;
+		String credentials =
+			_jiraAPIEmailAddress + StringPool.COLON + _jiraAPIToken;
 
 		return "Basic " + encoder.encodeToString(credentials.getBytes());
 	}
 
-	private Map<String, String> _loadObjectTypeIds(String schemaName) {
-		String schemaId = _resolveSchemaId(schemaName);
+	private String _resolveSchemaId(String schemaName) {
+		int startAt = 0;
 
-		return _toNameIdMap(
-			new JSONArray(
+		while (true) {
+			JSONObject responseJSONObject = new JSONObject(
 				_get(
 					StringBundler.concat(
-						"objectschema/", schemaId, "/objecttypes"))));
-	}
+						"objectschema/list?maxResults=", _MAX_RESULTS,
+						"&startAt=", startAt)));
 
-	private String _resolveSchemaId(String schemaName) {
-		JSONObject responseJSONObject = new JSONObject(
-			_get("objectschema/list"));
+			JSONArray valuesJSONArray = responseJSONObject.optJSONArray(
+				"values");
 
-		JSONArray valuesJSONArray = responseJSONObject.getJSONArray("values");
-
-		for (int i = 0; i < valuesJSONArray.length(); i++) {
-			JSONObject schemaJSONObject = valuesJSONArray.getJSONObject(i);
-
-			if (schemaName.equals(schemaJSONObject.getString("name"))) {
-				return schemaJSONObject.getString("id");
+			if ((valuesJSONArray == null) || valuesJSONArray.isEmpty()) {
+				break;
 			}
+
+			for (int i = 0; i < valuesJSONArray.length(); i++) {
+				JSONObject schemaJSONObject = valuesJSONArray.getJSONObject(i);
+
+				if (schemaName.equals(schemaJSONObject.optString("name"))) {
+					return schemaJSONObject.getString("id");
+				}
+			}
+
+			if (responseJSONObject.optBoolean("isLast")) {
+				break;
+			}
+
+			startAt += _MAX_RESULTS;
 		}
 
 		throw new JiraAssetSchemaException(
@@ -114,9 +118,14 @@ public class AssetSchemaLoader extends BaseService {
 			JSONObject attributeJSONObject = attributesJSONArray.getJSONObject(
 				i);
 
-			attributeIds.put(
-				attributeJSONObject.getString("name"),
-				attributeJSONObject.getString("id"));
+			String name = attributeJSONObject.optString("name");
+			String id = attributeJSONObject.optString("id");
+
+			if (Validator.isNull(name) || Validator.isNull(id)) {
+				continue;
+			}
+
+			attributeIds.put(name, id);
 		}
 
 		return attributeIds;
@@ -124,6 +133,8 @@ public class AssetSchemaLoader extends BaseService {
 
 	private static final String _JIRA_CLOUD_API_URL =
 		"https://api.atlassian.com";
+
+	private static final int _MAX_RESULTS = 100;
 
 	@Value("${liferay.one.jira.api.email.address}")
 	private String _jiraAPIEmailAddress;

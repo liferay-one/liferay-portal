@@ -9,6 +9,8 @@ import com.liferay.one.jira.service.AssetSchemaService;
 import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Map;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -19,23 +21,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class AssetObjectConverter {
 
-	public String attr(String attributeName) {
-		return _assetSchemaService.getAttributeId(
-			getObjectSchemaName(), getObjectTypeName(), attributeName);
-	}
-
 	public String getBaseAQL() {
 		return AQLUtil.getBaseAQL(getObjectSchemaName(), getObjectTypeName());
 	}
-
-	public abstract String getObjectSchemaName();
 
 	public String getObjectTypeId() {
 		return _assetSchemaService.getObjectTypeId(
 			getObjectSchemaName(), getObjectTypeName());
 	}
 
-	public abstract String getObjectTypeName();
+	protected Map<String, String> getAttributeIds() {
+		return _assetSchemaService.getAttributeIds(
+			getObjectSchemaName(), getObjectTypeName());
+	}
 
 	protected String getAttributeKey(
 		String attributeId, JSONObject jsonObject) {
@@ -55,6 +53,10 @@ public abstract class AssetObjectConverter {
 			"displayValue", _getAttributeKey(attributeValueJSONObject));
 	}
 
+	protected abstract String getObjectSchemaName();
+
+	protected abstract String getObjectTypeName();
+
 	private String _getAttributeKey(JSONObject attributeValueJSONObject) {
 		String key = attributeValueJSONObject.optString("value");
 
@@ -72,6 +74,10 @@ public abstract class AssetObjectConverter {
 
 	private JSONObject _getAttributeValueJSONObject(
 		String attributeId, JSONArray attributesJSONArray) {
+
+		if (Validator.isNull(attributeId)) {
+			return new JSONObject();
+		}
 
 		for (int i = 0; i < attributesJSONArray.length(); i++) {
 			JSONObject attributeJSONObject = attributesJSONArray.getJSONObject(

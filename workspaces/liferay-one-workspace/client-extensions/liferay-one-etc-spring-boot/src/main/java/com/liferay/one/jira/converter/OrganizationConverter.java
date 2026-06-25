@@ -19,21 +19,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrganizationConverter extends AssetObjectConverter {
 
-	@Override
-	public String getObjectSchemaName() {
-		return StringPool.BLANK;
-	}
-
-	@Override
-	public String getObjectTypeName() {
-		return StringPool.BLANK;
-	}
-
 	public Organization toOrganization(JSONObject assetObjectJSONObject) {
 		return new Organization(
 			getAttributeValue(_externalKeyAttributeId, assetObjectJSONObject),
 			assetObjectJSONObject.optString("id"),
 			assetObjectJSONObject.optString("name"));
+	}
+
+	@Override
+	protected String getObjectSchemaName() {
+		return StringPool.BLANK;
+	}
+
+	@Override
+	protected String getObjectTypeName() {
+		return StringPool.BLANK;
 	}
 
 	@Value(
