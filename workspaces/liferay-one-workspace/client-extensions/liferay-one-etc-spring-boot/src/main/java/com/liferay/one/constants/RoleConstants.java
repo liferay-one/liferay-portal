@@ -7,8 +7,9 @@ package com.liferay.one.constants;
 
 /**
  * @author Felipe Franca
+ * @author Felipe Veloso
  */
-public interface RoleConstants {
+public class RoleConstants {
 
 	public static final String NAME_ACCOUNT_ADMINISTRATOR =
 		"Account Administrator";
@@ -21,10 +22,35 @@ public interface RoleConstants {
 
 	public static final String NAME_LIFERAY_STAFF = "Liferay Staff";
 
+	public static final String NAME_PARTNER_MANAGER = "Partner Manager";
+
+	public static final String NAME_PARTNER_MARKETING_USER =
+		"Partner Marketing User";
+
+	public static final String NAME_PARTNER_MEMBER = "Partner Member";
+
+	public static final String NAME_PARTNER_SALES_USER = "Partner Sales User";
+
+	public static final String NAME_PARTNER_TECHNICAL_USER =
+		"Partner Technical User";
+
 	public static final String NAME_PROVISIONING_ADMINISTRATOR =
 		"Provisioning Administrator";
 
 	public static final String NAME_PROVISIONING_MEMBER = "Provisioning Member";
+
+	public static final String NAME_SUPPORT_ADMINISTRATOR =
+		"Support Administrator";
+
+	public static final String[] NAMES_CUSTOMER_ACCOUNT_ROLES = {
+		NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER, NAME_ACCOUNT_REQUESTER,
+		NAME_SUPPORT_ADMINISTRATOR
+	};
+
+	public static final String[] NAMES_PARTNER_ACCOUNT_ROLES = {
+		NAME_PARTNER_MANAGER, NAME_PARTNER_MARKETING_USER, NAME_PARTNER_MEMBER,
+		NAME_PARTNER_SALES_USER, NAME_PARTNER_TECHNICAL_USER
+	};
 
 	public static final String[] NAMES_SUPPORT_ACCOUNT = {
 		NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER, NAME_ACCOUNT_REQUESTER
