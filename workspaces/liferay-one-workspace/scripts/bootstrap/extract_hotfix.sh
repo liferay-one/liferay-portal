@@ -19,6 +19,8 @@ function main {
 
 	mkdir --parents ../../build/docker/patching
 
+	cd ../../build/docker/patching
+
 	local hotfix_file
 
 	hotfix_file="../../build/docker/patching/$(basename "${hotfix_url%%\?*}")"

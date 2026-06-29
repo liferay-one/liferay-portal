@@ -1,1 +1,1 @@
-../.agents/skills/guided-client-extension/SKILL.md
+../.workspace-rules/skills/guided-client-extension/SKILL.md
