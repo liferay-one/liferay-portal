@@ -12,7 +12,7 @@ function main {
 		_die "The OAuth application name was not provided."
 	fi
 
-	touch ../../.env
+	cd ../..
 
 	sed \
 		--in-place \

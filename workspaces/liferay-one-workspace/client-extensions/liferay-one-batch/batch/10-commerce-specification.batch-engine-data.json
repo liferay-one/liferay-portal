@@ -103,32 +103,6 @@
 		},
 		{
 			"description": {
-				"en_US": "This product is installable into a Cloud Native environment."
-			},
-			"facetable": false,
-			"key": "cloud-enabled",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Cloud Enabled"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This is the number of CPUs an app needs, read by the app installers."
-			},
-			"facetable": false,
-			"key": "cpu",
-			"optionCategory": {
-				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
-			},
-			"title": {
-				"en_US": "CPU"
-			}
-		},
-		{
-			"description": {
 				"en_US": "This is the latest Liferay version supported."
 			},
 			"facetable": false,
@@ -151,19 +125,6 @@
 			},
 			"title": {
 				"en_US": "Developer Name"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This is who last published the product."
-			},
-			"facetable": false,
-			"key": "last-updated-by",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Last Updated By"
 			}
 		},
 		{
@@ -285,19 +246,6 @@
 		},
 		{
 			"description": {
-				"en_US": "This indicates whether the product is a partner product."
-			},
-			"facetable": false,
-			"key": "partner-product",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Partner Product"
-			}
-		},
-		{
-			"description": {
 				"en_US": "These are the past versions this product has worked with."
 			},
 			"facetable": false,
@@ -337,19 +285,6 @@
 		},
 		{
 			"description": {
-				"en_US": ""
-			},
-			"facetable": true,
-			"key": "product-family",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Product Family"
-			}
-		},
-		{
-			"description": {
 				"en_US": "These are general notes about the app or solution."
 			},
 			"facetable": false,
@@ -363,107 +298,15 @@
 		},
 		{
 			"description": {
-				"en_US": "Selects which activation experience the project dashboard renders for this product."
+				"en_US": "Designates the product's classification from Salesforce (Add-on, Primary, Regular)."
 			},
-			"facetable": false,
-			"key": "project-activation-profile",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
+			"facetable": true,
+			"key": "product-type",
+			"priority": 0,
 			"title": {
-				"en_US": "Project Activation Profile"
-			}
-		},
-		{
-			"description": {
-				"en_US": "A comma separated list of role external reference codes that can be assigned to project members for this product."
+				"en_US": "Product Type"
 			},
-			"facetable": false,
-			"key": "project-contacts-role-ercs",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Contacts Role ERCs"
-			}
-		},
-		{
-			"description": {
-				"en_US": "Selects which details layout the project dashboard renders for this product."
-			},
-			"facetable": false,
-			"key": "project-details-profile",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Details Profile"
-			}
-		},
-		{
-			"description": {
-				"en_US": "Selects which download experience the project dashboard renders for this product."
-			},
-			"facetable": false,
-			"key": "project-download-profile",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Download Profile"
-			}
-		},
-		{
-			"description": {
-				"en_US": "Selects which environment layout the project dashboard renders for this product."
-			},
-			"facetable": false,
-			"key": "project-environment-profile",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Environment Profile"
-			}
-		},
-		{
-			"description": {
-				"en_US": "Selects whether the project dashboard lists this product under products or applications. A product without this specification is listed under neither."
-			},
-			"facetable": false,
-			"key": "project-item-type",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Item Type"
-			}
-		},
-		{
-			"description": {
-				"en_US": "The learn page URL shown on the project dashboard help and support tab for this product."
-			},
-			"facetable": false,
-			"key": "project-learn-url",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Learn URL"
-			}
-		},
-		{
-			"description": {
-				"en_US": "Selects which utilization layout the project dashboard renders for this product."
-			},
-			"facetable": false,
-			"key": "project-utilization-profile",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Project Utilization Profile"
-			}
+			"visible": true
 		},
 		{
 			"description": {
@@ -489,19 +332,6 @@
 			},
 			"title": {
 				"en_US": "Publisher Web Site URL"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This is the RAM in GB an app needs, read by the app installers."
-			},
-			"facetable": false,
-			"key": "ram",
-			"optionCategory": {
-				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
-			},
-			"title": {
-				"en_US": "RAM"
 			}
 		},
 		{
