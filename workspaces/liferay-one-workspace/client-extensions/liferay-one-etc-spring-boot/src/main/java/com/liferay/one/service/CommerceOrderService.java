@@ -16,6 +16,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.pagination.Page;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.SupportRegionConstants;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -61,32 +62,49 @@ public class CommerceOrderService extends OneBaseService {
 
 		BigDecimal total = subtotalAmount.add(taxAmount);
 
-		orderResource.patchOrder(
-			commerceOrderId,
-			new Order() {
-				{
-					setCustomFields(() -> customFields);
-					setTaxAmount(() -> taxAmount);
-					setTotal(() -> total);
-				}
-			});
+		Order taxedOrder = new Order();
+
+		taxedOrder.setCustomFields(() -> customFields);
+		taxedOrder.setTaxAmount(() -> taxAmount);
+		taxedOrder.setTotal(() -> total);
+
+		orderResource.patchOrder(commerceOrderId, taxedOrder);
 
 		for (OrderItem orderItem : order.getOrderItems()) {
 			BigDecimal finalPrice = orderItem.getFinalPrice();
 
+			OrderItem taxedOrderItem = new OrderItem();
+
+			taxedOrderItem.setFinalPrice(() -> finalPrice);
+			taxedOrderItem.setFinalPriceWithTaxAmount(
+				() -> finalPrice.add(
+					finalPrice.multiply(BigDecimal.valueOf(_TAX_PERCENTAGE))));
+			taxedOrderItem.setPriceManuallyAdjusted(() -> true);
+
 			_commerceOrderItemService.patchOrderItem(
-				orderItem.getId(),
-				new OrderItem() {
-					{
-						setFinalPrice(() -> finalPrice);
-						setFinalPriceWithTaxAmount(
-							() -> finalPrice.add(
-								finalPrice.multiply(
-									BigDecimal.valueOf(_TAX_PERCENTAGE))));
-						setPriceManuallyAdjusted(() -> true);
-					}
-				});
+				orderItem.getId(), taxedOrderItem);
 		}
+	}
+
+	public void completeOrder(long orderId, int paymentStatus)
+		throws Exception {
+
+		completeOrder(null, orderId, paymentStatus);
+	}
+
+	public void completeOrder(
+			Map<String, ?> customFields, long orderId, int paymentStatus)
+		throws Exception {
+
+		updateOrder(
+			customFields, orderId, CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		updateOrder(
+			null, orderId, CommerceOrderConstants.ORDER_STATUS_PROCESSING);
+
+		updateOrder(
+			null, orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+			paymentStatus);
 	}
 
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
@@ -142,6 +160,36 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return SupportRegionConstants.GLOBAL;
+	}
+
+	public void updateOrder(
+			Map<String, ?> customFields, long orderId, int orderStatus)
+		throws Exception {
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order order = new Order();
+
+		order.setCustomFields(() -> customFields);
+		order.setOrderStatus(() -> orderStatus);
+
+		orderResource.patchOrder(orderId, order);
+	}
+
+	public void updateOrder(
+			Map<String, ?> customFields, long orderId, int orderStatus,
+			int paymentStatus)
+		throws Exception {
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order order = new Order();
+
+		order.setCustomFields(() -> customFields);
+		order.setOrderStatus(() -> orderStatus);
+		order.setPaymentStatus(() -> paymentStatus);
+
+		orderResource.patchOrder(orderId, order);
 	}
 
 	private CurrencyResource _buildCurrencyResource() {
