@@ -3,69 +3,13 @@
 		"className": "com.liferay.headless.commerce.admin.catalog.dto.v1_0.Option",
 		"parameters": {
 			"containsHeaders": "true",
-			"createStrategy": "UPSERT",
+			"createStrategy": "INSERT",
 			"onErrorFail": "false",
 			"taskItemDelegateName": "DEFAULT",
 			"updateStrategy": "PARTIAL_UPDATE"
 		}
 	},
 	"items": [
-		{
-			"description": {
-				"en_US": "AI Hub tiers and token blocks can be purchased using this type."
-			},
-			"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE",
-			"facetable": false,
-			"fieldType": "radio",
-			"key": "ai-hub-license-usage-type",
-			"name": {
-				"en_US": "AI Hub License Usage Type"
-			},
-			"optionValues": [
-				{
-					"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE_1000000_LR_TOKENS",
-					"key": "1000000-lr-tokens",
-					"name": {
-						"en_US": "1,000,000 Liferay Tokens"
-					},
-					"priority": 0
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE_10000000_LR_TOKENS",
-					"key": "10000000-lr-tokens",
-					"name": {
-						"en_US": "10,000,000 Liferay Tokens"
-					},
-					"priority": 2
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE_5000000_LR_TOKENS",
-					"key": "5000000-lr-tokens",
-					"name": {
-						"en_US": "5,000,000 Liferay Tokens"
-					},
-					"priority": 1
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE_ACTIVATE",
-					"key": "activate",
-					"name": {
-						"en_US": "Activate"
-					},
-					"priority": 3
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE_STUDIO",
-					"key": "studio",
-					"name": {
-						"en_US": "Studio"
-					},
-					"priority": 4
-				}
-			],
-			"required": false,
-			"skuContributor": true
-		},
 		{
 			"description": {
 				"en_US": "Apps that are not DXP or Cloud can be licensed using this base type."
@@ -128,110 +72,6 @@
 				}
 			],
 			"required": true,
-			"skuContributor": true
-		},
-		{
-			"description": {
-				"en_US": "Content Marketing Platform can be licensed using this type."
-			},
-			"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE",
-			"facetable": false,
-			"fieldType": "radio",
-			"key": "cmp-license-usage-type",
-			"name": {
-				"en_US": "CMP License Usage Type"
-			},
-			"optionValues": [
-				{
-					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_DEVELOPER",
-					"key": "developer",
-					"name": {
-						"en_US": "Developer"
-					},
-					"priority": 0
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_PRODUCTION",
-					"key": "production",
-					"name": {
-						"en_US": "Production"
-					},
-					"priority": 2
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_TRIAL",
-					"key": "trial",
-					"name": {
-						"en_US": "Trial"
-					},
-					"priority": 1
-				}
-			],
-			"required": false,
-			"skuContributor": true
-		},
-		{
-			"description": {
-				"en_US": "SKUs in a consumable product group are distinguished by their role using this type."
-			},
-			"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
-			"facetable": false,
-			"fieldType": "radio",
-			"key": "consumption-role",
-			"name": {
-				"en_US": "Consumption Role"
-			},
-			"optionValues": [
-				{
-					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_ADD_ON",
-					"key": "add-on",
-					"name": {
-						"en_US": "Add-On Bucket"
-					},
-					"priority": 1
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_ALLOTMENT",
-					"key": "allotment",
-					"name": {
-						"en_US": "Base Allotment"
-					},
-					"priority": 0
-				},
-				{
-					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_OVERAGE",
-					"key": "overage",
-					"name": {
-						"en_US": "Overage Bucket"
-					},
-					"priority": 2
-				}
-			],
-			"required": false,
-			"skuContributor": true
-		},
-		{
-			"description": {
-				"en_US": "Digital Sales Room can be licensed using this type."
-			},
-			"externalReferenceCode": "LO_OPTION_DSR_LICENSE_USAGE",
-			"facetable": false,
-			"fieldType": "radio",
-			"key": "dsr-license-usage-type",
-			"name": {
-				"en_US": "DSR License Usage Type"
-			},
-			"optionValues": [
-				{
-					"externalReferenceCode": "LO_OPTION_DSR_LICENSE_USAGE_DEVELOPER",
-					"key": "developer",
-					"name": {
-						"en_US": "Developer"
-					},
-					"priority": 0
-				}
-			],
-			"required": false,
 			"skuContributor": true
 		},
 		{

@@ -20,13 +20,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_CATEGORY",
 			"name": "marketplace-app-category",
+			"name_i18n": {
+				"en_US": "Marketplace App Category"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -38,13 +38,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_TAGS",
 			"name": "marketplace-app-tags",
+			"name_i18n": {
+				"en_US": "Marketplace App Tags"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -56,13 +56,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_AVAILABILITY",
 			"name": "marketplace-availability",
+			"name_i18n": {
+				"en_US": "Marketplace Availability"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -74,13 +74,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_CATEGORY",
 			"name": "marketplace-category",
+			"name_i18n": {
+				"en_US": "Marketplace Category"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -92,13 +92,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_PLATFORM_OFFERING",
 			"name": "marketplace-liferay-platform-offering",
+			"name_i18n": {
+				"en_US": "Marketplace Liferay Platform Offering"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -110,13 +110,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_VERSION",
 			"name": "marketplace-liferay-version",
+			"name_i18n": {
+				"en_US": "Marketplace Liferay Version"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -128,31 +128,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
-			],
-			"externalReferenceCode": "MARKETPLACE_LISTING",
-			"name": "marketplace-listing",
-			"viewableBy": "Anyone"
-		},
-		{
-			"assetTypes": [
-				{
-					"required": false,
-					"subtype": "AllAssetSubtypes",
-					"type": "Product"
-				}
-			],
-			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE",
 			"name": "marketplace-product-type",
+			"name_i18n": {
+				"en_US": "Marketplace Product Type"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -164,13 +146,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_CATEGORY",
 			"name": "marketplace-solution-category",
+			"name_i18n": {
+				"en_US": "Marketplace Solution Category"
+			},
 			"viewableBy": "Anyone"
 		},
 		{
@@ -182,13 +164,13 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US",
-				"es-ES",
-				"ja-JP",
-				"pt-BR"
+				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_TAGS",
 			"name": "marketplace-solution-tags",
+			"name_i18n": {
+				"en_US": "Marketplace Solution Tags"
+			},
 			"viewableBy": "Anyone"
 		}
 	]
