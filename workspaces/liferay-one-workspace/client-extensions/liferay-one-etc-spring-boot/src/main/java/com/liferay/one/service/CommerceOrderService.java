@@ -13,6 +13,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.pagination.Page;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.SupportRegionConstants;
@@ -25,13 +26,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe Veloso
@@ -119,41 +118,20 @@ public class CommerceOrderService extends OneBaseService {
 			addressCountry = postalAddress.getAddressCountry();
 		}
 
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/headless-commerce-admin-order/v1.0/orders"
-			).queryParam(
-				"filter", "accountId/any(x:x eq " + accountId + ")"
-			).queryParam(
-				"nestedFields", "customFields"
-			).build(
-			).toUri());
+		OrderResource orderResource = _buildOrderResource();
 
-		if (Validator.isNull(response)) {
-			return SupportRegionConstants.GLOBAL;
-		}
+		Page<Order> ordersPage = orderResource.getOrdersPage(
+			null, "accountId/any(x:x eq " + accountId + ")", null, null);
 
-		JSONObject responseJSONObject = new JSONObject(response);
+		for (Order order : ordersPage.getItems()) {
+			Map<String, String> customFields =
+				(Map<String, String>)order.getCustomFields();
 
-		JSONArray itemsJSONArray = responseJSONObject.optJSONArray("items");
-
-		if (itemsJSONArray == null) {
-			return SupportRegionConstants.GLOBAL;
-		}
-
-		for (int i = 0; i < itemsJSONArray.length(); i++) {
-			JSONObject orderJSONObject = itemsJSONArray.getJSONObject(i);
-
-			JSONObject customFieldsJSONObject = orderJSONObject.optJSONObject(
-				"customFields");
-
-			if (customFieldsJSONObject == null) {
+			if (customFields == null) {
 				continue;
 			}
 
-			String opportunitySoldBy = customFieldsJSONObject.optString(
-				"opportunitySoldBy");
+			String opportunitySoldBy = customFields.get("opportunitySoldBy");
 
 			if (Validator.isNull(opportunitySoldBy)) {
 				continue;

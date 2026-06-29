@@ -79,6 +79,6 @@ public class UserAccountService extends OneBaseService {
 		return userAccountResource.getUserAccount(userId);
 	}
 
-	private static final int _PAGE_SIZE = 200;
+	private static final int _PAGE_SIZE = 500;
 
 }

@@ -23,9 +23,10 @@ public class ProjectService extends OneBaseService {
 		String response = get(
 			getAuthorization(),
 			UriComponentsBuilder.fromPath(
-				"/o/c/projects/by-external-reference-code/" +
-					externalReferenceCode
-			).build(
+				"/o/c/projects/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).buildAndExpand(
+				externalReferenceCode
 			).toUri());
 
 		if (Validator.isNull(response)) {

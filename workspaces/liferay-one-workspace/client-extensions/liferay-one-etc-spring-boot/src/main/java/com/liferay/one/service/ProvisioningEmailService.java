@@ -8,8 +8,8 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.AccountRoleConstants;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.constants.SupportRegionConstants;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
@@ -18,6 +18,7 @@ import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Year;
@@ -46,7 +47,9 @@ public class ProvisioningEmailService extends OneBaseService {
 
 		UserAccount userAccount = _userAccountService.getUserAccount(userId);
 
-		if (!UserAccountUtil.isVerified(userAccount) || !_isEnabled(account)) {
+		if ((account == null) || !UserAccountUtil.isVerified(userAccount) ||
+			!_hasSupportOrPartnerEntitlement(account)) {
+
 			return;
 		}
 
@@ -64,7 +67,7 @@ public class ProvisioningEmailService extends OneBaseService {
 		for (UserAccount userAccount : userAccounts) {
 			if (UserAccountUtil.hasAccountRole(
 					userAccount, account.getId(),
-					AccountRoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
+					RoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
 				UserAccountUtil.isVerified(userAccount)) {
 
 				_sendWelcomeEmail(
@@ -124,27 +127,26 @@ public class ProvisioningEmailService extends OneBaseService {
 	private String _getLanguageId(UserAccount userAccount) {
 		String languageId = userAccount.getLanguageId();
 
-		if (Validator.isNull(languageId)) {
-			return _DEFAULT_LANGUAGE_ID;
+		if (Validator.isNotNull(languageId) &&
+			_supportedLanguageIds.contains(languageId)) {
+
+			return languageId;
 		}
 
-		return languageId;
+		return _DEFAULT_LANGUAGE_ID;
 	}
 
 	private String _getProjectInvitationMessage(
 		List<Project> projects, Locale locale) {
 
-		if (projects.size() == 1) {
-			Project project = projects.get(0);
+		if (projects.isEmpty()) {
+			return "";
+		}
 
+		if (projects.size() == 1) {
 			return _messageSource.getMessage(
 				"you-have-been-invited-to-the-liferay-project-x",
-				new Object[] {
-					StringBundler.concat(
-						"<br /><a href=\"", _portalURL,
-						"\" style=\"text-decoration: none\">",
-						HtmlUtil.escape(project.getName()), "</a>")
-				},
+				new Object[] {"<br />" + _getProjectLink(projects.get(0))},
 				locale);
 		}
 
@@ -157,14 +159,19 @@ public class ProvisioningEmailService extends OneBaseService {
 		sb.append("<br />");
 
 		for (Project project : projects) {
-			sb.append("<a href=\"");
-			sb.append(_portalURL);
-			sb.append("\" style=\"text-decoration: none\">");
-			sb.append(HtmlUtil.escape(project.getName()));
-			sb.append("</a><br />");
+			sb.append(_getProjectLink(project));
+			sb.append("<br />");
 		}
 
 		return sb.toString();
+	}
+
+	private String _getProjectLink(Project project) {
+		return StringBundler.concat(
+			"<a href=\"", _portalURL, "/project/#/",
+			project.getExternalReferenceCode(),
+			"\" style=\"text-decoration: none\">",
+			HtmlUtil.escape(project.getName()), "</a>");
 	}
 
 	private List<Project> _getProjects(long accountId, long userId)
@@ -250,11 +257,10 @@ public class ProvisioningEmailService extends OneBaseService {
 		sb.append("</li>");
 
 		if (accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
+			accountRoleNames.contains(RoleConstants.NAME_PARTNER_MANAGER) ||
 			accountRoleNames.contains(
-				AccountRoleConstants.NAME_PARTNER_MANAGER) ||
-			accountRoleNames.contains(
-				AccountRoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -264,9 +270,9 @@ public class ProvisioningEmailService extends OneBaseService {
 		}
 
 		if (accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
 			accountRoleNames.contains(
-				AccountRoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -275,18 +281,14 @@ public class ProvisioningEmailService extends OneBaseService {
 			sb.append("</li>");
 		}
 
-		if (accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_MEMBER) ||
+		if (accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_MEMBER) ||
+			accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_REQUESTER) ||
 			accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_REQUESTER) ||
+				RoleConstants.NAME_PARTNER_MARKETING_USER) ||
+			accountRoleNames.contains(RoleConstants.NAME_PARTNER_MEMBER) ||
+			accountRoleNames.contains(RoleConstants.NAME_PARTNER_SALES_USER) ||
 			accountRoleNames.contains(
-				AccountRoleConstants.NAME_PARTNER_MARKETING_USER) ||
-			accountRoleNames.contains(
-				AccountRoleConstants.NAME_PARTNER_MEMBER) ||
-			accountRoleNames.contains(
-				AccountRoleConstants.NAME_PARTNER_SALES_USER) ||
-			accountRoleNames.contains(
-				AccountRoleConstants.NAME_PARTNER_TECHNICAL_USER)) {
+				RoleConstants.NAME_PARTNER_TECHNICAL_USER)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -308,11 +310,10 @@ public class ProvisioningEmailService extends OneBaseService {
 		sb.append("</li>");
 
 		if (accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
+			accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_REQUESTER) ||
 			accountRoleNames.contains(
-				AccountRoleConstants.NAME_ACCOUNT_REQUESTER) ||
-			accountRoleNames.contains(
-				AccountRoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -344,37 +345,31 @@ public class ProvisioningEmailService extends OneBaseService {
 				continue;
 			}
 
-			Account account = _accountService.fetchAccount(accountId);
-
-			boolean eligible = false;
-
-			if (UserAccountUtil.hasAccountRole(
+			if ((UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					AccountRoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
-				_entitlementService.hasEntitlement(
-					accountId, EntitlementConstants.NAMES_SLAS)) {
-
-				eligible = true;
-			}
-
-			if (UserAccountUtil.hasAccountRole(
+					RoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
+				 _entitlementService.hasEntitlement(
+					 accountId, EntitlementConstants.NAMES_SLAS)) ||
+				(UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					AccountRoleConstants.NAMES_PARTNER_ACCOUNT_ROLES) &&
-				_entitlementService.hasEntitlement(
-					accountId, EntitlementConstants.NAME_PARTNER)) {
+					RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES) &&
+				 _entitlementService.hasEntitlement(
+					 accountId, EntitlementConstants.NAME_PARTNER))) {
 
-				eligible = true;
-			}
+				Account account = _accountService.fetchAccount(accountId);
 
-			if (eligible) {
-				accounts.add(account);
+				if (account != null) {
+					accounts.add(account);
+				}
 			}
 		}
 
 		return accounts;
 	}
 
-	private boolean _isEnabled(Account account) throws Exception {
+	private boolean _hasSupportOrPartnerEntitlement(Account account)
+		throws Exception {
+
 		long accountId = account.getId();
 
 		if (_entitlementService.hasEntitlement(
@@ -446,6 +441,9 @@ public class ProvisioningEmailService extends OneBaseService {
 	}
 
 	private static final String _DEFAULT_LANGUAGE_ID = "en_US";
+
+	private static final Set<String> _supportedLanguageIds = SetUtil.fromArray(
+		"en_US", "es_ES", "ja_JP", "pt_BR");
 
 	@Autowired
 	private AccountService _accountService;
