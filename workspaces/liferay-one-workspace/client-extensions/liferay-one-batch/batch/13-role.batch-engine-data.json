@@ -41,6 +41,11 @@
 			"roleType": "account"
 		},
 		{
+			"externalReferenceCode": "C_CUSTOMER",
+			"name": "Customer",
+			"roleType": "regular"
+		},
+		{
 			"externalReferenceCode": "C_CUSTOMER_EXPERIENCE_MANAGER",
 			"name": "Customer Experience Manager",
 			"roleType": "account"
@@ -89,6 +94,11 @@
 			"externalReferenceCode": "C_MEMBER",
 			"name": "Member",
 			"roleType": "account"
+		},
+		{
+			"externalReferenceCode": "C_PARTNER",
+			"name": "Partner",
+			"roleType": "regular"
 		},
 		{
 			"externalReferenceCode": "C_PARTNER_MANAGER",
