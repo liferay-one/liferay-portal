@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProvisioningEmailService;
@@ -14,24 +13,28 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Felipe Veloso
  */
 @RequestMapping("/user-accounts")
 @RestController
-public class UserAccountsRestController extends BaseRestController {
+public class UserAccountsRestController extends OneBaseRestController {
 
 	@PostMapping("/assignments")
 	public void postAssignments(@RequestBody String json) throws Exception {
 		JSONObject jsonObject = new JSONObject(json);
 
-		if (jsonObject.isNull("accountId")) {
-			return;
+		if (jsonObject.isNull("accountId") || jsonObject.isNull("userId")) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"\"accountId\" and \"userId\" are required");
 		}
 
 		long accountId = jsonObject.getLong("accountId");
