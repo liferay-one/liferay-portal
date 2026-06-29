@@ -9,8 +9,10 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceList;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
+import com.liferay.one.salesforce.model.Account;
 import com.liferay.one.salesforce.model.PricebookEntry;
 import com.liferay.one.salesforce.model.Product2;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
@@ -62,7 +64,12 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 			for (int i = 0; i < recordsJSONArray.length(); i++) {
 				JSONObject recordJSONObject = recordsJSONArray.getJSONObject(i);
 
-				if (Objects.equals(salesforceObjectName, "PricebookEntry")) {
+				if (Objects.equals(salesforceObjectName, "Account")) {
+					_processAccount(recordJSONObject);
+				}
+				else if (Objects.equals(
+							salesforceObjectName, "PricebookEntry")) {
+
 					_processPricebookEntry(action, recordJSONObject);
 				}
 				else if (Objects.equals(salesforceObjectName, "Product2")) {
@@ -95,6 +102,21 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	@Override
 	protected boolean isAutoCreateTopic() {
 		return false;
+	}
+
+	private void _processAccount(JSONObject recordJSONObject) throws Exception {
+		Account account = new Account(recordJSONObject);
+
+		if (!account.isActiveSubscription()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping inactive Salesforce account " + account.getId());
+			}
+
+			return;
+		}
+
+		_accountService.upsertAccount(account);
 	}
 
 	private void _processPricebookEntry(
@@ -160,6 +182,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	private static final Log _log = LogFactory.getLog(
 		SalesforceObjectPubsubSubscriber.class);
+
+	@Autowired
+	private AccountService _accountService;
 
 	@Autowired
 	private CommercePriceEntryService _commercePriceEntryService;

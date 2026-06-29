@@ -5,10 +5,24 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountContactInformation;
+import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
+import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -85,6 +99,265 @@ public class AccountService extends OneBaseService {
 
 		return accountResource.getAccountByExternalReferenceCode(
 			externalReferenceCode);
+	}
+
+	public void upsertAccount(
+			com.liferay.one.salesforce.model.Account salesforceAccount)
+		throws Exception {
+
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode(salesforceAccount::getId);
+		account.setStatus(() -> WorkflowConstants.STATUS_APPROVED);
+		account.setType(() -> Account.Type.BUSINESS);
+
+		if (Validator.isNotNull(salesforceAccount.getName())) {
+			account.setName(salesforceAccount::getName);
+		}
+
+		if (Validator.isNotNull(salesforceAccount.getDescription())) {
+			account.setDescription(salesforceAccount::getDescription);
+		}
+
+		_setAccountContactInformation(account, salesforceAccount);
+
+		_setCustomFields(account, salesforceAccount);
+
+		_setPostalAddresses(account, salesforceAccount);
+
+		try {
+			_upsertAccount(accountResource, account, salesforceAccount.getId());
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem == null) ||
+				!Objects.equals(problem.getTitle(), "The web URL is invalid")) {
+
+				throw problemException;
+			}
+
+			AccountContactInformation accountContactInformation =
+				account.getAccountContactInformation();
+
+			accountContactInformation.setWebUrls(() -> null);
+
+			_upsertAccount(accountResource, account, salesforceAccount.getId());
+		}
+	}
+
+	private void _setAccountContactInformation(
+		Account account,
+		com.liferay.one.salesforce.model.Account salesforceAccount) {
+
+		String id = salesforceAccount.getId();
+
+		List<EmailAddress> emailAddresses = new ArrayList<>();
+		List<Phone> phones = new ArrayList<>();
+		List<WebUrl> webUrls = new ArrayList<>();
+
+		if (Validator.isNotNull(salesforceAccount.getOwnerEmail())) {
+			EmailAddress emailAddress = new EmailAddress();
+
+			emailAddress.setEmailAddress(salesforceAccount::getOwnerEmail);
+			emailAddress.setExternalReferenceCode(() -> id + "-owner-email");
+			emailAddress.setPrimary(() -> Boolean.TRUE);
+
+			emailAddresses.add(emailAddress);
+		}
+
+		if (Validator.isNotNull(salesforceAccount.getPhone())) {
+			Phone phone = new Phone();
+
+			phone.setExternalReferenceCode(() -> id + "-phone");
+			phone.setPhoneNumber(salesforceAccount::getPhone);
+			phone.setPrimary(() -> Boolean.TRUE);
+
+			phones.add(phone);
+		}
+
+		if (Validator.isNotNull(salesforceAccount.getFax())) {
+			Phone phone = new Phone();
+
+			phone.setExternalReferenceCode(() -> id + "-fax");
+			phone.setPhoneNumber(salesforceAccount::getFax);
+			phone.setPhoneType(() -> "fax");
+			phone.setPrimary(() -> Boolean.FALSE);
+
+			phones.add(phone);
+		}
+
+		String url = _toURL(salesforceAccount.getWebsite());
+
+		if (url != null) {
+			WebUrl webUrl = new WebUrl();
+
+			webUrl.setExternalReferenceCode(() -> id + "-website");
+			webUrl.setPrimary(() -> Boolean.TRUE);
+			webUrl.setUrl(() -> url);
+
+			webUrls.add(webUrl);
+		}
+
+		if (emailAddresses.isEmpty() && phones.isEmpty() && webUrls.isEmpty()) {
+			return;
+		}
+
+		AccountContactInformation accountContactInformation =
+			new AccountContactInformation();
+
+		if (!emailAddresses.isEmpty()) {
+			accountContactInformation.setEmailAddresses(
+				() -> emailAddresses.toArray(new EmailAddress[0]));
+		}
+
+		if (!phones.isEmpty()) {
+			accountContactInformation.setTelephones(
+				() -> phones.toArray(new Phone[0]));
+		}
+
+		if (!webUrls.isEmpty()) {
+			accountContactInformation.setWebUrls(
+				() -> webUrls.toArray(new WebUrl[0]));
+		}
+
+		account.setAccountContactInformation(() -> accountContactInformation);
+	}
+
+	private void _setCustomFields(
+		Account account,
+		com.liferay.one.salesforce.model.Account salesforceAccount) {
+
+		if (Validator.isNull(salesforceAccount.getAccountTier())) {
+			return;
+		}
+
+		CustomField customField = new CustomField();
+
+		customField.setName(() -> "accountTier");
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(salesforceAccount::getAccountTier);
+
+		customField.setCustomValue(() -> customValue);
+
+		account.setCustomFields(() -> new CustomField[] {customField});
+	}
+
+	private void _setPostalAddresses(
+		Account account,
+		com.liferay.one.salesforce.model.Account salesforceAccount) {
+
+		String id = salesforceAccount.getId();
+
+		List<PostalAddress> postalAddresses = new ArrayList<>();
+
+		PostalAddress billingPostalAddress = _toPostalAddress(
+			"billing", salesforceAccount.getBillingCity(),
+			salesforceAccount.getBillingCountry(), id + "-billing",
+			"Primary Billing Address", salesforceAccount.getBillingPostalCode(),
+			salesforceAccount.getBillingState(),
+			salesforceAccount.getBillingStreet());
+
+		if (billingPostalAddress != null) {
+			postalAddresses.add(billingPostalAddress);
+
+			account.setDefaultBillingAddressExternalReferenceCode(
+				() -> id + "-billing");
+		}
+
+		PostalAddress shippingPostalAddress = _toPostalAddress(
+			"shipping", salesforceAccount.getShippingCity(),
+			salesforceAccount.getShippingCountry(), id + "-shipping",
+			"Primary Shipping Address",
+			salesforceAccount.getShippingPostalCode(),
+			salesforceAccount.getShippingState(),
+			salesforceAccount.getShippingStreet());
+
+		if (shippingPostalAddress != null) {
+			postalAddresses.add(shippingPostalAddress);
+
+			account.setDefaultShippingAddressExternalReferenceCode(
+				() -> id + "-shipping");
+		}
+
+		if (!postalAddresses.isEmpty()) {
+			account.setPostalAddresses(
+				() -> postalAddresses.toArray(new PostalAddress[0]));
+		}
+	}
+
+	private PostalAddress _toPostalAddress(
+		String addressType, String city, String country,
+		String externalReferenceCode, String name, String postalCode,
+		String region, String street) {
+
+		if (Validator.isNull(street) || Validator.isNull(city) ||
+			Validator.isNull(postalCode)) {
+
+			return null;
+		}
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> country);
+		postalAddress.setAddressLocality(() -> city);
+		postalAddress.setAddressRegion(() -> region);
+		postalAddress.setAddressType(() -> addressType);
+		postalAddress.setExternalReferenceCode(() -> externalReferenceCode);
+		postalAddress.setName(() -> name);
+		postalAddress.setPostalCode(() -> postalCode);
+		postalAddress.setStreetAddressLine1(() -> street);
+
+		return postalAddress;
+	}
+
+	private String _toURL(String website) {
+		if (Validator.isNull(website) || website.contains(" ") ||
+			!website.contains(".")) {
+
+			return null;
+		}
+
+		String lowerCaseWebsite = StringUtil.toLowerCase(website);
+
+		if (lowerCaseWebsite.startsWith("http://") ||
+			lowerCaseWebsite.startsWith("https://")) {
+
+			return website;
+		}
+
+		return "https://" + website;
+	}
+
+	private void _upsertAccount(
+			AccountResource accountResource, Account account,
+			String externalReferenceCode)
+		throws Exception {
+
+		try {
+			accountResource.patchAccountByExternalReferenceCode(
+				externalReferenceCode, account);
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				accountResource.putAccountByExternalReferenceCode(
+					externalReferenceCode, account);
+			}
+			else {
+				throw problemException;
+			}
+		}
 	}
 
 	@Autowired
