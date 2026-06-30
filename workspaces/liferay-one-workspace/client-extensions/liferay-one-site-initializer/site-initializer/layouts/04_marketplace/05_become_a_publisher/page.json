@@ -1,0 +1,21 @@
+{
+	"description": "",
+	"fragmentCompositionDefinitionPath": "page-definition.json",
+	"friendlyURL": "/marketplace/become-a-publisher",
+	"hidden": true,
+	"name": "Become a Publisher",
+	"name_i18n": {
+		"en_US": "Become a Publisher"
+	},
+	"permissions": [
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "Guest",
+			"scope": 4
+		}
+	],
+	"system": false,
+	"type": "Content"
+}
