@@ -12,11 +12,13 @@ import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.salesforce.model.Account;
 import com.liferay.one.salesforce.model.PricebookEntry;
 import com.liferay.one.salesforce.model.Product2;
+import com.liferay.one.salesforce.model.Project;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.ProjectService;
 
 import java.util.Objects;
 
@@ -74,6 +76,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 				}
 				else if (Objects.equals(salesforceObjectName, "Product2")) {
 					_processProduct2(action, recordJSONObject);
+				}
+				else if (Objects.equals(salesforceObjectName, "Project__c")) {
+					_processProject(recordJSONObject);
 				}
 				else if (_log.isInfoEnabled()) {
 					_log.info(
@@ -180,6 +185,10 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		}
 	}
 
+	private void _processProject(JSONObject recordJSONObject) throws Exception {
+		_projectService.upsertProject(new Project(recordJSONObject));
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		SalesforceObjectPubsubSubscriber.class);
 
@@ -200,6 +209,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Value("${liferay.one.salesforce.object.pubsub.subscriber.project.id}")
 	private String _projectId;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	@Value("${liferay.one.salesforce.object.pubsub.subscriber.subscription}")
 	private String _subscription;
