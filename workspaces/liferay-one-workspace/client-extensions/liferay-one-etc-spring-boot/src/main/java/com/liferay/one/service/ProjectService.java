@@ -8,9 +8,16 @@ package com.liferay.one.service;
 import com.liferay.one.model.Project;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.net.URI;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.json.JSONObject;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -35,5 +42,55 @@ public class ProjectService extends OneBaseService {
 
 		return new Project(new JSONObject(response));
 	}
+
+	public void upsertProject(
+			com.liferay.one.salesforce.model.Project salesforceProject)
+		throws Exception {
+
+		if (Validator.isNull(salesforceProject.getId()) ||
+			Validator.isNull(salesforceProject.getName()) ||
+			Validator.isNull(salesforceProject.getAccountId())) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to upsert project " + salesforceProject.getId() +
+						" without an ID, name, and account");
+			}
+
+			return;
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"externalReferenceCode", salesforceProject.getId()
+		).put(
+			"name", salesforceProject.getName()
+		).put(
+			"r_accountEntryToProject_accountEntryERC",
+			salesforceProject.getAccountId()
+		);
+
+		URI uri = UriComponentsBuilder.fromPath(
+			"/o/c/projects/by-external-reference-code/" +
+				salesforceProject.getId()
+		).build(
+		).toUri();
+
+		try {
+			patch(getAuthorization(), jsonObject.toString(), uri);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode != HttpStatus.NOT_FOUND.value()) {
+				throw webClientResponseException;
+			}
+
+			put(getAuthorization(), jsonObject.toString(), uri);
+		}
+	}
+
+	private static final Log _log = LogFactory.getLog(ProjectService.class);
 
 }
