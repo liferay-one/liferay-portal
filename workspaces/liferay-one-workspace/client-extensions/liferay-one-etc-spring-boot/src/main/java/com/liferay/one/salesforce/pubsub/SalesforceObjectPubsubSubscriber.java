@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceList;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.salesforce.model.Account;
+import com.liferay.one.salesforce.model.Contract;
 import com.liferay.one.salesforce.model.PricebookEntry;
 import com.liferay.one.salesforce.model.Product2;
 import com.liferay.one.salesforce.model.Project;
@@ -18,6 +19,7 @@ import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
 
 import java.util.Objects;
@@ -68,6 +70,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 				if (Objects.equals(salesforceObjectName, "Account")) {
 					_processAccount(recordJSONObject);
+				}
+				else if (Objects.equals(salesforceObjectName, "Contract")) {
+					_processContract(recordJSONObject);
 				}
 				else if (Objects.equals(
 							salesforceObjectName, "PricebookEntry")) {
@@ -122,6 +127,12 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		}
 
 		_accountService.upsertAccount(account);
+	}
+
+	private void _processContract(JSONObject recordJSONObject)
+		throws Exception {
+
+		_contractService.upsertContract(new Contract(recordJSONObject));
 	}
 
 	private void _processPricebookEntry(
@@ -206,6 +217,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private ContractService _contractService;
 
 	@Value("${liferay.one.salesforce.object.pubsub.subscriber.project.id}")
 	private String _projectId;
