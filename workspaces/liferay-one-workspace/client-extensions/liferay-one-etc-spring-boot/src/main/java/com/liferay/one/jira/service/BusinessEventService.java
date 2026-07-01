@@ -13,7 +13,6 @@ import com.liferay.one.jira.model.BusinessEvent;
 import com.liferay.one.jira.model.BusinessEventVersion;
 import com.liferay.one.jira.model.ProductVersion;
 import com.liferay.one.jira.util.AQLUtil;
-import com.liferay.one.service.AccountService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -42,7 +41,7 @@ public class BusinessEventService {
 		_jiraAssetService.createObject(
 			_businessEventConverter.getObjectTypeId(),
 			_businessEventConverter.toAssetObject(
-				_accountService.getAccountObjectKey(
+				_accountAssetService.getAccountObjectKey(
 					businessEvent.getAccountExternalReferenceCode()),
 				businessEvent));
 	}
@@ -136,7 +135,10 @@ public class BusinessEventService {
 
 	@CacheEvict(
 		allEntries = true,
-		value = {"assetObjectFieldOptions", "productVersions"}
+		value = {
+			"assetObjectFieldOptions", "assetObjectTypeAttributeIds",
+			"assetObjectTypeIds", "productVersions"
+		}
 	)
 	@Scheduled(cron = "0 0 0 * * *")
 	public void scheduledAssetObjectsCacheEviction() throws Exception {
@@ -153,7 +155,7 @@ public class BusinessEventService {
 	}
 
 	@Autowired
-	private AccountService _accountService;
+	private AccountAssetService _accountAssetService;
 
 	@Autowired
 	private BusinessEventConverter _businessEventConverter;

@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -34,6 +35,15 @@ import org.springframework.web.server.ResponseStatusException;
  * @author Amos Fong
  */
 public abstract class OneBaseRestController extends BaseRestController {
+
+	@ExceptionHandler(AccountNotFoundException.class)
+	public ResponseEntity<?> handleException(
+		AccountNotFoundException accountNotFoundException) {
+
+		_log.error("Account not found", accountNotFoundException);
+
+		return _toResponseEntity(HttpStatus.NOT_FOUND, "Account not found");
+	}
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleException(Exception exception) {

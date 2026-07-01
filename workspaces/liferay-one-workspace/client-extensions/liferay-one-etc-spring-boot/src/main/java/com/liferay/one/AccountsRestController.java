@@ -5,13 +5,9 @@
 
 package com.liferay.one;
 
-import com.liferay.one.jira.exception.AccountNotFoundException;
+import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.permission.BusinessEventPermission;
-import com.liferay.one.service.AccountService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,34 +32,16 @@ public class AccountsRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		try {
-			_businessEventPermission.check(
-				externalReferenceCode, ActionKeys.VIEW, jwt);
+		_businessEventPermission.check(
+			externalReferenceCode, ActionKeys.VIEW, jwt);
 
-			return new ResponseEntity<>(
-				_accountService.getAccountObjectKey(externalReferenceCode),
-				HttpStatus.OK);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get Jira object key for " + externalReferenceCode,
-				exception);
-
-			HttpStatus httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-
-			if (exception instanceof AccountNotFoundException) {
-				httpStatus = HttpStatus.NOT_FOUND;
-			}
-
-			return new ResponseEntity<>(exception.getMessage(), httpStatus);
-		}
+		return new ResponseEntity<>(
+			_accountAssetService.getAccountObjectKey(externalReferenceCode),
+			HttpStatus.OK);
 	}
 
-	private static final Log _log = LogFactory.getLog(
-		AccountsRestController.class);
-
 	@Autowired
-	private AccountService _accountService;
+	private AccountAssetService _accountAssetService;
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
