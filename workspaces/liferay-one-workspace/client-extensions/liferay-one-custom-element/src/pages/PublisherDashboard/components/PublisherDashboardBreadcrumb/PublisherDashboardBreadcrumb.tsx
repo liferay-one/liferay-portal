@@ -17,7 +17,7 @@ const TEXT_COLOR = 'var(--color-neutral-10)';
 
 const TRAIL: Crumb[] = [
 	{href: '/', label: 'home'},
-	{href: '/web/one/my-account', label: 'my-accounts'},
+	{href: '/my-account', label: 'my-accounts'},
 	{label: 'publisher-dashboard'},
 ];
 
