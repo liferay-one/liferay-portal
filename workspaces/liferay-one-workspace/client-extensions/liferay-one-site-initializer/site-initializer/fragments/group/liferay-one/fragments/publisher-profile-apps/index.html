@@ -53,7 +53,7 @@
 
 			<div class="d-flex flex-row flex-wrap publisher-profile-apps">
 				[#list publisherProducts as product]
-					<a class="d-flex flex-column mb-0 one-card position-relative publisher-profile-app-card text-dark text-decoration-none" href="/web/one/p/${product.slug}" target="_self">
+					<a class="d-flex flex-column mb-0 one-card position-relative publisher-profile-app-card text-dark text-decoration-none" href="/p/${product.slug}" target="_self">
 						<div class="align-items-center d-flex flex-row">
 							<div class="image-container mr-3 rounded">
 								<img alt="${product.name}" class="publisher-profile-app-image" draggable="false" height="48" src="${((product.urlImage!'')?replace('https://', 'http://'))?js_string}" width="48" />

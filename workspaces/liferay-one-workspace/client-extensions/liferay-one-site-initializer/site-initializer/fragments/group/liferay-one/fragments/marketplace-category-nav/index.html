@@ -8,7 +8,7 @@
 	[#if appCategories?has_content]
 		<div class="d-flex flex-wrap marketplace-categories-list">
 			[#list appCategories as category]
-				<a class="align-items-center d-inline-flex justify-content-center marketplace-category-button text-decoration-none text-nowrap" href="/web/one/marketplace/applications?Category=${category.id?url('UTF-8')}" target="_self">
+				<a class="align-items-center d-inline-flex justify-content-center marketplace-category-button text-decoration-none text-nowrap" href="/marketplace/applications?Category=${category.id?url('UTF-8')}" target="_self">
 					<span class="align-items-center d-inline-flex justify-content-center marketplace-category-icon" style="--category-color:${category.color};">
 						[@clay["icon"] symbol="${category.icon}" /]
 					</span>
