@@ -113,6 +113,8 @@ public class BusinessEventService {
 
 			if (Validator.isNotNull(options)) {
 				for (String option : options.split(",")) {
+					option = option.trim();
+
 					assetObjectFieldOptions.add(
 						new AssetObjectFieldOption(option, option));
 				}
