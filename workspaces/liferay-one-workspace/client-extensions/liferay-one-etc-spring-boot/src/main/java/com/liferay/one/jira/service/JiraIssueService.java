@@ -8,7 +8,6 @@ package com.liferay.one.jira.service;
 import com.liferay.one.jira.constants.IssueConstants;
 import com.liferay.one.jira.converter.OrganizationConverter;
 import com.liferay.one.jira.exception.OrganizationNotFoundException;
-import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.model.Organization;
 import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.petra.string.StringBundler;
@@ -170,12 +169,11 @@ public class JiraIssueService extends BaseJiraService {
 			JSONArray jsonArray = jsonObject.optJSONArray(
 				_jiraSupportHCFieldOrganization);
 
-			JiraAssetObject jiraAssetObject =
-				_organizationConverter.toJiraAssetObject(
-					jsonArray.getJSONObject(0));
+			JSONObject organizationJSONObject = jsonArray.getJSONObject(0);
 
 			return _organizationConverter.toOrganization(
-				_jiraAssetService.getObject(jiraAssetObject.getObjectId()));
+				_jiraAssetService.getObject(
+					organizationJSONObject.getString("objectId")));
 		}
 		catch (Exception exception) {
 			throw new OrganizationNotFoundException(exception);
