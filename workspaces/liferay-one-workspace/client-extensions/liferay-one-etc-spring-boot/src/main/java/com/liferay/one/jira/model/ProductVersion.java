@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Felipe Franca
  */
-public class AssetObject {
+public class ProductVersion {
 
-	public AssetObject(JSONObject jsonObject) {
+	public ProductVersion(JSONObject jsonObject) {
 		_id = jsonObject.getString("id");
 		_name = jsonObject.getString("name");
 	}
