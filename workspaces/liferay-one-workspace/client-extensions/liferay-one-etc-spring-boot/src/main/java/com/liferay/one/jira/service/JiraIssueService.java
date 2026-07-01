@@ -165,10 +165,18 @@ public class JiraIssueService extends BaseJiraService {
 	private Organization _getOrganization(JSONObject jsonObject)
 		throws OrganizationNotFoundException {
 
-		try {
-			JSONArray jsonArray = jsonObject.optJSONArray(
-				_jiraSupportHCFieldOrganization);
+		if (jsonObject == null) {
+			throw new OrganizationNotFoundException();
+		}
 
+		JSONArray jsonArray = jsonObject.optJSONArray(
+			_jiraSupportHCFieldOrganization);
+
+		if ((jsonArray == null) || jsonArray.isEmpty()) {
+			throw new OrganizationNotFoundException();
+		}
+
+		try {
 			JSONObject organizationJSONObject = jsonArray.getJSONObject(0);
 
 			return _organizationConverter.toOrganization(
