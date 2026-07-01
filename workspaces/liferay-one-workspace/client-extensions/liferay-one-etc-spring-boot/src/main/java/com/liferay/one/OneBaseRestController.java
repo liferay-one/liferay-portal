@@ -40,9 +40,10 @@ public abstract class OneBaseRestController extends BaseRestController {
 	public ResponseEntity<?> handleException(
 		AccountNotFoundException accountNotFoundException) {
 
-		_log.error("Account not found", accountNotFoundException);
+		_log.error("The account was not found", accountNotFoundException);
 
-		return _toResponseEntity(HttpStatus.NOT_FOUND, "Account not found");
+		return _toResponseEntity(
+			HttpStatus.NOT_FOUND, "The account was not found");
 	}
 
 	@ExceptionHandler(Exception.class)
