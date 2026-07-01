@@ -16,6 +16,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
+import com.liferay.one.jira.converter.AccountConverter;
+import com.liferay.one.jira.exception.AccountNotFoundException;
+import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -99,6 +103,22 @@ public class AccountService extends OneBaseService {
 
 		return accountResource.getAccountByExternalReferenceCode(
 			externalReferenceCode);
+	}
+
+	public String getAccountObjectKey(String externalKey) throws Exception {
+		List<JiraAssetObject> objects = _jiraAssetService.searchObjects(
+			_accountConverter.getAQLWithBuilder(
+				aqlBuilder -> aqlBuilder.andEquals(
+					externalKey, "External Key")),
+			_accountConverter::toJiraAssetObject);
+
+		if (objects.isEmpty()) {
+			throw new AccountNotFoundException();
+		}
+
+		JiraAssetObject jiraAssetObject = objects.get(0);
+
+		return jiraAssetObject.getObjectKey();
 	}
 
 	public void upsertAccount(
@@ -359,6 +379,12 @@ public class AccountService extends OneBaseService {
 			}
 		}
 	}
+
+	@Autowired
+	private AccountConverter _accountConverter;
+
+	@Autowired
+	private JiraAssetService _jiraAssetService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
