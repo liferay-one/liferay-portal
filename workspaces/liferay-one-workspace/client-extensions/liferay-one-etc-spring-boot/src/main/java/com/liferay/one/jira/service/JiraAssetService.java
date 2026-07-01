@@ -45,18 +45,18 @@ public class JiraAssetService extends BaseJiraService {
 			).toString(),
 			_headers(), _objectURI("create"));
 
-		return new JSONObject(response);
+		return _toJSONObject(response);
 	}
 
 	public JSONObject deleteObject(String objectId) {
 		String response = delete(
 			getAuthorization(), StringPool.BLANK, _objectURI(objectId));
 
-		return new JSONObject(response);
+		return _toJSONObject(response);
 	}
 
 	public JSONObject getObject(String objectId) {
-		return new JSONObject(get(getAuthorization(), _objectURI(objectId)));
+		return _toJSONObject(get(getAuthorization(), _objectURI(objectId)));
 	}
 
 	public JSONArray getObjectSchemas() {
@@ -154,7 +154,7 @@ public class JiraAssetService extends BaseJiraService {
 			).toString(),
 			_headers(), _objectURI(objectId));
 
-		return new JSONObject(response);
+		return _toJSONObject(response);
 	}
 
 	private JSONObject _getObjectSchemasPageJSONObject(int startAt) {
@@ -169,11 +169,7 @@ public class JiraAssetService extends BaseJiraService {
 			).build(
 			).toUri());
 
-		if (Validator.isNull(response)) {
-			return new JSONObject();
-		}
-
-		return new JSONObject(response);
+		return _toJSONObject(response);
 	}
 
 	private Map<String, String> _headers() {
@@ -204,6 +200,10 @@ public class JiraAssetService extends BaseJiraService {
 			).build(
 			).toUri());
 
+		return _toJSONObject(response);
+	}
+
+	private JSONObject _toJSONObject(String response) {
 		if (Validator.isNull(response)) {
 			return new JSONObject();
 		}
