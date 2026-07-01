@@ -32,8 +32,8 @@
 												"siteKey": "[$GROUP_KEY$]"
 											},
 											"fragmentConfig": {
-												"homeLink": "/web/one/home",
-												"parentLink": "/web/one/home"
+												"homeLink": "/home",
+												"parentLink": "/home"
 											},
 											"fragmentFields": [
 												{

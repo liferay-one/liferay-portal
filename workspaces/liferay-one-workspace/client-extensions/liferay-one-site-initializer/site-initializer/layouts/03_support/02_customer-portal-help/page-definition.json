@@ -32,8 +32,8 @@
 												"siteKey": "[$GROUP_KEY$]"
 											},
 											"fragmentConfig": {
-												"homeLink": "/web/one/home",
-												"parentLink": "/web/one/support/customer-portal-help"
+												"homeLink": "/home",
+												"parentLink": "/support/customer-portal-help"
 											},
 											"fragmentFields": [
 												{
@@ -179,7 +179,7 @@
 											"fragmentLink": {
 												"href": {
 													"value_i18n": {
-														"en_US": "/web/one/support/getting-started"
+														"en_US": "/support/getting-started"
 													}
 												}
 											},
@@ -929,7 +929,7 @@
 											"fragmentLink": {
 												"href": {
 													"value_i18n": {
-														"en_US": "/web/one/my-account/#/team-members"
+														"en_US": "/my-account/#/team-members"
 													}
 												}
 											},

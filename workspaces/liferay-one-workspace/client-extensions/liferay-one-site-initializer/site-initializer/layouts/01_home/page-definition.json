@@ -1423,10 +1423,10 @@
 																	"value": {
 																		"href": {
 																			"value_i18n": {
-																				"en_US": "/web/one/support/announcements",
-																				"es_ES": "/web/one/support/announcements",
-																				"ja_JP": "/web/one/support/announcements",
-																				"pt_BR": "/web/one/support/announcements"
+																				"en_US": "/support/announcements",
+																				"es_ES": "/support/announcements",
+																				"ja_JP": "/support/announcements",
+																				"pt_BR": "/support/announcements"
 																			}
 																		}
 																	}
