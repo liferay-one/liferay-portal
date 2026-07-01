@@ -6,29 +6,15 @@
 package com.liferay.one.jira.converter;
 
 import com.liferay.one.jira.constants.AccountConstants;
-import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.model.Organization;
-
-import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Felipe Franca
+ * @author Drew Brokke
  */
 @Component
-public class OrganizationConverter extends BaseAssetObjectConverter {
-
-	public Organization toOrganization(JSONObject assetObjectJSONObject) {
-		JiraAssetObject jiraAssetObject = new JiraAssetObject(
-			assetObjectJSONObject, getAttributeIds());
-
-		return new Organization(
-			jiraAssetObject.getAttributeValue(
-				AccountConstants.ATTRIBUTE_NAME_EXTERNAL_KEY),
-			jiraAssetObject.getObjectId(), jiraAssetObject.getObjectName());
-	}
+public class AccountConverter extends BaseAssetObjectConverter {
 
 	@Override
 	protected String getObjectSchemaName() {
