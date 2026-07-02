@@ -137,9 +137,9 @@ public class TrialCommandLineRunner
 		for (int i = 0; i < ordersJSONArray.length(); i++) {
 			JSONObject orderJSONObject = ordersJSONArray.getJSONObject(i);
 
-			try {
-				long orderId = orderJSONObject.getLong("id");
+			long orderId = orderJSONObject.getLong("id");
 
+			try {
 				JSONObject customFieldsJSONObject =
 					orderJSONObject.optJSONObject("customFields");
 
@@ -186,7 +186,7 @@ public class TrialCommandLineRunner
 				}
 			}
 			catch (Exception exception) {
-				_log.error(exception);
+				_log.error("Unable to process order " + orderId, exception);
 			}
 		}
 	}
@@ -224,9 +224,9 @@ public class TrialCommandLineRunner
 
 			JSONObject orderJSONObject = ordersJSONArray.getJSONObject(i);
 
-			try {
-				long orderId = orderJSONObject.getLong("id");
+			long orderId = orderJSONObject.getLong("id");
 
+			try {
 				if (_log.isInfoEnabled()) {
 					_log.info("Processing on hold order " + orderId);
 				}
@@ -240,7 +240,8 @@ public class TrialCommandLineRunner
 				available--;
 			}
 			catch (Exception exception) {
-				_log.error(exception);
+				_log.error(
+					"Unable to process on hold order " + orderId, exception);
 			}
 		}
 	}
