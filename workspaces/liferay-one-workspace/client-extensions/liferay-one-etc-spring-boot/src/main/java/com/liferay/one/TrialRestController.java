@@ -21,6 +21,7 @@ import com.liferay.one.service.NotificationTemplateService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
@@ -75,9 +76,14 @@ public class TrialRestController extends BaseRestController {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
 
+		String virtualHost = null;
+
+		if (customFields != null) {
+			virtualHost = customFields.get("trial-virtual-host");
+		}
+
 		_deletePortalInstance(
-			orderId, trialProvisioningContextJSONObject,
-			customFields.get("trial-virtual-host"));
+			orderId, trialProvisioningContextJSONObject, virtualHost);
 	}
 
 	@GetMapping("availability")
@@ -193,10 +199,18 @@ public class TrialRestController extends BaseRestController {
 				).toUri());
 		}
 
+		String trialEndDate = customFields.get("trial-end-date");
+
+		if (Validator.isNull(trialEndDate)) {
+			throw new IllegalStateException(
+				"Order " + order.getId() +
+					" has no \"trial-end-date\" custom field");
+		}
+
 		customFields.put(
 			"trial-end-date",
 			ZonedDateTime.parse(
-				customFields.get("trial-end-date")
+				trialEndDate
 			).plusDays(
 				trialExtensionRequestJSONObject.getInt("duration")
 			).format(
@@ -215,12 +229,19 @@ public class TrialRestController extends BaseRestController {
 
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		String trialEndDate = customFields.get("trial-end-date");
+
+		if (Validator.isNull(trialEndDate)) {
+			throw new IllegalStateException(
+				"Order " + orderId + " has no \"trial-end-date\" custom field");
+		}
+
 		UserAccount userAccount =
 			_userAccountService.getUserAccountByEmailAddress(
 				order.getCreatorEmailAddress());
-
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
 
 		_postNotification(
 			order.getCreatorEmailAddress(), "TRIAL-EXPIRING-ORDER",
@@ -229,7 +250,7 @@ public class TrialRestController extends BaseRestController {
 			).put(
 				"TRIAL_END_DATE",
 				ZonedDateTime.parse(
-					customFields.get("trial-end-date")
+					trialEndDate
 				).format(
 					DateTimeFormatter.ofPattern("MMMM d, yyyy")
 				)
@@ -291,6 +312,12 @@ public class TrialRestController extends BaseRestController {
 		UserAccount userAccount =
 			_userAccountService.getUserAccountByEmailAddress(
 				order.getCreatorEmailAddress());
+
+		if (userAccount == null) {
+			throw new IllegalArgumentException(
+				"No user account exists for email address \"" +
+					order.getCreatorEmailAddress() + "\"");
+		}
 
 		JSONObject trialSettingsJSONObject = _getTrialSettingsJSONObject(order);
 
@@ -389,6 +416,10 @@ public class TrialRestController extends BaseRestController {
 			long orderId, JSONObject trialProvisioningContextJSONObject,
 			String virtualHost)
 		throws Exception {
+
+		if (Validator.isNull(virtualHost)) {
+			return;
+		}
 
 		PortalInstanceResource portalInstanceResource =
 			_getPortalInstanceResource(trialProvisioningContextJSONObject);

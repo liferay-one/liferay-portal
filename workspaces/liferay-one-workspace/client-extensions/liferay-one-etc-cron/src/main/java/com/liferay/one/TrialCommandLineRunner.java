@@ -12,8 +12,6 @@ import com.liferay.petra.string.StringBundler;
 
 import java.time.ZonedDateTime;
 
-import java.util.Objects;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -175,13 +173,8 @@ public class TrialCommandLineRunner
 					"trial-notify-end-date");
 
 				if (trialNotifyEndDate.isEmpty() &&
-					Objects.equals(
-						nowZonedDateTime.withZoneSameInstant(
-							trialEndDateZonedDateTime.getZone()
-						).toLocalDate(),
-						trialEndDateZonedDateTime.minusDays(
-							1
-						).toLocalDate())) {
+					!nowZonedDateTime.isBefore(
+						trialEndDateZonedDateTime.minusDays(1))) {
 
 					_postTrialNotifyEnd(orderId);
 
