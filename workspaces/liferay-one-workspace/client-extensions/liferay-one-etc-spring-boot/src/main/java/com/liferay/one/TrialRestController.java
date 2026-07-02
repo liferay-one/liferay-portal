@@ -573,18 +573,27 @@ public class TrialRestController extends BaseRestController {
 	}
 
 	private void _postNotification(
-			String toEmailAddress, String externalReferenceCode,
-			Map<String, String> placeholders)
-		throws Exception {
+		String toEmailAddress, String externalReferenceCode,
+		Map<String, String> placeholders) {
 
-		JSONObject processedTemplateJSONObject =
-			_notificationTemplateService.getAndProcessTemplateJSONObject(
-				externalReferenceCode, "en_US", placeholders);
+		try {
+			JSONObject processedTemplateJSONObject =
+				_notificationTemplateService.getAndProcessTemplateJSONObject(
+					externalReferenceCode, "en_US", placeholders);
 
-		_notificationQueueEntryService.addNotificationQueueEntry(
-			"customer-service@liferay.com", "Liferay Support", toEmailAddress,
-			processedTemplateJSONObject.getString("subject"),
-			processedTemplateJSONObject.getString("body"));
+			_notificationQueueEntryService.addNotificationQueueEntry(
+				"customer-service@liferay.com", "Liferay Support",
+				toEmailAddress,
+				processedTemplateJSONObject.getString("subject"),
+				processedTemplateJSONObject.getString("body"));
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to send notification ", externalReferenceCode,
+					" to ", toEmailAddress),
+				exception);
+		}
 	}
 
 	private PortalInstance _postPortalInstance(
