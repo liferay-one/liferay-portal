@@ -10,6 +10,8 @@ package com.liferay.one.constants;
  */
 public class CommerceProductConstants {
 
+	public static final String NAME_PAAS_EXPERIENCE = "PaaS Experience";
+
 	public static final String TYPE_SIMPLE = "simple";
 
 }
