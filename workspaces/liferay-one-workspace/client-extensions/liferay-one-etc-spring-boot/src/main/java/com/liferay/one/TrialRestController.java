@@ -67,6 +67,11 @@ public class TrialRestController extends BaseRestController {
 	public void deleteTrial(@PathVariable long orderId) throws Exception {
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
+
 		JSONObject trialProvisioningContextJSONObject =
 			_getTrialProvisioningContextJSONObject(order);
 
@@ -178,12 +183,29 @@ public class TrialRestController extends BaseRestController {
 			return;
 		}
 
-		Order order = _commerceOrderService.fetchCommerceOrder(
-			trialExtensionRequestJSONObject.getLong(
-				"r_orderToTrialExtensionRequest_commerceOrderId"));
+		long orderId = trialExtensionRequestJSONObject.getLong(
+			"r_orderToTrialExtensionRequest_commerceOrderId");
+
+		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
 
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
+
+		String trialEndDate = null;
+
+		if (customFields != null) {
+			trialEndDate = customFields.get("trial-end-date");
+		}
+
+		if (Validator.isNull(trialEndDate)) {
+			throw new IllegalStateException(
+				"Order " + orderId + " has no \"trial-end-date\" custom field");
+		}
 
 		if (Objects.equals(dueStatusJSONObject.getString("key"), "Pending")) {
 			patch(
@@ -199,14 +221,6 @@ public class TrialRestController extends BaseRestController {
 				).toUri());
 		}
 
-		String trialEndDate = customFields.get("trial-end-date");
-
-		if (Validator.isNull(trialEndDate)) {
-			throw new IllegalStateException(
-				"Order " + order.getId() +
-					" has no \"trial-end-date\" custom field");
-		}
-
 		customFields.put(
 			"trial-end-date",
 			ZonedDateTime.parse(
@@ -218,7 +232,7 @@ public class TrialRestController extends BaseRestController {
 			));
 
 		_commerceOrderService.updateOrder(
-			customFields, order.getId(), order.getOrderStatus());
+			customFields, orderId, order.getOrderStatus());
 	}
 
 	@PostMapping("notify-end/{orderId}")
@@ -229,10 +243,19 @@ public class TrialRestController extends BaseRestController {
 
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
+
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
 
-		String trialEndDate = customFields.get("trial-end-date");
+		String trialEndDate = null;
+
+		if (customFields != null) {
+			trialEndDate = customFields.get("trial-end-date");
+		}
 
 		if (Validator.isNull(trialEndDate)) {
 			throw new IllegalStateException(
@@ -283,6 +306,11 @@ public class TrialRestController extends BaseRestController {
 		}
 
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
 
 		JSONObject trialProvisioningContextJSONObject =
 			_getTrialProvisioningContextJSONObject(order);
