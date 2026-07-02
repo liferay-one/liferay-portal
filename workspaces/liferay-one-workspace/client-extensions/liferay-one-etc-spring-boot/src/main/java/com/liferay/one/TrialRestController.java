@@ -21,6 +21,7 @@ import com.liferay.one.service.NotificationTemplateService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -275,7 +276,7 @@ public class TrialRestController extends BaseRestController {
 				ZonedDateTime.parse(
 					trialEndDate
 				).format(
-					DateTimeFormatter.ofPattern("MMMM d, yyyy")
+					DateTimeFormatter.ofPattern("MMMM d, yyyy", LocaleUtil.US)
 				)
 			).build());
 
@@ -641,6 +642,16 @@ public class TrialRestController extends BaseRestController {
 
 		if (portalInstance != null) {
 			virtualHost = portalInstance.getVirtualHost();
+		}
+
+		try {
+			_consoleService.deleteProject(
+				trialProvisioningContextJSONObject.getString("projectId"));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to delete project during rollback for order " + orderId,
+				exception);
 		}
 
 		try {
