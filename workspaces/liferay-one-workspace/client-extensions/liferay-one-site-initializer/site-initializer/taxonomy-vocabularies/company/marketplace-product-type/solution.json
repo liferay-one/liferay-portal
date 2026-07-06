@@ -5,8 +5,5 @@
 	},
 	"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_SOLUTION",
 	"name": "solution",
-	"name_i18n": {
-		"en_US": "Solution"
-	},
 	"viewableBy": "Anyone"
 }

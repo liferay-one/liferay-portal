@@ -5,8 +5,5 @@
 	},
 	"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT",
 	"name": "liferay-product",
-	"name_i18n": {
-		"en_US": "Liferay Product"
-	},
 	"viewableBy": "Anyone"
 }
