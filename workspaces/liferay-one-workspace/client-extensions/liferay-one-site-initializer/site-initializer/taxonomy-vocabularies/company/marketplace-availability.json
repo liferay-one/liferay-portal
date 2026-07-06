@@ -11,8 +11,5 @@
 	],
 	"externalReferenceCode": "MARKETPLACE_AVAILABILITY",
 	"name": "marketplace-availability",
-	"name_i18n": {
-		"en_US": "Marketplace Availability"
-	},
 	"viewableBy": "Anyone"
 }
