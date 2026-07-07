@@ -138,7 +138,7 @@ public class LicenseEntryService {
 				sb.append(".*");
 			}
 
-			if (!segments[i].isEmpty()) {
+			if (Validator.isNotNull(segments[i])) {
 				sb.append(Pattern.quote(segments[i]));
 			}
 		}
@@ -160,7 +160,7 @@ public class LicenseEntryService {
 			String line = null;
 
 			while ((line = bufferedReader.readLine()) != null) {
-				if (line.isEmpty()) {
+				if (Validator.isNull(line)) {
 					continue;
 				}
 
