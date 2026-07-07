@@ -7,6 +7,9 @@ package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.exception.LicenseKeyActiveException;
+import com.liferay.one.exception.LicenseKeyValidationException;
+import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -52,6 +55,36 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return _toResponseEntity(
 			HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+	}
+
+	@ExceptionHandler(LicenseKeyActiveException.class)
+	public ResponseEntity<?> handleException(
+		LicenseKeyActiveException licenseKeyActiveException) {
+
+		_log.error("The license key is active", licenseKeyActiveException);
+
+		return _toResponseEntity(
+			HttpStatus.CONFLICT, "The license key is active");
+	}
+
+	@ExceptionHandler(LicenseKeyValidationException.class)
+	public ResponseEntity<?> handleException(
+		LicenseKeyValidationException licenseKeyValidationException) {
+
+		_log.error("Invalid license key", licenseKeyValidationException);
+
+		return _toResponseEntity(
+			HttpStatus.BAD_REQUEST, licenseKeyValidationException.getMessage());
+	}
+
+	@ExceptionHandler(NoSuchLicenseKeyException.class)
+	public ResponseEntity<?> handleException(
+		NoSuchLicenseKeyException noSuchLicenseKeyException) {
+
+		_log.error("The license key was not found", noSuchLicenseKeyException);
+
+		return _toResponseEntity(
+			HttpStatus.NOT_FOUND, "The license key was not found");
 	}
 
 	@ExceptionHandler(PrincipalException.class)
