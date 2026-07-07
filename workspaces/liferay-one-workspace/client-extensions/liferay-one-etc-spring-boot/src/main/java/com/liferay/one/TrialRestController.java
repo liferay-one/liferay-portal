@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -442,6 +443,23 @@ public class TrialRestController extends BaseRestController {
 		}
 	}
 
+	@Scheduled(cron = "0 0 */6 * * *")
+	protected void scheduledProcessTrials() {
+		try {
+			_processInProgressTrials();
+		}
+		catch (Exception exception) {
+			_log.error("Unable to process in progress trials", exception);
+		}
+
+		try {
+			_processOnHoldTrials();
+		}
+		catch (Exception exception) {
+			_log.error("Unable to process on hold trials", exception);
+		}
+	}
+
 	private void _deletePortalInstance(
 			long orderId, JSONObject trialProvisioningContextJSONObject,
 			String virtualHost)
@@ -638,6 +656,113 @@ public class TrialRestController extends BaseRestController {
 		}
 
 		return portalInstance;
+	}
+
+	private void _processInProgressTrials() throws Exception {
+		List<Order> orders = _commerceOrderService.getOrders(
+			StringBundler.concat(
+				"orderStatus/any(x:(x eq ",
+				CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS,
+				")) and orderTypeExternalReferenceCode in ('SSA_SAAS', ",
+				"'SOLUTIONS7')"));
+
+		for (Order order : orders) {
+			long orderId = order.getId();
+
+			try {
+				Map<String, String> customFields =
+					(Map<String, String>)order.getCustomFields();
+
+				if (customFields == null) {
+					continue;
+				}
+
+				String trialEndDate = customFields.get("trial-end-date");
+
+				if (Validator.isNull(trialEndDate)) {
+					continue;
+				}
+
+				ZonedDateTime nowZonedDateTime = ZonedDateTime.now();
+
+				ZonedDateTime trialEndDateZonedDateTime = ZonedDateTime.parse(
+					trialEndDate);
+
+				if (nowZonedDateTime.isAfter(trialEndDateZonedDateTime)) {
+					postExpire(orderId);
+
+					continue;
+				}
+
+				String trialNotifyEndDate = customFields.get(
+					"trial-notify-end-date");
+
+				if (Validator.isNull(trialNotifyEndDate) &&
+					!nowZonedDateTime.isBefore(
+						trialEndDateZonedDateTime.minusDays(1))) {
+
+					postNotifyEnd(orderId);
+				}
+			}
+			catch (Exception exception) {
+				_log.error("Unable to process order " + orderId, exception);
+			}
+		}
+	}
+
+	private void _processOnHoldTrials() throws Exception {
+		List<Order> orders = _commerceOrderService.getOrders(
+			StringBundler.concat(
+				"orderStatus/any(x:(x eq ",
+				CommerceOrderConstants.ORDER_STATUS_ON_HOLD,
+				")) and orderTypeExternalReferenceCode eq 'SOLUTIONS7'"));
+
+		if (orders.isEmpty()) {
+			return;
+		}
+
+		JSONObject availabilityJSONObject = new JSONObject(
+			getAvailability("SOLUTIONS7"));
+
+		if (!availabilityJSONObject.getBoolean("active")) {
+			if (_log.isInfoEnabled()) {
+				_log.info("There are no available seats");
+			}
+
+			return;
+		}
+
+		long available = availabilityJSONObject.getLong("available");
+
+		for (Order order : orders) {
+			if (available <= 0) {
+				if (_log.isInfoEnabled()) {
+					_log.info("There are no available seats");
+				}
+
+				break;
+			}
+
+			long orderId = order.getId();
+
+			try {
+				if (_log.isInfoEnabled()) {
+					_log.info("Processing on hold order " + orderId);
+				}
+
+				postProvisioningOrder(orderId);
+
+				if (_log.isInfoEnabled()) {
+					_log.info("Processed on hold order " + orderId);
+				}
+
+				available--;
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to process on hold order " + orderId, exception);
+			}
+		}
 	}
 
 	private void _rollBackTrial(
