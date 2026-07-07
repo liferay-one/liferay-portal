@@ -7,13 +7,13 @@ package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
-import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.CurrencyResource;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.pagination.Page;
+import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -130,6 +132,29 @@ public class CommerceOrderService extends OneBaseService {
 		return orderResource.getOrder(commerceOrderId);
 	}
 
+	public List<Order> getOrders(String filterString) throws Exception {
+		List<Order> orders = new ArrayList<>();
+
+		OrderResource orderResource = _buildOrderResource();
+
+		int page = 1;
+
+		while (true) {
+			Page<Order> ordersPage = orderResource.getOrdersPage(
+				null, filterString, Pagination.of(page, _PAGE_SIZE), null);
+
+			orders.addAll(ordersPage.getItems());
+
+			if (page >= ordersPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return orders;
+	}
+
 	public String getSupportRegion(long accountId, Long defaultBillingAddressId)
 		throws Exception {
 
@@ -232,7 +257,10 @@ public class CommerceOrderService extends OneBaseService {
 		CurrencyResource currencyResource = _buildCurrencyResource();
 
 		Currency currency = currencyResource.getCurrenciesPage(
-			null, "code eq 'EUR'", Pagination.of(1, 1), null
+			null, "code eq 'EUR'",
+			com.liferay.headless.commerce.admin.catalog.client.pagination.
+				Pagination.of(1, 1),
+			null
 		).fetchFirstItem();
 
 		if (currency == null) {
@@ -267,6 +295,8 @@ public class CommerceOrderService extends OneBaseService {
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
+
+	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
 
