@@ -36,8 +36,8 @@ import org.springframework.stereotype.Component;
 public class LicenseKeyValidator {
 
 	public void validateDates(
-			String licenseEntryType, String hostName, String ipAddresses,
-			String macAddresses, Date startDate, Date expirationDate)
+			Date expirationDate, String hostName, String ipAddresses,
+			String licenseEntryType, String macAddresses, Date startDate)
 		throws LicenseKeyValidationException {
 
 		if ((startDate == null) || (expirationDate == null) ||
@@ -53,8 +53,8 @@ public class LicenseKeyValidator {
 	}
 
 	public void validateMetadata(
-			String productVersion, String name, String owner,
-			String description, String licenseEntryType, int maxClusterNodes)
+			String description, String licenseEntryType, int maxClusterNodes,
+			String name, String owner, String productVersion)
 		throws LicenseKeyValidationException {
 
 		if (Validator.isNull(productVersion)) {
@@ -119,8 +119,8 @@ public class LicenseKeyValidator {
 	}
 
 	public void validateUpdate(
-			String licenseEntryType, String owner, String description,
-			String hostName, String ipAddresses, String macAddresses)
+			String description, String hostName, String ipAddresses,
+			String licenseEntryType, String macAddresses, String owner)
 		throws LicenseKeyValidationException {
 
 		if (Validator.isNull(owner) || (owner.length() > 75)) {

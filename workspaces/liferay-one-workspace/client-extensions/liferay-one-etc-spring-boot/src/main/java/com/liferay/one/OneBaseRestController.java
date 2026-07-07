@@ -61,17 +61,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 	public ResponseEntity<?> handleException(
 		LicenseKeyActiveException licenseKeyActiveException) {
 
-		_log.error("The license key is active", licenseKeyActiveException);
+		_log.error("The license key is inactive", licenseKeyActiveException);
 
 		return _toResponseEntity(
-			HttpStatus.CONFLICT, "The license key is active");
+			HttpStatus.CONFLICT, "The license key is inactive");
 	}
 
 	@ExceptionHandler(LicenseKeyValidationException.class)
 	public ResponseEntity<?> handleException(
 		LicenseKeyValidationException licenseKeyValidationException) {
 
-		_log.error("Invalid license key", licenseKeyValidationException);
+		_log.error(
+			"The license key is not valid", licenseKeyValidationException);
 
 		return _toResponseEntity(
 			HttpStatus.BAD_REQUEST, licenseKeyValidationException.getMessage());
