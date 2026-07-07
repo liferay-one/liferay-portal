@@ -5,11 +5,9 @@
 
 package com.liferay.one.license;
 
-import com.liferay.one.constants.ProductVersion;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.ee.license.shared.KeyGenerator;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -23,12 +21,12 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import java.text.DateFormat;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -98,7 +96,7 @@ public class LicenseKeyExporter {
 			Date createDate)
 		throws Exception {
 
-		Map<String, String> properties = _getProperties(
+		Map<String, String> properties = _licenseKeyGenerator.getProperties(
 			accountName, licenseEntryName, licenseType, licenseVersion,
 			productName, productId, productVersion, owner, maxClusterNodes,
 			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
@@ -122,13 +120,14 @@ public class LicenseKeyExporter {
 		Element serversElement = rootElement.addElement("servers");
 
 		for (int i = 0; i < serverIds.length; i++) {
-			Map<String, String> curProperties = _getProperties(
-				accountName, licenseEntryName, licenseType, licenseVersion,
-				productName, productId, productVersion, owner, maxClusterNodes,
-				maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers,
-				sizing, description, domains, hostNames[i], ipAddresses[i],
-				macAddresses[i], serverIds[i], startDate, expirationDate,
-				createDate);
+			Map<String, String> curProperties =
+				_licenseKeyGenerator.getProperties(
+					accountName, licenseEntryName, licenseType, licenseVersion,
+					productName, productId, productVersion, owner,
+					maxClusterNodes, maxServers, maxHttpSessions,
+					maxConcurrentUsers, maxUsers, sizing, description, domains,
+					hostNames[i], ipAddresses[i], macAddresses[i], serverIds[i],
+					startDate, expirationDate, createDate);
 
 			Element serverElement = serversElement.addElement("server");
 
@@ -155,7 +154,7 @@ public class LicenseKeyExporter {
 		properties.put("ipAddresses", StringUtil.merge(allIpAddresses));
 		properties.put("macAddresses", StringUtil.merge(allMacAddresses));
 
-		String key = KeyGenerator.encrypt(properties);
+		String key = _licenseKeyGenerator.encrypt(properties);
 
 		_addElement(rootElement, "key", key);
 
@@ -175,7 +174,7 @@ public class LicenseKeyExporter {
 
 		Document document = null;
 
-		Map<String, String> properties = _getProperties(
+		Map<String, String> properties = _licenseKeyGenerator.getProperties(
 			accountName, licenseEntryName, licenseType, licenseVersion,
 			productName, productId, productVersion, owner, maxClusterNodes,
 			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
@@ -461,39 +460,7 @@ public class LicenseKeyExporter {
 		}
 	}
 
-	private Map<String, String> _getProperties(
-		String accountName, String licenseEntryName, String licenseType,
-		int licenseVersion, String productName, String productId,
-		String productVersion, String owner, int maxClusterNodes,
-		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
-		long maxUsers, String sizing, String description, String domains,
-		String hostNames, String ipAddresses, String macAddresses,
-		String serverIds, Date startDate, Date expirationDate,
-		Date createDate) {
-
-		Map<String, String> properties = KeyGenerator.getProperties(
-			accountName, description, StringUtil.split(domains), expirationDate,
-			StringUtil.split(hostNames), sizing, StringUtil.split(ipAddresses),
-			licenseEntryName, licenseType, String.valueOf(licenseVersion),
-			StringUtil.split(macAddresses), maxClusterNodes, maxConcurrentUsers,
-			maxHttpSessions, maxServers, maxUsers, owner, productName,
-			productId, productVersion, new String[] {serverIds}, startDate);
-
-		if (productVersion.equals(ProductVersion.PORTAL_VERSION_6_1_10) ||
-			productVersion.equals("6.1 GA 1")) {
-
-			Calendar cal = Calendar.getInstance();
-
-			cal.set(Calendar.DAY_OF_MONTH, 31);
-			cal.set(Calendar.MONTH, 6);
-			cal.set(Calendar.YEAR, 2012);
-
-			if (createDate.before(cal.getTime())) {
-				properties.put("productVersion", "6.1");
-			}
-		}
-
-		return properties;
-	}
+	@Autowired
+	private LicenseKeyGenerator _licenseKeyGenerator;
 
 }
