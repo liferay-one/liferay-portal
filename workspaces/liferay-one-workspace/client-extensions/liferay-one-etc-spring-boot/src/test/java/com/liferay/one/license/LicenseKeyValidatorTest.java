@@ -33,8 +33,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyDateException.class,
 			() -> _licenseKeyValidator.validateDates(
-				LicenseConstants.TYPE_ENTERPRISE, null, null, null,
-				new Date(2000), new Date(1000)));
+				new Date(1000), null, null, LicenseConstants.TYPE_ENTERPRISE,
+				null, new Date(2000)));
 	}
 
 	@Test
@@ -42,8 +42,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyDateException.class,
 			() -> _licenseKeyValidator.validateDates(
-				LicenseConstants.TYPE_ENTERPRISE, null, null, null,
-				new Date(1000), null));
+				null, null, null, LicenseConstants.TYPE_ENTERPRISE, null,
+				new Date(1000)));
 	}
 
 	@Test
@@ -51,16 +51,16 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyDateException.class,
 			() -> _licenseKeyValidator.validateDates(
-				LicenseConstants.TYPE_ENTERPRISE, null, null, null, null,
-				new Date(1000)));
+				new Date(1000), null, null, LicenseConstants.TYPE_ENTERPRISE,
+				null, null));
 	}
 
 	@Test
 	public void testValidateDatesValid() {
 		Assertions.assertDoesNotThrow(
 			() -> _licenseKeyValidator.validateDates(
-				LicenseConstants.TYPE_ENTERPRISE, null, null, null,
-				new Date(1000), new Date(2000)));
+				new Date(2000), null, null, LicenseConstants.TYPE_ENTERPRISE,
+				null, new Date(1000)));
 	}
 
 	@Test
@@ -68,8 +68,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyDescriptionException.class,
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", "name", "owner", null, LicenseConstants.TYPE_ENTERPRISE,
-				0));
+				null, LicenseConstants.TYPE_ENTERPRISE, 0, "name", "owner",
+				"7.4"));
 	}
 
 	@Test
@@ -77,8 +77,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyMaxClusterNodesException.class,
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", "name", "owner", "description",
-				LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0));
+				"description", LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0, "name",
+				"owner", "7.4"));
 	}
 
 	@Test
@@ -86,8 +86,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyNameException.class,
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", null, "owner", "description",
-				LicenseConstants.TYPE_ENTERPRISE, 0));
+				"description", LicenseConstants.TYPE_ENTERPRISE, 0, null,
+				"owner", "7.4"));
 	}
 
 	@Test
@@ -95,8 +95,8 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyOwnerException.class,
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", "name", null, "description",
-				LicenseConstants.TYPE_ENTERPRISE, 0));
+				"description", LicenseConstants.TYPE_ENTERPRISE, 0, "name",
+				null, "7.4"));
 	}
 
 	@Test
@@ -104,24 +104,24 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyProductVersionException.class,
 			() -> _licenseKeyValidator.validateMetadata(
-				null, "name", "owner", "description",
-				LicenseConstants.TYPE_ENTERPRISE, 0));
+				"description", LicenseConstants.TYPE_ENTERPRISE, 0, "name",
+				"owner", null));
 	}
 
 	@Test
 	public void testValidateMetadataValid() {
 		Assertions.assertDoesNotThrow(
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", "name", "owner", "description",
-				LicenseConstants.TYPE_ENTERPRISE, 0));
+				"description", LicenseConstants.TYPE_ENTERPRISE, 0, "name",
+				"owner", "7.4"));
 	}
 
 	@Test
 	public void testValidateMetadataValidVirtualCluster() {
 		Assertions.assertDoesNotThrow(
 			() -> _licenseKeyValidator.validateMetadata(
-				"7.4", "name", "owner", "description",
-				LicenseConstants.TYPE_VIRTUAL_CLUSTER, 3));
+				"description", LicenseConstants.TYPE_VIRTUAL_CLUSTER, 3, "name",
+				"owner", "7.4"));
 	}
 
 	@Test
@@ -191,7 +191,7 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyOwnerException.class,
 			() -> _licenseKeyValidator.validateUpdate(
-				LicenseConstants.TYPE_ENTERPRISE, null, "description", null,
+				"description", null, null, LicenseConstants.TYPE_ENTERPRISE,
 				null, null));
 	}
 
@@ -200,16 +200,16 @@ public class LicenseKeyValidatorTest {
 		Assertions.assertThrows(
 			LicenseKeyServerInfoException.class,
 			() -> _licenseKeyValidator.validateUpdate(
-				LicenseConstants.TYPE_PRODUCTION, "owner", "description", null,
-				null, null));
+				"description", null, null, LicenseConstants.TYPE_PRODUCTION,
+				null, "owner"));
 	}
 
 	@Test
 	public void testValidateUpdateValid() {
 		Assertions.assertDoesNotThrow(
 			() -> _licenseKeyValidator.validateUpdate(
-				LicenseConstants.TYPE_ENTERPRISE, "owner", "description", null,
-				null, null));
+				"description", null, null, LicenseConstants.TYPE_ENTERPRISE,
+				null, "owner"));
 	}
 
 	private final LicenseKeyValidator _licenseKeyValidator =
