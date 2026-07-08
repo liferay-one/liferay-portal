@@ -4672,6 +4672,7 @@
 			"enableComments": false,
 			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_LICENSE_TYPES_DESCRIPTION",
+			"friendlyURLSeparator": "l",
 			"label": {
 				"en_US": "License Types Description"
 			},
