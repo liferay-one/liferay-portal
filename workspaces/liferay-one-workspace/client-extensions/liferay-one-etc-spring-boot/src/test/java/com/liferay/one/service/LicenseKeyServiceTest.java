@@ -122,6 +122,15 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testSearchEscapesSingleQuotes() throws Exception {
+		_licenseKeyService.search(
+			null, "O'Connor", null, null, null, null, null, null, null, null);
+
+		Assertions.assertEquals(
+			"(owner eq 'O''Connor')", _filterCaptor.getValue());
+	}
+
+	@Test
 	public void testSearchWithNoCriteriaUsesNullFilter() throws Exception {
 		_licenseKeyService.search(
 			null, null, null, null, null, null, null, null, null, null);
