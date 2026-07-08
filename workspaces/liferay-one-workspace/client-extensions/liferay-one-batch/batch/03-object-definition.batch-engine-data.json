@@ -4121,6 +4121,133 @@
 		},
 		{
 			"active": true,
+			"className": "com.liferay.object.model.ObjectDefinition#C_PRODUCT_VERSION",
+			"enableCategorization": false,
+			"enableComments": false,
+			"enableObjectEntryHistory": false,
+			"externalReferenceCode": "C_PRODUCT_VERSION",
+			"label": {
+				"en_US": "Product Version"
+			},
+			"name": "ProductVersion",
+			"objectFields": [
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_GROUP",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Product Group"
+					},
+					"name": "productGroup",
+					"objectFieldSettings": [
+					],
+					"required": true,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_VERSION",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Version"
+					},
+					"name": "productVersion",
+					"objectFieldSettings": [
+					],
+					"required": true,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": "true",
+					"externalReferenceCode": "C_PRODUCT_VERSION_SUPPORTED",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Supported"
+					},
+					"name": "supported",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				}
+			],
+			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
+			"objectRelationships": [
+			],
+			"objectValidationRules": [
+			],
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_PRODUCT_VERSION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Product Group"
+							},
+							"objectFieldName": "productGroup",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Version"
+							},
+							"objectFieldName": "productVersion",
+							"priority": 2
+						},
+						{
+							"label": {
+								"en_US": "Supported"
+							},
+							"objectFieldName": "supported",
+							"priority": 3
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
+			"pluralLabel": {
+				"en_US": "Product Versions"
+			},
+			"portlet": true,
+			"restContextPath": "/o/c/productversions",
+			"scope": "company",
+			"status": {
+				"code": 0,
+				"label": "approved",
+				"label_i18n": "Approved"
+			},
+			"system": false,
+			"titleObjectFieldName": "productVersion"
+		},
+		{
+			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_PROJECT",
 			"enableCategorization": false,
 			"enableComments": false,
