@@ -55,8 +55,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -138,25 +137,6 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 			"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
 	}
 
-	@ExceptionHandler(HttpClientErrorException.Forbidden.class)
-	public ResponseEntity<String> handleException(
-		HttpClientErrorException.Forbidden httpClientErrorException) {
-
-		_log.error(httpClientErrorException, httpClientErrorException);
-
-		return new ResponseEntity<>("FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
-	}
-
-	@ExceptionHandler(HttpServerErrorException.ServiceUnavailable.class)
-	public ResponseEntity<String> handleException(
-		HttpServerErrorException.ServiceUnavailable httpServerErrorException) {
-
-		_log.error(httpServerErrorException, httpServerErrorException);
-
-		return new ResponseEntity<>(
-			"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
-	}
-
 	@ExceptionHandler(OrganizationNotFoundException.class)
 	public ResponseEntity<String> handleException(
 		OrganizationNotFoundException organizationNotFoundException) {
@@ -201,6 +181,29 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		return new ResponseEntity<>(
 			"ATTACHMENT_NOT_FOUND", HttpStatus.NOT_FOUND);
+	}
+
+	@ExceptionHandler(WebClientResponseException.class)
+	public ResponseEntity<String> handleException(
+		WebClientResponseException webClientResponseException) {
+
+		_log.error(webClientResponseException);
+
+		int statusCode = webClientResponseException.getStatusCode(
+		).value();
+
+		if (statusCode == HttpStatus.FORBIDDEN.value()) {
+			return new ResponseEntity<>(
+				"FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
+		}
+
+		if (statusCode == HttpStatus.SERVICE_UNAVAILABLE.value()) {
+			return new ResponseEntity<>(
+				"FILE_SERVER_UNAVAILABLE", HttpStatus.SERVICE_UNAVAILABLE);
+		}
+
+		return new ResponseEntity<>(
+			"UNEXPECTED_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
 	@PostMapping("/{ticketAttachmentId}/complete-upload")
