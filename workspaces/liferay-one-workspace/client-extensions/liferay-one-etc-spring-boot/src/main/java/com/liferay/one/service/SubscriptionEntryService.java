@@ -30,6 +30,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -41,11 +42,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class SubscriptionEntryService extends OneBaseService {
 
 	public SubscriptionEntry addSubscriptionEntry(
-			String className, long classPK, long userId)
+			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
 		SubscriptionEntry existingSubscriptionEntry = fetchSubscriptionEntry(
-			className, classPK, userId);
+			jwt, className, classPK, userId);
 
 		if (existingSubscriptionEntry != null) {
 			return existingSubscriptionEntry;
@@ -61,7 +62,7 @@ public class SubscriptionEntryService extends OneBaseService {
 		);
 
 		String response = post(
-			getAuthorization(), subscriptionEntryJSONObject.toString(),
+			getAuthorization(jwt), subscriptionEntryJSONObject.toString(),
 			UriComponentsBuilder.fromPath(
 				"/o/c/subscriptionentries"
 			).build(
@@ -81,8 +82,8 @@ public class SubscriptionEntryService extends OneBaseService {
 
 		for (LicenseKey licenseKey : licenseKeys) {
 			deleteSubscriptionEntry(
-				ClassNameConstants.LICENSE_KEY, licenseKey.getLicenseKeyId(),
-				userId);
+				null, ClassNameConstants.LICENSE_KEY,
+				licenseKey.getLicenseKeyId(), userId);
 		}
 	}
 
@@ -92,29 +93,31 @@ public class SubscriptionEntryService extends OneBaseService {
 
 		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 			_deleteSubscriptionEntry(
-				subscriptionEntry.getSubscriptionEntryId());
+				null, subscriptionEntry.getSubscriptionEntryId());
 		}
 	}
 
 	public void deleteSubscriptionEntry(
-			String className, long classPK, long userId)
+			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
 		SubscriptionEntry subscriptionEntry = fetchSubscriptionEntry(
-			className, classPK, userId);
+			jwt, className, classPK, userId);
 
 		if (subscriptionEntry == null) {
 			return;
 		}
 
-		_deleteSubscriptionEntry(subscriptionEntry.getSubscriptionEntryId());
+		_deleteSubscriptionEntry(
+			jwt, subscriptionEntry.getSubscriptionEntryId());
 	}
 
 	public SubscriptionEntry fetchSubscriptionEntry(
-			String className, long classPK, long userId)
+			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
 		List<SubscriptionEntry> subscriptionEntries = getSubscriptionEntries(
+			jwt,
 			StringBundler.concat(
 				"(className eq '", className, "') and (classPK eq ", classPK,
 				") and (customUserId eq ", userId, ")"));
@@ -126,11 +129,19 @@ public class SubscriptionEntryService extends OneBaseService {
 		return subscriptionEntries.get(0);
 	}
 
-	public List<SubscriptionEntry> getSubscriptionEntries(String filterString)
+	public List<SubscriptionEntry> getSubscriptionEntries(
+			Jwt jwt, String filterString)
 		throws Exception {
 
 		return getAllItems(
-			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new);
+			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new,
+			jwt);
+	}
+
+	public List<SubscriptionEntry> getSubscriptionEntries(String filterString)
+		throws Exception {
+
+		return getSubscriptionEntries(null, filterString);
 	}
 
 	@Scheduled(cron = "0 0 0 * * *")
@@ -140,11 +151,11 @@ public class SubscriptionEntryService extends OneBaseService {
 		_sendExpiringLicenseKeyEmails(0);
 	}
 
-	private void _deleteSubscriptionEntry(long subscriptionEntryId)
+	private void _deleteSubscriptionEntry(Jwt jwt, long subscriptionEntryId)
 		throws Exception {
 
 		delete(
-			getAuthorization(), StringPool.BLANK,
+			getAuthorization(jwt), StringPool.BLANK,
 			UriComponentsBuilder.fromPath(
 				"/o/c/subscriptionentries/" + subscriptionEntryId
 			).build(

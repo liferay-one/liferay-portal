@@ -28,7 +28,10 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -149,7 +152,8 @@ public class LicenseKeyService extends OneBaseService {
 
 		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 			_subscriptionEntryService.addSubscriptionEntry(
-				ClassNameConstants.LICENSE_KEY, newLicenseKey.getLicenseKeyId(),
+				null, ClassNameConstants.LICENSE_KEY,
+				newLicenseKey.getLicenseKeyId(),
 				subscriptionEntry.getCustomUserId());
 		}
 
@@ -176,6 +180,33 @@ public class LicenseKeyService extends OneBaseService {
 				"(active eq ", active, ") and (complimentary eq ",
 				complimentary, ") and (orderId eq '",
 				_escapeODataString(orderId), "')"));
+	}
+
+	public LicenseKey getLicenseKey(Jwt jwt, long licenseKeyId)
+		throws Exception {
+
+		try {
+			String response = get(
+				getAuthorization(jwt),
+				UriComponentsBuilder.fromPath(
+					"/o/c/licensekeys/{licenseKeyId}"
+				).buildAndExpand(
+					licenseKeyId
+				).toUri());
+
+			return new LicenseKey(new JSONObject(response));
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				throw new NoSuchLicenseKeyException(
+					"No license key exists with ID " + licenseKeyId);
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public LicenseKey getLicenseKey(long licenseKeyId) throws Exception {
