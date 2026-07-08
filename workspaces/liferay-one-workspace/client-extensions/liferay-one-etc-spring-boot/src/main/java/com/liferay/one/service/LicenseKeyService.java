@@ -203,6 +203,17 @@ public class LicenseKeyService extends OneBaseService {
 		return licenseKeys.get(0);
 	}
 
+	public List<LicenseKey> getLicenseKeys(
+			long entitlementId, boolean complimentary, boolean active)
+		throws Exception {
+
+		return getLicenseKeys(
+			StringBundler.concat(
+				"(entitlementId eq '", entitlementId,
+				"') and (complimentary eq ", complimentary, ") and (active eq ",
+				active, ")"));
+	}
+
 	public List<LicenseKey> getLicenseKeys(String filterString)
 		throws Exception {
 
