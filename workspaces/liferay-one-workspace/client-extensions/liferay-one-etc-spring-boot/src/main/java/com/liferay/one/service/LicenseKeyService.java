@@ -39,15 +39,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class LicenseKeyService extends OneBaseService {
 
 	public LicenseKey addLicenseKey(
-			String licenseType, String licenseName, String productExternalId,
-			String productName, String productVersion, int licenseVersion,
-			String name, String owner, String description, String domains,
-			String hostName, String ipAddresses, String macAddresses,
-			String serverId, String accountName, int maxClusterNodes,
-			int maxServers, int maxHttpSessions, long maxConcurrentUsers,
-			long maxUsers, String sizing, String additionalInfo, String orderId,
-			Date startDate, Date expirationDate, boolean complimentary,
-			boolean active)
+			String accountName, boolean active, String additionalInfo,
+			boolean complimentary, String description, String domains,
+			Date expirationDate, String hostName, String ipAddresses,
+			String licenseName, String licenseType, int licenseVersion,
+			String macAddresses, int maxClusterNodes, long maxConcurrentUsers,
+			int maxHttpSessions, int maxServers, long maxUsers, String name,
+			String orderId, String owner, String productExternalId,
+			String productName, String productVersion, String serverId,
+			String sizing, Date startDate)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -135,11 +135,11 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public LicenseKey extendLicenseKey(
-			long licenseKeyId, Date startDate, Date expirationDate)
+			Date expirationDate, long licenseKeyId, Date startDate)
 		throws Exception {
 
 		LicenseKey newLicenseKey = _copyLicenseKey(
-			getLicenseKey(licenseKeyId), startDate, expirationDate);
+			expirationDate, getLicenseKey(licenseKeyId), startDate);
 
 		List<SubscriptionEntry> subscriptionEntries =
 			_subscriptionEntryService.getSubscriptionEntries(
@@ -157,25 +157,25 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(
-			String orderId, boolean complimentary, boolean active)
+			boolean active, boolean complimentary, String orderId)
 		throws Exception {
 
 		return getLicenseKeys(
 			StringBundler.concat(
-				"(orderId eq '", _escapeODataString(orderId),
-				"') and (complimentary eq ", complimentary, ") and (active eq ",
-				active, ")"));
+				"(active eq ", active, ") and (complimentary eq ",
+				complimentary, ") and (orderId eq '",
+				_escapeODataString(orderId), "')"));
 	}
 
 	public int getAssetReceiptLicenseLicenseKeysCount(
-			String orderId, boolean complimentary, boolean active)
+			boolean active, boolean complimentary, String orderId)
 		throws Exception {
 
 		return _getCount(
 			StringBundler.concat(
-				"(orderId eq '", _escapeODataString(orderId),
-				"') and (complimentary eq ", complimentary, ") and (active eq ",
-				active, ")"));
+				"(active eq ", active, ") and (complimentary eq ",
+				complimentary, ") and (orderId eq '",
+				_escapeODataString(orderId), "')"));
 	}
 
 	public LicenseKey getLicenseKey(long licenseKeyId) throws Exception {
@@ -208,14 +208,27 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public List<LicenseKey> getLicenseKeys(
-			long entitlementId, boolean complimentary, boolean active)
+			boolean active, boolean complimentary, long entitlementId)
 		throws Exception {
 
 		return getLicenseKeys(
 			StringBundler.concat(
-				"(entitlementId eq '", entitlementId,
-				"') and (complimentary eq ", complimentary, ") and (active eq ",
-				active, ")"));
+				"(active eq ", active, ") and (complimentary eq ",
+				complimentary, ") and (entitlementId eq '", entitlementId,
+				"')"));
+	}
+
+	public List<LicenseKey> getLicenseKeys(
+			boolean active, String orderId, String productExternalId,
+			String serverId)
+		throws Exception {
+
+		return getLicenseKeys(
+			StringBundler.concat(
+				"(active eq ", active, ") and (orderId eq '",
+				_escapeODataString(orderId), "') and (productExternalId eq '",
+				_escapeODataString(productExternalId), "') and (serverId eq '",
+				_escapeODataString(serverId), "')"));
 	}
 
 	public List<LicenseKey> getLicenseKeys(String filterString)
@@ -236,43 +249,29 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public List<LicenseKey> getLicenseKeys(
-			String licenseType, String owner, String domains)
+			String domains, String licenseType, String owner)
 		throws Exception {
 
 		return getLicenseKeys(
 			StringBundler.concat(
-				"(licenseType eq '", _escapeODataString(licenseType),
-				"') and (owner eq '", _escapeODataString(owner),
-				"') and (domains eq '", _escapeODataString(domains), "')"));
-	}
-
-	public List<LicenseKey> getLicenseKeys(
-			String orderId, String productExternalId, String serverId,
-			boolean active)
-		throws Exception {
-
-		return getLicenseKeys(
-			StringBundler.concat(
-				"(orderId eq '", _escapeODataString(orderId),
-				"') and (productExternalId eq '",
-				_escapeODataString(productExternalId), "') and (serverId eq '",
-				_escapeODataString(serverId), "') and (active eq ", active,
-				")"));
+				"(domains eq '", _escapeODataString(domains),
+				"') and (licenseType eq '", _escapeODataString(licenseType),
+				"') and (owner eq '", _escapeODataString(owner), "')"));
 	}
 
 	public List<LicenseKey> getLicenseKeysByName(
-			String productName, String serverId, boolean active)
+			boolean active, String productName, String serverId)
 		throws Exception {
 
 		return getLicenseKeys(
 			StringBundler.concat(
-				"(productName eq '", _escapeODataString(productName),
-				"') and (serverId eq '", _escapeODataString(serverId),
-				"') and (active eq ", active, ")"));
+				"(active eq ", active, ") and (productName eq '",
+				_escapeODataString(productName), "') and (serverId eq '",
+				_escapeODataString(serverId), "')"));
 	}
 
 	public LicenseKey replaceLicenseKey(
-			long licenseKeyId, Date startDate, Date expirationDate)
+			Date expirationDate, long licenseKeyId, Date startDate)
 		throws Exception {
 
 		LicenseKey licenseKey = getLicenseKey(licenseKeyId);
@@ -284,41 +283,41 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		LicenseKey newLicenseKey = _copyLicenseKey(
-			licenseKey, startDate, expirationDate);
+			expirationDate, licenseKey, startDate);
 
-		updateLicenseKey(licenseKeyId, licenseKey.isComplimentary(), false);
+		updateLicenseKey(false, licenseKey.isComplimentary(), licenseKeyId);
 
 		return newLicenseKey;
 	}
 
 	public List<LicenseKey> search(
-			String licenseType, String owner, String description,
-			String hostName, String ipAddress, String macAddress,
-			String serverId, String productName, String productExternalId,
-			Boolean active)
+			Boolean active, String description, String hostName,
+			String ipAddress, String licenseType, String macAddress,
+			String owner, String productExternalId, String productName,
+			String serverId)
 		throws Exception {
 
 		return getLicenseKeys(
 			_buildSearchFilter(
-				licenseType, owner, description, hostName, ipAddress,
-				macAddress, serverId, productName, productExternalId, active));
+				active, description, hostName, ipAddress, licenseType,
+				macAddress, owner, productExternalId, productName, serverId));
 	}
 
 	public int searchCount(
-			String licenseType, String owner, String description,
-			String hostName, String ipAddress, String macAddress,
-			String serverId, String productName, String productExternalId,
-			Boolean active)
+			Boolean active, String description, String hostName,
+			String ipAddress, String licenseType, String macAddress,
+			String owner, String productExternalId, String productName,
+			String serverId)
 		throws Exception {
 
 		return _getCount(
 			_buildSearchFilter(
-				licenseType, owner, description, hostName, ipAddress,
-				macAddress, serverId, productName, productExternalId, active));
+				active, description, hostName, ipAddress, licenseType,
+				macAddress, owner, productExternalId, productName, serverId));
 	}
 
 	public LicenseKey updateLicenseKey(
-			long licenseKeyId, boolean complimentary, boolean active)
+			boolean active, boolean complimentary, long licenseKeyId)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
@@ -339,7 +338,7 @@ public class LicenseKeyService extends OneBaseService {
 		return new LicenseKey(new JSONObject(response));
 	}
 
-	public LicenseKey updateLicenseKeyActive(long licenseKeyId, boolean active)
+	public LicenseKey updateLicenseKeyActive(boolean active, long licenseKeyId)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
@@ -359,19 +358,14 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private String _buildSearchFilter(
-		String licenseType, String owner, String description, String hostName,
-		String ipAddress, String macAddress, String serverId,
-		String productName, String productExternalId, Boolean active) {
+		Boolean active, String description, String hostName, String ipAddress,
+		String licenseType, String macAddress, String owner,
+		String productExternalId, String productName, String serverId) {
 
 		List<String> conditions = new ArrayList<>();
 
-		if (Validator.isNotNull(licenseType)) {
-			conditions.add(
-				"(licenseType eq '" + _escapeODataString(licenseType) + "')");
-		}
-
-		if (Validator.isNotNull(owner)) {
-			conditions.add("(owner eq '" + _escapeODataString(owner) + "')");
+		if (active != null) {
+			conditions.add("(active eq " + active + ")");
 		}
 
 		if (Validator.isNotNull(description)) {
@@ -389,19 +383,18 @@ public class LicenseKeyService extends OneBaseService {
 				"(ipAddresses eq '" + _escapeODataString(ipAddress) + "')");
 		}
 
+		if (Validator.isNotNull(licenseType)) {
+			conditions.add(
+				"(licenseType eq '" + _escapeODataString(licenseType) + "')");
+		}
+
 		if (Validator.isNotNull(macAddress)) {
 			conditions.add(
 				"(macAddresses eq '" + _escapeODataString(macAddress) + "')");
 		}
 
-		if (Validator.isNotNull(serverId)) {
-			conditions.add(
-				"(serverId eq '" + _escapeODataString(serverId) + "')");
-		}
-
-		if (Validator.isNotNull(productName)) {
-			conditions.add(
-				"(productName eq '" + _escapeODataString(productName) + "')");
+		if (Validator.isNotNull(owner)) {
+			conditions.add("(owner eq '" + _escapeODataString(owner) + "')");
 		}
 
 		if (Validator.isNotNull(productExternalId)) {
@@ -410,8 +403,14 @@ public class LicenseKeyService extends OneBaseService {
 					_escapeODataString(productExternalId) + "')");
 		}
 
-		if (active != null) {
-			conditions.add("(active eq " + active + ")");
+		if (Validator.isNotNull(productName)) {
+			conditions.add(
+				"(productName eq '" + _escapeODataString(productName) + "')");
+		}
+
+		if (Validator.isNotNull(serverId)) {
+			conditions.add(
+				"(serverId eq '" + _escapeODataString(serverId) + "')");
 		}
 
 		if (conditions.isEmpty()) {
@@ -422,23 +421,22 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private LicenseKey _copyLicenseKey(
-			LicenseKey licenseKey, Date startDate, Date expirationDate)
+			Date expirationDate, LicenseKey licenseKey, Date startDate)
 		throws Exception {
 
 		return addLicenseKey(
-			licenseKey.getLicenseType(), licenseKey.getLicenseName(),
-			licenseKey.getProductExternalId(), licenseKey.getProductName(),
-			licenseKey.getProductVersion(), licenseKey.getLicenseVersion(),
-			licenseKey.getName(), licenseKey.getOwner(),
-			licenseKey.getDescription(), licenseKey.getDomains(),
-			licenseKey.getHostName(), licenseKey.getIpAddresses(),
-			licenseKey.getMacAddresses(), licenseKey.getServerId(),
-			licenseKey.getAccountName(), licenseKey.getMaxClusterNodes(),
-			licenseKey.getMaxServers(), licenseKey.getMaxHttpSessions(),
-			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxUsers(),
-			licenseKey.getSizing(), licenseKey.getAdditionalInfo(),
-			licenseKey.getOrderId(), startDate, expirationDate,
-			licenseKey.isComplimentary(), true);
+			licenseKey.getAccountName(), true, licenseKey.getAdditionalInfo(),
+			licenseKey.isComplimentary(), licenseKey.getDescription(),
+			licenseKey.getDomains(), expirationDate, licenseKey.getHostName(),
+			licenseKey.getIpAddresses(), licenseKey.getLicenseName(),
+			licenseKey.getLicenseType(), licenseKey.getLicenseVersion(),
+			licenseKey.getMacAddresses(), licenseKey.getMaxClusterNodes(),
+			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxHttpSessions(),
+			licenseKey.getMaxServers(), licenseKey.getMaxUsers(),
+			licenseKey.getName(), licenseKey.getOrderId(),
+			licenseKey.getOwner(), licenseKey.getProductExternalId(),
+			licenseKey.getProductName(), licenseKey.getProductVersion(),
+			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
 	}
 
 	private String _escapeODataString(String value) {

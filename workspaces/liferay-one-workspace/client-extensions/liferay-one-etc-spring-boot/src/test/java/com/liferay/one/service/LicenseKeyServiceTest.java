@@ -41,11 +41,11 @@ public class LicenseKeyServiceTest {
 	@Test
 	public void testGetAssetReceiptLicenseLicenseKeysFilter() throws Exception {
 		_licenseKeyService.getAssetReceiptLicenseLicenseKeys(
-			"order-1", false, true);
+			true, false, "order-1");
 
 		Assertions.assertEquals(
-			"(orderId eq 'order-1') and (complimentary eq false) and (active " +
-				"eq true)",
+			"(active eq true) and (complimentary eq false) and (orderId eq " +
+				"'order-1')",
 			_filterCaptor.getValue());
 	}
 
@@ -59,21 +59,21 @@ public class LicenseKeyServiceTest {
 
 	@Test
 	public void testGetLicenseKeysByEntitlementFilter() throws Exception {
-		_licenseKeyService.getLicenseKeys(777L, false, true);
+		_licenseKeyService.getLicenseKeys(true, false, 777L);
 
 		Assertions.assertEquals(
-			"(entitlementId eq '777') and (complimentary eq false) and " +
-				"(active eq true)",
+			"(active eq true) and (complimentary eq false) and " +
+				"(entitlementId eq '777')",
 			_filterCaptor.getValue());
 	}
 
 	@Test
 	public void testGetLicenseKeysByNameFilter() throws Exception {
-		_licenseKeyService.getLicenseKeysByName("DXP", "srv-1", true);
+		_licenseKeyService.getLicenseKeysByName(true, "DXP", "srv-1");
 
 		Assertions.assertEquals(
-			"(productName eq 'DXP') and (serverId eq 'srv-1') and (active eq " +
-				"true)",
+			"(active eq true) and (productName eq 'DXP') and (serverId eq " +
+				"'srv-1')",
 			_filterCaptor.getValue());
 	}
 
@@ -81,11 +81,11 @@ public class LicenseKeyServiceTest {
 	public void testGetLicenseKeysByOrderProductServerActiveFilter()
 		throws Exception {
 
-		_licenseKeyService.getLicenseKeys("order-1", "portal", "srv-1", true);
+		_licenseKeyService.getLicenseKeys(true, "order-1", "portal", "srv-1");
 
 		Assertions.assertEquals(
-			"(orderId eq 'order-1') and (productExternalId eq 'portal') and " +
-				"(serverId eq 'srv-1') and (active eq true)",
+			"(active eq true) and (orderId eq 'order-1') and " +
+				"(productExternalId eq 'portal') and (serverId eq 'srv-1')",
 			_filterCaptor.getValue());
 	}
 
@@ -101,30 +101,30 @@ public class LicenseKeyServiceTest {
 	@Test
 	public void testGetLicenseKeysByTypeOwnerDomainsFilter() throws Exception {
 		_licenseKeyService.getLicenseKeys(
-			"enterprise", "Acme Corp", "example.com");
+			"example.com", "enterprise", "Acme Corp");
 
 		Assertions.assertEquals(
-			"(licenseType eq 'enterprise') and (owner eq 'Acme Corp') and " +
-				"(domains eq 'example.com')",
+			"(domains eq 'example.com') and (licenseType eq 'enterprise') " +
+				"and (owner eq 'Acme Corp')",
 			_filterCaptor.getValue());
 	}
 
 	@Test
 	public void testSearchBuildsFilterAndSkipsNulls() throws Exception {
 		_licenseKeyService.search(
-			"enterprise", null, null, null, null, null, null, "DXP", null,
-			Boolean.TRUE);
+			Boolean.TRUE, null, null, null, "enterprise", null, null, null,
+			"DXP", null);
 
 		Assertions.assertEquals(
-			"(licenseType eq 'enterprise') and (productName eq 'DXP') and " +
-				"(active eq true)",
+			"(active eq true) and (licenseType eq 'enterprise') and " +
+				"(productName eq 'DXP')",
 			_filterCaptor.getValue());
 	}
 
 	@Test
 	public void testSearchEscapesSingleQuotes() throws Exception {
 		_licenseKeyService.search(
-			null, "O'Connor", null, null, null, null, null, null, null, null);
+			null, null, null, null, null, null, "O'Connor", null, null, null);
 
 		Assertions.assertEquals(
 			"(owner eq 'O''Connor')", _filterCaptor.getValue());
