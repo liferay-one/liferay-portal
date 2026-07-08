@@ -27,8 +27,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -188,9 +189,16 @@ public class TicketAttachmentService extends OneBaseService {
 
 			return new TicketAttachment(jsonObject);
 		}
-		catch (HttpClientErrorException.NotFound httpClientErrorException) {
-			throw new TicketAttachmentNotFoundException(
-				httpClientErrorException);
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				throw new TicketAttachmentNotFoundException(
+					webClientResponseException);
+			}
+
+			throw webClientResponseException;
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -221,9 +229,16 @@ public class TicketAttachmentService extends OneBaseService {
 
 			return new TicketAttachment(jsonObject);
 		}
-		catch (HttpClientErrorException.NotFound httpClientErrorException) {
-			throw new TicketAttachmentNotFoundException(
-				httpClientErrorException);
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				throw new TicketAttachmentNotFoundException(
+					webClientResponseException);
+			}
+
+			throw webClientResponseException;
 		}
 		catch (Exception exception) {
 			_log.error(

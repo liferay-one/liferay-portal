@@ -104,6 +104,17 @@ public class AccountService extends OneBaseService {
 		}
 	}
 
+	public Account getAccount(long accountEntryId, Jwt jwt) throws Exception {
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
+		).build();
+
+		return accountResource.getAccount(accountEntryId);
+	}
+
 	public Account getAccount(String externalReferenceCode, Jwt jwt)
 		throws Exception {
 
