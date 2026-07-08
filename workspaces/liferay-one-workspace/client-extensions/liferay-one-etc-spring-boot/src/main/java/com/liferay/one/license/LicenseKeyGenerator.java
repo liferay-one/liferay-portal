@@ -64,8 +64,9 @@ public class LicenseKeyGenerator {
 			maxHttpSessions, maxServers, maxUsers, owner, productName,
 			productId, productVersion, new String[] {serverIds}, startDate);
 
-		if (productVersion.equals(ProductVersion.PORTAL_VERSION_6_1_10) ||
-			productVersion.equals("6.1 GA 1")) {
+		if (StringUtil.equals(
+				productVersion, ProductVersion.PORTAL_VERSION_6_1_10) ||
+			StringUtil.equals(productVersion, "6.1 GA 1")) {
 
 			Calendar cal = Calendar.getInstance();
 
