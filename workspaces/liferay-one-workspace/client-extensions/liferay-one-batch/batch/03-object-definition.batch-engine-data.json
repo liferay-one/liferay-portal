@@ -2527,6 +2527,24 @@
 				{
 					"DBType": "Long",
 					"businessType": "LongInteger",
+					"externalReferenceCode": "C_LICENSE_KEY_ENTITLEMENT_DEFINITION_ID",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Entitlement Definition ID"
+					},
+					"name": "entitlementDefinitionId",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Long"
+				},
+				{
+					"DBType": "Long",
+					"businessType": "LongInteger",
 					"externalReferenceCode": "C_LICENSE_KEY_ENTITLEMENT_ID",
 					"indexed": true,
 					"indexedAsKeyword": false,
