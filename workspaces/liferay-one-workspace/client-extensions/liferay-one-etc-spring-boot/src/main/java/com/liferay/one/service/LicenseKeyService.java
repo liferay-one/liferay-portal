@@ -283,9 +283,12 @@ public class LicenseKeyService extends OneBaseService {
 			throw new LicenseKeyActiveException();
 		}
 
+		LicenseKey newLicenseKey = _copyLicenseKey(
+			licenseKey, startDate, expirationDate);
+
 		updateLicenseKey(licenseKeyId, licenseKey.isComplimentary(), false);
 
-		return _copyLicenseKey(licenseKey, startDate, expirationDate);
+		return newLicenseKey;
 	}
 
 	public List<LicenseKey> search(
