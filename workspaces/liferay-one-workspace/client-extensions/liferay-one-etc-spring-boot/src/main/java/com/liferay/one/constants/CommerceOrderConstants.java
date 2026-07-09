@@ -10,6 +10,8 @@ package com.liferay.one.constants;
  */
 public class CommerceOrderConstants {
 
+	public static final int ORDER_PAYMENT_STATUS_COMPLETED = 0;
+
 	public static final int ORDER_PAYMENT_STATUS_NOT_REQUIRED = 23;
 
 	public static final int ORDER_STATUS_CANCELLED = 8;
