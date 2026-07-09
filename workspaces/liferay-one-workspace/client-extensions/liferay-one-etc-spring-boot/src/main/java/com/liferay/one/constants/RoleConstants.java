@@ -11,6 +11,20 @@ package com.liferay.one.constants;
  */
 public class RoleConstants {
 
+	public static final String ERC_PROJECT_ADMIN = "C_PROJECT_ADMIN";
+
+	public static final String ERC_PROJECT_REQUESTER = "C_PROJECT_REQUESTER";
+
+	public static final String ERC_PROJECT_USER = "C_PROJECT_USER";
+
+	public static final String[] ERCS_SUPPORT_PROJECT = {
+		ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER, ERC_PROJECT_USER
+	};
+
+	public static final String[] ERCS_SUPPORT_PROJECT_TICKET = {
+		ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER
+	};
+
 	public static final String NAME_ACCOUNT_ADMINISTRATOR =
 		"Account Administrator";
 

@@ -15,16 +15,15 @@ import org.json.JSONObject;
 public class BusinessEvent {
 
 	public BusinessEvent(
-		String accountExternalReferenceCode, String actualEventDate,
-		String associatedTickets, String authorEmailAddress,
-		String businessEventId, String currentLiferayVersionKey,
-		String currentLiferayVersionName, String description,
-		String eventStatusName, String eventTypeName, String lastComment,
-		String lastUpdatedAuthorEmailAddress, String name,
+		String actualEventDate, String associatedTickets,
+		String authorEmailAddress, String businessEventId,
+		String currentLiferayVersionKey, String currentLiferayVersionName,
+		String description, String eventStatusName, String eventTypeName,
+		String lastComment, String lastUpdatedAuthorEmailAddress, String name,
 		String newLiferayVersionKey, String newLiferayVersionName,
-		String plannedEventDate, String timeZoneName) {
+		String plannedEventDate, String projectExternalReferenceCode,
+		String timeZoneName) {
 
-		_accountExternalReferenceCode = accountExternalReferenceCode;
 		_actualEventDate = actualEventDate;
 		_associatedTickets = associatedTickets;
 		_authorEmailAddress = authorEmailAddress;
@@ -40,11 +39,8 @@ public class BusinessEvent {
 		_newLiferayVersionKey = newLiferayVersionKey;
 		_newLiferayVersionName = newLiferayVersionName;
 		_plannedEventDate = plannedEventDate;
+		_projectExternalReferenceCode = projectExternalReferenceCode;
 		_timeZoneName = timeZoneName;
-	}
-
-	public String getAccountExternalReferenceCode() {
-		return _accountExternalReferenceCode;
 	}
 
 	public String getActivityHistoryURL(String onePortalURL) {
@@ -115,6 +111,10 @@ public class BusinessEvent {
 		return _plannedEventDate;
 	}
 
+	public String getProjectExternalReferenceCode() {
+		return _projectExternalReferenceCode;
+	}
+
 	public String getTimeZoneName() {
 		return _timeZoneName;
 	}
@@ -124,7 +124,7 @@ public class BusinessEvent {
 
 		sb.append(onePortalURL);
 		sb.append("/support/business-events/#/");
-		sb.append(_accountExternalReferenceCode);
+		sb.append(_projectExternalReferenceCode);
 		sb.append("/business-events/");
 		sb.append(_businessEventId);
 
@@ -191,7 +191,6 @@ public class BusinessEvent {
 		return jsonObject;
 	}
 
-	private final String _accountExternalReferenceCode;
 	private final String _actualEventDate;
 	private final String _associatedTickets;
 	private final String _authorEmailAddress;
@@ -207,6 +206,7 @@ public class BusinessEvent {
 	private final String _newLiferayVersionKey;
 	private final String _newLiferayVersionName;
 	private final String _plannedEventDate;
+	private final String _projectExternalReferenceCode;
 	private final String _timeZoneName;
 
 }

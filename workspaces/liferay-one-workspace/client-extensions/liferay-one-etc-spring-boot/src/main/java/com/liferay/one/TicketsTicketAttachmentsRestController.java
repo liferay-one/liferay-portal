@@ -5,9 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Account;
-import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
-import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
@@ -15,10 +12,11 @@ import com.liferay.one.jira.exception.OrganizationNotFoundException;
 import com.liferay.one.jira.model.Organization;
 import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
-import com.liferay.one.service.AccountService;
+import com.liferay.one.permission.ProjectMembershipPermission;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,6 +76,33 @@ public class TicketsTicketAttachmentsRestController
 			"JIRA_ORGANIZATION_ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
+	@ExceptionHandler(PrincipalException.class)
+	public ResponseEntity<String> handleException(
+		PrincipalException principalException) {
+
+		_log.error(principalException);
+
+		return new ResponseEntity<>("FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
+	}
+
+	private void _checkViewPermission(
+			Jwt jwt, String projectExternalReferenceCode)
+		throws Exception {
+
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
+			String roleBriefName = roleBrief.getName();
+
+			if (roleBriefName.equals(RoleConstants.NAME_PROVISIONING_MEMBER)) {
+				return;
+			}
+		}
+
+		_projectMembershipPermission.check(
+			ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
+	}
+
 	private ResponseEntity<String> _getResponseEntity(
 			boolean allowClosedTicket, Jwt jwt, String ticketId)
 		throws Exception {
@@ -96,69 +121,19 @@ public class TicketsTicketAttachmentsRestController
 
 		Organization organization = supportIssue.getOrganization();
 
-		if (!_hasViewPermission(organization.getExternalKey(), jwt)) {
-			return new ResponseEntity<>(
-				"FORBIDDEN_ACCESS", HttpStatus.FORBIDDEN);
-		}
+		_checkViewPermission(jwt, organization.getExternalKey());
 
 		return new ResponseEntity<>(StringPool.BLANK, HttpStatus.OK);
-	}
-
-	private boolean _hasViewPermission(
-			String accountExternalReferenceCode, Jwt jwt)
-		throws Exception {
-
-		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
-
-		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
-			String roleBriefName = roleBrief.getName();
-
-			if (roleBriefName.equals(RoleConstants.NAME_PROVISIONING_MEMBER)) {
-				return true;
-			}
-		}
-
-		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
-			if (!accountExternalReferenceCode.equals(
-					accountBrief.getExternalReferenceCode())) {
-
-				continue;
-			}
-
-			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_SUPPORT_ACCOUNT_TICKET,
-						roleBrief.getName())) {
-
-					return true;
-				}
-			}
-		}
-
-		Account account = _accountService.getAccount(
-			accountExternalReferenceCode, jwt);
-
-		for (OrganizationBrief organizationBrief :
-				userAccount.getOrganizationBriefs()) {
-
-			if (ArrayUtil.contains(
-					account.getOrganizationIds(), organizationBrief.getId())) {
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static final Log _log = LogFactory.getLog(
 		TicketsTicketAttachmentsRestController.class);
 
 	@Autowired
-	private AccountService _accountService;
+	private JiraIssueService _jiraIssueService;
 
 	@Autowired
-	private JiraIssueService _jiraIssueService;
+	private ProjectMembershipPermission _projectMembershipPermission;
 
 	@Autowired
 	private UserAccountService _userAccountService;

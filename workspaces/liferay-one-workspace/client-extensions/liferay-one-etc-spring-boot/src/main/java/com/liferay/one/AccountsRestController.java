@@ -6,7 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.one.jira.service.AccountAssetService;
-import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -51,8 +51,7 @@ public class AccountsRestController extends OneBaseRestController {
 			@PathVariable("accountRoleId") long accountRoleId)
 		throws Exception {
 
-		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.UPDATE, jwt);
+		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
 
 		_accountService.removeAccountUserAccountRole(
 			accountRoleId, externalReferenceCode, jwt, userId);
@@ -64,8 +63,7 @@ public class AccountsRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.VIEW, jwt);
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
 
 		return new ResponseEntity<>(
 			_accountAssetService.getAccountObjectKey(externalReferenceCode),
@@ -102,9 +100,9 @@ public class AccountsRestController extends OneBaseRestController {
 	private AccountAssetService _accountAssetService;
 
 	@Autowired
-	private AccountService _accountService;
+	private AccountPermission _accountPermission;
 
 	@Autowired
-	private BusinessEventPermission _businessEventPermission;
+	private AccountService _accountService;
 
 }
