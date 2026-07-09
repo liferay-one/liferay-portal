@@ -18,6 +18,8 @@ public class ProjectMembership {
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToProjectMembership_c_projectERC");
+		_roleExternalReferenceCode = jsonObject.optString(
+			"roleExternalReferenceCode");
 		_userId = jsonObject.optLong("r_userToProjectMembership_userId");
 	}
 
@@ -33,6 +35,10 @@ public class ProjectMembership {
 		return _projectExternalReferenceCode;
 	}
 
+	public String getRoleExternalReferenceCode() {
+		return _roleExternalReferenceCode;
+	}
+
 	public long getUserId() {
 		return _userId;
 	}
@@ -40,6 +46,7 @@ public class ProjectMembership {
 	private final long _accountId;
 	private final String _externalReferenceCode;
 	private final String _projectExternalReferenceCode;
+	private final String _roleExternalReferenceCode;
 	private final long _userId;
 
 }
