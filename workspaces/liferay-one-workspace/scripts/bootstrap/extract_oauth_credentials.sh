@@ -14,10 +14,9 @@ function main {
 
 	cd ../..
 
-	sed \
-		--in-place \
-		--regexp-extended "/^OAUTH_CLIENT_(ID|SECRET)=/d" \
-		../../.env
+	touch .env
+
+	sed -E "/^OAUTH_CLIENT_(ID|SECRET)=/d" .env > .env.tmp && mv .env.tmp .env
 
 	local client_id
 
