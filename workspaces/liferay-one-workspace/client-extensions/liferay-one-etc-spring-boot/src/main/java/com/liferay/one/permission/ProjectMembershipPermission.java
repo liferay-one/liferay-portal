@@ -11,6 +11,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
@@ -41,17 +43,55 @@ public class ProjectMembershipPermission {
 		}
 	}
 
-	private boolean _belongsToAccountOrganization(
-			Jwt jwt, String projectExternalReferenceCode,
-			UserAccount userAccount)
+	private boolean _contains(
+			String actionId, Jwt jwt, String projectExternalReferenceCode)
 		throws Exception {
 
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			return false;
+		}
+
 		String accountExternalReferenceCode =
-			_projectService.fetchAccountExternalReferenceCode(
-				projectExternalReferenceCode);
+			project.getAccountExternalReferenceCode();
 
 		if (Validator.isNull(accountExternalReferenceCode)) {
 			return false;
+		}
+
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		if (_isAccountAdministrator(
+				accountExternalReferenceCode, userAccount)) {
+
+			return true;
+		}
+
+		ProjectMembership projectMembership =
+			_projectMembershipService.fetchProjectMembership(
+				projectExternalReferenceCode, userAccount.getId());
+
+		if (projectMembership != null) {
+			String roleExternalReferenceCode =
+				projectMembership.getRoleExternalReferenceCode();
+
+			if (ArrayUtil.contains(
+					RoleConstants.ERCS_SUPPORT_PROJECT,
+					roleExternalReferenceCode) &&
+				actionId.equals(ActionKeys.VIEW)) {
+
+				return true;
+			}
+
+			if (ArrayUtil.contains(
+					RoleConstants.ERCS_SUPPORT_PROJECT_TICKET,
+					roleExternalReferenceCode) &&
+				actionId.equals(ActionKeys.UPDATE)) {
+
+				return true;
+			}
 		}
 
 		Account account = _accountService.getAccount(
@@ -70,55 +110,9 @@ public class ProjectMembershipPermission {
 		return false;
 	}
 
-	private boolean _contains(
-			String actionId, Jwt jwt, String projectExternalReferenceCode)
-		throws Exception {
-
-		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
-
-		if (_isAccountAdministrator(
-				projectExternalReferenceCode, userAccount)) {
-
-			return true;
-		}
-
-		String membershipRoleExternalReferenceCode =
-			_projectMembershipService.getMembershipRole(
-				projectExternalReferenceCode, userAccount.getId());
-
-		if (Validator.isNotNull(membershipRoleExternalReferenceCode)) {
-			if (ArrayUtil.contains(
-					RoleConstants.ERCS_SUPPORT_PROJECT,
-					membershipRoleExternalReferenceCode) &&
-				actionId.equals(ActionKeys.VIEW)) {
-
-				return true;
-			}
-
-			if (ArrayUtil.contains(
-					RoleConstants.ERCS_SUPPORT_PROJECT_TICKET,
-					membershipRoleExternalReferenceCode) &&
-				actionId.equals(ActionKeys.UPDATE)) {
-
-				return true;
-			}
-		}
-
-		return _belongsToAccountOrganization(
-			jwt, projectExternalReferenceCode, userAccount);
-	}
-
 	private boolean _isAccountAdministrator(
-			String projectExternalReferenceCode, UserAccount userAccount)
+			String accountExternalReferenceCode, UserAccount userAccount)
 		throws Exception {
-
-		String accountExternalReferenceCode =
-			_projectService.fetchAccountExternalReferenceCode(
-				projectExternalReferenceCode);
-
-		if (Validator.isNull(accountExternalReferenceCode)) {
-			return false;
-		}
 
 		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
 			if (!Objects.equals(

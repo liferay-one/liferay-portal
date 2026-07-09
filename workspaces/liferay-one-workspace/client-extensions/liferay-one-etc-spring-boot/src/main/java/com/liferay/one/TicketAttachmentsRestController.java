@@ -16,6 +16,7 @@ import com.liferay.one.jira.exception.OrganizationNotFoundException;
 import com.liferay.one.jira.model.Organization;
 import com.liferay.one.jira.model.SupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
+import com.liferay.one.model.Project;
 import com.liferay.one.model.TicketAttachment;
 import com.liferay.one.service.GoogleCloudStorageService;
 import com.liferay.one.service.NotificationQueueEntryService;
@@ -271,8 +272,7 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		String projectERC = organization.getExternalKey();
 
-		String accountERC = _projectService.fetchAccountExternalReferenceCode(
-			projectERC);
+		Project project = _projectService.getProject(projectERC);
 
 		TicketAttachment ticketAttachment =
 			_ticketAttachmentService.fetchTicketAttachment(
@@ -286,7 +286,8 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		}
 		else {
 			ticketAttachment = _ticketAttachmentService.addTicketAttachment(
-				accountERC, "Bearer " + jwt.getTokenValue(),
+				project.getAccountExternalReferenceCode(),
+				"Bearer " + jwt.getTokenValue(),
 				jsonObject.optString("externalReferenceCode"), fileName,
 				fileSize, ticketId, md5Checksum, projectERC,
 				TicketAttachment.STATUS_DRAFT, jsonObject.optString("type"));

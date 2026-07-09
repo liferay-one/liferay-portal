@@ -93,7 +93,7 @@ public class ProjectMembershipService extends OneBaseService {
 		}
 	}
 
-	public String getMembershipRole(
+	public ProjectMembership fetchProjectMembership(
 			String projectExternalReferenceCode, long userId)
 		throws Exception {
 
@@ -106,8 +106,6 @@ public class ProjectMembershipService extends OneBaseService {
 			getAuthorization(),
 			UriComponentsBuilder.fromPath(
 				"/o/c/projectmemberships"
-			).queryParam(
-				"fields", "roleExternalReferenceCode"
 			).queryParam(
 				"filter", filterString
 			).queryParam(
@@ -129,10 +127,7 @@ public class ProjectMembershipService extends OneBaseService {
 			return null;
 		}
 
-		JSONObject membershipJSONObject = jsonArray.getJSONObject(0);
-
-		return membershipJSONObject.optString(
-			"roleExternalReferenceCode", null);
+		return new ProjectMembership(jsonArray.getJSONObject(0));
 	}
 
 	public List<ProjectMembership> getProjectMemberships(

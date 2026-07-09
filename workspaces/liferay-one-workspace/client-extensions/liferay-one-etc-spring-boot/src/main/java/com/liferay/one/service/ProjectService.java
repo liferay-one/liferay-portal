@@ -6,7 +6,6 @@
 package com.liferay.one.service;
 
 import com.liferay.one.model.Project;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -14,7 +13,6 @@ import java.net.URI;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.http.HttpStatus;
@@ -29,46 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class ProjectService extends OneBaseService {
 
-	public String fetchAccountExternalReferenceCode(
-			String projectExternalReferenceCode)
-		throws Exception {
-
-		String filterString = StringBundler.concat(
-			"externalReferenceCode eq '", projectExternalReferenceCode, "'");
-
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/projects"
-			).queryParam(
-				"fields", "r_accountEntryToProject_accountEntryERC"
-			).queryParam(
-				"filter", filterString
-			).queryParam(
-				"page", 1
-			).queryParam(
-				"pageSize", 1
-			).build(
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			return null;
-		}
-
-		JSONObject jsonObject = new JSONObject(response);
-
-		JSONArray jsonArray = jsonObject.optJSONArray("items");
-
-		if ((jsonArray == null) || (jsonArray.length() == 0)) {
-			return null;
-		}
-
-		JSONObject projectJSONObject = jsonArray.getJSONObject(0);
-
-		return projectJSONObject.optString(
-			"r_accountEntryToProject_accountEntryERC", null);
-	}
-
 	public Project fetchProject(String externalReferenceCode) throws Exception {
 		return _fetchProject(getAuthorization(), externalReferenceCode);
 	}
@@ -77,6 +35,19 @@ public class ProjectService extends OneBaseService {
 		throws Exception {
 
 		return _fetchProject(getAuthorization(jwt), externalReferenceCode);
+	}
+
+	public Project getProject(String externalReferenceCode) throws Exception {
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/projects/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).buildAndExpand(
+				externalReferenceCode
+			).toUri());
+
+		return new Project(new JSONObject(response));
 	}
 
 	public void upsertProject(
