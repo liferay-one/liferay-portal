@@ -19,6 +19,7 @@ import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.model.TicketAttachment;
 import com.liferay.one.service.GoogleCloudStorageService;
 import com.liferay.one.service.NotificationQueueEntryService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.TicketAttachmentService;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.string.StringBundler;
@@ -268,7 +269,10 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		Organization organization = supportIssue.getOrganization();
 
-		String accountKey = organization.getExternalKey();
+		String projectERC = organization.getExternalKey();
+
+		String accountERC = _projectService.fetchAccountExternalReferenceCode(
+			projectERC);
 
 		TicketAttachment ticketAttachment =
 			_ticketAttachmentService.fetchTicketAttachment(
@@ -282,16 +286,16 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		}
 		else {
 			ticketAttachment = _ticketAttachmentService.addTicketAttachment(
-				accountKey, "Bearer " + jwt.getTokenValue(),
+				accountERC, "Bearer " + jwt.getTokenValue(),
 				jsonObject.optString("externalReferenceCode"), fileName,
-				fileSize, ticketId, md5Checksum, TicketAttachment.STATUS_DRAFT,
-				jsonObject.optString("type"));
+				fileSize, ticketId, md5Checksum, projectERC,
+				TicketAttachment.STATUS_DRAFT, jsonObject.optString("type"));
 		}
 
 		JSONObject responseJSONObject = new JSONObject();
 
 		responseJSONObject.put(
-			"accountKey", accountKey
+			"projectKey", projectERC
 		).put(
 			"ticketAttachmentId", ticketAttachment.getTicketAttachmentId()
 		);
@@ -655,6 +659,9 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 	@Value("${liferay.one.portal.url}")
 	private String _onePortalURL;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	@Autowired
 	private TicketAttachmentService _ticketAttachmentService;

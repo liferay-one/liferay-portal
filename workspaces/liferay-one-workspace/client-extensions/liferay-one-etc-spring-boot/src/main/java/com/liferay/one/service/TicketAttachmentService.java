@@ -39,16 +39,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class TicketAttachmentService extends OneBaseService {
 
 	public TicketAttachment addTicketAttachment(
-			String accountKey, String authorization,
+			String accountERC, String authorization,
 			String externalReferenceCode, String fileName, String fileSize,
-			String jiraIssueKey, String md5Checksum, int statusCode,
-			String type)
+			String jiraIssueKey, String md5Checksum, String projectERC,
+			int statusCode, String type)
 		throws Exception {
 
 		JSONObject requestJSONObject = new JSONObject();
 
 		requestJSONObject.put(
-			"accountKey", accountKey
+			"accountKey", accountERC
 		).put(
 			"externalReferenceCode", externalReferenceCode
 		).put(
@@ -60,7 +60,9 @@ public class TicketAttachmentService extends OneBaseService {
 		).put(
 			"jiraIssueKey", jiraIssueKey
 		).put(
-			"r_accountEntryToTicketAttachment_accountEntryERC", accountKey
+			"projectKey", projectERC
+		).put(
+			"r_accountEntryToTicketAttachment_accountEntryERC", accountERC
 		).put(
 			"storageProvider", TicketAttachment.STORAGE_PROVIDER_GCS
 		).put(

@@ -42,7 +42,7 @@ public class BusinessEventService {
 			_businessEventConverter.getObjectTypeId(),
 			_businessEventConverter.toAssetObject(
 				_accountAssetService.getAccountObjectKey(
-					businessEvent.getAccountExternalReferenceCode()),
+					businessEvent.getProjectExternalReferenceCode()),
 				businessEvent));
 	}
 
@@ -52,21 +52,21 @@ public class BusinessEventService {
 
 	public BusinessEvent getBusinessEvent(String id) throws Exception {
 		return _businessEventConverter.toBusinessEvent(
-			StringPool.BLANK, _jiraAssetService.getObject(id));
+			_jiraAssetService.getObject(id), StringPool.BLANK);
 	}
 
 	public List<BusinessEvent> getBusinessEvents(
-			String accountExternalReferenceCode)
+			String projectExternalReferenceCode)
 		throws Exception {
 
 		return _jiraAssetService.searchObjects(
 			_businessEventConverter.getAQLWithBuilder(
 				aqlBuilder -> aqlBuilder.andEquals(
-					accountExternalReferenceCode,
+					projectExternalReferenceCode,
 					BusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
 					"External Key")),
 			jsonObject -> _businessEventConverter.toBusinessEvent(
-				accountExternalReferenceCode, jsonObject));
+				jsonObject, projectExternalReferenceCode));
 	}
 
 	public List<BusinessEventVersion> getBusinessEventVersions(

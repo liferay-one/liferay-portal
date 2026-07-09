@@ -28,6 +28,7 @@ public class TicketAttachment {
 		_gcsBucketName = jsonObject.getString("gcsBucketName");
 		_jiraIssueKey = jsonObject.optString("jiraIssueKey");
 		_md5Checksum = jsonObject.optString("md5Checksum");
+		_projectKey = jsonObject.optString("projectKey");
 
 		JSONObject statusJSONObject = jsonObject.getJSONObject("status");
 
@@ -83,6 +84,10 @@ public class TicketAttachment {
 		return _md5Checksum;
 	}
 
+	public String getProjectKey() {
+		return _projectKey;
+	}
+
 	public int getStatus() {
 		return _status;
 	}
@@ -118,6 +123,7 @@ public class TicketAttachment {
 	private final String _gcsBucketName;
 	private final String _jiraIssueKey;
 	private final String _md5Checksum;
+	private final String _projectKey;
 	private final int _status;
 	private final String _storageProvider;
 	private final long _ticketAttachmentId;

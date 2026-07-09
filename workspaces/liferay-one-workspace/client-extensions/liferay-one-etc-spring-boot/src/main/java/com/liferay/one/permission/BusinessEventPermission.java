@@ -5,17 +5,10 @@
 
 package com.liferay.one.permission;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Account;
-import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
-import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.service.AccountService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.util.ArrayUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,16 +21,7 @@ import org.springframework.stereotype.Component;
 public class BusinessEventPermission {
 
 	public void check(
-			String accountExternalReferenceCode, String actionId, Jwt jwt)
-		throws Exception {
-
-		if (!_contains(accountExternalReferenceCode, actionId, jwt)) {
-			throw new PrincipalException();
-		}
-	}
-
-	private boolean _contains(
-			String accountExternalReferenceCode, String actionId, Jwt jwt)
+			String actionId, Jwt jwt, String projectExternalReferenceCode)
 		throws Exception {
 
 		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
@@ -48,54 +32,16 @@ public class BusinessEventPermission {
 			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
 				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF)) {
 
-				return true;
+				return;
 			}
 		}
 
-		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
-			if (!accountExternalReferenceCode.equals(
-					accountBrief.getExternalReferenceCode())) {
-
-				continue;
-			}
-
-			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_SUPPORT_ACCOUNT,
-						roleBrief.getName()) &&
-					actionId.equals(ActionKeys.VIEW)) {
-
-					return true;
-				}
-
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_SUPPORT_ACCOUNT_TICKET,
-						roleBrief.getName()) &&
-					actionId.equals(ActionKeys.UPDATE)) {
-
-					return true;
-				}
-			}
-		}
-
-		Account account = _accountService.getAccount(
-			accountExternalReferenceCode, jwt);
-
-		for (OrganizationBrief organizationBrief :
-				userAccount.getOrganizationBriefs()) {
-
-			if (ArrayUtil.contains(
-					account.getOrganizationIds(), organizationBrief.getId())) {
-
-				return true;
-			}
-		}
-
-		return false;
+		_projectMembershipPermission.check(
+			actionId, jwt, projectExternalReferenceCode);
 	}
 
 	@Autowired
-	private AccountService _accountService;
+	private ProjectMembershipPermission _projectMembershipPermission;
 
 	@Autowired
 	private UserAccountService _userAccountService;

@@ -28,8 +28,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class JiraRestController extends OneBaseRestController {
 
-	@GetMapping("/accounts/{externalReferenceCode}/tickets")
-	public ResponseEntity<String> getAccountsTickets(
+	@GetMapping("/projects/{externalReferenceCode}/tickets")
+	public ResponseEntity<String> getProjectsTickets(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode,
 			@RequestParam(defaultValue = StringPool.BLANK, required = false)
@@ -37,7 +37,7 @@ public class JiraRestController extends OneBaseRestController {
 		throws Exception {
 
 		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.VIEW, jwt);
+			ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
 			_jiraIssueService.getSupportIssues(
