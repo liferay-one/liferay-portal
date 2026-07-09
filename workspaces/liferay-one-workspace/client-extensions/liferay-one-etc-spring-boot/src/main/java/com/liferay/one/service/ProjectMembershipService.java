@@ -9,9 +9,11 @@ import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +91,48 @@ public class ProjectMembershipService extends OneBaseService {
 					projectMembership.getExternalReferenceCode()
 				).toUri());
 		}
+	}
+
+	public String getMembershipRole(
+			String projectExternalReferenceCode, long userId)
+		throws Exception {
+
+		String filterString = StringBundler.concat(
+			"(r_projectToProjectMembership_c_projectERC eq '",
+			projectExternalReferenceCode,
+			"') and (r_userToProjectMembership_userId eq '", userId, "')");
+
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/projectmemberships"
+			).queryParam(
+				"fields", "roleExternalReferenceCode"
+			).queryParam(
+				"filter", filterString
+			).queryParam(
+				"page", 1
+			).queryParam(
+				"pageSize", 1
+			).build(
+			).toUri());
+
+		if (Validator.isNull(response)) {
+			return null;
+		}
+
+		JSONObject jsonObject = new JSONObject(response);
+
+		JSONArray jsonArray = jsonObject.optJSONArray("items");
+
+		if ((jsonArray == null) || (jsonArray.length() == 0)) {
+			return null;
+		}
+
+		JSONObject membershipJSONObject = jsonArray.getJSONObject(0);
+
+		return membershipJSONObject.optString(
+			"roleExternalReferenceCode", null);
 	}
 
 	public List<ProjectMembership> getProjectMemberships(

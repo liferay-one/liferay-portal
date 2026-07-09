@@ -76,14 +76,13 @@ public class BusinessEventConverter extends BaseAssetObjectConverter {
 	}
 
 	public BusinessEvent toBusinessEvent(
-		String accountExternalReferenceCode,
-		JSONObject jiraAssetObjectJSONObject) {
+		JSONObject jiraAssetObjectJSONObject,
+		String projectExternalReferenceCode) {
 
 		JiraAssetObject jiraAssetObject = new JiraAssetObject(
 			jiraAssetObjectJSONObject, getAttributeIds());
 
 		return new BusinessEvent(
-			accountExternalReferenceCode,
 			jiraAssetObject.getAttributeValue(
 				BusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
 			jiraAssetObject.getAttributeDisplayValue(
@@ -113,18 +112,18 @@ public class BusinessEventConverter extends BaseAssetObjectConverter {
 				BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
 			jiraAssetObject.getAttributeValue(
 				BusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
+			projectExternalReferenceCode,
 			jiraAssetObject.getAttributeDisplayValue(
 				BusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE));
 	}
 
 	public BusinessEvent toBusinessEvent(
-		String accountExternalReferenceCode, String attributesJSON,
-		String authorEmailAddress) {
+		String attributesJSON, String authorEmailAddress,
+		String projectExternalReferenceCode) {
 
 		JSONObject attributesJSONObject = new JSONObject(attributesJSON);
 
 		return new BusinessEvent(
-			accountExternalReferenceCode,
 			attributesJSONObject.optString("actualEventDate"),
 			attributesJSONObject.optString("associatedTickets"),
 			authorEmailAddress, StringPool.BLANK,
@@ -137,6 +136,7 @@ public class BusinessEventConverter extends BaseAssetObjectConverter {
 			attributesJSONObject.optString("newLiferayVersion"),
 			StringPool.BLANK,
 			attributesJSONObject.optString("plannedEventDate"),
+			projectExternalReferenceCode,
 			attributesJSONObject.optString("timeZone"));
 	}
 

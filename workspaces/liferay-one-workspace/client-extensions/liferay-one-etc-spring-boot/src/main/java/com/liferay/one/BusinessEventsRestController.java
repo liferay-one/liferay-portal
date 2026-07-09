@@ -40,69 +40,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BusinessEventsRestController extends OneBaseRestController {
 
-	@DeleteMapping("/accounts/{externalReferenceCode}/business-events/{id}")
-	public ResponseEntity<String> deleteAccountsBusinessEvents(
+	@DeleteMapping("/projects/{externalReferenceCode}/business-events/{id}")
+	public ResponseEntity<String> deleteProjectsBusinessEvents(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode,
 			@PathVariable("id") String id)
 		throws Exception {
 
 		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.UPDATE, jwt);
+			ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		_businessEventService.deleteBusinessEvent(id);
 
 		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	@GetMapping("/accounts/{externalReferenceCode}/business-events")
-	public ResponseEntity<String> getAccountsBusinessEvents(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode)
-		throws Exception {
-
-		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.VIEW, jwt);
-
-		return getResponseEntity(
-			_businessEventService.getBusinessEvents(externalReferenceCode),
-			BusinessEvent::toJSONObject);
-	}
-
-	@GetMapping("/accounts/{externalReferenceCode}/business-events/{id}")
-	public ResponseEntity<String> getAccountsBusinessEvents(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("id") String id)
-		throws Exception {
-
-		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.VIEW, jwt);
-
-		BusinessEvent businessEvent = _businessEventService.getBusinessEvent(
-			id);
-
-		return new ResponseEntity<>(
-			businessEvent.toJSONObject(
-			).toString(),
-			HttpStatus.OK);
-	}
-
-	@GetMapping(
-		"/accounts/{externalReferenceCode}/business-events/{id}/versions"
-	)
-	public ResponseEntity<String> getAccountsBusinessEventsVersions(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("id") String id)
-		throws Exception {
-
-		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.VIEW, jwt);
-
-		return getResponseEntity(
-			_businessEventService.getBusinessEventVersions(id),
-			BusinessEventVersion::toJSONObject);
 	}
 
 	@GetMapping("/business-events/fields/{fieldName}/options")
@@ -122,29 +72,79 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			ProductVersion::toJSONObject);
 	}
 
-	@PostMapping("/accounts/{externalReferenceCode}/business-events")
-	public ResponseEntity<String> postAccountsBusinessEvents(
+	@GetMapping("/projects/{externalReferenceCode}/business-events")
+	public ResponseEntity<String> getProjectsBusinessEvents(
 			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@RequestBody String json)
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
 		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.UPDATE, jwt);
-
-		UserAccount userAccount = getMyUserAccount(jwt);
-
-		_businessEventService.createBusinessEvent(
-			_businessEventConverter.toBusinessEvent(
-				externalReferenceCode, json, userAccount.getEmailAddress()));
+			ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
 			_businessEventService.getBusinessEvents(externalReferenceCode),
 			BusinessEvent::toJSONObject);
 	}
 
-	@PutMapping("/accounts/{externalReferenceCode}/business-events/{id}")
-	public ResponseEntity<String> putAccountsBusinessEvents(
+	@GetMapping("/projects/{externalReferenceCode}/business-events/{id}")
+	public ResponseEntity<String> getProjectsBusinessEvents(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("id") String id)
+		throws Exception {
+
+		_businessEventPermission.check(
+			ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		BusinessEvent businessEvent = _businessEventService.getBusinessEvent(
+			id);
+
+		return new ResponseEntity<>(
+			businessEvent.toJSONObject(
+			).toString(),
+			HttpStatus.OK);
+	}
+
+	@GetMapping(
+		"/projects/{externalReferenceCode}/business-events/{id}/versions"
+	)
+	public ResponseEntity<String> getProjectsBusinessEventsVersions(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("id") String id)
+		throws Exception {
+
+		_businessEventPermission.check(
+			ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		return getResponseEntity(
+			_businessEventService.getBusinessEventVersions(id),
+			BusinessEventVersion::toJSONObject);
+	}
+
+	@PostMapping("/projects/{externalReferenceCode}/business-events")
+	public ResponseEntity<String> postProjectsBusinessEvents(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestBody String json)
+		throws Exception {
+
+		_businessEventPermission.check(
+			ActionKeys.UPDATE, jwt, externalReferenceCode);
+
+		UserAccount userAccount = getMyUserAccount(jwt);
+
+		_businessEventService.createBusinessEvent(
+			_businessEventConverter.toBusinessEvent(
+				json, userAccount.getEmailAddress(), externalReferenceCode));
+
+		return getResponseEntity(
+			_businessEventService.getBusinessEvents(externalReferenceCode),
+			BusinessEvent::toJSONObject);
+	}
+
+	@PutMapping("/projects/{externalReferenceCode}/business-events/{id}")
+	public ResponseEntity<String> putProjectsBusinessEvents(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode,
 			@PathVariable("id") String id, @RequestBody String json)
@@ -155,12 +155,12 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		}
 
 		_businessEventPermission.check(
-			externalReferenceCode, ActionKeys.UPDATE, jwt);
+			ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
 		BusinessEvent businessEvent = _businessEventConverter.toBusinessEvent(
-			externalReferenceCode, json, userAccount.getEmailAddress());
+			json, userAccount.getEmailAddress(), externalReferenceCode);
 
 		businessEvent = _businessEventService.updateBusinessEvent(
 			businessEvent, id);
