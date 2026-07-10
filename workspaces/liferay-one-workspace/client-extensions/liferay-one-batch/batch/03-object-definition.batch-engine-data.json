@@ -2978,24 +2978,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ACTIVATION_CODE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Activation Code"
-					},
-					"name": "activationCode",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_ACTIVATION_MODE",
 					"indexed": true,
 					"indexedAsKeyword": true,
@@ -3010,132 +2992,6 @@
 					"state": false,
 					"system": false,
 					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ACTIVATION_STATUS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Activation Status"
-					},
-					"name": "activationStatus",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_EMAIL_ADDRESS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Admin Email Address"
-					},
-					"name": "adminEmailAddress",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_FIRST_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Admin First Name"
-					},
-					"name": "adminFirstName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_LAST_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Admin Last Name"
-					},
-					"name": "adminLastName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_AI_HUB_URL",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "AI Hub URL"
-					},
-					"name": "aiHubURL",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ALLOWED_EMAIL_DOMAINS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Allowed Email Domains"
-					},
-					"name": "allowedEmailDomains",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Clob",
-					"businessType": "LongText",
-					"externalReferenceCode": "C_ENVIRONMENT_BUNDLED_ENTITLEMENT_IDS",
-					"indexed": false,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Bundled Entitlement IDs"
-					},
-					"name": "bundledEntitlementIds",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Clob"
 				},
 				{
 					"DBType": "String",
@@ -3158,24 +3014,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_DISASTER_RECOVERY_REGION",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Disaster Recovery Region"
-					},
-					"name": "disasterRecoveryRegion",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_DOMAINS",
 					"indexed": true,
 					"indexedAsKeyword": true,
@@ -3184,42 +3022,6 @@
 						"en_US": "Domains"
 					},
 					"name": "domains",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_FRIENDLY_URL",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Friendly URL"
-					},
-					"name": "friendlyURL",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_GITHUB_USERNAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Github Username"
-					},
-					"name": "githubUsername",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -3306,96 +3108,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_NAME",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Name"
-					},
-					"name": "name",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_OFFERING",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Offering"
-					},
-					"name": "offering",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_OWNER_EMAIL_ADDRESS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Owner Email Address"
-					},
-					"name": "ownerEmailAddress",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_PROJECT_ID",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Project ID"
-					},
-					"name": "projectId",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Clob",
-					"businessType": "LongText",
-					"externalReferenceCode": "C_ENVIRONMENT_PUBLIC_KEY",
-					"indexed": false,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Public Key"
-					},
-					"name": "publicKey",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Clob"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_REGION",
 					"indexed": true,
 					"indexedAsKeyword": true,
@@ -3404,24 +3116,6 @@
 						"en_US": "Region"
 					},
 					"name": "region",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_REQUESTED_VERSION",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Requested Version"
-					},
-					"name": "requestedVersion",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -3450,32 +3144,14 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_TIME_ZONE",
+					"externalReferenceCode": "C_ENVIRONMENT_STATUS",
 					"indexed": true,
 					"indexedAsKeyword": true,
 					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Time Zone"
+						"en_US": "Status"
 					},
-					"name": "timeZone",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_TOKEN_MONTHLY_ALLOWANCE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Token Monthly Allowance"
-					},
-					"name": "tokenMonthlyAllowance",
+					"name": "status",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -3494,24 +3170,6 @@
 						"en_US": "Type"
 					},
 					"name": "type",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_WORKSPACE_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Workspace Name"
-					},
-					"name": "workspaceName",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -3556,9 +3214,9 @@
 						},
 						{
 							"label": {
-								"en_US": "Activation Status"
+								"en_US": "Status"
 							},
-							"objectFieldName": "activationStatus",
+							"objectFieldName": "status",
 							"priority": 3
 						},
 						{
@@ -3592,158 +3250,6 @@
 			},
 			"system": false,
 			"titleObjectFieldName": "hostName"
-		},
-		{
-			"active": true,
-			"className": "com.liferay.object.model.ObjectDefinition#C_ENVIRONMENT_ADMIN",
-			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
-			"externalReferenceCode": "C_ENVIRONMENT_ADMIN",
-			"friendlyURLSeparator": "l",
-			"label": {
-				"en_US": "Environment Admin"
-			},
-			"name": "EnvironmentAdmin",
-			"objectFields": [
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_EMAIL_ADDRESS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Email Address"
-					},
-					"name": "emailAddress",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_FIRST_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "First Name"
-					},
-					"name": "firstName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_GITHUB_USERNAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "GitHub Username"
-					},
-					"name": "githubUsername",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ADMIN_LAST_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Last Name"
-					},
-					"name": "lastName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				}
-			],
-			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
-			"objectRelationships": [
-			],
-			"objectValidationRules": [
-			],
-			"objectViews": [
-				{
-					"defaultObjectView": true,
-					"name": {
-						"en_US": "Default View"
-					},
-					"objectDefinitionExternalReferenceCode": "C_ENVIRONMENT_ADMIN",
-					"objectViewColumns": [
-						{
-							"label": {
-								"en_US": "ERC"
-							},
-							"objectFieldName": "externalReferenceCode",
-							"priority": 0
-						},
-						{
-							"label": {
-								"en_US": "Email Address"
-							},
-							"objectFieldName": "emailAddress",
-							"priority": 1
-						},
-						{
-							"label": {
-								"en_US": "First Name"
-							},
-							"objectFieldName": "firstName",
-							"priority": 2
-						},
-						{
-							"label": {
-								"en_US": "Last Name"
-							},
-							"objectFieldName": "lastName",
-							"priority": 3
-						},
-						{
-							"label": {
-								"en_US": "GitHub Username"
-							},
-							"objectFieldName": "githubUsername",
-							"priority": 4
-						}
-					]
-				}
-			],
-			"panelCategoryKey": "applications_menu.applications.content",
-			"pluralLabel": {
-				"en_US": "Environment Admins"
-			},
-			"portlet": true,
-			"restContextPath": "/o/c/environmentadmins",
-			"scope": "company",
-			"status": {
-				"code": 0,
-				"label": "approved",
-				"label_i18n": "Approved"
-			},
-			"system": false,
-			"titleObjectFieldName": "emailAddress"
 		},
 		{
 			"active": true,
@@ -7813,14 +7319,32 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_DEFINITION_AGGREGATION_TYPE",
+					"externalReferenceCode": "C_USAGE_DEFINITION_AGGREGATION",
 					"indexed": true,
 					"indexedAsKeyword": true,
 					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Aggregation Type"
+						"en_US": "Aggregation"
 					},
-					"name": "aggregationType",
+					"name": "aggregation",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_DEFINITION_OVERAGE_CURRENCY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Overage Currency"
+					},
+					"name": "overageCurrency",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -7831,14 +7355,14 @@
 				{
 					"DBType": "Double",
 					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_DEFINITION_OVERAGE_BUCKET_SIZE",
+					"externalReferenceCode": "C_USAGE_DEFINITION_OVERAGE_RATE",
 					"indexed": true,
 					"indexedAsKeyword": false,
 					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Overage Bucket Size"
+						"en_US": "Overage Rate"
 					},
-					"name": "overageBucketSize",
+					"name": "overageRate",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -7863,6 +7387,24 @@
 					"state": false,
 					"system": false,
 					"type": "String"
+				},
+				{
+					"DBType": "Double",
+					"businessType": "Decimal",
+					"externalReferenceCode": "C_USAGE_DEFINITION_QUANTITY",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Quantity"
+					},
+					"name": "quantity",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Double"
 				},
 				{
 					"DBType": "String",
@@ -7919,10 +7461,24 @@
 						},
 						{
 							"label": {
-								"en_US": "Overage Bucket Size"
+								"en_US": "Quantity"
 							},
-							"objectFieldName": "overageBucketSize",
+							"objectFieldName": "quantity",
 							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Overage Rate"
+							},
+							"objectFieldName": "overageRate",
+							"priority": 4
+						},
+						{
+							"label": {
+								"en_US": "Overage Currency"
+							},
+							"objectFieldName": "overageCurrency",
+							"priority": 5
 						}
 					]
 				}
@@ -8072,495 +7628,6 @@
 			},
 			"system": false,
 			"titleObjectFieldName": "dedupeKey"
-		},
-		{
-			"active": true,
-			"className": "com.liferay.object.model.ObjectDefinition#C_USAGE_REPORT",
-			"enableCategorization": true,
-			"enableComments": false,
-			"enableObjectEntryHistory": true,
-			"externalReferenceCode": "C_USAGE_REPORT",
-			"friendlyURLSeparator": "cpur",
-			"label": {
-				"en_US": "Usage Report"
-			},
-			"name": "UsageReport",
-			"objectActions": [
-				{
-					"active": true,
-					"description": "Triggers Spring Boot CX to create the overage commerce order and Salesforce opportunity once a usage report is approved.",
-					"externalReferenceCode": "OA_USAGE_REPORT_APPROVED",
-					"name": "UsageReportApproved",
-					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-usage-report-approved",
-					"objectActionTriggerKey": "onAfterUpdate",
-					"parameters": {
-					}
-				}
-			],
-			"objectFields": [
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_ACCOUNT_EXTERNAL_REFERENCE_CODE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Account External Reference Code"
-					},
-					"name": "accountExternalReferenceCode",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_AGGREGATE_QUANTITY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Aggregate Quantity"
-					},
-					"name": "aggregateQuantity",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "Long",
-					"businessType": "LongInteger",
-					"externalReferenceCode": "C_USAGE_REPORT_COMMERCE_ORDER_ID",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Commerce Order ID"
-					},
-					"name": "commerceOrderId",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Long"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_CONTRACT_EXTERNAL_REFERENCE_CODE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Contract External Reference Code"
-					},
-					"name": "contractExternalReferenceCode",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Date",
-					"businessType": "DateTime",
-					"externalReferenceCode": "C_USAGE_REPORT_DATE_FROM",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Date From"
-					},
-					"name": "dateFrom",
-					"objectFieldSettings": [
-						{
-							"name": "timeStorage",
-							"value": "convertToUTC"
-						}
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Date"
-				},
-				{
-					"DBType": "Date",
-					"businessType": "DateTime",
-					"externalReferenceCode": "C_USAGE_REPORT_DATE_TO",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Date To"
-					},
-					"name": "dateTo",
-					"objectFieldSettings": [
-						{
-							"name": "timeStorage",
-							"value": "convertToUTC"
-						}
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Date"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_ENTITLED_QUANTITY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Entitled Quantity"
-					},
-					"name": "entitledQuantity",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "Date",
-					"businessType": "DateTime",
-					"externalReferenceCode": "C_USAGE_REPORT_GENERATED_AT",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Generated At"
-					},
-					"name": "generatedAt",
-					"objectFieldSettings": [
-						{
-							"name": "timeStorage",
-							"value": "convertToUTC"
-						}
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Date"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_GENERATOR_CLASS_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Generator Class Name"
-					},
-					"name": "generatorClassName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_AMOUNT",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage Amount"
-					},
-					"name": "overageAmount",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_CURRENCY",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage Currency"
-					},
-					"name": "overageCurrency",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_QUANTITY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage Quantity"
-					},
-					"name": "overageQuantity",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_SKU_QUANTITY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage SKU Quantity"
-					},
-					"name": "overageSkuQuantity",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Picklist",
-					"defaultValue": "readyForReview",
-					"externalReferenceCode": "C_USAGE_REPORT_REVIEW_STATUS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Review Status"
-					},
-					"listTypeDefinitionExternalReferenceCode": "LT_USAGE_REPORT_REVIEW_STATUS",
-					"name": "reviewStatus",
-					"objectFieldSettings": [
-						{
-							"name": "stateFlow",
-							"value": {
-								"objectStates": [
-									{
-										"key": "readyForReview",
-										"objectStateTransitions": [
-											{
-												"key": "approved"
-											},
-											{
-												"key": "completed"
-											}
-										]
-									},
-									{
-										"key": "approved",
-										"objectStateTransitions": [
-											{
-												"key": "completed"
-											}
-										]
-									},
-									{
-										"key": "completed",
-										"objectStateTransitions": [
-										]
-									}
-								]
-							}
-						}
-					],
-					"required": true,
-					"state": true,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_SKU_EXTERNAL_REFERENCE_CODE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "SKU External Reference Code"
-					},
-					"name": "skuExternalReferenceCode",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_TARGET_CLASS_NAME",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Target Class Name"
-					},
-					"name": "targetClassName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Long",
-					"businessType": "LongInteger",
-					"externalReferenceCode": "C_USAGE_REPORT_TARGET_PK",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Target PK"
-					},
-					"name": "targetPK",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Long"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_USAGE_REPORT_TARGET_TYPE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Target Type"
-					},
-					"name": "targetType",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				}
-			],
-			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
-			"objectRelationships": [
-			],
-			"objectValidationRules": [
-			],
-			"objectViews": [
-				{
-					"defaultObjectView": true,
-					"name": {
-						"en_US": "Default View"
-					},
-					"objectDefinitionExternalReferenceCode": "C_USAGE_REPORT",
-					"objectViewColumns": [
-						{
-							"label": {
-								"en_US": "ERC"
-							},
-							"objectFieldName": "externalReferenceCode",
-							"priority": 0
-						},
-						{
-							"label": {
-								"en_US": "Review Status"
-							},
-							"objectFieldName": "reviewStatus",
-							"priority": 1
-						},
-						{
-							"label": {
-								"en_US": "Target Type"
-							},
-							"objectFieldName": "targetType",
-							"priority": 2
-						},
-						{
-							"label": {
-								"en_US": "Overage Quantity"
-							},
-							"objectFieldName": "overageQuantity",
-							"priority": 3
-						},
-						{
-							"label": {
-								"en_US": "Overage SKU Quantity"
-							},
-							"objectFieldName": "overageSkuQuantity",
-							"priority": 4
-						},
-						{
-							"label": {
-								"en_US": "Overage Amount"
-							},
-							"objectFieldName": "overageAmount",
-							"priority": 5
-						},
-						{
-							"label": {
-								"en_US": "Date From"
-							},
-							"objectFieldName": "dateFrom",
-							"priority": 6
-						},
-						{
-							"label": {
-								"en_US": "Date To"
-							},
-							"objectFieldName": "dateTo",
-							"priority": 7
-						},
-						{
-							"label": {
-								"en_US": "Generated At"
-							},
-							"objectFieldName": "generatedAt",
-							"priority": 8
-						}
-					]
-				}
-			],
-			"panelCategoryKey": "applications_menu.applications.content",
-			"pluralLabel": {
-				"en_US": "Usage Reports"
-			},
-			"portlet": true,
-			"restContextPath": "/o/c/usagereports",
-			"scope": "company",
-			"status": {
-				"code": 0,
-				"label": "approved",
-				"label_i18n": "Approved"
-			},
-			"system": false,
-			"titleObjectFieldName": "generatorClassName"
 		}
 	]
 }
