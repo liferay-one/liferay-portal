@@ -65,7 +65,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "prevent",
+			"deletionType": "disassociate",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_LICENSE_KEY",
 			"label": {
 				"en_US": "Account Entry to License Key"
@@ -275,28 +275,6 @@
 		},
 		{
 			"deletionType": "cascade",
-			"externalReferenceCode": "R_ENTITLEMENT_TO_USAGE_EVENT",
-			"label": {
-				"en_US": "Entitlement to Usage Event"
-			},
-			"name": "entitlementToUsageEvent",
-			"objectDefinitionExternalReferenceCode1": "C_ENTITLEMENT",
-			"objectDefinitionExternalReferenceCode2": "C_USAGE_EVENT",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "cascade",
-			"externalReferenceCode": "R_ENVIRONMENT_TO_ENVIRONMENT_ADMIN",
-			"label": {
-				"en_US": "Environment to Environment Admin"
-			},
-			"name": "environmentToEnvironmentAdmin",
-			"objectDefinitionExternalReferenceCode1": "C_ENVIRONMENT",
-			"objectDefinitionExternalReferenceCode2": "C_ENVIRONMENT_ADMIN",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "cascade",
 			"externalReferenceCode": "R_ENVIRONMENT_TO_USAGE_EVENT",
 			"label": {
 				"en_US": "Environment to Usage Event"
@@ -304,17 +282,6 @@
 			"name": "environmentToUsageEvent",
 			"objectDefinitionExternalReferenceCode1": "C_ENVIRONMENT",
 			"objectDefinitionExternalReferenceCode2": "C_USAGE_EVENT",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_ORDER_TO_AI_HUB_APPLICATION",
-			"label": {
-				"en_US": "Order to AI Hub Application"
-			},
-			"name": "orderToAIHubApplication",
-			"objectDefinitionExternalReferenceCode1": "L_COMMERCE_ORDER",
-			"objectDefinitionExternalReferenceCode2": "C_AI_HUB_APPLICATION",
 			"type": "oneToMany"
 		},
 		{
@@ -555,6 +522,17 @@
 			"name": "usageDefinitionToUsageReport",
 			"objectDefinitionExternalReferenceCode1": "C_USAGE_DEFINITION",
 			"objectDefinitionExternalReferenceCode2": "C_USAGE_REPORT",
+			"type": "oneToMany"
+		},
+		{
+			"deletionType": "disassociate",
+			"externalReferenceCode": "R_USAGE_DEFINITION_TO_USAGE_EVENT",
+			"label": {
+				"en_US": "Usage Definition to Usage Event"
+			},
+			"name": "usageDefinitionToUsageEvent",
+			"objectDefinitionExternalReferenceCode1": "C_USAGE_DEFINITION",
+			"objectDefinitionExternalReferenceCode2": "C_USAGE_EVENT",
 			"type": "oneToMany"
 		},
 		{
