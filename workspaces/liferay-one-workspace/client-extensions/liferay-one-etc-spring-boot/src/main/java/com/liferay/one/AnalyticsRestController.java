@@ -38,7 +38,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 /**
  * @author Ricardo Mariz
  */
-@RequestMapping("/analytics")
+@RequestMapping("/liferay-data-platform")
 @RestController
 public class AnalyticsRestController extends BaseRestController {
 
@@ -108,14 +108,17 @@ public class AnalyticsRestController extends BaseRestController {
 			null, orderId, CommerceOrderConstants.ORDER_STATUS_PROCESSING);
 
 		try {
-			JSONObject analyticsProjectJSONObject =
-				_analyticsService.provisionAnalyticsProject(
-					_getAnalyticsFormJSONObject(order, ldpSettingsJSONObject),
-					"internal", order.getAccountExternalReferenceCode());
+			JSONObject analyticsCloudProjectJSONObject =
+				_analyticsService.provisionAnalyticsCloudProject(
+					"internal",
+					_getAnalyticsCloudProjectJSONObject(
+						ldpSettingsJSONObject, order),
+					order.getAccountExternalReferenceCode());
 
 			_commerceOrderService.updateOrder(
 				HashMapBuilder.put(
-					"ldpAnalyticsProject", analyticsProjectJSONObject.toString()
+					"ldpAnalyticsCloudProject",
+					analyticsCloudProjectJSONObject.toString()
 				).put(
 					"ldpWorkspaceName", workspaceName
 				).build(),
@@ -159,8 +162,8 @@ public class AnalyticsRestController extends BaseRestController {
 			orderId, CommerceOrderConstants.ORDER_STATUS_CANCELLED);
 	}
 
-	private JSONObject _getAnalyticsFormJSONObject(
-		Order order, JSONObject ldpSettingsJSONObject) {
+	private JSONObject _getAnalyticsCloudProjectJSONObject(
+		JSONObject ldpSettingsJSONObject, Order order) {
 
 		return new JSONObject(
 		).put(
