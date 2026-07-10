@@ -30,7 +30,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Ricardo Mariz
  */
 @Component
-public class AnalyticsService extends BaseService {
+public class AnalyticsCloudService extends BaseService {
 
 	public JSONObject getAnalyticsCloudContextJSONObject(
 		String environmentName) {
@@ -201,7 +201,8 @@ public class AnalyticsService extends BaseService {
 			analyticsCloudContextJSONObject, analyticsCloudProjectJSONObject);
 	}
 
-	private static final Log _log = LogFactory.getLog(AnalyticsService.class);
+	private static final Log _log = LogFactory.getLog(
+		AnalyticsCloudService.class);
 
 	@Value("${liferay.one.analytics.cloud.auth.email.address}")
 	private String _analyticsCloudAuthEmailAddress;

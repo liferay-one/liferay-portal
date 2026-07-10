@@ -8,7 +8,7 @@ package com.liferay.one;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.service.AnalyticsService;
+import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -40,7 +40,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
  */
 @RequestMapping("/liferay-data-platform")
 @RestController
-public class AnalyticsRestController extends BaseRestController {
+public class LiferayDataPlatformRestController extends BaseRestController {
 
 	@PostMapping("provisioning/{orderId}")
 	public ResponseEntity<Void> postProvisioningOrder(
@@ -109,7 +109,7 @@ public class AnalyticsRestController extends BaseRestController {
 
 		try {
 			JSONObject analyticsCloudProjectJSONObject =
-				_analyticsService.provisionAnalyticsCloudProject(
+				_analyticsCloudService.provisionAnalyticsCloudProject(
 					"internal",
 					_getAnalyticsCloudProjectJSONObject(
 						ldpSettingsJSONObject, order),
@@ -199,10 +199,10 @@ public class AnalyticsRestController extends BaseRestController {
 	}
 
 	private static final Log _log = LogFactory.getLog(
-		AnalyticsRestController.class);
+		LiferayDataPlatformRestController.class);
 
 	@Autowired
-	private AnalyticsService _analyticsService;
+	private AnalyticsCloudService _analyticsCloudService;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
