@@ -32,47 +32,39 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class AnalyticsService extends BaseService {
 
-	public JSONObject getAnalyticsContextJSONObject(String environmentName) {
+	public JSONObject getAnalyticsCloudContextJSONObject(
+		String environmentName) {
+
 		if (Objects.equals(environmentName, "internal")) {
 			return new JSONObject(
 			).put(
-				"emailAddress", _analyticsInternalAuthEmailAddress
+				"emailAddress", _analyticsCloudInternalAuthEmailAddress
 			).put(
-				"password", _analyticsInternalAuthPassword
+				"password", _analyticsCloudInternalAuthPassword
 			).put(
-				"url", _analyticsInternalAuthUrl
+				"url", _analyticsCloudInternalAuthUrl
 			);
 		}
 
 		return new JSONObject(
 		).put(
-			"emailAddress", _analyticsAuthEmailAddress
+			"emailAddress", _analyticsCloudAuthEmailAddress
 		).put(
-			"password", _analyticsAuthPassword
+			"password", _analyticsCloudAuthPassword
 		).put(
-			"url", _analyticsAuthUrl
+			"url", _analyticsCloudAuthUrl
 		);
 	}
 
-	public String getAuthorization(JSONObject analyticsContextJSONObject) {
-		Base64.Encoder encoder = Base64.getEncoder();
-
-		String authorization =
-			analyticsContextJSONObject.getString("emailAddress") + ":" +
-				analyticsContextJSONObject.getString("password");
-
-		return "Basic " + encoder.encodeToString(authorization.getBytes());
-	}
-
-	public JSONObject getCorpProjectUuidJSONObject(
-		JSONObject analyticsContextJSONObject, String corpProjectUuid) {
+	public JSONObject getAnalyticsCloudProjectJSONObject(
+		JSONObject analyticsCloudContextJSONObject, String corpProjectUuid) {
 
 		try {
 			JSONObject jsonObject = new JSONObject(
 				get(
-					getAuthorization(analyticsContextJSONObject),
+					getAuthorization(analyticsCloudContextJSONObject),
 					UriComponentsBuilder.fromUriString(
-						analyticsContextJSONObject.getString("url")
+						analyticsCloudContextJSONObject.getString("url")
 					).path(
 						"/o/faro/main/project/corpProjectUuid/" +
 							corpProjectUuid
@@ -98,17 +90,28 @@ public class AnalyticsService extends BaseService {
 		}
 	}
 
-	public String provision(
-			JSONObject analyticsContextJSONObject, JSONObject jsonObject)
+	public String getAuthorization(JSONObject analyticsCloudContextJSONObject) {
+		Base64.Encoder encoder = Base64.getEncoder();
+
+		String authorization =
+			analyticsCloudContextJSONObject.getString("emailAddress") + ":" +
+				analyticsCloudContextJSONObject.getString("password");
+
+		return "Basic " + encoder.encodeToString(authorization.getBytes());
+	}
+
+	public JSONObject provisionAnalyticsCloudProject(
+			JSONObject analyticsCloudContextJSONObject,
+			JSONObject analyticsCloudProjectJSONObject)
 		throws Exception {
 
 		try {
 			String response = WebClient.builder(
 			).baseUrl(
-				analyticsContextJSONObject.getString("url")
+				analyticsCloudContextJSONObject.getString("url")
 			).defaultHeader(
 				HttpHeaders.AUTHORIZATION,
-				getAuthorization(analyticsContextJSONObject)
+				getAuthorization(analyticsCloudContextJSONObject)
 			).build(
 			).post(
 			).uri(
@@ -117,31 +120,37 @@ public class AnalyticsService extends BaseService {
 				MediaType.APPLICATION_FORM_URLENCODED
 			).body(
 				BodyInserters.fromFormData(
-					"corpProjectName", jsonObject.optString("corpProjectName")
+					"corpProjectName",
+					analyticsCloudProjectJSONObject.optString("corpProjectName")
 				).with(
-					"corpProjectUuid", jsonObject.optString("corpProjectUuid")
+					"corpProjectUuid",
+					analyticsCloudProjectJSONObject.optString("corpProjectUuid")
 				).with(
 					"enableAutoConfiguration",
 					String.valueOf(
-						jsonObject.optBoolean("enableAutoConfiguration", true))
+						analyticsCloudProjectJSONObject.optBoolean(
+							"enableAutoConfiguration", true))
 				).with(
-					"friendlyURL", jsonObject.optString("friendlyURL")
+					"friendlyURL",
+					analyticsCloudProjectJSONObject.optString("friendlyURL")
 				).with(
 					"incidentReportEmailAddresses",
-					jsonObject.getJSONArray(
+					analyticsCloudProjectJSONObject.getJSONArray(
 						"incidentReportEmailAddresses"
 					).toString()
 				).with(
-					"name", jsonObject.getString("name")
+					"name", analyticsCloudProjectJSONObject.getString("name")
 				).with(
-					"serverLocation", jsonObject.getString("serverLocation")
+					"ownerEmailAddress",
+					analyticsCloudProjectJSONObject.getString(
+						"ownerEmailAddress")
+				).with(
+					"serverLocation",
+					analyticsCloudProjectJSONObject.getString("serverLocation")
 				).with(
 					"sharedCluster", "false"
 				).with(
 					"trial", "false"
-				).with(
-					"ownerEmailAddress",
-					jsonObject.getString("ownerEmailAddress")
 				)
 			).retrieve(
 			).bodyToMono(
@@ -149,66 +158,67 @@ public class AnalyticsService extends BaseService {
 			).block();
 
 			if (_log.isInfoEnabled()) {
-				_log.info("Analytics project created " + response);
+				_log.info("Analytics Cloud project created " + response);
 			}
 
-			return response;
+			return new JSONObject(response);
 		}
 		catch (WebClientResponseException webClientResponseException) {
 			_log.error(
 				StringBundler.concat(
-					"Unable to provision Analytics Cloud project ", jsonObject,
-					": \n",
+					"Unable to provision Analytics Cloud project ",
+					analyticsCloudProjectJSONObject, ": \n",
 					webClientResponseException.getResponseBodyAsString()));
 
 			throw webClientResponseException;
 		}
 	}
 
-	public JSONObject provisionAnalyticsProject(
-			JSONObject analyticsFormJSONObject, String analyticsEnvironment,
-			String corpProjectUuid)
+	public JSONObject provisionAnalyticsCloudProject(
+			String analyticsCloudEnvironment,
+			JSONObject analyticsCloudProjectJSONObject, String corpProjectUuid)
 		throws Exception {
 
-		JSONObject analyticsContextJSONObject = getAnalyticsContextJSONObject(
-			analyticsEnvironment);
+		JSONObject analyticsCloudContextJSONObject =
+			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment);
 
-		JSONObject analyticsProjectJSONObject = getCorpProjectUuidJSONObject(
-			analyticsContextJSONObject, corpProjectUuid);
+		JSONObject curAnalyticsCloudProjectJSONObject =
+			getAnalyticsCloudProjectJSONObject(
+				analyticsCloudContextJSONObject, corpProjectUuid);
 
-		if (analyticsProjectJSONObject == null) {
-			if (Objects.equals(analyticsEnvironment, "internal")) {
-				analyticsFormJSONObject.put(
-					"serverLocation", "us-west1-ac-uat-c1");
-			}
-
-			analyticsFormJSONObject.put("corpProjectUuid", corpProjectUuid);
-
-			analyticsProjectJSONObject = new JSONObject(
-				provision(analyticsContextJSONObject, analyticsFormJSONObject));
+		if (curAnalyticsCloudProjectJSONObject != null) {
+			return curAnalyticsCloudProjectJSONObject;
 		}
 
-		return analyticsProjectJSONObject;
+		if (Objects.equals(analyticsCloudEnvironment, "internal")) {
+			analyticsCloudProjectJSONObject.put(
+				"serverLocation", "us-west1-ac-uat-c1");
+		}
+
+		analyticsCloudProjectJSONObject.put("corpProjectUuid", corpProjectUuid);
+
+		return provisionAnalyticsCloudProject(
+			analyticsCloudContextJSONObject, analyticsCloudProjectJSONObject);
 	}
 
 	private static final Log _log = LogFactory.getLog(AnalyticsService.class);
 
-	@Value("${liferay.one.analytics.auth.email.address}")
-	private String _analyticsAuthEmailAddress;
+	@Value("${liferay.one.analytics.cloud.auth.email.address}")
+	private String _analyticsCloudAuthEmailAddress;
 
-	@Value("${liferay.one.analytics.auth.password}")
-	private String _analyticsAuthPassword;
+	@Value("${liferay.one.analytics.cloud.auth.password}")
+	private String _analyticsCloudAuthPassword;
 
-	@Value("${liferay.one.analytics.auth.url}")
-	private String _analyticsAuthUrl;
+	@Value("${liferay.one.analytics.cloud.auth.url}")
+	private String _analyticsCloudAuthUrl;
 
-	@Value("${liferay.one.analytics.internal.auth.email.address}")
-	private String _analyticsInternalAuthEmailAddress;
+	@Value("${liferay.one.analytics.cloud.internal.auth.email.address}")
+	private String _analyticsCloudInternalAuthEmailAddress;
 
-	@Value("${liferay.one.analytics.internal.auth.password}")
-	private String _analyticsInternalAuthPassword;
+	@Value("${liferay.one.analytics.cloud.internal.auth.password}")
+	private String _analyticsCloudInternalAuthPassword;
 
-	@Value("${liferay.one.analytics.internal.auth.url}")
-	private String _analyticsInternalAuthUrl;
+	@Value("${liferay.one.analytics.cloud.internal.auth.url}")
+	private String _analyticsCloudInternalAuthUrl;
 
 }

@@ -223,7 +223,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
-		"name": "ldpAnalyticsProject",
+		"name": "ldpAnalyticsCloudProject",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
