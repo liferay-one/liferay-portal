@@ -1656,31 +1656,24 @@
 						},
 						{
 							"label": {
-								"en_US": "Active Contract"
-							},
-							"objectFieldName": "activeContract",
-							"priority": 2
-						},
-						{
-							"label": {
 								"en_US": "Contract Billing Cadence"
 							},
 							"objectFieldName": "contractBillingCadence",
-							"priority": 3
+							"priority": 2
 						},
 						{
 							"label": {
 								"en_US": "Contract Term"
 							},
 							"objectFieldName": "contractTerm",
-							"priority": 4
+							"priority": 3
 						},
 						{
 							"label": {
 								"en_US": "Contract Type"
 							},
 							"objectFieldName": "contractType",
-							"priority": 5
+							"priority": 4
 						}
 					]
 				}
