@@ -12,6 +12,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.net.URI;
+
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -201,6 +203,24 @@ public class ProductVersionService extends OneBaseService {
 				));
 		}
 
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Syncing ", productVersionJSONObjects.size(),
+					" product versions for product group ", productGroup));
+		}
+
+		String authorization = getAuthorization();
+
+		if (Validator.isNull(authorization)) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to sync product versions for product group ",
+					productGroup, ": no authorization token was obtained"));
+
+			return;
+		}
+
 		int count = 0;
 
 		for (JSONObject productVersionJSONObject :
@@ -211,15 +231,23 @@ public class ProductVersionService extends OneBaseService {
 			String version = productVersionJSONObject.getString(
 				"productVersion");
 
+			URI uri = UriComponentsBuilder.fromPath(
+				"/o/c/productversions/by-external-reference-code/" +
+					externalReferenceCode
+			).build(
+			).encode(
+			).toUri();
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Syncing product version ", version, " to ", uri,
+						" with payload ", productVersionJSONObject));
+			}
+
 			try {
 				String response = put(
-					getAuthorization(), productVersionJSONObject.toString(),
-					UriComponentsBuilder.fromPath(
-						"/o/c/productversions/by-external-reference-code/" +
-							externalReferenceCode
-					).build(
-					).encode(
-					).toUri());
+					authorization, productVersionJSONObject.toString(), uri);
 
 				if ((response != null) &&
 					!new JSONObject(
@@ -232,15 +260,15 @@ public class ProductVersionService extends OneBaseService {
 				else {
 					_log.error(
 						StringBundler.concat(
-							"Unable to sync product version ", version,
-							": unexpected response ", response));
+							"Unable to sync product version ", version, " to ",
+							uri, ": unexpected response ", response));
 				}
 			}
 			catch (WebClientResponseException webClientResponseException) {
 				_log.error(
 					StringBundler.concat(
-						"Unable to sync product version ", version, ": ",
-						webClientResponseException.getStatusCode(), " ",
+						"Unable to sync product version ", version, " to ", uri,
+						": ", webClientResponseException.getStatusCode(), " ",
 						webClientResponseException.getResponseBodyAsString()));
 			}
 			catch (Exception exception) {
