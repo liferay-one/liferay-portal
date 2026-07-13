@@ -25,6 +25,17 @@
 		{
 			"active": true,
 			"description": {
+				"en_US": "Designates that the order is an AI Hub."
+			},
+			"displayOrder": 1,
+			"externalReferenceCode": "AI_HUB",
+			"name": {
+				"en_US": "AI Hub"
+			}
+		},
+		{
+			"active": true,
+			"description": {
 				"en_US": "Designates that the order contains an AI hub token."
 			},
 			"displayOrder": 1,

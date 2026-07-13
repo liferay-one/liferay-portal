@@ -300,6 +300,21 @@
 	},
 	{
 		"dataType": 15,
+		"defaultValue": "{}",
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "order-metadata",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
+		}
+	},
+	{
+		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
 		"name": "opportunityProductFamily",
 		"properties": {
