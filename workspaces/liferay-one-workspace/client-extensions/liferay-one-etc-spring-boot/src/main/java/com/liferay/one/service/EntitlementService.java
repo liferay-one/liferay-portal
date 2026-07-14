@@ -13,11 +13,15 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,22 +94,6 @@ public class EntitlementService extends OneBaseService {
 			).toUri());
 
 		return new Entitlement(new JSONObject(response));
-	}
-
-	public void deleteEntitlements(long commerceOrderItemId) throws Exception {
-		List<Entitlement> entitlements = getEntitlements(
-			StringBundler.concat(
-				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '",
-				commerceOrderItemId, "'"));
-
-		for (Entitlement entitlement : entitlements) {
-			delete(
-				getAuthorization(), StringPool.BLANK,
-				UriComponentsBuilder.fromPath(
-					"/o/c/entitlements/" + entitlement.getEntitlementId()
-				).build(
-				).toUri());
-		}
 	}
 
 	public Entitlement fetchEntitlement(
@@ -220,9 +208,67 @@ public class EntitlementService extends OneBaseService {
 
 		sb.append(")");
 
-		return !getEntitlements(
-			sb.toString()
-		).isEmpty();
+		List<Entitlement> entitlements = getEntitlements(sb.toString());
+
+		String todayString = LocalDate.now(
+			ZoneOffset.UTC
+		).toString();
+
+		for (Entitlement entitlement : entitlements) {
+			String endDate = entitlement.getEndDate();
+
+			if (Validator.isNull(endDate) ||
+				(endDate.compareTo(todayString) >= 0)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public void trimEntitlements(long commerceOrderItemId, String endDate)
+		throws Exception {
+
+		List<Entitlement> entitlements = getEntitlements(
+			StringBundler.concat(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '",
+				commerceOrderItemId, "'"));
+
+		for (Entitlement entitlement : entitlements) {
+			String entitlementEndDate = entitlement.getEndDate();
+
+			if (Validator.isNotNull(entitlementEndDate) &&
+				(entitlementEndDate.compareTo(endDate) <= 0)) {
+
+				continue;
+			}
+
+			String trimmedEndDate = endDate;
+
+			String startDate = entitlement.getStartDate();
+
+			if (Validator.isNotNull(startDate) &&
+				(startDate.compareTo(endDate) > 0)) {
+
+				trimmedEndDate = startDate;
+			}
+
+			if (Objects.equals(entitlementEndDate, trimmedEndDate)) {
+				continue;
+			}
+
+			patch(
+				getAuthorization(),
+				new JSONObject(
+				).put(
+					"endDate", trimmedEndDate
+				).toString(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/entitlements/" + entitlement.getEntitlementId()
+				).build(
+				).toUri());
+		}
 	}
 
 	public void updateEntitlementContract(long entitlementId, long contractId)

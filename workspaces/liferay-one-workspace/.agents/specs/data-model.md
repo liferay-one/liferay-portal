@@ -289,6 +289,8 @@ Materialized grant records derived from CommerceOrderItems via EntitlementDefini
 | `startDate` | datetime | |
 | `endDate` | datetime | |
 
+The `endDate` is the grant's effective end. After a realignment amendment it may be earlier than the granting CommerceOrderItem's frozen `endDate`, in which case it equals that item's `effectiveEndDate`. Realignment expresses supersession through dates only; no status transition occurs at processing time.
+
 ---
 
 #### EntitlementDefinition (`C_ENTITLEMENT_DEFINITION`)

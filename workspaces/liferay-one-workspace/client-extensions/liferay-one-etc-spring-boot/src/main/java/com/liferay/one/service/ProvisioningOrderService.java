@@ -14,6 +14,9 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,78 +35,105 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProvisioningOrderService {
 
-	public void cancelRealignedOrder(
-			Order parentOrder,
+	public void trimRealignedOrderItems(
+			long accountId, String opportunityId, String parentOpportunityId,
 			List<OpportunityLineItem> realignmentOpportunityLineItems,
 			List<String> warningMessages)
 		throws Exception {
 
-		OrderItem[] parentOrderItems = parentOrder.getOrderItems();
-
-		if (parentOrderItems == null) {
-			return;
-		}
+		List<Order> orders = _commerceOrderService.getAccountOrders(accountId);
 
 		for (OpportunityLineItem realignmentOpportunityLineItem :
 				realignmentOpportunityLineItems) {
 
 			boolean matched = false;
 
-			for (OrderItem parentOrderItem : parentOrderItems) {
-				if (!Objects.equals(
-						parentOrderItem.getSkuExternalReferenceCode(),
-						realignmentOpportunityLineItem.getProduct2Id())) {
-
-					continue;
-				}
-
-				matched = true;
-
-				OrderItem orderItem =
-					_commerceOrderItemService.fetchCommerceOrderItem(
-						parentOrderItem.getId());
-
-				if ((orderItem == null) ||
-					!Objects.equals(
-						OrderItemUtil.getStatus(orderItem),
-						CommerceOrderItemConstants.STATUS_APPROVED)) {
-
-					continue;
-				}
-
-				String endDate = _toDateTime(
-					realignmentOpportunityLineItem.getEndDate());
-				String startDate = _toDateTime(
-					realignmentOpportunityLineItem.getServiceDate());
-
+			for (Order order : orders) {
 				if (Objects.equals(
-						OrderItemUtil.getEndDate(orderItem), endDate) &&
-					Objects.equals(
-						OrderItemUtil.getStartDate(orderItem), startDate)) {
+						order.getExternalReferenceCode(), opportunityId) ||
+					(order.getOrderItems() == null) ||
+					!_isFamilyOrder(order, parentOpportunityId)) {
 
 					continue;
 				}
 
-				_commerceOrderItemService.patchOrderItemCustomFields(
-					GetterUtil.getLong(orderItem.getId()),
-					Map.of(
-						"customStatus",
-						CommerceOrderItemConstants.STATUS_CANCELED));
+				for (OrderItem parentOrderItem : order.getOrderItems()) {
+					if (!Objects.equals(
+							parentOrderItem.getSkuExternalReferenceCode(),
+							realignmentOpportunityLineItem.getProduct2Id())) {
 
-				_entitlementService.deleteEntitlements(
-					GetterUtil.getLong(orderItem.getId()));
+						continue;
+					}
 
-				if (Validator.isNotNull(endDate) &&
-					!Objects.equals(
-						OrderItemUtil.getEndDate(orderItem), endDate)) {
+					matched = true;
 
-					_addWarning(
-						warningMessages,
-						StringBundler.concat(
-							"End date mismatch for order item ",
-							parentOrderItem.getExternalReferenceCode(),
-							". Amended date: ", endDate, ", original date: ",
-							OrderItemUtil.getEndDate(orderItem)));
+					OrderItem orderItem =
+						_commerceOrderItemService.fetchCommerceOrderItem(
+							parentOrderItem.getId());
+
+					if ((orderItem == null) ||
+						!Objects.equals(
+							OrderItemUtil.getStatus(orderItem),
+							CommerceOrderItemConstants.STATUS_APPROVED)) {
+
+						continue;
+					}
+
+					String endDate = _toDateTime(
+						realignmentOpportunityLineItem.getEndDate());
+					String startDate = _toDateTime(
+						realignmentOpportunityLineItem.getServiceDate());
+
+					if (Objects.equals(
+							OrderItemUtil.getEndDate(orderItem), endDate) &&
+						Objects.equals(
+							OrderItemUtil.getStartDate(orderItem), startDate)) {
+
+						continue;
+					}
+
+					String effectiveEndDate = endDate;
+
+					if (Validator.isNull(effectiveEndDate)) {
+						effectiveEndDate = startDate;
+					}
+
+					if (Validator.isNull(effectiveEndDate)) {
+						effectiveEndDate = _toDateTime(
+							LocalDate.now(
+								ZoneOffset.UTC
+							).toString());
+					}
+
+					String orderItemEffectiveEndDate =
+						OrderItemUtil.getEffectiveEndDate(orderItem);
+
+					if (Validator.isNull(orderItemEffectiveEndDate) ||
+						(orderItemEffectiveEndDate.compareTo(effectiveEndDate) >
+							0)) {
+
+						_commerceOrderItemService.patchOrderItemCustomFields(
+							GetterUtil.getLong(orderItem.getId()),
+							Map.of("effectiveEndDate", effectiveEndDate));
+
+						if (Validator.isNotNull(endDate) &&
+							!Objects.equals(
+								OrderItemUtil.getEndDate(orderItem), endDate)) {
+
+							_addWarning(
+								warningMessages,
+								StringBundler.concat(
+									"End date mismatch for order item ",
+									parentOrderItem.getExternalReferenceCode(),
+									". Amended date: ", endDate,
+									", original date: ",
+									OrderItemUtil.getEndDate(orderItem)));
+						}
+					}
+
+					_entitlementService.trimEntitlements(
+						GetterUtil.getLong(orderItem.getId()),
+						effectiveEndDate);
 				}
 			}
 
@@ -114,22 +144,6 @@ public class ProvisioningOrderService {
 						realignmentOpportunityLineItem.getProductName());
 			}
 		}
-
-		for (OrderItem parentOrderItem : parentOrder.getOrderItems()) {
-			OrderItem orderItem =
-				_commerceOrderItemService.fetchCommerceOrderItem(
-					parentOrderItem.getId());
-
-			if ((orderItem != null) &&
-				!Objects.equals(
-					OrderItemUtil.getStatus(orderItem),
-					CommerceOrderItemConstants.STATUS_CANCELED)) {
-
-				return;
-			}
-		}
-
-		_commerceOrderService.cancelOrder(parentOrder.getId());
 	}
 
 	public void trimRenewedOrderItems(
@@ -218,6 +232,25 @@ public class ProvisioningOrderService {
 		if (_log.isWarnEnabled()) {
 			_log.warn(warningMessage);
 		}
+	}
+
+	private boolean _isFamilyOrder(Order order, String parentOpportunityId) {
+		if (Objects.equals(
+				order.getExternalReferenceCode(), parentOpportunityId)) {
+
+			return true;
+		}
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		if (customFields == null) {
+			return false;
+		}
+
+		return Objects.equals(
+			Objects.toString(customFields.get("parentOpportunityId"), null),
+			parentOpportunityId);
 	}
 
 	private String _toDateTime(String value) {
