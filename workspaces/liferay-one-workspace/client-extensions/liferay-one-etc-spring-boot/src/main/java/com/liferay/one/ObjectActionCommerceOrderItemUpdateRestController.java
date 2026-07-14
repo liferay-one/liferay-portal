@@ -18,6 +18,9 @@ import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -68,12 +71,89 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 		Order order = _commerceOrderService.getCommerceOrder(
 			GetterUtil.getLong(orderItem.getOrderId()));
 
+		if (_hasOtherActivePaasExperience(
+				order.getAccountId(), GetterUtil.getLong(orderItem.getId()))) {
+
+			return;
+		}
+
 		String oktaApplicationId = _propertyService.getPropertyValue(
 			order.getAccountId(), PropertyConstants.NAME_OKTA_APPLICATION);
 
 		if (Validator.isNotNull(oktaApplicationId)) {
 			_oktaService.deleteApplication(oktaApplicationId);
 		}
+	}
+
+	private boolean _hasOtherActivePaasExperience(
+			long accountId, long commerceOrderItemId)
+		throws Exception {
+
+		String todayString = LocalDate.now(
+			ZoneOffset.UTC
+		).toString();
+
+		for (Order order : _commerceOrderService.getAccountOrders(accountId)) {
+			OrderItem[] orderItems = order.getOrderItems();
+
+			if (orderItems == null) {
+				continue;
+			}
+
+			for (OrderItem orderItem : orderItems) {
+				if (Objects.equals(orderItem.getId(), commerceOrderItemId)) {
+					continue;
+				}
+
+				Map<String, String> nameMap = orderItem.getName();
+
+				String name = null;
+
+				if (nameMap != null) {
+					name = nameMap.get("en_US");
+				}
+
+				if (Objects.equals(
+						name, CommerceProductConstants.NAME_PAAS_EXPERIENCE) &&
+					_isActiveOrderItem(
+						GetterUtil.getLong(orderItem.getId()), todayString)) {
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isActiveOrderItem(
+			long commerceOrderItemId, String todayString)
+		throws Exception {
+
+		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
+			commerceOrderItemId);
+
+		if ((orderItem == null) ||
+			!Objects.equals(
+				OrderItemUtil.getStatus(orderItem),
+				CommerceOrderItemConstants.STATUS_APPROVED)) {
+
+			return false;
+		}
+
+		String endDate = OrderItemUtil.getEffectiveEndDate(orderItem);
+
+		if (Validator.isNull(endDate)) {
+			endDate = OrderItemUtil.getEndDate(orderItem);
+		}
+
+		if (Validator.isNull(endDate) ||
+			(endDate.compareTo(todayString) >= 0)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Autowired

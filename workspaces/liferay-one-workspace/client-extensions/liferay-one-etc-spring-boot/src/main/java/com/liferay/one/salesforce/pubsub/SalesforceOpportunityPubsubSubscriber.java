@@ -440,23 +440,10 @@ public class SalesforceOpportunityPubsubSubscriber
 				}
 			}
 			else {
-				Order parentOrder =
-					_commerceOrderService.fetchOrderByExternalReferenceCode(
-						opportunity.getAmendedContractOpportunityId());
-
-				if (parentOrder == null) {
-					_addWarning(
-						warningMessages,
-						StringBundler.concat(
-							"Unable to find the parent order ",
-							opportunity.getAmendedContractOpportunityId(),
-							" for amended opportunity ", opportunity.getId()));
-				}
-				else {
-					_provisioningOrderService.cancelRealignedOrder(
-						parentOrder, realignmentOpportunityLineItems,
-						warningMessages);
-				}
+				_provisioningOrderService.trimRealignedOrderItems(
+					account.getId(), opportunity.getId(),
+					opportunity.getAmendedContractOpportunityId(),
+					realignmentOpportunityLineItems, warningMessages);
 			}
 		}
 
