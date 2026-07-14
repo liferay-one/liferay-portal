@@ -9,8 +9,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.okta.service.OktaService;
-import com.liferay.one.salesforce.model.Project;
-import com.liferay.one.salesforce.model.ProjectContactRole;
+import com.liferay.one.salesforce.model.SalesforceProject;
+import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -29,29 +29,33 @@ import org.springframework.stereotype.Component;
 public class ProvisioningContactService {
 
 	public List<Long> addProjectContacts(
-		Account account, List<ProjectContactRole> projectContactRoles,
-		Project salesforceProject, List<String> warningMessages) {
+		Account account,
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles,
+		SalesforceProject salesforceProject, List<String> warningMessages) {
 
 		List<Long> userIds = new ArrayList<>();
 
 		boolean hasDesignatedAdministrator = _hasDesignatedAdministrator(
-			projectContactRoles);
+			salesforceProjectContactRoles);
 
-		for (ProjectContactRole projectContactRole : projectContactRoles) {
+		for (SalesforceProjectContactRole salesforceProjectContactRole :
+				salesforceProjectContactRoles) {
+
 			try {
 				_addProjectContact(
-					account, hasDesignatedAdministrator, projectContactRole,
-					salesforceProject, userIds, warningMessages);
+					account, hasDesignatedAdministrator,
+					salesforceProjectContactRole, salesforceProject, userIds,
+					warningMessages);
 			}
 			catch (Exception exception) {
 				_addWarning(
 					warningMessages,
 					"Unable to process project contact " +
-						projectContactRole.getEmailAddress());
+						salesforceProjectContactRole.getEmailAddress());
 
 				_log.error(
 					"Unable to process project contact " +
-						projectContactRole.getEmailAddress(),
+						salesforceProjectContactRole.getEmailAddress(),
 					exception);
 			}
 		}
@@ -61,11 +65,12 @@ public class ProvisioningContactService {
 
 	private void _addProjectContact(
 			Account account, boolean hasDesignatedAdministrator,
-			ProjectContactRole projectContactRole, Project salesforceProject,
-			List<Long> userIds, List<String> warningMessages)
+			SalesforceProjectContactRole salesforceProjectContactRole,
+			SalesforceProject salesforceProject, List<Long> userIds,
+			List<String> warningMessages)
 		throws Exception {
 
-		String emailAddress = projectContactRole.getEmailAddress();
+		String emailAddress = salesforceProjectContactRole.getEmailAddress();
 
 		if (Validator.isNull(emailAddress) ||
 			_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
@@ -78,13 +83,13 @@ public class ProvisioningContactService {
 
 		if (userAccount == null) {
 			userAccount = _userAccountService.addUserAccount(
-				emailAddress, projectContactRole.getLastName(),
-				projectContactRole.getFirstName());
+				emailAddress, salesforceProjectContactRole.getLastName(),
+				salesforceProjectContactRole.getFirstName());
 
 			try {
 				_oktaService.createContact(
-					emailAddress, projectContactRole.getFirstName(), null,
-					projectContactRole.getLastName());
+					emailAddress, salesforceProjectContactRole.getFirstName(),
+					null, salesforceProjectContactRole.getLastName());
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -102,13 +107,13 @@ public class ProvisioningContactService {
 			account.getId());
 
 		Long accountRoleId = _accountService.fetchAccountRoleId(
-			account.getId(), projectContactRole.getContactRole());
+			account.getId(), salesforceProjectContactRole.getContactRole());
 
 		if (accountRoleId == null) {
 			_addWarning(
 				warningMessages,
 				"Unable to find account role " +
-					projectContactRole.getContactRole());
+					salesforceProjectContactRole.getContactRole());
 
 			_accountService.addAccountUserAccount(
 				account.getId(), userAccount.getId());
@@ -140,7 +145,7 @@ public class ProvisioningContactService {
 			try {
 				_provisioningAssignmentService.assignAccountRole(
 					account, userAccount.getId(),
-					projectContactRole.getContactRole());
+					salesforceProjectContactRole.getContactRole());
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -169,10 +174,13 @@ public class ProvisioningContactService {
 	}
 
 	private boolean _hasDesignatedAdministrator(
-		List<ProjectContactRole> projectContactRoles) {
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles) {
 
-		for (ProjectContactRole projectContactRole : projectContactRoles) {
-			String emailAddress = projectContactRole.getEmailAddress();
+		for (SalesforceProjectContactRole salesforceProjectContactRole :
+				salesforceProjectContactRoles) {
+
+			String emailAddress =
+				salesforceProjectContactRole.getEmailAddress();
 
 			if (Validator.isNull(emailAddress) ||
 				_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
@@ -181,7 +189,7 @@ public class ProvisioningContactService {
 			}
 
 			if (RoleConstants.NAME_ACCOUNT_ADMINISTRATOR.equals(
-					projectContactRole.getContactRole())) {
+					salesforceProjectContactRole.getContactRole())) {
 
 				return true;
 			}

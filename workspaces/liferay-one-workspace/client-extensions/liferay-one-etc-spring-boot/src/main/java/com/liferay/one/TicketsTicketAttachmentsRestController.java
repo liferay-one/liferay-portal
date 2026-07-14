@@ -9,8 +9,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.exception.OrganizationNotFoundException;
-import com.liferay.one.jira.model.Organization;
-import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.model.JiraOrganization;
+import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.permission.ProjectMembershipPermission;
 import com.liferay.one.service.UserAccountService;
@@ -107,21 +107,23 @@ public class TicketsTicketAttachmentsRestController
 			boolean allowClosedTicket, Jwt jwt, String ticketId)
 		throws Exception {
 
-		SupportIssue supportIssue = _jiraIssueService.getSupportIssue(ticketId);
+		JiraSupportIssue jiraSupportIssue =
+			_jiraIssueService.getJiraSupportIssue(ticketId);
 
-		if (supportIssue == null) {
+		if (jiraSupportIssue == null) {
 			return new ResponseEntity<>(
 				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
 		}
 
-		if (supportIssue.isClosed() && !allowClosedTicket) {
+		if (jiraSupportIssue.isClosed() && !allowClosedTicket) {
 			return new ResponseEntity<>(
 				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
 		}
 
-		Organization organization = supportIssue.getOrganization();
+		JiraOrganization jiraOrganization =
+			jiraSupportIssue.getJiraOrganization();
 
-		_checkViewPermission(jwt, organization.getExternalKey());
+		_checkViewPermission(jwt, jiraOrganization.getExternalKey());
 
 		return new ResponseEntity<>(StringPool.BLANK, HttpStatus.OK);
 	}

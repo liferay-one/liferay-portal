@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class ProjectContactRole {
+public class SalesforceProjectContactRole {
 
-	public ProjectContactRole(JSONObject jsonObject) {
+	public SalesforceProjectContactRole(JSONObject jsonObject) {
 		_contactRole = jsonObject.optString("Contact_Role__c");
 		_emailAddress = jsonObject.optString("Contact__r.Email");
 		_firstName = jsonObject.optString("Contact__r.FirstName");

@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class Opportunity {
+public class SalesforceOpportunity {
 
-	public Opportunity(JSONObject jsonObject) {
+	public SalesforceOpportunity(JSONObject jsonObject) {
 		_accountId = jsonObject.optString("AccountId");
 		_amendedContractOpportunityId = jsonObject.optString(
 			"SBQQ__AmendedContract__r.SBQQ__Opportunity__c");

@@ -9,7 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.model.Property;
 import com.liferay.one.okta.service.OktaService;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -30,14 +30,17 @@ import org.springframework.stereotype.Component;
 public class ProvisioningSubdomainService {
 
 	public void provisionSubdomain(
-			Account account, List<OpportunityLineItem> opportunityLineItems)
+			Account account,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
 		throws Exception {
 
 		boolean paasExperience = false;
 
-		for (OpportunityLineItem opportunityLineItem : opportunityLineItems) {
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
 			if (Objects.equals(
-					opportunityLineItem.getProductName(),
+					salesforceOpportunityLineItem.getProductName(),
 					_PRODUCT_NAME_PAAS_EXPERIENCE)) {
 
 				paasExperience = true;

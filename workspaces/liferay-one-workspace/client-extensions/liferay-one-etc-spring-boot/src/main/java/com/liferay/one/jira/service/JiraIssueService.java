@@ -6,10 +6,10 @@
 package com.liferay.one.jira.service;
 
 import com.liferay.one.jira.constants.IssueConstants;
-import com.liferay.one.jira.converter.OrganizationConverter;
+import com.liferay.one.jira.converter.JiraOrganizationConverter;
 import com.liferay.one.jira.exception.OrganizationNotFoundException;
-import com.liferay.one.jira.model.Organization;
-import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.model.JiraOrganization;
+import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -109,7 +109,7 @@ public class JiraIssueService extends BaseJiraService {
 		}
 	}
 
-	public SupportIssue getSupportIssue(String issueKey)
+	public JiraSupportIssue getJiraSupportIssue(String issueKey)
 		throws OrganizationNotFoundException {
 
 		try {
@@ -124,10 +124,10 @@ public class JiraIssueService extends BaseJiraService {
 					).build(
 					).toUri()));
 
-			Organization organization = _getOrganization(
+			JiraOrganization jiraOrganization = _getJiraOrganization(
 				issueJSONObject.optJSONObject("fields"));
 
-			return new SupportIssue(issueJSONObject, organization);
+			return new JiraSupportIssue(issueJSONObject, jiraOrganization);
 		}
 		catch (OrganizationNotFoundException organizationNotFoundException) {
 			throw organizationNotFoundException;
@@ -142,7 +142,7 @@ public class JiraIssueService extends BaseJiraService {
 		return null;
 	}
 
-	public List<SupportIssue> getSupportIssues(
+	public List<JiraSupportIssue> getJiraSupportIssues(
 			String externalReferenceCode, String[] issueKeys)
 		throws Exception {
 
@@ -171,10 +171,10 @@ public class JiraIssueService extends BaseJiraService {
 			sb.toString(), new String[] {"key", "labels", "status", "summary"});
 	}
 
-	public List<SupportIssue> search(String jql, String[] returnFields)
+	public List<JiraSupportIssue> search(String jql, String[] returnFields)
 		throws Exception {
 
-		List<SupportIssue> supportIssues = new ArrayList<>();
+		List<JiraSupportIssue> jiraSupportIssues = new ArrayList<>();
 
 		String nextPageToken = StringPool.BLANK;
 
@@ -202,10 +202,10 @@ public class JiraIssueService extends BaseJiraService {
 						_jiraProjectSupportFLSURL + StringPool.SLASH + issueKey;
 				}
 
-				SupportIssue supportIssue = new SupportIssue(
+				JiraSupportIssue jiraSupportIssue = new JiraSupportIssue(
 					issueJSONObject, ticketURL);
 
-				supportIssues.add(supportIssue);
+				jiraSupportIssues.add(jiraSupportIssue);
 			}
 
 			nextPageToken = searchResponseJSONObject.optString("nextPageToken");
@@ -215,10 +215,10 @@ public class JiraIssueService extends BaseJiraService {
 			}
 		}
 
-		return supportIssues;
+		return jiraSupportIssues;
 	}
 
-	private Organization _getOrganization(JSONObject jsonObject)
+	private JiraOrganization _getJiraOrganization(JSONObject jsonObject)
 		throws OrganizationNotFoundException {
 
 		if (jsonObject == null) {
@@ -235,7 +235,7 @@ public class JiraIssueService extends BaseJiraService {
 		try {
 			JSONObject organizationJSONObject = jsonArray.getJSONObject(0);
 
-			return _organizationConverter.toOrganization(
+			return _organizationConverter.toJiraOrganization(
 				_jiraAssetService.getObject(
 					organizationJSONObject.getString("objectId")));
 		}
@@ -307,6 +307,6 @@ public class JiraIssueService extends BaseJiraService {
 	private String _jiraURL;
 
 	@Autowired
-	private OrganizationConverter _organizationConverter;
+	private JiraOrganizationConverter _organizationConverter;
 
 }

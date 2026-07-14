@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class Project {
+public class SalesforceProject {
 
-	public Project(JSONObject jsonObject) {
+	public SalesforceProject(JSONObject jsonObject) {
 		_accountId = jsonObject.optString("Account__c");
 		_aiHubAccountName = jsonObject.optString("AI_Hub_Account_Name__c");
 		_allowedEmailDomains = jsonObject.optString("Allowed_Email_Domains__c");

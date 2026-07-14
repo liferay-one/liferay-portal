@@ -5,12 +5,13 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.jira.util.JiraDocumentUtil;
 import com.liferay.one.pubsub.Message;
-import com.liferay.one.salesforce.model.Account;
-import com.liferay.one.salesforce.model.Opportunity;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.one.salesforce.model.SalesforceOpportunity;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -61,9 +62,9 @@ public class ProvisioningIssueService {
 	}
 
 	public void addOpportunityInvoicedIssue(
-		com.liferay.headless.admin.user.client.dto.v1_0.Account account,
-		Account salesforceAccount, Opportunity opportunity,
-		List<OpportunityLineItem> opportunityLineItems,
+		Account account, SalesforceAccount salesforceAccount,
+		SalesforceOpportunity salesforceOpportunity,
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 		List<String> warningMessages) {
 
 		try {
@@ -79,7 +80,8 @@ public class ProvisioningIssueService {
 					"Account ID: " + account.getExternalReferenceCode(), false)
 			).put(
 				JiraDocumentUtil.createParagraph(
-					"Opportunity Type: " + opportunity.getType(), false)
+					"Opportunity Type: " + salesforceOpportunity.getType(),
+					false)
 			).put(
 				JiraDocumentUtil.createLinkParagraph(
 					"One Liferay Account Link",
@@ -89,7 +91,8 @@ public class ProvisioningIssueService {
 			).put(
 				JiraDocumentUtil.createLinkParagraph(
 					"Salesforce Opportunity Link",
-					"https://liferay.my.salesforce.com/" + opportunity.getId())
+					"https://liferay.my.salesforce.com/" +
+						salesforceOpportunity.getId())
 			);
 
 			if (!warningMessages.isEmpty()) {
@@ -107,22 +110,24 @@ public class ProvisioningIssueService {
 				JiraDocumentUtil.createParagraph(
 					"Products Purchased in this Opportunity", true));
 
-			for (OpportunityLineItem opportunityLineItem :
-					opportunityLineItems) {
+			for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+					salesforceOpportunityLineItems) {
 
 				contentJSONArray.put(
 					JiraDocumentUtil.createParagraph(
 						StringBundler.concat(
-							opportunityLineItem.getProductName(),
-							" (Quantity: ", opportunityLineItem.getQuantity(),
-							")"),
+							salesforceOpportunityLineItem.getProductName(),
+							" (Quantity: ",
+							salesforceOpportunityLineItem.getQuantity(), ")"),
 						false));
 
-				if (Validator.isNotNull(opportunityLineItem.getProductType())) {
+				if (Validator.isNotNull(
+						salesforceOpportunityLineItem.getProductType())) {
+
 					contentJSONArray.put(
 						JiraDocumentUtil.createParagraph(
 							"Product Type: " +
-								opportunityLineItem.getProductType(),
+								salesforceOpportunityLineItem.getProductType(),
 							false));
 				}
 
@@ -130,8 +135,10 @@ public class ProvisioningIssueService {
 					JiraDocumentUtil.createParagraph(
 						StringBundler.concat(
 							"Date Range: ",
-							opportunityLineItem.getServiceDateInstant(), " - ",
-							opportunityLineItem.getEndDateInstant()),
+							salesforceOpportunityLineItem.
+								getServiceDateInstant(),
+							" - ",
+							salesforceOpportunityLineItem.getEndDateInstant()),
 						false)
 				).put(
 					JiraDocumentUtil.createHorizontalRule()
@@ -146,10 +153,12 @@ public class ProvisioningIssueService {
 					salesforceAccount.getBillingCountry());
 			}
 
-			if (Validator.isNotNull(opportunity.getOwnerEmailAddress())) {
+			if (Validator.isNotNull(
+					salesforceOpportunity.getOwnerEmailAddress())) {
+
 				customFields.put(
 					_jiraIssueProvisioningFieldOwner,
-					opportunity.getOwnerEmailAddress());
+					salesforceOpportunity.getOwnerEmailAddress());
 			}
 
 			customFields.put(
@@ -164,7 +173,7 @@ public class ProvisioningIssueService {
 				).put(
 					"value",
 					SupportRegionUtil.getSupportRegion(
-						opportunity.getSoldBy(),
+						salesforceOpportunity.getSoldBy(),
 						salesforceAccount.getBillingCountry())
 				));
 
@@ -176,16 +185,19 @@ public class ProvisioningIssueService {
 				sb.append("[Warning] ");
 			}
 
-			sb.append(opportunity.getType());
+			sb.append(salesforceOpportunity.getType());
 			sb.append(": ");
 
 			Set<String> productTypes = new LinkedHashSet<>();
 
-			for (OpportunityLineItem opportunityLineItem :
-					opportunityLineItems) {
+			for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+					salesforceOpportunityLineItems) {
 
-				if (Validator.isNotNull(opportunityLineItem.getProductType())) {
-					productTypes.add(opportunityLineItem.getProductType());
+				if (Validator.isNotNull(
+						salesforceOpportunityLineItem.getProductType())) {
+
+					productTypes.add(
+						salesforceOpportunityLineItem.getProductType());
 				}
 			}
 
@@ -212,7 +224,7 @@ public class ProvisioningIssueService {
 		catch (Exception exception) {
 			_log.error(
 				"Unable to add Jira issue for opportunity " +
-					opportunity.getId(),
+					salesforceOpportunity.getId(),
 				exception);
 		}
 	}

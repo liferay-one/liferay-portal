@@ -13,8 +13,8 @@ import com.liferay.one.exception.TicketAttachmentAlreadyApprovedException;
 import com.liferay.one.exception.TicketAttachmentNotFoundException;
 import com.liferay.one.jira.constants.IssueConstants;
 import com.liferay.one.jira.exception.OrganizationNotFoundException;
-import com.liferay.one.jira.model.Organization;
-import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.model.JiraOrganization;
+import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.TicketAttachment;
@@ -256,21 +256,23 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		String ticketId = jsonObject.getString("ticketId");
 
-		SupportIssue supportIssue = _jiraIssueService.getSupportIssue(ticketId);
+		JiraSupportIssue jiraSupportIssue =
+			_jiraIssueService.getJiraSupportIssue(ticketId);
 
-		if (supportIssue == null) {
+		if (jiraSupportIssue == null) {
 			return new ResponseEntity<>(
 				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
 		}
 
-		if (supportIssue.isClosed()) {
+		if (jiraSupportIssue.isClosed()) {
 			return new ResponseEntity<>(
 				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
 		}
 
-		Organization organization = supportIssue.getOrganization();
+		JiraOrganization jiraOrganization =
+			jiraSupportIssue.getJiraOrganization();
 
-		String projectERC = organization.getExternalKey();
+		String projectERC = jiraOrganization.getExternalKey();
 
 		Project project = _projectService.getProject(projectERC);
 
@@ -334,11 +336,11 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
 		sb.append("') after -8d before -7d)");
 
-		List<SupportIssue> supportIssues = _jiraIssueService.search(
+		List<JiraSupportIssue> jiraSupportIssues = _jiraIssueService.search(
 			sb.toString(), new String[] {"key"});
 
-		for (SupportIssue supportIssue : supportIssues) {
-			_deleteTicketAttachments(supportIssue.getKey());
+		for (JiraSupportIssue jiraSupportIssue : jiraSupportIssues) {
+			_deleteTicketAttachments(jiraSupportIssue.getKey());
 		}
 	}
 

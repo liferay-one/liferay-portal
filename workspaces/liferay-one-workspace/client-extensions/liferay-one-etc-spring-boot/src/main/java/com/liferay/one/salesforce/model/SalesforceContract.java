@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class Contract {
+public class SalesforceContract {
 
-	public Contract(JSONObject jsonObject) {
+	public SalesforceContract(JSONObject jsonObject) {
 		_accountId = jsonObject.optString("AccountId");
 		_endDate = jsonObject.optString("EndDate");
 		_id = jsonObject.optString("Id");

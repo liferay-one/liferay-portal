@@ -5,9 +5,9 @@
 
 package com.liferay.one.jira.converter;
 
-import com.liferay.one.jira.constants.BusinessEventConstants;
-import com.liferay.one.jira.model.BusinessEvent;
+import com.liferay.one.jira.constants.JiraBusinessEventConstants;
 import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.petra.string.StringPool;
 
 import org.json.JSONObject;
@@ -18,112 +18,112 @@ import org.springframework.stereotype.Component;
  * @author Amos Fong
  */
 @Component
-public class BusinessEventConverter extends BaseAssetObjectConverter {
+public class JiraBusinessEventConverter extends BaseJiraAssetObjectConverter {
 
 	public JiraAssetObject toAssetObject(
-		String accountObjectKey, BusinessEvent businessEvent) {
+		String accountObjectKey, JiraBusinessEvent jiraBusinessEvent) {
 
 		JiraAssetObject jiraAssetObject = new JiraAssetObject(
 			getAttributeIds());
 
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE,
-			businessEvent.getActualEventDate());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE,
+			jiraBusinessEvent.getActualEventDate());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS,
-			businessEvent.getAssociatedTickets());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS,
+			jiraBusinessEvent.getAssociatedTickets());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION,
-			businessEvent.getCurrentLiferayVersionKey());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION,
+			jiraBusinessEvent.getCurrentLiferayVersionKey());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION,
-			businessEvent.getDescription());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION,
+			jiraBusinessEvent.getDescription());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS,
-			businessEvent.getEventStatusName());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS,
+			jiraBusinessEvent.getEventStatusName());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE,
-			businessEvent.getEventTypeName());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE,
+			jiraBusinessEvent.getEventTypeName());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT,
-			businessEvent.getLastComment());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT,
+			jiraBusinessEvent.getLastComment());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR,
-			businessEvent.getLastUpdatedAuthorEmailAddress());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR,
+			jiraBusinessEvent.getLastUpdatedAuthorEmailAddress());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_NAME,
-			businessEvent.getName());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_NAME,
+			jiraBusinessEvent.getName());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION,
-			businessEvent.getNewLiferayVersionKey());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION,
+			jiraBusinessEvent.getNewLiferayVersionKey());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE,
-			businessEvent.getPlannedEventDate());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE,
+			jiraBusinessEvent.getPlannedEventDate());
 		jiraAssetObject.setAttributeValue(
-			BusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE,
-			businessEvent.getTimeZoneName());
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE,
+			jiraBusinessEvent.getTimeZoneName());
 
 		if (accountObjectKey != null) {
 			jiraAssetObject.setAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
 				accountObjectKey);
 			jiraAssetObject.setAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR,
-				businessEvent.getAuthorEmailAddress());
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_AUTHOR,
+				jiraBusinessEvent.getAuthorEmailAddress());
 		}
 
 		return jiraAssetObject;
 	}
 
-	public BusinessEvent toBusinessEvent(
+	public JiraBusinessEvent toJiraBusinessEvent(
 		JSONObject jiraAssetObjectJSONObject,
 		String projectExternalReferenceCode) {
 
 		JiraAssetObject jiraAssetObject = new JiraAssetObject(
 			jiraAssetObjectJSONObject, getAttributeIds());
 
-		return new BusinessEvent(
+		return new JiraBusinessEvent(
 			jiraAssetObject.getAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
 			jiraAssetObject.getObjectId(),
 			jiraAssetObject.getAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_CURRENT_VERSION),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_DESCRIPTION),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_EVENT_STATUS),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_LAST_COMMENT),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_LAST_UPDATED_AUTHOR),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_NAME),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_NAME),
 			jiraAssetObject.getAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_NEW_VERSION),
 			jiraAssetObject.getAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_PLANNED_EVENT_DATE),
 			projectExternalReferenceCode,
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE));
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE));
 	}
 
-	public BusinessEvent toBusinessEvent(
+	public JiraBusinessEvent toJiraBusinessEvent(
 		String attributesJSON, String authorEmailAddress,
 		String projectExternalReferenceCode) {
 
 		JSONObject attributesJSONObject = new JSONObject(attributesJSON);
 
-		return new BusinessEvent(
+		return new JiraBusinessEvent(
 			attributesJSONObject.optString("actualEventDate"),
 			attributesJSONObject.optString("associatedTickets"),
 			authorEmailAddress, StringPool.BLANK,
@@ -142,12 +142,12 @@ public class BusinessEventConverter extends BaseAssetObjectConverter {
 
 	@Override
 	protected String getObjectSchemaName() {
-		return BusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
+		return JiraBusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
 	}
 
 	@Override
 	protected String getObjectTypeName() {
-		return BusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT;
+		return JiraBusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT;
 	}
 
 }
