@@ -41,4 +41,15 @@ public class CommerceSkuService extends OneBaseService {
 		}
 	}
 
+	public Sku getSku(long skuId) throws Exception {
+		SkuResource skuResource = SkuResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		return skuResource.getSku(skuId);
+	}
+
 }

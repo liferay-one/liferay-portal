@@ -14,6 +14,7 @@ import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.model.SalesforceOpportunity;
 import com.liferay.one.service.AIHubService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.SalesforceService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.CommerceOrderUtil;
@@ -192,7 +193,7 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 			_commerceOrderService.getCountryByA2(
 				billingAddress.getCountryISOCode()),
 			"Subscription", order,
-			_commerceOrderService.getSku(orderItem.getSkuId()),
+			_commerceSkuService.getSku(orderItem.getSkuId()),
 			_userAccountService.getUserAccountByEmailAddress(
 				order.getCreatorEmailAddress()));
 
@@ -207,7 +208,7 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 			return;
 		}
 
-		OrderResource orderResource = _commerceOrderService.getOrderResource();
+		OrderResource orderResource = _commerceOrderService.buildOrderResource();
 
 		orderResource.patchOrder(
 			order.getId(),
@@ -231,6 +232,9 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
 	private SalesforceService _salesforceService;
