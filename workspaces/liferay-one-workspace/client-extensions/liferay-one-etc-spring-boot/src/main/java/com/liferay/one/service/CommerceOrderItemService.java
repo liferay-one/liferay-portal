@@ -11,7 +11,9 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
+import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
@@ -124,13 +126,35 @@ public class CommerceOrderItemService extends OneBaseService {
 			orderItem.setFinalPrice(() -> finalPrice);
 		}
 
-		CustomField[] customFields = _toCustomFields(
-			_getCustomFieldValues(opportunityLineItem, stageName));
-
-		orderItem.setCustomFields(() -> customFields);
+		Map<String, Object> customFieldValues = _getCustomFieldValues(
+			opportunityLineItem, stageName);
 
 		OrderItem existingOrderItem = _getExistingOrderItem(
 			order, opportunityLineItem.getId());
+
+		if (existingOrderItem != null) {
+			OrderItem commerceOrderItem = fetchCommerceOrderItem(
+				existingOrderItem.getId());
+
+			if ((commerceOrderItem == null) ||
+				CommerceOrderItemConstants.STATUS_CANCELED.equals(
+					OrderItemUtil.getStatus(commerceOrderItem))) {
+
+				customFieldValues.remove("customStatus");
+			}
+
+			if ((commerceOrderItem == null) ||
+				Objects.equals(
+					OrderItemUtil.getEndDate(commerceOrderItem),
+					_toDateTime(opportunityLineItem.getEndDate()))) {
+
+				customFieldValues.remove("effectiveEndDate");
+			}
+		}
+
+		CustomField[] customFields = _toCustomFields(customFieldValues);
+
+		orderItem.setCustomFields(() -> customFields);
 
 		OrderItemResource orderItemResource = _buildOrderItemResource();
 

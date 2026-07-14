@@ -94,17 +94,6 @@ public class CommerceOrderService extends OneBaseService {
 		}
 	}
 
-	public void cancelOrder(long commerceOrderId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
-
-		Order order = new Order();
-
-		order.setOrderStatus(
-			() -> CommerceOrderConstants.ORDER_STATUS_CANCELLED);
-
-		orderResource.patchOrder(commerceOrderId, order);
-	}
-
 	public void completeOrder(long orderId, int paymentStatus)
 		throws Exception {
 
