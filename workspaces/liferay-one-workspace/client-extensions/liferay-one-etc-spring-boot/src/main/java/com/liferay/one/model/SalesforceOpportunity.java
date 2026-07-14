@@ -300,7 +300,8 @@ public class SalesforceOpportunity {
 					billingAddress.getRegionISOCode(),
 					region.getRegionCode())) {
 
-				return CommerceOrderUtil.getDefaultLocale(region.getTitle_i18n());
+				return CommerceOrderUtil.getDefaultLocale(
+					region.getTitle_i18n());
 			}
 		}
 

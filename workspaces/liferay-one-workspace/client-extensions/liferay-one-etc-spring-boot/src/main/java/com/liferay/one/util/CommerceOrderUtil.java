@@ -9,7 +9,6 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.portal.kernel.util.StringUtil;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import java.util.Date;
