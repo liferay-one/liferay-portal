@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -52,6 +53,17 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Component
 public class CommerceOrderService extends OneBaseService {
+
+	public OrderResource buildOrderResource() {
+		return OrderResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"nestedFields", "account,billingAddress,customFields,orderItems"
+		).build();
+	}
 
 	public void calculateTax(long commerceOrderId) throws Exception {
 		OrderResource orderResource = buildOrderResource();
@@ -199,6 +211,18 @@ public class CommerceOrderService extends OneBaseService {
 		OrderResource orderResource = buildOrderResource();
 
 		return orderResource.getOrder(commerceOrderId);
+	}
+
+	public Country getCountryByA2(String a2) throws Exception {
+		return CountryResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build(
+		).getCountryByA2(
+			a2
+		);
 	}
 
 	public List<Order> getOrders(String filterString) throws Exception {
@@ -704,6 +728,9 @@ public class CommerceOrderService extends OneBaseService {
 	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
+
+	private static final Log _log = LogFactory.getLog(
+		CommerceOrderService.class);
 
 	private static final Set<String> _europeanCountryISOCodes = Set.of(
 		"AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR",

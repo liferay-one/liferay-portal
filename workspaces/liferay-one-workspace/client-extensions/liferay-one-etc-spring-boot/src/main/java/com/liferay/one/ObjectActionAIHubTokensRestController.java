@@ -208,7 +208,8 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 			return;
 		}
 
-		OrderResource orderResource = _commerceOrderService.buildOrderResource();
+		OrderResource orderResource =
+			_commerceOrderService.buildOrderResource();
 
 		orderResource.patchOrder(
 			order.getId(),
