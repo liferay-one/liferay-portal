@@ -5,7 +5,7 @@
 
 package com.liferay.one;
 
-import com.liferay.one.jira.model.SupportIssue;
+import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.petra.string.StringPool;
@@ -40,9 +40,9 @@ public class JiraRestController extends OneBaseRestController {
 			ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
-			_jiraIssueService.getSupportIssues(
+			_jiraIssueService.getJiraSupportIssues(
 				externalReferenceCode, ticketIds),
-			SupportIssue::toJSONObject);
+			JiraSupportIssue::toJSONObject);
 	}
 
 	@Autowired

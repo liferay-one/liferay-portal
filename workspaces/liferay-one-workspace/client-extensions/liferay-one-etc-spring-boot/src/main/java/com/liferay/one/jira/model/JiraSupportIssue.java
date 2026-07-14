@@ -18,9 +18,9 @@ import org.json.JSONObject;
 /**
  * @author Jenny Chen
  */
-public class SupportIssue {
+public class JiraSupportIssue {
 
-	public SupportIssue(JSONObject jsonObject) {
+	public JiraSupportIssue(JSONObject jsonObject) {
 		_key = jsonObject.getString("key");
 
 		JSONObject fieldsJSONObject = jsonObject.getJSONObject("fields");
@@ -44,16 +44,22 @@ public class SupportIssue {
 		_summary = fieldsJSONObject.optString("summary");
 	}
 
-	public SupportIssue(JSONObject jsonObject, Organization organization) {
+	public JiraSupportIssue(
+		JSONObject jsonObject, JiraOrganization jiraOrganization) {
+
 		this(jsonObject);
 
-		_organization = organization;
+		_jiraOrganization = jiraOrganization;
 	}
 
-	public SupportIssue(JSONObject jsonObject, String ticketURL) {
+	public JiraSupportIssue(JSONObject jsonObject, String ticketURL) {
 		this(jsonObject);
 
 		_ticketURL = ticketURL;
+	}
+
+	public JiraOrganization getJiraOrganization() {
+		return _jiraOrganization;
 	}
 
 	public String getKey() {
@@ -62,10 +68,6 @@ public class SupportIssue {
 
 	public String[] getLabels() {
 		return _labels;
-	}
-
-	public Organization getOrganization() {
-		return _organization;
 	}
 
 	public String getStatus() {
@@ -97,9 +99,9 @@ public class SupportIssue {
 		);
 	}
 
+	private JiraOrganization _jiraOrganization;
 	private final String _key;
 	private final String[] _labels;
-	private Organization _organization;
 	private final String _status;
 	private final String _summary;
 	private String _ticketURL = StringPool.BLANK;

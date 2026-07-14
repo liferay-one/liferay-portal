@@ -9,11 +9,11 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceList;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
-import com.liferay.one.salesforce.model.Account;
-import com.liferay.one.salesforce.model.Contract;
-import com.liferay.one.salesforce.model.PricebookEntry;
-import com.liferay.one.salesforce.model.Product2;
-import com.liferay.one.salesforce.model.Project;
+import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.one.salesforce.model.SalesforcePricebookEntry;
+import com.liferay.one.salesforce.model.SalesforceProduct2;
+import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
@@ -115,40 +115,46 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	}
 
 	private void _processAccount(JSONObject recordJSONObject) throws Exception {
-		Account account = new Account(recordJSONObject);
+		SalesforceAccount salesforceAccount = new SalesforceAccount(
+			recordJSONObject);
 
-		if (!account.isActiveSubscription()) {
+		if (!salesforceAccount.isActiveSubscription()) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Skipping inactive Salesforce account " + account.getId());
+					"Skipping inactive Salesforce account " +
+						salesforceAccount.getId());
 			}
 
 			return;
 		}
 
-		_accountService.upsertAccount(account);
+		_accountService.upsertAccount(salesforceAccount);
 	}
 
 	private void _processContract(JSONObject recordJSONObject)
 		throws Exception {
 
-		_contractService.upsertContract(new Contract(recordJSONObject));
+		_contractService.upsertContract(
+			new SalesforceContract(recordJSONObject));
 	}
 
 	private void _processPricebookEntry(
 			String action, JSONObject recordJSONObject)
 		throws Exception {
 
-		PricebookEntry pricebookEntry = new PricebookEntry(recordJSONObject);
+		SalesforcePricebookEntry salesforcePricebookEntry =
+			new SalesforcePricebookEntry(recordJSONObject);
 
 		if (Objects.equals(action, "delete")) {
-			_commercePriceEntryService.deletePriceEntry(pricebookEntry.getId());
+			_commercePriceEntryService.deletePriceEntry(
+				salesforcePricebookEntry.getId());
 
 			return;
 		}
 
 		String priceListExternalReferenceCode =
-			"SALESFORCE_PRICE_LIST_" + pricebookEntry.getCurrencyIsoCode();
+			"SALESFORCE_PRICE_LIST_" +
+				salesforcePricebookEntry.getCurrencyIsoCode();
 
 		PriceList priceList = _commercePriceListService.fetchPriceList(
 			priceListExternalReferenceCode);
@@ -163,41 +169,45 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 			return;
 		}
 
-		Sku sku = _commerceSkuService.fetchSku(pricebookEntry.getProduct2Id());
+		Sku sku = _commerceSkuService.fetchSku(
+			salesforcePricebookEntry.getProduct2Id());
 
 		if (sku == null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to find SKU for Salesforce product " +
-						pricebookEntry.getProduct2Id());
+						salesforcePricebookEntry.getProduct2Id());
 			}
 
 			return;
 		}
 
 		_commercePriceEntryService.addOrUpdatePriceEntry(
-			pricebookEntry.isActive(), pricebookEntry.getId(),
-			pricebookEntry.getUnitPrice(), priceListExternalReferenceCode,
-			priceList.getId(), sku.getId());
+			salesforcePricebookEntry.isActive(),
+			salesforcePricebookEntry.getId(),
+			salesforcePricebookEntry.getUnitPrice(),
+			priceListExternalReferenceCode, priceList.getId(), sku.getId());
 	}
 
 	private void _processProduct2(String action, JSONObject recordJSONObject)
 		throws Exception {
 
-		Product2 product2 = new Product2(recordJSONObject);
+		SalesforceProduct2 salesforceProduct2 = new SalesforceProduct2(
+			recordJSONObject);
 
 		if (Objects.equals(action, "delete")) {
-			_commerceProductService.deactivateProduct(product2.getId());
+			_commerceProductService.deactivateProduct(
+				salesforceProduct2.getId());
 		}
 		else {
 			_commerceProductService.addOrUpdateProduct(
-				product2.getDescription(), product2.getId(),
-				product2.getName());
+				salesforceProduct2.getDescription(), salesforceProduct2.getId(),
+				salesforceProduct2.getName());
 		}
 	}
 
 	private void _processProject(JSONObject recordJSONObject) throws Exception {
-		_projectService.upsertProject(new Project(recordJSONObject));
+		_projectService.upsertProject(new SalesforceProject(recordJSONObject));
 	}
 
 	private static final Log _log = LogFactory.getLog(

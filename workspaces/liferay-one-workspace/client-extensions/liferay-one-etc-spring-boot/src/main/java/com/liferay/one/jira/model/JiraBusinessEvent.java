@@ -12,9 +12,9 @@ import org.json.JSONObject;
 /**
  * @author Amos Fong
  */
-public class BusinessEvent {
+public class JiraBusinessEvent {
 
-	public BusinessEvent(
+	public JiraBusinessEvent(
 		String actualEventDate, String associatedTickets,
 		String authorEmailAddress, String businessEventId,
 		String currentLiferayVersionKey, String currentLiferayVersionName,

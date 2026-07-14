@@ -11,7 +11,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -85,49 +85,53 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	public OrderItem upsertOrderItem(
-			Order order, OpportunityLineItem opportunityLineItem,
+			Order order,
+			SalesforceOpportunityLineItem salesforceOpportunityLineItem,
 			String stageName)
 		throws Exception {
 
 		OrderItem orderItem = new OrderItem();
 
-		orderItem.setExternalReferenceCode(opportunityLineItem::getId);
+		orderItem.setExternalReferenceCode(
+			salesforceOpportunityLineItem::getId);
 		orderItem.setSkuExternalReferenceCode(
-			opportunityLineItem::getProduct2Id);
+			salesforceOpportunityLineItem::getProduct2Id);
 
-		if (Validator.isNotNull(opportunityLineItem.getProductName())) {
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getProductName())) {
+
 			Map<String, String> name = Map.of(
-				"en_US", opportunityLineItem.getProductName());
+				"en_US", salesforceOpportunityLineItem.getProductName());
 
 			orderItem.setName(() -> name);
 		}
 
-		if (opportunityLineItem.getQuantity() != null) {
+		if (salesforceOpportunityLineItem.getQuantity() != null) {
 			BigDecimal quantity = BigDecimal.valueOf(
-				opportunityLineItem.getQuantity());
+				salesforceOpportunityLineItem.getQuantity());
 
 			orderItem.setQuantity(() -> quantity);
 		}
 
-		if (opportunityLineItem.getUnitPrice() != null) {
+		if (salesforceOpportunityLineItem.getUnitPrice() != null) {
 			BigDecimal unitPrice = BigDecimal.valueOf(
-				opportunityLineItem.getUnitPrice());
+				salesforceOpportunityLineItem.getUnitPrice());
 
 			orderItem.setUnitPrice(() -> unitPrice);
 		}
 
-		if (opportunityLineItem.getTotalPrice() != null) {
+		if (salesforceOpportunityLineItem.getTotalPrice() != null) {
 			BigDecimal finalPrice = BigDecimal.valueOf(
-				opportunityLineItem.getTotalPrice());
+				salesforceOpportunityLineItem.getTotalPrice());
 
 			orderItem.setFinalPrice(() -> finalPrice);
 		}
 
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
-			opportunityLineItem, stageName);
+			salesforceOpportunityLineItem, stageName);
 
 		OrderItem existingOrderItem = _getExistingOrderItem(
-			order, opportunityLineItem.getId());
+			order, salesforceOpportunityLineItem.getId());
 
 		if (existingOrderItem != null) {
 			if (OrderItemUtil.isCanceled(existingOrderItem)) {
@@ -136,7 +140,7 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			if (Objects.equals(
 					OrderItemUtil.getEndDateInstant(existingOrderItem),
-					opportunityLineItem.getEndDateInstant())) {
+					salesforceOpportunityLineItem.getEndDateInstant())) {
 
 				customFieldValues.remove("effectiveEndDate");
 			}
@@ -168,18 +172,22 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	private Map<String, Object> _getCustomFieldValues(
-		OpportunityLineItem opportunityLineItem, String stageName) {
+		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
+		String stageName) {
 
 		Map<String, Object> customFieldValues = new HashMap<>();
 
-		if (Validator.isNotNull(opportunityLineItem.getCloudRegion())) {
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getCloudRegion())) {
+
 			customFieldValues.put(
-				"cloudRegion", opportunityLineItem.getCloudRegion());
+				"cloudRegion", salesforceOpportunityLineItem.getCloudRegion());
 		}
 
 		customFieldValues.put("customStatus", _getCustomStatus(stageName));
 
-		Instant endDateInstant = opportunityLineItem.getEndDateInstant();
+		Instant endDateInstant =
+			salesforceOpportunityLineItem.getEndDateInstant();
 
 		if (endDateInstant != null) {
 			Instant effectiveEndDateInstant = endDateInstant.plus(
@@ -191,23 +199,27 @@ public class CommerceOrderItemService extends OneBaseService {
 			customFieldValues.put("endDate", endDateInstant.toString());
 		}
 
-		if (Validator.isNotNull(opportunityLineItem.getMachineType())) {
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getMachineType())) {
+
 			customFieldValues.put(
-				"machineType", opportunityLineItem.getMachineType());
+				"machineType", salesforceOpportunityLineItem.getMachineType());
 		}
 
-		if (Validator.isNotNull(opportunityLineItem.getProductType())) {
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getProductType())) {
+
 			customFieldValues.put(
-				"orderType", opportunityLineItem.getProductType());
+				"orderType", salesforceOpportunityLineItem.getProductType());
 		}
 
-		if (opportunityLineItem.getNumberOfPods() != null) {
+		if (salesforceOpportunityLineItem.getNumberOfPods() != null) {
 			customFieldValues.put(
-				"sizing", opportunityLineItem.getNumberOfPods());
+				"sizing", salesforceOpportunityLineItem.getNumberOfPods());
 		}
 
 		Instant serviceDateInstant =
-			opportunityLineItem.getServiceDateInstant();
+			salesforceOpportunityLineItem.getServiceDateInstant();
 
 		if (serviceDateInstant != null) {
 			customFieldValues.put("startDate", serviceDateInstant.toString());

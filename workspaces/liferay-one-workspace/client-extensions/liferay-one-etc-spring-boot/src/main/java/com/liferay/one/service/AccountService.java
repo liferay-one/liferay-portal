@@ -20,6 +20,7 @@ import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountRoleResource;
+import com.liferay.one.salesforce.model.SalesforceAccount;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -283,16 +284,14 @@ public class AccountService extends OneBaseService {
 			).toUri());
 	}
 
-	public void upsertAccount(
-			com.liferay.one.salesforce.model.Account salesforceAccount)
+	public void upsertAccount(SalesforceAccount salesforceAccount)
 		throws Exception {
 
 		_upsertAccount(salesforceAccount);
 	}
 
 	public void upsertAccount(
-			com.liferay.one.salesforce.model.Account salesforceAccount,
-			String soldBy)
+			SalesforceAccount salesforceAccount, String soldBy)
 		throws Exception {
 
 		Account account = _upsertAccount(salesforceAccount);
@@ -315,8 +314,7 @@ public class AccountService extends OneBaseService {
 	}
 
 	private void _setAccountContactInformation(
-		Account account,
-		com.liferay.one.salesforce.model.Account salesforceAccount) {
+		Account account, SalesforceAccount salesforceAccount) {
 
 		String id = salesforceAccount.getId();
 
@@ -393,8 +391,7 @@ public class AccountService extends OneBaseService {
 	}
 
 	private void _setCustomFields(
-		Account account,
-		com.liferay.one.salesforce.model.Account salesforceAccount) {
+		Account account, SalesforceAccount salesforceAccount) {
 
 		List<CustomField> customFields = new ArrayList<>();
 
@@ -451,8 +448,7 @@ public class AccountService extends OneBaseService {
 	}
 
 	private void _setPostalAddresses(
-		Account account,
-		com.liferay.one.salesforce.model.Account salesforceAccount) {
+		Account account, SalesforceAccount salesforceAccount) {
 
 		String id = salesforceAccount.getId();
 
@@ -562,7 +558,29 @@ public class AccountService extends OneBaseService {
 	}
 
 	private Account _upsertAccount(
-			com.liferay.one.salesforce.model.Account salesforceAccount)
+			AccountResource accountResource, Account account,
+			String externalReferenceCode)
+		throws Exception {
+
+		try {
+			accountResource.patchAccountByExternalReferenceCode(
+				externalReferenceCode, account);
+
+			return null;
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				return accountResource.putAccountByExternalReferenceCode(
+					externalReferenceCode, account);
+			}
+
+			throw problemException;
+		}
+	}
+
+	private Account _upsertAccount(SalesforceAccount salesforceAccount)
 		throws Exception {
 
 		AccountResource accountResource = AccountResource.builder(
@@ -612,29 +630,6 @@ public class AccountService extends OneBaseService {
 
 			return _upsertAccount(
 				accountResource, account, salesforceAccount.getId());
-		}
-	}
-
-	private Account _upsertAccount(
-			AccountResource accountResource, Account account,
-			String externalReferenceCode)
-		throws Exception {
-
-		try {
-			accountResource.patchAccountByExternalReferenceCode(
-				externalReferenceCode, account);
-
-			return null;
-		}
-		catch (Problem.ProblemException problemException) {
-			Problem problem = problemException.getProblem();
-
-			if ((problem != null) && isNotFound(problem.getStatus())) {
-				return accountResource.putAccountByExternalReferenceCode(
-					externalReferenceCode, account);
-			}
-
-			throw problemException;
 		}
 	}
 

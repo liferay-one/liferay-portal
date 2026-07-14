@@ -8,7 +8,7 @@ package com.liferay.one.jira.constants;
 /**
  * @author Drew Brokke
  */
-public interface BusinessEventConstants {
+public interface JiraBusinessEventConstants {
 
 	public static final String ATTRIBUTE_NAME_ACCOUNT = "Account";
 

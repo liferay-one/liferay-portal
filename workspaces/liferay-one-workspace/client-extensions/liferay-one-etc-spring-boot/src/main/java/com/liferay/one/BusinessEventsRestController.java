@@ -6,12 +6,12 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.jira.converter.BusinessEventConverter;
-import com.liferay.one.jira.model.AssetObjectFieldOption;
-import com.liferay.one.jira.model.BusinessEvent;
-import com.liferay.one.jira.model.BusinessEventVersion;
-import com.liferay.one.jira.model.ProductVersion;
-import com.liferay.one.jira.service.BusinessEventService;
+import com.liferay.one.jira.converter.JiraBusinessEventConverter;
+import com.liferay.one.jira.model.JiraAssetObjectFieldOption;
+import com.liferay.one.jira.model.JiraBusinessEvent;
+import com.liferay.one.jira.model.JiraBusinessEventVersion;
+import com.liferay.one.jira.model.JiraProductVersion;
+import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -50,7 +50,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		_businessEventPermission.check(
 			ActionKeys.UPDATE, jwt, externalReferenceCode);
 
-		_businessEventService.deleteBusinessEvent(id);
+		_businessEventService.deleteJiraBusinessEvent(id);
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -62,14 +62,14 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 		return getResponseEntity(
 			_businessEventService.getFieldOptions(fieldName),
-			AssetObjectFieldOption::toJSONObject);
+			JiraAssetObjectFieldOption::toJSONObject);
 	}
 
 	@GetMapping("/product-versions")
 	public ResponseEntity<String> getProductVersions() throws Exception {
 		return getResponseEntity(
-			_businessEventService.getProductVersions(),
-			ProductVersion::toJSONObject);
+			_businessEventService.getJiraProductVersions(),
+			JiraProductVersion::toJSONObject);
 	}
 
 	@GetMapping("/projects/{externalReferenceCode}/business-events")
@@ -82,8 +82,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
-			_businessEventService.getBusinessEvents(externalReferenceCode),
-			BusinessEvent::toJSONObject);
+			_businessEventService.getJiraBusinessEvents(externalReferenceCode),
+			JiraBusinessEvent::toJSONObject);
 	}
 
 	@GetMapping("/projects/{externalReferenceCode}/business-events/{id}")
@@ -96,11 +96,11 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		_businessEventPermission.check(
 			ActionKeys.VIEW, jwt, externalReferenceCode);
 
-		BusinessEvent businessEvent = _businessEventService.getBusinessEvent(
-			id);
+		JiraBusinessEvent jiraBusinessEvent =
+			_businessEventService.getJiraBusinessEvent(id);
 
 		return new ResponseEntity<>(
-			businessEvent.toJSONObject(
+			jiraBusinessEvent.toJSONObject(
 			).toString(),
 			HttpStatus.OK);
 	}
@@ -118,8 +118,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
-			_businessEventService.getBusinessEventVersions(id),
-			BusinessEventVersion::toJSONObject);
+			_businessEventService.getJiraBusinessEventVersions(id),
+			JiraBusinessEventVersion::toJSONObject);
 	}
 
 	@PostMapping("/projects/{externalReferenceCode}/business-events")
@@ -134,13 +134,13 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
-		_businessEventService.createBusinessEvent(
-			_businessEventConverter.toBusinessEvent(
+		_businessEventService.createJiraBusinessEvent(
+			_businessEventConverter.toJiraBusinessEvent(
 				json, userAccount.getEmailAddress(), externalReferenceCode));
 
 		return getResponseEntity(
-			_businessEventService.getBusinessEvents(externalReferenceCode),
-			BusinessEvent::toJSONObject);
+			_businessEventService.getJiraBusinessEvents(externalReferenceCode),
+			JiraBusinessEvent::toJSONObject);
 	}
 
 	@PutMapping("/projects/{externalReferenceCode}/business-events/{id}")
@@ -159,14 +159,15 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
-		BusinessEvent businessEvent = _businessEventConverter.toBusinessEvent(
-			json, userAccount.getEmailAddress(), externalReferenceCode);
+		JiraBusinessEvent jiraBusinessEvent =
+			_businessEventConverter.toJiraBusinessEvent(
+				json, userAccount.getEmailAddress(), externalReferenceCode);
 
-		businessEvent = _businessEventService.updateBusinessEvent(
-			businessEvent, id);
+		jiraBusinessEvent = _businessEventService.updateJiraBusinessEvent(
+			jiraBusinessEvent, id);
 
 		return new ResponseEntity<>(
-			businessEvent.toJSONObject(
+			jiraBusinessEvent.toJSONObject(
 			).toString(),
 			HttpStatus.OK);
 	}
@@ -175,12 +176,12 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		BusinessEventsRestController.class);
 
 	@Autowired
-	private BusinessEventConverter _businessEventConverter;
+	private JiraBusinessEventConverter _businessEventConverter;
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
 
 	@Autowired
-	private BusinessEventService _businessEventService;
+	private JiraBusinessEventService _businessEventService;
 
 }

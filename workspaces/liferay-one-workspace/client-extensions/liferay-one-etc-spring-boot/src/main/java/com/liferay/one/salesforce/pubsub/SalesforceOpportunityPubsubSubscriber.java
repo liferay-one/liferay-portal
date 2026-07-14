@@ -5,19 +5,21 @@
 
 package com.liferay.one.salesforce.pubsub;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.OpportunityConstants;
 import com.liferay.one.model.Contract;
+import com.liferay.one.model.Project;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
-import com.liferay.one.salesforce.model.Account;
-import com.liferay.one.salesforce.model.Opportunity;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
-import com.liferay.one.salesforce.model.Project;
-import com.liferay.one.salesforce.model.ProjectContactRole;
+import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.one.salesforce.model.SalesforceOpportunity;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceProject;
+import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
@@ -130,13 +132,17 @@ public class SalesforceOpportunityPubsubSubscriber
 	}
 
 	private String _getCurrencyCode(
-		Opportunity opportunity, List<OpportunityLineItem> opportunityLineItems,
+		SalesforceOpportunity salesforceOpportunity,
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 		List<String> warningMessages) {
 
 		String currencyCode = null;
 
-		for (OpportunityLineItem opportunityLineItem : opportunityLineItems) {
-			String lineCurrencyCode = opportunityLineItem.getCurrencyIsoCode();
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			String lineCurrencyCode =
+				salesforceOpportunityLineItem.getCurrencyIsoCode();
 
 			if (Validator.isNull(lineCurrencyCode)) {
 				continue;
@@ -149,7 +155,7 @@ public class SalesforceOpportunityPubsubSubscriber
 				_addWarning(
 					warningMessages,
 					"Unable to reconcile mixed currencies for opportunity " +
-						opportunity.getId());
+						salesforceOpportunity.getId());
 
 				return _DEFAULT_CURRENCY_CODE;
 			}
@@ -162,50 +168,54 @@ public class SalesforceOpportunityPubsubSubscriber
 		return currencyCode;
 	}
 
-	private List<OpportunityLineItem> _getOpportunityLineItems(
-		JSONObject recordJSONObject) {
+	private List<SalesforceOpportunityLineItem>
+		_getSalesforceOpportunityLineItems(JSONObject recordJSONObject) {
 
-		List<OpportunityLineItem> opportunityLineItems = new ArrayList<>();
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
+			new ArrayList<>();
 
 		JSONArray opportunityLineItemsJSONArray = recordJSONObject.optJSONArray(
 			"opportunityLineItems");
 
 		if (opportunityLineItemsJSONArray == null) {
-			return opportunityLineItems;
+			return salesforceOpportunityLineItems;
 		}
 
 		for (int i = 0; i < opportunityLineItemsJSONArray.length(); i++) {
-			opportunityLineItems.add(
-				new OpportunityLineItem(
+			salesforceOpportunityLineItems.add(
+				new SalesforceOpportunityLineItem(
 					opportunityLineItemsJSONArray.getJSONObject(i)));
 		}
 
-		return opportunityLineItems;
+		return salesforceOpportunityLineItems;
 	}
 
-	private List<ProjectContactRole> _getProjectContactRoles(
-		JSONObject recordJSONObject) {
+	private List<SalesforceProjectContactRole>
+		_getSalesforceProjectContactRoles(JSONObject recordJSONObject) {
 
-		List<ProjectContactRole> projectContactRoles = new ArrayList<>();
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles =
+			new ArrayList<>();
 
 		JSONArray projectContactRolesJSONArray = recordJSONObject.optJSONArray(
 			"projectContactRoles");
 
 		if (projectContactRolesJSONArray == null) {
-			return projectContactRoles;
+			return salesforceProjectContactRoles;
 		}
 
 		for (int i = 0; i < projectContactRolesJSONArray.length(); i++) {
-			projectContactRoles.add(
-				new ProjectContactRole(
+			salesforceProjectContactRoles.add(
+				new SalesforceProjectContactRole(
 					projectContactRolesJSONArray.getJSONObject(i)));
 		}
 
-		return projectContactRoles;
+		return salesforceProjectContactRoles;
 	}
 
-	private boolean _hasProductFamily(Opportunity opportunity) {
-		String productFamily = opportunity.getProductFamily();
+	private boolean _hasProductFamily(
+		SalesforceOpportunity salesforceOpportunity) {
+
+		String productFamily = salesforceOpportunity.getProductFamily();
 
 		if (Validator.isNull(productFamily)) {
 			return false;
@@ -228,51 +238,54 @@ public class SalesforceOpportunityPubsubSubscriber
 		return ArrayUtil.isNotEmpty(order.getOrderItems());
 	}
 
-	private boolean _isValidOpportunity(Opportunity opportunity) {
+	private boolean _isValidOpportunity(
+		SalesforceOpportunity salesforceOpportunity) {
+
 		if (StringUtil.equalsIgnoreCase(
-				opportunity.getType(), OpportunityConstants.TYPE_RENEWAL)) {
+				salesforceOpportunity.getType(),
+				OpportunityConstants.TYPE_RENEWAL)) {
 
 			return Objects.equals(
-				opportunity.getStageName(), _STAGE_NAME_CLOSED_LOST);
+				salesforceOpportunity.getStageName(), _STAGE_NAME_CLOSED_LOST);
 		}
 
 		return Objects.equals(
-			opportunity.getStageName(), _STAGE_NAME_CLOSED_WON);
+			salesforceOpportunity.getStageName(), _STAGE_NAME_CLOSED_WON);
 	}
 
 	private void _processProvisioningRecord(JSONObject recordJSONObject)
 		throws Exception {
 
-		Opportunity opportunity = new Opportunity(
+		SalesforceOpportunity salesforceOpportunity = new SalesforceOpportunity(
 			recordJSONObject.getJSONObject("opportunity"));
 
-		if (!_hasProductFamily(opportunity)) {
+		if (!_hasProductFamily(salesforceOpportunity)) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Skipping opportunity " + opportunity.getId() +
+					"Skipping opportunity " + salesforceOpportunity.getId() +
 						" without a valid product family");
 			}
 
 			return;
 		}
 
-		if (!_isValidOpportunity(opportunity)) {
+		if (!_isValidOpportunity(salesforceOpportunity)) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Skipping opportunity " + opportunity.getId() +
+					"Skipping opportunity " + salesforceOpportunity.getId() +
 						" that is not closed won or a closed lost renewal");
 			}
 
 			return;
 		}
 
-		List<OpportunityLineItem> opportunityLineItems =
-			_getOpportunityLineItems(recordJSONObject);
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
+			_getSalesforceOpportunityLineItems(recordJSONObject);
 
-		if (opportunityLineItems.isEmpty()) {
+		if (salesforceOpportunityLineItems.isEmpty()) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
-					"Skipping opportunity " + opportunity.getId() +
+					"Skipping opportunity " + salesforceOpportunity.getId() +
 						" without line items");
 			}
 
@@ -281,95 +294,99 @@ public class SalesforceOpportunityPubsubSubscriber
 
 		List<String> warningMessages = new ArrayList<>();
 
-		Account salesforceAccount = new Account(
+		SalesforceAccount salesforceAccount = new SalesforceAccount(
 			recordJSONObject.optJSONObject("account", new JSONObject()),
 			recordJSONObject.getJSONObject("opportunity"));
 
 		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
-			opportunity.getId());
+			salesforceOpportunity.getId());
 
 		if (_isProvisioned(order)) {
 			_addWarning(
 				warningMessages,
 				StringBundler.concat(
-					"The opportunity ", opportunity.getId(),
+					"The opportunity ", salesforceOpportunity.getId(),
 					" was not provisioned automatically since an order with ",
 					"this opportunity already exists"));
 
-			com.liferay.headless.admin.user.client.dto.v1_0.Account account =
+			Account account =
 				_accountService.fetchAccountByExternalReferenceCode(
-					opportunity.getAccountId());
+					salesforceOpportunity.getAccountId());
 
 			if ((account != null) &&
-				!Objects.equals(opportunity.getProductFamily(), "P")) {
+				!Objects.equals(
+					salesforceOpportunity.getProductFamily(), "P")) {
 
 				_provisioningIssueService.addOpportunityInvoicedIssue(
-					account, salesforceAccount, opportunity,
-					opportunityLineItems, warningMessages);
+					account, salesforceAccount, salesforceOpportunity,
+					salesforceOpportunityLineItems, warningMessages);
 			}
 
 			return;
 		}
 
-		List<OpportunityLineItem> provisionableOpportunityLineItems =
-			new ArrayList<>();
-		List<OpportunityLineItem> realignmentOpportunityLineItems =
-			new ArrayList<>();
+		List<SalesforceOpportunityLineItem>
+			provisionableSalesforceOpportunityLineItems = new ArrayList<>();
+		List<SalesforceOpportunityLineItem>
+			realignmentSalesforceOpportunityLineItems = new ArrayList<>();
 
-		for (OpportunityLineItem opportunityLineItem : opportunityLineItems) {
-			if (opportunityLineItem.isRealignment()) {
-				realignmentOpportunityLineItems.add(opportunityLineItem);
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			if (salesforceOpportunityLineItem.isRealignment()) {
+				realignmentSalesforceOpportunityLineItems.add(
+					salesforceOpportunityLineItem);
 			}
 			else {
-				provisionableOpportunityLineItems.add(opportunityLineItem);
+				provisionableSalesforceOpportunityLineItems.add(
+					salesforceOpportunityLineItem);
 			}
 		}
 
 		if (Validator.isNull(salesforceAccount.getId())) {
 			_addWarning(
 				warningMessages,
-				"Unable to provision opportunity " + opportunity.getId() +
-					" without an account");
+				"Unable to provision opportunity " +
+					salesforceOpportunity.getId() + " without an account");
 
 			return;
 		}
 
-		com.liferay.one.model.Project project = _projectService.fetchProject(
-			opportunity.getProjectId());
+		Project project = _projectService.fetchProject(
+			salesforceOpportunity.getProjectId());
 
 		if ((project == null) &&
 			StringUtil.equalsIgnoreCase(
-				opportunity.getType(),
+				salesforceOpportunity.getType(),
 				OpportunityConstants.TYPE_EXISTING_BUSINESS)) {
 
 			_addWarning(
 				warningMessages,
 				StringBundler.concat(
-					"The opportunity type is ", opportunity.getType(),
+					"The opportunity type is ", salesforceOpportunity.getType(),
 					" and the project does not exist"));
 		}
 		else if ((project != null) &&
 				 (StringUtil.equalsIgnoreCase(
-					 opportunity.getType(),
+					 salesforceOpportunity.getType(),
 					 OpportunityConstants.TYPE_NEW_BUSINESS) ||
 				  StringUtil.equalsIgnoreCase(
-					  opportunity.getType(),
+					  salesforceOpportunity.getType(),
 					  OpportunityConstants.
 						  TYPE_NEW_PROJECT_EXISTING_BUSINESS))) {
 
 			_addWarning(
 				warningMessages,
 				StringBundler.concat(
-					"The opportunity type is ", opportunity.getType(),
+					"The opportunity type is ", salesforceOpportunity.getType(),
 					" and the project already exists"));
 		}
 
 		_accountService.upsertAccount(
-			salesforceAccount, opportunity.getSoldBy());
+			salesforceAccount, salesforceOpportunity.getSoldBy());
 
-		com.liferay.headless.admin.user.client.dto.v1_0.Account account =
-			_accountService.fetchAccountByExternalReferenceCode(
-				salesforceAccount.getId());
+		Account account = _accountService.fetchAccountByExternalReferenceCode(
+			salesforceAccount.getId());
 
 		if (account == null) {
 			_addWarning(
@@ -387,20 +404,20 @@ public class SalesforceOpportunityPubsubSubscriber
 				"Another account already uses the name " + account.getName());
 		}
 
-		Project salesforceProject = null;
+		SalesforceProject salesforceProject = null;
 
 		JSONObject projectJSONObject = recordJSONObject.optJSONObject(
 			"project");
 
 		if (projectJSONObject != null) {
-			salesforceProject = new Project(projectJSONObject);
+			salesforceProject = new SalesforceProject(projectJSONObject);
 
 			_projectService.upsertProject(
-				opportunity.getAccountId(), salesforceProject);
+				salesforceOpportunity.getAccountId(), salesforceProject);
 		}
 
 		Contract contract = _contractService.fetchLatestContractByOpportunityId(
-			opportunity.getId());
+			salesforceOpportunity.getId());
 
 		Long contractId = null;
 
@@ -418,18 +435,20 @@ public class SalesforceOpportunityPubsubSubscriber
 			_addWarning(
 				warningMessages,
 				"Unable to find a contract for opportunity " +
-					opportunity.getId());
+					salesforceOpportunity.getId());
 		}
 
-		if (!realignmentOpportunityLineItems.isEmpty()) {
+		if (!realignmentSalesforceOpportunityLineItems.isEmpty()) {
 			if (Validator.isNull(
-					opportunity.getAmendedContractOpportunityId())) {
+					salesforceOpportunity.getAmendedContractOpportunityId())) {
 
-				for (OpportunityLineItem realignmentOpportunityLineItem :
-						realignmentOpportunityLineItems) {
+				for (SalesforceOpportunityLineItem
+						realignmentSalesforceOpportunityLineItem :
+							realignmentSalesforceOpportunityLineItems) {
 
 					String productName =
-						realignmentOpportunityLineItem.getProductName();
+						realignmentSalesforceOpportunityLineItem.
+							getProductName();
 
 					_addWarning(
 						warningMessages,
@@ -439,60 +458,65 @@ public class SalesforceOpportunityPubsubSubscriber
 			}
 			else {
 				_provisioningOrderService.trimRealignedOrderItems(
-					account.getId(), opportunity.getId(),
-					opportunity.getAmendedContractOpportunityId(),
-					realignmentOpportunityLineItems, warningMessages);
+					account.getId(), salesforceOpportunity.getId(),
+					salesforceOpportunity.getAmendedContractOpportunityId(),
+					realignmentSalesforceOpportunityLineItems, warningMessages);
 			}
 		}
 
-		boolean renewal = opportunity.isRenewal();
+		boolean renewal = salesforceOpportunity.isRenewal();
 
 		if (StringUtil.equalsIgnoreCase(
-				opportunity.getType(), OpportunityConstants.TYPE_RENEWAL)) {
+				salesforceOpportunity.getType(),
+				OpportunityConstants.TYPE_RENEWAL)) {
 
 			renewal = true;
 		}
 
 		if (renewal) {
 			_provisioningOrderService.trimRenewedOrderItems(
-				account.getId(), opportunity.getId(),
-				provisionableOpportunityLineItems, warningMessages);
+				account.getId(), salesforceOpportunity.getId(),
+				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
 
 		String currencyCode = _getCurrencyCode(
-			opportunity, provisionableOpportunityLineItems, warningMessages);
+			salesforceOpportunity, provisionableSalesforceOpportunityLineItems,
+			warningMessages);
 
-		if (Validator.isNotNull(opportunity.getOwnerEmailAddress())) {
+		if (Validator.isNotNull(salesforceOpportunity.getOwnerEmailAddress())) {
 			UserAccount userAccount =
 				_userAccountService.fetchUserAccountByEmailAddress(
-					opportunity.getOwnerEmailAddress());
+					salesforceOpportunity.getOwnerEmailAddress());
 
 			if (userAccount == null) {
 				_addWarning(
 					warningMessages,
 					"Unable to find portal user " +
-						opportunity.getOwnerEmailAddress() +
+						salesforceOpportunity.getOwnerEmailAddress() +
 							" for opportunity creator");
 			}
 		}
 
 		Order newOrder = _commerceOrderService.upsertOrder(
-			account, contractId, currencyCode, opportunity,
-			provisionableOpportunityLineItems, salesforceProject);
+			account, contractId, currencyCode, salesforceOpportunity,
+			provisionableSalesforceOpportunityLineItems, salesforceProject);
 
 		if ((contract != null) && (contract.getEndDateInstant() != null)) {
-			for (OpportunityLineItem provisionableOpportunityLineItem :
-					provisionableOpportunityLineItems) {
+			for (SalesforceOpportunityLineItem
+					provisionableSalesforceOpportunityLineItem :
+						provisionableSalesforceOpportunityLineItems) {
 
 				if (!Objects.equals(
-						provisionableOpportunityLineItem.getEndDateInstant(),
+						provisionableSalesforceOpportunityLineItem.
+							getEndDateInstant(),
 						contract.getEndDateInstant())) {
 
 					_addWarning(
 						warningMessages,
 						StringBundler.concat(
 							"The end date of line ",
-							provisionableOpportunityLineItem.getProductName(),
+							provisionableSalesforceOpportunityLineItem.
+								getProductName(),
 							" differs from the end date of contract ",
 							contract.getExternalReferenceCode()));
 				}
@@ -501,40 +525,44 @@ public class SalesforceOpportunityPubsubSubscriber
 
 		int provisionedOrderItemCount = 0;
 
-		for (OpportunityLineItem provisionableOpportunityLineItem :
-				provisionableOpportunityLineItems) {
+		for (SalesforceOpportunityLineItem
+				provisionableSalesforceOpportunityLineItem :
+					provisionableSalesforceOpportunityLineItems) {
 
-			Sku sku = _commerceSkuService.fetchSku(
-				provisionableOpportunityLineItem.getProduct2Id());
+			String product2Id =
+				provisionableSalesforceOpportunityLineItem.getProduct2Id();
+
+			Sku sku = _commerceSkuService.fetchSku(product2Id);
 
 			if (sku == null) {
 				_addWarning(
 					warningMessages,
-					"Unable to find SKU for Salesforce product " +
-						provisionableOpportunityLineItem.getProduct2Id());
+					"Unable to find SKU for Salesforce product " + product2Id);
 
 				continue;
 			}
 
 			try {
 				_commerceOrderItemService.upsertOrderItem(
-					newOrder, provisionableOpportunityLineItem,
-					opportunity.getStageName());
+					newOrder, provisionableSalesforceOpportunityLineItem,
+					salesforceOpportunity.getStageName());
 
 				provisionedOrderItemCount++;
 			}
 			catch (Exception exception) {
+				String productName =
+					provisionableSalesforceOpportunityLineItem.getProductName();
+
 				_addWarning(
-					warningMessages,
-					"Unable to provision line " +
-						provisionableOpportunityLineItem.getProductName());
+					warningMessages, "Unable to provision line " + productName);
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						StringBundler.concat(
 							"Unable to provision order item for Salesforce ",
 							"product ",
-							provisionableOpportunityLineItem.getProduct2Id()),
+							provisionableSalesforceOpportunityLineItem.
+								getProduct2Id()),
 						exception);
 				}
 			}
@@ -549,7 +577,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			catch (Exception exception) {
 				_addWarning(
 					warningMessages,
-					"Unable to complete order " + opportunity.getId());
+					"Unable to complete order " +
+						salesforceOpportunity.getId());
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
@@ -560,25 +589,26 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 
 		_provisioningSubdomainService.provisionSubdomain(
-			account, provisionableOpportunityLineItems);
+			account, provisionableSalesforceOpportunityLineItems);
 
 		List<Long> userIds = new ArrayList<>();
 
 		if (!StringUtil.equalsIgnoreCase(
-				opportunity.getType(), OpportunityConstants.TYPE_RENEWAL)) {
+				salesforceOpportunity.getType(),
+				OpportunityConstants.TYPE_RENEWAL)) {
 
 			userIds = _provisioningContactService.addProjectContacts(
-				account, _getProjectContactRoles(recordJSONObject),
+				account, _getSalesforceProjectContactRoles(recordJSONObject),
 				salesforceProject, warningMessages);
 		}
 
 		_provisioningEmailService.sendWelcomeEmails(
-			account, opportunity.getType(), userIds);
+			account, salesforceOpportunity.getType(), userIds);
 
-		if (!Objects.equals(opportunity.getProductFamily(), "P")) {
+		if (!Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
 			_provisioningIssueService.addOpportunityInvoicedIssue(
-				account, salesforceAccount, opportunity,
-				provisionableOpportunityLineItems, warningMessages);
+				account, salesforceAccount, salesforceOpportunity,
+				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
 	}
 

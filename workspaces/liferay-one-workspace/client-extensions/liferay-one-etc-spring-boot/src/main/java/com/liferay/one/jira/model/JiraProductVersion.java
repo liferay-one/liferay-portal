@@ -5,19 +5,16 @@
 
 package com.liferay.one.jira.model;
 
+import org.json.JSONObject;
+
 /**
  * @author Felipe Franca
  */
-public class Organization {
+public class JiraProductVersion {
 
-	public Organization(String externalKey, String id, String name) {
-		_externalKey = externalKey;
-		_id = id;
-		_name = name;
-	}
-
-	public String getExternalKey() {
-		return _externalKey;
+	public JiraProductVersion(JSONObject jsonObject) {
+		_id = jsonObject.getString("id");
+		_name = jsonObject.getString("name");
 	}
 
 	public String getId() {
@@ -28,7 +25,15 @@ public class Organization {
 		return _name;
 	}
 
-	private final String _externalKey;
+	public JSONObject toJSONObject() {
+		return new JSONObject(
+		).put(
+			"id", _id
+		).put(
+			"name", _name
+		);
+	}
+
 	private final String _id;
 	private final String _name;
 

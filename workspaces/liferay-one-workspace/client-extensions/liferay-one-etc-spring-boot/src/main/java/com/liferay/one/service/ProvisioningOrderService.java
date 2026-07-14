@@ -7,7 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -32,14 +32,16 @@ public class ProvisioningOrderService {
 
 	public void trimRealignedOrderItems(
 			long accountId, String opportunityId, String parentOpportunityId,
-			List<OpportunityLineItem> realignmentOpportunityLineItems,
+			List<SalesforceOpportunityLineItem>
+				realignmentSalesforceOpportunityLineItems,
 			List<String> warningMessages)
 		throws Exception {
 
 		List<Order> orders = _commerceOrderService.getAccountOrders(accountId);
 
-		for (OpportunityLineItem realignmentOpportunityLineItem :
-				realignmentOpportunityLineItems) {
+		for (SalesforceOpportunityLineItem
+				realignmentSalesforceOpportunityLineItem :
+					realignmentSalesforceOpportunityLineItems) {
 
 			boolean matched = false;
 
@@ -55,7 +57,8 @@ public class ProvisioningOrderService {
 				for (OrderItem parentOrderItem : order.getOrderItems()) {
 					if (!Objects.equals(
 							parentOrderItem.getSkuExternalReferenceCode(),
-							realignmentOpportunityLineItem.getProduct2Id())) {
+							realignmentSalesforceOpportunityLineItem.
+								getProduct2Id())) {
 
 						continue;
 					}
@@ -67,9 +70,11 @@ public class ProvisioningOrderService {
 					}
 
 					Instant endDateInstant =
-						realignmentOpportunityLineItem.getEndDateInstant();
+						realignmentSalesforceOpportunityLineItem.
+							getEndDateInstant();
 					Instant startDateInstant =
-						realignmentOpportunityLineItem.getServiceDateInstant();
+						realignmentSalesforceOpportunityLineItem.
+							getServiceDateInstant();
 
 					if (Objects.equals(
 							OrderItemUtil.getEndDateInstant(parentOrderItem),
@@ -130,17 +135,20 @@ public class ProvisioningOrderService {
 			}
 
 			if (!matched) {
+				String productName =
+					realignmentSalesforceOpportunityLineItem.getProductName();
+
 				_addWarning(
 					warningMessages,
 					"Unable to find an order item for amended line " +
-						realignmentOpportunityLineItem.getProductName());
+						productName);
 			}
 		}
 	}
 
 	public void trimRenewedOrderItems(
 			long accountId, String opportunityId,
-			List<OpportunityLineItem> opportunityLineItems,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			List<String> warningMessages)
 		throws Exception {
 
@@ -155,18 +163,19 @@ public class ProvisioningOrderService {
 			}
 
 			for (OrderItem orderItem : order.getOrderItems()) {
-				for (OpportunityLineItem opportunityLineItem :
-						opportunityLineItems) {
+				for (SalesforceOpportunityLineItem
+						salesforceOpportunityLineItem :
+							salesforceOpportunityLineItems) {
 
 					if (!Objects.equals(
 							orderItem.getSkuExternalReferenceCode(),
-							opportunityLineItem.getProduct2Id())) {
+							salesforceOpportunityLineItem.getProduct2Id())) {
 
 						continue;
 					}
 
 					Instant renewalStartDateInstant =
-						opportunityLineItem.getServiceDateInstant();
+						salesforceOpportunityLineItem.getServiceDateInstant();
 
 					if (renewalStartDateInstant == null) {
 						continue;

@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Felipe Franca
  */
-public class BusinessEventVersion {
+public class JiraBusinessEventVersion {
 
-	public BusinessEventVersion(
+	public JiraBusinessEventVersion(
 		String authorEmailAddress, String changeName, String comment,
 		String createdDate) {
 

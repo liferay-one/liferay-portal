@@ -5,9 +5,9 @@
 
 package com.liferay.one.jira.converter;
 
-import com.liferay.one.jira.constants.BusinessEventConstants;
-import com.liferay.one.jira.model.BusinessEventVersion;
+import com.liferay.one.jira.constants.JiraBusinessEventConstants;
 import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.model.JiraBusinessEventVersion;
 
 import org.json.JSONObject;
 
@@ -17,33 +17,34 @@ import org.springframework.stereotype.Component;
  * @author Amos Fong
  */
 @Component
-public class BusinessEventVersionConverter extends BaseAssetObjectConverter {
+public class JiraBusinessEventVersionConverter
+	extends BaseJiraAssetObjectConverter {
 
-	public BusinessEventVersion toBusinessEventVersion(
+	public JiraBusinessEventVersion toJiraBusinessEventVersion(
 		JSONObject jiraAssetObjectJSONObject) {
 
 		JiraAssetObject jiraAssetObject = new JiraAssetObject(
 			jiraAssetObjectJSONObject, getAttributeIds());
 
-		return new BusinessEventVersion(
+		return new JiraBusinessEventVersion(
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_AUTHOR),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_CHANGE),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_CHANGE),
 			jiraAssetObject.getAttributeDisplayValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_COMMENT),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_COMMENT),
 			jiraAssetObject.getAttributeValue(
-				BusinessEventConstants.ATTRIBUTE_NAME_CREATED));
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_CREATED));
 	}
 
 	@Override
 	protected String getObjectSchemaName() {
-		return BusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
+		return JiraBusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS;
 	}
 
 	@Override
 	protected String getObjectTypeName() {
-		return BusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT_VERSION;
+		return JiraBusinessEventConstants.OBJECT_TYPE_BUSINESS_EVENT_VERSION;
 	}
 
 }

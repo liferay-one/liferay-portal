@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class Account {
+public class SalesforceAccount {
 
-	public Account(JSONObject jsonObject) {
+	public SalesforceAccount(JSONObject jsonObject) {
 		_accountTier = jsonObject.optString("Account_Tier__c");
 		_activeSubscription = jsonObject.optBoolean("Active_Subscription__c");
 		_billingCity = jsonObject.optString("BillingCity");
@@ -34,7 +34,7 @@ public class Account {
 		_website = jsonObject.optString("Website");
 	}
 
-	public Account(
+	public SalesforceAccount(
 		JSONObject accountJSONObject, JSONObject opportunityJSONObject) {
 
 		_accountTier = accountJSONObject.optString("Account_Tier__c");
