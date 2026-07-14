@@ -5,6 +5,8 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.address.client.dto.v1_0.Country;
+import com.liferay.headless.admin.address.client.resource.v1_0.CountryResource;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -50,7 +54,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CommerceOrderService extends OneBaseService {
 
 	public void calculateTax(long commerceOrderId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		Order order = orderResource.getOrder(commerceOrderId);
 
@@ -118,7 +122,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		try {
 			return orderResource.getOrder(commerceOrderId);
@@ -192,7 +196,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public Order getCommerceOrder(long commerceOrderId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		return orderResource.getOrder(commerceOrderId);
 	}
@@ -200,7 +204,7 @@ public class CommerceOrderService extends OneBaseService {
 	public List<Order> getOrders(String filterString) throws Exception {
 		List<Order> orders = new ArrayList<>();
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		int page = 1;
 
@@ -237,7 +241,7 @@ public class CommerceOrderService extends OneBaseService {
 			Map<String, ?> customFields, long orderId, int orderStatus)
 		throws Exception {
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		Order order = new Order();
 
@@ -252,7 +256,7 @@ public class CommerceOrderService extends OneBaseService {
 			int paymentStatus)
 		throws Exception {
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		Order order = new Order();
 
@@ -337,7 +341,7 @@ public class CommerceOrderService extends OneBaseService {
 		).build();
 	}
 
-	private OrderResource _buildOrderResource() {
+	public OrderResource buildOrderResource() {
 		return OrderResource.builder(
 		).endpoint(
 			lxcDXPMainDomain, lxcDXPServerProtocol
@@ -476,6 +480,15 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return customFields;
+	}
+
+	public Country getCountryByA2(String a2) throws Exception {
+		return CountryResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build().getCountryByA2(a2);
 	}
 
 	private Map<String, String> _getCustomFields(Order order) throws Exception {
@@ -698,6 +711,9 @@ public class CommerceOrderService extends OneBaseService {
 		"SE", "SI", "SK");
 
 	private volatile Long _channelId;
+
+	@Autowired
+	private AIHubService _aiHubService;
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;
