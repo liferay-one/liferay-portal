@@ -56,8 +56,7 @@ public class AccountService extends OneBaseService {
 			).toUri());
 	}
 
-	public void addAccountUserAccount(
-			long accountId, Long accountRoleId, long userId)
+	public void addAccountUserAccount(long accountId, long userId)
 		throws Exception {
 
 		UserAccount userAccount = _userAccountService.getUserAccount(userId);
@@ -70,10 +69,15 @@ public class AccountService extends OneBaseService {
 			).buildAndExpand(
 				accountId, userAccount.getEmailAddress()
 			).toUri());
+	}
 
-		if (accountRoleId != null) {
-			addAccountUserAccountRole(accountId, accountRoleId, userId);
-		}
+	public void addAccountUserAccount(
+			long accountId, long accountRoleId, long userId)
+		throws Exception {
+
+		addAccountUserAccount(accountId, userId);
+
+		addAccountUserAccountRole(accountId, accountRoleId, userId);
 	}
 
 	public void addAccountUserAccount(

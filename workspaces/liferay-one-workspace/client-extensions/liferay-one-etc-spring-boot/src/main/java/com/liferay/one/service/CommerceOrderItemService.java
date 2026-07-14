@@ -8,9 +8,9 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
-import com.liferay.one.model.OrderItem;
 import com.liferay.one.salesforce.model.OpportunityLineItem;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -43,10 +43,7 @@ public class CommerceOrderItemService extends OneBaseService {
 		OrderItemResource orderItemResource = _buildOrderItemResource();
 
 		try {
-			com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-				orderItem = orderItemResource.getOrderItem(commerceOrderItemId);
-
-			return new OrderItem(orderItem);
+			return orderItemResource.getOrderItem(commerceOrderItemId);
 		}
 		catch (Problem.ProblemException problemException) {
 			Problem problem = problemException.getProblem();
@@ -59,10 +56,7 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 	}
 
-	public void patchOrderItem(
-			Long orderItemId,
-			com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-				orderItem)
+	public void patchOrderItem(Long orderItemId, OrderItem orderItem)
 		throws Exception {
 
 		OrderItemResource orderItemResource = _buildOrderItemResource();
@@ -76,14 +70,10 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		OrderItemResource orderItemResource = _buildOrderItemResource();
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-			existingOrderItem = orderItemResource.getOrderItem(
-				commerceOrderItemId);
+		OrderItem existingOrderItem = orderItemResource.getOrderItem(
+			commerceOrderItemId);
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-			orderItem =
-				new com.liferay.headless.commerce.admin.order.client.dto.v1_0.
-					OrderItem();
+		OrderItem orderItem = new OrderItem();
 
 		CustomField[] customFields = _toCustomFields(customFieldValues);
 
@@ -95,16 +85,12 @@ public class CommerceOrderItemService extends OneBaseService {
 		patchOrderItem(commerceOrderItemId, orderItem);
 	}
 
-	public com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-			upsertOrderItem(
-				Order order, OpportunityLineItem opportunityLineItem,
-				String stageName)
+	public OrderItem upsertOrderItem(
+			Order order, OpportunityLineItem opportunityLineItem,
+			String stageName)
 		throws Exception {
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-			orderItem =
-				new com.liferay.headless.commerce.admin.order.client.dto.v1_0.
-					OrderItem();
+		OrderItem orderItem = new OrderItem();
 
 		orderItem.setExternalReferenceCode(opportunityLineItem::getId);
 		orderItem.setSkuExternalReferenceCode(
@@ -143,9 +129,8 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		orderItem.setCustomFields(() -> customFields);
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-			existingOrderItem = _getExistingOrderItem(
-				order, opportunityLineItem.getId());
+		OrderItem existingOrderItem = _getExistingOrderItem(
+			order, opportunityLineItem.getId());
 
 		OrderItemResource orderItemResource = _buildOrderItemResource();
 
@@ -239,19 +224,16 @@ public class CommerceOrderItemService extends OneBaseService {
 		return "On Hold";
 	}
 
-	private com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-		_getExistingOrderItem(Order order, String externalReferenceCode) {
+	private OrderItem _getExistingOrderItem(
+		Order order, String externalReferenceCode) {
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem[]
-			orderItems = order.getOrderItems();
+		OrderItem[] orderItems = order.getOrderItems();
 
 		if (orderItems == null) {
 			return null;
 		}
 
-		for (com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-				orderItem : orderItems) {
-
+		for (OrderItem orderItem : orderItems) {
 			if (Objects.equals(
 					orderItem.getExternalReferenceCode(),
 					externalReferenceCode)) {

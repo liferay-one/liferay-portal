@@ -325,9 +325,9 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		StringBundler sb = new StringBundler(9);
 
 		sb.append("(project in (");
-		sb.append(_jiraSupportFLSProject);
+		sb.append(_jiraProjectSupportFLS);
 		sb.append(StringPool.COMMA);
-		sb.append(_jiraSupportHCProject);
+		sb.append(_jiraProjectSupportHC);
 		sb.append(")) and (status in ('");
 		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
 		sb.append("')) and (status changed to ('");
@@ -646,11 +646,11 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 	@Autowired
 	private JiraIssueService _jiraIssueService;
 
-	@Value("${liferay.one.jira.support.fls.project}")
-	private String _jiraSupportFLSProject;
+	@Value("${liferay.one.jira.project.support.fls}")
+	private String _jiraProjectSupportFLS;
 
-	@Value("${liferay.one.jira.support.hc.project}")
-	private String _jiraSupportHCProject;
+	@Value("${liferay.one.jira.project.support.hc}")
+	private String _jiraProjectSupportHC;
 
 	@Autowired
 	private LiferayOAuth2AccessTokenManager _liferayOAuth2AccessTokenManager;

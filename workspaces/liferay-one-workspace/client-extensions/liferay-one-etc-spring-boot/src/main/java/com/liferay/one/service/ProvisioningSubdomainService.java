@@ -8,8 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.model.Property;
-import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
-import com.liferay.one.pubsub.Message;
+import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.salesforce.model.OpportunityLineItem;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
@@ -20,8 +19,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -73,21 +70,13 @@ public class ProvisioningSubdomainService {
 			return;
 		}
 
-		_propertyService.addAccountProperty(
+		_propertyService.addProperty(
 			account.getId(), PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN,
 			subdomain);
 
 		try {
-			_oktaPubsubPublisher.publish(
-				new Message(
-					null,
-					new JSONObject(
-					).put(
-						"accountKey", account.getExternalReferenceCode()
-					).put(
-						"subdomain", subdomain
-					).toString(),
-					"okta-app-create"));
+			_oktaService.createApplication(
+				account.getExternalReferenceCode(), subdomain);
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -136,13 +125,13 @@ public class ProvisioningSubdomainService {
 
 	private static final int _SUBDOMAIN_LENGTH = 8;
 
-	private static final int _SUBDOMAIN_MAX_ATTEMPTS = 10;
+	private static final int _SUBDOMAIN_MAX_ATTEMPTS = 20;
 
 	private static final Log _log = LogFactory.getLog(
 		ProvisioningSubdomainService.class);
 
 	@Autowired
-	private OktaPubsubPublisher _oktaPubsubPublisher;
+	private OktaService _oktaService;
 
 	@Autowired
 	private PropertyService _propertyService;

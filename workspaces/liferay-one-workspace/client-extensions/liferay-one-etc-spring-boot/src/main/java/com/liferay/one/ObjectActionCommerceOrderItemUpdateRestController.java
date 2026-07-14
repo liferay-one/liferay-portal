@@ -6,16 +6,19 @@
 package com.liferay.one;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
-import com.liferay.one.model.OrderItem;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.util.OrderItemUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Map;
 import java.util.Objects;
 
 import org.json.JSONObject;
@@ -41,19 +44,29 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
 			jsonObject.getLong("classPK"));
 
-		if ((orderItem == null) ||
-			!Objects.equals(
-				orderItem.getStatus(),
+		if (orderItem == null) {
+			return;
+		}
+
+		Map<String, String> nameMap = orderItem.getName();
+
+		String name = null;
+
+		if (nameMap != null) {
+			name = nameMap.get("en_US");
+		}
+
+		if (!Objects.equals(
+				OrderItemUtil.getStatus(orderItem),
 				CommerceOrderItemConstants.STATUS_CANCELED) ||
 			!Objects.equals(
-				orderItem.getName(),
-				CommerceProductConstants.NAME_PAAS_EXPERIENCE)) {
+				name, CommerceProductConstants.NAME_PAAS_EXPERIENCE)) {
 
 			return;
 		}
 
 		Order order = _commerceOrderService.getCommerceOrder(
-			orderItem.getOrderId());
+			GetterUtil.getLong(orderItem.getOrderId()));
 
 		String oktaApplicationId = _propertyService.getPropertyValue(
 			order.getAccountId(), PropertyConstants.NAME_OKTA_APPLICATION);

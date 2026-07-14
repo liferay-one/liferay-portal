@@ -6,10 +6,12 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
-import com.liferay.one.model.OrderItem;
 import com.liferay.one.salesforce.model.OpportunityLineItem;
+import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
@@ -36,8 +38,7 @@ public class ProvisioningOrderService {
 			List<String> warningMessages)
 		throws Exception {
 
-		com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem[]
-			parentOrderItems = parentOrder.getOrderItems();
+		OrderItem[] parentOrderItems = parentOrder.getOrderItems();
 
 		if (parentOrderItems == null) {
 			return;
@@ -48,9 +49,7 @@ public class ProvisioningOrderService {
 
 			boolean matched = false;
 
-			for (com.liferay.headless.commerce.admin.order.client.dto.v1_0.
-					OrderItem parentOrderItem : parentOrderItems) {
-
+			for (OrderItem parentOrderItem : parentOrderItems) {
 				if (!Objects.equals(
 						parentOrderItem.getSkuExternalReferenceCode(),
 						realignmentOpportunityLineItem.getProduct2Id())) {
@@ -66,7 +65,7 @@ public class ProvisioningOrderService {
 
 				if ((orderItem == null) ||
 					!Objects.equals(
-						orderItem.getStatus(),
+						OrderItemUtil.getStatus(orderItem),
 						CommerceOrderItemConstants.STATUS_APPROVED)) {
 
 					continue;
@@ -77,23 +76,26 @@ public class ProvisioningOrderService {
 				String startDate = _toDateTime(
 					realignmentOpportunityLineItem.getServiceDate());
 
-				if (Objects.equals(orderItem.getEndDate(), endDate) &&
-					Objects.equals(orderItem.getStartDate(), startDate)) {
+				if (Objects.equals(
+						OrderItemUtil.getEndDate(orderItem), endDate) &&
+					Objects.equals(
+						OrderItemUtil.getStartDate(orderItem), startDate)) {
 
 					continue;
 				}
 
 				_commerceOrderItemService.patchOrderItemCustomFields(
-					orderItem.getCommerceOrderItemId(),
+					GetterUtil.getLong(orderItem.getId()),
 					Map.of(
 						"customStatus",
 						CommerceOrderItemConstants.STATUS_CANCELED));
 
 				_entitlementService.deleteEntitlements(
-					orderItem.getCommerceOrderItemId());
+					GetterUtil.getLong(orderItem.getId()));
 
 				if (Validator.isNotNull(endDate) &&
-					!Objects.equals(orderItem.getEndDate(), endDate)) {
+					!Objects.equals(
+						OrderItemUtil.getEndDate(orderItem), endDate)) {
 
 					_addWarning(
 						warningMessages,
@@ -101,7 +103,7 @@ public class ProvisioningOrderService {
 							"End date mismatch for order item ",
 							parentOrderItem.getExternalReferenceCode(),
 							". Amended date: ", endDate, ", original date: ",
-							orderItem.getEndDate()));
+							OrderItemUtil.getEndDate(orderItem)));
 				}
 			}
 
@@ -113,33 +115,21 @@ public class ProvisioningOrderService {
 			}
 		}
 
-		Order canceledOrder =
-			_commerceOrderService.fetchOrderByExternalReferenceCode(
-				parentOrder.getExternalReferenceCode());
-
-		if ((canceledOrder == null) ||
-			(canceledOrder.getOrderItems() == null)) {
-
-			return;
-		}
-
-		for (com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem
-				parentOrderItem : canceledOrder.getOrderItems()) {
-
+		for (OrderItem parentOrderItem : parentOrder.getOrderItems()) {
 			OrderItem orderItem =
 				_commerceOrderItemService.fetchCommerceOrderItem(
 					parentOrderItem.getId());
 
 			if ((orderItem != null) &&
 				!Objects.equals(
-					orderItem.getStatus(),
+					OrderItemUtil.getStatus(orderItem),
 					CommerceOrderItemConstants.STATUS_CANCELED)) {
 
 				return;
 			}
 		}
 
-		_commerceOrderService.cancelOrder(canceledOrder.getId());
+		_commerceOrderService.cancelOrder(parentOrder.getId());
 	}
 
 	public void trimRenewedOrderItems(
@@ -158,9 +148,7 @@ public class ProvisioningOrderService {
 				continue;
 			}
 
-			for (com.liferay.headless.commerce.admin.order.client.dto.v1_0.
-					OrderItem orderItem : order.getOrderItems()) {
-
+			for (OrderItem orderItem : order.getOrderItems()) {
 				for (OpportunityLineItem opportunityLineItem :
 						opportunityLineItems) {
 
@@ -178,18 +166,18 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					OrderItem commerceOrderItem =
+					OrderItem curOrderItem =
 						_commerceOrderItemService.fetchCommerceOrderItem(
 							orderItem.getId());
 
-					if (commerceOrderItem == null) {
+					if (curOrderItem == null) {
 						continue;
 					}
 
-					String endDate = commerceOrderItem.getEndDate();
+					String endDate = OrderItemUtil.getEndDate(curOrderItem);
 
 					if (!Objects.equals(
-							commerceOrderItem.getStatus(),
+							OrderItemUtil.getStatus(curOrderItem),
 							CommerceOrderItemConstants.STATUS_APPROVED) ||
 						Validator.isNull(endDate)) {
 
@@ -207,14 +195,14 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					String effectiveEndDate =
-						commerceOrderItem.getEffectiveEndDate();
+					String effectiveEndDate = OrderItemUtil.getEffectiveEndDate(
+						curOrderItem);
 
 					if (Validator.isNotNull(effectiveEndDate) &&
 						(renewalStartDate.compareTo(effectiveEndDate) < 0)) {
 
 						_commerceOrderItemService.patchOrderItemCustomFields(
-							commerceOrderItem.getCommerceOrderItemId(),
+							GetterUtil.getLong(curOrderItem.getId()),
 							Map.of("effectiveEndDate", renewalStartDate));
 					}
 				}
