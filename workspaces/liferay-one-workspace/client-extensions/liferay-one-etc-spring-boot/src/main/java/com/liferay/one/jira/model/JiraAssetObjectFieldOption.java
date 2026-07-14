@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Felipe Franca
  */
-public class AssetObjectFieldOption {
+public class JiraAssetObjectFieldOption {
 
-	public AssetObjectFieldOption(String label, String value) {
+	public JiraAssetObjectFieldOption(String label, String value) {
 		_label = label;
 		_value = value;
 	}

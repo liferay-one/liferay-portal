@@ -9,6 +9,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -121,16 +122,15 @@ public class ContractService extends OneBaseService {
 		return new Contract(jsonArray.getJSONObject(0));
 	}
 
-	public void upsertContract(
-			com.liferay.one.salesforce.model.Contract contract)
+	public void upsertContract(SalesforceContract salesforceContract)
 		throws Exception {
 
-		if (Validator.isNull(contract.getId()) ||
-			Validator.isNull(contract.getAccountId())) {
+		if (Validator.isNull(salesforceContract.getId()) ||
+			Validator.isNull(salesforceContract.getAccountId())) {
 
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to upsert contract " + contract.getId() +
+					"Unable to upsert contract " + salesforceContract.getId() +
 						" without an ID and account");
 			}
 
@@ -139,26 +139,29 @@ public class ContractService extends OneBaseService {
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
-			"externalReferenceCode", contract.getId()
+			"externalReferenceCode", salesforceContract.getId()
 		).put(
-			"r_accountEntryToContract_accountEntryERC", contract.getAccountId()
+			"r_accountEntryToContract_accountEntryERC",
+			salesforceContract.getAccountId()
 		);
 
-		if (contract.getContractTerm() != null) {
-			jsonObject.put("contractTerm", contract.getContractTerm());
+		if (salesforceContract.getContractTerm() != null) {
+			jsonObject.put(
+				"contractTerm", salesforceContract.getContractTerm());
 		}
 
-		String endDate = _toDateTime(contract.getEndDate());
+		String endDate = _toDateTime(salesforceContract.getEndDate());
 
 		if (Validator.isNotNull(endDate)) {
 			jsonObject.put("endDate", endDate);
 		}
 
-		if (Validator.isNotNull(contract.getOpportunityId())) {
-			jsonObject.put("opportunityId", contract.getOpportunityId());
+		if (Validator.isNotNull(salesforceContract.getOpportunityId())) {
+			jsonObject.put(
+				"opportunityId", salesforceContract.getOpportunityId());
 		}
 
-		String startDate = _toDateTime(contract.getStartDate());
+		String startDate = _toDateTime(salesforceContract.getStartDate());
 
 		if (Validator.isNotNull(startDate)) {
 			jsonObject.put("startDate", startDate);
@@ -167,9 +170,9 @@ public class ContractService extends OneBaseService {
 		Order order = null;
 		Map<String, Object> customFields = null;
 
-		if (Validator.isNotNull(contract.getOpportunityId())) {
+		if (Validator.isNotNull(salesforceContract.getOpportunityId())) {
 			order = _commerceOrderService.fetchOrderByExternalReferenceCode(
-				contract.getOpportunityId());
+				salesforceContract.getOpportunityId());
 		}
 
 		if (order != null) {
@@ -184,7 +187,7 @@ public class ContractService extends OneBaseService {
 			customFields.get("salesforceProjectId"));
 
 		Contract existingContract = fetchContractByExternalReferenceCode(
-			contract.getId());
+			salesforceContract.getId());
 
 		if (Validator.isNotNull(projectExternalReferenceCode) &&
 			((existingContract == null) ||
@@ -197,7 +200,8 @@ public class ContractService extends OneBaseService {
 		}
 
 		URI uri = UriComponentsBuilder.fromPath(
-			"/o/c/contracts/by-external-reference-code/" + contract.getId()
+			"/o/c/contracts/by-external-reference-code/" +
+				salesforceContract.getId()
 		).build(
 		).toUri();
 

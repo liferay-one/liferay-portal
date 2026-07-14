@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @author Drew Brokke
  */
 @Component
-public class AccountConverter extends BaseAssetObjectConverter {
+public class AccountConverter extends BaseJiraAssetObjectConverter {
 
 	@Override
 	protected String getObjectSchemaName() {

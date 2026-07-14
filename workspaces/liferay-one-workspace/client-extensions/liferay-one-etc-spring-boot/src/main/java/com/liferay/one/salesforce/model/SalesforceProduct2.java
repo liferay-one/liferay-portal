@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class Product2 {
+public class SalesforceProduct2 {
 
-	public Product2(JSONObject jsonObject) {
+	public SalesforceProduct2(JSONObject jsonObject) {
 		_description = jsonObject.optString("Description");
 		_id = jsonObject.optString("Id");
 		_name = jsonObject.optString("Name");

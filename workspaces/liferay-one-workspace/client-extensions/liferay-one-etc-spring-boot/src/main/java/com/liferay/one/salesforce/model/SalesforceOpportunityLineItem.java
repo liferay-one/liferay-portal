@@ -14,9 +14,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class OpportunityLineItem {
+public class SalesforceOpportunityLineItem {
 
-	public OpportunityLineItem(JSONObject jsonObject) {
+	public SalesforceOpportunityLineItem(JSONObject jsonObject) {
 		_cloudRegion = jsonObject.optString("Cloud_Region__c");
 		_currencyIsoCode = jsonObject.optString("CurrencyIsoCode");
 		_id = jsonObject.optString("Id");

@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.model.Project;
+import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -50,8 +51,7 @@ public class ProjectService extends OneBaseService {
 		return new Project(new JSONObject(response));
 	}
 
-	public void upsertProject(
-			com.liferay.one.salesforce.model.Project salesforceProject)
+	public void upsertProject(SalesforceProject salesforceProject)
 		throws Exception {
 
 		upsertProject(null, salesforceProject);
@@ -59,7 +59,7 @@ public class ProjectService extends OneBaseService {
 
 	public void upsertProject(
 			String accountExternalReferenceCode,
-			com.liferay.one.salesforce.model.Project salesforceProject)
+			SalesforceProject salesforceProject)
 		throws Exception {
 
 		String accountEntryERC = salesforceProject.getAccountId();

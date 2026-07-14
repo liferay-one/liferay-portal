@@ -19,9 +19,9 @@ import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.SupportRegionConstants;
-import com.liferay.one.salesforce.model.Opportunity;
-import com.liferay.one.salesforce.model.OpportunityLineItem;
-import com.liferay.one.salesforce.model.Project;
+import com.liferay.one.salesforce.model.SalesforceOpportunity;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -288,9 +288,10 @@ public class CommerceOrderService extends OneBaseService {
 
 	public Order upsertOrder(
 			com.liferay.headless.admin.user.client.dto.v1_0.Account account,
-			Long contractId, String currencyCode, Opportunity opportunity,
-			List<OpportunityLineItem> opportunityLineItems,
-			Project salesforceProject)
+			Long contractId, String currencyCode,
+			SalesforceOpportunity salesforceOpportunity,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+			SalesforceProject salesforceProject)
 		throws Exception {
 
 		Order order = new Order();
@@ -303,7 +304,7 @@ public class CommerceOrderService extends OneBaseService {
 
 		order.setChannelId(() -> channelId);
 
-		order.setExternalReferenceCode(opportunity::getId);
+		order.setExternalReferenceCode(salesforceOpportunity::getId);
 
 		if (account.getDefaultBillingAddressId() != null) {
 			order.setBillingAddressId(account::getDefaultBillingAddressId);
@@ -315,7 +316,7 @@ public class CommerceOrderService extends OneBaseService {
 
 		order.setCurrencyCode(() -> currencyCode);
 
-		BigDecimal total = _getTotal(opportunityLineItems);
+		BigDecimal total = _getTotal(salesforceOpportunityLineItems);
 
 		if (total != null) {
 			order.setTotal(() -> total);
@@ -323,22 +324,23 @@ public class CommerceOrderService extends OneBaseService {
 
 		UserAccount userAccount = null;
 
-		if (Validator.isNotNull(opportunity.getOwnerEmailAddress())) {
+		if (Validator.isNotNull(salesforceOpportunity.getOwnerEmailAddress())) {
 			userAccount = _userAccountService.fetchUserAccountByEmailAddress(
-				opportunity.getOwnerEmailAddress());
+				salesforceOpportunity.getOwnerEmailAddress());
 		}
 
 		if (userAccount != null) {
-			order.setCreatorEmailAddress(opportunity::getOwnerEmailAddress);
+			order.setCreatorEmailAddress(
+				salesforceOpportunity::getOwnerEmailAddress);
 		}
 
 		Map<String, Object> customFields = _getCustomFields(
-			contractId, opportunity, salesforceProject);
+			contractId, salesforceOpportunity, salesforceProject);
 
 		order.setCustomFields(() -> customFields);
 
 		Order existingOrder = fetchOrderByExternalReferenceCode(
-			opportunity.getId());
+			salesforceOpportunity.getId());
 
 		OrderResource orderResource = _buildOrderResource();
 
@@ -398,23 +400,27 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private Map<String, Object> _getCustomFields(
-		Long contractId, Opportunity opportunity, Project salesforceProject) {
+		Long contractId, SalesforceOpportunity salesforceOpportunity,
+		SalesforceProject salesforceProject) {
 
 		Map<String, Object> customFields = new HashMap<>();
 
-		if (Validator.isNotNull(opportunity.getOwnerEmailAddress())) {
+		if (Validator.isNotNull(salesforceOpportunity.getOwnerEmailAddress())) {
 			customFields.put(
-				"accountOwnerEmailAddress", opportunity.getOwnerEmailAddress());
+				"accountOwnerEmailAddress",
+				salesforceOpportunity.getOwnerEmailAddress());
 		}
 
-		if (Validator.isNotNull(opportunity.getOwnerFirstName())) {
+		if (Validator.isNotNull(salesforceOpportunity.getOwnerFirstName())) {
 			customFields.put(
-				"accountOwnerFirstName", opportunity.getOwnerFirstName());
+				"accountOwnerFirstName",
+				salesforceOpportunity.getOwnerFirstName());
 		}
 
-		if (Validator.isNotNull(opportunity.getOwnerLastName())) {
+		if (Validator.isNotNull(salesforceOpportunity.getOwnerLastName())) {
 			customFields.put(
-				"accountOwnerLastName", opportunity.getOwnerLastName());
+				"accountOwnerLastName",
+				salesforceOpportunity.getOwnerLastName());
 		}
 
 		if (contractId != null) {
@@ -428,39 +434,43 @@ public class CommerceOrderService extends OneBaseService {
 				"ldpWorkspaceName", salesforceProject.getLDPWorkspaceName());
 		}
 
-		if (Validator.isNotNull(opportunity.getProductFamily())) {
+		if (Validator.isNotNull(salesforceOpportunity.getProductFamily())) {
 			customFields.put(
-				"opportunityProductFamily", opportunity.getProductFamily());
+				"opportunityProductFamily",
+				salesforceOpportunity.getProductFamily());
 		}
 
-		if (Validator.isNotNull(opportunity.getSoldBy())) {
-			customFields.put("opportunitySoldBy", opportunity.getSoldBy());
-		}
-
-		if (Validator.isNotNull(opportunity.getStageName())) {
+		if (Validator.isNotNull(salesforceOpportunity.getSoldBy())) {
 			customFields.put(
-				"opportunityStageName", opportunity.getStageName());
+				"opportunitySoldBy", salesforceOpportunity.getSoldBy());
 		}
 
-		if (Validator.isNotNull(opportunity.getType())) {
-			customFields.put("opportunityType", opportunity.getType());
+		if (Validator.isNotNull(salesforceOpportunity.getStageName())) {
+			customFields.put(
+				"opportunityStageName", salesforceOpportunity.getStageName());
+		}
+
+		if (Validator.isNotNull(salesforceOpportunity.getType())) {
+			customFields.put(
+				"opportunityType", salesforceOpportunity.getType());
 		}
 
 		if (Validator.isNotNull(
-				opportunity.getAmendedContractOpportunityId())) {
+				salesforceOpportunity.getAmendedContractOpportunityId())) {
 
 			customFields.put(
 				"parentOpportunityId",
-				opportunity.getAmendedContractOpportunityId());
+				salesforceOpportunity.getAmendedContractOpportunityId());
 		}
 
-		if (Validator.isNotNull(opportunity.getResellerName())) {
-			customFields.put("partnerAccount", opportunity.getResellerName());
+		if (Validator.isNotNull(salesforceOpportunity.getResellerName())) {
+			customFields.put(
+				"partnerAccount", salesforceOpportunity.getResellerName());
 		}
 
 		customFields.put(
 			"partnerFirstLineSupport",
-			String.valueOf(opportunity.isFirstLineSupport()));
+			String.valueOf(salesforceOpportunity.isFirstLineSupport()));
 
 		if ((salesforceProject != null) &&
 			Validator.isNotNull(salesforceProject.getName())) {
@@ -468,10 +478,11 @@ public class CommerceOrderService extends OneBaseService {
 			customFields.put("projectName", salesforceProject.getName());
 		}
 
-		customFields.put("renewal", opportunity.isRenewal());
+		customFields.put("renewal", salesforceOpportunity.isRenewal());
 
-		if (Validator.isNotNull(opportunity.getProjectId())) {
-			customFields.put("salesforceProjectId", opportunity.getProjectId());
+		if (Validator.isNotNull(salesforceOpportunity.getProjectId())) {
+			customFields.put(
+				"salesforceProjectId", salesforceOpportunity.getProjectId());
 		}
 
 		return customFields;
@@ -511,12 +522,14 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private BigDecimal _getTotal(
-		List<OpportunityLineItem> opportunityLineItems) {
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems) {
 
 		BigDecimal total = null;
 
-		for (OpportunityLineItem opportunityLineItem : opportunityLineItems) {
-			Double totalPrice = opportunityLineItem.getTotalPrice();
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			Double totalPrice = salesforceOpportunityLineItem.getTotalPrice();
 
 			if (totalPrice == null) {
 				continue;

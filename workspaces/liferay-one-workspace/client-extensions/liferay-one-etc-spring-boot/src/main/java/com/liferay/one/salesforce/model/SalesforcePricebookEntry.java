@@ -10,9 +10,9 @@ import org.json.JSONObject;
 /**
  * @author Kyle Bischof
  */
-public class PricebookEntry {
+public class SalesforcePricebookEntry {
 
-	public PricebookEntry(JSONObject jsonObject) {
+	public SalesforcePricebookEntry(JSONObject jsonObject) {
 		_active = jsonObject.optBoolean("IsActive");
 		_currencyIsoCode = jsonObject.optString("CurrencyIsoCode");
 		_id = jsonObject.optString("Id");
