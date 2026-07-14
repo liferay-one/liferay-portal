@@ -83,6 +83,21 @@ public class OktaService {
 				"okta-app-user-update"));
 	}
 
+	public void createApplication(String accountKey, String subdomain)
+		throws Exception {
+
+		_oktaPubsubPublisher.publish(
+			new Message(
+				null,
+				new JSONObject(
+				).put(
+					"accountKey", accountKey
+				).put(
+					"subdomain", subdomain
+				).toString(),
+				"okta-app-create"));
+	}
+
 	public OktaUser createContact(
 			String emailAddress, String firstName, String middleName,
 			String lastName)

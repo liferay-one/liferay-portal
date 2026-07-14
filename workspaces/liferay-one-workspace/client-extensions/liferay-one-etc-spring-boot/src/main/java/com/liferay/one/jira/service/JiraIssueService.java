@@ -155,7 +155,8 @@ public class JiraIssueService extends BaseJiraService {
 			StringUtil.merge(IssueConstants.STATUSES_SOLVED_AND_CLOSED, "','"));
 		sb.append("')) and ");
 		sb.append(
-			IssueConstants.toJQLCustomField(_jiraSupportHCFieldRequestType));
+			IssueConstants.toJQLCustomField(
+				_jiraIssueSupportHCFieldRequestType));
 		sb.append(" = '");
 		sb.append(IssueConstants.TYPE_GENERAL_REQUEST);
 		sb.append("'");
@@ -194,11 +195,11 @@ public class JiraIssueService extends BaseJiraService {
 				String issueKey = issueJSONObject.getString("key");
 
 				String ticketURL =
-					_jiraSupportHCPortalURL + StringPool.SLASH + issueKey;
+					_jiraProjectSupportHCURL + StringPool.SLASH + issueKey;
 
-				if (issueKey.startsWith(_jiraSupportFLSProject)) {
+				if (issueKey.startsWith(_jiraProjectSupportFLS)) {
 					ticketURL =
-						_jiraSupportFLSPortalURL + StringPool.SLASH + issueKey;
+						_jiraProjectSupportFLSURL + StringPool.SLASH + issueKey;
 				}
 
 				SupportIssue supportIssue = new SupportIssue(
@@ -225,7 +226,7 @@ public class JiraIssueService extends BaseJiraService {
 		}
 
 		JSONArray jsonArray = jsonObject.optJSONArray(
-			_jiraSupportHCFieldOrganization);
+			_jiraIssueSupportHCFieldOrganization);
 
 		if ((jsonArray == null) || jsonArray.isEmpty()) {
 			throw new OrganizationNotFoundException();
@@ -287,20 +288,20 @@ public class JiraIssueService extends BaseJiraService {
 	@Autowired
 	private JiraAssetService _jiraAssetService;
 
-	@Value("${liferay.one.jira.support.fls.portal.url}")
-	private String _jiraSupportFLSPortalURL;
+	@Value("${liferay.one.jira.issue.support.hc.field.organization}")
+	private String _jiraIssueSupportHCFieldOrganization;
 
-	@Value("${liferay.one.jira.support.fls.project}")
-	private String _jiraSupportFLSProject;
+	@Value("${liferay.one.jira.issue.support.hc.field.request.type}")
+	private String _jiraIssueSupportHCFieldRequestType;
 
-	@Value("${liferay.one.jira.support.hc.field.organization}")
-	private String _jiraSupportHCFieldOrganization;
+	@Value("${liferay.one.jira.project.support.fls}")
+	private String _jiraProjectSupportFLS;
 
-	@Value("${liferay.one.jira.support.hc.field.request.type}")
-	private String _jiraSupportHCFieldRequestType;
+	@Value("${liferay.one.jira.project.support.fls.url}")
+	private String _jiraProjectSupportFLSURL;
 
-	@Value("${liferay.one.jira.support.hc.portal.url}")
-	private String _jiraSupportHCPortalURL;
+	@Value("${liferay.one.jira.project.support.hc.url}")
+	private String _jiraProjectSupportHCURL;
 
 	@Value("${liferay.one.jira.url}")
 	private String _jiraURL;

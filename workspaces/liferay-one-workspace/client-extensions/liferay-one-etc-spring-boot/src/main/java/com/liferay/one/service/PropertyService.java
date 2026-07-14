@@ -21,8 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class PropertyService extends OneBaseService {
 
-	public Property addAccountProperty(
-			long accountId, String name, String value)
+	public Property addProperty(long accountId, String name, String value)
 		throws Exception {
 
 		JSONObject propertyJSONObject = new JSONObject(

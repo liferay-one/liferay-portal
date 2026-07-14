@@ -6,11 +6,12 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
-import com.liferay.one.model.OrderItem;
+import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -139,7 +140,7 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		if (CommerceOrderItemConstants.STATUS_CANCELED.equals(
-				orderItem.getStatus())) {
+				OrderItemUtil.getStatus(orderItem))) {
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -154,11 +155,12 @@ public class EntitlementService extends OneBaseService {
 			_entitlementDefinitionService.getEntitlementDefinitions(
 				StringBundler.concat(
 					"(r_commerceProductToEntitlementDefinition_CProductId eq '",
-					orderItem.getCProductId(), "') and (active eq true)"),
-				orderItem.getProductOptions());
+					GetterUtil.getLong(orderItem.getProductId()),
+					"') and (active eq true)"),
+				OrderItemUtil.getProductOptions(orderItem));
 
 		Order order = _commerceOrderService.fetchCommerceOrder(
-			orderItem.getOrderId());
+			GetterUtil.getLong(orderItem.getOrderId()));
 
 		long accountEntryId = _getAccountEntryId(order);
 		long contractId = _getContractId(order);
@@ -170,11 +172,11 @@ public class EntitlementService extends OneBaseService {
 				addEntitlement(
 					accountEntryId, commerceOrderItemId, contractId,
 					entitlementDefinition.getEntitlementDefinitionId(),
-					orderItem.getEndDate(),
+					OrderItemUtil.getEndDate(orderItem),
 					entitlementDefinition.getGrantType(), null,
 					entitlementDefinition.getName(),
 					entitlementDefinition.getDefaultQuantity(),
-					orderItem.getStartDate());
+					OrderItemUtil.getStartDate(orderItem));
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -221,6 +223,21 @@ public class EntitlementService extends OneBaseService {
 		return !getEntitlements(
 			sb.toString()
 		).isEmpty();
+	}
+
+	public void updateEntitlementContract(long entitlementId, long contractId)
+		throws Exception {
+
+		patch(
+			getAuthorization(),
+			new JSONObject(
+			).put(
+				"r_contractToEntitlement_c_contractId", contractId
+			).toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/entitlements/" + entitlementId
+			).build(
+			).toUri());
 	}
 
 	private long _getAccountEntryId(Order order) {

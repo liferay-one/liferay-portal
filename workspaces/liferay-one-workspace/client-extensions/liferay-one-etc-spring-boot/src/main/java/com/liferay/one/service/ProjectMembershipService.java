@@ -77,16 +77,16 @@ public class ProjectMembershipService extends OneBaseService {
 	}
 
 	public void addProjectMembership(
-			long accountId, String projectExternalReferenceCode, long userId)
+			String projectExternalReferenceCode, long userId)
 		throws Exception {
 
 		addProjectMembership(
-			accountId, projectExternalReferenceCode,
+			projectExternalReferenceCode,
 			_PROJECT_USER_ROLE_EXTERNAL_REFERENCE_CODE, userId);
 	}
 
 	public void addProjectMembership(
-			long accountId, String projectExternalReferenceCode,
+			String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
 		throws Exception {
 
@@ -102,10 +102,18 @@ public class ProjectMembershipService extends OneBaseService {
 			return;
 		}
 
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			return;
+		}
+
 		JSONObject jsonObject = new JSONObject();
 
 		jsonObject.put(
-			"r_accountEntryToProjectMembership_accountEntryId", accountId
+			"r_accountEntryToProjectMembership_accountEntryId",
+			project.getAccountId()
 		).put(
 			"r_projectToProjectMembership_c_projectERC",
 			projectExternalReferenceCode
