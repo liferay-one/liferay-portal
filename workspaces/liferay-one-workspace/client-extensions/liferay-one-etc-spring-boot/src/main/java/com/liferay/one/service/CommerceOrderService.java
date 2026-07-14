@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -577,6 +578,108 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return false;
+	}
+
+	private void _provisionAiHub(Order order) throws Exception {
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		if ((customFields == null) ||
+			!customFields.containsKey("order-metadata")) {
+
+			return;
+		}
+
+		try {
+			JSONObject orderMetadataJSONObject = new JSONObject(
+				customFields.get("order-metadata"));
+
+			if (!orderMetadataJSONObject.has("aiHubForm")) {
+				return;
+			}
+
+			JSONObject aiHubFormJSONObject =
+				orderMetadataJSONObject.getJSONObject("aiHubForm");
+
+			String emailAddress = aiHubFormJSONObject.getString(
+				"administratorEmailAddress");
+
+			String firstName = "AI Hub";
+			String lastName = "Administrator";
+
+			try {
+				UserAccount userAccount =
+					_userAccountService.getUserAccountByEmailAddress(
+						emailAddress);
+
+				if (userAccount != null) {
+					firstName = userAccount.getGivenName();
+					lastName = userAccount.getFamilyName();
+				}
+			}
+			catch (Exception exception) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"Unable to fetch user account details for " +
+							emailAddress,
+						exception);
+				}
+			}
+
+			JSONObject provisionJSONObject = new JSONObject(
+			).put(
+				"accountName", aiHubFormJSONObject.getString("aiHubAccountName")
+			).put(
+				"companyName",
+				order.getAccount(
+				).getName()
+			).put(
+				"userAccounts",
+				new JSONArray(
+				).put(
+					new JSONObject(
+					).put(
+						"emailAddress", emailAddress
+					).put(
+						"firstName", firstName
+					).put(
+						"lastName", lastName
+					)
+				)
+			);
+
+			JSONObject aiHubJSONObject = _aiHubService.provision(
+				provisionJSONObject);
+
+			if (aiHubJSONObject != null) {
+				_aiHubService.putAIHubApplication(
+					"AI-HUB-" + order.getAccountExternalReferenceCode(),
+					new JSONObject(
+					).put(
+						"accountEntryId",
+						aiHubJSONObject.getInt("accountEntryId")
+					).put(
+						"accountName",
+						aiHubFormJSONObject.getString("aiHubAccountName")
+					).put(
+						"administratorEmailAddress",
+						aiHubFormJSONObject.getString(
+							"administratorEmailAddress")
+					).put(
+						"r_accountToAIHubApplication_accountEntryERC",
+						order.getAccount(
+						).getExternalReferenceCode()
+					).put(
+						"r_orderToAIHubApplication_commerceOrderERC",
+						order.getExternalReferenceCode()
+					));
+			}
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to provision AI Hub for order: " + order.getId(),
+				exception);
+		}
 	}
 
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
