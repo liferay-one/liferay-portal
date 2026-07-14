@@ -153,7 +153,7 @@ public class UserAccountService extends OneBaseService {
 		}
 	}
 
-	public boolean hasAccountUserAccounts(long accountId) throws Exception {
+	public boolean hasUserAccounts(long accountId) throws Exception {
 		UserAccountResource userAccountResource = _buildUserAccountResource();
 
 		Page<UserAccount> userAccountsPage =

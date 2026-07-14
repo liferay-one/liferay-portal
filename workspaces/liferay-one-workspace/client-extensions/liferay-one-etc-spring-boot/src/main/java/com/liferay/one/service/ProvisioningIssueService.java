@@ -142,24 +142,24 @@ public class ProvisioningIssueService {
 
 			if (Validator.isNotNull(salesforceAccount.getBillingCountry())) {
 				customFields.put(
-					_jiraProvisioningFieldCountry,
+					_jiraIssueProvisioningFieldCountry,
 					salesforceAccount.getBillingCountry());
 			}
 
 			if (Validator.isNotNull(opportunity.getOwnerEmailAddress())) {
 				customFields.put(
-					_jiraProvisioningFieldOwner,
+					_jiraIssueProvisioningFieldOwner,
 					opportunity.getOwnerEmailAddress());
 			}
 
 			customFields.put(
-				_jiraProvisioningFieldProvisioningComponent,
+				_jiraIssueProvisioningFieldProvisioningComponent,
 				new JSONObject(
 				).put(
 					"value", "Opportunity Invoiced"
 				));
 			customFields.put(
-				_jiraProvisioningFieldSupportRegion,
+				_jiraIssueProvisioningFieldSupportRegion,
 				new JSONObject(
 				).put(
 					"value",
@@ -170,6 +170,15 @@ public class ProvisioningIssueService {
 
 			_putJiraOrganizationCustomFields(customFields);
 
+			StringBundler sb = new StringBundler(7);
+
+			if (!warningMessages.isEmpty()) {
+				sb.append("[Warning] ");
+			}
+
+			sb.append(opportunity.getType());
+			sb.append(": ");
+
 			Set<String> productTypes = new LinkedHashSet<>();
 
 			for (OpportunityLineItem opportunityLineItem :
@@ -179,15 +188,6 @@ public class ProvisioningIssueService {
 					productTypes.add(opportunityLineItem.getProductType());
 				}
 			}
-
-			StringBundler sb = new StringBundler(7);
-
-			if (!warningMessages.isEmpty()) {
-				sb.append("[Warning] ");
-			}
-
-			sb.append(opportunity.getType());
-			sb.append(": ");
 
 			if (!productTypes.isEmpty()) {
 				sb.append(StringUtil.merge(productTypes, ", "));
@@ -207,8 +207,7 @@ public class ProvisioningIssueService {
 				).put(
 					"version", 1
 				),
-				_jiraProvisioningIssueTypeId, _jiraSupportHCProject,
-				sb.toString());
+				_jiraIssueProvisioningId, _jiraProjectSupportHC, sb.toString());
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -279,7 +278,7 @@ public class ProvisioningIssueService {
 				).put(
 					"version", 1
 				),
-				_jiraProvisioningIssueTypeId, _jiraSupportHCProject, summary);
+				_jiraIssueProvisioningId, _jiraProjectSupportHC, summary);
 		}
 		catch (Exception exception2) {
 			_log.error(
@@ -292,69 +291,72 @@ public class ProvisioningIssueService {
 		Map<String, Object> customFields) {
 
 		customFields.put(
-			_jiraProvisioningFieldOffering,
-			new JSONArray(
-			).put(
-				new JSONObject(
-				).put(
-					"id", _jiraWorkspaceId + ":" + _jiraProvisioningOfferingId
-				)
-			));
-		customFields.put(
-			_jiraProvisioningFieldOrganization,
+			_jiraIssueProvisioningFieldOffering,
 			new JSONArray(
 			).put(
 				new JSONObject(
 				).put(
 					"id",
-					_jiraWorkspaceId + ":" + _jiraProvisioningOrganizationId
+					_jiraWorkspaceId + ":" + _jiraIssueProvisioningOfferingId
 				)
 			));
 		customFields.put(
-			_jiraSupportHCFieldRequestType, _jiraProvisioningRequestTypeId);
+			_jiraIssueProvisioningFieldOrganization,
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"id",
+					_jiraWorkspaceId + ":" + _jiraOrganizationProvisioningId
+				)
+			));
+		customFields.put(
+			_jiraIssueSupportHCFieldRequestType, _jiraRequestProvisioningId);
 	}
 
 	private static final Log _log = LogFactory.getLog(
 		ProvisioningIssueService.class);
 
+	@Value("${liferay.one.jira.issue.provisioning.field.country}")
+	private String _jiraIssueProvisioningFieldCountry;
+
+	@Value("${liferay.one.jira.issue.provisioning.field.offering}")
+	private String _jiraIssueProvisioningFieldOffering;
+
+	@Value("${liferay.one.jira.issue.provisioning.field.organization}")
+	private String _jiraIssueProvisioningFieldOrganization;
+
+	@Value("${liferay.one.jira.issue.provisioning.field.owner}")
+	private String _jiraIssueProvisioningFieldOwner;
+
+	@Value(
+		"${liferay.one.jira.issue.provisioning.field.provisioning.component}"
+	)
+	private String _jiraIssueProvisioningFieldProvisioningComponent;
+
+	@Value("${liferay.one.jira.issue.provisioning.field.support.region}")
+	private String _jiraIssueProvisioningFieldSupportRegion;
+
+	@Value("${liferay.one.jira.issue.provisioning.id}")
+	private String _jiraIssueProvisioningId;
+
+	@Value("${liferay.one.jira.issue.provisioning.offering.id}")
+	private String _jiraIssueProvisioningOfferingId;
+
 	@Autowired
 	private JiraIssueService _jiraIssueService;
 
-	@Value("${liferay.one.jira.provisioning.field.country}")
-	private String _jiraProvisioningFieldCountry;
+	@Value("${liferay.one.jira.issue.support.hc.field.request.type}")
+	private String _jiraIssueSupportHCFieldRequestType;
 
-	@Value("${liferay.one.jira.provisioning.field.offering}")
-	private String _jiraProvisioningFieldOffering;
+	@Value("${liferay.one.jira.organization.provisioning.id}")
+	private String _jiraOrganizationProvisioningId;
 
-	@Value("${liferay.one.jira.provisioning.field.organization}")
-	private String _jiraProvisioningFieldOrganization;
+	@Value("${liferay.one.jira.project.support.hc}")
+	private String _jiraProjectSupportHC;
 
-	@Value("${liferay.one.jira.provisioning.field.owner}")
-	private String _jiraProvisioningFieldOwner;
-
-	@Value("${liferay.one.jira.provisioning.field.provisioning.component}")
-	private String _jiraProvisioningFieldProvisioningComponent;
-
-	@Value("${liferay.one.jira.provisioning.field.support.region}")
-	private String _jiraProvisioningFieldSupportRegion;
-
-	@Value("${liferay.one.jira.provisioning.issue.type.id}")
-	private String _jiraProvisioningIssueTypeId;
-
-	@Value("${liferay.one.jira.provisioning.offering.id}")
-	private String _jiraProvisioningOfferingId;
-
-	@Value("${liferay.one.jira.provisioning.organization.id}")
-	private String _jiraProvisioningOrganizationId;
-
-	@Value("${liferay.one.jira.provisioning.request.type.id}")
-	private String _jiraProvisioningRequestTypeId;
-
-	@Value("${liferay.one.jira.support.hc.field.request.type}")
-	private String _jiraSupportHCFieldRequestType;
-
-	@Value("${liferay.one.jira.support.hc.project}")
-	private String _jiraSupportHCProject;
+	@Value("${liferay.one.jira.request.provisioning.id}")
+	private String _jiraRequestProvisioningId;
 
 	@Value("${liferay.one.jira.workspace.id}")
 	private String _jiraWorkspaceId;

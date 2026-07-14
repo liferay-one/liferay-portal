@@ -98,7 +98,7 @@ public class ProvisioningContactService {
 			return;
 		}
 
-		boolean firstAccountUser = !_userAccountService.hasAccountUserAccounts(
+		boolean hasUserAccounts = _userAccountService.hasUserAccounts(
 			account.getId());
 
 		Long accountRoleId = _accountService.fetchAccountRoleId(
@@ -109,12 +109,16 @@ public class ProvisioningContactService {
 				warningMessages,
 				"Unable to find account role " +
 					projectContactRole.getContactRole());
+
+			_accountService.addAccountUserAccount(
+				account.getId(), userAccount.getId());
+		}
+		else {
+			_accountService.addAccountUserAccount(
+				account.getId(), accountRoleId, userAccount.getId());
 		}
 
-		_accountService.addAccountUserAccount(
-			account.getId(), accountRoleId, userAccount.getId());
-
-		if (firstAccountUser && !hasDesignatedAdministrator) {
+		if (!hasUserAccounts && !hasDesignatedAdministrator) {
 			Long administratorAccountRoleId =
 				_accountService.fetchAccountRoleId(
 					account.getId(), RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
@@ -148,8 +152,7 @@ public class ProvisioningContactService {
 
 		if (salesforceProject != null) {
 			_projectMembershipService.addProjectMembership(
-				account.getId(), salesforceProject.getId(),
-				userAccount.getId());
+				salesforceProject.getId(), userAccount.getId());
 		}
 
 		userIds.add(userAccount.getId());

@@ -354,9 +354,7 @@ public class CommerceOrderService extends OneBaseService {
 		OrderResource orderResource = _buildOrderResource();
 
 		if (existingOrder != null) {
-			orderResource.patchOrder(existingOrder.getId(), order);
-
-			return fetchOrderByExternalReferenceCode(opportunity.getId());
+			return orderResource.patchOrder(existingOrder.getId(), order);
 		}
 
 		return orderResource.postOrder(order);

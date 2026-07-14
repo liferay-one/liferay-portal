@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,33 +90,34 @@ public class ContractService extends OneBaseService {
 	public Contract fetchLatestContractByOpportunityId(String opportunityId)
 		throws Exception {
 
-		List<Contract> contracts = getAllItems(
-			"/o/c/contracts", "opportunityId eq '" + opportunityId + "'",
-			Contract::new);
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/contracts"
+			).queryParam(
+				"filter", "opportunityId eq '" + opportunityId + "'"
+			).queryParam(
+				"page", 1
+			).queryParam(
+				"pageSize", 1
+			).queryParam(
+				"sort", "dateCreated:desc,id:desc"
+			).build(
+			).toUri());
 
-		Contract latestContract = null;
-
-		for (Contract contract : contracts) {
-			if (latestContract == null) {
-				latestContract = contract;
-
-				continue;
-			}
-
-			int dateCreatedComparison = contract.getDateCreated(
-			).compareTo(
-				latestContract.getDateCreated()
-			);
-
-			if ((dateCreatedComparison > 0) ||
-				((dateCreatedComparison == 0) &&
-				 (contract.getId() > latestContract.getId()))) {
-
-				latestContract = contract;
-			}
+		if (Validator.isNull(response)) {
+			return null;
 		}
 
-		return latestContract;
+		JSONObject jsonObject = new JSONObject(response);
+
+		JSONArray jsonArray = jsonObject.optJSONArray("items");
+
+		if ((jsonArray == null) || (jsonArray.length() == 0)) {
+			return null;
+		}
+
+		return new Contract(jsonArray.getJSONObject(0));
 	}
 
 	public void upsertContract(
@@ -198,8 +200,10 @@ public class ContractService extends OneBaseService {
 		).build(
 		).toUri();
 
+		String response = null;
+
 		try {
-			patch(getAuthorization(), jsonObject.toString(), uri);
+			response = patch(getAuthorization(), jsonObject.toString(), uri);
 		}
 		catch (WebClientResponseException webClientResponseException) {
 			int statusCode = webClientResponseException.getStatusCode(
@@ -209,28 +213,23 @@ public class ContractService extends OneBaseService {
 				throw webClientResponseException;
 			}
 
-			put(getAuthorization(), jsonObject.toString(), uri);
+			response = put(getAuthorization(), jsonObject.toString(), uri);
 		}
 
-		if (order == null) {
+		if ((order == null) || Validator.isNull(response)) {
 			return;
 		}
 
-		Contract dxpContract = fetchContractByExternalReferenceCode(
-			contract.getId());
+		existingContract = new Contract(new JSONObject(response));
 
-		if (dxpContract == null) {
-			return;
-		}
-
-		String contractIdString = Objects.toString(
+		String orderContractId = Objects.toString(
 			customFields.get("contractId"), null);
 
 		if (!Objects.equals(
-				contractIdString, String.valueOf(dxpContract.getId()))) {
+				orderContractId, String.valueOf(existingContract.getId()))) {
 
 			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("contractId", dxpContract.getId()));
+				order.getId(), Map.of("contractId", existingContract.getId()));
 		}
 
 		OrderItem[] orderItems = order.getOrderItems();
@@ -251,17 +250,8 @@ public class ContractService extends OneBaseService {
 					continue;
 				}
 
-				patch(
-					getAuthorization(),
-					new JSONObject(
-					).put(
-						"r_contractToEntitlement_c_contractId",
-						dxpContract.getId()
-					).toString(),
-					UriComponentsBuilder.fromPath(
-						"/o/c/entitlements/" + entitlement.getEntitlementId()
-					).build(
-					).toUri());
+				_entitlementService.updateEntitlementContract(
+					entitlement.getEntitlementId(), existingContract.getId());
 			}
 		}
 	}
