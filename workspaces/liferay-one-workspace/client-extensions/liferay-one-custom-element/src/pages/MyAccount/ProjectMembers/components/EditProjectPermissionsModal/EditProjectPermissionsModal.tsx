@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
-import {ClayCheckbox, ClaySelect} from '@clayui/form';
+import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {useMemo, useState} from 'react';
 import {useProjectProducts} from '~/hooks/useProjectCommerce';
@@ -32,6 +32,7 @@ import type {
 type WorkingMember = {
 	designations: string[];
 	email: string;
+	emailInput: string;
 	isNew: boolean;
 	membershipId: number;
 	name: string;
@@ -105,15 +106,27 @@ function PermissionsSelect({
 					</ClayDropDown.Item>
 				))}
 
-				{availableDesignations.map((designation) => (
-					<ClayDropDown.Item key={designation}>
-						<ClayCheckbox
-							checked={designations.includes(designation)}
-							label={designation}
-							onChange={() => onToggleDesignation(designation)}
-						/>
-					</ClayDropDown.Item>
-				))}
+				{!!availableDesignations.length && (
+					<>
+						<ClayDropDown.Divider />
+
+						<li className="dropdown-subheader">
+							{translate('cloud-contacts')}
+						</li>
+
+						{availableDesignations.map((designation) => (
+							<ClayDropDown.Item key={designation}>
+								<ClayCheckbox
+									checked={designations.includes(designation)}
+									label={designation}
+									onChange={() =>
+										onToggleDesignation(designation)
+									}
+								/>
+							</ClayDropDown.Item>
+						))}
+					</>
+				)}
 			</ClayDropDown.ItemList>
 		</ClayDropDown>
 	);
@@ -146,6 +159,7 @@ const EditProjectPermissionsModal = ({
 		project.members.map((member) => ({
 			designations: member.designations,
 			email: member.email,
+			emailInput: '',
 			isNew: false,
 			membershipId: member.membershipId,
 			name: member.name,
@@ -157,18 +171,6 @@ const EditProjectPermissionsModal = ({
 		}))
 	);
 	const [error, setError] = useState('');
-
-	const availableToAdd = useMemo(
-		() =>
-			accountMemberOptions.filter(
-				(option) =>
-					!members.some(
-						(member) =>
-							member.userId === option.userId && !member.removed
-					)
-			),
-		[accountMemberOptions, members]
-	);
 
 	const updateMember = (index: number, patch: Partial<WorkingMember>) =>
 		setMembers((previous) =>
@@ -204,20 +206,6 @@ const EditProjectPermissionsModal = ({
 				.filter((member) => !(member.isNew && member.removed))
 		);
 
-	const selectNewMember = (index: number, userId: number) => {
-		const option = accountMemberOptions.find(
-			(accountMemberOption) => accountMemberOption.userId === userId
-		);
-
-		if (option) {
-			updateMember(index, {
-				email: option.email,
-				name: option.name,
-				userId: option.userId,
-			});
-		}
-	};
-
 	const addMember = () => {
 		setError('');
 
@@ -226,6 +214,7 @@ const EditProjectPermissionsModal = ({
 			{
 				designations: [],
 				email: '',
+				emailInput: '',
 				isNew: true,
 				membershipId: 0,
 				name: '',
@@ -243,8 +232,12 @@ const EditProjectPermissionsModal = ({
 
 		const activeMembers = members.filter((member) => !member.removed);
 
-		if (activeMembers.some((member) => !member.userId)) {
-			setError(translate('select-a-member-and-a-role'));
+		if (
+			activeMembers.some(
+				(member) => member.isNew && !member.emailInput.trim()
+			)
+		) {
+			setError(translate('please-enter-a-valid-email-address'));
 
 			return;
 		}
@@ -256,9 +249,36 @@ const EditProjectPermissionsModal = ({
 		}
 
 		try {
+			const resolvedMembers = await Promise.all(
+				members.map(async (member) => {
+					if (!member.isNew || member.removed) {
+						return member;
+					}
+
+					const email = member.emailInput.trim();
+
+					const existing = accountMemberOptions.find(
+						(option) =>
+							option.email.toLowerCase() === email.toLowerCase()
+					);
+
+					if (existing) {
+						return {...member, userId: existing.userId};
+					}
+
+					const userAccount =
+						await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
+							accountExternalReferenceCode,
+							email
+						);
+
+					return {...member, userId: userAccount.id};
+				})
+			);
+
 			const operations: Promise<unknown>[] = [];
 
-			members.forEach((member) => {
+			resolvedMembers.forEach((member) => {
 				if (member.isNew && !member.removed) {
 					operations.push(
 						Projects.postProjectMembership(
@@ -292,7 +312,7 @@ const EditProjectPermissionsModal = ({
 				}
 			});
 
-			const hasDesignationChanges = members.some(
+			const hasDesignationChanges = resolvedMembers.some(
 				(member) =>
 					!member.removed &&
 					member.userId &&
@@ -320,7 +340,7 @@ const EditProjectPermissionsModal = ({
 					])
 				);
 
-				members.forEach((member) => {
+				resolvedMembers.forEach((member) => {
 					if (member.removed || !member.userId) {
 						return;
 					}
@@ -398,30 +418,18 @@ const EditProjectPermissionsModal = ({
 			{members.map((member, index) =>
 				member.removed ? null : (
 					<div className="project-permissions-grid" key={index}>
-						{member.isNew && !member.userId ? (
-							<ClaySelect
-								aria-label={translate('team-member')}
+						{member.isNew ? (
+							<ClayInput
+								aria-label={translate('email-address')}
 								onChange={(event) =>
-									selectNewMember(
-										index,
-										Number(event.target.value)
-									)
+									updateMember(index, {
+										emailInput: event.target.value,
+									})
 								}
-								value=""
-							>
-								<ClaySelect.Option
-									label={translate('select-a-member')}
-									value=""
-								/>
-
-								{availableToAdd.map((option) => (
-									<ClaySelect.Option
-										key={option.userId}
-										label={option.name}
-										value={String(option.userId)}
-									/>
-								))}
-							</ClaySelect>
+								placeholder={translate('enter-email-address')}
+								type="email"
+								value={member.emailInput}
+							/>
 						) : (
 							<span className="form-control project-permissions-member-box">
 								{member.name}
