@@ -17,14 +17,12 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.Duration;
+import java.time.Instant;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -137,8 +135,8 @@ public class CommerceOrderItemService extends OneBaseService {
 			}
 
 			if (Objects.equals(
-					OrderItemUtil.getEndDate(existingOrderItem),
-					_toDateTime(opportunityLineItem.getEndDate()))) {
+					OrderItemUtil.getEndDateInstant(existingOrderItem),
+					opportunityLineItem.getEndDateInstant())) {
 
 				customFieldValues.remove("effectiveEndDate");
 			}
@@ -156,18 +154,6 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return orderItemResource.postOrderIdOrderItem(order.getId(), orderItem);
-	}
-
-	private String _addDays(String dateTime, int days) {
-		Matcher matcher = _dateTimePattern.matcher(dateTime);
-
-		if (!matcher.matches()) {
-			return null;
-		}
-
-		LocalDate localDate = LocalDate.parse(matcher.group(1));
-
-		return _dateFormatter.format(localDate.plusDays(days)) + "T00:00:00Z";
 	}
 
 	private OrderItemResource _buildOrderItemResource() {
@@ -193,11 +179,16 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		customFieldValues.put("customStatus", _getCustomStatus(stageName));
 
-		String endDate = _toDateTime(opportunityLineItem.getEndDate());
+		Instant endDateInstant = opportunityLineItem.getEndDateInstant();
 
-		if (Validator.isNotNull(endDate)) {
-			customFieldValues.put("effectiveEndDate", _addDays(endDate, 30));
-			customFieldValues.put("endDate", endDate);
+		if (endDateInstant != null) {
+			Instant effectiveEndDateInstant = endDateInstant.plus(
+				Duration.ofDays(30));
+
+			customFieldValues.put(
+				"effectiveEndDate", effectiveEndDateInstant.toString());
+
+			customFieldValues.put("endDate", endDateInstant.toString());
 		}
 
 		if (Validator.isNotNull(opportunityLineItem.getMachineType())) {
@@ -215,10 +206,11 @@ public class CommerceOrderItemService extends OneBaseService {
 				"sizing", opportunityLineItem.getNumberOfPods());
 		}
 
-		String startDate = _toDateTime(opportunityLineItem.getServiceDate());
+		Instant serviceDateInstant =
+			opportunityLineItem.getServiceDateInstant();
 
-		if (Validator.isNotNull(startDate)) {
-			customFieldValues.put("startDate", startDate);
+		if (serviceDateInstant != null) {
+			customFieldValues.put("startDate", serviceDateInstant.toString());
 		}
 
 		return customFieldValues;
@@ -283,29 +275,9 @@ public class CommerceOrderItemService extends OneBaseService {
 		return customFields;
 	}
 
-	private String _toDateTime(String value) {
-		if (Validator.isNull(value)) {
-			return null;
-		}
-
-		Matcher matcher = _datePattern.matcher(value);
-
-		if (matcher.matches()) {
-			return value + "T00:00:00Z";
-		}
-
-		return value;
-	}
-
 	private static final Log _log = LogFactory.getLog(
 		CommerceOrderItemService.class);
 
-	private static final DateTimeFormatter _dateFormatter =
-		DateTimeFormatter.ISO_LOCAL_DATE;
-	private static final Pattern _datePattern = Pattern.compile(
-		"\\d{4}-\\d{2}-\\d{2}");
-	private static final Pattern _dateTimePattern = Pattern.compile(
-		"(\\d{4}-\\d{2}-\\d{2})T.*");
 	private static final Map<String, String> _stageNameCustomStatuses = Map.of(
 		"Closed", "Canceled", "Closed Lost", "Canceled", "Closed Won",
 		"Approved", "Disqualified", "Canceled", "Rejected", "Canceled");

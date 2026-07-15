@@ -18,7 +18,10 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
 import java.time.Year;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import java.util.Calendar;
 import java.util.List;
@@ -163,8 +166,14 @@ public class SubscriptionEntryService extends OneBaseService {
 	}
 
 	private String _getExpirationMessage(
-		String languageId, int days, String expirationDate,
+		String languageId, int days, Instant expirationDateInstant,
 		String productGroup) {
+
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+			"MMMM dd, yyyy", LocaleUtil.fromLanguageId(languageId));
+
+		String expirationDate = dateTimeFormatter.format(
+			expirationDateInstant.atZone(ZoneOffset.UTC));
 
 		if (days == 0) {
 			return _messageSource.getMessage(
@@ -222,7 +231,7 @@ public class SubscriptionEntryService extends OneBaseService {
 		).put(
 			"LICENSE_KEY_EXPIRATION_MESSAGE",
 			_getExpirationMessage(
-				languageId, days, licenseKey.getCustomExpirationDate(),
+				languageId, days, licenseKey.getCustomExpirationDateInstant(),
 				licenseKey.getProductName())
 		).put(
 			"LICENSE_KEY_LICENSE_NAME", licenseKey.getLicenseName()

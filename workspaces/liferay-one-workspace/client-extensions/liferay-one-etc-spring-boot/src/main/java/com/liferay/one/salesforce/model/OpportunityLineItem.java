@@ -5,6 +5,10 @@
 
 package com.liferay.one.salesforce.model;
 
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.Instant;
+
 import org.json.JSONObject;
 
 /**
@@ -15,13 +19,29 @@ public class OpportunityLineItem {
 	public OpportunityLineItem(JSONObject jsonObject) {
 		_cloudRegion = jsonObject.optString("Cloud_Region__c");
 		_currencyIsoCode = jsonObject.optString("CurrencyIsoCode");
-		_endDate = jsonObject.optString("End_Date__c");
 		_id = jsonObject.optString("Id");
 		_machineType = jsonObject.optString("Machine_Type__c");
 		_product2Id = jsonObject.optString("Product2Id");
 		_productName = jsonObject.optString("Product2.Name");
 		_productType = jsonObject.optString("Product_Type__c");
-		_serviceDate = jsonObject.optString("ServiceDate");
+
+		String endDate = jsonObject.optString("End_Date__c");
+
+		if (Validator.isNull(endDate)) {
+			_endDateInstant = null;
+		}
+		else {
+			_endDateInstant = Instant.parse(endDate + "T00:00:00Z");
+		}
+
+		String serviceDate = jsonObject.optString("ServiceDate");
+
+		if (Validator.isNull(serviceDate)) {
+			_serviceDateInstant = null;
+		}
+		else {
+			_serviceDateInstant = Instant.parse(serviceDate + "T00:00:00Z");
+		}
 
 		if (jsonObject.isNull("Number_of_Pods__c")) {
 			_numberOfPods = null;
@@ -60,8 +80,8 @@ public class OpportunityLineItem {
 		return _currencyIsoCode;
 	}
 
-	public String getEndDate() {
-		return _endDate;
+	public Instant getEndDateInstant() {
+		return _endDateInstant;
 	}
 
 	public String getId() {
@@ -92,8 +112,8 @@ public class OpportunityLineItem {
 		return _quantity;
 	}
 
-	public String getServiceDate() {
-		return _serviceDate;
+	public Instant getServiceDateInstant() {
+		return _serviceDateInstant;
 	}
 
 	public Double getTotalPrice() {
@@ -116,7 +136,7 @@ public class OpportunityLineItem {
 
 	private final String _cloudRegion;
 	private final String _currencyIsoCode;
-	private final String _endDate;
+	private final Instant _endDateInstant;
 	private final String _id;
 	private final String _machineType;
 	private final Double _numberOfPods;
@@ -124,7 +144,7 @@ public class OpportunityLineItem {
 	private final String _productName;
 	private final String _productType;
 	private final Double _quantity;
-	private final String _serviceDate;
+	private final Instant _serviceDateInstant;
 	private final Double _totalPrice;
 	private final Double _unitPrice;
 

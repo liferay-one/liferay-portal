@@ -12,6 +12,8 @@ import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -28,13 +30,12 @@ import org.json.JSONObject;
  */
 public class OrderItemUtil {
 
-	public static String getEffectiveEndDate(OrderItem orderItem) {
-		return GetterUtil.getString(
-			_getCustomFieldValue(orderItem, "effectiveEndDate"));
+	public static Instant getEffectiveEndDateInstant(OrderItem orderItem) {
+		return _getCustomFieldInstant(orderItem, "effectiveEndDate");
 	}
 
-	public static String getEndDate(OrderItem orderItem) {
-		return GetterUtil.getString(_getCustomFieldValue(orderItem, "endDate"));
+	public static Instant getEndDateInstant(OrderItem orderItem) {
+		return _getCustomFieldInstant(orderItem, "endDate");
 	}
 
 	public static Map<String, String> getProductOptions(OrderItem orderItem) {
@@ -68,9 +69,8 @@ public class OrderItemUtil {
 		return productOptions;
 	}
 
-	public static String getStartDate(OrderItem orderItem) {
-		return GetterUtil.getString(
-			_getCustomFieldValue(orderItem, "startDate"));
+	public static Instant getStartDateInstant(OrderItem orderItem) {
+		return _getCustomFieldInstant(orderItem, "startDate");
 	}
 
 	public static String getStatus(OrderItem orderItem) {
@@ -86,6 +86,19 @@ public class OrderItemUtil {
 	public static boolean isCanceled(OrderItem orderItem) {
 		return CommerceOrderItemConstants.STATUS_CANCELED.equals(
 			getStatus(orderItem));
+	}
+
+	private static Instant _getCustomFieldInstant(
+		OrderItem orderItem, String name) {
+
+		String value = GetterUtil.getString(
+			_getCustomFieldValue(orderItem, name));
+
+		if (Validator.isNull(value)) {
+			return null;
+		}
+
+		return Instant.parse(value);
 	}
 
 	private static Object _getCustomFieldValue(

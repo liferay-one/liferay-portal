@@ -5,6 +5,10 @@
 
 package com.liferay.one.model;
 
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.Instant;
+
 import org.json.JSONObject;
 
 /**
@@ -13,20 +17,29 @@ import org.json.JSONObject;
 public class Contract {
 
 	public Contract(JSONObject jsonObject) {
-		_dateCreated = jsonObject.optString("dateCreated");
-		_endDate = jsonObject.optString("endDate");
+		_dateCreatedInstant = Instant.parse(
+			jsonObject.optString("dateCreated"));
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_id = jsonObject.optLong("id");
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToContract_c_projectERC");
+
+		String endDate = jsonObject.optString("endDate");
+
+		if (Validator.isNull(endDate)) {
+			_endDateInstant = null;
+		}
+		else {
+			_endDateInstant = Instant.parse(endDate);
+		}
 	}
 
-	public String getDateCreated() {
-		return _dateCreated;
+	public Instant getDateCreatedInstant() {
+		return _dateCreatedInstant;
 	}
 
-	public String getEndDate() {
-		return _endDate;
+	public Instant getEndDateInstant() {
+		return _endDateInstant;
 	}
 
 	public String getExternalReferenceCode() {
@@ -41,8 +54,8 @@ public class Contract {
 		return _projectExternalReferenceCode;
 	}
 
-	private final String _dateCreated;
-	private final String _endDate;
+	private final Instant _dateCreatedInstant;
+	private final Instant _endDateInstant;
 	private final String _externalReferenceCode;
 	private final long _id;
 	private final String _projectExternalReferenceCode;

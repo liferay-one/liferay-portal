@@ -7,8 +7,7 @@ package com.liferay.one.model;
 
 import com.liferay.portal.kernel.util.Validator;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 import org.json.JSONObject;
 
@@ -22,7 +21,6 @@ public class Entitlement {
 			"r_commerceOrderItemToEntitlement_commerceOrderItemId");
 		_contractId = jsonObject.optLong(
 			"r_contractToEntitlement_c_contractId");
-		_endDate = jsonObject.optString("endDate");
 		_entitlementDefinitionId = jsonObject.optLong(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId");
 		_entitlementId = jsonObject.getLong("id");
@@ -30,7 +28,24 @@ public class Entitlement {
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
 		_quantity = jsonObject.optDoubleObject("quantity", null);
-		_startDate = jsonObject.optString("startDate");
+
+		String endDate = jsonObject.optString("endDate");
+
+		if (Validator.isNull(endDate)) {
+			_endDateInstant = null;
+		}
+		else {
+			_endDateInstant = Instant.parse(endDate);
+		}
+
+		String startDate = jsonObject.optString("startDate");
+
+		if (Validator.isNull(startDate)) {
+			_startDateInstant = null;
+		}
+		else {
+			_startDateInstant = Instant.parse(startDate);
+		}
 	}
 
 	public long getCommerceOrderItemId() {
@@ -41,8 +56,8 @@ public class Entitlement {
 		return _contractId;
 	}
 
-	public String getEndDate() {
-		return _endDate;
+	public Instant getEndDateInstant() {
+		return _endDateInstant;
 	}
 
 	public long getEntitlementDefinitionId() {
@@ -69,31 +84,27 @@ public class Entitlement {
 		return _quantity;
 	}
 
-	public String getStartDate() {
-		return _startDate;
+	public Instant getStartDateInstant() {
+		return _startDateInstant;
 	}
 
 	public boolean isExpired() {
-		if (Validator.isNull(_endDate)) {
+		if (_endDateInstant == null) {
 			return false;
 		}
 
-		String todayString = LocalDate.now(
-			ZoneOffset.UTC
-		).toString();
-
-		return _endDate.compareTo(todayString) < 0;
+		return _endDateInstant.isBefore(Instant.now());
 	}
 
 	private final long _commerceOrderItemId;
 	private final long _contractId;
-	private final String _endDate;
+	private final Instant _endDateInstant;
 	private final long _entitlementDefinitionId;
 	private final long _entitlementId;
 	private final String _grantType;
 	private final Double _maxQuantity;
 	private final String _name;
 	private final Double _quantity;
-	private final String _startDate;
+	private final Instant _startDateInstant;
 
 }

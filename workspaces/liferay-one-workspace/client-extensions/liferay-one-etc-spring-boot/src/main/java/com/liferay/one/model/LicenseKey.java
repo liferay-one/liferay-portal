@@ -5,6 +5,8 @@
 
 package com.liferay.one.model;
 
+import java.time.Instant;
+
 import org.json.JSONObject;
 
 /**
@@ -20,7 +22,8 @@ public class LicenseKey {
 		_additionalInfo = jsonObject.optString("additionalInfo");
 		_clusterId = jsonObject.optLong("clusterId");
 		_complimentary = jsonObject.optBoolean("complimentary");
-		_customExpirationDate = jsonObject.optString("customExpirationDate");
+		_customExpirationDateInstant = Instant.parse(
+			jsonObject.getString("customExpirationDate"));
 		_description = jsonObject.optString("description");
 		_domains = jsonObject.optString("domains");
 		_entitlementId = jsonObject.optLong("entitlementId");
@@ -46,7 +49,7 @@ public class LicenseKey {
 		_productVersionLabel = jsonObject.optString("productVersionLabel");
 		_serverId = jsonObject.optString("serverId");
 		_sizing = jsonObject.optString("sizing");
-		_startDate = jsonObject.optString("startDate");
+		_startDateInstant = Instant.parse(jsonObject.getString("startDate"));
 	}
 
 	public long getAccountEntryId() {
@@ -65,8 +68,8 @@ public class LicenseKey {
 		return _clusterId;
 	}
 
-	public String getCustomExpirationDate() {
-		return _customExpirationDate;
+	public Instant getCustomExpirationDateInstant() {
+		return _customExpirationDateInstant;
 	}
 
 	public String getDescription() {
@@ -169,8 +172,8 @@ public class LicenseKey {
 		return _sizing;
 	}
 
-	public String getStartDate() {
-		return _startDate;
+	public Instant getStartDateInstant() {
+		return _startDateInstant;
 	}
 
 	public boolean isActive() {
@@ -187,7 +190,7 @@ public class LicenseKey {
 	private final String _additionalInfo;
 	private final long _clusterId;
 	private final boolean _complimentary;
-	private final String _customExpirationDate;
+	private final Instant _customExpirationDateInstant;
 	private final String _description;
 	private final String _domains;
 	private final long _entitlementId;
@@ -213,6 +216,6 @@ public class LicenseKey {
 	private final String _productVersionLabel;
 	private final String _serverId;
 	private final String _sizing;
-	private final String _startDate;
+	private final Instant _startDateInstant;
 
 }
