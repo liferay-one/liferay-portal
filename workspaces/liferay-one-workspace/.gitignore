@@ -9,10 +9,10 @@
 /poshi/test-results
 /poshi/tests
 @vite/*
-!@vite/refresh.ts
 bin
 build
 dist
 node_modules
 node_modules_cache
-test-classes
+
+!@vite/refresh.ts
