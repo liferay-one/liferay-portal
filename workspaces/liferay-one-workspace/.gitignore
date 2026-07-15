@@ -4,6 +4,7 @@
 /.idea
 /bundles
 /client-extensions/liferay-one-etc-spring-boot/liferay-release-tool-ee
+/docker-compose.override.yaml
 /poshi/poshi-ext.properties
 /poshi/test-results
 /poshi/tests
