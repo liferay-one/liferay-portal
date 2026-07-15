@@ -8,6 +8,7 @@ package com.liferay.one.util;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -75,6 +76,16 @@ public class OrderItemUtil {
 	public static String getStatus(OrderItem orderItem) {
 		return GetterUtil.getString(
 			_getCustomFieldValue(orderItem, "customStatus"));
+	}
+
+	public static boolean isApproved(OrderItem orderItem) {
+		return CommerceOrderItemConstants.STATUS_APPROVED.equals(
+			getStatus(orderItem));
+	}
+
+	public static boolean isCanceled(OrderItem orderItem) {
+		return CommerceOrderItemConstants.STATUS_CANCELED.equals(
+			getStatus(orderItem));
 	}
 
 	private static Object _getCustomFieldValue(

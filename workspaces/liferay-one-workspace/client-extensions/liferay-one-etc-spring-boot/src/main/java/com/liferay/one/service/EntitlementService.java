@@ -7,7 +7,6 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
-import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -15,9 +14,6 @@ import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
-
-import java.time.LocalDate;
-import java.time.ZoneOffset;
 
 import java.util.List;
 import java.util.Map;
@@ -127,9 +123,7 @@ public class EntitlementService extends OneBaseService {
 			return;
 		}
 
-		if (CommerceOrderItemConstants.STATUS_CANCELED.equals(
-				OrderItemUtil.getStatus(orderItem))) {
-
+		if (OrderItemUtil.isCanceled(orderItem)) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					"Skipping entitlement generation for canceled order item " +
@@ -143,12 +137,12 @@ public class EntitlementService extends OneBaseService {
 			_entitlementDefinitionService.getEntitlementDefinitions(
 				StringBundler.concat(
 					"(r_commerceProductToEntitlementDefinition_CProductId eq '",
-					GetterUtil.getLong(orderItem.getProductId()),
+					orderItem.getProductId(),
 					"') and (active eq true)"),
 				OrderItemUtil.getProductOptions(orderItem));
 
 		Order order = _commerceOrderService.fetchCommerceOrder(
-			GetterUtil.getLong(orderItem.getOrderId()));
+			orderItem.getOrderId());
 
 		long accountEntryId = _getAccountEntryId(order);
 		long contractId = _getContractId(order);
@@ -210,16 +204,8 @@ public class EntitlementService extends OneBaseService {
 
 		List<Entitlement> entitlements = getEntitlements(sb.toString());
 
-		String todayString = LocalDate.now(
-			ZoneOffset.UTC
-		).toString();
-
 		for (Entitlement entitlement : entitlements) {
-			String endDate = entitlement.getEndDate();
-
-			if (Validator.isNull(endDate) ||
-				(endDate.compareTo(todayString) >= 0)) {
-
+			if (!entitlement.isExpired()) {
 				return true;
 			}
 		}
@@ -236,10 +222,10 @@ public class EntitlementService extends OneBaseService {
 				commerceOrderItemId, "'"));
 
 		for (Entitlement entitlement : entitlements) {
-			String entitlementEndDate = entitlement.getEndDate();
+			String curEndDate = entitlement.getEndDate();
 
-			if (Validator.isNotNull(entitlementEndDate) &&
-				(entitlementEndDate.compareTo(endDate) <= 0)) {
+			if (Validator.isNotNull(curEndDate) &&
+				(curEndDate.compareTo(endDate) <= 0)) {
 
 				continue;
 			}
@@ -254,7 +240,7 @@ public class EntitlementService extends OneBaseService {
 				trimmedEndDate = startDate;
 			}
 
-			if (Objects.equals(entitlementEndDate, trimmedEndDate)) {
+			if (Objects.equals(curEndDate, trimmedEndDate)) {
 				continue;
 			}
 
@@ -291,7 +277,7 @@ public class EntitlementService extends OneBaseService {
 			return 0;
 		}
 
-		return GetterUtil.getLong(order.getAccountId());
+		return order.getAccountId();
 	}
 
 	private long _getContractId(Order order) {

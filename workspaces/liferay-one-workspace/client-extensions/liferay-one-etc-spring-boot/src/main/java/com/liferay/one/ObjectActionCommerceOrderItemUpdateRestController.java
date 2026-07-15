@@ -7,7 +7,6 @@ package com.liferay.one;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
-import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.okta.service.OktaService;
@@ -15,7 +14,6 @@ import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.OrderItemUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.LocalDate;
@@ -59,9 +57,7 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 			name = nameMap.get("en_US");
 		}
 
-		if (!Objects.equals(
-				OrderItemUtil.getStatus(orderItem),
-				CommerceOrderItemConstants.STATUS_CANCELED) ||
+		if (!OrderItemUtil.isCanceled(orderItem) ||
 			!Objects.equals(
 				name, CommerceProductConstants.NAME_PAAS_EXPERIENCE)) {
 
@@ -69,10 +65,10 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 		}
 
 		Order order = _commerceOrderService.getCommerceOrder(
-			GetterUtil.getLong(orderItem.getOrderId()));
+			orderItem.getOrderId());
 
 		if (_hasOtherActivePaasExperience(
-				order.getAccountId(), GetterUtil.getLong(orderItem.getId()))) {
+				order.getAccountId(), orderItem.getId())) {
 
 			return;
 		}
@@ -115,8 +111,7 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 
 				if (Objects.equals(
 						name, CommerceProductConstants.NAME_PAAS_EXPERIENCE) &&
-					_isActiveOrderItem(
-						GetterUtil.getLong(orderItem.getId()), todayString)) {
+					_isActiveOrderItem(orderItem, todayString)) {
 
 					return true;
 				}
@@ -127,17 +122,9 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 	}
 
 	private boolean _isActiveOrderItem(
-			long commerceOrderItemId, String todayString)
-		throws Exception {
+		OrderItem orderItem, String todayString) {
 
-		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
-			commerceOrderItemId);
-
-		if ((orderItem == null) ||
-			!Objects.equals(
-				OrderItemUtil.getStatus(orderItem),
-				CommerceOrderItemConstants.STATUS_APPROVED)) {
-
+		if (!OrderItemUtil.isApproved(orderItem)) {
 			return false;
 		}
 

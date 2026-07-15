@@ -5,6 +5,11 @@
 
 package com.liferay.one.model;
 
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+
 import org.json.JSONObject;
 
 /**
@@ -66,6 +71,18 @@ public class Entitlement {
 
 	public String getStartDate() {
 		return _startDate;
+	}
+
+	public boolean isExpired() {
+		if (Validator.isNull(_endDate)) {
+			return false;
+		}
+
+		String todayString = LocalDate.now(
+			ZoneOffset.UTC
+		).toString();
+
+		return _endDate.compareTo(todayString) < 0;
 	}
 
 	private final long _commerceOrderItemId;

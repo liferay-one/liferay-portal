@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -179,8 +180,8 @@ public class ContractService extends OneBaseService {
 			customFields = Map.of();
 		}
 
-		String projectExternalReferenceCode = Objects.toString(
-			customFields.get("salesforceProjectId"), null);
+		String projectExternalReferenceCode = GetterUtil.getString(
+			customFields.get("salesforceProjectId"));
 
 		Contract existingContract = fetchContractByExternalReferenceCode(
 			contract.getId());
@@ -222,8 +223,8 @@ public class ContractService extends OneBaseService {
 
 		existingContract = new Contract(new JSONObject(response));
 
-		String orderContractId = Objects.toString(
-			customFields.get("contractId"), null);
+		String orderContractId = GetterUtil.getString(
+			customFields.get("contractId"));
 
 		if (!Objects.equals(
 				orderContractId, String.valueOf(existingContract.getId()))) {
