@@ -11,16 +11,12 @@ import com.liferay.one.salesforce.model.OpportunityLineItem;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Validator;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -70,63 +66,66 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					String endDate = _toDateTime(
-						realignmentOpportunityLineItem.getEndDate());
-					String startDate = _toDateTime(
-						realignmentOpportunityLineItem.getServiceDate());
+					Instant endDateInstant =
+						realignmentOpportunityLineItem.getEndDateInstant();
+					Instant startDateInstant =
+						realignmentOpportunityLineItem.getServiceDateInstant();
 
 					if (Objects.equals(
-							OrderItemUtil.getEndDate(parentOrderItem),
-							endDate) &&
+							OrderItemUtil.getEndDateInstant(parentOrderItem),
+							endDateInstant) &&
 						Objects.equals(
-							OrderItemUtil.getStartDate(parentOrderItem),
-							startDate)) {
+							OrderItemUtil.getStartDateInstant(parentOrderItem),
+							startDateInstant)) {
 
 						continue;
 					}
 
-					String effectiveEndDate = endDate;
+					Instant effectiveEndDateInstant = endDateInstant;
 
-					if (Validator.isNull(effectiveEndDate)) {
-						effectiveEndDate = startDate;
+					if (effectiveEndDateInstant == null) {
+						effectiveEndDateInstant = startDateInstant;
 					}
 
-					if (Validator.isNull(effectiveEndDate)) {
-						effectiveEndDate = _toDateTime(
-							LocalDate.now(
-								ZoneOffset.UTC
-							).toString());
+					if (effectiveEndDateInstant == null) {
+						effectiveEndDateInstant = Instant.now();
 					}
 
-					String orderItemEffectiveEndDate =
-						OrderItemUtil.getEffectiveEndDate(parentOrderItem);
+					Instant orderItemEffectiveEndDateInstant =
+						OrderItemUtil.getEffectiveEndDateInstant(
+							parentOrderItem);
 
-					if (Validator.isNull(orderItemEffectiveEndDate) ||
-						(orderItemEffectiveEndDate.compareTo(effectiveEndDate) >
-							0)) {
+					if ((orderItemEffectiveEndDateInstant == null) ||
+						orderItemEffectiveEndDateInstant.isAfter(
+							effectiveEndDateInstant)) {
 
 						_commerceOrderItemService.patchOrderItemCustomFields(
 							parentOrderItem.getId(),
-							Map.of("effectiveEndDate", effectiveEndDate));
+							Map.of(
+								"effectiveEndDate",
+								effectiveEndDateInstant.toString()));
 
-						if (Validator.isNotNull(endDate) &&
+						if ((endDateInstant != null) &&
 							!Objects.equals(
-								OrderItemUtil.getEndDate(parentOrderItem),
-								endDate)) {
+								OrderItemUtil.getEndDateInstant(
+									parentOrderItem),
+								endDateInstant)) {
 
 							_addWarning(
 								warningMessages,
 								StringBundler.concat(
 									"End date mismatch for order item ",
 									parentOrderItem.getExternalReferenceCode(),
-									". Amended date: ", endDate,
+									". Amended date: ", endDateInstant,
 									", original date: ",
-									OrderItemUtil.getEndDate(parentOrderItem)));
+									OrderItemUtil.getEndDateInstant(
+										parentOrderItem)));
 						}
 					}
 
 					_entitlementService.trimEntitlements(
-						parentOrderItem.getId(), effectiveEndDate);
+						parentOrderItem.getId(),
+						effectiveEndDateInstant.toString());
 				}
 			}
 
@@ -166,41 +165,46 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					String renewalStartDate = _toDateTime(
-						opportunityLineItem.getServiceDate());
+					Instant renewalStartDateInstant =
+						opportunityLineItem.getServiceDateInstant();
 
-					if (Validator.isNull(renewalStartDate)) {
+					if (renewalStartDateInstant == null) {
 						continue;
 					}
 
-					String endDate = OrderItemUtil.getEndDate(orderItem);
+					Instant endDateInstant = OrderItemUtil.getEndDateInstant(
+						orderItem);
 
 					if (!OrderItemUtil.isApproved(orderItem) ||
-						Validator.isNull(endDate)) {
+						(endDateInstant == null)) {
 
 						continue;
 					}
 
-					if (renewalStartDate.compareTo(endDate) < 0) {
+					if (renewalStartDateInstant.isBefore(endDateInstant)) {
 						_addWarning(
 							warningMessages,
 							StringBundler.concat(
-								"The renewal start date ", renewalStartDate,
+								"The renewal start date ",
+								renewalStartDateInstant,
 								" is before the end date of order item ",
 								orderItem.getExternalReferenceCode()));
 
 						continue;
 					}
 
-					String effectiveEndDate = OrderItemUtil.getEffectiveEndDate(
-						orderItem);
+					Instant effectiveEndDateInstant =
+						OrderItemUtil.getEffectiveEndDateInstant(orderItem);
 
-					if (Validator.isNotNull(effectiveEndDate) &&
-						(renewalStartDate.compareTo(effectiveEndDate) < 0)) {
+					if ((effectiveEndDateInstant != null) &&
+						renewalStartDateInstant.isBefore(
+							effectiveEndDateInstant)) {
 
 						_commerceOrderItemService.patchOrderItemCustomFields(
 							orderItem.getId(),
-							Map.of("effectiveEndDate", renewalStartDate));
+							Map.of(
+								"effectiveEndDate",
+								renewalStartDateInstant.toString()));
 					}
 				}
 			}
@@ -236,25 +240,8 @@ public class ProvisioningOrderService {
 			parentOpportunityId);
 	}
 
-	private String _toDateTime(String value) {
-		if (Validator.isNull(value)) {
-			return null;
-		}
-
-		Matcher matcher = _datePattern.matcher(value);
-
-		if (matcher.matches()) {
-			return value + "T00:00:00Z";
-		}
-
-		return value;
-	}
-
 	private static final Log _log = LogFactory.getLog(
 		ProvisioningOrderService.class);
-
-	private static final Pattern _datePattern = Pattern.compile(
-		"\\d{4}-\\d{2}-\\d{2}");
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;

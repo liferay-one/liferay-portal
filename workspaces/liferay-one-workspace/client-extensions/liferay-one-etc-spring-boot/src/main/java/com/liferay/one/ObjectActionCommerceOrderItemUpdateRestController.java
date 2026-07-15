@@ -16,8 +16,7 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.Instant;
 
 import java.util.Map;
 import java.util.Objects;
@@ -85,9 +84,7 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 			long accountId, long commerceOrderItemId)
 		throws Exception {
 
-		String todayString = LocalDate.now(
-			ZoneOffset.UTC
-		).toString();
+		Instant now = Instant.now();
 
 		for (Order order : _commerceOrderService.getAccountOrders(accountId)) {
 			OrderItem[] orderItems = order.getOrderItems();
@@ -111,7 +108,7 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 
 				if (Objects.equals(
 						name, CommerceProductConstants.NAME_PAAS_EXPERIENCE) &&
-					_isActiveOrderItem(orderItem, todayString)) {
+					_isActiveOrderItem(orderItem, now)) {
 
 					return true;
 				}
@@ -121,22 +118,19 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 		return false;
 	}
 
-	private boolean _isActiveOrderItem(
-		OrderItem orderItem, String todayString) {
-
+	private boolean _isActiveOrderItem(OrderItem orderItem, Instant now) {
 		if (!OrderItemUtil.isApproved(orderItem)) {
 			return false;
 		}
 
-		String endDate = OrderItemUtil.getEffectiveEndDate(orderItem);
+		Instant endDateInstant = OrderItemUtil.getEffectiveEndDateInstant(
+			orderItem);
 
-		if (Validator.isNull(endDate)) {
-			endDate = OrderItemUtil.getEndDate(orderItem);
+		if (endDateInstant == null) {
+			endDateInstant = OrderItemUtil.getEndDateInstant(orderItem);
 		}
 
-		if (Validator.isNull(endDate) ||
-			(endDate.compareTo(todayString) >= 0)) {
-
+		if ((endDateInstant == null) || !endDateInstant.isBefore(now)) {
 			return true;
 		}
 
