@@ -365,7 +365,9 @@ public class CommerceOrderService extends OneBaseService {
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).parameters(
-			"nestedFields", "account,billingAddress,customFields,orderItems"
+			"nestedFields",
+			"account,billingAddress,customFields,orderItems," +
+				"orderItems.customFields"
 		).build();
 	}
 
