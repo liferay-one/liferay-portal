@@ -11,6 +11,14 @@
 	},
 	"items": [
 		{
+			"customFields": [
+				{
+					"customValue": {
+						"data": "Strategic Partner"
+					},
+					"name": "AccountType"
+				}
+			],
 			"externalReferenceCode": "ACCNT-001",
 			"name": "Omni Test Account",
 			"type": "business"
