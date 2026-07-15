@@ -14,7 +14,7 @@
 			"aggregation": "sum",
 			"externalReferenceCode": "ai-tokens-monthly",
 			"overageCurrency": "USD",
-			"overageRate": 2e-05,
+			"overageRate": 0.00002,
 			"period": "per month",
 			"quantity": 1000000,
 			"unit": "AI tokens"
