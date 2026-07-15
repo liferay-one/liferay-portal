@@ -38,8 +38,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -482,15 +480,13 @@ public class SalesforceOpportunityPubsubSubscriber
 			account, contractId, currencyCode, opportunity,
 			provisionableOpportunityLineItems, salesforceProject);
 
-		if ((contract != null) && Validator.isNotNull(contract.getEndDate())) {
+		if ((contract != null) && (contract.getEndDateInstant() != null)) {
 			for (OpportunityLineItem provisionableOpportunityLineItem :
 					provisionableOpportunityLineItems) {
 
-				String endDate = _toDateTime(
-					provisionableOpportunityLineItem.getEndDate());
-
-				if (Validator.isNotNull(endDate) &&
-					!Objects.equals(endDate, contract.getEndDate())) {
+				if (!Objects.equals(
+						provisionableOpportunityLineItem.getEndDateInstant(),
+						contract.getEndDateInstant())) {
 
 					_addWarning(
 						warningMessages,
@@ -586,20 +582,6 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 	}
 
-	private String _toDateTime(String value) {
-		if (Validator.isNull(value)) {
-			return null;
-		}
-
-		Matcher matcher = _datePattern.matcher(value);
-
-		if (matcher.matches()) {
-			return value + "T00:00:00Z";
-		}
-
-		return value;
-	}
-
 	private static final String _DEFAULT_CURRENCY_CODE = "USD";
 
 	private static final String[] _PRODUCT_FAMILY_TOKENS = {"E", "P", "S"};
@@ -610,9 +592,6 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	private static final Log _log = LogFactory.getLog(
 		SalesforceOpportunityPubsubSubscriber.class);
-
-	private static final Pattern _datePattern = Pattern.compile(
-		"\\d{4}-\\d{2}-\\d{2}");
 
 	@Autowired
 	private AccountService _accountService;

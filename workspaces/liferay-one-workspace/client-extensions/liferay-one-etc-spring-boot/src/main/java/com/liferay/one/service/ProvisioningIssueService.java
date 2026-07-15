@@ -130,8 +130,8 @@ public class ProvisioningIssueService {
 					JiraDocumentUtil.createParagraph(
 						StringBundler.concat(
 							"Date Range: ",
-							opportunityLineItem.getServiceDate(), " - ",
-							opportunityLineItem.getEndDate()),
+							opportunityLineItem.getServiceDateInstant(), " - ",
+							opportunityLineItem.getEndDateInstant()),
 						false)
 				).put(
 					JiraDocumentUtil.createHorizontalRule()

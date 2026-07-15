@@ -13,7 +13,8 @@ import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.Validator;
+
+import java.time.Instant;
 
 import java.util.List;
 import java.util.Map;
@@ -137,8 +138,7 @@ public class EntitlementService extends OneBaseService {
 			_entitlementDefinitionService.getEntitlementDefinitions(
 				StringBundler.concat(
 					"(r_commerceProductToEntitlementDefinition_CProductId eq '",
-					orderItem.getProductId(),
-					"') and (active eq true)"),
+					orderItem.getProductId(), "') and (active eq true)"),
 				OrderItemUtil.getProductOptions(orderItem));
 
 		Order order = _commerceOrderService.fetchCommerceOrder(
@@ -147,18 +147,31 @@ public class EntitlementService extends OneBaseService {
 		long accountEntryId = _getAccountEntryId(order);
 		long contractId = _getContractId(order);
 
+		Instant endDateInstant = OrderItemUtil.getEndDateInstant(orderItem);
+		Instant startDateInstant = OrderItemUtil.getStartDateInstant(orderItem);
+
+		String endDate = null;
+
+		if (endDateInstant != null) {
+			endDate = endDateInstant.toString();
+		}
+
+		String startDate = null;
+
+		if (startDateInstant != null) {
+			startDate = startDateInstant.toString();
+		}
+
 		for (EntitlementDefinition entitlementDefinition :
 				entitlementDefinitions) {
 
 			try {
 				addEntitlement(
 					accountEntryId, commerceOrderItemId, contractId,
-					entitlementDefinition.getEntitlementDefinitionId(),
-					OrderItemUtil.getEndDate(orderItem),
+					entitlementDefinition.getEntitlementDefinitionId(), endDate,
 					entitlementDefinition.getGrantType(), null,
 					entitlementDefinition.getName(),
-					entitlementDefinition.getDefaultQuantity(),
-					OrderItemUtil.getStartDate(orderItem));
+					entitlementDefinition.getDefaultQuantity(), startDate);
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -221,26 +234,28 @@ public class EntitlementService extends OneBaseService {
 				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '",
 				commerceOrderItemId, "'"));
 
-		for (Entitlement entitlement : entitlements) {
-			String curEndDate = entitlement.getEndDate();
+		Instant endDateInstant = Instant.parse(endDate);
 
-			if (Validator.isNotNull(curEndDate) &&
-				(curEndDate.compareTo(endDate) <= 0)) {
+		for (Entitlement entitlement : entitlements) {
+			Instant curEndDateInstant = entitlement.getEndDateInstant();
+
+			if ((curEndDateInstant != null) &&
+				!curEndDateInstant.isAfter(endDateInstant)) {
 
 				continue;
 			}
 
-			String trimmedEndDate = endDate;
+			Instant trimmedEndDateInstant = endDateInstant;
 
-			String startDate = entitlement.getStartDate();
+			Instant startDateInstant = entitlement.getStartDateInstant();
 
-			if (Validator.isNotNull(startDate) &&
-				(startDate.compareTo(endDate) > 0)) {
+			if ((startDateInstant != null) &&
+				startDateInstant.isAfter(endDateInstant)) {
 
-				trimmedEndDate = startDate;
+				trimmedEndDateInstant = startDateInstant;
 			}
 
-			if (Objects.equals(curEndDate, trimmedEndDate)) {
+			if (Objects.equals(curEndDateInstant, trimmedEndDateInstant)) {
 				continue;
 			}
 
@@ -248,7 +263,7 @@ public class EntitlementService extends OneBaseService {
 				getAuthorization(),
 				new JSONObject(
 				).put(
-					"endDate", trimmedEndDate
+					"endDate", trimmedEndDateInstant.toString()
 				).toString(),
 				UriComponentsBuilder.fromPath(
 					"/o/c/entitlements/" + entitlement.getEntitlementId()
