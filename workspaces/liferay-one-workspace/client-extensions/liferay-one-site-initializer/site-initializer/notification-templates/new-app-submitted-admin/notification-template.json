@@ -10,7 +10,7 @@
 			"cc": "",
 			"from": "do-not-reply@liferay.com",
 			"fromName": {
-				"en-US": "Liferay Marketplace"
+				"en-US": "One Liferay"
 			},
 			"to": {
 				"en-US": "marketplace-admin@liferay.com"
@@ -18,7 +18,7 @@
 		}
 	],
 	"subject": {
-		"en_US": "Liferay Marketplace - New App Submitted Admin"
+		"en_US": "One Liferay - New App Submitted Admin"
 	},
 	"type": "email"
 }

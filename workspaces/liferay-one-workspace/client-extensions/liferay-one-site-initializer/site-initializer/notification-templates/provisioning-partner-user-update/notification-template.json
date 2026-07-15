@@ -10,7 +10,7 @@
 			"cc": "",
 			"from": "[%FROM_EMAIL%]",
 			"fromName": {
-				"en-US": "Liferay Provisioning"
+				"en-US": "One Liferay"
 			},
 			"to": {
 				"en-US": "[%TO_EMAIL%]"
