@@ -11,7 +11,6 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
-import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.salesforce.model.OpportunityLineItem;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -133,19 +132,12 @@ public class CommerceOrderItemService extends OneBaseService {
 			order, opportunityLineItem.getId());
 
 		if (existingOrderItem != null) {
-			OrderItem commerceOrderItem = fetchCommerceOrderItem(
-				existingOrderItem.getId());
-
-			if ((commerceOrderItem == null) ||
-				CommerceOrderItemConstants.STATUS_CANCELED.equals(
-					OrderItemUtil.getStatus(commerceOrderItem))) {
-
+			if (OrderItemUtil.isCanceled(existingOrderItem)) {
 				customFieldValues.remove("customStatus");
 			}
 
-			if ((commerceOrderItem == null) ||
-				Objects.equals(
-					OrderItemUtil.getEndDate(commerceOrderItem),
+			if (Objects.equals(
+					OrderItemUtil.getEndDate(existingOrderItem),
 					_toDateTime(opportunityLineItem.getEndDate()))) {
 
 				customFieldValues.remove("effectiveEndDate");
