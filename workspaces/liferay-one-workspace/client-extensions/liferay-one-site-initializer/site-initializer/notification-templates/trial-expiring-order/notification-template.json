@@ -10,7 +10,7 @@
 			"cc": "",
 			"from": "do-not-reply@liferay.com",
 			"fromName": {
-				"en-US": "Liferay Marketplace"
+				"en-US": "One Liferay"
 			},
 			"to": {
 				"en-US": "[%COMMERCEORDER_AUTHOR_EMAIL_ADDRESS%]"
@@ -18,7 +18,7 @@
 		}
 	],
 	"subject": {
-		"en_US": "Liferay Marketplace - Your Trial ends on [%TRIAL_END_DATE%]"
+		"en_US": "One Liferay - Your Trial ends on [%TRIAL_END_DATE%]"
 	},
 	"type": "email"
 }
