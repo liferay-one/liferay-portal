@@ -18,7 +18,6 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Objects;
 
@@ -87,7 +86,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		JSONObject jsonObject = new JSONObject(json);
 
 		String domains = jsonObject.optString("domains");
-		String orderId = jsonObject.optString("orderId");
+		long orderId = jsonObject.optLong("orderId");
 		String owner = jsonObject.optString("owner");
 
 		if (_licenseKeyService.hasLicenseKeyTypeFree(domains, owner)) {
@@ -97,13 +96,12 @@ public class LicenseKeysRestController extends OneBaseRestController {
 					"this domain");
 		}
 
-		Order order = _commerceOrderService.getCommerceOrder(
-			GetterUtil.getLong(orderId));
+		Order order = _commerceOrderService.getCommerceOrder(orderId);
 
 		Account account = order.getAccount();
 
 		LicenseKey licenseKey = _licenseKeyService.addLicenseKeyTypeFree(
-			account.getId(), domains, orderId, owner);
+			account.getId(), domains, String.valueOf(orderId), owner);
 
 		Integer orderStatus = order.getOrderStatus();
 
