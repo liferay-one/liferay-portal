@@ -12,7 +12,7 @@
 			"cc": "",
 			"from": "do-not-reply@liferay.com",
 			"fromName": {
-				"en-US": "Liferay Marketplace"
+				"en-US": "One Liferay"
 			},
 			"to": {
 				"en-US": "[%TRIALEXTENSIONREQUEST_AUTHOR_EMAIL_ADDRESS%]"
@@ -20,7 +20,7 @@
 		}
 	],
 	"subject": {
-		"en_US": "Subject: Liferay Marketplace - Trial Extension Request [%TRIALEXTENSIONREQUEST_DUESTATUS%]: [%TRIALEXTENSIONREQUEST_PROJECTID%]"
+		"en_US": "Subject: One Liferay - Trial Extension Request [%TRIALEXTENSIONREQUEST_DUESTATUS%]: [%TRIALEXTENSIONREQUEST_PROJECTID%]"
 	},
 	"system": false,
 	"type": "email"

@@ -10,7 +10,7 @@
 			"cc": "",
 			"from": "customer-service@liferay.com",
 			"fromName": {
-				"en-US": "Liferay Support"
+				"en-US": "One Liferay"
 			},
 			"to": {
 				"en-US": "[%USER_EMAIL_ADDRESS%]"
