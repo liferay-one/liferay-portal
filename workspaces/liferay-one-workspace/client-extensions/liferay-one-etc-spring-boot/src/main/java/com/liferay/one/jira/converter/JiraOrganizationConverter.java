@@ -20,11 +20,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class JiraOrganizationConverter extends BaseJiraAssetObjectConverter {
 
+	@Override
+	public String getObjectTypeName() {
+		return AccountConstants.OBJECT_TYPE_NAME;
+	}
+
 	public JiraOrganization toJiraOrganization(
 		JSONObject assetObjectJSONObject) {
 
-		JiraAssetObject jiraAssetObject = new JiraAssetObject(
-			assetObjectJSONObject, getAttributeIds());
+		JiraAssetObject jiraAssetObject = toJiraAssetObject(
+			assetObjectJSONObject);
 
 		return new JiraOrganization(
 			jiraAssetObject.getAttributeValue(
@@ -35,11 +40,6 @@ public class JiraOrganizationConverter extends BaseJiraAssetObjectConverter {
 	@Override
 	protected String getObjectSchemaName() {
 		return _schemaName;
-	}
-
-	@Override
-	protected String getObjectTypeName() {
-		return AccountConstants.OBJECT_TYPE_NAME;
 	}
 
 	@Value("${liferay.one.jira.asset.schema.name}")

@@ -18,13 +18,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -36,16 +41,29 @@ public class JiraAssetService extends BaseJiraService {
 	public JSONObject createObject(
 		String objectTypeId, JiraAssetObject jiraAssetObject) {
 
-		String response = post(
-			new JSONObject(
-			).put(
-				"attributes", jiraAssetObject.toAttributesJSONArray()
-			).put(
-				"objectTypeId", objectTypeId
-			).toString(),
-			_headers(), _objectURI("create"));
+		String requestBody = new JSONObject(
+		).put(
+			"attributes", jiraAssetObject.toAttributesJSONArray()
+		).put(
+			"objectTypeId", objectTypeId
+		).toString();
 
-		return _toJSONObject(response);
+		try {
+			String response = post(
+				requestBody, _headers(), _objectURI("create"));
+
+			return _toJSONObject(response);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to create asset object with object type ",
+					objectTypeId, ": ",
+					webClientResponseException.getResponseBodyAsString(),
+					"; request body: ", requestBody));
+
+			throw webClientResponseException;
+		}
 	}
 
 	public JSONObject deleteObject(String objectId) {
@@ -87,7 +105,7 @@ public class JiraAssetService extends BaseJiraService {
 	}
 
 	public JSONArray getObjectTypeAttributes(String objectTypeId) {
-		return new JSONArray(
+		return _toJSONArray(
 			get(
 				getAuthorization(),
 				_v1URI(
@@ -96,7 +114,7 @@ public class JiraAssetService extends BaseJiraService {
 	}
 
 	public JSONArray getObjectTypes(String schemaId) {
-		return new JSONArray(
+		return _toJSONArray(
 			get(
 				getAuthorization(),
 				_v1URI(
@@ -147,14 +165,26 @@ public class JiraAssetService extends BaseJiraService {
 	public JSONObject updateObject(
 		String objectId, JiraAssetObject jiraAssetObject) {
 
-		String response = put(
-			new JSONObject(
-			).put(
-				"attributes", jiraAssetObject.toAttributesJSONArray()
-			).toString(),
-			_headers(), _objectURI(objectId));
+		String requestBody = new JSONObject(
+		).put(
+			"attributes", jiraAssetObject.toAttributesJSONArray()
+		).toString();
 
-		return _toJSONObject(response);
+		try {
+			String response = put(
+				requestBody, _headers(), _objectURI(objectId));
+
+			return _toJSONObject(response);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to update asset object ", objectId, ": ",
+					webClientResponseException.getResponseBodyAsString(),
+					"; request body: ", requestBody));
+
+			throw webClientResponseException;
+		}
 	}
 
 	private JSONObject _getObjectSchemasPageJSONObject(int startAt) {
@@ -203,12 +233,39 @@ public class JiraAssetService extends BaseJiraService {
 		return _toJSONObject(response);
 	}
 
+	private JSONArray _toJSONArray(String response) {
+		if (Validator.isNull(response)) {
+			return new JSONArray();
+		}
+
+		try {
+			return new JSONArray(response);
+		}
+		catch (JSONException jsonException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to parse JSON array response", jsonException);
+			}
+
+			return new JSONArray();
+		}
+	}
+
 	private JSONObject _toJSONObject(String response) {
 		if (Validator.isNull(response)) {
 			return new JSONObject();
 		}
 
-		return new JSONObject(response);
+		try {
+			return new JSONObject(response);
+		}
+		catch (JSONException jsonException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to parse JSON object response", jsonException);
+			}
+
+			return new JSONObject();
+		}
 	}
 
 	private URI _v1URI(String path) {
@@ -224,6 +281,8 @@ public class JiraAssetService extends BaseJiraService {
 		"https://api.atlassian.com";
 
 	private static final int _MAX_RESULTS = 100;
+
+	private static final Log _log = LogFactory.getLog(JiraAssetService.class);
 
 	@Value("${liferay.one.jira.workspace.id}")
 	private String _jiraWorkspaceId;
