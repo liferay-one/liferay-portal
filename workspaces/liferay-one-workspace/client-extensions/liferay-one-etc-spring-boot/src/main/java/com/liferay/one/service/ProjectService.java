@@ -11,6 +11,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,6 +51,13 @@ public class ProjectService extends OneBaseService {
 			).toUri());
 
 		return new Project(new JSONObject(response));
+	}
+
+	public List<Project> getProjects(long accountId) throws Exception {
+		return getAllItems(
+			"/o/c/projects",
+			"r_accountEntryToProject_accountEntryId eq '" + accountId + "'",
+			Project::new);
 	}
 
 	public void upsertProject(SalesforceProject salesforceProject)

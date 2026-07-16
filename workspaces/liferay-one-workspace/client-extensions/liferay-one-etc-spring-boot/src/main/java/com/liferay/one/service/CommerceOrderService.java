@@ -18,10 +18,11 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.constants.SupportRegionConstants;
+import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
+import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -176,6 +177,19 @@ public class CommerceOrderService extends OneBaseService {
 		return orders;
 	}
 
+	public AccountSupportInfo getAccountSupportInfo(
+			long accountId, Long defaultBillingAddressId)
+		throws Exception {
+
+		String opportunitySoldBy = _getOpportunitySoldBy(accountId);
+		String addressCountry = _getAddressCountry(defaultBillingAddressId);
+
+		return new AccountSupportInfo(
+			SupportLanguageUtil.getLanguage(opportunitySoldBy, addressCountry),
+			SupportRegionUtil.getSupportRegion(
+				opportunitySoldBy, addressCountry));
+	}
+
 	public Order getCommerceOrder(long commerceOrderId) throws Exception {
 		OrderResource orderResource = _buildOrderResource();
 
@@ -203,44 +217,6 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return orders;
-	}
-
-	public String getSupportRegion(long accountId, Long defaultBillingAddressId)
-		throws Exception {
-
-		String addressCountry = null;
-
-		if (Validator.isNotNull(defaultBillingAddressId)) {
-			PostalAddress postalAddress =
-				_postalAddressService.getPostalAddress(defaultBillingAddressId);
-
-			addressCountry = postalAddress.getAddressCountry();
-		}
-
-		OrderResource orderResource = _buildOrderResource();
-
-		Page<Order> ordersPage = orderResource.getOrdersPage(
-			null, "accountId/any(x:x eq " + accountId + ")", null, null);
-
-		for (Order order : ordersPage.getItems()) {
-			Map<String, String> customFields =
-				(Map<String, String>)order.getCustomFields();
-
-			if (customFields == null) {
-				continue;
-			}
-
-			String opportunitySoldBy = customFields.get("opportunitySoldBy");
-
-			if (Validator.isNull(opportunitySoldBy)) {
-				continue;
-			}
-
-			return SupportRegionUtil.getSupportRegion(
-				opportunitySoldBy, addressCountry);
-		}
-
-		return SupportRegionConstants.GLOBAL;
 	}
 
 	public void patchOrderCustomFields(
@@ -399,6 +375,19 @@ public class CommerceOrderService extends OneBaseService {
 		return _channelId;
 	}
 
+	private String _getAddressCountry(Long defaultBillingAddressId)
+		throws Exception {
+
+		if (Validator.isNull(defaultBillingAddressId)) {
+			return null;
+		}
+
+		PostalAddress postalAddress = _postalAddressService.getPostalAddress(
+			defaultBillingAddressId);
+
+		return postalAddress.getAddressCountry();
+	}
+
 	private Map<String, Object> _getCustomFields(
 		Long contractId, SalesforceOpportunity salesforceOpportunity,
 		SalesforceProject salesforceProject) {
@@ -519,6 +508,30 @@ public class CommerceOrderService extends OneBaseService {
 			).toString());
 
 		return customFields;
+	}
+
+	private String _getOpportunitySoldBy(long accountId) throws Exception {
+		OrderResource orderResource = _buildOrderResource();
+
+		Page<Order> ordersPage = orderResource.getOrdersPage(
+			null, "accountId/any(x:x eq " + accountId + ")", null, null);
+
+		for (Order order : ordersPage.getItems()) {
+			Map<String, String> customFields =
+				(Map<String, String>)order.getCustomFields();
+
+			if (customFields == null) {
+				continue;
+			}
+
+			String opportunitySoldBy = customFields.get("opportunitySoldBy");
+
+			if (Validator.isNotNull(opportunitySoldBy)) {
+				return opportunitySoldBy;
+			}
+		}
+
+		return null;
 	}
 
 	private BigDecimal _getTotal(
