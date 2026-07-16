@@ -5,16 +5,12 @@
 
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
-import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {useMemo, useState} from 'react';
 import {useProjectProducts} from '~/hooks/useProjectCommerce';
 import {translate} from '~/i18n';
-import {
-	PROJECT_ROLE_ERCS,
-	getAvailableDesignations,
-	getProjectRoleLabel,
-} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
+import {getAvailableDesignations} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import fetcher from '~/services/fetcher/fetcher';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
@@ -29,10 +25,53 @@ import type {
 	ProjectMembersRow,
 } from '~/pages/MyAccount/ProjectMembers/types';
 
+type MemberDropDownProps = {
+	filteredOptions: AccountMemberOption[];
+	onChange: (option: AccountMemberOption) => void;
+	selectedName: string;
+};
+
+const MemberDropDown = ({
+	filteredOptions,
+	onChange,
+	selectedName,
+}: MemberDropDownProps) => {
+	const [active, setActive] = useState(false);
+
+	return (
+		<ClayDropDown
+			active={active}
+			className="project-permissions-role-dropdown"
+			menuElementAttrs={{className: 'project-permissions-role-menu'}}
+			onActiveChange={setActive}
+			trigger={
+				<button
+					className="align-items-center d-flex form-control justify-content-between project-permissions-role-trigger"
+					type="button"
+				>
+					<span>{selectedName || translate('select-a-member')}</span>
+
+					<ClayIcon symbol="caret-bottom" />
+				</button>
+			}
+		>
+			<ClayDropDown.ItemList>
+				{filteredOptions.map((option) => (
+					<ClayDropDown.Item
+						key={option.userId}
+						onClick={() => onChange(option)}
+					>
+						{option.name}
+					</ClayDropDown.Item>
+				))}
+			</ClayDropDown.ItemList>
+		</ClayDropDown>
+	);
+};
+
 type WorkingMember = {
 	designations: string[];
 	email: string;
-	emailInput: string;
 	isNew: boolean;
 	membershipId: number;
 	name: string;
@@ -50,87 +89,6 @@ type EditProjectPermissionsModalProps = {
 	onClose: () => void;
 	project: ProjectMembersRow;
 };
-
-function PermissionsSelect({
-	availableDesignations,
-	designations,
-	onRoleChange,
-	onToggleDesignation,
-	roleExternalReferenceCode,
-}: {
-	availableDesignations: string[];
-	designations: string[];
-	onRoleChange: (roleExternalReferenceCode: string) => void;
-	onToggleDesignation: (designation: string) => void;
-	roleExternalReferenceCode: string;
-}) {
-	const [active, setActive] = useState(false);
-
-	return (
-		<ClayDropDown
-			active={active}
-			className="project-permissions-role-dropdown"
-			closeOnClick={false}
-			menuElementAttrs={{className: 'project-permissions-role-menu'}}
-			onActiveChange={setActive}
-			trigger={
-				<button
-					className="align-items-center d-flex form-control justify-content-between project-permissions-role-trigger"
-					type="button"
-				>
-					<span>
-						{roleExternalReferenceCode
-							? getProjectRoleLabel(roleExternalReferenceCode)
-							: translate('select-a-role')}
-					</span>
-
-					<ClayIcon symbol="caret-bottom" />
-				</button>
-			}
-		>
-			<ClayDropDown.ItemList>
-				{PROJECT_ROLE_ERCS.map((projectRoleExternalReferenceCode) => (
-					<ClayDropDown.Item key={projectRoleExternalReferenceCode}>
-						<ClayCheckbox
-							checked={
-								roleExternalReferenceCode ===
-								projectRoleExternalReferenceCode
-							}
-							label={getProjectRoleLabel(
-								projectRoleExternalReferenceCode
-							)}
-							onChange={() =>
-								onRoleChange(projectRoleExternalReferenceCode)
-							}
-						/>
-					</ClayDropDown.Item>
-				))}
-
-				{!!availableDesignations.length && (
-					<>
-						<ClayDropDown.Divider />
-
-						<li className="dropdown-subheader">
-							{translate('cloud-contacts')}
-						</li>
-
-						{availableDesignations.map((designation) => (
-							<ClayDropDown.Item key={designation}>
-								<ClayCheckbox
-									checked={designations.includes(designation)}
-									label={designation}
-									onChange={() =>
-										onToggleDesignation(designation)
-									}
-								/>
-							</ClayDropDown.Item>
-						))}
-					</>
-				)}
-			</ClayDropDown.ItemList>
-		</ClayDropDown>
-	);
-}
 
 const EditProjectPermissionsModal = ({
 	accountExternalReferenceCode,
@@ -159,7 +117,6 @@ const EditProjectPermissionsModal = ({
 		project.members.map((member) => ({
 			designations: member.designations,
 			email: member.email,
-			emailInput: '',
 			isNew: false,
 			membershipId: member.membershipId,
 			name: member.name,
@@ -206,38 +163,13 @@ const EditProjectPermissionsModal = ({
 				.filter((member) => !(member.isNew && member.removed))
 		);
 
-	const addMember = () => {
-		setError('');
-
-		setMembers((previous) => [
-			...previous,
-			{
-				designations: [],
-				email: '',
-				emailInput: '',
-				isNew: true,
-				membershipId: 0,
-				name: '',
-				originalDesignations: [],
-				originalRoleExternalReferenceCode: '',
-				removed: false,
-				roleExternalReferenceCode: '',
-				userId: 0,
-			},
-		]);
-	};
-
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
 		const activeMembers = members.filter((member) => !member.removed);
 
-		if (
-			activeMembers.some(
-				(member) => member.isNew && !member.emailInput.trim()
-			)
-		) {
-			setError(translate('please-enter-a-valid-email-address'));
+		if (activeMembers.some((member) => !member.userId)) {
+			setError(translate('please-select-a-user-for-every-new-member'));
 
 			return;
 		}
@@ -249,36 +181,9 @@ const EditProjectPermissionsModal = ({
 		}
 
 		try {
-			const resolvedMembers = await Promise.all(
-				members.map(async (member) => {
-					if (!member.isNew || member.removed) {
-						return member;
-					}
-
-					const email = member.emailInput.trim();
-
-					const existing = accountMemberOptions.find(
-						(option) =>
-							option.email.toLowerCase() === email.toLowerCase()
-					);
-
-					if (existing) {
-						return {...member, userId: existing.userId};
-					}
-
-					const userAccount =
-						await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
-							accountExternalReferenceCode,
-							email
-						);
-
-					return {...member, userId: userAccount.id};
-				})
-			);
-
 			const operations: Promise<unknown>[] = [];
 
-			resolvedMembers.forEach((member) => {
+			members.forEach((member) => {
 				if (member.isNew && !member.removed) {
 					operations.push(
 						Projects.postProjectMembership(
@@ -312,7 +217,7 @@ const EditProjectPermissionsModal = ({
 				}
 			});
 
-			const hasDesignationChanges = resolvedMembers.some(
+			const hasDesignationChanges = members.some(
 				(member) =>
 					!member.removed &&
 					member.userId &&
@@ -340,7 +245,7 @@ const EditProjectPermissionsModal = ({
 					])
 				);
 
-				resolvedMembers.forEach((member) => {
+				members.forEach((member) => {
 					if (member.removed || !member.userId) {
 						return;
 					}
@@ -418,17 +323,25 @@ const EditProjectPermissionsModal = ({
 			{members.map((member, index) =>
 				member.removed ? null : (
 					<div className="project-permissions-grid" key={index}>
-						{member.isNew ? (
-							<ClayInput
-								aria-label={translate('email-address')}
-								onChange={(event) =>
+						{member.isNew && !member.userId ? (
+							<MemberDropDown
+								filteredOptions={accountMemberOptions.filter(
+									(option) =>
+										!members.some(
+											(m, i) =>
+												i !== index &&
+												!m.removed &&
+												m.userId === option.userId
+										)
+								)}
+								onChange={(option) =>
 									updateMember(index, {
-										emailInput: event.target.value,
+										email: option.email,
+										name: option.name,
+										userId: option.userId,
 									})
 								}
-								placeholder={translate('enter-email-address')}
-								type="email"
-								value={member.emailInput}
+								selectedName={member.name}
 							/>
 						) : (
 							<span className="form-control project-permissions-member-box">
@@ -464,9 +377,25 @@ const EditProjectPermissionsModal = ({
 			)}
 
 			<ClayButton
-				className="mt-3 project-permissions-add-button"
-				displayType="link"
-				onClick={addMember}
+				className="project-permissions-add-button"
+				displayType="secondary"
+				onClick={() =>
+					setMembers((previous) => [
+						...previous,
+						{
+							designations: [],
+							email: '',
+							isNew: true,
+							membershipId: 0,
+							name: '',
+							originalDesignations: [],
+							originalRoleExternalReferenceCode: '',
+							removed: false,
+							roleExternalReferenceCode: '',
+							userId: 0,
+						},
+					])
+				}
 				type="button"
 			>
 				<ClayIcon className="mr-2" symbol="plus" />

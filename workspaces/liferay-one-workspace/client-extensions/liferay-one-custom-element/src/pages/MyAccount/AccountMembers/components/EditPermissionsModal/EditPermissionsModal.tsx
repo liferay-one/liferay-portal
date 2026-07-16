@@ -10,6 +10,7 @@ import {useState} from 'react';
 import {useMeasuredWidth} from '~/hooks/useMeasuredWidth';
 import i18n, {translate} from '~/i18n';
 import {
+	PARTNER_ACCOUNT_ROLES,
 	getMembershipRoleNames,
 	hasAdministratorRole,
 	isAdministratorRole,
@@ -106,16 +107,30 @@ const EditPermissionsModal = ({
 			const currentRoleNameSet = new Set(currentRoleNames);
 			const selectedRoleNameSet = new Set(selectedRoles);
 
+			const matchesSelectedRole = (accountRole: {
+				displayName: string;
+				name: string;
+			}) =>
+				selectedRoleNameSet.has(accountRole.name) ||
+				selectedRoleNameSet.has(accountRole.displayName);
+
+			const matchesCurrentRole = (accountRole: {
+				displayName: string;
+				name: string;
+			}) =>
+				currentRoleNameSet.has(accountRole.name) ||
+				currentRoleNameSet.has(accountRole.displayName);
+
 			const rolesToAdd = accountRoles.filter(
 				(accountRole) =>
-					!currentRoleNameSet.has(accountRole.name) &&
-					selectedRoleNameSet.has(accountRole.name)
+					!matchesCurrentRole(accountRole) &&
+					matchesSelectedRole(accountRole)
 			);
 
 			const rolesToRemove = accountRoles.filter(
 				(accountRole) =>
-					currentRoleNameSet.has(accountRole.name) &&
-					!selectedRoleNameSet.has(accountRole.name)
+					matchesCurrentRole(accountRole) &&
+					!matchesSelectedRole(accountRole)
 			);
 
 			await Promise.all([
@@ -187,20 +202,61 @@ const EditPermissionsModal = ({
 					}
 				>
 					<ClayDropDown.ItemList>
-						{roleNames.map((roleName) => (
-							<ClayDropDown.Item
-								disabled={isRoleLocked(roleName)}
-								key={roleName}
-								onClick={() => toggleRole(roleName)}
-							>
-								<ClayCheckbox
-									checked={selectedRoles.includes(roleName)}
+						{(() => {
+							const partnerRoleSet = new Set(
+								PARTNER_ACCOUNT_ROLES
+							);
+							const standardRoles = roleNames.filter(
+								(roleName) => !partnerRoleSet.has(roleName)
+							);
+							const partnerRoles = roleNames.filter((roleName) =>
+								partnerRoleSet.has(roleName)
+							);
+							const hasPartnerRoles = !!partnerRoles.length;
+
+							const renderItem = (roleName: string) => (
+								<ClayDropDown.Item
 									disabled={isRoleLocked(roleName)}
-									label={roleName}
-									onChange={() => toggleRole(roleName)}
-								/>
-							</ClayDropDown.Item>
-						))}
+									key={roleName}
+									onClick={() => toggleRole(roleName)}
+								>
+									<ClayCheckbox
+										checked={selectedRoles.includes(
+											roleName
+										)}
+										disabled={isRoleLocked(roleName)}
+										label={roleName}
+										onChange={() => toggleRole(roleName)}
+									/>
+								</ClayDropDown.Item>
+							);
+
+							return (
+								<>
+									{hasPartnerRoles && (
+										<li className="dropdown-subheader">
+											{translate('account-roles')}
+										</li>
+									)}
+
+									{standardRoles.map(renderItem)}
+
+									{hasPartnerRoles && (
+										<>
+											<ClayDropDown.Divider />
+
+											<li className="dropdown-subheader">
+												{translate('partner-roles')}
+											</li>
+
+											{partnerRoles.map(renderItem)}
+										</>
+									)}
+								</>
+							);
+						})()}
+
+						<ClayDropDown.Divider />
 
 						<ClayDropDown.Item
 							disabled={isLastAdmin}

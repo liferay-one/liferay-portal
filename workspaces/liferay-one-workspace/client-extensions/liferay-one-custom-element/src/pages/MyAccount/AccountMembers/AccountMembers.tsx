@@ -147,7 +147,8 @@ export default function AccountMembers() {
 		return (data?.items ?? []).map((userAccount) => {
 			const accountRoleBriefs =
 				userAccount.accountBriefs?.find(
-					(accountBrief) => accountBrief.id === accountId
+					(accountBrief) =>
+						String(accountBrief.id) === String(accountId)
 				)?.roleBriefs ?? [];
 
 			return {
@@ -404,7 +405,10 @@ export default function AccountMembers() {
 															? sub('x-me', [
 																	member.name,
 																])
-															: member.name}
+															: member.name ===
+																  member.email
+																? '—'
+																: member.name}
 													</span>
 												</div>
 											</ClayTable.Cell>

@@ -5,12 +5,12 @@
 
 .orders-card {
 	background-color: #fff;
-	border: 1px solid #e7e7ed;
+	border: 1px solid var(--color-neutral-2);
 	border-radius: 12px;
 }
 
 .orders-toolbar {
-	border-bottom: 1px solid #e7e7ed;
+	border-bottom: 1px solid var(--color-neutral-2);
 	gap: 16px;
 	padding: 16px 24px;
 
@@ -91,7 +91,7 @@
 }
 
 .orders-active-filters {
-	border-bottom: 1px solid #e7e7ed;
+	border-bottom: 1px solid var(--color-neutral-2);
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
@@ -152,7 +152,7 @@
 	}
 
 	& tbody td {
-		border-top: 1px solid #f1f2f5;
+		border-top: 1px solid var(--color-neutral-2);
 		color: #1b2a3b;
 		padding: 16px 24px;
 		vertical-align: middle;
@@ -177,7 +177,7 @@
 }
 
 .orders-pagination {
-	border-top: 1px solid #e7e7ed;
+	border-top: 1px solid var(--color-neutral-2);
 	padding: 8px 24px;
 
 	& .pagination-bar {

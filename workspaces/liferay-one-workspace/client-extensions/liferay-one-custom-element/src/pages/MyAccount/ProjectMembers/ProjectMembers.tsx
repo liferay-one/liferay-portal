@@ -51,11 +51,12 @@ export default function ProjectMembers() {
 
 	const isAccountAdmin = isAccountManager(userAccountModel);
 
-	const {openEditProjectPermissions} = useProjectMemberActions({
-		accountExternalReferenceCode: account?.externalReferenceCode ?? '',
-		accountMemberOptions,
-		mutate,
-	});
+	const {openEditProjectPermissions, openInviteProjectMember} =
+		useProjectMemberActions({
+			accountExternalReferenceCode: account?.externalReferenceCode ?? '',
+			accountMemberOptions,
+			mutate,
+		});
 
 	const showCloudContacts = rows.some(
 		(project) => project.availableDesignations.length
@@ -291,6 +292,18 @@ export default function ProjectMembers() {
 													}
 												>
 													<ClayDropDown.ItemList>
+														<ClayDropDown.Item
+															onClick={() =>
+																openInviteProjectMember(
+																	project
+																)
+															}
+														>
+															{translate(
+																'invite-project-member'
+															)}
+														</ClayDropDown.Item>
+
 														<ClayDropDown.Item
 															onClick={() =>
 																openEditProjectPermissions(
