@@ -1086,6 +1086,7 @@ export default {
 	'select-categories': 'Select Categories',
 	'select-category': 'Select Category',
 	'select-compatible-versions': 'Select Compatible Versions',
+	'select-contract': 'Select Contract',
 	'select-desired-amount-of-tokens': 'Select Desired Amount of Tokens',
 	'select-licensing-terms': 'Select Licensing Terms',
 	'select-project': 'Select Project',

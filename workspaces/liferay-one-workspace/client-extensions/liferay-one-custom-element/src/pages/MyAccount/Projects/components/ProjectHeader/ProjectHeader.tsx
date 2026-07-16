@@ -4,10 +4,16 @@
  */
 
 import {format} from 'date-fns';
-import {ReactNode} from 'react';
+import {useState} from 'react';
 import contractTermIconUrl from '~/assets/icons/contract_term_icon.svg';
+import EntitySelector, {
+	SelectorItem,
+} from '~/components/EntitySelector/EntitySelector';
 import {useProject} from '~/context/ProjectContext';
-import {useProjectCommerce} from '~/hooks/useProjectCommerce';
+import {
+	resolveDefaultContractERC,
+	useProjectCommerce,
+} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
 
 function formatTermRange(startDate?: string, endDate?: string): string {
@@ -21,77 +27,77 @@ function formatTermRange(startDate?: string, endDate?: string): string {
 	)}`;
 }
 
-const LABEL_COLOR = 'var(--color-neutral-7)';
-const VALUE_COLOR = 'var(--color-neutral-10)';
-
-type SectionProps = {
-	children: ReactNode;
-	first?: boolean;
-	label: string;
-};
-
-function Section({children, first, label}: SectionProps) {
-	return (
-		<div
-			className="d-flex flex-column"
-			style={{
-				borderLeft: first
-					? undefined
-					: '1px solid var(--color-neutral-2)',
-				gap: 'var(--spacer-1)',
-				padding: '0 var(--spacer-4)',
-			}}
-		>
-			<span
-				style={{
-					color: LABEL_COLOR,
-					fontSize: '0.6875rem',
-					fontWeight: 600,
-					letterSpacing: '0.06em',
-					textTransform: 'uppercase',
-				}}
-			>
-				{label}
-			</span>
-
-			<span
-				style={{
-					alignItems: 'center',
-					color: VALUE_COLOR,
-					display: 'inline-flex',
-					fontSize: '0.9375rem',
-					fontWeight: 600,
-					gap: 'var(--spacer-2)',
-				}}
-			>
-				{children}
-			</span>
-		</div>
-	);
-}
-
 export default function ProjectHeader() {
-	const {projectId} = useProject();
+	const {projectId, selectedContractERC, setSelectedContractERC} =
+		useProject();
 
-	const {contract} = useProjectCommerce(projectId);
+	const {contracts} = useProjectCommerce(projectId);
 
-	const termRange = formatTermRange(contract?.startDate, contract?.endDate);
+	const [searchValue, setSearchValue] = useState('');
+
+	const selectedContractExists = contracts.some(
+		(contract) => contract.externalReferenceCode === selectedContractERC
+	);
+
+	const resolvedContractERC = selectedContractExists
+		? selectedContractERC
+		: resolveDefaultContractERC(contracts);
+
+	const selectedContract = contracts.find(
+		(contract) => contract.externalReferenceCode === resolvedContractERC
+	);
+
+	const items: SelectorItem[] = contracts
+		.filter((contract) =>
+			contract.name
+				.toLowerCase()
+				.includes(searchValue.trim().toLowerCase())
+		)
+		.map((contract) => ({
+			id: contract.externalReferenceCode,
+			name: contract.name,
+			subtitle: formatTermRange(contract.startDate, contract.endDate),
+		}));
+
+	const handleSelect = (contractERC: string) => {
+		setSearchValue('');
+
+		setSelectedContractERC(contractERC);
+	};
+
+	const readOnly = contracts.length <= 1;
 
 	return (
 		<div
-			className="align-items-center d-flex flex-wrap mb-3"
-			style={{
-				border: '1px solid var(--color-neutral-2)',
-				borderRadius: 'var(--border-radius-lg, 0.625rem)',
-				padding: 'var(--spacer-3) var(--spacer-2)',
-				width: 'fit-content',
-			}}
+			className="d-flex flex-wrap mb-3"
+			style={
+				readOnly
+					? undefined
+					: {
+							backgroundColor: 'var(--color-neutral-1)',
+							border: '1px solid var(--color-neutral-2)',
+							borderRadius: 'var(--border-radius-lg, 0.625rem)',
+							padding: 'var(--spacer-3) var(--spacer-2)',
+							width: 'fit-content',
+						}
+			}
 		>
-			<Section first label={i18n.translate('contract-term')}>
-				<img alt="" src={contractTermIconUrl} />
-
-				{termRange}
-			</Section>
+			<EntitySelector
+				ariaLabel={i18n.translate('select-contract')}
+				items={items}
+				label={i18n.translate('contract-term')}
+				name={formatTermRange(
+					selectedContract?.startDate,
+					selectedContract?.endDate
+				)}
+				onSearchChange={setSearchValue}
+				onSelect={handleSelect}
+				readOnly={readOnly}
+				searchValue={searchValue}
+				selectedId={resolvedContractERC}
+				triggerIcon={<img alt="" src={contractTermIconUrl} />}
+				variant="rich"
+			/>
 		</div>
 	);
 }

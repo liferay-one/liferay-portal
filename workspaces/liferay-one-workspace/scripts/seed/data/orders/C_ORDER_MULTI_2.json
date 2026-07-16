@@ -1,0 +1,59 @@
+{
+	"customFields": {
+		"projectName": "Multi Contract Project"
+	},
+	"entitlements": [
+		{
+			"endDate": "2027-06-30T00:00:00Z",
+			"externalReferenceCode": "C_ENT_MULTI_2_DSR",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Digital Sales Room",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-025",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_MULTI_2_DSR",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_MULTI_2",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DSR",
+			"startDate": "2025-07-01T00:00:00Z"
+		},
+		{
+			"endDate": "2027-06-30T00:00:00Z",
+			"externalReferenceCode": "C_ENT_MULTI_2_DXP",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay DXP",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-025",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_MULTI_2_DXP",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_MULTI_2",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"startDate": "2025-07-01T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-025",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_MULTI_2",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_MULTI_2",
+		"orderItems": [
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_MULTI_2_DSR",
+				"name": "Digital Sales Room",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-DSR",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_MULTI_2_DXP",
+				"name": "Liferay DXP",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-DXP",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "DXP"
+	},
+	"purchaseOrderNumber": "PO-MULTI-2"
+}

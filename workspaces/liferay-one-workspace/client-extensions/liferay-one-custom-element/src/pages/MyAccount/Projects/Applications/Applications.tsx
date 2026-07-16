@@ -22,7 +22,7 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 
 export default function Applications() {
 	const navigate = useNavigate();
-	const {projectId, projects} = useProject();
+	const {projectId, projects, selectedContractERC} = useProject();
 
 	const projectName = isUnassignedProject(projectId)
 		? undefined
@@ -30,7 +30,10 @@ export default function Applications() {
 				(project) => project.externalReferenceCode === projectId
 			)?.name;
 
-	const {error, loading, products} = useProjectProducts(projectId);
+	const {error, loading, products} = useProjectProducts(
+		projectId,
+		selectedContractERC
+	);
 	const {placedOrders} = useProjectOrders(projectName);
 
 	const applications = useMemo(

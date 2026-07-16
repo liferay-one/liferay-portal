@@ -23,9 +23,12 @@ import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 
 export default function Products() {
 	const navigate = useNavigate();
-	const {projectId} = useProject();
+	const {projectId, selectedContractERC} = useProject();
 
-	const {error, loading, products} = useProjectProducts(projectId);
+	const {error, loading, products} = useProjectProducts(
+		projectId,
+		selectedContractERC
+	);
 
 	const liferayProducts = useMemo(
 		() =>
@@ -86,12 +89,14 @@ export default function Products() {
 		{
 			heading: 'start-date',
 			key: 'start-date',
+			noWrap: true,
 			render: (product) => product.startDate,
 			width: '1%',
 		},
 		{
 			heading: 'end-date',
 			key: 'end-date',
+			noWrap: true,
 			render: (product) => product.endDate,
 			width: '1%',
 		},

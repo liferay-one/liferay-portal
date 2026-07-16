@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useMatch, useNavigate, useParams} from 'react-router-dom';
 import AppLayout from '~/components/AppLayout/AppLayout';
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
@@ -37,9 +37,14 @@ export default function ProjectLayout() {
 		[accountERC, projectId]
 	);
 
-	const contentHeader = isUnassignedProject(projectId) ? undefined : (
-		<ProjectHeader />
+	const productsMatch = useMatch(
+		'/:accountERC/project/:projectId/products/*'
 	);
+
+	const contentHeader =
+		!isUnassignedProject(projectId) && productsMatch ? (
+			<ProjectHeader />
+		) : undefined;
 
 	if (!loading && !projects.length) {
 		return (

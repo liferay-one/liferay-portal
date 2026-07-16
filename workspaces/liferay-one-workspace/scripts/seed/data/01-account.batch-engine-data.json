@@ -147,6 +147,11 @@
 			"type": "business"
 		},
 		{
+			"externalReferenceCode": "ACCNT-025",
+			"name": "Multi Contract Test Account",
+			"type": "business"
+		},
+		{
 			"externalReferenceCode": "SSA-ACCOUNT",
 			"name": "SSA Account",
 			"type": "business"

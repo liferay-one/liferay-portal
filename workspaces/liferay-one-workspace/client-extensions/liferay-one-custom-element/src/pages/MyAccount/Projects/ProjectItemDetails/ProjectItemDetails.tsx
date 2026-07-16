@@ -41,7 +41,7 @@ type ProjectItemDetailsProps = {
 
 export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 	const {applicationERC, productERC} = useParams();
-	const {projectId, projects} = useProject();
+	const {projectId, projects, selectedContractERC} = useProject();
 
 	const itemERC = productERC ?? applicationERC ?? '';
 
@@ -55,7 +55,7 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 		contract,
 		loading: productsLoading,
 		products,
-	} = useProjectProducts(projectId);
+	} = useProjectProducts(projectId, selectedContractERC);
 
 	const productId =
 		products.find((product) => product.externalReferenceCode === itemERC)
