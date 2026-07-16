@@ -188,8 +188,9 @@ public class AssetReferenceObjectService {
 		if (jiraAssetObject == null) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to create asset object for external key " +
-						externalKey);
+					StringBundler.concat(
+						"Unable to create ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
 			}
 
 			return null;
@@ -197,8 +198,9 @@ public class AssetReferenceObjectService {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"Creating asset object for unresolved external key " +
-					externalKey);
+				StringBundler.concat(
+					"Creating ", converter.getObjectTypeName(),
+					" asset object for unresolved external key ", externalKey));
 		}
 
 		try {
@@ -240,11 +242,25 @@ public class AssetReferenceObjectService {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
-						"Resolved external key ", externalKey,
-						" to existing asset object ", objectId));
+						"Resolved external key ", externalKey, " to existing ",
+						converter.getObjectTypeName(), " asset object ",
+						objectId));
 			}
 
-			externalKeyToObjectIdMap.put(externalKey, objectId);
+			String previousObjectId = externalKeyToObjectIdMap.put(
+				externalKey, objectId);
+
+			if ((previousObjectId != null) &&
+				!Objects.equals(previousObjectId, objectId) &&
+				_log.isWarnEnabled()) {
+
+				_log.warn(
+					StringBundler.concat(
+						"Multiple asset objects share external key ",
+						externalKey, ": ", previousObjectId, " and ", objectId,
+						"; the reference will resolve to ", objectId,
+						" non-deterministically"));
+			}
 		}
 	}
 
@@ -290,7 +306,11 @@ public class AssetReferenceObjectService {
 
 			if (objectId == null) {
 				if (_log.isWarnEnabled()) {
-					_log.warn("Failed to resolve external key " + externalKey);
+					_log.warn(
+						StringBundler.concat(
+							"Unable to resolve external key ", externalKey,
+							" to a ", converter.getObjectTypeName(),
+							" asset object"));
 				}
 
 				continue;

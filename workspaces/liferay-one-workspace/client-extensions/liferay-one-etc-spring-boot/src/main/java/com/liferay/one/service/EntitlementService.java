@@ -184,6 +184,19 @@ public class EntitlementService extends OneBaseService {
 		}
 	}
 
+	public List<Entitlement> getActiveEntitlements(long accountEntryId)
+		throws Exception {
+
+		Instant instant = Instant.now();
+
+		return getEntitlements(
+			StringBundler.concat(
+				"(endDate eq null or endDate ge ", instant,
+				") and (r_accountEntryToEntitlement_accountEntryId eq '",
+				accountEntryId, "') and (startDate eq null or startDate le ",
+				instant, ")"));
+	}
+
 	public List<Entitlement> getEntitlements(String filterString)
 		throws Exception {
 
