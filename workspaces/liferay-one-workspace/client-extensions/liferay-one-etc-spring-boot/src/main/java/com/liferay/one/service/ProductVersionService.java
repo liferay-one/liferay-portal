@@ -14,6 +14,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.time.Duration;
+
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,6 +33,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import reactor.util.retry.Retry;
 
 /**
  * @author Allen Ziegenfus
@@ -122,6 +129,8 @@ public class ProductVersionService extends OneBaseService {
 			_log.info("Fetched " + releasesJSONArray.length() + " releases");
 		}
 
+		_waitUntilReady(getAuthorization());
+
 		for (String productGroup : _productGroups) {
 			_syncProductGroup(productGroup, releasesJSONArray);
 		}
@@ -132,6 +141,22 @@ public class ProductVersionService extends OneBaseService {
 
 		return getAllItems(
 			"/o/c/productversions", filterString, ProductVersion::new);
+	}
+
+	private boolean _isRetryable(Throwable throwable) {
+		if (throwable instanceof WebClientResponseException) {
+			WebClientResponseException webClientResponseException =
+				(WebClientResponseException)throwable;
+
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if ((statusCode == 401) || (statusCode == 403)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private boolean _isSupported(JSONArray tagsJSONArray) {
@@ -284,6 +309,38 @@ public class ProductVersionService extends OneBaseService {
 					productGroup));
 		}
 	}
+
+	private void _waitUntilReady(String authorization) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Waiting for the product version object endpoint to be ready");
+		}
+
+		URI uri = UriComponentsBuilder.fromPath(
+			"/o/c/productversions"
+		).queryParam(
+			"pageSize", 1
+		).build(
+		).toUri();
+
+		Mono.fromCallable(
+			() -> get(authorization, uri)
+		).retryWhen(
+			Retry.backoff(
+				_READINESS_MAX_RETRIES, Duration.ofSeconds(2)
+			).maxBackoff(
+				Duration.ofSeconds(20)
+			).scheduler(
+				Schedulers.boundedElastic()
+			).filter(
+				this::_isRetryable
+			).onRetryExhaustedThrow(
+				(retryBackoffSpec, retrySignal) -> retrySignal.failure()
+			)
+		).block();
+	}
+
+	private static final long _READINESS_MAX_RETRIES = 6;
 
 	private static final Log _log = LogFactory.getLog(
 		ProductVersionService.class);
