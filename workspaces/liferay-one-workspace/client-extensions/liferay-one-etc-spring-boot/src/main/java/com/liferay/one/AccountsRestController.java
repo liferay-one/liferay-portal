@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.service.AccountAssetService;
+import com.liferay.one.jira.service.AccountSyncService;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.service.AccountService;
@@ -107,6 +108,20 @@ public class AccountsRestController extends OneBaseRestController {
 		return new ResponseEntity<>(
 			_accountAssetService.getAccountObjectKey(externalReferenceCode),
 			HttpStatus.OK);
+	}
+
+	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
+	public ResponseEntity<Void> postSyncToJSM(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
+
+		_accountSyncService.syncAccount(
+			_accountService.getAccount(externalReferenceCode));
+
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PostMapping("/{externalReferenceCode}/user-accounts/{userId}")
@@ -312,6 +327,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private AccountSyncService _accountSyncService;
 
 	@Autowired
 	private EmailAddressValidatorService _emailAddressValidatorService;
