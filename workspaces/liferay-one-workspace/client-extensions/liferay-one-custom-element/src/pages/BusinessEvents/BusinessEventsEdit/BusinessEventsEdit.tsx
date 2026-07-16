@@ -425,7 +425,8 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 		Boolean(hasTimeZone);
 
 	if (isDescriptionRequired) {
-		hasAllRequiredFieldsFilled = hasAllRequiredFieldsFilled && hasDescription;
+		hasAllRequiredFieldsFilled =
+			hasAllRequiredFieldsFilled && hasDescription;
 	}
 
 	if (isNewLiferayVersionRequired) {

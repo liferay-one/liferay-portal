@@ -4,7 +4,7 @@
  */
 
 .project-members-card {
-	border: 1px solid #e7e7ed;
+	border: 1px solid var(--color-neutral-2);
 	border-radius: 12px;
 }
 
@@ -20,7 +20,7 @@
 	}
 
 	& tbody td {
-		border-top: 1px solid #f1f2f5;
+		border-top: 1px solid var(--color-neutral-2);
 		color: #1b2a3b;
 		padding: 16px 24px;
 		vertical-align: top;
@@ -85,12 +85,17 @@
 	font-size: var(--text-paragraph-sm-font-size, 13px);
 	font-weight: 600;
 	margin-bottom: var(--spacer-2);
+
+	& > :not(:last-child) {
+		padding-left: var(--input-padding-x, 0.75rem);
+	}
 }
 
 .project-permissions-member-box {
-	align-items: center;
 	background-color: var(--color-white, #fff);
-	display: flex;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .project-permissions-role-dropdown {
@@ -100,6 +105,13 @@
 .project-permissions-role-trigger {
 	text-align: left;
 	width: 100%;
+
+	& > span {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
 
 .project-permissions-role-menu {
@@ -114,7 +126,16 @@
 }
 
 .project-permissions-add-button.btn {
+	background-color: transparent;
+	border-color: #0b5fff;
+	color: #0b5fff;
 	font-weight: 600;
-	padding-left: 0;
-	padding-right: 0;
+	margin-top: var(--spacer-2);
+	padding: 8px 16px;
+
+	&:hover {
+		background-color: #e8f0fe;
+		border-color: #0b5fff;
+		color: #0b5fff;
+	}
 }

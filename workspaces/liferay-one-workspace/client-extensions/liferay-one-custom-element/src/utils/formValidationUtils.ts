@@ -8,6 +8,8 @@ import {translate} from '~/i18n';
 
 import type {ITimeInput} from '~/types/timeInput';
 
+export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function requiredTimeInput(value: ITimeInput) {
 	if (!value || value.hours === '--' || value.minutes === '--') {
 		return translate('this-field-is-required');

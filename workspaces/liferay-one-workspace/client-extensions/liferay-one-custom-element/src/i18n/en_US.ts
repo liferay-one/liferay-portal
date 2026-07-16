@@ -11,6 +11,7 @@ export default {
 		'A license key for the entered domain already exists.',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'A request will be sent to deactivate the selected activation key. From now on, it will be hidden and no longer visible.',
+	'a-role-is-required': 'A role is required.',
 	'a-role-is-required-for-every-member':
 		'A role is required for every member.',
 	'a-sleek-and-intuitive-admin-dashboard-for-monitoring-key-metrics':
@@ -25,6 +26,7 @@ export default {
 	'account-members': 'Account Members',
 	'account-name': 'Account Name',
 	'account-permissions': 'Account Permissions',
+	'account-roles': 'Account Roles',
 	'account-selected': 'Account Selected',
 	'account-selection': 'Account Selection',
 	'account-type': 'Account Type',
@@ -574,9 +576,12 @@ export default {
 		'Invalid or non-existent ticket number.',
 	'invite-a-new-member-by-email-address-they-will-be-added-to-the-account-once-they-accept-the-invitation':
 		'Invite a new member by email address. They will be added to the account once they accept the invitation.',
+	'invite-a-new-member-to-this-project-they-will-be-added-as-an-account-member-once-they-accept-the-invitation':
+		'Invite a new member to this project. They will be added as an account member once they accept the invitation.',
 	'invite-manage-roles-designate-incident-contacts':
 		'Invite, manage roles, designate incident contacts.',
 	'invite-member': 'Invite Member',
+	'invite-project-member': 'Invite Project Member',
 	'invoice-status': 'Invoice Status',
 	'ip-addresses': 'IP Addresses',
 	'job-title': 'Job Title',
@@ -842,6 +847,7 @@ export default {
 	'paid': 'Paid',
 	'paid-by': 'Paid By',
 	'paid-date': 'Paid Date',
+	'partner-roles': 'Partner Roles',
 	'password-policy': 'Password Policy',
 	'pay-with-bank-transfer': 'Pay with Bank Transfer',
 	'pay-with-card': 'Pay with Card',
@@ -879,6 +885,8 @@ export default {
 	'please-copy-and-paste-this-subscription-id-to-your-cloud-native-instance':
 		'Please copy and paste this Subscription ID to your Cloud Native instance.',
 	'please-enter-a-valid-email-address': 'Please enter a valid email address.',
+	'please-enter-a-valid-first-name': 'Please enter a valid first name.',
+	'please-enter-a-valid-last-name': 'Please enter a valid last name.',
 	'please-fill-in-a-valid-email': 'Please fill in a valid email.',
 	'please-fill-in-a-valid-phone-number':
 		'Please fill in a valid phone number.',
@@ -896,6 +904,8 @@ export default {
 		'Please review the order summary below and flag the checkbox to complete your purchase',
 	'please-review-your-payment-details-and-try-again':
 		'Please review your payment details and try again.',
+	'please-select-a-user-for-every-new-member':
+		'Please select a user for every new member.',
 	'please-select-an-actual-event-date-that-has-already-occurred-or-is-today':
 		'Please select an actual event date that has already occurred or is today.',
 	'please-select-the-account-you-wish-to-link-to-your-liferay-dxp-below':
@@ -924,11 +934,14 @@ export default {
 	'project-admin-email': 'Project Admin Email',
 	'project-admin-name': 'Project Admin Name',
 	'project-id': 'Project ID',
+	'project-member-successfully-invited':
+		'Project member successfully invited.',
 	'project-members': 'Project Members',
 	'project-members-successfully-updated':
 		'Project members successfully updated.',
 	'project-name': 'Project Name',
 	'project-permissions': 'Project Permissions',
+	'project-roles': 'Project Roles',
 	'project-selected': 'Project Selected',
 	'project-selection': 'Project Selection',
 	'project-type': 'Project Type',
@@ -1306,6 +1319,7 @@ export default {
 	'unable-to-download-your-license-file-please-try-again-and-or-contact-support-via-the-manage-menu-on-the-dashboard':
 		'Unable to download your license file.  Please try again and/or contact support via the manage menu on the dashboard.',
 	'unable-to-invite-member': 'Unable to invite member.',
+	'unable-to-invite-project-member': 'Unable to invite project member.',
 	'unable-to-remove-member': 'Unable to remove member.',
 	'unable-to-remove-roles': 'Unable to remove roles',
 	'unable-to-update-account-details': 'Unable to update account details',

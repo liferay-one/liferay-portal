@@ -10,12 +10,12 @@ import {useState} from 'react';
 import {FieldBase} from '~/components/FieldBase/FieldBase';
 import {useMeasuredWidth} from '~/hooks/useMeasuredWidth';
 import i18n, {translate} from '~/i18n';
+import {PARTNER_ACCOUNT_ROLES} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import {EMAIL_PATTERN} from '~/utils/formValidationUtils';
 
 import '../../AccountMembers.css';
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type InviteMemberModalProps = {
 	accountExternalReferenceCode: string;
@@ -35,6 +35,10 @@ const InviteMemberModal = ({
 	const [active, setActive] = useState(false);
 	const [emailAddress, setEmailAddress] = useState('');
 	const [emailError, setEmailError] = useState('');
+	const [familyName, setFamilyName] = useState('');
+	const [familyNameError, setFamilyNameError] = useState('');
+	const [givenName, setGivenName] = useState('');
+	const [givenNameError, setGivenNameError] = useState('');
 	const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
 	const {ref: rolesRef, width: menuWidth} =
@@ -55,19 +59,54 @@ const InviteMemberModal = ({
 		event.preventDefault();
 
 		const trimmedEmail = emailAddress.trim();
+		const trimmedFamilyName = familyName.trim();
+		const trimmedGivenName = givenName.trim();
+
+		let hasError = false;
+
+		if (!trimmedGivenName) {
+			setGivenNameError(
+				i18n.translate('please-enter-a-valid-first-name')
+			);
+			hasError = true;
+		}
+
+		if (!trimmedFamilyName) {
+			setFamilyNameError(
+				i18n.translate('please-enter-a-valid-last-name')
+			);
+			hasError = true;
+		}
 
 		if (!EMAIL_PATTERN.test(trimmedEmail)) {
 			setEmailError(i18n.translate('please-enter-a-valid-email-address'));
+			hasError = true;
+		}
 
+		if (hasError) {
 			return;
 		}
 
 		try {
-			const userAccount =
-				await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
+			let userAccount;
+
+			try {
+				userAccount =
+					await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
+						accountExternalReferenceCode,
+						trimmedEmail
+					);
+			}
+			catch {
+				userAccount = await HeadlessAdminUser.postAccountUserAccount(
 					accountExternalReferenceCode,
-					trimmedEmail
+					{
+						emailAddress: trimmedEmail,
+						familyName: trimmedFamilyName,
+						givenName: trimmedGivenName,
+					}
 				);
+			}
 
 			if (selectedRoles.length) {
 				const {items: accountRoles} =
@@ -79,8 +118,10 @@ const InviteMemberModal = ({
 
 				await Promise.all(
 					accountRoles
-						.filter((accountRole) =>
-							selectedRoleNames.has(accountRole.name)
+						.filter(
+							(accountRole) =>
+								selectedRoleNames.has(accountRole.name) ||
+								selectedRoleNames.has(accountRole.displayName)
 						)
 						.map((accountRole) =>
 							HeadlessAdminUser.sendRoleAccountUser(
@@ -117,6 +158,36 @@ const InviteMemberModal = ({
 					'invite-a-new-member-by-email-address-they-will-be-added-to-the-account-once-they-accept-the-invitation'
 				)}
 			</p>
+
+			<FieldBase
+				errorMessage={givenNameError}
+				label={i18n.translate('first-name')}
+				required
+			>
+				<ClayInput
+					onChange={(event) => {
+						setGivenNameError('');
+						setGivenName(event.target.value);
+					}}
+					type="text"
+					value={givenName}
+				/>
+			</FieldBase>
+
+			<FieldBase
+				errorMessage={familyNameError}
+				label={i18n.translate('last-name')}
+				required
+			>
+				<ClayInput
+					onChange={(event) => {
+						setFamilyNameError('');
+						setFamilyName(event.target.value);
+					}}
+					type="text"
+					value={familyName}
+				/>
+			</FieldBase>
 
 			<FieldBase
 				errorMessage={emailError}
@@ -157,20 +228,61 @@ const InviteMemberModal = ({
 						}
 					>
 						<ClayDropDown.ItemList>
-							{roleNames.map((roleName) => (
-								<ClayDropDown.Item
-									key={roleName}
-									onClick={() => toggleRole(roleName)}
-								>
-									<ClayCheckbox
-										checked={selectedRoles.includes(
-											roleName
+							{(() => {
+								const partnerRoleSet = new Set(
+									PARTNER_ACCOUNT_ROLES
+								);
+								const standardRoles = roleNames.filter(
+									(roleName) => !partnerRoleSet.has(roleName)
+								);
+								const partnerRoles = roleNames.filter(
+									(roleName) => partnerRoleSet.has(roleName)
+								);
+								const hasPartnerRoles = !!partnerRoles.length;
+
+								const renderItem = (roleName: string) => (
+									<ClayDropDown.Item
+										key={roleName}
+										onClick={() => toggleRole(roleName)}
+									>
+										<ClayCheckbox
+											checked={selectedRoles.includes(
+												roleName
+											)}
+											label={roleName}
+											onChange={() =>
+												toggleRole(roleName)
+											}
+										/>
+									</ClayDropDown.Item>
+								);
+
+								return (
+									<>
+										{hasPartnerRoles && (
+											<li className="dropdown-subheader">
+												{translate('account-roles')}
+											</li>
 										)}
-										label={roleName}
-										onChange={() => toggleRole(roleName)}
-									/>
-								</ClayDropDown.Item>
-							))}
+
+										{standardRoles.map(renderItem)}
+
+										{hasPartnerRoles && (
+											<>
+												<ClayDropDown.Divider />
+
+												<li className="dropdown-subheader">
+													{translate('partner-roles')}
+												</li>
+
+												{partnerRoles.map(renderItem)}
+											</>
+										)}
+									</>
+								);
+							})()}
+
+							<ClayDropDown.Divider />
 
 							<ClayDropDown.Item
 								onClick={() => setSelectedRoles([])}
