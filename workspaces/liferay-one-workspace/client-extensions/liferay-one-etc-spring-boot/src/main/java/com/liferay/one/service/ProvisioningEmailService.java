@@ -12,6 +12,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.OpportunityConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.constants.SupportRegionConstants;
+import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.util.LocaleUtil;
@@ -243,9 +244,12 @@ public class ProvisioningEmailService extends OneBaseService {
 		String provisioningEmailAddress = null;
 
 		for (Account account : accounts) {
+			AccountSupportInfo accountSupportInfo =
+				_commerceOrderService.getAccountSupportInfo(
+					account.getId(), account.getDefaultBillingAddressId());
+
 			String curProvisioningEmailAddress = _getRegionEmailAddress(
-				_commerceOrderService.getSupportRegion(
-					account.getId(), account.getDefaultBillingAddressId()));
+				accountSupportInfo.getSupportRegion());
 
 			if ((provisioningEmailAddress != null) &&
 				!provisioningEmailAddress.equals(curProvisioningEmailAddress)) {
