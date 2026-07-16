@@ -88,7 +88,9 @@ const Table: React.FC<TableProps> = ({
 							</ClayTable.Cell>
 						))}
 
-						{hasKebabButton && <ClayTable.Cell />}
+						{hasKebabButton && (
+							<ClayTable.Cell className="kebab-button-cell" />
+						)}
 					</ClayTable.Row>
 				</ClayTable.Head>
 
@@ -135,8 +137,11 @@ const Table: React.FC<TableProps> = ({
 
 							{hasKebabButton && (
 								<ClayTable.Cell
-									className={kebabClassName}
-									columnTextAlignment="center"
+									className={classNames(
+										'kebab-button-cell',
+										kebabClassName
+									)}
+									columnTextAlignment="end"
 								>
 									{Actions && <Actions row={row} />}
 								</ClayTable.Cell>

@@ -32,6 +32,7 @@ export type ProjectContract = {
 export type ProjectProduct = {
 	categoryNames: string[];
 	description: string;
+	endDate: string;
 	externalReferenceCode: string;
 	id: string;
 	name: string;
@@ -147,7 +148,8 @@ export function useProjectCommerce(projectExternalReferenceCode: string) {
 		}
 	);
 
-	const contractNode = data?.projectToContract?.[0];
+	const contractNodes = data?.projectToContract ?? [];
+	const contractNode = contractNodes[0];
 
 	const contract: ProjectContract | undefined = contractNode && {
 		endDate: contractNode.endDate,
@@ -159,7 +161,7 @@ export function useProjectCommerce(projectExternalReferenceCode: string) {
 		termMonths: contractNode.contractTerm,
 	};
 
-	const entitlements = toProductEntitlements(contractNode);
+	const entitlements = contractNodes.flatMap(toProductEntitlements);
 
 	return {contract, entitlements, error, loading};
 }
@@ -320,6 +322,9 @@ export function useProjectProducts(projectExternalReferenceCode: string) {
 				return {
 					categoryNames,
 					description: product.description,
+					endDate: entitlement.endDate
+						? format(new Date(entitlement.endDate), 'MMM d, yyyy')
+						: '',
 					externalReferenceCode: product.externalReferenceCode,
 					id: String(product.productId ?? product.id),
 					name: product.name,

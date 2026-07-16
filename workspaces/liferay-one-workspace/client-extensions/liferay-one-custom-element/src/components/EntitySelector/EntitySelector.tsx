@@ -57,6 +57,8 @@ export default function EntitySelector({
 	const [menuWidth, setMenuWidth] = useState<number>();
 	const triggerElementRef = useRef<HTMLButtonElement | null>(null);
 
+	const showSearch = items.length > 10 || Boolean(searchValue);
+
 	const setTriggerElement = useCallback((node: HTMLButtonElement | null) => {
 		triggerElementRef.current = node;
 	}, []);
@@ -84,78 +86,120 @@ export default function EntitySelector({
 		/>
 	);
 
+	const richContent = (
+		<>
+			{triggerIcon}
+
+			<span
+				className="d-flex flex-column flex-fill"
+				style={{minWidth: 0}}
+			>
+				<span
+					style={{
+						color: LABEL_COLOR,
+						fontSize: '0.6875rem',
+						fontWeight: 600,
+						letterSpacing: '0.06em',
+						textTransform: 'uppercase',
+					}}
+				>
+					{label}
+				</span>
+
+				<span
+					className="align-items-center d-flex w-100"
+					style={{gap: 'var(--spacer-1)'}}
+				>
+					<span
+						className="text-truncate"
+						style={{
+							color: VALUE_COLOR,
+							fontSize: '0.9375rem',
+							fontWeight: 700,
+							minWidth: 0,
+						}}
+						title={name}
+					>
+						{name}
+					</span>
+
+					{caretIcon}
+				</span>
+
+				{badge && (
+					<span
+						style={{
+							alignSelf: 'flex-start',
+							backgroundColor: 'var(--color-neutral-2)',
+							borderRadius: 'var(--border-radius-sm, 0.25rem)',
+							color: 'var(--color-neutral-7)',
+							fontSize: '0.6875rem',
+							fontWeight: 700,
+							marginTop: 'var(--spacer-1)',
+							padding: '0.0625rem 0.5rem',
+						}}
+					>
+						{badge}
+					</span>
+				)}
+			</span>
+		</>
+	);
+
 	const trigger =
 		variant === 'rich' ? (
-			<button
-				aria-label={ariaLabel}
-				className="align-items-center bg-transparent border-0 d-flex p-0 text-left w-100"
-				disabled={readOnly}
-				ref={setTriggerElement}
-				style={{gap: '0.75rem'}}
-				type="button"
+			readOnly ? (
+				<div
+					className="align-items-center d-flex"
+					style={{
+						border: '1px solid var(--color-neutral-2)',
+						borderRadius: 'var(--border-radius-lg, 0.625rem)',
+						gap: '0.75rem',
+						padding: 'var(--spacer-3) var(--spacer-2)',
+					}}
+				>
+					{richContent}
+				</div>
+			) : (
+				<button
+					aria-label={ariaLabel}
+					className="align-items-center bg-transparent border-0 d-flex p-0 text-left w-100"
+					ref={setTriggerElement}
+					style={{gap: '0.75rem'}}
+					type="button"
+				>
+					{richContent}
+				</button>
+			)
+		) : readOnly ? (
+			<div
+				className="align-items-center d-flex"
+				style={{
+					border: '1px solid var(--color-neutral-2)',
+					borderRadius: 'var(--border-radius-lg, 0.625rem)',
+					gap: 'var(--spacer-2)',
+					padding: '0.375rem 0.75rem 0.375rem 0.375rem',
+					width: '14rem',
+				}}
 			>
 				{triggerIcon}
 
 				<span
-					className="d-flex flex-column flex-fill"
-					style={{minWidth: 0}}
+					className="text-truncate"
+					style={{
+						color: VALUE_COLOR,
+						fontWeight: 600,
+						minWidth: 0,
+					}}
+					title={name}
 				>
-					<span
-						style={{
-							color: LABEL_COLOR,
-							fontSize: '0.6875rem',
-							fontWeight: 600,
-							letterSpacing: '0.06em',
-							textTransform: 'uppercase',
-						}}
-					>
-						{label}
-					</span>
-
-					<span
-						className="align-items-center d-flex w-100"
-						style={{gap: 'var(--spacer-1)'}}
-					>
-						<span
-							className="text-truncate"
-							style={{
-								color: VALUE_COLOR,
-								fontSize: '0.9375rem',
-								fontWeight: 700,
-								minWidth: 0,
-							}}
-							title={name}
-						>
-							{name}
-						</span>
-
-						{caretIcon}
-					</span>
-
-					{badge && (
-						<span
-							style={{
-								alignSelf: 'flex-start',
-								backgroundColor: 'var(--color-neutral-2)',
-								borderRadius:
-									'var(--border-radius-sm, 0.25rem)',
-								color: 'var(--color-neutral-7)',
-								fontSize: '0.6875rem',
-								fontWeight: 700,
-								marginTop: 'var(--spacer-1)',
-								padding: '0.0625rem 0.5rem',
-							}}
-						>
-							{badge}
-						</span>
-					)}
+					{name}
 				</span>
-			</button>
+			</div>
 		) : (
 			<button
 				aria-label={ariaLabel}
 				className="align-items-center border-0 d-flex entity-selector-trigger"
-				disabled={readOnly}
 				ref={setTriggerElement}
 				style={{
 					backgroundColor: 'var(--color-neutral-1)',
@@ -201,11 +245,13 @@ export default function EntitySelector({
 			onActiveChange={handleActiveChange}
 			trigger={trigger}
 		>
-			<ClayDropDown.Search
-				onChange={(value) => onSearchChange(value)}
-				placeholder={i18n.translate('search')}
-				value={searchValue}
-			/>
+			{showSearch && (
+				<ClayDropDown.Search
+					onChange={(value) => onSearchChange(value)}
+					placeholder={i18n.translate('search')}
+					value={searchValue}
+				/>
+			)}
 
 			<ClayDropDown.ItemList>
 				{loading && (

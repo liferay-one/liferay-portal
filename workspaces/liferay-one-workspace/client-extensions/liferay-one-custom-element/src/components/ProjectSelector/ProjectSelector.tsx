@@ -73,7 +73,7 @@ const ProjectSelector = ({
 			emptyLabel={emptyLabel}
 			items={items}
 			label={
-				showProjectCount
+				showProjectCount && projectCount > 1
 					? `${translate('project')} (${projectCount})`
 					: translate('project')
 			}

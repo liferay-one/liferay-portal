@@ -411,6 +411,10 @@
 		"cssVariableMapping": "link-hover-text-decoration",
 		"value": "none"
 	},
+	"tableRowBackgroundColorActive": {
+		"cssVariableMapping": "table-row-background-color-active",
+		"value": "var(--color-neutral-0)"
+	},
 	"tableRowBackgroundColorAlternate": {
 		"cssVariableMapping": "table-row-background-color-alternate",
 		"value": "#FFFFFF"

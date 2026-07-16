@@ -68,6 +68,7 @@ export default function ActivationKeysCard({
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
+			expanded: true,
 			heading: 'activation-key',
 			key: 'activation-key',
 			render: (activationKey) => (
@@ -108,6 +109,7 @@ export default function ActivationKeysCard({
 					</span>
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			heading: 'start-date-exp-date',
@@ -142,6 +144,7 @@ export default function ActivationKeysCard({
 					{translate(activationKey.status as Word)}
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			key: 'renew',
@@ -155,6 +158,7 @@ export default function ActivationKeysCard({
 					{translate('renew')}
 				</ClayButton>
 			),
+			width: '1%',
 		},
 		{
 			key: 'download',
@@ -167,6 +171,7 @@ export default function ActivationKeysCard({
 					{translate('download')}
 				</Button>
 			),
+			width: '1%',
 		},
 	];
 

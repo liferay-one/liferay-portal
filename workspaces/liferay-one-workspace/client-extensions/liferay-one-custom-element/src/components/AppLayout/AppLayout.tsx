@@ -12,6 +12,7 @@ type AppLayoutProps = {
 	breadcrumb?: ReactNode;
 	contentHeader?: ReactNode;
 	header?: ReactNode;
+	headerBackground?: boolean;
 	navItems: NavItem[];
 	title?: string;
 };
@@ -20,6 +21,7 @@ export default function AppLayout({
 	breadcrumb,
 	contentHeader,
 	header,
+	headerBackground,
 	navItems,
 	title,
 }: AppLayoutProps) {
@@ -33,7 +35,12 @@ export default function AppLayout({
 			{breadcrumb}
 
 			<div className="d-flex" style={{gap: 'var(--spacer-3)'}}>
-				<SideNav header={header} items={navItems} title={title} />
+				<SideNav
+					header={header}
+					headerBackground={headerBackground}
+					items={navItems}
+					title={title}
+				/>
 
 				<main className="flex-fill overflow-auto">
 					{contentHeader}

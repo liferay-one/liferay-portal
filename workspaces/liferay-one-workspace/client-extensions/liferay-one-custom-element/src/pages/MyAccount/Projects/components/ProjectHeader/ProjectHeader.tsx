@@ -5,6 +5,7 @@
 
 import {format} from 'date-fns';
 import {ReactNode} from 'react';
+import contractTermIconUrl from '~/assets/icons/contract_term_icon.svg';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectCommerce} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
@@ -55,9 +56,12 @@ function Section({children, first, label}: SectionProps) {
 
 			<span
 				style={{
+					alignItems: 'center',
 					color: VALUE_COLOR,
+					display: 'inline-flex',
 					fontSize: '0.9375rem',
 					fontWeight: 600,
+					gap: 'var(--spacer-2)',
 				}}
 			>
 				{children}
@@ -84,6 +88,8 @@ export default function ProjectHeader() {
 			}}
 		>
 			<Section first label={i18n.translate('contract-term')}>
+				<img alt="" src={contractTermIconUrl} />
+
 				{termRange}
 			</Section>
 		</div>

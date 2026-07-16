@@ -91,13 +91,6 @@ const InviteMemberModal = ({
 			let userAccount;
 
 			try {
-				userAccount =
-					await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
-						accountExternalReferenceCode,
-						trimmedEmail
-					);
-			}
-			catch {
 				userAccount = await HeadlessAdminUser.postAccountUserAccount(
 					accountExternalReferenceCode,
 					{
@@ -106,6 +99,13 @@ const InviteMemberModal = ({
 						givenName: trimmedGivenName,
 					}
 				);
+			}
+			catch {
+				userAccount =
+					await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
+						accountExternalReferenceCode,
+						trimmedEmail
+					);
 			}
 
 			if (selectedRoles.length) {

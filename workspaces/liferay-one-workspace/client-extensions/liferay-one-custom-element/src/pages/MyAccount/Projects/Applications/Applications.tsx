@@ -77,6 +77,7 @@ export default function Applications() {
 
 	const columns: ListColumn<ProjectProduct>[] = [
 		{
+			expanded: true,
 			heading: 'name',
 			key: 'name',
 			render: (application) => (
@@ -108,17 +109,20 @@ export default function Applications() {
 					</span>
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			heading: 'sale-type',
 			key: 'sale-type',
 			render: (application) => application.saleType,
+			width: '1%',
 		},
 		{
 			heading: 'order-id',
 			key: 'order-id',
 			render: (application) =>
 				orderIdByProductName.get(application.name) ?? '-',
+			width: '1%',
 		},
 		statusColumn(),
 	];

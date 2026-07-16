@@ -53,6 +53,7 @@ export default function Products() {
 
 	const columns: ListColumn<ProjectProduct>[] = [
 		{
+			expanded: true,
 			heading: 'name',
 			key: 'name',
 			render: (product) => (
@@ -80,11 +81,19 @@ export default function Products() {
 			heading: 'type',
 			key: 'type',
 			render: (product) => product.type,
+			width: '1%',
 		},
 		{
 			heading: 'start-date',
 			key: 'start-date',
 			render: (product) => product.startDate,
+			width: '1%',
+		},
+		{
+			heading: 'end-date',
+			key: 'end-date',
+			render: (product) => product.endDate,
+			width: '1%',
 		},
 		statusColumn(),
 	];

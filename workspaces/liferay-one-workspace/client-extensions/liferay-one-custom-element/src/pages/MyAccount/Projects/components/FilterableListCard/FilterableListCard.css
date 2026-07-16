@@ -168,10 +168,13 @@
 
 	& tbody tr {
 		cursor: pointer;
+	}
 
-		&:hover {
-			background-color: #f7f8f9;
-		}
+	& thead th:last-child,
+	& tbody td:last-child {
+		text-align: right;
+		white-space: nowrap;
+		width: 1%;
 	}
 }
 

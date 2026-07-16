@@ -87,13 +87,6 @@ const InviteProjectMemberModal = ({
 			let userAccount;
 
 			try {
-				userAccount =
-					await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
-						accountExternalReferenceCode,
-						trimmedEmail
-					);
-			}
-			catch {
 				userAccount = await HeadlessAdminUser.postAccountUserAccount(
 					accountExternalReferenceCode,
 					{
@@ -102,6 +95,13 @@ const InviteProjectMemberModal = ({
 						givenName: trimmedGivenName,
 					}
 				);
+			}
+			catch {
+				userAccount =
+					await HeadlessAdminUser.postAccountUserAccountByEmailAddress(
+						accountExternalReferenceCode,
+						trimmedEmail
+					);
 			}
 
 			await Projects.postProjectMembership(
@@ -115,7 +115,9 @@ const InviteProjectMemberModal = ({
 					HeadlessAdminUser.getAccountByExternalReferenceCode(
 						accountExternalReferenceCode
 					),
-					HeadlessAdminUser.getAccountRoles(accountExternalReferenceCode),
+					HeadlessAdminUser.getAccountRoles(
+						accountExternalReferenceCode
+					),
 				]);
 
 				const accountRoleByName = new Map(

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import EntitySelector, {
 	SelectorItem,
@@ -61,7 +61,19 @@ export default function AccountSelector() {
 		}
 	);
 
+	const totalAccountCountRef = useRef<number>();
+
+	if (!debouncedSearch && data?.totalCount !== undefined) {
+		totalAccountCountRef.current = data.totalCount;
+	}
+
+	const readOnly = totalAccountCountRef.current === 1;
+
 	if (!Liferay.ThemeDisplay.isSignedIn() || !currentAccountId) {
+		return null;
+	}
+
+	if (totalAccountCountRef.current === undefined) {
 		return null;
 	}
 
@@ -114,6 +126,7 @@ export default function AccountSelector() {
 			name={name}
 			onSearchChange={setSearchValue}
 			onSelect={handleSelect}
+			readOnly={readOnly}
 			searchValue={searchValue}
 			selectedId={String(currentAccountId)}
 			triggerIcon={

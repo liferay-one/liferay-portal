@@ -29,8 +29,10 @@ export type ListFilter<T> = {
 };
 
 export type ListColumn<T> = {
+	expanded?: boolean;
 	heading?: Word;
 	key: string;
+	noWrap?: boolean;
 	render: (item: T) => ReactNode;
 	width?: string;
 };
@@ -337,9 +339,15 @@ export default function FilterableListCard<T>({
 							<ClayTable.Row>
 								{columns.map((column) => (
 									<ClayTable.Cell
+										expanded={column.expanded}
 										headingCell
 										key={column.key}
-										style={{width: column.width}}
+										style={{
+											whiteSpace: column.noWrap
+												? 'nowrap'
+												: undefined,
+											width: column.width,
+										}}
 									>
 										{column.heading
 											? translate(column.heading)
@@ -357,8 +365,14 @@ export default function FilterableListCard<T>({
 								>
 									{columns.map((column) => (
 										<ClayTable.Cell
+											expanded={column.expanded}
 											key={column.key}
-											style={{width: column.width}}
+											style={{
+												whiteSpace: column.noWrap
+													? 'nowrap'
+													: undefined,
+												width: column.width,
+											}}
 										>
 											{column.render(item)}
 										</ClayTable.Cell>
