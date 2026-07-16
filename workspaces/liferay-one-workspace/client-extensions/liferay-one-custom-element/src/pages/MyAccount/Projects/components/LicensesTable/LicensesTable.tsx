@@ -65,6 +65,7 @@ export default function LicensesTable({
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
+			expanded: true,
 			heading: 'environment',
 			key: 'environment',
 			render: (activationKey) => (
@@ -83,6 +84,7 @@ export default function LicensesTable({
 					</span>
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			heading: 'start-date-exp-date',
@@ -94,6 +96,7 @@ export default function LicensesTable({
 					<span>{activationKey.expirationDate}</span>
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			heading: 'status',
@@ -112,6 +115,7 @@ export default function LicensesTable({
 					{translate(activationKey.status as Word)}
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			key: 'action',
@@ -127,6 +131,7 @@ export default function LicensesTable({
 						{translate('download')}
 					</Button>
 				),
+			width: '1%',
 		},
 	];
 

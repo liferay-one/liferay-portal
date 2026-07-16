@@ -19,6 +19,22 @@
 	& .cursor-pointer {
 		cursor: pointer;
 	}
+
+	& > tbody > tr > * {
+		--bs-table-accent-bg: initial;
+	}
+
+	& > tbody > tr:last-child > * {
+		border-bottom: 0;
+	}
+}
+
+.table.table-hover > tbody > tr:hover > * {
+	--bs-table-accent-bg: var(--color-neutral-2);
+}
+
+.table-responsive {
+	margin-bottom: 0;
 }
 
 .table-body {
@@ -39,8 +55,10 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+}
 
-	& .kebab-button-cell {
-		width: 50px !important;
-	}
+.kebab-button-cell {
+	text-align: right;
+	white-space: nowrap;
+	width: 1%;
 }

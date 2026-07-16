@@ -276,6 +276,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 						{
 							align: 'right',
 							key: 'accountId',
+							noWrap: true,
 							render: (_, order) => (
 								<DropDown
 									closeOnClick
@@ -311,6 +312,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 								</DropDown>
 							),
 							title: '',
+							width: '1%',
 						},
 					]}
 					rows={items}

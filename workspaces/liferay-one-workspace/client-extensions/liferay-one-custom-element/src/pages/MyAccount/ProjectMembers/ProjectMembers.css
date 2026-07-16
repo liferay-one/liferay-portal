@@ -29,6 +29,8 @@
 	& tbody td:last-child,
 	& thead th:last-child {
 		text-align: right;
+		white-space: nowrap;
+		width: 1%;
 	}
 }
 

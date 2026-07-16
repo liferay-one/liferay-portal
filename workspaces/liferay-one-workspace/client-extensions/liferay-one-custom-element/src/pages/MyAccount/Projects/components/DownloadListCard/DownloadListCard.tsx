@@ -35,6 +35,7 @@ export default function DownloadListCard({
 }: DownloadListCardProps) {
 	const columns: ListColumn<DownloadItem>[] = [
 		{
+			expanded: true,
 			heading,
 			key: 'name',
 			render: (item) => (
@@ -62,6 +63,7 @@ export default function DownloadListCard({
 					{translate('download')}
 				</Button>
 			),
+			width: '1%',
 		},
 	];
 

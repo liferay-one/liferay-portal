@@ -232,12 +232,14 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 						},
 						{
 							key: 'startDate',
+							noWrap: true,
 							render: (value) =>
 								formatDate(value as string | undefined),
 							title: i18n.translate('start-date'),
 						},
 						{
 							key: 'endDate',
+							noWrap: true,
 							render: (value) =>
 								formatDate(value as string | undefined),
 							title: i18n.translate('end-date'),

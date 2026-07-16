@@ -95,11 +95,17 @@ function SideNavItem({depth, item}: SideNavItemProps) {
 
 type SideNavProps = {
 	header?: ReactNode;
+	headerBackground?: boolean;
 	items: NavItem[];
 	title?: string;
 };
 
-export default function SideNav({header, items, title}: SideNavProps) {
+export default function SideNav({
+	header,
+	headerBackground = true,
+	items,
+	title,
+}: SideNavProps) {
 	return (
 		<nav
 			className="align-self-start d-flex flex-column flex-shrink-0"
@@ -108,9 +114,11 @@ export default function SideNav({header, items, title}: SideNavProps) {
 			{header && (
 				<div
 					style={{
-						backgroundColor: SIDEBAR_BG,
+						backgroundColor: headerBackground
+							? SIDEBAR_BG
+							: 'transparent',
 						borderRadius: 'var(--border-radius-lg, 0.625rem)',
-						padding: '0.75rem',
+						padding: headerBackground ? '0.75rem' : '0',
 					}}
 				>
 					{header}
