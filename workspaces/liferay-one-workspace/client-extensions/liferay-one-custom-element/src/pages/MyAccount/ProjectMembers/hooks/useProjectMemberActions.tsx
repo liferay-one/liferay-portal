@@ -7,6 +7,7 @@ import Button from '~/components/Button/Button';
 import useModalContext from '~/hooks/useModalContext';
 import {translate} from '~/i18n';
 import EditProjectPermissionsModal from '~/pages/MyAccount/ProjectMembers/components/EditProjectPermissionsModal/EditProjectPermissionsModal';
+import InviteProjectMemberModal from '~/pages/MyAccount/ProjectMembers/components/InviteProjectMemberModal/InviteProjectMemberModal';
 
 import type {
 	AccountMemberOption,
@@ -36,6 +37,31 @@ export function useProjectMemberActions({
 		</Button>
 	);
 
+	const openInviteProjectMember = (project: ProjectMembersRow) => {
+		modalContext.onOpenModal({
+			body: (
+				<InviteProjectMemberModal
+					accountExternalReferenceCode={accountExternalReferenceCode}
+					mutate={mutate}
+					onClose={modalContext.onClose}
+					project={project}
+				/>
+			),
+			footer: [
+				cancelButton,
+				null,
+				<Button
+					form="invite-project-member"
+					key="confirm"
+					type="submit"
+				>
+					{translate('send-invitation')}
+				</Button>,
+			],
+			header: translate('invite-project-member'),
+		});
+	};
+
 	const openEditProjectPermissions = (project: ProjectMembersRow) => {
 		modalContext.onOpenModal({
 			body: (
@@ -62,5 +88,5 @@ export function useProjectMemberActions({
 		});
 	};
 
-	return {openEditProjectPermissions};
+	return {openEditProjectPermissions, openInviteProjectMember};
 }
