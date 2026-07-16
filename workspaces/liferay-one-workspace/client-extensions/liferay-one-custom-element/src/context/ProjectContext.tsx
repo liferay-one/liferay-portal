@@ -3,7 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ReactNode, createContext, useContext, useEffect, useMemo} from 'react';
+import {
+	ReactNode,
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+} from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useUnassignedCommerce} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
@@ -19,6 +26,8 @@ type ProjectContextValue = {
 	loading: boolean;
 	projectId: string;
 	projects: UserProject[];
+	selectedContractERC?: string;
+	setSelectedContractERC: (contractERC: string) => void;
 };
 
 const ProjectContext = createContext<ProjectContextValue>(
@@ -55,6 +64,12 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const projectId = projectERC ?? '';
 
+	const [selectedContractERC, setSelectedContractERC] = useState<string>();
+
+	useEffect(() => {
+		setSelectedContractERC(undefined);
+	}, [projectId]);
+
 	const accessible = projects.some(
 		(project) => project.externalReferenceCode === projectId
 	);
@@ -83,7 +98,15 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	}, [accessible, accountERC, loading, navigate, projects]);
 
 	return (
-		<ProjectContext.Provider value={{loading, projectId, projects}}>
+		<ProjectContext.Provider
+			value={{
+				loading,
+				projectId,
+				projects,
+				selectedContractERC,
+				setSelectedContractERC,
+			}}
+		>
 			{children}
 		</ProjectContext.Provider>
 	);
