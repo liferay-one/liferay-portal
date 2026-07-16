@@ -6,8 +6,10 @@
 package com.liferay.one;
 
 import com.liferay.one.jira.service.AccountAssetService;
+import com.liferay.one.jira.service.AccountSyncService;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.ProjectMembershipService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,13 +73,34 @@ public class ProjectRestController extends OneBaseRestController {
 			jwt, projectId, accountRoleExternalReferenceCode, userId);
 	}
 
+	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
+	public ResponseEntity<Void> postSyncToJSM(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_businessEventPermission.check(
+			ActionKeys.UPDATE, jwt, externalReferenceCode);
+
+		_accountSyncService.syncProject(
+			_projectService.getProject(externalReferenceCode));
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
 	@Autowired
 	private AccountAssetService _accountAssetService;
+
+	@Autowired
+	private AccountSyncService _accountSyncService;
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;
+
+	@Autowired
+	private ProjectService _projectService;
 
 }
