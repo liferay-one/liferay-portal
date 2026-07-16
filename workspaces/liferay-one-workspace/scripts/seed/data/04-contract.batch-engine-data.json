@@ -143,6 +143,30 @@
 			"startDate": "2026-08-09T00:00:00Z"
 		},
 		{
+			"contractTerm": 30,
+			"customStatus": "active",
+			"endDate": "2026-12-31T00:00:00Z",
+			"externalReferenceCode": "C_CONTRACT_MULTI_1",
+			"name": "Multi Contract 1",
+			"r_accountEntryToContract_accountEntryERC": "ACCNT-025",
+			"r_projectToContract_c_projectERC": "PRJCT-025",
+			"renewalState": "auto-renew",
+			"spendLimit": 5000,
+			"startDate": "2024-07-01T00:00:00Z"
+		},
+		{
+			"contractTerm": 24,
+			"customStatus": "active",
+			"endDate": "2027-06-30T00:00:00Z",
+			"externalReferenceCode": "C_CONTRACT_MULTI_2",
+			"name": "Multi Contract 2",
+			"r_accountEntryToContract_accountEntryERC": "ACCNT-025",
+			"r_projectToContract_c_projectERC": "PRJCT-025",
+			"renewalState": "auto-renew",
+			"spendLimit": 3500,
+			"startDate": "2025-07-01T00:00:00Z"
+		},
+		{
 			"contractTerm": 12,
 			"customStatus": "active",
 			"endDate": "2027-08-09T00:00:00Z",

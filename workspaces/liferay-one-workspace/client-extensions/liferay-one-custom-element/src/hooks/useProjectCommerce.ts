@@ -77,6 +77,48 @@ type ProductEntitlement = {
 	startDate?: string;
 };
 
+function toProjectContract(contractNode: ContractNode): ProjectContract {
+	return {
+		endDate: contractNode.endDate,
+		externalReferenceCode: contractNode.externalReferenceCode,
+		name: contractNode.name,
+		spendLimit: contractNode.spendLimit,
+		startDate: contractNode.startDate,
+		status: contractNode.customStatus,
+		termMonths: contractNode.contractTerm,
+	};
+}
+
+export function resolveDefaultContractERC(
+	contracts: ProjectContract[]
+): string | undefined {
+	const activeContracts = contracts.filter(
+		(contract) => contract.status === 'active'
+	);
+
+	const selectableContracts = activeContracts.length
+		? activeContracts
+		: contracts;
+
+	if (!selectableContracts.length) {
+		return undefined;
+	}
+
+	return selectableContracts.reduce((costliest, contract) =>
+		(contract.spendLimit ?? 0) > (costliest.spendLimit ?? 0)
+			? contract
+			: costliest
+	).externalReferenceCode;
+}
+
+function getEntitlementStatus(endDate?: string): string {
+	if (endDate && new Date(endDate) < new Date()) {
+		return 'expired';
+	}
+
+	return 'active';
+}
+
 function toProductEntitlements(
 	contractNode?: ContractNode
 ): ProductEntitlement[] {
@@ -130,7 +172,10 @@ function useChannelProducts() {
 	);
 }
 
-export function useProjectCommerce(projectExternalReferenceCode: string) {
+export function useProjectCommerce(
+	projectExternalReferenceCode: string,
+	contractExternalReferenceCode?: string
+) {
 	const {
 		data,
 		error,
@@ -149,21 +194,27 @@ export function useProjectCommerce(projectExternalReferenceCode: string) {
 	);
 
 	const contractNodes = data?.projectToContract ?? [];
-	const contractNode = contractNodes[0];
 
-	const contract: ProjectContract | undefined = contractNode && {
-		endDate: contractNode.endDate,
-		externalReferenceCode: contractNode.externalReferenceCode,
-		name: contractNode.name,
-		spendLimit: contractNode.spendLimit,
-		startDate: contractNode.startDate,
-		status: contractNode.customStatus,
-		termMonths: contractNode.contractTerm,
-	};
+	const contracts = contractNodes.map(toProjectContract);
 
-	const entitlements = contractNodes.flatMap(toProductEntitlements);
+	const selectedContractExists = contracts.some(
+		(contract) =>
+			contract.externalReferenceCode === contractExternalReferenceCode
+	);
 
-	return {contract, entitlements, error, loading};
+	const resolvedContractERC = selectedContractExists
+		? contractExternalReferenceCode
+		: resolveDefaultContractERC(contracts);
+
+	const contractNode = contractNodes.find(
+		(node) => node.externalReferenceCode === resolvedContractERC
+	);
+
+	const contract = contractNode ? toProjectContract(contractNode) : undefined;
+
+	const entitlements = toProductEntitlements(contractNode);
+
+	return {contract, contracts, entitlements, error, loading};
 }
 
 export function useUnassignedCommerce(enabled = true) {
@@ -268,15 +319,22 @@ export function useAccountProjectProductTypes() {
 	};
 }
 
-export function useProjectProducts(projectExternalReferenceCode: string) {
+export function useProjectProducts(
+	projectExternalReferenceCode: string,
+	contractExternalReferenceCode?: string
+) {
 	const unassigned = isUnassignedProject(projectExternalReferenceCode);
 
 	const {
 		contract,
+		contracts,
 		entitlements: projectEntitlements,
 		error: projectError,
 		loading: projectLoading,
-	} = useProjectCommerce(unassigned ? '' : projectExternalReferenceCode);
+	} = useProjectCommerce(
+		unassigned ? '' : projectExternalReferenceCode,
+		contractExternalReferenceCode
+	);
 
 	const {
 		entitlements: unassignedEntitlements,
@@ -334,7 +392,7 @@ export function useProjectProducts(projectExternalReferenceCode: string) {
 					startDate: entitlement.startDate
 						? format(new Date(entitlement.startDate), 'MMM d, yyyy')
 						: '',
-					status: 'active',
+					status: getEntitlementStatus(entitlement.endDate),
 					type:
 						getSpecificationValues(
 							product,
@@ -347,6 +405,7 @@ export function useProjectProducts(projectExternalReferenceCode: string) {
 
 	return {
 		contract: unassigned ? undefined : contract,
+		contracts: unassigned ? [] : contracts,
 		error: commerceError ?? productsError,
 		loading: commerceLoading || productsLoading,
 		products,
