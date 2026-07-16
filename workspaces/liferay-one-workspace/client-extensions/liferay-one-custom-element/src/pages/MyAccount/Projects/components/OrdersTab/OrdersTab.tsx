@@ -51,6 +51,7 @@ export default function OrdersTab() {
 
 	const columns: ListColumn<ProjectOrder>[] = [
 		{
+			expanded: true,
 			heading: 'order-id',
 			key: 'order-id',
 			render: (order) => (
@@ -61,11 +62,13 @@ export default function OrdersTab() {
 			heading: 'date',
 			key: 'date',
 			render: (order) => order.date,
+			width: '1%',
 		},
 		{
 			heading: 'total',
 			key: 'total',
 			render: (order) => order.total,
+			width: '1%',
 		},
 		{
 			heading: 'status',
@@ -84,12 +87,14 @@ export default function OrdersTab() {
 					{order.status}
 				</span>
 			),
+			width: '1%',
 		},
 		{
 			key: 'actions',
 			render: () => (
 				<RowActionsMenu actions={[{label: 'view-details'}]} />
 			),
+			width: '1%',
 		},
 	];
 

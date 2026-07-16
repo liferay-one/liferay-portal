@@ -167,7 +167,15 @@ const ListViewTable = <T extends Record<string, unknown>>({
 			<ClayTable.Head>
 				<ClayTable.Row>
 					{_columns.map((column, index) => (
-						<ClayTable.Cell headingTitle key={index}>
+						<ClayTable.Cell
+							className={
+								column.id === '_actions_'
+									? 'kebab-button-cell'
+									: undefined
+							}
+							headingTitle
+							key={index}
+						>
 							<span className="d-flex justify-content-between">
 								<span
 									className={classNames({
@@ -221,10 +229,10 @@ const ListViewTable = <T extends Record<string, unknown>>({
 
 							return (
 								<ClayTable.Cell
-									className={classNames('text-dark', {
+									className={classNames({
 										'cursor-pointer': column.clickable,
-										[`table-cell-minw-${column.width}`]:
-											column.width,
+										'kebab-button-cell':
+											column.id === '_actions_',
 										'table-cell-expand':
 											column.size === 'sm',
 										'table-cell-expand-small':
@@ -233,6 +241,9 @@ const ListViewTable = <T extends Record<string, unknown>>({
 											column.size === 'lg',
 										'table-cell-expand-smallest':
 											column.size === 'md',
+										[`table-cell-minw-${column.width}`]:
+											column.width,
+										'text-dark': column.id !== '_actions_',
 									})}
 									expanded={column.truncate}
 									key={columnIndex}

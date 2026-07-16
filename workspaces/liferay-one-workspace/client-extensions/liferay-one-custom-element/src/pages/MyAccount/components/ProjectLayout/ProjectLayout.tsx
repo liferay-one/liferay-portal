@@ -63,6 +63,7 @@ export default function ProjectLayout() {
 					showProjectCount
 				/>
 			}
+			headerBackground={loading || projects.length > 1}
 			navItems={navItems}
 		/>
 	);

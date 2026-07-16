@@ -38,6 +38,7 @@ export function statusColumn(): ListColumn<ProjectProduct> {
 				{translate(product.status as Word)}
 			</span>
 		),
+		width: '1%',
 	};
 }
 
@@ -96,6 +97,7 @@ export default function ProductListPage({
 					]}
 				/>
 			),
+			width: '1%',
 		},
 	];
 

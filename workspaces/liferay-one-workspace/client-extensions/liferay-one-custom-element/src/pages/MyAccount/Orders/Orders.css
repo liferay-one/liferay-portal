@@ -161,6 +161,8 @@
 	& thead th:last-child,
 	& tbody td:last-child {
 		text-align: right;
+		white-space: nowrap;
+		width: 1%;
 	}
 }
 
