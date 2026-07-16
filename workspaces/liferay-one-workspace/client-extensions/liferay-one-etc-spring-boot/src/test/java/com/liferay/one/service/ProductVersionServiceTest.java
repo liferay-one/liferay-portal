@@ -7,12 +7,17 @@ package com.liferay.one.service;
 
 import com.liferay.one.model.ProductVersion;
 
+import java.net.URI;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -21,6 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Allen Ziegenfus
@@ -77,6 +84,113 @@ public class ProductVersionServiceTest {
 			_filterCaptor.getValue());
 	}
 
+	@Test
+	public void testSyncProductVersions() throws Exception {
+		TestProductVersionService testProductVersionService =
+			new TestProductVersionService();
+
+		testProductVersionService.releasesResponse = _releasesJSON();
+
+		ReflectionTestUtils.setField(
+			testProductVersionService, "_productGroups", new String[] {"dxp"});
+		ReflectionTestUtils.setField(
+			testProductVersionService, "_releasesURL",
+			"https://releases.example.com/releases.json");
+
+		testProductVersionService.syncProductVersions();
+
+		List<String> bodies = testProductVersionService.putBodies;
+
+		Assertions.assertEquals(2, bodies.size());
+
+		Map<String, Boolean> supportedByVersion = new HashMap<>();
+
+		for (String body : bodies) {
+			JSONObject jsonObject = new JSONObject(body);
+
+			Assertions.assertEquals(
+				"dxp", jsonObject.getString("productGroup"));
+			Assertions.assertEquals(
+				jsonObject.getString("externalReferenceCode"),
+				jsonObject.getString("productVersion"));
+
+			supportedByVersion.put(
+				jsonObject.getString("productVersion"),
+				jsonObject.getBoolean("supported"));
+		}
+
+		Assertions.assertEquals(
+			Boolean.TRUE, supportedByVersion.get("DXP 2026.Q2"));
+		Assertions.assertEquals(
+			Boolean.FALSE, supportedByVersion.get("DXP 7.4"));
+	}
+
+	private String _releasesJSON() {
+		JSONArray jsonArray = new JSONArray();
+
+		jsonArray.put(
+			new JSONObject(
+			).put(
+				"product", "dxp"
+			).put(
+				"productGroupVersion", "2026.q2"
+			).put(
+				"productMajorVersion", "DXP 2026.Q2"
+			).put(
+				"tags", new JSONArray()
+			));
+		jsonArray.put(
+			new JSONObject(
+			).put(
+				"product", "dxp"
+			).put(
+				"productGroupVersion", "2026.q2"
+			).put(
+				"productMajorVersion", "DXP 2026.Q2"
+			).put(
+				"tags",
+				new JSONArray(
+				).put(
+					"supported"
+				)
+			));
+		jsonArray.put(
+			new JSONObject(
+			).put(
+				"product", "dxp"
+			).put(
+				"productGroupVersion", "7.4"
+			).put(
+				"tags", new JSONArray()
+			));
+		jsonArray.put(
+			new JSONObject(
+			).put(
+				"product", "portal"
+			).put(
+				"productGroupVersion", "7.4"
+			).put(
+				"tags",
+				new JSONArray(
+				).put(
+					"supported"
+				)
+			));
+		jsonArray.put(
+			new JSONObject(
+			).put(
+				"product", "dxp"
+			).put(
+				"tags",
+				new JSONArray(
+				).put(
+					"supported"
+				)
+			));
+
+		return jsonArray.toString();
+	}
+
 	private List<ProductVersion> _stubbedItems(
 		Function<JSONObject, ProductVersion> mapper) {
 
@@ -103,5 +217,34 @@ public class ProductVersionServiceTest {
 	private ArgumentCaptor<String> _filterCaptor;
 	private ProductVersionService _productVersionService;
 	private List<String> _stubbedVersions = Collections.emptyList();
+
+	private static class TestProductVersionService
+		extends ProductVersionService {
+
+		public final List<String> putBodies = new ArrayList<>();
+		public String releasesResponse;
+
+		@Override
+		protected String get(String authorization, URI uri) {
+			if (authorization.isEmpty()) {
+				return releasesResponse;
+			}
+
+			return "{}";
+		}
+
+		@Override
+		protected String getAuthorization() {
+			return "Bearer test";
+		}
+
+		@Override
+		protected String put(String authorization, String body, URI uri) {
+			putBodies.add(body);
+
+			return "{\"id\": 1}";
+		}
+
+	}
 
 }
