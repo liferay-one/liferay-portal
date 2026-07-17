@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
 import com.liferay.one.model.LicenseKey;
@@ -313,6 +314,32 @@ public class LicenseKeyService extends OneBaseService {
 		return licenseKeys.get(0);
 	}
 
+	public String getLicenseKeyDownloadFileName(LicenseKey licenseKey) {
+		return _licenseKeyExporter.getFileName(
+			licenseKey.getProductName(), licenseKey.getProductVersion(),
+			licenseKey.getName());
+	}
+
+	public String getLicenseKeyDownloadXML(LicenseKey licenseKey)
+		throws Exception {
+
+		return _licenseKeyExporter.toXML(
+			licenseKey.getKey(), licenseKey.getAccountName(),
+			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
+			licenseKey.getLicenseVersion(), licenseKey.getProductName(),
+			licenseKey.getProductExternalId(), licenseKey.getProductVersion(),
+			licenseKey.getOwner(), licenseKey.getMaxClusterNodes(),
+			licenseKey.getMaxServers(), licenseKey.getMaxHttpSessions(),
+			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxUsers(),
+			licenseKey.getSizing(), licenseKey.getDescription(),
+			licenseKey.getDomains(), licenseKey.getHostName(),
+			licenseKey.getIpAddresses(), licenseKey.getMacAddresses(),
+			licenseKey.getServerId(),
+			Date.from(licenseKey.getStartDateInstant()),
+			Date.from(licenseKey.getCustomExpirationDateInstant()),
+			Date.from(licenseKey.getStartDateInstant()));
+	}
+
 	public List<LicenseKey> getLicenseKeys(
 			boolean active, boolean complimentary, long entitlementId)
 		throws Exception {
@@ -612,6 +639,9 @@ public class LicenseKeyService extends OneBaseService {
 		"Liferay DXP - Free Tier";
 
 	private static final String _FREE_TIER_PRODUCT_VERSION = "7.4";
+
+	@Autowired
+	private LicenseKeyExporter _licenseKeyExporter;
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;
