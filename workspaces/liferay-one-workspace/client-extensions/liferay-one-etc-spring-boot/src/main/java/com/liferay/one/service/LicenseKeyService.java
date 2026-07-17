@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.ClassNameConstants;
+import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -22,11 +23,17 @@ import com.liferay.portal.kernel.util.Validator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -155,11 +162,13 @@ public class LicenseKeyService extends OneBaseService {
 
 		Date expirationDate = calendar.getTime();
 
+		String productVersion = getFreeTierProductVersion();
+
 		String key = _licenseKeyGenerator.generateKey(
 			StringPool.BLANK, _FREE_TIER_LICENSE_NAME,
 			LicenseConstants.TYPE_FREE, _FREE_TIER_LICENSE_VERSION,
 			_FREE_TIER_PRODUCT_NAME, LicenseConstants.PRODUCT_ID_PORTAL,
-			_FREE_TIER_PRODUCT_VERSION, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0,
+			productVersion, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0,
 			0, 0L, 0L, StringPool.BLANK, StringPool.BLANK, domains,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, startDate, expirationDate);
@@ -194,7 +203,7 @@ public class LicenseKeyService extends OneBaseService {
 		).put(
 			"productName", _FREE_TIER_PRODUCT_NAME
 		).put(
-			"productVersion", _FREE_TIER_PRODUCT_VERSION
+			"productVersion", productVersion
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
 		).put(
@@ -402,13 +411,28 @@ public class LicenseKeyService extends OneBaseService {
 				_escapeODataString(serverId), "')"));
 	}
 
-	public boolean hasLicenseKeyTypeFree(String domains, String owner)
+	public boolean hasValidLicenseKeyTypeFree(String domains, String owner)
 		throws Exception {
 
-		List<LicenseKey> licenseKeys = getLicenseKeys(
-			domains, LicenseConstants.TYPE_FREE, owner);
+		Instant renewalThreshold = Instant.now(
+		).plus(
+			_FREE_TIER_RENEWAL_THRESHOLD_DAYS, ChronoUnit.DAYS
+		);
 
-		return !licenseKeys.isEmpty();
+		for (LicenseKey licenseKey :
+				getLicenseKeys(domains, LicenseConstants.TYPE_FREE, owner)) {
+
+			Instant customExpirationDateInstant =
+				licenseKey.getCustomExpirationDateInstant();
+
+			if ((customExpirationDateInstant != null) &&
+				customExpirationDateInstant.isAfter(renewalThreshold)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public LicenseKey replaceLicenseKey(
@@ -496,6 +520,35 @@ public class LicenseKeyService extends OneBaseService {
 			).toUri());
 
 		return new LicenseKey(new JSONObject(response));
+	}
+
+	protected String getFreeTierProductVersion() {
+		String productVersion = null;
+
+		try {
+			productVersion = getLatestSupportedProductVersion();
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to determine the latest product version",
+					exception);
+			}
+		}
+
+		String quarterlyRelease = ProductVersion.extractQuarterlyRelease(
+			productVersion);
+
+		if (Validator.isNull(quarterlyRelease)) {
+			return _FREE_TIER_PRODUCT_VERSION;
+		}
+
+		return quarterlyRelease;
+	}
+
+	protected String getLatestSupportedProductVersion() throws Exception {
+		return _productVersionService.getLatestProductVersion(
+			_FREE_TIER_PRODUCT_GROUP);
 	}
 
 	private String _buildSearchFilter(
@@ -634,10 +687,16 @@ public class LicenseKeyService extends OneBaseService {
 
 	private static final String _FREE_TIER_PRODUCT_ERC = "PRDCT-DXP";
 
+	private static final String _FREE_TIER_PRODUCT_GROUP = "dxp";
+
 	private static final String _FREE_TIER_PRODUCT_NAME =
 		"Liferay DXP - Free Tier";
 
 	private static final String _FREE_TIER_PRODUCT_VERSION = "7.4";
+
+	private static final int _FREE_TIER_RENEWAL_THRESHOLD_DAYS = 90;
+
+	private static final Log _log = LogFactory.getLog(LicenseKeyService.class);
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;
@@ -647,6 +706,10 @@ public class LicenseKeyService extends OneBaseService {
 
 	@Autowired
 	private LicenseKeyValidator _licenseKeyValidator;
+
+	@Autowired
+	@Lazy
+	private ProductVersionService _productVersionService;
 
 	@Autowired
 	@Lazy
