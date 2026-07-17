@@ -2871,7 +2871,7 @@
 			"className": "com.liferay.object.model.ObjectDefinition#C_LICENSE_KEY",
 			"enableCategorization": false,
 			"enableComments": false,
-			"enableObjectEntryHistory": false,
+			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_LICENSE_KEY",
 			"friendlyURLSeparator": "l",
 			"label": {
