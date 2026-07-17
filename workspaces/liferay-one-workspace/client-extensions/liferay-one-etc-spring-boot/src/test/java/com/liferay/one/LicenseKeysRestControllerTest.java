@@ -25,7 +25,10 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -53,6 +56,94 @@ public class LicenseKeysRestControllerTest {
 		).deleteSubscriptionEntry(
 			null, ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
 		);
+	}
+
+	@Test
+	public void testGetLicenseKeysDownload() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getAccountEntryId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			licenseKey.getLicenseVersion()
+		).thenReturn(
+			3
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.any(), Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeyDownloadFileName(licenseKey)
+		).thenReturn(
+			"activation-key.xml"
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+		).thenReturn(
+			"<license/>"
+		);
+
+		ResponseEntity<String> responseEntity =
+			licenseKeysRestController.getLicenseKeysDownload(null, 1L);
+
+		Assertions.assertEquals("<license/>", responseEntity.getBody());
+
+		HttpHeaders httpHeaders = responseEntity.getHeaders();
+
+		Assertions.assertEquals(
+			"attachment; filename=\"activation-key.xml\"",
+			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
+		Assertions.assertEquals(
+			MediaType.APPLICATION_XML, httpHeaders.getContentType());
+	}
+
+	@Test
+	public void testGetLicenseKeysDownloadThrowsNotFoundForOldVersion()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getAccountEntryId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			licenseKey.getLicenseVersion()
+		).thenReturn(
+			1
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.any(), Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.getLicenseKeysDownload(
+					null, 1L));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 	}
 
 	@Test

@@ -24,11 +24,15 @@ import java.util.Objects;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,6 +61,34 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				jwt, ClassNameConstants.LICENSE_KEY, licenseKeyId,
 				userAccount.getId());
 		}
+	}
+
+	@GetMapping("/{licenseKeyId}/download")
+	public ResponseEntity<String> getLicenseKeysDownload(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long licenseKeyId)
+		throws Exception {
+
+		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
+			jwt, licenseKeyId);
+
+		_checkAccountViewPermission(licenseKey.getAccountEntryId(), jwt);
+
+		if (licenseKey.getLicenseVersion() < 2) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+
+		String fileName = _licenseKeyService.getLicenseKeyDownloadFileName(
+			licenseKey);
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_XML
+		).header(
+			HttpHeaders.CONTENT_DISPOSITION,
+			"attachment; filename=\"" + fileName + "\""
+		).body(
+			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+		);
 	}
 
 	@GetMapping("/subscriptions")

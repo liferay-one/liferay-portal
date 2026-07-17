@@ -6,9 +6,13 @@
 package com.liferay.one.service;
 
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 
 import java.util.Collections;
+import java.util.Date;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +20,8 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Allen Ziegenfus
@@ -55,6 +61,126 @@ public class LicenseKeyServiceTest {
 			NoSuchLicenseKeyException.class,
 			() -> _licenseKeyService.getLicenseKeyByExternalReferenceCode(
 				"missing-erc"));
+	}
+
+	@Test
+	public void testGetLicenseKeyDownloadFileName() throws Exception {
+		LicenseKeyExporter licenseKeyExporter = Mockito.mock(
+			LicenseKeyExporter.class);
+
+		ReflectionTestUtils.setField(
+			_licenseKeyService, "_licenseKeyExporter", licenseKeyExporter);
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getName()
+		).thenReturn(
+			"key-1"
+		);
+
+		Mockito.when(
+			licenseKey.getProductName()
+		).thenReturn(
+			"DXP"
+		);
+
+		Mockito.when(
+			licenseKey.getProductVersion()
+		).thenReturn(
+			"2025.q3.9"
+		);
+
+		Mockito.when(
+			licenseKeyExporter.getFileName("DXP", "2025.q3.9", "key-1")
+		).thenReturn(
+			"activation-key-DXP.xml"
+		);
+
+		Assertions.assertEquals(
+			"activation-key-DXP.xml",
+			_licenseKeyService.getLicenseKeyDownloadFileName(licenseKey));
+	}
+
+	@Test
+	public void testGetLicenseKeyDownloadXML() throws Exception {
+		LicenseKeyExporter licenseKeyExporter = Mockito.mock(
+			LicenseKeyExporter.class);
+
+		ReflectionTestUtils.setField(
+			_licenseKeyService, "_licenseKeyExporter", licenseKeyExporter);
+
+		LicenseKey licenseKey = new LicenseKey(
+			new JSONObject(
+			).put(
+				"accountName", "Acme"
+			).put(
+				"customExpirationDate", "2027-01-01T00:00:00Z"
+			).put(
+				"description", "desc"
+			).put(
+				"domains", "example.com"
+			).put(
+				"hostName", "host"
+			).put(
+				"id", 1L
+			).put(
+				"ipAddresses", "1.2.3.4"
+			).put(
+				"key", "KEY"
+			).put(
+				"licenseName", "License Name"
+			).put(
+				"licenseType", "enterprise"
+			).put(
+				"licenseVersion", 3
+			).put(
+				"macAddresses", "AA:BB"
+			).put(
+				"maxClusterNodes", 1
+			).put(
+				"maxConcurrentUsers", 4
+			).put(
+				"maxHttpSessions", 3
+			).put(
+				"maxServers", 2
+			).put(
+				"maxUsers", 5
+			).put(
+				"name", "key-1"
+			).put(
+				"owner", "owner@example.com"
+			).put(
+				"productExternalId", "portal"
+			).put(
+				"productName", "DXP"
+			).put(
+				"productVersion", "2025.q3.9"
+			).put(
+				"serverId", "srv-1"
+			).put(
+				"sizing", "SIZING-4"
+			).put(
+				"startDate", "2026-01-01T00:00:00Z"
+			));
+
+		Date startDate = Date.from(licenseKey.getStartDateInstant());
+		Date expirationDate = Date.from(
+			licenseKey.getCustomExpirationDateInstant());
+
+		Mockito.when(
+			licenseKeyExporter.toXML(
+				"KEY", "Acme", "License Name", "enterprise", 3, "DXP", "portal",
+				"2025.q3.9", "owner@example.com", 1, 2, 3, 4L, 5L, "SIZING-4",
+				"desc", "example.com", "host", "1.2.3.4", "AA:BB", "srv-1",
+				startDate, expirationDate, startDate)
+		).thenReturn(
+			"<license/>"
+		);
+
+		Assertions.assertEquals(
+			"<license/>",
+			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey));
 	}
 
 	@Test
