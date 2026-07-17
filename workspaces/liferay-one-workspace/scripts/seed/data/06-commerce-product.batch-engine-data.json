@@ -661,6 +661,101 @@
 				}
 			],
 			"description": {
+				"en_US": "Liferay Customer Management Platform subscription for testing the activation status card."
+			},
+			"externalReferenceCode": "PRDCT-CMP",
+			"name": {
+				"en_US": "Liferay Customer Management Platform"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "product-icon",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "saas-dashboard"
+					}
+				},
+				{
+					"specificationKey": "family",
+					"value": {
+						"en_US": "Customer Management Platform"
+					}
+				},
+				{
+					"specificationKey": "product-family",
+					"value": {
+						"en_US": "Liferay Customer Management Platform (Subscription)"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-CMP",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-CMP"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
 				"en_US": "TODO"
 			},
 			"externalReferenceCode": "PRDCT-COMMERCE",
@@ -2017,6 +2112,107 @@
 				}
 			],
 			"description": {
+				"en_US": "Liferay PaaS Experience subscription for testing the activation status card."
+			},
+			"externalReferenceCode": "PRDCT-PAAS-EXPERIENCE",
+			"name": {
+				"en_US": "Liferay PaaS Experience"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "product-icon",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "paas-dashboard"
+					}
+				},
+				{
+					"specificationKey": "family",
+					"value": {
+						"en_US": "PaaS"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PAAS_USER"
+					}
+				},
+				{
+					"specificationKey": "product-family",
+					"value": {
+						"en_US": "Liferay PaaS (Subscription)"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PAAS-EXPERIENCE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-EXPERIENCE"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
 				"en_US": "Liferay PaaS legacy subscription for testing the activation status card."
 			},
 			"externalReferenceCode": "PRDCT-PAAS-LEGACY",
@@ -2710,6 +2906,107 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-SAAS-ENTERPRISE-PLAN"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Liferay SaaS Experience subscription for testing the activation status card."
+			},
+			"externalReferenceCode": "PRDCT-SAAS-EXPERIENCE",
+			"name": {
+				"en_US": "Liferay SaaS Experience"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "product-icon",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "saas-dashboard"
+					}
+				},
+				{
+					"specificationKey": "family",
+					"value": {
+						"en_US": "SaaS"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "product-family",
+					"value": {
+						"en_US": "Liferay SaaS (Subscription)"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-SAAS-EXPERIENCE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-EXPERIENCE"
 				}
 			]
 		},
