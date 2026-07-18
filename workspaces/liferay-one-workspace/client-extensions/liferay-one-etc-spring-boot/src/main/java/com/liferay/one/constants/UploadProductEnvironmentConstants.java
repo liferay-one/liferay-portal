@@ -8,7 +8,7 @@ package com.liferay.one.constants;
 /**
  * @author Allen Ziegenfus
  */
-public class ProductEnvironment {
+public class UploadProductEnvironmentConstants {
 
 	public static final String BACKUP = "backup";
 
