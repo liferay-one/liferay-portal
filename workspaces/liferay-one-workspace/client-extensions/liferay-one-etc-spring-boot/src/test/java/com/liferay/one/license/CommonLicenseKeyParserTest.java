@@ -5,7 +5,7 @@
 
 package com.liferay.one.license;
 
-import com.liferay.one.constants.ProductEnvironment;
+import com.liferay.one.constants.UploadProductEnvironmentConstants;
 
 import java.time.Instant;
 
@@ -26,7 +26,7 @@ public class CommonLicenseKeyParserTest {
 					"Wednesday, January 1, 2025 12:00:00 AM UTC"));
 
 		Assertions.assertEquals(
-			ProductEnvironment.BACKUP,
+			UploadProductEnvironmentConstants.BACKUP,
 			commonLicenseKeyData.getProductEnvironment());
 	}
 
@@ -40,7 +40,7 @@ public class CommonLicenseKeyParserTest {
 					"Wednesday, January 1, 2025 12:00:00 AM UTC"));
 
 		Assertions.assertEquals(
-			ProductEnvironment.PRODUCTION,
+			UploadProductEnvironmentConstants.PRODUCTION,
 			commonLicenseKeyData.getProductEnvironment());
 		Assertions.assertEquals(
 			Instant.parse("2024-01-01T00:00:00Z"),
@@ -51,6 +51,15 @@ public class CommonLicenseKeyParserTest {
 	}
 
 	@Test
+	public void testParseCommerceThrowsForUnparsableFile() {
+		Assertions.assertThrows(
+			IllegalArgumentException.class,
+			() -> _commonLicenseKeyParser.parseCommerce(
+				_commerceXML(
+					"Production instance", "not a date", "not a date")));
+	}
+
+	@Test
 	public void testParseEnterpriseSearchNonproduction() {
 		CommonLicenseKeyData commonLicenseKeyData =
 			_commonLicenseKeyParser.parseEnterpriseSearch(
@@ -58,7 +67,7 @@ public class CommonLicenseKeyParserTest {
 					"Acme Non-Production", 1704067200000L, 1735689600000L));
 
 		Assertions.assertEquals(
-			ProductEnvironment.NONPRODUCTION,
+			UploadProductEnvironmentConstants.NONPRODUCTION,
 			commonLicenseKeyData.getProductEnvironment());
 		Assertions.assertEquals(
 			Instant.ofEpochMilli(1704067200000L),
@@ -75,7 +84,7 @@ public class CommonLicenseKeyParserTest {
 				_enterpriseSearchJSON("Acme", 1L, 2L));
 
 		Assertions.assertEquals(
-			ProductEnvironment.PRODUCTION,
+			UploadProductEnvironmentConstants.PRODUCTION,
 			commonLicenseKeyData.getProductEnvironment());
 	}
 
