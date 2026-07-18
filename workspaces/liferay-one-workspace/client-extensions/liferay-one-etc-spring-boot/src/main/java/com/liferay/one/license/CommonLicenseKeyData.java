@@ -13,12 +13,12 @@ import java.time.Instant;
 public class CommonLicenseKeyData {
 
 	public CommonLicenseKeyData(
-		String productEnvironment, Instant startDateInstant,
-		Instant endDateInstant) {
+		Instant endDateInstant, String productEnvironment,
+		Instant startDateInstant) {
 
+		_endDateInstant = endDateInstant;
 		_productEnvironment = productEnvironment;
 		_startDateInstant = startDateInstant;
-		_endDateInstant = endDateInstant;
 	}
 
 	public Instant getEndDateInstant() {
