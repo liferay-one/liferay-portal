@@ -384,12 +384,12 @@ public class CommerceOrderService extends OneBaseService {
 				"/o/headless-commerce-admin-channel/v1.0/channels" +
 					"/by-externalReferenceCode/{externalReferenceCode}"
 			).buildAndExpand(
-				_SALESFORCE_CHANNEL
+				_LIFERAY_ONE_CHANNEL
 			).toUri());
 
 		if (Validator.isNull(response)) {
 			throw new Exception(
-				"Unable to find commerce channel " + _SALESFORCE_CHANNEL);
+				"Unable to find commerce channel " + _LIFERAY_ONE_CHANNEL);
 		}
 
 		JSONObject jsonObject = new JSONObject(response);
@@ -570,9 +570,9 @@ public class CommerceOrderService extends OneBaseService {
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
 
-	private static final int _PAGE_SIZE = 500;
+	private static final String _LIFERAY_ONE_CHANNEL = "LIFERAY_ONE_CHANNEL";
 
-	private static final String _SALESFORCE_CHANNEL = "SALESFORCE_CHANNEL";
+	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
 
