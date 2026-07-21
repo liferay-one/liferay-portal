@@ -1,7 +1,4 @@
 {
-	"customFields": {
-		"projectName": "Enterprise Plan Project"
-	},
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
@@ -39,7 +36,8 @@
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "DXP"
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-010"
 	},
 	"purchaseOrderNumber": "PO-ENTERPRISE-PLAN"
 }

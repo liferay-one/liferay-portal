@@ -37,12 +37,6 @@
 					"value": {
 						"en_US": "Paid"
 					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Commerce"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -83,12 +77,6 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
 					}
 				}
 			],
@@ -131,12 +119,6 @@
 					"value": {
 						"en_US": "Paid"
 					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -177,12 +159,6 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "PaaS"
 					}
 				}
 			],
@@ -336,12 +312,6 @@
 					"value": {
 						"en_US": "https://learn.liferay.com"
 					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "AIHub"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -470,12 +440,6 @@
 					"specificationKey": "project-environment-profile",
 					"value": {
 						"en_US": "analytics-cloud"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Analytics"
 					}
 				},
 				{
@@ -628,12 +592,6 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "PaaS"
-					}
-				},
-				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Software (Subscription)"
@@ -720,12 +678,6 @@
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "saas-dashboard"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Customer Management Platform"
 					}
 				},
 				{
@@ -848,12 +800,6 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-commerce"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Commerce"
 					}
 				},
 				{
@@ -983,12 +929,6 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-commerce"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Commerce"
 					}
 				},
 				{
@@ -1154,12 +1094,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "CMP"
 					}
 				}
 			],
@@ -1338,12 +1272,6 @@
 					"value": {
 						"en_US": "https://learn.liferay.com"
 					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "DataPlatform"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -1502,12 +1430,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "DSR"
 					}
 				}
 			],
@@ -1674,12 +1596,6 @@
 					"value": {
 						"en_US": "https://learn.liferay.com"
 					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "DXP"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -1766,12 +1682,6 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "EnterpriseSearch"
-					}
-				},
-				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Enterprise Search (Subscription)"
@@ -1852,12 +1762,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "EnterpriseSearch"
 					}
 				}
 			],
@@ -2073,12 +1977,6 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "PaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
 						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PAAS_USER"
@@ -2171,12 +2069,6 @@
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "paas-dashboard"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "PaaS"
 					}
 				},
 				{
@@ -2275,12 +2167,6 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "PaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
 						"en_US": "C_CRITICAL_INCIDENT_CONTACT"
@@ -2302,6 +2188,429 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-PAAS-LEGACY"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Entry-level reseller partnership for reselling Liferay products and services."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-BASIC-RESELLER",
+			"name": {
+				"en_US": "Basic Reseller Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-BASIC-RESELLER",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-BASIC-RESELLER"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Distribution partnership for distributing Liferay products through regional channels."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-DISTRIBUTION",
+			"name": {
+				"en_US": "Distribution Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-DISTRIBUTION",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-DISTRIBUTION"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Reseller partnership for reselling Liferay products and services."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-RESELLER",
+			"name": {
+				"en_US": "Reseller Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-RESELLER",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-RESELLER"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Service partnership for delivering implementation and consulting services on Liferay."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-SERVICE",
+			"name": {
+				"en_US": "Service Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-SERVICE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-SERVICE"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Service partnership referral program for referring Liferay opportunities."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-SERVICE-REFERRAL",
+			"name": {
+				"en_US": "Service Partnership - Referral Program"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-SERVICE-REFERRAL",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-SERVICE-REFERRAL"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Solution partnership reseller program for packaging and reselling Liferay solutions."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-SOLUTION-RESELLER",
+			"name": {
+				"en_US": "Solution Partnership - Reseller Program"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-SOLUTION-RESELLER",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-SOLUTION-RESELLER"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Standard Liferay partner membership tier."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-STANDARD",
+			"name": {
+				"en_US": "Partner - Standard"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-STANDARD",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-STANDARD"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Training partnership for delivering authorized Liferay training."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-TRAINING",
+			"name": {
+				"en_US": "Training Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-TRAINING",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-TRAINING"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Value-added reseller partnership for reselling Liferay with added services."
+			},
+			"externalReferenceCode": "PRDCT-PARTNERSHIP-VAR",
+			"name": {
+				"en_US": "Value-Added Reseller Partnership"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-PARTNERSHIP-VAR",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PARTNERSHIP-VAR"
 				}
 			]
 		},
@@ -2367,12 +2676,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Portal"
 					}
 				},
 				{
@@ -2456,12 +2759,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "Portal"
 					}
 				},
 				{
@@ -2677,15 +2974,9 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
-						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
 					}
 				},
 				{
@@ -2778,15 +3069,9 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
-						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
 					}
 				},
 				{
@@ -2879,15 +3164,9 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
-						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
 					}
 				},
 				{
@@ -2980,15 +3259,9 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
-						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
 					}
 				},
 				{
@@ -3081,15 +3354,9 @@
 					}
 				},
 				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "SaaS"
-					}
-				},
-				{
 					"specificationKey": "project-contacts-role-ercs",
 					"value": {
-						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PRIVACY_BREACH_CONTACT,C_SECURITY_BREACH_CONTACT"
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
 					}
 				}
 			],
@@ -3890,12 +4157,6 @@
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "Experience Management"
-					}
-				},
-				{
-					"specificationKey": "family",
-					"value": {
-						"en_US": "DXP"
 					}
 				}
 			],

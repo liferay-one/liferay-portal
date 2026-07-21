@@ -90,6 +90,7 @@ function _build_order_payload {
 	local file="${1}"
 	local channel_id="${2}"
 	local contract_id="${3}"
+	local project_id="${4}"
 
 	python3 -c "
 import json
@@ -98,17 +99,23 @@ with open('${file}') as file:
 	order = json.load(file)['order']
 
 # channelExternalReferenceCode is not resolved on create, so the numeric
-# channelId is required. The contract is linked through the
-# contractToCommerceOrder object relationship, whose foreign key field on the
-# order takes the numeric contract object entry ID. The order item name is
-# denormalized from the SKU on create -- sending it rejects the nested mapping
-# -- so it is kept in the file for readability and dropped here.
+# channelId is required. The contract and project are linked through the
+# contractToCommerceOrder and projectToCommerceOrder object relationships, whose
+# foreign key fields on the order take the numeric object entry IDs. The order
+# item name is denormalized from the SKU on create -- sending it rejects the
+# nested mapping -- so it is kept in the file for readability and dropped here.
 
 order.pop('channelExternalReferenceCode', None)
 order.pop('contractExternalReferenceCode', None)
+order.pop('projectExternalReferenceCode', None)
 
 order['channelId'] = ${channel_id}
 order['r_contractToCommerceOrder_c_contractId'] = ${contract_id}
+
+project_id = '${project_id}'
+
+if project_id:
+	order['r_projectToCommerceOrder_c_projectId'] = int(project_id)
 
 for order_item in order.get('orderItems', []):
 	order_item.pop('name', None)
@@ -155,10 +162,18 @@ function _link_license_keys {
 # (shown as the purchase number on the product details). They are applied with a
 # follow-up PATCH from the customFields object and purchaseOrderNumber in the
 # order file once the order exists.
+#
+# projectName is a denormalized read cache: the project is linked authoritatively
+# through the projectToCommerceOrder relationship (see _build_order_payload), and
+# projectName is derived here from that same project's name rather than authored
+# in the order file, so the relationship stays the single source of truth. The
+# commerce order read APIs surface expando custom fields but not object
+# relationship foreign keys, so the UI reads projectName off the order directly.
 
 function _set_order_fields {
 	local file="${1}"
 	local order_id="${2}"
+	local project_name="${3}"
 
 	local payload
 
@@ -171,14 +186,21 @@ with open(sys.argv[1]) as file:
 
 patch = {}
 
-if data.get('customFields'):
-	patch['customFields'] = data['customFields']
+custom_fields = dict(data.get('customFields') or {})
+
+project_name = sys.argv[2]
+
+if project_name:
+	custom_fields['projectName'] = project_name
+
+if custom_fields:
+	patch['customFields'] = custom_fields
 
 if data.get('purchaseOrderNumber'):
 	patch['purchaseOrderNumber'] = data['purchaseOrderNumber']
 
 print(json.dumps(patch))
-" "${file}")
+" "${file}" "${project_name}")
 
 	[[ ${payload} == "{}" ]] && return 0
 
@@ -216,9 +238,25 @@ function _populate_order {
 
 	contract_id=$(_resolve_contract_id "${contract_external_reference_code}") || return 1
 
+	local project_external_reference_code
+
+	project_external_reference_code=$(_read_field "order.projectExternalReferenceCode" < "${file}")
+
+	local project_id=""
+	local project_name=""
+
+	if [[ -n ${project_external_reference_code} ]]
+	then
+		local project
+
+		project=$(_resolve_project "${project_external_reference_code}") || return 1
+
+		IFS=$'\t' read -r project_id project_name <<< "${project}"
+	fi
+
 	local payload
 
-	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}")
+	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}" "${project_id}")
 
 	# The order placement upserts by external reference code, so re-running is
 	# idempotent. A 4xx is a permanent rejection -- bad data such as an
@@ -264,7 +302,7 @@ function _populate_order {
 
 	order_id=$(echo "${response}" | sed '$d' | _read_field "id")
 
-	_set_order_fields "${file}" "${order_id}"
+	_set_order_fields "${file}" "${order_id}" "${project_name}"
 	_upsert_entitlements "${file}"
 	_link_license_keys "${file}"
 }
@@ -363,6 +401,49 @@ function _resolve_contract_id {
 	done
 
 	echo "Unable to resolve contract ${external_reference_code}." >&2
+
+	return 1
+}
+
+# Resolves a project external reference code to its numeric ID and name,
+# emitted as a single tab-separated line. The ID sets the projectToCommerceOrder
+# relationship foreign key on the order; the name is the denormalized projectName
+# custom field the UI reads (see _set_order_fields).
+
+function _resolve_project {
+	local external_reference_code="${1}"
+
+	local url="${LIFERAY_URL}/o/c/projects/by-external-reference-code/${external_reference_code}"
+
+	local attempt
+
+	for ((attempt = 1; attempt <= 60; attempt++))
+	do
+		local project
+
+		project=$(_curl "${url}" | python3 -c "
+import json
+import sys
+
+try:
+	project = json.load(sys.stdin)
+
+	print('{}\t{}'.format(project['id'], project.get('name', '')))
+except Exception:
+	pass
+" || true)
+
+		if [[ -n ${project} ]]
+		then
+			echo "${project}"
+
+			return 0
+		fi
+
+		sleep 5
+	done
+
+	echo "Unable to resolve project ${external_reference_code}." >&2
 
 	return 1
 }

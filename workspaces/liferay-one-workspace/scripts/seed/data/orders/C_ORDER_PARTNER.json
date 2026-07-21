@@ -1,7 +1,4 @@
 {
-	"customFields": {
-		"projectName": "Partner Project"
-	},
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
@@ -14,6 +11,19 @@
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_DXP",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PARTNER",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PARTNER_SOLUTION_RESELLER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Solution Partnership - Reseller Program",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-016",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_SOLUTION_RESELLER",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PARTNER",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
@@ -30,10 +40,18 @@
 				"quantity": 1,
 				"skuExternalReferenceCode": "PRDCT-DXP",
 				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_SOLUTION_RESELLER",
+				"name": "Solution Partnership - Reseller Program",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-PARTNERSHIP-SOLUTION-RESELLER",
+				"unitPrice": 0
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "DXP"
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-016"
 	},
 	"purchaseOrderNumber": "PO-PARTNER"
 }

@@ -1,7 +1,4 @@
 {
-	"customFields": {
-		"projectName": "Commerce Cloud Project"
-	},
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
@@ -33,7 +30,8 @@
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "DXP"
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-023"
 	},
 	"purchaseOrderNumber": "PO-COMMERCE-CLOUD"
 }

@@ -1,7 +1,4 @@
 {
-	"customFields": {
-		"projectName": "Multi Contract Project"
-	},
 	"entitlements": [
 		{
 			"endDate": "2026-12-31T00:00:00Z",
@@ -73,7 +70,8 @@
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "DXP"
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-025"
 	},
 	"purchaseOrderNumber": "PO-MULTI-1"
 }
