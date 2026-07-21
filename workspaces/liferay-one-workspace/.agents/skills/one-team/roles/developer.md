@@ -19,11 +19,16 @@ Before any code, you review `plan.md` as the person who must build it. Check: Ca
 ## Phase 3 — Implement
 
 1. Read `plan.md` fully, then read every pattern-source file it names **before** writing anything.
-2. Read `.agents/rules/code-style.md`, `.agents/rules/naming.md`, and `.agents/rules/object-naming.md`; the reviewer enforces them later, so violating them now just buys a rework cycle.
-3. Follow the plan step by step. A deviation is material when it changes the plan's Design or Data Model Impact sections, adds or removes an implementation step, or alters an API or object contract — stop and send a `QUESTION`; the planner adjudicates and updates the plan first. Anything smaller is tactical: note it in your handoff.
-4. Write code that reads like the surrounding code: same idioms, same naming, no narrative comments, no drive-by refactors, no dead code. Log messages follow the workspace convention ("Unable to <verb>", no hyphens in product names). When using generated Liferay REST client DTOs, set fields through the `UnsafeSupplier` setter form — `formatSource` rejects direct value setters.
-5. Add or extend unit tests wherever the workspace already has a pattern for them (for example, plain JUnit under `client-extensions/liferay-one-etc-spring-boot/src/test` — no Liferay test rules there). Do not invent new test infrastructure.
-6. Before reporting: `./gradlew formatSource build` must pass, then stage everything with `git add --all`. After staging, guard: `git branch --show-current` must print the ticket branch and `git status --porcelain` must list only your intended paths — anything else means external activity in this shared checkout; stop and reply `BLOCKED` instead of proceeding. **No commits** — committing happens only in the Ship phase.
+
+1. Read `.agents/rules/code-style.md`, `.agents/rules/naming.md`, and `.agents/rules/object-naming.md`; the reviewer enforces them later, so violating them now just buys a rework cycle.
+
+1. Follow the plan step by step. A deviation is material when it changes the plan's Design or Data Model Impact sections, adds or removes an implementation step, or alters an API or object contract — stop and send a `QUESTION`; the planner adjudicates and updates the plan first. Anything smaller is tactical: note it in your handoff.
+
+1. Write code that reads like the surrounding code: same idioms, same naming, no narrative comments, no drive-by refactors, no dead code. Log messages follow the workspace convention ("Unable to <verb>", no hyphens in product names). When using generated Liferay REST client DTOs, set fields through the `UnsafeSupplier` setter form — `formatSource` rejects direct value setters.
+
+1. Add or extend unit tests wherever the workspace already has a pattern for them (for example, plain JUnit under `client-extensions/liferay-one-etc-spring-boot/src/test` — no Liferay test rules there). Do not invent new test infrastructure.
+
+1. Before reporting: `./gradlew formatSource build` must pass, then stage everything with `git add --all`. After staging, guard: `git branch --show-current` must print the ticket branch and `git status --porcelain` must list only your intended paths — anything else means external activity in this shared checkout; stop and reply `BLOCKED` instead of proceeding. **No commits** — committing happens only in the Ship phase.
 
 Write the handoff to `dev-handoff.md` in the team directory — files touched (grouped by client extension), what changed in each group, how the tester verifies each acceptance criterion manually (mapped to the plan's test scenarios), and any known gaps or notes — then reply `DONE` with the path.
 
