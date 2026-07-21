@@ -6,8 +6,8 @@
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useProject} from '~/context/ProjectContext';
-import {ProjectProduct, useProjectProducts} from '~/hooks/useProjectCommerce';
-import {useProjectOrders} from '~/hooks/useProjectOrders';
+import {useProjectApplications} from '~/hooks/useProjectApplications';
+import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {
 	ListColumn,
 	ListFilter,
@@ -16,13 +16,12 @@ import ProductListPage, {
 	statusColumn,
 	statusFilter,
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
-import {PRODUCT_CATEGORY} from '~/pages/MyAccount/Projects/utils/constants';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 export default function Applications() {
 	const navigate = useNavigate();
-	const {projectId, projects, selectedContractERC} = useProject();
+	const {projectId, projects} = useProject();
 
 	const projectName = isUnassignedProject(projectId)
 		? undefined
@@ -30,33 +29,8 @@ export default function Applications() {
 				(project) => project.externalReferenceCode === projectId
 			)?.name;
 
-	const {error, loading, products} = useProjectProducts(
-		projectId,
-		selectedContractERC
-	);
-	const {placedOrders} = useProjectOrders(projectName);
-
-	const applications = useMemo(
-		() =>
-			products.filter((product) =>
-				product.categoryNames.includes(PRODUCT_CATEGORY.APP)
-			),
-		[products]
-	);
-
-	const orderIdByProductName = useMemo(() => {
-		const map = new Map<string, string>();
-
-		for (const order of placedOrders) {
-			for (const item of order.placedOrderItems ?? []) {
-				if (!map.has(item.name)) {
-					map.set(item.name, String(order.id));
-				}
-			}
-		}
-
-		return map;
-	}, [placedOrders]);
+	const {applications, error, loading, orderIdByProductName} =
+		useProjectApplications(projectId, projectName);
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(
