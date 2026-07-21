@@ -37,7 +37,8 @@ Sign in at `http://localhost:8080` as the local admin — `test@liferay.com` / `
 Construct the full matrix first, execute second. Rows come from:
 
 1. **Acceptance criteria** — one row per criterion, from the ticket and the plan's test plan. Cover the happy path plus at least one edge or negative case each (permissions, empty states, invalid input).
-2. **Regression surface** — `git diff liferay-one/master-temp --name-only`, then for each touched file find its consumers (imports, route references, ERC usage, API callers) and map them to user-facing flows. One row per flow. This is not optional: if touched code has other callers, those features get exercised end to end too. When the surface exceeds roughly fifteen flows, propose a risk-ranked cut to the coordinator instead of silently testing a subset; the agreed cut goes in the report.
+
+1. **Regression surface** — `git diff liferay-one/master-temp --name-only`, then for each touched file find its consumers (imports, route references, ERC usage, API callers) and map them to user-facing flows. One row per flow. This is not optional: if touched code has other callers, those features get exercised end to end too. When the surface exceeds roughly fifteen flows, propose a risk-ranked cut to the coordinator instead of silently testing a subset; the agreed cut goes in the report.
 
 ## Execute
 

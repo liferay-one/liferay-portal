@@ -22,8 +22,10 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 ## Inputs, Before Any Judgment
 
 1. All five rule files in `.agents/rules/` — `code-style.md`, `naming.md`, `object-naming.md`, `page-folder-structure.md`, `pr-hygiene.md`.
-2. `plan.md` and `test-report.md` in the team directory — what was promised, what was proven.
-3. The diff: `git diff liferay-one/master-temp` (the work is staged, so this includes new files) and `git diff liferay-one/master-temp --name-only` for scope.
+
+1. `plan.md` and `test-report.md` in the team directory — what was promised, what was proven.
+
+1. The diff: `git diff liferay-one/master-temp` (the work is staged, so this includes new files) and `git diff liferay-one/master-temp --name-only` for scope.
 
 ## Automated Pass First
 
@@ -32,12 +34,18 @@ Run the `code-review` skill (the diff-review skill, not a PR review) against the
 ## Review Lenses, in Order
 
 1. **Correctness** — logic errors, null and error paths, edge cases, concurrency; silent failures above all: swallowed exceptions, empty catch blocks, fail-open authorization, defaults that mask errors.
-2. **Completeness** — every acceptance criterion in `plan.md` is implemented and appears in `test-report.md` as tested; nothing implemented that the ticket did not ask for.
-3. **Security** — new or changed endpoints carry the right OAuth2 scopes (`.agents/specs/api.md`); object access is authorized (no IDOR through ERC or ID parameters); no secrets, tokens, or personal data in code or logs.
-4. **Regression risk** — changed signatures, contracts, ERCs, or shared components, checked against their consumers; anything the test report's regression matrix missed.
-5. **Pattern conformance** — the code mirrors the pattern-source files the plan named; ERC and naming rules hold; REST endpoints map robotically to method names.
-6. **Workspace rules** — sorted lists and JSON entries, log message conventions ("Unable to <verb>", no hyphens in product names), "IDs" wording, brand casing, file naming.
-7. **Simplicity** — dead code, needless abstraction, duplicated logic, narrative comments. Flag complexity that the next human reader will pay for.
+
+1. **Completeness** — every acceptance criterion in `plan.md` is implemented and appears in `test-report.md` as tested; nothing implemented that the ticket did not ask for.
+
+1. **Security** — new or changed endpoints carry the right OAuth2 scopes (`.agents/specs/api.md`); object access is authorized (no IDOR through ERC or ID parameters); no secrets, tokens, or personal data in code or logs.
+
+1. **Regression risk** — changed signatures, contracts, ERCs, or shared components, checked against their consumers; anything the test report's regression matrix missed.
+
+1. **Pattern conformance** — the code mirrors the pattern-source files the plan named; ERC and naming rules hold; REST endpoints map robotically to method names.
+
+1. **Workspace rules** — sorted lists and JSON entries, log message conventions ("Unable to <verb>", no hyphens in product names), "IDs" wording, brand casing, file naming.
+
+1. **Simplicity** — dead code, needless abstraction, duplicated logic, narrative comments. Flag complexity that the next human reader will pay for.
 
 ## Findings and Verdicts
 

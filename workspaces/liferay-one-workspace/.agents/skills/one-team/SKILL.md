@@ -124,14 +124,22 @@ This checkout is shared — other sessions and the user can move it mid-run. Bef
 ### Phase 0 — Kickoff (Coordinator)
 
 1. Verify the working directory is the workspace root.
-2. Resume check — before any tree-state judgment: when `.one-team/<TICKET>/team-log.md` exists, follow Resuming an Interrupted Run instead of continuing here; a resumed run's staged, uncommitted work is its persisted state, not a dirty tree. A branch named `<TICKET>` with no team log is a leftover, not a resume: when `git cherry liferay-one/master-temp <TICKET>` shows its work already upstream (the usual case for follow-ups on completed tickets), rename it aside — `git branch -m <TICKET> <TICKET>-pre-one-team` — and continue; when it carries unique unmerged commits, stop and ask the user which base to build on.
-3. Fresh runs only: `git status --porcelain` must be clean. Dirty tree → stop and ask the user.
-4. Make the team directory unstageable: append `/workspaces/liferay-one-workspace/.one-team/` to `../../.git/info/exclude` unless already present (repo-local — the committed `.gitignore` entry may not exist on the ticket branch, and the developer stages with `git add --all`).
-5. Create the team directory and `team-log.md` (ticket, date, phase checklist, roster placeholder), and copy the four charter files into `.one-team/<TICKET>/roles/` — every spawn prompt points at these copies.
-6. Fetch the ticket and initiative JSON into the team directory and validate them (see Jira Context).
-7. `git fetch liferay-one master-temp`, then `git checkout -b <TICKET> liferay-one/master-temp`.
-8. Create the phase tasks on the task board.
-9. Spawn all four teammates; log the roster.
+
+1. Resume check — before any tree-state judgment: when `.one-team/<TICKET>/team-log.md` exists, follow Resuming an Interrupted Run instead of continuing here; a resumed run's staged, uncommitted work is its persisted state, not a dirty tree. A branch named `<TICKET>` with no team log is a leftover, not a resume: when `git cherry liferay-one/master-temp <TICKET>` shows its work already upstream (the usual case for follow-ups on completed tickets), rename it aside — `git branch -m <TICKET> <TICKET>-pre-one-team` — and continue; when it carries unique unmerged commits, stop and ask the user which base to build on.
+
+1. Fresh runs only: `git status --porcelain` must be clean. Dirty tree → stop and ask the user.
+
+1. Make the team directory unstageable: append `/workspaces/liferay-one-workspace/.one-team/` to `../../.git/info/exclude` unless already present (repo-local — the committed `.gitignore` entry may not exist on the ticket branch, and the developer stages with `git add --all`).
+
+1. Create the team directory and `team-log.md` (ticket, date, phase checklist, roster placeholder), and copy the four charter files into `.one-team/<TICKET>/roles/` — every spawn prompt points at these copies.
+
+1. Fetch the ticket and initiative JSON into the team directory and validate them (see Jira Context).
+
+1. `git fetch liferay-one master-temp`, then `git checkout -b <TICKET> liferay-one/master-temp`.
+
+1. Create the phase tasks on the task board.
+
+1. Spawn all four teammates; log the roster.
 
 ### Phase 1 — Plan (Planner)
 
@@ -176,10 +184,14 @@ Exit gate: reviewer's `APPROVED` logged.
 ### Phase 6 — Ship (Developer Commits, Everyone Signs)
 
 1. The developer runs the format pass (`.agents/skills/one-format/SKILL.md`) and `./gradlew build` one final time. The pass must produce no diff — when it changes anything, re-stage and return to Phase 5 for a delta re-review before continuing.
-2. The developer composes the commits: minimal and organized — one commit is the default; split only when the history is genuinely clearer for the human reviewer (for example, regenerated output apart from hand-written code). Every message reads `<TICKET> <concise summary>` — sentence case, no trailing period, under 72 characters. Plain `git commit` under the user's git identity: **never** add Claude as author or co-author, no `Co-Authored-By` trailer, no tool attribution anywhere.
-3. The coordinator verifies: `git log liferay-one/master-temp..HEAD --format='%an %s'` shows the user as author and the ticket prefix on every commit; `git diff liferay-one/master-temp --name-only` shows only files in this ticket's scope (`.agents/rules/pr-hygiene.md`); the working tree is clean.
-4. The reviewer takes one last look at the commit structure — message quality, nothing stray. A problem named here follows the usual adjudication loop: the developer amends the commits (soft-reset and recommit when structure or messages are wrong), the coordinator re-runs its step 3 checks, the reviewer looks again.
-5. **Do not push. Do not open a PR** (unless the user has explicitly ordered it — log the override). Report to the user: what was built, where the plan/test/review artifacts live, the commit list, the branch name, and that `/one-pr` is the next step once they are satisfied. Warn them that `liferay-one/master-temp` force-rewrites frequently — a branch that sits unmerged shows PR "conflicts" even when its files are untouched; re-rebasing onto the current tip and force-pushing with lease fixes it in seconds, and prompt merging avoids it entirely.
+
+1. The developer composes the commits: minimal and organized — one commit is the default; split only when the history is genuinely clearer for the human reviewer (for example, regenerated output apart from hand-written code). Every message reads `<TICKET> <concise summary>` — sentence case, no trailing period, under 72 characters. Plain `git commit` under the user's git identity: **never** add Claude as author or co-author, no `Co-Authored-By` trailer, no tool attribution anywhere.
+
+1. The coordinator verifies: `git log liferay-one/master-temp..HEAD --format='%an %s'` shows the user as author and the ticket prefix on every commit; `git diff liferay-one/master-temp --name-only` shows only files in this ticket's scope (`.agents/rules/pr-hygiene.md`); the working tree is clean.
+
+1. The reviewer takes one last look at the commit structure — message quality, nothing stray. A problem named here follows the usual adjudication loop: the developer amends the commits (soft-reset and recommit when structure or messages are wrong), the coordinator re-runs its step 3 checks, the reviewer looks again.
+
+1. **Do not push. Do not open a PR** (unless the user has explicitly ordered it — log the override). Report to the user: what was built, where the plan/test/review artifacts live, the commit list, the branch name, and that `/one-pr` is the next step once they are satisfied. Warn them that `liferay-one/master-temp` force-rewrites frequently — a branch that sits unmerged shows PR "conflicts" even when its files are untouched; re-rebasing onto the current tip and force-pushing with lease fixes it in seconds, and prompt merging avoids it entirely.
 
 ## Communication Rules
 
