@@ -18,6 +18,7 @@ import com.liferay.one.jira.converter.EntitlementConverter;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PostalAddressConverter;
 import com.liferay.one.jira.converter.TeamConverter;
+import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.one.model.AccountSupportInfo;
@@ -98,8 +99,17 @@ public class AccountSyncService {
 					" to JSM");
 		}
 
+		String accountExternalReferenceCode =
+			project.getAccountExternalReferenceCode();
+
+		if (Validator.isNull(accountExternalReferenceCode)) {
+			throw new AccountNotFoundException(
+				"Project " + project.getExternalReferenceCode() +
+					" has no account external reference code");
+		}
+
 		Account account = _accountService.getAccount(
-			project.getAccountExternalReferenceCode());
+			accountExternalReferenceCode);
 
 		_syncAccountAsset(
 			account, _getAccountAttributeValues(account),
