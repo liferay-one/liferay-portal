@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,14 +119,14 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
-		boolean wasMember = _userAccountService.hasAccountUserAccount(
+		boolean hasAccount = _userAccountService.hasAccountUserAccount(
 			account.getId(), userId);
 
 		_accountService.addAccountUserAccount(account.getId(), jwt, userId);
 
 		_provisioningAssignmentService.assignCustomerGroup(userId);
 
-		if (!wasMember) {
+		if (!hasAccount) {
 			_provisioningEmailService.sendAssignedWelcomeEmail(userId, account);
 		}
 	}
@@ -180,7 +179,7 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
-		JSONObject jsonObject = _getJSONObject(json);
+		JSONObject jsonObject = new JSONObject(json);
 
 		Map<Long, String> accountRoleNames = _getAccountRoleNames(
 			account.getId(), jsonObject.optJSONArray("accountRoleIds"));
@@ -207,16 +206,16 @@ public class AccountsRestController extends OneBaseRestController {
 			_createOktaContact(account, emailAddress, jsonObject);
 		}
 
-		boolean wasMember = false;
+		boolean hasAccount = false;
 
 		if ((userAccount != null) &&
 			UserAccountUtil.hasAccountMembership(
 				userAccount, account.getId())) {
 
-			wasMember = true;
+			hasAccount = true;
 		}
 
-		if (!wasMember) {
+		if (!hasAccount) {
 			_accountService.addAccountUserAccountByEmailAddress(
 				account.getId(), emailAddress, jwt);
 		}
@@ -240,7 +239,7 @@ public class AccountsRestController extends OneBaseRestController {
 				account, userId, entry.getValue());
 		}
 
-		if (!wasMember) {
+		if (!hasAccount) {
 			_provisioningEmailService.sendAssignedWelcomeEmail(userId, account);
 		}
 	}
@@ -275,19 +274,6 @@ public class AccountsRestController extends OneBaseRestController {
 			emailAddress, firstName, StringPool.BLANK, lastName);
 	}
 
-	private long _getAccountRoleId(
-		JSONArray accountRoleIdsJSONArray, int index) {
-
-		try {
-			return accountRoleIdsJSONArray.getLong(index);
-		}
-		catch (JSONException jsonException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Unable to parse \"accountRoleIds\"",
-				jsonException);
-		}
-	}
-
 	private Map<Long, String> _getAccountRoleNames(
 			long accountId, JSONArray accountRoleIdsJSONArray)
 		throws Exception {
@@ -302,7 +288,7 @@ public class AccountsRestController extends OneBaseRestController {
 			_accountService.getAccountRoleNames(accountId);
 
 		for (int i = 0; i < accountRoleIdsJSONArray.length(); i++) {
-			long accountRoleId = _getAccountRoleId(accountRoleIdsJSONArray, i);
+			long accountRoleId = accountRoleIdsJSONArray.getLong(i);
 
 			String accountRoleName = allAccountRoleNames.get(accountRoleId);
 
@@ -316,17 +302,6 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 
 		return accountRoleNames;
-	}
-
-	private JSONObject _getJSONObject(String json) {
-		try {
-			return new JSONObject(json);
-		}
-		catch (JSONException jsonException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Unable to parse the request body",
-				jsonException);
-		}
 	}
 
 	@Autowired
