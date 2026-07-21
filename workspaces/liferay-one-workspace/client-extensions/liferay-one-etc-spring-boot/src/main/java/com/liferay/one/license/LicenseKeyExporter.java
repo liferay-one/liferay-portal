@@ -92,8 +92,7 @@ public class LicenseKeyExporter {
 			int maxServers, int maxHttpSessions, long maxConcurrentUsers,
 			long maxUsers, String sizing, String description, String domains,
 			String[] hostNames, String[] ipAddresses, String[] macAddresses,
-			String[] serverIds, Date startDate, Date expirationDate,
-			Date createDate)
+			String[] serverIds, Date startDate, Date expirationDate)
 		throws Exception {
 
 		Map<String, String> properties = _licenseKeyGenerator.getProperties(
@@ -101,7 +100,7 @@ public class LicenseKeyExporter {
 			productName, productId, productVersion, owner, maxClusterNodes,
 			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
 			description, domains, hostNames[0], ipAddresses[0], macAddresses[0],
-			serverIds[0], startDate, expirationDate, createDate);
+			serverIds[0], startDate, expirationDate);
 
 		if ((licenseVersion >= 4) &&
 			licenseType.equals(LicenseConstants.TYPE_PRODUCTION)) {
@@ -127,7 +126,7 @@ public class LicenseKeyExporter {
 					maxClusterNodes, maxServers, maxHttpSessions,
 					maxConcurrentUsers, maxUsers, sizing, description, domains,
 					hostNames[i], ipAddresses[i], macAddresses[i], serverIds[i],
-					startDate, expirationDate, createDate);
+					startDate, expirationDate);
 
 			Element serverElement = serversElement.addElement("server");
 
@@ -169,7 +168,7 @@ public class LicenseKeyExporter {
 			long maxConcurrentUsers, long maxUsers, String sizing,
 			String description, String domains, String hostNames,
 			String ipAddresses, String macAddresses, String serverIds,
-			Date startDate, Date expirationDate, Date createDate)
+			Date startDate, Date expirationDate)
 		throws Exception {
 
 		Document document = null;
@@ -179,7 +178,7 @@ public class LicenseKeyExporter {
 			productName, productId, productVersion, owner, maxClusterNodes,
 			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
 			description, domains, hostNames, ipAddresses, macAddresses,
-			serverIds, startDate, expirationDate, createDate);
+			serverIds, startDate, expirationDate);
 
 		if (licenseVersion >= 3) {
 			document = toXMLVersion3_4(properties, key, false);
