@@ -3,22 +3,18 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useFetch} from '~/hooks/useFetch';
+import {
+	getSpecificationValue,
+	useAccountProducts,
+} from '~/hooks/useProjectCommerce';
 import {
 	MANAGEABLE_ACCOUNT_ROLES,
 	PARTNER_ACCOUNT_ROLES,
 	STANDARD_ACCOUNT_ROLES,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {useHasProject} from '~/pages/MyAccount/Projects/hooks/useHasProject';
-import {Liferay} from '~/services/liferay/liferay';
 
-import type {Account} from '~/types/accounts';
-
-const PARTNER_ACCOUNT_TYPES = [
-	'Marketplace Developer',
-	'Strategic Partner',
-	'Technology Partner',
-];
+const PARTNER_PRODUCT_SPECIFICATION_KEY = 'partner-product';
 
 type AccountType = {
 	isHybrid: boolean;
@@ -28,24 +24,16 @@ type AccountType = {
 };
 
 export function useAccountType(): AccountType {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-
-	const {data: account, isLoading} = useFetch<Account>(
-		accountId ? `/o/headless-admin-user/v1.0/accounts/${accountId}` : null
-	);
-
 	const {hasProject, loading: projectsLoading} = useHasProject();
 
-	const accountTypeCustomField = account?.customFields?.find(
-		({name}) => name === 'AccountType'
-	);
+	const {loading: productsLoading, products} = useAccountProducts();
 
-	const accountTypeValue = accountTypeCustomField?.customValue?.data;
-
-	const isPartner = PARTNER_ACCOUNT_TYPES.some((partnerAccountType) =>
-		Array.isArray(accountTypeValue)
-			? accountTypeValue.includes(partnerAccountType)
-			: accountTypeValue === partnerAccountType
+	const isPartner = products.some(
+		(product) =>
+			getSpecificationValue(
+				product,
+				PARTNER_PRODUCT_SPECIFICATION_KEY
+			) === 'true'
 	);
 
 	const isHybrid = isPartner && hasProject;
@@ -62,7 +50,7 @@ export function useAccountType(): AccountType {
 	return {
 		isHybrid,
 		isPartner,
-		loading: isLoading || projectsLoading,
+		loading: productsLoading || projectsLoading,
 		roleNames,
 	};
 }
