@@ -247,7 +247,7 @@ public class AssetReferenceObjectService {
 						objectId));
 			}
 
-			String previousObjectId = externalKeyToObjectIdMap.put(
+			String previousObjectId = externalKeyToObjectIdMap.putIfAbsent(
 				externalKey, objectId);
 
 			if ((previousObjectId != null) &&
@@ -258,8 +258,8 @@ public class AssetReferenceObjectService {
 					StringBundler.concat(
 						"Multiple asset objects share external key ",
 						externalKey, ": ", previousObjectId, " and ", objectId,
-						"; the reference will resolve to ", objectId,
-						" non-deterministically"));
+						"; the reference will resolve to the first match ",
+						previousObjectId));
 			}
 		}
 	}
