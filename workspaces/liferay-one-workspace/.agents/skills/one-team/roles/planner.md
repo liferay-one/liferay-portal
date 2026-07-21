@@ -21,10 +21,14 @@ Produce an implementation plan the developer can execute without re-deriving you
 ## Research, in Order
 
 1. **The ticket** — `ticket.json` in the team directory. Extract the acceptance criteria verbatim; they anchor the plan and the test plan.
-2. **The initiative** — `initiative.json`. Scan sibling tickets for overlap: same objects, same endpoints, same pages. Note anything in flight that this ticket must not collide with.
-3. **Workspace specs** — `.agents/specs/`: `data-model.md` (entity and ERC registry), `api.md` (headless conventions, custom REST contracts, OAuth2 scopes), `ui.md` (page groups, navigation), `workspace.md`, `integrations/` when external systems are involved.
-4. **Existing code** — find the nearest feature in `client-extensions/` that already does something shaped like this ticket. Name its files; they become the pattern sources the developer mimics. The Liferay Portal source two levels up (`../..`) is the reference for platform-level patterns.
-5. **Legacy behavior** — when the ticket migrates or replaces prior behavior, read the old implementation: `../../../liferay-portal-7.2.x/modules/dxp/apps/osb/` (osb-provisioning, osb-koroneiki, osb-distributed-messaging), `../../../liferay-portal-7.0.x/modules/dxp/apps/osb/osb-customer/` (customer.liferay.com), `../liferay-customer-workspace` (support.liferay.com), `../liferay-marketplace-workspace`, and `.agents/specs/legacy/`. For the old osb-koroneiki and osb-provisioning server configs, see `../../../lfris-koroneiki` and `../../../lfris-provisioning` respectively. Legacy code answers *what it did*, never *how to write it now*. When a legacy checkout is absent on this machine, record the gap instead of inventing history.
+
+1. **The initiative** — `initiative.json`. Scan sibling tickets for overlap: same objects, same endpoints, same pages. Note anything in flight that this ticket must not collide with.
+
+1. **Workspace specs** — `.agents/specs/`: `data-model.md` (entity and ERC registry), `api.md` (headless conventions, custom REST contracts, OAuth2 scopes), `ui.md` (page groups, navigation), `workspace.md`, `integrations/` when external systems are involved.
+
+1. **Existing code** — find the nearest feature in `client-extensions/` that already does something shaped like this ticket. Name its files; they become the pattern sources the developer mimics. The Liferay Portal source two levels up (`../..`) is the reference for platform-level patterns.
+
+1. **Legacy behavior** — when the ticket migrates or replaces prior behavior, read the old implementation: `../../../liferay-portal-7.2.x/modules/dxp/apps/osb/` (osb-provisioning, osb-koroneiki, osb-distributed-messaging), `../../../liferay-portal-7.0.x/modules/dxp/apps/osb/osb-customer/` (customer.liferay.com), `../liferay-customer-workspace` (support.liferay.com), `../liferay-marketplace-workspace`, and `.agents/specs/legacy/`. For the old osb-koroneiki and osb-provisioning server configs, see `../../../lfris-koroneiki` and `../../../lfris-provisioning` respectively. Legacy code answers *what it did*, never *how to write it now*. When a legacy checkout is absent on this machine, record the gap instead of inventing history.
 
 Fan the mechanical parts out to subagents — "inventory every consumer of X", "list the endpoints in Y", "how does legacy do Z" — and synthesize yourself.
 
