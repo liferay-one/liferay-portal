@@ -15,6 +15,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.List;
 import java.util.Map;
@@ -199,7 +200,10 @@ public class EntitlementService extends OneBaseService {
 	public List<Entitlement> getActiveEntitlements(long accountEntryId)
 		throws Exception {
 
-		Instant instant = Instant.now();
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
 
 		return getEntitlements(
 			StringBundler.concat(
