@@ -42,6 +42,10 @@ export function isAdministratorRole(roleName: string) {
 	);
 }
 
+export function isPartnerRole(roleName: string) {
+	return PARTNER_ACCOUNT_ROLES.includes(roleName);
+}
+
 export function getMembershipRoleNames(roleBriefs: RoleBrief[] = []) {
 	const roleNames = new Set(roleBriefs.map(({name}) => name));
 

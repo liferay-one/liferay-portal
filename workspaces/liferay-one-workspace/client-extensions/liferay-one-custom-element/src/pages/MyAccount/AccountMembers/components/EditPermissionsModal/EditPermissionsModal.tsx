@@ -10,10 +10,10 @@ import {useState} from 'react';
 import {useMeasuredWidth} from '~/hooks/useMeasuredWidth';
 import i18n, {translate} from '~/i18n';
 import {
-	PARTNER_ACCOUNT_ROLES,
 	getMembershipRoleNames,
 	hasAdministratorRole,
 	isAdministratorRole,
+	isPartnerRole,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
@@ -67,11 +67,20 @@ const EditPermissionsModal = ({
 			return;
 		}
 
-		setSelectedRoles((previous) =>
-			previous.includes(roleName)
-				? previous.filter((value) => value !== roleName)
-				: [...previous, roleName]
-		);
+		setSelectedRoles((previous) => {
+			if (previous.includes(roleName)) {
+				return previous.filter((value) => value !== roleName);
+			}
+
+			if (isPartnerRole(roleName)) {
+				return [
+					...previous.filter((value) => !isPartnerRole(value)),
+					roleName,
+				];
+			}
+
+			return [...previous, roleName];
+		});
 	};
 
 	const clearRoles = () =>
@@ -203,14 +212,11 @@ const EditPermissionsModal = ({
 				>
 					<ClayDropDown.ItemList>
 						{(() => {
-							const partnerRoleSet = new Set(
-								PARTNER_ACCOUNT_ROLES
-							);
 							const standardRoles = roleNames.filter(
-								(roleName) => !partnerRoleSet.has(roleName)
+								(roleName) => !isPartnerRole(roleName)
 							);
 							const partnerRoles = roleNames.filter((roleName) =>
-								partnerRoleSet.has(roleName)
+								isPartnerRole(roleName)
 							);
 							const hasPartnerRoles = !!partnerRoles.length;
 

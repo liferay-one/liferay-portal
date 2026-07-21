@@ -246,6 +246,19 @@
 		},
 		{
 			"description": {
+				"en_US": "This indicates whether the product is a partner product."
+			},
+			"facetable": false,
+			"key": "partner-product",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Partner Product"
+			}
+		},
+		{
+			"description": {
 				"en_US": "These are the past versions this product has worked with."
 			},
 			"facetable": false,
