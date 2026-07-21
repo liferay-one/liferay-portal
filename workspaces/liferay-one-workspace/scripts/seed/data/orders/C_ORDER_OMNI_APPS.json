@@ -1,0 +1,117 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_TEST_APP",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Test App",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_APP",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_APP",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_TEST_CRM_ACCELERATOR",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Test Supplier CRM Accelerator",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_CRM_ACCELERATOR",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_TEST_PARTNER_PORTAL",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Test Supplier Partner Portal",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_PARTNER_PORTAL",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_PARTNER_PORTAL",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_TEST_SLACK_CONNECTOR",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Test Supplier Slack Connector",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_SLACK_CONNECTOR",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_TEST_THEME_PACK",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Test Supplier Theme Pack",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_THEME_PACK",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_THEME_PACK",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-001",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_OMNI",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_OMNI_APPS",
+		"orderItems": [
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_APP",
+				"name": "Test App",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-TEST-APP",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_CRM_ACCELERATOR",
+				"name": "Test Supplier CRM Accelerator",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-TEST-CRM-ACCELERATOR",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_PARTNER_PORTAL",
+				"name": "Test Supplier Partner Portal",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-TEST-PARTNER-PORTAL",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_SLACK_CONNECTOR",
+				"name": "Test Supplier Slack Connector",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-TEST-SLACK-CONNECTOR",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_THEME_PACK",
+				"name": "Test Supplier Theme Pack",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-TEST-THEME-PACK",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "DXP_APP",
+		"projectExternalReferenceCode": "PRJCT-001"
+	},
+	"purchaseOrderNumber": "PO-OMNI-APPS"
+}

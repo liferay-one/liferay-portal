@@ -111,6 +111,16 @@
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
 		},
 		{
+			"externalReferenceCode": "PRJCT-019-2",
+			"name": "EWSA Project 2",
+			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
+		},
+		{
+			"externalReferenceCode": "PRJCT-019-3",
+			"name": "EWSA Project 3",
+			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
+		},
+		{
 			"externalReferenceCode": "PRJCT-020",
 			"name": "Liferay Supplier Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-020"

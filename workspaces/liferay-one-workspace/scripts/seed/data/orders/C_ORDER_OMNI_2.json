@@ -1,7 +1,6 @@
 {
 	"customFields": {
-		"cloudProjectName": "omni-2-cloud",
-		"projectName": "Omni Project 2"
+		"cloudProjectName": "omni-2-cloud"
 	},
 	"entitlements": [
 		{
@@ -54,7 +53,8 @@
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "SSA_SAAS"
+		"orderTypeExternalReferenceCode": "SSA_SAAS",
+		"projectExternalReferenceCode": "PRJCT-001-2"
 	},
 	"purchaseOrderNumber": "PO-OMNI-2"
 }

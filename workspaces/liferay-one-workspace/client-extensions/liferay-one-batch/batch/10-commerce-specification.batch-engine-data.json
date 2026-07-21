@@ -362,6 +362,19 @@
 		},
 		{
 			"description": {
+				"en_US": "A comma separated list of role external reference codes that can be assigned to project members for this product."
+			},
+			"facetable": false,
+			"key": "project-contacts-role-ercs",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Project Contacts Role ERCs"
+			}
+		},
+		{
+			"description": {
 				"en_US": "Selects which details layout the project dashboard renders for this product."
 			},
 			"facetable": false,
