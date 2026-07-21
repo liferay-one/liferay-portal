@@ -62,12 +62,14 @@ export default function OrdersTab() {
 		{
 			heading: 'date',
 			key: 'date',
+			noWrap: true,
 			render: (order) => order.date,
 			width: '1%',
 		},
 		{
 			heading: 'total',
 			key: 'total',
+			noWrap: true,
 			render: (order) => order.total,
 			width: '1%',
 		},
@@ -124,7 +126,6 @@ export default function OrdersTab() {
 			filters={filters}
 			items={orders}
 			matchesSearch={matchesSearch}
-			onItemClick={() => {}}
 			rowKey={(order) => order.id}
 			title="orders-list"
 		/>

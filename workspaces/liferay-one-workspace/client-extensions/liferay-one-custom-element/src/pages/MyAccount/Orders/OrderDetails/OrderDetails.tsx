@@ -95,7 +95,7 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 
 	return (
 		<>
-			<DetailsCard rows={detailsRows} title="order-summary" />
+			<DetailsCard fullWidth rows={detailsRows} title="order-summary" />
 
 			<DetailedCard
 				cardIconAltText={i18n.translate('order-items')}

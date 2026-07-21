@@ -13,6 +13,7 @@ export type DetailsRow = {
 };
 
 type DetailsCardProps = {
+	fullWidth?: boolean;
 	headerActions?: ReactNode;
 	icon?: string;
 	rows: DetailsRow[];
@@ -20,6 +21,7 @@ type DetailsCardProps = {
 };
 
 export default function DetailsCard({
+	fullWidth = false,
 	headerActions,
 	icon = 'catalog',
 	rows,
@@ -31,12 +33,27 @@ export default function DetailsCard({
 			cardTitle={i18n.translate(title)}
 			className="mt-3"
 			clayIcon={icon}
-			fitContent
+			fitContent={!fullWidth}
 			headerActions={headerActions}
 		>
 			<div
-				className="d-flex flex-column mt-3"
-				style={{gap: 'var(--spacer-3)', maxWidth: '32rem'}}
+				className="mt-3"
+				style={
+					fullWidth
+						? {
+								columnGap: 'var(--spacer-5)',
+								display: 'grid',
+								gridTemplateColumns:
+									'repeat(auto-fill, minmax(20rem, 1fr))',
+								rowGap: 'var(--spacer-3)',
+							}
+						: {
+								display: 'flex',
+								flexDirection: 'column',
+								gap: 'var(--spacer-3)',
+								maxWidth: '32rem',
+							}
+				}
 			>
 				{rows.map((row) => (
 					<div
