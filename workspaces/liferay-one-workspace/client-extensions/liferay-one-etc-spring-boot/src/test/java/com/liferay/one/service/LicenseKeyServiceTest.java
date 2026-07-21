@@ -173,7 +173,7 @@ public class LicenseKeyServiceTest {
 				"KEY", "Acme", "License Name", "enterprise", 3, "DXP", "portal",
 				"2025.q3.9", "owner@example.com", 1, 2, 3, 4L, 5L, "SIZING-4",
 				"desc", "example.com", "host", "1.2.3.4", "AA:BB", "srv-1",
-				startDate, expirationDate, startDate)
+				startDate, expirationDate)
 		).thenReturn(
 			"<license/>"
 		);

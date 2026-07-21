@@ -70,7 +70,7 @@ public class LicenseKeyService extends OneBaseService {
 			productExternalId, productVersion, owner, maxClusterNodes,
 			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
 			description, domains, hostName, ipAddresses, macAddresses, serverId,
-			startDate, expirationDate, new Date());
+			startDate, expirationDate);
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -162,7 +162,7 @@ public class LicenseKeyService extends OneBaseService {
 			_FREE_TIER_PRODUCT_VERSION, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0,
 			0, 0L, 0L, StringPool.BLANK, StringPool.BLANK, domains,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate, new Date());
+			StringPool.BLANK, startDate, expirationDate);
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -336,8 +336,7 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getIpAddresses(), licenseKey.getMacAddresses(),
 			licenseKey.getServerId(),
 			Date.from(licenseKey.getStartDateInstant()),
-			Date.from(licenseKey.getCustomExpirationDateInstant()),
-			Date.from(licenseKey.getStartDateInstant()));
+			Date.from(licenseKey.getCustomExpirationDateInstant()));
 	}
 
 	public List<LicenseKey> getLicenseKeys(

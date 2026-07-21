@@ -39,8 +39,7 @@ public class LicenseKeyGeneratorTest {
 			"Liferay DXP", LicenseConstants.PRODUCT_ID_PORTAL, "7.4",
 			"Acme Corp", 0, 0, 0, 0L, 0L, "", "Test license", "",
 			"host.example.com", "127.0.0.1", "00:11:22:33:44:55", "srv-1",
-			new Date(1000000000000L), new Date(2000000000000L),
-			new Date(1000000000000L));
+			new Date(1000000000000L), new Date(2000000000000L));
 	}
 
 	private final LicenseKeyGenerator _licenseKeyGenerator =
