@@ -27,18 +27,22 @@ public class ExternalLinkConverter extends BaseJiraAssetObjectConverter {
 		return ExternalLinkConstants.OBJECT_TYPE_NAME;
 	}
 
+	public boolean isExternalLinkProperty(Property property) {
+		if (_toExternalLinkInfo(property) != null) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public JiraAssetObject toAssetObject(Property property) {
-		JiraAssetObject jiraAssetObject = createJiraAssetObject();
+		ExternalLinkInfo externalLinkInfo = _toExternalLinkInfo(property);
 
-		List<String> parts = StringUtil.split(
-			property.getName(), CharPool.COLON);
-
-		if (parts.size() != 2) {
+		if (externalLinkInfo == null) {
 			return null;
 		}
 
-		String domain = parts.get(0);
-		String entityName = parts.get(1);
+		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
 		jiraAssetObject.setAttributeValue(
 			ExternalLinkConstants.ATTRIBUTE_NAME_NAME, property.getClassName());
@@ -46,12 +50,14 @@ public class ExternalLinkConverter extends BaseJiraAssetObjectConverter {
 			ExternalLinkConstants.ATTRIBUTE_NAME_EXTERNAL_KEY,
 			property.getExternalReferenceCode());
 		jiraAssetObject.setAttributeValue(
-			ExternalLinkConstants.ATTRIBUTE_NAME_DOMAIN, domain);
+			ExternalLinkConstants.ATTRIBUTE_NAME_DOMAIN,
+			externalLinkInfo.getDomain());
 		jiraAssetObject.setAttributeValue(
 			ExternalLinkConstants.ATTRIBUTE_NAME_ENTITY_ID,
 			property.getValue());
 		jiraAssetObject.setAttributeValue(
-			ExternalLinkConstants.ATTRIBUTE_NAME_ENTITY_NAME, entityName);
+			ExternalLinkConstants.ATTRIBUTE_NAME_ENTITY_NAME,
+			externalLinkInfo.getEntityName());
 
 		return jiraAssetObject;
 	}
@@ -61,7 +67,38 @@ public class ExternalLinkConverter extends BaseJiraAssetObjectConverter {
 		return _schemaName;
 	}
 
+	private ExternalLinkInfo _toExternalLinkInfo(Property property) {
+		List<String> parts = StringUtil.split(
+			property.getName(), CharPool.COLON);
+
+		if (parts.size() != 2) {
+			return null;
+		}
+
+		return new ExternalLinkInfo(parts.get(0), parts.get(1));
+	}
+
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	private static class ExternalLinkInfo {
+
+		public ExternalLinkInfo(String domain, String entityName) {
+			_domain = domain;
+			_entityName = entityName;
+		}
+
+		public String getDomain() {
+			return _domain;
+		}
+
+		public String getEntityName() {
+			return _entityName;
+		}
+
+		private final String _domain;
+		private final String _entityName;
+
+	}
 
 }
