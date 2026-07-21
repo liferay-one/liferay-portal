@@ -163,7 +163,7 @@ export function getSpecificationValues(
 		.map((specification) => specification.value);
 }
 
-function useChannelProducts() {
+export function useChannelProducts() {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
 
 	return useSWR(`/project-channel-products/${channelId}`, () =>
@@ -200,7 +200,7 @@ export function useProjectCommerce(
 			params: {
 				nestedFields:
 					'projectToContract,contractToEntitlement,entitlementDefinitionToEntitlement',
-				nestedFieldsDepth: 5,
+				nestedFieldsDepth: 3,
 			},
 		}
 	);
@@ -212,7 +212,7 @@ export function useProjectCommerce(
 			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 			nestedFields:
 				'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 5,
+			nestedFieldsDepth: 2,
 			pageSize: 100,
 		},
 	});
@@ -303,7 +303,7 @@ function useAccountOrderEntitlements(enabled = true) {
 				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 				nestedFields:
 					'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
-				nestedFieldsDepth: 5,
+				nestedFieldsDepth: 2,
 				pageSize: 100,
 			},
 		}
@@ -352,7 +352,7 @@ export function useAccountProducts() {
 			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 			nestedFields:
 				'contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 5,
+			nestedFieldsDepth: 2,
 			pageSize: 100,
 		},
 	});
@@ -398,7 +398,7 @@ export function useAccountProjectContactRoles() {
 			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 			nestedFields:
 				'contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 5,
+			nestedFieldsDepth: 2,
 			pageSize: 100,
 		},
 	});
