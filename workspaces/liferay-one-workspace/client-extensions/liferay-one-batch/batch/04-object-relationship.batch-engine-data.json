@@ -365,6 +365,17 @@
 		},
 		{
 			"deletionType": "disassociate",
+			"externalReferenceCode": "R_PROJECT_TO_COMMERCE_ORDER",
+			"label": {
+				"en_US": "Project to Commerce Order"
+			},
+			"name": "projectToCommerceOrder",
+			"objectDefinitionExternalReferenceCode1": "C_PROJECT",
+			"objectDefinitionExternalReferenceCode2": "L_COMMERCE_ORDER",
+			"type": "oneToMany"
+		},
+		{
+			"deletionType": "disassociate",
 			"externalReferenceCode": "R_PROJECT_TO_CONTRACT",
 			"label": {
 				"en_US": "Project to Contract"
