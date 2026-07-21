@@ -153,6 +153,7 @@ export type PlacedOrder = {
 	author: string;
 	createDate: string;
 	customFields: {[key: string]: string};
+	externalReferenceCode?: string;
 	id: number;
 	orderStatus: number | string;
 	orderStatusInfo: {

@@ -7,10 +7,12 @@ import {format} from 'date-fns';
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {useFetch} from '~/hooks/useFetch';
+import {usePlacedOrders} from '~/hooks/usePlacedOrder';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/projects';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
+import {OrderCustomFields} from '~/utils/orderUtils';
 
 import type {APIResponse} from '~/types/api';
 import type {
@@ -44,6 +46,9 @@ export type ProjectProduct = {
 };
 
 type EntitlementNode = {
+	commerceOrderItemToEntitlement?: {
+		orderExternalReferenceCode?: string;
+	};
 	endDate?: string;
 	entitlementDefinitionToEntitlement?: {
 		commerceProductToEntitlementDefinitionERC?: string;
@@ -67,12 +72,15 @@ type ContractNode = {
 };
 
 type ProjectNode = {
+	name?: string;
 	projectToContract?: ContractNode[];
 };
 
 type ProductEntitlement = {
 	endDate?: string;
+	orderExternalReferenceCode?: string;
 	productExternalReferenceCode?: string;
+	projectName?: string;
 	startDate?: string;
 };
 
@@ -124,6 +132,9 @@ function toProductEntitlements(
 	return (contractNode?.contractToEntitlement ?? [])
 		.map((entitlement) => ({
 			endDate: entitlement.endDate,
+			orderExternalReferenceCode:
+				entitlement.commerceOrderItemToEntitlement
+					?.orderExternalReferenceCode,
 			productExternalReferenceCode:
 				entitlement.entitlementDefinitionToEntitlement
 					?.commerceProductToEntitlementDefinitionERC,
@@ -175,6 +186,8 @@ export function useProjectCommerce(
 	projectExternalReferenceCode: string,
 	contractExternalReferenceCode?: string
 ) {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+
 	const {
 		data,
 		error,
@@ -192,7 +205,29 @@ export function useProjectCommerce(
 		}
 	);
 
-	const contractNodes = data?.projectToContract ?? [];
+	const {data: accountData, isLoading: accountLoading} = useFetch<
+		APIResponse<ContractNode>
+	>(projectExternalReferenceCode && accountId ? '/o/c/contracts' : null, {
+		params: {
+			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
+			nestedFields:
+				'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
+			nestedFieldsDepth: 5,
+			pageSize: 100,
+		},
+	});
+
+	const projectContractNodes = data?.projectToContract ?? [];
+
+	const accountContractNodes = (accountData?.items ?? []).filter(
+		(contract) => !contract.r_projectToContract_c_projectId
+	);
+
+	const usingAccountFallback = !projectContractNodes.length;
+
+	const contractNodes = usingAccountFallback
+		? accountContractNodes
+		: projectContractNodes;
 
 	const contracts = contractNodes.map(toProjectContract);
 
@@ -211,12 +246,50 @@ export function useProjectCommerce(
 
 	const contract = contractNode ? toProjectContract(contractNode) : undefined;
 
-	const entitlements = toProductEntitlements(contractNode);
+	const entitlements = usingAccountFallback
+		? []
+		: toProductEntitlements(contractNode);
 
-	return {contract, contracts, entitlements, error, loading};
+	return {
+		contract,
+		contracts,
+		entitlements,
+		error,
+		loading: loading || accountLoading,
+		projectName: data?.name,
+		usingAccountFallback,
+	};
 }
 
-export function useUnassignedCommerce(enabled = true) {
+function useOrderProjectNames(enabled = true) {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+
+	const {data, isLoading: loading} = usePlacedOrders({
+		accountId: accountId ?? -1,
+		page: 1,
+		pageSize: 100,
+		shouldFetch: enabled && Boolean(accountId),
+	});
+
+	const orderProjectNames = useMemo(() => {
+		const map = new Map<string, string>();
+
+		(data?.items ?? []).forEach((order) => {
+			if (order.externalReferenceCode) {
+				map.set(
+					order.externalReferenceCode,
+					order.customFields?.[OrderCustomFields.PROJECT_NAME] ?? ''
+				);
+			}
+		});
+
+		return map;
+	}, [data]);
+
+	return {loading, orderProjectNames};
+}
+
+function useAccountOrderEntitlements(enabled = true) {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 
 	const {
@@ -229,18 +302,90 @@ export function useUnassignedCommerce(enabled = true) {
 			params: {
 				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 				nestedFields:
-					'contractToEntitlement,entitlementDefinitionToEntitlement',
+					'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
 				nestedFieldsDepth: 5,
 				pageSize: 100,
 			},
 		}
 	);
 
-	const entitlements = (data?.items ?? [])
-		.filter((contract) => !contract.r_projectToContract_c_projectId)
-		.flatMap((contract) => toProductEntitlements(contract));
+	const {loading: orderProjectNamesLoading, orderProjectNames} =
+		useOrderProjectNames(enabled);
 
-	return {entitlements, error, loading};
+	const entitlements = useMemo(
+		() =>
+			(data?.items ?? [])
+				.filter((contract) => !contract.r_projectToContract_c_projectId)
+				.flatMap((contract) => toProductEntitlements(contract))
+				.map((entitlement) => ({
+					...entitlement,
+					projectName:
+						orderProjectNames.get(
+							entitlement.orderExternalReferenceCode ?? ''
+						) ?? '',
+				})),
+		[data, orderProjectNames]
+	);
+
+	return {entitlements, error, loading: loading || orderProjectNamesLoading};
+}
+
+export function useUnassignedCommerce(enabled = true) {
+	const {entitlements, error, loading} = useAccountOrderEntitlements(enabled);
+
+	return {
+		entitlements: entitlements.filter(
+			(entitlement) => !entitlement.projectName
+		),
+		error,
+		loading,
+	};
+}
+
+export function useAccountProducts() {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+
+	const {data: contractsData, isLoading: contractsLoading} = useFetch<
+		APIResponse<ContractNode>
+	>(accountId ? '/o/c/contracts' : null, {
+		params: {
+			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
+			nestedFields:
+				'contractToEntitlement,entitlementDefinitionToEntitlement',
+			nestedFieldsDepth: 5,
+			pageSize: 100,
+		},
+	});
+
+	const {data: productsData, isLoading: productsLoading} =
+		useChannelProducts();
+
+	const products = useMemo<DeliveryProduct[]>(() => {
+		const productsByExternalReferenceCode = new Map(
+			(productsData?.items ?? []).map((product) => [
+				product.externalReferenceCode,
+				product,
+			])
+		);
+
+		const accountProducts = new Map<string, DeliveryProduct>();
+
+		(contractsData?.items ?? []).forEach((contract) => {
+			toProductEntitlements(contract).forEach((entitlement) => {
+				const product = productsByExternalReferenceCode.get(
+					entitlement.productExternalReferenceCode as string
+				);
+
+				if (product) {
+					accountProducts.set(product.externalReferenceCode, product);
+				}
+			});
+		});
+
+		return [...accountProducts.values()];
+	}, [contractsData, productsData]);
+
+	return {loading: contractsLoading || productsLoading, products};
 }
 
 export function useAccountProjectContactRoles() {
@@ -335,23 +480,43 @@ export function useProjectProducts(
 		entitlements: projectEntitlements,
 		error: projectError,
 		loading: projectLoading,
+		projectName,
+		usingAccountFallback,
 	} = useProjectCommerce(
 		unassigned ? '' : projectExternalReferenceCode,
 		contractExternalReferenceCode
 	);
 
 	const {
-		entitlements: unassignedEntitlements,
-		error: unassignedError,
-		loading: unassignedLoading,
-	} = useUnassignedCommerce(unassigned);
+		entitlements: accountOrderEntitlements,
+		error: accountError,
+		loading: accountLoading,
+	} = useAccountOrderEntitlements(unassigned || usingAccountFallback);
 
-	const entitlements = unassigned
-		? unassignedEntitlements
-		: projectEntitlements;
+	const entitlements = useMemo(() => {
+		if (unassigned) {
+			return accountOrderEntitlements.filter(
+				(entitlement) => !entitlement.projectName
+			);
+		}
 
-	const commerceError = unassigned ? unassignedError : projectError;
-	const commerceLoading = unassigned ? unassignedLoading : projectLoading;
+		if (usingAccountFallback) {
+			return accountOrderEntitlements.filter(
+				(entitlement) => entitlement.projectName === projectName
+			);
+		}
+
+		return projectEntitlements;
+	}, [
+		accountOrderEntitlements,
+		projectEntitlements,
+		projectName,
+		unassigned,
+		usingAccountFallback,
+	]);
+
+	const commerceError = projectError ?? accountError;
+	const commerceLoading = projectLoading || accountLoading;
 
 	const {
 		data: productsData,
