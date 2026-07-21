@@ -5,6 +5,7 @@
 
 package com.liferay.one.jira.service;
 
+import com.liferay.one.jira.exception.JiraAssetSchemaException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -105,21 +106,24 @@ public class JiraAssetService extends BaseJiraService {
 	}
 
 	public JSONArray getObjectTypeAttributes(String objectTypeId) {
-		return _toJSONArray(
+		return _toSchemaJSONArray(
 			get(
 				getAuthorization(),
 				_v1URI(
 					StringBundler.concat(
-						"objecttype/", objectTypeId, "/attributes"))));
+						"objecttype/", objectTypeId, "/attributes"))),
+			"Unable to parse attributes response for object type " +
+				objectTypeId);
 	}
 
 	public JSONArray getObjectTypes(String schemaId) {
-		return _toJSONArray(
+		return _toSchemaJSONArray(
 			get(
 				getAuthorization(),
 				_v1URI(
 					StringBundler.concat(
-						"objectschema/", schemaId, "/objecttypes"))));
+						"objectschema/", schemaId, "/objecttypes"))),
+			"Unable to parse object types response for schema " + schemaId);
 	}
 
 	public JSONArray searchObjects(String aql) {
@@ -233,23 +237,6 @@ public class JiraAssetService extends BaseJiraService {
 		return _toJSONObject(response);
 	}
 
-	private JSONArray _toJSONArray(String response) {
-		if (Validator.isNull(response)) {
-			return new JSONArray();
-		}
-
-		try {
-			return new JSONArray(response);
-		}
-		catch (JSONException jsonException) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to parse JSON array response", jsonException);
-			}
-
-			return new JSONArray();
-		}
-	}
-
 	private JSONObject _toJSONObject(String response) {
 		if (Validator.isNull(response)) {
 			return new JSONObject();
@@ -265,6 +252,19 @@ public class JiraAssetService extends BaseJiraService {
 			}
 
 			return new JSONObject();
+		}
+	}
+
+	private JSONArray _toSchemaJSONArray(String response, String message) {
+		if (Validator.isNull(response)) {
+			throw new JiraAssetSchemaException(message + ": empty response");
+		}
+
+		try {
+			return new JSONArray(response);
+		}
+		catch (JSONException jsonException) {
+			throw new JiraAssetSchemaException(message, jsonException);
 		}
 	}
 
