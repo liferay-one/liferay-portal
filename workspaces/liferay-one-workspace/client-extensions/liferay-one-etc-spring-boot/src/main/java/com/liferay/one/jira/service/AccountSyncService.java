@@ -34,7 +34,6 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -291,10 +290,7 @@ public class AccountSyncService {
 			account.getId());
 
 		for (Property property : properties) {
-			String[] split = StringUtil.split(
-				property.getName(), CharPool.COLON);
-
-			if (split.length == 2) {
+			if (_externalLinkConverter.isExternalLinkProperty(property)) {
 				externalLinkProperties.add(property);
 			}
 		}
