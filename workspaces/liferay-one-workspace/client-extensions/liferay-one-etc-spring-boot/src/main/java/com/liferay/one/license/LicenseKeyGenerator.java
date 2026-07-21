@@ -5,11 +5,9 @@
 
 package com.liferay.one.license;
 
-import com.liferay.one.constants.ProductVersion;
 import com.liferay.portal.ee.license.shared.KeyGenerator;
 import com.liferay.portal.kernel.util.StringUtil;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
@@ -32,8 +30,7 @@ public class LicenseKeyGenerator {
 			int maxServers, int maxHttpSessions, long maxConcurrentUsers,
 			long maxUsers, String sizing, String description, String domains,
 			String hostNames, String ipAddresses, String macAddresses,
-			String serverIds, Date startDate, Date expirationDate,
-			Date createDate)
+			String serverIds, Date startDate, Date expirationDate)
 		throws Exception {
 
 		return encrypt(
@@ -42,8 +39,7 @@ public class LicenseKeyGenerator {
 				productName, productId, productVersion, owner, maxClusterNodes,
 				maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers,
 				sizing, description, domains, hostNames, ipAddresses,
-				macAddresses, serverIds, startDate, expirationDate,
-				createDate));
+				macAddresses, serverIds, startDate, expirationDate));
 	}
 
 	public Map<String, String> getProperties(
@@ -53,33 +49,15 @@ public class LicenseKeyGenerator {
 		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
 		long maxUsers, String sizing, String description, String domains,
 		String hostNames, String ipAddresses, String macAddresses,
-		String serverIds, Date startDate, Date expirationDate,
-		Date createDate) {
+		String serverIds, Date startDate, Date expirationDate) {
 
-		Map<String, String> properties = KeyGenerator.getProperties(
+		return KeyGenerator.getProperties(
 			accountName, description, StringUtil.split(domains), expirationDate,
 			StringUtil.split(hostNames), sizing, StringUtil.split(ipAddresses),
 			licenseEntryName, licenseType, String.valueOf(licenseVersion),
 			StringUtil.split(macAddresses), maxClusterNodes, maxConcurrentUsers,
 			maxHttpSessions, maxServers, maxUsers, owner, productName,
 			productId, productVersion, new String[] {serverIds}, startDate);
-
-		if (StringUtil.equals(
-				productVersion, ProductVersion.PORTAL_VERSION_6_1_10) ||
-			StringUtil.equals(productVersion, "6.1 GA 1")) {
-
-			Calendar cal = Calendar.getInstance();
-
-			cal.set(Calendar.DAY_OF_MONTH, 31);
-			cal.set(Calendar.MONTH, 6);
-			cal.set(Calendar.YEAR, 2012);
-
-			if (createDate.before(cal.getTime())) {
-				properties.put("productVersion", "6.1");
-			}
-		}
-
-		return properties;
 	}
 
 }
