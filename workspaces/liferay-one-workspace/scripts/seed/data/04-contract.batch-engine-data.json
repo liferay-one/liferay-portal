@@ -161,7 +161,6 @@
 			"externalReferenceCode": "C_CONTRACT_EWSA",
 			"name": "EWSA Contract",
 			"r_accountEntryToContract_accountEntryERC": "ACCNT-019",
-			"r_projectToContract_c_projectERC": "PRJCT-019",
 			"renewalState": "auto-renew",
 			"spendLimit": 3500,
 			"startDate": "2026-08-09T00:00:00Z"

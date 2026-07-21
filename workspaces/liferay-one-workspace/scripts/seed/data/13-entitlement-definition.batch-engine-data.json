@@ -193,6 +193,96 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Basic Reseller Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-BASIC-RESELLER",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Distribution Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-DISTRIBUTION",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Reseller Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_RESELLER",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-RESELLER",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Service Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SERVICE",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-SERVICE",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Service Partnership - Referral Program",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SERVICE_REFERRAL",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-SERVICE-REFERRAL",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Solution Partnership - Reseller Program",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-SOLUTION-RESELLER",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Partner - Standard",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_STANDARD",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-STANDARD",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Training Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TRAINING",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-TRAINING",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Value-Added Reseller Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_VAR",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-PARTNERSHIP-VAR",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Portal",
 			"externalReferenceCode": "C_ENT_DEF_PORTAL",
 			"grantType": "fixed",
@@ -248,6 +338,56 @@
 			"grantType": "fixed",
 			"name": "licenseGeneration",
 			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-SAAS-LEGACY",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Test App",
+			"externalReferenceCode": "C_ENT_DEF_TEST_APP",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-TEST-APP",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Test Supplier CRM Accelerator",
+			"externalReferenceCode": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-TEST-CRM-ACCELERATOR",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Test Supplier Partner Portal",
+			"externalReferenceCode": "C_ENT_DEF_TEST_PARTNER_PORTAL",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-TEST-PARTNER-PORTAL",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Test Supplier Slack Connector",
+			"externalReferenceCode": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-TEST-SLACK-CONNECTOR",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Test Supplier Theme Pack",
+			"externalReferenceCode": "C_ENT_DEF_TEST_THEME_PACK",
+			"grantType": "fixed",
+			"name": "licenseGeneration",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-TEST-THEME-PACK",
 			"unit": "boolean"
 		}
 	]

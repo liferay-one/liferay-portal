@@ -2,27 +2,27 @@
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_CLOUD_NATIVE",
+			"externalReferenceCode": "C_ENT_EWSA_CLOUD_NATIVE",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Cloud Native - Standard Operations Bundle",
 			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-007",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_CLOUD_NATIVE",
-			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_CLOUD_NATIVE",
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-019",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_EWSA_CLOUD_NATIVE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_EWSA",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
 	"order": {
-		"accountExternalReferenceCode": "ACCNT-007",
+		"accountExternalReferenceCode": "ACCNT-019",
 		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
-		"contractExternalReferenceCode": "C_CONTRACT_CLOUD_NATIVE",
+		"contractExternalReferenceCode": "C_CONTRACT_EWSA",
 		"currencyCode": "USD",
-		"externalReferenceCode": "C_ORDER_CLOUD_NATIVE",
+		"externalReferenceCode": "C_ORDER_EWSA_2",
 		"orderItems": [
 			{
-				"externalReferenceCode": "C_ORDER_ITEM_CLOUD_NATIVE",
+				"externalReferenceCode": "C_ORDER_ITEM_EWSA_CLOUD_NATIVE",
 				"name": "Liferay Cloud Native - Standard Operations Bundle",
 				"quantity": 1,
 				"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
@@ -31,7 +31,7 @@
 		],
 		"orderStatus": 5,
 		"orderTypeExternalReferenceCode": "DXP",
-		"projectExternalReferenceCode": "PRJCT-007"
+		"projectExternalReferenceCode": "PRJCT-019-2"
 	},
-	"purchaseOrderNumber": "PO-CLOUD-NATIVE"
+	"purchaseOrderNumber": "PO-EWSA-2"
 }

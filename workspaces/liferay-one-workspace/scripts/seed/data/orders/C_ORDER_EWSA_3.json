@@ -2,27 +2,27 @@
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_DATA_PLATFORM",
+			"externalReferenceCode": "C_ENT_EWSA_DATA_PLATFORM",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Data Platform",
 			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-028",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_DATA_PLATFORM",
-			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_DATA_PLATFORM",
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-019",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_EWSA_DATA_PLATFORM",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_EWSA",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
 	"order": {
-		"accountExternalReferenceCode": "ACCNT-028",
+		"accountExternalReferenceCode": "ACCNT-019",
 		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
-		"contractExternalReferenceCode": "C_CONTRACT_DATA_PLATFORM",
+		"contractExternalReferenceCode": "C_CONTRACT_EWSA",
 		"currencyCode": "USD",
-		"externalReferenceCode": "C_ORDER_DATA_PLATFORM",
+		"externalReferenceCode": "C_ORDER_EWSA_3",
 		"orderItems": [
 			{
-				"externalReferenceCode": "C_ORDER_ITEM_DATA_PLATFORM",
+				"externalReferenceCode": "C_ORDER_ITEM_EWSA_DATA_PLATFORM",
 				"name": "Liferay Data Platform",
 				"quantity": 1,
 				"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM",
@@ -31,7 +31,7 @@
 		],
 		"orderStatus": 5,
 		"orderTypeExternalReferenceCode": "DXP",
-		"projectExternalReferenceCode": "PRJCT-028"
+		"projectExternalReferenceCode": "PRJCT-019-3"
 	},
-	"purchaseOrderNumber": "PO-DATA-PLATFORM"
+	"purchaseOrderNumber": "PO-EWSA-3"
 }
