@@ -46,7 +46,7 @@ type FilterableListCardProps<T> = {
 	hideToolbar?: boolean;
 	items: T[];
 	matchesSearch?: (item: T, search: string) => boolean;
-	onItemClick: (item: T) => void;
+	onItemClick?: (item: T) => void;
 	rowKey: (item: T) => string;
 	title?: Word;
 };
@@ -334,7 +334,14 @@ export default function FilterableListCard<T>({
 
 			{paginatedItems.length ? (
 				<>
-					<ClayTable borderless className="list-card-table">
+					<ClayTable
+						borderless
+						className={
+							onItemClick
+								? 'list-card-table list-card-table-clickable'
+								: 'list-card-table'
+						}
+					>
 						<ClayTable.Head>
 							<ClayTable.Row>
 								{columns.map((column) => (
@@ -361,7 +368,11 @@ export default function FilterableListCard<T>({
 							{paginatedItems.map((item) => (
 								<ClayTable.Row
 									key={rowKey(item)}
-									onClick={() => onItemClick(item)}
+									onClick={
+										onItemClick
+											? () => onItemClick(item)
+											: undefined
+									}
 								>
 									{columns.map((column) => (
 										<ClayTable.Cell

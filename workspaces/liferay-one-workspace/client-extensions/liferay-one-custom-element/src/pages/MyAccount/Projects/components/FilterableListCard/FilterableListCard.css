@@ -155,19 +155,24 @@
 		border-top: 0;
 		color: #6b6c7e;
 		font-weight: 600;
-		padding: 12px 24px;
+		padding: 12px var(--spacer-4);
 		text-transform: none;
 	}
 
 	& tbody td {
 		border-top: 1px solid var(--color-neutral-2);
 		color: #1b2a3b;
-		padding: 16px 24px;
+		padding: 16px var(--spacer-4);
 		vertical-align: middle;
 	}
 
-	& tbody tr {
+	&.list-card-table-clickable tbody tr {
 		cursor: pointer;
+	}
+
+	& thead th:first-child,
+	& tbody td:first-child {
+		padding-left: var(--spacer-4);
 	}
 
 	& thead th:last-child,
