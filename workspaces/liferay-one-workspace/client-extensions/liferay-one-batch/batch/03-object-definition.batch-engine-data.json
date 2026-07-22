@@ -6122,6 +6122,24 @@
 					"type": "Long"
 				},
 				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_PUBLISHER_DETAILS_CATALOG_EXTERNAL_ID",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Catalog External Id"
+					},
+					"name": "catalogExternalId",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
 					"DBType": "Clob",
 					"businessType": "RichText",
 					"externalReferenceCode": "C_PUBLISHER_DETAILS_DESCRIPTION",
