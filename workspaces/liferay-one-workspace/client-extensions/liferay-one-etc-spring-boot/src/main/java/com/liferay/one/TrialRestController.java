@@ -19,10 +19,10 @@ import com.liferay.one.service.ConsoleService;
 import com.liferay.one.service.NotificationQueueEntryService;
 import com.liferay.one.service.NotificationTemplateService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.LocaleUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
