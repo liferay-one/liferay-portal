@@ -61,7 +61,9 @@ public class CommerceOrderService extends OneBaseService {
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).parameters(
-			"nestedFields", "account,billingAddress,customFields,orderItems"
+			"nestedFields",
+			"account,billingAddress,customFields,orderItems," +
+				"orderItems.customFields"
 		).build();
 	}
 
@@ -131,6 +133,15 @@ public class CommerceOrderService extends OneBaseService {
 		updateOrder(
 			null, orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
 			paymentStatus);
+
+		Order order = fetchCommerceOrder(orderId);
+
+		if ((order != null) &&
+			Objects.equals(
+				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
+
+			_provisionAiHub(order);
+		}
 	}
 
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
@@ -153,7 +164,7 @@ public class CommerceOrderService extends OneBaseService {
 	public Order fetchOrderByExternalReferenceCode(String externalReferenceCode)
 		throws Exception {
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		try {
 			return orderResource.getOrderByExternalReferenceCode(
@@ -171,7 +182,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public List<Order> getAccountOrders(long accountId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		List<Order> orders = new ArrayList<>();
 
@@ -252,7 +263,7 @@ public class CommerceOrderService extends OneBaseService {
 			long commerceOrderId, Map<String, ?> customFields)
 		throws Exception {
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		Order order = new Order();
 
@@ -347,7 +358,7 @@ public class CommerceOrderService extends OneBaseService {
 		Order existingOrder = fetchOrderByExternalReferenceCode(
 			salesforceOpportunity.getId());
 
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		if (existingOrder != null) {
 			return orderResource.patchOrder(existingOrder.getId(), order);
@@ -362,19 +373,6 @@ public class CommerceOrderService extends OneBaseService {
 			lxcDXPMainDomain, lxcDXPServerProtocol
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-	}
-
-	public OrderResource buildOrderResource() {
-		return OrderResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).parameters(
-			"nestedFields",
-			"account,billingAddress,customFields,orderItems," +
-				"orderItems.customFields"
 		).build();
 	}
 
@@ -506,15 +504,6 @@ public class CommerceOrderService extends OneBaseService {
 		return customFields;
 	}
 
-	public Country getCountryByA2(String a2) throws Exception {
-		return CountryResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build().getCountryByA2(a2);
-	}
-
 	private Map<String, String> _getCustomFields(Order order) throws Exception {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
@@ -549,7 +538,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private String _getOpportunitySoldBy(long accountId) throws Exception {
-		OrderResource orderResource = _buildOrderResource();
+		OrderResource orderResource = buildOrderResource();
 
 		Page<Order> ordersPage = orderResource.getOrdersPage(
 			null, "accountId/any(x:x eq " + accountId + ")", null, null);
@@ -737,10 +726,10 @@ public class CommerceOrderService extends OneBaseService {
 		"HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO",
 		"SE", "SI", "SK");
 
-	private volatile Long _channelId;
-
 	@Autowired
 	private AIHubService _aiHubService;
+
+	private volatile Long _channelId;
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;

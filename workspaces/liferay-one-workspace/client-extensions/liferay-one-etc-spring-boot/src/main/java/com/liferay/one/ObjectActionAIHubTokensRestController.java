@@ -57,7 +57,8 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 		int paymentStatus = commerceOrderJSONObject.getInt("paymentStatus");
 
 		if ((orderStatus == CommerceOrderConstants.ORDER_STATUS_COMPLETED) ||
-			(paymentStatus != 0)) { // 0 is completed
+			(paymentStatus !=
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)) {
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -124,7 +125,9 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 				"transactionId", order.getId()
 			));
 
-		_commerceOrderService.completeOrder(null, order.getId(), 0); // 0 is completed payment status
+		_commerceOrderService.completeOrder(
+			null, order.getId(),
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
 
 		_setUpSalesforceOpportunity(
 			aiHubApplicationJSONObject, order, orderItem);

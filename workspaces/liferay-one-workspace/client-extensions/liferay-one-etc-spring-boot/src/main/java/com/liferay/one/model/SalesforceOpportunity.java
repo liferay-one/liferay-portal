@@ -16,13 +16,11 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.util.CommerceOrderUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 
 import org.json.JSONArray;
@@ -91,16 +89,6 @@ public class SalesforceOpportunity {
 
 	private String _getAccountId() {
 		Account account = _order.getAccount();
-
-		Map<String, String> customFields =
-			(Map<String, String>)account.getCustomFields();
-
-		String salesforceAccountKey = customFields.get(
-			"salesforce-account-key");
-
-		if (Validator.isNotNull(salesforceAccountKey)) {
-			return salesforceAccountKey;
-		}
 
 		return account.getExternalReferenceCode();
 	}
