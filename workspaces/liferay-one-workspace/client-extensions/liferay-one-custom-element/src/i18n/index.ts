@@ -27,7 +27,7 @@ export function translate(
 		languages as unknown as Record<string, Partial<typeof en_US>>
 	)[languageId];
 
-	return languageProperties[word] || word;
+	return languageProperties?.[word] || en_US[word] || word;
 }
 
 export function sub(

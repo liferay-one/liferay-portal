@@ -22,7 +22,7 @@ import i18n, {Word, translate} from '~/i18n';
 import {canAccessOrders} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {Liferay} from '~/services/liferay/liferay';
-import {OrderCustomFields, getOrderStatusLabel} from '~/utils/orderUtils';
+import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import './Orders.css';
@@ -214,7 +214,7 @@ export default function Orders() {
 		const statuses = new Set<string>();
 
 		orders.forEach((order) => {
-			const status = getOrderStatusLabel(order);
+			const status = getOrderStatusToken(order);
 
 			if (status) {
 				statuses.add(status);
@@ -223,7 +223,10 @@ export default function Orders() {
 
 		return Array.from(statuses)
 			.sort()
-			.map((status) => ({label: status, value: status}));
+			.map((status) => ({
+				label: translate(status as Word),
+				value: status,
+			}));
 	}, [orders]);
 
 	const filteredOrders = useMemo(() => {
@@ -250,7 +253,7 @@ export default function Orders() {
 
 			if (
 				statusFilter.length &&
-				!statusFilter.includes(getOrderStatusLabel(order))
+				!statusFilter.includes(getOrderStatusToken(order))
 			) {
 				return false;
 			}
@@ -292,7 +295,7 @@ export default function Orders() {
 
 		statusFilter.forEach((status) => {
 			filters.push({
-				label: `${translate('status')}: ${status}`,
+				label: `${translate('status')}: ${translate(status as Word)}`,
 				onRemove: () => {
 					setStatusFilter((previous) =>
 						previous.filter((current) => current !== status)
@@ -516,14 +519,18 @@ export default function Orders() {
 														style={{
 															backgroundColor:
 																getStatusColor(
-																	getOrderStatusLabel(
+																	getOrderStatusToken(
 																		order
-																	).toLowerCase()
+																	)
 																),
 														}}
 													/>
 
-													{getOrderStatusLabel(order)}
+													{translate(
+														getOrderStatusToken(
+															order
+														) as Word
+													)}
 												</span>
 											</ClayTable.Cell>
 

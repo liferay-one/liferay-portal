@@ -5,9 +5,11 @@
 
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
+import {Word, translate} from '~/i18n';
 import {
 	OrderWorkflowStatusCode,
 	getOrderStatusLabel,
+	getOrderStatusToken,
 	orderWorkflowStatusCodeLabels,
 } from '~/utils/orderUtils';
 
@@ -60,7 +62,9 @@ const OrderStatus = ({placedOrder}: OrderStatusProps) => {
 				symbol="circle"
 			/>
 
-			<span className="order-status-text">{orderStatusLabel}</span>
+			<span className="order-status-text">
+				{translate(getOrderStatusToken(placedOrder) as Word)}
+			</span>
 		</>
 	);
 };

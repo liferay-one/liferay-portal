@@ -351,6 +351,7 @@ export default {
 	'deleting': 'Deleting',
 	'deleting-a-service-cannot-be-undone-confirm-the-deletion-before-proceeding':
 		'Deleting a service cannot be undone! Confirm the deletion before proceeding.',
+	'denied': 'Denied',
 	'description': 'Description',
 	'design-the-storefront-for-your-solution-this-will-set-the-information-displayed-on-the-solutions-page-this-section-is-dedicated-to-creating-the-solutions-detail-content':
 		'Design the storefront for your solution. This will set the information displayed on the solution’s page. This section is dedicated to creating the solution’s detail content.',
@@ -555,6 +556,7 @@ export default {
 	'inactive': 'Inactive',
 	'incident-report-contacts': 'Incident Report Contacts',
 	'income': 'Income',
+	'incomplete': 'Incomplete',
 	'industry': 'Industry',
 	'information': 'Information',
 	'input-one-domain-name-per-instance': 'Input one domain name per instance',
@@ -861,6 +863,7 @@ export default {
 	'paypal': 'PayPal',
 	'paypal-account': 'PayPal Account',
 	'pending': 'Pending',
+	'pending-payment': 'Pending Payment',
 	'permissions-successfully-updated': 'Permissions successfully updated.',
 	'perpetual': 'Perpetual',
 	'personal': 'Personal',
@@ -1054,6 +1057,7 @@ export default {
 	'save-changes': 'Save Changes',
 	'save-this-address-for-future-orders':
 		'Save this address for future orders',
+	'scheduled': 'Scheduled',
 	'scroll-to-bottom': 'Scroll to Bottom',
 	'scroll-to-top': 'Scroll to Top',
 	'search': 'Search',

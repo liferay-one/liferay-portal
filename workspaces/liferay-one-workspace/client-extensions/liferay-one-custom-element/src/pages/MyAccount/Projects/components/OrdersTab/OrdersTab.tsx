@@ -9,7 +9,7 @@ import {Link, useNavigate, useParams} from 'react-router-dom';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
 import {ProjectOrder, useProjectOrders} from '~/hooks/useProjectOrders';
-import {translate} from '~/i18n';
+import {Word, translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 
 import FilterableListCard, {
@@ -43,7 +43,7 @@ export default function OrdersTab() {
 				label: 'status',
 				matches: (order, values) => values.includes(order.status),
 				options: statuses.map((status) => ({
-					label: status,
+					label: translate(status as Word),
 					value: status,
 				})),
 			},
@@ -80,13 +80,11 @@ export default function OrdersTab() {
 					<span
 						className="list-card-status-dot"
 						style={{
-							backgroundColor: getStatusColor(
-								order.status.toLowerCase()
-							),
+							backgroundColor: getStatusColor(order.status),
 						}}
 					/>
 
-					{order.status}
+					{translate(order.status as Word)}
 				</span>
 			),
 			width: '1%',
