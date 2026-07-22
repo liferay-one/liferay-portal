@@ -14,6 +14,7 @@ public class ProductVersion {
 
 	public ProductVersion(JSONObject jsonObject) {
 		_productGroup = jsonObject.optString("productGroup");
+		_productGroupVersion = jsonObject.optString("productGroupVersion");
 		_productVersionId = jsonObject.getLong("id");
 		_supported = jsonObject.optBoolean("supported");
 		_version = jsonObject.optString("productVersion");
@@ -21,6 +22,10 @@ public class ProductVersion {
 
 	public String getProductGroup() {
 		return _productGroup;
+	}
+
+	public String getProductGroupVersion() {
+		return _productGroupVersion;
 	}
 
 	public long getProductVersionId() {
@@ -36,6 +41,7 @@ public class ProductVersion {
 	}
 
 	private final String _productGroup;
+	private final String _productGroupVersion;
 	private final long _productVersionId;
 	private final boolean _supported;
 	private final String _version;

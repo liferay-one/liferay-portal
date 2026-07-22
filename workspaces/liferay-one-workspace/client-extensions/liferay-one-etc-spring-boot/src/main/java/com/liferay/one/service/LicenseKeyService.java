@@ -6,7 +6,6 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.ClassNameConstants;
-import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -168,10 +167,10 @@ public class LicenseKeyService extends OneBaseService {
 			StringPool.BLANK, _FREE_TIER_LICENSE_NAME,
 			LicenseConstants.TYPE_FREE, _FREE_TIER_LICENSE_VERSION,
 			_FREE_TIER_PRODUCT_NAME, LicenseConstants.PRODUCT_ID_PORTAL,
-			productVersion, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0,
-			0, 0L, 0L, StringPool.BLANK, StringPool.BLANK, domains,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+			productVersion, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0, 0, 0L, 0L,
+			StringPool.BLANK, StringPool.BLANK, domains, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
+			expirationDate);
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -523,10 +522,10 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	protected String getFreeTierProductVersion() {
-		String productVersion = null;
+		String productGroupVersion = null;
 
 		try {
-			productVersion = getLatestSupportedProductVersion();
+			productGroupVersion = getLatestSupportedProductGroupVersion();
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -536,18 +535,15 @@ public class LicenseKeyService extends OneBaseService {
 			}
 		}
 
-		String quarterlyRelease = ProductVersion.extractQuarterlyRelease(
-			productVersion);
-
-		if (Validator.isNull(quarterlyRelease)) {
+		if (Validator.isNull(productGroupVersion)) {
 			return _FREE_TIER_PRODUCT_VERSION;
 		}
 
-		return quarterlyRelease;
+		return productGroupVersion;
 	}
 
-	protected String getLatestSupportedProductVersion() throws Exception {
-		return _productVersionService.getLatestProductVersion(
+	protected String getLatestSupportedProductGroupVersion() throws Exception {
+		return _productVersionService.getLatestProductGroupVersion(
 			_FREE_TIER_PRODUCT_GROUP);
 	}
 

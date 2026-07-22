@@ -45,26 +45,34 @@ import reactor.util.retry.Retry;
 @Component
 public class ProductVersionService extends OneBaseService {
 
-	public String getLatestProductVersion(String productGroup)
+	public String getLatestProductGroupVersion(String productGroup)
 		throws Exception {
 
-		String latestVersion = null;
+		String latestProductGroupVersion = null;
 
 		VersionComparator versionComparator = new VersionComparator();
 
 		for (ProductVersion productVersion :
 				getProductVersions(productGroup, true)) {
 
-			String version = productVersion.getVersion();
+			String productGroupVersion =
+				productVersion.getProductGroupVersion();
 
-			if ((latestVersion == null) ||
-				(versionComparator.compare(version, latestVersion) > 0)) {
+			if (latestProductGroupVersion == null) {
+				latestProductGroupVersion = productGroupVersion;
 
-				latestVersion = version;
+				continue;
+			}
+
+			int compareTo = versionComparator.compare(
+				productGroupVersion, latestProductGroupVersion);
+
+			if (compareTo > 0) {
+				latestProductGroupVersion = productGroupVersion;
 			}
 		}
 
-		return latestVersion;
+		return latestProductGroupVersion;
 	}
 
 	public ProductVersion getProductVersion(String productGroup, String version)
@@ -221,6 +229,9 @@ public class ProductVersionService extends OneBaseService {
 					"externalReferenceCode", version
 				).put(
 					"productGroup", productGroup
+				).put(
+					"productGroupVersion",
+					StringUtil.toUpperCase(productGroupVersion)
 				).put(
 					"productVersion", version
 				).put(
