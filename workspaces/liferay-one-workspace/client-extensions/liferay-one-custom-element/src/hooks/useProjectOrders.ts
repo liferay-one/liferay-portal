@@ -6,7 +6,7 @@
 import {format} from 'date-fns';
 import {useMemo} from 'react';
 import {Liferay} from '~/services/liferay/liferay';
-import {OrderCustomFields, getOrderStatusLabel} from '~/utils/orderUtils';
+import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {usePlacedOrders} from './usePlacedOrder';
@@ -66,16 +66,6 @@ function formatDate(value?: string): string {
 	return value ? format(new Date(value), 'MMM d, yyyy') : '';
 }
 
-const STATUS_TOKEN_ALIASES: {[key: string]: string} = {
-	cancelled: 'canceled',
-};
-
-function toStatusToken(label: string): string {
-	const token = label.toLowerCase().replace(/\s+/g, '-');
-
-	return STATUS_TOKEN_ALIASES[token] ?? token;
-}
-
 export function useProjectOrders(projectName?: string) {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
@@ -100,7 +90,7 @@ export function useProjectOrders(projectName?: string) {
 				date: formatDate(order.createDate),
 				id: String(order.id),
 				orderId: String(order.id),
-				status: getOrderStatusLabel(order),
+				status: getOrderStatusToken(order),
 				total: getOrderTotal(order),
 			})),
 		[placedOrders]
@@ -147,7 +137,7 @@ export function getProductOrderInfo(
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy: order.author ?? '',
-		status: toStatusToken(getOrderStatusLabel(order)),
+		status: getOrderStatusToken(order),
 	};
 }
 
