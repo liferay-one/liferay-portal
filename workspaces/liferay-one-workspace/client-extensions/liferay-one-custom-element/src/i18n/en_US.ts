@@ -582,7 +582,6 @@ export default {
 		'Invite, manage roles, designate incident contacts.',
 	'invite-member': 'Invite Member',
 	'invite-project-member': 'Invite Project Member',
-	'invoice-status': 'Invoice Status',
 	'ip-addresses': 'IP Addresses',
 	'job-title': 'Job Title',
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
