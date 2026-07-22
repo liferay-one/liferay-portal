@@ -22,11 +22,7 @@ import i18n, {Word, translate} from '~/i18n';
 import {canAccessOrders} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {Liferay} from '~/services/liferay/liferay';
-import {
-	OrderCustomFields,
-	PaymentStatus,
-	getOrderStatusLabel,
-} from '~/utils/orderUtils';
+import {OrderCustomFields, getOrderStatusLabel} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import './Orders.css';
@@ -38,16 +34,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 const FILTER_SEARCH_MIN_OPTIONS = 10;
 
-const INVOICE_STATUS_OPTIONS: {label: Word; value: number}[] = [
-	{label: 'paid', value: PaymentStatus.PAID},
-	{label: 'not-required', value: PaymentStatus.NOT_REQUIRED},
-	{label: 'unpaid', value: PaymentStatus.PENDING},
-	{label: 'pending', value: PaymentStatus.PAYMENT_PENDING},
-	{label: 'failed', value: PaymentStatus.FAILED},
-	{label: 'canceled', value: PaymentStatus.CANCELED},
-];
-
-type FilterCategory = 'invoice-status' | 'project';
+type FilterCategory = 'project' | 'status';
 
 type FilterOption = {label: string; value: number | string};
 
@@ -186,9 +173,7 @@ export default function Orders() {
 		exclude: boolean;
 		values: string[];
 	}>({exclude: false, values: []});
-	const [invoiceStatusFilter, setInvoiceStatusFilter] = useState<number[]>(
-		[]
-	);
+	const [statusFilter, setStatusFilter] = useState<string[]>([]);
 
 	const {
 		data,
@@ -225,6 +210,22 @@ export default function Orders() {
 			.map((name) => ({label: name, value: name}));
 	}, [orders]);
 
+	const statusOptions = useMemo<FilterOption[]>(() => {
+		const statuses = new Set<string>();
+
+		orders.forEach((order) => {
+			const status = getOrderStatusLabel(order);
+
+			if (status) {
+				statuses.add(status);
+			}
+		});
+
+		return Array.from(statuses)
+			.sort()
+			.map((status) => ({label: status, value: status}));
+	}, [orders]);
+
 	const filteredOrders = useMemo(() => {
 		const search = keywords.trim().toLowerCase();
 
@@ -248,15 +249,15 @@ export default function Orders() {
 			}
 
 			if (
-				invoiceStatusFilter.length &&
-				!invoiceStatusFilter.includes(order.paymentStatus)
+				statusFilter.length &&
+				!statusFilter.includes(getOrderStatusLabel(order))
 			) {
 				return false;
 			}
 
 			return true;
 		});
-	}, [invoiceStatusFilter, keywords, orders, projectFilter]);
+	}, [keywords, orders, projectFilter, statusFilter]);
 
 	const paginatedOrders = useMemo(() => {
 		const start = (page - 1) * pageSize;
@@ -289,27 +290,21 @@ export default function Orders() {
 			});
 		});
 
-		invoiceStatusFilter.forEach((status) => {
-			const option = INVOICE_STATUS_OPTIONS.find(
-				(current) => current.value === status
-			);
-
+		statusFilter.forEach((status) => {
 			filters.push({
-				label: `${translate('invoice-status')}: ${
-					option ? translate(option.label) : String(status)
-				}`,
+				label: `${translate('status')}: ${status}`,
 				onRemove: () => {
-					setInvoiceStatusFilter((previous) =>
+					setStatusFilter((previous) =>
 						previous.filter((current) => current !== status)
 					);
 					setPage(1);
 				},
-				value: `invoice-status-${status}`,
+				value: `status-${status}`,
 			});
 		});
 
 		return filters;
-	}, [invoiceStatusFilter, projectFilter]);
+	}, [projectFilter, statusFilter]);
 
 	const closeFilter = () => {
 		setFilterActive(false);
@@ -368,10 +363,7 @@ export default function Orders() {
 								{(
 									[
 										{key: 'project', label: 'project'},
-										{
-											key: 'invoice-status',
-											label: 'invoice-status',
-										},
+										{key: 'status', label: 'status'},
 									] as {key: FilterCategory; label: Word}[]
 								).map(({key, label}) => (
 									<button
@@ -406,19 +398,14 @@ export default function Orders() {
 						) : (
 							<FilterSubPanel
 								onApply={(values) => {
-									setInvoiceStatusFilter(values as number[]);
+									setStatusFilter(values as string[]);
 									setPage(1);
 									closeFilter();
 								}}
 								onBack={() => setFilterCategory(null)}
-								options={INVOICE_STATUS_OPTIONS.map(
-									({label, value}) => ({
-										label: translate(label),
-										value,
-									})
-								)}
-								selectedValues={invoiceStatusFilter}
-								title={translate('invoice-status')}
+								options={statusOptions}
+								selectedValues={statusFilter}
+								title={translate('status')}
 							/>
 						)}
 					</ClayDropDown>
