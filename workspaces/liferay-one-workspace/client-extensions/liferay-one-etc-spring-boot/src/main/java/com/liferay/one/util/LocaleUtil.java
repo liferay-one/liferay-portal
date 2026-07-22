@@ -14,6 +14,8 @@ import java.util.Locale;
  */
 public class LocaleUtil {
 
+	public static final Locale US = Locale.forLanguageTag("en-US");
+
 	public static Locale fromLanguageId(String languageId) {
 		return Locale.forLanguageTag(StringUtil.replace(languageId, '_', '-'));
 	}
