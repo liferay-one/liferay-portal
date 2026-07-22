@@ -52,7 +52,6 @@ export default function OrdersTab() {
 
 	const columns: ListColumn<ProjectOrder>[] = [
 		{
-			expanded: true,
 			heading: 'order-id',
 			key: 'order-id',
 			render: (order) => (
@@ -118,7 +117,11 @@ export default function OrdersTab() {
 				>
 					{translate('view-all-account-orders')}
 
-					<ClayIcon className="ml-1" symbol="shortcut" />
+					<ClayIcon
+						className="ml-1"
+						style={{marginTop: 0}}
+						symbol="shortcut"
+					/>
 				</Link>
 			}
 			columns={columns}
