@@ -4152,6 +4152,24 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
+					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_GROUP_VERSION",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Product Group Version"
+					},
+					"name": "productGroupVersion",
+					"objectFieldSettings": [
+					],
+					"required": true,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
 					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_VERSION",
 					"indexed": true,
 					"indexedAsKeyword": true,
