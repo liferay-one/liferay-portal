@@ -43,6 +43,11 @@ liferay-one-etc-spring-boot-object-action-account-update:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/account/update
     type: objectAction
+liferay-one-etc-spring-boot-object-action-ai-hub-tokens:
+    name: Liferay One Etc Spring Boot Object Action AI Hub Tokens
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/ai/hub/tokens
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-generation:
     name: Liferay One Etc Spring Boot Object Action Commerce Order Item Entitlement Generation
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
