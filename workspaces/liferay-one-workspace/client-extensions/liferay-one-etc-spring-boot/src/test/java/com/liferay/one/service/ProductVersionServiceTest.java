@@ -56,14 +56,19 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
-	public void testGetLatestProductVersion() throws Exception {
-		_stubbedVersions = Arrays.asList(
-			"DXP 2025.Q3", "DXP 2026.Q2", "DXP 2024.Q1", "DXP 2026.Q1 LTS",
-			"DXP 2025.Q1 LTS", "DXP 2025.Q4");
+	public void testGetLatestProductGroupVersion() throws Exception {
+		_stubbedProductVersions = Arrays.asList(
+			new String[] {"DXP 7.4", "7.4"},
+			new String[] {"DXP 2025.Q3", "2025.Q3"},
+			new String[] {"DXP 2026.Q2", "2026.Q2"},
+			new String[] {"DXP 2024.Q1", "2024.Q1"},
+			new String[] {"DXP 2026.Q1 LTS", "2026.Q1"},
+			new String[] {"DXP 2025.Q1 LTS", "2025.Q1"},
+			new String[] {"DXP 2025.Q4", "2025.Q4"});
 
 		Assertions.assertEquals(
-			"DXP 2026.Q2",
-			_productVersionService.getLatestProductVersion("dxp"));
+			"2026.Q2",
+			_productVersionService.getLatestProductGroupVersion("dxp"));
 	}
 
 	@Test
@@ -104,6 +109,7 @@ public class ProductVersionServiceTest {
 		Assertions.assertEquals(2, bodies.size());
 
 		Map<String, Boolean> supportedByVersion = new HashMap<>();
+		Map<String, String> productGroupVersionByVersion = new HashMap<>();
 
 		for (String body : bodies) {
 			JSONObject jsonObject = new JSONObject(body);
@@ -114,6 +120,9 @@ public class ProductVersionServiceTest {
 				jsonObject.getString("externalReferenceCode"),
 				jsonObject.getString("productVersion"));
 
+			productGroupVersionByVersion.put(
+				jsonObject.getString("productVersion"),
+				jsonObject.getString("productGroupVersion"));
 			supportedByVersion.put(
 				jsonObject.getString("productVersion"),
 				jsonObject.getBoolean("supported"));
@@ -123,6 +132,10 @@ public class ProductVersionServiceTest {
 			Boolean.TRUE, supportedByVersion.get("DXP 2026.Q2"));
 		Assertions.assertEquals(
 			Boolean.FALSE, supportedByVersion.get("DXP 7.4"));
+		Assertions.assertEquals(
+			"2026.Q2", productGroupVersionByVersion.get("DXP 2026.Q2"));
+		Assertions.assertEquals(
+			"7.4", productGroupVersionByVersion.get("DXP 7.4"));
 	}
 
 	private String _releasesJSON() {
@@ -196,7 +209,7 @@ public class ProductVersionServiceTest {
 
 		List<ProductVersion> productVersions = new ArrayList<>();
 
-		for (String version : _stubbedVersions) {
+		for (String[] productVersion : _stubbedProductVersions) {
 			productVersions.add(
 				mapper.apply(
 					new JSONObject(
@@ -205,7 +218,9 @@ public class ProductVersionServiceTest {
 					).put(
 						"productGroup", "dxp"
 					).put(
-						"productVersion", version
+						"productGroupVersion", productVersion[1]
+					).put(
+						"productVersion", productVersion[0]
 					).put(
 						"supported", true
 					)));
@@ -216,7 +231,7 @@ public class ProductVersionServiceTest {
 
 	private ArgumentCaptor<String> _filterCaptor;
 	private ProductVersionService _productVersionService;
-	private List<String> _stubbedVersions = Collections.emptyList();
+	private List<String[]> _stubbedProductVersions = Collections.emptyList();
 
 	private static class TestProductVersionService
 		extends ProductVersionService {

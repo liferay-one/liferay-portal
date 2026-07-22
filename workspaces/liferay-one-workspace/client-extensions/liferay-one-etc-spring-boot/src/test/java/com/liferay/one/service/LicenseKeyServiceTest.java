@@ -67,7 +67,7 @@ public class LicenseKeyServiceTest {
 			null
 		).when(
 			_licenseKeyService
-		).getLatestSupportedProductVersion();
+		).getLatestSupportedProductGroupVersion();
 
 		Assertions.assertEquals(
 			"7.4", _licenseKeyService.getFreeTierProductVersion());
@@ -81,35 +81,21 @@ public class LicenseKeyServiceTest {
 			new RuntimeException()
 		).when(
 			_licenseKeyService
-		).getLatestSupportedProductVersion();
+		).getLatestSupportedProductGroupVersion();
 
 		Assertions.assertEquals(
 			"7.4", _licenseKeyService.getFreeTierProductVersion());
 	}
 
 	@Test
-	public void testGetFreeTierProductVersionFallsBackWhenNotQuarterly()
+	public void testGetFreeTierProductVersionUsesLatestProductGroupVersion()
 		throws Exception {
 
 		Mockito.doReturn(
-			"DXP 7.3"
+			"2026.Q2"
 		).when(
 			_licenseKeyService
-		).getLatestSupportedProductVersion();
-
-		Assertions.assertEquals(
-			"7.4", _licenseKeyService.getFreeTierProductVersion());
-	}
-
-	@Test
-	public void testGetFreeTierProductVersionUsesLatestQuarterlyRelease()
-		throws Exception {
-
-		Mockito.doReturn(
-			"DXP 2026.Q2"
-		).when(
-			_licenseKeyService
-		).getLatestSupportedProductVersion();
+		).getLatestSupportedProductGroupVersion();
 
 		Assertions.assertEquals(
 			"2026.Q2", _licenseKeyService.getFreeTierProductVersion());
