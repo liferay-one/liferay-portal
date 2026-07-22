@@ -1,0 +1,22 @@
+.publisher-profile-header .publisher-image {
+	border-radius: 50%;
+	height: 72px;
+	object-fit: cover;
+	width: 72px;
+}
+
+.publisher-profile-header .publisher-profile-header-name {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 36px;
+}
+
+.publisher-profile-header .publisher-profile-header-stats {
+	color: #54555f;
+	font-size: 13px;
+	line-height: 16px;
+}
+
+.publisher-profile-header .stars {
+	color: var(--color-accent-6);
+}
