@@ -10,14 +10,14 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {PageRenderer} from '~/components/Page/Page';
 import Table from '~/components/Table/Table';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
-import i18n, {translate} from '~/i18n';
+import i18n, {Word, translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {
 	PaymentStatus,
-	getOrderStatusLabel,
+	getOrderStatusToken,
 	paymentStatusLabels,
 } from '~/utils/orderUtils';
 
@@ -66,12 +66,12 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 						className="orders-status-dot"
 						style={{
 							backgroundColor: getStatusColor(
-								getOrderStatusLabel(order).toLowerCase()
+								getOrderStatusToken(order)
 							),
 						}}
 					/>
 
-					{getOrderStatusLabel(order)}
+					{translate(getOrderStatusToken(order) as Word)}
 				</span>
 			),
 		},

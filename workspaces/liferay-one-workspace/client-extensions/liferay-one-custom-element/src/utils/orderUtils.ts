@@ -182,3 +182,17 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 
 	return statusLabel;
 }
+
+const STATUS_TOKEN_ALIASES: {[token: string]: string} = {
+	cancelled: 'canceled',
+};
+
+export function toStatusToken(label: string): string {
+	const token = label.toLowerCase().replace(/\s+/g, '-');
+
+	return STATUS_TOKEN_ALIASES[token] ?? token;
+}
+
+export function getOrderStatusToken(order: PlacedOrder): string {
+	return toStatusToken(getOrderStatusLabel(order));
+}
