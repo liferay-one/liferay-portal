@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.UserAccountService;
@@ -24,6 +25,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/user-accounts")
 @RestController
 public class UserAccountsRestController extends OneBaseRestController {
+
+	@PostMapping("/{userId}/sync-to-jsm")
+	public void postSyncToJSM(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("userId") long userId)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		_userAccountSynchronizer.syncUserAccount(
+			_userAccountService.getUserAccount(userId));
+	}
 
 	@PostMapping("/{userId}/sync-with-okta")
 	public void postSyncWithOkta(
@@ -49,5 +62,8 @@ public class UserAccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
