@@ -7,8 +7,11 @@ package com.liferay.one;
 
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +32,29 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/app-license-keys")
 @RestController
 public class AppLicenseKeysRestController extends OneBaseRestController {
+
+	@GetMapping("/{appLicenseKeyId}")
+	public LicenseKey getAppLicenseKey(
+			@PathVariable("appLicenseKeyId") long appLicenseKeyId)
+		throws Exception {
+
+		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
+			appLicenseKeyId);
+
+		if (!_isApp(licenseKey)) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+		}
+
+		return licenseKey;
+	}
+
+	@GetMapping
+	public List<LicenseKey> getAppLicenseKeys() throws Exception {
+		return _licenseKeyService.getLicenseKeys(
+			StringBundler.concat(
+				"productExternalId ne '", LicenseConstants.PRODUCT_ID_PORTAL,
+				"'"));
+	}
 
 	@GetMapping("/{appLicenseKeyId}/download")
 	public ResponseEntity<String> getAppLicenseKeysDownload(
