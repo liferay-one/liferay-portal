@@ -8,6 +8,7 @@ package com.liferay.one.jira.converter;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.util.UserAccountUtil;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -43,6 +44,9 @@ public class ContactConverter extends BaseJiraAssetObjectConverter {
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_EMAIL_ADDRESS,
 			userAccount.getEmailAddress());
+		jiraAssetObject.setAttributeValue(
+			ContactConstants.ATTRIBUTE_NAME_EMAIL_ADDRESS_VERIFIED,
+			UserAccountUtil.isVerified(userAccount));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_LANGUAGE_ID,
 			userAccount.getLanguageId());

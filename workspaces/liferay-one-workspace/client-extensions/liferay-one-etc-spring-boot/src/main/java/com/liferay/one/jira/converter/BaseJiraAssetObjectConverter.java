@@ -45,6 +45,10 @@ public abstract class BaseJiraAssetObjectConverter {
 		return _ATTRIBUTE_NAME_EXTERNAL_KEY;
 	}
 
+	public String getExternalUpdatedAtAttributeName() {
+		return _ATTRIBUTE_NAME_EXTERNAL_UPDATED_AT;
+	}
+
 	public String getObjectTypeId() {
 		return _assetSchemaService.getObjectTypeId(
 			getObjectSchemaName(), getObjectTypeName());
@@ -87,6 +91,9 @@ public abstract class BaseJiraAssetObjectConverter {
 	}
 
 	private static final String _ATTRIBUTE_NAME_EXTERNAL_KEY = "External Key";
+
+	private static final String _ATTRIBUTE_NAME_EXTERNAL_UPDATED_AT =
+		"External Updated At";
 
 	@Autowired
 	private AssetSchemaService _assetSchemaService;
