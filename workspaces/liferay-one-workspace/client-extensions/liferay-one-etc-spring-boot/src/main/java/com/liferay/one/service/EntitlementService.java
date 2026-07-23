@@ -11,15 +11,20 @@ import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.OrderItemUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -195,6 +200,36 @@ public class EntitlementService extends OneBaseService {
 					exception);
 			}
 		}
+	}
+
+	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
+			long accountEntryId)
+		throws Exception {
+
+		List<Entitlement> entitlements = getActiveEntitlements(accountEntryId);
+
+		Set<Long> entitlementDefinitionIds = new LinkedHashSet<>();
+
+		for (Entitlement entitlement : entitlements) {
+			long entitlementDefinitionId =
+				entitlement.getEntitlementDefinitionId();
+
+			if (entitlementDefinitionId > 0) {
+				entitlementDefinitionIds.add(entitlementDefinitionId);
+			}
+		}
+
+		if (entitlementDefinitionIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> statements = TransformUtil.transform(
+			entitlementDefinitionIds,
+			entitlementDefinitionId ->
+				"(id eq '" + entitlementDefinitionId + "')");
+
+		return _entitlementDefinitionService.getEntitlementDefinitions(
+			StringUtil.merge(statements, " or "));
 	}
 
 	public List<Entitlement> getActiveEntitlements(long accountEntryId)
