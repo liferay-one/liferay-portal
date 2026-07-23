@@ -11,6 +11,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.function.BiPredicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,9 +26,38 @@ import org.springframework.stereotype.Component;
 @Component
 public class AssetObjectUpsertService {
 
+	public boolean isUnchangedByExternalUpdatedAt(
+		BaseJiraAssetObjectConverter converter,
+		JiraAssetObject existingJiraAssetObject,
+		JiraAssetObject jiraAssetObject) {
+
+		String externalUpdatedAtAttributeName =
+			converter.getExternalUpdatedAtAttributeName();
+
+		String externalUpdatedAt = jiraAssetObject.getAttributeValue(
+			externalUpdatedAtAttributeName);
+
+		if (Validator.isNull(externalUpdatedAt)) {
+			return false;
+		}
+
+		return Objects.equals(
+			externalUpdatedAt,
+			existingJiraAssetObject.getAttributeValue(
+				externalUpdatedAtAttributeName));
+	}
+
 	public void upsert(
 		BaseJiraAssetObjectConverter converter,
 		JiraAssetObject jiraAssetObject) {
+
+		upsert(converter, jiraAssetObject, null);
+	}
+
+	public void upsert(
+		BaseJiraAssetObjectConverter converter, JiraAssetObject jiraAssetObject,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
 
 		String externalKeyAttributeName =
 			converter.getExternalKeyAttributeName();
@@ -63,20 +94,35 @@ public class AssetObjectUpsertService {
 
 			_jiraAssetService.createObject(
 				converter.getObjectTypeId(), jiraAssetObject);
-		}
-		else {
-			JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
 
-			if (_log.isInfoEnabled()) {
-				_log.info(
+			return;
+		}
+
+		JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
+
+		if ((shouldSkipUpdateBiPredicate != null) &&
+			shouldSkipUpdateBiPredicate.test(
+				existingJiraAssetObject, jiraAssetObject)) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
 					StringBundler.concat(
-						"Updating ", converter.getObjectTypeName(),
+						"Skipping unchanged ", converter.getObjectTypeName(),
 						" asset object for external key ", externalKey));
 			}
 
-			_jiraAssetService.updateObject(
-				existingJiraAssetObject.getObjectId(), jiraAssetObject);
+			return;
 		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Updating ", converter.getObjectTypeName(),
+					" asset object for external key ", externalKey));
+		}
+
+		_jiraAssetService.updateObject(
+			existingJiraAssetObject.getObjectId(), jiraAssetObject);
 	}
 
 	private static final Log _log = LogFactory.getLog(
