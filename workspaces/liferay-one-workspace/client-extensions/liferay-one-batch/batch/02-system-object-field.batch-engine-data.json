@@ -33,24 +33,13 @@
 					"objectActionTriggerKey": "onAfterUpdate",
 					"parameters": {
 					}
-				},
-				{
-					"active": true,
-					"description": "Triggers Spring Boot CX to delete the account from JSM.",
-					"externalReferenceCode": "OA_ACCOUNT_DELETE",
-					"name": "AccountDelete",
-					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-account-delete",
-					"objectActionTriggerKey": "onAfterDelete",
-					"parameters": {
-					}
 				}
 			],
 			"objectFields": [
 			],
 			"objectRelationships": [
 			],
-			"system": true,
-			"titleObjectFieldName": "name"
+			"system": true
 		},
 		{
 			"externalReferenceCode": "L_COMMERCE_ORDER_ITEM",
@@ -202,37 +191,9 @@
 					"objectActionTriggerKey": "onAfterUpdate",
 					"parameters": {
 					}
-				},
-				{
-					"active": true,
-					"description": "Triggers Spring Boot CX to delete the team from JSM.",
-					"externalReferenceCode": "OA_ORGANIZATION_DELETE",
-					"name": "OrganizationDelete",
-					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-organization-delete",
-					"objectActionTriggerKey": "onAfterDelete",
-					"parameters": {
-					}
 				}
 			],
 			"objectFields": [
-				{
-					"DBType": "Long",
-					"businessType": "LongInteger",
-					"externalReferenceCode": "L_ORGANIZATION_ACCOUNT_ENTRY_ID",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Account Entry ID"
-					},
-					"name": "accountEntryId",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Long"
-				}
 			],
 			"objectRelationships": [
 			],
@@ -259,37 +220,6 @@
 					"name": "UserUpdate",
 					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-update",
 					"objectActionTriggerKey": "onAfterUpdate",
-					"parameters": {
-					}
-				},
-				{
-					"active": true,
-					"description": "Triggers Spring Boot CX to delete the contact from JSM and clean up subscription entries.",
-					"externalReferenceCode": "OA_USER_DELETE",
-					"name": "UserDelete",
-					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-delete",
-					"objectActionTriggerKey": "onAfterDelete",
-					"parameters": {
-					}
-				}
-			],
-			"objectFields": [
-			],
-			"objectRelationships": [
-			],
-			"system": true
-		},
-		{
-			"externalReferenceCode": "L_POSTAL_ADDRESS",
-			"name": "Address",
-			"objectActions": [
-				{
-					"active": true,
-					"description": "Triggers Spring Boot CX when an address is created to automatically set it as the account default billing address and configure currency.",
-					"externalReferenceCode": "OA_POSTAL_ADDRESS_CREATE",
-					"name": "PostalAddressCreate",
-					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-postal-address-create",
-					"objectActionTriggerKey": "onAfterAdd",
 					"parameters": {
 					}
 				}
