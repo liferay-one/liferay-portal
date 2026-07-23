@@ -49,7 +49,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ProvisioningEmailService extends OneBaseService {
 
-	public void sendAssignedWelcomeEmail(long userId, Account account)
+	public void sendAssignedWelcomeEmail(Account account, long userId)
 		throws Exception {
 
 		UserAccount userAccount = _userAccountService.getUserAccount(userId);
@@ -63,6 +63,20 @@ public class ProvisioningEmailService extends OneBaseService {
 		_sendWelcomeEmail(
 			userAccount, List.of(account),
 			_getProjects(account.getId(), userId));
+	}
+
+	public void sendAssignedWelcomeEmails(Account account, List<Long> userIds) {
+		for (Long userId : userIds) {
+			try {
+				sendAssignedWelcomeEmail(account, userId);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to send the assigned welcome email to user " +
+						userId,
+					exception);
+			}
+		}
 	}
 
 	public void sendAutoProvisionedWelcomeEmail(Account account)
@@ -154,17 +168,7 @@ public class ProvisioningEmailService extends OneBaseService {
 					opportunityType,
 					OpportunityConstants.TYPE_EXISTING_BUSINESS)) {
 
-			for (Long userId : userIds) {
-				try {
-					sendAssignedWelcomeEmail(userId, account);
-				}
-				catch (Exception exception) {
-					_log.error(
-						"Unable to send the assigned welcome email to user " +
-							userId,
-						exception);
-				}
-			}
+			sendAssignedWelcomeEmails(account, userIds);
 		}
 	}
 
