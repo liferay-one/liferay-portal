@@ -9,7 +9,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.service.AccountAssetService;
-import com.liferay.one.jira.service.AccountSyncService;
+import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.service.AccountService;
@@ -27,6 +28,9 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -95,6 +99,8 @@ public class AccountsRestController extends OneBaseRestController {
 			_provisioningAssignmentService.unassignAccountRole(
 				account, userId, accountRoleName);
 		}
+
+		_unassignContactRole(account, accountRoleId, userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -118,7 +124,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
 
-		_accountSyncService.syncAccount(
+		_accountSynchronizer.syncAccount(
 			_accountService.getAccount(externalReferenceCode));
 
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -170,6 +176,8 @@ public class AccountsRestController extends OneBaseRestController {
 			_provisioningAssignmentService.assignAccountRole(
 				account, userId, accountRoleName);
 		}
+
+		_assignContactRole(account, accountRoleId, userId);
 	}
 
 	@PostMapping(
@@ -247,15 +255,47 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 
 		for (Map.Entry<Long, String> entry : accountRoleNames.entrySet()) {
+			long accountRoleId = entry.getKey();
+
 			_accountService.addAccountUserAccountRole(
-				entry.getKey(), externalReferenceCode, jwt, userId);
+				accountRoleId, externalReferenceCode, jwt, userId);
 
 			_provisioningAssignmentService.assignAccountRole(
 				account, userId, entry.getValue());
+
+			_assignContactRole(account, accountRoleId, userId);
 		}
 
 		if (!hasAccount) {
 			_provisioningEmailService.sendAssignedWelcomeEmail(userId, account);
+		}
+	}
+
+	private void _assignContactRole(
+		Account account, long accountRoleId, long userId) {
+
+		try {
+			String accountRoleExternalReferenceCode =
+				_accountService.getAccountRoleExternalReferenceCode(
+					account.getId(), accountRoleId);
+
+			if (accountRoleExternalReferenceCode == null) {
+				return;
+			}
+
+			UserAccount userAccount = _userAccountService.getUserAccount(
+				userId);
+
+			_accountUserAccountRoleSynchronizer.syncAssignRole(
+				accountRoleExternalReferenceCode,
+				userAccount.getExternalReferenceCode(),
+				account.getExternalReferenceCode());
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync account contact role assignment for user " +
+					userId,
+				exception);
 		}
 	}
 
@@ -319,6 +359,37 @@ public class AccountsRestController extends OneBaseRestController {
 		return accountRoleNames;
 	}
 
+	private void _unassignContactRole(
+		Account account, long accountRoleId, long userId) {
+
+		try {
+			String accountRoleExternalReferenceCode =
+				_accountService.getAccountRoleExternalReferenceCode(
+					account.getId(), accountRoleId);
+
+			if (accountRoleExternalReferenceCode == null) {
+				return;
+			}
+
+			UserAccount userAccount = _userAccountService.getUserAccount(
+				userId);
+
+			_accountUserAccountRoleSynchronizer.syncUnassignRole(
+				accountRoleExternalReferenceCode,
+				userAccount.getExternalReferenceCode(),
+				account.getExternalReferenceCode());
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync account contact role unassignment for user " +
+					userId,
+				exception);
+		}
+	}
+
+	private static final Log _log = LogFactory.getLog(
+		AccountsRestController.class);
+
 	@Autowired
 	private AccountAssetService _accountAssetService;
 
@@ -329,7 +400,11 @@ public class AccountsRestController extends OneBaseRestController {
 	private AccountService _accountService;
 
 	@Autowired
-	private AccountSyncService _accountSyncService;
+	private AccountSynchronizer _accountSynchronizer;
+
+	@Autowired
+	private AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer;
 
 	@Autowired
 	private EmailAddressValidatorService _emailAddressValidatorService;
