@@ -248,6 +248,15 @@ public class EntitlementService extends OneBaseService {
 				instant, ")"));
 	}
 
+	public List<Entitlement> getEntitlements(long commerceOrderItemId)
+		throws Exception {
+
+		return getEntitlements(
+			StringBundler.concat(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '",
+				commerceOrderItemId, "'"));
+	}
+
 	public List<Entitlement> getEntitlements(String filterString)
 		throws Exception {
 
@@ -293,10 +302,7 @@ public class EntitlementService extends OneBaseService {
 	public void trimEntitlements(long commerceOrderItemId, String endDate)
 		throws Exception {
 
-		List<Entitlement> entitlements = getEntitlements(
-			StringBundler.concat(
-				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '",
-				commerceOrderItemId, "'"));
+		List<Entitlement> entitlements = getEntitlements(commerceOrderItemId);
 
 		Instant endDateInstant = Instant.parse(endDate);
 
@@ -309,46 +315,85 @@ public class EntitlementService extends OneBaseService {
 				continue;
 			}
 
-			Instant trimmedEndDateInstant = endDateInstant;
-
-			Instant startDateInstant = entitlement.getStartDateInstant();
-
-			if ((startDateInstant != null) &&
-				startDateInstant.isAfter(endDateInstant)) {
-
-				trimmedEndDateInstant = startDateInstant;
-			}
+			Instant trimmedEndDateInstant = _getLatestInstant(
+				endDateInstant, entitlement.getStartDateInstant());
 
 			if (Objects.equals(curEndDateInstant, trimmedEndDateInstant)) {
 				continue;
 			}
 
-			patch(
-				getAuthorization(),
+			_patchEntitlement(
+				entitlement.getEntitlementId(),
 				new JSONObject(
 				).put(
 					"endDate", trimmedEndDateInstant.toString()
-				).toString(),
-				UriComponentsBuilder.fromPath(
-					"/o/c/entitlements/" + entitlement.getEntitlementId()
-				).build(
-				).toUri());
+				));
 		}
 	}
 
 	public void updateEntitlementContract(long entitlementId, long contractId)
 		throws Exception {
 
-		patch(
-			getAuthorization(),
+		_patchEntitlement(
+			entitlementId,
 			new JSONObject(
 			).put(
 				"r_contractToEntitlement_c_contractId", contractId
-			).toString(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/entitlements/" + entitlementId
-			).build(
-			).toUri());
+			));
+	}
+
+	public void updateEntitlements(long commerceOrderItemId) throws Exception {
+		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
+			commerceOrderItemId);
+
+		if ((orderItem == null) || OrderItemUtil.isCanceled(orderItem)) {
+			return;
+		}
+
+		Instant endDateInstant = OrderItemUtil.getEntitlementEndDateInstant(
+			orderItem);
+		Instant startDateInstant = OrderItemUtil.getStartDateInstant(orderItem);
+
+		List<Entitlement> entitlements = getEntitlements(commerceOrderItemId);
+
+		for (Entitlement entitlement : entitlements) {
+			JSONObject entitlementJSONObject = new JSONObject();
+
+			if ((startDateInstant != null) &&
+				!Objects.equals(
+					entitlement.getStartDateInstant(), startDateInstant)) {
+
+				entitlementJSONObject.put(
+					"startDate", startDateInstant.toString());
+			}
+
+			if (endDateInstant != null) {
+				Instant effectiveStartDateInstant = startDateInstant;
+
+				if (effectiveStartDateInstant == null) {
+					effectiveStartDateInstant =
+						entitlement.getStartDateInstant();
+				}
+
+				Instant targetEndDateInstant = _getLatestInstant(
+					endDateInstant, effectiveStartDateInstant);
+
+				if (!Objects.equals(
+						entitlement.getEndDateInstant(),
+						targetEndDateInstant)) {
+
+					entitlementJSONObject.put(
+						"endDate", targetEndDateInstant.toString());
+				}
+			}
+
+			if (entitlementJSONObject.length() == 0) {
+				continue;
+			}
+
+			_patchEntitlement(
+				entitlement.getEntitlementId(), entitlementJSONObject);
+		}
 	}
 
 	private long _getAccountEntryId(Order order) {
@@ -372,6 +417,30 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return GetterUtil.getLong(customFields.get("contractId"));
+	}
+
+	private Instant _getLatestInstant(
+		Instant endDateInstant, Instant startDateInstant) {
+
+		if ((startDateInstant != null) &&
+			startDateInstant.isAfter(endDateInstant)) {
+
+			return startDateInstant;
+		}
+
+		return endDateInstant;
+	}
+
+	private void _patchEntitlement(
+			long entitlementId, JSONObject entitlementJSONObject)
+		throws Exception {
+
+		patch(
+			getAuthorization(), entitlementJSONObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/entitlements/" + entitlementId
+			).build(
+			).toUri());
 	}
 
 	private static final Log _log = LogFactory.getLog(EntitlementService.class);

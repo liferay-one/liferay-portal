@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.OpportunityConstants;
 import com.liferay.one.model.Contract;
@@ -25,6 +26,7 @@ import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
@@ -32,6 +34,7 @@ import com.liferay.one.service.ProvisioningIssueService;
 import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.OrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -230,6 +233,16 @@ public class SalesforceOpportunityPubsubSubscriber
 		return false;
 	}
 
+	private boolean _isCompleted(Order order) {
+		if (order == null) {
+			return false;
+		}
+
+		return Objects.equals(
+			order.getOrderStatus(),
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+	}
+
 	private boolean _isProvisioned(Order order) {
 		if (order == null) {
 			return false;
@@ -301,28 +314,11 @@ public class SalesforceOpportunityPubsubSubscriber
 		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
 			salesforceOpportunity.getId());
 
-		if (_isProvisioned(order)) {
-			_addWarning(
-				warningMessages,
-				StringBundler.concat(
-					"The opportunity ", salesforceOpportunity.getId(),
-					" was not provisioned automatically since an order with ",
-					"this opportunity already exists"));
+		boolean reprocessing = _isProvisioned(order);
 
-			Account account =
-				_accountService.fetchAccountByExternalReferenceCode(
-					salesforceOpportunity.getAccountId());
-
-			if ((account != null) &&
-				!Objects.equals(
-					salesforceOpportunity.getProductFamily(), "P")) {
-
-				_provisioningIssueService.addOpportunityInvoicedIssue(
-					account, salesforceAccount, salesforceOpportunity,
-					salesforceOpportunityLineItems, warningMessages);
-			}
-
-			return;
+		if (reprocessing && _log.isInfoEnabled()) {
+			_log.info(
+				"Reprocessing opportunity " + salesforceOpportunity.getId());
 		}
 
 		List<SalesforceOpportunityLineItem>
@@ -548,6 +544,22 @@ public class SalesforceOpportunityPubsubSubscriber
 					salesforceOpportunity.getStageName());
 
 				provisionedOrderItemCount++;
+
+				OrderItem existingOrderItem = OrderItemUtil.fetchOrderItem(
+					provisionableSalesforceOpportunityLineItem.getId(), order);
+
+				if (existingOrderItem != null) {
+					try {
+						_entitlementService.updateEntitlements(
+							existingOrderItem.getId());
+					}
+					catch (Exception exception) {
+						_log.error(
+							"Unable to update entitlements for order item " +
+								existingOrderItem.getId(),
+							exception);
+					}
+				}
 			}
 			catch (Exception exception) {
 				String productName =
@@ -568,7 +580,7 @@ public class SalesforceOpportunityPubsubSubscriber
 			}
 		}
 
-		if (provisionedOrderItemCount > 0) {
+		if ((provisionedOrderItemCount > 0) && !_isCompleted(order)) {
 			try {
 				_commerceOrderService.completeOrder(
 					newOrder.getId(),
@@ -602,10 +614,18 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceProject, warningMessages);
 		}
 
-		_provisioningEmailService.sendWelcomeEmails(
-			account, salesforceOpportunity.getType(), userIds);
+		if (reprocessing) {
+			_provisioningEmailService.sendAssignedWelcomeEmails(
+				account, userIds);
+		}
+		else {
+			_provisioningEmailService.sendWelcomeEmails(
+				account, salesforceOpportunity.getType(), userIds);
+		}
 
-		if (!Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
+		if (!reprocessing &&
+			!Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
+
 			_provisioningIssueService.addOpportunityInvoicedIssue(
 				account, salesforceAccount, salesforceOpportunity,
 				provisionableSalesforceOpportunityLineItems, warningMessages);
@@ -637,6 +657,9 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private ContractService _contractService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
 
 	@Value("${liferay.one.salesforce.opportunity.pubsub.subscriber.project.id}")
 	private String _projectId;
