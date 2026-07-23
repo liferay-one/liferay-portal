@@ -11,6 +11,37 @@
 	},
 	"items": [
 		{
+			"externalReferenceCode": "L_ACCOUNT",
+			"name": "AccountEntry",
+			"objectActions": [
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the new account to JSM.",
+					"externalReferenceCode": "OA_ACCOUNT_CREATE",
+					"name": "AccountCreate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-account-create",
+					"objectActionTriggerKey": "onAfterAdd",
+					"parameters": {
+					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the updated account to JSM.",
+					"externalReferenceCode": "OA_ACCOUNT_UPDATE",
+					"name": "AccountUpdate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-account-update",
+					"objectActionTriggerKey": "onAfterUpdate",
+					"parameters": {
+					}
+				}
+			],
+			"objectFields": [
+			],
+			"objectRelationships": [
+			],
+			"system": true
+		},
+		{
 			"externalReferenceCode": "L_COMMERCE_ORDER_ITEM",
 			"name": "CommerceOrderItem",
 			"objectActions": [
@@ -119,6 +150,68 @@
 					"system": false,
 					"type": "String"
 				}
+			],
+			"objectRelationships": [
+			],
+			"system": true
+		},
+		{
+			"externalReferenceCode": "L_ORGANIZATION",
+			"name": "Organization",
+			"objectActions": [
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the new team to JSM.",
+					"externalReferenceCode": "OA_ORGANIZATION_CREATE",
+					"name": "OrganizationCreate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-organization-create",
+					"objectActionTriggerKey": "onAfterAdd",
+					"parameters": {
+					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the updated team to JSM.",
+					"externalReferenceCode": "OA_ORGANIZATION_UPDATE",
+					"name": "OrganizationUpdate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-organization-update",
+					"objectActionTriggerKey": "onAfterUpdate",
+					"parameters": {
+					}
+				}
+			],
+			"objectFields": [
+			],
+			"objectRelationships": [
+			],
+			"system": true
+		},
+		{
+			"externalReferenceCode": "L_USER",
+			"name": "User",
+			"objectActions": [
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the new contact to JSM.",
+					"externalReferenceCode": "OA_USER_CREATE",
+					"name": "UserCreate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-create",
+					"objectActionTriggerKey": "onAfterAdd",
+					"parameters": {
+					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to sync the updated contact to JSM.",
+					"externalReferenceCode": "OA_USER_UPDATE",
+					"name": "UserUpdate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-update",
+					"objectActionTriggerKey": "onAfterUpdate",
+					"parameters": {
+					}
+				}
+			],
+			"objectFields": [
 			],
 			"objectRelationships": [
 			],
