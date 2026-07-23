@@ -9,10 +9,13 @@ import com.liferay.one.model.LicenseKey;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
@@ -35,6 +38,72 @@ public class AppLicenseKeysRestControllerTest {
 		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_licenseKeyService",
 			_licenseKeyService);
+	}
+
+	@Test
+	public void testGetAppLicenseKey() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getProductExternalId()
+		).thenReturn(
+			"commerce"
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(1L)
+		).thenReturn(
+			licenseKey
+		);
+
+		Assertions.assertSame(
+			licenseKey, _appLicenseKeysRestController.getAppLicenseKey(1L));
+	}
+
+	@Test
+	public void testGetAppLicenseKeyRejectsPortalLicense() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getProductExternalId()
+		).thenReturn(
+			LicenseConstants.PRODUCT_ID_PORTAL
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(1L)
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.getAppLicenseKey(1L));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testGetAppLicenseKeys() throws Exception {
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		List<LicenseKey> licenseKeys = List.of(Mockito.mock(LicenseKey.class));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(argumentCaptor.capture())
+		).thenReturn(
+			licenseKeys
+		);
+
+		Assertions.assertSame(
+			licenseKeys, _appLicenseKeysRestController.getAppLicenseKeys());
+
+		Assertions.assertEquals(
+			"productExternalId ne '" + LicenseConstants.PRODUCT_ID_PORTAL + "'",
+			argumentCaptor.getValue());
 	}
 
 	@Test
