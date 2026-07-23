@@ -61,6 +61,14 @@ public class OrganizationService extends OneBaseService {
 		return organizations;
 	}
 
+	public Organization getOrganization(long organizationId) throws Exception {
+		OrganizationResource organizationResource =
+			_buildOrganizationResource();
+
+		return organizationResource.getOrganization(
+			String.valueOf(organizationId));
+	}
+
 	public void removeOrganizationUserAccountByEmailAddress(
 			String emailAddress, long organizationId)
 		throws Exception {

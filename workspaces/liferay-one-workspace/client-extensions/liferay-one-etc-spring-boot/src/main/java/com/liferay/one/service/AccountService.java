@@ -237,6 +237,25 @@ public class AccountService extends OneBaseService {
 			externalReferenceCode);
 	}
 
+	public String getAccountRoleExternalReferenceCode(
+			long accountId, long accountRoleId)
+		throws Exception {
+
+		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
+
+		Page<AccountRole> accountRolesPage =
+			accountRoleResource.getAccountAccountRolesPage(
+				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
+
+		for (AccountRole accountRole : accountRolesPage.getItems()) {
+			if (Objects.equals(accountRole.getId(), accountRoleId)) {
+				return accountRole.getExternalReferenceCode();
+			}
+		}
+
+		return null;
+	}
+
 	public String getAccountRoleName(long accountId, long accountRoleId)
 		throws Exception {
 
