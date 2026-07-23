@@ -6,7 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.one.jira.service.AccountAssetService;
-import com.liferay.one.jira.service.AccountSyncService;
+import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
@@ -82,7 +82,7 @@ public class ProjectRestController extends OneBaseRestController {
 		_businessEventPermission.check(
 			ActionKeys.UPDATE, jwt, externalReferenceCode);
 
-		_accountSyncService.syncProject(
+		_accountSynchronizer.syncProject(
 			_projectService.getProject(externalReferenceCode));
 
 		return new ResponseEntity<>(HttpStatus.OK);
@@ -92,7 +92,7 @@ public class ProjectRestController extends OneBaseRestController {
 	private AccountAssetService _accountAssetService;
 
 	@Autowired
-	private AccountSyncService _accountSyncService;
+	private AccountSynchronizer _accountSynchronizer;
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;

@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
@@ -96,6 +97,18 @@ public class OrganizationsRestController extends OneBaseRestController {
 		}
 	}
 
+	@PostMapping("/{organizationId}/sync-to-jsm")
+	public void postSyncToJSM(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("organizationId") long organizationId)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		_organizationSynchronizer.syncOrganization(
+			_organizationService.getOrganization(organizationId));
+	}
+
 	@Autowired
 	private AdminPermission _adminPermission;
 
@@ -104,6 +117,9 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 	@Autowired
 	private OrganizationService _organizationService;
+
+	@Autowired
+	private OrganizationSynchronizer _organizationSynchronizer;
 
 	@Autowired
 	private PropertyService _propertyService;
