@@ -218,7 +218,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_provisioningEmailService
 		).sendAssignedWelcomeEmail(
-			_USER_ID, account
+			account, _USER_ID
 		);
 	}
 
@@ -288,7 +288,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_provisioningEmailService
 		).sendAssignedWelcomeEmail(
-			_USER_ID, account
+			account, _USER_ID
 		);
 	}
 
@@ -501,7 +501,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_provisioningEmailService
 		).sendAssignedWelcomeEmail(
-			_USER_ID, account
+			account, _USER_ID
 		);
 	}
 

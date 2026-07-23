@@ -7,6 +7,7 @@ package com.liferay.one.util;
 
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -30,12 +31,56 @@ import org.json.JSONObject;
  */
 public class OrderItemUtil {
 
+	public static OrderItem fetchOrderItem(
+		String externalReferenceCode, Order order) {
+
+		if (order == null) {
+			return null;
+		}
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (orderItems == null) {
+			return null;
+		}
+
+		for (OrderItem orderItem : orderItems) {
+			if (Objects.equals(
+					orderItem.getExternalReferenceCode(),
+					externalReferenceCode)) {
+
+				return orderItem;
+			}
+		}
+
+		return null;
+	}
+
 	public static Instant getEffectiveEndDateInstant(OrderItem orderItem) {
 		return _getCustomFieldInstant(orderItem, "effectiveEndDate");
 	}
 
 	public static Instant getEndDateInstant(OrderItem orderItem) {
 		return _getCustomFieldInstant(orderItem, "endDate");
+	}
+
+	public static Instant getEntitlementEndDateInstant(OrderItem orderItem) {
+		Instant endDateInstant = getEndDateInstant(orderItem);
+		Instant effectiveEndDateInstant = getEffectiveEndDateInstant(orderItem);
+
+		if (endDateInstant == null) {
+			return effectiveEndDateInstant;
+		}
+
+		if (effectiveEndDateInstant == null) {
+			return endDateInstant;
+		}
+
+		if (effectiveEndDateInstant.isBefore(endDateInstant)) {
+			return effectiveEndDateInstant;
+		}
+
+		return endDateInstant;
 	}
 
 	public static Map<String, String> getProductOptions(OrderItem orderItem) {
@@ -86,6 +131,25 @@ public class OrderItemUtil {
 	public static boolean isCanceled(OrderItem orderItem) {
 		return CommerceOrderItemConstants.STATUS_CANCELED.equals(
 			getStatus(orderItem));
+	}
+
+	public static boolean isUpdateEffectiveEndDate(
+		OrderItem existingOrderItem, Instant messageEndDateInstant) {
+
+		if (messageEndDateInstant == null) {
+			return false;
+		}
+
+		if (_isEffectiveEndDateTrimmed(existingOrderItem)) {
+			Instant messageEffectiveEndDateInstant = messageEndDateInstant.plus(
+				CommerceOrderItemConstants.EFFECTIVE_END_DATE_GRACE);
+
+			return messageEffectiveEndDateInstant.isBefore(
+				getEffectiveEndDateInstant(existingOrderItem));
+		}
+
+		return !Objects.equals(
+			messageEndDateInstant, getEndDateInstant(existingOrderItem));
 	}
 
 	private static Instant _getCustomFieldInstant(
@@ -139,6 +203,19 @@ public class OrderItemUtil {
 		}
 
 		return optionJSONObject.optString("value", null);
+	}
+
+	private static boolean _isEffectiveEndDateTrimmed(OrderItem orderItem) {
+		Instant effectiveEndDateInstant = getEffectiveEndDateInstant(orderItem);
+		Instant endDateInstant = getEndDateInstant(orderItem);
+
+		if ((effectiveEndDateInstant == null) || (endDateInstant == null)) {
+			return false;
+		}
+
+		return effectiveEndDateInstant.isBefore(
+			endDateInstant.plus(
+				CommerceOrderItemConstants.EFFECTIVE_END_DATE_GRACE));
 	}
 
 	private static final Log _log = LogFactory.getLog(OrderItemUtil.class);

@@ -5,10 +5,14 @@
 
 package com.liferay.one.constants;
 
+import java.time.Duration;
+
 /**
  * @author Felipe Veloso
  */
 public class CommerceOrderItemConstants {
+
+	public static final Duration EFFECTIVE_END_DATE_GRACE = Duration.ofDays(30);
 
 	public static final String STATUS_APPROVED = "Approved";
 

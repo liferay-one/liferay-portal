@@ -11,18 +11,17 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
+import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.OrderItemUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
 
-import java.time.Duration;
 import java.time.Instant;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,16 +129,16 @@ public class CommerceOrderItemService extends OneBaseService {
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
 			salesforceOpportunityLineItem, stageName);
 
-		OrderItem existingOrderItem = _getExistingOrderItem(
-			order, salesforceOpportunityLineItem.getId());
+		OrderItem existingOrderItem = OrderItemUtil.fetchOrderItem(
+			salesforceOpportunityLineItem.getId(), order);
 
 		if (existingOrderItem != null) {
 			if (OrderItemUtil.isCanceled(existingOrderItem)) {
 				customFieldValues.remove("customStatus");
 			}
 
-			if (Objects.equals(
-					OrderItemUtil.getEndDateInstant(existingOrderItem),
+			if (!OrderItemUtil.isUpdateEffectiveEndDate(
+					existingOrderItem,
 					salesforceOpportunityLineItem.getEndDateInstant())) {
 
 				customFieldValues.remove("effectiveEndDate");
@@ -191,7 +190,7 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		if (endDateInstant != null) {
 			Instant effectiveEndDateInstant = endDateInstant.plus(
-				Duration.ofDays(30));
+				CommerceOrderItemConstants.EFFECTIVE_END_DATE_GRACE);
 
 			customFieldValues.put(
 				"effectiveEndDate", effectiveEndDateInstant.toString());
@@ -242,27 +241,6 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return "On Hold";
-	}
-
-	private OrderItem _getExistingOrderItem(
-		Order order, String externalReferenceCode) {
-
-		OrderItem[] orderItems = order.getOrderItems();
-
-		if (orderItems == null) {
-			return null;
-		}
-
-		for (OrderItem orderItem : orderItems) {
-			if (Objects.equals(
-					orderItem.getExternalReferenceCode(),
-					externalReferenceCode)) {
-
-				return orderItem;
-			}
-		}
-
-		return null;
 	}
 
 	private CustomField[] _toCustomFields(Map<String, ?> customFieldValues) {

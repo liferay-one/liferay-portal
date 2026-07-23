@@ -148,7 +148,7 @@ public class AccountsRestController extends OneBaseRestController {
 		_provisioningAssignmentService.assignCustomerGroup(userId);
 
 		if (!hasAccount) {
-			_provisioningEmailService.sendAssignedWelcomeEmail(userId, account);
+			_provisioningEmailService.sendAssignedWelcomeEmail(account, userId);
 		}
 	}
 
@@ -267,7 +267,7 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 
 		if (!hasAccount) {
-			_provisioningEmailService.sendAssignedWelcomeEmail(userId, account);
+			_provisioningEmailService.sendAssignedWelcomeEmail(account, userId);
 		}
 	}
 
