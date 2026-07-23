@@ -33,6 +33,16 @@ liferay-one-etc-spring-boot-oaua:
         -   c_projectmembership.everything
         -   c_ticketattachment.everything
     type: oAuthApplicationUserAgent
+liferay-one-etc-spring-boot-object-action-account-create:
+    name: Liferay One Etc Spring Boot Object Action Account Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/account/create
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-account-update:
+    name: Liferay One Etc Spring Boot Object Action Account Update
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/account/update
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-generation:
     name: Liferay One Etc Spring Boot Object Action Commerce Order Item Entitlement Generation
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
@@ -43,8 +53,28 @@ liferay-one-etc-spring-boot-object-action-commerce-order-item-update:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/commerce/order/item/update
     type: objectAction
+liferay-one-etc-spring-boot-object-action-organization-create:
+    name: Liferay One Etc Spring Boot Object Action Organization Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/organization/create
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-organization-update:
+    name: Liferay One Etc Spring Boot Object Action Organization Update
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/organization/update
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-user-create:
+    name: Liferay One Etc Spring Boot Object Action User Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/user/create
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-user-delete:
     name: Liferay One Etc Spring Boot Object Action User Delete
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/user/delete
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-user-update:
+    name: Liferay One Etc Spring Boot Object Action User Update
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/user/update
     type: objectAction
