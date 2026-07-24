@@ -33,11 +33,13 @@ Spawn each teammate with the `Agent` tool using `subagent_type: "claude"`, `run_
 
 The tiering cascades: subagents spawned by any teammate always run on `haiku` or `sonnet` — research sweeps, file inventories, log scans, isolated mechanical edits. Frontier tokens are reserved for the teammates' own reasoning. A teammate whose runtime cannot spawn subagents (some execution modes restrict nesting) does that work itself rather than blocking on the missing capability.
 
+**Small-ticket lane.** Two downgrades are available when the work is genuinely small, each keyed to evidence that exists at the moment the role is spawned. When the user's kickoff context frames the ticket as small or trivial, spawn the planner on `opus`. When the drafted `plan.md` — which the coordinator reads anyway to summarize it for the user — reports no data-model impact, no new objects or endpoints, and roughly fifty changed lines or fewer, spawn the developer on `sonnet` for its Phase 2 review and the implementation that follows. Should the review or the user's approval then enlarge the plan past those bounds, respawn the developer on `opus` before Phase 3 and log the swap; the plan is a file, so the replacement loses nothing. The reviewer stays on `fable` in every case — it is the last gate — and the tester's end-to-end pass is never trimmed. Log whichever downgrades apply.
+
 ## How Teammates Actually Work
 
 These mechanics were verified live; the protocol depends on them:
 
-- A background teammate is **turn-based**, not a live process. It handles the message it was given, acts, replies, and stops. `SendMessage` to it resumes it with its full context intact. An idle teammate costs nothing, so keeping all four alive across the whole run is free.
+- A background teammate is **turn-based**, not a live process. It handles the message it was given, acts, replies, and stops. `SendMessage` to it resumes it with its full context intact. Idling is free once spawned, but the spawn is not — a measured thirty to sixty thousand tokens of baseline context per agent, before it does any work. Spawn each role just in time, at its first real assignment, and keep it alive from there.
 - Because teammates are spawned with `name` set to the role, `SendMessage` addresses them by that name and the agents panel lists them readably. Still record the role → agent ID mapping from each spawn result in the team log: a reused name belongs to the newest agent, so IDs disambiguate respawns. Never show raw agent IDs to the user — say "the planner", "the developer".
 - Teammates reply by calling `SendMessage` with `to: "main"`. Replies arrive at the coordinator automatically; there is no inbox to poll. A teammate's final text also arrives in its completion notification — the fallback when a teammate forgets to message.
 - A teammate's **background subagent** reports its completion to the coordinator, not to the teammate that spawned it — a teammate that stops to wait for its own background child stalls until nudged. The charters therefore require synchronous subagents; when a grandchild result lands on the coordinator anyway, persist it to the team directory and resume the owning teammate with the path. Background **commands** are different: they re-invoke their owner and are safe. Synchronous is not serial: independent subagents issued in a single message run concurrently.
@@ -45,7 +47,7 @@ These mechanics were verified live; the protocol depends on them:
 - After dispatching work, end the turn with a one-line status for the user. The teammate's reply resumes the session.
 - Teammates share the filesystem. Handoffs carry **paths, not contents** — point at `plan.md`, list the touched files, reference the diff. Pasting file bodies into messages pays for them twice.
 
-Spawn prompts follow one shape: the role name; the ticket ID; the absolute team directory path; the instruction to read the role's charter copy in `.one-team/<TICKET>/roles/` first (absolute path — the teammate reads it itself, so the coordinator never loads charters into its own context); the kickoff context; and the first assignment. Roles spawned ahead of their phase get a standing first assignment: read the charter, acknowledge, and stand by.
+Spawn prompts follow one shape: the role name; the ticket ID; the absolute team directory path; the instruction to read the role's charter copy in `.one-team/<TICKET>/roles/` first (absolute path — the teammate reads it itself, so the coordinator never loads charters into its own context); the kickoff context; and the first assignment. That first assignment is always real work — never an acknowledgment. The planner spawns in Phase 1, the developer for the Phase 2 plan review, the tester with its prep dispatch, the reviewer at its first pass; each then stays alive for the rest of the run.
 
 ## Team Directory
 
@@ -54,7 +56,8 @@ All run artifacts live in `.one-team/<TICKET>/` at the workspace root (gitignore
 | File | Writer | Content |
 | --- | --- | --- |
 | `team-log.md` | coordinator | roster, phase gate outcomes, agreements, arbitrations, escalations |
-| `ticket.json`, `initiative.json` | coordinator | Jira context, fetched once at kickoff |
+| `ticket-digest.md`, `initiative-digest.md` | coordinator | the Jira context teammates actually read — flattened ticket, one line per initiative issue |
+| `ticket.json`, `initiative.json` | coordinator | raw Jira responses, kept only for targeted `jq` lookups — never read whole |
 | `roles/` | coordinator | charter copies frozen at kickoff — what every spawn prompt points at (the ticket branch may predate the skill) |
 | `plan.md` | planner | the implementation plan (template in the planner charter) |
 | `dev-handoff.md` | developer | Phase 3 handoff: changes, per-AC verification hints for the tester, notes |
@@ -89,11 +92,27 @@ while :; do
 	TOKEN=$(echo "${RESP}" | jq -r '.nextPageToken // empty')
 	[ -z "${TOKEN}" ] && break
 done
+
+jq -s '{issues: [.[].issues[]]}' pages.jsonl > initiative.json
 ```
 
 When `portfolioChildIssuesOf` is unavailable, fall back to `parent = LPD-87600` and walk one level down. Save the responses into the team directory so teammates read files instead of refetching.
 
-Validate before briefing anyone: `ticket.json` must contain the requested issue key. When it does not, stop and tell the user which it is — credentials (`JIRA_API_USER`/`JIRA_API_TOKEN` unset or rejected) or an unknown ticket. A planner briefed on an error body plans garbage.
+Then digest them, because the raw responses are far too large to read: a 584-issue initiative measured about a hundred and eighty thousand tokens, and one rich ticket about thirteen thousand. These recipes were run against exactly that data and reduced them to roughly fourteen thousand and four hundred tokens respectively — thirteenfold and thirtyfold — with the acceptance criteria, dev notes, and dependencies intact:
+
+```bash
+jq -r '.issues[] | "\(.key) | \(.fields.issuetype.name) | \(.fields.status.name) | \(.fields.summary)"' \
+	initiative.json > initiative-digest.md
+
+{
+	jq -r '"# \(.key) — \(.fields.summary)\n\nType: \(.fields.issuetype.name)\nStatus: \(.fields.status.name)\n"' ticket.json
+	jq -r '.fields.description | [.. | objects | select(.type == "text") | .text] | join(" ")' ticket.json
+} > ticket-digest.md
+```
+
+The description is Atlassian Document Format, hence the text-node flatten — verify the acceptance criteria survived it, and fall back to reading `.fields.description` alone when a ticket uses tables or panels the flatten mangles. Brief teammates on the digests; the raw JSON stays on disk for `jq` when someone needs a field the digest dropped.
+
+Validate before digesting or briefing anyone: `ticket.json` must contain the requested issue key. When it does not, stop and tell the user which it is — credentials (`JIRA_API_USER`/`JIRA_API_TOKEN` unset or rejected) or an unknown ticket. A planner briefed on an error body plans garbage.
 
 ## Where the Answers Live
 
@@ -140,11 +159,11 @@ This checkout is shared — other sessions and the user can move it mid-run. Bef
 
 1. Create the phase tasks on the task board.
 
-1. Spawn all four teammates; log the roster.
+1. Spawn the planner, whose first assignment is Phase 1; log the roster and extend it as the other roles spawn.
 
 ### Phase 1 — Plan (Planner)
 
-Brief the planner with the ticket and initiative JSON paths, the user's kickoff context, and the assignment: produce `plan.md` per its charter.
+Brief the planner with the digest paths, the user's kickoff context, and the assignment: produce `plan.md` per its charter.
 
 The planner researches broadly and **asks instead of guessing**: `QUESTION` messages come to the coordinator, which answers from established run context or puts the question to the user via `AskUserQuestion`, then relays the answer verbatim.
 
@@ -152,13 +171,13 @@ Exit gate: `plan.md` written; planner reports `DONE`.
 
 ### Phase 2 — Plan Review (Developer) and the Human Gate, Concurrently
 
-Dispatch both reads at once: send the developer to review `plan.md` critically before any code exists — feasibility, missing steps, pattern conformance, testability, scope — and in the same breath post the compact plan summary to the user in chat (goal, approach, files, test plan, open risks), point at `plan.md`, and ask them to approve or request changes. **Phase 3 starts only when both the developer–planner agreement and the user's approval are in.**
+Dispatch both reads at once: spawn the developer with this review as its first assignment — read `plan.md` critically before any code exists — feasibility, missing steps, pattern conformance, testability, scope — and in the same breath post the compact plan summary to the user in chat (goal, approach, files, test plan, open risks), point at `plan.md`, and ask them to approve or request changes. **Phase 3 starts only when both the developer–planner agreement and the user's approval are in.**
 
 Developer objections are relayed to the planner for revision; loop until **both explicitly agree**. When they still disagree after one rebuttal round each, take both positions to the user instead of forcing agreement. When a revision lands while the user is still reading, tell them what changed — an approval given on stale text is re-confirmed against a one-line delta. Log the outcome and any accepted risks.
 
 ### Phase 3 — Implement (Developer)
 
-Dispatch two assignments the moment the plan gate closes: the developer implements `plan.md` under its charter's rules, and the tester runs its prep in parallel — environment up and healthy, test matrix pre-built from the plan (its charter's Prep section; nothing in it needs the diff). While this phase runs:
+Dispatch two assignments the moment the plan gate closes: the developer implements `plan.md` under its charter's rules, and the tester — spawned now, prep as its first assignment — runs that prep in parallel — environment up and healthy, test matrix pre-built from the plan (its charter's Prep section; nothing in it needs the diff). While this phase runs:
 
 - The developer is the **only writer** of repository files. Nobody else — planner, tester, reviewer, coordinator — edits them, ever. The `.one-team/` artifacts are the one exception: each role maintains its own, per the artifact table.
 - Deviations from the plan are flagged to the coordinator; material design changes go back to the planner for agreement before proceeding.
@@ -176,7 +195,7 @@ Exit gate: `test-report.md` complete; developer and tester both explicitly confi
 
 ### Phase 5 — Final Review (Reviewer)
 
-Brief the reviewer with the plan, test report, and diff scope (`git diff liferay-one/master-temp` — the work is staged, so this shows everything, new files included). The reviewer works read-only per its charter.
+Spawn the reviewer — unless the early pass below already did — and brief it with the plan, test report, and diff scope (`git diff liferay-one/master-temp` — the work is staged, so this shows everything, new files included). The reviewer works read-only per its charter.
 
 For small diffs (roughly under two hundred changed lines), the coordinator may start the reviewer's rule-reading and automated pass during Phase 4, with the verdict held until the tester's `PASS` lands — a `FAIL` that changes the diff voids the early pass. Findings are only ever issued against the tested, final diff.
 
@@ -201,7 +220,7 @@ Exit gate: reviewer's `APPROVED` logged.
 - Hub and spoke for everything that matters: handoffs, verdicts, gates, escalations, and disagreements go through the coordinator and into `team-log.md` as they happen, not retroactively. Pure clarification questions between teammates go directly — address the role name (a verified mechanic) — with the exchange reflected in the asker's next report to main; anything touching scope, design, verdicts, or gates returns to the spoke.
 - Every teammate reply starts with a status word — `DONE`, `PASS`, `FAIL`, `BLOCKED`, `PROGRESS`, `QUESTION`, `APPROVED`, `CHANGES_REQUESTED` — followed by the payload. Each charter names the subset its role uses. `PROGRESS` is non-terminal: a milestone heartbeat during long phases (environment ready, deploy confirmed in logs, matrix row N of M, build green); the coordinator relays a one-liner to the user and expects no reply.
 - The user outranks the protocol: a mid-run user instruction that overrides a rule — ship before review, push, skip a phase — is followed and logged as a user override, never resisted and never silently absorbed. Work it displaces (a deferred final review, for example) is recorded in the log as still owed.
-- Every dispatch names the phase, the assignment, the artifact paths, and what done looks like.
+- Every dispatch names the phase, the assignment, the artifact paths, and what done looks like — complete, in one message. Each extra round-trip re-processes that teammate's whole transcript, so one full dispatch costs less than three partial ones, and a probe only pays for itself when a circuit breaker calls for it.
 - Disagreements get one rebuttal round per side. Execution-level disputes (fix approach, finding severity, retest scope) are then decided by the coordinator, reasoning logged. Disputes over the plan's content, the ticket's scope or meaning, or anything that would overturn a user-approved plan go to the user with both positions summarized.
 - Nothing ships unexamined: the plan is reviewed by the developer, the code by the tester and the reviewer, the test report by the reviewer, every review finding by the developer (adjudication), and the commits by the coordinator and the reviewer. At least one other teammate has analyzed every artifact — that invariant is not negotiable.
 
@@ -217,13 +236,13 @@ Exit gate: reviewer's `APPROVED` logged.
 
 ## Resuming an Interrupted Run
 
-Artifacts and the branch carry the state; teammate transcripts do not survive a session restart. When `/one-team <TICKET>` finds `.one-team/<TICKET>/team-log.md`: check out the existing branch (create it per Phase 0 when only the team directory survived), read the log, find the last recorded gate, spawn fresh teammates for the remaining phases, and brief them from the artifacts. Do not redo passed gates; trust the log over memory. A branch with no team log is not a resume — handle it per Phase 0 step 2.
+Artifacts and the branch carry the state; teammate transcripts do not survive a session restart. When `/one-team <TICKET>` finds `.one-team/<TICKET>/team-log.md`: check out the existing branch (create it per Phase 0 when only the team directory survived), read the log, find the last recorded gate, and carry on from there — spawning fresh teammates just in time as the remaining phases need them, briefed from the artifacts. Do not redo passed gates; trust the log over memory. A branch with no team log is not a resume — handle it per Phase 0 step 2.
 
 ## Hard Rules
 
 - The coordinator orchestrates; it never produces the work products itself.
 - One writer: only the developer edits repository files, and only in Phases 3–6; every other role writes only inside `.one-team/<TICKET>/` — its own artifacts, plus relayed results the coordinator persists there. The coordinator's kickoff append to `.git/info/exclude` is the single exception outside both.
-- Planner and reviewer run on `fable`, the developer on `opus`, the tester on `sonnet`; every teammate subagent runs on `haiku` or `sonnet`.
+- Planner and reviewer run on `fable`, the developer on `opus`, the tester on `sonnet`, except for the two evidence-keyed downgrades the small-ticket lane allows; every teammate subagent runs on `haiku` or `sonnet`.
 - No commits before Phase 6; no pushes except on an explicit user order, logged as an override; no Claude authorship ever.
 - No phase advances without its gate logged in `team-log.md`.
 - Jira is read-only.
