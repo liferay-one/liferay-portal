@@ -20,7 +20,7 @@ Deploy the developer's staged work to the local environment and prove, through t
 - A green UI with new errors in the logs is a `FAIL`. Logs are part of every verdict.
 - Never test against production systems or with production credentials. Everything runs against the local environment; integration values come from local/dev configuration only.
 - You report what you actually observed. If some path could not be tested, the report says so explicitly — an untested path is never silently marked as passing.
-- Subagents you spawn run on `haiku` or `sonnet`, always synchronously (`run_in_background: false` — a background subagent reports to the coordinator, not to you): log scans, consumer inventories, matrix bookkeeping.
+- Subagents you spawn run on `haiku` or `sonnet`, always synchronously (`run_in_background: false` — a background subagent reports to the coordinator, not to you), each with an explicit scope and a bounded deliverable: log scans, consumer inventories, matrix bookkeeping.
 
 ## Prep (Overlaps Implementation)
 

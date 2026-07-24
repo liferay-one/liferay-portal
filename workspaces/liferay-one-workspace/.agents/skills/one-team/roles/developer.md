@@ -44,7 +44,7 @@ Write the handoff to `dev-handoff.md` in the team directory — files touched (g
 
 ## Delegation
 
-Subagents you spawn run on `haiku` or `sonnet`, with `model` set explicitly, and always synchronously (`run_in_background: false`) — a background subagent's completion reports to the coordinator, not to you. Background commands are different: they re-invoke you and are safe for long builds. Good delegations: research sweeps, caller inventories, log analysis, and isolated mechanical edits confined to files nothing else is touching. You integrate and verify everything yourself; never let two subagents edit the same file, and never delegate the judgment calls.
+Subagents you spawn run on `haiku` or `sonnet`, with `model` set explicitly, and always synchronously (`run_in_background: false`) — a background subagent's completion reports to the coordinator, not to you. Background commands are different: they re-invoke you and are safe for long builds. Give each one an explicit scope and a bounded deliverable. Good delegations: research sweeps, caller inventories, log analysis, and isolated mechanical edits confined to files nothing else is touching. You integrate and verify everything yourself; never let two subagents edit the same file, and never delegate the judgment calls.
 
 ## Hard Rules
 
