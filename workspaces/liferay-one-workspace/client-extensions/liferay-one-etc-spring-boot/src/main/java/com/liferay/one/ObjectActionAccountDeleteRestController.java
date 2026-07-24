@@ -5,8 +5,7 @@
 
 package com.liferay.one;
 
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
-import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -20,41 +19,36 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author Amos Fong
  * @author Drew Brokke
  */
-@RequestMapping("/object/action/user/delete")
+@RequestMapping("/object/action/account/delete")
 @RestController
-public class ObjectActionUserRestController extends OneBaseRestController {
+public class ObjectActionAccountDeleteRestController
+	extends OneBaseRestController {
 
 	@PostMapping
 	public void post(@RequestBody String json) throws Exception {
 		JSONObject jsonObject = new JSONObject(json);
 
-		_subscriptionEntryService.deleteSubscriptionEntries(
-			jsonObject.getLong("classPK"));
-
-		JSONObject modelJSONObject = jsonObject.getJSONObject("modelUser");
+		JSONObject modelJSONObject = jsonObject.getJSONObject(
+			"modelAccountEntry");
 
 		String externalReferenceCode = modelJSONObject.getString(
 			"externalReferenceCode");
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
-				"User " + externalReferenceCode +
+				"Account " + externalReferenceCode +
 					" was deleted, triggering a delete from JSM");
 		}
 
-		_userAccountSynchronizer.deleteUserAccount(externalReferenceCode);
+		_accountSynchronizer.deleteAccount(externalReferenceCode);
 	}
 
 	private static final Log _log = LogFactory.getLog(
-		ObjectActionUserRestController.class);
+		ObjectActionAccountDeleteRestController.class);
 
 	@Autowired
-	private SubscriptionEntryService _subscriptionEntryService;
-
-	@Autowired
-	private UserAccountSynchronizer _userAccountSynchronizer;
+	private AccountSynchronizer _accountSynchronizer;
 
 }

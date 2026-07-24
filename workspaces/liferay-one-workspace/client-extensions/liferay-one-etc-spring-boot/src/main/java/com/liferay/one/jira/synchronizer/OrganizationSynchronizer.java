@@ -41,6 +41,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrganizationSynchronizer {
 
+	public void deleteOrganization(String externalReferenceCode) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Deleting organization " + externalReferenceCode + " from JSM");
+		}
+
+		_jiraAssetService.delete(_teamConverter, externalReferenceCode);
+	}
+
 	public void syncOrganization(Organization organization) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info(

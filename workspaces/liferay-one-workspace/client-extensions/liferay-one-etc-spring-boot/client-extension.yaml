@@ -38,6 +38,11 @@ liferay-one-etc-spring-boot-object-action-account-create:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/account/create
     type: objectAction
+liferay-one-etc-spring-boot-object-action-account-delete:
+    name: Liferay One Etc Spring Boot Object Action Account Delete
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/account/delete
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-account-update:
     name: Liferay One Etc Spring Boot Object Action Account Update
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
@@ -62,6 +67,11 @@ liferay-one-etc-spring-boot-object-action-organization-create:
     name: Liferay One Etc Spring Boot Object Action Organization Create
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/organization/create
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-organization-delete:
+    name: Liferay One Etc Spring Boot Object Action Organization Delete
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/organization/delete
     type: objectAction
 liferay-one-etc-spring-boot-object-action-organization-update:
     name: Liferay One Etc Spring Boot Object Action Organization Update
