@@ -33,6 +33,16 @@
 					"objectActionTriggerKey": "onAfterUpdate",
 					"parameters": {
 					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to delete the account from JSM.",
+					"externalReferenceCode": "OA_ACCOUNT_DELETE",
+					"name": "AccountDelete",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-account-delete",
+					"objectActionTriggerKey": "onAfterDelete",
+					"parameters": {
+					}
 				}
 			],
 			"objectFields": [
@@ -178,6 +188,16 @@
 					"objectActionTriggerKey": "onAfterUpdate",
 					"parameters": {
 					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to delete the team from JSM.",
+					"externalReferenceCode": "OA_ORGANIZATION_DELETE",
+					"name": "OrganizationDelete",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-organization-delete",
+					"objectActionTriggerKey": "onAfterDelete",
+					"parameters": {
+					}
 				}
 			],
 			"objectFields": [
@@ -207,6 +227,16 @@
 					"name": "UserUpdate",
 					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-update",
 					"objectActionTriggerKey": "onAfterUpdate",
+					"parameters": {
+					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to delete the contact from JSM and clean up subscription entries.",
+					"externalReferenceCode": "OA_USER_DELETE",
+					"name": "UserDelete",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-user-delete",
+					"objectActionTriggerKey": "onAfterDelete",
 					"parameters": {
 					}
 				}
