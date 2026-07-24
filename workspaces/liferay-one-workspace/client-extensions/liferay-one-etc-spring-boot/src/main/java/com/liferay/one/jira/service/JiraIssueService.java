@@ -236,7 +236,7 @@ public class JiraIssueService extends BaseJiraService {
 			JSONObject organizationJSONObject = jsonArray.getJSONObject(0);
 
 			return _organizationConverter.toJiraOrganization(
-				_jiraAssetService.getObject(
+				_jiraAssetPersistence.getObject(
 					organizationJSONObject.getString("objectId")));
 		}
 		catch (Exception exception) {
@@ -286,7 +286,7 @@ public class JiraIssueService extends BaseJiraService {
 	private static final Log _log = LogFactory.getLog(JiraIssueService.class);
 
 	@Autowired
-	private JiraAssetService _jiraAssetService;
+	private JiraAssetPersistence _jiraAssetPersistence;
 
 	@Value("${liferay.one.jira.issue.support.hc.field.organization}")
 	private String _jiraIssueSupportHCFieldOrganization;

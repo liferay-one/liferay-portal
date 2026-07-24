@@ -12,8 +12,7 @@ import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.converter.TeamRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.service.AssetObjectUpsertService;
-import com.liferay.one.jira.service.AssetReferenceObjectService;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Collections;
@@ -67,7 +66,7 @@ public class AccountOrganizationSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM_ROLE,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_teamRoleConverter,
 				Collections.singletonList(
 					TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT),
@@ -77,14 +76,14 @@ public class AccountOrganizationSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM,
-			_assetReferenceObjectService.getReferenceObjectId(
+			_jiraAssetService.getReferenceObjectId(
 				_teamConverter, organizationExternalKey));
 		jiraAssetObject.setAttributeValue(
 			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_assetReferenceObjectService.getReferenceObjectId(
+			_jiraAssetService.getReferenceObjectId(
 				_accountConverter, accountExternalKey));
 
-		_assetObjectUpsertService.upsert(
+		_jiraAssetService.upsert(
 			_accountTeamRoleAssignmentConverter, jiraAssetObject);
 	}
 
@@ -99,10 +98,7 @@ public class AccountOrganizationSynchronizer {
 		_accountTeamRoleAssignmentConverter;
 
 	@Autowired
-	private AssetObjectUpsertService _assetObjectUpsertService;
-
-	@Autowired
-	private AssetReferenceObjectService _assetReferenceObjectService;
+	private JiraAssetService _jiraAssetService;
 
 	@Autowired
 	private TeamConverter _teamConverter;

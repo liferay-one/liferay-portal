@@ -6,7 +6,7 @@
 package com.liferay.one.jira.converter;
 
 import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.service.AssetSchemaService;
+import com.liferay.one.jira.service.JiraAssetSchemaService;
 import com.liferay.one.jira.util.AQLUtil;
 
 import java.text.SimpleDateFormat;
@@ -50,7 +50,7 @@ public abstract class BaseJiraAssetObjectConverter {
 	}
 
 	public String getObjectTypeId() {
-		return _assetSchemaService.getObjectTypeId(
+		return _jiraAssetSchemaService.getObjectTypeId(
 			getObjectSchemaName(), getObjectTypeName());
 	}
 
@@ -81,12 +81,12 @@ public abstract class BaseJiraAssetObjectConverter {
 	protected abstract String getObjectSchemaName();
 
 	private Map<String, String> _getAttributeIds() {
-		return _assetSchemaService.getAttributeIds(
+		return _jiraAssetSchemaService.getAttributeIds(
 			getObjectSchemaName(), getObjectTypeName());
 	}
 
 	private Map<String, Set<String>> _getAttributeOptions() {
-		return _assetSchemaService.getAttributeOptions(
+		return _jiraAssetSchemaService.getAttributeOptions(
 			getObjectSchemaName(), getObjectTypeName());
 	}
 
@@ -96,6 +96,6 @@ public abstract class BaseJiraAssetObjectConverter {
 		"External Updated At";
 
 	@Autowired
-	private AssetSchemaService _assetSchemaService;
+	private JiraAssetSchemaService _jiraAssetSchemaService;
 
 }
