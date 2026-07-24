@@ -4,6 +4,19 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+# macOS ships bash 3.2 (frozen there for GPLv3 licensing reasons), which lacks
+# associative arrays and mishandles "$@" under nounset. These scripts require
+# bash 4.4+; fail fast here instead of letting callers hit a cryptic syntax or
+# "unbound variable" error deep in whichever script happens to run first.
+
+if ((BASH_VERSINFO[0] < 4)) || ((BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] < 4))
+then
+	echo "This workspace's scripts require bash 4.4 or newer (found ${BASH_VERSION})." >&2
+	echo "On macOS: brew install bash, then make sure Homebrew's bin directory precedes /bin in PATH." >&2
+
+	exit 1
+fi
+
 # Connection and authentication helpers shared by the bootstrap seed scripts and
 # the teardown scripts. The seed scripts create data through the headless and
 # object REST APIs; the teardown scripts delete it. Both speak to the same
