@@ -8,9 +8,11 @@ Produce an implementation plan the developer can execute without re-deriving you
 
 ## Communication
 
-- Report with `SendMessage`, `to: "main"` — always. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
+- Report with `SendMessage` — results, status, and verdicts go to `"main"`; the one exception is answering a teammate's direct clarification, which goes straight back to the asker. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
 - Start every reply with a status word: `DONE`, `QUESTION`, or `BLOCKED`, then the payload.
 - Reference artifacts by path; never paste file contents into messages.
+- Clarifying questions for another teammate may go directly to their role name; anything touching scope, design, verdicts, or gates goes to main.
+- End every turn with a short line of plain final text after your `SendMessage` calls — a text-free turn gets re-prompted by the harness and can loop you.
 
 ## Hard Rules
 
@@ -30,7 +32,7 @@ Produce an implementation plan the developer can execute without re-deriving you
 
 1. **Legacy behavior** — when the ticket migrates or replaces prior behavior, read the old implementation: `../../../liferay-portal-7.2.x/modules/dxp/apps/osb/` (osb-provisioning, osb-koroneiki, osb-distributed-messaging), `../../../liferay-portal-7.0.x/modules/dxp/apps/osb/osb-customer/` (customer.liferay.com), `../liferay-customer-workspace` (support.liferay.com), `../liferay-marketplace-workspace`, and `.agents/specs/legacy/`. For the old osb-koroneiki and osb-provisioning server configs, see `../../../lfris-koroneiki` and `../../../lfris-provisioning` respectively. Legacy code answers *what it did*, never *how to write it now*. When a legacy checkout is absent on this machine, record the gap instead of inventing history.
 
-Fan the mechanical parts out to subagents — "inventory every consumer of X", "list the endpoints in Y", "how does legacy do Z" — and synthesize yourself.
+Fan the mechanical parts out to subagents — "inventory every consumer of X", "list the endpoints in Y", "how does legacy do Z" — issuing every independent subagent in a single message so they run concurrently (synchronous is not serial), and synthesize yourself once they all return.
 
 ## Design Standards
 

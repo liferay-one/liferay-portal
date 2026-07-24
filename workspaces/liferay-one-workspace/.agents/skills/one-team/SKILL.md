@@ -40,7 +40,8 @@ These mechanics were verified live; the protocol depends on them:
 - A background teammate is **turn-based**, not a live process. It handles the message it was given, acts, replies, and stops. `SendMessage` to it resumes it with its full context intact. An idle teammate costs nothing, so keeping all four alive across the whole run is free.
 - Because teammates are spawned with `name` set to the role, `SendMessage` addresses them by that name and the agents panel lists them readably. Still record the role → agent ID mapping from each spawn result in the team log: a reused name belongs to the newest agent, so IDs disambiguate respawns. Never show raw agent IDs to the user — say "the planner", "the developer".
 - Teammates reply by calling `SendMessage` with `to: "main"`. Replies arrive at the coordinator automatically; there is no inbox to poll. A teammate's final text also arrives in its completion notification — the fallback when a teammate forgets to message.
-- A teammate's **background subagent** reports its completion to the coordinator, not to the teammate that spawned it — a teammate that stops to wait for its own background child stalls until nudged. The charters therefore require synchronous subagents; when a grandchild result lands on the coordinator anyway, persist it to the team directory and resume the owning teammate with the path. Background **commands** are different: they re-invoke their owner and are safe.
+- A teammate's **background subagent** reports its completion to the coordinator, not to the teammate that spawned it — a teammate that stops to wait for its own background child stalls until nudged. The charters therefore require synchronous subagents; when a grandchild result lands on the coordinator anyway, persist it to the team directory and resume the owning teammate with the path. Background **commands** are different: they re-invoke their owner and are safe. Synchronous is not serial: independent subagents issued in a single message run concurrently.
+- A turn whose only output is `SendMessage` calls looks empty to the harness, which re-prompts the agent — and can loop it. Teammates end every turn with a short line of plain final text after their messages.
 - After dispatching work, end the turn with a one-line status for the user. The teammate's reply resumes the session.
 - Teammates share the filesystem. Handoffs carry **paths, not contents** — point at `plan.md`, list the touched files, reference the diff. Pasting file bodies into messages pays for them twice.
 
@@ -117,7 +118,7 @@ Legacy sources answer "how did this behave before" — they are behavioral refer
 
 ## Phase Protocol
 
-Seven phases. Each has an owner, an exit gate, and a `team-log.md` entry; no phase starts before the previous gate is logged. Gates are evidence-based, not immutable: when later evidence invalidates a logged gate — a regression surfacing after `APPROVED`, a failed retest — the coordinator reopens the run at the earliest affected phase, logs why, and the standard loops rerun. Ship never proceeds over a known-stale gate. Mirror the phases on the shared task board at kickoff — one task per phase, chained with `addBlockedBy` — and advance statuses as gates pass. The coordinator owns the board; teammates report through messages.
+Seven phases. Each has an owner, an exit gate, and a `team-log.md` entry; no phase's gate can pass before the previous gate is logged — verdicts and confirmations keep their order even where work overlaps (tester prep during Phase 3 and the reviewer's early pass during Phase 4 are the two sanctioned overlaps). Gates are evidence-based, not immutable: when later evidence invalidates a logged gate — a regression surfacing after `APPROVED`, a failed retest — the coordinator reopens the run at the earliest affected phase, logs why, and the standard loops rerun. Ship never proceeds over a known-stale gate. Mirror the phases on the shared task board at kickoff — one task per phase, chained with `addBlockedBy` — and advance statuses as gates pass. The coordinator owns the board; teammates report through messages.
 
 This checkout is shared — other sessions and the user can move it mid-run. Before logging any gate and before dispatching any phase assignment, verify `git branch --show-current` prints `<TICKET>`; on a mismatch, freeze the team with HOLD messages, read the reflog to see what happened, and escalate to the user before anything else runs.
 
@@ -149,15 +150,15 @@ The planner researches broadly and **asks instead of guessing**: `QUESTION` mess
 
 Exit gate: `plan.md` written; planner reports `DONE`.
 
-### Phase 2 — Plan Review (Developer), Then the Human Gate
+### Phase 2 — Plan Review (Developer) and the Human Gate, Concurrently
 
-Send the developer to review `plan.md` critically before any code exists: feasibility, missing steps, pattern conformance, testability, scope. Relay objections to the planner for revision and loop until **both explicitly agree**. When they still disagree after one rebuttal round each, take both positions to the user instead of forcing agreement. Log the outcome and any accepted risks.
+Dispatch both reads at once: send the developer to review `plan.md` critically before any code exists — feasibility, missing steps, pattern conformance, testability, scope — and in the same breath post the compact plan summary to the user in chat (goal, approach, files, test plan, open risks), point at `plan.md`, and ask them to approve or request changes. **Phase 3 starts only when both the developer–planner agreement and the user's approval are in.**
 
-Then pause for the human: post a compact plan summary in chat (goal, approach, files, test plan, open risks), point at `plan.md`, and ask the user to approve or request changes. **Phase 3 does not start without the user's approval.** Requested changes go back through the planner–developer agreement loop.
+Developer objections are relayed to the planner for revision; loop until **both explicitly agree**. When they still disagree after one rebuttal round each, take both positions to the user instead of forcing agreement. When a revision lands while the user is still reading, tell them what changed — an approval given on stale text is re-confirmed against a one-line delta. Log the outcome and any accepted risks.
 
 ### Phase 3 — Implement (Developer)
 
-The developer implements `plan.md` under its charter's rules. While this phase runs:
+Dispatch two assignments the moment the plan gate closes: the developer implements `plan.md` under its charter's rules, and the tester runs its prep in parallel — environment up and healthy, test matrix pre-built from the plan (its charter's Prep section; nothing in it needs the diff). While this phase runs:
 
 - The developer is the **only writer** of repository files. Nobody else — planner, tester, reviewer, coordinator — edits them, ever. The `.one-team/` artifacts are the one exception: each role maintains its own, per the artifact table.
 - Deviations from the plan are flagged to the coordinator; material design changes go back to the planner for agreement before proceeding.
@@ -167,7 +168,7 @@ Exit gate: developer writes `dev-handoff.md` (touched files, change summary, per
 
 ### Phase 4 — Deploy and Test (Tester)
 
-The tester — briefed with `dev-handoff.md` and the plan's Test Plan — deploys the staged work and proves it per its charter: environment up, client extensions deployed (including the `liferay-one-etc-spring-boot` image-rebuild nuance), then end-to-end verification through the real UI at `http://localhost:8080` — logged in, exercising every acceptance criterion — plus a **regression sweep**: every flow that consumes code the developer touched gets exercised too, with container logs watched for new errors throughout.
+The tester — already prepped, briefed with `dev-handoff.md` and the plan's Test Plan — deploys the staged work and proves it per its charter: client extensions deployed (the tester rebuilds the `liferay-one-etc-spring-boot` image itself — a near-instant no-op when the developer's background warm-up finished — recreates its container, and confirms pickup in the logs), then end-to-end verification through the real UI at `http://localhost:8080` — logged in, exercising every acceptance criterion — plus a **regression sweep**: every flow that consumes code the developer touched gets exercised too, with container logs watched for new errors throughout.
 
 `FAIL` goes back to the developer with reproduction steps, the developer fixes under Phase 3 rules, the tester redeploys and retests the failed cases plus the fix's blast radius. Loop until the full matrix passes on the currently deployed build.
 
@@ -176,6 +177,8 @@ Exit gate: `test-report.md` complete; developer and tester both explicitly confi
 ### Phase 5 — Final Review (Reviewer)
 
 Brief the reviewer with the plan, test report, and diff scope (`git diff liferay-one/master-temp` — the work is staged, so this shows everything, new files included). The reviewer works read-only per its charter.
+
+For small diffs (roughly under two hundred changed lines), the coordinator may start the reviewer's rule-reading and automated pass during Phase 4, with the verdict held until the tester's `PASS` lands — a `FAIL` that changes the diff voids the early pass. Findings are only ever issued against the tested, final diff.
 
 `CHANGES_REQUESTED` → developer fixes (Phase 3 rules) → **tester retests the fixes and their blast radius** (Phase 4 rules — a `PASS` on those rows suffices in these rounds; the full joint confirmation is not re-taken) → reviewer re-reviews. Every finding ends adjudicated: fixed, or explicitly rejected with a reason the reviewer accepts. Loop until `APPROVED`.
 
@@ -195,7 +198,7 @@ Exit gate: reviewer's `APPROVED` logged.
 
 ## Communication Rules
 
-- Hub and spoke: teammates talk to the coordinator, the coordinator relays. Log every gate, agreement, and arbitration in `team-log.md` as it happens, not retroactively.
+- Hub and spoke for everything that matters: handoffs, verdicts, gates, escalations, and disagreements go through the coordinator and into `team-log.md` as they happen, not retroactively. Pure clarification questions between teammates go directly — address the role name (a verified mechanic) — with the exchange reflected in the asker's next report to main; anything touching scope, design, verdicts, or gates returns to the spoke.
 - Every teammate reply starts with a status word — `DONE`, `PASS`, `FAIL`, `BLOCKED`, `PROGRESS`, `QUESTION`, `APPROVED`, `CHANGES_REQUESTED` — followed by the payload. Each charter names the subset its role uses. `PROGRESS` is non-terminal: a milestone heartbeat during long phases (environment ready, deploy confirmed in logs, matrix row N of M, build green); the coordinator relays a one-liner to the user and expects no reply.
 - The user outranks the protocol: a mid-run user instruction that overrides a rule — ship before review, push, skip a phase — is followed and logged as a user override, never resisted and never silently absorbed. Work it displaces (a deferred final review, for example) is recorded in the log as still owed.
 - Every dispatch names the phase, the assignment, the artifact paths, and what done looks like.
@@ -233,7 +236,7 @@ Artifacts and the branch carry the state; teammate transcripts do not survive a 
 | --- | --- | --- | --- |
 | 0 Kickoff | coordinator | branch, context, roster ready | `team-log.md` |
 | 1 Plan | planner | plan written | `plan.md` |
-| 2 Plan review | developer → user | planner and developer agree, user approves | log entry |
+| 2 Plan review | developer + user, concurrent | planner and developer agree, user approves | log entry |
 | 3 Implement | developer | build green, staged, handoff written | staged diff + `dev-handoff.md` |
 | 4 Deploy and test | tester | full matrix passes, developer and tester agree | `test-report.md` |
 | 5 Final review | reviewer | `APPROVED`, all findings adjudicated | `review.md` |
