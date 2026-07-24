@@ -118,7 +118,8 @@ public class JiraAssetObject {
 
 	/**
 	 * Serializes this object into the JSM's {@code attributes} JSON shape.
-	 * This method is used by the {@link com.liferay.one.jira.service.JiraAssetService}.
+	 * This method is used by the
+	 * {@link com.liferay.one.jira.service.JiraAssetPersistence}.
 	 */
 	public JSONArray toAttributesJSONArray() {
 		JSONArray attributesJSONArray = new JSONArray();

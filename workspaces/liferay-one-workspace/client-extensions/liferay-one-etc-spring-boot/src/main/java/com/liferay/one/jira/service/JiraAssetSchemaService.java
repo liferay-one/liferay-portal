@@ -19,25 +19,25 @@ import org.springframework.stereotype.Component;
  * @author Drew Brokke
  */
 @Component
-public class AssetSchemaService {
+public class JiraAssetSchemaService {
 
 	public Map<String, String> getAttributeIds(
 		String schemaName, String objectTypeName) {
 
-		return _assetSchemaLoader.getAttributeIds(
+		return _jiraAssetSchemaLoader.getAttributeIds(
 			getObjectTypeId(schemaName, objectTypeName));
 	}
 
 	public Map<String, Set<String>> getAttributeOptions(
 		String schemaName, String objectTypeName) {
 
-		return _assetSchemaLoader.getAttributeOptions(
+		return _jiraAssetSchemaLoader.getAttributeOptions(
 			getObjectTypeId(schemaName, objectTypeName));
 	}
 
 	public String getObjectTypeId(String schemaName, String objectTypeName) {
-		Map<String, String> objectTypeIds = _assetSchemaLoader.getObjectTypeIds(
-			schemaName);
+		Map<String, String> objectTypeIds =
+			_jiraAssetSchemaLoader.getObjectTypeIds(schemaName);
 
 		String objectTypeId = objectTypeIds.get(objectTypeName);
 
@@ -54,6 +54,6 @@ public class AssetSchemaService {
 	}
 
 	@Autowired
-	private AssetSchemaLoader _assetSchemaLoader;
+	private JiraAssetSchemaLoader _jiraAssetSchemaLoader;
 
 }

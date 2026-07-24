@@ -27,12 +27,12 @@ import org.springframework.stereotype.Component;
  * @author Drew Brokke
  */
 @Component
-public class AssetSchemaLoader {
+public class JiraAssetSchemaLoader {
 
 	@Cacheable("assetObjectTypeAttributeIds")
 	public Map<String, String> getAttributeIds(String objectTypeId) {
 		return _toNameIdMap(
-			_jiraAssetService.getObjectTypeAttributes(objectTypeId));
+			_jiraAssetPersistence.getObjectTypeAttributes(objectTypeId));
 	}
 
 	@Cacheable("assetObjectTypeAttributeOptions")
@@ -40,7 +40,7 @@ public class AssetSchemaLoader {
 		Map<String, Set<String>> attributeOptions = new LinkedHashMap<>();
 
 		JSONArray attributesJSONArray =
-			_jiraAssetService.getObjectTypeAttributes(objectTypeId);
+			_jiraAssetPersistence.getObjectTypeAttributes(objectTypeId);
 
 		for (int i = 0; i < attributesJSONArray.length(); i++) {
 			JSONObject attributeJSONObject = attributesJSONArray.getJSONObject(
@@ -69,11 +69,12 @@ public class AssetSchemaLoader {
 	public Map<String, String> getObjectTypeIds(String schemaName) {
 		String schemaId = _resolveSchemaId(schemaName);
 
-		return _toNameIdMap(_jiraAssetService.getObjectTypes(schemaId));
+		return _toNameIdMap(_jiraAssetPersistence.getObjectTypes(schemaId));
 	}
 
 	private String _resolveSchemaId(String schemaName) {
-		JSONArray objectSchemasJSONArray = _jiraAssetService.getObjectSchemas();
+		JSONArray objectSchemasJSONArray =
+			_jiraAssetPersistence.getObjectSchemas();
 
 		for (int i = 0; i < objectSchemasJSONArray.length(); i++) {
 			JSONObject schemaJSONObject = objectSchemasJSONArray.getJSONObject(
@@ -109,6 +110,6 @@ public class AssetSchemaLoader {
 	}
 
 	@Autowired
-	private JiraAssetService _jiraAssetService;
+	private JiraAssetPersistence _jiraAssetPersistence;
 
 }

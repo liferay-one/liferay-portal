@@ -11,8 +11,7 @@ import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.service.AssetObjectUpsertService;
-import com.liferay.one.jira.service.AssetReferenceObjectService;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
@@ -68,18 +67,18 @@ public class AccountUserAccountRoleSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT_ROLE,
-			_assetReferenceObjectService.getReferenceObjectId(
+			_jiraAssetService.getReferenceObjectId(
 				_contactRoleConverter, roleExternalKey));
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT,
-			_assetReferenceObjectService.getReferenceObjectId(
+			_jiraAssetService.getReferenceObjectId(
 				_contactConverter, userAccountExternalKey));
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_assetReferenceObjectService.getReferenceObjectId(
+			_jiraAssetService.getReferenceObjectId(
 				_accountConverter, accountExternalKey));
 
-		_assetObjectUpsertService.upsert(
+		_jiraAssetService.upsert(
 			_accountContactRoleAssignmentConverter, jiraAssetObject);
 	}
 
@@ -94,15 +93,12 @@ public class AccountUserAccountRoleSynchronizer {
 	private AccountConverter _accountConverter;
 
 	@Autowired
-	private AssetObjectUpsertService _assetObjectUpsertService;
-
-	@Autowired
-	private AssetReferenceObjectService _assetReferenceObjectService;
-
-	@Autowired
 	private ContactConverter _contactConverter;
 
 	@Autowired
 	private ContactRoleConverter _contactRoleConverter;
+
+	@Autowired
+	private JiraAssetService _jiraAssetService;
 
 }

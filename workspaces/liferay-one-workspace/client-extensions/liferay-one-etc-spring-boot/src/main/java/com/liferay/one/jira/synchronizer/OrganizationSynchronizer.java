@@ -16,8 +16,7 @@ import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.converter.TeamRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.service.AssetObjectUpsertService;
-import com.liferay.one.jira.service.AssetReferenceObjectService;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
@@ -60,7 +59,7 @@ public class OrganizationSynchronizer {
 
 			jiraAssetObject.setAttributeValue(
 				TeamConstants.ATTRIBUTE_NAME_ACCOUNT,
-				_assetReferenceObjectService.getReferenceObjectId(
+				_jiraAssetService.getReferenceObjectId(
 					_accountConverter,
 					accountBrief.getExternalReferenceCode()));
 		}
@@ -68,34 +67,33 @@ public class OrganizationSynchronizer {
 		List<String> teamRoleObjectIds = Collections.emptyList();
 
 		if (!accountBriefs.isEmpty()) {
-			teamRoleObjectIds =
-				_assetReferenceObjectService.getOrCreateReferenceObjectIds(
-					_teamRoleConverter,
-					Collections.singletonList(
-						TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT),
-					Function.identity(),
-					externalKey ->
-						_teamRoleConverter.toFirstLineSupportAssetObject());
+			teamRoleObjectIds = _jiraAssetService.getOrCreateReferenceObjectIds(
+				_teamRoleConverter,
+				Collections.singletonList(
+					TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT),
+				Function.identity(),
+				externalKey ->
+					_teamRoleConverter.toFirstLineSupportAssetObject());
 		}
 
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_TEAM_ROLES, teamRoleObjectIds);
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_externalLinkConverter,
 				_getExternalLinkProperties(organization),
 				Property::getExternalReferenceCode,
 				_externalLinkConverter::toAssetObject));
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_CONTACTS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactConverter,
 				_userAccountService.getOrganizationUserAccounts(
 					GetterUtil.getLong(organization.getId())),
 				UserAccount::getExternalReferenceCode));
 
-		_assetObjectUpsertService.upsert(_teamConverter, jiraAssetObject);
+		_jiraAssetService.upsert(_teamConverter, jiraAssetObject);
 
 		_syncOrganizationAssignments(organization, accountBriefs);
 	}
@@ -146,16 +144,13 @@ public class OrganizationSynchronizer {
 	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
 
 	@Autowired
-	private AssetObjectUpsertService _assetObjectUpsertService;
-
-	@Autowired
-	private AssetReferenceObjectService _assetReferenceObjectService;
-
-	@Autowired
 	private ContactConverter _contactConverter;
 
 	@Autowired
 	private ExternalLinkConverter _externalLinkConverter;
+
+	@Autowired
+	private JiraAssetService _jiraAssetService;
 
 	@Autowired
 	private PropertyService _propertyService;
