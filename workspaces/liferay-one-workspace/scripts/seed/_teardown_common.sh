@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Shared helpers for the teardown scripts (teardown.sh, teardown_records.sh,
 # teardown_structure.sh). These mirror the bootstrap seed scripts in reverse:

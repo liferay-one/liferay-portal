@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Sends a single liferay-one-batch *.batch-engine-data.json file to a Liferay
 # environment through the headless batch engine import-task endpoint, then polls
