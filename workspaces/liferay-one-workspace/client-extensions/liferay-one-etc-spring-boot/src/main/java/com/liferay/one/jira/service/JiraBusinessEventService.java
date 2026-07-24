@@ -38,7 +38,7 @@ public class JiraBusinessEventService {
 	public void createJiraBusinessEvent(JiraBusinessEvent jiraBusinessEvent)
 		throws Exception {
 
-		_jiraAssetService.createObject(
+		_jiraAssetPersistence.createObject(
 			_businessEventConverter.getObjectTypeId(),
 			_businessEventConverter.toAssetObject(
 				_accountAssetService.getAccountObjectKey(
@@ -47,7 +47,7 @@ public class JiraBusinessEventService {
 	}
 
 	public void deleteJiraBusinessEvent(String id) throws Exception {
-		_jiraAssetService.deleteObject(id);
+		_jiraAssetPersistence.deleteObject(id);
 	}
 
 	@Cacheable("assetObjectFieldOptions")
@@ -58,7 +58,7 @@ public class JiraBusinessEventService {
 			new ArrayList<>();
 
 		JSONArray objectTypeAttributesJSONArray =
-			_jiraAssetService.getObjectTypeAttributes(
+			_jiraAssetPersistence.getObjectTypeAttributes(
 				_businessEventConverter.getObjectTypeId());
 
 		for (int i = 0; i < objectTypeAttributesJSONArray.length(); i++) {
@@ -90,14 +90,14 @@ public class JiraBusinessEventService {
 
 	public JiraBusinessEvent getJiraBusinessEvent(String id) throws Exception {
 		return _businessEventConverter.toJiraBusinessEvent(
-			_jiraAssetService.getObject(id), StringPool.BLANK);
+			_jiraAssetPersistence.getObject(id), StringPool.BLANK);
 	}
 
 	public List<JiraBusinessEvent> getJiraBusinessEvents(
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return _jiraAssetService.searchObjects(
+		return _jiraAssetPersistence.searchObjects(
 			_businessEventConverter.getAQLWithBuilder(
 				aqlBuilder -> aqlBuilder.andEquals(
 					projectExternalReferenceCode,
@@ -115,7 +115,7 @@ public class JiraBusinessEventService {
 			return new ArrayList<>();
 		}
 
-		return _jiraAssetService.searchObjects(
+		return _jiraAssetPersistence.searchObjects(
 			_businessEventVersionConverter.getAQLWithBuilder(
 				aqlBuilder -> aqlBuilder.andEqualsObject(
 					businessEventId,
@@ -128,7 +128,7 @@ public class JiraBusinessEventService {
 
 	@Cacheable("productVersions")
 	public List<JiraProductVersion> getJiraProductVersions() throws Exception {
-		return _jiraAssetService.searchObjects(
+		return _jiraAssetPersistence.searchObjects(
 			AQLUtil.getBaseAQL(
 				JiraBusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS,
 				JiraBusinessEventConstants.OBJECT_TYPE_PRODUCT_VERSION),
@@ -151,7 +151,7 @@ public class JiraBusinessEventService {
 			JiraBusinessEvent jiraBusinessEvent, String id)
 		throws Exception {
 
-		_jiraAssetService.updateObject(
+		_jiraAssetPersistence.updateObject(
 			id, _businessEventConverter.toAssetObject(null, jiraBusinessEvent));
 
 		return getJiraBusinessEvent(id);
@@ -167,6 +167,6 @@ public class JiraBusinessEventService {
 	private JiraBusinessEventVersionConverter _businessEventVersionConverter;
 
 	@Autowired
-	private JiraAssetService _jiraAssetService;
+	private JiraAssetPersistence _jiraAssetPersistence;
 
 }

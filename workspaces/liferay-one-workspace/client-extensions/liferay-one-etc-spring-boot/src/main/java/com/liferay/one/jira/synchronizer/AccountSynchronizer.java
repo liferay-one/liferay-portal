@@ -22,8 +22,7 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.model.JiraBusinessEvent;
-import com.liferay.one.jira.service.AssetObjectUpsertService;
-import com.liferay.one.jira.service.AssetReferenceObjectService;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.EntitlementDefinition;
@@ -188,7 +187,7 @@ public class AccountSynchronizer {
 
 		return LinkedHashMapBuilder.<String, Object>put(
 			AccountConstants.ATTRIBUTE_NAME_ASSIGNED_TEAMS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_teamConverter, accountOrganizations,
 				Organization::getExternalReferenceCode)
 		).put(
@@ -196,13 +195,13 @@ public class AccountSynchronizer {
 			_toBusinessEventsFieldValue(account)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactConverter,
 				accountUserAccountBucket.getCustomerUserAccounts(),
 				UserAccount::getExternalReferenceCode)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_entitlementConverter,
 				_entitlementService.getActiveEntitlementDefinitions(
 					account.getId()),
@@ -210,7 +209,7 @@ public class AccountSynchronizer {
 				_entitlementConverter::toAssetObject)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_externalLinkConverter, _getExternalLinkProperties(account),
 				Property::getExternalReferenceCode,
 				_externalLinkConverter::toAssetObject)
@@ -227,20 +226,19 @@ public class AccountSynchronizer {
 					return null;
 				}
 
-				return _assetReferenceObjectService.
-					getOrCreateReferenceObjectIds(
-						_postalAddressConverter,
-						ListUtil.fromArray(
-							accountContactInformation.getPostalAddresses()),
-						postalAddress -> String.valueOf(postalAddress.getId()),
-						_postalAddressConverter::toAssetObject);
+				return _jiraAssetService.getOrCreateReferenceObjectIds(
+					_postalAddressConverter,
+					ListUtil.fromArray(
+						accountContactInformation.getPostalAddresses()),
+					postalAddress -> String.valueOf(postalAddress.getId()),
+					_postalAddressConverter::toAssetObject);
 			}
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_SUPPORT_REGION,
 			GetterUtil.getString(accountSupportInfo.getSupportRegion())
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactConverter,
 				accountUserAccountBucket.getWorkerUserAccounts(),
 				UserAccount::getExternalReferenceCode)
@@ -344,12 +342,12 @@ public class AccountSynchronizer {
 			accountAttributeValues
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactConverter, customerUserAccounts,
 				UserAccount::getExternalReferenceCode)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactConverter, workerUserAccounts,
 				UserAccount::getExternalReferenceCode)
 		).build();
@@ -367,7 +365,7 @@ public class AccountSynchronizer {
 			assetObject.setAttributeValue(entry.getKey(), entry.getValue());
 		}
 
-		_assetObjectUpsertService.upsert(_accountConverter, assetObject);
+		_jiraAssetService.upsert(_accountConverter, assetObject);
 	}
 
 	private void _syncAccountOrganizationAssignments(
@@ -529,12 +527,6 @@ public class AccountSynchronizer {
 		_accountUserAccountRoleSynchronizer;
 
 	@Autowired
-	private AssetObjectUpsertService _assetObjectUpsertService;
-
-	@Autowired
-	private AssetReferenceObjectService _assetReferenceObjectService;
-
-	@Autowired
 	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
@@ -550,6 +542,9 @@ public class AccountSynchronizer {
 
 	@Autowired
 	private ExternalLinkConverter _externalLinkConverter;
+
+	@Autowired
+	private JiraAssetService _jiraAssetService;
 
 	@Autowired
 	private JiraBusinessEventService _jiraBusinessEventService;

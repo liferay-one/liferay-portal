@@ -20,8 +20,7 @@ import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
-import com.liferay.one.jira.service.AssetObjectUpsertService;
-import com.liferay.one.jira.service.AssetReferenceObjectService;
+import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.EntitlementService;
@@ -67,39 +66,39 @@ public class UserAccountSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_accountConverter, accountBriefs,
 				AccountBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_contactRoleConverter, roleBriefs,
 				RoleBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_entitlementConverter,
 				_getEntitlementDefinitions(accountBriefs),
 				EntitlementDefinition::getDisplayName,
 				_entitlementConverter::toAssetObject));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_externalLinkConverter, _getExternalLinkProperties(userAccount),
 				Property::getExternalReferenceCode,
 				_externalLinkConverter::toAssetObject));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_TEAMS,
-			_assetReferenceObjectService.fetchReferenceObjectIds(
+			_jiraAssetService.fetchReferenceObjectIds(
 				_teamConverter, organizationBriefs,
 				OrganizationBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_PHONES,
-			_assetReferenceObjectService.getOrCreateReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_phoneConverter, _getTelephones(userAccount),
 				Phone::getPhoneNumber, _phoneConverter::toAssetObject));
 
-		_assetObjectUpsertService.upsert(_contactConverter, jiraAssetObject);
+		_jiraAssetService.upsert(_contactConverter, jiraAssetObject);
 
 		_syncContactRoleAssignments(userAccount, accountBriefs);
 		_syncOrganizationRoleAssignments(userAccount, organizationBriefs);
@@ -250,12 +249,6 @@ public class UserAccountSynchronizer {
 		_accountUserAccountRoleSynchronizer;
 
 	@Autowired
-	private AssetObjectUpsertService _assetObjectUpsertService;
-
-	@Autowired
-	private AssetReferenceObjectService _assetReferenceObjectService;
-
-	@Autowired
 	private ContactConverter _contactConverter;
 
 	@Autowired
@@ -269,6 +262,9 @@ public class UserAccountSynchronizer {
 
 	@Autowired
 	private ExternalLinkConverter _externalLinkConverter;
+
+	@Autowired
+	private JiraAssetService _jiraAssetService;
 
 	@Autowired
 	private OrganizationUserAccountRoleSynchronizer

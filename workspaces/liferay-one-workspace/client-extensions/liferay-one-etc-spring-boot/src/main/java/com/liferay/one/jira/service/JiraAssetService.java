@@ -5,286 +5,469 @@
 
 package com.liferay.one.jira.service;
 
-import com.liferay.one.jira.exception.JiraAssetSchemaException;
+import com.liferay.one.jira.converter.BaseJiraAssetObjectConverter;
+import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.net.URI;
-
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Drew Brokke
  */
 @Component
-public class JiraAssetService extends BaseJiraService {
+public class JiraAssetService {
 
-	public JSONObject createObject(
-		String objectTypeId, JiraAssetObject jiraAssetObject) {
+	public void delete(
+		BaseJiraAssetObjectConverter converter, String externalKey) {
 
-		String requestBody = new JSONObject(
-		).put(
-			"attributes", jiraAssetObject.toAttributesJSONArray()
-		).put(
-			"objectTypeId", objectTypeId
-		).toString();
-
-		try {
-			String response = post(
-				requestBody, _headers(), _objectURI("create"));
-
-			return _toJSONObject(response);
+		if (Validator.isNull(externalKey)) {
+			return;
 		}
-		catch (WebClientResponseException webClientResponseException) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to create asset object with object type ",
-					objectTypeId, ": ",
-					webClientResponseException.getResponseBodyAsString(),
-					"; request body: ", requestBody));
 
-			throw webClientResponseException;
-		}
-	}
+		String externalKeyAttributeName =
+			converter.getExternalKeyAttributeName();
 
-	public JSONObject deleteObject(String objectId) {
-		String response = delete(
-			getAuthorization(), StringPool.BLANK, _objectURI(objectId));
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetPersistence.searchObjects(
+				converter.getAQLWithBuilder(
+					aqlBuilder -> aqlBuilder.andEquals(
+						externalKey, externalKeyAttributeName)),
+				converter::toJiraAssetObject);
 
-		return _toJSONObject(response);
-	}
-
-	public JSONObject getObject(String objectId) {
-		return _toJSONObject(get(getAuthorization(), _objectURI(objectId)));
-	}
-
-	public JSONArray getObjectSchemas() {
-		JSONArray itemsJSONArray = new JSONArray();
-
-		boolean last = false;
-		int startAt = 0;
-
-		while (!last) {
-			JSONObject resultsJSONObject = _getObjectSchemasPageJSONObject(
-				startAt);
-
-			JSONArray valuesJSONArray = resultsJSONObject.optJSONArray(
-				"values");
-
-			if ((valuesJSONArray == null) || valuesJSONArray.isEmpty()) {
-				break;
+		if (jiraAssetObjects.isEmpty()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping delete of ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey,
+						" because it does not exist"));
 			}
 
-			itemsJSONArray.putAll(valuesJSONArray);
-
-			last = resultsJSONObject.optBoolean("isLast");
-
-			startAt += _MAX_RESULTS;
+			return;
 		}
 
-		return itemsJSONArray;
+		JiraAssetObject jiraAssetObject = jiraAssetObjects.get(0);
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Deleting ", converter.getObjectTypeName(),
+					" asset object for external key ", externalKey));
+		}
+
+		_jiraAssetPersistence.deleteObject(jiraAssetObject.getObjectId());
 	}
 
-	public JSONArray getObjectTypeAttributes(String objectTypeId) {
-		return _toSchemaJSONArray(
-			get(
-				getAuthorization(),
-				_v1URI(
-					StringBundler.concat(
-						"objecttype/", objectTypeId, "/attributes"))),
-			"Unable to parse attributes response for object type " +
-				objectTypeId);
+	/**
+	 * Resolves a single external key to its existing asset object ID.
+	 *
+	 * @param  converter the converter describing the asset object type and its
+	 *         external key attribute
+	 * @param  externalKey the external key of the reference asset object
+	 *
+	 * @return the ID of the existing asset object, or <code>null</code> if the
+	 *         external key is <code>null</code> or no matching asset object
+	 *         exists
+	 */
+	public String fetchReferenceObjectId(
+		BaseJiraAssetObjectConverter converter, String externalKey) {
+
+		if (Validator.isNull(externalKey)) {
+			return null;
+		}
+
+		Map<String, String> externalKeyToObjectIdMap = new HashMap<>();
+
+		_putObjectIds(
+			converter, Collections.singletonList(externalKey),
+			externalKeyToObjectIdMap);
+
+		return externalKeyToObjectIdMap.get(externalKey);
 	}
 
-	public JSONArray getObjectTypes(String schemaId) {
-		return _toSchemaJSONArray(
-			get(
-				getAuthorization(),
-				_v1URI(
-					StringBundler.concat(
-						"objectschema/", schemaId, "/objecttypes"))),
-			"Unable to parse object types response for schema " + schemaId);
-	}
+	/**
+	 * Resolves a collection of entities to the IDs of their existing asset
+	 * objects. Entities whose external key is <code>null</code> or does not
+	 * resolve to an existing asset object are skipped.
+	 *
+	 * @param  converter the converter describing the asset object type and its
+	 *         external key attribute
+	 * @param  entities the entities to resolve to asset objects
+	 * @param  externalKeyFunction the function that extracts an external key
+	 *         from an entity
+	 *
+	 * @return the IDs of the resolved asset objects, or <code>null</code> if
+	 *         <code>entities</code> is <code>null</code>
+	 */
+	public <T> List<String> fetchReferenceObjectIds(
+		BaseJiraAssetObjectConverter converter, Collection<T> entities,
+		Function<T, String> externalKeyFunction) {
 
-	public JSONArray searchObjects(String aql) {
-		JSONArray itemsJSONArray = new JSONArray();
+		if (entities == null) {
+			return null;
+		}
 
-		boolean last = false;
-		int startAt = 0;
+		Set<String> externalKeys = new LinkedHashSet<>();
 
-		while (!last) {
-			JSONObject resultsJSONObject = _searchObjectsPage(aql, startAt);
-
-			JSONArray valuesJSONArray = resultsJSONObject.optJSONArray(
-				"values");
-
-			if ((valuesJSONArray == null) || valuesJSONArray.isEmpty()) {
-				break;
+		for (T entity : entities) {
+			if (entity == null) {
+				continue;
 			}
 
-			itemsJSONArray.putAll(valuesJSONArray);
+			String externalKey = externalKeyFunction.apply(entity);
 
-			last = resultsJSONObject.optBoolean("last");
-
-			startAt += _MAX_RESULTS;
+			if (Validator.isNotNull(externalKey)) {
+				externalKeys.add(externalKey);
+			}
 		}
 
-		return itemsJSONArray;
+		return _resolveToObjectIds(converter, externalKeys, null);
 	}
 
-	public <T> List<T> searchObjects(
-		String aql, Function<JSONObject, T> transformFunction) {
+	/**
+	 * Resolves a collection of entities to the IDs of their asset objects,
+	 * creating an asset object for any external key that does not already
+	 * resolve to one.
+	 *
+	 * @param  converter the converter describing the asset object type and its
+	 *         external key attribute
+	 * @param  entities the entities to resolve to asset objects
+	 * @param  externalKeyFunction the function that extracts an external key
+	 *         from an entity
+	 * @param  createAssetObjectFunction the function that builds the asset
+	 *         object to create for an entity whose external key is unresolved;
+	 *         must not be <code>null</code>
+	 *
+	 * @return the IDs of the resolved and newly created asset objects, or
+	 *         <code>null</code> if <code>entities</code> is <code>null</code>
+	 */
+	public <T> List<String> getOrCreateReferenceObjectIds(
+		BaseJiraAssetObjectConverter converter, Collection<T> entities,
+		Function<T, String> externalKeyFunction,
+		Function<T, JiraAssetObject> createAssetObjectFunction) {
 
-		ArrayList<T> results = new ArrayList<>();
+		Objects.requireNonNull(createAssetObjectFunction);
 
-		JSONArray jsonArray = searchObjects(aql);
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			results.add(transformFunction.apply(jsonArray.getJSONObject(i)));
+		if (entities == null) {
+			return null;
 		}
 
-		return results;
+		Map<String, T> entitiesMap = new LinkedHashMap<>();
+
+		for (T entity : entities) {
+			if (entity == null) {
+				continue;
+			}
+
+			String externalKey = externalKeyFunction.apply(entity);
+
+			if (Validator.isNotNull(externalKey)) {
+				entitiesMap.putIfAbsent(externalKey, entity);
+			}
+		}
+
+		return _resolveToObjectIds(
+			converter, entitiesMap.keySet(),
+			externalKey -> createAssetObjectFunction.apply(
+				entitiesMap.get(externalKey)));
 	}
 
-	public JSONObject updateObject(
-		String objectId, JiraAssetObject jiraAssetObject) {
+	/**
+	 * Resolves a single external key to its existing asset object ID, throwing
+	 * an exception when no matching asset object exists.
+	 *
+	 * @param  converter the converter describing the asset object type and its
+	 *         external key attribute
+	 * @param  externalKey the external key of the reference asset object
+	 *
+	 * @return the ID of the existing asset object
+	 * @throws JiraAssetObjectException if no asset object exists for the given
+	 *         external key
+	 */
+	public String getReferenceObjectId(
+		BaseJiraAssetObjectConverter converter, String externalKey) {
 
-		String requestBody = new JSONObject(
-		).put(
-			"attributes", jiraAssetObject.toAttributesJSONArray()
-		).toString();
+		String objectId = fetchReferenceObjectId(converter, externalKey);
 
-		try {
-			String response = put(
-				requestBody, _headers(), _objectURI(objectId));
-
-			return _toJSONObject(response);
-		}
-		catch (WebClientResponseException webClientResponseException) {
-			_log.error(
+		if (objectId == null) {
+			throw new JiraAssetObjectException(
 				StringBundler.concat(
-					"Unable to update asset object ", objectId, ": ",
-					webClientResponseException.getResponseBodyAsString(),
-					"; request body: ", requestBody));
-
-			throw webClientResponseException;
-		}
-	}
-
-	private JSONObject _getObjectSchemasPageJSONObject(int startAt) {
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromUri(
-				_v1URI("objectschema/list")
-			).queryParam(
-				"maxResults", _MAX_RESULTS
-			).queryParam(
-				"startAt", startAt
-			).build(
-			).toUri());
-
-		return _toJSONObject(response);
-	}
-
-	private Map<String, String> _headers() {
-		return HashMapBuilder.put(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).put(
-			HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE
-		).build();
-	}
-
-	private URI _objectURI(String suffix) {
-		return _v1URI("object/" + suffix);
-	}
-
-	private JSONObject _searchObjectsPage(String aql, int startAt) {
-		String response = post(
-			new JSONObject(
-			).put(
-				"qlQuery", aql
-			).toString(),
-			_headers(),
-			UriComponentsBuilder.fromUri(
-				_v1URI("object/aql")
-			).queryParam(
-				"maxResults", _MAX_RESULTS
-			).queryParam(
-				"startAt", startAt
-			).build(
-			).toUri());
-
-		return _toJSONObject(response);
-	}
-
-	private JSONObject _toJSONObject(String response) {
-		if (Validator.isNull(response)) {
-			return new JSONObject();
+					"No \"", converter.getObjectTypeName(),
+					"\" asset object exists for external key ", externalKey));
 		}
 
-		try {
-			return new JSONObject(response);
+		return objectId;
+	}
+
+	public boolean isUnchangedByExternalUpdatedAt(
+		BaseJiraAssetObjectConverter converter,
+		JiraAssetObject existingJiraAssetObject,
+		JiraAssetObject jiraAssetObject) {
+
+		String externalUpdatedAtAttributeName =
+			converter.getExternalUpdatedAtAttributeName();
+
+		String externalUpdatedAt = jiraAssetObject.getAttributeValue(
+			externalUpdatedAtAttributeName);
+
+		if (Validator.isNull(externalUpdatedAt)) {
+			return false;
 		}
-		catch (JSONException jsonException) {
+
+		return Objects.equals(
+			externalUpdatedAt,
+			existingJiraAssetObject.getAttributeValue(
+				externalUpdatedAtAttributeName));
+	}
+
+	public void upsert(
+		BaseJiraAssetObjectConverter converter,
+		JiraAssetObject jiraAssetObject) {
+
+		upsert(converter, jiraAssetObject, null);
+	}
+
+	public void upsert(
+		BaseJiraAssetObjectConverter converter, JiraAssetObject jiraAssetObject,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
+
+		String externalKeyAttributeName =
+			converter.getExternalKeyAttributeName();
+
+		String externalKey = jiraAssetObject.getAttributeValue(
+			externalKeyAttributeName);
+
+		if (Validator.isNull(externalKey)) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to parse JSON object response", jsonException);
+					StringBundler.concat(
+						"Unable to upsert a ", converter.getObjectTypeName(),
+						" asset object with no \"", externalKeyAttributeName,
+						"\" value"));
 			}
 
-			return new JSONObject();
+			return;
 		}
+
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetPersistence.searchObjects(
+				converter.getAQLWithBuilder(
+					aqlBuilder -> aqlBuilder.andEquals(
+						externalKey, externalKeyAttributeName)),
+				converter::toJiraAssetObject);
+
+		if (jiraAssetObjects.isEmpty()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Creating ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
+			}
+
+			_jiraAssetPersistence.createObject(
+				converter.getObjectTypeId(), jiraAssetObject);
+
+			return;
+		}
+
+		JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
+
+		if ((shouldSkipUpdateBiPredicate != null) &&
+			shouldSkipUpdateBiPredicate.test(
+				existingJiraAssetObject, jiraAssetObject)) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Skipping unchanged ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
+			}
+
+			return;
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Updating ", converter.getObjectTypeName(),
+					" asset object for external key ", externalKey));
+		}
+
+		_jiraAssetPersistence.updateObject(
+			existingJiraAssetObject.getObjectId(), jiraAssetObject);
 	}
 
-	private JSONArray _toSchemaJSONArray(String response, String message) {
-		if (Validator.isNull(response)) {
-			throw new JiraAssetSchemaException(message + ": empty response");
+	private String _createObject(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		Function<String, JiraAssetObject> createAssetObjectFunction) {
+
+		JiraAssetObject jiraAssetObject = createAssetObjectFunction.apply(
+			externalKey);
+
+		if (jiraAssetObject == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to create ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
+			}
+
+			return null;
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Creating ", converter.getObjectTypeName(),
+					" asset object for unresolved external key ", externalKey));
 		}
 
 		try {
-			return new JSONArray(response);
+			JSONObject jsonObject = _jiraAssetPersistence.createObject(
+				converter.getObjectTypeId(), jiraAssetObject);
+
+			return jsonObject.optString("id", null);
 		}
-		catch (JSONException jsonException) {
-			throw new JiraAssetSchemaException(message, jsonException);
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to create ", converter.getObjectTypeName(),
+					" asset object for external key ", externalKey),
+				exception);
+
+			return null;
 		}
 	}
 
-	private URI _v1URI(String path) {
-		return UriComponentsBuilder.fromUriString(
-			StringBundler.concat(
-				_JIRA_CLOUD_API_URL, "/jsm/assets/workspace/", _jiraWorkspaceId,
-				"/v1/", path)
-		).build(
-		).toUri();
+	private void _putObjectIds(
+		BaseJiraAssetObjectConverter converter, List<String> externalKeys,
+		Map<String, String> externalKeyToObjectIdMap) {
+
+		String externalKeyAttributeName =
+			converter.getExternalKeyAttributeName();
+
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetPersistence.searchObjects(
+				converter.getAQLWithBuilder(
+					aqlBuilder -> aqlBuilder.andIn(
+						externalKeys, externalKeyAttributeName)),
+				converter::toJiraAssetObject);
+
+		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			String externalKey = jiraAssetObject.getAttributeValue(
+				externalKeyAttributeName);
+			String objectId = jiraAssetObject.getObjectId();
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Resolved external key ", externalKey, " to existing ",
+						converter.getObjectTypeName(), " asset object ",
+						objectId));
+			}
+
+			String previousObjectId = externalKeyToObjectIdMap.putIfAbsent(
+				externalKey, objectId);
+
+			if ((previousObjectId != null) &&
+				!Objects.equals(previousObjectId, objectId) &&
+				_log.isWarnEnabled()) {
+
+				_log.warn(
+					StringBundler.concat(
+						"Multiple asset objects share external key ",
+						externalKey, ": ", previousObjectId, " and ", objectId,
+						"; the reference will resolve to the first match ",
+						previousObjectId));
+			}
+		}
 	}
 
-	private static final String _JIRA_CLOUD_API_URL =
-		"https://api.atlassian.com";
+	private List<String> _resolveToObjectIds(
+		BaseJiraAssetObjectConverter converter, Collection<String> externalKeys,
+		Function<String, JiraAssetObject> createAssetObjectFunction) {
 
-	private static final int _MAX_RESULTS = 100;
+		List<String> resolvedObjectIds = new ArrayList<>();
+
+		Set<String> uniqueExternalKeys = new LinkedHashSet<>();
+
+		for (String externalKey : externalKeys) {
+			if (Validator.isNotNull(externalKey)) {
+				uniqueExternalKeys.add(externalKey);
+			}
+		}
+
+		if (uniqueExternalKeys.isEmpty()) {
+			return resolvedObjectIds;
+		}
+
+		Map<String, String> externalKeyToObjectIdMap = new HashMap<>();
+
+		List<String> uniqueExternalKeysList = new ArrayList<>(
+			uniqueExternalKeys);
+
+		for (int i = 0; i < uniqueExternalKeysList.size(); i += _CHUNK_SIZE) {
+			_putObjectIds(
+				converter,
+				uniqueExternalKeysList.subList(
+					i,
+					Math.min(i + _CHUNK_SIZE, uniqueExternalKeysList.size())),
+				externalKeyToObjectIdMap);
+		}
+
+		for (String externalKey : uniqueExternalKeysList) {
+			String objectId = externalKeyToObjectIdMap.get(externalKey);
+
+			if ((objectId == null) && (createAssetObjectFunction != null)) {
+				objectId = _createObject(
+					converter, externalKey, createAssetObjectFunction);
+			}
+
+			if (objectId == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to resolve external key ", externalKey,
+							" to a ", converter.getObjectTypeName(),
+							" asset object"));
+				}
+
+				continue;
+			}
+
+			resolvedObjectIds.add(objectId);
+		}
+
+		return resolvedObjectIds;
+	}
+
+	private static final int _CHUNK_SIZE = 50;
 
 	private static final Log _log = LogFactory.getLog(JiraAssetService.class);
 
-	@Value("${liferay.one.jira.workspace.id}")
-	private String _jiraWorkspaceId;
+	@Autowired
+	private JiraAssetPersistence _jiraAssetPersistence;
 
 }

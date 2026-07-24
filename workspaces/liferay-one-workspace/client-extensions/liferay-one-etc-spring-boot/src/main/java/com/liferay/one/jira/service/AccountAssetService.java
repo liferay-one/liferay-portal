@@ -24,7 +24,7 @@ public class AccountAssetService {
 	public JiraAssetObject fetchAccountJiraAssetObjectByExternalKey(
 		String externalKey) {
 
-		List<JiraAssetObject> objects = _jiraAssetService.searchObjects(
+		List<JiraAssetObject> objects = _jiraAssetPersistence.searchObjects(
 			_accountConverter.getAQLWithBuilder(
 				aqlBuilder -> aqlBuilder.andEquals(
 					externalKey,
@@ -53,6 +53,6 @@ public class AccountAssetService {
 	private AccountConverter _accountConverter;
 
 	@Autowired
-	private JiraAssetService _jiraAssetService;
+	private JiraAssetPersistence _jiraAssetPersistence;
 
 }
