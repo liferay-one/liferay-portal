@@ -66,6 +66,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class AccountSynchronizer {
 
+	public void deleteAccount(String externalReferenceCode) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Deleting account " + externalReferenceCode + " from JSM");
+		}
+
+		_jiraAssetService.delete(_accountConverter, externalReferenceCode);
+	}
+
 	public void syncAccount(Account account) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info(
