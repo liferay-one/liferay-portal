@@ -137,6 +137,20 @@ public class AccountService extends OneBaseService {
 			).toUri());
 	}
 
+	public void addOrganizationAccount(long accountId, long organizationId)
+		throws Exception {
+
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		accountResource.postOrganizationAccounts(
+			organizationId, new Long[] {accountId});
+	}
+
 	public Account fetchAccount(long accountId) throws Exception {
 		AccountResource accountResource = AccountResource.builder(
 		).endpoint(
@@ -360,6 +374,20 @@ public class AccountService extends OneBaseService {
 			).buildAndExpand(
 				account.getId(), accountRoleId, userId
 			).toUri());
+	}
+
+	public void removeOrganizationAccount(long accountId, long organizationId)
+		throws Exception {
+
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		accountResource.deleteOrganizationAccounts(
+			organizationId, new Long[] {accountId});
 	}
 
 	public void upsertAccount(SalesforceAccount salesforceAccount)
