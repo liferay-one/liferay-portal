@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
@@ -42,7 +42,7 @@ function main {
 	cd ..
 
 	echo "Tearing down seeded records."
-	bash scripts/seed/teardown_records.sh
+	./scripts/seed/teardown_records.sh
 
 	echo "Deleting the One site."
 	_delete_site
@@ -56,13 +56,13 @@ function main {
 	_wait_for_site_initializer
 
 	echo "Setting virtual hosts."
-	bash scripts/bootstrap/set_virtual_hosts.sh
+	./scripts/bootstrap/set_virtual_hosts.sh
 
 	echo "Re-provisioning etc-spring-boot OAuth redirect URIs."
-	bash scripts/bootstrap/reprovision_etc_spring_boot_oauth.sh
+	./scripts/bootstrap/reprovision_etc_spring_boot_oauth.sh
 
 	echo "Seeding data."
-	bash scripts/seed.sh
+	./scripts/seed.sh
 
 	echo "Done. The One site has been reset."
 }

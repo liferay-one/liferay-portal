@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
@@ -15,31 +15,31 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 function main {
 	echo "Seeding test data."
-	bash seed/seed_test_data.sh
+	./seed/seed_test_data.sh
 
 	echo "Ensuring product SKUs."
-	bash seed/ensure_product_skus.sh
+	./seed/ensure_product_skus.sh
 
 	echo "Seeding journal articles."
-	bash seed/seed_journal_articles.sh
+	./seed/seed_journal_articles.sh
 
 	echo "Activating seeded user accounts."
-	bash seed/activate_user_accounts.sh
+	./seed/activate_user_accounts.sh
 
 	echo "Assigning user group and role memberships."
-	bash seed/assign_user_memberships.sh
+	./seed/assign_user_memberships.sh
 
 	echo "Assigning users to the Omni Test Account."
-	bash seed/assign_omni_account_users.sh
+	./seed/assign_omni_account_users.sh
 
 	echo "Linking supplier accounts to commerce catalogs."
-	bash seed/link_commerce_catalogs.sh
+	./seed/link_commerce_catalogs.sh
 
 	echo "Creating publisher details."
-	bash seed/create_publisher_details.sh
+	./seed/create_publisher_details.sh
 
 	echo "Populating orders, order items, and entitlements."
-	bash seed/populate_orders.sh
+	./seed/populate_orders.sh
 }
 
 main "${@}"
