@@ -23,12 +23,38 @@ import org.springframework.stereotype.Component;
 @Component
 public class RoleService extends OneBaseService {
 
+	public void addOrganizationUserAccountRole(
+			long organizationId, long roleId, long userId)
+		throws Exception {
+
+		RoleResource roleResource = _buildRoleResource();
+
+		roleResource.postOrganizationRoleUserAccountAssociation(
+			roleId, organizationId, userId);
+	}
+
 	public List<Role> getAccountRoles() throws Exception {
 		return _getRoles(RoleConstants.TYPE_ACCOUNT);
 	}
 
 	public List<Role> getOrganizationRoles() throws Exception {
 		return _getRoles(RoleConstants.TYPE_ORGANIZATION);
+	}
+
+	public Role getRole(long roleId) throws Exception {
+		RoleResource roleResource = _buildRoleResource();
+
+		return roleResource.getRole(roleId);
+	}
+
+	public void removeOrganizationUserAccountRole(
+			long organizationId, long roleId, long userId)
+		throws Exception {
+
+		RoleResource roleResource = _buildRoleResource();
+
+		roleResource.deleteOrganizationRoleUserAccountAssociation(
+			roleId, organizationId, userId);
 	}
 
 	private RoleResource _buildRoleResource() {
