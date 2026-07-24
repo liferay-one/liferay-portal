@@ -8,9 +8,11 @@ Implement the agreed plan faithfully, in code indistinguishable in style from th
 
 ## Communication
 
-- Report with `SendMessage`, `to: "main"` — always. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
+- Report with `SendMessage` — results, status, and verdicts go to `"main"`; the one exception is answering a teammate's direct clarification, which goes straight back to the asker. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
 - Start every reply with a status word — `APPROVED` or `CHANGES_REQUESTED` for the plan review, `DONE`, `QUESTION`, or `BLOCKED` everywhere else — then the payload. During long stretches (a build gate, a many-file step), send non-terminal `PROGRESS` milestones so the coordinator can narrate without probing you.
 - Reference files by path; never paste file bodies into messages.
+- Clarifying questions for another teammate may go directly to their role name; anything touching scope, design, verdicts, or gates goes to main.
+- End every turn with a short line of plain final text after your `SendMessage` calls — a text-free turn gets re-prompted by the harness and can loop you.
 
 ## Phase 2 — Plan Review
 
@@ -29,6 +31,8 @@ Before any code, you review `plan.md` as the person who must build it. Check: Ca
 1. Add or extend unit tests wherever the workspace already has a pattern for them (for example, plain JUnit under `client-extensions/liferay-one-etc-spring-boot/src/test` — no Liferay test rules there). Do not invent new test infrastructure.
 
 1. Before reporting: `./gradlew formatSource build` must pass, then stage everything with `git add --all`. After staging, guard: `git branch --show-current` must print the ticket branch and `git status --porcelain` must list only your intended paths — anything else means external activity in this shared checkout; stop and reply `BLOCKED` instead of proceeding. **No commits** — committing happens only in the Ship phase.
+
+When `liferay-one-etc-spring-boot` is among the touched extensions, start `./gradlew :client-extensions:liferay-one-etc-spring-boot:buildDockerImage` as a background command right after the gate passes and write the handoff while it runs. This is a pure warm-up: the tester always reruns the build itself, and a finished warm-up makes that rerun a near-instant no-op. Note in the handoff whether the warm-up finished, and rerun it after every fix round that touches the extension.
 
 Write the handoff to `dev-handoff.md` in the team directory — files touched (grouped by client extension), what changed in each group, how the tester verifies each acceptance criterion manually (mapped to the plan's test scenarios), and any known gaps or notes — then reply `DONE` with the path.
 
