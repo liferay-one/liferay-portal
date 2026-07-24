@@ -5,8 +5,6 @@
 
 package com.liferay.one.service;
 
-import com.liferay.headless.admin.address.client.dto.v1_0.Country;
-import com.liferay.headless.admin.address.client.resource.v1_0.CountryResource;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
@@ -54,21 +52,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class CommerceOrderService extends OneBaseService {
 
-	public OrderResource buildOrderResource() {
-		return OrderResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).parameters(
-			"nestedFields",
-			"account,billingAddress,customFields,orderItems," +
-				"orderItems.customFields"
-		).build();
-	}
-
 	public void calculateTax(long commerceOrderId) throws Exception {
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		Order order = orderResource.getOrder(commerceOrderId);
 
@@ -145,7 +130,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		try {
 			return orderResource.getOrder(commerceOrderId);
@@ -164,7 +149,7 @@ public class CommerceOrderService extends OneBaseService {
 	public Order fetchOrderByExternalReferenceCode(String externalReferenceCode)
 		throws Exception {
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		try {
 			return orderResource.getOrderByExternalReferenceCode(
@@ -182,7 +167,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public List<Order> getAccountOrders(long accountId) throws Exception {
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		List<Order> orders = new ArrayList<>();
 
@@ -219,27 +204,15 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public Order getCommerceOrder(long commerceOrderId) throws Exception {
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		return orderResource.getOrder(commerceOrderId);
-	}
-
-	public Country getCountryByA2(String a2) throws Exception {
-		return CountryResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build(
-		).getCountryByA2(
-			a2
-		);
 	}
 
 	public List<Order> getOrders(String filterString) throws Exception {
 		List<Order> orders = new ArrayList<>();
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		int page = 1;
 
@@ -263,7 +236,7 @@ public class CommerceOrderService extends OneBaseService {
 			long commerceOrderId, Map<String, ?> customFields)
 		throws Exception {
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		Order order = new Order();
 
@@ -272,11 +245,24 @@ public class CommerceOrderService extends OneBaseService {
 		orderResource.patchOrder(commerceOrderId, order);
 	}
 
+	public void patchOrderExternalReferenceCode(
+			long orderId, String externalReferenceCode)
+		throws Exception {
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order order = new Order();
+
+		order.setExternalReferenceCode(() -> externalReferenceCode);
+
+		orderResource.patchOrder(orderId, order);
+	}
+
 	public void updateOrder(
 			Map<String, ?> customFields, long orderId, int orderStatus)
 		throws Exception {
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		Order order = new Order();
 
@@ -291,7 +277,7 @@ public class CommerceOrderService extends OneBaseService {
 			int paymentStatus)
 		throws Exception {
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		Order order = new Order();
 
@@ -358,7 +344,7 @@ public class CommerceOrderService extends OneBaseService {
 		Order existingOrder = fetchOrderByExternalReferenceCode(
 			salesforceOpportunity.getId());
 
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		if (existingOrder != null) {
 			return orderResource.patchOrder(existingOrder.getId(), order);
@@ -373,6 +359,19 @@ public class CommerceOrderService extends OneBaseService {
 			lxcDXPMainDomain, lxcDXPServerProtocol
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+	}
+
+	private OrderResource _buildOrderResource() {
+		return OrderResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"nestedFields",
+			"account,billingAddress,customFields,orderItems," +
+				"orderItems.customFields"
 		).build();
 	}
 
@@ -538,7 +537,7 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private String _getOpportunitySoldBy(long accountId) throws Exception {
-		OrderResource orderResource = buildOrderResource();
+		OrderResource orderResource = _buildOrderResource();
 
 		Page<Order> ordersPage = orderResource.getOrdersPage(
 			null, "accountId/any(x:x eq " + accountId + ")", null, null);

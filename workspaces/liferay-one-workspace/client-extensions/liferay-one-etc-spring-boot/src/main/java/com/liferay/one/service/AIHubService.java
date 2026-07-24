@@ -131,19 +131,22 @@ public class AIHubService extends OneBaseService {
 			clientRequest
 		).retryWhen(
 			Retry.fixedDelay(
-				3, Duration.ofSeconds(5)
+				_RETRY_MAX_ATTEMPTS, Duration.ofSeconds(5)
 			).doBeforeRetry(
 				retrySignal -> {
 					if (_log.isInfoEnabled()) {
 						_log.info(
 							StringBundler.concat(
-								"Retrying ", clientRequest.url(),
-								retrySignal.totalRetries() + 1));
+								"Retrying ", clientRequest.url(), " (attempt ",
+								retrySignal.totalRetries() + 1, "/",
+								_RETRY_MAX_ATTEMPTS, ")"));
 					}
 				}
 			)
 		);
 	}
+
+	private static final long _RETRY_MAX_ATTEMPTS = 3;
 
 	private static final Log _log = LogFactory.getLog(AIHubService.class);
 

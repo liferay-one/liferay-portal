@@ -9,12 +9,11 @@ import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
-import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.model.SalesforceOpportunity;
 import com.liferay.one.service.AIHubService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.CountryService;
 import com.liferay.one.service.SalesforceService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.CommerceOrderUtil;
@@ -192,16 +191,14 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 
 		BillingAddress billingAddress = order.getBillingAddress();
 
-		SalesforceOpportunity salesforceOpportunity = new SalesforceOpportunity(
-			_commerceOrderService.getCountryByA2(
-				billingAddress.getCountryISOCode()),
-			"Subscription", order,
-			_commerceSkuService.getSku(orderItem.getSkuId()),
-			_userAccountService.getUserAccountByEmailAddress(
-				order.getCreatorEmailAddress()));
-
 		JSONObject salesforceOpportunityJSONObject =
-			_salesforceService.postSalesforceOpportunity(salesforceOpportunity);
+			_salesforceService.postSalesforceOpportunity(
+				_countryService.getCountryByA2(
+					billingAddress.getCountryISOCode()),
+				"Subscription", order,
+				_commerceSkuService.getSku(orderItem.getSkuId()),
+				_userAccountService.getUserAccountByEmailAddress(
+					order.getCreatorEmailAddress()));
 
 		if (salesforceOpportunityJSONObject == null) {
 			if (_log.isInfoEnabled()) {
@@ -211,21 +208,13 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 			return;
 		}
 
-		OrderResource orderResource =
-			_commerceOrderService.buildOrderResource();
-
-		orderResource.patchOrder(
+		_commerceOrderService.patchOrderExternalReferenceCode(
 			order.getId(),
-			new Order() {
-				{
-					setExternalReferenceCode(
-						() -> salesforceOpportunityJSONObject.getJSONObject(
-							"data"
-						).getString(
-							"opportunityId"
-						));
-				}
-			});
+			salesforceOpportunityJSONObject.getJSONObject(
+				"data"
+			).getString(
+				"opportunityId"
+			));
 	}
 
 	private static final Log _log = LogFactory.getLog(
@@ -239,6 +228,9 @@ public class ObjectActionAIHubTokensRestController extends BaseRestController {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private CountryService _countryService;
 
 	@Autowired
 	private SalesforceService _salesforceService;
