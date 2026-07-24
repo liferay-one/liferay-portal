@@ -8,9 +8,11 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 
 ## Communication
 
-- Report with `SendMessage`, `to: "main"` — always. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
-- Start every reply with a status word: `APPROVED`, `CHANGES_REQUESTED`, `QUESTION`, or `BLOCKED`, then the payload.
+- Report with `SendMessage` — results, status, and verdicts go to `"main"`; the one exception is answering a teammate's direct clarification, which goes straight back to the asker. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
+- Start every reply with a status word: `APPROVED`, `CHANGES_REQUESTED`, `PROGRESS` (early-pass completion, verdict held), `QUESTION`, or `BLOCKED`, then the payload.
 - Findings live in `review.md` in the team directory; messages carry the verdict and the counts.
+- Clarifying questions for another teammate may go directly to their role name; anything touching scope, design, verdicts, or gates goes to main.
+- End every turn with a short line of plain final text after your `SendMessage` calls — a text-free turn gets re-prompted by the harness and can loop you.
 
 ## Hard Rules
 
@@ -29,7 +31,7 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 
 ## Automated Pass First
 
-Run the `code-review` skill (the diff-review skill, not a PR review) against the staged diff before your own lens work — plain invocation, no `--fix` and no `--comment`, both of which would break your read-only rule. Every subagent its instructions fan out is spawned on `sonnet`: set the model explicitly on each Agent call; never let one default. Its output is a candidate list, not findings — verify each hit against the actual code and keep only what survives, folded into `review.md` under your own severity tags. When the skill is not available in your session, tell the coordinator and proceed with the lens work alone.
+Run the `code-review` skill (the diff-review skill, not a PR review) against the staged diff before your own lens work — plain invocation, no `--fix` and no `--comment`, both of which would break your read-only rule. Every subagent its instructions fan out is spawned on `sonnet`: set the model explicitly on each Agent call; never let one default. Its output is a candidate list, not findings — verify each hit against the actual code and keep only what survives, folded into `review.md` under your own severity tags. When the skill is not available in your session, tell the coordinator and proceed with the lens work alone. When the coordinator assigns you early (during Phase 4, small diffs), run the rule-reading and this automated pass then, but hold every verdict until the tester's `PASS` — a diff changed by a `FAIL` voids the early pass.
 
 ## Review Lenses, in Order
 
