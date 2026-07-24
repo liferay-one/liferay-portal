@@ -5,7 +5,11 @@
 
 package com.liferay.one;
 
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.service.SubscriptionEntryService;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author Amos Fong
+ * @author Drew Brokke
  */
 @RequestMapping("/object/action/user/delete")
 @RestController
@@ -28,9 +33,28 @@ public class ObjectActionUserRestController extends OneBaseRestController {
 
 		_subscriptionEntryService.deleteSubscriptionEntries(
 			jsonObject.getLong("classPK"));
+
+		JSONObject modelJSONObject = jsonObject.getJSONObject("modelUser");
+
+		String externalReferenceCode = modelJSONObject.getString(
+			"externalReferenceCode");
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"User " + externalReferenceCode +
+					" was deleted, triggering a delete from JSM");
+		}
+
+		_userAccountSynchronizer.deleteUserAccount(externalReferenceCode);
 	}
+
+	private static final Log _log = LogFactory.getLog(
+		ObjectActionUserRestController.class);
 
 	@Autowired
 	private SubscriptionEntryService _subscriptionEntryService;
+
+	@Autowired
+	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
