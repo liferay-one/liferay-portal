@@ -123,15 +123,32 @@ function _delete_commerce_catalogs {
 }
 
 function _delete_commerce_price_lists {
+
+	# Salesforce price lists are created at runtime, one per price book and
+	# currency, so their codes are discovered from the collection rather than
+	# read from a batch engine document.
+
 	_log "Deleting commerce price lists..."
+
+	local list_url="${LIFERAY_URL}/o/headless-commerce-admin-pricing/v1.0/priceLists"
 
 	local ercs
 
-	ercs=$(_read_ercs "${BATCH_DIR}/11-commerce-price-list.batch-engine-data.json")
+	ercs=$(_read_ercs_by_prefix "${list_url}" "SALESFORCE_PRICE_LIST_")
+
+	# Passing no codes to _delete_from_collection matches every item, which
+	# would delete price lists this script does not own.
+
+	if [[ -z ${ercs} ]]
+	then
+		_log "Deleted 0 commerce price lists."
+
+		return
+	fi
 
 	_delete_from_collection "commerce price lists" \
-		"${LIFERAY_URL}/o/headless-commerce-admin-pricing/v1.0/priceLists" \
-		"${LIFERAY_URL}/o/headless-commerce-admin-pricing/v1.0/priceLists" \
+		"${list_url}" \
+		"${list_url}" \
 		${ercs}
 }
 
