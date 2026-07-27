@@ -16,6 +16,7 @@ public class SalesforcePricebookEntry {
 		_active = jsonObject.optBoolean("IsActive");
 		_currencyIsoCode = jsonObject.optString("CurrencyIsoCode");
 		_id = jsonObject.optString("Id");
+		_pricebook2Id = jsonObject.optString("Pricebook2Id");
 		_product2Id = jsonObject.optString("Product2Id");
 		_unitPrice = jsonObject.optDouble("UnitPrice");
 	}
@@ -26,6 +27,10 @@ public class SalesforcePricebookEntry {
 
 	public String getId() {
 		return _id;
+	}
+
+	public String getPricebook2Id() {
+		return _pricebook2Id;
 	}
 
 	public String getProduct2Id() {
@@ -43,6 +48,7 @@ public class SalesforcePricebookEntry {
 	private final boolean _active;
 	private final String _currencyIsoCode;
 	private final String _id;
+	private final String _pricebook2Id;
 	private final String _product2Id;
 	private final double _unitPrice;
 
