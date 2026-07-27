@@ -259,6 +259,54 @@ for item in items:
 " "${1}"
 }
 
+# Prints the externalReferenceCode of every item in a live collection whose code
+# starts with the given prefix. Use this for collections whose members are
+# created at runtime rather than seeded from a batch engine document, where the
+# set of codes is not known ahead of time.
+#
+# Args: list_url prefix
+
+function _read_ercs_by_prefix {
+	local list_url="${1}"
+	local prefix="${2}"
+
+	local separator="?"
+
+	[[ ${list_url} == *"?"* ]] && separator="&"
+
+	local page=1
+
+	while :
+	do
+		local response
+
+		response=$(_curl "${list_url}${separator}page=${page}&pageSize=100")
+
+		local output
+
+		output=$(echo "${response}" | _matching_ids)
+
+		local count
+
+		count=$(echo "${output}" | sed -n 's/^COUNT //p')
+
+		local body
+
+		body=$(echo "${output}" | grep -v '^COUNT ' || true)
+
+		if [[ -n ${body} ]]
+		then
+			echo "${body}" | cut -f2 | grep "^${prefix}" || true
+		fi
+
+		[[ -z ${count} || ${count} -lt 100 ]] && break
+
+		page=$((page + 1))
+
+		[[ ${page} -gt 1000 ]] && break
+	done
+}
+
 # Minting happens once, at source time and at top level, so a failed token
 # request aborts the sourcing script. Acquiring inside _curl would not: _curl
 # runs in command-substitution subshells throughout the teardown, where an exit
