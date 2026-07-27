@@ -206,8 +206,8 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		_commercePriceEntryService.addOrUpdatePriceEntry(
 			salesforcePricebookEntry.isActive(),
 			salesforcePricebookEntry.getId(),
-			salesforcePricebookEntry.getUnitPrice(),
-			priceListExternalReferenceCode, priceList.getId(), sku.getId());
+			salesforcePricebookEntry.getUnitPrice(), priceList.getId(),
+			sku.getId());
 	}
 
 	private void _processProduct2(String action, JSONObject recordJSONObject)

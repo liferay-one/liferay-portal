@@ -22,21 +22,13 @@ public class CommercePriceEntryService extends OneBaseService {
 
 	public void addOrUpdatePriceEntry(
 			boolean active, String externalReferenceCode, double price,
-			String priceListExternalReferenceCode, long priceListId, long skuId)
+			long priceListId, long skuId)
 		throws Exception {
 
 		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
 
 		PriceEntry existingPriceEntry = _fetchPriceEntry(
 			externalReferenceCode, priceEntryResource);
-
-		PriceEntry priceEntry = new PriceEntry();
-
-		priceEntry.setActive(() -> active);
-		priceEntry.setExternalReferenceCode(() -> externalReferenceCode);
-		priceEntry.setPrice(() -> price);
-		priceEntry.setPriceListId(() -> priceListId);
-		priceEntry.setSkuId(() -> skuId);
 
 		if ((existingPriceEntry != null) &&
 			!Objects.equals(existingPriceEntry.getPriceListId(), priceListId)) {
@@ -47,13 +39,21 @@ public class CommercePriceEntryService extends OneBaseService {
 			existingPriceEntry = null;
 		}
 
+		PriceEntry priceEntry = new PriceEntry();
+
+		priceEntry.setActive(() -> active);
+		priceEntry.setExternalReferenceCode(() -> externalReferenceCode);
+		priceEntry.setPrice(() -> price);
+		priceEntry.setPriceListId(() -> priceListId);
+		priceEntry.setSkuId(() -> skuId);
+
 		if (existingPriceEntry != null) {
 			priceEntryResource.patchPriceEntryByExternalReferenceCode(
 				externalReferenceCode, priceEntry);
 		}
 		else {
-			priceEntryResource.postPriceListByExternalReferenceCodePriceEntry(
-				priceListExternalReferenceCode, priceEntry);
+			priceEntryResource.postPriceListIdPriceEntry(
+				priceListId, priceEntry);
 		}
 	}
 
