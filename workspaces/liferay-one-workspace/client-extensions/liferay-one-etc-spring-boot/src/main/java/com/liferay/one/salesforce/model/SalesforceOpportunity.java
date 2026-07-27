@@ -22,6 +22,7 @@ public class SalesforceOpportunity {
 		_ownerEmailAddress = jsonObject.optString("Owner.Email");
 		_ownerFirstName = jsonObject.optString("Owner.FirstName");
 		_ownerLastName = jsonObject.optString("Owner.LastName");
+		_pricebook2Id = jsonObject.optString("Pricebook2Id");
 		_productFamily = jsonObject.optString("Product_Family__c");
 		_projectId = jsonObject.optString("Project__c");
 		_renewal = jsonObject.optDouble("Has_Renewal__c", 0) > 0;
@@ -57,6 +58,10 @@ public class SalesforceOpportunity {
 
 	public String getOwnerLastName() {
 		return _ownerLastName;
+	}
+
+	public String getPricebook2Id() {
+		return _pricebook2Id;
 	}
 
 	public String getProductFamily() {
@@ -99,6 +104,7 @@ public class SalesforceOpportunity {
 	private final String _ownerEmailAddress;
 	private final String _ownerFirstName;
 	private final String _ownerLastName;
+	private final String _pricebook2Id;
 	private final String _productFamily;
 	private final String _projectId;
 	private final boolean _renewal;

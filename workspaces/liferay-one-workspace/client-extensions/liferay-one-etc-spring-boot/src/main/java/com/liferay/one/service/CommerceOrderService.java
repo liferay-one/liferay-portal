@@ -495,6 +495,12 @@ public class CommerceOrderService extends OneBaseService {
 
 		customFields.put("renewal", salesforceOpportunity.isRenewal());
 
+		if (Validator.isNotNull(salesforceOpportunity.getPricebook2Id())) {
+			customFields.put(
+				"salesforcePricebookId",
+				salesforceOpportunity.getPricebook2Id());
+		}
+
 		if (Validator.isNotNull(salesforceOpportunity.getProjectId())) {
 			customFields.put(
 				"salesforceProjectId", salesforceOpportunity.getProjectId());
