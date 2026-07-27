@@ -7,6 +7,7 @@ package com.liferay.one.salesforce.pubsub;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceList;
+import com.liferay.one.constants.CommerceCurrencyConstants;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.salesforce.model.SalesforceAccount;
@@ -21,6 +22,9 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Objects;
 
@@ -152,18 +156,23 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 			return;
 		}
 
-		String priceListExternalReferenceCode =
-			"SALESFORCE_PRICE_LIST_" +
-				salesforcePricebookEntry.getCurrencyIsoCode();
+		String currencyIsoCode = salesforcePricebookEntry.getCurrencyIsoCode();
 
-		PriceList priceList = _commercePriceListService.fetchPriceList(
-			priceListExternalReferenceCode);
+		if (!ArrayUtil.contains(
+				CommerceCurrencyConstants.CODES_SUPPORTED_CURRENCIES,
+				currencyIsoCode)) {
 
-		if (priceList == null) {
+			return;
+		}
+
+		String pricebook2Id = salesforcePricebookEntry.getPricebook2Id();
+
+		if (Validator.isNull(pricebook2Id)) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Unable to find price list " +
-						priceListExternalReferenceCode);
+					"Unable to process Salesforce price book entry " +
+						salesforcePricebookEntry.getId() +
+							" without a price book");
 			}
 
 			return;
@@ -179,6 +188,18 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 						salesforcePricebookEntry.getProduct2Id());
 			}
 
+			return;
+		}
+
+		String priceListExternalReferenceCode = StringBundler.concat(
+			"SALESFORCE_PRICE_LIST_", pricebook2Id, "_", currencyIsoCode);
+
+		PriceList priceList = _commercePriceListService.fetchOrAddPriceList(
+			currencyIsoCode, priceListExternalReferenceCode,
+			StringBundler.concat(
+				"Salesforce ", pricebook2Id, " ", currencyIsoCode));
+
+		if (priceList == null) {
 			return;
 		}
 

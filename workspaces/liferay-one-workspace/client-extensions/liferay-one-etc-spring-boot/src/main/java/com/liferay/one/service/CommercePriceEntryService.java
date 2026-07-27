@@ -9,6 +9,8 @@ import com.liferay.headless.commerce.admin.pricing.client.dto.v2_0.PriceEntry;
 import com.liferay.headless.commerce.admin.pricing.client.problem.Problem;
 import com.liferay.headless.commerce.admin.pricing.client.resource.v2_0.PriceEntryResource;
 
+import java.util.Objects;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +37,15 @@ public class CommercePriceEntryService extends OneBaseService {
 		priceEntry.setPrice(() -> price);
 		priceEntry.setPriceListId(() -> priceListId);
 		priceEntry.setSkuId(() -> skuId);
+
+		if ((existingPriceEntry != null) &&
+			!Objects.equals(existingPriceEntry.getPriceListId(), priceListId)) {
+
+			priceEntryResource.deletePriceEntryByExternalReferenceCode(
+				externalReferenceCode);
+
+			existingPriceEntry = null;
+		}
 
 		if (existingPriceEntry != null) {
 			priceEntryResource.patchPriceEntryByExternalReferenceCode(
