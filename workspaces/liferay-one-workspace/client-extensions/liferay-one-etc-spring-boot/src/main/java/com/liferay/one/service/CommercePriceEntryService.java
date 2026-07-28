@@ -25,10 +25,9 @@ public class CommercePriceEntryService extends OneBaseService {
 			long priceListId, long skuId)
 		throws Exception {
 
-		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
+		PriceEntry existingPriceEntry = _fetchPriceEntry(externalReferenceCode);
 
-		PriceEntry existingPriceEntry = _fetchPriceEntry(
-			externalReferenceCode, priceEntryResource);
+		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
 
 		if ((existingPriceEntry != null) &&
 			!Objects.equals(existingPriceEntry.getPriceListId(), priceListId)) {
@@ -60,14 +59,13 @@ public class CommercePriceEntryService extends OneBaseService {
 	public void deletePriceEntry(String externalReferenceCode)
 		throws Exception {
 
-		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
-
-		PriceEntry priceEntry = _fetchPriceEntry(
-			externalReferenceCode, priceEntryResource);
+		PriceEntry priceEntry = _fetchPriceEntry(externalReferenceCode);
 
 		if (priceEntry == null) {
 			return;
 		}
+
+		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
 
 		priceEntryResource.deletePriceEntryByExternalReferenceCode(
 			externalReferenceCode);
@@ -82,9 +80,10 @@ public class CommercePriceEntryService extends OneBaseService {
 		).build();
 	}
 
-	private PriceEntry _fetchPriceEntry(
-			String externalReferenceCode, PriceEntryResource priceEntryResource)
+	private PriceEntry _fetchPriceEntry(String externalReferenceCode)
 		throws Exception {
+
+		PriceEntryResource priceEntryResource = _buildPriceEntryResource();
 
 		try {
 			return priceEntryResource.getPriceEntryByExternalReferenceCode(

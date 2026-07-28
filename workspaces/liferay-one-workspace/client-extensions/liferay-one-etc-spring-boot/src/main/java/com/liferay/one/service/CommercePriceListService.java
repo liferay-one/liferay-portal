@@ -25,15 +25,7 @@ public class CommercePriceListService extends OneBaseService {
 			String currencyCode, String externalReferenceCode, String name)
 		throws Exception {
 
-		PriceListResource priceListResource = PriceListResource.builder(
-		).endpoint(
-			lxcDXPMainDomain, lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-
-		PriceList existingPriceList = _fetchPriceList(
-			externalReferenceCode, priceListResource);
+		PriceList existingPriceList = _fetchPriceList(externalReferenceCode);
 
 		if (existingPriceList != null) {
 			return existingPriceList;
@@ -55,13 +47,25 @@ public class CommercePriceListService extends OneBaseService {
 		priceList.setName(() -> name);
 		priceList.setType(() -> PriceList.Type.PRICE_LIST);
 
+		PriceListResource priceListResource = _buildPriceListResource();
+
 		return priceListResource.putPriceListByExternalReferenceCode(
 			externalReferenceCode, priceList);
 	}
 
-	private PriceList _fetchPriceList(
-			String externalReferenceCode, PriceListResource priceListResource)
+	private PriceListResource _buildPriceListResource() {
+		return PriceListResource.builder(
+		).endpoint(
+			lxcDXPMainDomain, lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+	}
+
+	private PriceList _fetchPriceList(String externalReferenceCode)
 		throws Exception {
+
+		PriceListResource priceListResource = _buildPriceListResource();
 
 		try {
 			return priceListResource.getPriceListByExternalReferenceCode(
