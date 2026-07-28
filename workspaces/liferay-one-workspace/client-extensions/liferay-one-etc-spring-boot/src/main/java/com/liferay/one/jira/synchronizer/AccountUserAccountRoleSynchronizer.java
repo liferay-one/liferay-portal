@@ -12,6 +12,7 @@ import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
@@ -50,6 +51,17 @@ public class AccountUserAccountRoleSynchronizer {
 			String roleExternalKey, String userAccountExternalKey,
 			String accountExternalKey, boolean deleted)
 		throws Exception {
+
+		_jiraSyncLock.withLock(
+			userAccountExternalKey,
+			() -> _syncAssignmentWithinLock(
+				roleExternalKey, userAccountExternalKey, accountExternalKey,
+				deleted));
+	}
+
+	private void _syncAssignmentWithinLock(
+		String roleExternalKey, String userAccountExternalKey,
+		String accountExternalKey, boolean deleted) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -100,5 +112,8 @@ public class AccountUserAccountRoleSynchronizer {
 
 	@Autowired
 	private JiraAssetService _jiraAssetService;
+
+	@Autowired
+	private JiraSyncLock _jiraSyncLock;
 
 }

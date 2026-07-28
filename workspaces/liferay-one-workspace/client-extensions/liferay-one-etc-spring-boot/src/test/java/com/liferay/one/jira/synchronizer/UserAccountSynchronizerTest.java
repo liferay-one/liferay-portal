@@ -15,6 +15,7 @@ import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.PropertyService;
 
@@ -81,6 +82,8 @@ public class UserAccountSynchronizerTest {
 			Mockito.mock(ExternalLinkConverter.class));
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_jiraAssetService", _jiraAssetService);
+		ReflectionTestUtils.setField(
+			_userAccountSynchronizer, "_jiraSyncLock", new JiraSyncLock());
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer,
 			"_organizationUserAccountRoleSynchronizer",
