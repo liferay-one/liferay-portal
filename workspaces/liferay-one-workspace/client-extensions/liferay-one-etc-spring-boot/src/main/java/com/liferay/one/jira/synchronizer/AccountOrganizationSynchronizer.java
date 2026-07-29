@@ -10,14 +10,11 @@ import com.liferay.one.jira.constants.TeamRoleConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
 import com.liferay.one.jira.converter.TeamConverter;
-import com.liferay.one.jira.converter.TeamRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.petra.string.StringBundler;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -66,13 +63,7 @@ public class AccountOrganizationSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM_ROLE,
-			_jiraAssetService.getOrCreateReferenceObjectIds(
-				_teamRoleConverter,
-				Collections.singletonList(
-					TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT),
-				Function.identity(),
-				externalKey ->
-					_teamRoleConverter.toFirstLineSupportAssetObject()));
+			_teamRoleSynchronizer.getFirstLineSupportTeamRoleObjectId());
 
 		jiraAssetObject.setAttributeValue(
 			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM,
@@ -104,6 +95,6 @@ public class AccountOrganizationSynchronizer {
 	private TeamConverter _teamConverter;
 
 	@Autowired
-	private TeamRoleConverter _teamRoleConverter;
+	private TeamRoleSynchronizer _teamRoleSynchronizer;
 
 }
