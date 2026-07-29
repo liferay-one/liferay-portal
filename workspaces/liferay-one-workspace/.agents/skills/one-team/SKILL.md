@@ -32,7 +32,7 @@ Two lanes, one protocol. Everything lane-specific is in this table; the rest of 
 | Not covered | anything outside `client-extensions/` — portal modules belong to a different workflow | the repo's `partner/` and `customer/` Python areas, which have no rules of their own; a ticket landing there gets the same phases, but the planner reads the neighbouring scripts for convention and records the absence of a rule file as a risk |
 | Target repo `<TARGET>` | `<WORKSPACE>` | `<SCRIPTS>` |
 | Base ref `<BASE>` | `liferay-one/master-temp` | `liferay-one/main` |
-| Rules the reviewer enforces | `<TARGET>/.agents/rules/` — `code-style.md`, `naming.md`, `object-naming.md`, `page-folder-structure.md`, `pr-hygiene.md` | `<TARGET>/.agents/rules/` — `architecture.md`, `code-quality.md`, `no-comments.md`, `script-conventions.md`, `sensitive-data.md` |
+| Rules the reviewer enforces | every file in `<TARGET>/.agents/rules/` | every file in `<TARGET>/.agents/rules/`, plus `<WORKSPACE>/.agents/rules/data-access.md` — the lane table in `one-review/criteria.md` is authoritative |
 | Pattern sources | `<TARGET>/client-extensions/` | `<TARGET>/one/scripts/migration/`, `one/services/`, `one/core/`, `one/utils/` |
 | Build gate | `./gradlew formatSource build` | `bunx prettier --write <touched paths>` then `bun run lint`, from `<TARGET>` — `bun run format` would reformat pre-existing drift across the whole repo and pull foreign files into the diff |
 | Phase 4 proof | deploy client extensions, exercise the UI at `http://localhost:8080` | run the script against the local environment, verify the loaded data, re-run for idempotency |
@@ -60,7 +60,7 @@ A ticket that genuinely needs both repos is **two runs**, not one straddling run
 | Tester | `sonnet` | `<WORKSPACE>/.agents/skills/one-team/roles/tester.md` |
 | Reviewer | `fable` | `<WORKSPACE>/.agents/skills/one-team/roles/reviewer.md` |
 
-The charters are lane-neutral and live only in the workspace; both lanes read the same four files.
+The charters are lane-neutral and live only in the workspace; both lanes read the same four files. The reviewer's charter carries the role and the protocol but not the review substance — that lives in `<WORKSPACE>/.agents/skills/one-review/criteria.md`, shared with the interactive `/one-review` skill so the two can never drift. The reviewer reads it in place from `<WORKSPACE>` in both lanes, like the rule files; it is not copied into the team directory.
 
 Spawn each teammate with the `Agent` tool using `subagent_type: "claude"`, `run_in_background: true`, `name` set to the role (planner, developer, tester, reviewer), and the `model` from the table. Never let a teammate default to the session model — the split is deliberate: frontier reasoning where judgment concentrates (the plan, the final review), cheaper models where the work is more mechanical. When the harness does not offer `fable`, fall back to `opus` and say so in the kickoff status.
 
@@ -175,7 +175,8 @@ Test each path before recording it and mark the absent ones absent — a teammat
 | Liferay One product code | `<WORKSPACE>/client-extensions/` | workspace-lane patterns; scripts-lane truth about what a script is calling |
 | Migration and ETL scripts | `<SCRIPTS>/one/` — `scripts/migration/`, `services/`, `core/`, `utils/` | scripts-lane patterns; workspace-lane truth about which loaders depend on an object, ERC, or endpoint |
 | Written specs | `<WORKSPACE>/.agents/specs/` — whatever it currently contains | orientation and intent: the fastest way to find *where* something lives and *why*. Documentation, not truth — nothing under `.agents/` is authoritative, and any value read from a spec is confirmed against the definition or controller above before the plan relies on it |
-| Target repo rules and skills | `<TARGET>/.agents/rules/`, `<TARGET>/.agents/skills/` | review standards, environment and deploy recipes, PR conventions |
+| Target repo rules and skills | `<TARGET>/.agents/rules/`, `<TARGET>/.agents/skills/` | the lane's coding standards, environment and deploy recipes, PR conventions |
+| Review criteria | `<WORKSPACE>/.agents/skills/one-review/criteria.md` | what a review covers in both lanes — the lenses and their weighting, the mechanical sweep, the false positives, the finding format |
 | Liferay Portal source | `<PORTAL>` | canonical platform patterns |
 | Legacy OSB portal | `<LEGACY_OSB>` | prior provisioning, Koroneiki, and messaging behavior |
 | Legacy server configs | `<LEGACY_KORONEIKI>`, `<LEGACY_PROVISIONING>` | prior osb-koroneiki and osb-provisioning server configuration |

@@ -40,9 +40,12 @@ Run from `workspaces/liferay-one-workspace/`.
 
 `.agents/rules/` contains coding standards and PR conventions derived from Brian Chan's review feedback. Read these before writing or reviewing code:
 
-- [`rules/code-style.md`](./rules/code-style.md) — sorting, log conventions, FreeMarker, Java ordering
+- [`rules/code-style.md`](./rules/code-style.md) — sorting, log conventions, string concatenation, FreeMarker, Java ordering
+- [`rules/concurrency.md`](./rules/concurrency.md) — shared state on Spring singletons, formatter fields, React effect races
+- [`rules/data-access.md`](./rules/data-access.md) — one-row reads, service calls in loops, pagination bounds
 - [`rules/naming.md`](./rules/naming.md) — brand name casing, file naming, REST controller naming
 - [`rules/object-naming.md`](./rules/object-naming.md) — ERC patterns, Object names, field casing
+- [`rules/page-folder-structure.md`](./rules/page-folder-structure.md) — one subfolder per sub-page component
 - [`rules/pr-hygiene.md`](./rules/pr-hygiene.md) — PR scope, merge conflicts, commit messages
 
 ## Specs

@@ -20,6 +20,7 @@ Do not write log statements like AI-generated code. Specifically:
 
 - Error messages: use `"Unable to <verb>"` not `"Error <verb>ing"` or `"Error: <noun>"`
 - Product/object names in log strings: no hyphens — write `"business event"` not `"business-event"`, `"business events"` not `"business-events"`
+- No label-style punctuation: a log message is prose, so it carries no `:`, `-`, or `=` separators — write `"Unable to update business event " + id`, not `"Update failed: id=" + id`. A hyphen inside a URL path being echoed verbatim is the one tolerable case.
 
 Example of what Brian corrected:
 
@@ -32,6 +33,28 @@ _log.error("Error updating business event " + id);
 _log.info("GET business events for " + externalReferenceCode);
 _log.error("Unable to update business event " + id);
 ```
+
+## String Concatenation In Java
+
+Three or more `+` operators joining strings in one expression become `StringBundler.concat(...)`. Two pieces stay as they are.
+
+```java
+// Wrong
+throw new JiraAssetObjectException(
+	"No \"" + objectTypeName + "\" asset object exists for external key " +
+		externalKey);
+
+// Correct
+throw new JiraAssetObjectException(
+	StringBundler.concat(
+		"No \"", objectTypeName, "\" asset object exists for external key ",
+		externalKey));
+
+// Fine — two pieces
+_log.info("Deployed app for project " + projectId);
+```
+
+This applies everywhere a string is built: log calls, exception messages, return values, assignments. It is a Java rule only — TypeScript uses template literals.
 
 ## User-Facing Text
 
