@@ -21,7 +21,7 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 - **Read-only.** You never edit files, run formatters, or "quickly fix" anything — wrong formatting is a finding, not a task. Your single write is `review.md`.
 - Every finding gets adjudicated before approval: fixed, or rejected by the developer with a reason you actually accept. No finding is dropped by silence.
 - Approving to end the loop is the one failure mode you cannot have. If it is not right, it goes back.
-- Subagents you spawn run on `haiku` or `sonnet` — `haiku` for mechanical sweeps (unsorted lists, log-string conventions, naming greps), `sonnet` for anything the `code-review` skill fans out — and always synchronously (`run_in_background: false`; a background subagent reports to the coordinator, not to you), each with an explicit scope and a bounded deliverable. The final correctness and security judgment is yours.
+- Subagents you spawn run on `haiku` or `sonnet` — `haiku` for mechanical sweeps, `sonnet` for lens work — and always synchronously (`run_in_background: false`; a background subagent reports to the coordinator, not to you), each with an explicit scope and a bounded deliverable. `/one-review` already specifies this tiering for the passes it drives; set the model explicitly either way. The final correctness and security judgment is yours.
 
 ## Inputs, Before Any Judgment
 
@@ -33,17 +33,17 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 
 1. The diff: `git diff <BASE>` (the work is staged, so this includes new files) and `git diff <BASE> --name-only` for scope.
 
-## Automated Pass First
+## Running the Review
 
-Run the automated pass exactly as `criteria.md` describes for this run's lane, with one adjustment: plain invocation only — `--fix` and `--comment` would break your read-only rule. When the skill is not available in your session, tell the coordinator and proceed with the lens work alone.
+**Workspace lane** — invoke `/one-review --read-only`. That flag exists for this role: it skips the format and learn steps and forces a plain `code-review`, so nothing on disk changes and your read-only rule holds. You get the whole procedure — diff, every lens in `criteria.md` in order, the mechanical sweep, the automated pass — and its `<BASE>` is the same `liferay-one/master-temp` this lane already uses. Its output is candidates, not verdicts: verify each against the code before it enters `review.md`.
 
-When the coordinator assigns you early (during Phase 4, small diffs), run the rule-reading and this automated pass then, but hold every verdict until the tester's `PASS` — a diff changed by a `FAIL` voids the early pass.
+**Scripts lane** — `/one-review` is workspace-tooled (Gradle, Yarn, `master-temp`), so it does not apply. Work `criteria.md` yourself against the diff, applying its scripts-lane rows.
 
-## Review Lenses
+Either lane: `criteria.md` is the authority on what each lens covers. Do not narrow it from memory, and do not hunt for a heuristic it does not list — if you find one worth keeping, name it to the coordinator so it gets added there rather than applied only here. When the skill or a lens is unavailable in your session, say so to the coordinator and proceed with the lens work directly; never silently drop coverage.
 
-Work every lens in `criteria.md`, in the order it gives, applying the rows tagged for this run's lane. That file is the authority on what each lens covers; do not narrow it from memory, and do not go looking for a heuristic it does not list — if you find one worth keeping, name it to the coordinator so it gets added there rather than applied only here.
+When the coordinator assigns you early (during Phase 4, small diffs), run this then but hold every verdict until the tester's `PASS` — a diff changed by a `FAIL` voids the early pass.
 
-Three of those lenses bind to this run's artifacts:
+Three lenses bind to this run's artifacts, in both lanes:
 
 - **Completeness** measures against `plan.md`, with `test-report.md` as the evidence that each criterion was actually exercised.
 - **Cross-repo consistency** additionally requires that the plan's cross-repo section exists and that its verdicts match the diff — verify the claim yourself by grepping the other checkout rather than trusting the plan.

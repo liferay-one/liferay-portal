@@ -14,13 +14,18 @@ What a review covers — the lenses and their weighting, the rule files behind t
 
 ## Flags
 
+- `--read-only` — review without changing anything on disk: skips Step 1 and Step 5 and forces a plain `/code-review`. Findings are reported, never applied. Use it when something else owns the formatter, or when the caller is bound by a read-only rule — the `one-team` reviewer is, and this flag is what lets it run this skill.
 - `--fix` — apply all safe corrections automatically (format + lint + code-review fixes)
 - `--comment` — post review findings as inline GitHub PR comments
 - `--effort <low|medium|high|xhigh|max>` — passed through to `/code-review` (default: `medium`)
 
+`--read-only` contradicts `--fix` and `--comment`. When they arrive together, stop and ask which was meant rather than guessing.
+
 ## Step 1: Format
 
-Invoke the `one-format` skill. If formatting fails, stop and report the error — do not review on a broken formatter pass.
+Under `--read-only`, skip this step and say so in the report — formatting is then *unverified*, which is not the same as clean.
+
+Otherwise invoke the `one-format` skill. If formatting fails, stop and report the error — do not review on a broken formatter pass.
 
 ## Step 2: Establish the Diff
 
@@ -31,7 +36,7 @@ git diff "${BASE}...HEAD" --name-only
 git diff "${BASE}...HEAD"
 ```
 
-Include uncommitted work when there is any — `git diff HEAD` and `git diff --cached`. If the diff is empty or the base is ambiguous, stop and ask rather than guessing.
+Include uncommitted work when there is any — `git diff HEAD` and `git diff --cached`. Staged-but-uncommitted is a normal shape, not an edge case: a `one-team` run reaches review with everything staged and nothing committed, so `${BASE}...HEAD` is empty there and `git diff --cached` is the whole change. If every one of them is empty, or the base is ambiguous, stop and ask rather than guessing.
 
 Read the diff in full and note what kind of change it is: feature, refactor, fix, or deletion. Then read enough surrounding context per changed file to judge it — the rest of the class, the callers, the tests. Read what the lenses need, not the whole subsystem.
 
@@ -43,7 +48,7 @@ Under roughly two hundred changed lines, work the lenses inline — every subage
 
 ## Step 4: Automated Code Review
 
-Run the automated pass as `criteria.md` describes, passing any `--fix`, `--comment`, and `--effort` flags through to `/code-review`.
+Run the automated pass as `criteria.md` describes, passing any `--fix`, `--comment`, and `--effort` flags through to `/code-review`. Under `--read-only` the invocation is plain apart from `--effort`.
 
 ## Output
 
@@ -53,6 +58,7 @@ One consolidated report, using the severity tags and finding format from `criter
 ## Format
 PASS — no changes needed
 (or) Applied N changes; N lint violations remain (rule + file for each)
+(or) NOT RUN — read-only; formatting is unverified
 
 ## Findings
 Grouped by lens, in the criteria.md order — rule violations and verified
@@ -69,4 +75,6 @@ If `--fix` ran, say which fixes were applied automatically and which need a huma
 
 ## Step 5: Learn
 
-After emitting the report, invoke the `one-review-learn` skill. It harvests correction patterns from this session — uncommitted changes, recent commits, PR comments — and encodes them as durable guardrails so the same issues do not recur.
+Skip under `--read-only` — it writes rule files and memory, and a review whose findings are not yet adjudicated has nothing settled to harvest. Whoever owns the change runs it once the dust clears.
+
+Otherwise invoke the `one-review-learn` skill. It harvests correction patterns from this session — uncommitted changes, recent commits, PR comments — and encodes them as durable guardrails so the same issues do not recur.
