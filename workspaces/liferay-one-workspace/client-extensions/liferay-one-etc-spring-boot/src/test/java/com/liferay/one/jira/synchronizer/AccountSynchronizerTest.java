@@ -24,14 +24,8 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -160,23 +154,12 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testDeleteAccountWaitsForInFlightSyncAccount()
-		throws Exception {
-
-		List<String> events = Collections.synchronizedList(new ArrayList<>());
-		CountDownLatch releaseSyncLatch = new CountDownLatch(1);
-		CountDownLatch syncEnteredLatch = new CountDownLatch(1);
+	public void testDeleteAccountWaitsForSyncAccount() throws Exception {
+		LockSerializationTestHelper lockSerializationTestHelper =
+			new LockSerializationTestHelper();
 
 		Mockito.doAnswer(
-			invocation -> {
-				syncEnteredLatch.countDown();
-
-				releaseSyncLatch.await(10, TimeUnit.SECONDS);
-
-				events.add("upsert");
-
-				return null;
-			}
+			lockSerializationTestHelper.block("upsert")
 		).when(
 			_jiraAssetService
 		).upsert(
@@ -184,11 +167,7 @@ public class AccountSynchronizerTest {
 		);
 
 		Mockito.doAnswer(
-			invocation -> {
-				events.add("delete");
-
-				return null;
-			}
+			lockSerializationTestHelper.record("delete")
 		).when(
 			_jiraAssetService
 		).delete(
@@ -201,35 +180,10 @@ public class AccountSynchronizerTest {
 		account.setId(1L);
 		account.setName("Test Account");
 
-		Thread syncThread = new Thread(
-			() -> {
-				try {
-					_accountSynchronizer.syncAccount(account);
-				}
-				catch (Exception exception) {
-					Assertions.fail(exception);
-				}
-			});
-
-		syncThread.start();
-
-		Assertions.assertTrue(syncEnteredLatch.await(10, TimeUnit.SECONDS));
-
-		Thread deleteThread = new Thread(
-			() -> _accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE));
-
-		deleteThread.start();
-
-		deleteThread.join(200);
-
-		Assertions.assertEquals(Collections.emptyList(), events);
-
-		releaseSyncLatch.countDown();
-
-		syncThread.join(10000);
-		deleteThread.join(10000);
-
-		Assertions.assertEquals(Arrays.asList("upsert", "delete"), events);
+		lockSerializationTestHelper.assertSerialized(
+			() -> _accountSynchronizer.syncAccount(account),
+			() -> _accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE),
+			"upsert", "delete");
 	}
 
 	private static final String _EXTERNAL_REFERENCE_CODE =
