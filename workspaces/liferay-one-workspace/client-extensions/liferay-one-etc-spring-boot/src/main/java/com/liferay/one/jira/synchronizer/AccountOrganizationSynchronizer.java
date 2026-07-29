@@ -12,6 +12,7 @@ import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
@@ -32,20 +33,25 @@ public class AccountOrganizationSynchronizer {
 			String organizationExternalKey, String accountExternalKey)
 		throws Exception {
 
-		_syncAssignment(organizationExternalKey, accountExternalKey, false);
+		_jiraSyncLock.withLock(
+			accountExternalKey,
+			() -> _syncAssignment(
+				organizationExternalKey, accountExternalKey, false));
 	}
 
 	public void syncUnassignOrganization(
 			String organizationExternalKey, String accountExternalKey)
 		throws Exception {
 
-		_syncAssignment(organizationExternalKey, accountExternalKey, true);
+		_jiraSyncLock.withLock(
+			accountExternalKey,
+			() -> _syncAssignment(
+				organizationExternalKey, accountExternalKey, true));
 	}
 
 	private void _syncAssignment(
-			String organizationExternalKey, String accountExternalKey,
-			boolean deleted)
-		throws Exception {
+		String organizationExternalKey, String accountExternalKey,
+		boolean deleted) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -90,6 +96,9 @@ public class AccountOrganizationSynchronizer {
 
 	@Autowired
 	private JiraAssetService _jiraAssetService;
+
+	@Autowired
+	private JiraSyncLock _jiraSyncLock;
 
 	@Autowired
 	private TeamConverter _teamConverter;
