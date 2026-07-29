@@ -14,7 +14,7 @@ What a review covers — the lenses and their weighting, the rule files behind t
 
 ## Flags
 
-- `--read-only` — review without changing anything on disk: skips Step 1 and Step 5 and forces a plain `/code-review`. Findings are reported, never applied. Use it when something else owns the formatter, or when the caller is bound by a read-only rule — the `one-team` reviewer is, and this flag is what lets it run this skill.
+- `--read-only` — review everything, change nothing on disk. Formatting is still verified, through `one-format --check` rather than by fixing it; Step 5 is skipped because it writes; `/code-review` runs plain. Every check still runs, so coverage is identical — only the writing stops. Use it when something else owns the formatter, or when the caller is bound by a read-only rule; the `one-team` reviewer is, and this flag is what lets it run this skill.
 - `--fix` — apply all safe corrections automatically (format + lint + code-review fixes)
 - `--comment` — post review findings as inline GitHub PR comments
 - `--effort <low|medium|high|xhigh|max>` — passed through to `/code-review` (default: `medium`)
@@ -23,7 +23,7 @@ What a review covers — the lenses and their weighting, the rule files behind t
 
 ## Step 1: Format
 
-Under `--read-only`, skip this step and say so in the report — formatting is then *unverified*, which is not the same as clean.
+Under `--read-only`, invoke `one-format --check`. It runs the non-mutating counterpart of every formatter step, so compliance is fully verified and nothing is written. Each violation becomes a finding under the Repo rules lens — report them, do not fix them, and do not re-run the mutating formatter to "confirm."
 
 Otherwise invoke the `one-format` skill. If formatting fails, stop and report the error — do not review on a broken formatter pass.
 
@@ -58,7 +58,7 @@ One consolidated report, using the severity tags and finding format from `criter
 ## Format
 PASS — no changes needed
 (or) Applied N changes; N lint violations remain (rule + file for each)
-(or) NOT RUN — read-only; formatting is unverified
+(or, read-only) CHECKED — N violations, nothing written (rule + file for each)
 
 ## Findings
 Grouped by lens, in the criteria.md order — rule violations and verified

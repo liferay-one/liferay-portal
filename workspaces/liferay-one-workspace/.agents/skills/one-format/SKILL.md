@@ -29,6 +29,20 @@ yarn lint:fix
 yarn format
 ```
 
+## Check-Only Mode
+
+Invoked as `one-format --check`, run the non-mutating counterpart of each step above and report violations instead of fixing them. Nothing is written, so a caller bound by a read-only rule can still verify formatting fully.
+
+| Step | Fix | Check |
+| --- | --- | --- |
+| 1. Gradle source formatter | `./gradlew formatSource` | `./gradlew checkSourceFormatting` |
+| 2. ESLint | `yarn lint:fix` | `yarn lint` |
+| 3. Prettier | `yarn format` | the `format` script's command with `--check` in place of `--write` |
+
+Each check exits non-zero on a violation and names the offending file and rule. Report every violation; fix none of them. Never retry with the mutating command when a check fails — a failing check is the answer, not an error to work around.
+
+Do not reach for this mode as a way to run the formatter "safely" and revert afterward. Formatting and reverting would put the tree through a modified state, which loses uncommitted work when the revert restores from the index and leaves the tree dirty if anything fails in between. These checks never write, so there is nothing to undo.
+
 ## Manual rules
 
 After the automated tools run, apply the manual rules from `.agents/rules/code-style.md`. Re-run steps 2–3 after any manual edits to catch formatter-driven cleanup.
