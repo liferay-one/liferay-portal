@@ -9,12 +9,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.TeamConstants;
-import com.liferay.one.jira.constants.TeamRoleConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.TeamConverter;
-import com.liferay.one.jira.converter.TeamRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.Property;
@@ -27,7 +25,6 @@ import com.liferay.portal.kernel.util.ListUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,13 +73,8 @@ public class OrganizationSynchronizer {
 		List<String> teamRoleObjectIds = Collections.emptyList();
 
 		if (!accountBriefs.isEmpty()) {
-			teamRoleObjectIds = _jiraAssetService.getOrCreateReferenceObjectIds(
-				_teamRoleConverter,
-				Collections.singletonList(
-					TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT),
-				Function.identity(),
-				externalKey ->
-					_teamRoleConverter.toFirstLineSupportAssetObject());
+			teamRoleObjectIds = Collections.singletonList(
+				_teamRoleSynchronizer.getFirstLineSupportTeamRoleObjectId());
 		}
 
 		jiraAssetObject.setAttributeValue(
@@ -168,7 +160,7 @@ public class OrganizationSynchronizer {
 	private TeamConverter _teamConverter;
 
 	@Autowired
-	private TeamRoleConverter _teamRoleConverter;
+	private TeamRoleSynchronizer _teamRoleSynchronizer;
 
 	@Autowired
 	private UserAccountService _userAccountService;
