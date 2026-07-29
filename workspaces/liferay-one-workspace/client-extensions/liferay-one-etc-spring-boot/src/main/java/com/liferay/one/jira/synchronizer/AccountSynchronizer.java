@@ -24,6 +24,7 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
+import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
@@ -67,12 +68,18 @@ import org.springframework.stereotype.Component;
 public class AccountSynchronizer {
 
 	public void deleteAccount(String externalReferenceCode) {
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				"Deleting account " + externalReferenceCode + " from JSM");
-		}
+		_jiraSyncLock.withLock(
+			externalReferenceCode,
+			() -> {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Deleting account " + externalReferenceCode +
+							" from JSM");
+				}
 
-		_jiraAssetService.delete(_accountConverter, externalReferenceCode);
+				_jiraAssetService.delete(
+					_accountConverter, externalReferenceCode);
+			});
 	}
 
 	public void syncAccount(Account account) throws Exception {
@@ -382,7 +389,9 @@ public class AccountSynchronizer {
 			assetObject.setAttributeValue(entry.getKey(), entry.getValue());
 		}
 
-		_jiraAssetService.upsert(_accountConverter, assetObject);
+		_jiraSyncLock.withLock(
+			externalKey,
+			() -> _jiraAssetService.upsert(_accountConverter, assetObject));
 	}
 
 	private void _syncAccountOrganizationAssignments(
@@ -565,6 +574,9 @@ public class AccountSynchronizer {
 
 	@Autowired
 	private JiraBusinessEventService _jiraBusinessEventService;
+
+	@Autowired
+	private JiraSyncLock _jiraSyncLock;
 
 	@Autowired
 	private OrganizationService _organizationService;

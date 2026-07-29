@@ -1,0 +1,241 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.one.jira.synchronizer;
+
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.jira.converter.AccountConverter;
+import com.liferay.one.jira.converter.ContactConverter;
+import com.liferay.one.jira.converter.EntitlementConverter;
+import com.liferay.one.jira.converter.ExternalLinkConverter;
+import com.liferay.one.jira.converter.PostalAddressConverter;
+import com.liferay.one.jira.converter.TeamConverter;
+import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.jira.service.JiraBusinessEventService;
+import com.liferay.one.jira.util.JiraSyncLock;
+import com.liferay.one.model.AccountSupportInfo;
+import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.OrganizationService;
+import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UserAccountService;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.mockito.Mockito;
+
+import org.springframework.test.util.ReflectionTestUtils;
+
+/**
+ * @author Drew Brokke
+ */
+public class AccountSynchronizerTest {
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		_accountSynchronizer = new AccountSynchronizer();
+
+		_jiraAssetService = Mockito.mock(JiraAssetService.class);
+
+		AccountConverter accountConverter = Mockito.mock(
+			AccountConverter.class);
+
+		Mockito.when(
+			accountConverter.toAssetObject(
+				Mockito.any(Account.class), Mockito.any(), Mockito.any())
+		).thenReturn(
+			Mockito.mock(JiraAssetObject.class)
+		);
+
+		CommerceOrderService commerceOrderService = Mockito.mock(
+			CommerceOrderService.class);
+
+		Mockito.when(
+			commerceOrderService.getAccountSupportInfo(
+				Mockito.anyLong(), Mockito.any())
+		).thenReturn(
+			Mockito.mock(AccountSupportInfo.class)
+		);
+
+		JiraBusinessEventService jiraBusinessEventService = Mockito.mock(
+			JiraBusinessEventService.class);
+
+		Mockito.when(
+			jiraBusinessEventService.getJiraBusinessEvents(Mockito.any())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		OrganizationService organizationService = Mockito.mock(
+			OrganizationService.class);
+
+		Mockito.when(
+			organizationService.getAccountOrganizations(Mockito.anyLong())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		ProjectService projectService = Mockito.mock(ProjectService.class);
+
+		Mockito.when(
+			projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		PropertyService propertyService = Mockito.mock(PropertyService.class);
+
+		Mockito.when(
+			propertyService.getAccountProperties(Mockito.anyLong())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		UserAccountService userAccountService = Mockito.mock(
+			UserAccountService.class);
+
+		Mockito.when(
+			userAccountService.getAccountUserAccounts(Mockito.anyLong())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_accountConverter", accountConverter);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_accountOrganizationSynchronizer",
+			Mockito.mock(AccountOrganizationSynchronizer.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_accountUserAccountRoleSynchronizer",
+			Mockito.mock(AccountUserAccountRoleSynchronizer.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_commerceOrderService",
+			commerceOrderService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_contactConverter",
+			Mockito.mock(ContactConverter.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_entitlementConverter",
+			Mockito.mock(EntitlementConverter.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_entitlementService",
+			Mockito.mock(EntitlementService.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_externalLinkConverter",
+			Mockito.mock(ExternalLinkConverter.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_jiraAssetService", _jiraAssetService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_jiraBusinessEventService",
+			jiraBusinessEventService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_jiraSyncLock", new JiraSyncLock());
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_organizationService", organizationService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_postalAddressConverter",
+			Mockito.mock(PostalAddressConverter.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_projectService", projectService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_propertyService", propertyService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_teamConverter",
+			Mockito.mock(TeamConverter.class));
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_userAccountService", userAccountService);
+	}
+
+	@Test
+	public void testDeleteAccountWaitsForInFlightSyncAccount()
+		throws Exception {
+
+		List<String> events = Collections.synchronizedList(new ArrayList<>());
+		CountDownLatch releaseSyncLatch = new CountDownLatch(1);
+		CountDownLatch syncEnteredLatch = new CountDownLatch(1);
+
+		Mockito.doAnswer(
+			invocation -> {
+				syncEnteredLatch.countDown();
+
+				releaseSyncLatch.await(10, TimeUnit.SECONDS);
+
+				events.add("upsert");
+
+				return null;
+			}
+		).when(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.doAnswer(
+			invocation -> {
+				events.add("delete");
+
+				return null;
+			}
+		).when(
+			_jiraAssetService
+		).delete(
+			Mockito.any(), Mockito.any()
+		);
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		account.setId(1L);
+		account.setName("Test Account");
+
+		Thread syncThread = new Thread(
+			() -> {
+				try {
+					_accountSynchronizer.syncAccount(account);
+				}
+				catch (Exception exception) {
+					Assertions.fail(exception);
+				}
+			});
+
+		syncThread.start();
+
+		Assertions.assertTrue(syncEnteredLatch.await(10, TimeUnit.SECONDS));
+
+		Thread deleteThread = new Thread(
+			() -> _accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE));
+
+		deleteThread.start();
+
+		deleteThread.join(200);
+
+		Assertions.assertEquals(Collections.emptyList(), events);
+
+		releaseSyncLatch.countDown();
+
+		syncThread.join(10000);
+		deleteThread.join(10000);
+
+		Assertions.assertEquals(Arrays.asList("upsert", "delete"), events);
+	}
+
+	private static final String _EXTERNAL_REFERENCE_CODE =
+		"test-external-reference-code";
+
+	private AccountSynchronizer _accountSynchronizer;
+	private JiraAssetService _jiraAssetService;
+
+}
