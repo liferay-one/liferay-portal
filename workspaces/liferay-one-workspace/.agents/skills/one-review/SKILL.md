@@ -1,79 +1,72 @@
 ---
 
 allowed-tools: [Agent, Bash, Edit, Glob, Grep, Read, Skill, Write]
-description: Run a full code review for this workspace — formats source, checks workspace-specific rules, and reviews the diff for correctness and quality.
+description: Run a full code review for this workspace — formats source, then reviews the diff against the shared review criteria for correctness, concurrency, efficiency, security, and workspace rules.
 name: one-review
 
 ---
 
 # One Review
 
-Run a complete review pass tailored to this workspace. Combines automated formatting, workspace-specific rule checks, and a correctness/quality review of the diff.
+Run a complete review pass: automated formatting, then the shared review criteria worked against the branch diff, then the automated code review folded in.
+
+What a review covers — the lenses and their weighting, the rule files behind them, the mechanical sweep, the false-positive calibration, the finding format — lives in [`criteria.md`](./criteria.md), not here. This skill is the interactive workflow around it. The `one-team` reviewer charter reads the same file, which is why a finding from either is interchangeable. **New review heuristics go in `criteria.md`.**
 
 ## Flags
 
 - `--fix` — apply all safe corrections automatically (format + lint + code-review fixes)
 - `--comment` — post review findings as inline GitHub PR comments
-- `--effort <low|medium|high|max>` — passed through to `/code-review` (default: `medium`)
+- `--effort <low|medium|high|xhigh|max>` — passed through to `/code-review` (default: `medium`)
 
 ## Step 1: Format
 
-Invoke the `one-format` skill. This runs Gradle `formatSource`, `yarn lint:fix`, and `yarn format` in sequence.
+Invoke the `one-format` skill. If formatting fails, stop and report the error — do not review on a broken formatter pass.
 
-If formatting fails, stop and report the error. Do not continue to review on a broken formatter pass.
-
-## Step 2: Workspace Rule Check
-
-Read the five workspace rule files:
-
-- `.agents/rules/code-style.md`
-- `.agents/rules/naming.md`
-- `.agents/rules/object-naming.md`
-- `.agents/rules/page-folder-structure.md`
-- `.agents/rules/pr-hygiene.md`
-
-Get the branch diff:
+## Step 2: Establish the Diff
 
 ```bash
-git diff "$(git merge-base HEAD liferay-one/master-temp)...HEAD" --name-only
-git diff "$(git merge-base HEAD liferay-one/master-temp)...HEAD"
+BASE=$(git merge-base HEAD liferay-one/master-temp)
+
+git diff "${BASE}...HEAD" --name-only
+git diff "${BASE}...HEAD"
 ```
 
-Check the diff against each rule manually. The ESLint rules in Step 2 catch structural/naming issues mechanically; this step catches the rules that cannot be automated:
+Include uncommitted work when there is any — `git diff HEAD` and `git diff --cached`. If the diff is empty or the base is ambiguous, stop and ask rather than guessing.
 
-- **code-style.md** — sort order in arrays/objects/JSON, log message phrasing, user-facing text ("IDs" not "Id"), FreeMarker variable block grouping
-- **naming.md** — brand name casing (ArgoCD, Grafana, etc.), SVG/CSS filenames use underscores, REST endpoint-to-method mapping, service file naming matches URL
-- **object-naming.md** — ERC prefixes (`C_`), PascalCase object names, camelCase fields, `className` format
-- **page-folder-structure.md** — every sub-page component has its own subfolder at all depths; utility `.ts` files exempt
-- **pr-hygiene.md** — all diff files belong to this workspace, every commit has a Jira ticket prefix
+Read the diff in full and note what kind of change it is: feature, refactor, fix, or deletion. Then read enough surrounding context per changed file to judge it — the rest of the class, the callers, the tests. Read what the lenses need, not the whole subsystem.
 
-Flag any violation with the file, line (if determinable), and the specific rule from the `.agents/rules/` file.
+## Step 3: Work the Criteria
 
-## Step 3: Code Review
+Read [`criteria.md`](./criteria.md) and work it end to end against the diff: the lane's rule files, then every lens in its order, then the mechanical sweep. This lane is **workspace**, so apply the workspace-tagged rows and skip the scripts-lane ones.
 
-Invoke the `/code-review` skill, passing through any `--fix`, `--comment`, and `--effort` flags the user provided.
+Under roughly two hundred changed lines, work the lenses inline — every subagent re-reads the diff and the rule files, so a fan-out on a small diff costs more than it saves. Past that, group the lenses into a handful of `sonnet` subagents rather than one per lens — correctness with concurrency, efficiency with architecture, security on its own, rules with simplicity — and put the mechanical sweep on `haiku`. Give each the diff scope, its lenses, and the rule files behind them; set the model explicitly on every `Agent` call. Verification and the final judgment stay in this session.
 
-The workspace-specific findings from Steps 2 and 3 are already collected; the code review focuses on correctness, logic bugs, and quality issues that the rule-based checks above cannot catch.
+## Step 4: Automated Code Review
+
+Run the automated pass as `criteria.md` describes, passing any `--fix`, `--comment`, and `--effort` flags through to `/code-review`.
 
 ## Output
 
-Emit a consolidated report with four sections. Omit any section that has no findings.
+One consolidated report, using the severity tags and finding format from `criteria.md`. Omit any section with no findings.
 
 ```
 ## Format
 PASS — no changes needed
-(or) Applied N changes; N lint violations remain (list rule + file for each)
+(or) Applied N changes; N lint violations remain (rule + file for each)
 
-## Workspace Rules
-PASS
-(or) List each violation: rule name, file, what was wrong
+## Findings
+Grouped by lens, in the criteria.md order — rule violations and verified
+/code-review hits included under their lens, never in sections of their own.
 
-## Code Review
-(paste the /code-review output here)
+## Mechanical
+Identifier typos, string typos, then whitespace grouped by type
+
+## Verdict
+APPROVED | CHANGES_REQUESTED — one line of reasoning
 ```
 
-If `--fix` was passed, note which fixes were applied automatically vs. which require manual attention.
+If `--fix` ran, say which fixes were applied automatically and which need a human.
 
-## Step 4: Learn
+## Step 5: Learn
 
-After emitting the report, invoke the `one-review-learn` skill. This harvests correction patterns from the current session (uncommitted changes, recent commits, PR comments) and encodes them as durable guardrails so the same issues don't recur.
+After emitting the report, invoke the `one-review-learn` skill. It harvests correction patterns from this session — uncommitted changes, recent commits, PR comments — and encodes them as durable guardrails so the same issues do not recur.
