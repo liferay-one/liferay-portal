@@ -17,6 +17,10 @@ Run after any of these:
 - `/code-review` or `/code-review --fix` applies corrections to the branch
 - You notice the same type of fix appearing across multiple files
 
+## Model Tiering
+
+None of this work needs the session's model. Collection is mechanical — run it inline or on a `haiku` subagent. Analysis and guardrail writing run on `sonnet` subagents, with the model set explicitly on every `Agent` call. Only the final pick of where each pattern gets encoded stays in the session.
+
 ## Signal Sources
 
 Collect from all available sources. Skip any that don't apply.
@@ -58,12 +62,12 @@ These are the freshest corrections — direct output of the current review sessi
 
 ## Analysis
 
-Use an agent to read all collected signals and produce a list of correction patterns. For each pattern, capture:
+Use a `sonnet` agent to read all collected signals and produce a list of correction patterns. For each pattern, capture:
 
 - **What changed** — a concrete before/after example
 - **Why it was wrong** — the rule being violated
 - **How general is it** — does it apply to the whole codebase, or just this one file?
-- **Category** — one of: `naming`, `structure`, `style`, `pr-hygiene`, `object-naming`, `logic`, `other`
+- **Category** — one of: `naming`, `structure`, `style`, `pr-hygiene`, `object-naming`, `logic`, `concurrency`, `data-access`, `other`
 
 Cluster related comments and diffs that point to the same root issue into a single pattern. A reviewer leaving five "sort this" comments is one pattern, not five.
 
@@ -81,18 +85,24 @@ For each pattern, pick the highest-enforcement option that fits:
 | Import conventions | Yes | ESLint rule (prefer `@liferay/eslint-plugin` config first) |
 | PR hygiene | No | `.agents/rules/pr-hygiene.md` |
 | Object ERCs / field names | No | `.agents/rules/object-naming.md` |
+| Shared mutable state, effect races | No | `.agents/rules/concurrency.md` |
+| N+1 calls, unbounded or over-wide reads | No | `.agents/rules/data-access.md` |
 | General code style | No | `.agents/rules/code-style.md` |
 | Non-obvious project context | No | Memory (`~/.claude/projects/.../memory/`) |
+| A defect class a reviewer should hunt for | No | `.agents/skills/one-review/criteria.md` — the lens it belongs under, or a false positive to rule out |
 | Workflow/procedure | No | Skill update |
 
-**Before encoding anything:** check whether the pattern is already covered.
+**Before encoding anything:** check whether the pattern is already covered. Run these from the workspace root (`workspaces/liferay-one-workspace`).
 
 ```bash
 # Rules docs
-grep -ri "<keyword>" /home/ry/repos/liferay-portal/workspaces/liferay-one-workspace/.agents/rules/
+grep -ri "<keyword>" .agents/rules/
+
+# Review criteria
+grep -i "<keyword>" .agents/skills/one-review/criteria.md
 
 # Existing ESLint rules
-ls /home/ry/repos/liferay-portal/workspaces/liferay-one-workspace/tools/eslint-plugin-local/src/rules/
+ls tools/eslint-plugin-local/src/rules/
 ```
 
 Skip patterns fully covered. Sharpen a rule if it is partially covered.
@@ -104,6 +114,12 @@ Skip patterns fully covered. Sharpen a rule if it is partially covered.
 Append to the most relevant `.agents/rules/<file>.md`. Use the same style as the existing content (table rows for naming rules, fenced code examples for before/after, prose for rationale).
 
 If no existing file fits, create a new one under `.agents/rules/`. After writing, also note in the output which file was updated so the user can review it.
+
+### Review Criteria Update
+
+The rule files and the review criteria answer different questions, and a harvested pattern often belongs in both. A rule file says what correct code looks like, for whoever is writing it. `.agents/skills/one-review/criteria.md` says how to *find* the incorrect version in a diff — which lens it falls under, what to grep for, how heavily to weight it.
+
+Add to `criteria.md` when the pattern is something a reviewer would otherwise miss, and add it under an existing lens rather than inventing one. When the harvest instead reveals that a reviewer flagged something that was never wrong, add it to that file's Known False Positives — a retracted finding is as much a signal as an accepted one. Because both `/one-review` and the `one-team` reviewer read that file, the edit lands in every review at once; never encode a review heuristic in a caller.
 
 ### New ESLint Rule
 
@@ -120,8 +136,9 @@ When a pattern is mechanically detectable in TypeScript/TSX files:
 
 1. **Build and verify:**
 
+   From the workspace root:
+
    ```bash
-   cd /home/ry/repos/liferay-portal/workspaces/liferay-one-workspace
    yarn build:plugin && yarn install --check-files
    yarn lint 2>&1 | grep -E "local/<kebab-case-name>|<RuleName>" | head -20
    ```
@@ -134,7 +151,7 @@ When a pattern is mechanically detectable in TypeScript/TSX files:
 
 When a correction reveals something non-obvious about the project that Claude should remember across sessions (a surprising constraint, a naming landmine, a workflow quirk), write a memory entry.
 
-Follow the memory system format — write a file under `~/.claude/projects/-home-ry-repos-liferay-portal/memory/` with the appropriate frontmatter (`type: feedback` or `type: project`), then add a one-line pointer to `MEMORY.md`.
+Follow the memory system format — write a file under the session's memory directory (`~/.claude/projects/<slugified-repo-path>/memory/`) with the appropriate frontmatter (`type: feedback` or `type: project`), then add a one-line pointer to `MEMORY.md`.
 
 ### Skill Update
 

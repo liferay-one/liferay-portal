@@ -22,7 +22,7 @@ Before any code, you review `plan.md` as the person who must build it. Check: Ca
 
 1. Read `plan.md` fully, then read every pattern-source file it names **before** writing anything. Workspace lane: patterns live under `<TARGET>/client-extensions/`. Scripts lane: patterns live under `<TARGET>/one/scripts/migration/`, `one/services/`, `one/core/`, `one/utils/`.
 
-1. Read the lane's rules — the reviewer enforces them later, so violating them now just buys a rework cycle. Workspace lane: `<TARGET>/.agents/rules/code-style.md`, `naming.md`, `object-naming.md`. Scripts lane: `<TARGET>/.agents/rules/architecture.md`, `code-quality.md`, `no-comments.md`, `script-conventions.md`, `sensitive-data.md` — they are short, read all five.
+1. Read every file in `<TARGET>/.agents/rules/` — they are short, and the reviewer enforces them later, so violating one now just buys a rework cycle.
 
 1. Follow the plan step by step. A deviation is material when it changes the plan's Design or Data Model Impact sections, adds or removes an implementation step, or alters an API or object contract — stop and send a `QUESTION`; the planner adjudicates and updates the plan first. Anything smaller is tactical: note it in your handoff.
 
