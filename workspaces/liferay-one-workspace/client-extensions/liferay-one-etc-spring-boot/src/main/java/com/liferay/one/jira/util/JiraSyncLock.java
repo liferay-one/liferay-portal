@@ -6,6 +6,7 @@
 package com.liferay.one.jira.util;
 
 import com.liferay.petra.function.UnsafeRunnable;
+import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,10 +29,21 @@ public class JiraSyncLock {
 			String key, UnsafeRunnable<E> unsafeRunnable)
 		throws E {
 
-		if (Validator.isNull(key)) {
-			unsafeRunnable.run();
+		withLock(
+			key,
+			() -> {
+				unsafeRunnable.run();
 
-			return;
+				return null;
+			});
+	}
+
+	public <T, E extends Throwable> T withLock(
+			String key, UnsafeSupplier<T, E> unsafeSupplier)
+		throws E {
+
+		if (Validator.isNull(key)) {
+			return unsafeSupplier.get();
 		}
 
 		ReentrantLock reentrantLock =
@@ -41,7 +53,7 @@ public class JiraSyncLock {
 		reentrantLock.lock();
 
 		try {
-			unsafeRunnable.run();
+			return unsafeSupplier.get();
 		}
 		finally {
 			reentrantLock.unlock();
