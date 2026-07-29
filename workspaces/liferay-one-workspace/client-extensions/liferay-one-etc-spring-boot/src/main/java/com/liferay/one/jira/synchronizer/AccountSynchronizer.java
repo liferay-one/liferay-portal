@@ -203,18 +203,20 @@ public class AccountSynchronizer {
 
 		return LinkedHashMapBuilder.<String, Object>put(
 			AccountConstants.ATTRIBUTE_NAME_ASSIGNED_TEAMS,
-			_jiraAssetService.fetchReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_teamConverter, accountOrganizations,
-				Organization::getExternalReferenceCode)
+				Organization::getExternalReferenceCode,
+				_teamConverter::toAssetObject)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_BUSINESS_EVENTS,
 			_toBusinessEventsFieldValue(account)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
-			_jiraAssetService.fetchReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_contactConverter,
 				accountUserAccountBucket.getCustomerUserAccounts(),
-				UserAccount::getExternalReferenceCode)
+				UserAccount::getExternalReferenceCode,
+				_contactConverter::toAssetObject)
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
 			_jiraAssetService.getOrCreateReferenceObjectIds(
@@ -254,10 +256,11 @@ public class AccountSynchronizer {
 			GetterUtil.getString(accountSupportInfo.getSupportRegion())
 		).put(
 			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
-			_jiraAssetService.fetchReferenceObjectIds(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_contactConverter,
 				accountUserAccountBucket.getWorkerUserAccounts(),
-				UserAccount::getExternalReferenceCode)
+				UserAccount::getExternalReferenceCode,
+				_contactConverter::toAssetObject)
 		).build();
 	}
 
