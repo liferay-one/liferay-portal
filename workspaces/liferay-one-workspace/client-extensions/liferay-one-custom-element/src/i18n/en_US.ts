@@ -1214,6 +1214,8 @@ export default {
 	'support-phone-number': 'Support Phone Number',
 	'support-url': 'Support URL',
 	'supported-version': 'Supported Version',
+	'sync-to-jsm': 'Sync to JSM',
+	'syncing-to-jsm': 'Syncing to JSM...',
 	'system-admin-email': 'System Admin Email',
 	'system-admin-first-name': 'System Admin First Name',
 	'system-admin-last-name': 'System Admin Last Name',
@@ -1239,6 +1241,8 @@ export default {
 		'Thank you for trying the beta version of this product! Your feedback is essential to improve the final release. This survey takes ~3–5 minutes.',
 	'thank-you-for-your': 'Thank you for your',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
+	'the-account-was-successfully-synced-to-jsm':
+		'The account was successfully synced to JSM.',
 	'the-app-and-all-its-client-extensions-services-will-be-deleted-and-uninstalled-from-liferay-dxp':
 		'The app and all its client extensions (services) will be deleted and uninstalled from Liferay DXP.',
 	'the-app-submission-is-compatible-with-liferay-experience-cloud-and':
