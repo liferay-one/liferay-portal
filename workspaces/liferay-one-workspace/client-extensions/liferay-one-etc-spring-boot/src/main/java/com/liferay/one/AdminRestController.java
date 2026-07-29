@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
@@ -70,6 +71,24 @@ public class AdminRestController extends OneBaseRestController {
 		}
 
 		return new ResponseEntity<>(jsonArray.toString(), HttpStatus.OK);
+	}
+
+	@PostMapping("/jira/team-roles/sync")
+	public ResponseEntity<String> postJiraTeamRolesSync(
+			@AuthenticationPrincipal Jwt jwt)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		_teamRoleSynchronizer.syncTeamRoles();
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"firstLineSupportTeamRoleObjectId",
+			_teamRoleSynchronizer.getFirstLineSupportTeamRoleObjectId()
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
 	}
 
 	@PostMapping("/pubsub/dispatch")
@@ -150,5 +169,8 @@ public class AdminRestController extends OneBaseRestController {
 	@Autowired(required = false)
 	private List<BasePubsubSubscriber> _basePubsubSubscribers =
 		Collections.emptyList();
+
+	@Autowired
+	private TeamRoleSynchronizer _teamRoleSynchronizer;
 
 }

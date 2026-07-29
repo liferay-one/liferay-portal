@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
@@ -78,6 +79,42 @@ public class AdminRestControllerTest {
 				).keySet()));
 		Assertions.assertEquals("1", message.get("a"));
 		Assertions.assertEquals("2", message.get("b"));
+	}
+
+	@Test
+	public void testPostJiraTeamRolesSyncRefreshesAndReturnsObjectId()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		TeamRoleSynchronizer teamRoleSynchronizer = Mockito.mock(
+			TeamRoleSynchronizer.class);
+
+		Mockito.when(
+			teamRoleSynchronizer.getFirstLineSupportTeamRoleObjectId()
+		).thenReturn(
+			"12345"
+		);
+
+		ReflectionTestUtils.setField(
+			adminRestController, "_teamRoleSynchronizer", teamRoleSynchronizer);
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.postJiraTeamRolesSync(null);
+
+		Assertions.assertEquals(
+			HttpStatus.OK.value(),
+			responseEntity.getStatusCode(
+			).value());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			"12345", jsonObject.getString("firstLineSupportTeamRoleObjectId"));
+
+		Mockito.verify(
+			teamRoleSynchronizer
+		).syncTeamRoles();
 	}
 
 	@Test
