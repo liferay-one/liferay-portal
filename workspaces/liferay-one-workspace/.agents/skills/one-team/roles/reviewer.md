@@ -35,7 +35,7 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 
 ## Running the Review
 
-**Workspace lane** — invoke `/one-review --read-only`. That flag exists for this role: it skips the format and learn steps and forces a plain `code-review`, so nothing on disk changes and your read-only rule holds. You get the whole procedure — diff, every lens in `criteria.md` in order, the mechanical sweep, the automated pass — and its `<BASE>` is the same `liferay-one/master-temp` this lane already uses. Its output is candidates, not verdicts: verify each against the code before it enters `review.md`.
+**Workspace lane** — invoke `/one-review --read-only`. That flag exists for this role: every check still runs, including formatting via `one-format --check`, but nothing is written, so your read-only rule holds without giving up coverage. You get the whole procedure — diff, every lens in `criteria.md` in order, the mechanical sweep, the automated pass — and its `<BASE>` is the same `liferay-one/master-temp` this lane already uses. A formatting violation it reports is a finding for the developer, exactly like any other. Its output is candidates, not verdicts: verify each against the code before it enters `review.md`.
 
 **Scripts lane** — `/one-review` is workspace-tooled (Gradle, Yarn, `master-temp`), so it does not apply. Work `criteria.md` yourself against the diff, applying its scripts-lane rows.
 
