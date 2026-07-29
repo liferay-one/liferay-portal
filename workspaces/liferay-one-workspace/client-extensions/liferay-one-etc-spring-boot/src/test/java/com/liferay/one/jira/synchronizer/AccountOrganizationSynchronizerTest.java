@@ -12,15 +12,6 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.JiraSyncLock;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -73,71 +64,26 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncAssignOrganizationSerializesPerAccount()
+	public void testSyncAssignOrganizationWaitsForSyncAssignOrganization()
 		throws Exception {
 
-		List<String> events = Collections.synchronizedList(new ArrayList<>());
-		CountDownLatch firstUpsertEnteredLatch = new CountDownLatch(1);
-		AtomicInteger invocationCount = new AtomicInteger();
-		CountDownLatch releaseFirstUpsertLatch = new CountDownLatch(1);
+		LockSerializationTestHelper lockSerializationTestHelper =
+			new LockSerializationTestHelper();
 
 		Mockito.doAnswer(
-			invocation -> {
-				if (invocationCount.incrementAndGet() == 1) {
-					firstUpsertEnteredLatch.countDown();
-
-					releaseFirstUpsertLatch.await(10, TimeUnit.SECONDS);
-				}
-
-				events.add("upsert");
-
-				return null;
-			}
+			lockSerializationTestHelper.block("upsert")
 		).when(
 			_jiraAssetService
 		).upsert(
 			Mockito.any(), Mockito.any()
 		);
 
-		Thread firstThread = new Thread(
-			() -> {
-				try {
-					_accountOrganizationSynchronizer.syncAssignOrganization(
-						"organization-erc", "account-erc");
-				}
-				catch (Exception exception) {
-					Assertions.fail(exception);
-				}
-			});
-
-		firstThread.start();
-
-		Assertions.assertTrue(
-			firstUpsertEnteredLatch.await(10, TimeUnit.SECONDS));
-
-		Thread secondThread = new Thread(
-			() -> {
-				try {
-					_accountOrganizationSynchronizer.syncAssignOrganization(
-						"organization-erc", "account-erc");
-				}
-				catch (Exception exception) {
-					Assertions.fail(exception);
-				}
-			});
-
-		secondThread.start();
-
-		secondThread.join(200);
-
-		Assertions.assertEquals(Collections.emptyList(), events);
-
-		releaseFirstUpsertLatch.countDown();
-
-		firstThread.join(10000);
-		secondThread.join(10000);
-
-		Assertions.assertEquals(Arrays.asList("upsert", "upsert"), events);
+		lockSerializationTestHelper.assertSerialized(
+			() -> _accountOrganizationSynchronizer.syncAssignOrganization(
+				"organization-erc", "account-erc"),
+			() -> _accountOrganizationSynchronizer.syncAssignOrganization(
+				"organization-erc", "account-erc"),
+			"upsert", "upsert");
 	}
 
 	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
