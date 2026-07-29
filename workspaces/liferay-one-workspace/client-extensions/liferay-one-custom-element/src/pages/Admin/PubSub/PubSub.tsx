@@ -9,14 +9,13 @@ import ClayTable from '@clayui/table';
 import {useEffect, useState} from 'react';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import Page from '~/components/Page/Page';
+import useHasAdminPermissions from '~/hooks/useHasAdminPermissions';
 import {translate} from '~/i18n';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import DispatchMessage, {
 	Subscriber,
 } from '~/services/spring-boot/DispatchMessage';
-
-import useHasAdminPermissions from './hooks/useHasAdminPermissions';
 
 export default function PubSub() {
 	const [attributes, setAttributes] = useState('');
