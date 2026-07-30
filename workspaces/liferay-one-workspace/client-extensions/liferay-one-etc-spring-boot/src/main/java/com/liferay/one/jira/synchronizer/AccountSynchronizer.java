@@ -50,9 +50,11 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -411,7 +413,12 @@ public class AccountSynchronizer {
 	private void _syncAccountOrganizationAssignments(
 		Account account, List<Organization> organizations) {
 
+		Set<String> organizationExternalKeys = new LinkedHashSet<>();
+
 		for (Organization organization : organizations) {
+			organizationExternalKeys.add(
+				organization.getExternalReferenceCode());
+
 			try {
 				_accountOrganizationSynchronizer.syncAssignOrganization(
 					organization.getExternalReferenceCode(),
@@ -426,10 +433,24 @@ public class AccountSynchronizer {
 					exception);
 			}
 		}
+
+		try {
+			_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+				account.getExternalReferenceCode(), organizationExternalKeys);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to unassign stale organizations from account " +
+					account.getExternalReferenceCode(),
+				exception);
+		}
 	}
 
 	private void _syncContactRoleAssignments(
 		Account account, List<UserAccount> accountUserAccounts) {
+
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+			new LinkedHashMap<>();
 
 		for (UserAccount accountUserAccount : accountUserAccounts) {
 			AccountBrief accountBrief = FindUtil.findFirst(
@@ -448,7 +469,15 @@ public class AccountSynchronizer {
 				continue;
 			}
 
+			Set<String> roleExternalKeys = new LinkedHashSet<>();
+
+			roleExternalKeysByUserAccountExternalKey.put(
+				accountUserAccount.getExternalReferenceCode(),
+				roleExternalKeys);
+
 			for (RoleBrief roleBrief : roleBriefs) {
+				roleExternalKeys.add(roleBrief.getExternalReferenceCode());
+
 				try {
 					_accountUserAccountRoleSynchronizer.syncAssignRole(
 						roleBrief.getExternalReferenceCode(),
@@ -463,6 +492,18 @@ public class AccountSynchronizer {
 						exception);
 				}
 			}
+		}
+
+		try {
+			_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+				account.getExternalReferenceCode(),
+				roleExternalKeysByUserAccountExternalKey);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to unassign stale contact roles for account " +
+					account.getExternalReferenceCode(),
+				exception);
 		}
 	}
 

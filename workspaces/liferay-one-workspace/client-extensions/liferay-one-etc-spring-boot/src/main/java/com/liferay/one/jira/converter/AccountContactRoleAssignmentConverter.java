@@ -26,6 +26,15 @@ public class AccountContactRoleAssignmentConverter
 		return AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME;
 	}
 
+	public String getName(
+		String contactRoleExternalKey, String contactExternalKey,
+		String accountExternalKey) {
+
+		return StringBundler.concat(
+			contactRoleExternalKey, ";", contactExternalKey, ";",
+			accountExternalKey);
+	}
+
 	@Override
 	public String getObjectTypeName() {
 		return AccountContactRoleAssignmentConstants.OBJECT_TYPE_NAME;
@@ -39,7 +48,7 @@ public class AccountContactRoleAssignmentConverter
 
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME,
-			_getName(
+			getName(
 				contactRoleExternalKey, contactExternalKey,
 				accountExternalKey));
 		jiraAssetObject.setAttributeValue(
@@ -68,15 +77,6 @@ public class AccountContactRoleAssignmentConverter
 	@Override
 	protected String getObjectSchemaName() {
 		return _schemaName;
-	}
-
-	private String _getName(
-		String contactRoleExternalKey, String contactExternalKey,
-		String accountExternalKey) {
-
-		return StringBundler.concat(
-			contactRoleExternalKey, ";", contactExternalKey, ";",
-			accountExternalKey);
 	}
 
 	@Value("${liferay.one.jira.asset.schema.name}")
