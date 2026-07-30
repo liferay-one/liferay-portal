@@ -10,6 +10,9 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.service.AccountAssetService;
+import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
@@ -122,6 +125,12 @@ public class AccountsRestControllerTest {
 			_createAccount()
 		);
 
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			_createUserAccount()
+		);
+
 		accountsRestController.deleteUserAccounts(
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
 
@@ -135,6 +144,61 @@ public class AccountsRestControllerTest {
 			_provisioningAssignmentService
 		).unassignAccountMembership(
 			_ACCOUNT_ID, _USER_ID
+		);
+	}
+
+	@Test
+	public void testDeleteUserAccountsUnassignsContactRolesAndSyncsContacts()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, "Account Member");
+
+		userAccount.setExternalReferenceCode("USER-ERC-1");
+
+		AccountBrief accountBrief = userAccount.getAccountBriefs()[0];
+
+		accountBrief.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+
+		RoleBrief roleBrief = accountBrief.getRoleBriefs()[0];
+
+		roleBrief.setExternalReferenceCode("ROLE-ERC-1");
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		accountsRestController.deleteUserAccounts(
+			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignRole(
+			"ROLE-ERC-1", "USER-ERC-1", _EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			userAccount
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountContacts(
+			account
 		);
 	}
 
@@ -171,6 +235,44 @@ public class AccountsRestControllerTest {
 			_provisioningAssignmentService
 		).assignAccountRole(
 			account, _USER_ID, "Support Administrator"
+		);
+	}
+
+	@Test
+	public void testPostUserAccountsAccountRoleSyncsContactsToJSM()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = _createUserAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		accountsRestController.postUserAccountsAccountRole(
+			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			userAccount
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountContacts(
+			account
 		);
 	}
 
@@ -535,9 +637,46 @@ public class AccountsRestControllerTest {
 		Mockito.verifyNoInteractions(_provisioningEmailService);
 	}
 
+	@Test
+	public void testPostUserAccountsSyncsContactsToJSM() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = _createUserAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		accountsRestController.postUserAccounts(
+			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			userAccount
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountContacts(
+			account
+		);
+	}
+
 	private Account _createAccount() {
 		Account account = new Account();
 
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
 		account.setId(_ACCOUNT_ID);
 
 		return account;
@@ -578,6 +717,12 @@ public class AccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountsRestController, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_accountSynchronizer",
+			_accountSynchronizer);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_accountUserAccountRoleSynchronizer",
+			_accountUserAccountRoleSynchronizer);
+		ReflectionTestUtils.setField(
 			accountsRestController, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
 		ReflectionTestUtils.setField(
@@ -592,6 +737,9 @@ public class AccountsRestControllerTest {
 			_provisioningEmailService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_userAccountService", _userAccountService);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_userAccountSynchronizer",
+			_userAccountSynchronizer);
 
 		return accountsRestController;
 	}
@@ -639,6 +787,11 @@ public class AccountsRestControllerTest {
 		AccountPermission.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(
+		AccountSynchronizer.class);
+	private final AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer = Mockito.mock(
+			AccountUserAccountRoleSynchronizer.class);
 	private final EmailAddressValidatorService _emailAddressValidatorService =
 		Mockito.mock(EmailAddressValidatorService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
@@ -650,5 +803,7 @@ public class AccountsRestControllerTest {
 		Mockito.mock(ProvisioningEmailService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
+	private final UserAccountSynchronizer _userAccountSynchronizer =
+		Mockito.mock(UserAccountSynchronizer.class);
 
 }
