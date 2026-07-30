@@ -330,15 +330,10 @@ public class JiraAssetService {
 	private void _delete(
 		BaseJiraAssetObjectConverter converter, String externalKey) {
 
-		String externalKeyAttributeName =
-			converter.getExternalKeyAttributeName();
-
-		List<JiraAssetObject> jiraAssetObjects =
-			_jiraAssetPersistence.searchObjects(
-				converter.getAQLWithBuilder(
-					aqlBuilder -> aqlBuilder.andEquals(
-						externalKey, externalKeyAttributeName)),
-				converter::toJiraAssetObject);
+		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> aqlBuilder.andEquals(
+				externalKey, converter.getExternalKeyAttributeName()));
 
 		if (jiraAssetObjects.isEmpty()) {
 			if (_log.isInfoEnabled()) {
@@ -377,12 +372,10 @@ public class JiraAssetService {
 		String externalKeyAttributeName =
 			converter.getExternalKeyAttributeName();
 
-		List<JiraAssetObject> jiraAssetObjects =
-			_jiraAssetPersistence.searchObjects(
-				converter.getAQLWithBuilder(
-					aqlBuilder -> aqlBuilder.andIn(
-						externalKeys, externalKeyAttributeName)),
-				converter::toJiraAssetObject);
+		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> aqlBuilder.andIn(
+				externalKeys, externalKeyAttributeName));
 
 		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
 			String externalKey = jiraAssetObject.getAttributeValue(
@@ -478,15 +471,10 @@ public class JiraAssetService {
 		BiPredicate<JiraAssetObject, JiraAssetObject>
 			shouldSkipUpdateBiPredicate) {
 
-		String externalKeyAttributeName =
-			converter.getExternalKeyAttributeName();
-
-		List<JiraAssetObject> jiraAssetObjects =
-			_jiraAssetPersistence.searchObjects(
-				converter.getAQLWithBuilder(
-					aqlBuilder -> aqlBuilder.andEquals(
-						externalKey, externalKeyAttributeName)),
-				converter::toJiraAssetObject);
+		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> aqlBuilder.andEquals(
+				externalKey, converter.getExternalKeyAttributeName()));
 
 		if (jiraAssetObjects.isEmpty()) {
 			if (_log.isInfoEnabled()) {
