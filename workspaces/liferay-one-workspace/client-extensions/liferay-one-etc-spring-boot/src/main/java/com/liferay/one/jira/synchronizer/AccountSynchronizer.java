@@ -126,6 +126,38 @@ public class AccountSynchronizer {
 		}
 	}
 
+	public void syncAccountUserAccounts(Account account) throws Exception {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing user accounts for account " +
+					account.getExternalReferenceCode() + " to JSM");
+		}
+
+		UserAccountBucket accountUserAccountBucket =
+			_getAccountUserAccountBucket(
+				account,
+				_userAccountService.getAccountUserAccounts(account.getId()));
+
+		_syncAccountAsset(
+			account,
+			LinkedHashMapBuilder.<String, Object>put(
+				AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
+				_jiraAssetService.getOrCreateReferenceObjectIds(
+					_contactConverter,
+					accountUserAccountBucket.getCustomerUserAccounts(),
+					UserAccount::getExternalReferenceCode,
+					_contactConverter::toAssetObject)
+			).put(
+				AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
+				_jiraAssetService.getOrCreateReferenceObjectIds(
+					_contactConverter,
+					accountUserAccountBucket.getWorkerUserAccounts(),
+					UserAccount::getExternalReferenceCode,
+					_contactConverter::toAssetObject)
+			).build(),
+			account.getExternalReferenceCode(), account.getName());
+	}
+
 	public void syncProject(Project project) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info(

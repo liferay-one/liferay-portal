@@ -6,11 +6,14 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
@@ -28,6 +31,7 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -68,8 +72,14 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
 		_accountService.removeAccountUserAccount(
 			externalReferenceCode, jwt, userId);
+
+		_unassignContactRoles(account, userAccount);
+
+		_syncContacts(account, userId);
 
 		_provisioningAssignmentService.unassignAccountMembership(
 			account.getId(), userId);
@@ -97,12 +107,14 @@ public class AccountsRestController extends OneBaseRestController {
 		_accountService.removeAccountUserAccountRole(
 			accountRoleId, externalReferenceCode, jwt, userId);
 
+		_unassignContactRole(account, accountRoleId, userId);
+
+		_syncContacts(account, userId);
+
 		if (accountRoleName != null) {
 			_provisioningAssignmentService.unassignAccountRole(
 				account, userId, accountRoleName);
 		}
-
-		_unassignContactRole(account, accountRoleId, userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -147,6 +159,8 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountService.addAccountUserAccount(account.getId(), jwt, userId);
 
+		_syncContacts(account, userId);
+
 		_provisioningAssignmentService.assignCustomerGroup(userId);
 
 		if (!hasAccount) {
@@ -171,6 +185,8 @@ public class AccountsRestController extends OneBaseRestController {
 		_accountService.addAccountUserAccountRole(
 			accountRoleId, externalReferenceCode, jwt, userId);
 
+		_syncContacts(account, userId);
+
 		String accountRoleName = _accountService.getAccountRoleName(
 			account.getId(), accountRoleId);
 
@@ -178,8 +194,6 @@ public class AccountsRestController extends OneBaseRestController {
 			_provisioningAssignmentService.assignAccountRole(
 				account, userId, accountRoleName);
 		}
-
-		_assignContactRole(account, accountRoleId, userId);
 	}
 
 	@PostMapping(
@@ -261,52 +275,24 @@ public class AccountsRestController extends OneBaseRestController {
 
 		long userId = userAccount.getId();
 
+		for (Map.Entry<Long, String> entry : accountRoleNames.entrySet()) {
+			_accountService.addAccountUserAccountRole(
+				entry.getKey(), externalReferenceCode, jwt, userId);
+		}
+
+		_syncContacts(account, userId);
+
 		if (accountRoleNames.isEmpty()) {
 			_provisioningAssignmentService.assignCustomerGroup(userId);
 		}
 
 		for (Map.Entry<Long, String> entry : accountRoleNames.entrySet()) {
-			long accountRoleId = entry.getKey();
-
-			_accountService.addAccountUserAccountRole(
-				accountRoleId, externalReferenceCode, jwt, userId);
-
 			_provisioningAssignmentService.assignAccountRole(
 				account, userId, entry.getValue());
-
-			_assignContactRole(account, accountRoleId, userId);
 		}
 
 		if (!hasAccount) {
 			_provisioningEmailService.sendAssignedWelcomeEmail(account, userId);
-		}
-	}
-
-	private void _assignContactRole(
-		Account account, long accountRoleId, long userId) {
-
-		try {
-			String accountRoleExternalReferenceCode =
-				_accountService.getAccountRoleExternalReferenceCode(
-					account.getId(), accountRoleId);
-
-			if (accountRoleExternalReferenceCode == null) {
-				return;
-			}
-
-			UserAccount userAccount = _userAccountService.getUserAccount(
-				userId);
-
-			_accountUserAccountRoleSynchronizer.syncAssignRole(
-				accountRoleExternalReferenceCode,
-				userAccount.getExternalReferenceCode(),
-				account.getExternalReferenceCode());
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync account contact role assignment for user " +
-					userId,
-				exception);
 		}
 	}
 
@@ -370,6 +356,27 @@ public class AccountsRestController extends OneBaseRestController {
 		return accountRoleNames;
 	}
 
+	private void _syncContacts(Account account, long userId) {
+		try {
+			_userAccountSynchronizer.syncUserAccount(
+				_userAccountService.getUserAccount(userId));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync user account " + userId + " to JSM", exception);
+		}
+
+		try {
+			_accountSynchronizer.syncAccountContacts(account);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync contacts for account " +
+					account.getExternalReferenceCode(),
+				exception);
+		}
+	}
+
 	private void _unassignContactRole(
 		Account account, long accountRoleId, long userId) {
 
@@ -395,6 +402,48 @@ public class AccountsRestController extends OneBaseRestController {
 				"Unable to sync account contact role unassignment for user " +
 					userId,
 				exception);
+		}
+	}
+
+	private void _unassignContactRoles(
+		Account account, UserAccount userAccount) {
+
+		AccountBrief[] accountBriefs = userAccount.getAccountBriefs();
+
+		if (accountBriefs == null) {
+			return;
+		}
+
+		for (AccountBrief accountBrief : accountBriefs) {
+			if (!Objects.equals(
+					account.getExternalReferenceCode(),
+					accountBrief.getExternalReferenceCode())) {
+
+				continue;
+			}
+
+			RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+
+			if (roleBriefs == null) {
+				return;
+			}
+
+			for (RoleBrief roleBrief : roleBriefs) {
+				try {
+					_accountUserAccountRoleSynchronizer.syncUnassignRole(
+						roleBrief.getExternalReferenceCode(),
+						userAccount.getExternalReferenceCode(),
+						account.getExternalReferenceCode());
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to sync account contact role unassignment " +
+							"for role " + roleBrief.getExternalReferenceCode(),
+						exception);
+				}
+			}
+
+			return;
 		}
 	}
 
@@ -437,5 +486,8 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
