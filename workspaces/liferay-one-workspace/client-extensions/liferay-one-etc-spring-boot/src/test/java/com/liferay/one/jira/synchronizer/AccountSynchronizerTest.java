@@ -6,6 +6,7 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.jira.constants.AccountConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.EntitlementConverter;
@@ -44,6 +45,8 @@ public class AccountSynchronizerTest {
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
 
+		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
 		AccountConverter accountConverter = Mockito.mock(
 			AccountConverter.class);
 
@@ -51,7 +54,7 @@ public class AccountSynchronizerTest {
 			accountConverter.toAssetObject(
 				Mockito.any(Account.class), Mockito.any(), Mockito.any())
 		).thenReturn(
-			Mockito.mock(JiraAssetObject.class)
+			_jiraAssetObject
 		);
 
 		CommerceOrderService commerceOrderService = Mockito.mock(
@@ -186,10 +189,44 @@ public class AccountSynchronizerTest {
 			"upsert", "delete");
 	}
 
+	@Test
+	public void testSyncAccountUserAccountsUpsertsUserAccountReferences()
+		throws Exception {
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		account.setId(1L);
+		account.setName("Test Account");
+
+		_accountSynchronizer.syncAccountUserAccounts(account);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+	}
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
 	private AccountSynchronizer _accountSynchronizer;
+	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 
 }
