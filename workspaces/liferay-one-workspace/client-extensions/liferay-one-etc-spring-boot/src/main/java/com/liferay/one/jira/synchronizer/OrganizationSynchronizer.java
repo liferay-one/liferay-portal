@@ -105,6 +105,31 @@ public class OrganizationSynchronizer {
 		_syncOrganizationAssignments(organization, accountBriefs);
 	}
 
+	public void syncOrganizationUserAccounts(Organization organization)
+		throws Exception {
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing user accounts for organization " +
+					organization.getExternalReferenceCode() + " to JSM");
+		}
+
+		JiraAssetObject jiraAssetObject = _teamConverter.toAssetObject(
+			organization);
+
+		jiraAssetObject.setAttributeValue(
+			TeamConstants.ATTRIBUTE_NAME_CONTACTS,
+			_jiraAssetService.fetchReferenceObjectIds(
+				_contactConverter,
+				_userAccountService.getOrganizationUserAccounts(
+					GetterUtil.getLong(organization.getId())),
+				UserAccount::getExternalReferenceCode));
+
+		_jiraSyncLock.withLock(
+			organization.getExternalReferenceCode(),
+			() -> _jiraAssetService.upsert(_teamConverter, jiraAssetObject));
+	}
+
 	private List<Property> _getExternalLinkProperties(Organization organization)
 		throws Exception {
 

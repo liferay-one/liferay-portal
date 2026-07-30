@@ -6,6 +6,7 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
+import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
@@ -44,12 +45,14 @@ public class OrganizationSynchronizerTest {
 			Collections.emptyList()
 		);
 
+		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
 		TeamConverter teamConverter = Mockito.mock(TeamConverter.class);
 
 		Mockito.when(
 			teamConverter.toAssetObject(Mockito.any(Organization.class))
 		).thenReturn(
-			Mockito.mock(JiraAssetObject.class)
+			_jiraAssetObject
 		);
 
 		UserAccountService userAccountService = Mockito.mock(
@@ -123,9 +126,34 @@ public class OrganizationSynchronizerTest {
 			"upsert", "delete");
 	}
 
+	@Test
+	public void testSyncOrganizationUserAccountsUpsertsUserAccountReferences()
+		throws Exception {
+
+		Organization organization = new Organization();
+
+		organization.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		organization.setId("1");
+
+		_organizationSynchronizer.syncOrganizationUserAccounts(organization);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(TeamConstants.ATTRIBUTE_NAME_CONTACTS), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+	}
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private OrganizationSynchronizer _organizationSynchronizer;
 
