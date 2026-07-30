@@ -16,6 +16,8 @@ import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +49,51 @@ public class AccountOrganizationSynchronizer {
 			accountExternalKey,
 			() -> _syncAssignment(
 				organizationExternalKey, accountExternalKey, true));
+	}
+
+	public void syncUnassignStaleOrganizations(
+		String accountExternalKey, Set<String> organizationExternalKeys) {
+
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetService.getJiraAssetObjects(
+				_accountTeamRoleAssignmentConverter,
+				aqlBuilder -> {
+					aqlBuilder.andEquals(
+						accountExternalKey,
+						AccountTeamRoleAssignmentConstants.
+							ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
+					).andEquals(
+						false,
+						AccountTeamRoleAssignmentConstants.
+							ATTRIBUTE_NAME_DELETED
+					);
+
+					if (!organizationExternalKeys.isEmpty()) {
+						aqlBuilder.andNotIn(
+							organizationExternalKeys,
+							AccountTeamRoleAssignmentConstants.
+								ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY);
+					}
+				});
+
+		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			String organizationExternalKey = jiraAssetObject.getAttributeValue(
+				AccountTeamRoleAssignmentConstants.
+					ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY);
+
+			try {
+				syncUnassignOrganization(
+					organizationExternalKey, accountExternalKey);
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to unassign stale organization ",
+						organizationExternalKey, " from account ",
+						accountExternalKey),
+					exception);
+			}
+		}
 	}
 
 	private void _syncAssignment(

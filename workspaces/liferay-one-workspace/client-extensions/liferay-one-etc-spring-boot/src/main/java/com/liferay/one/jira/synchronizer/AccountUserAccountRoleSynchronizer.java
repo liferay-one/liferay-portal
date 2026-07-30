@@ -16,6 +16,10 @@ import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +49,68 @@ public class AccountUserAccountRoleSynchronizer {
 
 		_syncAssignment(
 			roleExternalKey, userAccountExternalKey, accountExternalKey, true);
+	}
+
+	public void syncUnassignStaleRoles(
+		String accountExternalKey,
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey) {
+
+		Set<String> names = new LinkedHashSet<>();
+
+		for (Map.Entry<String, Set<String>> entry :
+				roleExternalKeysByUserAccountExternalKey.entrySet()) {
+
+			for (String roleExternalKey : entry.getValue()) {
+				names.add(
+					_accountContactRoleAssignmentConverter.getName(
+						roleExternalKey, entry.getKey(), accountExternalKey));
+			}
+		}
+
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetService.getJiraAssetObjects(
+				_accountContactRoleAssignmentConverter,
+				aqlBuilder -> {
+					aqlBuilder.andEquals(
+						accountExternalKey,
+						AccountContactRoleAssignmentConstants.
+							ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
+					).andEquals(
+						false,
+						AccountContactRoleAssignmentConstants.
+							ATTRIBUTE_NAME_DELETED
+					);
+
+					if (!names.isEmpty()) {
+						aqlBuilder.andNotIn(
+							names,
+							AccountContactRoleAssignmentConstants.
+								ATTRIBUTE_NAME_NAME);
+					}
+				});
+
+		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			String roleExternalKey = jiraAssetObject.getAttributeValue(
+				AccountContactRoleAssignmentConstants.
+					ATTRIBUTE_NAME_CONTACT_ROLE_EXTERNAL_KEY);
+			String userAccountExternalKey = jiraAssetObject.getAttributeValue(
+				AccountContactRoleAssignmentConstants.
+					ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY);
+
+			try {
+				syncUnassignRole(
+					roleExternalKey, userAccountExternalKey,
+					accountExternalKey);
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to unassign stale role ", roleExternalKey,
+						" for user account ", userAccountExternalKey,
+						" on account ", accountExternalKey),
+					exception);
+			}
+		}
 	}
 
 	private void _syncAssignment(

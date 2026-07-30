@@ -6,6 +6,10 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.AccountConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -76,11 +80,10 @@ public class AccountSynchronizerTest {
 			Collections.emptyList()
 		);
 
-		OrganizationService organizationService = Mockito.mock(
-			OrganizationService.class);
+		_organizationService = Mockito.mock(OrganizationService.class);
 
 		Mockito.when(
-			organizationService.getAccountOrganizations(Mockito.anyLong())
+			_organizationService.getAccountOrganizations(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -101,23 +104,27 @@ public class AccountSynchronizerTest {
 			Collections.emptyList()
 		);
 
-		UserAccountService userAccountService = Mockito.mock(
-			UserAccountService.class);
+		_userAccountService = Mockito.mock(UserAccountService.class);
 
 		Mockito.when(
-			userAccountService.getAccountUserAccounts(Mockito.anyLong())
+			_userAccountService.getAccountUserAccounts(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
+
+		_accountOrganizationSynchronizer = Mockito.mock(
+			AccountOrganizationSynchronizer.class);
+		_accountUserAccountRoleSynchronizer = Mockito.mock(
+			AccountUserAccountRoleSynchronizer.class);
 
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_accountConverter", accountConverter);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_accountOrganizationSynchronizer",
-			Mockito.mock(AccountOrganizationSynchronizer.class));
+			_accountOrganizationSynchronizer);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_accountUserAccountRoleSynchronizer",
-			Mockito.mock(AccountUserAccountRoleSynchronizer.class));
+			_accountUserAccountRoleSynchronizer);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_commerceOrderService",
 			commerceOrderService);
@@ -141,7 +148,7 @@ public class AccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_jiraSyncLock", new JiraSyncLock());
 		ReflectionTestUtils.setField(
-			_accountSynchronizer, "_organizationService", organizationService);
+			_accountSynchronizer, "_organizationService", _organizationService);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_postalAddressConverter",
 			Mockito.mock(PostalAddressConverter.class));
@@ -153,7 +160,7 @@ public class AccountSynchronizerTest {
 			_accountSynchronizer, "_teamConverter",
 			Mockito.mock(TeamConverter.class));
 		ReflectionTestUtils.setField(
-			_accountSynchronizer, "_userAccountService", userAccountService);
+			_accountSynchronizer, "_userAccountService", _userAccountService);
 	}
 
 	@Test
@@ -187,6 +194,61 @@ public class AccountSynchronizerTest {
 			() -> _accountSynchronizer.syncAccount(account),
 			() -> _accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE),
 			"upsert", "delete");
+	}
+
+	@Test
+	public void testSyncAccountUnassignsStaleAssignments() throws Exception {
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setExternalReferenceCode("role-erc");
+
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		accountBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
+		userAccount.setExternalReferenceCode("user-account-erc");
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(userAccount)
+		);
+
+		Organization organization = new Organization();
+
+		organization.setExternalReferenceCode("organization-erc");
+
+		Mockito.when(
+			_organizationService.getAccountOrganizations(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(organization)
+		);
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		account.setId(1L);
+		account.setName("Test Account");
+
+		_accountSynchronizer.syncAccount(account);
+
+		Mockito.verify(
+			_accountOrganizationSynchronizer
+		).syncUnassignStaleOrganizations(
+			_EXTERNAL_REFERENCE_CODE, Collections.singleton("organization-erc")
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			_EXTERNAL_REFERENCE_CODE,
+			Collections.singletonMap(
+				"user-account-erc", Collections.singleton("role-erc"))
+		);
 	}
 
 	@Test
@@ -225,8 +287,13 @@ public class AccountSynchronizerTest {
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
 	private AccountSynchronizer _accountSynchronizer;
+	private AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
+	private OrganizationService _organizationService;
+	private UserAccountService _userAccountService;
 
 }
