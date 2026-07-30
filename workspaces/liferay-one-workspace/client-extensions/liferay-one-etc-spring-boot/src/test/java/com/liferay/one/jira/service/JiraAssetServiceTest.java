@@ -119,6 +119,22 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testGetJiraAssetObjectsSearchesWithConverterAQL()
+		throws Exception {
+
+		Mockito.when(
+			_jiraAssetPersistence.<JiraAssetObject>searchObjects(
+				Mockito.eq("aql"), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(_existingJiraAssetObject)
+		);
+
+		Assertions.assertEquals(
+			Collections.singletonList(_existingJiraAssetObject),
+			_jiraAssetService.getJiraAssetObjects(_converter, null));
+	}
+
+	@Test
 	public void testGetOrCreateReferenceObjectIdsWaitsForUpsert()
 		throws Exception {
 

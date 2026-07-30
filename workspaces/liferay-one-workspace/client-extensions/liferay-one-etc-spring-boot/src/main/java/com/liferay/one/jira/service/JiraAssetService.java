@@ -8,6 +8,7 @@ package com.liferay.one.jira.service;
 import com.liferay.one.jira.converter.BaseJiraAssetObjectConverter;
 import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import org.apache.commons.logging.Log;
@@ -115,6 +117,25 @@ public class JiraAssetService {
 		}
 
 		return _resolveToObjectIds(converter, externalKeys, null);
+	}
+
+	/**
+	 * Returns the asset objects of the converter's type that match the AQL
+	 * criteria appended by the consumer.
+	 *
+	 * @param  converter the converter describing the asset object type
+	 * @param  consumer the consumer that appends criteria to the type's base
+	 *         AQL
+	 *
+	 * @return the matching asset objects
+	 */
+	public List<JiraAssetObject> getJiraAssetObjects(
+		BaseJiraAssetObjectConverter converter,
+		Consumer<AQLUtil.Builder> consumer) {
+
+		return _jiraAssetPersistence.searchObjects(
+			converter.getAQLWithBuilder(consumer),
+			converter::toJiraAssetObject);
 	}
 
 	/**
