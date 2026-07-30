@@ -13,7 +13,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
@@ -79,7 +79,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_unassignContactRoles(account, userAccount);
 
-		_syncContacts(account, userId);
+		_syncMembership(account, userId);
 
 		_provisioningAssignmentService.unassignAccountMembership(
 			account.getId(), userId);
@@ -109,7 +109,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_unassignContactRole(account, accountRoleId, userId);
 
-		_syncContacts(account, userId);
+		_syncMembership(account, userId);
 
 		if (accountRoleName != null) {
 			_provisioningAssignmentService.unassignAccountRole(
@@ -159,7 +159,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountService.addAccountUserAccount(account.getId(), jwt, userId);
 
-		_syncContacts(account, userId);
+		_syncMembership(account, userId);
 
 		_provisioningAssignmentService.assignCustomerGroup(userId);
 
@@ -185,7 +185,7 @@ public class AccountsRestController extends OneBaseRestController {
 		_accountService.addAccountUserAccountRole(
 			accountRoleId, externalReferenceCode, jwt, userId);
 
-		_syncContacts(account, userId);
+		_syncMembership(account, userId);
 
 		String accountRoleName = _accountService.getAccountRoleName(
 			account.getId(), accountRoleId);
@@ -280,7 +280,7 @@ public class AccountsRestController extends OneBaseRestController {
 				entry.getKey(), externalReferenceCode, jwt, userId);
 		}
 
-		_syncContacts(account, userId);
+		_syncMembership(account, userId);
 
 		if (accountRoleNames.isEmpty()) {
 			_provisioningAssignmentService.assignCustomerGroup(userId);
@@ -356,24 +356,14 @@ public class AccountsRestController extends OneBaseRestController {
 		return accountRoleNames;
 	}
 
-	private void _syncContacts(Account account, long userId) {
+	private void _syncMembership(Account account, long userId) {
 		try {
-			_userAccountSynchronizer.syncUserAccount(
-				_userAccountService.getUserAccount(userId));
+			_accountUserAccountSynchronizer.syncAccountUserAccountMembership(
+				account, _userAccountService.getUserAccount(userId));
 		}
 		catch (Exception exception) {
 			_log.error(
-				"Unable to sync user account " + userId + " to JSM", exception);
-		}
-
-		try {
-			_accountSynchronizer.syncAccountContacts(account);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync contacts for account " +
-					account.getExternalReferenceCode(),
-				exception);
+				"Unable to sync membership for user " + userId, exception);
 		}
 	}
 
@@ -467,6 +457,9 @@ public class AccountsRestController extends OneBaseRestController {
 		_accountUserAccountRoleSynchronizer;
 
 	@Autowired
+	private AccountUserAccountSynchronizer _accountUserAccountSynchronizer;
+
+	@Autowired
 	private AdminPermission _adminPermission;
 
 	@Autowired
@@ -486,8 +479,5 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private UserAccountService _userAccountService;
-
-	@Autowired
-	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
