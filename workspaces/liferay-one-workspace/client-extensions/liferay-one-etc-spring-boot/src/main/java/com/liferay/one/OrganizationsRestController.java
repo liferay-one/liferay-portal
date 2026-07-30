@@ -25,6 +25,7 @@ import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.FindUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -366,44 +367,35 @@ public class OrganizationsRestController extends OneBaseRestController {
 	private void _unassignContactRoles(
 		Organization organization, UserAccount userAccount) {
 
-		OrganizationBrief[] organizationBriefs =
-			userAccount.getOrganizationBriefs();
+		OrganizationBrief organizationBrief = FindUtil.findFirst(
+			userAccount.getOrganizationBriefs(),
+			organizationBrief1 -> Objects.equals(
+				organization.getExternalReferenceCode(),
+				organizationBrief1.getExternalReferenceCode()));
 
-		if (organizationBriefs == null) {
+		if (organizationBrief == null) {
 			return;
 		}
 
-		for (OrganizationBrief organizationBrief : organizationBriefs) {
-			if (!Objects.equals(
-					organization.getExternalReferenceCode(),
-					organizationBrief.getExternalReferenceCode())) {
+		RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
 
-				continue;
-			}
-
-			RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
-
-			if (roleBriefs == null) {
-				return;
-			}
-
-			for (RoleBrief roleBrief : roleBriefs) {
-				try {
-					_organizationUserAccountRoleSynchronizer.syncUnassignRole(
-						roleBrief.getExternalReferenceCode(),
-						userAccount.getExternalReferenceCode(),
-						organization.getExternalReferenceCode());
-				}
-				catch (Exception exception) {
-					_log.error(
-						"Unable to sync organization contact role " +
-							"unassignment for role " +
-								roleBrief.getExternalReferenceCode(),
-						exception);
-				}
-			}
-
+		if (roleBriefs == null) {
 			return;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			try {
+				_organizationUserAccountRoleSynchronizer.syncUnassignRole(
+					roleBrief.getExternalReferenceCode(),
+					userAccount.getExternalReferenceCode(),
+					organization.getExternalReferenceCode());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to sync organization contact role unassignment " +
+						"for role " + roleBrief.getExternalReferenceCode(),
+					exception);
+			}
 		}
 	}
 
