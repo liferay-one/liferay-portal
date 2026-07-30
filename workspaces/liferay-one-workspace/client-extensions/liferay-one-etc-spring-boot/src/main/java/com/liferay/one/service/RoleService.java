@@ -30,7 +30,7 @@ public class RoleService extends OneBaseService {
 		RoleResource roleResource = _buildRoleResource();
 
 		roleResource.postOrganizationRoleUserAccountAssociation(
-			roleId, organizationId, userId);
+			roleId, userId, organizationId);
 	}
 
 	public List<Role> getAccountRoles() throws Exception {
@@ -54,7 +54,7 @@ public class RoleService extends OneBaseService {
 		RoleResource roleResource = _buildRoleResource();
 
 		roleResource.deleteOrganizationRoleUserAccountAssociation(
-			roleId, organizationId, userId);
+			roleId, userId, organizationId);
 	}
 
 	private RoleResource _buildRoleResource() {
