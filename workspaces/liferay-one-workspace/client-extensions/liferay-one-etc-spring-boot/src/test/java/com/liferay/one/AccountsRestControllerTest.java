@@ -12,7 +12,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
@@ -148,7 +148,7 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testDeleteUserAccountsUnassignsContactRolesAndSyncsContacts()
+	public void testDeleteUserAccountsUnassignsContactRolesAndSyncsMembership()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
@@ -190,15 +190,9 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			userAccount
-		);
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncAccountContacts(
-			account
+			_accountUserAccountSynchronizer
+		).syncAccountUserAccountMembership(
+			account, userAccount
 		);
 	}
 
@@ -239,7 +233,7 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostUserAccountsAccountRoleSyncsContactsToJSM()
+	public void testPostUserAccountsAccountRoleSyncsMembershipToJSM()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
@@ -264,15 +258,9 @@ public class AccountsRestControllerTest {
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
 
 		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			userAccount
-		);
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncAccountContacts(
-			account
+			_accountUserAccountSynchronizer
+		).syncAccountUserAccountMembership(
+			account, userAccount
 		);
 	}
 
@@ -638,7 +626,7 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostUserAccountsSyncsContactsToJSM() throws Exception {
+	public void testPostUserAccountsSyncsMembershipToJSM() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
 		Account account = _createAccount();
@@ -661,15 +649,9 @@ public class AccountsRestControllerTest {
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
 
 		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			userAccount
-		);
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncAccountContacts(
-			account
+			_accountUserAccountSynchronizer
+		).syncAccountUserAccountMembership(
+			account, userAccount
 		);
 	}
 
@@ -723,6 +705,9 @@ public class AccountsRestControllerTest {
 			accountsRestController, "_accountUserAccountRoleSynchronizer",
 			_accountUserAccountRoleSynchronizer);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_accountUserAccountSynchronizer",
+			_accountUserAccountSynchronizer);
+		ReflectionTestUtils.setField(
 			accountsRestController, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
 		ReflectionTestUtils.setField(
@@ -737,9 +722,6 @@ public class AccountsRestControllerTest {
 			_provisioningEmailService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_userAccountService", _userAccountService);
-		ReflectionTestUtils.setField(
-			accountsRestController, "_userAccountSynchronizer",
-			_userAccountSynchronizer);
 
 		return accountsRestController;
 	}
@@ -792,6 +774,9 @@ public class AccountsRestControllerTest {
 	private final AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer = Mockito.mock(
 			AccountUserAccountRoleSynchronizer.class);
+	private final AccountUserAccountSynchronizer
+		_accountUserAccountSynchronizer = Mockito.mock(
+			AccountUserAccountSynchronizer.class);
 	private final EmailAddressValidatorService _emailAddressValidatorService =
 		Mockito.mock(EmailAddressValidatorService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
@@ -803,7 +788,5 @@ public class AccountsRestControllerTest {
 		Mockito.mock(ProvisioningEmailService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
-	private final UserAccountSynchronizer _userAccountSynchronizer =
-		Mockito.mock(UserAccountSynchronizer.class);
 
 }

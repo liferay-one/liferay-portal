@@ -13,6 +13,7 @@ import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
 import com.liferay.one.jira.synchronizer.OrganizationUserAccountRoleSynchronizer;
+import com.liferay.one.jira.synchronizer.OrganizationUserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
@@ -79,6 +80,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 			organizationId, organizationRoleId, userId);
 
 		_unassignContactRole(organizationId, organizationRoleId, userId);
+
+		_syncMembership(organizationId, userId);
 	}
 
 	@PostMapping("/{organizationId}/accounts/{accountId}")
@@ -183,6 +186,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 			organizationId, organizationRoleId, userId);
 
 		_assignContactRole(organizationId, organizationRoleId, userId);
+
+		_syncMembership(organizationId, userId);
 	}
 
 	private void _assignAccount(long accountId, long organizationId) {
@@ -228,6 +233,19 @@ public class OrganizationsRestController extends OneBaseRestController {
 				"Unable to sync organization contact role assignment for " +
 					"user " + userId,
 				exception);
+		}
+	}
+
+	private void _syncMembership(long organizationId, long userId) {
+		try {
+			_organizationUserAccountSynchronizer.
+				syncOrganizationUserAccountMembership(
+					_organizationService.getOrganization(organizationId),
+					_userAccountService.getUserAccount(userId));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync membership for user " + userId, exception);
 		}
 	}
 
@@ -301,6 +319,10 @@ public class OrganizationsRestController extends OneBaseRestController {
 	@Autowired
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
+
+	@Autowired
+	private OrganizationUserAccountSynchronizer
+		_organizationUserAccountSynchronizer;
 
 	@Autowired
 	private PropertyService _propertyService;
