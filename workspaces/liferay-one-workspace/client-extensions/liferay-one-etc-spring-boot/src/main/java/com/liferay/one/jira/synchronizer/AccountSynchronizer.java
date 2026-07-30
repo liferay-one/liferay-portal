@@ -39,6 +39,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.role.EmployeeRoles;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -48,12 +49,10 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -199,28 +198,6 @@ public class AccountSynchronizer {
 		lines.add(fieldName + ": " + value);
 	}
 
-	private <T> T _findFirst(List<T> list, Predicate<T> predicate) {
-		if (ListUtil.isEmpty(list)) {
-			return null;
-		}
-
-		for (T t : list) {
-			if (predicate.test(t)) {
-				return t;
-			}
-		}
-
-		return null;
-	}
-
-	private <T> T _findFirst(T[] arr, Predicate<T> predicate) {
-		if (arr == null) {
-			return null;
-		}
-
-		return _findFirst(Arrays.asList(arr), predicate);
-	}
-
 	private Map<String, Object> _getAccountAttributeValues(
 			Account account, List<UserAccount> accountUserAccounts,
 			List<Organization> accountOrganizations)
@@ -316,8 +293,8 @@ public class AccountSynchronizer {
 		UserAccountBucket accountUserAccountBucket = new UserAccountBucket();
 
 		for (UserAccount accountUserAccount : accountUserAccounts) {
-			AccountBrief accountBrief = _findFirst(
-				Arrays.asList(accountUserAccount.getAccountBriefs()),
+			AccountBrief accountBrief = FindUtil.findFirst(
+				accountUserAccount.getAccountBriefs(),
 				accountBrief1 -> Objects.equals(
 					account.getExternalReferenceCode(),
 					accountBrief1.getExternalReferenceCode()));
@@ -330,7 +307,7 @@ public class AccountSynchronizer {
 				continue;
 			}
 
-			RoleBrief roleBrief = _findFirst(
+			RoleBrief roleBrief = FindUtil.findFirst(
 				accountBrief.getRoleBriefs(),
 				roleBrief1 -> _employeeRoleNames.contains(
 					roleBrief1.getName()));
@@ -455,8 +432,8 @@ public class AccountSynchronizer {
 		Account account, List<UserAccount> accountUserAccounts) {
 
 		for (UserAccount accountUserAccount : accountUserAccounts) {
-			AccountBrief accountBrief = _findFirst(
-				Arrays.asList(accountUserAccount.getAccountBriefs()),
+			AccountBrief accountBrief = FindUtil.findFirst(
+				accountUserAccount.getAccountBriefs(),
 				accountBrief1 -> Objects.equals(
 					account.getExternalReferenceCode(),
 					accountBrief1.getExternalReferenceCode()));
