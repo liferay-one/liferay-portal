@@ -6,6 +6,7 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
@@ -48,10 +49,12 @@ public class UserAccountSynchronizerTest {
 			Collections.emptyList()
 		);
 
+		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
 		Mockito.when(
 			_contactConverter.toAssetObject(Mockito.any(UserAccount.class))
 		).thenReturn(
-			Mockito.mock(JiraAssetObject.class)
+			_jiraAssetObject
 		);
 
 		ReflectionTestUtils.setField(
@@ -115,10 +118,7 @@ public class UserAccountSynchronizerTest {
 			Mockito.any(), Mockito.any()
 		);
 
-		UserAccount userAccount = new UserAccount();
-
-		userAccount.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
-		userAccount.setId(1L);
+		UserAccount userAccount = _createUserAccount();
 
 		lockSerializationTestHelper.assertSerialized(
 			() -> _userAccountSynchronizer.syncUserAccount(userAccount),
@@ -127,10 +127,62 @@ public class UserAccountSynchronizerTest {
 			"upsert", "delete");
 	}
 
+	@Test
+	public void testSyncUserAccountAccountsUpsertsAccountReferences() {
+		_assertUpsertsAttribute(
+			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
+			() -> _userAccountSynchronizer.syncUserAccountAccounts(
+				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences() {
+		_assertUpsertsAttribute(
+			ContactConstants.ATTRIBUTE_NAME_TEAMS,
+			() -> _userAccountSynchronizer.syncUserAccountOrganizations(
+				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountRolesUpsertsRoleReferences() {
+		_assertUpsertsAttribute(
+			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
+			() -> _userAccountSynchronizer.syncUserAccountRoles(
+				_createUserAccount()));
+	}
+
+	private void _assertUpsertsAttribute(
+		String attributeName, Runnable runnable) {
+
+		runnable.run();
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+	}
+
+	private UserAccount _createUserAccount() {
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		userAccount.setId(1L);
+
+		return userAccount;
+	}
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
 	private ContactConverter _contactConverter;
+	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
