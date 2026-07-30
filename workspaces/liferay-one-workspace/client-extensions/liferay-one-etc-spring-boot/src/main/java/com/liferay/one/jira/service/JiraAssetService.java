@@ -8,6 +8,7 @@ package com.liferay.one.jira.service;
 import com.liferay.one.jira.converter.BaseJiraAssetObjectConverter;
 import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.jira.model.JiraAssetObject;
+import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -45,38 +46,9 @@ public class JiraAssetService {
 			return;
 		}
 
-		String externalKeyAttributeName =
-			converter.getExternalKeyAttributeName();
-
-		List<JiraAssetObject> jiraAssetObjects =
-			_jiraAssetPersistence.searchObjects(
-				converter.getAQLWithBuilder(
-					aqlBuilder -> aqlBuilder.andEquals(
-						externalKey, externalKeyAttributeName)),
-				converter::toJiraAssetObject);
-
-		if (jiraAssetObjects.isEmpty()) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					StringBundler.concat(
-						"Skipping delete of ", converter.getObjectTypeName(),
-						" asset object for external key ", externalKey,
-						" because it does not exist"));
-			}
-
-			return;
-		}
-
-		JiraAssetObject jiraAssetObject = jiraAssetObjects.get(0);
-
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				StringBundler.concat(
-					"Deleting ", converter.getObjectTypeName(),
-					" asset object for external key ", externalKey));
-		}
-
-		_jiraAssetPersistence.deleteObject(jiraAssetObject.getObjectId());
+		_jiraSyncLock.withLock(
+			_getLockKey(converter, externalKey),
+			() -> _delete(converter, externalKey));
 	}
 
 	/**
@@ -271,6 +243,75 @@ public class JiraAssetService {
 			return;
 		}
 
+		_jiraSyncLock.withLock(
+			_getLockKey(converter, externalKey),
+			() -> _upsert(
+				converter, externalKey, jiraAssetObject,
+				shouldSkipUpdateBiPredicate));
+	}
+
+	private String _createObject(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		Function<String, JiraAssetObject> createAssetObjectFunction) {
+
+		return _jiraSyncLock.withLock(
+			_getLockKey(converter, externalKey),
+			() -> {
+				String objectId = fetchReferenceObjectId(
+					converter, externalKey);
+
+				if (objectId != null) {
+					return objectId;
+				}
+
+				JiraAssetObject jiraAssetObject =
+					createAssetObjectFunction.apply(externalKey);
+
+				if (jiraAssetObject == null) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to create ",
+								converter.getObjectTypeName(),
+								" asset object for external key ",
+								externalKey));
+					}
+
+					return null;
+				}
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Creating ", converter.getObjectTypeName(),
+							" asset object for unresolved external key ",
+							externalKey));
+				}
+
+				try {
+					JSONObject jsonObject = _jiraAssetPersistence.createObject(
+						converter.getObjectTypeId(), jiraAssetObject);
+
+					return jsonObject.optString("id", null);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to create ", converter.getObjectTypeName(),
+							" asset object for external key ", externalKey),
+						exception);
+
+					return null;
+				}
+			});
+	}
+
+	private void _delete(
+		BaseJiraAssetObjectConverter converter, String externalKey) {
+
+		String externalKeyAttributeName =
+			converter.getExternalKeyAttributeName();
+
 		List<JiraAssetObject> jiraAssetObjects =
 			_jiraAssetPersistence.searchObjects(
 				converter.getAQLWithBuilder(
@@ -282,83 +323,30 @@ public class JiraAssetService {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
-						"Creating ", converter.getObjectTypeName(),
-						" asset object for external key ", externalKey));
-			}
-
-			_jiraAssetPersistence.createObject(
-				converter.getObjectTypeId(), jiraAssetObject);
-
-			return;
-		}
-
-		JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
-
-		if ((shouldSkipUpdateBiPredicate != null) &&
-			shouldSkipUpdateBiPredicate.test(
-				existingJiraAssetObject, jiraAssetObject)) {
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(
-					StringBundler.concat(
-						"Skipping unchanged ", converter.getObjectTypeName(),
-						" asset object for external key ", externalKey));
+						"Skipping delete of ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey,
+						" because it does not exist"));
 			}
 
 			return;
 		}
+
+		JiraAssetObject jiraAssetObject = jiraAssetObjects.get(0);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				StringBundler.concat(
-					"Updating ", converter.getObjectTypeName(),
+					"Deleting ", converter.getObjectTypeName(),
 					" asset object for external key ", externalKey));
 		}
 
-		_jiraAssetPersistence.updateObject(
-			existingJiraAssetObject.getObjectId(), jiraAssetObject);
+		_jiraAssetPersistence.deleteObject(jiraAssetObject.getObjectId());
 	}
 
-	private String _createObject(
-		BaseJiraAssetObjectConverter converter, String externalKey,
-		Function<String, JiraAssetObject> createAssetObjectFunction) {
+	private String _getLockKey(
+		BaseJiraAssetObjectConverter converter, String externalKey) {
 
-		JiraAssetObject jiraAssetObject = createAssetObjectFunction.apply(
-			externalKey);
-
-		if (jiraAssetObject == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Unable to create ", converter.getObjectTypeName(),
-						" asset object for external key ", externalKey));
-			}
-
-			return null;
-		}
-
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				StringBundler.concat(
-					"Creating ", converter.getObjectTypeName(),
-					" asset object for unresolved external key ", externalKey));
-		}
-
-		try {
-			JSONObject jsonObject = _jiraAssetPersistence.createObject(
-				converter.getObjectTypeId(), jiraAssetObject);
-
-			return jsonObject.optString("id", null);
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to create ", converter.getObjectTypeName(),
-					" asset object for external key ", externalKey),
-				exception);
-
-			return null;
-		}
+		return converter.getObjectTypeName() + "#" + externalKey;
 	}
 
 	private void _putObjectIds(
@@ -463,11 +451,75 @@ public class JiraAssetService {
 		return resolvedObjectIds;
 	}
 
+	private void _upsert(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		JiraAssetObject jiraAssetObject,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
+
+		String externalKeyAttributeName =
+			converter.getExternalKeyAttributeName();
+
+		List<JiraAssetObject> jiraAssetObjects =
+			_jiraAssetPersistence.searchObjects(
+				converter.getAQLWithBuilder(
+					aqlBuilder -> aqlBuilder.andEquals(
+						externalKey, externalKeyAttributeName)),
+				converter::toJiraAssetObject);
+
+		if (jiraAssetObjects.isEmpty()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Creating ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
+			}
+
+			_jiraAssetPersistence.createObject(
+				converter.getObjectTypeId(), jiraAssetObject);
+
+			return;
+		}
+
+		JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
+
+		if ((shouldSkipUpdateBiPredicate != null) &&
+			shouldSkipUpdateBiPredicate.test(
+				existingJiraAssetObject, jiraAssetObject)) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					StringBundler.concat(
+						"Skipping unchanged ", converter.getObjectTypeName(),
+						" asset object for external key ", externalKey));
+			}
+
+			return;
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Updating ", converter.getObjectTypeName(),
+					" asset object for external key ", externalKey));
+		}
+
+		_jiraAssetPersistence.updateObject(
+			existingJiraAssetObject.getObjectId(), jiraAssetObject);
+	}
+
 	private static final int _CHUNK_SIZE = 50;
 
 	private static final Log _log = LogFactory.getLog(JiraAssetService.class);
 
 	@Autowired
 	private JiraAssetPersistence _jiraAssetPersistence;
+
+	// Deliberately not the shared JiraSyncLock component: the synchronizers
+	// hold entity-level locks from that component around calls into this
+	// class, and nesting two lock levels on one striped pool can deadlock
+	// when unrelated keys hash to each other's stripes.
+
+	private final JiraSyncLock _jiraSyncLock = new JiraSyncLock();
 
 }
