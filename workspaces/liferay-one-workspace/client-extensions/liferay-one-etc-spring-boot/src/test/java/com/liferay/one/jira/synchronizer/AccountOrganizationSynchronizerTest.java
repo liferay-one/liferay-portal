@@ -5,13 +5,21 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.one.jira.constants.AccountTeamRoleAssignmentConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.jira.util.JiraSyncLock;
+import com.liferay.petra.string.StringBundler;
 
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -31,11 +39,11 @@ public class AccountOrganizationSynchronizerTest {
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
 
-		AccountTeamRoleAssignmentConverter accountTeamRoleAssignmentConverter =
-			Mockito.mock(AccountTeamRoleAssignmentConverter.class);
+		_accountTeamRoleAssignmentConverter = Mockito.mock(
+			AccountTeamRoleAssignmentConverter.class);
 
 		Mockito.when(
-			accountTeamRoleAssignmentConverter.toAssetObject(
+			_accountTeamRoleAssignmentConverter.toAssetObject(
 				Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.anyBoolean(), Mockito.any())
 		).thenReturn(
@@ -48,7 +56,7 @@ public class AccountOrganizationSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_accountOrganizationSynchronizer,
 			"_accountTeamRoleAssignmentConverter",
-			accountTeamRoleAssignmentConverter);
+			_accountTeamRoleAssignmentConverter);
 		ReflectionTestUtils.setField(
 			_accountOrganizationSynchronizer, "_jiraAssetService",
 			_jiraAssetService);
@@ -86,7 +94,111 @@ public class AccountOrganizationSynchronizerTest {
 			"upsert", "upsert");
 	}
 
+	@Test
+	public void testSyncUnassignStaleOrganizationsExcludesCurrentAssignments()
+		throws Exception {
+
+		AtomicReference<String> aqlAtomicReference = _captureAQL();
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY));
+
+		Assertions.assertEquals(
+			StringBundler.concat(
+				"base AND \"Account External Key\" = \"account-erc\" AND ",
+				"\"Deleted\" = false AND \"Team External Key\" NOT IN ",
+				"(\"organization-erc\")"),
+			aqlAtomicReference.get());
+	}
+
+	@Test
+	public void testSyncUnassignStaleOrganizationsExcludesDeletedAssignments()
+		throws Exception {
+
+		AtomicReference<String> aqlAtomicReference = _captureAQL();
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet());
+
+		Assertions.assertEquals(
+			"base AND \"Account External Key\" = \"account-erc\" AND " +
+				"\"Deleted\" = false",
+			aqlAtomicReference.get());
+	}
+
+	@Test
+	public void testSyncUnassignStaleOrganizationsSoftDeletesStaleAssignments()
+		throws Exception {
+
+		JiraAssetObject jiraAssetObject = _mockAssignment();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet());
+
+		Mockito.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq(_ORGANIZATION_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(true), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any()
+		);
+	}
+
+	private AtomicReference<String> _captureAQL() {
+		AtomicReference<String> aqlAtomicReference = new AtomicReference<>();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				Consumer<AQLUtil.Builder> consumer = invocation.getArgument(1);
+
+				AQLUtil.Builder aqlBuilder = AQLUtil.builder("base");
+
+				consumer.accept(aqlBuilder);
+
+				aqlAtomicReference.set(aqlBuilder.build());
+
+				return Collections.emptyList();
+			}
+		);
+
+		return aqlAtomicReference;
+	}
+
+	private JiraAssetObject _mockAssignment() {
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue(
+				AccountTeamRoleAssignmentConstants.
+					ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY)
+		).thenReturn(
+			_ORGANIZATION_EXTERNAL_KEY
+		);
+
+		return jiraAssetObject;
+	}
+
+	private static final String _ACCOUNT_EXTERNAL_KEY = "account-erc";
+
+	private static final String _ORGANIZATION_EXTERNAL_KEY = "organization-erc";
+
 	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
+	private AccountTeamRoleAssignmentConverter
+		_accountTeamRoleAssignmentConverter;
 	private JiraAssetService _jiraAssetService;
 
 }
