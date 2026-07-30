@@ -29,6 +29,15 @@ public class AQLUtil {
 
 	public static class Builder {
 
+		public Builder andEquals(boolean value, String... fieldNames) {
+			_sb.append(" AND ");
+			_sb.append(_field(fieldNames));
+			_sb.append(" = ");
+			_sb.append(value);
+
+			return this;
+		}
+
 		public Builder andEquals(String value, String... fieldNames) {
 			_sb.append(" AND ");
 			_sb.append(_field(fieldNames));
@@ -56,6 +65,26 @@ public class AQLUtil {
 			_sb.append(" AND ");
 			_sb.append(_field(fieldNames));
 			_sb.append(" IN (");
+			_sb.append(
+				StringUtil.merge(
+					TransformUtil.transform(values, AQLUtil::_quote),
+					StringPool.COMMA_AND_SPACE));
+			_sb.append(")");
+
+			return this;
+		}
+
+		public Builder andNotIn(
+			Collection<String> values, String... fieldNames) {
+
+			if (values.isEmpty()) {
+				throw new IllegalArgumentException(
+					"A NOT IN clause requires at least one value");
+			}
+
+			_sb.append(" AND ");
+			_sb.append(_field(fieldNames));
+			_sb.append(" NOT IN (");
 			_sb.append(
 				StringUtil.merge(
 					TransformUtil.transform(values, AQLUtil::_quote),
