@@ -66,20 +66,69 @@ public class UserAccountSynchronizer {
 			() -> _syncUserAccount(userAccount));
 	}
 
-	private List<RoleBrief> _getAccountRoleBriefs(
-		List<AccountBrief> accountBriefs) {
-
-		List<RoleBrief> roleBriefs = new ArrayList<>();
-
-		for (AccountBrief accountBrief : accountBriefs) {
-			RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
-
-			if (accountRoleBriefs != null) {
-				Collections.addAll(roleBriefs, accountRoleBriefs);
-			}
+	public void syncUserAccountAccounts(UserAccount userAccount) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing accounts for user account " +
+					userAccount.getExternalReferenceCode() + " to JSM");
 		}
 
-		return roleBriefs;
+		JiraAssetObject jiraAssetObject = _contactConverter.toAssetObject(
+			userAccount);
+
+		jiraAssetObject.setAttributeValue(
+			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
+			_jiraAssetService.fetchReferenceObjectIds(
+				_accountConverter,
+				ListUtil.fromArray(userAccount.getAccountBriefs()),
+				AccountBrief::getExternalReferenceCode));
+
+		_jiraSyncLock.withLock(
+			userAccount.getExternalReferenceCode(),
+			() -> _jiraAssetService.upsert(_contactConverter, jiraAssetObject));
+	}
+
+	public void syncUserAccountOrganizations(UserAccount userAccount) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing organizations for user account " +
+					userAccount.getExternalReferenceCode() + " to JSM");
+		}
+
+		JiraAssetObject jiraAssetObject = _contactConverter.toAssetObject(
+			userAccount);
+
+		jiraAssetObject.setAttributeValue(
+			ContactConstants.ATTRIBUTE_NAME_TEAMS,
+			_jiraAssetService.fetchReferenceObjectIds(
+				_teamConverter,
+				ListUtil.fromArray(userAccount.getOrganizationBriefs()),
+				OrganizationBrief::getExternalReferenceCode));
+
+		_jiraSyncLock.withLock(
+			userAccount.getExternalReferenceCode(),
+			() -> _jiraAssetService.upsert(_contactConverter, jiraAssetObject));
+	}
+
+	public void syncUserAccountRoles(UserAccount userAccount) {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing roles for user account " +
+					userAccount.getExternalReferenceCode() + " to JSM");
+		}
+
+		JiraAssetObject jiraAssetObject = _contactConverter.toAssetObject(
+			userAccount);
+
+		jiraAssetObject.setAttributeValue(
+			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
+			_jiraAssetService.fetchReferenceObjectIds(
+				_contactRoleConverter, _getRoleBriefs(userAccount),
+				RoleBrief::getExternalReferenceCode));
+
+		_jiraSyncLock.withLock(
+			userAccount.getExternalReferenceCode(),
+			() -> _jiraAssetService.upsert(_contactConverter, jiraAssetObject));
 	}
 
 	private List<EntitlementDefinition> _getEntitlementDefinitions(
@@ -114,12 +163,22 @@ public class UserAccountSynchronizer {
 		return externalLinkProperties;
 	}
 
-	private List<RoleBrief> _getOrganizationRoleBriefs(
-		List<OrganizationBrief> organizationBriefs) {
-
+	private List<RoleBrief> _getRoleBriefs(UserAccount userAccount) {
 		List<RoleBrief> roleBriefs = new ArrayList<>();
 
-		for (OrganizationBrief organizationBrief : organizationBriefs) {
+		for (AccountBrief accountBrief :
+				ListUtil.fromArray(userAccount.getAccountBriefs())) {
+
+			RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
+
+			if (accountRoleBriefs != null) {
+				Collections.addAll(roleBriefs, accountRoleBriefs);
+			}
+		}
+
+		for (OrganizationBrief organizationBrief :
+				ListUtil.fromArray(userAccount.getOrganizationBriefs())) {
+
 			RoleBrief[] organizationRoleBriefs =
 				organizationBrief.getRoleBriefs();
 
@@ -215,11 +274,6 @@ public class UserAccountSynchronizer {
 		JiraAssetObject jiraAssetObject = _contactConverter.toAssetObject(
 			userAccount);
 
-		List<RoleBrief> roleBriefs = new ArrayList<>(
-			_getAccountRoleBriefs(accountBriefs));
-
-		roleBriefs.addAll(_getOrganizationRoleBriefs(organizationBriefs));
-
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
 			_jiraAssetService.fetchReferenceObjectIds(
@@ -228,7 +282,7 @@ public class UserAccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			_jiraAssetService.fetchReferenceObjectIds(
-				_contactRoleConverter, roleBriefs,
+				_contactRoleConverter, _getRoleBriefs(userAccount),
 				RoleBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
