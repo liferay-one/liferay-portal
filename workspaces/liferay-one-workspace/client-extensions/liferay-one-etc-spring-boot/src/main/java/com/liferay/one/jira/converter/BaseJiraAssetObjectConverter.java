@@ -31,6 +31,19 @@ public abstract class BaseJiraAssetObjectConverter {
 		return new JiraAssetObject(_getAttributeIds(), _getAttributeOptions());
 	}
 
+	public String formatDate(Date date) {
+		if (date == null) {
+			return null;
+		}
+
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ssXX");
+
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		return simpleDateFormat.format(date);
+	}
+
 	public String getAQLWithBuilder(Consumer<AQLUtil.Builder> consumer) {
 		AQLUtil.Builder builder = AQLUtil.builder(getBaseAQL());
 
@@ -59,19 +72,6 @@ public abstract class BaseJiraAssetObjectConverter {
 	public JiraAssetObject toJiraAssetObject(JSONObject jsonObject) {
 		return new JiraAssetObject(
 			jsonObject, _getAttributeIds(), _getAttributeOptions());
-	}
-
-	protected String formatDate(Date date) {
-		if (date == null) {
-			return null;
-		}
-
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ssXX");
-
-		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-		return simpleDateFormat.format(date);
 	}
 
 	protected String getBaseAQL() {

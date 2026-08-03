@@ -16,6 +16,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -232,6 +233,38 @@ public class JiraAssetService {
 			externalUpdatedAt,
 			existingJiraAssetObject.getAttributeValue(
 				externalUpdatedAtAttributeName));
+	}
+
+	/**
+	 * Returns <code>true</code> if the asset object's external updated at
+	 * attribute value is on or after the given date, meaning another sync has
+	 * written the asset object since the date was captured.
+	 *
+	 * @param  converter the converter describing the asset object type
+	 * @param  date the date to compare against
+	 * @param  jiraAssetObject the asset object to check
+	 *
+	 * @return <code>true</code> if the asset object was updated on or after
+	 *         the given date
+	 */
+	public boolean isUpdatedSince(
+		BaseJiraAssetObjectConverter converter, Date date,
+		JiraAssetObject jiraAssetObject) {
+
+		String externalUpdatedAt = jiraAssetObject.getAttributeValue(
+			converter.getExternalUpdatedAtAttributeName());
+
+		if (Validator.isNull(externalUpdatedAt)) {
+			return false;
+		}
+
+		String formattedDate = converter.formatDate(date);
+
+		if (externalUpdatedAt.compareTo(formattedDate) >= 0) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public void upsert(

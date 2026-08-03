@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +40,8 @@ public class AccountUserAccountRoleSynchronizer {
 		throws Exception {
 
 		_syncAssignment(
-			roleExternalKey, userAccountExternalKey, accountExternalKey, false);
+			roleExternalKey, userAccountExternalKey, accountExternalKey, false,
+			null);
 	}
 
 	public void syncUnassignRole(
@@ -48,12 +50,14 @@ public class AccountUserAccountRoleSynchronizer {
 		throws Exception {
 
 		_syncAssignment(
-			roleExternalKey, userAccountExternalKey, accountExternalKey, true);
+			roleExternalKey, userAccountExternalKey, accountExternalKey, true,
+			null);
 	}
 
 	public void syncUnassignStaleRoles(
 		String accountExternalKey,
-		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey) {
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey,
+		Date startDate) {
 
 		Set<String> names = new LinkedHashSet<>();
 
@@ -98,9 +102,13 @@ public class AccountUserAccountRoleSynchronizer {
 					ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY);
 
 			try {
-				syncUnassignRole(
-					roleExternalKey, userAccountExternalKey,
-					accountExternalKey);
+				_syncAssignment(
+					roleExternalKey, userAccountExternalKey, accountExternalKey,
+					true,
+					(existingJiraAssetObject, newJiraAssetObject) ->
+						_jiraAssetService.isUpdatedSince(
+							_accountContactRoleAssignmentConverter, startDate,
+							existingJiraAssetObject));
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -115,19 +123,23 @@ public class AccountUserAccountRoleSynchronizer {
 
 	private void _syncAssignment(
 			String roleExternalKey, String userAccountExternalKey,
-			String accountExternalKey, boolean deleted)
+			String accountExternalKey, boolean deleted,
+			BiPredicate<JiraAssetObject, JiraAssetObject>
+				shouldSkipUpdateBiPredicate)
 		throws Exception {
 
 		_jiraSyncLock.withLock(
 			userAccountExternalKey,
 			() -> _syncAssignmentWithinLock(
 				roleExternalKey, userAccountExternalKey, accountExternalKey,
-				deleted));
+				deleted, shouldSkipUpdateBiPredicate));
 	}
 
 	private void _syncAssignmentWithinLock(
 		String roleExternalKey, String userAccountExternalKey,
-		String accountExternalKey, boolean deleted) {
+		String accountExternalKey, boolean deleted,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -157,7 +169,8 @@ public class AccountUserAccountRoleSynchronizer {
 				_accountConverter, accountExternalKey));
 
 		_jiraAssetService.upsert(
-			_accountContactRoleAssignmentConverter, jiraAssetObject);
+			_accountContactRoleAssignmentConverter, jiraAssetObject,
+			shouldSkipUpdateBiPredicate);
 	}
 
 	private static final Log _log = LogFactory.getLog(

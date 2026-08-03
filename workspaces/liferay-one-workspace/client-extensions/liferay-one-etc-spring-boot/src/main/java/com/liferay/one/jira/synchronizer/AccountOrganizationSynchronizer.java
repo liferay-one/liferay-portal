@@ -18,6 +18,7 @@ import com.liferay.petra.string.StringBundler;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,7 +39,7 @@ public class AccountOrganizationSynchronizer {
 		_jiraSyncLock.withLock(
 			accountExternalKey,
 			() -> _syncAssignment(
-				organizationExternalKey, accountExternalKey, false));
+				organizationExternalKey, accountExternalKey, false, null));
 	}
 
 	public void syncUnassignOrganization(
@@ -48,11 +49,12 @@ public class AccountOrganizationSynchronizer {
 		_jiraSyncLock.withLock(
 			accountExternalKey,
 			() -> _syncAssignment(
-				organizationExternalKey, accountExternalKey, true));
+				organizationExternalKey, accountExternalKey, true, null));
 	}
 
 	public void syncUnassignStaleOrganizations(
-		String accountExternalKey, Set<String> organizationExternalKeys) {
+		String accountExternalKey, Set<String> organizationExternalKeys,
+		Date startDate) {
 
 		List<JiraAssetObject> jiraAssetObjects =
 			_jiraAssetService.getJiraAssetObjects(
@@ -82,8 +84,14 @@ public class AccountOrganizationSynchronizer {
 					ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY);
 
 			try {
-				syncUnassignOrganization(
-					organizationExternalKey, accountExternalKey);
+				_jiraSyncLock.withLock(
+					accountExternalKey,
+					() -> _syncAssignment(
+						organizationExternalKey, accountExternalKey, true,
+						(existingJiraAssetObject, newJiraAssetObject) ->
+							_jiraAssetService.isUpdatedSince(
+								_accountTeamRoleAssignmentConverter, startDate,
+								existingJiraAssetObject)));
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -98,7 +106,9 @@ public class AccountOrganizationSynchronizer {
 
 	private void _syncAssignment(
 		String organizationExternalKey, String accountExternalKey,
-		boolean deleted) {
+		boolean deleted,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -128,7 +138,8 @@ public class AccountOrganizationSynchronizer {
 				_accountConverter, accountExternalKey));
 
 		_jiraAssetService.upsert(
-			_accountTeamRoleAssignmentConverter, jiraAssetObject);
+			_accountTeamRoleAssignmentConverter, jiraAssetObject,
+			shouldSkipUpdateBiPredicate);
 	}
 
 	private static final Log _log = LogFactory.getLog(
