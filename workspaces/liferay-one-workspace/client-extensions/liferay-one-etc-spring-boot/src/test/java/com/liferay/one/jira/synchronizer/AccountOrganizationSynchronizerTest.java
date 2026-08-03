@@ -16,13 +16,16 @@ import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -83,7 +86,7 @@ public class AccountOrganizationSynchronizerTest {
 		).when(
 			_jiraAssetService
 		).upsert(
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		lockSerializationTestHelper.assertSerialized(
@@ -102,7 +105,7 @@ public class AccountOrganizationSynchronizerTest {
 
 		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
 			_ACCOUNT_EXTERNAL_KEY,
-			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY));
+			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY), new Date());
 
 		Assertions.assertEquals(
 			StringBundler.concat(
@@ -119,12 +122,59 @@ public class AccountOrganizationSynchronizerTest {
 		AtomicReference<String> aqlAtomicReference = _captureAQL();
 
 		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet());
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet(), new Date());
 
 		Assertions.assertEquals(
 			"base AND \"Account External Key\" = \"account-erc\" AND " +
 				"\"Deleted\" = false",
 			aqlAtomicReference.get());
+	}
+
+	@Test
+	public void testSyncUnassignStaleOrganizationsSkipsFreshAssignments()
+		throws Exception {
+
+		JiraAssetObject jiraAssetObject = _mockAssignment();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		Date startDate = new Date();
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet(), startDate);
+
+		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
+			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
+				BiPredicate.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
+			biPredicateArgumentCaptor.capture()
+		);
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_accountTeamRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			biPredicateArgumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
 	}
 
 	@Test
@@ -140,7 +190,7 @@ public class AccountOrganizationSynchronizerTest {
 		);
 
 		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet());
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet(), new Date());
 
 		Mockito.verify(
 			_accountTeamRoleAssignmentConverter
@@ -152,7 +202,8 @@ public class AccountOrganizationSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService
 		).upsert(
-			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any()
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
+			Mockito.any()
 		);
 	}
 

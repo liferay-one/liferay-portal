@@ -49,6 +49,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -90,6 +91,8 @@ public class AccountSynchronizer {
 					" to JSM");
 		}
 
+		Date startDate = new Date();
+
 		List<UserAccount> accountUserAccounts =
 			_userAccountService.getAccountUserAccounts(account.getId());
 		List<Organization> accountOrganizations =
@@ -102,8 +105,9 @@ public class AccountSynchronizer {
 			account, accountAttributeValues, account.getExternalReferenceCode(),
 			account.getName());
 
-		_syncContactRoleAssignments(account, accountUserAccounts);
-		_syncAccountOrganizationAssignments(account, accountOrganizations);
+		_syncContactRoleAssignments(account, accountUserAccounts, startDate);
+		_syncAccountOrganizationAssignments(
+			account, accountOrganizations, startDate);
 
 		List<Project> projects = _projectService.getProjects(account.getId());
 
@@ -411,7 +415,7 @@ public class AccountSynchronizer {
 	}
 
 	private void _syncAccountOrganizationAssignments(
-		Account account, List<Organization> organizations) {
+		Account account, List<Organization> organizations, Date startDate) {
 
 		Set<String> organizationExternalKeys = new LinkedHashSet<>();
 
@@ -436,7 +440,8 @@ public class AccountSynchronizer {
 
 		try {
 			_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-				account.getExternalReferenceCode(), organizationExternalKeys);
+				account.getExternalReferenceCode(), organizationExternalKeys,
+				startDate);
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -447,7 +452,8 @@ public class AccountSynchronizer {
 	}
 
 	private void _syncContactRoleAssignments(
-		Account account, List<UserAccount> accountUserAccounts) {
+		Account account, List<UserAccount> accountUserAccounts,
+		Date startDate) {
 
 		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
 			new LinkedHashMap<>();
@@ -497,7 +503,7 @@ public class AccountSynchronizer {
 		try {
 			_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
 				account.getExternalReferenceCode(),
-				roleExternalKeysByUserAccountExternalKey);
+				roleExternalKeysByUserAccountExternalKey, startDate);
 		}
 		catch (Exception exception) {
 			_log.error(

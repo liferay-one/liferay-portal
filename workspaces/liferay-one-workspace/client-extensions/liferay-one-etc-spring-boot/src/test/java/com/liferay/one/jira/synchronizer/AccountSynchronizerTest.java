@@ -30,6 +30,7 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 
 import java.util.Collections;
+import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -239,15 +240,19 @@ public class AccountSynchronizerTest {
 		Mockito.verify(
 			_accountOrganizationSynchronizer
 		).syncUnassignStaleOrganizations(
-			_EXTERNAL_REFERENCE_CODE, Collections.singleton("organization-erc")
+			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(Collections.singleton("organization-erc")),
+			Mockito.any(Date.class)
 		);
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
 		).syncUnassignStaleRoles(
-			_EXTERNAL_REFERENCE_CODE,
-			Collections.singletonMap(
-				"user-account-erc", Collections.singleton("role-erc"))
+			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(
+				Collections.singletonMap(
+					"user-account-erc", Collections.singleton("role-erc"))),
+			Mockito.any(Date.class)
 		);
 	}
 
