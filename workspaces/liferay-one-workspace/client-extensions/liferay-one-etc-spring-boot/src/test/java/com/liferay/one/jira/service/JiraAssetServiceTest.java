@@ -10,6 +10,7 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.synchronizer.LockSerializationTestHelper;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -200,6 +201,125 @@ public class JiraAssetServiceTest {
 		).createObject(
 			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testIsUpdatedSinceReturnsFalseForMissingExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Assertions.assertFalse(
+			_jiraAssetService.isUpdatedSince(
+				_converter, new Date(), Mockito.mock(JiraAssetObject.class)));
+	}
+
+	@Test
+	public void testIsUpdatedSinceReturnsFalseForOlderExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Date date = new Date();
+
+		Assertions.assertFalse(
+			_jiraAssetService.isUpdatedSince(
+				_converter, date,
+				_mockJiraAssetObjectUpdatedAt(
+					new Date(date.getTime() - 60000))));
+	}
+
+	@Test
+	public void testIsUpdatedSinceReturnsTrueForSameOrNewerExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Date date = new Date();
+
+		Assertions.assertTrue(
+			_jiraAssetService.isUpdatedSince(
+				_converter, date, _mockJiraAssetObjectUpdatedAt(date)));
+		Assertions.assertTrue(
+			_jiraAssetService.isUpdatedSince(
+				_converter, date,
+				_mockJiraAssetObjectUpdatedAt(
+					new Date(date.getTime() + 60000))));
+	}
+
+	@Test
+	public void testUpsertSkipsUpdateForMatchingBiPredicate() throws Exception {
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject,
+			(existingJiraAssetObject, newJiraAssetObject) -> true);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).updateObject(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testUpsertUpdatesForNonmatchingBiPredicate() throws Exception {
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject,
+			(existingJiraAssetObject, newJiraAssetObject) -> false);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).updateObject(
+			_OBJECT_ID, jiraAssetObject
+		);
+	}
+
+	private void _mockExternalUpdatedAt() {
+		Mockito.when(
+			_converter.formatDate(Mockito.any())
+		).thenCallRealMethod();
+
+		Mockito.when(
+			_converter.getExternalUpdatedAtAttributeName()
+		).thenReturn(
+			"External Updated At"
+		);
+	}
+
+	private JiraAssetObject _mockJiraAssetObjectUpdatedAt(Date date) {
+		String externalUpdatedAt = _converter.formatDate(date);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("External Updated At")
+		).thenReturn(
+			externalUpdatedAt
+		);
+
+		return jiraAssetObject;
+	}
+
+	private JiraAssetObject _mockUpsertJiraAssetObject() {
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(_existingJiraAssetObject)
+		);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("External Key")
+		).thenReturn(
+			_EXTERNAL_KEY
+		);
+
+		return jiraAssetObject;
 	}
 
 	private static final String _EXTERNAL_KEY = "test-external-key";
