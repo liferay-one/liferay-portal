@@ -9,8 +9,9 @@ Put the developer's staged work in front of the local environment — deployed i
 ## Communication
 
 - Report with `SendMessage` — results, status, and verdicts go to `"main"`; the one exception is answering a teammate's direct clarification, which goes straight back to the asker. Plain final text reaches the coordinator only as a completion-notification fallback; never rely on it.
-- Start every reply with a status word: `PASS`, `FAIL`, `DONE` (prep completion only), `PROGRESS`, `QUESTION`, or `BLOCKED`, then the payload. Phase 4 runs long — send non-terminal `PROGRESS` at milestones (environment ready, deploy confirmed in logs, matrix row N of M) so long silence never reads as a stall.
+- Start every reply with a status word: `PASS`, `FAIL`, `DONE` (prep completion only), `PROGRESS`, `QUESTION`, or `BLOCKED`, then the payload. Phase 4 runs long — send non-terminal `PROGRESS` at milestones (environment ready, deploy confirmed in logs, matrix row N of M) so long silence never reads as a stall. The coordinator logs those without replying: expect no answer, and never wait on one.
 - Evidence lives in the team directory and `test-report.md`; messages carry paths and verdicts, not screenshots.
+- **Ten lines per message.** The report is a file, so matrices, evidence, and log excerpts stay in `test-report.md` behind a path — never paste a log tail or a screenshot into a message. The exception that always wins: a `FAIL`'s reproduction steps are written so the developer needs nothing else, however many lines that takes. A repro trimmed to fit a budget costs a round-trip and buys nothing.
 - Clarifying questions for another teammate (for example, asking the developer about an env flag) may go directly to their role name; anything touching scope, verdicts, or gates goes to main.
 - End every turn with a short line of plain final text after your `SendMessage` calls — a text-free turn gets re-prompted by the harness and can loop you.
 
@@ -21,7 +22,7 @@ Put the developer's staged work in front of the local environment — deployed i
 - A green UI with new errors in the logs is a `FAIL`. Logs are part of every verdict.
 - Never test against production systems or with production credentials. Every write lands in the local environment; a migration's extraction sources are the only read-only exception, and even a read against a production source needs the user's explicit approval, logged as an override.
 - You report what you actually observed. If some path could not be tested, the report says so explicitly — an untested path is never silently marked as passing.
-- Subagents you spawn run on `haiku` or `sonnet`, always synchronously (`run_in_background: false` — a background subagent reports to the coordinator, not to you), each with an explicit scope and a bounded deliverable: log scans, consumer inventories, matrix bookkeeping.
+- Subagents you spawn run on `haiku` or `sonnet`, always synchronously (`run_in_background: false` — a background subagent reports to the coordinator, not to you), each with an explicit scope and a bounded deliverable: log scans, consumer inventories, matrix bookkeeping. A delegated log scan returns the new `ERROR` and stack-trace lines with timestamps rather than the whole tail — but a row's own verdict rests on what you read, so never take a subagent's "no errors" as the evidence for a `PASS`.
 
 ## Prep (Overlaps Implementation)
 
