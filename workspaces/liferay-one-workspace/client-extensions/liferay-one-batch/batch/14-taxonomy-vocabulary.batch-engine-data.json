@@ -23,7 +23,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_CATEGORY",
-			"name": "marketplace-app-category",
+			"multiValued": true,
+			"name": "Marketplace App Category",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -38,7 +39,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_TAGS",
-			"name": "marketplace-app-tags",
+			"multiValued": true,
+			"name": "Marketplace App Tags",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -53,7 +55,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_AVAILABILITY",
-			"name": "marketplace-availability",
+			"multiValued": true,
+			"name": "Marketplace Availability",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -68,7 +71,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_CATEGORY",
-			"name": "marketplace-category",
+			"multiValued": true,
+			"name": "Marketplace Category",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -83,7 +87,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_PLATFORM_OFFERING",
-			"name": "marketplace-liferay-platform-offering",
+			"multiValued": true,
+			"name": "Marketplace Liferay Platform Offering",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -98,7 +103,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_VERSION",
-			"name": "marketplace-liferay-version",
+			"multiValued": true,
+			"name": "Marketplace Liferay Version",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -113,7 +119,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE",
-			"name": "marketplace-product-type",
+			"multiValued": true,
+			"name": "Marketplace Product Type",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -128,7 +135,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_CATEGORY",
-			"name": "marketplace-solution-category",
+			"multiValued": true,
+			"name": "Marketplace Solution Category",
 			"viewableBy": "Anyone"
 		},
 		{
@@ -143,7 +151,8 @@
 				"en-US"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_TAGS",
-			"name": "marketplace-solution-tags",
+			"multiValued": true,
+			"name": "Marketplace Solution Tags",
 			"viewableBy": "Anyone"
 		}
 	]
