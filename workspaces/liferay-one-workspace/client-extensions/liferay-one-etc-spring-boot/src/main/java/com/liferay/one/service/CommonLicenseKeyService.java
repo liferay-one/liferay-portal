@@ -9,10 +9,12 @@ import com.liferay.one.constants.UploadProductEnvironmentConstants;
 import com.liferay.one.constants.UploadProductGroupConstants;
 import com.liferay.one.license.CommonLicenseKeyData;
 import com.liferay.one.license.CommonLicenseKeyParser;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,20 +33,19 @@ public class CommonLicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		CommonLicenseKeyData commonLicenseKeyData = null;
-		String productFamily = null;
 
 		if (StringUtil.equals(
 				productGroup, UploadProductGroupConstants.ENTERPRISE_SEARCH)) {
 
 			commonLicenseKeyData =
 				_commonLicenseKeyParser.parseEnterpriseSearch(fileContent);
-			productFamily = _PRODUCT_FAMILY_ENTERPRISE_SEARCH;
 		}
 		else {
 			commonLicenseKeyData = _commonLicenseKeyParser.parseCommerce(
 				fileContent);
-			productFamily = _PRODUCT_FAMILY_COMMERCE;
 		}
+
+		String productFamily = _toProductFamily(productGroup);
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -78,6 +79,85 @@ public class CommonLicenseKeyService extends OneBaseService {
 		);
 
 		postCommonLicenseKey(jsonObject);
+	}
+
+	public void deleteCommonLicenseKey(long commonLicenseKeyId)
+		throws Exception {
+
+		delete(
+			getAuthorization(), StringPool.BLANK,
+			UriComponentsBuilder.fromPath(
+				"/o/c/commonlicensekeys/" + commonLicenseKeyId
+			).build(
+			).toUri());
+	}
+
+	public JSONObject getCommonLicenseKey(long commonLicenseKeyId)
+		throws Exception {
+
+		return new JSONObject(
+			get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/commonlicensekeys/" + commonLicenseKeyId
+				).build(
+				).toUri()));
+	}
+
+	public JSONObject getCommonLicenseKeysPage(
+			int page, int pageSize, String productGroup)
+		throws Exception {
+
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/commonlicensekeys"
+			).queryParam(
+				"filter",
+				"productFamily eq '" + _toProductFamily(productGroup) + "'"
+			).queryParam(
+				"page", page
+			).queryParam(
+				"pageSize", pageSize
+			).build(
+			).toUri());
+
+		JSONObject pageJSONObject = new JSONObject(response);
+
+		JSONArray itemsJSONArray = pageJSONObject.getJSONArray("items");
+
+		JSONArray reshapedItemsJSONArray = new JSONArray();
+
+		for (int i = 0; i < itemsJSONArray.length(); i++) {
+			JSONObject itemJSONObject = itemsJSONArray.getJSONObject(i);
+
+			JSONObject environmentTypeJSONObject = itemJSONObject.optJSONObject(
+				"environmentType");
+
+			String productEnvironment = "";
+
+			if (environmentTypeJSONObject != null) {
+				productEnvironment = environmentTypeJSONObject.optString("key");
+			}
+
+			reshapedItemsJSONArray.put(
+				new JSONObject(
+				).put(
+					"endDate", itemJSONObject.optString("endDate")
+				).put(
+					"id", itemJSONObject.optLong("id")
+				).put(
+					"name", itemJSONObject.optString("fileName")
+				).put(
+					"productEnvironment", productEnvironment
+				).put(
+					"startDate", itemJSONObject.optString("startDate")
+				));
+		}
+
+		pageJSONObject.put("items", reshapedItemsJSONArray);
+
+		return pageJSONObject;
 	}
 
 	public boolean hasCommonLicenseKey(String fileName) throws Exception {
@@ -115,6 +195,16 @@ public class CommonLicenseKeyService extends OneBaseService {
 		}
 
 		return productEnvironment;
+	}
+
+	private String _toProductFamily(String productGroup) {
+		if (StringUtil.equals(
+				productGroup, UploadProductGroupConstants.ENTERPRISE_SEARCH)) {
+
+			return _PRODUCT_FAMILY_ENTERPRISE_SEARCH;
+		}
+
+		return _PRODUCT_FAMILY_COMMERCE;
 	}
 
 	private static final String _PRODUCT_FAMILY_COMMERCE = "commerce";
