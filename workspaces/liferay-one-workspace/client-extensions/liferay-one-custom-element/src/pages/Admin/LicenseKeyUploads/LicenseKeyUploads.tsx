@@ -27,6 +27,11 @@ import useCommonLicenseKeys, {PAGE_SIZE} from './hooks/useCommonLicenseKeys';
 
 type Tab = 'commerce' | 'elasticsearch';
 
+const ACCEPT_BY_PRODUCT_GROUP: Record<ProductGroup, string> = {
+	COMMERCE: '.xml',
+	ENTERPRISE_SEARCH: '.json',
+};
+
 const PRODUCT_GROUP_BY_TAB: Record<Tab, ProductGroup> = {
 	commerce: 'COMMERCE',
 	elasticsearch: 'ENTERPRISE_SEARCH',
@@ -193,7 +198,7 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 			<form className="mb-4" onSubmit={handleUpload}>
 				<div className="align-items-center d-flex">
 					<input
-						accept=".xml"
+						accept={ACCEPT_BY_PRODUCT_GROUP[productGroup]}
 						className="form-control mr-3"
 						multiple
 						onChange={handleFileChange}
