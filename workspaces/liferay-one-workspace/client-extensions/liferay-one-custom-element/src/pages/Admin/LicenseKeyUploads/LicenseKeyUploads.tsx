@@ -4,15 +4,14 @@
  */
 
 import ClayButton from '@clayui/button';
-import ClayDropDown, {Align} from '@clayui/drop-down';
 import {useModal} from '@clayui/modal';
 import ClayTabs from '@clayui/tabs';
 import {ChangeEvent, FormEvent, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
-import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import Page from '~/components/Page/Page';
+import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import Table from '~/components/Table/Table';
 import i18n from '~/i18n';
 import FetcherError from '~/services/fetcher/FetcherError';
@@ -152,12 +151,10 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 	const totalCount = data?.totalCount ?? 0;
 
 	const RowActions = ({row}: {row: CommonLicenseKey}) => (
-		<ClayDropDown
-			alignmentPosition={Align.BottomCenter}
-			closeOnClick
-			items={[
+		<RowActionsMenu
+			actions={[
 				{
-					label: i18n.translate('download'),
+					label: 'download',
 					onClick: () =>
 						CommonLicenseKeys.downloadCommonLicenseKey(
 							row.id,
@@ -165,7 +162,7 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 						),
 				},
 				{
-					label: i18n.translate('delete'),
+					label: 'delete',
 					onClick: () => {
 						setSelectedKey(row);
 
@@ -173,24 +170,7 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 					},
 				},
 			]}
-			trigger={
-				<ButtonWithIcon
-					aria-label={i18n.translate('actions')}
-					className="btn-monospaced"
-					displayType="unstyled"
-					symbol="ellipsis-v"
-				/>
-			}
-		>
-			{(item, index) => (
-				<ClayDropDown.Item
-					onClick={() => item.onClick()}
-					{...{['keyValue']: index}}
-				>
-					{item.label}
-				</ClayDropDown.Item>
-			)}
-		</ClayDropDown>
+		/>
 	);
 
 	return (
