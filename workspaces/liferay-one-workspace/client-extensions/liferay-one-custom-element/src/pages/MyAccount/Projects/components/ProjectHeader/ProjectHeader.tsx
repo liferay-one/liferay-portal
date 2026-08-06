@@ -15,6 +15,7 @@ import {
 	useProjectCommerce,
 } from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 
 function formatTermRange(startDate?: string, endDate?: string): string {
 	if (!startDate || !endDate) {
@@ -56,8 +57,25 @@ export default function ProjectHeader() {
 		.map((contract) => ({
 			id: contract.externalReferenceCode,
 			name: contract.name,
-			subtitle: formatTermRange(contract.startDate, contract.endDate),
+			subtitle:
+				contract.externalReferenceCode === ONE_TIME_PURCHASES
+					? i18n.translate('no-contract-linked')
+					: formatTermRange(contract.startDate, contract.endDate),
 		}));
+
+	const oneTimeSelected =
+		selectedContract?.externalReferenceCode === ONE_TIME_PURCHASES;
+
+	const triggerName = oneTimeSelected
+		? selectedContract.name
+		: formatTermRange(
+				selectedContract?.startDate,
+				selectedContract?.endDate
+			);
+
+	const triggerSubtitle = oneTimeSelected
+		? i18n.translate('no-contract-linked')
+		: undefined;
 
 	const handleSelect = (contractERC: string) => {
 		setSearchValue('');
@@ -86,15 +104,13 @@ export default function ProjectHeader() {
 				ariaLabel={i18n.translate('select-contract')}
 				items={items}
 				label={i18n.translate('contract-term')}
-				name={formatTermRange(
-					selectedContract?.startDate,
-					selectedContract?.endDate
-				)}
+				name={triggerName}
 				onSearchChange={setSearchValue}
 				onSelect={handleSelect}
 				readOnly={readOnly}
 				searchValue={searchValue}
 				selectedId={resolvedContractERC}
+				subtitle={triggerSubtitle}
 				triggerIcon={<img alt="" src={contractTermIconUrl} />}
 				variant="rich"
 			/>

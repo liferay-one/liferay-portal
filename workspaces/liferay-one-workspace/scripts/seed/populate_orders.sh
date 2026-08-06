@@ -150,7 +150,11 @@ order.pop('contractExternalReferenceCode', None)
 order.pop('projectExternalReferenceCode', None)
 
 order['channelId'] = ${channel_id}
-order['r_contractToCommerceOrder_c_contractId'] = ${contract_id}
+
+contract_id = '${contract_id}'
+
+if contract_id:
+	order['r_contractToCommerceOrder_c_contractId'] = int(contract_id)
 
 project_id = '${project_id}'
 
@@ -247,15 +251,18 @@ function _populate_order {
 	local contract_external_reference_code
 	local project_external_reference_code
 
-	IFS=$'\t' read -r \
+	IFS='|' read -r \
 		order_external_reference_code \
 		contract_external_reference_code \
 		project_external_reference_code \
 		< <(_read_order_meta "${file}")
 
-	local contract_id
+	local contract_id=""
 
-	contract_id=$(_resolve_contract_id "${contract_external_reference_code}") || return 1
+	if [[ -n ${contract_external_reference_code} ]]
+	then
+		contract_id=$(_resolve_contract_id "${contract_external_reference_code}") || return 1
+	fi
 
 	local project_id=""
 	local project_name=""
@@ -342,7 +349,11 @@ except Exception:
 
 # Reads the three order fields the placement needs -- the order, contract, and
 # project external reference codes -- in a single parse, emitted as one
-# tab-separated line, so an order costs one Python process here rather than three.
+# pipe-separated line, so an order costs one Python process here rather than three.
+# The separator is pipe rather than tab because the contract or project is
+# optional: an absent field is empty, and adjacent tabs (both being IFS
+# whitespace) would collapse on read, shifting the remaining fields into the
+# wrong variables. Pipe is not IFS whitespace, so empty fields are preserved.
 
 function _read_order_meta {
 	local file="${1}"
@@ -353,7 +364,7 @@ import json
 with open('${file}') as file:
 	order = json.load(file)['order']
 
-print('\t'.join((
+print('|'.join((
 	order.get('externalReferenceCode', ''),
 	order.get('contractExternalReferenceCode', ''),
 	order.get('projectExternalReferenceCode', ''),

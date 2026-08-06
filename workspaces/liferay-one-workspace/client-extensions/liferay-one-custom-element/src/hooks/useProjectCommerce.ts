@@ -7,8 +7,12 @@ import {format} from 'date-fns';
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {useFetch} from '~/hooks/useFetch';
+import i18n from '~/i18n';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
-import {isUnassignedProject} from '~/pages/MyAccount/Projects/projects';
+import {
+	ONE_TIME_PURCHASES,
+	isUnassignedProject,
+} from '~/pages/MyAccount/Projects/projects';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -231,7 +235,36 @@ export function useProjectCommerce(
 		? accountContractNodes
 		: projectContractNodes;
 
-	const contracts = contractNodes.map(toProjectContract);
+	const contractEntitlementExternalReferenceCodes = new Set(
+		projectContractNodes.flatMap((node) =>
+			(node.contractToEntitlement ?? []).map(
+				(entitlement) => entitlement.externalReferenceCode
+			)
+		)
+	);
+
+	const oneTimeEntitlementNodes = (data?.projectToEntitlement ?? []).filter(
+		(node) =>
+			!contractEntitlementExternalReferenceCodes.has(
+				node.externalReferenceCode
+			)
+	);
+
+	const hasOneTimeEntitlements =
+		!!oneTimeEntitlementNodes.length &&
+		(!usingAccountFallback || !contractNodes.length);
+
+	const contracts = [
+		...contractNodes.map(toProjectContract),
+		...(hasOneTimeEntitlements
+			? [
+					{
+						externalReferenceCode: ONE_TIME_PURCHASES,
+						name: i18n.translate('one-time-purchases'),
+					},
+				]
+			: []),
+	];
 
 	const selectedContractExists = contracts.some(
 		(contract) =>
@@ -242,15 +275,29 @@ export function useProjectCommerce(
 		? contractExternalReferenceCode
 		: resolveDefaultContractERC(contracts);
 
-	const contractNode = contractNodes.find(
-		(node) => node.externalReferenceCode === resolvedContractERC
-	);
+	const oneTimeSelected = resolvedContractERC === ONE_TIME_PURCHASES;
+
+	const contractNode = oneTimeSelected
+		? undefined
+		: contractNodes.find(
+				(node) => node.externalReferenceCode === resolvedContractERC
+			);
 
 	const contract = contractNode ? toProjectContract(contractNode) : undefined;
 
-	const entitlements = usingAccountFallback
-		? toProductEntitlements(data?.projectToEntitlement)
-		: toProductEntitlements(contractNode?.contractToEntitlement);
+	let entitlements;
+
+	if (usingAccountFallback) {
+		entitlements = toProductEntitlements(data?.projectToEntitlement);
+	}
+	else if (oneTimeSelected) {
+		entitlements = toProductEntitlements(oneTimeEntitlementNodes);
+	}
+	else {
+		entitlements = toProductEntitlements(
+			contractNode?.contractToEntitlement
+		);
+	}
 
 	return {
 		contract,

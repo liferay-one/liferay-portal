@@ -1,0 +1,56 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_NO_CONTRACT_AIHUB",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay AI Hub",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-030",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_CONTRACT_AIHUB",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-030",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_NO_CONTRACT_DXP",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay DXP",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-030",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_CONTRACT_DXP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-030",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-030",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_NO_CONTRACT",
+		"orderItems": [
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_NO_CONTRACT_AIHUB",
+				"name": "Liferay AI Hub",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-AI-HUB",
+				"unitPrice": 0
+			},
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_NO_CONTRACT_DXP",
+				"name": "Liferay DXP",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-DXP",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-030"
+	},
+	"purchaseOrderNumber": "PO-NO-CONTRACT"
+}

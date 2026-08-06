@@ -1,0 +1,36 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_ONE_TIME_ENTERPRISE_SEARCH",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay Enterprise Search - Production",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_ONE_TIME_ENTERPRISE_SEARCH",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ENTERPRISE_SEARCH",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-001",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_OMNI_ONE_TIME",
+		"orderItems": [
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_ONE_TIME_ENTERPRISE_SEARCH",
+				"name": "Liferay Enterprise Search - Production",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-ENTERPRISE-SEARCH",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-001"
+	},
+	"purchaseOrderNumber": "PO-OMNI-ONE-TIME"
+}
