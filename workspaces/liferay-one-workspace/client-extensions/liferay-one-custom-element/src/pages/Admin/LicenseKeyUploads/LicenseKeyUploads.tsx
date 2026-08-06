@@ -6,7 +6,7 @@
 import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
 import ClayTabs from '@clayui/tabs';
-import {ChangeEvent, FormEvent, useRef, useState} from 'react';
+import {ChangeEvent, FormEvent, useEffect, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
@@ -69,7 +69,19 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 	const deleteModal = useModal();
 
-	const {data, isLoading, mutate} = useCommonLicenseKeys(productGroup, page);
+	const {data, error, isLoading, mutate} = useCommonLicenseKeys(
+		productGroup,
+		page
+	);
+
+	useEffect(() => {
+		if (error) {
+			Liferay.Util.openToast({
+				message: i18n.translate('unable-to-load-the-license-keys'),
+				type: 'danger',
+			});
+		}
+	}, [error]);
 
 	function handleFileChange(event: ChangeEvent<HTMLInputElement>) {
 		setSelectedFiles(Array.from(event.target.files ?? []));

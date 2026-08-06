@@ -119,6 +119,7 @@ export default {
 	'try-again-later': '後でもう一度試してください。',
 	'unable-to-connect-to-file-server': 'ファイルサーバーに接続できない',
 	'unable-to-delete-attachment': '添付ファイルを削除できませんでした。',
+	'unable-to-load-the-license-keys': 'ライセンスキーを読み込めませんでした。',
 	'upgrade': 'アップグレード',
 	'upload': 'アップロード',
 	'user': 'ユーザー',
