@@ -7,10 +7,7 @@ export {useHasProject} from './hooks/useHasProject';
 export {useSelectedProject} from './hooks/useSelectedProject';
 export {useUserProjects} from './hooks/useUserProjects';
 export type {ProjectItemKind, ProjectTabKey, UserProject} from './types';
-export {
-	LAST_PROJECT_STORAGE_KEY,
-	UNASSIGNED_PROJECT_ERC,
-} from './utils/constants';
+export {LAST_PROJECT_STORAGE_KEY, ONE_TIME_PURCHASES} from './utils/constants';
 export {isUnassignedProject} from './utils/isUnassignedProject';
 export {
 	getCurrentUserId,

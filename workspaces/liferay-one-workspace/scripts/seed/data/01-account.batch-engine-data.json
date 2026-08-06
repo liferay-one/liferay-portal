@@ -167,6 +167,11 @@
 			"type": "business"
 		},
 		{
+			"externalReferenceCode": "ACCNT-030",
+			"name": "No Contract Test Account",
+			"type": "business"
+		},
+		{
 			"externalReferenceCode": "SSA-ACCOUNT",
 			"name": "SSA Account",
 			"type": "business"
