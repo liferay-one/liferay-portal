@@ -159,6 +159,11 @@
 			"externalReferenceCode": "PRJCT-029",
 			"name": "Digital Sales Room Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-029"
+		},
+		{
+			"externalReferenceCode": "PRJCT-030",
+			"name": "No Contract Project",
+			"r_accountEntryToProject_accountEntryERC": "ACCNT-030"
 		}
 	]
 }

@@ -127,7 +127,7 @@ export const SUPPORT_SPECIFICATION_KEYS = SUPPORT_LINKS.map(
 	(link) => link.specificationKey
 );
 
-export const UNASSIGNED_PROJECT_ERC = 'one-time-purchases';
+export const ONE_TIME_PURCHASES = 'one-time-purchases';
 
 export const ICON_BY_CATEGORY: {[key: string]: string} = {
 	'Analytics': 'analytics',

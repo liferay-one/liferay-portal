@@ -16,7 +16,7 @@ import {useUnassignedCommerce} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
 import {
 	LAST_PROJECT_STORAGE_KEY,
-	UNASSIGNED_PROJECT_ERC,
+	ONE_TIME_PURCHASES,
 	UserProject,
 	resolveDefaultProject,
 	useUserProjects,
@@ -52,7 +52,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 		return [
 			...userProjects,
 			{
-				externalReferenceCode: UNASSIGNED_PROJECT_ERC,
+				externalReferenceCode: ONE_TIME_PURCHASES,
 				id: -1,
 				name: i18n.translate('one-time-purchases'),
 				unassigned: true,

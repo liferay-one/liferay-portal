@@ -778,6 +778,7 @@ export default {
 	'no-business-events-were-found': 'No business events were found.',
 	'no-cloud-native-environments-yet': 'No cloud native environments yet.',
 	'no-cloud-projects-available': 'No Cloud Projects Available',
+	'no-contract-linked': 'No Contract Linked',
 	'no-data-found': 'No data found.',
 	'no-environment-information-yet': 'No Environment Information Yet',
 	'no-environment-yet': 'No environment yet.',

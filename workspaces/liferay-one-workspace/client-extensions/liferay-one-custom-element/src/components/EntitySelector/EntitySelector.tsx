@@ -33,6 +33,7 @@ type EntitySelectorProps = {
 	readOnly?: boolean;
 	searchValue: string;
 	selectedId?: string;
+	subtitle?: string;
 	triggerIcon: ReactNode;
 	variant?: 'compact' | 'rich';
 };
@@ -50,6 +51,7 @@ export default function EntitySelector({
 	readOnly = false,
 	searchValue,
 	selectedId,
+	subtitle,
 	triggerIcon,
 	variant = 'compact',
 }: EntitySelectorProps) {
@@ -125,6 +127,20 @@ export default function EntitySelector({
 
 					{caretIcon}
 				</span>
+
+				{subtitle && (
+					<span
+						className="text-truncate"
+						style={{
+							color: LABEL_COLOR,
+							fontSize: '0.75rem',
+							minWidth: 0,
+						}}
+						title={subtitle}
+					>
+						{subtitle}
+					</span>
+				)}
 
 				{badge && (
 					<span
