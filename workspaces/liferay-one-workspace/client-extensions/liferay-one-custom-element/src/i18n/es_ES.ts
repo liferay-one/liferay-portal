@@ -122,6 +122,8 @@ export default {
 	'unable-to-connect-to-file-server':
 		'No es posible conectarse al servidor de archivos',
 	'unable-to-delete-attachment': 'No se pudo eliminar el adjunto.',
+	'unable-to-load-the-license-keys':
+		'No se pudieron cargar las claves de licencia.',
 	'upgrade': 'Actualización',
 	'upload': 'Subir',
 	'user': 'Usuario',

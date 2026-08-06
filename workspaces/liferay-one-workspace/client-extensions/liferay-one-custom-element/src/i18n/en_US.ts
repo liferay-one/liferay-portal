@@ -1369,6 +1369,7 @@ export default {
 		'Unable to download your license file.  Please try again and/or contact support via the manage menu on the dashboard.',
 	'unable-to-invite-member': 'Unable to invite member.',
 	'unable-to-invite-project-member': 'Unable to invite project member.',
+	'unable-to-load-the-license-keys': 'Unable to load the license keys.',
 	'unable-to-remove-member': 'Unable to remove member.',
 	'unable-to-remove-roles': 'Unable to remove roles',
 	'unable-to-update-account-details': 'Unable to update account details',
