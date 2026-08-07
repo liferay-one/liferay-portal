@@ -61,15 +61,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class LicenseKeyService extends OneBaseService {
 
 	public LicenseKey addLicenseKey(
-			String accountName, boolean active, String additionalInfo,
-			boolean complimentary, String description, String domains,
-			Date expirationDate, String hostName, String ipAddresses,
-			String licenseName, String licenseType, int licenseVersion,
-			String macAddresses, int maxClusterNodes, long maxConcurrentUsers,
-			int maxHttpSessions, int maxServers, long maxUsers, String name,
-			String orderId, String owner, String productExternalId,
-			String productName, String productVersion, String serverId,
-			String sizing, Date startDate)
+			long accountEntryId, String accountName, boolean active,
+			String additionalInfo, boolean complimentary, String description,
+			String domains, long entitlementId, Date expirationDate,
+			String hostName, String ipAddresses, String licenseName,
+			String licenseType, int licenseVersion, String macAddresses,
+			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
+			int maxServers, long maxUsers, String name, String orderId,
+			String owner, String productExternalId, String productName,
+			String productVersion, String serverId, String sizing,
+			Date startDate)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -102,6 +103,8 @@ public class LicenseKeyService extends OneBaseService {
 			"description", description
 		).put(
 			"domains", domains
+		).put(
+			"entitlementId", entitlementId
 		).put(
 			"hostName", hostName
 		).put(
@@ -138,6 +141,8 @@ public class LicenseKeyService extends OneBaseService {
 			"productName", productName
 		).put(
 			"productVersion", productVersion
+		).put(
+			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
 		).put(
 			"serverId", serverId
 		).put(
@@ -730,18 +735,20 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return addLicenseKey(
-			licenseKey.getAccountName(), true, licenseKey.getAdditionalInfo(),
-			licenseKey.isComplimentary(), licenseKey.getDescription(),
-			licenseKey.getDomains(), expirationDate, licenseKey.getHostName(),
-			licenseKey.getIpAddresses(), licenseKey.getLicenseName(),
-			licenseKey.getLicenseType(), licenseKey.getLicenseVersion(),
-			licenseKey.getMacAddresses(), licenseKey.getMaxClusterNodes(),
-			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxHttpSessions(),
-			licenseKey.getMaxServers(), licenseKey.getMaxUsers(),
-			licenseKey.getName(), licenseKey.getOrderId(),
-			licenseKey.getOwner(), licenseKey.getProductExternalId(),
-			licenseKey.getProductName(), licenseKey.getProductVersion(),
-			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
+			licenseKey.getAccountEntryId(), licenseKey.getAccountName(), true,
+			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
+			licenseKey.getDescription(), licenseKey.getDomains(),
+			licenseKey.getEntitlementId(), expirationDate,
+			licenseKey.getHostName(), licenseKey.getIpAddresses(),
+			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
+			licenseKey.getLicenseVersion(), licenseKey.getMacAddresses(),
+			licenseKey.getMaxClusterNodes(), licenseKey.getMaxConcurrentUsers(),
+			licenseKey.getMaxHttpSessions(), licenseKey.getMaxServers(),
+			licenseKey.getMaxUsers(), licenseKey.getName(),
+			licenseKey.getOrderId(), licenseKey.getOwner(),
+			licenseKey.getProductExternalId(), licenseKey.getProductName(),
+			licenseKey.getProductVersion(), licenseKey.getServerId(),
+			licenseKey.getSizing(), startDate);
 	}
 
 	private int _getCount(String filterString) throws Exception {

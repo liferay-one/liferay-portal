@@ -17,6 +17,8 @@ import org.json.JSONObject;
 public class Entitlement {
 
 	public Entitlement(JSONObject jsonObject) {
+		_accountEntryId = jsonObject.optLong(
+			"r_accountEntryToEntitlement_accountEntryId");
 		_commerceOrderItemId = jsonObject.optLong(
 			"r_commerceOrderItemToEntitlement_commerceOrderItemId");
 		_contractId = jsonObject.optLong(
@@ -59,6 +61,10 @@ public class Entitlement {
 		else {
 			_startDateInstant = Instant.parse(startDate);
 		}
+	}
+
+	public long getAccountEntryId() {
+		return _accountEntryId;
 	}
 
 	public long getCommerceOrderItemId() {
@@ -117,6 +123,7 @@ public class Entitlement {
 		return _endDateInstant.isBefore(Instant.now());
 	}
 
+	private final long _accountEntryId;
 	private final long _commerceOrderItemId;
 	private final long _contractId;
 	private final Instant _endDateInstant;
