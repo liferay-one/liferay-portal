@@ -6,8 +6,10 @@
 package com.liferay.one;
 
 import com.liferay.one.model.LicenseKey;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.util.List;
 
@@ -33,11 +35,53 @@ public class AppLicenseKeysRestControllerTest {
 	public void setUp() throws Exception {
 		_appLicenseKeysRestController = new AppLicenseKeysRestController();
 
+		_adminPermission = Mockito.mock(AdminPermission.class);
 		_licenseKeyService = Mockito.mock(LicenseKeyService.class);
 
 		ReflectionTestUtils.setField(
+			_appLicenseKeysRestController, "_adminPermission",
+			_adminPermission);
+		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_licenseKeyService",
 			_licenseKeyService);
+	}
+
+	@Test
+	public void testAppLicenseKeysWhenAdminPermissionIsDenied()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _appLicenseKeysRestController.getAppLicenseKeys(null));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _appLicenseKeysRestController.getAppLicenseKey(null, 1L));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _appLicenseKeysRestController.getAppLicenseKeysDownload(
+				null, 1L));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _appLicenseKeysRestController.putAppLicenseKeysActivate(
+				null, new long[] {1L}));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _appLicenseKeysRestController.putAppLicenseKeysDeactivate(
+				null, new long[] {1L}));
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
 	}
 
 	@Test
@@ -57,7 +101,14 @@ public class AppLicenseKeysRestControllerTest {
 		);
 
 		Assertions.assertSame(
-			licenseKey, _appLicenseKeysRestController.getAppLicenseKey(1L));
+			licenseKey,
+			_appLicenseKeysRestController.getAppLicenseKey(null, 1L));
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
 	}
 
 	@Test
@@ -79,7 +130,7 @@ public class AppLicenseKeysRestControllerTest {
 		ResponseStatusException responseStatusException =
 			Assertions.assertThrows(
 				ResponseStatusException.class,
-				() -> _appLicenseKeysRestController.getAppLicenseKey(1L));
+				() -> _appLicenseKeysRestController.getAppLicenseKey(null, 1L));
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
@@ -99,11 +150,17 @@ public class AppLicenseKeysRestControllerTest {
 		);
 
 		Assertions.assertSame(
-			licenseKeys, _appLicenseKeysRestController.getAppLicenseKeys());
+			licenseKeys, _appLicenseKeysRestController.getAppLicenseKeys(null));
 
 		Assertions.assertEquals(
 			"productExternalId ne '" + LicenseConstants.PRODUCT_ID_PORTAL + "'",
 			argumentCaptor.getValue());
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
 	}
 
 	@Test
@@ -135,7 +192,7 @@ public class AppLicenseKeysRestControllerTest {
 		);
 
 		ResponseEntity<String> responseEntity =
-			_appLicenseKeysRestController.getAppLicenseKeysDownload(1L);
+			_appLicenseKeysRestController.getAppLicenseKeysDownload(null, 1L);
 
 		Assertions.assertEquals("<license/>", responseEntity.getBody());
 
@@ -144,6 +201,12 @@ public class AppLicenseKeysRestControllerTest {
 		Assertions.assertEquals(
 			"attachment; filename=\"activation-key.xml\"",
 			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
 	}
 
 	@Test
@@ -168,7 +231,7 @@ public class AppLicenseKeysRestControllerTest {
 			Assertions.assertThrows(
 				ResponseStatusException.class,
 				() -> _appLicenseKeysRestController.getAppLicenseKeysDownload(
-					1L));
+					null, 1L));
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
@@ -177,7 +240,7 @@ public class AppLicenseKeysRestControllerTest {
 	@Test
 	public void testPutAppLicenseKeysActivate() throws Exception {
 		_appLicenseKeysRestController.putAppLicenseKeysActivate(
-			new long[] {1L, 2L});
+			null, new long[] {1L, 2L});
 
 		Mockito.verify(
 			_licenseKeyService
@@ -190,20 +253,33 @@ public class AppLicenseKeysRestControllerTest {
 		).updateLicenseKeyActive(
 			true, 2L
 		);
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
 	}
 
 	@Test
 	public void testPutAppLicenseKeysDeactivate() throws Exception {
 		_appLicenseKeysRestController.putAppLicenseKeysDeactivate(
-			new long[] {3L});
+			null, new long[] {3L});
 
 		Mockito.verify(
 			_licenseKeyService
 		).updateLicenseKeyActive(
 			false, 3L
 		);
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
 	}
 
+	private AdminPermission _adminPermission;
 	private AppLicenseKeysRestController _appLicenseKeysRestController;
 	private LicenseKeyService _licenseKeyService;
 
