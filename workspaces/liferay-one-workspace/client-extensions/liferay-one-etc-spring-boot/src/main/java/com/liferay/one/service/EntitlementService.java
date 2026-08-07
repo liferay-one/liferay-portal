@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -227,6 +228,14 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
+			Collection<Long> accountEntryIds)
+		throws Exception {
+
+		return _getActiveEntitlementDefinitions(
+			getActiveEntitlements(accountEntryIds));
+	}
+
+	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
 			long accountEntryId)
 		throws Exception {
 
@@ -240,6 +249,23 @@ public class EntitlementService extends OneBaseService {
 
 		return _getActiveEntitlementDefinitions(
 			getActiveEntitlements(projectExternalReferenceCode));
+	}
+
+	public List<Entitlement> getActiveEntitlements(
+			Collection<Long> accountEntryIds)
+		throws Exception {
+
+		if (accountEntryIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> statements = TransformUtil.transform(
+			accountEntryIds,
+			accountEntryId ->
+				"r_accountEntryToEntitlement_accountEntryId eq '" +
+					accountEntryId + "'");
+
+		return _getActiveEntitlements(StringUtil.merge(statements, " or "));
 	}
 
 	public List<Entitlement> getActiveEntitlements(long accountEntryId)

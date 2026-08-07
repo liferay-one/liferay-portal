@@ -5,7 +5,9 @@
 
 package com.liferay.one;
 
+import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.CommonLicenseKeyPermission;
 import com.liferay.one.service.CommonLicenseKeyService;
 
 import java.nio.charset.StandardCharsets;
@@ -49,10 +51,13 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 
 	@GetMapping
 	public ResponseEntity<String> getCommonLicenseKeys(
-			@RequestParam("page") int page,
+			@AuthenticationPrincipal Jwt jwt, @RequestParam("page") int page,
 			@RequestParam("pageSize") int pageSize,
 			@RequestParam("productGroup") String productGroup)
 		throws Exception {
+
+		_commonLicenseKeyPermission.check(
+			CommonLicenseKeyConstants.toProductFamily(productGroup), jwt);
 
 		if ((pageSize < 1) || (pageSize > _MAX_PAGE_SIZE)) {
 			throw new ResponseStatusException(
@@ -74,11 +79,14 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 
 	@GetMapping("/{commonLicenseKeyId}/download")
 	public ResponseEntity<String> getCommonLicenseKeysDownload(
+			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("commonLicenseKeyId") long commonLicenseKeyId)
 		throws Exception {
 
 		JSONObject jsonObject = _commonLicenseKeyService.getCommonLicenseKey(
 			commonLicenseKeyId);
+
+		_commonLicenseKeyPermission.check(_getProductFamily(jsonObject), jwt);
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -125,10 +133,24 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private String _getProductFamily(JSONObject jsonObject) {
+		JSONObject productFamilyJSONObject = jsonObject.optJSONObject(
+			"productFamily");
+
+		if (productFamilyJSONObject == null) {
+			return null;
+		}
+
+		return productFamilyJSONObject.optString("key");
+	}
+
 	private static final int _MAX_PAGE_SIZE = 100;
 
 	@Autowired
 	private AdminPermission _adminPermission;
+
+	@Autowired
+	private CommonLicenseKeyPermission _commonLicenseKeyPermission;
 
 	@Autowired
 	private CommonLicenseKeyService _commonLicenseKeyService;
