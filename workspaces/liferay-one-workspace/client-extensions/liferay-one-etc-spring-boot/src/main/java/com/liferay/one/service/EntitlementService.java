@@ -309,6 +309,18 @@ public class EntitlementService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode) + "'");
 	}
 
+	public Entitlement getEntitlement(long entitlementId) throws Exception {
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/entitlements/{id}"
+			).buildAndExpand(
+				entitlementId
+			).toUri());
+
+		return new Entitlement(new JSONObject(response));
+	}
+
 	public List<Entitlement> getEntitlements(long commerceOrderItemId)
 		throws Exception {
 

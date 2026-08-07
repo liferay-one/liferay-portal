@@ -5,13 +5,20 @@
 
 package com.liferay.one;
 
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
+import java.time.Instant;
+
+import java.util.Date;
 import java.util.List;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,11 +43,15 @@ public class AppLicenseKeysRestControllerTest {
 		_appLicenseKeysRestController = new AppLicenseKeysRestController();
 
 		_adminPermission = Mockito.mock(AdminPermission.class);
+		_entitlementService = Mockito.mock(EntitlementService.class);
 		_licenseKeyService = Mockito.mock(LicenseKeyService.class);
 
 		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_adminPermission",
 			_adminPermission);
+		ReflectionTestUtils.setField(
+			_appLicenseKeysRestController, "_entitlementService",
+			_entitlementService);
 		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_licenseKeyService",
 			_licenseKeyService);
@@ -73,6 +84,11 @@ public class AppLicenseKeysRestControllerTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
+			() -> _appLicenseKeysRestController.postAppLicenseKey(
+				null, _toJSON("Acme description")));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
 			() -> _appLicenseKeysRestController.putAppLicenseKeysActivate(
 				null, new long[] {1L}));
 
@@ -80,6 +96,8 @@ public class AppLicenseKeysRestControllerTest {
 			PrincipalException.class,
 			() -> _appLicenseKeysRestController.putAppLicenseKeysDeactivate(
 				null, new long[] {1L}));
+
+		Mockito.verifyNoInteractions(_entitlementService);
 
 		Mockito.verifyNoInteractions(_licenseKeyService);
 	}
@@ -238,6 +256,83 @@ public class AppLicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostAppLicenseKey() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Entitlement entitlement = Mockito.mock(Entitlement.class);
+
+		Mockito.when(
+			entitlement.getAccountEntryId()
+		).thenReturn(
+			77L
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlement(9L)
+		).thenReturn(
+			entitlement
+		);
+
+		Mockito.when(
+			_licenseKeyService.addLicenseKey(
+				77L, "", true, "", false, "Acme description", "", 9L,
+				Date.from(Instant.parse("2027-01-01T00:00:00Z")), "acme.host",
+				"1.2.3.4", "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L, 0, 0,
+				0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
+				"Acme App", "1.0", "", "",
+				Date.from(Instant.parse("2026-01-01T00:00:00Z")))
+		).thenReturn(
+			licenseKey
+		);
+
+		Assertions.assertSame(
+			licenseKey,
+			_appLicenseKeysRestController.postAppLicenseKey(
+				null, _toJSON("Acme description")));
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
+	}
+
+	@Test
+	public void testPostAppLicenseKeyWhenDescriptionIsNull() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Entitlement entitlement = Mockito.mock(Entitlement.class);
+
+		Mockito.when(
+			entitlement.getAccountEntryId()
+		).thenReturn(
+			77L
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlement(9L)
+		).thenReturn(
+			entitlement
+		);
+
+		Mockito.when(
+			_licenseKeyService.addLicenseKey(
+				77L, "", true, "", false, "acme@example.com", "", 9L,
+				Date.from(Instant.parse("2027-01-01T00:00:00Z")), "acme.host",
+				"1.2.3.4", "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L, 0, 0,
+				0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
+				"Acme App", "1.0", "", "",
+				Date.from(Instant.parse("2026-01-01T00:00:00Z")))
+		).thenReturn(
+			licenseKey
+		);
+
+		Assertions.assertSame(
+			licenseKey,
+			_appLicenseKeysRestController.postAppLicenseKey(null, _toJSON("")));
+	}
+
+	@Test
 	public void testPutAppLicenseKeysActivate() throws Exception {
 		_appLicenseKeysRestController.putAppLicenseKeysActivate(
 			null, new long[] {1L, 2L});
@@ -279,8 +374,42 @@ public class AppLicenseKeysRestControllerTest {
 		);
 	}
 
+	private String _toJSON(String description) {
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"description", description
+		).put(
+			"entitlementId", 9L
+		).put(
+			"expirationDate", "2027-01-01T00:00:00Z"
+		).put(
+			"hostName", "acme.host"
+		).put(
+			"ipAddresses", "1.2.3.4"
+		).put(
+			"licenseType", "commerce"
+		).put(
+			"macAddresses", "AA:BB:CC:DD:EE:FF"
+		).put(
+			"orderId", "ORDER-1"
+		).put(
+			"owner", "acme@example.com"
+		).put(
+			"productExternalId", "acme-app"
+		).put(
+			"productName", "Acme App"
+		).put(
+			"productVersion", "1.0"
+		).put(
+			"startDate", "2026-01-01T00:00:00Z"
+		);
+
+		return jsonObject.toString();
+	}
+
 	private AdminPermission _adminPermission;
 	private AppLicenseKeysRestController _appLicenseKeysRestController;
+	private EntitlementService _entitlementService;
 	private LicenseKeyService _licenseKeyService;
 
 }
