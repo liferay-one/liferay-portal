@@ -86,6 +86,35 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testSoftDeleteByAccount() {
+		_accountUserAccountRoleSynchronizer.softDeleteByAccount("account-erc");
+
+		Mockito.verify(
+			_jiraAssetService
+		).softDeleteByAttribute(
+			_accountContactRoleAssignmentConverter,
+			AccountContactRoleAssignmentConstants.
+				ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY,
+			"account-erc"
+		);
+	}
+
+	@Test
+	public void testSoftDeleteByUserAccount() {
+		_accountUserAccountRoleSynchronizer.softDeleteByUserAccount(
+			"user-account-erc");
+
+		Mockito.verify(
+			_jiraAssetService
+		).softDeleteByAttribute(
+			_accountContactRoleAssignmentConverter,
+			AccountContactRoleAssignmentConstants.
+				ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY,
+			"user-account-erc"
+		);
+	}
+
+	@Test
 	public void testSyncUnassignStaleRolesExcludesCurrentAssignments()
 		throws Exception {
 

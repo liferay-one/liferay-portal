@@ -29,6 +29,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class OrganizationUserAccountRoleSynchronizer {
 
+	public void softDeleteByOrganization(String organizationExternalKey) {
+		_jiraAssetService.softDeleteByAttribute(
+			_teamContactRoleAssignmentConverter,
+			TeamContactRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY,
+			organizationExternalKey);
+	}
+
+	public void softDeleteByUserAccount(String userAccountExternalKey) {
+		_jiraAssetService.softDeleteByAttribute(
+			_teamContactRoleAssignmentConverter,
+			TeamContactRoleAssignmentConstants.
+				ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY,
+			userAccountExternalKey);
+	}
+
 	public void syncAssignRole(
 			String roleExternalKey, String userAccountExternalKey,
 			String organizationExternalKey)

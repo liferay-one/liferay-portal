@@ -75,6 +75,34 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSoftDeleteByAccount() {
+		_accountOrganizationSynchronizer.softDeleteByAccount("account-erc");
+
+		Mockito.verify(
+			_jiraAssetService
+		).softDeleteByAttribute(
+			_accountTeamRoleAssignmentConverter,
+			AccountTeamRoleAssignmentConstants.
+				ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY,
+			"account-erc"
+		);
+	}
+
+	@Test
+	public void testSoftDeleteByOrganization() {
+		_accountOrganizationSynchronizer.softDeleteByOrganization(
+			"organization-erc");
+
+		Mockito.verify(
+			_jiraAssetService
+		).softDeleteByAttribute(
+			_accountTeamRoleAssignmentConverter,
+			AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY,
+			"organization-erc"
+		);
+	}
+
+	@Test
 	public void testSyncAssignOrganizationWaitsForSyncAssignOrganization()
 		throws Exception {
 
@@ -95,6 +123,28 @@ public class AccountOrganizationSynchronizerTest {
 			() -> _accountOrganizationSynchronizer.syncAssignOrganization(
 				"organization-erc", "account-erc"),
 			"upsert", "upsert");
+	}
+
+	@Test
+	public void testSyncUnassignOrganizationMarksAssignmentDeleted()
+		throws Exception {
+
+		_accountOrganizationSynchronizer.syncUnassignOrganization(
+			_ORGANIZATION_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY);
+
+		Mockito.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq(_ORGANIZATION_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(true), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
+		);
 	}
 
 	@Test

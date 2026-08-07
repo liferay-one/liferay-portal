@@ -47,8 +47,35 @@ public class OrganizationSynchronizer {
 
 		_jiraSyncLock.withLock(
 			externalReferenceCode,
-			() -> _jiraAssetService.delete(
-				_teamConverter, externalReferenceCode));
+			() -> {
+				try {
+					_accountOrganizationSynchronizer.softDeleteByOrganization(
+						externalReferenceCode);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to soft delete account team role ",
+							"assignments for organization ",
+							externalReferenceCode),
+						exception);
+				}
+
+				try {
+					_organizationUserAccountRoleSynchronizer.
+						softDeleteByOrganization(externalReferenceCode);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to soft delete team contact role ",
+							"assignments for organization ",
+							externalReferenceCode),
+						exception);
+				}
+
+				_jiraAssetService.delete(_teamConverter, externalReferenceCode);
+			});
 	}
 
 	public void syncOrganization(Organization organization) throws Exception {
@@ -186,6 +213,10 @@ public class OrganizationSynchronizer {
 
 	@Autowired
 	private JiraSyncLock _jiraSyncLock;
+
+	@Autowired
+	private OrganizationUserAccountRoleSynchronizer
+		_organizationUserAccountRoleSynchronizer;
 
 	@Autowired
 	private PropertyService _propertyService;
