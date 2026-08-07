@@ -14,6 +14,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.time.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +30,17 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
+
+import reactor.util.retry.Retry;
 
 /**
  * @author Drew Brokke
@@ -68,10 +77,54 @@ public class JiraAssetPersistence extends BaseJiraService {
 	}
 
 	public JSONObject deleteObject(String objectId) {
-		String response = delete(
-			getAuthorization(), StringPool.BLANK, _objectURI(objectId));
+		try {
+			String response = Mono.fromCallable(
+				() -> delete(
+					getAuthorization(), StringPool.BLANK, _objectURI(objectId))
+			).retryWhen(
+				Retry.backoff(
+					_MAX_RETRIES, _RETRY_MIN_BACKOFF
+				).maxBackoff(
+					_RETRY_MAX_BACKOFF
+				).scheduler(
+					Schedulers.boundedElastic()
+				).filter(
+					this::_isRetryable
+				).onRetryExhaustedThrow(
+					(retryBackoffSpec, retrySignal) -> retrySignal.failure()
+				)
+			).block();
 
-		return _toJSONObject(response);
+			return _toJSONObject(response);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Skipping delete of asset object ", objectId,
+							" because it does not exist"));
+				}
+
+				return new JSONObject();
+			}
+
+			_log.error(
+				StringBundler.concat(
+					"Unable to delete asset object ", objectId, ": ",
+					webClientResponseException.getResponseBodyAsString()));
+
+			throw webClientResponseException;
+		}
+		catch (RuntimeException runtimeException) {
+			_log.error(
+				"Unable to delete asset object " + objectId, runtimeException);
+
+			throw runtimeException;
+		}
 	}
 
 	public JSONObject getObject(String objectId) {
@@ -214,6 +267,25 @@ public class JiraAssetPersistence extends BaseJiraService {
 		).build();
 	}
 
+	private boolean _isRetryable(Throwable throwable) {
+		if (throwable instanceof
+				WebClientResponseException webClientResponseException) {
+
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (httpStatusCode.is5xxServerError() ||
+				httpStatusCode.isSameCodeAs(HttpStatus.TOO_MANY_REQUESTS)) {
+
+				return true;
+			}
+
+			return false;
+		}
+
+		return true;
+	}
+
 	private URI _objectURI(String suffix) {
 		return _v1URI("object/" + suffix);
 	}
@@ -281,6 +353,16 @@ public class JiraAssetPersistence extends BaseJiraService {
 		"https://api.atlassian.com";
 
 	private static final int _MAX_RESULTS = 100;
+
+	private static final int _MAX_RETRIES = 3;
+
+	// Callers hold a JiraSyncLock stripe across the retried call, so the
+	// worst case backoff must stay within a few seconds to keep unrelated
+	// syncs that hash to the same stripe from stalling
+
+	private static final Duration _RETRY_MAX_BACKOFF = Duration.ofSeconds(2);
+
+	private static final Duration _RETRY_MIN_BACKOFF = Duration.ofMillis(500);
 
 	private static final Log _log = LogFactory.getLog(
 		JiraAssetPersistence.class);

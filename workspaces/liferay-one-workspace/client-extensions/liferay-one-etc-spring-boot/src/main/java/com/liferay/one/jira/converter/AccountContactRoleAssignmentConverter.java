@@ -22,6 +22,11 @@ public class AccountContactRoleAssignmentConverter
 	extends BaseJiraAssetObjectConverter {
 
 	@Override
+	public String getDeletedAttributeName() {
+		return AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_DELETED;
+	}
+
+	@Override
 	public String getExternalKeyAttributeName() {
 		return AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME;
 	}
