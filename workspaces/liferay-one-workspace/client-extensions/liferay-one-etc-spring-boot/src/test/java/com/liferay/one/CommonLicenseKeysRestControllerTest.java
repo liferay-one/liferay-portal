@@ -6,7 +6,9 @@
 package com.liferay.one;
 
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.CommonLicenseKeyPermission;
 import com.liferay.one.service.CommonLicenseKeyService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.nio.charset.StandardCharsets;
 
@@ -34,6 +36,8 @@ public class CommonLicenseKeysRestControllerTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
+		_commonLicenseKeyPermission = Mockito.mock(
+			CommonLicenseKeyPermission.class);
 		_commonLicenseKeyService = Mockito.mock(CommonLicenseKeyService.class);
 
 		_commonLicenseKeysRestController =
@@ -42,6 +46,9 @@ public class CommonLicenseKeysRestControllerTest {
 		ReflectionTestUtils.setField(
 			_commonLicenseKeysRestController, "_adminPermission",
 			Mockito.mock(AdminPermission.class));
+		ReflectionTestUtils.setField(
+			_commonLicenseKeysRestController, "_commonLicenseKeyPermission",
+			_commonLicenseKeyPermission);
 		ReflectionTestUtils.setField(
 			_commonLicenseKeysRestController, "_commonLicenseKeyService",
 			_commonLicenseKeyService);
@@ -73,7 +80,7 @@ public class CommonLicenseKeysRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			_commonLicenseKeysRestController.getCommonLicenseKeys(
-				1, 20, "COMMERCE");
+				null, 1, 20, "COMMERCE");
 
 		Assertions.assertEquals(
 			pageJSONObject.toString(), responseEntity.getBody());
@@ -82,6 +89,12 @@ public class CommonLicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			MediaType.APPLICATION_JSON, httpHeaders.getContentType());
+
+		Mockito.verify(
+			_commonLicenseKeyPermission
+		).check(
+			"commerce", null
+		);
 	}
 
 	@Test
@@ -91,6 +104,12 @@ public class CommonLicenseKeysRestControllerTest {
 			"fileContent", "<license/>"
 		).put(
 			"fileName", "commerce-prod.xml"
+		).put(
+			"productFamily",
+			new JSONObject(
+			).put(
+				"key", "commerce"
+			)
 		);
 
 		Mockito.when(
@@ -100,7 +119,8 @@ public class CommonLicenseKeysRestControllerTest {
 		);
 
 		ResponseEntity<String> responseEntity =
-			_commonLicenseKeysRestController.getCommonLicenseKeysDownload(5L);
+			_commonLicenseKeysRestController.getCommonLicenseKeysDownload(
+				null, 5L);
 
 		Assertions.assertEquals("<license/>", responseEntity.getBody());
 
@@ -111,6 +131,49 @@ public class CommonLicenseKeysRestControllerTest {
 			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
 		Assertions.assertEquals(
 			MediaType.APPLICATION_XML, httpHeaders.getContentType());
+
+		Mockito.verify(
+			_commonLicenseKeyPermission
+		).check(
+			"commerce", null
+		);
+	}
+
+	@Test
+	public void testGetCommonLicenseKeysDownloadRejectsWithoutEntitlement()
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"fileContent", "<license/>"
+		).put(
+			"fileName", "commerce-prod.xml"
+		).put(
+			"productFamily",
+			new JSONObject(
+			).put(
+				"key", "commerce"
+			)
+		);
+
+		Mockito.when(
+			_commonLicenseKeyService.getCommonLicenseKey(5L)
+		).thenReturn(
+			jsonObject
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commonLicenseKeyPermission
+		).check(
+			"commerce", null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _commonLicenseKeysRestController.getCommonLicenseKeysDownload(
+				null, 5L));
 	}
 
 	@Test
@@ -121,7 +184,7 @@ public class CommonLicenseKeysRestControllerTest {
 			Assertions.assertThrows(
 				ResponseStatusException.class,
 				() -> _commonLicenseKeysRestController.getCommonLicenseKeys(
-					1, 101, "COMMERCE"));
+					null, 1, 101, "COMMERCE"));
 
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
@@ -205,6 +268,7 @@ public class CommonLicenseKeysRestControllerTest {
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 	}
 
+	private CommonLicenseKeyPermission _commonLicenseKeyPermission;
 	private CommonLicenseKeyService _commonLicenseKeyService;
 	private CommonLicenseKeysRestController _commonLicenseKeysRestController;
 
