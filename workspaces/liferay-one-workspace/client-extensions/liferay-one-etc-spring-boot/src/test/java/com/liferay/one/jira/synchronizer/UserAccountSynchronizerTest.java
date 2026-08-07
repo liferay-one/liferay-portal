@@ -25,6 +25,7 @@ import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -38,8 +39,12 @@ public class UserAccountSynchronizerTest {
 	public void setUp() throws Exception {
 		_userAccountSynchronizer = new UserAccountSynchronizer();
 
+		_accountUserAccountRoleSynchronizer = Mockito.mock(
+			AccountUserAccountRoleSynchronizer.class);
 		_contactConverter = Mockito.mock(ContactConverter.class);
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
+		_organizationUserAccountRoleSynchronizer = Mockito.mock(
+			OrganizationUserAccountRoleSynchronizer.class);
 
 		PropertyService propertyService = Mockito.mock(PropertyService.class);
 
@@ -62,7 +67,7 @@ public class UserAccountSynchronizerTest {
 			Mockito.mock(AccountConverter.class));
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_accountUserAccountRoleSynchronizer",
-			Mockito.mock(AccountUserAccountRoleSynchronizer.class));
+			_accountUserAccountRoleSynchronizer);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_contactConverter", _contactConverter);
 		ReflectionTestUtils.setField(
@@ -84,7 +89,7 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer,
 			"_organizationUserAccountRoleSynchronizer",
-			Mockito.mock(OrganizationUserAccountRoleSynchronizer.class));
+			_organizationUserAccountRoleSynchronizer);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_phoneConverter",
 			Mockito.mock(PhoneConverter.class));
@@ -93,6 +98,66 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_teamConverter",
 			Mockito.mock(TeamConverter.class));
+	}
+
+	@Test
+	public void testDeleteUserAccountContinuesWhenSoftDeleteFails() {
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_accountUserAccountRoleSynchronizer
+		).softDeleteByUserAccount(
+			Mockito.any()
+		);
+
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_organizationUserAccountRoleSynchronizer
+		).softDeleteByUserAccount(
+			Mockito.any()
+		);
+
+		_userAccountSynchronizer.deleteUserAccount(_EXTERNAL_REFERENCE_CODE);
+
+		Mockito.verify(
+			_organizationUserAccountRoleSynchronizer
+		).softDeleteByUserAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).delete(
+			Mockito.any(), Mockito.eq(_EXTERNAL_REFERENCE_CODE)
+		);
+	}
+
+	@Test
+	public void testDeleteUserAccountSoftDeletesAssignmentsFirst() {
+		_userAccountSynchronizer.deleteUserAccount(_EXTERNAL_REFERENCE_CODE);
+
+		InOrder inOrder = Mockito.inOrder(
+			_accountUserAccountRoleSynchronizer, _jiraAssetService,
+			_organizationUserAccountRoleSynchronizer);
+
+		inOrder.verify(
+			_accountUserAccountRoleSynchronizer
+		).softDeleteByUserAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_organizationUserAccountRoleSynchronizer
+		).softDeleteByUserAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_jiraAssetService
+		).delete(
+			Mockito.any(), Mockito.eq(_EXTERNAL_REFERENCE_CODE)
+		);
 	}
 
 	@Test
@@ -181,9 +246,13 @@ public class UserAccountSynchronizerTest {
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer;
 	private ContactConverter _contactConverter;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
+	private OrganizationUserAccountRoleSynchronizer
+		_organizationUserAccountRoleSynchronizer;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }

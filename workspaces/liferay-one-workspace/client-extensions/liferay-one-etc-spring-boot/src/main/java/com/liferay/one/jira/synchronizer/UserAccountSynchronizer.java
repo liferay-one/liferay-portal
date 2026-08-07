@@ -55,6 +55,32 @@ public class UserAccountSynchronizer {
 							" from JSM");
 				}
 
+				try {
+					_accountUserAccountRoleSynchronizer.softDeleteByUserAccount(
+						externalReferenceCode);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to soft delete account contact role ",
+							"assignments for user account ",
+							externalReferenceCode),
+						exception);
+				}
+
+				try {
+					_organizationUserAccountRoleSynchronizer.
+						softDeleteByUserAccount(externalReferenceCode);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to soft delete team contact role ",
+							"assignments for user account ",
+							externalReferenceCode),
+						exception);
+				}
+
 				_jiraAssetService.delete(
 					_contactConverter, externalReferenceCode);
 			});
