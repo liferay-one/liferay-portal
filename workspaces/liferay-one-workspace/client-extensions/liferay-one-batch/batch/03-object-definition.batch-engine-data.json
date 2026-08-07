@@ -1497,24 +1497,6 @@
 					"type": "String"
 				},
 				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_CONTRACT_OPPORTUNITY_ID",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Opportunity ID"
-					},
-					"name": "opportunityId",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
 					"DBType": "Integer",
 					"businessType": "Integer",
 					"externalReferenceCode": "C_CONTRACT_OVERAGE_BILLING_CADENCE",
