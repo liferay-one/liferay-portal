@@ -37,11 +37,11 @@ Judge the finished, tested diff for correctness, completeness, security, and con
 
 ## Running the Review
 
-**Workspace lane** — invoke `/one-review --read-only`. That flag exists for this role: every check still runs, including formatting via `one-format --check`, but nothing is written, so your read-only rule holds without giving up coverage. You get the whole procedure — diff, every lens in `criteria.md` in order, the mechanical sweep, the automated pass — and its `<BASE>` is the same `liferay-one/master-temp` this lane already uses. A formatting violation it reports is a finding for the developer, exactly like any other. Its output is candidates, not verdicts: verify each against the code before it enters `review.md`.
+**In both lanes, invoke `/one-review --read-only`.** That flag exists for this role: every check still runs, including formatting through the lane's check-only command, but nothing is written, so your read-only rule holds without giving up coverage. You get the whole procedure — the diff, every lens in `criteria.md` in order, the blast-radius pass, the mechanical sweep, and in the workspace lane the automated pass. The skill resolves the lane and `<BASE>` from the directory the run is rooted in, which `paths.md` has already settled, so there is nothing for you to adapt. A formatting violation it reports is a finding for the developer, exactly like any other. Its output is candidates, not verdicts: verify each against the code before it enters `review.md`.
 
-**Scripts lane** — `/one-review` is workspace-tooled (Gradle, Yarn, `master-temp`), so it does not apply. Work `criteria.md` yourself against the diff, applying its scripts-lane rows.
+When your session does not expose `/one-review` by name — the scripts lane may not, since the skill lives in the workspace — read `<WORKSPACE>/.agents/skills/one-review/SKILL.md` directly and follow it in this run's lane. That is the same in-place read you already do for `criteria.md` and the rule files, and it is a full substitute rather than a degraded one. Working from memory instead of the skill is never the fallback, and neither is skipping it.
 
-Either lane: `criteria.md` is the authority on what each lens covers. Do not narrow it from memory, and do not hunt for a heuristic it does not list — if you find one worth keeping, name it to the coordinator so it gets added there rather than applied only here. When the skill or a lens is unavailable in your session, say so to the coordinator and proceed with the lens work directly; never silently drop coverage.
+Either lane: `criteria.md` is the authority on what each lens covers. Do not narrow it from memory, and do not hunt for a heuristic it does not list — if you find one worth keeping, name it to the coordinator so it gets added there rather than applied only here. When a lens is genuinely unavailable in your session, say so to the coordinator and work it directly; never silently drop coverage.
 
 When the coordinator assigns you early (during Phase 4, small diffs), run this then but hold every verdict until the tester's `PASS` — a diff changed by a `FAIL` voids the early pass.
 
@@ -50,6 +50,8 @@ Three lenses bind to this run's artifacts, in both lanes:
 - **Completeness** measures against `plan.md`, with `test-report.md` as the evidence that each criterion was actually exercised.
 - **Cross-repo consistency** additionally requires that the plan's cross-repo section exists and that its verdicts match the diff — verify the claim yourself by grepping the other checkout rather than trusting the plan.
 - **Architecture and pattern conformance** measures against the pattern-source files the plan named, not just against the repo at large.
+
+**Regression risk is neither optional nor diff-shaped.** The blast-radius step traces every symbol the diff changes into the code that calls it, the other checkout included, and it runs on every round at any diff size — a one-line change to a shared method reaches further than a large change to a leaf file. It is the pass that most rewards delegation: fan the reference searches out to `haiku` subagents, then read the call sites yourself. Record its coverage in `review.md` — the symbols traced and their reference counts — even when it finds nothing, so a later round can see what is already covered instead of re-tracing it.
 
 ## Findings and Verdicts
 
@@ -62,6 +64,8 @@ Write findings to `review.md` in the tagged format `criteria.md` defines, most s
 ## Re-review Rounds
 
 Each round: verify every prior finding's fix actually fixes it, then review **only the delta** — the diff of what changed since your last pass, not the whole diff re-read. Your earlier findings already cover the rest. If a fix reveals a systemic pattern (the same mistake elsewhere), widen the sweep once and say so. Track rounds in `review.md`.
+
+The delta rule bounds the lens work, not the blast radius. A fix that touches a shared symbol — changing a signature, a return shape, an ERC, a component's props — reopens that symbol's references, including any the earlier round already cleared, because they were cleared against behavior the fix has now changed. Re-trace those; leave the symbols the fix did not touch alone.
 
 ## Ship Phase
 
