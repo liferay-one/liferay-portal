@@ -7,12 +7,14 @@ package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.security.Principal;
@@ -97,6 +99,31 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return _toResponseEntity(
 			HttpStatus.NOT_FOUND, "The license key was not found");
+	}
+
+	@ExceptionHandler(CommonLicenseKeyEntitlementException.class)
+	public ResponseEntity<?> handleException(
+		Principal principal,
+		CommonLicenseKeyEntitlementException
+			commonLicenseKeyEntitlementException) {
+
+		if (_log.isWarnEnabled()) {
+			JwtAuthenticationToken jwtAuthenticationToken =
+				(JwtAuthenticationToken)principal;
+
+			Jwt jwt = jwtAuthenticationToken.getToken();
+
+			_log.warn(
+				StringBundler.concat(
+					"User ", jwt.getSubject(),
+					" is not entitled to download a common license key for ",
+					"product family ",
+					commonLicenseKeyEntitlementException.getProductFamily()));
+		}
+
+		return _toResponseEntity(
+			HttpStatus.FORBIDDEN,
+			"You do not have permission to access this resource");
 	}
 
 	@ExceptionHandler(PrincipalException.class)
