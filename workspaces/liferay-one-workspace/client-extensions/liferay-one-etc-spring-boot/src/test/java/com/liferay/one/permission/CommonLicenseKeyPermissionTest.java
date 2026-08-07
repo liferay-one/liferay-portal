@@ -10,10 +10,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -83,7 +83,7 @@ public class CommonLicenseKeyPermissionTest {
 					_ACCOUNT_ID));
 
 		Assertions.assertThrows(
-			PrincipalException.class,
+			CommonLicenseKeyEntitlementException.class,
 			() -> commonLicenseKeyPermission.check(
 				CommonLicenseKeyConstants.PRODUCT_FAMILY_ENTERPRISE_SEARCH,
 				null));
@@ -97,7 +97,7 @@ public class CommonLicenseKeyPermissionTest {
 				"C_ENT_DEF_COMMERCE");
 
 		Assertions.assertThrows(
-			PrincipalException.class,
+			CommonLicenseKeyEntitlementException.class,
 			() -> commonLicenseKeyPermission.check(
 				CommonLicenseKeyConstants.PRODUCT_FAMILY_ENTERPRISE_SEARCH,
 				null));
@@ -111,7 +111,7 @@ public class CommonLicenseKeyPermissionTest {
 				"C_ENT_DEF_ENTERPRISE_SEARCH");
 
 		Assertions.assertThrows(
-			PrincipalException.class,
+			CommonLicenseKeyEntitlementException.class,
 			() -> commonLicenseKeyPermission.check("bogus", null));
 
 		Mockito.verify(

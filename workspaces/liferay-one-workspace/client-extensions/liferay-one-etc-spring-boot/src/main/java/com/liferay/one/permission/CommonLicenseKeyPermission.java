@@ -10,10 +10,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.HashSet;
@@ -32,7 +32,7 @@ public class CommonLicenseKeyPermission {
 
 	public void check(String productFamily, Jwt jwt) throws Exception {
 		if (!_contains(productFamily, jwt)) {
-			throw new PrincipalException();
+			throw new CommonLicenseKeyEntitlementException(productFamily);
 		}
 	}
 
