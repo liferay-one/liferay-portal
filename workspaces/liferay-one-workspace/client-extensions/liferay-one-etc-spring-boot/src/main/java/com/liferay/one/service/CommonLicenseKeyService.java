@@ -5,8 +5,8 @@
 
 package com.liferay.one.service;
 
+import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.constants.UploadProductEnvironmentConstants;
-import com.liferay.one.constants.UploadProductGroupConstants;
 import com.liferay.one.license.CommonLicenseKeyData;
 import com.liferay.one.license.CommonLicenseKeyParser;
 import com.liferay.petra.string.StringPool;
@@ -35,7 +35,8 @@ public class CommonLicenseKeyService extends OneBaseService {
 		CommonLicenseKeyData commonLicenseKeyData = null;
 
 		if (StringUtil.equals(
-				productGroup, UploadProductGroupConstants.ENTERPRISE_SEARCH)) {
+				productGroup,
+				CommonLicenseKeyConstants.PRODUCT_GROUP_ENTERPRISE_SEARCH)) {
 
 			commonLicenseKeyData =
 				_commonLicenseKeyParser.parseEnterpriseSearch(fileContent);
@@ -45,7 +46,8 @@ public class CommonLicenseKeyService extends OneBaseService {
 				fileContent);
 		}
 
-		String productFamily = _toProductFamily(productGroup);
+		String productFamily = CommonLicenseKeyConstants.toProductFamily(
+			productGroup);
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -114,7 +116,9 @@ public class CommonLicenseKeyService extends OneBaseService {
 				"/o/c/commonlicensekeys"
 			).queryParam(
 				"filter",
-				"productFamily eq '" + _toProductFamily(productGroup) + "'"
+				"productFamily eq '" +
+					CommonLicenseKeyConstants.toProductFamily(productGroup) +
+						"'"
 			).queryParam(
 				"page", page
 			).queryParam(
@@ -196,21 +200,6 @@ public class CommonLicenseKeyService extends OneBaseService {
 
 		return productEnvironment;
 	}
-
-	private String _toProductFamily(String productGroup) {
-		if (StringUtil.equals(
-				productGroup, UploadProductGroupConstants.ENTERPRISE_SEARCH)) {
-
-			return _PRODUCT_FAMILY_ENTERPRISE_SEARCH;
-		}
-
-		return _PRODUCT_FAMILY_COMMERCE;
-	}
-
-	private static final String _PRODUCT_FAMILY_COMMERCE = "commerce";
-
-	private static final String _PRODUCT_FAMILY_ENTERPRISE_SEARCH =
-		"enterpriseSearch";
 
 	@Autowired
 	private CommonLicenseKeyParser _commonLicenseKeyParser;
