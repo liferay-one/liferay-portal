@@ -121,6 +121,31 @@ APPROVED | CHANGES_REQUESTED — one line of reasoning
 
 If `--fix` ran, say which fixes were applied automatically and which need a human.
 
+## Record the Verdict
+
+Leave a receipt, so `/one-pr` can tell whether this branch was reviewed and at which commit:
+
+```bash
+RECEIPTS="$(git rev-parse --git-common-dir)/one-review/receipts"
+
+mkdir -p "${RECEIPTS}"
+
+{
+	echo "verdict: <APPROVED|CHANGES_REQUESTED>"
+	echo "commit: $(git rev-parse HEAD)"
+	echo "branch: $(git rev-parse --abbrev-ref HEAD)"
+	echo "lane: <workspace|scripts>"
+	echo "tree: $([ -z "$(git status --porcelain)" ] && echo clean || echo dirty)"
+	echo "reviewed: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "${RECEIPTS}/$(git rev-parse HEAD)"
+```
+
+It lives inside the git directory, so it is never tracked, never reaches a PR diff, and needs no `.gitignore` entry. Use `--git-common-dir` rather than `--git-dir`: the latter is per-worktree, so a review run in a worktree would be invisible when the pull request goes out from the main checkout. The common directory is shared by every worktree of the repo, and since receipts are keyed by commit SHA there is nothing to collide.
+
+Key it to the reviewed commit: a receipt is evidence about that commit and nothing later. Record `tree: dirty` honestly when the review covered staged or uncommitted work — a review of a working tree is not a review of whatever gets committed afterward, and `/one-pr` is right to ask again.
+
+Skip this under `--read-only`, which writes nothing. The caller owns the record there; for the `one-team` reviewer that record is `review.md`.
+
 ## Step 6: Learn
 
 Skip under `--read-only` — it writes rule files and memory, and a review whose findings are not yet adjudicated has nothing settled to harvest. Whoever owns the change runs it once the dust clears.

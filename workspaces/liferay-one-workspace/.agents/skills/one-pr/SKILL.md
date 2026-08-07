@@ -26,6 +26,26 @@ Before creating the PR, verify these Brian-enforced requirements:
 
 **Merge conflicts:** Confirm the branch is rebased on top of `liferay-one/master-temp` with no conflicts. Run `git merge-base --is-ancestor liferay-one/master-temp HEAD` — if the branch is behind, offer to run `/one-rebase` first.
 
+**Code review:** Confirm the branch has actually been reviewed before it goes out. Accept either signal:
+
+1. A `one-review` receipt for the exact commit being sent, with `verdict: APPROVED` and `tree: clean`:
+
+	```bash
+	cat "$(git rev-parse --git-common-dir)/one-review/receipts/$(git rev-parse HEAD)" 2>/dev/null
+	```
+
+1. A `one-team` review artifact for this ticket — `.one-team/<TICKET>/review.md` at the repo root. That protocol gates its own commits on the reviewer's `APPROVED`, so its presence is evidence for the branch as committed.
+
+Three cases fail the check, and each gets named rather than lumped together as "unreviewed":
+
+- **No receipt and no artifact** — the branch was never reviewed.
+- **A receipt naming an ancestor of `HEAD`** — the review predates the current commits. Report which arrived after it with `git log --oneline <receipt-commit>..HEAD`; a review of earlier commits says nothing about later ones.
+- **A receipt reading `verdict: CHANGES_REQUESTED` or `tree: dirty`** — findings were open, or the review covered a working tree rather than the commit. Neither counts, however recent.
+
+On any of those, **stop before doing anything outward-facing.** Do not push the branch, do not open the pull request, and do not transition the Jira ticket. Tell the user which case applies and ask them to run `/one-review` first. Do not run the review here — this skill checks for one and reports; it is not the review.
+
+The user may override by saying so explicitly, and that decision is theirs to make. When they do, proceed and note in the final summary that the PR went out without a review on record, so it is visible rather than silently absorbed.
+
 ## Input
 
 ### Branch
@@ -115,3 +135,4 @@ Report back to the user with:
 
 - The Jira ticket status and link.
 - The pull request URL.
+- Which review signal satisfied the pre-flight check — the receipt's commit and verdict, or the `one-team` artifact — or, when the user overrode it, that the pull request went out with no review on record.
