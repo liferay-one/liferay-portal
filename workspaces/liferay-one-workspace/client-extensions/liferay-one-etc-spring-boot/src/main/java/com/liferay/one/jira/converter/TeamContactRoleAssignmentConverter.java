@@ -22,6 +22,11 @@ public class TeamContactRoleAssignmentConverter
 	extends BaseJiraAssetObjectConverter {
 
 	@Override
+	public String getDeletedAttributeName() {
+		return TeamContactRoleAssignmentConstants.ATTRIBUTE_NAME_DELETED;
+	}
+
+	@Override
 	public String getExternalKeyAttributeName() {
 		return TeamContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME;
 	}

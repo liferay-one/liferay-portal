@@ -54,6 +54,18 @@ public abstract class BaseJiraAssetObjectConverter {
 		return builder.build();
 	}
 
+	/**
+	 * @return the name of the boolean attribute that marks an asset object as
+	 *         soft deleted
+	 * @throws UnsupportedOperationException if the asset object type does not
+	 *         support soft deletion
+	 */
+	public String getDeletedAttributeName() {
+		throw new UnsupportedOperationException(
+			"The object type " + getObjectTypeName() +
+				" does not support soft deletion");
+	}
+
 	public String getExternalKeyAttributeName() {
 		return _ATTRIBUTE_NAME_EXTERNAL_KEY;
 	}

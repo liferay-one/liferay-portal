@@ -29,6 +29,28 @@ public class AQLUtil {
 
 	public static class Builder {
 
+		public Builder andAnyEmpty(String... fieldNames) {
+			if (fieldNames.length == 0) {
+				throw new IllegalArgumentException(
+					"An IS EMPTY clause requires at least one field name");
+			}
+
+			_sb.append(" AND (");
+
+			for (int i = 0; i < fieldNames.length; i++) {
+				if (i > 0) {
+					_sb.append(" OR ");
+				}
+
+				_sb.append(_field(fieldNames[i]));
+				_sb.append(" IS EMPTY");
+			}
+
+			_sb.append(")");
+
+			return this;
+		}
+
 		public Builder andEquals(boolean value, String... fieldNames) {
 			_sb.append(" AND ");
 			_sb.append(_field(fieldNames));
