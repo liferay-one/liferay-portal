@@ -35,6 +35,7 @@ import java.util.Date;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -162,6 +163,66 @@ public class AccountSynchronizerTest {
 			Mockito.mock(TeamConverter.class));
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_userAccountService", _userAccountService);
+	}
+
+	@Test
+	public void testDeleteAccountContinuesWhenSoftDeleteFails() {
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_accountOrganizationSynchronizer
+		).softDeleteByAccount(
+			Mockito.any()
+		);
+
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_accountUserAccountRoleSynchronizer
+		).softDeleteByAccount(
+			Mockito.any()
+		);
+
+		_accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).softDeleteByAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).delete(
+			Mockito.any(), Mockito.eq(_EXTERNAL_REFERENCE_CODE)
+		);
+	}
+
+	@Test
+	public void testDeleteAccountSoftDeletesAssignmentsFirst() {
+		_accountSynchronizer.deleteAccount(_EXTERNAL_REFERENCE_CODE);
+
+		InOrder inOrder = Mockito.inOrder(
+			_accountOrganizationSynchronizer,
+			_accountUserAccountRoleSynchronizer, _jiraAssetService);
+
+		inOrder.verify(
+			_accountOrganizationSynchronizer
+		).softDeleteByAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_accountUserAccountRoleSynchronizer
+		).softDeleteByAccount(
+			_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_jiraAssetService
+		).delete(
+			Mockito.any(), Mockito.eq(_EXTERNAL_REFERENCE_CODE)
+		);
 	}
 
 	@Test
