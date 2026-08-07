@@ -15,12 +15,10 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -198,12 +196,8 @@ public class ContractService extends OneBaseService {
 		String projectExternalReferenceCode = GetterUtil.getString(
 			customFields.get("salesforceProjectId"));
 
-		ChainContracts chainContracts = _fetchChainContracts(
+		Contract predecessorContract = _fetchPredecessorContract(
 			salesforceContract);
-
-		Contract existingContract = chainContracts.getExistingContract();
-
-		Contract predecessorContract = chainContracts.getPredecessorContract();
 
 		if (predecessorContract != null) {
 			jsonObject.put(
@@ -226,8 +220,8 @@ public class ContractService extends OneBaseService {
 
 		if (Objects.equals(action, "update")) {
 			response = _updateContract(
-				existingContract, jsonObject, predecessorContract,
-				projectExternalReferenceCode, salesforceContract, uri);
+				jsonObject, predecessorContract, projectExternalReferenceCode,
+				salesforceContract, uri);
 		}
 		else {
 			response = _createContract(
@@ -244,7 +238,7 @@ public class ContractService extends OneBaseService {
 		_syncOrderContract(
 			contract, customFields, order, projectExternalReferenceCode);
 
-		_attachSuccessorContract(chainContracts, contract, salesforceContract);
+		_attachSuccessorContract(contract, salesforceContract);
 	}
 
 	private void _attachOriginalContract(
@@ -279,15 +273,15 @@ public class ContractService extends OneBaseService {
 	}
 
 	private void _attachSuccessorContract(
-			ChainContracts chainContracts, Contract contract,
-			SalesforceContract salesforceContract)
+			Contract contract, SalesforceContract salesforceContract)
 		throws Exception {
 
 		if (contract == null) {
 			return;
 		}
 
-		Contract successorContract = chainContracts.getSuccessorContract();
+		Contract successorContract = _fetchSuccessorContract(
+			salesforceContract);
 
 		if ((successorContract == null) ||
 			Validator.isNotNull(
@@ -349,95 +343,82 @@ public class ContractService extends OneBaseService {
 		}
 	}
 
-	private ChainContracts _fetchChainContracts(
-			SalesforceContract salesforceContract)
+	private Contract _fetchChainContract(
+			String filter, String salesforceContractId)
 		throws Exception {
-
-		String opportunityId = salesforceContract.getOpportunityId();
-		String renewalOpportunityId =
-			salesforceContract.getRenewalOpportunityId();
-
-		List<String> filterStatements = new ArrayList<>();
-
-		filterStatements.add(
-			"externalReferenceCode eq '" + salesforceContract.getId() + "'");
-
-		if (Validator.isNotNull(opportunityId)) {
-			filterStatements.add(
-				"renewalOpportunityId eq '" + opportunityId + "'");
-		}
-
-		if (Validator.isNotNull(renewalOpportunityId)) {
-			filterStatements.add(
-				"opportunityId eq '" + renewalOpportunityId + "'");
-		}
 
 		String response = get(
 			getAuthorization(),
 			UriComponentsBuilder.fromPath(
 				"/o/c/contracts"
 			).queryParam(
-				"filter", StringUtil.merge(filterStatements, " or ")
+				"filter", filter
 			).queryParam(
 				"page", 1
 			).queryParam(
-				"pageSize", 3
+				"pageSize", 2
 			).build(
 			).toUri());
 
 		if (Validator.isNull(response)) {
-			return new ChainContracts(null, null, null);
+			return null;
 		}
 
 		JSONObject jsonObject = new JSONObject(response);
 
 		int totalCount = jsonObject.optInt("totalCount");
 
-		if (totalCount > 3) {
+		if (totalCount > 1) {
 			throw new AmbiguousContractChainException(
 				StringBundler.concat(
 					"Unable to uniquely resolve the contract chain for ",
-					salesforceContract.getId(), " with total count ",
-					totalCount));
+					salesforceContractId, " with total count ", totalCount));
 		}
 
 		JSONArray jsonArray = jsonObject.optJSONArray("items");
 
-		Contract existingContract = null;
-		Contract predecessorContract = null;
-		Contract successorContract = null;
-
-		if (jsonArray != null) {
-			for (int i = 0; i < jsonArray.length(); i++) {
-				Contract contract = new Contract(jsonArray.getJSONObject(i));
-
-				if (Objects.equals(
-						contract.getExternalReferenceCode(),
-						salesforceContract.getId())) {
-
-					existingContract = contract;
-
-					continue;
-				}
-
-				if (Validator.isNotNull(opportunityId) &&
-					Objects.equals(
-						contract.getRenewalOpportunityId(), opportunityId)) {
-
-					predecessorContract = contract;
-				}
-
-				if (Validator.isNotNull(renewalOpportunityId) &&
-					Objects.equals(
-						contract.getOpportunityId(), renewalOpportunityId)) {
-
-					successorContract = contract;
-				}
-			}
+		if ((jsonArray == null) || (jsonArray.length() == 0)) {
+			return null;
 		}
 
-		return new ChainContracts(
-			existingContract, predecessorContract, successorContract);
+		return new Contract(jsonArray.getJSONObject(0));
+	}
+
+	private Contract _fetchPredecessorContract(
+			SalesforceContract salesforceContract)
+		throws Exception {
+
+		String opportunityId = salesforceContract.getOpportunityId();
+
+		if (Validator.isNull(opportunityId)) {
+			return null;
+		}
+
+		return _fetchChainContract(
+			StringBundler.concat(
+				"renewalOpportunityId eq '", opportunityId,
+				"' and externalReferenceCode ne '", salesforceContract.getId(),
+				"'"),
+			salesforceContract.getId());
+	}
+
+	private Contract _fetchSuccessorContract(
+			SalesforceContract salesforceContract)
+		throws Exception {
+
+		String renewalOpportunityId =
+			salesforceContract.getRenewalOpportunityId();
+
+		if (Validator.isNull(renewalOpportunityId)) {
+			return null;
+		}
+
+		return _fetchChainContract(
+			StringBundler.concat(
+				"opportunityId eq '", renewalOpportunityId,
+				"' and externalReferenceCode ne '", salesforceContract.getId(),
+				"'"),
+			salesforceContract.getId());
 	}
 
 	private void _syncOrderContract(
@@ -505,10 +486,13 @@ public class ContractService extends OneBaseService {
 	}
 
 	private String _updateContract(
-			Contract existingContract, JSONObject jsonObject,
-			Contract predecessorContract, String projectExternalReferenceCode,
+			JSONObject jsonObject, Contract predecessorContract,
+			String projectExternalReferenceCode,
 			SalesforceContract salesforceContract, URI uri)
 		throws Exception {
+
+		Contract existingContract = fetchContractByExternalReferenceCode(
+			salesforceContract.getId());
 
 		if (existingContract == null) {
 			throw new NoSuchContractException(
@@ -547,34 +531,5 @@ public class ContractService extends OneBaseService {
 
 	@Autowired
 	private EntitlementService _entitlementService;
-
-	private static class ChainContracts {
-
-		public ChainContracts(
-			Contract existingContract, Contract predecessorContract,
-			Contract successorContract) {
-
-			_existingContract = existingContract;
-			_predecessorContract = predecessorContract;
-			_successorContract = successorContract;
-		}
-
-		public Contract getExistingContract() {
-			return _existingContract;
-		}
-
-		public Contract getPredecessorContract() {
-			return _predecessorContract;
-		}
-
-		public Contract getSuccessorContract() {
-			return _successorContract;
-		}
-
-		private final Contract _existingContract;
-		private final Contract _predecessorContract;
-		private final Contract _successorContract;
-
-	}
 
 }
