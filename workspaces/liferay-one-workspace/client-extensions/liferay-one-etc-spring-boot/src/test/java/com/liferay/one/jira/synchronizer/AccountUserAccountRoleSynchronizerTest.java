@@ -15,6 +15,7 @@ import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.jira.util.JiraSyncLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
 import java.util.Date;
@@ -115,30 +116,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUnassignStaleRolesExcludesCurrentAssignments()
-		throws Exception {
-
-		AtomicReference<String> aqlAtomicReference = _captureAQL();
-
-		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
-			_ACCOUNT_EXTERNAL_KEY,
-			Collections.singletonMap(
-				_USER_ACCOUNT_EXTERNAL_KEY,
-				Collections.singleton(_ROLE_EXTERNAL_KEY)),
-			new Date());
-
-		Assertions.assertEquals(
-			StringBundler.concat(
-				"base AND \"Account External Key\" = \"account-erc\" AND ",
-				"\"Deleted\" = false AND \"Name\" NOT IN ",
-				"(\"role-erc;user-account-erc;account-erc\")"),
-			aqlAtomicReference.get());
-	}
-
-	@Test
-	public void testSyncUnassignStaleRolesExcludesDeletedAssignments()
-		throws Exception {
-
+	public void testSyncUnassignStaleRolesBaseAQL() throws Exception {
 		AtomicReference<String> aqlAtomicReference = _captureAQL();
 
 		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
@@ -148,6 +126,20 @@ public class AccountUserAccountRoleSynchronizerTest {
 			"base AND \"Account External Key\" = \"account-erc\" AND " +
 				"\"Deleted\" = false",
 			aqlAtomicReference.get());
+	}
+
+	@Test
+	public void testSyncUnassignStaleRolesSkipsCaseDifferingCurrentAssignments()
+		throws Exception {
+
+		_assertSkipped(StringUtil.toUpperCase(_NAME));
+	}
+
+	@Test
+	public void testSyncUnassignStaleRolesSkipsCurrentAssignments()
+		throws Exception {
+
+		_assertSkipped(_NAME);
 	}
 
 	@Test
@@ -232,6 +224,36 @@ public class AccountUserAccountRoleSynchronizerTest {
 		);
 	}
 
+	private void _assertSkipped(String name) {
+		JiraAssetObject jiraAssetObject = _mockAssignment(_ROLE_EXTERNAL_KEY);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue(
+				AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME)
+		).thenReturn(
+			name
+		);
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singletonMap(
+				_USER_ACCOUNT_EXTERNAL_KEY,
+				Collections.singleton(_ROLE_EXTERNAL_KEY)),
+			new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
 	private AtomicReference<String> _captureAQL() {
 		AtomicReference<String> aqlAtomicReference = new AtomicReference<>();
 
@@ -277,6 +299,8 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	private static final String _ACCOUNT_EXTERNAL_KEY = "account-erc";
+
+	private static final String _NAME = "role-erc;user-account-erc;account-erc";
 
 	private static final String _ROLE_EXTERNAL_KEY = "role-erc";
 

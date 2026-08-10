@@ -13,7 +13,7 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.jira.util.JiraSyncLock;
-import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
 import java.util.Date;
@@ -148,27 +148,7 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUnassignStaleOrganizationsExcludesCurrentAssignments()
-		throws Exception {
-
-		AtomicReference<String> aqlAtomicReference = _captureAQL();
-
-		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-			_ACCOUNT_EXTERNAL_KEY,
-			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY), new Date());
-
-		Assertions.assertEquals(
-			StringBundler.concat(
-				"base AND \"Account External Key\" = \"account-erc\" AND ",
-				"\"Deleted\" = false AND \"Team External Key\" NOT IN ",
-				"(\"organization-erc\")"),
-			aqlAtomicReference.get());
-	}
-
-	@Test
-	public void testSyncUnassignStaleOrganizationsExcludesDeletedAssignments()
-		throws Exception {
-
+	public void testSyncUnassignStaleOrganizationsBaseAQL() throws Exception {
 		AtomicReference<String> aqlAtomicReference = _captureAQL();
 
 		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
@@ -178,6 +158,20 @@ public class AccountOrganizationSynchronizerTest {
 			"base AND \"Account External Key\" = \"account-erc\" AND " +
 				"\"Deleted\" = false",
 			aqlAtomicReference.get());
+	}
+
+	@Test
+	public void testSyncUnassignStaleOrganizationsSkipsCaseDifferingCurrentAssignments()
+		throws Exception {
+
+		_assertSkipped(StringUtil.toUpperCase(_ORGANIZATION_EXTERNAL_KEY));
+	}
+
+	@Test
+	public void testSyncUnassignStaleOrganizationsSkipsCurrentAssignments()
+		throws Exception {
+
+		_assertSkipped(_ORGANIZATION_EXTERNAL_KEY);
 	}
 
 	@Test
@@ -254,6 +248,26 @@ public class AccountOrganizationSynchronizerTest {
 		).upsert(
 			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
 			Mockito.any()
+		);
+	}
+
+	private void _assertSkipped(String organizationExternalKey) {
+		JiraAssetObject jiraAssetObject = _mockAssignment();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singleton(organizationExternalKey), new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
