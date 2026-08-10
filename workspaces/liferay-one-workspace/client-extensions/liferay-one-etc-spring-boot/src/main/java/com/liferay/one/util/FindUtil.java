@@ -5,7 +5,10 @@
 
 package com.liferay.one.util;
 
+import com.liferay.portal.kernel.util.StringUtil;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -13,6 +16,22 @@ import java.util.function.Predicate;
  * @author Drew Brokke
  */
 public class FindUtil {
+
+	public static boolean containsIgnoreCase(
+		Collection<String> collection, String value) {
+
+		if (collection == null) {
+			return false;
+		}
+
+		for (String string : collection) {
+			if (StringUtil.equalsIgnoreCase(string, value)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	public static <T> T findFirst(List<T> list, Predicate<T> predicate) {
 		if (list == null) {
