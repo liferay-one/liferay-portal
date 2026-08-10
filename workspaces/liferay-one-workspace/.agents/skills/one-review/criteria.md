@@ -76,6 +76,14 @@ Workspace lane: run the `code-review` skill — the working-diff reviewer, not t
 
 Scripts lane: skip it — the skill is shaped for the workspace. A clean `bun run lint` is a starting point, not a substitute: it says nothing about layering, comments, idempotency, or an invented ERC.
 
+## Evidence
+
+A check happened during this review or it did not happen. Nothing already in context counts — not a file read earlier in the session, not a grep run while the code was being written, not a conclusion reached before the review began. *I already checked that* is the signal to check it again: it is the one class of check a reviewer skips without ever noticing a gap, and it lands hardest on the values that matter most, since a contract looked up during implementation was looked up against code that has since changed.
+
+This binds cleared checks as much as findings. A finding cites the `file:line` it was verified at; a lens that reports nothing states in the report what it read to conclude that — a line of files and counts, not a paragraph, since a short report is bought by naming coverage tersely and never by leaving it out. Blast radius already has to distinguish "traced, nothing found" from "never traced"; the same distinction applies to every lens, and to every value the cross-repo lens clears.
+
+Where the reviewing session is not independent of the change, this rule is what the review turns on; [`SKILL.md`](./SKILL.md) defines the three states of independence and what each one owes.
+
 ## Known False Positives
 
 Do not report these. Each costs the reader more than it saves, and a wrong finding costs more than a missed one.
@@ -99,6 +107,6 @@ Tag every finding and sort most severe first:
 
 Every finding cites a `file:line` and is verified against the actual code before it is written up. Automated output — from `code-review` or any subagent — is a candidate list, not findings; only what survives verification gets a tag. The `fix:` line is a direction, not a patch: name the approach and leave the implementation to whoever owns the change.
 
-Keep the report short — most good reviews fit on a page — and never echo the diff back, since the reader already has it. The one thing worth stating even when it found nothing is the blast-radius coverage: which symbols were traced and how many references each had. "Traced, nothing found" and "never traced" take the same space on the page and mean opposite things.
+Keep the report short — most good reviews fit on a page — and never echo the diff back, since the reader already has it. State coverage even where a pass found nothing: the independence state, the blast-radius trace with the symbols traced and their reference counts, and each cleared lens's one-line read, per Evidence above. "Traced, nothing found" and "never traced" take the same space on the page and mean opposite things.
 
 `APPROVED` requires zero open findings of any severity, nits included. Anything else is `CHANGES_REQUESTED`.
