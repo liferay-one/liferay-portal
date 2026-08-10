@@ -13,6 +13,7 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.JiraSyncLock;
+import com.liferay.one.util.FindUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
@@ -74,29 +75,25 @@ public class AccountOrganizationSynchronizer {
 		List<JiraAssetObject> jiraAssetObjects =
 			_jiraAssetService.getJiraAssetObjects(
 				_accountTeamRoleAssignmentConverter,
-				aqlBuilder -> {
-					aqlBuilder.andEquals(
-						accountExternalKey,
-						AccountTeamRoleAssignmentConstants.
-							ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
-					).andEquals(
-						false,
-						AccountTeamRoleAssignmentConstants.
-							ATTRIBUTE_NAME_DELETED
-					);
-
-					if (!organizationExternalKeys.isEmpty()) {
-						aqlBuilder.andNotIn(
-							organizationExternalKeys,
-							AccountTeamRoleAssignmentConstants.
-								ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY);
-					}
-				});
+				aqlBuilder -> aqlBuilder.andEquals(
+					accountExternalKey,
+					AccountTeamRoleAssignmentConstants.
+						ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
+				).andEquals(
+					false,
+					AccountTeamRoleAssignmentConstants.ATTRIBUTE_NAME_DELETED
+				));
 
 		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
 			String organizationExternalKey = jiraAssetObject.getAttributeValue(
 				AccountTeamRoleAssignmentConstants.
 					ATTRIBUTE_NAME_TEAM_EXTERNAL_KEY);
+
+			if (FindUtil.containsIgnoreCase(
+					organizationExternalKeys, organizationExternalKey)) {
+
+				continue;
+			}
 
 			try {
 				_jiraSyncLock.withLock(

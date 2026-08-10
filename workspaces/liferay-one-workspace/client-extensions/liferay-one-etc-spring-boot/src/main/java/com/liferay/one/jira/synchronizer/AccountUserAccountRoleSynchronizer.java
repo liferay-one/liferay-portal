@@ -13,6 +13,7 @@ import com.liferay.one.jira.converter.ContactRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.JiraSyncLock;
+import com.liferay.one.util.FindUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
@@ -90,26 +91,23 @@ public class AccountUserAccountRoleSynchronizer {
 		List<JiraAssetObject> jiraAssetObjects =
 			_jiraAssetService.getJiraAssetObjects(
 				_accountContactRoleAssignmentConverter,
-				aqlBuilder -> {
-					aqlBuilder.andEquals(
-						accountExternalKey,
-						AccountContactRoleAssignmentConstants.
-							ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
-					).andEquals(
-						false,
-						AccountContactRoleAssignmentConstants.
-							ATTRIBUTE_NAME_DELETED
-					);
-
-					if (!names.isEmpty()) {
-						aqlBuilder.andNotIn(
-							names,
-							AccountContactRoleAssignmentConstants.
-								ATTRIBUTE_NAME_NAME);
-					}
-				});
+				aqlBuilder -> aqlBuilder.andEquals(
+					accountExternalKey,
+					AccountContactRoleAssignmentConstants.
+						ATTRIBUTE_NAME_ACCOUNT_EXTERNAL_KEY
+				).andEquals(
+					false,
+					AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_DELETED
+				));
 
 		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			String name = jiraAssetObject.getAttributeValue(
+				AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME);
+
+			if (FindUtil.containsIgnoreCase(names, name)) {
+				continue;
+			}
+
 			String roleExternalKey = jiraAssetObject.getAttributeValue(
 				AccountContactRoleAssignmentConstants.
 					ATTRIBUTE_NAME_CONTACT_ROLE_EXTERNAL_KEY);
