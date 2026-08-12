@@ -1368,6 +1368,7 @@ export default {
 	'unable-to-assign-roles': 'Unable to assign roles',
 	'unable-to-connect-to-file-server': 'Unable to connect to file server.',
 	'unable-to-delete-attachment': 'Unable to delete attachment.',
+	'unable-to-download-the-license-key': 'Unable to download the license key.',
 	'unable-to-download-your-license-file-please-try-again-and-or-contact-support-via-the-manage-menu-on-the-dashboard':
 		'Unable to download your license file.  Please try again and/or contact support via the manage menu on the dashboard.',
 	'unable-to-invite-member': 'Unable to invite member.',
@@ -1517,6 +1518,8 @@ export default {
 		'You do not have access to this page.',
 	'you-do-not-have-access-to-upload-files':
 		'You do not have access to upload files.',
+	'you-do-not-have-an-active-enterprise-search-subscription':
+		'You do not have an active Enterprise Search subscription.',
 	'you-have-reached-the-maximum-number-of-active-trials-allowed-to-start-a-new-trial-please-end-one-of-your-existing-trials-first':
 		'You have reached the maximum number of active trials allowed. To start a new trial, please end one of your existing trials first.',
 	'you-havent-published-any-apps-yet': "You haven't published any apps yet.",
