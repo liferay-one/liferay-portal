@@ -119,6 +119,8 @@ export default {
 	'try-again-later': '後でもう一度試してください。',
 	'unable-to-connect-to-file-server': 'ファイルサーバーに接続できない',
 	'unable-to-delete-attachment': '添付ファイルを削除できませんでした。',
+	'unable-to-download-the-license-key':
+		'ライセンスキーをダウンロードできませんでした。',
 	'unable-to-load-the-license-keys': 'ライセンスキーを読み込めませんでした。',
 	'upgrade': 'アップグレード',
 	'upload': 'アップロード',
@@ -132,6 +134,8 @@ export default {
 	'x-tickets': '{0} チケット',
 	'you-do-not-have-access-to-upload-files':
 		'ファイルをアップロードする権限がない',
+	'you-do-not-have-an-active-enterprise-search-subscription':
+		'有効なEnterprise Searchサブスクリプションがありません。',
 	'you-need-administrator-or-requester-role-on-this-project-to-upload-a-file':
 		'ファイルをアップロードするには、このプロジェクトの管理者または要求者のロールが必要です。',
 	'your-attachment-is-uploaded-however-we-encountered-a-problem-posting-your-comment-the-system-is-automatically-retrying-to-send-it':

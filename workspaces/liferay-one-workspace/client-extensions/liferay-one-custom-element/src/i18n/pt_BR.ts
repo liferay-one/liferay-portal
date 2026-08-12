@@ -123,6 +123,8 @@ export default {
 	'unable-to-connect-to-file-server':
 		'Não foi possível conectar ao servidor de arquivos.',
 	'unable-to-delete-attachment': 'Não foi possível excluir o anexo.',
+	'unable-to-download-the-license-key':
+		'Não foi possível baixar a chave de licença.',
 	'unable-to-load-the-license-keys':
 		'Não foi possível carregar as chaves de licença.',
 	'upgrade': 'Atualização',
@@ -137,6 +139,8 @@ export default {
 	'x-tickets': '{0} Tickets',
 	'you-do-not-have-access-to-upload-files':
 		'Você não tem acesso para enviar arquivos.',
+	'you-do-not-have-an-active-enterprise-search-subscription':
+		'Você não tem uma assinatura ativa do Enterprise Search.',
 	'you-need-administrator-or-requester-role-on-this-project-to-upload-a-file':
 		'Você precisa ter o papel de Administrador ou Solicitante neste projeto para enviar um arquivo.',
 	'your-attachment-is-uploaded-however-we-encountered-a-problem-posting-your-comment-the-system-is-automatically-retrying-to-send-it':
