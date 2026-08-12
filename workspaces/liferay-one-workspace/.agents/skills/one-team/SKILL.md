@@ -205,7 +205,14 @@ Exit gate: `test-report.md` complete; developer and tester both explicitly confi
 
 Spawn the reviewer — unless the early pass below already did — and brief it with the plan, test report, and diff scope (`git diff <BASE>` — the work is staged, so this shows everything, new files included).
 
-**Decide here whether this ticket earns `--adversarial`**, and tell the reviewer which it is. Off is the default and costs a fraction; on replaces the reviewer's own reading with independent passes that cannot see each other, at several times the tokens. Turn it on where being wrong is expensive — a migration that writes data, a contract another repo consumes, a security-facing path — and leave it off for the ordinary ticket. Under the flag, brief with `--name-only` scope instead: the reviewer reads no diff itself, and a coordinator that hands over the content has spent its fresh eyes before a pass exists. Log the choice in `team-log.md`. Those artifacts and nothing more: no account of how the developer arrived at the change, no summary of what has already been checked, no reassurance that a shape was deliberate. The coordinator watched this get built, and every sentence of that history it forwards is a judgment the reviewer no longer derives for itself. The reviewer works read-only per its charter.
+**Decide here whether this ticket is `--adversarial`-eligible**, and tell the reviewer which it is. Two triggers earn it and nothing else does:
+
+- the diff touches a **write path in the scripts lane** — a migration that loads or mutates data, where `criteria.md` already makes an idempotency defect a blocker and a bad run is expensive to undo;
+- the diff changes a **contract another repo consumes** — an ERC, a field name, an endpoint path, a payload shape.
+
+Neither present, every round runs standard. Either present, the reviewer still runs standard rounds and escalates only on the round it would otherwise approve — see its charter. Running the flag on every round multiplies its cost by the number of rounds and spends the most where it buys the least: a round ending in `CHANGES_REQUESTED` is catching things the next round would catch anyway, while the round that produces `APPROVED` is the one where a miss actually ships.
+
+Log the call in `team-log.md`. On an escalated round, brief with `git diff <BASE> --name-only` scope rather than content: under the flag the reviewer reads no diff itself, and a coordinator that hands over the content has spent its fresh eyes before a pass exists. Those artifacts and nothing more: no account of how the developer arrived at the change, no summary of what has already been checked, no reassurance that a shape was deliberate. The coordinator watched this get built, and every sentence of that history it forwards is a judgment the reviewer no longer derives for itself. The reviewer works read-only per its charter.
 
 For small diffs (roughly under two hundred changed lines), the coordinator may start the reviewer's passes during Phase 4, with the verdict held until the tester's `PASS` lands — a `FAIL` that changes the diff voids them. Findings are only ever issued against the tested, final diff.
 
