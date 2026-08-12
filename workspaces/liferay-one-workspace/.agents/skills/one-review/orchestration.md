@@ -1,6 +1,8 @@
 # One Review — Orchestration
 
-How a review is *run*: who reads the diff, how many independent passes there are, and how their findings combine. What a review *covers* is [`criteria.md`](./criteria.md); the steps themselves are [`SKILL.md`](./SKILL.md).
+How a review is *run* when it is run adversarially: who reads the diff, how many independent passes there are, and how their findings combine. What a review *covers* is [`criteria.md`](./criteria.md); the steps themselves are [`SKILL.md`](./SKILL.md).
+
+**This file applies under `--adversarial` and nowhere else.** A plain `/one-review` never reads it and works `SKILL.md` directly — which is the default, because everything here buys accuracy with several times the tokens of a plain run. `SKILL.md`'s flag list says when that trade is worth making.
 
 **A pass never reads this file.** A session whose prompt names it a pass works `SKILL.md` Steps 1 through 5 and nothing here — that is what keeps a pass from spawning passes of its own, and it is why this content lives in a separate file rather than a section a pass is asked to skip.
 

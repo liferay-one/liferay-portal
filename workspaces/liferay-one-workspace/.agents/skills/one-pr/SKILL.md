@@ -34,7 +34,7 @@ Before creating the PR, verify these Brian-enforced requirements:
 	cat "$(git rev-parse --git-common-dir)/one-review/receipts/$(git rev-parse HEAD)" 2>/dev/null
 	```
 
-1. A `one-team` review artifact for this ticket — `.one-team/<TICKET>/review.md` at the repo root. That protocol gates its own commits on the reviewer's `APPROVED`, so its presence is evidence for the branch as committed. It carries an Independence line in place of a receipt, since the reviewer runs `--read-only`; read its `reading` value and apply the same branches below. Phase 6 already named any degradation to the user, but this skill may run days later in another session, so do not rely on that having been heard.
+1. A `one-team` review artifact for this ticket — `.one-team/<TICKET>/review.md` at the repo root. That protocol gates its own commits on the reviewer's `APPROVED`, so its presence is evidence for the branch as committed. Its presence is the signal; where that run used `--adversarial` it also carries an Independence line in place of a receipt, since the reviewer runs `--read-only`, and that is worth naming in the summary.
 
 Three cases fail the check, and each gets named rather than lumped together as "unreviewed":
 
@@ -44,15 +44,7 @@ Three cases fail the check, and each gets named rather than lumped together as "
 
 On any of those, **stop before doing anything outward-facing.** Do not push the branch, do not open the pull request, and do not transition the Jira ticket. Tell the user which case applies and ask them to run `/one-review` first. Do not run the review here — this skill checks for one and reports; it is not the review.
 
-A receipt is not a fourth failing case whatever its `independence` — it passes. What decides whether anything needs saying is the `reading` field beside it, read together with the state rather than either alone:
-
-- `fresh` — two or more independent passes that could not see each other. Name it and move on.
-- `orchestrated` — one pass, its lenses delegated to clean subagents, with the reviewing session owning the verdict. Second-best in every state, not the design anywhere: it means the harness offered no second reader. Name it; offer another review where the state is `SELF` or `BRIEFED`.
-- `contaminated` — the reviewing session read the diff itself, nothing delegated. Under `SELF` or `BRIEFED` that is the session carrying prior conclusions about the change grading its own work: name it, and offer another review before anything outward-facing happens. Under `FRESH` it is an ordinary single-reader review in a harness with no subagents — weaker than a combined one, worth naming, not worth blocking.
-
-Where the offer applies, say what it means operationally: a run in a session that did not write the code, or `/one-review` from here, which spawns independent fresh passes and comes back reading `fresh`. Proceed when the user declines.
-
-A receipt predating these fields carries neither; say so rather than inferring them.
+The gate is the verdict and nothing else: `APPROVED` on the right commit with a clean tree passes, whichever way the review was run. `--adversarial` is an optional escalation for changes that warrant it, never the bar — a standard review satisfies this check exactly as fully, and a receipt without a `mode` line (or with `mode: standard`) is not a lesser signal. Note the `mode` in the summary because it is worth knowing, and do not offer to re-run anything: the user asking for a PR has already decided how much review this change warranted.
 
 The user may override by saying so explicitly, and that decision is theirs to make. When they do, proceed and note in the final summary that the PR went out without a review on record, so it is visible rather than silently absorbed.
 
@@ -145,4 +137,4 @@ Report back to the user with:
 
 - The Jira ticket status and link.
 - The pull request URL.
-- Which review signal satisfied the pre-flight check — the receipt's commit and verdict, or the `one-team` artifact — or, when the user overrode it, that the pull request went out with no review on record. Name the receipt's `independence` and `reading` next to its verdict when it carries them, so the reader can see whose session answered for the branch and whether the findings came from clean context.
+- Which review signal satisfied the pre-flight check — the receipt's commit and verdict, or the `one-team` artifact — or, when the user overrode it, that the pull request went out with no review on record. Name the receipt's `mode` next to its verdict when it carries one, and under `adversarial` the `independence` and `reading` beside it.
