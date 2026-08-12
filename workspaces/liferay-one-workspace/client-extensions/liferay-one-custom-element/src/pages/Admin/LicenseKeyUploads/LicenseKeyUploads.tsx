@@ -167,11 +167,22 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 			actions={[
 				{
 					label: 'download',
-					onClick: () =>
-						CommonLicenseKeys.downloadCommonLicenseKey(
-							row.id,
-							row.name
-						),
+					onClick: async () => {
+						try {
+							await CommonLicenseKeys.downloadCommonLicenseKey(
+								row.id,
+								row.name
+							);
+						}
+						catch {
+							Liferay.Util.openToast({
+								message: i18n.translate(
+									'unable-to-download-the-license-key'
+								),
+								type: 'danger',
+							});
+						}
+					},
 				},
 				{
 					label: 'delete',

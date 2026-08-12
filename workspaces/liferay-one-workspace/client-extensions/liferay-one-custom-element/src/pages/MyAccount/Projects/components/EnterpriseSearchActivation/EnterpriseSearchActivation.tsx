@@ -5,11 +5,13 @@
 
 import {ClaySelect} from '@clayui/form';
 import {format} from 'date-fns';
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import useSWR from 'swr';
 import Button from '~/components/Button/Button';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {translate} from '~/i18n';
+import FetcherError from '~/services/fetcher/FetcherError';
+import {Liferay} from '~/services/liferay/liferay';
 import CommonLicenseKeys, {
 	CommonLicenseKey,
 } from '~/services/spring-boot/CommonLicenseKeys';
@@ -33,7 +35,7 @@ function termLabel(key: CommonLicenseKey): string {
 }
 
 export default function EnterpriseSearchActivation() {
-	const {data} = useSWR<APIResponse<CommonLicenseKey>>(
+	const {data, error} = useSWR<APIResponse<CommonLicenseKey>>(
 		['common-license-keys', 'ENTERPRISE_SEARCH'],
 		() =>
 			CommonLicenseKeys.getCommonLicenseKeys({
@@ -42,6 +44,17 @@ export default function EnterpriseSearchActivation() {
 				productGroup: 'ENTERPRISE_SEARCH',
 			})
 	);
+
+	const notEntitled = (error as FetcherError)?.status === 403;
+
+	useEffect(() => {
+		if (error && !notEntitled) {
+			Liferay.Util.openToast({
+				message: translate('unable-to-load-the-license-keys'),
+				type: 'danger',
+			});
+		}
+	}, [error, notEntitled]);
 
 	const keys = useMemo(() => data?.items ?? [], [data]);
 
@@ -70,12 +83,22 @@ export default function EnterpriseSearchActivation() {
 	const selectedTerm =
 		terms.find((key) => String(key.id) === termId) ?? terms[0];
 
-	const handleDownload = () => {
-		if (selectedTerm) {
-			CommonLicenseKeys.downloadCommonLicenseKey(
+	const handleDownload = async () => {
+		if (!selectedTerm) {
+			return;
+		}
+
+		try {
+			await CommonLicenseKeys.downloadCommonLicenseKey(
 				selectedTerm.id,
 				selectedTerm.name
 			);
+		}
+		catch {
+			Liferay.Util.openToast({
+				message: translate('unable-to-download-the-license-key'),
+				type: 'danger',
+			});
 		}
 	};
 
@@ -86,80 +109,98 @@ export default function EnterpriseSearchActivation() {
 			className="mt-3"
 			clayIcon="key"
 		>
-			<p className="mt-3 text-neutral-7">
-				{translate(
-					'select-an-active-enterprise-search-subscription-to-download-the-activation-key'
-				)}
-			</p>
-
-			<div
-				className="d-flex flex-wrap"
-				style={{gap: 'var(--spacer-4)', maxWidth: '32rem'}}
-			>
-				<div className="flex-grow-1">
-					<label htmlFor="enterprise-search-subscription">
-						{translate('subscription')}
-					</label>
-
-					<ClaySelect
-						id="enterprise-search-subscription"
-						onChange={(event) => {
-							setSubscription(event.target.value);
-							setTermId('');
-						}}
-						value={selectedSubscription}
-					>
-						{subscriptions.map((option) => (
-							<ClaySelect.Option
-								key={option}
-								label={option}
-								value={option}
-							/>
-						))}
-					</ClaySelect>
-				</div>
-
-				<div className="flex-grow-1">
-					<label htmlFor="enterprise-search-term">
-						{translate('subscription-term')}
-					</label>
-
-					<ClaySelect
-						id="enterprise-search-term"
-						onChange={(event) => setTermId(event.target.value)}
-						value={selectedTerm ? String(selectedTerm.id) : ''}
-					>
-						{terms.map((key) => (
-							<ClaySelect.Option
-								key={key.id}
-								label={termLabel(key)}
-								value={String(key.id)}
-							/>
-						))}
-					</ClaySelect>
-				</div>
-			</div>
-
-			<Button
-				className="mt-4"
-				disabled={!selectedTerm}
-				displayType="secondary"
-				onClick={handleDownload}
-				prependIcon="download"
-			>
-				{translate('download-key')}
-			</Button>
-
-			<p className="mt-4 text-neutral-7">
-				{translate(
-					'for-instructions-on-how-to-setup-your-software-read'
-				)}{' '}
-				<a href={GETTING_STARTED_URL} rel="noopener" target="_blank">
+			{notEntitled ? (
+				<p className="mt-3 text-neutral-7">
 					{translate(
-						'getting-started-with-liferay-enterprise-search-article'
+						'you-do-not-have-an-active-enterprise-search-subscription'
 					)}
-				</a>
-			</p>
+				</p>
+			) : (
+				<>
+					<p className="mt-3 text-neutral-7">
+						{translate(
+							'select-an-active-enterprise-search-subscription-to-download-the-activation-key'
+						)}
+					</p>
+
+					<div
+						className="d-flex flex-wrap"
+						style={{gap: 'var(--spacer-4)', maxWidth: '32rem'}}
+					>
+						<div className="flex-grow-1">
+							<label htmlFor="enterprise-search-subscription">
+								{translate('subscription')}
+							</label>
+
+							<ClaySelect
+								id="enterprise-search-subscription"
+								onChange={(event) => {
+									setSubscription(event.target.value);
+									setTermId('');
+								}}
+								value={selectedSubscription}
+							>
+								{subscriptions.map((option) => (
+									<ClaySelect.Option
+										key={option}
+										label={option}
+										value={option}
+									/>
+								))}
+							</ClaySelect>
+						</div>
+
+						<div className="flex-grow-1">
+							<label htmlFor="enterprise-search-term">
+								{translate('subscription-term')}
+							</label>
+
+							<ClaySelect
+								id="enterprise-search-term"
+								onChange={(event) =>
+									setTermId(event.target.value)
+								}
+								value={
+									selectedTerm ? String(selectedTerm.id) : ''
+								}
+							>
+								{terms.map((key) => (
+									<ClaySelect.Option
+										key={key.id}
+										label={termLabel(key)}
+										value={String(key.id)}
+									/>
+								))}
+							</ClaySelect>
+						</div>
+					</div>
+
+					<Button
+						className="mt-4"
+						disabled={!selectedTerm}
+						displayType="secondary"
+						onClick={handleDownload}
+						prependIcon="download"
+					>
+						{translate('download-key')}
+					</Button>
+
+					<p className="mt-4 text-neutral-7">
+						{translate(
+							'for-instructions-on-how-to-setup-your-software-read'
+						)}{' '}
+						<a
+							href={GETTING_STARTED_URL}
+							rel="noopener"
+							target="_blank"
+						>
+							{translate(
+								'getting-started-with-liferay-enterprise-search-article'
+							)}
+						</a>
+					</p>
+				</>
+			)}
 		</DetailedCard>
 	);
 }
