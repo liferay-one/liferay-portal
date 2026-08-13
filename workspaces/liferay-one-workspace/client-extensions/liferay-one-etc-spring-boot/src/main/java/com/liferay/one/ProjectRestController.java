@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
@@ -12,6 +13,7 @@ import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -25,6 +27,7 @@ import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -76,6 +79,8 @@ public class ProjectRestController extends OneBaseRestController {
 
 		_projectMembershipService.deleteProjectMembership(
 			jwt, projectId, accountRoleExternalReferenceCode, userId);
+
+		_syncMembership(userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -160,6 +165,8 @@ public class ProjectRestController extends OneBaseRestController {
 
 		_projectMembershipService.addProjectMembership(
 			jwt, projectId, accountRoleExternalReferenceCode, userId);
+
+		_syncMembership(userId);
 	}
 
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
@@ -330,6 +337,34 @@ public class ProjectRestController extends OneBaseRestController {
 		return false;
 	}
 
+	private void _syncMembership(long userId) {
+		UserAccount userAccount = null;
+
+		try {
+			userAccount = _userAccountService.getUserAccount(userId);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get user account for user " + userId, exception);
+
+			return;
+		}
+
+		try {
+			_userAccountSynchronizer.syncUserAccountAccounts(userAccount);
+		}
+		catch (Exception exception) {
+			_log.error("Unable to sync accounts for user " + userId, exception);
+		}
+
+		try {
+			_userAccountSynchronizer.syncUserAccountRoles(userAccount);
+		}
+		catch (Exception exception) {
+			_log.error("Unable to sync roles for user " + userId, exception);
+		}
+	}
+
 	private static final DateTimeFormatter _BILLING_PERIOD_DATE_TIME_FORMATTER =
 		DateTimeFormatter.ofPattern("yyyy-MM");
 
@@ -362,5 +397,11 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private PropertyService _propertyService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
