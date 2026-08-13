@@ -52,6 +52,14 @@ public abstract class OneBaseService extends BaseService {
 			Jwt jwt)
 		throws Exception {
 
+		return getAllItems(path, filterString, function, jwt, null);
+	}
+
+	protected <T> List<T> getAllItems(
+			String path, String filterString, Function<JSONObject, T> function,
+			Jwt jwt, String nestedFields)
+		throws Exception {
+
 		List<T> items = new ArrayList<>();
 
 		int page = 1;
@@ -68,6 +76,10 @@ public abstract class OneBaseService extends BaseService {
 
 			if (filterString != null) {
 				uriComponentsBuilder.queryParam("filter", filterString);
+			}
+
+			if (nestedFields != null) {
+				uriComponentsBuilder.queryParam("nestedFields", nestedFields);
 			}
 
 			String response = get(

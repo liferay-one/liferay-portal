@@ -41,7 +41,6 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
-
 		caffeineCacheManager.registerCustomCache(
 			"customerAccountUsage",
 			Caffeine.newBuilder(
@@ -50,7 +49,6 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
-
 		caffeineCacheManager.registerCustomCache(
 			"productName",
 			Caffeine.newBuilder(

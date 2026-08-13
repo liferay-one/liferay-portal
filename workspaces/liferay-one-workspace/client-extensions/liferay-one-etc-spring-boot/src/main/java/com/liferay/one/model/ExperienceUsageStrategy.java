@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -37,43 +36,39 @@ public class ExperienceUsageStrategy extends BaseUsageStrategy {
 	public static final String METRIC_NETWORK_TRAFFIC = "networkTraffic";
 
 	public ExperienceUsageStrategy(
-		List<EntitlementDefinition> entitlementDefinitions,
-		List<Entitlement> entitlements, String response) {
+		String response, List<Entitlement> entitlements) {
 
 		super(_toUsageJSONObject(response));
-
-		Map<Long, String> units = getUnits(entitlementDefinitions);
 
 		for (Entitlement entitlement : entitlements) {
 			String name = entitlement.getName();
 
 			if (name.equals(EntitlementConstants.NAME_DATABASE)) {
 				_databaseCapacityMax = getMaxCount(
-					entitlement, _databaseCapacityMax, units);
+					_databaseCapacityMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_EXTENSIONS_RAM)) {
 				_extensionsCapacityRAMMax = getMaxCount(
-					entitlement, _extensionsCapacityRAMMax, units);
+					_extensionsCapacityRAMMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_EXTENSIONS_VCPU) ||
 					 name.equals(EntitlementConstants.NAME_EXTENSIONS_VCPUS)) {
 
 				_extensionsCapacityCPUMax = getMaxCount(
-					entitlement, _extensionsCapacityCPUMax, units);
+					_extensionsCapacityCPUMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_LOGS)) {
-				_logCapacityMax = getMaxCount(
-					entitlement, _logCapacityMax, units);
+				_logCapacityMax = getMaxCount(_logCapacityMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_STORAGE)) {
 				_storageCapacityMax = getMaxCount(
-					entitlement, _storageCapacityMax, units);
+					_storageCapacityMax, entitlement);
 			}
 			else if (name.equals(
 						EntitlementConstants.NAME_TRAFFIC_NETWORKING)) {
 
 				_networkingCapacityMax = getMaxCount(
-					entitlement, _networkingCapacityMax, units);
+					_networkingCapacityMax, entitlement);
 			}
 		}
 
