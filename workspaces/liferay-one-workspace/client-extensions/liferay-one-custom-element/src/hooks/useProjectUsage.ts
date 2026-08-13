@@ -27,8 +27,8 @@ type UsageEventNode = {
 	r_usageDefinitionToUsageEvent_c_usageDefinitionId?: number;
 };
 
-export function useProjectUsage(skip = false) {
-	const {environments} = useProjectEnvironments(skip);
+export function useProjectUsage() {
+	const {environments} = useProjectEnvironments();
 
 	const environmentIds = environments.map((environment) => environment.id);
 
@@ -37,7 +37,7 @@ export function useProjectUsage(skip = false) {
 		.join(' or ');
 
 	const {data: definitionsData} = useFetch<APIResponse<UsageDefinitionNode>>(
-		skip ? null : '/o/c/usagedefinitions',
+		'/o/c/usagedefinitions',
 		{params: {pageSize: 200}}
 	);
 
@@ -46,7 +46,7 @@ export function useProjectUsage(skip = false) {
 		error,
 		isLoading: loading,
 	} = useFetch<APIResponse<UsageEventNode>>(
-		!skip && environmentIds.length ? '/o/c/usageevents' : null,
+		environmentIds.length ? '/o/c/usageevents' : null,
 		{params: {filter: eventFilter, pageSize: 500}}
 	);
 

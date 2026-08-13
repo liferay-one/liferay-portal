@@ -20,8 +20,10 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -229,7 +231,7 @@ public class EntitlementService extends OneBaseService {
 			Collection<Long> accountEntryIds)
 		throws Exception {
 
-		return _entitlementDefinitionService.getEntitlementDefinitions(
+		return _getEntitlementDefinitions(
 			getActiveEntitlements(accountEntryIds));
 	}
 
@@ -237,7 +239,7 @@ public class EntitlementService extends OneBaseService {
 			long accountEntryId)
 		throws Exception {
 
-		return _entitlementDefinitionService.getEntitlementDefinitions(
+		return _getEntitlementDefinitions(
 			getActiveEntitlements(accountEntryId));
 	}
 
@@ -245,7 +247,7 @@ public class EntitlementService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return _entitlementDefinitionService.getEntitlementDefinitions(
+		return _getEntitlementDefinitions(
 			getActiveEntitlements(projectExternalReferenceCode));
 	}
 
@@ -295,7 +297,9 @@ public class EntitlementService extends OneBaseService {
 	public List<Entitlement> getEntitlements(String filterString)
 		throws Exception {
 
-		return getAllItems("/o/c/entitlements", filterString, Entitlement::new);
+		return getAllItems(
+			"/o/c/entitlements", filterString, Entitlement::new, null,
+			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
 	}
 
 	public boolean hasEntitlement(long accountId, String... entitlementNames)
@@ -464,6 +468,26 @@ public class EntitlementService extends OneBaseService {
 		return GetterUtil.getLong(customFields.get("contractId"));
 	}
 
+	private List<EntitlementDefinition> _getEntitlementDefinitions(
+		List<Entitlement> entitlements) {
+
+		Map<Long, EntitlementDefinition> entitlementDefinitions =
+			new LinkedHashMap<>();
+
+		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (entitlementDefinition != null) {
+				entitlementDefinitions.put(
+					entitlementDefinition.getEntitlementDefinitionId(),
+					entitlementDefinition);
+			}
+		}
+
+		return new ArrayList<>(entitlementDefinitions.values());
+	}
+
 	private Instant _getLatestInstant(
 		Instant endDateInstant, Instant startDateInstant) {
 
@@ -539,6 +563,9 @@ public class EntitlementService extends OneBaseService {
 			).build(
 			).toUri());
 	}
+
+	private static final String _NESTED_FIELDS_ENTITLEMENT_DEFINITION =
+		"entitlementDefinitionToEntitlement";
 
 	private static final Log _log = LogFactory.getLog(EntitlementService.class);
 

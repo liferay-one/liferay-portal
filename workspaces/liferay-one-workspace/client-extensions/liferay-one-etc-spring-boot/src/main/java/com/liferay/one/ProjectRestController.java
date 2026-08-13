@@ -5,14 +5,37 @@
 
 package com.liferay.one;
 
+import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageProductException;
+import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.model.BaseUsageStrategy;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.ExperienceUsageStrategy;
+import com.liferay.one.model.Project;
+import com.liferay.one.model.SaaSUsageStrategy;
 import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.service.CommerceProductService;
+import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.PropertyService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -82,11 +105,14 @@ public class ProjectRestController extends OneBaseRestController {
 		_businessEventPermission.check(
 			ActionKeys.VIEW, jwt, externalReferenceCode);
 
-		JSONObject projectUsageJSONObject = _projectService.getProjectUsage(
-			productExternalReferenceCode, externalReferenceCode);
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"metrics",
+			_getMetricsJSONObject(
+				productExternalReferenceCode, externalReferenceCode)
+		);
 
-		return new ResponseEntity<>(
-			projectUsageJSONObject.toString(), HttpStatus.OK);
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
 	}
 
 	@ExceptionHandler(GoogleCloudFunctionUnavailableException.class)
@@ -151,6 +177,162 @@ public class ProjectRestController extends OneBaseRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	private String _getAccountKey(Project project) throws Exception {
+		long accountId = project.getAccountId();
+
+		if (accountId > 0) {
+			String value = _propertyService.getPropertyValue(
+				accountId, PropertyConstants.NAME_KORONEIKI_ACCOUNT_KEY);
+
+			if (Validator.isNotNull(value)) {
+				return value;
+			}
+		}
+
+		return project.getAccountExternalReferenceCode();
+	}
+
+	private JSONObject _getMetricsJSONObject(
+			String productExternalReferenceCode,
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		if (Validator.isNull(productExternalReferenceCode)) {
+			throw new InvalidUsageProductException(
+				"Product external reference code is required");
+		}
+
+		String productName = _commerceProductService.fetchProductName(
+			productExternalReferenceCode);
+
+		if (Validator.isNull(productName)) {
+			throw new InvalidUsageProductException(
+				"Unable to find product " + productExternalReferenceCode);
+		}
+
+		if (!ArrayUtil.contains(
+				CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS,
+				productName) &&
+			!ArrayUtil.contains(
+				CommerceProductConstants.NAMES_SAAS_PLAN_PRODUCTS,
+				productName)) {
+
+			throw new InvalidUsageProductException(
+				StringBundler.concat(
+					"Product ", productExternalReferenceCode,
+					" has no usage dashboard: ", productName));
+		}
+
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException(
+				"Unable to find project " + projectExternalReferenceCode);
+		}
+
+		boolean experienceProduct = ArrayUtil.contains(
+			CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS, productName);
+
+		List<Entitlement> entitlements = _getUsageDashboardEntitlements(
+			experienceProduct, projectExternalReferenceCode);
+
+		BaseUsageStrategy usageStrategy = null;
+
+		if (experienceProduct) {
+			LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
+
+			usageStrategy = new ExperienceUsageStrategy(
+				_googleCloudFunctionService.fetchComposableAccountUsage(
+					_getAccountKey(project),
+					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER)),
+				entitlements);
+		}
+		else {
+			usageStrategy = new SaaSUsageStrategy(
+				_googleCloudFunctionService.fetchCustomerAccountUsage(
+					_getAccountKey(project)),
+				entitlements);
+		}
+
+		if (usageStrategy.hasUsage()) {
+			return usageStrategy.toJSONObject();
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Unable to find DataOps usage data for project " +
+					projectExternalReferenceCode);
+		}
+
+		return new JSONObject();
+	}
+
+	private List<Entitlement> _getUsageDashboardEntitlements(
+			boolean experienceProduct, String projectExternalReferenceCode)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				projectExternalReferenceCode);
+
+		if (entitlements.isEmpty() && _log.isWarnEnabled()) {
+			_log.warn(
+				"Unable to find active entitlements for project " +
+					projectExternalReferenceCode);
+		}
+
+		List<Entitlement> usageDashboardEntitlements = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (_isUsageDashboardEntitlement(entitlement, experienceProduct)) {
+				usageDashboardEntitlements.add(entitlement);
+			}
+		}
+
+		return usageDashboardEntitlements;
+	}
+
+	private boolean _isUsageDashboardEntitlement(
+			Entitlement entitlement, boolean experienceProduct)
+		throws Exception {
+
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return false;
+		}
+
+		String productName = _commerceProductService.fetchProductName(
+			entitlementDefinition.getCProductId());
+
+		if (Validator.isNull(productName)) {
+			return false;
+		}
+
+		if (experienceProduct) {
+			return ArrayUtil.contains(
+				CommerceProductConstants.NAMES_EXPERIENCE_ENTITLEMENT_PRODUCTS,
+				productName);
+		}
+
+		if (ArrayUtil.contains(
+				CommerceProductConstants.NAMES_SAAS_PLAN_ENTITLEMENT_PRODUCTS,
+				productName) ||
+			productName.startsWith(
+				CommerceProductConstants.
+					NAME_PREFIX_LIFERAY_SAAS_ENTITLEMENTS)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final DateTimeFormatter _BILLING_PERIOD_DATE_TIME_FORMATTER =
+		DateTimeFormatter.ofPattern("yyyy-MM");
+
 	private static final Log _log = LogFactory.getLog(
 		ProjectRestController.class);
 
@@ -164,9 +346,21 @@ public class ProjectRestController extends OneBaseRestController {
 	private BusinessEventPermission _businessEventPermission;
 
 	@Autowired
+	private CommerceProductService _commerceProductService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
+
+	@Autowired
+	private GoogleCloudFunctionService _googleCloudFunctionService;
+
+	@Autowired
 	private ProjectMembershipService _projectMembershipService;
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private PropertyService _propertyService;
 
 }

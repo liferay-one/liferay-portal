@@ -11,7 +11,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.math.BigDecimal;
 
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -20,62 +19,40 @@ import org.json.JSONObject;
  */
 public class SaaSUsageStrategy extends BaseUsageStrategy {
 
-	public static final String METRIC_ANONYMOUS_PAGE_VIEWS =
-		"anonymousPageViews";
-
-	public static final String METRIC_CLIENT_EXTENSIONS_CAPACITY_CPU =
-		"clientExtensionsCapacityCPU";
-
-	public static final String METRIC_CLIENT_EXTENSIONS_CAPACITY_RAM =
-		"clientExtensionsCapacityRAM";
-
-	public static final String METRIC_MONTHLY_ACTIVE_LOGGED_IN_USERS =
-		"monthlyActiveLoggedInUsers";
-
-	public static final String METRIC_SITES = "sites";
-
-	public static final String METRIC_STORAGE_CAPACITY_DOCUMENT_LIBRARY =
-		"storageCapacityDocumentLibrary";
-
-	public SaaSUsageStrategy(
-		List<EntitlementDefinition> entitlementDefinitions,
-		List<Entitlement> entitlements, String response) {
-
+	public SaaSUsageStrategy(String response, List<Entitlement> entitlements) {
 		super(_toUsageJSONObject(response));
-
-		Map<Long, String> units = getUnits(entitlementDefinitions);
 
 		for (Entitlement entitlement : entitlements) {
 			String name = entitlement.getName();
 
 			if (name.equals(EntitlementConstants.NAME_APV)) {
 				_anonymousPageViewsMax = getMaxCount(
-					entitlement, _anonymousPageViewsMax, units);
+					_anonymousPageViewsMax, entitlement);
 			}
 			else if (name.equals(
 						EntitlementConstants.NAME_DOCUMENT_LIBRARY_SIZE)) {
 
 				_storageCapacityMax = getMaxCount(
-					entitlement, _storageCapacityMax, units);
+					_storageCapacityMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_EXTENSIONS_RAM) ||
 					 name.equals(EntitlementConstants.NAME_RAM)) {
 
 				_extensionsCapacityRAMMax = getMaxCount(
-					entitlement, _extensionsCapacityRAMMax, units);
+					_extensionsCapacityRAMMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_EXTENSIONS_VCPU) ||
 					 name.equals(EntitlementConstants.NAME_VCPU)) {
 
 				_extensionsCapacityCPUMax = getMaxCount(
-					entitlement, _extensionsCapacityCPUMax, units);
+					_extensionsCapacityCPUMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_MALU)) {
 				_monthlyActiveLoggedInUsersMax = getMaxCount(
-					entitlement, _monthlyActiveLoggedInUsersMax, units);
+					_monthlyActiveLoggedInUsersMax, entitlement);
 			}
 			else if (name.equals(EntitlementConstants.NAME_SITES)) {
-				_sitesMax = getMaxCount(entitlement, _sitesMax, units);
+				_sitesMax = getMaxCount(_sitesMax, entitlement);
 			}
 		}
 
@@ -101,25 +78,25 @@ public class SaaSUsageStrategy extends BaseUsageStrategy {
 	public JSONObject toJSONObject() {
 		return new JSONObject(
 		).put(
-			METRIC_ANONYMOUS_PAGE_VIEWS,
+			"anonymousPageViews",
 			createUsageJSONObject(
 				_anonymousPageViewsMax, _anonymousPageViewsUsed)
 		).put(
-			METRIC_CLIENT_EXTENSIONS_CAPACITY_CPU,
+			"clientExtensionsCapacityCPU",
 			createUsageJSONObject(
 				_extensionsCapacityCPUMax, _extensionsCapacityCPUUsed)
 		).put(
-			METRIC_CLIENT_EXTENSIONS_CAPACITY_RAM,
+			"clientExtensionsCapacityRAM",
 			createCapacityUsageJSONObject(
 				_extensionsCapacityRAMMax, _extensionsCapacityRAMGiBUsed)
 		).put(
-			METRIC_MONTHLY_ACTIVE_LOGGED_IN_USERS,
+			"monthlyActiveLoggedInUsers",
 			createUsageJSONObject(
 				_monthlyActiveLoggedInUsersMax, _monthlyActiveLoggedInUsersUsed)
 		).put(
-			METRIC_SITES, createUsageJSONObject(_sitesMax, _sitesUsed)
+			"sites", createUsageJSONObject(_sitesMax, _sitesUsed)
 		).put(
-			METRIC_STORAGE_CAPACITY_DOCUMENT_LIBRARY,
+			"storageCapacityDocumentLibrary",
 			createCapacityUsageJSONObject(
 				_storageCapacityMax, _storageCapacityGiBUsed)
 		);

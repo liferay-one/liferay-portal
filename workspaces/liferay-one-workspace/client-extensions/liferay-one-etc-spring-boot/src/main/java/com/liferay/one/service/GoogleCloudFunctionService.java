@@ -86,28 +86,27 @@ public class GoogleCloudFunctionService extends BaseService {
 	private IdTokenCredentials _getIdTokenCredentials(String audience)
 		throws Exception {
 
-		IdTokenCredentials idTokenCredentials = _idTokenCredentials.get(
-			audience);
+		IdTokenProvider idTokenProvider = _getIdTokenProvider();
 
-		if (idTokenCredentials != null) {
-			return idTokenCredentials;
+		return _idTokenCredentials.computeIfAbsent(
+			audience,
+			targetAudience -> IdTokenCredentials.newBuilder(
+			).setIdTokenProvider(
+				idTokenProvider
+			).setTargetAudience(
+				targetAudience
+			).build());
+	}
+
+	private IdTokenProvider _getIdTokenProvider() throws Exception {
+		if (_idTokenProvider != null) {
+			return _idTokenProvider;
 		}
 
-		idTokenCredentials = IdTokenCredentials.newBuilder(
-		).setIdTokenProvider(
-			(IdTokenProvider)GoogleCredentials.getApplicationDefault()
-		).setTargetAudience(
-			audience
-		).build();
+		_idTokenProvider =
+			(IdTokenProvider)GoogleCredentials.getApplicationDefault();
 
-		IdTokenCredentials previousIdTokenCredentials =
-			_idTokenCredentials.putIfAbsent(audience, idTokenCredentials);
-
-		if (previousIdTokenCredentials != null) {
-			return previousIdTokenCredentials;
-		}
-
-		return idTokenCredentials;
+		return _idTokenProvider;
 	}
 
 	private String _handleRequest(String accountKey, String audience, URI uri)
@@ -164,5 +163,6 @@ public class GoogleCloudFunctionService extends BaseService {
 
 	private final Map<String, IdTokenCredentials> _idTokenCredentials =
 		new ConcurrentHashMap<>();
+	private volatile IdTokenProvider _idTokenProvider;
 
 }

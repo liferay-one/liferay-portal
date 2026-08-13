@@ -77,14 +77,13 @@ public class CommerceProductService extends OneBaseService {
 	public void deactivateProduct(String externalReferenceCode)
 		throws Exception {
 
-		ProductResource productResource = _buildProductResource();
-
-		Product existingProduct = _fetchProduct(
-			externalReferenceCode, productResource);
+		Product existingProduct = _fetchProduct(externalReferenceCode);
 
 		if (existingProduct == null) {
 			return;
 		}
+
+		ProductResource productResource = _buildProductResource();
 
 		Product product = new Product();
 
@@ -97,19 +96,14 @@ public class CommerceProductService extends OneBaseService {
 
 	@Cacheable("productName")
 	public String fetchProductName(long id) throws Exception {
-		Product product = _fetchProduct(id, _buildProductResource());
-
-		return getName(product);
+		return getName(_fetchProduct(id));
 	}
 
 	@Cacheable("productName")
 	public String fetchProductName(String externalReferenceCode)
 		throws Exception {
 
-		Product product = _fetchProduct(
-			externalReferenceCode, _buildProductResource());
-
-		return getName(product);
+		return getName(_fetchProduct(externalReferenceCode));
 	}
 
 	protected String getName(Product product) {
@@ -135,8 +129,8 @@ public class CommerceProductService extends OneBaseService {
 		).build();
 	}
 
-	private Product _fetchProduct(long id, ProductResource productResource)
-		throws Exception {
+	private Product _fetchProduct(long id) throws Exception {
+		ProductResource productResource = _buildProductResource();
 
 		try {
 			return productResource.getProduct(id);
@@ -152,9 +146,10 @@ public class CommerceProductService extends OneBaseService {
 		}
 	}
 
-	private Product _fetchProduct(
-			String externalReferenceCode, ProductResource productResource)
+	private Product _fetchProduct(String externalReferenceCode)
 		throws Exception {
+
+		ProductResource productResource = _buildProductResource();
 
 		try {
 			return productResource.getProductByExternalReferenceCode(

@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useProjectUsage} from '~/hooks/useProjectUsage';
-import {buildUtilizationSections} from '~/pages/MyAccount/Projects/utils/buildUtilizationSections';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
-import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
-import UtilizationCard from '../UtilizationCard/UtilizationCard';
 import LegacyBillingBanner from './LegacyBillingBanner';
 import LegacyDashboardPreview from './LegacyDashboardPreview';
 import UsageDashboard from './UsageDashboard';
+import UsageEventsCard from './UsageEventsCard';
 
 import type {UtilizationProfile} from '~/pages/MyAccount/Projects/utils/resolveUtilizationProfile';
 
@@ -31,13 +28,6 @@ export default function UtilizationTab({
 	profile,
 	projectExternalReferenceCode,
 }: UtilizationTabProps) {
-	const showDashboard =
-		profile !== undefined &&
-		DASHBOARD_PROFILES.includes(profile) &&
-		!isUnassignedProject(projectExternalReferenceCode);
-
-	const {usage} = useProjectUsage(showDashboard || profile === 'legacy');
-
 	if (profile === 'legacy') {
 		return (
 			<>
@@ -48,7 +38,11 @@ export default function UtilizationTab({
 		);
 	}
 
-	if (showDashboard) {
+	if (
+		profile !== undefined &&
+		DASHBOARD_PROFILES.includes(profile) &&
+		!isUnassignedProject(projectExternalReferenceCode)
+	) {
 		return (
 			<UsageDashboard
 				productExternalReferenceCode={productExternalReferenceCode}
@@ -58,15 +52,5 @@ export default function UtilizationTab({
 		);
 	}
 
-	if (!usage.length) {
-		return <UtilizationCard />;
-	}
-
-	return (
-		<SectionedDetailsCard
-			icon="analytics"
-			sections={buildUtilizationSections(usage)}
-			title="usage"
-		/>
-	);
+	return <UsageEventsCard />;
 }

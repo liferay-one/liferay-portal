@@ -31,6 +31,17 @@ public class Entitlement {
 			"r_projectToEntitlement_c_projectERC");
 		_quantity = jsonObject.optDoubleObject("quantity", null);
 
+		JSONObject entitlementDefinitionJSONObject = jsonObject.optJSONObject(
+			"entitlementDefinitionToEntitlement");
+
+		if (entitlementDefinitionJSONObject == null) {
+			_entitlementDefinition = null;
+		}
+		else {
+			_entitlementDefinition = new EntitlementDefinition(
+				entitlementDefinitionJSONObject);
+		}
+
 		String endDate = jsonObject.optString("endDate");
 
 		if (Validator.isNull(endDate)) {
@@ -60,6 +71,10 @@ public class Entitlement {
 
 	public Instant getEndDateInstant() {
 		return _endDateInstant;
+	}
+
+	public EntitlementDefinition getEntitlementDefinition() {
+		return _entitlementDefinition;
 	}
 
 	public long getEntitlementDefinitionId() {
@@ -105,6 +120,7 @@ public class Entitlement {
 	private final long _commerceOrderItemId;
 	private final long _contractId;
 	private final Instant _endDateInstant;
+	private final EntitlementDefinition _entitlementDefinition;
 	private final long _entitlementDefinitionId;
 	private final long _entitlementId;
 	private final String _grantType;
