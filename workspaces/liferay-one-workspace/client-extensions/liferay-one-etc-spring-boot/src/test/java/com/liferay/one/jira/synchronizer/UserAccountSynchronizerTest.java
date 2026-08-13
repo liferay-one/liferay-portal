@@ -5,6 +5,7 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -16,13 +17,17 @@ import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeRunnable;
 
+import java.util.Arrays;
 import java.util.Collections;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +46,15 @@ public class UserAccountSynchronizerTest {
 	public void setUp() throws Exception {
 		_userAccountSynchronizer = new UserAccountSynchronizer();
 
+		_accountConverter = Mockito.mock(AccountConverter.class);
 		_accountUserAccountRoleSynchronizer = Mockito.mock(
 			AccountUserAccountRoleSynchronizer.class);
 		_contactConverter = Mockito.mock(ContactConverter.class);
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
 		_organizationUserAccountRoleSynchronizer = Mockito.mock(
 			OrganizationUserAccountRoleSynchronizer.class);
+		_projectMembershipService = Mockito.mock(
+			ProjectMembershipService.class);
 
 		PropertyService propertyService = Mockito.mock(PropertyService.class);
 
@@ -65,8 +73,7 @@ public class UserAccountSynchronizerTest {
 		);
 
 		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_accountConverter",
-			Mockito.mock(AccountConverter.class));
+			_userAccountSynchronizer, "_accountConverter", _accountConverter);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_accountUserAccountRoleSynchronizer",
 			_accountUserAccountRoleSynchronizer);
@@ -97,7 +104,7 @@ public class UserAccountSynchronizerTest {
 			Mockito.mock(PhoneConverter.class));
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_projectMembershipService",
-			Mockito.mock(ProjectMembershipService.class));
+			_projectMembershipService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_propertyService", propertyService);
 		ReflectionTestUtils.setField(
@@ -208,6 +215,17 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUserAccountAccountsUpsertsProjectReferences()
+		throws Exception {
+
+		_whenProjectMembership();
+
+		_userAccountSynchronizer.syncUserAccountAccounts(_createUserAccount());
+
+		_verifyFetchesAccountAndProjectReferences();
+	}
+
+	@Test
 	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences()
 		throws Exception {
 
@@ -225,6 +243,15 @@ public class UserAccountSynchronizerTest {
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			() -> _userAccountSynchronizer.syncUserAccountRoles(
 				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountUpsertsProjectReferences() throws Exception {
+		_whenProjectMembership();
+
+		_userAccountSynchronizer.syncUserAccount(_createUserAccount());
+
+		_verifyFetchesAccountAndProjectReferences();
 	}
 
 	private void _assertUpsertsAttribute(
@@ -246,18 +273,63 @@ public class UserAccountSynchronizerTest {
 		);
 	}
 
+	private AccountBrief _createAccountBrief() {
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setExternalReferenceCode(_ACCOUNT_EXTERNAL_REFERENCE_CODE);
+		accountBrief.setId(1L);
+
+		return accountBrief;
+	}
+
 	private UserAccount _createUserAccount() {
 		UserAccount userAccount = new UserAccount();
 
+		userAccount.setAccountBriefs(
+			new AccountBrief[] {_createAccountBrief()});
 		userAccount.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
 		userAccount.setId(1L);
 
 		return userAccount;
 	}
 
+	private void _verifyFetchesAccountAndProjectReferences() {
+		Mockito.verify(
+			_jiraAssetService
+		).fetchReferenceObjectIds(
+			Mockito.eq(_accountConverter),
+			Mockito.eq(
+				Arrays.asList(
+					_ACCOUNT_EXTERNAL_REFERENCE_CODE,
+					_PROJECT_EXTERNAL_REFERENCE_CODE)),
+			Mockito.any()
+		);
+	}
+
+	private void _whenProjectMembership() throws Exception {
+		Mockito.when(
+			_projectMembershipService.getProjectMembershipsByUserId(1L)
+		).thenReturn(
+			Collections.singletonList(
+				new ProjectMembership(
+					new JSONObject(
+					).put(
+						"r_projectToProjectMembership_c_projectERC",
+						_PROJECT_EXTERNAL_REFERENCE_CODE
+					)))
+		);
+	}
+
+	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE =
+		"test-account-external-reference-code";
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE =
+		"test-project-external-reference-code";
+
+	private AccountConverter _accountConverter;
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
 	private ContactConverter _contactConverter;
@@ -265,6 +337,7 @@ public class UserAccountSynchronizerTest {
 	private JiraAssetService _jiraAssetService;
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
+	private ProjectMembershipService _projectMembershipService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
