@@ -5,16 +5,31 @@
 
 package com.liferay.one;
 
+import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageProductException;
+import com.liferay.one.exception.ProjectNotFoundException;
+import com.liferay.one.model.BaseUsageStrategy;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.ExperienceUsageStrategy;
+import com.liferay.one.model.Project;
 import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.service.CommerceProductService;
+import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.PropertyService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+
+import java.util.Arrays;
+import java.util.Set;
 
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.InOrder;
@@ -30,21 +45,44 @@ import org.springframework.test.util.ReflectionTestUtils;
  */
 public class ProjectRestControllerTest {
 
+	@BeforeEach
+	public void setUp() throws Exception {
+		_projectRestController = new ProjectRestController();
+
+		ReflectionTestUtils.setField(
+			_projectRestController, "_businessEventPermission",
+			_businessEventPermission);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_commerceProductService",
+			_commerceProductService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_googleCloudFunctionService",
+			_googleCloudFunctionService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_projectService", _projectService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_propertyService", _propertyService);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createProject()
+		);
+
+		_setUpProductName(_PRODUCT_NAME_EXPERIENCE);
+	}
+
 	@Test
 	public void testGetUsageChecksPermissionBeforeReadingUsage()
 		throws Exception {
 
-		ProjectRestController projectRestController = _createController();
+		_setUpEntitlements();
 
-		Mockito.when(
-			_projectService.getProjectUsage(
-				_PRODUCT_EXTERNAL_REFERENCE_CODE, _EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			new JSONObject()
-		);
+		_setUpComposableUsage();
 
-		projectRestController.getUsage(
-			null, _EXTERNAL_REFERENCE_CODE, _PRODUCT_EXTERNAL_REFERENCE_CODE);
+		_getUsage();
 
 		InOrder inOrder = Mockito.inOrder(
 			_businessEventPermission, _projectService);
@@ -52,13 +90,13 @@ public class ProjectRestControllerTest {
 		inOrder.verify(
 			_businessEventPermission
 		).check(
-			ActionKeys.VIEW, null, _EXTERNAL_REFERENCE_CODE
+			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 
 		inOrder.verify(
 			_projectService
-		).getProjectUsage(
-			_PRODUCT_EXTERNAL_REFERENCE_CODE, _EXTERNAL_REFERENCE_CODE
+		).fetchProject(
+			_PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 	}
 
@@ -66,41 +104,295 @@ public class ProjectRestControllerTest {
 	public void testGetUsageDoesNotReadUsageWhenPermissionIsDenied()
 		throws Exception {
 
-		ProjectRestController projectRestController = _createController();
-
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
 			_businessEventPermission
 		).check(
-			ActionKeys.VIEW, null, _EXTERNAL_REFERENCE_CODE
+			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> projectRestController.getUsage(
-				null, _EXTERNAL_REFERENCE_CODE,
-				_PRODUCT_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertThrows(PrincipalException.class, this::_getUsage);
 
-		Mockito.verifyNoInteractions(_projectService);
+		Mockito.verifyNoInteractions(_googleCloudFunctionService);
 	}
 
 	@Test
-	public void testGetUsageReturnsMetrics() throws Exception {
-		ProjectRestController projectRestController = _createController();
+	public void testGetUsageExcludesEntitlementsFromUnrelatedProducts()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "sites", 5.0),
+			_createEntitlement(99901, 2, null, "vcpu", 16.0, null));
 
 		Mockito.when(
-			_projectService.getProjectUsage(
-				_PRODUCT_EXTERNAL_REFERENCE_CODE, _EXTERNAL_REFERENCE_CODE)
+			_commerceProductService.fetchProductName(99901)
 		).thenReturn(
-			new JSONObject(
-			).put(
-				"metrics", new JSONObject()
-			)
+			"Liferay PaaS Instance - Backup L"
 		);
 
-		ResponseEntity<String> responseEntity = projectRestController.getUsage(
-			null, _EXTERNAL_REFERENCE_CODE, _PRODUCT_EXTERNAL_REFERENCE_CODE);
+		_setUpCustomerUsage();
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_SAAS_PLAN);
+
+		JSONObject sitesJSONObject = metricsJSONObject.getJSONObject("sites");
+
+		Assertions.assertEquals(
+			5,
+			sitesJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+
+		JSONObject clientExtensionsCapacityCPUJSONObject =
+			metricsJSONObject.getJSONObject("clientExtensionsCapacityCPU");
+
+		Assertions.assertEquals(
+			0,
+			clientExtensionsCapacityCPUJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+	}
+
+	@Test
+	public void testGetUsageExperienceProfileReturnsExperienceMetrics()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "extensions-vcpus", 3.0),
+			_createEntitlement(2, null, "logs", 300.0));
+
+		_setUpComposableUsage();
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_EXPERIENCE);
+
+		Assertions.assertEquals(
+			Set.of(
+				"clientExtensionsCPU", "clientExtensionsRAM", "databaseStorage",
+				"documentLibraryAndBackupStorage", "logStorage",
+				"networkTraffic"),
+			metricsJSONObject.keySet());
+
+		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
+			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
+
+		Assertions.assertEquals(
+			300,
+			logStorageJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+		Assertions.assertEquals(
+			BaseUsageStrategy.UNIT_GIB,
+			logStorageJSONObject.get("maxCountUnits"));
+	}
+
+	@Test
+	public void testGetUsageProfileSelectsMetricSetNotEntitlements()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "extensions-vcpus", 3.0),
+			_createEntitlement(2, null, "logs", 300.0));
+
+		_setUpCustomerUsage();
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_SAAS_PLAN);
+
+		Assertions.assertEquals(
+			Set.of(
+				"anonymousPageViews", "clientExtensionsCapacityCPU",
+				"clientExtensionsCapacityRAM", "monthlyActiveLoggedInUsers",
+				"sites", "storageCapacityDocumentLibrary"),
+			metricsJSONObject.keySet());
+	}
+
+	@Test
+	public void testGetUsagePropagatesGoogleCloudFunctionUnavailable()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		Mockito.when(
+			_googleCloudFunctionService.fetchComposableAccountUsage(
+				Mockito.anyString(), Mockito.anyString())
+		).thenThrow(
+			new GoogleCloudFunctionUnavailableException()
+		);
+
+		Assertions.assertThrows(
+			GoogleCloudFunctionUnavailableException.class, this::_getUsage);
+	}
+
+	@Test
+	public void testGetUsageRejectsMissingProduct() throws Exception {
+		Assertions.assertThrows(
+			InvalidUsageProductException.class,
+			() -> _projectRestController.getUsage(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE, null));
+	}
+
+	@Test
+	public void testGetUsageRejectsProductWithoutUsageDashboard()
+		throws Exception {
+
+		_setUpProductName("SaaS (Legacy)");
+
+		Assertions.assertThrows(
+			InvalidUsageProductException.class, this::_getUsage);
+	}
+
+	@Test
+	public void testGetUsageRejectsUnknownProduct() throws Exception {
+		_setUpProductName(null);
+
+		Assertions.assertThrows(
+			InvalidUsageProductException.class, this::_getUsage);
+	}
+
+	@Test
+	public void testGetUsageRejectsUnknownProject() throws Exception {
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			null
+		);
+
+		Assertions.assertThrows(
+			ProjectNotFoundException.class, this::_getUsage);
+	}
+
+	@Test
+	public void testGetUsageRendersEmDashLimitsWithoutEntitlements()
+		throws Exception {
+
+		_setUpEntitlements();
+
+		_setUpComposableUsage();
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_EXPERIENCE);
+
+		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
+			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
+
+		Assertions.assertEquals(
+			0,
+			logStorageJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+		Assertions.assertEquals("0", logStorageJSONObject.get("percentage"));
+
+		Assertions.assertEquals(
+			4,
+			logStorageJSONObject.getBigDecimal(
+				"usedCount"
+			).intValue());
+	}
+
+	@Test
+	public void testGetUsageReportsPercentageAboveOneHundredOnOverage()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "sites", 1.0));
+
+		_setUpProductName(_PRODUCT_NAME_SAAS_PLAN);
+
+		_setUpCustomerUsage();
+
+		JSONObject sitesJSONObject = _getMetricsJSONObject().getJSONObject(
+			"sites");
+
+		Assertions.assertEquals("300.0000", sitesJSONObject.get("percentage"));
+	}
+
+	@Test
+	public void testGetUsageResolvesAccountKeyFromExternalReferenceCode()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		_getUsage();
+
+		Mockito.verify(
+			_googleCloudFunctionService
+		).fetchComposableAccountUsage(
+			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE),
+			Mockito.matches("\\d{4}-\\d{2}")
+		);
+	}
+
+	@Test
+	public void testGetUsageResolvesAccountKeyFromOwnAccount()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		Mockito.when(
+			_propertyService.getPropertyValue(
+				_ACCOUNT_ID, PropertyConstants.NAME_KORONEIKI_ACCOUNT_KEY)
+		).thenReturn(
+			_KORONEIKI_ACCOUNT_KEY
+		);
+
+		_getUsage();
+
+		Mockito.verify(
+			_googleCloudFunctionService
+		).fetchComposableAccountUsage(
+			Mockito.eq(_KORONEIKI_ACCOUNT_KEY), Mockito.matches("\\d{4}-\\d{2}")
+		);
+	}
+
+	@Test
+	public void testGetUsageReturnsEmptyMetricsWhenComposableUsageIsAbsent()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		Mockito.when(
+			_googleCloudFunctionService.fetchComposableAccountUsage(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			new JSONObject(
+			).toString()
+		);
+
+		Assertions.assertTrue(
+			_getMetricsJSONObject(
+				_PRODUCT_NAME_EXPERIENCE
+			).isEmpty());
+	}
+
+	@Test
+	public void testGetUsageReturnsEmptyMetricsWhenDataOpsReturnsNull()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		Assertions.assertTrue(_getMetricsJSONObject().isEmpty());
+	}
+
+	@Test
+	public void testGetUsageReturnsEmptyMetricsWhenSaaSUsageIsNull()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "sites", 15.0));
+
+		Assertions.assertTrue(
+			_getMetricsJSONObject(
+				_PRODUCT_NAME_SAAS_PLAN
+			).isEmpty());
+	}
+
+	@Test
+	public void testGetUsageReturnsOKWithMetrics() throws Exception {
+		_setUpEntitlements();
+
+		_setUpComposableUsage();
+
+		ResponseEntity<String> responseEntity = _getUsage();
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -111,11 +403,80 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testHandleExceptionMapsGoogleCloudFunctionUnavailableToBadGateway() {
-		ProjectRestController projectRestController = _createController();
+	public void testGetUsageSumsContributingEntitlementNames()
+		throws Exception {
 
+		_setUpEntitlements(
+			_createEntitlement(1, null, "extensions-vcpus", 3.0),
+			_createEntitlement(2, null, "extensions-vcpu", 2.0));
+
+		_setUpComposableUsage();
+
+		JSONObject clientExtensionsCPUJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_EXPERIENCE
+		).getJSONObject(
+			ExperienceUsageStrategy.METRIC_CLIENT_EXTENSIONS_CPU
+		);
+
+		Assertions.assertEquals(
+			5,
+			clientExtensionsCPUJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+	}
+
+	@Test
+	public void testGetUsageTreatsUnlimitedGrantTypeAsNegativeMaxCount()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, "unlimited", "sites", null));
+
+		_setUpProductName(_PRODUCT_NAME_SAAS_PLAN);
+
+		_setUpCustomerUsage();
+
+		JSONObject sitesJSONObject = _getMetricsJSONObject().getJSONObject(
+			"sites");
+
+		Assertions.assertEquals(
+			-1,
+			sitesJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+		Assertions.assertEquals("0", sitesJSONObject.get("percentage"));
+	}
+
+	@Test
+	public void testGetUsageUpscalesTebibyteLimits() throws Exception {
+		_setUpEntitlements(
+			_createEntitlement(
+				_CPRODUCT_ID, 1, null, "storage", 1.0,
+				BaseUsageStrategy.UNIT_TIB),
+			_createEntitlement(
+				_CPRODUCT_ID, 2, null, "logs", 300.0,
+				BaseUsageStrategy.UNIT_GIB));
+
+		_setUpComposableUsage();
+
+		JSONObject storageJSONObject = _getMetricsJSONObject(
+			_PRODUCT_NAME_EXPERIENCE
+		).getJSONObject(
+			ExperienceUsageStrategy.METRIC_DOCUMENT_LIBRARY_AND_BACKUP_STORAGE
+		);
+
+		Assertions.assertEquals(
+			1,
+			storageJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+		Assertions.assertEquals(
+			BaseUsageStrategy.UNIT_TIB, storageJSONObject.get("maxCountUnits"));
+	}
+
+	@Test
+	public void testHandleExceptionMapsGoogleCloudFunctionUnavailableToBadGateway() {
 		ResponseEntity<ProblemDetail> responseEntity =
-			projectRestController.handleException(
+			_projectRestController.handleException(
 				new GoogleCloudFunctionUnavailableException());
 
 		Assertions.assertEquals(
@@ -129,10 +490,8 @@ public class ProjectRestControllerTest {
 
 	@Test
 	public void testHandleExceptionMapsInvalidProductToBadRequest() {
-		ProjectRestController projectRestController = _createController();
-
 		ResponseEntity<ProblemDetail> responseEntity =
-			projectRestController.handleException(
+			_projectRestController.handleException(
 				new InvalidUsageProductException("Product is required"));
 
 		Assertions.assertEquals(
@@ -146,26 +505,179 @@ public class ProjectRestControllerTest {
 			"Product is required", problemDetail.getDetail());
 	}
 
-	private ProjectRestController _createController() {
-		ProjectRestController projectRestController =
-			new ProjectRestController();
-
-		ReflectionTestUtils.setField(
-			projectRestController, "_businessEventPermission",
-			_businessEventPermission);
-		ReflectionTestUtils.setField(
-			projectRestController, "_projectService", _projectService);
-
-		return projectRestController;
+	private String _createComposableUsage() {
+		return new JSONObject(
+		).put(
+			"usage",
+			new JSONObject(
+			).put(
+				"logStorage", 4L * 1024L * 1024L * 1024L
+			)
+		).toString();
 	}
 
-	private static final String _EXTERNAL_REFERENCE_CODE = "PRJCT-004";
+	private Entitlement _createEntitlement(
+		long cProductId, long entitlementDefinitionId, String grantType,
+		String name, Double quantity, String unit) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"entitlementDefinitionToEntitlement",
+			new JSONObject(
+			).put(
+				"id", entitlementDefinitionId
+			).put(
+				"r_commerceProductToEntitlementDefinition_CProductId",
+				cProductId
+			).put(
+				"unit", unit
+			)
+		).put(
+			"id", entitlementDefinitionId
+		).put(
+			"name", name
+		).put(
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
+			entitlementDefinitionId
+		);
+
+		if (grantType != null) {
+			jsonObject.put("grantType", grantType);
+		}
+
+		if (quantity != null) {
+			jsonObject.put("quantity", quantity);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _createEntitlement(
+		long entitlementDefinitionId, String grantType, String name,
+		Double quantity) {
+
+		return _createEntitlement(
+			_CPRODUCT_ID, entitlementDefinitionId, grantType, name, quantity,
+			null);
+	}
+
+	private Project _createProject() {
+		return new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryERC",
+				_ACCOUNT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
+			));
+	}
+
+	private JSONObject _getMetricsJSONObject() throws Exception {
+		ResponseEntity<String> responseEntity = _getUsage();
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertFalse(jsonObject.has("variant"));
+
+		return jsonObject.getJSONObject("metrics");
+	}
+
+	private JSONObject _getMetricsJSONObject(String productName)
+		throws Exception {
+
+		_setUpProductName(productName);
+
+		return _getMetricsJSONObject();
+	}
+
+	private ResponseEntity<String> _getUsage() throws Exception {
+		return _projectRestController.getUsage(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+			_PRODUCT_EXTERNAL_REFERENCE_CODE);
+	}
+
+	private void _setUpComposableUsage() throws Exception {
+		Mockito.when(
+			_googleCloudFunctionService.fetchComposableAccountUsage(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			_createComposableUsage()
+		);
+	}
+
+	private void _setUpCustomerUsage() throws Exception {
+		Mockito.when(
+			_googleCloudFunctionService.fetchCustomerAccountUsage(
+				Mockito.anyString())
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"totalClientExtensionsCapacityRAM", 2
+			).put(
+				"totalSitesCount", 3
+			).toString()
+		);
+	}
+
+	private void _setUpEntitlements(Entitlement... entitlements)
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			Arrays.asList(entitlements)
+		);
+	}
+
+	private void _setUpProductName(String productName) throws Exception {
+		Mockito.when(
+			_commerceProductService.fetchProductName(_CPRODUCT_ID)
+		).thenReturn(
+			productName
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProductName(
+				_PRODUCT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			productName
+		);
+	}
+
+	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE =
+		"0015Y00002ABCDEabc";
+
+	private static final long _ACCOUNT_ID = 40001;
+
+	private static final long _CPRODUCT_ID = 55501;
+
+	private static final String _KORONEIKI_ACCOUNT_KEY = "abc-123-def";
 
 	private static final String _PRODUCT_EXTERNAL_REFERENCE_CODE = "PRDCT-PAAS";
 
+	private static final String _PRODUCT_NAME_EXPERIENCE =
+		CommerceProductConstants.NAME_PAAS_EXPERIENCE;
+
+	private static final String _PRODUCT_NAME_SAAS_PLAN =
+		CommerceProductConstants.NAME_LIFERAY_SAAS_BUSINESS_PLAN;
+
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-004";
+
 	private final BusinessEventPermission _businessEventPermission =
 		Mockito.mock(BusinessEventPermission.class);
+	private final CommerceProductService _commerceProductService = Mockito.mock(
+		CommerceProductService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
+	private final GoogleCloudFunctionService _googleCloudFunctionService =
+		Mockito.mock(GoogleCloudFunctionService.class);
+	private ProjectRestController _projectRestController;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
+	private final PropertyService _propertyService = Mockito.mock(
+		PropertyService.class);
 
 }

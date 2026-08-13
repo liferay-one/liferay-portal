@@ -11,10 +11,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.json.JSONObject;
 
 /**
@@ -99,7 +95,7 @@ public abstract class BaseUsageStrategy {
 	}
 
 	protected BigDecimal getMaxCount(
-		Entitlement entitlement, BigDecimal maxCount, Map<Long, String> units) {
+		BigDecimal maxCount, Entitlement entitlement) {
 
 		if (_isUnlimited(maxCount)) {
 			return maxCount;
@@ -120,25 +116,7 @@ public abstract class BaseUsageStrategy {
 		}
 
 		return maxCount.add(
-			_toGibibytes(
-				BigDecimal.valueOf(quantity),
-				units.get(entitlement.getEntitlementDefinitionId())));
-	}
-
-	protected Map<Long, String> getUnits(
-		List<EntitlementDefinition> entitlementDefinitions) {
-
-		Map<Long, String> units = new HashMap<>();
-
-		for (EntitlementDefinition entitlementDefinition :
-				entitlementDefinitions) {
-
-			units.put(
-				entitlementDefinition.getEntitlementDefinitionId(),
-				entitlementDefinition.getUnit());
-		}
-
-		return units;
+			_toGibibytes(BigDecimal.valueOf(quantity), _getUnit(entitlement)));
 	}
 
 	protected JSONObject getUsageJSONObject() {
@@ -176,6 +154,17 @@ public abstract class BaseUsageStrategy {
 		}
 
 		return gibValue;
+	}
+
+	private String _getUnit(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return null;
+		}
+
+		return entitlementDefinition.getUnit();
 	}
 
 	private boolean _isTebibyteScale(BigDecimal gibValue) {
