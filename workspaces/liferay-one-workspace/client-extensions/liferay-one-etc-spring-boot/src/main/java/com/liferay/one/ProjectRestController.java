@@ -77,10 +77,11 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable String accountRoleExternalReferenceCode)
 		throws Exception {
 
-		_projectMembershipService.deleteProjectMembership(
-			jwt, projectId, accountRoleExternalReferenceCode, userId);
+		if (_projectMembershipService.deleteProjectMembership(
+				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-		_syncMembership(userId);
+			_syncMembership(userId);
+		}
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -163,10 +164,11 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable String accountRoleExternalReferenceCode)
 		throws Exception {
 
-		_projectMembershipService.addProjectMembership(
-			jwt, projectId, accountRoleExternalReferenceCode, userId);
+		if (_projectMembershipService.addProjectMembership(
+				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-		_syncMembership(userId);
+			_syncMembership(userId);
+		}
 	}
 
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")

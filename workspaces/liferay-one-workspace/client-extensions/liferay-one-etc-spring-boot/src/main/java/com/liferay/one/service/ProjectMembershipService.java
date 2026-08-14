@@ -27,7 +27,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class ProjectMembershipService extends OneBaseService {
 
-	public void addProjectMembership(
+	/**
+	 * @return <code>true</code> if a project membership was added;
+	 *         <code>false</code> if one already existed or the project was not
+	 *         found
+	 */
+	public boolean addProjectMembership(
 			Jwt jwt, String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
 		throws Exception {
@@ -37,14 +42,14 @@ public class ProjectMembershipService extends OneBaseService {
 			userId);
 
 		if (!projectMemberships.isEmpty()) {
-			return;
+			return false;
 		}
 
 		Project project = _projectService.fetchProject(
 			projectExternalReferenceCode, jwt);
 
 		if (project == null) {
-			return;
+			return false;
 		}
 
 		if (!_userAccountService.hasAccountUserAccount(
@@ -74,6 +79,8 @@ public class ProjectMembershipService extends OneBaseService {
 				"/o/c/projectmemberships"
 			).build(
 			).toUri());
+
+		return true;
 	}
 
 	public void addProjectMembership(
@@ -131,7 +138,11 @@ public class ProjectMembershipService extends OneBaseService {
 			).toUri());
 	}
 
-	public void deleteProjectMembership(
+	/**
+	 * @return <code>true</code> if at least one project membership was deleted;
+	 *         <code>false</code> if none matched
+	 */
+	public boolean deleteProjectMembership(
 			Jwt jwt, String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
 		throws Exception {
@@ -139,6 +150,10 @@ public class ProjectMembershipService extends OneBaseService {
 		List<ProjectMembership> projectMemberships = _getProjectMemberships(
 			jwt, projectExternalReferenceCode, roleExternalReferenceCode,
 			userId);
+
+		if (projectMemberships.isEmpty()) {
+			return false;
+		}
 
 		for (ProjectMembership projectMembership : projectMemberships) {
 			delete(
@@ -150,6 +165,8 @@ public class ProjectMembershipService extends OneBaseService {
 					projectMembership.getExternalReferenceCode()
 				).toUri());
 		}
+
+		return true;
 	}
 
 	public ProjectMembership fetchProjectMembership(
