@@ -17,8 +17,10 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
+import com.liferay.petra.function.UnsafeRunnable;
 
 import java.util.Collections;
 
@@ -93,6 +95,9 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_phoneConverter",
 			Mockito.mock(PhoneConverter.class));
+		ReflectionTestUtils.setField(
+			_userAccountSynchronizer, "_projectMembershipService",
+			Mockito.mock(ProjectMembershipService.class));
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_propertyService", propertyService);
 		ReflectionTestUtils.setField(
@@ -193,7 +198,9 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountAccountsUpsertsAccountReferences() {
+	public void testSyncUserAccountAccountsUpsertsAccountReferences()
+		throws Exception {
+
 		_assertUpsertsAttribute(
 			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
 			() -> _userAccountSynchronizer.syncUserAccountAccounts(
@@ -201,7 +208,9 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences() {
+	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences()
+		throws Exception {
+
 		_assertUpsertsAttribute(
 			ContactConstants.ATTRIBUTE_NAME_TEAMS,
 			() -> _userAccountSynchronizer.syncUserAccountOrganizations(
@@ -209,7 +218,9 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountRolesUpsertsRoleReferences() {
+	public void testSyncUserAccountRolesUpsertsRoleReferences()
+		throws Exception {
+
 		_assertUpsertsAttribute(
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			() -> _userAccountSynchronizer.syncUserAccountRoles(
@@ -217,9 +228,10 @@ public class UserAccountSynchronizerTest {
 	}
 
 	private void _assertUpsertsAttribute(
-		String attributeName, Runnable runnable) {
+			String attributeName, UnsafeRunnable<Exception> unsafeRunnable)
+		throws Exception {
 
-		runnable.run();
+		unsafeRunnable.run();
 
 		Mockito.verify(
 			_jiraAssetObject
