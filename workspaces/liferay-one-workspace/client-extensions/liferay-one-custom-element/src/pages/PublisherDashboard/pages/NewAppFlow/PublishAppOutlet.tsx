@@ -13,8 +13,8 @@ import {useNewAppContext} from '~/context/NewAppContextProvider';
 import PublishModeContextProvider from '~/context/PublishModeContextProvider';
 import usePublishAppSubmission from '~/hooks/usePublishAppSubmission';
 import usePublishHeader from '~/hooks/usePublishHeader';
-import usePublishNavigation from '~/hooks/usePublishNavigation';
 import i18n from '~/i18n';
+import usePublishNavigation from '~/pages/PublisherDashboard/hooks/usePublishNavigation';
 import {ProductWorkflowStatusCode} from '~/utils/productUtils';
 
 import BasePublishAppOutlet from '../../BasePublishAppOutlet';
