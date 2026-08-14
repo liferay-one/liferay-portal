@@ -213,6 +213,15 @@ public class ProjectMembershipService extends OneBaseService {
 			ProjectMembership::new);
 	}
 
+	public List<ProjectMembership> getProjectMembershipsByUserId(long userId)
+		throws Exception {
+
+		return getAllItems(
+			"/o/c/projectmemberships",
+			"r_userToProjectMembership_userId eq '" + userId + "'",
+			ProjectMembership::new);
+	}
+
 	private List<ProjectMembership> _getProjectMemberships(
 			Jwt jwt, String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)

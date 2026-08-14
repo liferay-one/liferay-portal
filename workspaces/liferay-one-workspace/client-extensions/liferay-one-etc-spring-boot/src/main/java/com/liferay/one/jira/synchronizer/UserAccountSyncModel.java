@@ -13,8 +13,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccountContactInformation;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.portal.kernel.util.ListUtil;
 
@@ -30,10 +32,12 @@ public class UserAccountSyncModel {
 	public UserAccountSyncModel(
 		EntitlementService entitlementService,
 		ExternalLinkConverter externalLinkConverter,
+		ProjectMembershipService projectMembershipService,
 		PropertyService propertyService, UserAccount userAccount) {
 
 		_entitlementService = entitlementService;
 		_externalLinkConverter = externalLinkConverter;
+		_projectMembershipService = projectMembershipService;
 		_propertyService = propertyService;
 		_userAccount = userAccount;
 	}
@@ -45,6 +49,26 @@ public class UserAccountSyncModel {
 		}
 
 		return _accountBriefs;
+	}
+
+	public List<String> getAccountExternalReferenceCodes() throws Exception {
+		if (_accountExternalReferenceCodes != null) {
+			return _accountExternalReferenceCodes;
+		}
+
+		List<String> accountExternalReferenceCodes = new ArrayList<>();
+
+		for (AccountBrief accountBrief : getAccountBriefs()) {
+			accountExternalReferenceCodes.add(
+				accountBrief.getExternalReferenceCode());
+		}
+
+		accountExternalReferenceCodes.addAll(
+			_getProjectExternalReferenceCodes());
+
+		_accountExternalReferenceCodes = accountExternalReferenceCodes;
+
+		return _accountExternalReferenceCodes;
 	}
 
 	public List<EntitlementDefinition> getEntitlementDefinitions()
@@ -148,6 +172,27 @@ public class UserAccountSyncModel {
 		return _userAccount;
 	}
 
+	private List<String> _getProjectExternalReferenceCodes() throws Exception {
+		if (_projectExternalReferenceCodes != null) {
+			return _projectExternalReferenceCodes;
+		}
+
+		List<String> projectExternalReferenceCodes = new ArrayList<>();
+
+		List<ProjectMembership> projectMemberships =
+			_projectMembershipService.getProjectMembershipsByUserId(
+				_userAccount.getId());
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			projectExternalReferenceCodes.add(
+				projectMembership.getProjectExternalReferenceCode());
+		}
+
+		_projectExternalReferenceCodes = projectExternalReferenceCodes;
+
+		return _projectExternalReferenceCodes;
+	}
+
 	private List<Property> _getUserAccountProperties() throws Exception {
 		if (_userAccountProperties == null) {
 			_userAccountProperties = _propertyService.getUserAccountProperties(
@@ -158,11 +203,14 @@ public class UserAccountSyncModel {
 	}
 
 	private List<AccountBrief> _accountBriefs;
+	private List<String> _accountExternalReferenceCodes;
 	private List<EntitlementDefinition> _entitlementDefinitions;
 	private final EntitlementService _entitlementService;
 	private final ExternalLinkConverter _externalLinkConverter;
 	private List<Property> _externalLinkProperties;
 	private List<OrganizationBrief> _organizationBriefs;
+	private List<String> _projectExternalReferenceCodes;
+	private final ProjectMembershipService _projectMembershipService;
 	private final PropertyService _propertyService;
 	private List<RoleBrief> _roleBriefs;
 	private List<Phone> _telephones;

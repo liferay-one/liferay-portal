@@ -23,9 +23,12 @@ import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -86,7 +89,9 @@ public class UserAccountSynchronizer {
 			() -> _syncUserAccount(_createUserAccountSyncModel(userAccount)));
 	}
 
-	public void syncUserAccountAccounts(UserAccount userAccount) {
+	public void syncUserAccountAccounts(UserAccount userAccount)
+		throws Exception {
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing accounts for user account " +
@@ -101,9 +106,7 @@ public class UserAccountSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_jiraAssetService.fetchReferenceObjectIds(
-				_accountConverter, userAccountSyncModel.getAccountBriefs(),
-				AccountBrief::getExternalReferenceCode));
+			_getAccountObjectIds(userAccountSyncModel));
 
 		_keyedLock.withLock(
 			userAccount.getExternalReferenceCode(),
@@ -162,8 +165,18 @@ public class UserAccountSynchronizer {
 		UserAccount userAccount) {
 
 		return new UserAccountSyncModel(
-			_entitlementService, _externalLinkConverter, _propertyService,
-			userAccount);
+			_entitlementService, _externalLinkConverter,
+			_projectMembershipService, _propertyService, userAccount);
+	}
+
+	private List<String> _getAccountObjectIds(
+			UserAccountSyncModel userAccountSyncModel)
+		throws Exception {
+
+		return _jiraAssetService.fetchReferenceObjectIds(
+			_accountConverter,
+			userAccountSyncModel.getAccountExternalReferenceCodes(),
+			externalReferenceCode -> externalReferenceCode);
 	}
 
 	private void _syncContactRoleAssignments(
@@ -243,9 +256,7 @@ public class UserAccountSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_jiraAssetService.fetchReferenceObjectIds(
-				_accountConverter, userAccountSyncModel.getAccountBriefs(),
-				AccountBrief::getExternalReferenceCode));
+			_getAccountObjectIds(userAccountSyncModel));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			_jiraAssetService.fetchReferenceObjectIds(
@@ -319,6 +330,9 @@ public class UserAccountSynchronizer {
 
 	@Autowired
 	private PhoneConverter _phoneConverter;
+
+	@Autowired
+	private ProjectMembershipService _projectMembershipService;
 
 	@Autowired
 	private PropertyService _propertyService;
