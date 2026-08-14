@@ -201,6 +201,35 @@ public class AccountSynchronizer {
 		_syncUserAccounts(userAccounts);
 	}
 
+	public void syncProjectUserAccounts(Project project) throws Exception {
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				"Syncing user accounts for project " +
+					project.getExternalReferenceCode() + " to JSM");
+		}
+
+		Account account = _accountService.getAccount(
+			project.getAccountExternalReferenceCode());
+
+		AccountSyncModel accountSyncModel = _createAccountSyncModel(account);
+
+		ProjectSyncModel projectSyncModel = _createProjectSyncModel(
+			accountSyncModel, project);
+
+		_syncAccountAsset(
+			account, project.getExternalReferenceCode(), project.getName(),
+			jiraAssetObject -> {
+				jiraAssetObject.setAttributeValue(
+					AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
+					_toContactObjectIds(
+						projectSyncModel.getCustomerUserAccounts()));
+				jiraAssetObject.setAttributeValue(
+					AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
+					_toContactObjectIds(
+						projectSyncModel.getWorkerUserAccounts()));
+			});
+	}
+
 	private AccountSyncModel _createAccountSyncModel(Account account) {
 		return new AccountSyncModel(
 			account, _commerceOrderService, _entitlementService,
