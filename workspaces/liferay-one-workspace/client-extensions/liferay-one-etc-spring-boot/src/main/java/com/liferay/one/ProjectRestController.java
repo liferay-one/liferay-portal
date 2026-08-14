@@ -80,7 +80,7 @@ public class ProjectRestController extends OneBaseRestController {
 		if (_projectMembershipService.deleteProjectMembership(
 				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-			_syncMembership(userId);
+			_syncMembership(projectId, userId);
 		}
 	}
 
@@ -167,7 +167,7 @@ public class ProjectRestController extends OneBaseRestController {
 		if (_projectMembershipService.addProjectMembership(
 				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-			_syncMembership(userId);
+			_syncMembership(projectId, userId);
 		}
 	}
 
@@ -339,7 +339,20 @@ public class ProjectRestController extends OneBaseRestController {
 		return false;
 	}
 
-	private void _syncMembership(long userId) {
+	private void _syncMembership(
+		String projectExternalReferenceCode, long userId) {
+
+		try {
+			_accountSynchronizer.syncProjectUserAccounts(
+				_projectService.getProject(projectExternalReferenceCode));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync users for project " +
+					projectExternalReferenceCode,
+				exception);
+		}
+
 		UserAccount userAccount = null;
 
 		try {
