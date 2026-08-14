@@ -15,8 +15,13 @@ import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.role.EmployeeRoles;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @author Drew Brokke
@@ -86,11 +91,35 @@ public class ProjectSyncModel {
 		Map<String, Role> accountRolesByExternalReferenceCode =
 			_accountSyncModel.getAccountRolesByExternalReferenceCode();
 
+		List<ProjectMembership> projectMemberships = getProjectMemberships();
+
+		List<Long> userIds = new ArrayList<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			userIds.add(projectMembership.getUserId());
+		}
+
+		Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
+
+		for (UserAccount userAccount :
+				_userAccountService.getUserAccounts(userIds)) {
+
+			userAccountsByUserId.put(userAccount.getId(), userAccount);
+		}
+
 		_userAccountBucket = new UserAccountBucket();
 
-		for (ProjectMembership projectMembership : getProjectMemberships()) {
-			UserAccount userAccount = _userAccountService.getUserAccount(
+		for (ProjectMembership projectMembership : projectMemberships) {
+			UserAccount userAccount = userAccountsByUserId.get(
 				projectMembership.getUserId());
+
+			if (userAccount == null) {
+				_log.error(
+					"Unable to get user account for user " +
+						projectMembership.getUserId());
+
+				continue;
+			}
 
 			Role role = accountRolesByExternalReferenceCode.get(
 				projectMembership.getRoleExternalReferenceCode());
@@ -105,6 +134,8 @@ public class ProjectSyncModel {
 
 		return _userAccountBucket;
 	}
+
+	private static final Log _log = LogFactory.getLog(ProjectSyncModel.class);
 
 	private final AccountSyncModel _accountSyncModel;
 	private List<EntitlementDefinition> _activeEntitlementDefinitions;

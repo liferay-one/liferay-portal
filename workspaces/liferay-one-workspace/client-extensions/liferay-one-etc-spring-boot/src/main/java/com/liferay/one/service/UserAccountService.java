@@ -12,9 +12,14 @@ import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -161,6 +166,39 @@ public class UserAccountService extends OneBaseService {
 		return userAccountResource.getUserAccountByEmailAddress(emailAddress);
 	}
 
+	public List<UserAccount> getUserAccounts(Collection<Long> userIds)
+		throws Exception {
+
+		if ((userIds == null) || userIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		UserAccountResource userAccountResource = _buildUserAccountResource(
+			"nestedFields", "customFields");
+
+		List<Long> uniqueUserIds = new ArrayList<>(
+			new LinkedHashSet<>(userIds));
+
+		List<UserAccount> userAccounts = new ArrayList<>();
+
+		for (int i = 0; i < uniqueUserIds.size(); i += _FILTER_BATCH_SIZE) {
+			List<Long> batchUserIds = uniqueUserIds.subList(
+				i, Math.min(i + _FILTER_BATCH_SIZE, uniqueUserIds.size()));
+
+			Page<UserAccount> userAccountsPage =
+				userAccountResource.getUserAccountsPage(
+					null,
+					StringBundler.concat(
+						"id in ('", StringUtil.merge(batchUserIds, "','"),
+						"')"),
+					Pagination.of(1, batchUserIds.size()), null);
+
+			userAccounts.addAll(userAccountsPage.getItems());
+		}
+
+		return userAccounts;
+	}
+
 	public boolean hasAccountUserAccount(long accountId, long userId)
 		throws Exception {
 
@@ -240,6 +278,8 @@ public class UserAccountService extends OneBaseService {
 			parameters
 		).build();
 	}
+
+	private static final int _FILTER_BATCH_SIZE = 100;
 
 	private static final int _PAGE_SIZE = 500;
 
