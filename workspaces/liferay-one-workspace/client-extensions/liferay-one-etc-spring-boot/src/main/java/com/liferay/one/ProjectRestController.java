@@ -21,6 +21,7 @@ import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SaaSUsageStrategy;
 import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
@@ -342,16 +343,7 @@ public class ProjectRestController extends OneBaseRestController {
 	private void _syncMembership(
 		String projectExternalReferenceCode, long userId) {
 
-		try {
-			_accountSynchronizer.syncProjectUserAccounts(
-				_projectService.getProject(projectExternalReferenceCode));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync users for project " +
-					projectExternalReferenceCode,
-				exception);
-		}
+		_syncProjectAndAccountUserAccounts(projectExternalReferenceCode);
 
 		UserAccount userAccount = null;
 
@@ -380,6 +372,47 @@ public class ProjectRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _syncProjectAndAccountUserAccounts(
+		String projectExternalReferenceCode) {
+
+		Project project = null;
+
+		try {
+			project = _projectService.getProject(projectExternalReferenceCode);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get project " + projectExternalReferenceCode,
+				exception);
+
+			return;
+		}
+
+		try {
+			_accountSynchronizer.syncProjectUserAccounts(project);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync users for project " +
+					projectExternalReferenceCode,
+				exception);
+		}
+
+		String accountExternalReferenceCode =
+			project.getAccountExternalReferenceCode();
+
+		try {
+			_accountSynchronizer.syncAccountUserAccounts(
+				_accountService.getAccount(accountExternalReferenceCode));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync users for account " +
+					accountExternalReferenceCode,
+				exception);
+		}
+	}
+
 	private static final DateTimeFormatter _BILLING_PERIOD_DATE_TIME_FORMATTER =
 		DateTimeFormatter.ofPattern("yyyy-MM");
 
@@ -388,6 +421,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private AccountAssetService _accountAssetService;
+
+	@Autowired
+	private AccountService _accountService;
 
 	@Autowired
 	private AccountSynchronizer _accountSynchronizer;
