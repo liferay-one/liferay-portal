@@ -13,6 +13,7 @@ import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
@@ -81,7 +82,8 @@ public class ProjectRestController extends OneBaseRestController {
 		if (_projectMembershipService.deleteProjectMembership(
 				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-			_syncMembership(projectId, userId);
+			_syncDeletedMembership(
+				accountRoleExternalReferenceCode, projectId, userId);
 		}
 	}
 
@@ -168,7 +170,8 @@ public class ProjectRestController extends OneBaseRestController {
 		if (_projectMembershipService.addProjectMembership(
 				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
 
-			_syncMembership(projectId, userId);
+			_syncAddedMembership(
+				accountRoleExternalReferenceCode, projectId, userId);
 		}
 	}
 
@@ -185,6 +188,18 @@ public class ProjectRestController extends OneBaseRestController {
 			_projectService.getProject(externalReferenceCode));
 
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	private UserAccount _fetchUserAccount(long userId) {
+		try {
+			return _userAccountService.getUserAccount(userId);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get user account for user " + userId, exception);
+
+			return null;
+		}
 	}
 
 	private String _getAccountKey(Project project) throws Exception {
@@ -340,35 +355,83 @@ public class ProjectRestController extends OneBaseRestController {
 		return false;
 	}
 
-	private void _syncMembership(
+	private void _syncAddedMembership(
+		String accountRoleExternalReferenceCode,
 		String projectExternalReferenceCode, long userId) {
 
-		_syncProjectAndAccountUserAccounts(projectExternalReferenceCode);
+		UserAccount userAccount = _fetchUserAccount(userId);
 
-		UserAccount userAccount = null;
+		if (userAccount == null) {
+			return;
+		}
+
+		_syncMembership(projectExternalReferenceCode, userAccount);
 
 		try {
-			userAccount = _userAccountService.getUserAccount(userId);
+			_accountUserAccountRoleSynchronizer.syncAssignRole(
+				accountRoleExternalReferenceCode,
+				userAccount.getExternalReferenceCode(),
+				projectExternalReferenceCode);
 		}
 		catch (Exception exception) {
 			_log.error(
-				"Unable to get user account for user " + userId, exception);
+				StringBundler.concat(
+					"Unable to sync contact role ",
+					accountRoleExternalReferenceCode, " for user ",
+					userAccount.getId()),
+				exception);
+		}
+	}
 
+	private void _syncDeletedMembership(
+		String accountRoleExternalReferenceCode,
+		String projectExternalReferenceCode, long userId) {
+
+		UserAccount userAccount = _fetchUserAccount(userId);
+
+		if (userAccount == null) {
 			return;
 		}
+
+		_syncMembership(projectExternalReferenceCode, userAccount);
+
+		try {
+			_accountUserAccountRoleSynchronizer.syncUnassignRole(
+				accountRoleExternalReferenceCode,
+				userAccount.getExternalReferenceCode(),
+				projectExternalReferenceCode);
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to sync contact role ",
+					accountRoleExternalReferenceCode, " for user ",
+					userAccount.getId()),
+				exception);
+		}
+	}
+
+	private void _syncMembership(
+		String projectExternalReferenceCode, UserAccount userAccount) {
+
+		_syncProjectAndAccountUserAccounts(projectExternalReferenceCode);
 
 		try {
 			_userAccountSynchronizer.syncUserAccountAccounts(userAccount);
 		}
 		catch (Exception exception) {
-			_log.error("Unable to sync accounts for user " + userId, exception);
+			_log.error(
+				"Unable to sync accounts for user " + userAccount.getId(),
+				exception);
 		}
 
 		try {
 			_userAccountSynchronizer.syncUserAccountRoles(userAccount);
 		}
 		catch (Exception exception) {
-			_log.error("Unable to sync roles for user " + userId, exception);
+			_log.error(
+				"Unable to sync roles for user " + userAccount.getId(),
+				exception);
 		}
 	}
 
@@ -427,6 +490,10 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private AccountSynchronizer _accountSynchronizer;
+
+	@Autowired
+	private AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer;
 
 	@Autowired
 	private BusinessEventPermission _businessEventPermission;
