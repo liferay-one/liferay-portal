@@ -176,17 +176,8 @@ public class AccountSynchronizer {
 					" to JSM");
 		}
 
-		String accountExternalReferenceCode =
-			project.getAccountExternalReferenceCode();
-
-		if (Validator.isNull(accountExternalReferenceCode)) {
-			throw new AccountNotFoundException(
-				"Project " + project.getExternalReferenceCode() +
-					" has no account external reference code");
-		}
-
 		AccountSyncModel accountSyncModel = _createAccountSyncModel(
-			_accountService.getAccount(accountExternalReferenceCode));
+			_getProjectAccount(project));
 
 		ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 			accountSyncModel, project);
@@ -208,8 +199,7 @@ public class AccountSynchronizer {
 					project.getExternalReferenceCode() + " to JSM");
 		}
 
-		Account account = _accountService.getAccount(
-			project.getAccountExternalReferenceCode());
+		Account account = _getProjectAccount(project);
 
 		AccountSyncModel accountSyncModel = _createAccountSyncModel(account);
 
@@ -244,6 +234,19 @@ public class AccountSynchronizer {
 		return new ProjectSyncModel(
 			accountSyncModel, _entitlementService, project,
 			_projectMembershipService, _userAccountService);
+	}
+
+	private Account _getProjectAccount(Project project) throws Exception {
+		String accountExternalReferenceCode =
+			project.getAccountExternalReferenceCode();
+
+		if (Validator.isNull(accountExternalReferenceCode)) {
+			throw new AccountNotFoundException(
+				"Project " + project.getExternalReferenceCode() +
+					" has no account external reference code");
+		}
+
+		return _accountService.getAccount(accountExternalReferenceCode);
 	}
 
 	private void _setAttributeValues(
