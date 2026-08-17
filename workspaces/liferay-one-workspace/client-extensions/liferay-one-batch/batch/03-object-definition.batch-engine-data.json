@@ -2691,58 +2691,6 @@
 					"type": "String"
 				},
 				{
-					"DBType": "Integer",
-					"businessType": "Integer",
-					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_DURATION_DAYS",
-					"indexed": true,
-					"label": {
-						"en_US": "License Key Duration Days"
-					},
-					"name": "licenseKeyDurationDays",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Integer"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_FAMILY",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "License Key Family"
-					},
-					"name": "licenseKeyFamily",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_TYPE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "License Key Type"
-					},
-					"name": "licenseKeyType",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
 					"DBType": "Double",
 					"businessType": "Decimal",
 					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_MAX_QUANTITY",
