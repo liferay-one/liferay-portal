@@ -1,6 +1,6 @@
 ---
 
-allowed-tools: [Bash, Glob, Grep, Read]
+allowed-tools: [AskUserQuestion, Bash, Glob, Grep, Read]
 description: Create a GitHub pull request for the current branch, transition the corresponding Jira ticket to review, and record the PR link on the ticket. Use when the user asks to create a PR, send a PR, or invokes /pr.
 name: one-pr
 
@@ -26,27 +26,51 @@ Before creating the PR, verify these Brian-enforced requirements:
 
 **Merge conflicts:** Confirm the branch is rebased on top of `liferay-one/master-temp` with no conflicts. Run `git merge-base --is-ancestor liferay-one/master-temp HEAD` — if the branch is behind, offer to run `/one-rebase` first.
 
-**Code review:** Confirm the branch has actually been reviewed before it goes out. Accept either signal:
+**Code review:** Report what review the branch has, recommend one when it is missing, and let the author decide. This check pauses for a question; it never holds the pull request against an answer.
 
-1. A `one-review` receipt for the exact commit being sent, with `verdict: APPROVED` and `tree: clean`:
+Both halves matter. A check that cannot pause is worthless — an unreviewed branch should hear about it before it goes out. A check that can veto is worse than worthless: every fix is a new commit, every new commit outdates the receipt, and the next review reads the fix and finds something in it, so the rounds compound and the branch drifts past the ticket it was opened for. One question, then the author's word is final in either direction. Opening the pull request is not the end of review; the comments on it are the other half.
+
+Look for either signal:
+
+1. A `one-review` receipt — for `HEAD` first, then for the branch's own commits:
 
 	```bash
-	cat "$(git rev-parse --git-common-dir)/one-review/receipts/$(git rev-parse HEAD)" 2>/dev/null
+	RECEIPTS="$(git rev-parse --path-format=absolute --git-common-dir)/one-review/receipts"
+
+	cat "${RECEIPTS}/$(git rev-parse HEAD)" 2>/dev/null ||
+		for SHA in $(git log --format=%H liferay-one/master-temp..HEAD); do
+			[ -f "${RECEIPTS}/${SHA}" ] &&
+				echo "receipt on ancestor ${SHA}" &&
+				cat "${RECEIPTS}/${SHA}" &&
+				break
+		done
 	```
+
+	`--path-format=absolute` matches the form the receipt is written with. A bare `--git-common-dir` returns a path relative to the current directory — `.git` at the repo root, `../../.git` from a subdirectory — which is correct only while the shell stays where it was computed. Capture it and `cd`, or reuse it a step later, and it quietly resolves somewhere else and the receipt reads as missing.
 
 1. A `one-team` review artifact for this ticket — `.one-team/<TICKET>/review.md` at the repo root. That protocol gates its own commits on the reviewer's `APPROVED`, so its presence is evidence for the branch as committed. Its presence is the signal; where that run used `--adversarial` it also carries an Independence line in place of a receipt, since the reviewer runs `--read-only`, and that is worth naming in the summary.
 
-Three cases fail the check, and each gets named rather than lumped together as "unreviewed":
+Name the state in a sentence or two — a note, not a report:
 
-- **No receipt and no artifact** — the branch was never reviewed.
-- **A receipt naming an ancestor of `HEAD`** — the review predates the current commits. Report which arrived after it with `git log --oneline <receipt-commit>..HEAD`; a review of earlier commits says nothing about later ones.
-- **A receipt reading `verdict: CHANGES_REQUESTED` or `tree: dirty`** — findings were open, or the review covered a working tree rather than the commit. Neither counts, however recent.
+- **A receipt for `HEAD` reading `verdict: APPROVED` and `tree: clean`, or a `one-team` artifact** — reviewed. Say so and carry on without asking.
+- **A receipt on an ancestor** — reviewed at that commit, with the later ones not covered. List them with `git log --oneline <receipt-commit>..HEAD`. This is the ordinary state of a branch that has had review fixes applied, not a problem in itself.
+- **`verdict: CHANGES_REQUESTED`, or `tree: dirty`** — the review had open findings, or it covered a working tree rather than a commit. Say which, and name the findings if the receipt carries them.
+- **Neither signal** — the branch has never been reviewed. This is the one case that earns a real recommendation: `/one-review` before it goes out.
 
-On any of those, **stop before doing anything outward-facing.** Do not push the branch, do not open the pull request, and do not transition the Jira ticket. Tell the user which case applies and ask them to run `/one-review` first. Do not run the review here — this skill checks for one and reports; it is not the review.
+In every case but the first, **do not push, do not open the pull request, and do not transition the Jira ticket yet.** Ask once, with `AskUserQuestion`, offering these two in this order:
 
-The gate is the verdict and nothing else: `APPROVED` on the right commit with a clean tree passes, whichever way the review was run. `--adversarial` is an optional escalation for changes that warrant it, never the bar — a standard review satisfies this check exactly as fully, and a receipt without a `mode` line (or with `mode: standard`) is not a lesser signal. Note the `mode` in the summary because it is worth knowing, and do not offer to re-run anything: the user asking for a PR has already decided how much review this change warranted.
+1. **Run `/one-review` first** — the recommendation, and the first option every time. Stop the run here, and hand it back so they can invoke `/one-review` themselves.
+1. **Open the pull request anyway** — proceed to everything below, Jira transition included.
 
-The user may override by saying so explicitly, and that decision is theirs to make. When they do, proceed and note in the final summary that the PR went out without a review on record, so it is visible rather than silently absorbed.
+Nothing goes out on a default or a shrug. The pull request is opened only when the author picks it, either at that question or by saying so afterward.
+
+**And a follow-up settles it.** When the run stopped for a review and the author comes back — in this turn or a later one — saying to send it, that is the answer: open the pull request. Do not ask a second time, do not re-raise the findings, do not ask them to run the review first, and do not treat an open finding of any severity as a veto. They were told what the branch is missing; choosing to send it anyway is theirs to make, and an unreviewed pull request is an ordinary thing to open.
+
+Never run `/one-review` from inside this skill, with or without permission. This skill reads the record and reports it; it is not the review, and running one here is precisely what turns opening a pull request into another round.
+
+However the review was run, it is read the same way. `--adversarial` is an optional escalation for changes that warrant it, never the bar — a standard review is exactly as valid a signal, and a receipt without a `mode` line (or with `mode: standard`) is not a lesser one. Note the `mode` in the summary because it is worth knowing, and do not offer to re-run anything: the user asking for a PR has already decided how much review this change warranted.
+
+**Ticket scope.** Findings are not a queue to be drained before this skill may push. What belongs on the branch is what the ticket asked for; a finding outside that is owed work for a companion ticket — record it, leave it. A pull request that grew past its ticket to satisfy a review is a harder pull request to review, not a safer one.
 
 ## Input
 
@@ -137,4 +161,4 @@ Report back to the user with:
 
 - The Jira ticket status and link.
 - The pull request URL.
-- Which review signal satisfied the pre-flight check — the receipt's commit and verdict, or the `one-team` artifact — or, when the user overrode it, that the pull request went out with no review on record. Name the receipt's `mode` next to its verdict when it carries one, and under `adversarial` the `independence` and `reading` beside it.
+- The review state the pull request went out under — the receipt's commit and verdict, the `one-team` artifact, or that the branch was unreviewed and the author chose to send it anyway. One line, stated the same way in every case: this is a record, not a warning, and nothing here is a mark against the pull request. Name the receipt's `mode` next to its verdict when it carries one, and under `adversarial` the `independence` and `reading` beside it.
