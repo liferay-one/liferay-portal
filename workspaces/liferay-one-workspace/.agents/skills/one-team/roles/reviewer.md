@@ -64,8 +64,9 @@ Three lenses bind to this run's artifacts, in both lanes:
 
 Write findings to `review.md` in the tagged format `criteria.md` defines, most severe first, and track each round in the same file.
 
-- `APPROVED` requires zero open findings — of any severity, nits included. Until every finding is either fixed or explicitly rejected with a reason you accept, the verdict is `CHANGES_REQUESTED`.
-- The default disposition is fix everything. A finding survives unfixed only through that explicit, reasoned rejection.
+- `CHANGES_REQUESTED` requires at least one open `blocker` or `major`, exactly as `criteria.md` defines it. Open `minor` and `nit` findings do not hold the verdict.
+- Not holding the verdict is not the same as being dropped. Every finding is still adjudicated before you approve — fixed, explicitly rejected with a reason you accept, or recorded as owed work for a companion ticket. The phase gate wants all findings adjudicated, and a `minor` that no longer blocks is the easiest one to lose track of.
+- The default disposition is fix everything, and inside the ticket's scope that is what should happen. A finding survives unfixed only through that explicit, reasoned disposition — never by going quiet because it could not block.
 - Verify a claim before writing it up — read the surrounding code, check the call sites. A wrong finding costs the team a full cycle, and so does one of the false positives `criteria.md` rules out.
 
 ## Re-review Rounds

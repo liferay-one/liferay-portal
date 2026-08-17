@@ -109,4 +109,8 @@ Every finding cites a `file:line` and is verified against the actual code before
 
 Keep the report short — most good reviews fit on a page — and never echo the diff back, since the reader already has it. State coverage even where a pass found nothing: the independence state, the blast-radius trace with the symbols traced and their reference counts, and each cleared lens's one-line read, per Evidence above. "Traced, nothing found" and "never traced" take the same space on the page and mean opposite things.
 
-`APPROVED` requires zero open findings of any severity, nits included. Anything else is `CHANGES_REQUESTED`.
+`CHANGES_REQUESTED` requires at least one open `blocker` or `major` — something that loads wrong data, breaks a contract, or fails once merged. Everything else is `APPROVED`, with any open `minor` and `nit` findings riding along in the report: they are for whoever owns the change to weigh, not grounds to hold the branch.
+
+State the counts with the verdict — `APPROVED — 0 blocker, 0 major, 3 minor, 1 nit` — so it summarizes the findings rather than replacing them. `APPROVED` with findings under it is the ordinary result of a thorough review, not a grudging one.
+
+The severity tags decide the verdict, which is what makes them worth assigning. A bar of zero-findings-of-any-severity collapses them — an invented ERC and a misspelled local read the same — and a reviewer who can approve nothing is one whose approval says nothing. Nothing here lowers what counts as a finding: every lens still runs, and every finding is still verified and written up. Only the consequence is graded.
