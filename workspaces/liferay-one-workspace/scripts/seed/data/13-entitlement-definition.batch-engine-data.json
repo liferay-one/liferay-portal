@@ -92,6 +92,16 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PODS",
+			"grantType": "fixed",
+			"name": "production-pods",
+			"r_commerceProductToEntitlementDefinition_CProductERC": "PRDCT-CLOUD-NATIVE-PODS",
+			"unit": "count"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Commerce",
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE",

@@ -312,6 +312,12 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/ai-hub"
 					}
+				},
+				{
+					"specificationKey": "cloud-enabled",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -629,6 +635,47 @@
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
 				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Cloud Native production pod capacity add-on for testing cluster sizing."
+			},
+			"externalReferenceCode": "PRDCT-CLOUD-NATIVE-PODS",
+			"name": {
+				"en_US": "Up to 5 Production Pods"
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				}
+			],
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-CLOUD-NATIVE-PODS",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-CLOUD-NATIVE-PODS"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
 					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
 				}
 			],
@@ -692,6 +739,12 @@
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Liferay Customer Management Platform (Subscription)"
+					}
+				},
+				{
+					"specificationKey": "cloud-enabled",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],
@@ -1438,6 +1491,12 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com/digital-sales-room"
+					}
+				},
+				{
+					"specificationKey": "cloud-enabled",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],

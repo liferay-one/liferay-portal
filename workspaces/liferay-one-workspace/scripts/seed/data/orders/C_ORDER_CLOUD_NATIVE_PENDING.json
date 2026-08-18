@@ -1,0 +1,38 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_CLOUD_NATIVE_PENDING",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay Cloud Native - Standard Operations Bundle",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-031",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_CLOUD_NATIVE_PENDING",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_PENDING",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-031",
+			"startDate": "2025-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-031",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_CLOUD_NATIVE_PENDING",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_CLOUD_NATIVE_PENDING",
+		"orderItems": [
+			{
+				"externalReferenceCode": "C_ORDER_ITEM_CLOUD_NATIVE_PENDING",
+				"name": "Liferay Cloud Native - Standard Operations Bundle",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "DXP",
+		"projectExternalReferenceCode": "PRJCT-031"
+	},
+	"purchaseOrderNumber": "PO-CLOUD-NATIVE-PENDING"
+}
