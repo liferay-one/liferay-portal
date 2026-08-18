@@ -9,6 +9,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import type {APIResponse} from '~/types/api';
 
 export type ProjectEnvironment = {
+	activationCode: string;
 	activationMode: string;
 	adminEmailAddress: string;
 	adminFirstName: string;
@@ -17,6 +18,8 @@ export type ProjectEnvironment = {
 	allowedEmailDomains: string;
 	currentEntitlementHash: string;
 	domains: string;
+	environmentName: string;
+	environmentType: string;
 	externalReferenceCode: string;
 	friendlyURL: string;
 	githubUsername: string;
@@ -34,6 +37,7 @@ export type ProjectEnvironment = {
 };
 
 type EnvironmentNode = {
+	activationCode?: string;
 	activationMode?: string;
 	activationStatus?: string;
 	adminEmailAddress?: string;
@@ -43,6 +47,8 @@ type EnvironmentNode = {
 	allowedEmailDomains?: string;
 	currentEntitlementHash?: string;
 	domains?: string;
+	environmentName?: string;
+	environmentType?: string;
 	externalReferenceCode: string;
 	friendlyURL?: string;
 	githubUsername?: string;
@@ -65,6 +71,7 @@ export function useProjectEnvironments() {
 		data,
 		error,
 		isLoading: loading,
+		mutate,
 	} = useFetch<APIResponse<EnvironmentNode>>(
 		accountId ? '/o/c/environments' : null,
 		{
@@ -78,6 +85,7 @@ export function useProjectEnvironments() {
 
 	const environments: ProjectEnvironment[] = (data?.items ?? []).map(
 		(node) => ({
+			activationCode: node.activationCode ?? '',
 			activationMode: node.activationMode ?? '',
 			adminEmailAddress: node.adminEmailAddress ?? '',
 			adminFirstName: node.adminFirstName ?? '',
@@ -86,6 +94,8 @@ export function useProjectEnvironments() {
 			allowedEmailDomains: node.allowedEmailDomains ?? '',
 			currentEntitlementHash: node.currentEntitlementHash ?? '',
 			domains: node.domains ?? '',
+			environmentName: node.environmentName ?? '',
+			environmentType: node.environmentType ?? '',
 			externalReferenceCode: node.externalReferenceCode,
 			friendlyURL: node.friendlyURL ?? '',
 			githubUsername: node.githubUsername ?? '',
@@ -104,7 +114,7 @@ export function useProjectEnvironments() {
 		})
 	);
 
-	return {environments, error, loading};
+	return {environments, error, loading, mutate};
 }
 
 export default useProjectEnvironments;
