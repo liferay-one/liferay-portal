@@ -103,6 +103,19 @@
 		},
 		{
 			"description": {
+				"en_US": "This product is installable into a Cloud Native environment."
+			},
+			"facetable": false,
+			"key": "cloud-enabled",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Cloud Enabled"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the latest Liferay version supported."
 			},
 			"facetable": false,
