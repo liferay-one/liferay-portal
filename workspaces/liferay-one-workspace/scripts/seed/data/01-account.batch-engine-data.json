@@ -172,6 +172,16 @@
 			"type": "business"
 		},
 		{
+			"externalReferenceCode": "ACCNT-031",
+			"name": "Cloud Native Pending Test Account",
+			"type": "business"
+		},
+		{
+			"externalReferenceCode": "ACCNT-032",
+			"name": "Cloud Native Offline Test Account",
+			"type": "business"
+		},
+		{
 			"externalReferenceCode": "SSA-ACCOUNT",
 			"name": "SSA Account",
 			"type": "business"
