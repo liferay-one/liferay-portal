@@ -171,9 +171,19 @@
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-002"
 		},
 		{
+			"externalReferenceCode": "PRJCT-031",
+			"name": "Cloud Native Pending Project",
+			"r_accountEntryToProject_accountEntryERC": "ACCNT-031"
+		},
+		{
 			"externalReferenceCode": "PRJCT-032",
 			"name": "Mixed Legacy And Business Plan Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-002"
+		},
+		{
+			"externalReferenceCode": "PRJCT-032",
+			"name": "Cloud Native Offline Project",
+			"r_accountEntryToProject_accountEntryERC": "ACCNT-032"
 		},
 		{
 			"externalReferenceCode": "PRJCT-033",

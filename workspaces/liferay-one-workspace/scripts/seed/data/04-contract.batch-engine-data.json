@@ -53,6 +53,26 @@
 		{
 			"contractTerm": 12,
 			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_CONTRACT_CLOUD_NATIVE_OFFLINE",
+			"r_accountEntryToContract_accountEntryERC": "ACCNT-032",
+			"r_projectToContract_c_projectERC": "PRJCT-032",
+			"renewalState": "auto-renew",
+			"spendLimit": 4500,
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"contractTerm": 12,
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_CONTRACT_CLOUD_NATIVE_PENDING",
+			"r_accountEntryToContract_accountEntryERC": "ACCNT-031",
+			"r_projectToContract_c_projectERC": "PRJCT-031",
+			"renewalState": "auto-renew",
+			"spendLimit": 3500,
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"contractTerm": 12,
+			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_CONTRACT_COMMERCE",
 			"r_accountEntryToContract_accountEntryERC": "ACCNT-012",
 			"r_projectToContract_c_projectERC": "PRJCT-012",
