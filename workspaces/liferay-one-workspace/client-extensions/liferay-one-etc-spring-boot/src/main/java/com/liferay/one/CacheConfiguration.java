@@ -34,6 +34,14 @@ public class CacheConfiguration {
 			));
 
 		caffeineCacheManager.registerCustomCache(
+			"cloudEnabledProduct",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+		caffeineCacheManager.registerCustomCache(
 			"composableAccountUsage",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
@@ -54,6 +62,14 @@ public class CacheConfiguration {
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+		caffeineCacheManager.registerCustomCache(
+			"productVirtualSettingsFileEntryChecksum",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(24)
 			).maximumSize(
 				1000
 			).build());
