@@ -34,7 +34,9 @@ export default {
 	'accounts': 'Accounts',
 	'accounts-available-for-x-you': 'Accounts available for {0} (you)',
 	'actions': 'Actions',
+	'activate': 'Activate',
 	'activated': 'Activated',
+	'activating': 'Activating...',
 	'activation': 'Activation',
 	'activation-key': 'Activation Key',
 	'activation-key-creation': 'Activation Key Creation',
@@ -43,6 +45,7 @@ export default {
 	'activation-keys-list': 'Activation Keys List',
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
+	'activation-token': 'Activation Token',
 	'active': 'Active',
 	'active-batch-segments': 'Active Batch Segments',
 	'active-real-time-segments': 'Active Real-Time Segments',
@@ -433,6 +436,7 @@ export default {
 	'download-in-progress': 'Download in Progress',
 	'download-key': 'Download Key',
 	'download-license-key': 'Download License Key',
+	'download-offline-activation-bundle': 'Download Offline Activation Bundle',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
@@ -444,6 +448,7 @@ export default {
 	'dxp-license-usage-type': 'DXP License Usage Type',
 	'dxp-module-based-apps-are-not-supported-on-liferay-experience-cloud-lxc':
 		'DXP module-based apps are not supported on Liferay SaaS.',
+	'dxp-version': 'DXP Version',
 	'e-commerce': 'E-Commerce',
 	'each': 'each',
 	'ecm': 'ECM',
@@ -930,6 +935,7 @@ export default {
 	'of-service': 'of Service.',
 	'of-target': 'of target',
 	'of-x': 'of {0}',
+	'offline-activation': 'Offline Activation',
 	'offline-payment': 'Offline Payment',
 	'offline-payments-using-the-invoice': 'Offline payments using the invoice',
 	'ok': 'OK',
@@ -938,6 +944,8 @@ export default {
 	'on-premise': 'On-Premise',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'Once canceled, no further edits can be made to this event.',
+	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
+		'One or more add-ons are not available for the selected DXP version.',
 	'one-time-purchases': 'One-Time Purchases',
 	'online-payments-with-paypal': 'Online payments with PayPal',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
@@ -979,6 +987,7 @@ export default {
 	'paid-date': 'Paid Date',
 	'partner-roles': 'Partner Roles',
 	'password-policy': 'Password Policy',
+	'paste-your-activation-token-here': 'Paste your activation token here',
 	'pay-with-bank-transfer': 'Pay with Bank Transfer',
 	'pay-with-card': 'Pay with Card',
 	'pay-with-invoice': 'Pay with Invoice',
@@ -1241,6 +1250,7 @@ export default {
 	'section-that-shows-the-payments': 'Section that shows the payments.',
 	'security': 'Security',
 	'security-breach-contacts': 'Security Breach Contacts',
+	'select-a-dxp-version': 'Select a DXP Version',
 	'select-a-file': 'Select a File',
 	'select-a-local-file-to-upload': 'Select a Local File to Upload',
 	'select-a-local-file-to-upload-only-one-file-can-be-attached-at-a-time':
@@ -1393,6 +1403,9 @@ export default {
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-account-was-successfully-synced-to-jsm':
 		'The account was successfully synced to JSM.',
+	'the-activation-code-was-not-found': 'The activation code was not found.',
+	'the-activation-token-is-not-valid': 'The activation token is not valid.',
+	'the-activation-token-is-required': 'The activation token is required.',
 	'the-app-and-all-its-client-extensions-services-will-be-deleted-and-uninstalled-from-liferay-dxp':
 		'The app and all its client extensions (services) will be deleted and uninstalled from Liferay DXP.',
 	'the-app-submission-is-compatible-with-liferay-experience-cloud-and':
@@ -1411,6 +1424,7 @@ export default {
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay DXP.',
 	'the-dxp-app-is-module-based-and-is-compatible-with-7-4-builds-of-liferay-dxp-self-managed-liferay-cloud-formerly-dxp-cloud':
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay Self-Managed.',
+	'the-environment-was-activated': 'The environment was activated.',
 	'the-file-has-already-been-uploaded': 'The file has already been uploaded.',
 	'the-file-is-downloading-automatically-if-you-encounter-any-issues-click-the-download-button-below-to-start-the-download-manually':
 		'The file is downloading automatically. If you encounter any issues, click the button below to start the download manually.',
@@ -1434,9 +1448,15 @@ export default {
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
+	'this-activation-code-has-already-been-used':
+		'This activation code has already been used.',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
 	'this-email-address-is-duplicated': 'This email address is duplicated.',
+	'this-environment-has-already-been-activated':
+		'This environment has already been activated.',
+	'this-environment-s-cloud-native-cluster-doesn-t-have-a-live-connection-to-liferay-s-provisioning-service-run-x-in-your-cloud-native-environment-to-generate-a-signed-activation-token-then-paste-it-below-to-activate-this-x-environment':
+		"This environment's Cloud Native cluster doesn't have a live connection to Liferay's provisioning service. Run {0} in your Cloud Native Environment to generate a signed activation token, then paste it below to activate this {1} environment.",
 	'this-feature-is-not-included-in-your-current-plan':
 		'This feature is not included in your current plan',
 	'this-field-is-required': 'This field is required.',
