@@ -31,7 +31,7 @@ Two lanes, one protocol. Everything lane-specific is in this table; the rest of 
 | Delivers | client extensions, objects, site content — the Liferay One product | `one/` ETL and migration scripts that load data into it |
 | Not covered | anything outside `client-extensions/` | the repo's `partner/` and `customer/` Python areas — same phases, but the planner reads neighbouring scripts for convention and records the missing rule file as a risk |
 | Target repo `<TARGET>` | `<WORKSPACE>` — the checkout itself | `<SCRIPTS>/.claude/worktrees/<TICKET>` — a per-ticket worktree |
-| Isolation | none; the run works in the checkout, so **one workspace-lane run at a time** (see Concurrency) | a per-ticket worktree, so any number of runs proceed in parallel |
+| Isolation | none by default; the run works in the checkout, so **one workspace-lane run at a time** — a second one is offered an opt-in per-ticket worktree instead of being refused (see Concurrency) | a per-ticket worktree, so any number of runs proceed in parallel |
 | Base ref `<BASE>` | `liferay-one/master-temp` | `liferay-one/main` |
 | Rules the reviewer enforces | every file in `<TARGET>/.agents/rules/` | every file in `<TARGET>/.agents/rules/`, plus `<WORKSPACE>/.agents/rules/data-access.md` — the lane table in `one-review/criteria.md` is authoritative |
 | Pattern sources | `<TARGET>/client-extensions/` | `<TARGET>/one/scripts/migration/`, `one/services/`, `one/core/`, `one/utils/` |
@@ -158,13 +158,15 @@ Several runs may be in flight on this machine at once — the common shape is on
 
 Most of a run never touches the portal and never coordinates: Jira and kickoff, planning, plan review, the developer's implementation, the final review, and the commit. This section binds two stretches — **Phase 4**, and the **tester's prep** that overlaps Phase 3, since prep brings the environment up and may hit the bootstrap branch of env-up. The developer's `buildDockerImage` warm-up in Phase 3 builds an image and restarts nothing, which is why it stays uncoordinated.
 
+**A run that is alone on the machine pays nothing for any of this, and nothing here changes how one-team is invoked or what the user does.** `/one-team <TICKET>` is unchanged. With no other run registered, the lock is uncontended and acquires on the first attempt, the drain has nobody to wait for, quiet windows are free, and no tier distinction has any effect — the registry write is a single small file. The cost only appears when there is genuinely another run to avoid colliding with, which is the case that used to corrupt both runs silently. If following this section ever makes a solo run slower or more complicated, that is a bug in this section, not the price of concurrency.
+
 **Coordination state lives at `~/.claude/one-team/portal/`.** Machine-global on purpose: the portal is `localhost`, shared by every lane, so its coordination state cannot live under any one repo's `.git` — a repo-local lock would let a workspace-lane run and a scripts-lane run each pass their own check and still collide.
 
 | Path | Owner | Contents |
 | --- | --- | --- |
 | `runs/<TICKET>.json` | coordinator | ticket, lane, session, PID, current phase, `activity` (`idle`/`active`) with a timestamp, and the run's data-scope claim. Written at kickoff, refreshed at each gate, deleted at Phase 6 or abandonment |
 | `ops.lock` | whoever holds it | a directory, created with `mkdir` so creation is atomic. Holds `ticket`, `operation`, `PID`, `acquired-at`. Held for one operation, never for a phase or a run |
-| `generation` | last disruptor | a monotonic counter plus an append-only log line per disruptive operation: `<n> <ticket> <operation> <timestamp>` |
+| `generation` | last disruptor | a monotonic counter plus an append-only log line per disruptive operation: `<n> <ticket> <operation> <timestamp>`. Initialized to `0`. **Read and incremented only while holding `ops.lock`** — it is a read-modify-write, so unsynchronized bumps silently collapse: eight concurrent unlocked bumps were measured landing as one, which would make the staleness check read "nothing happened" after seven disruptive operations |
 
 ### Three Tiers of Portal Work
 
@@ -178,13 +180,21 @@ The rule behind the table, for anything it does not name: **restarts a container
 
 ### Acquiring, Draining, Releasing
 
-Take the lock by creating the directory — `mkdir` fails when it already exists, which is the whole mechanism:
+The registry must exist before anything reads or locks it. Phase 0 creates it, but never assume it: **ensure the directory first, then loop, and cap the loop.**
 
 ```
-until mkdir ~/.claude/one-team/portal/ops.lock 2>/dev/null; do sleep 5; done
+P=~/.claude/one-team/portal
+mkdir -p "$P/runs"                       # never assume; harmless when present
+[ -f "$P/generation" ] || echo 0 > "$P/generation"
+i=0; until mkdir "$P/ops.lock" 2>/dev/null; do
+    i=$((i+1)); [ $i -gt 120 ] && { echo "ops.lock held too long"; break; }
+    sleep 5
+done
 ```
 
-For Tier C, then **drain**: wait until every other registered run reads `activity: idle`, polling the registry the same way. Cap the wait around ten minutes and escalate to the user rather than forcing it — a run that will not go idle is a run that needs a human, not a deadline. Run the operation, verify health by its own recipe's checks, append the generation line, then release by removing the lock directory.
+Both halves matter, and the reason is that `mkdir` fails **identically** whether the lock is held or its parent does not exist, while `2>/dev/null` throws away the distinction. Without `mkdir -p`, the first run to attempt any redeploy on a fresh machine waits forever on a lock nobody holds — a tested failure, not a hypothetical. Without the cap, a crashed holder's stale lock hangs the next run just as silently. Exhausting the cap is never resolved by deleting someone's lock: check the holder's PID, reclaim only if it is dead, and otherwise escalate to the user.
+
+For Tier C, then **drain**: wait until every other registered run reads `activity: idle`, polling the registry with the same capped shape. Cap the wait around ten minutes and escalate to the user rather than forcing it — a run that will not go idle is a run that needs a human, not a deadline. Run the operation, verify health by its own recipe's checks, append the generation line, then release by removing the lock directory.
 
 On the other side of it, every tester checks for a held `ops.lock` **before each unit of portal work** — a script run, a matrix row group — and waits rather than starting; between units it flips its `activity` flag to `idle`. Unit granularity is what keeps a pending Tier C operation draining in minutes instead of waiting out a whole matrix. Set the flag to `idle` *before* beginning to wait, never after: a run that waits on the lock while still advertising itself as `active` is waiting for a drain that its own flag is blocking, which is the one way these two rules could deadlock each other.
 
@@ -213,11 +223,11 @@ Every `git` command in every phase runs in `<TARGET>` — a teammate that shells
 
 1. Read the lane off the working directory (see Lanes) and verify that directory is `<CHECKOUT>`'s root, then resolve every path and write `paths.md` — the lane, `<CHECKOUT>`, `<TEAMDIR>`, `<BASE>`, and each variable from Resolving the Repos marked present or absent. `<TARGET>` is recorded once it exists: the same path as `<CHECKOUT>` in the workspace lane, the worktree path below in every other lane.
 
-1. Claim the ticket before changing anything: create `<TEAMDIR>` and take `~/.claude/one-team/<TICKET>/run.lock` per Concurrency. A live holder means another session is already running this ticket — stop and tell the user which, rather than running a second coordinator over one team directory.
+1. Claim the ticket before changing anything: create `<TEAMDIR>`, `mkdir -p ~/.claude/one-team/portal/runs`, initialize `generation` to `0` when absent, then write `~/.claude/one-team/<TICKET>/run.lock` with this session's ticket, PID and start time. Creating the registry here is what keeps every later lock and generation read from failing on a missing parent. A `run.lock` whose **PID is still alive** means another session is already running this ticket — stop and tell the user which, rather than putting a second coordinator on one team directory. A `run.lock` whose **PID is dead** is a crashed predecessor, not a conflict: reclaim it, note the reclaim in `team-log.md`, and continue into the resume check below, which is where its surviving artifacts get picked up.
 
 1. Resume check — before any tree-state judgment: when `<TEAMDIR>/team-log.md` exists, follow Resuming an Interrupted Run instead of continuing here; a resumed run's staged, uncommitted work is its persisted state, not a dirty tree. A branch named `<TICKET>` with no team log is a leftover, not a resume: when `git cherry <BASE> <TICKET>` shows its work already upstream (the usual case for follow-ups on completed tickets), rename it aside — `git branch -m <TICKET> <TICKET>-pre-one-team` — and continue; when it carries unique unmerged commits, stop and ask the user which base to build on.
 
-1. Register the run in the portal registry and check what else is live, per Concurrency. In the workspace lane, another registered workspace-lane run is a stop: that lane has no worktree, so two runs would share one working tree. Registered runs in other lanes are expected and fine — note them in the kickoff status so the user knows what this run is sharing the portal with.
+1. Register the run in the portal registry and check what else is live, per Concurrency — sweeping any entry whose PID is dead, with a log line. Registered runs in other lanes are expected and fine; note them in the kickoff status so the user knows what this run shares the portal with. One case needs the user rather than a rule: another **live workspace-lane run**, because that lane works directly in the checkout and two runs would share one working tree. Do not silently refuse — report the holder and offer the two real options: wait for it to finish, or run this ticket in its own workspace worktree, which costs 1.7–3 GB and is the only way to overlap them. The user decides; log the choice.
 
 1. Fresh runs only: `git -C <CHECKOUT> status --porcelain` must be clean. Dirty tree → stop and ask the user. A worktree lane checks `<CHECKOUT>` here because the worktree does not exist yet; from Phase 3 on, the tree that matters is `<TARGET>`.
 

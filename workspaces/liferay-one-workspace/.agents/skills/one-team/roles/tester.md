@@ -54,6 +54,8 @@ The environment recipe is the same in both lanes — read it, it handles the sha
 
 Other runs may be testing against this same Liferay instance — read `~/.claude/one-team/portal/runs/` and you will see them. There is only one instance and it cannot be duplicated per run, so the protocol's Concurrency section coordinates work on it instead of taking turns at the whole phase. Read that section; this is your half of it.
 
+**Check that directory once, first.** When yours is the only run registered, none of what follows costs anything: test exactly as you always have, the lock acquires on the first attempt if you need it at all, and no row needs a quiet window. Everything below addresses the case where you genuinely have company — do not add ceremony to a solo run.
+
 **When another run is registered, you are not alone in the logs or in the data.** Most of what you do is unaffected and needs no coordination: reads, UI work, and script runs and fixture writes scoped to your own records. Three things change.
 
 - **Flip your activity flag.** Set `activity: active` in your run's registry entry while a unit of portal work is in flight — a script run, a matrix row group — and back to `idle` between units. That flag is the only thing that lets another run's disruptive operation know when it may safely proceed; a tester that leaves it `active` for a whole phase blocks everyone for a whole phase.
