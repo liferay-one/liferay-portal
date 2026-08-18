@@ -166,17 +166,24 @@ Most of a run never touches the portal and never coordinates: Jira and kickoff, 
 | --- | --- | --- |
 | `runs/<TICKET>.json` | coordinator | ticket, lane, session, PID, current phase, `activity` (`idle`/`active`) with a timestamp, and the run's data-scope claim. Written at kickoff, refreshed at each gate, deleted at Phase 6 or abandonment |
 | `ops.lock` | whoever holds it | a directory, created with `mkdir` so creation is atomic. Holds `ticket`, `operation`, `PID`, `acquired-at`. Held for one operation, never for a phase or a run |
-| `generation` | last disruptor | a monotonic counter plus an append-only log line per disruptive operation: `<n> <ticket> <operation> <timestamp>`. Initialized to `0`. **Read and incremented only while holding `ops.lock`** — it is a read-modify-write, so unsynchronized bumps silently collapse: eight concurrent unlocked bumps were measured landing as one, which would make the staleness check read "nothing happened" after seven disruptive operations |
+| `generation` | last disruptor | **exactly one line, containing one integer and nothing else.** Initialized to `0`. Bumped by overwriting it with the new number. Never append to this file |
+| `generation.log` | last disruptor | the append-only history, one line per disruptive operation: `<n> <ticket> <operation> <timestamp>`. Append here, never to `generation` |
 
 ### Three Tiers of Portal Work
 
 | Tier | What it is | Coordination |
 | --- | --- | --- |
-| **A — free** | authenticated reads and UI reads at `8080`; reading object definitions (files, not the portal); `docker compose logs` reads; migration and fixture writes scoped to the run's own records; the developer's `buildDockerImage` warm-up (it builds an image and restarts nothing); `docker compose up --detach` when containers already run; hot-deploy of `liferay-one-custom-element` or `liferay-one-global-css` | none |
+| **A — free** | authenticated reads and UI reads at `8080`; reading object definitions (files, not the portal); `docker compose logs` reads; migration and fixture writes scoped to the run's own records; the developer's `buildDockerImage` warm-up (it builds an image and restarts nothing); `docker compose up --detach` when containers already run; hot-deploy of `liferay-one-custom-element` or `liferay-one-global-css` | acquires nothing — but still waits out a lock another run holds |
 | **B — quiet window** | the idempotency row, the data-integrity row, and any first-run measurement or global count. The portal is fine with concurrent writes; the *verdict* is not, because these compare a before and an after | `ops.lock` for the row group, intent `quiet-verification`. No generation bump — nothing persistent changed |
 | **C — disruptive** | `docker compose up --detach --force-recreate liferay-one-etc-spring-boot` (mandatory after any Spring Boot change: restarts the container, fails every in-flight `58081` call, and serves new code afterwards); hot-deploy of `liferay-one-batch`, `liferay-one-site-initializer` or `liferay-one-instance-settings` (no restart, but changes the schema, objects or site every other run is verifying against); `/one-site-reset`; `/one-instance-reset` (tears down all records and structure with no restart at all — it looks gentle and is the second most destructive thing available); `/one-env-reset` (volume wipe, taking the `local-dev` OAuth2 app with it); `one-env-up`'s first-run bootstrap branch; re-creating the OAuth app | `ops.lock` + drain, then bump `generation` |
 
 The rule behind the table, for anything it does not name: **restarts a container, redeploys an extension, or deletes-and-reseeds → Tier C. Depends on nobody else writing → Tier B. Otherwise A.**
+
+**Two rules that are easy to read as contradicting each other, resolved.** Tier A needs no lock *of its own* — but it still **yields to a lock somebody else is holding**. "No coordination" means you never acquire, not that you may proceed through another run's hold. This matters concretely: a lock held for a Tier B quiet window exists precisely to stop other writes, so a Tier A write during it corrupts that run's idempotency or integrity verdict. In a measured exercise a compliant Tier A write landed roughly two seconds after another run's quiet window closed, and only escaped corrupting it by that margin — the agent had read the tier table's "none" as permission to write through the hold. So: acquire for B and C, yield for all three.
+
+**The bump procedure, exactly:** while holding `ops.lock`, read the integer from `generation`, overwrite `generation` with that number plus one, then append one line to `generation.log`. Both because it is a read-modify-write that collapses when unsynchronized — eight concurrent unlocked bumps were measured landing as one — and because two files keep the counter machine-readable: when three agents were left to infer the layout from a single file described as "a counter plus a log line", two appended their event into `generation` itself and one used a separate log, leaving `generation` reading `1` while three operations had actually happened. A staleness check would have reported "nothing changed" after three redeploys.
+
+**Another run's compliant deploy supersedes yours, and nothing announces it.** When a Tier C deploy lands after yours, the portal serves *their* build, through nobody's fault. That is benign contention, not breakage, and it is never a reason to reset. It does mean "confirm pickup before testing" is per **unit** of portal work, not once per phase: re-verify your build is the one deployed immediately before each unit, and re-run your own deploy under the same lock-and-drain if it is not.
 
 ### Acquiring, Draining, Releasing
 
@@ -185,7 +192,8 @@ The registry must exist before anything reads or locks it. Phase 0 creates it, b
 ```
 P=~/.claude/one-team/portal
 mkdir -p "$P/runs"                       # never assume; harmless when present
-[ -f "$P/generation" ] || echo 0 > "$P/generation"
+[ -f "$P/generation" ] || echo 0 > "$P/generation"      # one integer, nothing else
+[ -f "$P/generation.log" ] || : > "$P/generation.log"   # the append-only history
 i=0; until mkdir "$P/ops.lock" 2>/dev/null; do
     i=$((i+1)); [ $i -gt 120 ] && { echo "ops.lock held too long"; break; }
     sleep 5
