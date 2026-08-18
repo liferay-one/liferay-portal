@@ -5,21 +5,29 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
+import com.liferay.one.jira.synchronizer.AccountSynchronizer;
+import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -50,6 +58,14 @@ public class ProjectRestControllerTest {
 		_projectRestController = new ProjectRestController();
 
 		ReflectionTestUtils.setField(
+			_projectRestController, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_accountSynchronizer",
+			_accountSynchronizer);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_accountUserAccountRoleSynchronizer",
+			_accountUserAccountRoleSynchronizer);
+		ReflectionTestUtils.setField(
 			_projectRestController, "_businessEventPermission",
 			_businessEventPermission);
 		ReflectionTestUtils.setField(
@@ -61,9 +77,17 @@ public class ProjectRestControllerTest {
 			_projectRestController, "_googleCloudFunctionService",
 			_googleCloudFunctionService);
 		ReflectionTestUtils.setField(
+			_projectRestController, "_projectMembershipService",
+			_projectMembershipService);
+		ReflectionTestUtils.setField(
 			_projectRestController, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_propertyService", _propertyService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_userAccountService", _userAccountService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_userAccountSynchronizer",
+			_userAccountSynchronizer);
 
 		Mockito.when(
 			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
@@ -72,6 +96,65 @@ public class ProjectRestControllerTest {
 		);
 
 		_setUpProductName(_PRODUCT_NAME_EXPERIENCE);
+	}
+
+	@Test
+	public void testDeleteProjectMembershipsDoesNotSyncWhenNothingDeleted()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			false
+		);
+
+		_deleteProjectMemberships();
+
+		_assertNoSync();
+	}
+
+	@Test
+	public void testDeleteProjectMembershipsSyncsWhenDeleted()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		_whenSyncDependencies();
+
+		_deleteProjectMemberships();
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncProjectUserAccounts(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountUserAccounts(
+			_account
+		);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccountAccounts(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignRole(
+			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE,
+			_USER_EXTERNAL_REFERENCE_CODE, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	@Test
@@ -505,6 +588,71 @@ public class ProjectRestControllerTest {
 			"Product is required", problemDetail.getDetail());
 	}
 
+	@Test
+	public void testPostProjectMembershipsDoesNotSyncWhenNothingAdded()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.addProjectMembership(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			false
+		);
+
+		_postProjectMemberships();
+
+		_assertNoSync();
+	}
+
+	@Test
+	public void testPostProjectMembershipsSyncsWhenAdded() throws Exception {
+		Mockito.when(
+			_projectMembershipService.addProjectMembership(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		_whenSyncDependencies();
+
+		_postProjectMemberships();
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncProjectUserAccounts(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountUserAccounts(
+			_account
+		);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccountAccounts(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE,
+			_USER_EXTERNAL_REFERENCE_CODE, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	private void _assertNoSync() throws Exception {
+		Mockito.verifyNoInteractions(_accountService);
+		Mockito.verifyNoInteractions(_accountSynchronizer);
+		Mockito.verifyNoInteractions(_accountUserAccountRoleSynchronizer);
+		Mockito.verifyNoInteractions(_userAccountService);
+		Mockito.verifyNoInteractions(_userAccountSynchronizer);
+	}
+
 	private String _createComposableUsage() {
 		return new JSONObject(
 		).put(
@@ -574,6 +722,12 @@ public class ProjectRestControllerTest {
 			));
 	}
 
+	private void _deleteProjectMemberships() throws Exception {
+		_projectRestController.deleteProjectMemberships(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE);
+	}
+
 	private JSONObject _getMetricsJSONObject() throws Exception {
 		ResponseEntity<String> responseEntity = _getUsage();
 
@@ -596,6 +750,12 @@ public class ProjectRestControllerTest {
 		return _projectRestController.getUsage(
 			null, _PROJECT_EXTERNAL_REFERENCE_CODE,
 			_PRODUCT_EXTERNAL_REFERENCE_CODE);
+	}
+
+	private void _postProjectMemberships() throws Exception {
+		_projectRestController.postProjectMemberships(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE);
 	}
 
 	private void _setUpComposableUsage() throws Exception {
@@ -647,10 +807,38 @@ public class ProjectRestControllerTest {
 		);
 	}
 
+	private void _whenSyncDependencies() throws Exception {
+		Mockito.when(
+			_accountService.getAccount(_ACCOUNT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_account
+		);
+
+		Mockito.when(
+			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createProject()
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setExternalReferenceCode(_USER_EXTERNAL_REFERENCE_CODE);
+		userAccount.setId(_USER_ID);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+	}
+
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE =
 		"0015Y00002ABCDEabc";
 
 	private static final long _ACCOUNT_ID = 40001;
+
+	private static final String _ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE =
+		"ACCT-ROLE-001";
 
 	private static final long _CPRODUCT_ID = 55501;
 
@@ -666,6 +854,18 @@ public class ProjectRestControllerTest {
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-004";
 
+	private static final String _USER_EXTERNAL_REFERENCE_CODE = "USER-001";
+
+	private static final long _USER_ID = 1L;
+
+	private final Account _account = new Account();
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
+	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(
+		AccountSynchronizer.class);
+	private final AccountUserAccountRoleSynchronizer
+		_accountUserAccountRoleSynchronizer = Mockito.mock(
+			AccountUserAccountRoleSynchronizer.class);
 	private final BusinessEventPermission _businessEventPermission =
 		Mockito.mock(BusinessEventPermission.class);
 	private final CommerceProductService _commerceProductService = Mockito.mock(
@@ -674,10 +874,16 @@ public class ProjectRestControllerTest {
 		EntitlementService.class);
 	private final GoogleCloudFunctionService _googleCloudFunctionService =
 		Mockito.mock(GoogleCloudFunctionService.class);
+	private final ProjectMembershipService _projectMembershipService =
+		Mockito.mock(ProjectMembershipService.class);
 	private ProjectRestController _projectRestController;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
 	private final PropertyService _propertyService = Mockito.mock(
 		PropertyService.class);
+	private final UserAccountService _userAccountService = Mockito.mock(
+		UserAccountService.class);
+	private final UserAccountSynchronizer _userAccountSynchronizer =
+		Mockito.mock(UserAccountSynchronizer.class);
 
 }
