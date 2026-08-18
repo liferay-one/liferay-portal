@@ -8,14 +8,18 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductConfiguration;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductShippingConfiguration;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
 import com.liferay.one.constants.CommerceCatalogConstants;
 import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
@@ -94,6 +98,25 @@ public class CommerceProductService extends OneBaseService {
 			externalReferenceCode, product);
 	}
 
+	@Cacheable("cloudEnabledProduct")
+	public Product fetchCloudEnabledProduct(long id) throws Exception {
+		Product product = _fetchProduct(id);
+
+		if ((product == null) || !isCloudEnabled(product)) {
+			return null;
+		}
+
+		return product;
+	}
+
+	public Product fetchProduct(long id) throws Exception {
+		return _fetchProduct(id);
+	}
+
+	public Product fetchProduct(String externalReferenceCode) throws Exception {
+		return _fetchProduct(externalReferenceCode);
+	}
+
 	@Cacheable("productName")
 	public String fetchProductName(long id) throws Exception {
 		return getName(_fetchProduct(id));
@@ -106,7 +129,7 @@ public class CommerceProductService extends OneBaseService {
 		return getName(_fetchProduct(externalReferenceCode));
 	}
 
-	protected String getName(Product product) {
+	public String getName(Product product) {
 		if (product == null) {
 			return null;
 		}
@@ -118,6 +141,41 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return name.get("en_US");
+	}
+
+	public boolean isCloudEnabled(Product product) {
+		return GetterUtil.getBoolean(
+			getSpecificationValue(
+				product, EnvironmentConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
+	}
+
+	protected String getSpecificationValue(Product product, String key) {
+		ProductSpecification[] productSpecifications =
+			product.getProductSpecifications();
+
+		if (productSpecifications == null) {
+			return null;
+		}
+
+		for (ProductSpecification productSpecification :
+				productSpecifications) {
+
+			if (!Objects.equals(
+					productSpecification.getSpecificationKey(), key)) {
+
+				continue;
+			}
+
+			Map<String, String> value = productSpecification.getValue();
+
+			if (value == null) {
+				return null;
+			}
+
+			return value.get("en_US");
+		}
+
+		return null;
 	}
 
 	private ProductResource _buildProductResource() {
