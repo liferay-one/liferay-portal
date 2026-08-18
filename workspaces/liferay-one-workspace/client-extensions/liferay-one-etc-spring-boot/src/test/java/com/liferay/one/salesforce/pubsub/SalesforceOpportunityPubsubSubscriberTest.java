@@ -28,6 +28,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
+import com.liferay.one.service.ProvisioningEnvironmentService;
 import com.liferay.one.service.ProvisioningIssueService;
 import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningSubdomainService;
@@ -71,6 +72,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			ProvisioningContactService.class);
 		_provisioningEmailService = Mockito.mock(
 			ProvisioningEmailService.class);
+		_provisioningEnvironmentService = Mockito.mock(
+			ProvisioningEnvironmentService.class);
 		_provisioningIssueService = Mockito.mock(
 			ProvisioningIssueService.class);
 		_provisioningOrderService = Mockito.mock(
@@ -153,6 +156,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningOrderService",
 			_provisioningOrderService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_provisioningEnvironmentService",
+			_provisioningEnvironmentService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningSubdomainService",
 			_provisioningSubdomainService);
@@ -2025,9 +2031,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_accountService, _commerceOrderItemService, _commerceOrderService,
 			_commerceSkuService, _contractService, _entitlementService,
 			_projectService, _provisioningContactService,
-			_provisioningEmailService, _provisioningIssueService,
-			_provisioningOrderService, _provisioningSubdomainService,
-			_userAccountService);
+			_provisioningEmailService, _provisioningEnvironmentService,
+			_provisioningIssueService, _provisioningOrderService,
+			_provisioningSubdomainService, _userAccountService);
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
@@ -2058,6 +2064,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private ProjectService _projectService;
 	private ProvisioningContactService _provisioningContactService;
 	private ProvisioningEmailService _provisioningEmailService;
+	private ProvisioningEnvironmentService _provisioningEnvironmentService;
 	private ProvisioningIssueService _provisioningIssueService;
 	private ProvisioningOrderService _provisioningOrderService;
 	private ProvisioningSubdomainService _provisioningSubdomainService;

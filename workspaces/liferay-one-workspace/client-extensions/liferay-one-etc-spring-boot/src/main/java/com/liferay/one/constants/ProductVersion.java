@@ -67,6 +67,19 @@ public class ProductVersion {
 
 	public static final String PORTAL_VERSION_6_2_10 = "6.2 EE";
 
+	public static String extractQuarterlyPatchRelease(String version) {
+		if (Validator.isNotNull(version)) {
+			Matcher matcher = _quarterlyPatchReleaseVersionPattern.matcher(
+				version);
+
+			if (matcher.find()) {
+				return StringUtil.toUpperCase(matcher.group());
+			}
+		}
+
+		return StringPool.BLANK;
+	}
+
 	public static String extractQuarterlyRelease(String version) {
 		if (Validator.isNotNull(version)) {
 			Matcher matcher = getQuarterlyReleaseMatcher(version);
@@ -83,6 +96,9 @@ public class ProductVersion {
 		return _quarterlyReleaseVersionPattern.matcher(version);
 	}
 
+	private static final Pattern _quarterlyPatchReleaseVersionPattern =
+		Pattern.compile(
+			"(\\d{4})\\.Q([1-4])\\.\\d{1,2}", Pattern.CASE_INSENSITIVE);
 	private static final Pattern _quarterlyReleaseVersionPattern =
 		Pattern.compile("(\\d{4})\\.Q([1-4])", Pattern.CASE_INSENSITIVE);
 

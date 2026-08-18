@@ -30,6 +30,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
+import com.liferay.one.service.ProvisioningEnvironmentService;
 import com.liferay.one.service.ProvisioningIssueService;
 import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningSubdomainService;
@@ -596,6 +597,9 @@ public class SalesforceOpportunityPubsubSubscriber
 			}
 		}
 
+		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
+			account, contract, provisionableSalesforceOpportunityLineItems);
+
 		_provisioningSubdomainService.provisionSubdomain(
 			account, provisionableSalesforceOpportunityLineItems);
 
@@ -668,6 +672,9 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private ProvisioningEmailService _provisioningEmailService;
+
+	@Autowired
+	private ProvisioningEnvironmentService _provisioningEnvironmentService;
 
 	@Autowired
 	private ProvisioningIssueService _provisioningIssueService;
