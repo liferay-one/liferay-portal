@@ -14,8 +14,6 @@ import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
 import com.liferay.one.constants.CommerceCatalogConstants;
 import com.liferay.one.constants.CommerceProductConstants;
-import com.liferay.one.constants.EnvironmentConstants;
-import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Collections;
 import java.util.Map;
@@ -98,17 +96,7 @@ public class CommerceProductService extends OneBaseService {
 			externalReferenceCode, product);
 	}
 
-	@Cacheable("cloudEnabledProduct")
-	public Product fetchCloudEnabledProduct(long id) throws Exception {
-		Product product = _fetchProduct(id);
-
-		if ((product == null) || !isCloudEnabled(product)) {
-			return null;
-		}
-
-		return product;
-	}
-
+	@Cacheable("product")
 	public Product fetchProduct(long id) throws Exception {
 		return _fetchProduct(id);
 	}
@@ -143,13 +131,7 @@ public class CommerceProductService extends OneBaseService {
 		return name.get("en_US");
 	}
 
-	public boolean isCloudEnabled(Product product) {
-		return GetterUtil.getBoolean(
-			getSpecificationValue(
-				product, EnvironmentConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
-	}
-
-	protected String getSpecificationValue(Product product, String key) {
+	public String getSpecificationValue(Product product, String key) {
 		ProductSpecification[] productSpecifications =
 			product.getProductSpecifications();
 

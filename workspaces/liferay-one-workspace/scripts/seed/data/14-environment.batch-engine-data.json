@@ -11,7 +11,7 @@
 	},
 	"items": [
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"aiHubURL": "liferay.betaaihub.com",
 			"externalReferenceCode": "ENV-AI-HUB-PROD",
@@ -23,7 +23,7 @@
 			"type": "AI Hub"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"allowedEmailDomains": "omni.example.com",
 			"externalReferenceCode": "ENV-ANALYTICS-PROD",
@@ -38,7 +38,7 @@
 			"workspaceName": "analytics-omni"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"environmentName": "cloud-native-nonprod",
 			"environmentType": "non-production",
@@ -51,7 +51,7 @@
 			"type": "CNE"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"environmentName": "cloud-native-prod",
 			"environmentType": "production",
@@ -122,7 +122,7 @@
 			"type": "CNE"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"environmentName": "commerce-cloud-prod",
 			"environmentType": "production",
@@ -135,7 +135,7 @@
 			"type": "CNE"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"currentEntitlementHash": "eyJkYXRhIjoiZHNyLW9tbmktdG9rZW4tZm9yLWRlbW8ifQ==",
 			"externalReferenceCode": "ENV-DSR-PROD",
@@ -170,7 +170,7 @@
 			"type": "On-Prem"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"allowedEmailDomains": "enterprise.example.com",
 			"externalReferenceCode": "ENV-LDP-PROD",
@@ -185,7 +185,7 @@
 			"workspaceName": "enterprise-ldp"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"adminEmailAddress": "admin@paas.example.com",
 			"adminFirstName": "Ada",
@@ -211,7 +211,7 @@
 			"type": "On-Prem"
 		},
 		{
-			"activationMode": "heartbeat",
+			"activationMode": "online",
 			"activationStatus": "active",
 			"adminEmailAddress": "admin@saas.example.com",
 			"adminFirstName": "Grace",

@@ -12,6 +12,8 @@ public class EntitlementConstants {
 
 	public static final String GRANT_TYPE_UNLIMITED = "unlimited";
 
+	public static final String NAME_1_PRODUCTION_POD = "1 Production Pod";
+
 	public static final String NAME_APV = "apv";
 
 	public static final String NAME_DATABASE = "database";
@@ -28,6 +30,22 @@ public class EntitlementConstants {
 	public static final String NAME_GLOBAL_24_7_SUPPORT = "Global 24/7 Support";
 
 	public static final String NAME_GOLD_SUPPORT = "Gold Support";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE =
+			"Liferay Cloud Native - Digital Accelerator Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE =
+			"Liferay Cloud Native - Enhanced Resilience Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE =
+			"Liferay Cloud Native - Maximum Resilience Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE =
+			"Liferay Cloud Native - Standard Operations Bundle";
 
 	public static final String NAME_LIMITED_SUPPORT = "Limited Support";
 
@@ -61,7 +79,35 @@ public class EntitlementConstants {
 
 	public static final String NAME_TRAFFIC_NETWORKING = "traffic-networking";
 
+	public static final String NAME_UP_TO_3_PRODUCTION_PODS =
+		"Up to 3 Production Pods";
+
+	public static final String NAME_UP_TO_5_PRODUCTION_PODS =
+		"Up to 5 Production Pods";
+
+	public static final String NAME_UP_TO_7_PRODUCTION_PODS =
+		"Up to 7 Production Pods";
+
+	public static final String NAME_UP_TO_9_PRODUCTION_PODS =
+		"Up to 9 Production Pods";
+
+	public static final String NAME_UP_TO_CUSTOM_PRODUCTION_PODS =
+		"Up to Custom Production Pods";
+
 	public static final String NAME_VCPU = "vcpu";
+
+	public static final String[] NAMES_CLOUD_NATIVE = {
+		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE
+	};
+
+	public static final String[] NAMES_PRODUCTION_PODS = {
+		NAME_1_PRODUCTION_POD, NAME_UP_TO_3_PRODUCTION_PODS,
+		NAME_UP_TO_5_PRODUCTION_PODS, NAME_UP_TO_7_PRODUCTION_PODS,
+		NAME_UP_TO_9_PRODUCTION_PODS, NAME_UP_TO_CUSTOM_PRODUCTION_PODS
+	};
 
 	public static final String[] NAMES_SLAS = {
 		NAME_GLOBAL_24_7_SUPPORT, NAME_GOLD_SUPPORT, NAME_LIMITED_SUPPORT,
