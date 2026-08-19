@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import FetcherError from '~/services/fetcher/FetcherError';
 import {downloadFile} from '~/utils/downloadFile';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
@@ -19,7 +20,7 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		);
 
 		if (!response.ok) {
-			throw new Error(await response.text());
+			throw this.toFetcherError(response);
 		}
 
 		await downloadFile(
@@ -36,8 +37,18 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		);
 
 		if (!response.ok) {
-			throw new Error(await response.text());
+			throw this.toFetcherError(response);
 		}
+	}
+
+	private toFetcherError(response: Response) {
+		const error = new FetcherError(
+			'An error occurred while fetching the data.'
+		);
+
+		error.status = response.status;
+
+		return error;
 	}
 }
 
