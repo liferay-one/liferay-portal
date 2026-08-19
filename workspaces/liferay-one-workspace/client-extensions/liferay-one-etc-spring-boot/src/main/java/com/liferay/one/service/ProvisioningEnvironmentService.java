@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Environment;
@@ -44,7 +45,7 @@ public class ProvisioningEnvironmentService {
 				salesforceOpportunityLineItems) {
 
 			if (ArrayUtil.contains(
-					EnvironmentConstants.NAMES_CLOUD_NATIVE,
+					CommerceProductConstants.NAMES_CLOUD_NATIVE_PRODUCTS,
 					salesforceOpportunityLineItem.getProductName())) {
 
 				cloudNative = true;

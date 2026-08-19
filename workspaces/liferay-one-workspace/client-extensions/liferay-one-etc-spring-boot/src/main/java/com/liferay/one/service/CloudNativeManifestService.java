@@ -8,6 +8,8 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
+import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.constants.ProductVersion;
@@ -20,6 +22,7 @@ import com.liferay.one.model.Environment;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Time;
 
 import java.time.Instant;
@@ -70,7 +73,7 @@ public class CloudNativeManifestService {
 
 		for (Entitlement entitlement : entitlements) {
 			if (ArrayUtil.contains(
-					EnvironmentConstants.NAMES_CLOUD_NATIVE,
+					EntitlementConstants.NAMES_CLOUD_NATIVE,
 					entitlement.getName())) {
 
 				cloudNativeEntitlement = entitlement;
@@ -97,17 +100,13 @@ public class CloudNativeManifestService {
 			_getCloudEnabledProducts(entitlements),
 			ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
 
-		String licenseEntryName =
-			EnvironmentConstants.
-				LICENSE_ENTRY_NAME_DXP_NONPRODUCTION_VIRTUAL_CLUSTER;
+		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
 
 		if (Objects.equals(
 				environment.getEnvironmentType(),
 				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION)) {
 
-			licenseEntryName =
-				EnvironmentConstants.
-					LICENSE_ENTRY_NAME_DXP_PRODUCTION_VIRTUAL_CLUSTER;
+			licenseEntryName = "DXP Production (Virtual Cluster)";
 		}
 
 		return new JSONObject(
@@ -155,28 +154,26 @@ public class CloudNativeManifestService {
 			Date startDate)
 		throws Exception {
 
-		String description =
-			EnvironmentConstants.LICENSE_DESCRIPTION_CLOUD_NATIVE;
+		String description = "Cloud Native";
 		String licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
+		String productName = "DXP Production";
 		int licenseVersion = LicenseVersion.getLicenseVersion(
-			EnvironmentConstants.PRODUCT_NAME_DXP_PRODUCTION, productVersion);
-		String sizing = EnvironmentConstants.LICENSE_SIZING_4;
+			productName, productVersion);
+		String sizing = "Sizing 4";
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntryName, licenseEntryType, licenseVersion,
-			EnvironmentConstants.PRODUCT_NAME_DXP_PRODUCTION,
-			EnvironmentConstants.PRODUCT_ID_PORTAL, productVersion, owner,
-			maxClusterNodes, 0, 0, 0, 0, sizing, description, StringPool.BLANK,
+			productName, LicenseConstants.PRODUCT_ID_PORTAL, productVersion,
+			owner, maxClusterNodes, 0, 0, 0, 0, sizing, description,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntryName, licenseEntryType,
-			licenseVersion, EnvironmentConstants.PRODUCT_NAME_DXP_PRODUCTION,
-			EnvironmentConstants.PRODUCT_ID_PORTAL, productVersion, owner,
-			maxClusterNodes, 0, 0, 0, 0, sizing, description, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
+			productVersion, owner, maxClusterNodes, 0, 0, 0, 0, sizing,
+			description, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
 	}
 
 	private String _getAccountName(Environment environment) throws Exception {
@@ -301,10 +298,9 @@ public class CloudNativeManifestService {
 				continue;
 			}
 
-			Product product = _commerceProductService.fetchCloudEnabledProduct(
-				cProductId);
+			Product product = _commerceProductService.fetchProduct(cProductId);
 
-			if (product != null) {
+			if ((product != null) && _isCloudEnabled(product)) {
 				products.add(product);
 			}
 		}
@@ -323,7 +319,7 @@ public class CloudNativeManifestService {
 
 		for (Entitlement entitlement : entitlements) {
 			if (!ArrayUtil.contains(
-					EnvironmentConstants.NAMES_PRODUCTION_PODS,
+					EntitlementConstants.NAMES_PRODUCTION_PODS,
 					entitlement.getName())) {
 
 				continue;
@@ -356,6 +352,13 @@ public class CloudNativeManifestService {
 		}
 
 		return false;
+	}
+
+	private boolean _isCloudEnabled(Product product) {
+		return GetterUtil.getBoolean(
+			_commerceProductService.getSpecificationValue(
+				product,
+				CommerceProductConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
 	}
 
 	private Date _toDate(Instant instant, Date defaultDate) {

@@ -72,8 +72,8 @@ public class CloudRestController extends OneBaseRestController {
 	@PostMapping("/environments/{environmentId}/activation")
 	public ResponseEntity<Void> postEnvironmentsActivation(
 			@PathVariable String environmentId,
-			@RequestHeader(name = _HEADER_ACTIVATION_CODE, required = false)
-				String activationCodeHeader,
+			@RequestHeader(name = "Activation-Code", required = false)
+				String activationCode,
 			@RequestBody String body)
 		throws Exception {
 
@@ -91,16 +91,15 @@ public class CloudRestController extends OneBaseRestController {
 
 		String publicKey = jwtClaimsSet.getStringClaim("publicKey");
 
-		String activationCode = activationCodeHeader;
+		_cloudNativeSignatureValidator.validateSignature(publicKey, signedJWT);
+
 		String activationMode = EnvironmentConstants.ACTIVATION_MODE_OFFLINE;
 
 		if (Validator.isNull(activationCode)) {
 			activationCode = jwtClaimsSet.getStringClaim("activationCode");
-			activationMode = EnvironmentConstants.ACTIVATION_MODE_HEARTBEAT;
+			activationMode = EnvironmentConstants.ACTIVATION_MODE_ONLINE;
 		}
-
-		_cloudNativeSignatureValidator.validateSignature(publicKey, signedJWT);
-
+		
 		Environment environment = _environmentService.fetchEnvironment(
 			StringBundler.concat(
 				"(activationCode eq '", activationCode, "') and (type eq '",
@@ -304,8 +303,6 @@ public class CloudRestController extends OneBaseRestController {
 
 		return false;
 	}
-
-	private static final String _HEADER_ACTIVATION_CODE = "Activation-Code";
 
 	private static final Log _log = LogFactory.getLog(
 		CloudRestController.class);

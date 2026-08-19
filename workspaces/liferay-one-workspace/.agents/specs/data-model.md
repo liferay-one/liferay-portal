@@ -430,7 +430,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic 鈥
 | FK `subscriptionId` | long | FK to Contract |
 | `type` | string | `SaaS` 路 `PaaS` 路 `CNE` 路 `On-Prem` |
 | `region` | string | Cloud only; blank for on-prem |
-| `activationMode` | string | `license-key` 路 `heartbeat` |
+| `activationMode` | string | `license-key` 路 `offline` 路 `online` |
 | `status` | string | `active` 路 `deactivated` 路 `expired` |
 | `lastHeartbeatAt` | datetime | Cloud only |
 | `currentEntitlementHash` | string | Identity hash; enables change detection on heartbeat |
