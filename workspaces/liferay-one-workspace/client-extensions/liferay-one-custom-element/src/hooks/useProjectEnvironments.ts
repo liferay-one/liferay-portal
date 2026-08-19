@@ -18,13 +18,13 @@ export type ProjectEnvironment = {
 	allowedEmailDomains: string;
 	currentEntitlementHash: string;
 	domains: string;
-	environmentName: string;
-	environmentType: string;
 	externalReferenceCode: string;
 	friendlyURL: string;
 	githubUsername: string;
 	hostName: string;
 	id: string;
+	name: string;
+	offering: string;
 	ownerEmailAddress: string;
 	projectExternalReferenceCode: string;
 	projectId: string;
@@ -47,13 +47,13 @@ type EnvironmentNode = {
 	allowedEmailDomains?: string;
 	currentEntitlementHash?: string;
 	domains?: string;
-	environmentName?: string;
-	environmentType?: string;
 	externalReferenceCode: string;
 	friendlyURL?: string;
 	githubUsername?: string;
 	hostName?: string;
 	id: number;
+	name?: string;
+	offering?: string;
 	ownerEmailAddress?: string;
 	projectId?: string;
 	r_projectToEnvironment_c_projectERC?: string;
@@ -78,7 +78,7 @@ export function useProjectEnvironments() {
 			params: {
 				filter: `r_accountEntryToEnvironment_accountEntryId eq '${accountId}'`,
 				pageSize: 200,
-				sort: 'type:asc',
+				sort: 'offering:asc',
 			},
 		}
 	);
@@ -94,13 +94,13 @@ export function useProjectEnvironments() {
 			allowedEmailDomains: node.allowedEmailDomains ?? '',
 			currentEntitlementHash: node.currentEntitlementHash ?? '',
 			domains: node.domains ?? '',
-			environmentName: node.environmentName ?? '',
-			environmentType: node.environmentType ?? '',
 			externalReferenceCode: node.externalReferenceCode,
 			friendlyURL: node.friendlyURL ?? '',
 			githubUsername: node.githubUsername ?? '',
 			hostName: node.hostName ?? '',
 			id: String(node.id),
+			name: node.name ?? '',
+			offering: node.offering ?? '',
 			ownerEmailAddress: node.ownerEmailAddress ?? '',
 			projectExternalReferenceCode:
 				node.r_projectToEnvironment_c_projectERC ?? '',

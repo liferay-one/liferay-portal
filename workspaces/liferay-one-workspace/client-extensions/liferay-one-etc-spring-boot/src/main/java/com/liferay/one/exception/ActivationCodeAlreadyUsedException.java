@@ -8,10 +8,10 @@ package com.liferay.one.exception;
 /**
  * @author Amos Fong
  */
-public class AddOnsUnavailableException extends Exception {
+public class ActivationCodeAlreadyUsedException extends Exception {
 
-	public AddOnsUnavailableException(String message) {
-		super(message);
+	public ActivationCodeAlreadyUsedException(String activationCode) {
+		super("Activation code " + activationCode + " has already been used");
 	}
 
 }

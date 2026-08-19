@@ -14,32 +14,32 @@ import './ActivationStatusCard.css';
 
 type StatusConfig = {
 	icon: string;
+	offering: string;
 	subtitle: Word;
 	title: Word;
-	type: string;
 };
 
 const CONFIG_BY_PRODUCT_NAME: {[name: string]: StatusConfig} = {
 	'Analytics Cloud': {
 		icon: 'analytics',
+		offering: 'SaaS',
 		subtitle:
 			'almost-there-setup-analytics-cloud-by-finishing-the-activation-form',
 		title: 'analytics-cloud-activation',
-		type: 'SaaS',
 	},
 	'PaaS': {
 		icon: 'cloud',
+		offering: 'PaaS',
 		subtitle:
 			'almost-there-setup-liferay-paas-by-finishing-the-activation-form',
 		title: 'liferay-paas-activation',
-		type: 'PaaS',
 	},
 	'SaaS': {
 		icon: 'cloud',
+		offering: 'SaaS',
 		subtitle:
 			'almost-there-setup-liferay-saas-by-finishing-the-activation-form',
 		title: 'liferay-saas-activation',
-		type: 'SaaS',
 	},
 };
 
@@ -68,7 +68,7 @@ export default function ActivationStatusCard({
 
 	const [environment] = filterEnvironmentsByProject(
 		projectId,
-		environments.filter((current) => current.type === config.type)
+		environments.filter((current) => current.offering === config.offering)
 	);
 
 	const status = STATUS_LABEL[environment?.status ?? ''] ?? {
@@ -92,7 +92,7 @@ export default function ActivationStatusCard({
 
 					<p className="list-card-subtext m-0">
 						{environment
-							? `${environment.type}${
+							? `${environment.offering}${
 									environment.region
 										? ` • ${environment.region}`
 										: ''

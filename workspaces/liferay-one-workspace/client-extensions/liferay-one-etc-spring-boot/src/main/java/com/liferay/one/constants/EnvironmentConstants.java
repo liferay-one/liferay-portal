@@ -18,13 +18,12 @@ public class EnvironmentConstants {
 
 	public static final String ACTIVATION_STATUS_PENDING = "pending";
 
-	public static final String ENVIRONMENT_TYPE_NONPRODUCTION =
-		"non-production";
+	public static final String OFFERING_CLOUD_NATIVE = "Cloud Native";
 
-	public static final String ENVIRONMENT_TYPE_PRODUCTION = "production";
+	public static final String TYPE_NONPRODUCTION = "non-production";
 
-	public static final String ENVIRONMENT_TYPE_UAT = "uat";
+	public static final String TYPE_PRODUCTION = "production";
 
-	public static final String TYPE_CNE = "CNE";
+	public static final String TYPE_UAT = "uat";
 
 }

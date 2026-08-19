@@ -21,7 +21,7 @@ type EnvironmentTabProps = {
 	profile?: EnvironmentProfile;
 };
 
-const ENVIRONMENT_TYPE_BY_PROFILE: Record<EnvironmentProfile, string> = {
+const ENVIRONMENT_OFFERING_BY_PROFILE: Record<EnvironmentProfile, string> = {
 	'ac-token': 'DSR',
 	'ai-hub': 'AI Hub',
 	'analytics-cloud': 'SaaS',
@@ -38,11 +38,13 @@ export default function EnvironmentTab({
 	const {projectId} = useProject();
 	const {environments} = useProjectEnvironments();
 
-	const expectedType = profile ? ENVIRONMENT_TYPE_BY_PROFILE[profile] : '';
+	const expectedOffering = profile
+		? ENVIRONMENT_OFFERING_BY_PROFILE[profile]
+		: '';
 
 	const matchingEnvironments = filterEnvironmentsByProject(
 		projectId,
-		environments.filter((item) => item.type === expectedType)
+		environments.filter((item) => item.offering === expectedOffering)
 	);
 
 	const [environmentEntry] = matchingEnvironments;

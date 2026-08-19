@@ -14,7 +14,7 @@ export default function AIHubAlert() {
 
 	const {environments} = useProjectEnvironments();
 
-	const environment = environments.find((item) => item.type === 'AI Hub');
+	const environment = environments.find((item) => item.offering === 'AI Hub');
 
 	if (!showAlert) {
 		return null;
