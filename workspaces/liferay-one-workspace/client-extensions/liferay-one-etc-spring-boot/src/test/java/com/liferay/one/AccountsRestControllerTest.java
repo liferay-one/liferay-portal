@@ -20,6 +20,7 @@ import com.liferay.one.model.Project;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectMembershipPermission;
 import com.liferay.one.service.AccountInvitationEmailService;
@@ -34,6 +35,7 @@ import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.lang.reflect.Field;
@@ -923,6 +925,63 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncToJSMRejectsNonadministrator() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.postSyncToJSM(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verify(
+			_accountSynchronizer, Mockito.never()
+		).syncAccount(
+			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostSyncToJSMSyncsAccountForAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		ResponseEntity<Void> responseEntity =
+			accountsRestController.postSyncToJSM(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccount(
+			account
+		);
+	}
+
+	@Test
 	public void testPostUserAccountsAccountRoleAssignsAccountRole()
 		throws Exception {
 
@@ -1490,6 +1549,8 @@ public class AccountsRestControllerTest {
 			accountsRestController, "_accountUserAccountSynchronizer",
 			_accountUserAccountSynchronizer);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_adminPermission", _adminPermission);
+		ReflectionTestUtils.setField(
 			accountsRestController, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
 		ReflectionTestUtils.setField(
@@ -1638,6 +1699,8 @@ public class AccountsRestControllerTest {
 	private final AccountUserAccountSynchronizer
 		_accountUserAccountSynchronizer = Mockito.mock(
 			AccountUserAccountSynchronizer.class);
+	private final AdminPermission _adminPermission = Mockito.mock(
+		AdminPermission.class);
 	private final EmailAddressValidatorService _emailAddressValidatorService =
 		Mockito.mock(EmailAddressValidatorService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
