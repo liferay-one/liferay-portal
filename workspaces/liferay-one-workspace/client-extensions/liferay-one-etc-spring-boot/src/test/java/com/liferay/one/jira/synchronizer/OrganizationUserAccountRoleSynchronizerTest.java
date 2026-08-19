@@ -7,7 +7,9 @@ package com.liferay.one.jira.synchronizer;
 
 import com.liferay.one.jira.constants.TeamContactRoleAssignmentConstants;
 import com.liferay.one.jira.converter.TeamContactRoleAssignmentConverter;
+import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.util.KeyedLock;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,12 +29,24 @@ public class OrganizationUserAccountRoleSynchronizerTest {
 			new OrganizationUserAccountRoleSynchronizer();
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
+
 		_teamContactRoleAssignmentConverter = Mockito.mock(
 			TeamContactRoleAssignmentConverter.class);
+
+		Mockito.when(
+			_teamContactRoleAssignmentConverter.toAssetObject(
+				Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean(), Mockito.any())
+		).thenReturn(
+			Mockito.mock(JiraAssetObject.class)
+		);
 
 		ReflectionTestUtils.setField(
 			_organizationUserAccountRoleSynchronizer, "_jiraAssetService",
 			_jiraAssetService);
+		ReflectionTestUtils.setField(
+			_organizationUserAccountRoleSynchronizer, "_keyedLock",
+			new KeyedLock());
 		ReflectionTestUtils.setField(
 			_organizationUserAccountRoleSynchronizer,
 			"_teamContactRoleAssignmentConverter",
@@ -65,6 +79,44 @@ public class OrganizationUserAccountRoleSynchronizerTest {
 			TeamContactRoleAssignmentConstants.
 				ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY,
 			"user-account-erc"
+		);
+	}
+
+	@Test
+	public void testSyncAssignRoleMarksAssignmentUndeleted() throws Exception {
+		_organizationUserAccountRoleSynchronizer.syncAssignRole(
+			"role-erc", "user-account-erc", "organization-erc");
+
+		Mockito.verify(
+			_teamContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq("role-erc"), Mockito.eq("user-account-erc"),
+			Mockito.eq("organization-erc"), Mockito.eq(false), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncUnassignRoleMarksAssignmentDeleted() throws Exception {
+		_organizationUserAccountRoleSynchronizer.syncUnassignRole(
+			"role-erc", "user-account-erc", "organization-erc");
+
+		Mockito.verify(
+			_teamContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq("role-erc"), Mockito.eq("user-account-erc"),
+			Mockito.eq("organization-erc"), Mockito.eq(true), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any()
 		);
 	}
 
