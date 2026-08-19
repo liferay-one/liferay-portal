@@ -5,17 +5,33 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
+import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.constants.LicenseVersion;
+import com.liferay.one.constants.ProductVersion;
+import com.liferay.one.exception.AddOnsUnavailableException;
 import com.liferay.one.exception.CloudNativeEntitlementException;
+import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.license.LicenseKeyGenerator;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Environment;
-import com.liferay.one.service.CloudNativeManifestService;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -25,9 +41,20 @@ import java.io.InputStream;
 
 import java.net.http.HttpResponse;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import java.time.Instant;
+
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,19 +63,22 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
  * @author Kyle Bischof
@@ -71,19 +101,8 @@ public class CloudRestController extends OneBaseRestController {
 
 	@PostMapping("/environments/{environmentId}/activation")
 	public ResponseEntity<Void> postEnvironmentsActivation(
-			@PathVariable String environmentId,
-			@RequestHeader(name = "Activation-Code", required = false)
-				String activationCode,
-			@RequestBody String body)
+			@PathVariable String environmentId, @RequestBody String body)
 		throws Exception {
-
-		Environment activatedEnvironment =
-			_environmentService.fetchEnvironmentByExternalReferenceCode(
-				environmentId);
-
-		if (activatedEnvironment != null) {
-			return new ResponseEntity<>(HttpStatus.CONFLICT);
-		}
 
 		SignedJWT signedJWT = SignedJWT.parse(body);
 
@@ -93,32 +112,18 @@ public class CloudRestController extends OneBaseRestController {
 
 		_cloudNativeSignatureValidator.validateSignature(publicKey, signedJWT);
 
-		String activationMode = EnvironmentConstants.ACTIVATION_MODE_OFFLINE;
+		ActivationResult activationResult = _activateEnvironment(
+			jwtClaimsSet.getStringClaim("activationCode"),
+			EnvironmentConstants.ACTIVATION_MODE_ONLINE, environmentId,
+			jwtClaimsSet.getStringClaim("environmentName"), publicKey);
 
-		if (Validator.isNull(activationCode)) {
-			activationCode = jwtClaimsSet.getStringClaim("activationCode");
-			activationMode = EnvironmentConstants.ACTIVATION_MODE_ONLINE;
-		}
-		
-		Environment environment = _environmentService.fetchEnvironment(
-			StringBundler.concat(
-				"(activationCode eq '", activationCode, "') and (type eq '",
-				EnvironmentConstants.TYPE_CNE, "')"));
-
-		if (environment == null) {
+		if (activationResult == ActivationResult.ACTIVATION_CODE_NOT_FOUND) {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
-		if (Objects.equals(
-				environment.getActivationStatus(),
-				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE)) {
-
+		if (activationResult != ActivationResult.SUCCESS) {
 			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		}
-
-		_environmentService.updateEnvironmentActivation(
-			activationMode, jwtClaimsSet.getStringClaim("environmentName"),
-			environmentId, environment.getId(), publicKey);
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Activating environment " + environmentId);
@@ -139,29 +144,164 @@ public class CloudRestController extends OneBaseRestController {
 				"Retrieving entitlements for environment " + environmentId);
 		}
 
-		JSONObject jsonObject =
-			_cloudNativeManifestService.getManifestJSONObject(
-				_getDXPVersion(body), environment);
+		JSONObject jsonObject = _getManifestJSONObject(
+			_getDXPVersion(body), environment);
 
 		return ResponseEntity.ok(jsonObject.toString());
 	}
 
-	@PostMapping("/environments/{environmentId}/manifest/add-on")
-	public ResponseEntity<String> postEnvironmentsManifestAddOn(
-			@PathVariable String environmentId, @RequestBody String body)
+	@PostMapping("/environments/offline-activation")
+	public ResponseEntity<String> postEnvironmentsOfflineActivation(
+			@RequestBody String json)
 		throws Exception {
 
-		Environment environment = _getEnvironment(body, environmentId);
+		JSONObject jsonObject = new JSONObject(json);
 
-		JSONArray jsonArray = _cloudNativeManifestService.getAddOnsJSONArray(
-			_getDXPVersion(body), environment);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"add-ons", jsonArray
+		String activationCode = jsonObject.optString("activationCode");
+		String token = jsonObject.optString(
+			"token"
+		).replaceAll(
+			"\\s", ""
 		);
 
-		return ResponseEntity.ok(jsonObject.toString());
+		if (Validator.isNull(activationCode) || Validator.isNull(token)) {
+			return new ResponseEntity<>(
+				_ERROR_MISSING_PARAMETERS, HttpStatus.BAD_REQUEST);
+		}
+
+		SignedJWT signedJWT = null;
+
+		try {
+			signedJWT = SignedJWT.parse(token);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to parse the offline activation token", exception);
+			}
+
+			return new ResponseEntity<>(
+				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+		}
+
+		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+		String environmentId = jwtClaimsSet.getStringClaim("environmentId");
+		String publicKey = jwtClaimsSet.getStringClaim("publicKey");
+
+		if (Validator.isNull(environmentId) || Validator.isNull(publicKey)) {
+			return new ResponseEntity<>(
+				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+		}
+
+		try {
+			_cloudNativeSignatureValidator.validateSignature(
+				publicKey, signedJWT);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to verify the offline activation token", exception);
+			}
+
+			return new ResponseEntity<>(
+				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+		}
+
+		ActivationResult activationResult = _activateEnvironment(
+			activationCode, EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
+			environmentId, jwtClaimsSet.getStringClaim("environmentName"),
+			publicKey);
+
+		if (activationResult == ActivationResult.ACTIVATION_CODE_NOT_FOUND) {
+			return new ResponseEntity<>(
+				_ERROR_ACTIVATION_CODE_NOT_FOUND, HttpStatus.NOT_FOUND);
+		}
+
+		if (activationResult == ActivationResult.ACTIVATION_CODE_USED) {
+			return new ResponseEntity<>(
+				_ERROR_ACTIVATION_CODE_USED, HttpStatus.CONFLICT);
+		}
+
+		if (activationResult ==
+				ActivationResult.ENVIRONMENT_ALREADY_ACTIVATED) {
+
+			return new ResponseEntity<>(
+				_ERROR_ENVIRONMENT_ALREADY_ACTIVATED, HttpStatus.CONFLICT);
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Activated offline environment ", environmentId,
+					" for activation code ", activationCode));
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@PostMapping("/environments/{environmentId}/offline-activation-bundle")
+	public ResponseEntity<StreamingResponseBody>
+			postEnvironmentsOfflineActivationBundle(
+				@AuthenticationPrincipal Jwt jwt,
+				@PathVariable String environmentId, @RequestBody String json)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		String dxpVersion = jsonObject.optString("dxpVersion");
+
+		if (Validator.isNull(dxpVersion)) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentId, jwt);
+
+		if (environment == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		Path path = null;
+
+		try {
+			path = _createOfflineActivationBundle(
+				_getManifestJSONObject(dxpVersion, environment));
+		}
+		catch (AddOnsUnavailableException addOnsUnavailableException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(addOnsUnavailableException);
+			}
+
+			return _getErrorResponseEntity(
+				_ERROR_ADD_ONS_UNAVAILABLE, HttpStatus.UNPROCESSABLE_ENTITY);
+		}
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+
+		httpHeaders.setContentDisposition(
+			ContentDisposition.attachment(
+			).filename(
+				StringBundler.concat(
+					environmentId, "-", dxpVersion,
+					"-offline-activation-bundle.zip")
+			).build());
+		httpHeaders.setContentLength(Files.size(path));
+		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+		Path bundlePath = path;
+
+		return new ResponseEntity<>(
+			outputStream -> {
+				try {
+					Files.copy(bundlePath, outputStream);
+				}
+				finally {
+					Files.deleteIfExists(bundlePath);
+				}
+			},
+			httpHeaders, HttpStatus.OK);
 	}
 
 	@PostMapping(
@@ -207,7 +347,9 @@ public class CloudRestController extends OneBaseRestController {
 		httpHeaders.setAccessControlExposeHeaders(
 			Collections.singletonList(HttpHeaders.CONTENT_DISPOSITION));
 		httpHeaders.setContentDispositionFormData(
-			"attachment", _getFileName(productVirtualSettingsFileEntry));
+			"attachment",
+			_getFileName(
+				externalReferenceCode, productVirtualSettingsFileEntry));
 		httpHeaders.setContentType(
 			_getMediaType(
 				httpResponse.headers(
@@ -222,6 +364,267 @@ public class CloudRestController extends OneBaseRestController {
 				}
 			},
 			httpHeaders, HttpStatus.OK);
+	}
+
+	private ActivationResult _activateEnvironment(
+			String activationCode, String activationMode, String environmentId,
+			String environmentName, String publicKey)
+		throws Exception {
+
+		Environment environment = _environmentService.fetchEnvironment(
+			StringBundler.concat(
+				"(activationCode eq '", activationCode, "') and (type eq '",
+				EnvironmentConstants.TYPE_CNE, "')"));
+
+		if (environment == null) {
+			return ActivationResult.ACTIVATION_CODE_NOT_FOUND;
+		}
+
+		if (Objects.equals(
+				environment.getActivationStatus(),
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE)) {
+
+			return ActivationResult.ACTIVATION_CODE_USED;
+		}
+
+		Environment activatedEnvironment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentId);
+
+		if (activatedEnvironment != null) {
+			return ActivationResult.ENVIRONMENT_ALREADY_ACTIVATED;
+		}
+
+		_environmentService.updateEnvironmentActivation(
+			activationMode, environmentName, environmentId, environment.getId(),
+			publicKey);
+
+		return ActivationResult.SUCCESS;
+	}
+
+	private Path _createOfflineActivationBundle(JSONObject manifestJSONObject)
+		throws Exception {
+
+		Path path = Files.createTempFile("offline-activation-bundle-", ".zip");
+
+		try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+				Files.newOutputStream(path))) {
+
+			zipOutputStream.putNextEntry(new ZipEntry("manifest.json"));
+
+			zipOutputStream.write(
+				manifestJSONObject.toString(
+					2
+				).getBytes(
+					StandardCharsets.UTF_8
+				));
+
+			zipOutputStream.closeEntry();
+
+			JSONArray addOnsJSONArray = manifestJSONObject.optJSONArray(
+				"add-ons");
+
+			if (addOnsJSONArray != null) {
+				for (int i = 0; i < addOnsJSONArray.length(); i++) {
+					_writeAddOn(
+						addOnsJSONArray.getJSONObject(i), zipOutputStream);
+				}
+			}
+		}
+		catch (Exception exception) {
+			Files.deleteIfExists(path);
+
+			throw exception;
+		}
+
+		return path;
+	}
+
+	private String _generateAppLicenseXML(
+			Date expirationDate, String owner, String productId,
+			String productName, Date startDate)
+		throws Exception {
+
+		String description = productName + " Cloud Native Environment";
+		String licenseEntryType = LicenseConstants.TYPE_ENTERPRISE;
+		int licenseVersion = LicenseVersion.getAppLicenseVersion();
+
+		String key = _licenseKeyGenerator.generateKey(
+			StringPool.BLANK, StringPool.BLANK, licenseEntryType,
+			licenseVersion, productName, productId, _APP_PRODUCT_VERSION, owner,
+			0, 0, 0, 0, 0, StringPool.BLANK, description, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, startDate, expirationDate);
+
+		return _licenseKeyExporter.toXML(
+			key, StringPool.BLANK, StringPool.BLANK, licenseEntryType,
+			licenseVersion, productName, productId, _APP_PRODUCT_VERSION, owner,
+			0, 0, 0, 0, 0, StringPool.BLANK, description, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, startDate, expirationDate);
+	}
+
+	private String _generateDXPLicenseXML(
+			String accountName, Date expirationDate, String licenseEntryName,
+			int maxClusterNodes, String owner, String productVersion,
+			Date startDate)
+		throws Exception {
+
+		String description = "Cloud Native";
+		String licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
+
+		String productName = "DXP Production";
+
+		int licenseVersion = LicenseVersion.getLicenseVersion(
+			productName, productVersion);
+
+		String sizing = "Sizing 4";
+
+		String key = _licenseKeyGenerator.generateKey(
+			accountName, licenseEntryName, licenseEntryType, licenseVersion,
+			productName, LicenseConstants.PRODUCT_ID_PORTAL, productVersion,
+			owner, maxClusterNodes, 0, 0, 0, 0, sizing, description,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
+
+		return _licenseKeyExporter.toXML(
+			key, accountName, licenseEntryName, licenseEntryType,
+			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
+			productVersion, owner, maxClusterNodes, 0, 0, 0, 0, sizing,
+			description, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
+	}
+
+	private String _getAccountName(Environment environment) throws Exception {
+		Account account = _accountService.fetchAccount(
+			environment.getAccountEntryId());
+
+		if (account == null) {
+			return StringPool.BLANK;
+		}
+
+		return account.getName();
+	}
+
+	private JSONArray _getAddOnsJSONArray(
+			List<Product> cloudEnabledProducts, String dxpPatchProductVersion)
+		throws Exception {
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (Product product : cloudEnabledProducts) {
+			try {
+				ProductVirtualSettingsFileEntry
+					productVirtualSettingsFileEntry =
+						_commerceProductVirtualSettingsService.
+							fetchProductVirtualSettingsFileEntry(
+								product.getProductId(), dxpPatchProductVersion);
+
+				if (productVirtualSettingsFileEntry == null) {
+					throw new Exception(
+						"No package is available for product " +
+							product.getExternalReferenceCode());
+				}
+
+				jsonArray.put(
+					new JSONObject(
+					).put(
+						"downloadURL",
+						ServletUriComponentsBuilder.fromCurrentContextPath(
+						).path(
+							"/cloud/products/{externalReferenceCode}" +
+								"/virtual-entry/{virtualEntryId}/download"
+						).buildAndExpand(
+							product.getExternalReferenceCode(),
+							productVirtualSettingsFileEntry.getId()
+						).toUriString()
+					).put(
+						"productId", product.getExternalReferenceCode()
+					).put(
+						"productName", _commerceProductService.getName(product)
+					).put(
+						"sha256Checksum",
+						_commerceProductVirtualSettingsService.
+							getSHA256Checksum(
+								productVirtualSettingsFileEntry.getSrc())
+					).put(
+						"version", productVirtualSettingsFileEntry.getVersion()
+					).put(
+						"virtualEntryId",
+						productVirtualSettingsFileEntry.getId()
+					));
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to resolve the add on package for product " +
+						product.getExternalReferenceCode(),
+					exception);
+			}
+		}
+
+		return jsonArray;
+	}
+
+	private String _getAggregateLicenseXML(
+			JSONArray addOnsJSONArray, String accountName,
+			String dxpProductVersion, Date expirationDate,
+			String licenseEntryName, int maxClusterNodes, String owner,
+			Date startDate)
+		throws Exception {
+
+		List<String> licenseXMLs = new ArrayList<>();
+
+		for (int i = 0; i < addOnsJSONArray.length(); i++) {
+			JSONObject addOnJSONObject = addOnsJSONArray.getJSONObject(i);
+
+			licenseXMLs.add(
+				_generateAppLicenseXML(
+					expirationDate, accountName,
+					addOnJSONObject.getString("productId"),
+					addOnJSONObject.getString("productName"), startDate));
+		}
+
+		licenseXMLs.add(
+			_generateDXPLicenseXML(
+				accountName, expirationDate, licenseEntryName, maxClusterNodes,
+				owner, dxpProductVersion, startDate));
+
+		String licenseXML = _licenseKeyExporter.aggregateXMLs(
+			licenseXMLs.toArray(new String[0]));
+
+		Base64.Encoder encoder = Base64.getEncoder();
+
+		return encoder.encodeToString(licenseXML.getBytes());
+	}
+
+	private List<Product> _getCloudEnabledProducts(
+			List<Entitlement> entitlements)
+		throws Exception {
+
+		List<Product> products = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (entitlementDefinition == null) {
+				continue;
+			}
+
+			long cProductId = entitlementDefinition.getCProductId();
+
+			if (cProductId <= 0) {
+				continue;
+			}
+
+			Product product = _commerceProductService.fetchProduct(cProductId);
+
+			if ((product != null) && _isCloudEnabled(product)) {
+				products.add(product);
+			}
+		}
+
+		return products;
 	}
 
 	private String _getDXPVersion(String body) throws Exception {
@@ -250,16 +653,136 @@ public class CloudRestController extends OneBaseRestController {
 		return environment;
 	}
 
+	private ResponseEntity<StreamingResponseBody> _getErrorResponseEntity(
+		String error, HttpStatus httpStatus) {
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+
+		httpHeaders.setContentType(MediaType.TEXT_PLAIN);
+
+		return new ResponseEntity<>(
+			outputStream -> outputStream.write(
+				error.getBytes(StandardCharsets.UTF_8)),
+			httpHeaders, httpStatus);
+	}
+
 	private String _getFileName(
+		String externalReferenceCode,
 		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry) {
 
 		String src = productVirtualSettingsFileEntry.getSrc();
 
-		if (Validator.isNull(src)) {
-			return "package.lpkg";
+		if (Validator.isNotNull(src)) {
+			String fileName = src.substring(src.lastIndexOf('/') + 1);
+
+			int index = fileName.indexOf('?');
+
+			if (index != -1) {
+				fileName = fileName.substring(0, index);
+			}
+
+			if (fileName.endsWith(".lpkg")) {
+				return fileName;
+			}
 		}
 
-		return src.substring(src.lastIndexOf('/') + 1);
+		return externalReferenceCode + ".lpkg";
+	}
+
+	private JSONObject _getManifestJSONObject(
+			String dxpVersion, Environment environment)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				environment.getAccountEntryId());
+
+		Entitlement cloudNativeEntitlement = null;
+
+		for (Entitlement entitlement : entitlements) {
+			if (ArrayUtil.contains(
+					EntitlementConstants.NAMES_CLOUD_NATIVE,
+					entitlement.getName())) {
+
+				cloudNativeEntitlement = entitlement;
+
+				break;
+			}
+		}
+
+		if (cloudNativeEntitlement == null) {
+			throw new CloudNativeEntitlementException(
+				environment.getAccountEntryId());
+		}
+
+		Date expirationDate = _toDate(
+			cloudNativeEntitlement.getEndDateInstant(),
+			new Date(System.currentTimeMillis() + Time.YEAR));
+		Date startDate = _toDate(
+			cloudNativeEntitlement.getStartDateInstant(), new Date());
+
+		int maxClusterNodes = _getMaxClusterNodes(
+			entitlements, environment.getEnvironmentType());
+
+		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
+			_getCloudEnabledProducts(entitlements),
+			ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
+
+		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
+
+		if (Objects.equals(
+				environment.getEnvironmentType(),
+				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION)) {
+
+			licenseEntryName = "DXP Production (Virtual Cluster)";
+		}
+
+		return new JSONObject(
+		).put(
+			"add-ons", addOnsJSONArray
+		).put(
+			"licenseXML",
+			_getAggregateLicenseXML(
+				addOnsJSONArray, _getAccountName(environment),
+				ProductVersion.extractQuarterlyRelease(dxpVersion),
+				expirationDate, licenseEntryName, maxClusterNodes,
+				environment.getExternalReferenceCode(), startDate)
+		).put(
+			"maxClusterNodes", maxClusterNodes
+		);
+	}
+
+	private int _getMaxClusterNodes(
+		List<Entitlement> entitlements, String environmentType) {
+
+		int maxClusterNodes = 1;
+
+		if (!_hasProductionSizing(environmentType)) {
+			return maxClusterNodes;
+		}
+
+		for (Entitlement entitlement : entitlements) {
+			if (!ArrayUtil.contains(
+					EntitlementConstants.NAMES_PRODUCTION_PODS,
+					entitlement.getName())) {
+
+				continue;
+			}
+
+			Double quantity = entitlement.getQuantity();
+
+			if (quantity == null) {
+				continue;
+			}
+
+			int curMaxClusterNodes = quantity.intValue();
+
+			if (curMaxClusterNodes > maxClusterNodes) {
+				maxClusterNodes = curMaxClusterNodes;
+			}
+		}
+
+		return maxClusterNodes;
 	}
 
 	private MediaType _getMediaType(List<String> contentTypes) {
@@ -280,8 +803,11 @@ public class CloudRestController extends OneBaseRestController {
 
 		String externalReferenceCode = product.getExternalReferenceCode();
 
-		JSONArray addOnsJSONArray =
-			_cloudNativeManifestService.getAddOnsJSONArray(null, environment);
+		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
+			_getCloudEnabledProducts(
+				_entitlementService.getActiveEntitlements(
+					environment.getAccountEntryId())),
+			StringPool.BLANK);
 
 		for (int i = 0; i < addOnsJSONArray.length(); i++) {
 			JSONObject addOnJSONObject = addOnsJSONArray.getJSONObject(i);
@@ -304,11 +830,100 @@ public class CloudRestController extends OneBaseRestController {
 		return false;
 	}
 
+	private boolean _hasProductionSizing(String environmentType) {
+		if (Objects.equals(
+				environmentType,
+				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION) ||
+			Objects.equals(
+				environmentType, EnvironmentConstants.ENVIRONMENT_TYPE_UAT)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isCloudEnabled(Product product) {
+		return GetterUtil.getBoolean(
+			_commerceProductService.getSpecificationValue(
+				product,
+				CommerceProductConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
+	}
+
+	private Date _toDate(Instant instant, Date defaultDate) {
+		if (instant == null) {
+			return defaultDate;
+		}
+
+		return Date.from(instant);
+	}
+
+	private void _writeAddOn(
+			JSONObject addOnJSONObject, ZipOutputStream zipOutputStream)
+		throws Exception {
+
+		String externalReferenceCode = addOnJSONObject.optString("productId");
+
+		Product product = _commerceProductService.fetchProduct(
+			externalReferenceCode);
+
+		if (product == null) {
+			throw new AddOnsUnavailableException(
+				"No product exists for external reference code " +
+					externalReferenceCode);
+		}
+
+		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
+			_commerceProductVirtualSettingsService.
+				fetchProductVirtualSettingsFileEntry(
+					product.getProductId(),
+					addOnJSONObject.optLong("virtualEntryId"));
+
+		if (productVirtualSettingsFileEntry == null) {
+			throw new AddOnsUnavailableException(
+				"No package is available for product " + externalReferenceCode);
+		}
+
+		HttpResponse<InputStream> httpResponse =
+			_commerceProductVirtualSettingsService.getAssetHttpResponse(
+				productVirtualSettingsFileEntry.getSrc());
+
+		String fileName = _getFileName(
+			externalReferenceCode, productVirtualSettingsFileEntry);
+
+		zipOutputStream.putNextEntry(new ZipEntry("add-ons/" + fileName));
+
+		try (InputStream inputStream = httpResponse.body()) {
+			inputStream.transferTo(zipOutputStream);
+		}
+
+		zipOutputStream.closeEntry();
+	}
+
+	private static final String _APP_PRODUCT_VERSION = "1";
+
+	private static final String _ERROR_ACTIVATION_CODE_NOT_FOUND =
+		"ACTIVATION_CODE_NOT_FOUND";
+
+	private static final String _ERROR_ACTIVATION_CODE_USED =
+		"ACTIVATION_CODE_USED";
+
+	private static final String _ERROR_ADD_ONS_UNAVAILABLE =
+		"ADD_ONS_UNAVAILABLE";
+
+	private static final String _ERROR_ENVIRONMENT_ALREADY_ACTIVATED =
+		"ENVIRONMENT_ALREADY_ACTIVATED";
+
+	private static final String _ERROR_INVALID_TOKEN = "INVALID_TOKEN";
+
+	private static final String _ERROR_MISSING_PARAMETERS =
+		"MISSING_PARAMETERS";
+
 	private static final Log _log = LogFactory.getLog(
 		CloudRestController.class);
 
 	@Autowired
-	private CloudNativeManifestService _cloudNativeManifestService;
+	private AccountService _accountService;
 
 	@Autowired
 	private CloudNativeSignatureValidator _cloudNativeSignatureValidator;
@@ -321,6 +936,22 @@ public class CloudRestController extends OneBaseRestController {
 		_commerceProductVirtualSettingsService;
 
 	@Autowired
+	private EntitlementService _entitlementService;
+
+	@Autowired
 	private EnvironmentService _environmentService;
+
+	@Autowired
+	private LicenseKeyExporter _licenseKeyExporter;
+
+	@Autowired
+	private LicenseKeyGenerator _licenseKeyGenerator;
+
+	private enum ActivationResult {
+
+		ACTIVATION_CODE_NOT_FOUND, ACTIVATION_CODE_USED,
+		ENVIRONMENT_ALREADY_ACTIVATED, SUCCESS
+
+	}
 
 }
