@@ -8,10 +8,12 @@ package com.liferay.one.exception;
 /**
  * @author Amos Fong
  */
-public class AddOnsUnavailableException extends Exception {
+public class NoSuchActivationCodeException extends Exception {
 
-	public AddOnsUnavailableException(String message) {
-		super(message);
+	public NoSuchActivationCodeException(String activationCode) {
+		super(
+			"No cloud native environment exists for activation code " +
+				activationCode);
 	}
 
 }

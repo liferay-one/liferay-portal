@@ -18,6 +18,8 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.EntitlementService;
 
+import java.lang.reflect.UndeclaredThrowableException;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -98,8 +100,7 @@ public class CloudRestControllerTest {
 		);
 
 		JSONObject jsonObject = _getManifestJSONObject(
-			_createEnvironment(
-				EnvironmentConstants.ENVIRONMENT_TYPE_NONPRODUCTION));
+			_createEnvironment(EnvironmentConstants.TYPE_NONPRODUCTION));
 
 		Assertions.assertEquals(1, jsonObject.getInt("maxClusterNodes"));
 	}
@@ -123,8 +124,7 @@ public class CloudRestControllerTest {
 		);
 
 		JSONObject jsonObject = _getManifestJSONObject(
-			_createEnvironment(
-				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION));
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
 
 		Assertions.assertEquals(7, jsonObject.getInt("maxClusterNodes"));
 	}
@@ -142,8 +142,7 @@ public class CloudRestControllerTest {
 		Assertions.assertThrows(
 			CloudNativeEntitlementException.class,
 			() -> _getManifestJSONObject(
-				_createEnvironment(
-					EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION)));
+				_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)));
 	}
 
 	private Entitlement _createEntitlement(String name, double quantity) {
@@ -162,26 +161,34 @@ public class CloudRestControllerTest {
 			));
 	}
 
-	private Environment _createEnvironment(String environmentType) {
+	private Environment _createEnvironment(String type) {
 		return new Environment(
 			new JSONObject(
-			).put(
-				"environmentType", environmentType
 			).put(
 				"externalReferenceCode", "CNE-1"
 			).put(
 				"id", _ENVIRONMENT_ID
 			).put(
+				"offering", EnvironmentConstants.OFFERING_CLOUD_NATIVE
+			).put(
 				"r_accountEntryToEnvironment_accountEntryId", _ACCOUNT_ID
 			).put(
-				"type", EnvironmentConstants.TYPE_CNE
+				"type", type
 			));
 	}
 
-	private JSONObject _getManifestJSONObject(Environment environment) {
-		return ReflectionTestUtils.invokeMethod(
-			_cloudRestController, "_getManifestJSONObject", "DXP 2025.Q3.1",
-			environment);
+	private JSONObject _getManifestJSONObject(Environment environment)
+		throws Exception {
+
+		try {
+			return ReflectionTestUtils.invokeMethod(
+				_cloudRestController, "_getManifestJSONObject", "DXP 2025.Q3.1",
+				environment);
+		}
+		catch (UndeclaredThrowableException undeclaredThrowableException) {
+			throw (Exception)
+				undeclaredThrowableException.getUndeclaredThrowable();
+		}
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;

@@ -428,7 +428,9 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 |---|---|---|
 | PK `environmentId` | long | |
 | FK `subscriptionId` | long | FK to Contract |
-| `type` | string | `SaaS` · `PaaS` · `CNE` · `On-Prem` |
+| `name` | string | Reported by the environment on activation |
+| `offering` | string | `AI Hub` · `Cloud Native` · `DSR` · `LDP` · `On-Prem` · `PaaS` · `SaaS` |
+| `type` | string | `non-production` · `production` · `uat`; cloud only |
 | `region` | string | Cloud only; blank for on-prem |
 | `activationMode` | string | `license-key` · `offline` · `online` |
 | `status` | string | `active` · `deactivated` · `expired` |

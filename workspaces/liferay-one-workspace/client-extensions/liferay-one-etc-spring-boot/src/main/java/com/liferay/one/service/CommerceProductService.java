@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductConfiguration;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductShippingConfiguration;
-import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
@@ -17,7 +16,6 @@ import com.liferay.one.constants.CommerceProductConstants;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
@@ -129,35 +127,6 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return name.get("en_US");
-	}
-
-	public String getSpecificationValue(Product product, String key) {
-		ProductSpecification[] productSpecifications =
-			product.getProductSpecifications();
-
-		if (productSpecifications == null) {
-			return null;
-		}
-
-		for (ProductSpecification productSpecification :
-				productSpecifications) {
-
-			if (!Objects.equals(
-					productSpecification.getSpecificationKey(), key)) {
-
-				continue;
-			}
-
-			Map<String, String> value = productSpecification.getValue();
-
-			if (value == null) {
-				return null;
-			}
-
-			return value.get("en_US");
-		}
-
-		return null;
 	}
 
 	private ProductResource _buildProductResource() {

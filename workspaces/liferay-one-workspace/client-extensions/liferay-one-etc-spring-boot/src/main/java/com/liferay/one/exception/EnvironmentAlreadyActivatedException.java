@@ -8,10 +8,10 @@ package com.liferay.one.exception;
 /**
  * @author Amos Fong
  */
-public class AddOnsUnavailableException extends Exception {
+public class EnvironmentAlreadyActivatedException extends Exception {
 
-	public AddOnsUnavailableException(String message) {
-		super(message);
+	public EnvironmentAlreadyActivatedException(String environmentId) {
+		super("Environment " + environmentId + " has already been activated");
 	}
 
 }

@@ -26,10 +26,10 @@ public class Environment {
 			"r_contractToEnvironment_c_contractId");
 		_currentEntitlementHash = jsonObject.optString(
 			"currentEntitlementHash");
-		_environmentName = jsonObject.optString("environmentName");
-		_environmentType = jsonObject.optString("environmentType");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_id = jsonObject.getLong("id");
+		_name = jsonObject.optString("name");
+		_offering = jsonObject.optString("offering");
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToEnvironment_c_projectERC");
 		_publicKey = jsonObject.optString("publicKey");
@@ -70,14 +70,6 @@ public class Environment {
 		return _currentEntitlementHash;
 	}
 
-	public String getEnvironmentName() {
-		return _environmentName;
-	}
-
-	public String getEnvironmentType() {
-		return _environmentType;
-	}
-
 	public String getExternalReferenceCode() {
 		return _externalReferenceCode;
 	}
@@ -88,6 +80,14 @@ public class Environment {
 
 	public Instant getLastHeartbeatAtInstant() {
 		return _lastHeartbeatAtInstant;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public String getOffering() {
+		return _offering;
 	}
 
 	public String getProjectExternalReferenceCode() {
@@ -112,11 +112,11 @@ public class Environment {
 	private final String _activationStatus;
 	private final long _contractId;
 	private final String _currentEntitlementHash;
-	private final String _environmentName;
-	private final String _environmentType;
 	private final String _externalReferenceCode;
 	private final long _id;
 	private final Instant _lastHeartbeatAtInstant;
+	private final String _name;
+	private final String _offering;
 	private final String _projectExternalReferenceCode;
 	private final String _publicKey;
 	private final String _region;

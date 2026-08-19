@@ -12,9 +12,12 @@ import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+
+import java.text.ParseException;
 
 import java.util.Base64;
 import java.util.Date;
@@ -31,8 +34,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class CloudNativeSignatureValidator {
 
+	public void validateSignature(SignedJWT signedJWT)
+		throws ParseException, PrincipalException {
+
+		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+		validateSignature(jwtClaimsSet.getStringClaim("publicKey"), signedJWT);
+	}
+
 	public void validateSignature(String publicKey, SignedJWT signedJWT)
-		throws Exception {
+		throws ParseException, PrincipalException {
 
 		if (!_hasValidSignature(publicKey, signedJWT)) {
 			throw new PrincipalException();
@@ -69,7 +80,7 @@ public class CloudNativeSignatureValidator {
 	}
 
 	private RSAPublicKey _toRSAPublicKey(String encodedPublicKey)
-		throws Exception {
+		throws GeneralSecurityException {
 
 		String base64 = encodedPublicKey.replaceAll(
 			"-----(BEGIN|END) PUBLIC KEY-----", "");

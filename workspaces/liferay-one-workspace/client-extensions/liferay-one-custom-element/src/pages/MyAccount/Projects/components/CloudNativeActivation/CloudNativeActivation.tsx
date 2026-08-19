@@ -36,7 +36,7 @@ const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	422: 'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
 };
 
-const CLOUD_TYPES = ['CNE', 'PaaS', 'SaaS'];
+const CLOUD_OFFERINGS = ['Cloud Native', 'PaaS', 'SaaS'];
 
 function toErrorMessageKey(
 	error: unknown,
@@ -77,7 +77,7 @@ export default function CloudNativeActivation() {
 	});
 
 	const cloudEnvironments = environments.filter((environment) =>
-		CLOUD_TYPES.includes(environment.type)
+		CLOUD_OFFERINGS.includes(environment.offering)
 	);
 
 	const onActivate = async (token: string) => {
@@ -192,14 +192,14 @@ export default function CloudNativeActivation() {
 									<ClayTable.Cell>
 										<span className="d-flex flex-column">
 											<span className="fw-bold">
-												{environment.environmentName ||
+												{environment.name ||
 													translate(
-														environment.environmentType as Word
+														environment.type as Word
 													)}
 											</span>
 
 											<span className="list-card-subtext">
-												{environment.type}
+												{environment.offering}
 											</span>
 										</span>
 									</ClayTable.Cell>
@@ -284,7 +284,7 @@ export default function CloudNativeActivation() {
 			>
 				<OfflineActivationModal
 					environmentType={
-						activatingEnvironment?.environmentType ?? ''
+						activatingEnvironment?.type ?? ''
 					}
 					errorMessageKey={errorMessageKey}
 					isActivating={isActivating}

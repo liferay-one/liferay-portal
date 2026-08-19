@@ -15,12 +15,12 @@
 			"activationStatus": "active",
 			"aiHubURL": "liferay.betaaihub.com",
 			"externalReferenceCode": "ENV-AI-HUB-PROD",
+			"offering": "AI Hub",
 			"ownerEmailAddress": "jon@pandora.com",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-013",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_ANALYTICS_CLOUD",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-013",
-			"tokenMonthlyAllowance": "1000",
-			"type": "AI Hub"
+			"tokenMonthlyAllowance": "1000"
 		},
 		{
 			"activationMode": "online",
@@ -28,123 +28,123 @@
 			"allowedEmailDomains": "omni.example.com",
 			"externalReferenceCode": "ENV-ANALYTICS-PROD",
 			"friendlyURL": "/analytics-omni",
+			"offering": "SaaS",
 			"ownerEmailAddress": "owner@omni.example.com",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-013",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_ANALYTICS_CLOUD",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-013",
 			"region": "us-central1",
 			"timeZone": "UTC-06:00",
-			"type": "SaaS",
 			"workspaceName": "analytics-omni"
 		},
 		{
 			"activationMode": "online",
 			"activationStatus": "active",
-			"environmentName": "cloud-native-nonprod",
-			"environmentType": "non-production",
 			"externalReferenceCode": "ENV-CLOUD-NATIVE-NONPROD",
+			"name": "cloud-native-nonprod",
+			"offering": "Cloud Native",
 			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkxpe7JIPHiDs5itx47VV\nIuGeP14LaLd81HD+stlcVxq48xETnVGTi5V99BtyzziN3tkHuFyOMONLzIVIdUOx\n7jeknqqv4EGqqktE6eTLrBA1kHvnODaQ3krT+XbBMSMkJDsOIlQxZ/TllJ7m55g8\nW7FDsE0Q9te27qCliGVJm6e4TCWrOJorUQn4/2tJy4cLvosd+ac+mDx/dr4MSb2F\nWprdXeYvt5B4XwAP+JtMs5AN3h0zxDrEHiUoQKq/d2rtthlXZUuHHvHGCuvH962u\n+ezbXXttW18ILPktD30nU/OPxDnSF2702HhNw3gtd79k2pt72YmB/mgqrs0PMk8t\nRQIDAQAB\n-----END PUBLIC KEY-----",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-007",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-007",
 			"region": "us-central1",
-			"type": "CNE"
+			"type": "non-production"
 		},
 		{
 			"activationMode": "online",
 			"activationStatus": "active",
-			"environmentName": "cloud-native-prod",
-			"environmentType": "production",
 			"externalReferenceCode": "ENV-CLOUD-NATIVE-PROD",
+			"name": "cloud-native-prod",
+			"offering": "Cloud Native",
 			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkxpe7JIPHiDs5itx47VV\nIuGeP14LaLd81HD+stlcVxq48xETnVGTi5V99BtyzziN3tkHuFyOMONLzIVIdUOx\n7jeknqqv4EGqqktE6eTLrBA1kHvnODaQ3krT+XbBMSMkJDsOIlQxZ/TllJ7m55g8\nW7FDsE0Q9te27qCliGVJm6e4TCWrOJorUQn4/2tJy4cLvosd+ac+mDx/dr4MSb2F\nWprdXeYvt5B4XwAP+JtMs5AN3h0zxDrEHiUoQKq/d2rtthlXZUuHHvHGCuvH962u\n+ezbXXttW18ILPktD30nU/OPxDnSF2702HhNw3gtd79k2pt72YmB/mgqrs0PMk8t\nRQIDAQAB\n-----END PUBLIC KEY-----",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-007",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-007",
 			"region": "us-central1",
-			"type": "CNE"
+			"type": "production"
 		},
 		{
 			"activationCode": "1a3c5e7b9d0f42648a2c4e6b8d0f1357",
 			"activationMode": "offline",
 			"activationStatus": "active",
-			"environmentName": "acme-offline-prod",
-			"environmentType": "production",
 			"externalReferenceCode": "ENV-CNE-OFFLINE-PROD",
+			"name": "acme-offline-prod",
+			"offering": "Cloud Native",
 			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkxpe7JIPHiDs5itx47VV\nIuGeP14LaLd81HD+stlcVxq48xETnVGTi5V99BtyzziN3tkHuFyOMONLzIVIdUOx\n7jeknqqv4EGqqktE6eTLrBA1kHvnODaQ3krT+XbBMSMkJDsOIlQxZ/TllJ7m55g8\nW7FDsE0Q9te27qCliGVJm6e4TCWrOJorUQn4/2tJy4cLvosd+ac+mDx/dr4MSb2F\nWprdXeYvt5B4XwAP+JtMs5AN3h0zxDrEHiUoQKq/d2rtthlXZUuHHvHGCuvH962u\n+ezbXXttW18ILPktD30nU/OPxDnSF2702HhNw3gtd79k2pt72YmB/mgqrs0PMk8t\nRQIDAQAB\n-----END PUBLIC KEY-----",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-032",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_OFFLINE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-032",
 			"region": "europe-west1",
-			"type": "CNE"
+			"type": "production"
 		},
 		{
 			"activationCode": "9f2b4d6a8c0e41537b9d1f3a5c7e2048",
 			"activationStatus": "pending",
-			"environmentType": "uat",
 			"externalReferenceCode": "ENV-CNE-OFFLINE-UAT",
+			"offering": "Cloud Native",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-032",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_OFFLINE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-032",
 			"region": "europe-west1",
-			"type": "CNE"
+			"type": "uat"
 		},
 		{
 			"activationCode": "7b1f2c9a4d6e48f0b3c5a7e9d1f24680",
 			"activationStatus": "pending",
-			"environmentType": "non-production",
 			"externalReferenceCode": "ENV-CNE-PENDING-NONPROD",
+			"offering": "Cloud Native",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-031",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_PENDING",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-031",
 			"region": "us-central1",
-			"type": "CNE"
+			"type": "non-production"
 		},
 		{
 			"activationCode": "3e8a5d1c7b9f42a06d8c1e3f5a7b9d20",
 			"activationStatus": "pending",
-			"environmentType": "production",
 			"externalReferenceCode": "ENV-CNE-PENDING-PROD",
+			"offering": "Cloud Native",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-031",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_PENDING",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-031",
 			"region": "us-central1",
-			"type": "CNE"
+			"type": "production"
 		},
 		{
 			"activationCode": "c4d6e8f0a2b41638d5f7a9c1e3b5d709",
 			"activationStatus": "pending",
-			"environmentType": "uat",
 			"externalReferenceCode": "ENV-CNE-PENDING-UAT",
+			"offering": "Cloud Native",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-031",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_PENDING",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-031",
 			"region": "us-central1",
-			"type": "CNE"
+			"type": "uat"
 		},
 		{
 			"activationMode": "online",
 			"activationStatus": "active",
-			"environmentName": "commerce-cloud-prod",
-			"environmentType": "production",
 			"externalReferenceCode": "ENV-COMMERCE-CLOUD-PROD",
+			"name": "commerce-cloud-prod",
+			"offering": "Cloud Native",
 			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkxpe7JIPHiDs5itx47VV\nIuGeP14LaLd81HD+stlcVxq48xETnVGTi5V99BtyzziN3tkHuFyOMONLzIVIdUOx\n7jeknqqv4EGqqktE6eTLrBA1kHvnODaQ3krT+XbBMSMkJDsOIlQxZ/TllJ7m55g8\nW7FDsE0Q9te27qCliGVJm6e4TCWrOJorUQn4/2tJy4cLvosd+ac+mDx/dr4MSb2F\nWprdXeYvt5B4XwAP+JtMs5AN3h0zxDrEHiUoQKq/d2rtthlXZUuHHvHGCuvH962u\n+ezbXXttW18ILPktD30nU/OPxDnSF2702HhNw3gtd79k2pt72YmB/mgqrs0PMk8t\nRQIDAQAB\n-----END PUBLIC KEY-----",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-023",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_COMMERCE_CLOUD",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-023",
 			"region": "us-east1",
-			"type": "CNE"
+			"type": "production"
 		},
 		{
 			"activationMode": "online",
 			"activationStatus": "active",
 			"currentEntitlementHash": "eyJkYXRhIjoiZHNyLW9tbmktdG9rZW4tZm9yLWRlbW8ifQ==",
 			"externalReferenceCode": "ENV-DSR-PROD",
+			"offering": "DSR",
 			"ownerEmailAddress": "keanureeves@owner.com",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-001",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_OMNI",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-001",
 			"region": "Internal",
-			"type": "DSR",
 			"workspaceName": "DSRWS-01"
 		},
 		{
@@ -153,10 +153,10 @@
 			"domains": "staging.omni.example.com",
 			"externalReferenceCode": "ENV-DXP-NONPROD",
 			"hostName": "staging.omni.example.com",
+			"offering": "On-Prem",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-006",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_DXP",
-			"r_projectToEnvironment_c_projectERC": "PRJCT-006",
-			"type": "On-Prem"
+			"r_projectToEnvironment_c_projectERC": "PRJCT-006"
 		},
 		{
 			"activationMode": "license-key",
@@ -164,10 +164,10 @@
 			"domains": "omni.example.com,www.omni.example.com",
 			"externalReferenceCode": "ENV-DXP-PROD",
 			"hostName": "prod.omni.example.com",
+			"offering": "On-Prem",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-006",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_DXP",
-			"r_projectToEnvironment_c_projectERC": "PRJCT-006",
-			"type": "On-Prem"
+			"r_projectToEnvironment_c_projectERC": "PRJCT-006"
 		},
 		{
 			"activationMode": "online",
@@ -175,13 +175,13 @@
 			"allowedEmailDomains": "enterprise.example.com",
 			"externalReferenceCode": "ENV-LDP-PROD",
 			"friendlyURL": "/enterprise-ldp",
+			"offering": "LDP",
 			"ownerEmailAddress": "owner@enterprise.example.com",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-010",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_ENTERPRISE_PLAN",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-010",
 			"region": "us-east1",
 			"timeZone": "UTC-05:00",
-			"type": "LDP",
 			"workspaceName": "enterprise-ldp"
 		},
 		{
@@ -192,12 +192,12 @@
 			"adminLastName": "Lovelace",
 			"externalReferenceCode": "ENV-PAAS-PROD",
 			"githubUsername": "adalovelace",
+			"offering": "PaaS",
 			"projectId": "paas-omni",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-004",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_PAAS_EXPERIENCE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-004",
-			"region": "us-east1",
-			"type": "PaaS"
+			"region": "us-east1"
 		},
 		{
 			"activationMode": "license-key",
@@ -205,10 +205,10 @@
 			"domains": "portal.example.com",
 			"externalReferenceCode": "ENV-PORTAL-PROD",
 			"hostName": "portal.example.com",
+			"offering": "On-Prem",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-015",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_PORTAL",
-			"r_projectToEnvironment_c_projectERC": "PRJCT-015",
-			"type": "On-Prem"
+			"r_projectToEnvironment_c_projectERC": "PRJCT-015"
 		},
 		{
 			"activationMode": "online",
@@ -217,12 +217,12 @@
 			"adminFirstName": "Grace",
 			"adminLastName": "Hopper",
 			"externalReferenceCode": "ENV-SAAS-PROD",
+			"offering": "SaaS",
 			"projectId": "saas-omni",
 			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-002",
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_SAAS_EXPERIENCE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-002",
-			"region": "eu-west1",
-			"type": "SaaS"
+			"region": "eu-west1"
 		}
 	]
 }
