@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Environment;
@@ -165,7 +166,7 @@ public class ProvisioningEnvironmentServiceTest {
 		return new SalesforceOpportunityLineItem(
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
 				"USD", null, "LINE-1", "PROD-1",
-				EnvironmentConstants.
+				CommerceProductConstants.
 					NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
 				"Subscription", 1, null));
 	}

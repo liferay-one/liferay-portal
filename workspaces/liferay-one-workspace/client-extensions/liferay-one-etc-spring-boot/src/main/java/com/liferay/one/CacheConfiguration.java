@@ -34,7 +34,7 @@ public class CacheConfiguration {
 			));
 
 		caffeineCacheManager.registerCustomCache(
-			"cloudEnabledProduct",
+			"product",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)

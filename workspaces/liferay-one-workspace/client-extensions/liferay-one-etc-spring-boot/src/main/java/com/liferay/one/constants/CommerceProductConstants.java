@@ -21,6 +21,22 @@ public class CommerceProductConstants {
 	public static final String NAME_CLIENT_EXTENSIONS_RAM_1GB_COMMITMENT =
 		"Client Extensions RAM (1 GB) - Commitment";
 
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE =
+			"Liferay Cloud Native - Digital Accelerator Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE =
+			"Liferay Cloud Native - Enhanced Resilience Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE =
+			"Liferay Cloud Native - Maximum Resilience Bundle";
+
+	public static final String
+		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE =
+			"Liferay Cloud Native - Standard Operations Bundle";
+
 	public static final String NAME_LIFERAY_PAAS_SUBSCRIPTION_HA_PROD_ENV =
 		"Liferay PaaS Subscription - HA Prod Env";
 
@@ -53,6 +69,13 @@ public class CommerceProductConstants {
 
 	public static final String NAME_SAAS_EXPERIENCE = "SaaS Experience";
 
+	public static final String[] NAMES_CLOUD_NATIVE_PRODUCTS = {
+		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
+		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE
+	};
+
 	public static final String[] NAMES_EXPERIENCE_ENTITLEMENT_PRODUCTS = {
 		NAME_LIFERAY_PAAS_SUBSCRIPTION_HA_PROD_ENV, NAME_PAAS_EXPERIENCE,
 		NAME_PRODUCTION_ENVIRONMENT, NAME_SAAS_EXPERIENCE
@@ -77,6 +100,9 @@ public class CommerceProductConstants {
 		NAME_LIFERAY_SAAS_BUSINESS_PLAN, NAME_LIFERAY_SAAS_ENTERPRISE_PLAN,
 		NAME_LIFERAY_SAAS_PRO_PLAN
 	};
+
+	public static final String SPECIFICATION_KEY_CLOUD_ENABLED =
+		"cloud-enabled";
 
 	public static final String TYPE_SIMPLE = "simple";
 

@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.exception.CloudNativeEntitlementException;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -89,11 +90,11 @@ public class CloudNativeManifestServiceTest {
 		).thenReturn(
 			List.of(
 				_createEntitlement(
-					EnvironmentConstants.
+					EntitlementConstants.
 						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
 					1),
 				_createEntitlement(
-					EnvironmentConstants.NAME_UP_TO_5_PRODUCTION_PODS, 5))
+					EntitlementConstants.NAME_UP_TO_5_PRODUCTION_PODS, 5))
 		);
 
 		JSONObject jsonObject =
@@ -114,13 +115,13 @@ public class CloudNativeManifestServiceTest {
 		).thenReturn(
 			List.of(
 				_createEntitlement(
-					EnvironmentConstants.
+					EntitlementConstants.
 						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
 					1),
 				_createEntitlement(
-					EnvironmentConstants.NAME_UP_TO_3_PRODUCTION_PODS, 3),
+					EntitlementConstants.NAME_UP_TO_3_PRODUCTION_PODS, 3),
 				_createEntitlement(
-					EnvironmentConstants.NAME_UP_TO_7_PRODUCTION_PODS, 7))
+					EntitlementConstants.NAME_UP_TO_7_PRODUCTION_PODS, 7))
 		);
 
 		JSONObject jsonObject =
