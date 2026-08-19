@@ -74,23 +74,23 @@ public class ProvisioningEnvironmentServiceTest {
 
 		ArgumentCaptor<String> activationCodeArgumentCaptor =
 			ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> environmentTypeArgumentCaptor =
-			ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String> typeArgumentCaptor = ArgumentCaptor.forClass(
+			String.class);
 
 		Mockito.verify(
 			_environmentService, Mockito.times(3)
 		).addCloudNativeEnvironment(
 			Mockito.eq(_ACCOUNT_ID), activationCodeArgumentCaptor.capture(),
-			Mockito.eq(_CONTRACT_ERC), environmentTypeArgumentCaptor.capture(),
-			Mockito.eq(_PROJECT_ERC)
+			Mockito.eq(_CONTRACT_ERC), Mockito.eq(_PROJECT_ERC),
+			typeArgumentCaptor.capture()
 		);
 
 		Assertions.assertEquals(
 			List.of(
-				EnvironmentConstants.ENVIRONMENT_TYPE_NONPRODUCTION,
-				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION,
-				EnvironmentConstants.ENVIRONMENT_TYPE_UAT),
-			environmentTypeArgumentCaptor.getAllValues());
+				EnvironmentConstants.TYPE_NONPRODUCTION,
+				EnvironmentConstants.TYPE_PRODUCTION,
+				EnvironmentConstants.TYPE_UAT),
+			typeArgumentCaptor.getAllValues());
 
 		List<String> activationCodes =
 			activationCodeArgumentCaptor.getAllValues();

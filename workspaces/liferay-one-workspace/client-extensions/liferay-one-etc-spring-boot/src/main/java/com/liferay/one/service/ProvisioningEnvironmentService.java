@@ -61,24 +61,24 @@ public class ProvisioningEnvironmentService {
 		List<Environment> environments = _environmentService.getEnvironments(
 			StringBundler.concat(
 				"(r_accountEntryToEnvironment_accountEntryId eq '",
-				account.getId(), "') and (type eq '",
-				EnvironmentConstants.TYPE_CNE, "')"));
+				account.getId(), "') and (offering eq '",
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE, "')"));
 
 		if (!environments.isEmpty()) {
 			return;
 		}
 
-		for (String environmentType : _ENVIRONMENT_TYPES) {
+		for (String type : _TYPES) {
 			try {
 				_environmentService.addCloudNativeEnvironment(
 					account.getId(), _generateActivationCode(),
-					contract.getExternalReferenceCode(), environmentType,
-					contract.getProjectExternalReferenceCode());
+					contract.getExternalReferenceCode(),
+					contract.getProjectExternalReferenceCode(), type);
 			}
 			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
-						"Unable to add the ", environmentType,
+						"Unable to add the ", type,
 						" cloud native environment for account ",
 						account.getExternalReferenceCode()),
 					exception);
@@ -92,10 +92,9 @@ public class ProvisioningEnvironmentService {
 		return StringUtil.removeChar(uuid.toString(), '-');
 	}
 
-	private static final String[] _ENVIRONMENT_TYPES = {
-		EnvironmentConstants.ENVIRONMENT_TYPE_NONPRODUCTION,
-		EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION,
-		EnvironmentConstants.ENVIRONMENT_TYPE_UAT
+	private static final String[] _TYPES = {
+		EnvironmentConstants.TYPE_NONPRODUCTION,
+		EnvironmentConstants.TYPE_PRODUCTION, EnvironmentConstants.TYPE_UAT
 	};
 
 	private static final Log _log = LogFactory.getLog(

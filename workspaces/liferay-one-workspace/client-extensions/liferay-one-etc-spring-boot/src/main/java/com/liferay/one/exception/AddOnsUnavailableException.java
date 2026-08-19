@@ -8,7 +8,7 @@ package com.liferay.one.exception;
 /**
  * @author Amos Fong
  */
-public class AddOnsUnavailableException extends RuntimeException {
+public class AddOnsUnavailableException extends Exception {
 
 	public AddOnsUnavailableException(String message) {
 		super(message);

@@ -31,8 +31,8 @@ public class EnvironmentService extends OneBaseService {
 
 	public Environment addCloudNativeEnvironment(
 			long accountEntryId, String activationCode,
-			String contractExternalReferenceCode, String environmentType,
-			String projectExternalReferenceCode)
+			String contractExternalReferenceCode,
+			String projectExternalReferenceCode, String type)
 		throws Exception {
 
 		JSONObject environmentJSONObject = new JSONObject(
@@ -41,14 +41,14 @@ public class EnvironmentService extends OneBaseService {
 		).put(
 			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_PENDING
 		).put(
-			"environmentType", environmentType
+			"offering", EnvironmentConstants.OFFERING_CLOUD_NATIVE
 		).put(
 			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
 		).put(
 			"r_contractToEnvironment_c_contractERC",
 			contractExternalReferenceCode
 		).put(
-			"type", EnvironmentConstants.TYPE_CNE
+			"type", type
 		);
 
 		if (projectExternalReferenceCode != null) {
@@ -148,8 +148,8 @@ public class EnvironmentService extends OneBaseService {
 	}
 
 	public void updateEnvironmentActivation(
-			String activationMode, String environmentName,
-			String externalReferenceCode, long id, String publicKey)
+			String activationMode, String externalReferenceCode, long id,
+			String name, String publicKey)
 		throws Exception {
 
 		_patchEnvironment(
@@ -161,9 +161,9 @@ public class EnvironmentService extends OneBaseService {
 				"activationStatus",
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
 			).put(
-				"environmentName", environmentName
-			).put(
 				"externalReferenceCode", externalReferenceCode
+			).put(
+				"name", name
 			).put(
 				"publicKey", publicKey
 			));

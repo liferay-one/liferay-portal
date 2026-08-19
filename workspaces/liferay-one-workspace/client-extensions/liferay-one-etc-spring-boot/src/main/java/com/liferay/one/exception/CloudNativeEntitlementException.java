@@ -8,12 +8,12 @@ package com.liferay.one.exception;
 /**
  * @author Amos Fong
  */
-public class CloudNativeEntitlementException extends RuntimeException {
+public class CloudNativeEntitlementException extends Exception {
 
 	public CloudNativeEntitlementException(long accountEntryId) {
 		super(
 			"Account " + accountEntryId +
-				" does not have an active cloud native entitlement");
+				" does not have an active Cloud Native entitlement");
 
 		_accountEntryId = accountEntryId;
 	}
