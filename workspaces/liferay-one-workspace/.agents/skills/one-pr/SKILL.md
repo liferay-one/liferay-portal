@@ -60,6 +60,7 @@ Name the state in a sentence or two — a note, not a report:
 In every case but the first, **do not push, do not open the pull request, and do not transition the Jira ticket yet.** Ask once, with `AskUserQuestion`, offering these two in this order:
 
 1. **Run `/one-review` first** — the recommendation, and the first option every time. Stop the run here, and hand it back so they can invoke `/one-review` themselves.
+
 1. **Open the pull request anyway** — proceed to everything below, Jira transition included.
 
 Nothing goes out on a default or a shrug. The pull request is opened only when the author picks it, either at that question or by saying so afterward.
