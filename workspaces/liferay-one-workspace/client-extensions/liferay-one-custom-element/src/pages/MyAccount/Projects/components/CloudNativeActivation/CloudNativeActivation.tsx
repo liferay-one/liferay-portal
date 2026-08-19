@@ -12,6 +12,7 @@ import Modal from '~/components/Modal/Modal';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {Word, translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import Cloud from '~/services/spring-boot/Cloud';
 
@@ -21,27 +22,31 @@ import PopoverIcon from '../PopoverIcon/PopoverIcon';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 
+const ACTIVATION_ERROR_MESSAGE_KEYS: Record<number, Word> = {
+	400: 'the-activation-token-is-not-valid',
+	404: 'the-activation-code-was-not-found',
+	409: 'this-environment-has-already-been-activated',
+};
+
 const ACTIVATION_MODE_OFFLINE = 'offline';
 
 const ACTIVATION_STATUS_ACTIVE = 'active';
 
-const CLOUD_TYPES = ['CNE', 'PaaS', 'SaaS'];
-
-const ERROR_MESSAGE_KEYS: Record<string, Word> = {
-	ACTIVATION_CODE_NOT_FOUND: 'the-activation-code-was-not-found',
-	ACTIVATION_CODE_USED: 'this-activation-code-has-already-been-used',
-	ADD_ONS_UNAVAILABLE:
-		'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
-	ENVIRONMENT_ALREADY_ACTIVATED:
-		'this-environment-has-already-been-activated',
-	INVALID_TOKEN: 'the-activation-token-is-not-valid',
-	MISSING_PARAMETERS: 'the-activation-token-is-required',
+const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
+	422: 'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
 };
 
-function toErrorMessageKey(error: unknown): Word {
-	const message = error instanceof Error ? error.message.trim() : '';
+const CLOUD_TYPES = ['CNE', 'PaaS', 'SaaS'];
 
-	return ERROR_MESSAGE_KEYS[message] ?? 'an-unexpected-error-occurred';
+function toErrorMessageKey(
+	error: unknown,
+	errorMessageKeys: Record<number, Word>
+): Word {
+	if (error instanceof FetcherError && error.status) {
+		return errorMessageKeys[error.status] ?? 'an-unexpected-error-occurred';
+	}
+
+	return 'an-unexpected-error-occurred';
 }
 
 export default function CloudNativeActivation() {
@@ -99,7 +104,9 @@ export default function CloudNativeActivation() {
 			onActivationClose();
 		}
 		catch (error) {
-			setErrorMessageKey(toErrorMessageKey(error));
+			setErrorMessageKey(
+				toErrorMessageKey(error, ACTIVATION_ERROR_MESSAGE_KEYS)
+			);
 		}
 		finally {
 			setIsActivating(false);
@@ -123,7 +130,9 @@ export default function CloudNativeActivation() {
 			onBundleClose();
 		}
 		catch (error) {
-			setErrorMessageKey(toErrorMessageKey(error));
+			setErrorMessageKey(
+				toErrorMessageKey(error, BUNDLE_ERROR_MESSAGE_KEYS)
+			);
 		}
 		finally {
 			setIsDownloading(false);

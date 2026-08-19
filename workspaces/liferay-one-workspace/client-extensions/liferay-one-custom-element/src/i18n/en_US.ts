@@ -1405,7 +1405,6 @@ export default {
 		'The account was successfully synced to JSM.',
 	'the-activation-code-was-not-found': 'The activation code was not found.',
 	'the-activation-token-is-not-valid': 'The activation token is not valid.',
-	'the-activation-token-is-required': 'The activation token is required.',
 	'the-app-and-all-its-client-extensions-services-will-be-deleted-and-uninstalled-from-liferay-dxp':
 		'The app and all its client extensions (services) will be deleted and uninstalled from Liferay DXP.',
 	'the-app-submission-is-compatible-with-liferay-experience-cloud-and':
@@ -1448,8 +1447,6 @@ export default {
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
-	'this-activation-code-has-already-been-used':
-		'This activation code has already been used.',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
 	'this-email-address-is-duplicated': 'This email address is duplicated.',
