@@ -199,6 +199,66 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testGetOrCreateReferenceObjectIdsCreatesMissingObjects() {
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(_existingJiraAssetObject)
+		);
+
+		Mockito.when(
+			_jiraAssetPersistence.createObject(Mockito.any(), Mockito.any())
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"id", "created-object-id"
+			)
+		);
+
+		JiraAssetObject createdJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		List<String> objectIds =
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				_converter, Arrays.asList(_EXTERNAL_KEY, "unresolved-key"),
+				externalKey -> externalKey,
+				externalKey -> createdJiraAssetObject);
+
+		Assertions.assertEquals(
+			Arrays.asList(_OBJECT_ID, "created-object-id"), objectIds);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).createObject(
+			"objectTypeId", createdJiraAssetObject
+		);
+	}
+
+	@Test
+	public void testGetOrCreateReferenceObjectIdsSkipsNullCreatedObjects() {
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		List<String> objectIds =
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				_converter, Collections.singletonList("unresolved-key"),
+				externalKey -> externalKey, externalKey -> null);
+
+		Assertions.assertTrue(objectIds.isEmpty());
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).createObject(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGetOrCreateReferenceObjectIdsWaitsForUpsert()
 		throws Exception {
 
@@ -264,6 +324,47 @@ public class JiraAssetServiceTest {
 		).createObject(
 			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testIsUnchangedByExternalUpdatedAtReturnsFalseForDifferingExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Date date = new Date();
+
+		Assertions.assertFalse(
+			_jiraAssetService.isUnchangedByExternalUpdatedAt(
+				_converter, _mockJiraAssetObjectUpdatedAt(date),
+				_mockJiraAssetObjectUpdatedAt(
+					new Date(date.getTime() + 60000))));
+	}
+
+	@Test
+	public void testIsUnchangedByExternalUpdatedAtReturnsFalseForMissingExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Assertions.assertFalse(
+			_jiraAssetService.isUnchangedByExternalUpdatedAt(
+				_converter, _mockJiraAssetObjectUpdatedAt(new Date()),
+				Mockito.mock(JiraAssetObject.class)));
+	}
+
+	@Test
+	public void testIsUnchangedByExternalUpdatedAtReturnsTrueForSameExternalUpdatedAt()
+		throws Exception {
+
+		_mockExternalUpdatedAt();
+
+		Date date = new Date();
+
+		Assertions.assertTrue(
+			_jiraAssetService.isUnchangedByExternalUpdatedAt(
+				_converter, _mockJiraAssetObjectUpdatedAt(date),
+				_mockJiraAssetObjectUpdatedAt(date)));
 	}
 
 	@Test
@@ -636,6 +737,56 @@ public class JiraAssetServiceTest {
 			() -> _jiraAssetService.softDelete(
 				_converter, _existingJiraAssetObject),
 			"delete", "update");
+	}
+
+	@Test
+	public void testUpsertCreatesMissingObject() throws Exception {
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("External Key")
+		).thenReturn(
+			_EXTERNAL_KEY
+		);
+
+		_jiraAssetService.upsert(_converter, jiraAssetObject);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).createObject(
+			"objectTypeId", jiraAssetObject
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).updateObject(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testUpsertSkipsMissingExternalKey() throws Exception {
+		_jiraAssetService.upsert(
+			_converter, Mockito.mock(JiraAssetObject.class));
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).searchObjects(
+			Mockito.anyString(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).createObject(
+			Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
