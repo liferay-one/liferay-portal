@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.service;
+package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.constants.EntitlementConstants;
@@ -13,6 +13,10 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
+import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceProductService;
+import com.liferay.one.service.CommerceProductVirtualSettingsService;
+import com.liferay.one.service.EntitlementService;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,11 +35,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Amos Fong
  */
-public class CloudNativeManifestServiceTest {
+public class CloudRestControllerTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		_cloudNativeManifestService = new CloudNativeManifestService();
+		_cloudRestController = new CloudRestController();
 
 		_accountService = Mockito.mock(AccountService.class);
 		_commerceProductService = Mockito.mock(CommerceProductService.class);
@@ -62,23 +66,19 @@ public class CloudNativeManifestServiceTest {
 		);
 
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService, "_accountService", _accountService);
+			_cloudRestController, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService, "_commerceProductService",
+			_cloudRestController, "_commerceProductService",
 			_commerceProductService);
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService,
-			"_commerceProductVirtualSettingsService",
+			_cloudRestController, "_commerceProductVirtualSettingsService",
 			_commerceProductVirtualSettingsService);
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService, "_entitlementService",
-			_entitlementService);
+			_cloudRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService, "_licenseKeyExporter",
-			_licenseKeyExporter);
+			_cloudRestController, "_licenseKeyExporter", _licenseKeyExporter);
 		ReflectionTestUtils.setField(
-			_cloudNativeManifestService, "_licenseKeyGenerator",
-			_licenseKeyGenerator);
+			_cloudRestController, "_licenseKeyGenerator", _licenseKeyGenerator);
 	}
 
 	@Test
@@ -97,11 +97,9 @@ public class CloudNativeManifestServiceTest {
 					EntitlementConstants.NAME_UP_TO_5_PRODUCTION_PODS, 5))
 		);
 
-		JSONObject jsonObject =
-			_cloudNativeManifestService.getManifestJSONObject(
-				"DXP 2025.Q3.1",
-				_createEnvironment(
-					EnvironmentConstants.ENVIRONMENT_TYPE_NONPRODUCTION));
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(
+				EnvironmentConstants.ENVIRONMENT_TYPE_NONPRODUCTION));
 
 		Assertions.assertEquals(1, jsonObject.getInt("maxClusterNodes"));
 	}
@@ -124,11 +122,9 @@ public class CloudNativeManifestServiceTest {
 					EntitlementConstants.NAME_UP_TO_7_PRODUCTION_PODS, 7))
 		);
 
-		JSONObject jsonObject =
-			_cloudNativeManifestService.getManifestJSONObject(
-				"DXP 2025.Q3.1",
-				_createEnvironment(
-					EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION));
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(
+				EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION));
 
 		Assertions.assertEquals(7, jsonObject.getInt("maxClusterNodes"));
 	}
@@ -145,8 +141,7 @@ public class CloudNativeManifestServiceTest {
 
 		Assertions.assertThrows(
 			CloudNativeEntitlementException.class,
-			() -> _cloudNativeManifestService.getManifestJSONObject(
-				"DXP 2025.Q3.1",
+			() -> _getManifestJSONObject(
 				_createEnvironment(
 					EnvironmentConstants.ENVIRONMENT_TYPE_PRODUCTION)));
 	}
@@ -183,12 +178,18 @@ public class CloudNativeManifestServiceTest {
 			));
 	}
 
+	private JSONObject _getManifestJSONObject(Environment environment) {
+		return ReflectionTestUtils.invokeMethod(
+			_cloudRestController, "_getManifestJSONObject", "DXP 2025.Q3.1",
+			environment);
+	}
+
 	private static final long _ACCOUNT_ID = 1000L;
 
 	private static final long _ENVIRONMENT_ID = 2000L;
 
 	private AccountService _accountService;
-	private CloudNativeManifestService _cloudNativeManifestService;
+	private CloudRestController _cloudRestController;
 	private CommerceProductService _commerceProductService;
 	private CommerceProductVirtualSettingsService
 		_commerceProductVirtualSettingsService;

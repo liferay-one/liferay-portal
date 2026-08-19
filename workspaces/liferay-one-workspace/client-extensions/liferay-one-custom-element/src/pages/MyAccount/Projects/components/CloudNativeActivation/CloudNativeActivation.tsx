@@ -13,7 +13,7 @@ import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {Word, translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {Liferay} from '~/services/liferay/liferay';
-import CloudNativeEnvironments from '~/services/spring-boot/CloudNativeEnvironments';
+import Cloud from '~/services/spring-boot/Cloud';
 
 import OfflineActivationBundleModal from '../OfflineActivationBundleModal/OfflineActivationBundleModal';
 import OfflineActivationModal from '../OfflineActivationModal/OfflineActivationModal';
@@ -84,7 +84,7 @@ export default function CloudNativeActivation() {
 		setIsActivating(true);
 
 		try {
-			await CloudNativeEnvironments.offlineActivation(
+			await Cloud.offlineActivation(
 				activatingEnvironment.activationCode,
 				token
 			);
@@ -115,9 +115,9 @@ export default function CloudNativeActivation() {
 		setIsDownloading(true);
 
 		try {
-			await CloudNativeEnvironments.downloadOfflineActivationBundle(
-				downloadingEnvironment.externalReferenceCode,
-				dxpVersion
+			await Cloud.downloadOfflineActivationBundle(
+				dxpVersion,
+				downloadingEnvironment.externalReferenceCode
 			);
 
 			onBundleClose();

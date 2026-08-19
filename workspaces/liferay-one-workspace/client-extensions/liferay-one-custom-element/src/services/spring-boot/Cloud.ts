@@ -7,14 +7,14 @@ import {downloadFile} from '~/utils/downloadFile';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
-class CloudNativeEnvironmentsOAuth2 extends OneSpringBootOAuth2 {
+class CloudOAuth2 extends OneSpringBootOAuth2 {
 	async downloadOfflineActivationBundle(
-		environmentId: string,
-		dxpVersion: string
+		dxpVersion: string,
+		environmentId: string
 	) {
 		const response = await this.post<Response>(
-			'/offline-activation-bundle',
-			{dxpVersion, environmentId},
+			`/environments/${environmentId}/offline-activation-bundle`,
+			{dxpVersion},
 			{earlyReturn: true}
 		);
 
@@ -30,7 +30,7 @@ class CloudNativeEnvironmentsOAuth2 extends OneSpringBootOAuth2 {
 
 	async offlineActivation(activationCode: string, token: string) {
 		const response = await this.post<Response>(
-			'/offline-activation',
+			'/environments/offline-activation',
 			{activationCode, token},
 			{earlyReturn: true}
 		);
@@ -41,8 +41,6 @@ class CloudNativeEnvironmentsOAuth2 extends OneSpringBootOAuth2 {
 	}
 }
 
-const CloudNativeEnvironments = new CloudNativeEnvironmentsOAuth2(
-	'/cloud-native-environments'
-);
+const Cloud = new CloudOAuth2('/cloud');
 
-export default CloudNativeEnvironments;
+export default Cloud;
