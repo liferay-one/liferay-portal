@@ -151,7 +151,7 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	@PostMapping("/environments/offline-activation")
-	public ResponseEntity<String> postEnvironmentsOfflineActivation(
+	public ResponseEntity<Void> postEnvironmentsOfflineActivation(
 			@RequestBody String json)
 		throws Exception {
 
@@ -165,8 +165,11 @@ public class CloudRestController extends OneBaseRestController {
 		);
 
 		if (Validator.isNull(activationCode) || Validator.isNull(token)) {
-			return new ResponseEntity<>(
-				_ERROR_MISSING_PARAMETERS, HttpStatus.BAD_REQUEST);
+			_log.error(
+				"The activation code and the offline activation token are " +
+					"required");
+
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		SignedJWT signedJWT = null;
@@ -180,8 +183,7 @@ public class CloudRestController extends OneBaseRestController {
 					"Unable to parse the offline activation token", exception);
 			}
 
-			return new ResponseEntity<>(
-				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
@@ -190,8 +192,13 @@ public class CloudRestController extends OneBaseRestController {
 		String publicKey = jwtClaimsSet.getStringClaim("publicKey");
 
 		if (Validator.isNull(environmentId) || Validator.isNull(publicKey)) {
-			return new ResponseEntity<>(
-				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"The offline activation token is missing the environment " +
+						"ID or the public key");
+			}
+
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		try {
@@ -204,8 +211,7 @@ public class CloudRestController extends OneBaseRestController {
 					"Unable to verify the offline activation token", exception);
 			}
 
-			return new ResponseEntity<>(
-				_ERROR_INVALID_TOKEN, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
 		ActivationResult activationResult = _activateEnvironment(
@@ -214,20 +220,11 @@ public class CloudRestController extends OneBaseRestController {
 			publicKey);
 
 		if (activationResult == ActivationResult.ACTIVATION_CODE_NOT_FOUND) {
-			return new ResponseEntity<>(
-				_ERROR_ACTIVATION_CODE_NOT_FOUND, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
-		if (activationResult == ActivationResult.ACTIVATION_CODE_USED) {
-			return new ResponseEntity<>(
-				_ERROR_ACTIVATION_CODE_USED, HttpStatus.CONFLICT);
-		}
-
-		if (activationResult ==
-				ActivationResult.ENVIRONMENT_ALREADY_ACTIVATED) {
-
-			return new ResponseEntity<>(
-				_ERROR_ENVIRONMENT_ALREADY_ACTIVATED, HttpStatus.CONFLICT);
+		if (activationResult != ActivationResult.SUCCESS) {
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -274,8 +271,7 @@ public class CloudRestController extends OneBaseRestController {
 				_log.warn(addOnsUnavailableException);
 			}
 
-			return _getErrorResponseEntity(
-				_ERROR_ADD_ONS_UNAVAILABLE, HttpStatus.UNPROCESSABLE_ENTITY);
+			return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
 		}
 
 		HttpHeaders httpHeaders = new HttpHeaders();
@@ -653,19 +649,6 @@ public class CloudRestController extends OneBaseRestController {
 		return environment;
 	}
 
-	private ResponseEntity<StreamingResponseBody> _getErrorResponseEntity(
-		String error, HttpStatus httpStatus) {
-
-		HttpHeaders httpHeaders = new HttpHeaders();
-
-		httpHeaders.setContentType(MediaType.TEXT_PLAIN);
-
-		return new ResponseEntity<>(
-			outputStream -> outputStream.write(
-				error.getBytes(StandardCharsets.UTF_8)),
-			httpHeaders, httpStatus);
-	}
-
 	private String _getFileName(
 		String externalReferenceCode,
 		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry) {
@@ -901,23 +884,6 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private static final String _APP_PRODUCT_VERSION = "1";
-
-	private static final String _ERROR_ACTIVATION_CODE_NOT_FOUND =
-		"ACTIVATION_CODE_NOT_FOUND";
-
-	private static final String _ERROR_ACTIVATION_CODE_USED =
-		"ACTIVATION_CODE_USED";
-
-	private static final String _ERROR_ADD_ONS_UNAVAILABLE =
-		"ADD_ONS_UNAVAILABLE";
-
-	private static final String _ERROR_ENVIRONMENT_ALREADY_ACTIVATED =
-		"ENVIRONMENT_ALREADY_ACTIVATED";
-
-	private static final String _ERROR_INVALID_TOKEN = "INVALID_TOKEN";
-
-	private static final String _ERROR_MISSING_PARAMETERS =
-		"MISSING_PARAMETERS";
 
 	private static final Log _log = LogFactory.getLog(
 		CloudRestController.class);
