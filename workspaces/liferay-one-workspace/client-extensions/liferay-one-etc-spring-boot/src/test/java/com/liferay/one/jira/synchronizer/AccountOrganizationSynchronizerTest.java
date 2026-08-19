@@ -102,6 +102,28 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAssignOrganizationMarksAssignmentUndeleted()
+		throws Exception {
+
+		_accountOrganizationSynchronizer.syncAssignOrganization(
+			_ORGANIZATION_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY);
+
+		Mockito.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq(_ORGANIZATION_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
+		);
+	}
+
+	@Test
 	public void testSyncAssignOrganizationWaitsForSyncAssignOrganization()
 		throws Exception {
 
