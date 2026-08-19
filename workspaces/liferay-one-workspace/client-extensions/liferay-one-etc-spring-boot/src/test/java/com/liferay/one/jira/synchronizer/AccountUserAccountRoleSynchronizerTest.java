@@ -115,6 +115,50 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAssignRoleMarksAssignmentUndeleted() throws Exception {
+		_accountUserAccountRoleSynchronizer.syncAssignRole(
+			_ROLE_EXTERNAL_KEY, _USER_ACCOUNT_EXTERNAL_KEY,
+			_ACCOUNT_EXTERNAL_KEY);
+
+		Mockito.verify(
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq(_ROLE_EXTERNAL_KEY),
+			Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
+		);
+	}
+
+	@Test
+	public void testSyncUnassignRoleMarksAssignmentDeleted() throws Exception {
+		_accountUserAccountRoleSynchronizer.syncUnassignRole(
+			_ROLE_EXTERNAL_KEY, _USER_ACCOUNT_EXTERNAL_KEY,
+			_ACCOUNT_EXTERNAL_KEY);
+
+		Mockito.verify(
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq(_ROLE_EXTERNAL_KEY),
+			Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(true), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
+		);
+	}
+
+	@Test
 	public void testSyncUnassignStaleRolesBaseAQL() throws Exception {
 		AtomicReference<String> aqlAtomicReference = _captureAQL();
 
