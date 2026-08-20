@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.one.constants.ProductVersionConstants;
 import com.liferay.one.model.ProductVersion;
 import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.StringBundler;
@@ -19,6 +20,8 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,7 +97,9 @@ public class ProductVersionService extends OneBaseService {
 		throws Exception {
 
 		return _getProductVersions(
-			StringBundler.concat("productGroup eq '", productGroup, "'"));
+			StringBundler.concat(
+				"(productGroup eq '", productGroup, "') and (versionLevel eq '",
+				ProductVersionConstants.LEVEL_MAJOR, "')"));
 	}
 
 	public List<ProductVersion> getProductVersions(
@@ -104,7 +109,8 @@ public class ProductVersionService extends OneBaseService {
 		return _getProductVersions(
 			StringBundler.concat(
 				"(productGroup eq '", productGroup, "') and (supported eq ",
-				supported, ")"));
+				supported, ") and (versionLevel eq '",
+				ProductVersionConstants.LEVEL_MAJOR, "')"));
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -144,11 +150,91 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
+	private JSONObject _createProductVersionJSONObject(
+		String productGroup, String productGroupVersion, boolean supported,
+		String type, String version, String versionLevel) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"externalReferenceCode", version
+		).put(
+			"productGroup", productGroup
+		).put(
+			"productGroupVersion", productGroupVersion
+		).put(
+			"productVersion", version
+		).put(
+			"supported", supported
+		).put(
+			"versionLevel",
+			new JSONObject(
+			).put(
+				"key", versionLevel
+			)
+		);
+
+		if (Validator.isNotNull(type)) {
+			jsonObject.put(
+				"type",
+				new JSONObject(
+				).put(
+					"key", type
+				));
+		}
+
+		return jsonObject;
+	}
+
+	private String _getMajorVersionType(String productGroupVersion) {
+		Matcher matcher = _quarterlyProductGroupVersionPattern.matcher(
+			productGroupVersion);
+
+		if (matcher.matches()) {
+			return ProductVersionConstants.TYPE_QUARTERLY;
+		}
+
+		return null;
+	}
+
 	private List<ProductVersion> _getProductVersions(String filterString)
 		throws Exception {
 
 		return getAllItems(
 			"/o/c/productversions", filterString, ProductVersion::new);
+	}
+
+	private String _getType(String version) {
+		Matcher matcher = _versionTypePattern.matcher(version);
+
+		if (!matcher.find()) {
+			return null;
+		}
+
+		String marker = matcher.group(1);
+
+		if (marker == null) {
+			return ProductVersionConstants.TYPE_QUARTERLY;
+		}
+
+		marker = StringUtil.toUpperCase(marker);
+
+		if (marker.equals("DE")) {
+			return ProductVersionConstants.TYPE_DIGITAL_ENTERPRISE;
+		}
+		else if (marker.equals("FP")) {
+			return ProductVersionConstants.TYPE_FIX_PACK;
+		}
+		else if (marker.equals("GA")) {
+			return ProductVersionConstants.TYPE_GENERAL_AVAILABILITY;
+		}
+		else if (marker.equals("SP")) {
+			return ProductVersionConstants.TYPE_SERVICE_PACK;
+		}
+		else if (marker.equals("U")) {
+			return ProductVersionConstants.TYPE_UPDATE;
+		}
+
+		return null;
 	}
 
 	private boolean _isRetryable(Throwable throwable) {
@@ -200,43 +286,47 @@ public class ProductVersionService extends OneBaseService {
 				continue;
 			}
 
+			productGroupVersion = StringUtil.toUpperCase(productGroupVersion);
+
 			boolean supported = _isSupported(
 				releaseJSONObject.optJSONArray("tags"));
 
-			String version = releaseJSONObject.optString("productMajorVersion");
+			String majorVersion = releaseJSONObject.optString(
+				"productMajorVersion");
 
-			if (Validator.isNull(version)) {
-				version = StringBundler.concat(
+			if (Validator.isNull(majorVersion)) {
+				majorVersion = StringBundler.concat(
 					StringUtil.toUpperCase(productGroup), StringPool.SPACE,
-					StringUtil.toUpperCase(productGroupVersion));
+					productGroupVersion);
 			}
 
-			JSONObject productVersionJSONObject = productVersionJSONObjects.get(
-				version);
+			JSONObject majorVersionJSONObject = productVersionJSONObjects.get(
+				majorVersion);
 
-			if (productVersionJSONObject != null) {
-				if (supported) {
-					productVersionJSONObject.put("supported", true);
-				}
+			if (majorVersionJSONObject == null) {
+				productVersionJSONObjects.put(
+					majorVersion,
+					_createProductVersionJSONObject(
+						productGroup, productGroupVersion, supported,
+						_getMajorVersionType(productGroupVersion), majorVersion,
+						ProductVersionConstants.LEVEL_MAJOR));
+			}
+			else if (supported) {
+				majorVersionJSONObject.put("supported", true);
+			}
 
+			String version = releaseJSONObject.optString("productVersion");
+
+			if (Validator.isNull(version)) {
 				continue;
 			}
 
 			productVersionJSONObjects.put(
 				version,
-				new JSONObject(
-				).put(
-					"externalReferenceCode", version
-				).put(
-					"productGroup", productGroup
-				).put(
-					"productGroupVersion",
-					StringUtil.toUpperCase(productGroupVersion)
-				).put(
-					"productVersion", version
-				).put(
-					"supported", supported
-				));
+				_createProductVersionJSONObject(
+					productGroup, productGroupVersion, supported,
+					_getType(version), version,
+					ProductVersionConstants.LEVEL_PATCH));
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -355,6 +445,12 @@ public class ProductVersionService extends OneBaseService {
 
 	private static final Log _log = LogFactory.getLog(
 		ProductVersionService.class);
+
+	private static final Pattern _quarterlyProductGroupVersionPattern =
+		Pattern.compile("\\d{4}\\.Q[1-4]", Pattern.CASE_INSENSITIVE);
+	private static final Pattern _versionTypePattern = Pattern.compile(
+		"\\d{4}\\.Q[1-4]\\.\\d+|\\s(DE|FP|GA|SP|U)\\d+",
+		Pattern.CASE_INSENSITIVE);
 
 	@Value("${liferay.one.product.version.sync.product.groups}")
 	private String[] _productGroups;
