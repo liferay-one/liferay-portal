@@ -3,22 +3,24 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayIcon from '@clayui/icon';
 import {useModal} from '@clayui/modal';
 import ClayTable from '@clayui/table';
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import Modal from '~/components/Modal/Modal';
+import {Tooltip} from '~/components/Tooltip/Tooltip';
+import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
-import {Word, translate} from '~/i18n';
-import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {Word, sub, translate} from '~/i18n';
+import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import Cloud from '~/services/spring-boot/Cloud';
 
 import OfflineActivationBundleModal from '../OfflineActivationBundleModal/OfflineActivationBundleModal';
 import OfflineActivationModal from '../OfflineActivationModal/OfflineActivationModal';
-import PopoverIcon from '../PopoverIcon/PopoverIcon';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 
@@ -36,8 +38,6 @@ const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	422: 'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
 };
 
-const CLOUD_OFFERINGS = ['Cloud Native', 'PaaS', 'SaaS'];
-
 function toErrorMessageKey(
 	error: unknown,
 	errorMessageKeys: Record<number, Word>
@@ -50,6 +50,7 @@ function toErrorMessageKey(
 }
 
 export default function CloudNativeActivation() {
+	const {projectId} = useProject();
 	const {environments, loading, mutate} = useProjectEnvironments();
 
 	const [activatingEnvironment, setActivatingEnvironment] =
@@ -76,9 +77,28 @@ export default function CloudNativeActivation() {
 		},
 	});
 
-	const cloudEnvironments = environments.filter((environment) =>
-		CLOUD_OFFERINGS.includes(environment.offering)
+	const cloudEnvironments = filterEnvironmentsByProject(
+		projectId,
+		environments.filter(
+			(environment) => environment.offering === 'Cloud Native'
+		)
 	);
+
+	const activatedEnvironments = cloudEnvironments.filter(
+		(environment) => environment.status === ACTIVATION_STATUS_ACTIVE
+	);
+
+	const unactivatedEnvironments = cloudEnvironments.filter(
+		(environment) => environment.status !== ACTIVATION_STATUS_ACTIVE
+	);
+
+	const onCopyActivationCode = (activationCode: string) => {
+		navigator.clipboard.writeText(activationCode);
+
+		Liferay.Util.openToast({
+			message: sub('copied-x-to-the-clipboard', 'activation code'),
+		});
+	};
 
 	const onActivate = async (token: string) => {
 		if (!activatingEnvironment) {
@@ -140,141 +160,179 @@ export default function CloudNativeActivation() {
 	};
 
 	return (
-		<DetailedCard
-			cardIconAltText={translate('cloud-native-environments')}
-			cardTitle={translate('cloud-native-environments')}
-			className="mt-3"
-			clayIcon="cloud"
-		>
-			{loading ? (
-				<div className="p-4 text-neutral-7">{translate('loading')}</div>
-			) : cloudEnvironments.length ? (
-				<ClayTable borderless className="mt-3">
-					<ClayTable.Head>
-						<ClayTable.Row>
-							<ClayTable.Cell headingCell>
-								{translate('environment')}
-							</ClayTable.Cell>
+		<>
+			<DetailedCard
+				cardIconAltText={translate('cloud-native-environments')}
+				cardTitle={translate('cloud-native-environments')}
+				className="mt-3"
+				clayIcon="cloud"
+			>
+				{loading ? (
+					<div className="p-4 text-neutral-7">
+						{translate('loading')}
+					</div>
+				) : activatedEnvironments.length ? (
+					<ClayTable borderless className="mt-3">
+						<ClayTable.Head>
+							<ClayTable.Row>
+								<ClayTable.Cell headingCell>
+									{translate('type')}
+								</ClayTable.Cell>
 
-							<ClayTable.Cell headingCell>
-								{translate('region')}
-							</ClayTable.Cell>
+								<ClayTable.Cell headingCell>
+									{translate('environment-id')}
+								</ClayTable.Cell>
 
-							<ClayTable.Cell headingCell>
-								{translate('identity')}
+								<ClayTable.Cell headingCell>
+									{translate('environment-name')}
+								</ClayTable.Cell>
 
-								<PopoverIcon
-									title={translate(
-										'please-copy-and-paste-this-subscription-id-to-your-cloud-native-instance'
-									)}
-								/>
-							</ClayTable.Cell>
+								<ClayTable.Cell
+									className="text-center"
+									headingCell
+								>
+									{translate('actions')}
+								</ClayTable.Cell>
+							</ClayTable.Row>
+						</ClayTable.Head>
 
-							<ClayTable.Cell headingCell>
-								{translate('status')}
-							</ClayTable.Cell>
-
-							<ClayTable.Cell className="text-center" headingCell>
-								{translate('actions')}
-							</ClayTable.Cell>
-						</ClayTable.Row>
-					</ClayTable.Head>
-
-					<ClayTable.Body>
-						{cloudEnvironments.map((environment) => {
-							const active =
-								environment.status === ACTIVATION_STATUS_ACTIVE;
-
-							return (
+						<ClayTable.Body>
+							{activatedEnvironments.map((environment) => (
 								<ClayTable.Row
 									key={environment.externalReferenceCode}
 								>
 									<ClayTable.Cell>
-										<span className="d-flex flex-column">
-											<span className="fw-bold">
-												{environment.name ||
-													translate(
-														environment.type as Word
-													)}
-											</span>
-
-											<span className="list-card-subtext">
-												{environment.offering}
-											</span>
-										</span>
+										{environment.type
+											? translate(
+													environment.type as Word
+												)
+											: '-'}
 									</ClayTable.Cell>
 
 									<ClayTable.Cell>
-										{environment.region || '-'}
+										{environment.externalReferenceCode}
 									</ClayTable.Cell>
 
 									<ClayTable.Cell>
-										{environment.activationCode ||
-											environment.currentEntitlementHash ||
-											'-'}
-									</ClayTable.Cell>
-
-									<ClayTable.Cell>
-										<span className="list-card-status">
-											<span
-												className="list-card-status-dot"
-												style={{
-													backgroundColor:
-														getStatusColor(
-															environment.status
-														),
-												}}
-											/>
-
-											{translate(
-												environment.status as Word
-											)}
-										</span>
+										{environment.name || '-'}
 									</ClayTable.Cell>
 
 									<ClayTable.Cell className="text-center">
-										{active ? (
+										{environment.activationMode ===
+											ACTIVATION_MODE_OFFLINE && (
 											<Button
-												aria-label={translate(
-													'download'
-												)}
-												borderless
-												className="text-neutral-7"
-												disabled={
-													environment.activationMode !==
-													ACTIVATION_MODE_OFFLINE
-												}
-												displayType="unstyled"
+												displayType="link"
 												onClick={() =>
 													setDownloadingEnvironment(
 														environment
 													)
 												}
-												prependIcon="download"
-											/>
-										) : (
-											<Button
-												displayType="secondary"
-												onClick={() =>
-													setActivatingEnvironment(
-														environment
-													)
-												}
 												small
 											>
-												{translate('activate')}
+												{translate(
+													'download-offline-activation-bundle'
+												)}
 											</Button>
 										)}
 									</ClayTable.Cell>
 								</ClayTable.Row>
-							);
-						})}
-					</ClayTable.Body>
-				</ClayTable>
-			) : (
-				<div className="p-4 text-neutral-7">
-					{translate('no-cloud-native-environments-yet')}
-				</div>
+							))}
+						</ClayTable.Body>
+					</ClayTable>
+				) : (
+					<div className="p-4 text-neutral-7">
+						{translate('no-cloud-native-environments-yet')}
+					</div>
+				)}
+			</DetailedCard>
+
+			{!loading && !!unactivatedEnvironments.length && (
+				<DetailedCard
+					cardIconAltText={translate('activation-codes')}
+					cardTitle={translate('activation-codes')}
+					className="mt-3"
+					clayIcon="key"
+				>
+					<ClayTable borderless className="mt-3">
+						<ClayTable.Head>
+							<ClayTable.Row>
+								<ClayTable.Cell headingCell>
+									{translate('type')}
+								</ClayTable.Cell>
+
+								<ClayTable.Cell headingCell>
+									<span className="align-items-center d-flex">
+										{translate('activation-code')}
+
+										<span className="ml-2">
+											<Tooltip
+												tooltip={translate(
+													'please-copy-and-paste-this-activation-code-to-your-cloud-native-instance'
+												)}
+											/>
+										</span>
+									</span>
+								</ClayTable.Cell>
+
+								<ClayTable.Cell
+									className="text-center"
+									headingCell
+								>
+									{translate('actions')}
+								</ClayTable.Cell>
+							</ClayTable.Row>
+						</ClayTable.Head>
+
+						<ClayTable.Body>
+							{unactivatedEnvironments.map((environment) => (
+								<ClayTable.Row
+									key={environment.externalReferenceCode}
+								>
+									<ClayTable.Cell>
+										{environment.type
+											? translate(
+													environment.type as Word
+												)
+											: '-'}
+									</ClayTable.Cell>
+
+									<ClayTable.Cell>
+										{environment.activationCode}
+
+										{!!environment.activationCode && (
+											<button
+												aria-label={translate('copy')}
+												className="btn btn-unstyled ml-2 text-neutral-7"
+												onClick={() =>
+													onCopyActivationCode(
+														environment.activationCode
+													)
+												}
+												type="button"
+											>
+												<ClayIcon symbol="copy" />
+											</button>
+										)}
+									</ClayTable.Cell>
+
+									<ClayTable.Cell className="text-center">
+										<Button
+											displayType="secondary"
+											onClick={() =>
+												setActivatingEnvironment(
+													environment
+												)
+											}
+											small
+										>
+											{translate('offline-activation')}
+										</Button>
+									</ClayTable.Cell>
+								</ClayTable.Row>
+							))}
+						</ClayTable.Body>
+					</ClayTable>
+				</DetailedCard>
 			)}
 
 			<Modal
@@ -283,9 +341,7 @@ export default function CloudNativeActivation() {
 				visible={!!activatingEnvironment}
 			>
 				<OfflineActivationModal
-					environmentType={
-						activatingEnvironment?.type ?? ''
-					}
+					environmentType={activatingEnvironment?.type ?? ''}
 					errorMessageKey={errorMessageKey}
 					isActivating={isActivating}
 					onActivate={onActivate}
@@ -305,6 +361,6 @@ export default function CloudNativeActivation() {
 					onDownload={onDownload}
 				/>
 			</Modal>
-		</DetailedCard>
+		</>
 	);
 }

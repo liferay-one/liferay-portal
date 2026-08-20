@@ -38,6 +38,8 @@ export default {
 	'activated': 'Activated',
 	'activating': 'Activating...',
 	'activation': 'Activation',
+	'activation-code': 'Activation Code',
+	'activation-codes': 'Activation Codes',
 	'activation-key': 'Activation Key',
 	'activation-key-creation': 'Activation Key Creation',
 	'activation-key-server-details': 'Activation Key Server Details',
@@ -500,6 +502,7 @@ export default {
 	'entity-type': 'Entity Type',
 	'environment': 'Environment',
 	'environment-details': 'Environment Details',
+	'environment-id': 'Environment ID',
 	'environment-name': 'Environment Name',
 	'environment-selection': 'Environment Selection',
 	'environment-type': 'Environment Type',
@@ -1028,8 +1031,8 @@ export default {
 		'Please check this box if the file you upload does not contain any personal data and therefore can be uploaded to and accessed from any Liferay support location globally.',
 	'please-complete-at-least-one-of-the-following-fields-to-proceed':
 		'Please complete at least one of the following fields to proceed',
-	'please-copy-and-paste-this-subscription-id-to-your-cloud-native-instance':
-		'Please copy and paste this Subscription ID to your Cloud Native instance.',
+	'please-copy-and-paste-this-activation-code-to-your-cloud-native-instance':
+		'Please copy and paste this activation code to your Cloud Native instance.',
 	'please-enter-a-valid-email-address': 'Please enter a valid email address.',
 	'please-enter-a-valid-first-name': 'Please enter a valid first name.',
 	'please-enter-a-valid-last-name': 'Please enter a valid last name.',
