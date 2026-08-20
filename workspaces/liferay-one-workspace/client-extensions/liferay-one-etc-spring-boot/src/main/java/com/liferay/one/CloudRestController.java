@@ -229,7 +229,7 @@ public class CloudRestController extends OneBaseRestController {
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
-		String environmentId = jwtClaimsSet.getStringClaim("environmentId");
+		String environmentId = jwtClaimsSet.getStringClaim("environmentID");
 
 		if (Validator.isNull(environmentId)) {
 			if (_log.isWarnEnabled()) {
@@ -802,7 +802,7 @@ public class CloudRestController extends OneBaseRestController {
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
 		Environment environment = _getEnvironment(
-			body, jwtClaimsSet.getStringClaim("environmentId"));
+			body, jwtClaimsSet.getStringClaim("environmentID"));
 
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
 			_getCloudEnabledProducts(

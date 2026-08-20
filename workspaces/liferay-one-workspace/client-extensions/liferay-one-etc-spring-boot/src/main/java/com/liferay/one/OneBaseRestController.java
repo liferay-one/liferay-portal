@@ -124,14 +124,9 @@ public abstract class OneBaseRestController extends BaseRestController {
 			commonLicenseKeyEntitlementException) {
 
 		if (_log.isWarnEnabled()) {
-			JwtAuthenticationToken jwtAuthenticationToken =
-				(JwtAuthenticationToken)principal;
-
-			Jwt jwt = jwtAuthenticationToken.getToken();
-
 			_log.warn(
 				StringBundler.concat(
-					"User ", jwt.getSubject(),
+					"User ", _getSubject(principal),
 					" is not entitled to download a common license key for ",
 					"product family ",
 					commonLicenseKeyEntitlementException.getProductFamily()));
@@ -146,13 +141,9 @@ public abstract class OneBaseRestController extends BaseRestController {
 	public ResponseEntity<?> handleException(
 		Principal principal, PrincipalException principalException) {
 
-		JwtAuthenticationToken jwtAuthenticationToken =
-			(JwtAuthenticationToken)principal;
-
-		Jwt jwt = jwtAuthenticationToken.getToken();
-
 		_log.error(
-			"Permission denied for " + jwt.getSubject(), principalException);
+			"Permission denied for " + _getSubject(principal),
+			principalException);
 
 		return _toResponseEntity(
 			HttpStatus.FORBIDDEN,
@@ -210,6 +201,19 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return new ResponseEntity<>(
 			responseJSONObject.toString(), HttpStatus.OK);
+	}
+
+	private String _getSubject(Principal principal) {
+		if (principal == null) {
+			return "an unauthenticated request";
+		}
+
+		JwtAuthenticationToken jwtAuthenticationToken =
+			(JwtAuthenticationToken)principal;
+
+		Jwt jwt = jwtAuthenticationToken.getToken();
+
+		return jwt.getSubject();
 	}
 
 	private ResponseEntity<ProblemDetail> _toResponseEntity(

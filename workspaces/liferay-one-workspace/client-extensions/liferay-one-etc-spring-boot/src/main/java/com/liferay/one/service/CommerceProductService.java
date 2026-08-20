@@ -135,6 +135,8 @@ public class CommerceProductService extends OneBaseService {
 			getDXPEndpointAddress(), lxcDXPServerProtocol
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameter(
+			"nestedFields", "productSpecifications"
 		).build();
 	}
 
