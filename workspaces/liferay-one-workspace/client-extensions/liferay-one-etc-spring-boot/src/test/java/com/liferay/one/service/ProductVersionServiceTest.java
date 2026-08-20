@@ -81,107 +81,153 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
+	public void testGetProductVersionsFilter() throws Exception {
+		_productVersionService.getProductVersions("dxp");
+
+		Assertions.assertEquals(
+			"(productGroup eq 'dxp') and (versionLevel eq 'major')",
+			_filterCaptor.getValue());
+	}
+
+	@Test
 	public void testGetProductVersionsSupportedFilter() throws Exception {
 		_productVersionService.getProductVersions("dxp", true);
 
 		Assertions.assertEquals(
-			"(productGroup eq 'dxp') and (supported eq true)",
+			"(productGroup eq 'dxp') and (supported eq true) and " +
+				"(versionLevel eq 'major')",
 			_filterCaptor.getValue());
 	}
 
 	@Test
 	public void testSyncProductVersions() throws Exception {
-		TestProductVersionService testProductVersionService =
-			new TestProductVersionService();
+		Map<String, JSONObject> jsonObjects = _syncProductVersions(
+			_releasesJSON());
 
-		testProductVersionService.releasesResponse = _releasesJSON();
+		Assertions.assertEquals(5, jsonObjects.size());
 
-		ReflectionTestUtils.setField(
-			testProductVersionService, "_productGroups", new String[] {"dxp"});
-		ReflectionTestUtils.setField(
-			testProductVersionService, "_releasesURL",
-			"https://releases.example.com/releases.json");
+		_assertProductVersion(
+			jsonObjects.get("DXP 2026.Q2"), "2026.Q2", true, "quarterly",
+			"major");
+		_assertProductVersion(
+			jsonObjects.get("DXP 2026.Q2.1"), "2026.Q2", false, "quarterly",
+			"patch");
+		_assertProductVersion(
+			jsonObjects.get("DXP 2026.Q2.2"), "2026.Q2", true, "quarterly",
+			"patch");
+		_assertProductVersion(
+			jsonObjects.get("DXP 7.4"), "7.4", false, null, "major");
+		_assertProductVersion(
+			jsonObjects.get("DXP 7.4 U112"), "7.4", false, "update", "patch");
+	}
 
-		testProductVersionService.syncProductVersions();
+	@Test
+	public void testSyncProductVersionsTypes() throws Exception {
+		JSONArray jsonArray = new JSONArray();
 
-		List<String> bodies = testProductVersionService.putBodies;
+		jsonArray.put(_releaseJSONObject("7.0", null, "DXP 7.0 DE10", false));
+		jsonArray.put(_releaseJSONObject("7.2", null, "DXP 7.2 FP1", false));
+		jsonArray.put(_releaseJSONObject("7.1", null, "DXP 7.1 GA1", false));
+		jsonArray.put(_releaseJSONObject("7.3", null, "DXP 7.3 SP5", false));
+		jsonArray.put(
+			_releaseJSONObject(
+				"2026.q1", "DXP 2026.Q1 LTS", "DXP 2026.Q1.12 LTS", true));
 
-		Assertions.assertEquals(2, bodies.size());
+		Map<String, JSONObject> jsonObjects = _syncProductVersions(
+			jsonArray.toString());
 
-		Map<String, Boolean> supportedByVersion = new HashMap<>();
-		Map<String, String> productGroupVersionByVersion = new HashMap<>();
+		Assertions.assertEquals(
+			"digitalEnterprise", _getTypeKey(jsonObjects.get("DXP 7.0 DE10")));
+		Assertions.assertEquals(
+			"fixPack", _getTypeKey(jsonObjects.get("DXP 7.2 FP1")));
+		Assertions.assertEquals(
+			"generalAvailability", _getTypeKey(jsonObjects.get("DXP 7.1 GA1")));
+		Assertions.assertEquals(
+			"servicePack", _getTypeKey(jsonObjects.get("DXP 7.3 SP5")));
+		Assertions.assertEquals(
+			"quarterly", _getTypeKey(jsonObjects.get("DXP 2026.Q1.12 LTS")));
+		Assertions.assertEquals(
+			"quarterly", _getTypeKey(jsonObjects.get("DXP 2026.Q1 LTS")));
+	}
 
-		for (String body : bodies) {
-			JSONObject jsonObject = new JSONObject(body);
+	private void _assertProductVersion(
+		JSONObject jsonObject, String productGroupVersion, boolean supported,
+		String type, String versionLevel) {
 
-			Assertions.assertEquals(
-				"dxp", jsonObject.getString("productGroup"));
-			Assertions.assertEquals(
-				jsonObject.getString("externalReferenceCode"),
-				jsonObject.getString("productVersion"));
+		Assertions.assertNotNull(jsonObject);
 
-			productGroupVersionByVersion.put(
-				jsonObject.getString("productVersion"),
-				jsonObject.getString("productGroupVersion"));
-			supportedByVersion.put(
-				jsonObject.getString("productVersion"),
-				jsonObject.getBoolean("supported"));
+		Assertions.assertEquals("dxp", jsonObject.getString("productGroup"));
+		Assertions.assertEquals(
+			jsonObject.getString("externalReferenceCode"),
+			jsonObject.getString("productVersion"));
+		Assertions.assertEquals(
+			productGroupVersion, jsonObject.getString("productGroupVersion"));
+		Assertions.assertEquals(supported, jsonObject.getBoolean("supported"));
+		Assertions.assertEquals(type, _getTypeKey(jsonObject));
+
+		JSONObject versionLevelJSONObject = jsonObject.getJSONObject(
+			"versionLevel");
+
+		Assertions.assertEquals(
+			versionLevel, versionLevelJSONObject.getString("key"));
+	}
+
+	private String _getTypeKey(JSONObject jsonObject) {
+		JSONObject typeJSONObject = jsonObject.optJSONObject("type");
+
+		if (typeJSONObject == null) {
+			return null;
 		}
 
-		Assertions.assertEquals(
-			Boolean.TRUE, supportedByVersion.get("DXP 2026.Q2"));
-		Assertions.assertEquals(
-			Boolean.FALSE, supportedByVersion.get("DXP 7.4"));
-		Assertions.assertEquals(
-			"2026.Q2", productGroupVersionByVersion.get("DXP 2026.Q2"));
-		Assertions.assertEquals(
-			"7.4", productGroupVersionByVersion.get("DXP 7.4"));
+		return typeJSONObject.getString("key");
+	}
+
+	private JSONObject _releaseJSONObject(
+		String productGroupVersion, String productMajorVersion,
+		String productVersion, boolean supported) {
+
+		JSONArray tagsJSONArray = new JSONArray();
+
+		if (supported) {
+			tagsJSONArray.put("supported");
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"product", "dxp"
+		).put(
+			"productGroupVersion", productGroupVersion
+		).put(
+			"productVersion", productVersion
+		).put(
+			"tags", tagsJSONArray
+		);
+
+		if (productMajorVersion != null) {
+			jsonObject.put("productMajorVersion", productMajorVersion);
+		}
+
+		return jsonObject;
 	}
 
 	private String _releasesJSON() {
 		JSONArray jsonArray = new JSONArray();
 
 		jsonArray.put(
-			new JSONObject(
-			).put(
-				"product", "dxp"
-			).put(
-				"productGroupVersion", "2026.q2"
-			).put(
-				"productMajorVersion", "DXP 2026.Q2"
-			).put(
-				"tags", new JSONArray()
-			));
+			_releaseJSONObject(
+				"2026.q2", "DXP 2026.Q2", "DXP 2026.Q2.1", false));
 		jsonArray.put(
-			new JSONObject(
-			).put(
-				"product", "dxp"
-			).put(
-				"productGroupVersion", "2026.q2"
-			).put(
-				"productMajorVersion", "DXP 2026.Q2"
-			).put(
-				"tags",
-				new JSONArray(
-				).put(
-					"supported"
-				)
-			));
-		jsonArray.put(
-			new JSONObject(
-			).put(
-				"product", "dxp"
-			).put(
-				"productGroupVersion", "7.4"
-			).put(
-				"tags", new JSONArray()
-			));
+			_releaseJSONObject(
+				"2026.q2", "DXP 2026.Q2", "DXP 2026.Q2.2", true));
+		jsonArray.put(_releaseJSONObject("7.4", null, "DXP 7.4 U112", false));
 		jsonArray.put(
 			new JSONObject(
 			).put(
 				"product", "portal"
 			).put(
 				"productGroupVersion", "7.4"
+			).put(
+				"productVersion", "Portal 7.4 GA1"
 			).put(
 				"tags",
 				new JSONArray(
@@ -223,10 +269,43 @@ public class ProductVersionServiceTest {
 						"productVersion", productVersion[0]
 					).put(
 						"supported", true
+					).put(
+						"versionLevel",
+						new JSONObject(
+						).put(
+							"key", "major"
+						)
 					)));
 		}
 
 		return productVersions;
+	}
+
+	private Map<String, JSONObject> _syncProductVersions(String releasesJSON)
+		throws Exception {
+
+		TestProductVersionService testProductVersionService =
+			new TestProductVersionService();
+
+		testProductVersionService.releasesResponse = releasesJSON;
+
+		ReflectionTestUtils.setField(
+			testProductVersionService, "_productGroups", new String[] {"dxp"});
+		ReflectionTestUtils.setField(
+			testProductVersionService, "_releasesURL",
+			"https://releases.example.com/releases.json");
+
+		testProductVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = new HashMap<>();
+
+		for (String body : testProductVersionService.putBodies) {
+			JSONObject jsonObject = new JSONObject(body);
+
+			jsonObjects.put(jsonObject.getString("productVersion"), jsonObject);
+		}
+
+		return jsonObjects;
 	}
 
 	private ArgumentCaptor<String> _filterCaptor;

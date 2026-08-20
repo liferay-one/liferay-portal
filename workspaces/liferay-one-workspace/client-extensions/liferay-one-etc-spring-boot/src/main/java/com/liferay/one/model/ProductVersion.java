@@ -18,6 +18,25 @@ public class ProductVersion {
 		_productVersionId = jsonObject.getLong("id");
 		_supported = jsonObject.optBoolean("supported");
 		_version = jsonObject.optString("productVersion");
+
+		JSONObject typeJSONObject = jsonObject.optJSONObject("type");
+
+		if (typeJSONObject == null) {
+			_type = null;
+		}
+		else {
+			_type = typeJSONObject.optString("key", null);
+		}
+
+		JSONObject versionLevelJSONObject = jsonObject.optJSONObject(
+			"versionLevel");
+
+		if (versionLevelJSONObject == null) {
+			_versionLevel = null;
+		}
+		else {
+			_versionLevel = versionLevelJSONObject.optString("key", null);
+		}
 	}
 
 	public String getProductGroup() {
@@ -32,8 +51,16 @@ public class ProductVersion {
 		return _productVersionId;
 	}
 
+	public String getType() {
+		return _type;
+	}
+
 	public String getVersion() {
 		return _version;
+	}
+
+	public String getVersionLevel() {
+		return _versionLevel;
 	}
 
 	public boolean isSupported() {
@@ -44,6 +71,8 @@ public class ProductVersion {
 	private final String _productGroupVersion;
 	private final long _productVersionId;
 	private final boolean _supported;
+	private final String _type;
 	private final String _version;
+	private final String _versionLevel;
 
 }
