@@ -1356,7 +1356,7 @@
 		},
 		{
 			"active": true,
-			"catalogExternalReferenceCode": "SALESFORCE_CATALOG",
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
 				{
 					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"

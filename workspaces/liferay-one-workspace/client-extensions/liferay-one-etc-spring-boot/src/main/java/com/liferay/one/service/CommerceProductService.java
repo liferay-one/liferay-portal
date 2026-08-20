@@ -39,7 +39,7 @@ public class CommerceProductService extends OneBaseService {
 		product.setCatalogExternalReferenceCode(
 			() ->
 				CommerceCatalogConstants.
-					EXTERNAL_REFERENCE_CODE_SALESFORCE_CATALOG);
+					EXTERNAL_REFERENCE_CODE_LIFERAY_INC_CATALOG);
 		product.setDescription(
 			() -> Collections.singletonMap("en_US", description));
 		product.setExternalReferenceCode(() -> externalReferenceCode);
