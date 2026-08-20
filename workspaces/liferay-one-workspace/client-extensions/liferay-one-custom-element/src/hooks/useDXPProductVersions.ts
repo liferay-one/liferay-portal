@@ -4,12 +4,23 @@
  */
 
 import {useFetch} from '~/hooks/useFetch';
+import SearchBuilder from '~/utils/SearchBuilder';
 
 import type {APIResponse} from '~/types/api';
 
-const MINIMUM_QUARTERLY_VERSION = [2024, 1, 0];
+const MINIMUM_PRODUCT_GROUP_VERSION = '2024.Q1';
 
 const QUARTERLY_VERSION_REGEX = /^DXP (\d{4})\.Q([1-4])\.(\d+)/;
+
+const FILTER = [
+	SearchBuilder.eq('productGroup', 'dxp'),
+	SearchBuilder.eq('type', 'quarterly'),
+	SearchBuilder.eq('versionLevel', 'patch'),
+	SearchBuilder.ge(
+		'productGroupVersion',
+		`'${MINIMUM_PRODUCT_GROUP_VERSION}'`
+	),
+].join(' and ');
 
 type ProductVersionNode = {
 	externalReferenceCode: string;
@@ -43,8 +54,8 @@ export function useDXPProductVersions() {
 		APIResponse<ProductVersionNode>
 	>('/o/c/productversions', {
 		params: {
-			filter: "productGroup eq 'dxp'",
-			pageSize: 200,
+			filter: FILTER,
+			pageSize: -1,
 		},
 	});
 
@@ -53,14 +64,7 @@ export function useDXPProductVersions() {
 			productVersion: node.productVersion ?? '',
 			quarterlyVersion: parseQuarterlyVersion(node.productVersion ?? ''),
 		}))
-		.filter(
-			({quarterlyVersion}) =>
-				quarterlyVersion &&
-				compareQuarterlyVersions(
-					quarterlyVersion,
-					MINIMUM_QUARTERLY_VERSION
-				) >= 0
-		)
+		.filter(({quarterlyVersion}) => quarterlyVersion)
 		.sort((productVersion1, productVersion2) =>
 			compareQuarterlyVersions(
 				productVersion2.quarterlyVersion as number[],

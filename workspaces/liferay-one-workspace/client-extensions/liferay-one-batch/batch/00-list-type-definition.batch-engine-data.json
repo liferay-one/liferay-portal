@@ -326,6 +326,58 @@
 			"name": "Product Type"
 		},
 		{
+			"externalReferenceCode": "LT_PRODUCT_VERSION_LEVEL",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_LEVEL_MAJOR",
+					"key": "major",
+					"name": "Major"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_LEVEL_PATCH",
+					"key": "patch",
+					"name": "Patch"
+				}
+			],
+			"name": "Product Version Level"
+		},
+		{
+			"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE",
+			"listTypeEntries": [
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_DIGITAL_ENTERPRISE",
+					"key": "digitalEnterprise",
+					"name": "Digital Enterprise"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_FIX_PACK",
+					"key": "fixPack",
+					"name": "Fix Pack"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_GENERAL_AVAILABILITY",
+					"key": "generalAvailability",
+					"name": "General Availability"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_QUARTERLY",
+					"key": "quarterly",
+					"name": "Quarterly"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_SERVICE_PACK",
+					"key": "servicePack",
+					"name": "Service Pack"
+				},
+				{
+					"externalReferenceCode": "LT_PRODUCT_VERSION_TYPE_UPDATE",
+					"key": "update",
+					"name": "Update"
+				}
+			],
+			"name": "Product Version Type"
+		},
+		{
 			"externalReferenceCode": "LT_PUBLISHER_ASSET_ATTACHMENT_TYPE",
 			"listTypeEntries": [
 				{

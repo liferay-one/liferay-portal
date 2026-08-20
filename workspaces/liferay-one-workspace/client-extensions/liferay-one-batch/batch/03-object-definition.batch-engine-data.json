@@ -4440,6 +4440,44 @@
 					"state": false,
 					"system": false,
 					"type": "Boolean"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Picklist",
+					"externalReferenceCode": "C_PRODUCT_VERSION_TYPE",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Type"
+					},
+					"listTypeDefinitionExternalReferenceCode": "LT_PRODUCT_VERSION_TYPE",
+					"name": "type",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Picklist",
+					"externalReferenceCode": "C_PRODUCT_VERSION_VERSION_LEVEL",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Version Level"
+					},
+					"listTypeDefinitionExternalReferenceCode": "LT_PRODUCT_VERSION_LEVEL",
+					"name": "versionLevel",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				}
 			],
 			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
@@ -4478,10 +4516,24 @@
 						},
 						{
 							"label": {
+								"en_US": "Version Level"
+							},
+							"objectFieldName": "versionLevel",
+							"priority": 3
+						},
+						{
+							"label": {
+								"en_US": "Type"
+							},
+							"objectFieldName": "type",
+							"priority": 4
+						},
+						{
+							"label": {
 								"en_US": "Supported"
 							},
 							"objectFieldName": "supported",
-							"priority": 3
+							"priority": 5
 						}
 					]
 				}
