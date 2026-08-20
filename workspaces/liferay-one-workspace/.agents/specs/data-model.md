@@ -138,7 +138,7 @@ Finance/A/R-set hard hold; overrides spend limits.
 |---|---|---|
 | PK `CProductId` | long | |
 | `externalReferenceCode` | string | Salesforce Product2.Id (18-char); OOTB key for marketplace |
-| `catalog` | string | `Salesforce` · `Liferay` · `AccountEntry` |
+| `catalog` | string | `Liferay` · `AccountEntry` |
 | `name` | string | |
 | `description` | string | |
 | `isPrimary` | boolean | Default `false` |

@@ -33,7 +33,7 @@ public class CommercePriceListService extends OneBaseService {
 
 		Catalog catalog = _commerceCatalogService.fetchCatalog(
 			CommerceCatalogConstants.
-				EXTERNAL_REFERENCE_CODE_SALESFORCE_CATALOG);
+				EXTERNAL_REFERENCE_CODE_LIFERAY_INC_CATALOG);
 
 		if (catalog == null) {
 			return null;
