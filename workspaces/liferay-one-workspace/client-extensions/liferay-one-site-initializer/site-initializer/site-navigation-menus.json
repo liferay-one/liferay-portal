@@ -523,12 +523,13 @@
 			},
 			{
 				"externalReferenceCode": "LO_NAV_ADMIN",
+				"friendlyURL": "/admin",
 				"name_i18n": {
 					"en_US": "Admin"
 				},
-				"type": "url",
-				"url": "/admin",
-				"useNewTab": false
+				"privateLayout": false,
+				"type": "layout",
+				"useCustomName": true
 			}
 		],
 		"name": "Primary Navigation",
