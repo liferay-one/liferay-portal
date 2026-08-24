@@ -15,7 +15,6 @@ import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.UserAccountService;
 
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -71,6 +70,57 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 	}
 
 	@Test
+	public void testPostAssignsAccountRolesByExternalReferenceCode()
+		throws Exception {
+
+		ObjectActionAccountInvitationAcceptedRestController
+			objectActionAccountInvitationAcceptedRestController =
+				_createController();
+
+		Mockito.when(
+			_accountInvitationService.fetchAccountInvitation(
+				_ACCOUNT_INVITATION_ID)
+		).thenReturn(
+			_createAccountInvitation(
+				true, "", List.of("L_ACCOUNT_ADMINISTRATOR", "C_ACCOUNT_BUYER"))
+		);
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			_createUserAccount()
+		);
+
+		objectActionAccountInvitationAcceptedRestController.post(
+			null, _createPayload());
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountRoleByExternalReferenceCode(
+			_EXTERNAL_REFERENCE_CODE, "L_ACCOUNT_ADMINISTRATOR", _EMAIL_ADDRESS
+		);
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountRoleByExternalReferenceCode(
+			_EXTERNAL_REFERENCE_CODE, "C_ACCOUNT_BUYER", _EMAIL_ADDRESS
+		);
+
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).addAccountUserAccountRole(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
 	public void testPostCreatesUserAccountWithInvitedName() throws Exception {
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
@@ -114,69 +164,6 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			_accountService
 		).addAccountUserAccountByEmailAddress(
 			_ACCOUNT_ID, _EMAIL_ADDRESS, null
-		);
-	}
-
-	@Test
-	public void testPostResolvesRolesWithOneLookup() throws Exception {
-		ObjectActionAccountInvitationAcceptedRestController
-			objectActionAccountInvitationAcceptedRestController =
-				_createController();
-
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(
-				true, "", List.of("L_ACCOUNT_ADMINISTRATOR", "C_ACCOUNT_BUYER"))
-		);
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
-		);
-
-		Mockito.when(
-			_accountService.getAccountRoleIdsByExternalReferenceCode(
-				_ACCOUNT_ID)
-		).thenReturn(
-			Map.of(
-				"C_ACCOUNT_BUYER", 55555L, "L_ACCOUNT_ADMINISTRATOR",
-				_ACCOUNT_ROLE_ID)
-		);
-
-		objectActionAccountInvitationAcceptedRestController.post(
-			null, _createPayload());
-
-		Mockito.verify(
-			_accountService, Mockito.times(1)
-		).getAccountRoleIdsByExternalReferenceCode(
-			_ACCOUNT_ID
-		);
-
-		Mockito.verify(
-			_accountService, Mockito.never()
-		).fetchAccountRoleId(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
-		);
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRole(
-			_ACCOUNT_ID, _ACCOUNT_ROLE_ID, _USER_ID
-		);
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRole(
-			_ACCOUNT_ID, 55555L, _USER_ID
 		);
 	}
 
@@ -354,8 +341,6 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 	private static final long _ACCOUNT_ID = 11111;
 
 	private static final long _ACCOUNT_INVITATION_ID = 44444;
-
-	private static final long _ACCOUNT_ROLE_ID = 33333;
 
 	private static final String _EMAIL_ADDRESS = "jane@example.com";
 

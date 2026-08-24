@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.okta.service.OktaService;
@@ -35,6 +36,7 @@ public class ProvisioningContactServiceTest {
 	public void setUp() throws Exception {
 		_provisioningContactService = new ProvisioningContactService();
 
+		_accountRoleService = Mockito.mock(AccountRoleService.class);
 		_accountService = Mockito.mock(AccountService.class);
 		_emailAddressValidatorService = Mockito.mock(
 			EmailAddressValidatorService.class);
@@ -55,6 +57,9 @@ public class ProvisioningContactServiceTest {
 			true
 		);
 
+		ReflectionTestUtils.setField(
+			_provisioningContactService, "_accountRoleService",
+			_accountRoleService);
 		ReflectionTestUtils.setField(
 			_provisioningContactService, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
@@ -89,9 +94,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		SalesforceProject salesforceProject = new SalesforceProject(
@@ -125,9 +130,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		List<String> warningMessages = new ArrayList<>();
@@ -185,9 +190,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		List<String> warningMessages = new ArrayList<>();
@@ -228,16 +233,16 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(
-				_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
+			_accountRoleService.fetchAccountRoleByName(
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
 		).thenReturn(
-			_ADMINISTRATOR_ROLE_ID
+			_createAccountRole(_ADMINISTRATOR_ROLE_ID)
 		);
 
 		_provisioningContactService.addProjectContacts(
@@ -262,9 +267,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		UserAccount firstUserAccount = new UserAccount();
@@ -279,10 +284,10 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(
-				_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
+			_accountRoleService.fetchAccountRoleByName(
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
 		).thenReturn(
-			_ADMINISTRATOR_ROLE_ID
+			_createAccountRole(_ADMINISTRATOR_ROLE_ID)
 		);
 
 		UserAccount secondUserAccount = new UserAccount();
@@ -378,9 +383,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		Mockito.doThrow(
@@ -414,9 +419,9 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		Mockito.doThrow(
@@ -456,7 +461,7 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
 			null
 		);
@@ -510,14 +515,14 @@ public class ProvisioningContactServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(_ACCOUNT_ID, _CONTACT_ROLE)
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
 		).thenReturn(
-			_ACCOUNT_ROLE_ID
+			_createAccountRole(_ACCOUNT_ROLE_ID)
 		);
 
 		Mockito.when(
-			_accountService.fetchAccountRoleId(
-				_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
+			_accountRoleService.fetchAccountRoleByName(
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
 		).thenReturn(
 			null
 		);
@@ -542,6 +547,14 @@ public class ProvisioningContactServiceTest {
 		).addAccountUserAccountRole(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()
 		);
+	}
+
+	private AccountRole _createAccountRole(long accountRoleId) {
+		AccountRole accountRole = new AccountRole();
+
+		accountRole.setId(() -> accountRoleId);
+
+		return accountRole;
 	}
 
 	private SalesforceProjectContactRole _createContactRole(
@@ -586,6 +599,7 @@ public class ProvisioningContactServiceTest {
 	private static final long _USER_ID = 100L;
 
 	private Account _account;
+	private AccountRoleService _accountRoleService;
 	private AccountService _accountService;
 	private EmailAddressValidatorService _emailAddressValidatorService;
 	private OktaService _oktaService;

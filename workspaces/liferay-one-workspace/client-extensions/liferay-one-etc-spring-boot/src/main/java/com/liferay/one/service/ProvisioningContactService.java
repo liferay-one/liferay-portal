@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.okta.service.OktaService;
@@ -106,10 +107,10 @@ public class ProvisioningContactService {
 		boolean hasUserAccounts = _userAccountService.hasUserAccounts(
 			account.getId());
 
-		Long accountRoleId = _accountService.fetchAccountRoleId(
-			account.getId(), salesforceProjectContactRole.getContactRole());
+		AccountRole accountRole = _accountRoleService.fetchAccountRoleByName(
+			salesforceProjectContactRole.getContactRole());
 
-		if (accountRoleId == null) {
+		if (accountRole == null) {
 			_addWarning(
 				warningMessages,
 				"Unable to find account role " +
@@ -120,17 +121,17 @@ public class ProvisioningContactService {
 		}
 		else {
 			_accountService.addAccountUserAccount(
-				account.getId(), accountRoleId, userAccount.getId());
+				account.getId(), accountRole.getId(), userAccount.getId());
 		}
 
 		if (!hasUserAccounts && !hasDesignatedAdministrator) {
-			Long administratorAccountRoleId =
-				_accountService.fetchAccountRoleId(
-					account.getId(), RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+			AccountRole administratorAccountRole =
+				_accountRoleService.fetchAccountRoleByName(
+					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
 
-			if (administratorAccountRoleId != null) {
+			if (administratorAccountRole != null) {
 				_accountService.addAccountUserAccountRole(
-					account.getId(), administratorAccountRoleId,
+					account.getId(), administratorAccountRole.getId(),
 					userAccount.getId());
 			}
 			else {
@@ -141,7 +142,7 @@ public class ProvisioningContactService {
 			}
 		}
 
-		if (accountRoleId != null) {
+		if (accountRole != null) {
 			try {
 				_provisioningAssignmentService.assignAccountRole(
 					account, userAccount.getId(),
@@ -200,6 +201,9 @@ public class ProvisioningContactService {
 
 	private static final Log _log = LogFactory.getLog(
 		ProvisioningContactService.class);
+
+	@Autowired
+	private AccountRoleService _accountRoleService;
 
 	@Autowired
 	private AccountService _accountService;

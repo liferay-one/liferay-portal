@@ -97,13 +97,9 @@ public class ProjectMembershipService extends OneBaseService {
 			String roleExternalReferenceCode, long userId)
 		throws Exception {
 
-		List<ProjectMembership> projectMemberships = getAllItems(
-			"/o/c/projectmemberships",
-			StringBundler.concat(
-				"r_userToProjectMembership_userId eq '", userId,
-				"' and r_projectToProjectMembership_c_projectERC eq '",
-				projectExternalReferenceCode, "'"),
-			ProjectMembership::new);
+		List<ProjectMembership> projectMemberships = _getProjectMemberships(
+			null, projectExternalReferenceCode, roleExternalReferenceCode,
+			userId);
 
 		if (!projectMemberships.isEmpty()) {
 			return;
@@ -170,13 +166,25 @@ public class ProjectMembershipService extends OneBaseService {
 	}
 
 	public ProjectMembership fetchProjectMembership(
-			String projectExternalReferenceCode, long userId)
+			String projectExternalReferenceCode,
+			String roleExternalReferenceCode, long userId)
 		throws Exception {
 
-		String filterString = StringBundler.concat(
-			"(r_projectToProjectMembership_c_projectERC eq '",
-			projectExternalReferenceCode,
-			"') and (r_userToProjectMembership_userId eq '", userId, "')");
+		StringBundler sb = new StringBundler(8);
+
+		sb.append("(r_projectToProjectMembership_c_projectERC eq '");
+		sb.append(projectExternalReferenceCode);
+		sb.append("') and (r_userToProjectMembership_userId eq '");
+		sb.append(userId);
+		sb.append("')");
+
+		if (Validator.isNotNull(roleExternalReferenceCode)) {
+			sb.append(" and (roleExternalReferenceCode eq '");
+			sb.append(roleExternalReferenceCode);
+			sb.append("')");
+		}
+
+		String filterString = sb.toString();
 
 		String response = get(
 			getAuthorization(),
@@ -228,6 +236,14 @@ public class ProjectMembershipService extends OneBaseService {
 			"r_projectToProjectMembership_c_projectERC eq '" +
 				projectExternalReferenceCode + "'",
 			ProjectMembership::new);
+	}
+
+	public List<ProjectMembership> getProjectMemberships(
+			String projectExternalReferenceCode, long userId)
+		throws Exception {
+
+		return _getProjectMemberships(
+			null, projectExternalReferenceCode, null, userId);
 	}
 
 	public List<ProjectMembership> getProjectMembershipsByUserId(long userId)

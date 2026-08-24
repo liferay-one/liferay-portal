@@ -5,10 +5,8 @@
 
 package com.liferay.one;
 
-import com.liferay.one.constants.AccountInvitationConstants;
 import com.liferay.one.model.AccountInvitation;
 import com.liferay.one.service.AccountInvitationService;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.UUID;
@@ -28,57 +26,47 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @author Pedro Oliveira
  */
-@RequestMapping(AccountInvitationConstants.INVITATIONS_PATH)
+@RequestMapping("/invitations")
 @RestController
 public class AccountInvitationsRestController extends OneBaseRestController {
 
-	@GetMapping(AccountInvitationConstants.ACCEPT_SEGMENT)
+	@GetMapping("/accept")
 	public ResponseEntity<String> getAccept(@RequestParam("token") String token)
 		throws Exception {
 
 		if (!_isValidToken(token)) {
-			return _toResponseEntity(AccountInvitationConstants.STATUS_INVALID);
+			return _toResponseEntity("invalid");
 		}
 
-		return _keyedLock.withLock(
-			token,
-			() -> {
-				AccountInvitation accountInvitation =
-					_accountInvitationService.fetchAccountInvitationByToken(
-						token);
+		AccountInvitation accountInvitation =
+			_accountInvitationService.fetchAccountInvitationByToken(token);
 
-				if (accountInvitation == null) {
-					return _toResponseEntity(
-						AccountInvitationConstants.STATUS_INVALID);
-				}
+		if (accountInvitation == null) {
+			return _toResponseEntity("invalid");
+		}
 
-				if (accountInvitation.isAccepted()) {
-					return _toResponseEntity(
-						AccountInvitationConstants.STATUS_ACCEPTED);
-				}
+		if (accountInvitation.isAccepted()) {
+			return _toResponseEntity("accepted");
+		}
 
-				if (accountInvitation.isExpired()) {
-					return _toResponseEntity(
-						AccountInvitationConstants.STATUS_EXPIRED);
-				}
+		if (accountInvitation.isExpired()) {
+			return _toResponseEntity("expired");
+		}
 
-				try {
-					_accountInvitationService.updateAccepted(
-						accountInvitation.getAccountInvitationId());
-				}
-				catch (Exception exception) {
-					_log.error(
-						"Unable to accept the invitation " +
-							accountInvitation.getExternalReferenceCode(),
-						exception);
+		try {
+			_accountInvitationService.updateAccepted(
+				accountInvitation.getAccountInvitationId());
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to accept the invitation " +
+					accountInvitation.getExternalReferenceCode(),
+				exception);
 
-					return _toResponseEntity(
-						AccountInvitationConstants.STATUS_ERROR);
-				}
+			return _toResponseEntity("error");
+		}
 
-				return _toResponseEntity(
-					AccountInvitationConstants.STATUS_ACCEPTED);
-			});
+		return _toResponseEntity("accepted");
 	}
 
 	private boolean _isValidToken(String token) {
@@ -116,8 +104,5 @@ public class AccountInvitationsRestController extends OneBaseRestController {
 
 	@Autowired
 	private AccountInvitationService _accountInvitationService;
-
-	@Autowired
-	private KeyedLock _keyedLock;
 
 }
