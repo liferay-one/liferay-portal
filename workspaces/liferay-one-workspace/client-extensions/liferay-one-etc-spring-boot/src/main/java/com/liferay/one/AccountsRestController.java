@@ -42,10 +42,8 @@ import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -330,29 +328,26 @@ public class AccountsRestController extends OneBaseRestController {
 
 		UserAccount inviterUserAccount = getMyUserAccount(jwt);
 
-		AccountInvitation accountInvitation = _keyedLock.withLock(
-			StringBundler.concat(
-				externalReferenceCode, "#", emailAddress, "#",
-				projectExternalReferenceCode),
-			() -> {
-				AccountInvitation pendingAccountInvitation =
-					_accountInvitationService.fetchPendingAccountInvitation(
-						externalReferenceCode, emailAddress,
-						projectExternalReferenceCode);
+		AccountInvitation pendingAccountInvitation =
+			_accountInvitationService.fetchPendingAccountInvitation(
+				externalReferenceCode, emailAddress,
+				projectExternalReferenceCode);
 
-				if (pendingAccountInvitation == null) {
-					return _accountInvitationService.addAccountInvitation(
-						externalReferenceCode, emailAddress, familyName,
-						givenName, projectExternalReferenceCode,
-						projectRoleExternalReferenceCode,
-						roleExternalReferenceCodes);
-				}
+		AccountInvitation accountInvitation = null;
 
-				return _accountInvitationService.updateAccountInvitation(
+		if (pendingAccountInvitation == null) {
+			accountInvitation = _accountInvitationService.addAccountInvitation(
+				externalReferenceCode, emailAddress, familyName, givenName,
+				projectExternalReferenceCode, projectRoleExternalReferenceCode,
+				roleExternalReferenceCodes);
+		}
+		else {
+			accountInvitation =
+				_accountInvitationService.updateAccountInvitation(
 					pendingAccountInvitation.getAccountInvitationId(),
 					familyName, givenName, projectRoleExternalReferenceCode,
 					roleExternalReferenceCodes);
-			});
+		}
 
 		if (project == null) {
 			_accountInvitationEmailService.sendInvitationEmail(
@@ -811,6 +806,9 @@ public class AccountsRestController extends OneBaseRestController {
 			"projectExternalReferenceCode",
 			accountInvitation.getProjectExternalReferenceCode()
 		).put(
+			"projectRoleExternalReferenceCode",
+			accountInvitation.getProjectRoleExternalReferenceCode()
+		).put(
 			"roleNames", roleNamesJSONArray
 		);
 	}
@@ -1002,9 +1000,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
-
-	@Autowired
-	private KeyedLock _keyedLock;
 
 	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;

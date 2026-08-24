@@ -15,6 +15,7 @@ export type AccountMemberRow = {
 	isAdministrator: boolean;
 	isCurrentUser: boolean;
 	name: string;
+	projectRoleName?: string;
 	roleBriefs: RoleBrief[];
 	roleNames: string[];
 	status: AccountMemberStatus;

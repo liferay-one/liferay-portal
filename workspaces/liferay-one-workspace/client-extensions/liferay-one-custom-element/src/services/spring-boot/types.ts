@@ -10,6 +10,7 @@ export type AccountInvitation = {
 	givenName: string;
 	id: number;
 	projectExternalReferenceCode?: string;
+	projectRoleExternalReferenceCode?: string;
 	roleNames: string[];
 };
 
