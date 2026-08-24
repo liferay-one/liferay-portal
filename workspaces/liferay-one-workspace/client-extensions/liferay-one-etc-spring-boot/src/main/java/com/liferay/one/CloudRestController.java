@@ -192,13 +192,18 @@ public class CloudRestController extends OneBaseRestController {
 
 		Environment environment = _getEnvironment(body, environmentId);
 
+		String dxpVersion = _getDXPVersion(body);
+
+		if (Validator.isNull(dxpVersion)) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Retrieving entitlements for environment " + environmentId);
 		}
 
-		JSONObject jsonObject = _getManifestJSONObject(
-			_getDXPVersion(body), environment);
+		JSONObject jsonObject = _getManifestJSONObject(dxpVersion, environment);
 
 		return ResponseEntity.ok(jsonObject.toString());
 	}
