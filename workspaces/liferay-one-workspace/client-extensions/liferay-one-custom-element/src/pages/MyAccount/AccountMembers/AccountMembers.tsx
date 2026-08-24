@@ -349,7 +349,12 @@ export default function AccountMembers() {
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>
-												{member.roleNames.join(', ')}
+												{[
+													member.projectRoleName,
+													...member.roleNames,
+												]
+													.filter(Boolean)
+													.join(', ')}
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>

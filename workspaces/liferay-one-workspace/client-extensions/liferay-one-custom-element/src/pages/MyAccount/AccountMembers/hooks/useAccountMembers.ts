@@ -11,6 +11,7 @@ import {
 	hasAdministratorRole,
 	sortRoleNames,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {getProjectRoleLabel} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
 
@@ -22,6 +23,25 @@ type ProjectItem = {
 	externalReferenceCode: string;
 	name: string;
 };
+
+function getProjectRoleName(
+	projectRoleExternalReferenceCode?: string,
+	projectName?: string
+) {
+	if (!projectName) {
+		return undefined;
+	}
+
+	const projectRoleLabel = getProjectRoleLabel(
+		projectRoleExternalReferenceCode ?? ''
+	);
+
+	if (!projectRoleLabel) {
+		return projectName;
+	}
+
+	return `${projectName}: ${projectRoleLabel}`;
+}
 
 export function useAccountMembers() {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
@@ -111,32 +131,20 @@ export function useAccountMembers() {
 			memberRows.map((memberRow) => memberRow.email.toLowerCase())
 		);
 
-		const invitationRowsByEmailAddress = new Map<
-			string,
-			AccountMemberRow
-		>();
+		const invitationRows: AccountMemberRow[] = [];
 
 		(invitations ?? []).forEach((invitation) => {
-			const emailAddress = invitation.emailAddress.toLowerCase();
+			const projectExternalReferenceCode =
+				invitation.projectExternalReferenceCode;
 
-			if (memberEmailAddresses.has(emailAddress)) {
+			if (
+				!projectExternalReferenceCode &&
+				memberEmailAddresses.has(invitation.emailAddress.toLowerCase())
+			) {
 				return;
 			}
 
-			const invitationRow =
-				invitationRowsByEmailAddress.get(emailAddress);
-
-			if (invitationRow) {
-				invitationRow.invitationIds.push(invitation.id);
-				invitationRow.roleNames = sortRoleNames([
-					...invitationRow.roleNames,
-					...(invitation.roleNames ?? []),
-				]);
-
-				return;
-			}
-
-			invitationRowsByEmailAddress.set(emailAddress, {
+			invitationRows.push({
 				email: invitation.emailAddress,
 				id: invitation.id,
 				invitationIds: [invitation.id],
@@ -145,18 +153,34 @@ export function useAccountMembers() {
 				name: [invitation.givenName, invitation.familyName]
 					.filter(Boolean)
 					.join(' '),
+				projectRoleName: getProjectRoleName(
+					invitation.projectRoleExternalReferenceCode,
+					projectExternalReferenceCode
+						? projectNamesByExternalReferenceCode[
+								projectExternalReferenceCode
+							] ?? projectExternalReferenceCode
+						: undefined
+				),
 				roleBriefs: [],
 				roleNames: sortRoleNames(invitation.roleNames ?? []),
 				status: 'invited',
 			});
 		});
 
-		const invitationRows = [...invitationRowsByEmailAddress.values()].sort(
-			(a, b) => a.name.localeCompare(b.name)
+		invitationRows.sort(
+			(a, b) =>
+				a.name.localeCompare(b.name) ||
+				(a.projectRoleName ?? '').localeCompare(b.projectRoleName ?? '')
 		);
 
 		return [...memberRows, ...invitationRows];
-	}, [accountId, currentUserId, invitations, userAccountData]);
+	}, [
+		accountId,
+		currentUserId,
+		invitations,
+		projectNamesByExternalReferenceCode,
+		userAccountData,
+	]);
 
 	const mutate = async () => {
 		await Promise.all([mutateInvitations(), mutateUserAccounts()]);
