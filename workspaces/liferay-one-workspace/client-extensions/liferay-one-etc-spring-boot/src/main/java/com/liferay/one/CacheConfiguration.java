@@ -34,6 +34,33 @@ public class CacheConfiguration {
 			));
 
 		caffeineCacheManager.registerCustomCache(
+			"accountRoles",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
+			"accountRolesByExternalReferenceCode",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
+			"accountRolesByName",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
 			"product",
 			Caffeine.newBuilder(
 			).expireAfterWrite(

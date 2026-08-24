@@ -161,26 +161,14 @@ public class ProjectService extends OneBaseService {
 			String authorization, String externalReferenceCode)
 		throws Exception {
 
-		String response = null;
-
-		try {
-			response = get(
-				authorization,
-				UriComponentsBuilder.fromPath(
-					"/o/c/projects/by-external-reference-code" +
-						"/{externalReferenceCode}"
-				).buildAndExpand(
-					externalReferenceCode
-				).toUri());
-		}
-		catch (WebClientResponseException webClientResponseException) {
-			int statusCode = webClientResponseException.getStatusCode(
-			).value();
-
-			if (statusCode != HttpStatus.NOT_FOUND.value()) {
-				throw webClientResponseException;
-			}
-		}
+		String response = fetch(
+			authorization,
+			UriComponentsBuilder.fromPath(
+				"/o/c/projects/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).buildAndExpand(
+				externalReferenceCode
+			).toUri());
 
 		if (Validator.isNull(response)) {
 			return null;

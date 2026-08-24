@@ -30,15 +30,33 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Amos Fong
  */
 public abstract class OneBaseService extends BaseService {
+
+	protected String fetch(String authorization, URI uri) {
+		try {
+			return get(authorization, uri);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+				return null;
+			}
+
+			throw webClientResponseException;
+		}
+	}
 
 	protected <T> List<T> getAllItems(
 			String path, String filterString, Function<JSONObject, T> function)

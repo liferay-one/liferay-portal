@@ -10,25 +10,11 @@ package com.liferay.one.constants;
  */
 public class AccountInvitationConstants {
 
-	public static final String ACCEPT_SEGMENT = "/accept";
-
-	public static final String INVITATIONS_PATH = "/invitations";
-
 	public static final String NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE =
 		"ACCOUNT-INVITATION";
-
-	public static final String PAGE_PATH = "/account-invitation";
 
 	public static final String
 		PROJECT_NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE =
 			"PROJECT-INVITATION";
-
-	public static final String STATUS_ACCEPTED = "accepted";
-
-	public static final String STATUS_ERROR = "error";
-
-	public static final String STATUS_EXPIRED = "expired";
-
-	public static final String STATUS_INVALID = "invalid";
 
 }

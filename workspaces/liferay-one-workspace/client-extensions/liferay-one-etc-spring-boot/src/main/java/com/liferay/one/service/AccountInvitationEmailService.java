@@ -8,10 +8,10 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.constants.AccountInvitationConstants;
 import com.liferay.one.model.AccountInvitation;
+import com.liferay.one.model.Project;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URLEncoder;
 
@@ -33,30 +33,20 @@ public class AccountInvitationEmailService extends OneBaseService {
 
 	public void sendInvitationEmail(
 			Account account, AccountInvitation accountInvitation,
-			String inviterName, String projectName)
+			String inviterName)
 		throws Exception {
-
-		String notificationTemplateExternalReferenceCode =
-			AccountInvitationConstants.
-				NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE;
-
-		if (Validator.isNotNull(projectName)) {
-			notificationTemplateExternalReferenceCode =
-				AccountInvitationConstants.
-					PROJECT_NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE;
-		}
 
 		JSONObject processedTemplateJSONObject =
 			_notificationTemplateService.getAndProcessTemplateJSONObject(
-				notificationTemplateExternalReferenceCode, _DEFAULT_LANGUAGE_ID,
+				AccountInvitationConstants.
+					NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE,
+				_DEFAULT_LANGUAGE_ID,
 				HashMapBuilder.put(
 					"ACCEPT_URL", _getAcceptURL(accountInvitation.getToken())
 				).put(
 					"ACCOUNT_NAME", HtmlUtil.escape(account.getName())
 				).put(
 					"INVITER_NAME", HtmlUtil.escape(inviterName)
-				).put(
-					"PROJECT_NAME", HtmlUtil.escape(projectName)
 				).put(
 					"USER_FIRST_NAME",
 					HtmlUtil.escape(accountInvitation.getGivenName())
@@ -65,6 +55,46 @@ public class AccountInvitationEmailService extends OneBaseService {
 					Year.now(
 					).toString()
 				).build());
+
+		_addNotificationQueueEntry(
+			accountInvitation, processedTemplateJSONObject);
+	}
+
+	public void sendInvitationEmail(
+			Account account, AccountInvitation accountInvitation,
+			String inviterName, Project project)
+		throws Exception {
+
+		JSONObject processedTemplateJSONObject =
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				AccountInvitationConstants.
+					PROJECT_NOTIFICATION_TEMPLATE_EXTERNAL_REFERENCE_CODE,
+				_DEFAULT_LANGUAGE_ID,
+				HashMapBuilder.put(
+					"ACCEPT_URL", _getAcceptURL(accountInvitation.getToken())
+				).put(
+					"ACCOUNT_NAME", HtmlUtil.escape(account.getName())
+				).put(
+					"INVITER_NAME", HtmlUtil.escape(inviterName)
+				).put(
+					"PROJECT_NAME", HtmlUtil.escape(project.getName())
+				).put(
+					"USER_FIRST_NAME",
+					HtmlUtil.escape(accountInvitation.getGivenName())
+				).put(
+					"YEAR",
+					Year.now(
+					).toString()
+				).build());
+
+		_addNotificationQueueEntry(
+			accountInvitation, processedTemplateJSONObject);
+	}
+
+	private void _addNotificationQueueEntry(
+			AccountInvitation accountInvitation,
+			JSONObject processedTemplateJSONObject)
+		throws Exception {
 
 		_notificationQueueEntryService.addNotificationQueueEntry(
 			_emailAddressGlobal, "Liferay One",
@@ -75,7 +105,7 @@ public class AccountInvitationEmailService extends OneBaseService {
 
 	private String _getAcceptURL(String token) {
 		return StringBundler.concat(
-			_portalURL, AccountInvitationConstants.PAGE_PATH, "?token=",
+			_portalURL, "/account-invitation?token=",
 			URLEncoder.encode(token, StandardCharsets.UTF_8));
 	}
 

@@ -62,34 +62,25 @@ public class ProjectMembershipPermission {
 		Project project = _projectService.fetchProject(
 			projectExternalReferenceCode);
 
-		if (project == null) {
-			return false;
-		}
+		if ((project == null) ||
+			Validator.isNull(project.getAccountExternalReferenceCode())) {
 
-		String accountExternalReferenceCode =
-			project.getAccountExternalReferenceCode();
-
-		if (Validator.isNull(accountExternalReferenceCode)) {
 			return false;
 		}
 
 		if (_isAccountAdministrator(
-				accountExternalReferenceCode, userAccount)) {
+				project.getAccountExternalReferenceCode(), userAccount)) {
 
 			return true;
 		}
 
-		ProjectMembership projectMembership =
-			_projectMembershipService.fetchProjectMembership(
-				projectExternalReferenceCode, userAccount.getId());
-
-		if (projectMembership != null) {
-			String roleExternalReferenceCode =
-				projectMembership.getRoleExternalReferenceCode();
+		for (ProjectMembership projectMembership :
+				_projectMembershipService.getProjectMemberships(
+					projectExternalReferenceCode, userAccount.getId())) {
 
 			if (ArrayUtil.contains(
 					RoleConstants.ERCS_SUPPORT_PROJECT,
-					roleExternalReferenceCode) &&
+					projectMembership.getRoleExternalReferenceCode()) &&
 				actionId.equals(ActionKeys.VIEW)) {
 
 				return true;
@@ -97,7 +88,7 @@ public class ProjectMembershipPermission {
 
 			if (ArrayUtil.contains(
 					RoleConstants.ERCS_SUPPORT_PROJECT_TICKET,
-					roleExternalReferenceCode) &&
+					projectMembership.getRoleExternalReferenceCode()) &&
 				actionId.equals(ActionKeys.UPDATE)) {
 
 				return true;
@@ -105,7 +96,7 @@ public class ProjectMembershipPermission {
 		}
 
 		Account account = _accountService.getAccount(
-			accountExternalReferenceCode, jwt);
+			project.getAccountExternalReferenceCode(), jwt);
 
 		for (OrganizationBrief organizationBrief :
 				userAccount.getOrganizationBriefs()) {

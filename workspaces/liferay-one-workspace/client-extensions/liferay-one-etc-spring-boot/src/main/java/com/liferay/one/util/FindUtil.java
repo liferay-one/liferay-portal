@@ -9,6 +9,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -31,6 +32,16 @@ public class FindUtil {
 		}
 
 		return false;
+	}
+
+	public static <T> T findFirst(Collection<T> collection) {
+		if ((collection == null) || collection.isEmpty()) {
+			return null;
+		}
+
+		Iterator<T> iterator = collection.iterator();
+
+		return iterator.next();
 	}
 
 	public static <T> T findFirst(List<T> list, Predicate<T> predicate) {
