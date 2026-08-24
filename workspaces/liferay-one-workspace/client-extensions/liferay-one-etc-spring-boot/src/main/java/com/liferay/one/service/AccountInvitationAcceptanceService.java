@@ -8,14 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.model.AccountInvitation;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
-
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -46,64 +39,23 @@ public class AccountInvitationAcceptanceService {
 		_accountService.addAccountUserAccountByEmailAddress(
 			account.getId(), emailAddress, null);
 
-		_addAccountUserAccountRoles(account, accountInvitation, userAccount);
+		for (String roleExternalReferenceCode :
+				accountInvitation.getRoleExternalReferenceCodes()) {
 
-		_addProjectMembership(accountInvitation, userAccount);
-	}
-
-	private void _addAccountUserAccountRoles(
-			Account account, AccountInvitation accountInvitation,
-			UserAccount userAccount)
-		throws Exception {
-
-		List<String> roleExternalReferenceCodes =
-			accountInvitation.getRoleExternalReferenceCodes();
-
-		if (roleExternalReferenceCodes.isEmpty()) {
-			return;
+			_accountService.addAccountUserAccountRoleByExternalReferenceCode(
+				account.getExternalReferenceCode(), roleExternalReferenceCode,
+				userAccount.getEmailAddress());
 		}
 
-		Map<String, Long> accountRoleIds =
-			_accountService.getAccountRoleIdsByExternalReferenceCode(
-				account.getId());
+		if (Validator.isNotNull(
+				accountInvitation.getProjectExternalReferenceCode())) {
 
-		for (String roleExternalReferenceCode : roleExternalReferenceCodes) {
-			Long accountRoleId = accountRoleIds.get(roleExternalReferenceCode);
-
-			if (accountRoleId == null) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to find account role ",
-						roleExternalReferenceCode, " for account ",
-						account.getExternalReferenceCode()));
-
-				continue;
-			}
-
-			_accountService.addAccountUserAccountRole(
-				account.getId(), accountRoleId, userAccount.getId());
+			_projectMembershipService.addProjectMembership(
+				accountInvitation.getProjectExternalReferenceCode(),
+				accountInvitation.getProjectRoleExternalReferenceCode(),
+				userAccount.getId());
 		}
 	}
-
-	private void _addProjectMembership(
-			AccountInvitation accountInvitation, UserAccount userAccount)
-		throws Exception {
-
-		String projectExternalReferenceCode =
-			accountInvitation.getProjectExternalReferenceCode();
-
-		if (Validator.isNull(projectExternalReferenceCode)) {
-			return;
-		}
-
-		_projectMembershipService.addProjectMembership(
-			projectExternalReferenceCode,
-			accountInvitation.getProjectRoleExternalReferenceCode(),
-			userAccount.getId());
-	}
-
-	private static final Log _log = LogFactory.getLog(
-		AccountInvitationAcceptanceService.class);
 
 	@Autowired
 	private AccountService _accountService;

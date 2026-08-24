@@ -15,19 +15,14 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -97,25 +92,13 @@ public class AccountInvitationService extends OneBaseService {
 	public AccountInvitation fetchAccountInvitation(long accountInvitationId)
 		throws Exception {
 
-		String response = null;
-
-		try {
-			response = get(
-				getAuthorization(),
-				UriComponentsBuilder.fromPath(
-					"/o/c/accountinvitations/{accountInvitationId}"
-				).buildAndExpand(
-					accountInvitationId
-				).toUri());
-		}
-		catch (WebClientResponseException webClientResponseException) {
-			HttpStatusCode httpStatusCode =
-				webClientResponseException.getStatusCode();
-
-			if (!httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
-				throw webClientResponseException;
-			}
-		}
+		String response = fetch(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/accountinvitations/{accountInvitationId}"
+			).buildAndExpand(
+				accountInvitationId
+			).toUri());
 
 		if (Validator.isNull(response)) {
 			return null;
@@ -132,13 +115,11 @@ public class AccountInvitationService extends OneBaseService {
 			"token eq '" + _escapeFilterValue(token) + "'",
 			AccountInvitation::new);
 
-		for (AccountInvitation accountInvitation : accountInvitations) {
-			if (Objects.equals(accountInvitation.getToken(), token)) {
-				return accountInvitation;
-			}
+		if (accountInvitations.isEmpty()) {
+			return null;
 		}
 
-		return null;
+		return accountInvitations.get(0);
 	}
 
 	public AccountInvitation fetchPendingAccountInvitation(
@@ -146,47 +127,43 @@ public class AccountInvitationService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		List<AccountInvitation> accountInvitations = getAllItems(
-			"/o/c/accountinvitations",
-			StringBundler.concat(
-				"accountExternalReferenceCode eq '",
-				_escapeFilterValue(accountExternalReferenceCode),
-				"' and emailAddress eq '", _escapeFilterValue(emailAddress),
-				"'"),
-			AccountInvitation::new);
+		StringBundler sb = new StringBundler(8);
 
-		for (AccountInvitation accountInvitation : accountInvitations) {
-			if (!accountInvitation.isAccepted() &&
-				Objects.equals(
-					accountInvitation.getProjectExternalReferenceCode(),
-					projectExternalReferenceCode)) {
+		sb.append("(accepted eq false) and (accountExternalReferenceCode eq '");
+		sb.append(_escapeFilterValue(accountExternalReferenceCode));
+		sb.append("') and (emailAddress eq '");
+		sb.append(_escapeFilterValue(emailAddress));
+		sb.append("') and (projectExternalReferenceCode eq ");
 
-				return accountInvitation;
-			}
+		if (Validator.isNotNull(projectExternalReferenceCode)) {
+			sb.append(StringPool.APOSTROPHE);
+			sb.append(_escapeFilterValue(projectExternalReferenceCode));
+			sb.append("')");
+		}
+		else {
+			sb.append("null)");
 		}
 
-		return null;
+		List<AccountInvitation> accountInvitations = getAllItems(
+			"/o/c/accountinvitations", sb.toString(), AccountInvitation::new);
+
+		if (accountInvitations.isEmpty()) {
+			return null;
+		}
+
+		return accountInvitations.get(0);
 	}
 
 	public List<AccountInvitation> getPendingAccountInvitations(
 			String accountExternalReferenceCode)
 		throws Exception {
 
-		List<AccountInvitation> pendingAccountInvitations = new ArrayList<>();
-
-		List<AccountInvitation> accountInvitations = getAllItems(
+		return getAllItems(
 			"/o/c/accountinvitations",
-			"accountExternalReferenceCode eq '" +
-				_escapeFilterValue(accountExternalReferenceCode) + "'",
+			StringBundler.concat(
+				"(accepted eq false) and (accountExternalReferenceCode eq '",
+				_escapeFilterValue(accountExternalReferenceCode), "')"),
 			AccountInvitation::new);
-
-		for (AccountInvitation accountInvitation : accountInvitations) {
-			if (!accountInvitation.isAccepted()) {
-				pendingAccountInvitations.add(accountInvitation);
-			}
-		}
-
-		return pendingAccountInvitations;
 	}
 
 	public AccountInvitation renewAccountInvitation(long accountInvitationId)

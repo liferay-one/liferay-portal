@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
@@ -28,6 +29,7 @@ import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectMembershipPermission;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
+import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
@@ -49,9 +51,9 @@ import java.time.Instant;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -148,20 +150,20 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleName(_ACCOUNT_ID, _ACCOUNT_ROLE_ID)
+			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
 		).thenReturn(
-			"Partner Manager"
+			_createAccountRole("Partner Manager")
 		);
 
 		accountsRestController.deleteUserAccountsAccountRole(
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
 
-		InOrder inOrder = Mockito.inOrder(_accountService);
+		InOrder inOrder = Mockito.inOrder(_accountRoleService, _accountService);
 
 		inOrder.verify(
-			_accountService
-		).getAccountRoleName(
-			_ACCOUNT_ID, _ACCOUNT_ROLE_ID
+			_accountRoleService
+		).fetchAccountRole(
+			_ACCOUNT_ROLE_ID
 		);
 
 		inOrder.verify(
@@ -297,10 +299,10 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNamesByExternalReferenceCode(
-				_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			Map.of("L_ACCOUNT_ADMINISTRATOR", "Account Administrator")
+			_createAccountRole("Account Administrator")
 		);
 
 		Mockito.when(
@@ -631,7 +633,9 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountInvitationEmailService
 		).sendInvitationEmail(
-			account, accountInvitation, "Inviter Name", "Project One"
+			ArgumentMatchers.eq(account),
+			ArgumentMatchers.eq(accountInvitation),
+			ArgumentMatchers.eq("Inviter Name"), ArgumentMatchers.any()
 		);
 	}
 
@@ -688,7 +692,7 @@ public class AccountsRestControllerTest {
 		inOrder.verify(
 			_accountInvitationEmailService
 		).sendInvitationEmail(
-			account, accountInvitation, "Inviter Name", null
+			account, accountInvitation, "Inviter Name"
 		);
 	}
 
@@ -751,14 +755,10 @@ public class AccountsRestControllerTest {
 	public void testPostInvitationsRejectsMalformedBody() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> accountsRestController.postInvitations(
-					null, _EXTERNAL_REFERENCE_CODE, "not json"));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertThrows(
+			JSONException.class,
+			() -> accountsRestController.postInvitations(
+				null, _EXTERNAL_REFERENCE_CODE, "not json"));
 
 		Mockito.verifyNoInteractions(_accountInvitationService);
 	}
@@ -807,10 +807,10 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNamesByExternalReferenceCode(
-				_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			Map.of("L_ACCOUNT_ADMINISTRATOR", "Account Administrator")
+			_createAccountRole("Account Administrator")
 		);
 
 		ResponseStatusException responseStatusException =
@@ -881,8 +881,7 @@ public class AccountsRestControllerTest {
 			_accountInvitationEmailService
 		).sendInvitationEmail(
 			ArgumentMatchers.any(), ArgumentMatchers.any(),
-			ArgumentMatchers.eq("Inviter Name"),
-			ArgumentMatchers.eq("Project One")
+			ArgumentMatchers.eq("Inviter Name"), ArgumentMatchers.any()
 		);
 	}
 
@@ -976,7 +975,7 @@ public class AccountsRestControllerTest {
 		inOrder.verify(
 			_accountInvitationEmailService
 		).sendInvitationEmail(
-			account, renewedAccountInvitation, "Inviter Name", null
+			account, renewedAccountInvitation, "Inviter Name"
 		);
 	}
 
@@ -1035,7 +1034,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountInvitationEmailService
 		).sendInvitationEmail(
-			account, accountInvitation, "Inviter Name", null
+			account, accountInvitation, "Inviter Name"
 		);
 	}
 
@@ -1058,10 +1057,10 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNamesByExternalReferenceCode(
-				_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			Map.of("L_ACCOUNT_ADMINISTRATOR", "Account Administrator")
+			_createAccountRole("Account Administrator")
 		);
 
 		Mockito.when(
@@ -1156,9 +1155,9 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleName(_ACCOUNT_ID, _ACCOUNT_ROLE_ID)
+			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
 		).thenReturn(
-			"Support Administrator"
+			_createAccountRole("Support Administrator")
 		);
 
 		accountsRestController.postUserAccountsAccountRole(
@@ -1272,9 +1271,9 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNames(_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
 		).thenReturn(
-			Map.of(_ACCOUNT_ROLE_ID, "Support Administrator")
+			_createAccountRole("Support Administrator")
 		);
 
 		UserAccount userAccount = _createUserAccount();
@@ -1340,9 +1339,9 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNames(_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
 		).thenReturn(
-			Map.of(_ACCOUNT_ROLE_ID, "Account Member")
+			_createAccountRole("Account Member")
 		);
 
 		Mockito.when(
@@ -1378,17 +1377,13 @@ public class AccountsRestControllerTest {
 			_createAccount()
 		);
 
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() ->
-					accountsRestController.
-						postUserAccountsByEmailAddressAccountRoles(
-							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
-							"not json"));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertThrows(
+			JSONException.class,
+			() ->
+				accountsRestController.
+					postUserAccountsByEmailAddressAccountRoles(
+						null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
+						"not json"));
 
 		Mockito.verifyNoInteractions(_oktaService);
 	}
@@ -1468,9 +1463,9 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccountRoleNames(_ACCOUNT_ID)
+			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
 		).thenReturn(
-			Map.of(_ACCOUNT_ROLE_ID, "Support Administrator")
+			_createAccountRole("Support Administrator")
 		);
 
 		Mockito.when(
@@ -1652,6 +1647,16 @@ public class AccountsRestControllerTest {
 			));
 	}
 
+	private AccountRole _createAccountRole(String name) {
+		AccountRole accountRole = new AccountRole();
+
+		accountRole.setExternalReferenceCode("L_ACCOUNT_ADMINISTRATOR");
+		accountRole.setId(_ACCOUNT_ROLE_ID);
+		accountRole.setName(name);
+
+		return accountRole;
+	}
+
 	private String _createBodyJSON(
 		long accountRoleId, String firstName, String lastName) {
 
@@ -1697,6 +1702,8 @@ public class AccountsRestControllerTest {
 			_accountInvitationService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_accountPermission", _accountPermission);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_accountRoleService", _accountRoleService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
@@ -1852,6 +1859,8 @@ public class AccountsRestControllerTest {
 		Mockito.mock(AccountInvitationService.class);
 	private final AccountPermission _accountPermission = Mockito.mock(
 		AccountPermission.class);
+	private final AccountRoleService _accountRoleService = Mockito.mock(
+		AccountRoleService.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
 	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(

@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
@@ -21,6 +22,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
@@ -28,11 +30,13 @@ import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectMembershipPermission;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
+import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
@@ -64,7 +68,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,8 +146,8 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
-		String accountRoleName = _accountService.getAccountRoleName(
-			account.getId(), accountRoleId);
+		AccountRole accountRole = _accountRoleService.fetchAccountRole(
+			accountRoleId);
 
 		_accountService.removeAccountUserAccountRole(
 			accountRoleId, externalReferenceCode, jwt, userId);
@@ -153,9 +156,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_syncMembership(account, userId);
 
-		if (accountRoleName != null) {
+		if (accountRole != null) {
 			_provisioningAssignmentService.unassignAccountRole(
-				account, userId, accountRoleName);
+				account, userId, accountRole.getName());
 		}
 	}
 
@@ -167,13 +170,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
 
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
-
-		Map<String, String> accountRoleNames =
-			_accountService.getAccountRoleNamesByExternalReferenceCode(
-				account.getId());
-
 		JSONArray jsonArray = new JSONArray();
 
 		List<AccountInvitation> accountInvitations =
@@ -181,7 +177,7 @@ public class AccountsRestController extends OneBaseRestController {
 				externalReferenceCode);
 
 		for (AccountInvitation accountInvitation : accountInvitations) {
-			jsonArray.put(_toJSONObject(accountInvitation, accountRoleNames));
+			jsonArray.put(_toJSONObject(accountInvitation));
 		}
 
 		return new ResponseEntity<>(jsonArray.toString(), HttpStatus.OK);
@@ -290,104 +286,46 @@ public class AccountsRestController extends OneBaseRestController {
 			@RequestBody String json)
 		throws Exception {
 
-		JSONObject jsonObject = null;
-
-		try {
-			jsonObject = new JSONObject(json);
-		}
-		catch (JSONException jsonException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Request body is not valid JSON",
-				jsonException);
-		}
-
-		String projectExternalReferenceCode = jsonObject.optString(
-			"projectExternalReferenceCode");
-
-		if (Validator.isNull(projectExternalReferenceCode)) {
-			_accountPermission.check(
-				externalReferenceCode, ActionKeys.UPDATE, jwt);
-		}
-		else {
-			_projectMembershipPermission.check(
-				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
-		}
+		JSONObject jsonObject = new JSONObject(json);
 
 		String emailAddress = jsonObject.optString("emailAddress");
 		String familyName = jsonObject.optString("familyName");
 		String givenName = jsonObject.optString("givenName");
-
-		if (Validator.isNull(emailAddress) || Validator.isNull(familyName) ||
-			Validator.isNull(givenName)) {
-
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"\"emailAddress\", \"familyName\", and \"givenName\" are " +
-					"required");
-		}
-
-		if (!Validator.isEmailAddress(emailAddress)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Email address is not valid");
-		}
-
-		if (_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"Email address uses a reserved Liferay domain");
-		}
+		String projectExternalReferenceCode = jsonObject.optString(
+			"projectExternalReferenceCode");
+		String projectRoleExternalReferenceCode = jsonObject.optString(
+			"projectRoleExternalReferenceCode");
 
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
+		_validateInvitation(emailAddress, familyName, givenName);
+
 		UserAccount userAccount =
 			_userAccountService.fetchUserAccountByEmailAddress(emailAddress);
 
-		if (Validator.isNull(projectExternalReferenceCode) &&
-			(userAccount != null) &&
-			UserAccountUtil.hasAccountMembership(
-				userAccount, account.getId())) {
-
-			throw new ResponseStatusException(
-				HttpStatus.CONFLICT,
-				"The user is already a member of this account");
-		}
-
-		String projectName = null;
-		String projectRoleExternalReferenceCode = jsonObject.optString(
-			"projectRoleExternalReferenceCode");
+		Project project = null;
 
 		if (Validator.isNotNull(projectExternalReferenceCode)) {
-			Project project = _projectService.fetchProject(
+			_projectMembershipPermission.check(
+				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
+
+			project = _projectService.fetchProject(
 				projectExternalReferenceCode);
 
-			if ((project == null) ||
-				!Objects.equals(
-					project.getAccountExternalReferenceCode(),
-					externalReferenceCode)) {
+			_validateProjectInvitation(
+				externalReferenceCode, project, projectExternalReferenceCode,
+				projectRoleExternalReferenceCode, userAccount);
+		}
+		else {
+			_accountPermission.check(
+				externalReferenceCode, ActionKeys.UPDATE, jwt);
 
-				throw new ResponseStatusException(
-					HttpStatus.BAD_REQUEST,
-					"Unable to find project " + projectExternalReferenceCode +
-						" for this account");
-			}
-
-			if (!ArrayUtil.contains(
-					RoleConstants.ERCS_SUPPORT_PROJECT,
-					projectRoleExternalReferenceCode)) {
-
-				throw new ResponseStatusException(
-					HttpStatus.BAD_REQUEST,
-					"Unable to find project role " +
-						projectRoleExternalReferenceCode);
-			}
-
-			projectName = project.getName();
+			_validateAccountInvitation(account, userAccount);
 		}
 
 		List<String> roleExternalReferenceCodes =
 			_getRoleExternalReferenceCodes(
-				account.getId(),
 				jsonObject.optJSONArray("roleExternalReferenceCodes"));
 
 		UserAccount inviterUserAccount = getMyUserAccount(jwt);
@@ -416,9 +354,15 @@ public class AccountsRestController extends OneBaseRestController {
 					roleExternalReferenceCodes);
 			});
 
-		_accountInvitationEmailService.sendInvitationEmail(
-			account, accountInvitation, inviterUserAccount.getName(),
-			projectName);
+		if (project == null) {
+			_accountInvitationEmailService.sendInvitationEmail(
+				account, accountInvitation, inviterUserAccount.getName());
+		}
+		else {
+			_accountInvitationEmailService.sendInvitationEmail(
+				account, accountInvitation, inviterUserAccount.getName(),
+				project);
+		}
 	}
 
 	@PostMapping(
@@ -433,24 +377,28 @@ public class AccountsRestController extends OneBaseRestController {
 		AccountInvitation accountInvitation = _getPendingAccountInvitation(
 			accountInvitationId, externalReferenceCode, jwt);
 
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
+		AccountInvitation renewedAccountInvitation =
+			_accountInvitationService.renewAccountInvitation(
+				accountInvitation.getAccountInvitationId());
 
 		UserAccount inviterUserAccount = getMyUserAccount(jwt);
 
-		String projectName = _getProjectName(
-			accountInvitation.getProjectExternalReferenceCode());
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
 
-		AccountInvitation renewedAccountInvitation = _keyedLock.withLock(
-			StringBundler.concat(
-				externalReferenceCode, "#", accountInvitation.getEmailAddress(),
-				"#", accountInvitation.getProjectExternalReferenceCode()),
-			() -> _accountInvitationService.renewAccountInvitation(
-				accountInvitation.getAccountInvitationId()));
+		String projectExternalReferenceCode =
+			accountInvitation.getProjectExternalReferenceCode();
 
-		_accountInvitationEmailService.sendInvitationEmail(
-			account, renewedAccountInvitation, inviterUserAccount.getName(),
-			projectName);
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			_accountInvitationEmailService.sendInvitationEmail(
+				account, renewedAccountInvitation,
+				inviterUserAccount.getName());
+		}
+		else {
+			_accountInvitationEmailService.sendInvitationEmail(
+				account, renewedAccountInvitation, inviterUserAccount.getName(),
+				_projectService.fetchProject(projectExternalReferenceCode));
+		}
 	}
 
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
@@ -510,12 +458,12 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_syncMembership(account, userId);
 
-		String accountRoleName = _accountService.getAccountRoleName(
-			account.getId(), accountRoleId);
+		AccountRole accountRole = _accountRoleService.fetchAccountRole(
+			accountRoleId);
 
-		if (accountRoleName != null) {
+		if (accountRole != null) {
 			_provisioningAssignmentService.assignAccountRole(
-				account, userId, accountRoleName);
+				account, userId, accountRole.getName());
 		}
 	}
 
@@ -538,22 +486,13 @@ public class AccountsRestController extends OneBaseRestController {
 				"Email address uses a reserved Liferay domain");
 		}
 
-		JSONObject jsonObject = null;
-
-		try {
-			jsonObject = new JSONObject(json);
-		}
-		catch (JSONException jsonException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Request body is not valid JSON",
-				jsonException);
-		}
+		JSONObject jsonObject = new JSONObject(json);
 
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
 		Map<Long, String> accountRoleNames = _getAccountRoleNames(
-			account.getId(), jsonObject.optJSONArray("accountRoleIds"));
+			jsonObject.optJSONArray("accountRoleIds"));
 
 		UserAccount userAccount =
 			_userAccountService.fetchUserAccountByEmailAddress(emailAddress);
@@ -650,7 +589,7 @@ public class AccountsRestController extends OneBaseRestController {
 	}
 
 	private Map<Long, String> _getAccountRoleNames(
-			long accountId, JSONArray accountRoleIdsJSONArray)
+			JSONArray accountRoleIdsJSONArray)
 		throws Exception {
 
 		Map<Long, String> accountRoleNames = new LinkedHashMap<>();
@@ -659,21 +598,19 @@ public class AccountsRestController extends OneBaseRestController {
 			return accountRoleNames;
 		}
 
-		Map<Long, String> allAccountRoleNames =
-			_accountService.getAccountRoleNames(accountId);
-
 		for (int i = 0; i < accountRoleIdsJSONArray.length(); i++) {
 			long accountRoleId = accountRoleIdsJSONArray.getLong(i);
 
-			String accountRoleName = allAccountRoleNames.get(accountRoleId);
+			AccountRole accountRole = _accountRoleService.fetchAccountRole(
+				accountRoleId);
 
-			if (accountRoleName == null) {
+			if (accountRole == null) {
 				throw new ResponseStatusException(
 					HttpStatus.BAD_REQUEST,
 					"Unable to find account role " + accountRoleId);
 			}
 
-			accountRoleNames.put(accountRoleId, accountRoleName);
+			accountRoleNames.put(accountRoleId, accountRole.getName());
 		}
 
 		return accountRoleNames;
@@ -789,25 +726,8 @@ public class AccountsRestController extends OneBaseRestController {
 		return jsonObject.toString();
 	}
 
-	private String _getProjectName(String projectExternalReferenceCode)
-		throws Exception {
-
-		if (Validator.isNull(projectExternalReferenceCode)) {
-			return null;
-		}
-
-		Project project = _projectService.fetchProject(
-			projectExternalReferenceCode);
-
-		if (project == null) {
-			return null;
-		}
-
-		return project.getName();
-	}
-
 	private List<String> _getRoleExternalReferenceCodes(
-			long accountId, JSONArray roleExternalReferenceCodesJSONArray)
+			JSONArray roleExternalReferenceCodesJSONArray)
 		throws Exception {
 
 		List<String> roleExternalReferenceCodes = new ArrayList<>();
@@ -818,15 +738,15 @@ public class AccountsRestController extends OneBaseRestController {
 			return roleExternalReferenceCodes;
 		}
 
-		Map<String, String> accountRoleNames =
-			_accountService.getAccountRoleNamesByExternalReferenceCode(
-				accountId);
-
 		for (int i = 0; i < roleExternalReferenceCodesJSONArray.length(); i++) {
 			String roleExternalReferenceCode =
 				roleExternalReferenceCodesJSONArray.getString(i);
 
-			if (!accountRoleNames.containsKey(roleExternalReferenceCode)) {
+			AccountRole accountRole =
+				_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+					roleExternalReferenceCode);
+
+			if (accountRole == null) {
 				throw new ResponseStatusException(
 					HttpStatus.BAD_REQUEST,
 					"Unable to find account role " + roleExternalReferenceCode);
@@ -849,19 +769,20 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
-	private JSONObject _toJSONObject(
-		AccountInvitation accountInvitation,
-		Map<String, String> accountRoleNames) {
+	private JSONObject _toJSONObject(AccountInvitation accountInvitation)
+		throws Exception {
 
 		JSONArray roleNamesJSONArray = new JSONArray();
 
 		for (String roleExternalReferenceCode :
 				accountInvitation.getRoleExternalReferenceCodes()) {
 
-			String roleName = accountRoleNames.get(roleExternalReferenceCode);
+			AccountRole accountRole =
+				_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+					roleExternalReferenceCode);
 
-			if (roleName != null) {
-				roleNamesJSONArray.put(roleName);
+			if (accountRole != null) {
+				roleNamesJSONArray.put(accountRole.getName());
 			}
 		}
 
@@ -898,11 +819,10 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account, long accountRoleId, long userId) {
 
 		try {
-			String accountRoleExternalReferenceCode =
-				_accountService.getAccountRoleExternalReferenceCode(
-					account.getId(), accountRoleId);
+			AccountRole accountRole = _accountRoleService.fetchAccountRole(
+				accountRoleId);
 
-			if (accountRoleExternalReferenceCode == null) {
+			if (accountRole == null) {
 				return;
 			}
 
@@ -910,7 +830,7 @@ public class AccountsRestController extends OneBaseRestController {
 				userId);
 
 			_accountUserAccountRoleSynchronizer.syncUnassignRole(
-				accountRoleExternalReferenceCode,
+				accountRole.getExternalReferenceCode(),
 				userAccount.getExternalReferenceCode(),
 				account.getExternalReferenceCode());
 		}
@@ -957,6 +877,86 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _validateAccountInvitation(
+		Account account, UserAccount userAccount) {
+
+		if ((userAccount != null) &&
+			UserAccountUtil.hasAccountMembership(
+				userAccount, account.getId())) {
+
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"The user is already a member of this account");
+		}
+	}
+
+	private void _validateInvitation(
+		String emailAddress, String familyName, String givenName) {
+
+		if (Validator.isNull(emailAddress) || Validator.isNull(familyName) ||
+			Validator.isNull(givenName)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"\"emailAddress\", \"familyName\", and \"givenName\" are " +
+					"required");
+		}
+
+		if (!Validator.isEmailAddress(emailAddress)) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Email address is not valid");
+		}
+
+		if (_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Email address uses a reserved Liferay domain");
+		}
+	}
+
+	private void _validateProjectInvitation(
+			String externalReferenceCode, Project project,
+			String projectExternalReferenceCode,
+			String projectRoleExternalReferenceCode, UserAccount userAccount)
+		throws Exception {
+
+		if ((project == null) ||
+			!Objects.equals(
+				project.getAccountExternalReferenceCode(),
+				externalReferenceCode)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Unable to find project " + projectExternalReferenceCode +
+					" for this account");
+		}
+
+		if (!ArrayUtil.contains(
+				RoleConstants.ERCS_SUPPORT_PROJECT,
+				projectRoleExternalReferenceCode)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Unable to find project role " +
+					projectRoleExternalReferenceCode);
+		}
+
+		if (userAccount == null) {
+			return;
+		}
+
+		ProjectMembership projectMembership =
+			_projectMembershipService.fetchProjectMembership(
+				projectExternalReferenceCode, projectRoleExternalReferenceCode,
+				userAccount.getId());
+
+		if (projectMembership != null) {
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"The user already has this role in this project");
+		}
+	}
+
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
 
@@ -974,6 +974,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private AccountPermission _accountPermission;
+
+	@Autowired
+	private AccountRoleService _accountRoleService;
 
 	@Autowired
 	private AccountService _accountService;
@@ -1017,6 +1020,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private ProjectMembershipPermission _projectMembershipPermission;
+
+	@Autowired
+	private ProjectMembershipService _projectMembershipService;
 
 	@Autowired
 	private ProjectService _projectService;

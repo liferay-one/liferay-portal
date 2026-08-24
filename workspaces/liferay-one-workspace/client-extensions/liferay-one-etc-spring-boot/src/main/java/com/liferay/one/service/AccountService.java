@@ -9,28 +9,23 @@ import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountContactInformation;
-import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.EmailAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
-import com.liferay.headless.admin.user.client.pagination.Page;
-import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
-import com.liferay.headless.admin.user.client.resource.v1_0.AccountRoleResource;
 import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,6 +133,29 @@ public class AccountService extends OneBaseService {
 			).toUri());
 	}
 
+	public void addAccountUserAccountRoleByExternalReferenceCode(
+			String accountExternalReferenceCode,
+			String accountRoleExternalReferenceCode, String emailAddress)
+		throws Exception {
+
+		StringBundler sb = new StringBundler(5);
+
+		sb.append("/o/headless-admin-user/v1.0/accounts");
+		sb.append("/by-external-reference-code/{accountExternalReferenceCode}");
+		sb.append("/account-roles/by-external-reference-code");
+		sb.append("/{accountRoleExternalReferenceCode}/user-accounts");
+		sb.append("/by-email-address/{emailAddress}");
+
+		post(
+			getAuthorization(), StringPool.BLANK,
+			UriComponentsBuilder.fromPath(
+				sb.toString()
+			).buildAndExpand(
+				accountExternalReferenceCode, accountRoleExternalReferenceCode,
+				emailAddress
+			).toUri());
+	}
+
 	public void addOrganizationAccount(long accountId, long organizationId)
 		throws Exception {
 
@@ -200,21 +218,6 @@ public class AccountService extends OneBaseService {
 		}
 	}
 
-	public Long fetchAccountRoleId(long accountId, String name)
-		throws Exception {
-
-		List<Long> accountRoleIds = getAllItems(
-			"/o/headless-admin-user/v1.0/accounts/" + accountId +
-				"/account-roles",
-			"name eq '" + name + "'", jsonObject -> jsonObject.getLong("id"));
-
-		if (accountRoleIds.isEmpty()) {
-			return null;
-		}
-
-		return accountRoleIds.get(0);
-	}
-
 	public Account getAccount(long accountEntryId, Jwt jwt) throws Exception {
 		AccountResource accountResource = AccountResource.builder(
 		).endpoint(
@@ -263,101 +266,6 @@ public class AccountService extends OneBaseService {
 
 			throw problemException;
 		}
-	}
-
-	public String getAccountRoleExternalReferenceCode(
-			long accountId, long accountRoleId)
-		throws Exception {
-
-		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
-
-		Page<AccountRole> accountRolesPage =
-			accountRoleResource.getAccountAccountRolesPage(
-				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
-
-		for (AccountRole accountRole : accountRolesPage.getItems()) {
-			if (Objects.equals(accountRole.getId(), accountRoleId)) {
-				return accountRole.getExternalReferenceCode();
-			}
-		}
-
-		return null;
-	}
-
-	public Map<String, Long> getAccountRoleIdsByExternalReferenceCode(
-			long accountId)
-		throws Exception {
-
-		Map<String, Long> accountRoleIds = new HashMap<>();
-
-		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
-
-		Page<AccountRole> accountRolesPage =
-			accountRoleResource.getAccountAccountRolesPage(
-				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
-
-		for (AccountRole accountRole : accountRolesPage.getItems()) {
-			accountRoleIds.put(
-				accountRole.getExternalReferenceCode(), accountRole.getId());
-		}
-
-		return accountRoleIds;
-	}
-
-	public String getAccountRoleName(long accountId, long accountRoleId)
-		throws Exception {
-
-		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
-
-		Page<AccountRole> accountRolesPage =
-			accountRoleResource.getAccountAccountRolesPage(
-				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
-
-		for (AccountRole accountRole : accountRolesPage.getItems()) {
-			if (Objects.equals(accountRole.getId(), accountRoleId)) {
-				return accountRole.getName();
-			}
-		}
-
-		return null;
-	}
-
-	public Map<Long, String> getAccountRoleNames(long accountId)
-		throws Exception {
-
-		Map<Long, String> accountRoleNames = new HashMap<>();
-
-		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
-
-		Page<AccountRole> accountRolesPage =
-			accountRoleResource.getAccountAccountRolesPage(
-				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
-
-		for (AccountRole accountRole : accountRolesPage.getItems()) {
-			accountRoleNames.put(accountRole.getId(), accountRole.getName());
-		}
-
-		return accountRoleNames;
-	}
-
-	public Map<String, String> getAccountRoleNamesByExternalReferenceCode(
-			long accountId)
-		throws Exception {
-
-		Map<String, String> accountRoleNames = new HashMap<>();
-
-		AccountRoleResource accountRoleResource = _buildAccountRoleResource();
-
-		Page<AccountRole> accountRolesPage =
-			accountRoleResource.getAccountAccountRolesPage(
-				accountId, null, null, Pagination.of(1, _PAGE_SIZE), null);
-
-		for (AccountRole accountRole : accountRolesPage.getItems()) {
-			accountRoleNames.put(
-				accountRole.getExternalReferenceCode(), accountRole.getName());
-		}
-
-		return accountRoleNames;
 	}
 
 	public boolean hasDuplicateAccountName(
@@ -462,15 +370,6 @@ public class AccountService extends OneBaseService {
 
 		_setDefaultLicensingCustomFields(
 			account, salesforceAccount.getBillingCountry(), soldBy);
-	}
-
-	private AccountRoleResource _buildAccountRoleResource() {
-		return AccountRoleResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
 	}
 
 	private void _setAccountContactInformation(
@@ -796,8 +695,6 @@ public class AccountService extends OneBaseService {
 	private static final int _MAX_CITY_LENGTH = 75;
 
 	private static final int _MAX_STREET_LENGTH = 255;
-
-	private static final int _PAGE_SIZE = 500;
 
 	@Autowired
 	private UserAccountService _userAccountService;

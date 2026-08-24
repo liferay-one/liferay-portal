@@ -64,26 +64,14 @@ public class ContractService extends OneBaseService {
 			String externalReferenceCode)
 		throws Exception {
 
-		String response = null;
-
-		try {
-			response = get(
-				getAuthorization(),
-				UriComponentsBuilder.fromPath(
-					"/o/c/contracts/by-external-reference-code" +
-						"/{externalReferenceCode}"
-				).buildAndExpand(
-					externalReferenceCode
-				).toUri());
-		}
-		catch (WebClientResponseException webClientResponseException) {
-			int statusCode = webClientResponseException.getStatusCode(
-			).value();
-
-			if (statusCode != HttpStatus.NOT_FOUND.value()) {
-				throw webClientResponseException;
-			}
-		}
+		String response = fetch(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/contracts/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).buildAndExpand(
+				externalReferenceCode
+			).toUri());
 
 		if (Validator.isNull(response)) {
 			return null;
