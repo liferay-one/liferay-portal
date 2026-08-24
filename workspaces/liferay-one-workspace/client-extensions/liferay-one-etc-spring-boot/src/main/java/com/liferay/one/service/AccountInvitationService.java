@@ -133,15 +133,16 @@ public class AccountInvitationService extends OneBaseService {
 		sb.append(_escapeFilterValue(accountExternalReferenceCode));
 		sb.append("') and (emailAddress eq '");
 		sb.append(_escapeFilterValue(emailAddress));
-		sb.append("') and (projectExternalReferenceCode eq ");
+		sb.append("') and ");
 
 		if (Validator.isNotNull(projectExternalReferenceCode)) {
-			sb.append(StringPool.APOSTROPHE);
+			sb.append("(projectExternalReferenceCode eq '");
 			sb.append(_escapeFilterValue(projectExternalReferenceCode));
 			sb.append("')");
 		}
 		else {
-			sb.append("null)");
+			sb.append("((projectExternalReferenceCode eq null) or ");
+			sb.append("(projectExternalReferenceCode eq ''))");
 		}
 
 		List<AccountInvitation> accountInvitations = getAllItems(
