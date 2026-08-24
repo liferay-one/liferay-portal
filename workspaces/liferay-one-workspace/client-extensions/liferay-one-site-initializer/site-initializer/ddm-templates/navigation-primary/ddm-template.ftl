@@ -14,6 +14,24 @@
 	<#return "" />
 </#function>
 
+<#function getNavigationMenuItemURL navigationMenuItem>
+	<#if stringUtil.equals((navigationMenuItem.type)!"", "layout")>
+		<#return (layoutFriendlyURLs[(navigationMenuItem.typeSettings.externalReferenceCode)!""])!"" />
+	</#if>
+
+	<#return (navigationMenuItem.typeSettings.url)!"" />
+</#function>
+
+<#function hasLayoutNavigationMenuItems navigationMenuItems>
+	<#list navigationMenuItems as navigationMenuItem>
+		<#if stringUtil.equals((navigationMenuItem.type)!"", "layout") || hasLayoutNavigationMenuItems((navigationMenuItem.navigationMenuItems)![])>
+			<#return true />
+		</#if>
+	</#list>
+
+	<#return false />
+</#function>
+
 <#assign
 	canBypassMyAccount = false
 	hasMarketplacePublisherRole = false
@@ -44,6 +62,20 @@
 	<#assign navigationMenu = {} />
 </#attempt>
 
+<#assign layoutFriendlyURLs = {} />
+
+<#if ((navigationMenu.navigationMenuItems)?? && hasLayoutNavigationMenuItems(navigationMenu.navigationMenuItems))>
+	<#attempt>
+		<#assign sitePages = restClient.get("/headless-delivery/v1.0/sites/" + themeDisplay.getScopeGroupId()?c + "/site-pages?fields=friendlyUrlPath,uuid&pageSize=-1") />
+
+		<#list (sitePages.items)![] as sitePage>
+			<#assign layoutFriendlyURLs = layoutFriendlyURLs + {(sitePage.uuid)!"": (sitePage.friendlyUrlPath)!""} />
+		</#list>
+	<#recover>
+		<#assign layoutFriendlyURLs = {} />
+	</#attempt>
+</#if>
+
 <#assign activeSectionName = "" />
 
 <#attempt>
@@ -61,9 +93,14 @@
 <ul class="adt-navigation" data-account-bypass="${canBypassMyAccount?c}">
 	<#if (navigationMenu.navigationMenuItems)??>
 		<#list navigationMenu.navigationMenuItems as navPrimaryItem>
-			<#assign isActiveSection = activeSectionName?has_content && stringUtil.equals(navPrimaryItem.name, activeSectionName) />
+			<#assign
+				navPrimaryItemName = (navPrimaryItem.name)!""
+				navPrimaryItemURL = getNavigationMenuItemURL(navPrimaryItem)
+				isActiveSection = activeSectionName?has_content && stringUtil.equals(navPrimaryItemName, activeSectionName)
+			/>
 
-			<#if (stringUtil.equals(navPrimaryItem.name, "My Account") || stringUtil.equals(navPrimaryItem.name, "Admin")) && !themeDisplay.isSignedIn()>
+			<#if !navPrimaryItemName?has_content>
+			<#elseif (stringUtil.equals(navPrimaryItemName, "My Account") || stringUtil.equals(navPrimaryItemName, "Admin")) && !themeDisplay.isSignedIn()>
 			<#elseif (((navPrimaryItem.navigationMenuItems)![])?size > 0)>
 				<div class="adt-nav-item dropdown dropdown-action<#if isActiveSection> selected</#if> w-100">
 					<button
@@ -74,7 +111,7 @@
 						tabindex="4"
 					>
 						<span class="adt-nav-title text-truncate">
-							${navPrimaryItem.name}
+							${navPrimaryItemName}
 						</span>
 						<span class="adt-nav-caret-bottom-icon align-self-center">
 							<svg class="lexicon-icon lexicon-icon-caret-bottom" role="presentation" viewBox="0 0 512 512"><use xlink:href="/o/admin-theme/images/clay/icons.svg#caret-bottom"></use></svg>
@@ -83,11 +120,11 @@
 
 					<@renderNavigationDropdown navPrimaryItem />
 				</div>
-			<#else>
-				<a class="adt-nav-item<#if isActiveSection> selected</#if> w-100" href="${(navPrimaryItem.typeSettings.url)!""}"<#if stringUtil.equals((navPrimaryItem.typeSettings.useNewTab)!"", "true")> target="_blank"</#if>>
+			<#elseif navPrimaryItemURL?has_content>
+				<a class="adt-nav-item<#if isActiveSection> selected</#if> w-100" href="${navPrimaryItemURL}"<#if stringUtil.equals((navPrimaryItem.typeSettings.useNewTab)!"", "true")> target="_blank"</#if>>
 					<div class="adt-nav-text d-flex pr-3" tabindex="4">
 						<span class="adt-nav-title text-truncate">
-							${navPrimaryItem.name}
+							${navPrimaryItemName}
 						</span>
 					</div>
 				</a>
@@ -109,6 +146,7 @@
 						columnSpan = getCustomFieldData(navSecondaryItem, "Submenu Column Span")
 						imageURL = getCustomFieldData(navSecondaryItem, "Menu Item Image URL")
 						menuItemType = getCustomFieldData(navSecondaryItem, "Menu Item Type")
+						navSecondaryItemName = (navSecondaryItem.name)!""
 					/>
 
 					<#if childColumns?has_content>
@@ -124,7 +162,7 @@
 							<#if stringUtil.equals(menuItemType, "Image") && imageURL?has_content>
 								<img class="adt-submenu-header-image" loading="lazy" src="${imageURL}" />
 							</#if>
-							${navSecondaryItem.name}
+							${navSecondaryItemName}
 						</li>
 
 						<#list (navSecondaryItem.navigationMenuItems)![] as navTertiaryItem>
@@ -132,12 +170,14 @@
 								descriptionText = getCustomFieldData(navTertiaryItem, "Menu Item Description")
 								imageURL = getCustomFieldData(navTertiaryItem, "Menu Item Image URL")
 								menuItemType = getCustomFieldData(navTertiaryItem, "Menu Item Type")
+								navTertiaryItemName = (navTertiaryItem.name)!""
+								navTertiaryItemURL = getNavigationMenuItemURL(navTertiaryItem)
 								preheaderText = getCustomFieldData(navTertiaryItem, "Menu Item Preheader")
 							/>
 
-							<#if !(stringUtil.equals(navTertiaryItem.name, "Publisher Dashboard") && !hasMarketplacePublisherRole)>
+							<#if navTertiaryItemName?has_content && navTertiaryItemURL?has_content && !(stringUtil.equals(navTertiaryItemName, "Publisher Dashboard") && !hasMarketplacePublisherRole)>
 								<li class="adt-submenu-item-content ${menuItemType?lower_case}-type grid-column-span-${childColumns}">
-									<a class="adt-submenu-item-link" href="${(navTertiaryItem.typeSettings.url)!""}" tabindex="4">
+									<a class="adt-submenu-item-link" href="${navTertiaryItemURL}" tabindex="4">
 										<#if stringUtil.equals(menuItemType, "Image") && imageURL?has_content>
 											<img class="adt-submenu-item-image" loading="lazy" src="${imageURL}" />
 										</#if>
@@ -149,8 +189,8 @@
 												</div>
 											</#if>
 
-											<div class="adt-submenu-item-title h5" data-nav-name="${navTertiaryItem.name}">
-												${navTertiaryItem.name}
+											<div class="adt-submenu-item-title h5" data-nav-name="${navTertiaryItemName}">
+												${navTertiaryItemName}
 											</div>
 
 											<#if descriptionText?has_content>
