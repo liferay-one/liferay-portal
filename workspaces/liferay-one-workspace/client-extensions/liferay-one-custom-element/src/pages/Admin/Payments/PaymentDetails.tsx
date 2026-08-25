@@ -344,7 +344,7 @@ const PaymentDetails = () => {
 										<div className="d-flex">
 											<img
 												alt="App Icon"
-												className="mr-2 order-details-app-icon rounded"
+												className="app-details-page-table-icon mr-2"
 												draggable={false}
 												src={placedOrderItem.thumbnail}
 											/>
