@@ -26,6 +26,14 @@ liferay-one-etc-spring-boot-oahs:
         -   c_ticketattachment.everything
         -   c_trialextensionrequest.everything
     type: oAuthApplicationHeadlessServer
+liferay-one-etc-spring-boot-oaci:
+    .serviceAddress: localhost:58081
+    .serviceScheme: http
+    name: Liferay One Etc Spring Boot OAuth Application Cloud Infrastructure
+    scopes:
+        -   Liferay.Headless.Admin.User.read
+        -   c_property.read
+    type: oAuthApplicationHeadlessServer
 liferay-one-etc-spring-boot-oaua:
     .serviceAddress: localhost:58081
     .serviceScheme: http
