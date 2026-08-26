@@ -1,10 +1,29 @@
 <#assign
-	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
+	accountId = "-1"
+	currencyCode = "USD"
 
+	commerceContext = (renderRequest.getAttribute("COMMERCE_CONTEXT"))!
+/>
+
+<#if !commerceContext?has_content>
+	<#assign commerceContext = (request.getAttribute("COMMERCE_CONTEXT"))! />
+</#if>
+
+<#if commerceContext?has_content>
+	<#if commerceContext.getAccountEntry()??>
+		<#assign accountId = commerceContext.getAccountEntry().getAccountEntryId()?string />
+	</#if>
+	<#if commerceContext.getCommerceCurrency()??>
+		<#assign currencyCode = commerceContext.getCommerceCurrency().getCode() />
+	</#if>
+</#if>
+
+<#assign
+	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=" + accountId + "&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
 	product = restClient.get(
 		"/headless-commerce-delivery-catalog/v1.0/channels/" + channel.items[0].id +
 		"/products/" + CPDefinition_cProductId.getData() +
-		"?accountId=-1&nestedFields=categories,productSpecifications,skus&skus.accountId=-1&skus.currencyCode=USD"
+		"?accountId=" + accountId + "&nestedFields=categories,productSpecifications,skus&skus.accountId=" + accountId + "&skus.currencyCode=" + currencyCode
 	)
 
 	catalogName = product.catalogName!""

@@ -8,10 +8,13 @@ export function formatCurrency(
 	currencyCode = 'USD',
 	locale = 'en-US'
 ) {
-	return new Intl.NumberFormat(locale, {
+	const normalizedLocale = locale.replace('_', '-');
+
+	return new Intl.NumberFormat(normalizedLocale, {
 		currency: currencyCode,
 		style: 'currency',
 	}).format(amount);
 }
 
 export default formatCurrency;
+
