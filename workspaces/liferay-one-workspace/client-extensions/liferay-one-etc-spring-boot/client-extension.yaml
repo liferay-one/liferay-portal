@@ -31,8 +31,8 @@ liferay-one-etc-spring-boot-oaci:
     .serviceScheme: http
     name: Liferay One Etc Spring Boot OAuth Application Cloud Infrastructure
     scopes:
-        -   Liferay.Headless.Admin.User.read
-        -   c_property.read
+        -   Liferay.Headless.Admin.User.everything.read
+        -   c_property.everything.read
     type: oAuthApplicationHeadlessServer
 liferay-one-etc-spring-boot-oaua:
     .serviceAddress: localhost:58081
