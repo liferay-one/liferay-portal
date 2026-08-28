@@ -11,10 +11,19 @@
 
 <#if commerceContext?has_content>
 	<#if commerceContext.getAccountEntry()??>
-		<#assign accountId = commerceContext.getAccountEntry().getAccountEntryId()?string />
+		<#assign
+			accountEntry = commerceContext.getAccountEntry()
+
+			accountId = accountEntry.getAccountEntryId()?string
+		/>
 	</#if>
+
 	<#if commerceContext.getCommerceCurrency()??>
-		<#assign currencyCode = commerceContext.getCommerceCurrency().getCode() />
+		<#assign
+			commerceCurrency = commerceContext.getCommerceCurrency()
+
+			currencyCode = commerceCurrency.getCode()
+		/>
 	</#if>
 </#if>
 
