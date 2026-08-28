@@ -26,6 +26,7 @@ import AIHubAlert from '~/pages/MyAccount/Projects/components/AIHubAlert/AIHubAl
 import ActivationTab from '~/pages/MyAccount/Projects/components/ActivationTab/ActivationTab';
 import DetailHeader from '~/pages/MyAccount/Projects/components/DetailHeader/DetailHeader';
 import DetailsTab from '~/pages/MyAccount/Projects/components/DetailsTab/DetailsTab';
+import SEOStudioDetails from '~/pages/MyAccount/Projects/components/ProductDetails/SEOStudioDetails';
 import DownloadTab from '~/pages/MyAccount/Projects/components/DownloadTab/DownloadTab';
 import EnvironmentTab from '~/pages/MyAccount/Projects/components/EnvironmentTab/EnvironmentTab';
 import HelpSupportTab from '~/pages/MyAccount/Projects/components/HelpSupportTab/HelpSupportTab';
@@ -126,13 +127,19 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 				profile={activationProfile}
 			/>
 		),
-		'details': () => (
-			<DetailsTab
-				contract={contract}
-				orderInfo={orderInfo}
-				profile={detailsProfile}
-			/>
-		),
+		'details': () => {
+			if (orderInfo.orderType === 'SEO_STUDIO') {
+				return <SEOStudioDetails />;
+			}
+
+			return (
+				<DetailsTab
+					contract={contract}
+					orderInfo={orderInfo}
+					profile={detailsProfile}
+				/>
+			);
+		},
 		'download': () => (
 			<DownloadTab
 				profile={downloadProfile}

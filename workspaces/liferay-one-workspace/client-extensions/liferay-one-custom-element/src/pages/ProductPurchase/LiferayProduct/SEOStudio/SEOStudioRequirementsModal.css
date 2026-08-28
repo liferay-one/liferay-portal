@@ -1,0 +1,18 @@
+.seo-studio-requirements-modal {
+	.seo-studio-requirements-modal-description {
+		color: #6b6c7e;
+		margin-bottom: 48px;
+	}
+
+	.seo-studio-requirements-modal-header {
+		color: #0b5fff;
+		font-size: 14px;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	.seo-studio-requirements-modal-title {
+		font-size: 32px;
+		font-weight: 700;
+	}
+}
