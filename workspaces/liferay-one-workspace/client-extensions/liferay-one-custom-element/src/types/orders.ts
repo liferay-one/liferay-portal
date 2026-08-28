@@ -142,7 +142,7 @@ export type OrderItem = {
 export type OrderType = {
 	externalReferenceCode: string;
 	id: number;
-	name: {[key: string]: string};
+	name: { [key: string]: string };
 };
 
 export type PaymentMethodSelector = 'order' | 'pay' | 'trial' | 'free';
@@ -158,7 +158,7 @@ export type PlacedOrder = {
 	accountId: number;
 	author: string;
 	createDate: string;
-	customFields: {[key: string]: string};
+	customFields: { [key: string]: string };
 	externalReferenceCode?: string;
 	id: number;
 	orderStatus: number | string;
