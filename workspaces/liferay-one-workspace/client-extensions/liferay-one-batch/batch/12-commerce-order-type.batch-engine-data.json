@@ -223,6 +223,18 @@
 				"en_US": "SSA SaaS"
 			},
 			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
+				"en_US": "Designates that the order contains a SEO Studio beta."
+			},
+			"displayOrder": 15,
+			"externalReferenceCode": "SEO_STUDIO",
+			"name": {
+				"en_US": "SEO Studio"
+			},
+			"neverExpire": true
 		}
 	]
 }
