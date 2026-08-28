@@ -45,6 +45,12 @@ const AIHubTokenSelection = lazy(
 );
 const ContractSelection = lazy(() => import('./LiferayProduct/Contract'));
 const DSRForm = lazy(() => import('./LiferayProduct/DSR/DSRForm/DSRForm'));
+const SEOStudioAccountSelection = lazy(
+	() => import('./LiferayProduct/SEOStudio/SEOStudioAccountSelection')
+);
+const SEOStudioForm = lazy(
+	() => import('./LiferayProduct/SEOStudio/SEOStudioForm')
+);
 const ProjectSelection = lazy(() => import('./LiferayProduct/Project'));
 
 export type ProductPurchaseStep = {
@@ -155,6 +161,26 @@ export function getProductPurchaseSteps({
 					element: <DSRForm />,
 					path: 'dsr-form',
 					title: i18n.translate('digital-sales-room'),
+				},
+			];
+		}
+
+		if (solutionType === 'seo-studio') {
+			return [
+				{
+					element: <SEOStudioAccountSelection />,
+					index: true,
+					title: i18n.translate('account'),
+				},
+				{
+					element: <ProjectSelection />,
+					path: 'project',
+					title: i18n.translate('project-selection'),
+				},
+				{
+					element: <SEOStudioForm />,
+					path: 'seo-studio-form',
+					title: i18n.translate('request-access' as any),
 				},
 			];
 		}
