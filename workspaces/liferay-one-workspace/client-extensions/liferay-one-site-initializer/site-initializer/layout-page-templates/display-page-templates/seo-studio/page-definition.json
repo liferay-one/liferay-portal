@@ -1,0 +1,3247 @@
+{
+	"pageElement": {
+		"id": "2cfcb64f-999a-d905-ba5d-1df75ba5b8b4",
+		"pageElements": [
+			{
+				"definition": {
+					"fragmentStyle": {
+						"backgroundColor": "",
+						"borderRadius": "10px",
+						"borderWidth": "0",
+						"minHeight": "100vh"
+					},
+					"indexed": true,
+					"layout": {
+					}
+				},
+				"id": "dcb5046b-e882-e593-ba19-68c7f6033c75",
+				"pageElements": [
+					{
+						"definition": {
+							"cssClasses": [
+								"sticky-container-24",
+								"ai-hub-sticky"
+							],
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:sticky;\ntop:12px;\nz-index:969;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#F7F7F8",
+								"paddingBottom": "4"
+							},
+							"indexed": true,
+							"layout": {
+								"paddingBottom": 2
+							}
+						},
+						"id": "73705427-265f-f836-ca55-ed1987076893",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"borderWidth": "0"
+									},
+									"indexed": true,
+									"layout": {
+										"contentDisplay": "FlexColumn",
+										"widthType": "Fixed"
+									}
+								},
+								"id": "dd0b1050-7f80-9024-9277-376d2aac5527",
+								"pageElements": [
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\nbackground-color: transparent;\n}",
+											"fragmentStyle": {
+												"paddingBottom": "4",
+												"paddingTop": "4"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyleGroupId": "[$SCOPE_GROUP_ID$]",
+													"showCurrentGroup": "true",
+													"showGuestGroup": "false",
+													"showLayout": "true",
+													"showParentGroups": "true",
+													"showPortletBreadcrumb": "true"
+												},
+												"widgetName": "com_liferay_site_navigation_breadcrumb_web_portlet_SiteNavigationBreadcrumbPortlet"
+											}
+										},
+										"id": "011f19d5-01a9-ecda-cf93-bba24d0e6067",
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"borderWidth": "0"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexRow",
+												"justify": "SpaceBetween"
+											}
+										},
+										"id": "2c534036-8b3f-9158-4344-9fbc4623b803",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "2f5e2287-4dd3-cb4e-6613-84dfd3e6eda2",
+												"pageElements": [
+													{
+														"definition": {
+															"cssClasses": [
+																"image-container"
+															],
+															"customCSS": ".[$FRAGMENT_CLASS$] img {\nobject-fit: contain;\n    height: 80px;\n    width: 80px;\nborder-radius: 8px;\n}",
+															"fragment": {
+																"key": "image",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"imageSize": "w-100"
+															},
+															"fragmentFields": [
+																{
+																	"id": "icon",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "ddmTemplate__ddmTemplate_[$TEMPLATE_ENTRY_ID:marketplace_apps_icon$]",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"height": "80px",
+																"maxWidth": "80px",
+																"width": "80px"
+															},
+															"indexed": true
+														},
+														"id": "32286b6f-4d3f-c0f7-3a7d-eac35d938f5e",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"borderWidth": "0"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "045e0f2f-4026-2f24-7714-ec5fdea6affd",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"backgroundColor": "colorNeutral3",
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"id": "4cd82209-38c8-ce16-42f1-f7698dcca81a",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "text",
+																				"siteKey": "[$GROUP_KEY$]"
+																			},
+																			"fragmentConfig": {
+																				"fontSize": "font-size-paragraph-base",
+																				"smallCaps": false,
+																				"tabletScreenCenter": false
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"mapping": {
+																								"fieldKey": "CPDefinition_name",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "28px",
+																				"fontWeight": "600",
+																				"paddingRight": "3"
+																			},
+																			"indexed": true
+																		},
+																		"id": "0cfd6d37-7ce1-a1a3-8eb4-e1240238582d",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<span class=\"beta-badge-label\">Beta</span>"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true,
+																			"name": "Beta Badge HTML"
+																		},
+																		"id": "88053e02-183a-40b9-83a3-686d5039ad3a",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"backgroundColor": "colorNeutral3",
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"id": "a3ecd304-ad30-535c-979d-9854d33ea832",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<span>By </span>\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"paddingRight": "1",
+																				"textColor": "#54555F"
+																			},
+																			"indexed": true
+																		},
+																		"id": "786045d5-d14d-9f41-58e1-481906c2d1fc",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"customCSS": ".[$FRAGMENT_CLASS$] a {\ncolor: #54555F;\n}",
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"mapping": {
+																								"fieldKey": "ddmTemplate__ddmTemplate_[$TEMPLATE_ENTRY_ID:marketplace_developer_name$]",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"id": "a29ecbe3-4cd8-d3ef-47d6-f39e651bc268",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-image"
+													},
+													"fragmentConfig": {
+														"imageSize": "w-100"
+													},
+													"fragmentFields": [
+														{
+															"id": "image-square",
+															"value": {
+																"fragmentImage": {
+																	"description": {
+																		"value_i18n": {
+																		}
+																	},
+																	"url": {
+																		"value_i18n": {
+																		}
+																	}
+																},
+																"fragmentLink": {
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"hidden": true,
+														"marginBottom": "2",
+														"marginLeft": "2",
+														"marginRight": "2",
+														"marginTop": "2"
+													},
+													"indexed": true
+												},
+												"id": "abafb51e-0222-f846-d51c-ee93a839991b",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"align": "Center",
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "203067b8-4671-0841-0531-e02e69403cfc",
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-html"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-html",
+																	"value": {
+																		"html": {
+																			"value_i18n": {
+																				"en_US": "  <button\n    class=\"btn btn-secondary\"\n    onclick=\"document.querySelector('.marketo-form').scrollIntoView({ behavior: 'smooth' })\"\n  >\n    Contact\n  </button>"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"hidden": true,
+																"marginRight": "2"
+															},
+															"indexed": true
+														},
+														"id": "6ee17e2a-d414-055a-bb01-c524aca0297a",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-button"
+															},
+															"fragmentConfig": {
+																"buttonSize": "nm",
+																"buttonType": "primary",
+																"type": "link"
+															},
+															"fragmentFields": [
+																{
+																	"id": "link",
+																	"value": {
+																		"fragmentLink": {
+																			"value": {
+																				"href": {
+																					"value_i18n": {
+																						"en_US": "#ai-hub-plans"
+																					}
+																				}
+																			}
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"en_US": "Purchase"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"hidden": true
+															},
+															"indexed": true
+														},
+														"id": "2bc9ad60-bd3d-6ca3-dd9a-e7289c54511e",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] .main-button {\n width: max-content !important;\nz-index: 10;\n}",
+															"fragment": {
+																"key": "get-app-button",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"buttonText": "Request to Join",
+																"product-id": {
+																	"href": ""
+																},
+																"useDescription": false
+															},
+															"fragmentFields": [
+																{
+																	"id": "product-id",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "CPDefinition_cProductId",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"hidden": true
+															},
+															"indexed": true
+														},
+														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "get-app-button",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"buttonText": "Request to Join",
+														"useDescription": true
+													},
+													"fragmentFields": [
+														{
+															"id": "product-id",
+															"value": {
+																"fragmentLink": {
+																},
+																"text": {
+																	"mapping": {
+																		"fieldKey": "CPDefinition_cProductId",
+																		"itemReference": {
+																			"contextSource": "DisplayPageItem"
+																		}
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "722ccca9-afc2-e0d1-76f7-0a7b7b72ebc0",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"customCSS": ".[$FRAGMENT_CLASS$] h1 {\n line-height: 56px !important;\nfont-size: 56px;\nfont-weight: 700;\ntext-align: center;\n}",
+							"fragmentStyle": {
+								"paddingBottom": "8",
+								"paddingTop": "8"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexColumn",
+								"paddingBottom": 10,
+								"paddingTop": 10,
+								"widthType": "Fixed"
+							}
+						},
+						"id": "462fca70-9a58-fb7f-8d17-42691a0c8f93",
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<h1 class=\"dxp-gradient-text\">\nSEO Studio\n</h1>\n\n"
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "fontSizeLg",
+										"fontWeight": "700"
+									},
+									"indexed": true
+								},
+								"id": "61c7844e-fd19-3db3-66a2-e62918085c2e",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-paragraph"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-text",
+											"value": {
+												"fragmentLink": {
+												},
+												"text": {
+													"value_i18n": {
+														"en_US": "<p>Deploy agents that learn, make decisions, and improve your digital experiences using Liferay AI Hub.</p>\n\n\n\n\n"
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "24px",
+										"textAlign": "center"
+									},
+									"indexed": true
+								},
+								"id": "734a94a6-663c-f8f0-5a15-0a2467e23969",
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"hidden": true,
+								"paddingBottom": "9",
+								"paddingTop": "9"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexRow",
+								"widthType": "Fixed"
+							}
+						},
+						"id": "d6692e42-d7ad-d818-9413-0693ed6442de",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"height": "100%",
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "Start",
+										"contentDisplay": "FlexColumn",
+										"justify": "Center"
+									},
+									"name": "content"
+								},
+								"id": "63cd17a2-1a79-2203-5f13-5d07aa9e803c",
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentStyle": {
+												"marginTop": "5"
+											},
+											"indexed": true,
+											"layout": {
+												"marginTop": 4
+											}
+										},
+										"id": "8e67edc2-fff9-9724-a56f-3abbfd25c39c",
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "text",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"fontSize": "font-size-paragraph-base",
+														"smallCaps": false,
+														"tabletScreenCenter": false
+													},
+													"fragmentFields": [
+														{
+															"id": "text",
+															"value": {
+																"fragmentLink": {
+																},
+																"text": {
+																	"value_i18n": {
+																		"en_US": "What Is a CMP?"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "32px",
+														"fontWeight": "600",
+														"marginBottom": "3",
+														"textColor": "#1C1C24"
+													},
+													"indexed": true
+												},
+												"id": "366ed434-0378-278d-8f8c-d736a1d2cb4e",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "\t<p class=\"mb-0\">\n\tA Content Marketing Platform (CMP) is a centralized software solution that <b>streamlines the \n    entire content marketing process</b>, from planning and creation to multi-channel distribution. \n    By offering full visibility across the content lifecycle, CMPs help <b>ensure brand consistency, \n    support data-driven decisions, and deliver relevant content to the right audience</b>, ultimately \n    driving engagement, lead nurturing, and revenue through high-quality storytelling.\n\t</p>\n"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "20px"
+													},
+													"indexed": true
+												},
+												"id": "1ebd1950-0de6-34a0-aaee-ac6d18ebd97b",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							},
+							{
+								"definition": {
+									"fragmentStyle": {
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "End",
+										"contentDisplay": "FlexColumn",
+										"justify": "Center"
+									}
+								},
+								"id": "69ab924c-d866-b8d5-6674-1be34f6ad9f5",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "image-container",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fragmentHeight": "381px",
+												"fragmentId": "1",
+												"fragmentWidth": "600px",
+												"shape": "trapezoid"
+											},
+											"fragmentFields": [
+												{
+													"id": "icon",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"mapping": {
+																"fieldKey": "FileEntry_downloadURL",
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																	"classPK": 41976010
+																}
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"textAlign": "right"
+											},
+											"indexed": true
+										},
+										"id": "ac3d6f9d-e5a6-d4ed-6dc5-98d74de7043b",
+										"type": "Fragment"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition: relative;\nz-index: 1;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#060B14",
+								"overflow": "hidden",
+								"paddingBottom": "80px"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexColumn"
+							}
+						},
+						"id": "f3f85c57-d7f6-5f66-4154-3fefac774423",
+						"pageElements": [
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:absolute;\ntop:0px;\nright:0px;\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<div>\n  <svg\n    width=\"1440\"\n    height=\"1711\"\n    viewBox=\"0 0 1440 1711\"\n    fill=\"none\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g opacity=\"0.6\">\n      <g opacity=\"0.3\" filter=\"url(#filter0_fn_5674_46315)\">\n        <path\n          d=\"M1692.57 434.065C1692.57 802.403 1025.29 1661 943 1472C882 1241 358 802.403 358 434.065C358 65.7262 656.754 -232.871 1025.29 -232.871C1393.82 -232.871 1692.57 65.7262 1692.57 434.065Z\"\n          fill=\"#8C3BF4\"\n        />\n      </g>\n      <g opacity=\"0.5\" filter=\"url(#filter1_fn_5674_46315)\">\n        <path\n          d=\"M1512.1 177.832C1512.1 404.729 1001 564.336 1001 373C1013.95 174.336 490 233.896 490 7C490 -219.896 874.033 -233 1101.05 -233C1328.06 -233 1512.1 -49.0641 1512.1 177.832Z\"\n          fill=\"#F43B3E\"\n        />\n      </g>\n      <g opacity=\"0.4\" filter=\"url(#filter2_fn_5674_46315)\">\n        <path\n          d=\"M1794 308.681C1794 541.47 1423.91 754 1191 754C958.088 754 1161.87 520 950.55 308.681C767 95 1139.36 -112.823 1372.28 -112.823C1605.19 -112.823 1794 75.8909 1794 308.681Z\"\n          fill=\"#FF690B\"\n        />\n      </g>\n      <g opacity=\"0.8\" filter=\"url(#filter3_fn_5674_46315)\">\n        <path\n          d=\"M1664 73.9781C1664 310.896 1468.41 678 1231.09 678C993.783 678 1099.66 285.155 804.619 73.9781C649.309 -72.07 996.998 -355 1234.31 -355C1471.62 -355 1664 -162.94 1664 73.9781Z\"\n          fill=\"#3B47F4\"\n        />\n      </g>\n    </g>\n    <defs>\n      <filter\n        id=\"filter0_fn_5674_46315\"\n        x=\"-242\"\n        y=\"-832.871\"\n        width=\"2534.57\"\n        height=\"2931.7\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter1_fn_5674_46315\"\n        x=\"90\"\n        y=\"-633\"\n        width=\"1822.1\"\n        height=\"1491.22\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter2_fn_5674_46315\"\n        x=\"501.351\"\n        y=\"-512.823\"\n        width=\"1692.65\"\n        height=\"1666.82\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feComposite\n          operator=\"in\"\n          in2=\"effect1_foregroundBlur_5674_46315\"\n          in=\"coloredNoise1\"\n          result=\"noise1Clipped\"\n        />\n        <feComponentTransfer in=\"noise1Clipped\" result=\"color1\">\n          <feFuncA type=\"table\" tableValues=\"0 0.55\" />\n        </feComponentTransfer>\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter3_fn_5674_46315\"\n        x=\"366\"\n        y=\"-755\"\n        width=\"1698\"\n        height=\"1833\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n    </defs>\n  </svg>\n</div>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true,
+									"name": "Gradient Top HTML"
+								},
+								"id": "6d2e465b-42d9-b22b-fd58-5c4f11219c8d",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"cssClasses": [
+										"bottom-gradient"
+									],
+									"customCSS": ".[$FRAGMENT_CLASS$] {\n  position: absolute;\n  bottom: 0;\n  left: -200px;\n  transform: scale(-1, -1);\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<div>\n  <svg\n    width=\"1440\"\n    height=\"1711\"\n    viewBox=\"0 0 1440 1711\"\n    fill=\"none\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g opacity=\"0.6\">\n      <g opacity=\"0.3\" filter=\"url(#filter0_fn_5674_46315)\">\n        <path\n          d=\"M1692.57 434.065C1692.57 802.403 1025.29 1661 943 1472C882 1241 358 802.403 358 434.065C358 65.7262 656.754 -232.871 1025.29 -232.871C1393.82 -232.871 1692.57 65.7262 1692.57 434.065Z\"\n          fill=\"#8C3BF4\"\n        />\n      </g>\n      <g opacity=\"0.5\" filter=\"url(#filter1_fn_5674_46315)\">\n        <path\n          d=\"M1512.1 177.832C1512.1 404.729 1001 564.336 1001 373C1013.95 174.336 490 233.896 490 7C490 -219.896 874.033 -233 1101.05 -233C1328.06 -233 1512.1 -49.0641 1512.1 177.832Z\"\n          fill=\"#F43B3E\"\n        />\n      </g>\n      <g opacity=\"0.4\" filter=\"url(#filter2_fn_5674_46315)\">\n        <path\n          d=\"M1794 308.681C1794 541.47 1423.91 754 1191 754C958.088 754 1161.87 520 950.55 308.681C767 95 1139.36 -112.823 1372.28 -112.823C1605.19 -112.823 1794 75.8909 1794 308.681Z\"\n          fill=\"#FF690B\"\n        />\n      </g>\n      <g opacity=\"0.8\" filter=\"url(#filter3_fn_5674_46315)\">\n        <path\n          d=\"M1664 73.9781C1664 310.896 1468.41 678 1231.09 678C993.783 678 1099.66 285.155 804.619 73.9781C649.309 -72.07 996.998 -355 1234.31 -355C1471.62 -355 1664 -162.94 1664 73.9781Z\"\n          fill=\"#3B47F4\"\n        />\n      </g>\n    </g>\n    <defs>\n      <filter\n        id=\"filter0_fn_5674_46315\"\n        x=\"-242\"\n        y=\"-832.871\"\n        width=\"2534.57\"\n        height=\"2931.7\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter1_fn_5674_46315\"\n        x=\"90\"\n        y=\"-633\"\n        width=\"1822.1\"\n        height=\"1491.22\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter2_fn_5674_46315\"\n        x=\"501.351\"\n        y=\"-512.823\"\n        width=\"1692.65\"\n        height=\"1666.82\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feComposite\n          operator=\"in\"\n          in2=\"effect1_foregroundBlur_5674_46315\"\n          in=\"coloredNoise1\"\n          result=\"noise1Clipped\"\n        />\n        <feComponentTransfer in=\"noise1Clipped\" result=\"color1\">\n          <feFuncA type=\"table\" tableValues=\"0 0.55\" />\n        </feComponentTransfer>\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter3_fn_5674_46315\"\n        x=\"366\"\n        y=\"-755\"\n        width=\"1698\"\n        height=\"1833\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n    </defs>\n  </svg>\n</div>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true,
+									"name": "Gradient Bottom HTML"
+								},
+								"id": "a58ace6d-b3b4-1ff1-306a-b61f06339394",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nz-index: 10;\n}",
+									"fragmentStyle": {
+										"paddingTop": "80px"
+									},
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8027aedf-93f2-07c4-2ddf-c1715dab602c",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "text",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fontSize": "font-size-paragraph-large",
+												"smallCaps": false,
+												"tabletScreenCenter": false
+											},
+											"fragmentFields": [
+												{
+													"id": "text",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"value_i18n": {
+																"en_US": "Launch Secure and Efficient AI Agents"
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"fontSize": "48px",
+												"fontWeight": "fontWeightLight",
+												"textAlign": "center",
+												"textColor": "whiteColor"
+											},
+											"indexed": true
+										},
+										"id": "f1544b1a-702a-6af6-5275-9d2b6276c3b0",
+										"type": "Fragment"
+									},
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 136px\n}",
+											"fragmentStyle": {
+												"marginBottom": "80px",
+												"marginTop": "80px"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexColumn"
+											}
+										},
+										"id": "2652d95f-297f-0263-ff4e-b1f9546796e3",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "bc428e83-b1ed-221a-b233-0abbdd406a45",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "1ed4b2ba-bbe3-d54e-2b78-f3bccab3fa66",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Set up powerful and integrated AI agents."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "083e9837-0a55-cd73-6698-84dc2f7d92e5",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nDeploy AI agents directly within the Liferay Platform to handle a wide range of tasks. \n</p>\n<p class=\"dxp-capabilities-description\">\nDesign agent logic through <span class=\"highlight\">a visual, low-code drag-and-drop interface</span> accessible to both technical \nand business users, accelerate adoption with ready-to-use templates, and streamline creation using prebuilt \nnodes for LLMs, data, custom code, and API integrations.\n</p>\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "41ba1862-228b-8f5c-bb74-3a5625b6f221",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "513751ee-7883-8bcc-7c41-dff11f1f6151",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "351px",
+																		"fragmentId": "2",
+																		"fragmentWidth": "601px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41995160
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"borderRadius": "20px",
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "2972acea-e9f0-aef4-b3a0-18fc21d59ac0",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "0a19ec57-f667-097b-ca44-b89b53ca124c",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "6b4faf1d-1adf-a04d-5a74-aa9505c0e29f",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "demo-video-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"autoplay": true,
+																		"controls": false,
+																		"fragmentHeight": "375px",
+																		"fragmentId": "1",
+																		"fragmentWidth": "601px",
+																		"loop": true,
+																		"muted": true,
+																		"objectFit": "cover",
+																		"shadow": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "demo",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41990253
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "b2532d29-758b-2a9f-e308-54f0443f2a80",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "9dda70df-fe95-6ef5-fc6d-085cdafc76d1",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Enable AI agents to jump into action when you need them."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "fbdf4d81-4bdb-ff43-b9e8-443c1e9821b4",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tDefine flexible automation triggers to launch AI agents manually, on a schedule, via APIs, or in response to Liferay DXP events.\n</p>\n\n <p class=\"dxp-capabilities-description\">\n<span class=\"highlight\">These agents can automate content operations, route support tickets intelligently</span>, and dynamically segment users to enable faster workflows and more effective personalization.</p>\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "17ddbf91-59a7-36db-3123-92ddeadb56ad",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "21e74c13-0c32-9bc7-492e-9e29a3742649",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "ea3e18d8-618a-4785-6576-d3c3039087ba",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Monitor the success of your AI Agents."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "af121447-1612-e138-6f6e-d1f833b74516",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n   A centralized dashboard provides full visibility and control over AI agents by monitoring usage, performance, and costs.\n</p>\n<p class=\"dxp-capabilities-description\">\n <span class=\"highlight\">It offers insights into active agents and automations,</span> agent efficiency over time, and resource consumption, enabling smarter optimization and resource allocation decisions.</p>\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "829aeaec-5f02-9c04-7067-1d2bd9bfbbc5",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "a135bc09-661b-4be7-1010-dfe7f34a6769",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "447px",
+																		"fragmentId": "4",
+																		"fragmentWidth": "601px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41995281
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "c5ad7e60-8e12-3613-5714-da986fbf3db8",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "ae8bda69-a75a-d24f-21a4-7aa67fbbaf45",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "56eab32e-e1c8-bf5e-4078-7f7af2342d7f",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "demo-video-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"autoplay": true,
+																		"controls": false,
+																		"fragmentHeight": "382px",
+																		"fragmentId": "2",
+																		"fragmentWidth": "601px",
+																		"loop": true,
+																		"muted": true,
+																		"objectFit": "cover",
+																		"shadow": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "demo",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41990320
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "b7ff326a-d137-5d33-d120-e5d9bd1308fa",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "667387bf-00e5-d115-2a37-230a5766a724",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Implement AI with necessary enterprise-grade security and governance."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "164e4df2-1cc0-2b06-8854-c997f623460c",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n    While AI is powerful, it can introduce cybersecurity risks if not properly managed. \n</p>\n<p class=\"dxp-capabilities-description\">\nLiferay DXP protects users and sensitive data <span class=\"highlight\">by enforcing strict access policies and fine-grained permissions,</span> ensuring AI systems access only the information authorized for each user. Learn more about Liferay’s security capabilities here.</p>\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "d00a2e22-b785-abcd-317b-a4a0dc9056a6",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "073fd8bd-d121-6a91-f379-a14637bac8a6",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "60956c94-9192-5767-9eeb-8ffaaf9c24bb",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<div class=\"coming-soon-badge\">\n\tComing Soon\n</div>\n\n<style>\n.coming-soon-badge {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tjustify-content: center;\n\n\theight: 38px;\n\tpadding: 0 16px;\n\tgap: 8px;\n\n\tbackground: linear-gradient(\n\t\t257.77deg,\n\t\t#e9ecff 17.81%,\n\t\t#f4e8ff 100%\n\t);\n\n\tborder: 1px solid rgba(37, 99, 235, 0.12);\n\tborder-radius: 9999px;\n\n\tfont-family: inherit;\n\tfont-size: 16px;\n\tfont-weight: 600;\n\tline-height: 1;\n\tcolor: #2563eb;\n\n\twhite-space: nowrap;\n}\n</style>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"marginBottom": "4",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "c180231a-7ca1-5b0f-9bfe-2227672b5eab",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Connect to the compliant LLM of your choice."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "3538f1ef-9501-1a8b-8226-e3ad9455116b",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tLarge language models (LLMs) power AI agents with advanced reasoning, planning, and decision-making.\n</p>\n<p class=\"dxp-capabilities-description\">\n<span class=\"highlight\">Liferay DXP lets you connect and configure LLMs easily,</span> using Model Context Protocols (MCPs) to securely provide the data they need. It supports popular MCPs from Microsoft and GitLab, and also offers Liferay’s own MCP to make the platform AI-ready.\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "whiteColor"
+																	},
+																	"indexed": true
+																},
+																"id": "b73af79a-ad58-6071-66c2-bb687b0e7f13",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "fb9a1b15-fc90-75b3-50d2-5904205e2b62",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "376px",
+																		"fragmentId": "6",
+																		"fragmentWidth": "601px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41995303
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "562bc841-d7a8-dfc5-61ad-0493b4cc378a",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"borderWidth": "0"
+							},
+							"indexed": true,
+							"layout": {
+							}
+						},
+						"id": "5ebdc963-5da4-20d0-3e94-1275b22880fc",
+						"pageElements": [
+							{
+								"definition": {
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8129590f-d1fe-21c7-de2e-1eacebbe57fd",
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "#FFFFFF"
+											},
+											"indexed": true,
+											"layout": {
+											}
+										},
+										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "",
+														"borderRadius": "10px",
+														"overflow": "hidden"
+													},
+													"indexed": true,
+													"layout": {
+														"widthType": "Fixed"
+													}
+												},
+												"id": "c5432183-cd54-185b-171b-1319a2049d21",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+															}
+														},
+														"id": "55ad4cd2-c736-8a39-4e23-32a54322d3ce",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"marginBottom": "9"
+																	},
+																	"indexed": true,
+																	"layout": {
+																	}
+																},
+																"id": "abe496a7-d283-4fd8-1709-18f419082bf1",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "text",
+																				"siteKey": "[$GROUP_KEY$]"
+																			},
+																			"fragmentConfig": {
+																				"fontSize": "font-size-paragraph-large",
+																				"smallCaps": false,
+																				"tabletScreenCenter": false
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "<p>Join the SEO Studio Beta</p>\n\n\n\n\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "48px",
+																				"fontWeight": "300",
+																				"marginBottom": "4",
+																				"textAlign": "center",
+																				"textColor": "#282934"
+																			},
+																			"indexed": true
+																		},
+																		"id": "e9433b13-84a3-8d67-cb33-1cca88b0b06a",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-paragraph"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "<p>The primary goal of this product is to put our foundational AI orchestration tools into your hands early, allowing your direct feedback to help us shape and refine the product's evolution.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "24px",
+																				"textAlign": "center",
+																				"textColor": "#54555F"
+																			},
+																			"indexed": true
+																		},
+																		"id": "35542da7-7cfc-874d-6c3b-548f469223f3",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "demo-video-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"autoplay": true,
+																		"controls": false,
+																		"fragmentHeight": "539px",
+																		"fragmentId": "3",
+																		"fragmentWidth": "808px",
+																		"loop": true,
+																		"muted": true,
+																		"objectFit": "cover",
+																		"posterImage": "",
+																		"shadow": true
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "demo",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": 41992712
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "center"
+																	},
+																	"indexed": true
+																},
+																"id": "9472a3a4-7ac2-f6f5-01e0-42d25bb7abb6",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+															}
+														},
+														"id": "9765a1d2-4f89-9a1c-3663-2f192112d126",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"marginBottom": "9"
+																	},
+																	"indexed": true,
+																	"layout": {
+																	}
+																},
+																"id": "796bbd2e-ea9f-3841-3c90-49382466b5d9",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "text",
+																				"siteKey": "[$GROUP_KEY$]"
+																			},
+																			"fragmentConfig": {
+																				"fontSize": "font-size-paragraph-large",
+																				"smallCaps": false,
+																				"tabletScreenCenter": false
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "Explore Generative AI Potential"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "48px",
+																				"fontWeight": "300",
+																				"marginBottom": "4",
+																				"textAlign": "center",
+																				"textColor": "#282934"
+																			},
+																			"indexed": true
+																		},
+																		"id": "1e099f0c-0376-c659-b0da-e43ab4555952",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-paragraph"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "<p>Please, take into account that this environment is in constant evolution. In this initial stage, you can begin exploring the <strong>potential of generative AI</strong> through the following available features:</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "24px",
+																				"textAlign": "center",
+																				"textColor": "#54555F"
+																			},
+																			"indexed": true
+																		},
+																		"id": "c2b974e5-9da3-c762-ac92-f33a78c1fa71",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"gutters": true,
+																	"indexed": true,
+																	"modulesPerRow": 3,
+																	"numberOfColumns": 3,
+																	"reverseOrder": false,
+																	"rowViewports": [
+																		{
+																			"id": "landscapeMobile",
+																			"rowViewportDefinition": {
+																				"modulesPerRow": 1
+																			}
+																		},
+																		{
+																			"id": "portraitMobile",
+																			"rowViewportDefinition": {
+																			}
+																		},
+																		{
+																			"id": "tablet",
+																			"rowViewportDefinition": {
+																			}
+																		}
+																	],
+																	"verticalAlignment": "top"
+																},
+																"id": "0a96a74f-7731-96f5-735b-30708c91b6cf",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "d82730dd-989c-771b-73b5-0cf09cd98da2",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 10px;\n}",
+																					"fragmentStyle": {
+																						"borderColor": "#E2E2E4",
+																						"borderRadius": "8px",
+																						"borderWidth": "01px",
+																						"maxWidth": "392px",
+																						"paddingBottom": "4",
+																						"paddingLeft": "4",
+																						"paddingRight": "4",
+																						"paddingTop": "4",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Start",
+																						"borderColor": "#E2E2E4",
+																						"contentDisplay": "FlexRow",
+																						"justify": "Center",
+																						"paddingBottom": 2,
+																						"paddingLeft": 2,
+																						"paddingRight": 2,
+																						"paddingTop": 2,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "7be951be-3b19-0de9-0e97-98ebf0622be0",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"56\" height=\"56\" viewBox=\"0 0 56 56\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M23.9551 17.1973C24.688 15.0507 27.7244 15.0507 28.4573 17.1973L29.8376 21.2393C30.2272 22.3813 30.8738 23.4191 31.7269 24.2725C32.58 25.1258 33.6172 25.7724 34.7591 26.1624L38.8011 27.5426C40.9496 28.2755 40.9493 31.3117 38.8008 32.0446L38.8011 32.0449L34.7591 33.4254C33.6174 33.8153 32.58 34.4617 31.7269 35.3148C30.8738 36.1678 30.2274 37.205 29.8376 38.3467L28.4573 42.389C27.7244 44.537 24.6881 44.537 23.9551 42.389L22.5745 38.3467C22.1846 37.205 21.5383 36.1678 20.6852 35.3148C19.8321 34.4617 18.795 33.8153 17.6533 33.4254L13.611 32.0449C11.4631 31.3118 11.463 28.2756 13.611 27.5426L17.6533 26.1624C18.795 25.7726 19.8321 25.1262 20.6852 24.2731C21.5383 23.42 22.1847 22.3826 22.5745 21.2409L23.9551 17.1973Z\" fill=\"url(#paint0_linear_6589_30171)\" style=\"mix-blend-mode:plus-darker\"/>\n<path d=\"M39.9079 12C40.1929 12 40.4464 12.1812 40.5387 12.4508L41.3063 14.6934L43.5492 15.4613C43.8188 15.5535 44 15.8071 44 16.0921C44 16.3771 43.8188 16.6307 43.5492 16.723L41.3063 17.4906L40.5387 19.7334C40.4464 20.003 40.1929 20.1842 39.9079 20.1842C39.6229 20.1842 39.3693 20.003 39.277 19.7334L38.5091 17.4906L36.2666 16.723C35.997 16.6307 35.8158 16.3771 35.8157 16.0921C35.8157 15.8071 35.997 15.5535 36.2666 15.4613L38.5091 14.6934L39.277 12.4508C39.3693 12.1812 39.6229 12 39.9079 12Z\" fill=\"url(#paint1_linear_6589_30171)\" style=\"mix-blend-mode:plus-darker\"/>\n<defs>\n<linearGradient id=\"paint0_linear_6589_30171\" x1=\"12\" y1=\"28\" x2=\"44\" y2=\"28\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_6589_30171\" x1=\"12\" y1=\"28\" x2=\"44\" y2=\"28\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n</defs>\n</svg>"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "74e255c1-bee9-f1fa-b4ce-509516d2669a",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\nfont-size: 21px\n}",
+																							"indexed": true,
+																							"layout": {
+																								"align": "Start",
+																								"contentDisplay": "FlexColumn"
+																							}
+																						},
+																						"id": "0fc4cda3-c0a6-a772-1444-f9d1358a67a8",
+																						"pageElements": [
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																									"fragment": {
+																										"key": "text",
+																										"siteKey": "[$GROUP_KEY$]"
+																									},
+																									"fragmentConfig": {
+																										"fontSize": "font-size-paragraph-base",
+																										"smallCaps": false,
+																										"tabletScreenCenter": false
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<h2>Custom AI Tasks</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"fontSize": "21px",
+																										"fontWeight": "500",
+																										"marginBottom": "1"
+																									},
+																									"indexed": true
+																								},
+																								"id": "41f75a66-9b43-52f5-9202-b51766fa8806",
+																								"type": "Fragment"
+																							},
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																									"fragment": {
+																										"key": "BASIC_COMPONENT-paragraph"
+																									},
+																									"fragmentConfig": {
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "element-text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<p style=\"text-align: left;\">Create and configure personalized AI workflows powered by Google Gemini services.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"textColor": "#82828C"
+																									},
+																									"indexed": true
+																								},
+																								"id": "cfe1145e-bb1f-d95c-6760-d63441868d53",
+																								"type": "Fragment"
+																							}
+																						],
+																						"type": "Section"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "d5a9a335-7e39-8a8b-9a2c-099e2a9407eb",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 10px;\n}",
+																					"fragmentStyle": {
+																						"borderColor": "#E2E2E4",
+																						"borderRadius": "8px",
+																						"borderWidth": "01px",
+																						"maxWidth": "392px",
+																						"paddingBottom": "4",
+																						"paddingLeft": "4",
+																						"paddingRight": "4",
+																						"paddingTop": "4",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Start",
+																						"borderColor": "#E2E2E4",
+																						"contentDisplay": "FlexRow",
+																						"justify": "Center",
+																						"paddingBottom": 2,
+																						"paddingLeft": 2,
+																						"paddingRight": 2,
+																						"paddingTop": 2,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "174f9f22-6054-3bce-7c57-0f936d931cb7",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M9.39681 17.9997C9.41364 17.9997 9.42983 18.0063 9.44173 18.0182C9.45363 18.0301 9.46028 18.0463 9.46029 18.0632C9.46029 18.08 9.45363 18.0962 9.44173 18.1081C9.42983 18.12 9.41365 18.1266 9.39681 18.1266C9.37997 18.1266 9.36379 18.12 9.35189 18.1081C9.33999 18.0962 9.33333 18.08 9.33333 18.0632C9.33334 18.0463 9.33999 18.0301 9.35189 18.0182C9.36379 18.0063 9.37998 17.9997 9.39681 17.9997Z\" fill=\"url(#paint0_linear_7235_18039)\" style=\"mix-blend-mode:plus-darker\"/>\n<path d=\"M16.0492 17.9997C16.066 17.9997 16.0822 18.0064 16.0941 18.0182C16.106 18.0301 16.1126 18.0463 16.1126 18.0632C16.1126 18.08 16.106 18.0962 16.0941 18.1081C16.0822 18.12 16.066 18.1266 16.0492 18.1266C16.0323 18.1266 16.0161 18.1199 16.0042 18.1081C15.9923 18.0962 15.9857 18.08 15.9857 18.0632C15.9857 18.0463 15.9923 18.0301 16.0042 18.0182C16.0161 18.0064 16.0323 17.9997 16.0492 17.9997Z\" fill=\"url(#paint1_linear_7235_18039)\" style=\"mix-blend-mode:plus-darker\"/>\n<path d=\"M22.7018 17.9997C22.7186 17.9997 22.7348 18.0064 22.7467 18.0182C22.7586 18.0301 22.7653 18.0463 22.7653 18.0632C22.7653 18.08 22.7587 18.0962 22.7467 18.1081C22.7348 18.1199 22.7186 18.1266 22.7018 18.1266C22.685 18.1266 22.6688 18.12 22.6569 18.1081C22.645 18.0962 22.6383 18.08 22.6383 18.0632C22.6384 18.0463 22.645 18.0301 22.6569 18.0182C22.6688 18.0064 22.685 17.9997 22.7018 17.9997Z\" fill=\"url(#paint2_linear_7235_18039)\" style=\"mix-blend-mode:plus-darker\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M16.0977 0C16.8769 3.23344e-05 17.6245 0.309672 18.1755 0.860677C18.7264 1.41167 19.0361 2.15897 19.0361 2.93815C19.0361 3.7174 18.7265 4.46492 18.1755 5.01595C17.7605 5.43087 17.2341 5.70859 16.6667 5.82064V8.05111H24.9443C25.7989 8.05111 26.6187 8.39051 27.223 8.99479C27.8273 9.59908 28.1667 10.4189 28.1667 11.2734V13.7272C29.1572 13.7337 30.1188 14.0854 30.8405 14.7269C31.5715 15.3767 32 16.2762 32 17.2331V17.5169C32 17.9517 31.9035 18.3803 31.7188 18.7767C31.5341 19.1728 31.2661 19.5273 30.9342 19.8223C30.6025 20.1171 30.2125 20.3476 29.7887 20.5036C29.365 20.6596 28.9132 20.7393 28.4583 20.7393C28.3604 20.7393 28.2628 20.73 28.1667 20.7132V24.0511C28.1667 24.9056 27.8272 25.7252 27.223 26.3294C26.6187 26.9337 25.7989 27.2734 24.9443 27.2734H20.2204C20.1148 27.2734 20.0111 27.3005 19.9196 27.3522L19.8812 27.376L16.5462 29.5993L16.5456 29.5996C16.3837 29.7073 16.1937 29.765 15.9993 29.765C15.805 29.765 15.615 29.7073 15.4531 29.5996L15.4525 29.5993L12.1175 27.376C12.0299 27.3176 11.929 27.283 11.8245 27.2751L11.7796 27.2734H7.05566C6.20108 27.2734 5.3813 26.9337 4.77702 26.3294C4.1728 25.7252 3.83333 24.9056 3.83333 24.0511V20.7142C3.73712 20.7306 3.63952 20.7393 3.54167 20.7393C3.08684 20.7393 2.63496 20.6596 2.21126 20.5036C1.78752 20.3476 1.3975 20.1171 1.06576 19.8223C0.733943 19.5273 0.46585 19.1727 0.28125 18.7767C0.0965136 18.3803 2.40764e-05 17.9517 0 17.5169V17.2331C0 16.2762 0.428505 15.3767 1.15951 14.7269C1.88124 14.0854 2.84282 13.7337 3.83333 13.7272V11.2734C3.83333 10.4189 4.17273 9.59908 4.77702 8.99479C5.3813 8.39051 6.20108 8.05111 7.05566 8.05111H15.3333V5.77441C14.841 5.64168 14.387 5.38275 14.0202 5.01595C13.4691 4.46492 13.1595 3.71743 13.1595 2.93815C13.1595 2.15892 13.4692 1.41168 14.0202 0.860677C14.5712 0.30971 15.3185 3.19882e-05 16.0977 0ZM9.39681 16.6663C9.02636 16.6663 8.67113 16.8136 8.40918 17.0755C8.14723 17.3375 8.00001 17.6927 8 18.0632C8 18.4336 8.14723 18.7888 8.40918 19.0508C8.67113 19.3127 9.02636 19.46 9.39681 19.46C9.76727 19.46 10.1225 19.3127 10.3844 19.0508C10.6464 18.7888 10.7936 18.4336 10.7936 18.0632C10.7936 17.6927 10.6464 17.3375 10.3844 17.0755C10.1225 16.8136 9.76726 16.6663 9.39681 16.6663ZM16.0492 16.6663C15.6787 16.6663 15.3235 16.8136 15.0615 17.0755C14.7996 17.3375 14.6523 17.6927 14.6523 18.0632C14.6523 18.4336 14.7996 18.7888 15.0615 19.0508C15.3235 19.3127 15.6787 19.46 16.0492 19.46C16.4196 19.4599 16.7748 19.3127 17.0368 19.0508C17.2987 18.7888 17.446 18.4336 17.446 18.0632C17.446 17.6927 17.2987 17.3375 17.0368 17.0755C16.7748 16.8136 16.4196 16.6664 16.0492 16.6663ZM22.7018 16.6663C22.3314 16.6664 21.9761 16.8136 21.7142 17.0755C21.4523 17.3375 21.305 17.6927 21.305 18.0632C21.305 18.4336 21.4523 18.7888 21.7142 19.0508C21.9761 19.3127 22.3314 19.4599 22.7018 19.46C23.0723 19.46 23.4275 19.3127 23.6895 19.0508C23.9514 18.7888 24.0986 18.4336 24.0986 18.0632C24.0986 17.6927 23.9514 17.3375 23.6895 17.0755C23.4275 16.8136 23.0723 16.6663 22.7018 16.6663Z\" fill=\"url(#paint3_linear_7235_18039)\" style=\"mix-blend-mode:plus-darker\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7235_18039\" x1=\"0\" y1=\"14.8825\" x2=\"32\" y2=\"14.8825\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_7235_18039\" x1=\"0\" y1=\"14.8825\" x2=\"32\" y2=\"14.8825\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n<linearGradient id=\"paint2_linear_7235_18039\" x1=\"0\" y1=\"14.8825\" x2=\"32\" y2=\"14.8825\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n<linearGradient id=\"paint3_linear_7235_18039\" x1=\"0\" y1=\"14.8825\" x2=\"32\" y2=\"14.8825\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n</defs>\n</svg>"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"paddingBottom": "3",
+																								"paddingLeft": "3",
+																								"paddingRight": "3",
+																								"paddingTop": "3"
+																							},
+																							"indexed": true
+																						},
+																						"id": "8b022c00-a4e9-29af-2a87-ed257ee5bd2b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\nfont-size: 21px !important;\n}",
+																							"indexed": true,
+																							"layout": {
+																								"align": "Start",
+																								"contentDisplay": "FlexColumn"
+																							}
+																						},
+																						"id": "e49ab842-0882-9e21-1be9-1776c0fdadbd",
+																						"pageElements": [
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																									"fragment": {
+																										"key": "text",
+																										"siteKey": "[$GROUP_KEY$]"
+																									},
+																									"fragmentConfig": {
+																										"fontSize": "font-size-paragraph-base",
+																										"smallCaps": false,
+																										"tabletScreenCenter": false
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<h2>CMS Writing Assistant</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"fontSize": "21px",
+																										"fontWeight": "500",
+																										"marginBottom": "1"
+																									},
+																									"indexed": true
+																								},
+																								"id": "2210a550-b804-94c5-8f62-07ccfa2470b0",
+																								"type": "Fragment"
+																							},
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																									"fragment": {
+																										"key": "BASIC_COMPONENT-paragraph"
+																									},
+																									"fragmentConfig": {
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "element-text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<p style=\"text-align: left;\">Access a dedicated plugin within the new CMS to instantly improve writing, fix spelling and grammar, and make content shine in real time.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"textColor": "#82828C"
+																									},
+																									"indexed": true
+																								},
+																								"id": "6625e804-0c06-26c3-fba0-ebf795e7ceef",
+																								"type": "Fragment"
+																							}
+																						],
+																						"type": "Section"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "e092f6be-e5ee-e343-65db-2b43494b3222",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 10px;\n\n}",
+																					"fragmentStyle": {
+																						"borderColor": "#E2E2E4",
+																						"borderRadius": "8px",
+																						"borderWidth": "01px",
+																						"maxWidth": "392px",
+																						"paddingBottom": "4",
+																						"paddingLeft": "4",
+																						"paddingRight": "4",
+																						"paddingTop": "4",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Start",
+																						"borderColor": "#E2E2E4",
+																						"contentDisplay": "FlexRow",
+																						"justify": "Center",
+																						"paddingBottom": 2,
+																						"paddingLeft": 2,
+																						"paddingRight": 2,
+																						"paddingTop": 2,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "fcfa94fb-89f1-f633-464f-b19f969d4b95",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"32\" height=\"32\" viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M32 0V32H0V0H32Z\" fill=\"white\" fill-opacity=\"0.01\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M17.6453 1.8122C18.4878 0.801305 20.1299 1.49237 19.9961 2.80144L19.0554 11.9991H26.6696C27.8001 11.9991 28.4176 13.3176 27.6939 14.186L14.3606 30.186C13.5182 31.1969 11.876 30.5059 12.0099 29.1968L12.9506 19.9991H5.33631C4.20586 19.9991 3.58832 18.6806 4.31201 17.8122L17.6453 1.8122Z\" fill=\"url(#paint0_linear_7235_18081)\" style=\"mix-blend-mode:plus-darker\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7235_18081\" x1=\"0\" y1=\"16\" x2=\"32\" y2=\"16\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"paddingBottom": "3",
+																								"paddingLeft": "3",
+																								"paddingRight": "3",
+																								"paddingTop": "3"
+																							},
+																							"indexed": true
+																						},
+																						"id": "f4f94f9e-4f02-2ca2-7fed-182cd737f8f3",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\nfont-size: 21px\n}",
+																							"indexed": true,
+																							"layout": {
+																								"align": "Start",
+																								"contentDisplay": "FlexColumn"
+																							}
+																						},
+																						"id": "3c85c53a-1edb-ea2a-7118-9d9ffcb9fcb4",
+																						"pageElements": [
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 21px !important;\n}",
+																									"fragment": {
+																										"key": "text",
+																										"siteKey": "[$GROUP_KEY$]"
+																									},
+																									"fragmentConfig": {
+																										"fontSize": "font-size-paragraph-base",
+																										"smallCaps": false,
+																										"tabletScreenCenter": false
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<h2>Liferay AI Assistant</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"fontSize": "21px",
+																										"fontWeight": "500",
+																										"marginBottom": "1"
+																									},
+																									"indexed": true
+																								},
+																								"id": "4ad35918-4152-843f-920b-117d4f1f22ed",
+																								"type": "Fragment"
+																							},
+																							{
+																								"definition": {
+																									"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																									"fragment": {
+																										"key": "BASIC_COMPONENT-paragraph"
+																									},
+																									"fragmentConfig": {
+																									},
+																									"fragmentFields": [
+																										{
+																											"id": "element-text",
+																											"value": {
+																												"fragmentLink": {
+																												},
+																												"text": {
+																													"value_i18n": {
+																														"en_US": "<p style=\"text-align: left;\">Query Liferay data directly through an integrated AI assistant. Beyond simple searches, use the chatbot to trigger writing tools and custom workflows.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																													}
+																												}
+																											}
+																										}
+																									],
+																									"fragmentStyle": {
+																										"textColor": "#82828C"
+																									},
+																									"indexed": true
+																								},
+																								"id": "73190da1-9b45-b794-8445-7e44c96e9146",
+																								"type": "Fragment"
+																							}
+																						],
+																						"type": "Section"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	}
+																],
+																"type": "Row"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"marginBottom": "5",
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+																"marginBottom": 4
+															}
+														},
+														"id": "cd9ce237-bc33-4a7f-27a5-a9a883896fb9",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-large",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "How Liferay AI Hub Works with Liferay DXP"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "48px",
+																		"fontWeight": "300",
+																		"marginBottom": "7",
+																		"textAlign": "center",
+																		"textColor": "#282934"
+																	},
+																	"indexed": true
+																},
+																"id": "bddcabb0-82c1-2ea5-58f9-9c28a46afeb6",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"gutters": true,
+																	"indexed": true,
+																	"modulesPerRow": 2,
+																	"numberOfColumns": 4,
+																	"reverseOrder": false,
+																	"rowViewports": [
+																		{
+																			"id": "landscapeMobile",
+																			"rowViewportDefinition": {
+																				"modulesPerRow": 1
+																			}
+																		},
+																		{
+																			"id": "portraitMobile",
+																			"rowViewportDefinition": {
+																			}
+																		},
+																		{
+																			"id": "tablet",
+																			"rowViewportDefinition": {
+																			}
+																		}
+																	],
+																	"verticalAlignment": "top"
+																},
+																"id": "21a3f5e7-52dc-0f15-2174-8ce384c467e0",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "0d5813af-6166-980e-ea82-07b68baab830",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "e3151c63-3c49-a24e-5247-12886002eb42",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"67\" height=\"57\" viewBox=\"0 0 67 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M51.3273 31.2393C52.3085 30.2583 53.8989 30.2583 54.8801 31.2393L57.2668 33.626H60.6408C62.0283 33.626 63.1533 34.7503 63.1535 36.1377V39.5127L65.5393 41.8984C66.5203 42.8796 66.5204 44.471 65.5393 45.4521L63.1535 47.8379V51.2129C63.1533 52.6003 62.0283 53.7256 60.6408 53.7256H57.2668L54.8801 56.1113C53.8989 57.0922 52.3084 57.0923 51.3273 56.1113L48.9406 53.7256H45.5666C44.1792 53.7255 43.0541 52.6002 43.0539 51.2129V47.8379L40.6672 45.4521C39.6863 44.4711 39.6863 42.8796 40.6672 41.8984L43.0539 39.5127V36.1377C43.0541 34.7503 44.1792 33.6261 45.5666 33.626H48.9406L51.3273 31.2393ZM36.466 18.0244C36.466 20.3216 38.328 22.1845 40.6252 22.1846H58.6496V29.7715L55.5363 26.6582C54.1938 25.3159 52.0167 25.3161 50.674 26.6582L47.4084 29.9238H42.7902C40.8919 29.9241 39.3531 31.463 39.3527 33.3613V37.9795L36.0871 41.2451C34.7447 42.5877 34.7446 44.7648 36.0871 46.1074L39.3527 49.373V53.9912C39.3527 54.1155 39.3594 54.2385 39.3723 54.3594C39.3752 54.3867 39.3794 54.4142 39.383 54.4414C39.3873 54.4743 39.3914 54.5075 39.3967 54.54C39.401 54.5668 39.4064 54.5936 39.4113 54.6201C39.4177 54.6547 39.4244 54.6894 39.4318 54.7236C39.4366 54.7458 39.4422 54.7681 39.4475 54.79C39.4854 54.9492 39.5347 55.1042 39.5939 55.2539C39.6004 55.2703 39.6058 55.2875 39.6125 55.3037C39.6344 55.3568 39.6583 55.4092 39.6828 55.4609H19.8273C16.7645 55.4608 14.2817 52.9778 14.2814 49.915V5.5459C14.2817 2.48321 16.7646 9.22497e-05 19.8273 0H36.466V18.0244ZM5.23652 1.11621C5.69878 1.1202 6.11106 1.41052 6.26972 1.84473L9.81367 11.5449L9.87714 11.7471C9.93125 11.9502 9.95625 12.1602 9.95429 12.3711L9.95527 12.3721L9.6291 50.4297C9.61789 51.706 9.09984 52.9255 8.18964 53.8203C7.27936 54.7151 6.05095 55.2119 4.7746 55.2012C4.14223 55.1959 3.51696 55.0662 2.93476 54.8193C2.35264 54.5724 1.82434 54.2136 1.38105 53.7627C0.937738 53.3117 0.587681 52.7768 0.350774 52.1904C0.113996 51.6042 -0.00541661 50.9769 0.000188568 50.3447L0.327337 12.2871C0.329606 12.0057 0.382557 11.7265 0.483587 11.4639L4.19257 1.82715L4.26581 1.67285C4.46297 1.32962 4.83205 1.1129 5.23652 1.11621ZM53.1027 39.9053C51.0216 39.9054 49.3344 41.5927 49.3342 43.6738C49.3344 45.755 51.0216 47.4432 53.1027 47.4434C55.184 47.4434 56.8711 45.755 56.8713 43.6738C56.8711 41.5926 55.184 39.9053 53.1027 39.9053ZM42.0119 0.121094C43.054 0.341788 44.0195 0.859385 44.7844 1.62402L57.0256 13.8652C57.7903 14.63 58.3077 15.5956 58.5285 16.6377H42.0119V0.121094Z\" fill=\"url(#paint0_linear_7252_18444)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18444\" x1=\"53.6567\" y1=\"3.72617\" x2=\"1.71619\" y2=\"45.9532\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "d1cb2ac2-1618-3390-36fd-65680db5bc76",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>AI Hub + CMS</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "3cd3ed7f-d05c-e7b6-ad13-92618a6fc9cc",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Configure AI agents to help accelerate content management, like creating assets, translating content, or updating web pages.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "ddb9f4cf-7c31-734c-54ad-1c54c18e8318",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "11aeec7b-a26e-cd02-8d22-8aeae0482372",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3f43587c-300f-4434-2ca3-c7a92f44aa66",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"59\" height=\"60\" viewBox=\"0 0 59 60\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M4.97989 0.615397C4.31951 0.125767 3.48944 -0.0844698 2.67227 0.0309372C1.8551 0.146344 1.11778 0.577941 0.622497 1.23078C0.127218 1.88362 -0.0854443 2.70423 0.0312941 3.51208C0.148033 4.31993 0.584609 5.04884 1.24498 5.53847L6.56099 9.47693L15.0859 46C15.4026 47.3559 16.1749 48.5656 17.2766 49.4318C18.3783 50.298 19.7444 50.7694 21.152 50.7692H48.2425C49.068 50.7692 49.8597 50.4451 50.4433 49.868C51.027 49.291 51.3549 48.5084 51.3549 47.6923C51.3549 46.8763 51.027 46.0936 50.4433 45.5166C49.8597 44.9396 49.068 44.6154 48.2425 44.6154H21.152L20.3428 41.1569L43.1039 39.28C46.6623 38.9867 50.0104 37.4926 52.5866 35.0483C55.1628 32.604 56.8104 29.3582 57.253 25.8554L58.6754 14.6092C58.7848 13.7433 58.7067 12.8643 58.4463 12.0304C58.1858 11.1966 57.749 10.4271 57.1647 9.77295C56.5804 9.1188 55.8621 8.59498 55.0573 8.23627C54.2526 7.87755 53.3799 7.69213 52.4972 7.69232H12.5182C12.1341 6.43906 11.3556 5.33961 10.2959 4.55386L4.97989 0.615397ZM24.8994 56.9231C24.8994 57.7391 24.5715 58.5218 23.9878 59.0988C23.4041 59.6758 22.6124 60 21.787 60C20.9615 60 20.1698 59.6758 19.5861 59.0988C19.0025 58.5218 18.6745 57.7391 18.6745 56.9231C18.6745 56.107 19.0025 55.3244 19.5861 54.7474C20.1698 54.1703 20.9615 53.8462 21.787 53.8462C22.6124 53.8462 23.4041 54.1703 23.9878 54.7474C24.5715 55.3244 24.8994 56.107 24.8994 56.9231ZM43.5739 60C44.3994 60 45.191 59.6758 45.7747 59.0988C46.3584 58.5218 46.6863 57.7391 46.6863 56.9231C46.6863 56.107 46.3584 55.3244 45.7747 54.7474C45.191 54.1703 44.3994 53.8462 43.5739 53.8462C42.7484 53.8462 41.9568 54.1703 41.3731 54.7474C40.7894 55.3244 40.4615 56.107 40.4615 56.9231C40.4615 57.7391 40.7894 58.5218 41.3731 59.0988C41.9568 59.6758 42.7484 60 43.5739 60Z\" fill=\"url(#paint0_linear_7252_18466)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18466\" x1=\"47.5429\" y1=\"3.93284\" x2=\"-4.6064\" y2=\"39.5246\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "b74c006f-e95c-5cce-c570-8c45b0a8502d",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>AI Hub + Commerce</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "cfd9d473-89df-ff11-41b2-a194ed85c534",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Use AI agents to update product information, manage orders, or personalize customer experiences, ultimately improving customer satisfaction.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "b10f3284-0808-d12d-aad9-3a935a5dcb09",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "4c6ae040-9b57-d310-fa59-671349bc996b",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3866d610-fa81-1236-5a4a-eb0709510ab7",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M62.9153 12.3916C64.2795 12.3918 65.5882 12.9339 66.553 13.8984C67.5177 14.8633 68.0607 16.1727 68.0608 17.5371V62.4648C68.0607 63.8293 67.5178 65.1387 66.553 66.1035C65.5882 67.0681 64.2795 67.6102 62.9153 67.6104H17.0842C15.7198 67.6103 14.4104 67.0682 13.4456 66.1035C12.4807 65.1386 11.9388 63.8293 11.9387 62.4648V17.5371C11.9388 16.1725 12.4806 14.8633 13.4456 13.8984C14.4105 12.9336 15.7197 12.3916 17.0842 12.3916H62.9153ZM15.6829 62.4648C15.683 62.8365 15.8302 63.1933 16.093 63.4561C16.3558 63.7187 16.7127 63.8662 17.0842 63.8662H62.9153C63.2868 63.866 63.6438 63.7188 63.9065 63.4561C64.1692 63.1933 64.3166 62.8364 64.3167 62.4648V28.3271H15.6829V62.4648ZM20.1067 18.2373C18.6531 18.2374 17.475 19.4156 17.4749 20.8691C17.4749 22.3228 18.6531 23.5018 20.1067 23.502C21.5604 23.502 22.7395 22.3229 22.7395 20.8691C22.7394 19.4155 21.5604 18.2373 20.1067 18.2373ZM27.1262 18.2373C25.6725 18.2373 24.4945 19.4155 24.4944 20.8691C24.4944 22.3229 25.6725 23.502 27.1262 23.502C28.5799 23.5019 29.7581 22.3229 29.7581 20.8691C29.7579 19.4155 28.5799 18.2373 27.1262 18.2373ZM34.1458 18.2373C32.6921 18.2373 31.513 19.4155 31.5129 20.8691C31.5129 22.3229 32.692 23.502 34.1458 23.502C35.5993 23.5018 36.7776 22.3228 36.7776 20.8691C36.7775 19.4156 35.5993 18.2375 34.1458 18.2373Z\" fill=\"url(#paint0_linear_7252_18469)\"/>\n<path d=\"M40.8086 34.5784C41.1578 33.3343 42.4495 32.6086 43.6935 32.9577C44.9376 33.3069 45.6626 34.5986 45.3134 35.8426L39.2733 57.3637C38.9239 58.6074 37.6329 59.3325 36.3891 58.9836C35.1451 58.6344 34.4193 57.3427 34.7685 56.0987L40.8086 34.5784ZM30.8897 38.5326C31.8033 37.6193 33.2844 37.6192 34.198 38.5326C35.1117 39.4462 35.1117 40.928 34.198 41.8417L30.0687 45.9703L34.198 50.0996C35.1117 51.0133 35.1117 52.495 34.198 53.4087C33.2844 54.3221 31.8033 54.322 30.8897 53.4087L25.1062 47.6252C24.1925 46.7115 24.1925 45.2298 25.1062 44.3161L30.8897 38.5326ZM45.8839 38.5326C46.7975 37.619 48.2793 37.619 49.193 38.5326L54.9765 44.3161C55.8901 45.2297 55.8901 46.7115 54.9765 47.6252L49.193 53.4087C48.2793 54.3223 46.7975 54.3223 45.8839 53.4087C44.9702 52.4951 44.9703 51.0133 45.8839 50.0996L50.0124 45.9703L45.8839 41.8417C44.9702 40.928 44.9702 39.4462 45.8839 38.5326Z\" fill=\"url(#paint1_linear_7252_18469)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18469\" x1=\"57.3755\" y1=\"16.011\" x2=\"8.74767\" y2=\"50.4756\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_7252_18469\" x1=\"49.7136\" y1=\"34.5875\" x2=\"25.6698\" y2=\"54.5792\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "d44fe4e3-22be-43d1-692d-2c3e9a823386",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>AI Hub + Low-Code</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "fe854d2c-9057-0401-20f7-5303648b8d7b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>AI agents can help advance workflow steps or trigger new workflows. Agents can also create, update, or delete Object entries and definitions.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "d32c1478-e383-88f0-49bc-e1a2695f2f61",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "52c8ac14-011a-1035-13cd-2be0a686e999",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "be73ddf9-e120-780f-58ce-2a61565cfd70",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M25.9482 11.25C26.7333 11.2501 27.5082 11.4267 28.2158 11.7666C28.9236 12.1067 29.5464 12.6019 30.0371 13.2148L33.7041 17.7988H53.3994C54.7888 17.7988 56.1211 18.3506 57.1035 19.333C58.0859 20.3154 58.6386 21.6478 58.6387 23.0371V53.1602C58.6387 54.5496 58.086 55.8828 57.1035 56.8652C56.1211 57.8475 54.7887 58.3994 53.3994 58.3994H11.4893C10.0998 58.3994 8.76665 57.8477 7.78418 56.8652C6.80171 55.8828 6.25 54.5496 6.25 53.1602V16.4893C6.25 15.0998 6.80171 13.7666 7.78418 12.7842C8.76665 11.8017 10.0998 11.25 11.4893 11.25H25.9482Z\" fill=\"url(#paint0_linear_7253_18229)\"/>\n<rect x=\"41.25\" y=\"41.25\" width=\"25\" height=\"23.75\" fill=\"white\"/>\n<path d=\"M58.7578 61.8936L58.7666 61.9014M58.7578 61.8936L58.7666 61.8857M58.7578 61.8936L58.7666 61.9014M58.7578 61.8936L58.7666 61.8857M58.7666 61.9014V61.8857M58.7666 61.9014V62.0674M58.7666 61.8857V61.543M52.0996 61.543C52.1792 61.5461 52.2472 61.5717 52.2988 61.6074L52.3477 61.6484L52.3809 61.6895C52.3898 61.7033 52.397 61.717 52.4023 61.7305L52.417 61.8057L52.4023 61.8799C52.3917 61.9069 52.3742 61.9352 52.3477 61.9629C52.2947 62.0181 52.2074 62.0631 52.0996 62.0674M52.0996 61.543V62.0674M52.0996 61.543C52.0967 61.5429 52.0938 61.542 52.0908 61.542C52.008 61.5438 51.937 61.5705 51.8838 61.6074L51.8359 61.6484C51.783 61.7036 51.7666 61.7614 51.7666 61.8057L51.7812 61.8799C51.7919 61.9069 51.8094 61.9352 51.8359 61.9629C51.8901 62.0193 51.9797 62.0659 52.0908 62.0684C52.0938 62.0683 52.0967 62.0675 52.0996 62.0674M52.0996 61.543V62.0674M58.7578 54.9492L58.7666 54.957M58.7578 54.9492L58.7666 54.9414M58.7578 54.9492L58.7666 54.957M58.7578 54.9492L58.7666 54.9414M58.7666 54.957V54.9414M58.7666 54.957V55.123M58.7666 54.9414V54.5986M52.0996 54.5986C52.1789 54.6018 52.2473 54.6266 52.2988 54.6621L52.3477 54.7041L52.3809 54.7451C52.3898 54.759 52.397 54.7727 52.4023 54.7861L52.417 54.8613L52.4023 54.9355C52.3917 54.9626 52.3742 54.9909 52.3477 55.0186C52.2947 55.0737 52.2074 55.1187 52.0996 55.123M52.0996 54.5986V55.123M52.0996 54.5986C52.0967 54.5985 52.0938 54.5977 52.0908 54.5977C52.0082 54.5995 51.9369 54.6253 51.8838 54.6621L51.8359 54.7041C51.7831 54.7592 51.7666 54.8171 51.7666 54.8613L51.7812 54.9355C51.7919 54.9625 51.8094 54.9909 51.8359 55.0186C51.8901 55.0749 51.9798 55.1215 52.0908 55.124C52.0938 55.124 52.0967 55.1232 52.0996 55.123M52.0996 54.5986V55.123M58.7666 61.543C58.7637 61.5428 58.7608 61.542 58.7578 61.542C58.6749 61.5438 58.604 61.5705 58.5508 61.6074L58.502 61.6484C58.4493 61.7035 58.4336 61.7615 58.4336 61.8057L58.4482 61.8799C58.4588 61.9068 58.4756 61.9353 58.502 61.9629C58.5562 62.0193 58.6465 62.0659 58.7578 62.0684C58.7608 62.0683 58.7637 62.0675 58.7666 62.0674M58.7666 61.543C58.8461 61.5462 58.9142 61.5717 58.9658 61.6074L59.0146 61.6484L59.0479 61.6895C59.0567 61.7032 59.0631 61.7172 59.0684 61.7305L59.083 61.8057L59.0684 61.8799C59.0577 61.9068 59.041 61.9353 59.0146 61.9629C58.9617 62.018 58.8743 62.063 58.7666 62.0674M58.7666 61.543V62.0674M65.4336 61.543C65.4307 61.5428 65.4278 61.5421 65.4248 61.542C65.3419 61.5437 65.2711 61.5706 65.2178 61.6074L65.1689 61.6484C65.1162 61.7035 65.0996 61.7615 65.0996 61.8057L65.1143 61.8799C65.1249 61.9069 65.1424 61.9352 65.1689 61.9629C65.2232 62.0194 65.3134 62.066 65.4248 62.0684C65.4278 62.0683 65.4307 62.0675 65.4336 62.0674M65.4336 61.543V62.0674M65.4336 61.543C65.5131 61.5463 65.5813 61.5717 65.6328 61.6074L65.6807 61.6484L65.7139 61.6895C65.7228 61.7033 65.73 61.717 65.7354 61.7305L65.75 61.8057L65.7354 61.8799C65.7247 61.9069 65.7072 61.9352 65.6807 61.9629C65.6278 62.0179 65.5411 62.0629 65.4336 62.0674M65.4336 61.543V62.0674M58.7666 54.5986C58.7637 54.5985 58.7608 54.5977 58.7578 54.5977C58.6751 54.5994 58.604 54.6254 58.5508 54.6621L58.502 54.7041C58.4493 54.7591 58.4336 54.8172 58.4336 54.8613L58.4482 54.9355C58.4589 54.9624 58.4756 54.991 58.502 55.0186C58.5561 55.075 58.6465 55.1216 58.7578 55.124C58.7608 55.124 58.7637 55.1232 58.7666 55.123M58.7666 54.5986C58.8459 54.6019 58.9143 54.6265 58.9658 54.6621L59.0146 54.7041L59.0479 54.7451C59.0567 54.7588 59.0631 54.7728 59.0684 54.7861L59.083 54.8613L59.0684 54.9355C59.0577 54.9624 59.041 54.991 59.0146 55.0186C58.9617 55.0737 58.8743 55.1186 58.7666 55.123M58.7666 54.5986V55.123M65.4336 54.5986C65.4307 54.5985 65.4278 54.5977 65.4248 54.5977C65.3421 54.5994 65.271 54.6254 65.2178 54.6621L65.1689 54.7041C65.1162 54.7592 65.0996 54.8172 65.0996 54.8613L65.1143 54.9355C65.1249 54.9626 65.1424 54.9909 65.1689 55.0186C65.2232 55.0751 65.3134 55.1217 65.4248 55.124C65.4278 55.124 65.4307 55.1232 65.4336 55.123M65.4336 54.5986V55.123M65.4336 54.5986C65.5129 54.6019 65.5813 54.6265 65.6328 54.6621L65.6807 54.7041L65.7139 54.7451C65.7228 54.759 65.73 54.7727 65.7354 54.7861L65.75 54.8613L65.7354 54.9355C65.7247 54.9625 65.7072 54.9909 65.6807 55.0186C65.6278 55.0736 65.541 55.1186 65.4336 55.123M65.4336 54.5986V55.123M65.6035 35.5049C66.4709 35.5498 67.2838 35.9063 67.9072 36.4941L68.0381 36.623L68.1611 36.7588C68.7019 37.3807 69.0169 38.1611 69.0732 38.9727H70.417C71.8583 38.9727 73.2236 39.5699 74.2168 40.6045C75.2072 41.6364 75.75 43.019 75.75 44.4443V65.2773C75.75 66.7029 75.2074 68.0863 74.2168 69.1182C73.2236 70.1528 71.8583 70.7499 70.417 70.75H47.083C45.6417 70.7499 44.2764 70.1528 43.2832 69.1182C42.2926 68.0863 41.75 66.7029 41.75 65.2773V44.4443C41.75 43.019 42.2928 41.6364 43.2832 40.6045C44.2764 39.5699 45.6417 38.9727 47.083 38.9727H48.4268C48.4873 38.1012 48.8457 37.2649 49.4619 36.623L49.5928 36.4941C50.2607 35.8644 51.1462 35.5001 52.083 35.5C53.0201 35.5 53.9062 35.8642 54.5742 36.4941L54.7051 36.623L54.8281 36.7588C55.3688 37.3806 55.6839 38.1612 55.7402 38.9727H61.7598C61.8203 38.1012 62.1787 37.2649 62.7949 36.623L62.9258 36.4941C63.5938 35.8642 64.4799 35.5 65.417 35.5L65.6035 35.5049Z\" fill=\"url(#paint1_linear_7253_18229)\" stroke=\"white\" stroke-width=\"4\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7253_18229\" x1=\"48.6642\" y1=\"14.3405\" x2=\"6.05192\" y2=\"47.3575\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_7253_18229\" x1=\"68.0382\" y1=\"39.5484\" x2=\"41.072\" y2=\"57.6006\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "2ad08072-437e-c913-bf05-7925b6f12efd",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>AI Hub + CMP</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "40242399-444f-4eb8-0393-ae991f7e975e",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Leverage AI Agents to audit the existing content library and suggest Projects or reuse an existing piece of content before duplicating.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "edc662bf-d99d-e110-08e2-c2d23932aeaa",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	}
+																],
+																"type": "Row"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									},
+									{
+										"definition": {
+											"fragment": {
+												"key": "requirements-modal",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"description": "The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.",
+												"header": "Liferay Ai HUB",
+												"productId": "",
+												"solutionType": "cmp",
+												"title": "AI Hub Requirements"
+											},
+											"fragmentFields": [
+												{
+													"id": "header",
+													"value": {
+														"fragmentLink": {
+														}
+													}
+												},
+												{
+													"id": "description",
+													"value": {
+														"fragmentLink": {
+														}
+													}
+												},
+												{
+													"id": "title",
+													"value": {
+														"fragmentLink": {
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"hidden": true
+											},
+											"indexed": true
+										},
+										"id": "c476f489-5590-0bce-f169-d9ceadcc938a",
+										"type": "Fragment"
+									}
+								],
+								"type": "Section"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "\n<style>\n  .dxp-gradient-text mark {\n    color: #8881f9;\n    background-image: linear-gradient(90deg, #659aff, #7414ff80);\n    background-clip: text;\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n  }\n\n.dxp-capabilities-description .highlight {\n\tcolor: #C379FB;\n\tfont-weight: 700;\n}\n  \n.ai-hub-sticky.stop-sticky {\n\tposition: static !important;\n\ttop: auto !important;\n}\n\n</style>\n<script>\ndocument.addEventListener('DOMContentLoaded', () => {\n\tconst stickyElement = document.querySelector('.ai-hub-sticky');\n\tconst lastSection = document.querySelector('#ai-hub-plans');\n\tconst purchaseButton = document.querySelector(\n\t\t'a[href=\"#ai-hub-plans\"]'\n\t);\n\n\tif (purchaseButton && lastSection) {\n\t\tpurchaseButton.addEventListener('click', (event) => {\n\t\t\tevent.preventDefault();\n\n\t\t\twindow.scrollTo({\n\t\t\t\ttop: lastSection.offsetTop,\n\t\t\t\tbehavior: 'smooth',\n\t\t\t});\n\t\t});\n\t}\n\n\tif (stickyElement && lastSection) {\n\t\tconst observer = new IntersectionObserver(\n\t\t\t([entry]) => {\n\n\t\t\t\tstickyElement.classList.toggle(\n\t\t\t\t\t'stop-sticky',\n\t\t\t\t\tentry.intersectionRatio >= 0.5\n\t\t\t\t);\n\t\t\t},\n\t\t\t{\n\t\t\t\trootMargin: '0px 0px -200px 0px',\n\t\t\t\tthreshold: 0.5,\n\t\t\t}\n\t\t);\n\n\t\tobserver.observe(lastSection);\n\t}\n});\n</script>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true
+								},
+								"id": "3a290e5d-e501-0c0b-23be-aa3ff1209b3e",
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"colorSchemeName": "01",
+		"masterPage": {
+			"key": "marketplace-master"
+		},
+		"themeName": "Classic",
+		"themeSettings": {
+			"lfr-theme:regular:show-footer": "false",
+			"lfr-theme:regular:show-header": "false",
+			"lfr-theme:regular:show-header-search": "false",
+			"lfr-theme:regular:wrap-widget-page-content": "false"
+		}
+	},
+	"version": 1.1
+}
