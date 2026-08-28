@@ -1,5 +1,7 @@
 <#attempt>
-	<#assign activePlid = themeDisplay.getLayout().getPlid() />
+	<#assign activeLayout = themeDisplay.getLayout() />
+
+	<#assign activePlid = activeLayout.getPlid() />
 <#recover>
 	<#assign activePlid = 0 />
 </#attempt>
@@ -19,13 +21,15 @@
 		<#attempt>
 			<#list entries![] as navigationMenuItem>
 				<#assign
+					navigationMenuItemLayout = (navigationMenuItem.getLayout())!
 					navigationMenuItemName = navigationMenuItem.getName()
-					navigationMenuItemPlid = (navigationMenuItem.getLayout().getPlid())!0
 					navigationMenuItemURL = navigationMenuItem.getRegularURL()
 				/>
 
 				<#assign
 					navigationIconSymbol = (navigationIcons[navigationMenuItemName])!"circle"
+					navigationMenuItemPlid = (navigationMenuItemLayout.getPlid())!0
+
 					navigationMenuItemActive = (activePlid > 0) && (navigationMenuItemPlid == activePlid)
 				/>
 

@@ -32,7 +32,9 @@
 <#assign canBypassMyAccount = false />
 
 <#attempt>
-	<#list themeDisplay.getUser().getRoles() as userRole>
+	<#assign currentUser = themeDisplay.getUser() />
+
+	<#list currentUser.getRoles() as userRole>
 		<#if stringUtil.equals(userRole.getName(), "Administrator") || stringUtil.equals(userRole.getName(), "Liferay Staff")>
 			<#assign canBypassMyAccount = true />
 		</#if>
@@ -50,7 +52,9 @@
 </#attempt>
 
 <#attempt>
-	<#assign selectedSectionPlid = themeDisplay.getLayout().getAncestorPlid() />
+	<#assign selectedSectionLayout = themeDisplay.getLayout() />
+
+	<#assign selectedSectionPlid = selectedSectionLayout.getAncestorPlid() />
 <#recover>
 	<#assign selectedSectionPlid = 0 />
 </#attempt>
@@ -60,7 +64,9 @@
 		<#list entries![] as navPrimaryItem>
 			<#assign
 				navPrimaryItemChildren = navPrimaryItem.getChildren()
-				navPrimaryItemSelected = (selectedSectionPlid > 0) && (((navPrimaryItem.getLayout().getPlid())!0) == selectedSectionPlid)
+				navPrimaryItemLayout = (navPrimaryItem.getLayout())!
+
+				navPrimaryItemSelected = (selectedSectionPlid > 0) && (((navPrimaryItemLayout.getPlid())!0) == selectedSectionPlid)
 			/>
 
 			<#if navPrimaryItemChildren?has_content>
