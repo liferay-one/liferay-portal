@@ -176,18 +176,25 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
 
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
 		UserAccount userAccount =
 			_userAccountService.fetchUserAccountByEmailAddress(emailAddress);
 
-		if (userAccount == null) {
+		if ((userAccount == null) ||
+			!UserAccountUtil.hasAccountMembership(
+				userAccount, account.getId())) {
+
 			throw new ResponseStatusException(
 				HttpStatus.NOT_FOUND,
-				"No user account exists with the email address");
+				"No account member exists with the email address " +
+					emailAddress);
 		}
 
 		_deleteUserAccountAccountRole(
-			_accountService.getAccount(externalReferenceCode, jwt),
-			accountRoleId, externalReferenceCode, jwt, userAccount.getId());
+			account, accountRoleId, externalReferenceCode, jwt,
+			userAccount.getId());
 	}
 
 	@GetMapping("/{externalReferenceCode}/invitations")

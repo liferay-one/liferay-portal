@@ -225,7 +225,7 @@ public class AccountsRestControllerTest {
 		Mockito.when(
 			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
 		).thenReturn(
-			_createUserAccount()
+			_createUserAccount(_ACCOUNT_ID, "Support Administrator")
 		);
 
 		accountsRestController.deleteUserAccountsByEmailAddressAccountRole(
@@ -248,6 +248,40 @@ public class AccountsRestControllerTest {
 		).unassignAccountRole(
 			account, _USER_ID, "Support Administrator"
 		);
+	}
+
+	@Test
+	public void testDeleteUserAccountsByEmailAddressAccountRoleWhenUserAccountIsNotMember()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			_createUserAccount(_ACCOUNT_ID + 1, "Support Administrator")
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() ->
+					accountsRestController.
+						deleteUserAccountsByEmailAddressAccountRole(
+							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
+							_ACCOUNT_ROLE_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(
+			_accountRoleService, _provisioningAssignmentService);
 	}
 
 	@Test
