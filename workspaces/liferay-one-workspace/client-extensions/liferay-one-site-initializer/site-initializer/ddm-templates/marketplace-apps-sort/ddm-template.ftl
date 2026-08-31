@@ -1,7 +1,9 @@
 <div>
-	<#assign selectedSortTermDisplayContext = (sortDisplayContext.getSelectedSortTermDisplayContext())! />
+	<#assign
+		selectedSortTermDisplayContext = (sortDisplayContext.getSelectedSortTermDisplayContext())!
 
-	<#assign sortTermLabel = (selectedSortTermDisplayContext.getLabel())!"relevance" />
+		sortTermLabel = (selectedSortTermDisplayContext.getLabel())!"relevance"
+	/>
 
 	<div class="form-group-item">
 		<@clay["dropdown-menu"]
