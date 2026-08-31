@@ -16,30 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Ports <code>ContactResourceImpl</code> from
- * <code>osb-provisioning-rest-impl</code>.
- *
  * @author Allen Ziegenfus
  */
 @RequestMapping("/contacts")
 @RestController
 public class ContactsRestController extends OneBaseRestController {
 
-	/**
-	 * Ports <code>ContactResourceImpl#getContactValidate</code>, keeping its
-	 * condition unchanged: an address is invalid only when no contact exists
-	 * for it and it uses a Liferay domain.
-	 *
-	 * <p>
-	 * Legacy resolved the contact through
-	 * <code>ContactIdentityProvider#fetchContactByEmailAddress</code> with
-	 * <code>sync</code> false, which read Koroneiki first and fell back to the
-	 * Okta API without activating a deactivated user. Liferay One has no
-	 * Koroneiki, so the lookup goes straight to Okta, and
-	 * <code>OktaService#fetchContactByEmailAddress</code> carries the same
-	 * absence of side effects.
-	 * </p>
-	 */
 	@GetMapping("/{contactEmailAddress}/validate")
 	public boolean getContactsValidate(
 			@PathVariable("contactEmailAddress") String contactEmailAddress)
