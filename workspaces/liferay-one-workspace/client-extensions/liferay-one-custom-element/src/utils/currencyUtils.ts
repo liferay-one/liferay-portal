@@ -77,4 +77,3 @@ export function getCurrencyForLocale(locale: string = 'en_US'): string {
 
 	return SUPPORTED_LOCALES_CURRENCIES[normalizedLocale] || 'USD';
 }
-
