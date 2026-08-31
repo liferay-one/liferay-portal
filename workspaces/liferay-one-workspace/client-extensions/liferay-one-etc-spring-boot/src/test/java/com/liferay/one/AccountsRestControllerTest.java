@@ -154,6 +154,12 @@ public class AccountsRestControllerTest {
 			_createAccountRole("Partner Manager")
 		);
 
+		Mockito.when(
+			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
+		).thenReturn(
+			true
+		);
+
 		accountsRestController.deleteUserAccountsAccountRole(
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
 
@@ -190,6 +196,12 @@ public class AccountsRestControllerTest {
 			_createAccount()
 		);
 
+		Mockito.when(
+			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
+		).thenReturn(
+			true
+		);
+
 		accountsRestController.deleteUserAccountsAccountRole(
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
 
@@ -200,6 +212,38 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.verifyNoInteractions(_provisioningAssignmentService);
+	}
+
+	@Test
+	public void testDeleteUserAccountsAccountRoleWhenUserAccountIsNotMember()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
+		).thenReturn(
+			false
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.deleteUserAccountsAccountRole(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
+					_ACCOUNT_ROLE_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(
+			_accountRoleService, _provisioningAssignmentService);
 	}
 
 	@Test
