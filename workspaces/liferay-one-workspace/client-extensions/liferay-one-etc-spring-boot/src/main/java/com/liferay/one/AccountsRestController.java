@@ -141,28 +141,21 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
 
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		if (!_userAccountService.hasAccountUserAccount(
+				account.getId(), userId)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.NOT_FOUND,
+				"No account member exists with the user ID " + userId);
+		}
+
 		_deleteUserAccountAccountRole(
-			_accountService.getAccount(externalReferenceCode, jwt),
-			accountRoleId, externalReferenceCode, jwt, userId);
+			account, accountRoleId, externalReferenceCode, jwt, userId);
 	}
 
-	/**
-	 * Ports
-	 * <code>AccountResourceImpl#deleteAccountContactByEmailAddresContactEmailAddressRole</code>
-	 * from <code>osb-provisioning-rest-impl</code>. The path mirrors the assign
-	 * side, <code>postUserAccountsByEmailAddressAccountRoles</code>, rather
-	 * than the legacy <code>/contacts/{email}/roles/{names}</code> shape.
-	 *
-	 * <p>
-	 * The legacy contact role vocabulary does not carry over. Legacy took an
-	 * array of contact role names and validated Koroneiki specific pairings of
-	 * <code>ContactRoleConstants.NAME_PARTNER_MANAGER</code> and
-	 * <code>NAME_SUPPORT_ADMINISTRATOR</code> along with support seat counts.
-	 * Liferay One addresses roles by account role id and has no contact role
-	 * equivalent, so this takes the single role of the existing by user id
-	 * endpoint.
-	 * </p>
-	 */
 	@DeleteMapping(
 		"/{externalReferenceCode}/user-accounts/by-email-address" +
 			"/{emailAddress}/account-roles/{accountRoleId}"
@@ -620,12 +613,6 @@ public class AccountsRestController extends OneBaseRestController {
 			emailAddress, firstName, StringPool.BLANK, lastName);
 	}
 
-	/**
-	 * Extracted from <code>deleteUserAccountsAccountRole</code> so the by user
-	 * id and by email address paths unassign identically. Legacy reached the
-	 * same effect through
-	 * <code>AccountWebService#unassignContactRolesByEmailAddress</code>.
-	 */
 	private void _deleteUserAccountAccountRole(
 			Account account, long accountRoleId, String externalReferenceCode,
 			Jwt jwt, long userId)
