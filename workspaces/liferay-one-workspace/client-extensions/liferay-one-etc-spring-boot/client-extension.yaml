@@ -1,5 +1,13 @@
 assemble:
     -   fromTask: bootJar
+liferay-one-etc-spring-boot-oaci:
+    .serviceAddress: localhost:58081
+    .serviceScheme: http
+    name: Liferay One Etc Spring Boot OAuth Application Cloud Infrastructure
+    scopes:
+        -   Liferay.Headless.Admin.User.everything.read
+        -   c_property.everything.read
+    type: oAuthApplicationHeadlessServer
 liferay-one-etc-spring-boot-oahs:
     .serviceAddress: localhost:58081
     .serviceScheme: http
@@ -26,14 +34,6 @@ liferay-one-etc-spring-boot-oahs:
         -   c_subscriptionentry.everything
         -   c_ticketattachment.everything
         -   c_trialextensionrequest.everything
-    type: oAuthApplicationHeadlessServer
-liferay-one-etc-spring-boot-oaci:
-    .serviceAddress: localhost:58081
-    .serviceScheme: http
-    name: Liferay One Etc Spring Boot OAuth Application Cloud Infrastructure
-    scopes:
-        -   Liferay.Headless.Admin.User.everything.read
-        -   c_property.everything.read
     type: oAuthApplicationHeadlessServer
 liferay-one-etc-spring-boot-oaua:
     .serviceAddress: localhost:58081

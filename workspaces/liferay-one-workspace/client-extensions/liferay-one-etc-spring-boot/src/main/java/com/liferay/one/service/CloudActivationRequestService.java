@@ -11,7 +11,6 @@ import com.liferay.one.exception.DisasterRecoveryEntitlementException;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.exception.InvalidEnvironmentAdminsException;
 import com.liferay.one.model.Environment;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.LocaleUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -79,14 +78,28 @@ public class CloudActivationRequestService extends OneBaseService {
 				projectExternalReferenceCode);
 		}
 
-		_copyFirstAdmin(adminsJSONArray, fieldsJSONObject);
+		if (!adminsJSONArray.isEmpty()) {
+			JSONObject adminJSONObject = adminsJSONArray.getJSONObject(0);
 
-		Environment activationEnvironment = _keyedLock.withLock(
-			StringBundler.concat(
-				projectExternalReferenceCode, StringPool.POUND, offering),
-			() -> _addActivationEnvironment(
+			fieldsJSONObject.put(
+				"adminEmailAddress", adminJSONObject.optString("emailAddress")
+			).put(
+				"adminFirstName", adminJSONObject.optString("firstName")
+			).put(
+				"adminLastName", adminJSONObject.optString("lastName")
+			);
+
+			if (adminJSONObject.has("githubUsername")) {
+				fieldsJSONObject.put(
+					"githubUsername",
+					adminJSONObject.optString("githubUsername"));
+			}
+		}
+
+		Environment activationEnvironment =
+			_environmentService.addActivationEnvironment(
 				accountEntryId, contractId, fieldsJSONObject, offering,
-				projectExternalReferenceCode));
+				projectExternalReferenceCode);
 
 		try {
 			_environmentAdminService.addEnvironmentAdmins(
@@ -121,25 +134,6 @@ public class CloudActivationRequestService extends OneBaseService {
 		}
 	}
 
-	private Environment _addActivationEnvironment(
-			long accountEntryId, long contractId, JSONObject fieldsJSONObject,
-			String offering, String projectExternalReferenceCode)
-		throws Exception {
-
-		Environment environment =
-			_environmentService.fetchActivationEnvironment(
-				accountEntryId, offering, projectExternalReferenceCode);
-
-		if (environment != null) {
-			throw new EnvironmentActivationAlreadyRequestedException(
-				environment.getExternalReferenceCode());
-		}
-
-		return _environmentService.addActivationEnvironment(
-			accountEntryId, contractId, fieldsJSONObject, offering,
-			projectExternalReferenceCode);
-	}
-
 	private void _checkAdmins(
 			JSONArray adminsJSONArray, String environmentProfile)
 		throws Exception {
@@ -165,29 +159,6 @@ public class CloudActivationRequestService extends OneBaseService {
 						" is not an object for the environment profile ",
 						environmentProfile));
 			}
-		}
-	}
-
-	private void _copyFirstAdmin(
-		JSONArray adminsJSONArray, JSONObject fieldsJSONObject) {
-
-		if (adminsJSONArray.isEmpty()) {
-			return;
-		}
-
-		JSONObject adminJSONObject = adminsJSONArray.getJSONObject(0);
-
-		fieldsJSONObject.put(
-			"adminEmailAddress", adminJSONObject.optString("emailAddress")
-		).put(
-			"adminFirstName", adminJSONObject.optString("firstName")
-		).put(
-			"adminLastName", adminJSONObject.optString("lastName")
-		);
-
-		if (adminJSONObject.has("githubUsername")) {
-			fieldsJSONObject.put(
-				"githubUsername", adminJSONObject.optString("githubUsername"));
 		}
 	}
 
@@ -346,11 +317,10 @@ public class CloudActivationRequestService extends OneBaseService {
 		String projectExternalReferenceCode) {
 
 		return HashMapBuilder.put(
-			"ANALYTICS_CLOUD_OWNER_EMAIL_ADDRESS",
-			HtmlUtil.escape(
-				fieldsJSONObject.optString("analyticsCloudOwnerEmailAddress"))
-		).put(
 			"DATE_AND_TIME_SUBMITTED", _getDateAndTimeSubmitted()
+		).put(
+			"OWNER_EMAIL_ADDRESS",
+			HtmlUtil.escape(fieldsJSONObject.optString("ownerEmailAddress"))
 		).put(
 			"PRIMARY_REGION",
 			HtmlUtil.escape(fieldsJSONObject.optString("region"))
@@ -488,9 +458,6 @@ public class CloudActivationRequestService extends OneBaseService {
 
 	@Autowired
 	private EnvironmentService _environmentService;
-
-	@Autowired
-	private KeyedLock _keyedLock;
 
 	@Autowired
 	private NotificationQueueEntryService _notificationQueueEntryService;

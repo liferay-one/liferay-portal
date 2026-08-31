@@ -44,6 +44,10 @@ public class NotificationTemplateService extends OneBaseService {
 	}
 
 	private String _getLocalizedValue(Object value, String languageId) {
+		if (value instanceof String) {
+			return (String)value;
+		}
+
 		if (!(value instanceof Map)) {
 			return null;
 		}
@@ -86,12 +90,11 @@ public class NotificationTemplateService extends OneBaseService {
 		if ((recipients != null) && (recipients.length > 0)) {
 			Map<String, Object> recipient = (Map<String, Object>)recipients[0];
 
-			Object from = recipient.get("from");
-
 			jsonObject.put(
 				"from",
 				_replacePlaceholders(
-					placeholders, from instanceof String ? (String)from : null)
+					placeholders,
+					_getLocalizedValue(recipient.get("from"), languageId))
 			).put(
 				"fromName",
 				_replacePlaceholders(

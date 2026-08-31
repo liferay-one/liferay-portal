@@ -6,8 +6,11 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.model.Environment;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
@@ -15,6 +18,7 @@ import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -30,37 +34,22 @@ public class EnvironmentService extends OneBaseService {
 			String offering, String projectExternalReferenceCode)
 		throws Exception {
 
-		JSONObject environmentJSONObject = new JSONObject(
-		).put(
-			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_PENDING
-		).put(
-			"offering", offering
-		).put(
-			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
-		).put(
-			"r_projectToEnvironment_c_projectERC", projectExternalReferenceCode
-		);
+		return _keyedLock.withLock(
+			StringBundler.concat(
+				projectExternalReferenceCode, StringPool.POUND, offering),
+			() -> {
+				Environment environment = fetchActivationEnvironment(
+					accountEntryId, offering, projectExternalReferenceCode);
 
-		if (contractId > 0) {
-			environmentJSONObject.put(
-				"r_contractToEnvironment_c_contractId", contractId);
-		}
+				if (environment != null) {
+					throw new EnvironmentActivationAlreadyRequestedException(
+						environment.getExternalReferenceCode());
+				}
 
-		for (String fieldName : _ACTIVATION_FIELD_NAMES) {
-			if (fieldsJSONObject.has(fieldName)) {
-				environmentJSONObject.put(
-					fieldName, fieldsJSONObject.optString(fieldName));
-			}
-		}
-
-		String response = post(
-			getAuthorization(), environmentJSONObject.toString(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/environments"
-			).build(
-			).toUri());
-
-		return new Environment(new JSONObject(response));
+				return _addActivationEnvironment(
+					accountEntryId, contractId, fieldsJSONObject, offering,
+					projectExternalReferenceCode);
+			});
 	}
 
 	public Environment addCloudNativeEnvironment(
@@ -197,6 +186,44 @@ public class EnvironmentService extends OneBaseService {
 			));
 	}
 
+	private Environment _addActivationEnvironment(
+			long accountEntryId, long contractId, JSONObject fieldsJSONObject,
+			String offering, String projectExternalReferenceCode)
+		throws Exception {
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_PENDING
+		).put(
+			"offering", offering
+		).put(
+			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
+		).put(
+			"r_projectToEnvironment_c_projectERC", projectExternalReferenceCode
+		);
+
+		if (contractId > 0) {
+			environmentJSONObject.put(
+				"r_contractToEnvironment_c_contractId", contractId);
+		}
+
+		for (String fieldName : _ACTIVATION_FIELD_NAMES) {
+			if (fieldsJSONObject.has(fieldName)) {
+				environmentJSONObject.put(
+					fieldName, fieldsJSONObject.optString(fieldName));
+			}
+		}
+
+		String response = post(
+			getAuthorization(), environmentJSONObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/environments"
+			).build(
+			).toUri());
+
+		return new Environment(new JSONObject(response));
+	}
+
 	private void _patchEnvironment(long id, JSONObject environmentJSONObject)
 		throws Exception {
 
@@ -210,9 +237,12 @@ public class EnvironmentService extends OneBaseService {
 
 	private static final String[] _ACTIVATION_FIELD_NAMES = {
 		"adminEmailAddress", "adminFirstName", "adminLastName",
-		"allowedEmailDomains", "analyticsCloudOwnerEmailAddress",
-		"disasterRecoveryRegion", "friendlyURL", "githubUsername",
-		"ownerEmailAddress", "projectId", "region", "timeZone", "workspaceName"
+		"allowedEmailDomains", "disasterRecoveryRegion", "friendlyURL",
+		"githubUsername", "ownerEmailAddress", "projectId", "region",
+		"timeZone", "workspaceName"
 	};
+
+	@Autowired
+	private KeyedLock _keyedLock;
 
 }

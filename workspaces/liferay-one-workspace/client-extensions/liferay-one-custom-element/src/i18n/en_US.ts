@@ -121,8 +121,6 @@ export default {
 	'analytics': 'Analytics',
 	'analytics-and-optimization': 'Analytics and Optimization',
 	'analytics-cloud-activation': 'Analytics Cloud Activation',
-	'analytics-cloud-owner-s-email-address':
-		"Analytics Cloud Owner's Email Address",
 	'analytics-group-id': 'Analytics Group ID',
 	'and': 'and',
 	'and-the': 'and the',

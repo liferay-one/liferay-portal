@@ -87,7 +87,7 @@ export const projectSchemas = {
 		admins: z
 			.array(saasAdmin)
 			.min(1, i18n.translate('this-field-is-required')),
-		analyticsCloudOwnerEmailAddress: emailAddress,
+		ownerEmailAddress: emailAddress,
 		projectId,
 		region,
 	}),
