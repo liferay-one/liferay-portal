@@ -16,14 +16,14 @@ import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filt
 import {formatDate} from '~/utils/dateUtils';
 
 import useHasActivationPermission from '../../hooks/useHasActivationPermission';
-import {getCloudConsoleURL} from '../../utils/cloudActivationFields';
+import {getCloudConsoleURL} from '../../utils/cloudActivationFieldsUtils';
 import CloudActivationModal from '../CloudActivationModal/CloudActivationModal';
 
 import './ActivationStatusCard.css';
 
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
 
-import type {CloudActivationProfile} from '../../utils/cloudActivationFields';
+import type {CloudActivationProfile} from '../../utils/cloudActivationFieldsUtils';
 import type {EnvironmentProfile} from '../../utils/resolveEnvironmentProfile';
 
 type StatusConfig = {
