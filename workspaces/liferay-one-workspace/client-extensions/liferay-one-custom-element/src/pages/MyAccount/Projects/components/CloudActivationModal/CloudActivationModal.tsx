@@ -9,7 +9,7 @@ import {Word, translate} from '~/i18n';
 
 import CloudActivationForm from '../CloudActivationForm/CloudActivationForm';
 
-import type {CloudActivationProfile} from '../../utils/cloudActivationFields';
+import type {CloudActivationProfile} from '../../utils/cloudActivationFieldsUtils';
 
 const ALREADY_SUBMITTED_MESSAGE_KEY_BY_PROFILE: Record<
 	CloudActivationProfile,

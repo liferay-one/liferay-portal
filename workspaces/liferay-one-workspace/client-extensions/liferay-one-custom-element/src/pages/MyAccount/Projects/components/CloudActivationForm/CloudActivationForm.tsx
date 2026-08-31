@@ -25,7 +25,7 @@ import {
 	CloudActivationProfile,
 	getCloudActivationAdminFields,
 	getCloudActivationFields,
-} from '../../utils/cloudActivationFields';
+} from '../../utils/cloudActivationFieldsUtils';
 
 type FormAdmin = {
 	emailAddress: string;

@@ -272,5 +272,3 @@ export function getCloudConsoleURL(
 
 	return 'https://analytics.liferay.com';
 }
-
-export default getCloudActivationFields;
