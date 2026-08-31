@@ -44,17 +44,23 @@
 </#attempt>
 
 <#attempt>
-	<#assign navigationMenu = restClient.get("/headless-delivery/v1.0/sites/" + themeDisplay.getScopeGroupId()?c + "/navigation-menus/by-external-reference-code/LO_PRIMARY_NAV?nestedFields=customFields,navigationMenuItems") />
+	<#assign
+		navigationMenu = restClient.get("/headless-delivery/v1.0/sites/" + themeDisplay.getScopeGroupId()?c + "/navigation-menus/by-external-reference-code/LO_PRIMARY_NAV?nestedFields=customFields,navigationMenuItems")
 
-	<#assign customFieldsMaps = getCustomFieldsMaps((navigationMenu.navigationMenuItems)![]) />
+		customFieldsMaps = getCustomFieldsMaps((navigationMenu.navigationMenuItems)![])
+	/>
+
 <#recover>
 	<#assign customFieldsMaps = {} />
 </#attempt>
 
 <#attempt>
-	<#assign selectedSectionLayout = themeDisplay.getLayout() />
+	<#assign
+		selectedSectionLayout = themeDisplay.getLayout()
 
-	<#assign selectedSectionPlid = selectedSectionLayout.getAncestorPlid() />
+		selectedSectionPlid = selectedSectionLayout.getAncestorPlid()
+	/>
+
 <#recover>
 	<#assign selectedSectionPlid = 0 />
 </#attempt>
@@ -108,17 +114,15 @@
 		<div class="adt-submenu-outer-wrapper container-fluid-max-xl">
 			<div class="adt-submenu-inner-wrapper">
 				<#list navSecondaryItems as navSecondaryItem>
-					<#assign navSecondaryItemCustomFields = getCustomFields(navSecondaryItem) />
-
 					<#assign
+						navSecondaryItemCustomFields = getCustomFields(navSecondaryItem)
+
 						navSecondaryItemChildColumns = (navSecondaryItemCustomFields["Submenu Child Columns"])!""
 						navSecondaryItemColumnSpan = (navSecondaryItemCustomFields["Submenu Column Span"])!""
 						navSecondaryItemImageURL = (navSecondaryItemCustomFields["Menu Item Image URL"])!""
 						navSecondaryItemType = (navSecondaryItemCustomFields["Menu Item Type"])!""
 						submenuBackground = (navSecondaryItemCustomFields["Submenu Background"])!""
-					/>
 
-					<#assign
 						childColumnSpan = ""
 						sectionColumnSpan = ""
 					/>
@@ -140,9 +144,9 @@
 						</li>
 
 						<#list navSecondaryItem.getChildren() as navTertiaryItem>
-							<#assign navTertiaryItemCustomFields = getCustomFields(navTertiaryItem) />
-
 							<#assign
+								navTertiaryItemCustomFields = getCustomFields(navTertiaryItem)
+
 								navTertiaryItemDescription = (navTertiaryItemCustomFields["Menu Item Description"])!""
 								navTertiaryItemImageURL = (navTertiaryItemCustomFields["Menu Item Image URL"])!""
 								navTertiaryItemName = navTertiaryItem.getName()
