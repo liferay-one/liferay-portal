@@ -2629,24 +2629,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_ANALYTICS_CLOUD_OWNER_EMAIL_ADDRESS",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Analytics Cloud Owner Email Address"
-					},
-					"name": "analyticsCloudOwnerEmailAddress",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_CURRENT_ENTITLEMENT_HASH",
 					"indexed": true,
 					"indexedAsKeyword": true,

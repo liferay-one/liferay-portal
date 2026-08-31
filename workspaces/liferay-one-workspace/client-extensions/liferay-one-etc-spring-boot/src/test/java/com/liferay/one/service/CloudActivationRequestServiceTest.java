@@ -11,7 +11,6 @@ import com.liferay.one.exception.DisasterRecoveryEntitlementException;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.exception.InvalidEnvironmentAdminsException;
 import com.liferay.one.model.Environment;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Map;
@@ -78,8 +77,6 @@ public class CloudActivationRequestServiceTest {
 		ReflectionTestUtils.setField(
 			_cloudActivationRequestService, "_environmentService",
 			_environmentService);
-		ReflectionTestUtils.setField(
-			_cloudActivationRequestService, "_keyedLock", new KeyedLock());
 		ReflectionTestUtils.setField(
 			_cloudActivationRequestService, "_notificationQueueEntryService",
 			_notificationQueueEntryService);
@@ -1241,8 +1238,7 @@ public class CloudActivationRequestServiceTest {
 			placeholders.get("PROJECT_ADMIN"));
 		Assertions.assertEquals("Europe", placeholders.get("PRIMARY_REGION"));
 		Assertions.assertEquals(
-			"owner@liferay.com",
-			placeholders.get("ANALYTICS_CLOUD_OWNER_EMAIL_ADDRESS"));
+			"owner@liferay.com", placeholders.get("OWNER_EMAIL_ADDRESS"));
 
 		Mockito.verify(
 			_notificationQueueEntryService
@@ -1256,25 +1252,21 @@ public class CloudActivationRequestServiceTest {
 	public void testAddActivationRequestThrowsForConcurrentDuplicate()
 		throws Exception {
 
-		Environment environment = Mockito.mock(Environment.class);
-
-		Mockito.when(
-			environment.getExternalReferenceCode()
-		).thenReturn(
-			"ENV-1"
-		);
-
 		Mockito.when(
 			_environmentService.fetchActivationEnvironment(
 				_ACCOUNT_ENTRY_ID, EnvironmentConstants.OFFERING_PAAS,
 				_PROJECT_ERC)
 		).thenReturn(
-			null, null, null, environment
+			null
 		);
 
-		_cloudActivationRequestService.addActivationRequest(
-			_ACCOUNT_ENTRY_ID, _ACCOUNT_ERC, _CONTRACT_ID, "paas",
-			_createPaaSFieldsJSONObject(), _PROJECT_ERC);
+		Mockito.when(
+			_environmentService.addActivationEnvironment(
+				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.anyString(), Mockito.anyString())
+		).thenThrow(
+			new EnvironmentActivationAlreadyRequestedException("ENV-1")
+		);
 
 		Assertions.assertThrows(
 			EnvironmentActivationAlreadyRequestedException.class,
@@ -1282,12 +1274,9 @@ public class CloudActivationRequestServiceTest {
 				_ACCOUNT_ENTRY_ID, _ACCOUNT_ERC, _CONTRACT_ID, "paas",
 				_createPaaSFieldsJSONObject(), _PROJECT_ERC));
 
-		Mockito.verify(
-			_environmentService, Mockito.times(1)
-		).addActivationEnvironment(
-			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
-			Mockito.anyString(), Mockito.anyString()
-		);
+		Mockito.verifyNoInteractions(_environmentAdminService);
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+		Mockito.verifyNoInteractions(_notificationTemplateService);
 	}
 
 	@Test
@@ -1467,7 +1456,7 @@ public class CloudActivationRequestServiceTest {
 				_createSaaSAdminJSONObject("admin@liferay.com", "Jane", "Doe")
 			)
 		).put(
-			"analyticsCloudOwnerEmailAddress", "owner@liferay.com"
+			"ownerEmailAddress", "owner@liferay.com"
 		).put(
 			"projectId", "saas-omni"
 		).put(

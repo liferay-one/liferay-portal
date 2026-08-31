@@ -433,7 +433,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic 鈥
 | `type` | string | `non-production` 路 `production` 路 `uat`; cloud only |
 | `region` | string | Cloud only; blank for on-prem |
 | `disasterRecoveryRegion` | string | Cloud only; secondary region for disaster recovery, alongside `region` |
-| `analyticsCloudOwnerEmailAddress` | string | SaaS only; Analytics Cloud workspace owner, mirrors Customer Portal's `lxc.analyticsCloudOwnersEmailAddress` |
+| `ownerEmailAddress` | string | Cloud only; workspace owner collected on activation. On SaaS this is the Analytics Cloud workspace owner, mirroring Customer Portal's `lxc.analyticsCloudOwnersEmailAddress` |
 | `activationMode` | string | `license-key` 路 `offline` 路 `online` |
 | `status` | string | `active` 路 `deactivated` 路 `expired` |
 | `lastHeartbeatAt` | datetime | Cloud only |
