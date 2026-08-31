@@ -8,7 +8,7 @@ import {useFetch} from '~/hooks/useFetch';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
-import {escapeODataString} from '~/utils/odata';
+import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';
 
