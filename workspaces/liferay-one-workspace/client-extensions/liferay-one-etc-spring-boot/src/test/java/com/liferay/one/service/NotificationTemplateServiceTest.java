@@ -51,6 +51,29 @@ public class NotificationTemplateServiceTest {
 	}
 
 	@Test
+	public void testGetProcessedTemplateJSONObjectFallsBackToDefaultLanguageId()
+		throws Exception {
+
+		JSONObject jsonObject = _getProcessedTemplateJSONObject(
+			"pt_BR",
+			_createNotificationTemplate(
+				Map.of("pt_BR", "corpo"),
+				Map.<String, Object>of(
+					"from", "customer-service@liferay.com", "fromName",
+					Map.of("en_US", "One Liferay"), "to",
+					Map.of("en_US", "[%TO_EMAIL%]")),
+				Map.of("pt_BR", "assunto")),
+			Map.of("TO_EMAIL", "cloud-provisioning@liferay.com"));
+
+		Assertions.assertEquals("corpo", jsonObject.getString("body"));
+		Assertions.assertEquals("assunto", jsonObject.getString("subject"));
+		Assertions.assertEquals(
+			"One Liferay", jsonObject.getString("fromName"));
+		Assertions.assertEquals(
+			"cloud-provisioning@liferay.com", jsonObject.getString("to"));
+	}
+
+	@Test
 	public void testGetProcessedTemplateJSONObjectReplacesRecipientPlaceholders()
 		throws Exception {
 
@@ -70,22 +93,50 @@ public class NotificationTemplateServiceTest {
 			"cloud-provisioning@liferay.com", jsonObject.getString("to"));
 	}
 
+	@Test
+	public void testGetProcessedTemplateJSONObjectSupportsPlainStringRecipients()
+		throws Exception {
+
+		JSONObject jsonObject = _getProcessedTemplateJSONObject(
+			_LANGUAGE_ID,
+			_createNotificationTemplate(
+				Map.of(_LANGUAGE_ID, "body"),
+				Map.<String, Object>of(
+					"from", "customer-service@liferay.com", "fromName",
+					"One Liferay", "to", "[%TO_EMAIL%]"),
+				Map.of(_LANGUAGE_ID, "subject")),
+			Map.of("TO_EMAIL", "cloud-provisioning@liferay.com"));
+
+		Assertions.assertEquals(
+			"customer-service@liferay.com", jsonObject.getString("from"));
+		Assertions.assertEquals(
+			"One Liferay", jsonObject.getString("fromName"));
+		Assertions.assertEquals(
+			"cloud-provisioning@liferay.com", jsonObject.getString("to"));
+	}
+
 	private NotificationTemplate _createNotificationTemplate(
-		String body, String fromName, String subject, String to) {
+		Map<String, String> bodyMap, Map<String, Object> recipient,
+		Map<String, String> subjectMap) {
 
 		NotificationTemplate notificationTemplate = new NotificationTemplate();
 
-		notificationTemplate.setBody(() -> Map.of(_LANGUAGE_ID, body));
-		notificationTemplate.setRecipients(
-			() -> new Object[] {
-				Map.<String, Object>of(
-					"from", "[%FROM_EMAIL%]", "fromName",
-					Map.of(_LANGUAGE_ID, fromName), "to",
-					Map.of(_LANGUAGE_ID, to))
-			});
-		notificationTemplate.setSubject(() -> Map.of(_LANGUAGE_ID, subject));
+		notificationTemplate.setBody(() -> bodyMap);
+		notificationTemplate.setRecipients(() -> new Object[] {recipient});
+		notificationTemplate.setSubject(() -> subjectMap);
 
 		return notificationTemplate;
+	}
+
+	private NotificationTemplate _createNotificationTemplate(
+		String body, String fromName, String subject, String to) {
+
+		return _createNotificationTemplate(
+			Map.of(_LANGUAGE_ID, body),
+			Map.<String, Object>of(
+				"from", "[%FROM_EMAIL%]", "fromName",
+				Map.of(_LANGUAGE_ID, fromName), "to", Map.of(_LANGUAGE_ID, to)),
+			Map.of(_LANGUAGE_ID, subject));
 	}
 
 	private JSONObject _getProcessedTemplateJSONObject(

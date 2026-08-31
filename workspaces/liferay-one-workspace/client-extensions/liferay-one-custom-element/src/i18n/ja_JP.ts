@@ -17,8 +17,6 @@ export default {
 	'an-unexpected-error-occurred': '予期しないエラーが発生しました。',
 	'analytics': '分析',
 	'analytics-and-optimization': '分析と最適化',
-	'analytics-cloud-owner-s-email-address':
-		'Analytics Cloudオーナーのメールアドレス',
 	'anonymous-page-views-apv': '匿名ページビュー（APV）',
 	'another-user-already-submitted-the-analytics-cloud-activation-request':
 		'別のユーザーがすでに Analytics Cloud のアクティベーション申請を送信しています。',
@@ -177,6 +175,7 @@ export default {
 	'osaka-japan': '大阪、日本',
 	'other-event': 'その他のイベント',
 	'overdue': '期限切れ',
+	'owner-email': 'オーナーのメールアドレス',
 	'peak-usage-exceeded-your-entitlements':
 		'ピーク使用量がエンタイトルメントを超過しました',
 	'performance-management': 'パフォーマンス管理',

@@ -185,9 +185,9 @@ const CLOUD_ACTIVATION_FIELDS_BY_PROFILE: Record<
 			required: true,
 		},
 		{
-			environmentField: 'analyticsCloudOwnerEmailAddress',
-			kind: 'text',
-			label: 'analytics-cloud-owner-s-email-address',
+			environmentField: 'ownerEmailAddress',
+			kind: 'email',
+			label: 'owner-email',
 			required: true,
 		},
 	],

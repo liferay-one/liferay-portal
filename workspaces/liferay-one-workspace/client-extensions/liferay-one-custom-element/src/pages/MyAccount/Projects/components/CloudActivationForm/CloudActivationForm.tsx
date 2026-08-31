@@ -38,7 +38,6 @@ type FormAdmin = {
 type FormFields = {
 	admins: FormAdmin[];
 	allowedEmailDomains: string;
-	analyticsCloudOwnerEmailAddress: string;
 	disasterRecoveryRegion: string;
 	dxpVersion: string;
 	friendlyURL: string;
@@ -173,7 +172,7 @@ function toFields(
 
 	return {
 		admins: toAdmins(profile, values.admins),
-		analyticsCloudOwnerEmailAddress: values.analyticsCloudOwnerEmailAddress,
+		ownerEmailAddress: values.ownerEmailAddress,
 		projectId: values.projectId,
 		region: values.region,
 	};
