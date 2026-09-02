@@ -541,7 +541,7 @@
 				{
 					"externalReferenceCode": "PRDCT-APP",
 					"neverExpire": true,
-					"price": 0,
+					"price": 99,
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-APP",
@@ -3889,7 +3889,7 @@
 				{
 					"externalReferenceCode": "PRDCT-TEST-CLIENT-EXTENSION",
 					"neverExpire": true,
-					"price": 0,
+					"price": 99,
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-TEST-CLIENT-EXTENSION",
@@ -3968,7 +3968,7 @@
 				{
 					"externalReferenceCode": "PRDCT-TEST-COMPOSITE-APP",
 					"neverExpire": true,
-					"price": 0,
+					"price": 99,
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-TEST-COMPOSITE-APP",
@@ -4185,7 +4185,7 @@
 				{
 					"externalReferenceCode": "PRDCT-TEST-LOW-CODE-CONFIGURATION",
 					"neverExpire": true,
-					"price": 0,
+					"price": 99,
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-TEST-LOW-CODE-CONFIGURATION",
