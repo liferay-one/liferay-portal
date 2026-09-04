@@ -61,7 +61,7 @@ public class LDPUsageStrategyTest {
 	}
 
 	@Test
-	public void testToJSONObjectPercentageIsRoundedToFourDecimalPlaces() {
+	public void testToJSONObjectPercentageIsRoundedToTwoDecimalPlaces() {
 		JSONObject jsonObject = _toJSONObject(
 			"{\"apiRequestsCount\": 1}",
 			Collections.singletonList(

@@ -300,7 +300,7 @@ public class GoogleCloudFunctionServiceTest {
 	private final AtomicReference<String> _requestAuthorization =
 		new AtomicReference<>();
 	private final AtomicReference<String> _requestURI = new AtomicReference<>();
-	private String _responseBody = "{}";
-	private int _responseStatus = 200;
+	private volatile String _responseBody = "{}";
+	private volatile int _responseStatus = 200;
 
 }

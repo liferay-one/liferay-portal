@@ -43,7 +43,7 @@ DATA_SOURCE_ID_SALESFORCE="102"
 
 PROJECT_NAME="Data Platform Project"
 SALESFORCE_PROJECT_ID="PRJCT-028"
-WE_DEPLOY_KEY="asah6851964768a0436b9073da037c407129.lfr.cloud"
+WE_DEPLOY_KEY="mock-environment.lfr.cloud"
 
 function main {
 	local target_dir="${1}"
