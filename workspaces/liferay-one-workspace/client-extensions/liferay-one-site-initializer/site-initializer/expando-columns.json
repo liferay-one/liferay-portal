@@ -732,6 +732,32 @@
 		}
 	},
 	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPInstance",
+		"name": "description",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPInstance",
+		"name": "icon-url",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
 		"dataType": 11,
 		"modelResource": "com.liferay.portal.kernel.model.Organization",
 		"name": "accountEntryId",
