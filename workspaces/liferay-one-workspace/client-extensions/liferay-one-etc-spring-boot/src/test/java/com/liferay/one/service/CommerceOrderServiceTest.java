@@ -7,7 +7,6 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.util.KeyedLock;
 
 import java.util.List;
 
@@ -28,8 +27,6 @@ public class CommerceOrderServiceTest {
 	public void setUp() throws Exception {
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
 
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_keyedLock", new KeyedLock());
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_settledPaymentRetryDelays", new long[0]);
 
@@ -216,29 +213,6 @@ public class CommerceOrderServiceTest {
 			_createOrder(
 				CommerceOrderConstants.ORDER_STATUS_CANCELLED, "DXP_APP",
 				_PAYMENT_STATUS_PENDING)
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		_verifyNeverCompleted();
-	}
-
-	@Test
-	public void testCompleteSettledOrderSkipsOrderCompletedWhileAwaitingLock()
-		throws Exception {
-
-		Mockito.doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)
-		).doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_COMPLETED, "DXP_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)
 		).when(
 			_commerceOrderService
 		).fetchCommerceOrder(

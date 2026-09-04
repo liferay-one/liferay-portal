@@ -22,7 +22,6 @@ import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
@@ -167,30 +166,13 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			if (_awaitSettledPaymentStatus(order, orderId) == null) {
+			Integer paymentStatus = _awaitCompletableOrder(order, orderId);
+
+			if (paymentStatus == null) {
 				return;
 			}
 
-			_keyedLock.withLock(
-				"order-completion#" + orderId,
-				() -> {
-					Order settledOrder = fetchCommerceOrder(orderId);
-
-					if (settledOrder == null) {
-						return;
-					}
-
-					Integer paymentStatus = _getSettledPaymentStatus(
-						settledOrder);
-
-					if ((paymentStatus == null) ||
-						!_isCompletableOrderStatus(settledOrder)) {
-
-						return;
-					}
-
-					completeOrder(orderId, paymentStatus);
-				});
+			completeOrder(orderId, paymentStatus);
 		}
 		finally {
 			_inFlightOrderIds.remove(orderId);
@@ -459,7 +441,7 @@ public class CommerceOrderService extends OneBaseService {
 		return orderResource.postOrder(order);
 	}
 
-	private Integer _awaitSettledPaymentStatus(Order order, long orderId)
+	private Integer _awaitCompletableOrder(Order order, long orderId)
 		throws Exception {
 
 		int retryIndex = 0;
@@ -945,9 +927,6 @@ public class CommerceOrderService extends OneBaseService {
 	private CommerceOrderItemService _commerceOrderItemService;
 
 	private final Set<Long> _inFlightOrderIds = ConcurrentHashMap.newKeySet();
-
-	@Autowired
-	private KeyedLock _keyedLock;
 
 	@Autowired
 	private PostalAddressService _postalAddressService;
