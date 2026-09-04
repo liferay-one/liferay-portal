@@ -15,7 +15,7 @@ const TaxIdDisplay = () => {
 	const {payment, setAccountTaxId} = useAppPurchaseContext();
 
 	return (
-		<Section label={i18n.translate('tax-vat-id')}>
+		<Section label={i18n.translate('tax-vat-id')} required>
 			<Input
 				defaultValue={selectedAccount.taxId}
 				disabled={!!selectedAccount?.taxId}

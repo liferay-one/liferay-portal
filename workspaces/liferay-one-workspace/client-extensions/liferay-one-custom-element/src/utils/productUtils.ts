@@ -228,6 +228,29 @@ export function isDXPFreeTierProduct(product: DeliveryProduct) {
 	return isFreeApp && isDXP;
 }
 
+export function getAiHubTierSKU(product: DeliveryProduct, skuRef?: string) {
+	const aiHubTierSKUs = getAiHubTierSKUs(product);
+
+	return (
+		aiHubTierSKUs.find(
+			({externalReferenceCode}) => externalReferenceCode === skuRef
+		) ?? aiHubTierSKUs[0]
+	);
+}
+
+export function getAiHubTierSKUs(product: DeliveryProduct) {
+	return (product.skus ?? [])
+		.filter(
+			({purchasable, skuOptions}) =>
+				purchasable &&
+				skuOptions &&
+				skuOptions.some(({skuOptionValueKey}) =>
+					['activate', 'studio'].includes(skuOptionValueKey)
+				)
+		)
+		.sort((a, b) => (a.price?.price ?? 0) - (b.price?.price ?? 0));
+}
+
 export function getAiHubTokenSKUs(product: DeliveryProduct) {
 	return (product.skus ?? [])
 		.filter(

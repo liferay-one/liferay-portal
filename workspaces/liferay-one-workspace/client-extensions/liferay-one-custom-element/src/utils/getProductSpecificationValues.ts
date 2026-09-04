@@ -9,6 +9,7 @@ export function getProductSpecificationValues(
 	productSpecifications: DeliveryProductSpecification[]
 ) {
 	const validSpecificationValues = [
+		'ai-hub',
 		'client-extension',
 		'cloud',
 		'composite-app',

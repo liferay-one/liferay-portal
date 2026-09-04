@@ -23,6 +23,7 @@ import {ProductPurchaseAIHubOpenBeta} from '~/services/commerce/ProductPurchaseA
 import {Liferay} from '~/services/liferay/liferay';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {productAgreements} from '~/utils/productAgreements';
+import {getAiHubTierSKU} from '~/utils/productUtils';
 
 import './AIHubOrderSummary.css';
 
@@ -30,18 +31,26 @@ const AIHubOrderSummary = () => {
 	const {
 		form,
 		handlePurchase,
+		payment: contextPayment,
 		product,
 		productPurchaseCart,
 		selectedAccount,
+		skuRef,
 	} = useProductPurchaseOutletContext();
 
 	const [userAgreement, setUserAgreement] = useState(false);
 
 	const {
 		payment: paymentStore,
+		salesforceContract,
 		salesforceProject,
 		setBillingAddress,
 	} = useAppPurchaseContext();
+
+	const aiHubTierSKU = useMemo(
+		() => getAiHubTierSKU(product, skuRef.current),
+		[product, skuRef]
+	);
 
 	const {data: addressResponse} = useAccountAddresses(selectedAccount?.id);
 
@@ -87,12 +96,21 @@ const AIHubOrderSummary = () => {
 		setBillingAddress,
 	]);
 
+	useEffect(() => {
+		if (contextPayment?.billingAddress) {
+			setBillingAddress(contextPayment.billingAddress);
+		}
+	}, [contextPayment?.billingAddress, setBillingAddress]);
+
 	const summary = productPurchaseCart.cart.summary;
 	const currencyCode = Liferay.CommerceContext.currency.currencyCode;
 
 	const valueFallBack = (value: string) => {
 		if (!value) {
-			return formatCurrency(0, currencyCode);
+			return (
+				aiHubTierSKU?.price?.priceFormatted ??
+				formatCurrency(0, currencyCode)
+			);
 		}
 
 		return value;
@@ -114,6 +132,23 @@ const AIHubOrderSummary = () => {
 
 		productPurchase.setForm(form);
 
+		if (salesforceContract) {
+			productPurchase.setSalesforceContract(salesforceContract);
+		}
+
+		if (!aiHubTierSKU?.id) {
+			return;
+		}
+
+		productPurchase.setSKUId(aiHubTierSKU.id);
+
+		const aiHubTierName =
+			aiHubTierSKU.skuOptions?.[0]?.skuOptionValueNames?.[0];
+
+		if (aiHubTierName) {
+			productPurchase.setTier(aiHubTierName);
+		}
+
 		await handlePurchase(productPurchase, {
 			...productPurchaseCart.cart,
 			billingAddress: paymentStore.billingAddress,
@@ -124,6 +159,10 @@ const AIHubOrderSummary = () => {
 
 	if (!salesforceProject) {
 		return <Navigate replace to="/" />;
+	}
+
+	if (!salesforceContract) {
+		return <Navigate replace to="/contract" />;
 	}
 
 	return (
@@ -273,7 +312,11 @@ const AIHubOrderSummary = () => {
 			<div className="d-flex flex-column mt-4 w-100">
 				<ClayButton
 					className="font-weight-bold w-100"
-					disabled={!isBillingAddressValid || !userAgreement}
+					disabled={
+						!aiHubTierSKU ||
+						!isBillingAddressValid ||
+						!userAgreement
+					}
 					displayType="primary"
 					onClick={() =>
 						onSubmit(

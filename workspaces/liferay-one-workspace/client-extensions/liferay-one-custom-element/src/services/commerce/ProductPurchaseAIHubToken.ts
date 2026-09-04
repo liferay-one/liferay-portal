@@ -6,13 +6,21 @@
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
-import {getSiteURL} from '~/utils/siteUtils';
+import {OrderCustomFields} from '~/utils/orderUtils';
+import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import ProductPurchase from './ProductPurchase';
 
 import type {Cart, OrderTypes} from '~/types/orders';
 
+type AIHubOrderMetadata = {
+	contractEntityId?: number;
+	salesforceContractId?: string;
+	salesforceProjectId?: string;
+};
+
 export class ProductPurchaseAIHubToken extends ProductPurchase {
+	private aiHubOrderMetadata: AIHubOrderMetadata = {};
 	protected orderTypeExternalReferenceCode: OrderTypes = 'AI_HUB_TOKEN';
 
 	protected getCart() {
@@ -24,6 +32,13 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 			cartItems,
 			customFields: {
 				...baseCart?.customFields,
+				[OrderCustomFields.ORDER_METADATA]: JSON.stringify({
+					contractEntityId: this.aiHubOrderMetadata.contractEntityId,
+					salesforceContractId:
+						this.aiHubOrderMetadata.salesforceContractId,
+					salesforceProjectId:
+						this.aiHubOrderMetadata.salesforceProjectId,
+				}),
 			},
 			orderTypeExternalReferenceCode: this.orderTypeExternalReferenceCode,
 		} as Cart;
@@ -34,43 +49,49 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 	}
 
 	public async createOrder(cart: Cart) {
-		const order = await super.createOrder(cart);
+		await this.resolveAIHubOrderMetadata();
 
-		return order;
+		const serviceCart = this.getCart();
+
+		return super.createOrder({
+			...serviceCart,
+			...cart,
+			customFields: serviceCart.customFields,
+		});
 	}
 
 	public async getNextStepsLink(cart: Cart) {
-		const channelId = Liferay.CommerceContext.commerceChannelId;
+		return super.getPaymentNextStepsLink(cart);
+	}
 
-		const accountId = this.account?.id;
-
-		const parameters = new URLSearchParams({
-			filter: SearchBuilder.eq(
-				'orderTypeExternalReferenceCode',
-				'AI_HUB'
-			),
-			pageSize: '1',
-		});
-
+	private async resolveAIHubOrderMetadata() {
 		const response = await HeadlessCommerceDeliveryOrder.getPlacedOrders(
-			channelId,
-			accountId,
-			parameters
+			Liferay.CommerceContext.commerceChannelId,
+			this.account?.id,
+			new URLSearchParams({
+				filter: SearchBuilder.eq(
+					'orderTypeExternalReferenceCode',
+					'AI_HUB'
+				),
+				nestedFields: 'customFields',
+				pageSize: '1',
+				sort: 'createDate:desc',
+			})
 		);
 
 		const aiHubOrder = response?.items?.[0];
 
-		let callbackURL = `${window.location.origin}${getSiteURL()}/customer-dashboard?redirectTo=products?tokenPurchaseSuccess`;
-
-		if (aiHubOrder?.id) {
-			callbackURL = `${window.location.origin}${getSiteURL()}/customer-dashboard?redirectTo=/products/${aiHubOrder.id}?tokenPurchaseSuccess`;
-		}
-
-		const url = await this.HeadlessCommerceDeliveryCart.getPaymentMethodURL(
-			cart.id,
-			callbackURL
+		const orderMetadata = safeJSONParse<AIHubOrderMetadata>(
+			aiHubOrder?.customFields?.[
+				OrderCustomFields.ORDER_METADATA
+			] as string,
+			{}
 		);
 
-		return url || callbackURL;
+		this.aiHubOrderMetadata = {
+			contractEntityId: orderMetadata.contractEntityId,
+			salesforceContractId: orderMetadata.salesforceContractId,
+			salesforceProjectId: orderMetadata.salesforceProjectId,
+		};
 	}
 }

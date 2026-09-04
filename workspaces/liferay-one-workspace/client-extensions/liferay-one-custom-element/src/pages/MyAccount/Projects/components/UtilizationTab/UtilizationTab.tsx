@@ -5,6 +5,7 @@
 
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
+import AIHubUtilization from './AIHubUtilization';
 import LDPEventHistoryChart from './LDPEventHistoryChart';
 import LDPEventsWidget from './LDPEventsWidget';
 import LDPUsageDashboard from './LDPUsageDashboard';
@@ -31,6 +32,10 @@ export default function UtilizationTab({
 	profile,
 	projectExternalReferenceCode,
 }: UtilizationTabProps) {
+	if (profile === 'ai-hub') {
+		return <AIHubUtilization />;
+	}
+
 	if (profile === 'legacy') {
 		return (
 			<>
