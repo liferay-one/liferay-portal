@@ -584,6 +584,126 @@
 		},
 		{
 			"active": true,
+			"className": "com.liferay.object.model.ObjectDefinition#C_AI_HUB_APPLICATION",
+			"enableCategorization": false,
+			"enableComments": false,
+			"enableObjectEntryHistory": false,
+			"externalReferenceCode": "C_AI_HUB_APPLICATION",
+			"friendlyURLSeparator": "l",
+			"label": {
+				"en_US": "AI Hub Application"
+			},
+			"name": "AIHubApplication",
+			"objectFields": [
+				{
+					"DBType": "Long",
+					"businessType": "LongInteger",
+					"externalReferenceCode": "C_AI_HUB_APPLICATION_ACCOUNT_ENTRY_ID",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "AI Hub Account Entry ID"
+					},
+					"name": "accountEntryId",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Long"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_AI_HUB_APPLICATION_ACCOUNT_NAME",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Account Name"
+					},
+					"name": "accountName",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_AI_HUB_APPLICATION_ADMINISTRATOR_EMAIL_ADDRESS",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Administrator Email Address"
+					},
+					"name": "administratorEmailAddress",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				}
+			],
+			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
+			"objectRelationships": [
+			],
+			"objectValidationRules": [
+			],
+			"objectViews": [
+				{
+					"defaultObjectView": true,
+					"name": {
+						"en_US": "Default View"
+					},
+					"objectDefinitionExternalReferenceCode": "C_AI_HUB_APPLICATION",
+					"objectViewColumns": [
+						{
+							"label": {
+								"en_US": "ERC"
+							},
+							"objectFieldName": "externalReferenceCode",
+							"priority": 0
+						},
+						{
+							"label": {
+								"en_US": "Account Name"
+							},
+							"objectFieldName": "accountName",
+							"priority": 1
+						},
+						{
+							"label": {
+								"en_US": "Administrator Email Address"
+							},
+							"objectFieldName": "administratorEmailAddress",
+							"priority": 2
+						}
+					]
+				}
+			],
+			"panelCategoryKey": "applications_menu.applications.content",
+			"pluralLabel": {
+				"en_US": "AI Hub Applications"
+			},
+			"portlet": true,
+			"restContextPath": "/o/c/aihubapplications",
+			"scope": "company",
+			"status": {
+				"code": 0,
+				"label": "approved",
+				"label_i18n": "Approved"
+			},
+			"system": false,
+			"titleObjectFieldName": "accountName"
+		},
+		{
+			"active": true,
 			"enableCategorization": false,
 			"enableComments": false,
 			"enableObjectEntryHistory": false,

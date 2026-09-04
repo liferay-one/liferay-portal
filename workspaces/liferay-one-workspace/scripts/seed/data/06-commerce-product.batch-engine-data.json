@@ -207,6 +207,55 @@
 				"displayAvailability": true,
 				"displayStockQuantity": true
 			},
+			"productOptions": [
+				{
+					"fieldType": "radio",
+					"key": "ai-hub-license-usage-type",
+					"name": {
+						"en_US": "AI Hub License Usage Type"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE",
+					"productOptionValues": [
+						{
+							"key": "1000000-lr-tokens",
+							"name": {
+								"en_US": "1,000,000 Liferay Tokens"
+							},
+							"priority": 0
+						},
+						{
+							"key": "10000000-lr-tokens",
+							"name": {
+								"en_US": "10,000,000 Liferay Tokens"
+							},
+							"priority": 2
+						},
+						{
+							"key": "5000000-lr-tokens",
+							"name": {
+								"en_US": "5,000,000 Liferay Tokens"
+							},
+							"priority": 1
+						},
+						{
+							"key": "activate",
+							"name": {
+								"en_US": "Activate"
+							},
+							"priority": 3
+						},
+						{
+							"key": "studio",
+							"name": {
+								"en_US": "Studio"
+							},
+							"priority": 4
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
 			"productSpecifications": [
 				{
 					"specificationKey": "app-documentation-url",
@@ -218,6 +267,12 @@
 					"specificationKey": "app-usage-terms-url",
 					"value": {
 						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "cloud-enabled",
+					"value": {
+						"en_US": "true"
 					}
 				},
 				{
@@ -263,6 +318,24 @@
 					}
 				},
 				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "ai-hub"
+					}
+				},
+				{
+					"specificationKey": "project-learn-url",
+					"value": {
+						"en_US": "https://learn.liferay.com/ai-hub"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "ai-hub"
+					}
+				},
+				{
 					"specificationKey": "publisher-name",
 					"value": {
 						"en_US": "Liferay, Inc."
@@ -272,6 +345,12 @@
 					"specificationKey": "publisher-web-site-url",
 					"value": {
 						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "ai-hub-open-beta"
 					}
 				},
 				{
@@ -295,25 +374,7 @@
 				{
 					"specificationKey": "type",
 					"value": {
-						"en_US": "cloud"
-					}
-				},
-				{
-					"specificationKey": "project-environment-profile",
-					"value": {
 						"en_US": "ai-hub"
-					}
-				},
-				{
-					"specificationKey": "project-learn-url",
-					"value": {
-						"en_US": "https://learn.liferay.com/ai-hub"
-					}
-				},
-				{
-					"specificationKey": "cloud-enabled",
-					"value": {
-						"en_US": "true"
 					}
 				}
 			],
@@ -333,6 +394,100 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-AI-HUB"
+				},
+				{
+					"externalReferenceCode": "PRDCT-AI-HUB-ACTIVATE",
+					"neverExpire": true,
+					"price": 1250,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-AI-HUB-ACTIVATE",
+					"skuOptions": [
+						{
+							"key": "ai-hub-license-usage-type",
+							"value": "activate"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-AI-HUB-STUDIO",
+					"neverExpire": true,
+					"price": 625,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-AI-HUB-STUDIO",
+					"skuOptions": [
+						{
+							"key": "ai-hub-license-usage-type",
+							"value": "studio"
+						}
+					]
+				},
+				{
+					"customFields": [
+						{
+							"customValue": {
+								"data": "Adds 10,000,000 Liferay Tokens to your AI Hub monthly capacity."
+							},
+							"name": "description"
+						}
+					],
+					"externalReferenceCode": "PRDCT-AI-HUB-TOKENS-10M",
+					"neverExpire": true,
+					"price": 800,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-AI-HUB-TOKENS-10M",
+					"skuOptions": [
+						{
+							"key": "ai-hub-license-usage-type",
+							"value": "10000000-lr-tokens"
+						}
+					]
+				},
+				{
+					"customFields": [
+						{
+							"customValue": {
+								"data": "Adds 1,000,000 Liferay Tokens to your AI Hub monthly capacity."
+							},
+							"name": "description"
+						}
+					],
+					"externalReferenceCode": "PRDCT-AI-HUB-TOKENS-1M",
+					"neverExpire": true,
+					"price": 100,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-AI-HUB-TOKENS-1M",
+					"skuOptions": [
+						{
+							"key": "ai-hub-license-usage-type",
+							"value": "1000000-lr-tokens"
+						}
+					]
+				},
+				{
+					"customFields": [
+						{
+							"customValue": {
+								"data": "Adds 5,000,000 Liferay Tokens to your AI Hub monthly capacity."
+							},
+							"name": "description"
+						}
+					],
+					"externalReferenceCode": "PRDCT-AI-HUB-TOKENS-5M",
+					"neverExpire": true,
+					"price": 450,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-AI-HUB-TOKENS-5M",
+					"skuOptions": [
+						{
+							"key": "ai-hub-license-usage-type",
+							"value": "5000000-lr-tokens"
+						}
+					]
 				}
 			]
 		},
