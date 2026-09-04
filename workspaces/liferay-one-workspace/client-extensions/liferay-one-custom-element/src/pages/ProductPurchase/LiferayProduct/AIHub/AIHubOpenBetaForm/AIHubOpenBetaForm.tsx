@@ -36,14 +36,11 @@ const AIHubOpenBetaForm = () => {
 	const {
 		actions: {nextStep, previousStep},
 		form,
-		product,
-		productPurchaseCart,
 		selectedAccount,
 		setForm,
-		skuRef,
 	} = useProductPurchaseOutletContext();
 
-	const {salesforceProject} = useAppPurchaseContext();
+	const {salesforceContract, salesforceProject} = useAppPurchaseContext();
 
 	const {
 		formState: {errors, isValid},
@@ -95,21 +92,6 @@ const AIHubOpenBetaForm = () => {
 	const onSubmit = async (
 		form: z.infer<typeof zodSchema.aiHubOpenBetaForm>
 	) => {
-		const sku = product.skus.find(
-			({externalReferenceCode}) =>
-				externalReferenceCode === skuRef.current
-		);
-
-		const skuId = sku?.id;
-
-		const existingItem = productPurchaseCart.cartItems.find(
-			(item) => item?.skuId === skuId
-		);
-
-		if (!existingItem && skuId) {
-			await productPurchaseCart.addCart(product.id, skuId);
-		}
-
 		setForm(form);
 
 		nextStep();
@@ -117,6 +99,10 @@ const AIHubOpenBetaForm = () => {
 
 	if (!salesforceProject) {
 		return <Navigate replace to="/" />;
+	}
+
+	if (!salesforceContract) {
+		return <Navigate replace to="/contract" />;
 	}
 
 	return (

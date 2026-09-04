@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
 import {useState} from 'react';
 import contractTermIconUrl from '~/assets/icons/contract_term_icon.svg';
 import EntitySelector, {
@@ -16,17 +15,7 @@ import {
 } from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
-
-function formatTermRange(startDate?: string, endDate?: string): string {
-	if (!startDate || !endDate) {
-		return '-';
-	}
-
-	return `${format(new Date(startDate), 'MM.dd.yyyy')} - ${format(
-		new Date(endDate),
-		'MM.dd.yyyy'
-	)}`;
-}
+import {formatTermRange} from '~/utils/dateUtils';
 
 export default function ProjectHeader() {
 	const {projectId, selectedContractERC, setSelectedContractERC} =
@@ -60,7 +49,7 @@ export default function ProjectHeader() {
 			subtitle:
 				contract.externalReferenceCode === ONE_TIME_PURCHASES
 					? i18n.translate('no-contract-linked')
-					: formatTermRange(contract.startDate, contract.endDate),
+					: formatTermRange(contract.endDate, contract.startDate),
 		}));
 
 	const oneTimeSelected =
@@ -69,8 +58,8 @@ export default function ProjectHeader() {
 	const triggerName = oneTimeSelected
 		? selectedContract.name
 		: formatTermRange(
-				selectedContract?.startDate,
-				selectedContract?.endDate
+				selectedContract?.endDate,
+				selectedContract?.startDate
 			);
 
 	const triggerSubtitle = oneTimeSelected

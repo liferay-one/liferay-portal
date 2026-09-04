@@ -89,7 +89,6 @@ export default {
 	'agent-portal': 'Agent Portal',
 	'agreements': 'Agreements',
 	'ai': 'AI',
-	'ai-administration-email': 'AI Administration Email',
 	'ai-hub': 'AI Hub',
 	'ai-hub-account-details': 'AI Hub Account Details',
 	'ai-hub-account-name': 'AI Hub Account Name',
@@ -357,6 +356,8 @@ export default {
 	'continue': 'Continue',
 	'continue-to-download': 'Continue to Download',
 	'continue-to-install': 'Continue to Install',
+	'contract': 'Contract',
+	'contract-selection': 'Contract Selection',
 	'contract-term': 'Contract Term',
 	'copied-x-to-the-clipboard': 'Copied {0} to the clipboard.',
 	'copy': 'Copy',
@@ -747,6 +748,8 @@ export default {
 	'iot': 'IoT',
 	'iowa-usa': 'Iowa, USA',
 	'ip-addresses': 'IP Addresses',
+	'it-looks-like-this-project-does-not-have-any-contracts-yet-please-contact-your-administrator-or-liferay-sales-to-set-one-up-before-purchasing':
+		'It looks like this project does not have any contracts yet. Please contact your administrator or Liferay sales to set one up before purchasing.',
 	'job-title': 'Job Title',
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
 		'Join an existing business account (e.g., your company) and gain full access.',
@@ -950,6 +953,7 @@ export default {
 	'no-cloud-projects-available': 'No Cloud Projects Available',
 	'no-code': 'No-code',
 	'no-contract-linked': 'No Contract Linked',
+	'no-contracts-available-for-x': 'No contracts available for {0}',
 	'no-data-found': 'No data found.',
 	'no-environment-information-yet': 'No Environment Information Yet',
 	'no-further-edits-can-be-made-when-tickets-are-closed-please-open-a-new-support-ticket-if-assistance-is-needed':
@@ -979,6 +983,7 @@ export default {
 	'not-installed': 'Not Installed',
 	'not-required': 'Not Required',
 	'not-seeing-a-specific-account': 'Not seeing a specific Account?',
+	'not-seeing-a-specific-contract': 'Not seeing a specific Contract?',
 	'not-seeing-a-specific-project': 'Not seeing a specific Project?',
 	'notes': 'Notes',
 	'notes-pertaining-to-the-release-of-the-project-these-will-be-displayed-when-the-customer-goes-to-purchase-and-or-update-the-app':
@@ -1734,6 +1739,8 @@ export default {
 		'We are happy to have you interested in the Liferay Marketplace. At the moment, we are working on enhancing the experience for our customers in the Marketplace and access is invite only. If you are an existing Liferay customer, please keep an eye out for an announcement related to the new Marketplace in the coming months!',
 	'we-are-happy-to-have-you-interested-in-the-liferay-marketplace-at-the-moment-we-are-working-on-enhancing-the-experience-for-our-publishers-in-the-marketplace-if-you-are-an-existing-liferay-developer-or-partner-you-can-choose-to-join-our-pilot-group-of-publishers-to-submit-apps-to-the-marketplace-continue-to-request-a-publisher-account':
 		'We are happy to have you interested in the Liferay Marketplace. At the moment, we are working on enhancing the experience for our publishers in the Marketplace.  If you are an existing Liferay developer or partner, you can choose to join our pilot group of publishers to submit apps to the Marketplace.  Continue to request a publisher account.',
+	'we-are-still-confirming-your-payment-your-tokens-will-be-credited-once-it-settles-and-we-will-notify-you-by-email':
+		'We are still confirming your payment. Your tokens will be credited once it settles, and we will notify you by email.',
 	'we-could-not-install-your-app-please-try-again-if-the-problem-continues-contact-x-for-assistance':
 		'We could not install your app. Please try again. If the problem continues, contact {0} for assistance.',
 	'we-couldnt-set-up-your-environment-please-contact-support':
@@ -1750,6 +1757,8 @@ export default {
 		'We were unable to complete your invitation. Try the link again or ask an account administrator for a new one.',
 	'we-were-unable-to-process-the-payment-for-x-please-review-your-payment-details-and-try-again':
 		'We were unable to process the payment for <b>{0}</b>. Please review your payment details and try again.',
+	'we-were-unable-to-process-the-payment-for-your-liferay-tokens-please-review-your-payment-details-and-try-again':
+		'We were unable to process the payment for your Liferay Tokens. Please review your payment details and try again.',
 	'website': 'Website',
 	'weve-sent-the-order-form-to-your-email-via-docusign-please-review-sign-and-return-it-to-confirm-your-subscription-once-received-well-provision-your-ai-hub-and-notify-you-by-email':
 		'We’ve sent the order form to your email via DocuSign. Please review, sign, and return it to confirm your subscription — once received, we’ll provision your AI Hub and notify you by email.',
@@ -1865,6 +1874,8 @@ export default {
 		'Your peak usage for this billing period exceeded your entitlement limits. Overage charges may apply.',
 	'your-request-completed-successfully':
 		'Your request completed successfully',
+	'your-tokens-will-be-credited-to-your-ai-hub-account-shortly-we-will-notify-you-by-email-once-they-are-available':
+		'Your tokens will be credited to your AI Hub account shortly. We will notify you by email once they are available.',
 	'zip-area-code': 'Zip/Area Code',
 	'zip-files-must-be-in-universal-file-format-archive-luffa-the-specially-structured-zip-encoded-archive-used-to-package-client-extension-project-outputs-this-format-must-support-the-following-use-cases-deliver-batch-engine-data-files-compatible-with-all-deployment-targets-deliver-dxp-configuration-resource-compatible-with-all-deployment-targets-deliver-static-resources-compatible-with-all-deployment-targets-deliver-the-infrastructure-metadata-necessary-to-deploy-to-lxc-sm-for-more-information-see':
 		'ZIP Files must be in universal file format archive (LUFFA) - the specially structured, ZIP encoded archive used to package client extension project outputs This format must support the following use cases: deliver batch engine data files compatible with all deployment targets deliver DXP configuration resource compatible with all deployment targets deliver static resources compatible with all deployment targets deliver the infrastructure metadata necessary to deploy to Liferay PaaS for more information see: ',

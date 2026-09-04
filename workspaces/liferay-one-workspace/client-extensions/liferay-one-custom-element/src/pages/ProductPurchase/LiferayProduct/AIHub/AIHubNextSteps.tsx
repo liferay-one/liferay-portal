@@ -120,9 +120,7 @@ const AIHubNextSteps: React.FC<AIHubNextStepsProps> = ({
 						className="mr-3 next-step-page-footer-button-back"
 						displayType="secondary"
 						onClick={() => {
-							Liferay.Util.navigate(
-								`${getSiteURL()}/customer-dashboard/#/products`
-							);
+							Liferay.Util.navigate(`${getSiteURL()}/my-account`);
 						}}
 					>
 						{i18n.translate('go-to-dashboard')}

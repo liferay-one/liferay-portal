@@ -9,6 +9,7 @@ import {PaymentMethodType} from '../types';
 
 import type {ConsoleUserProject} from '~/services/spring-boot/types';
 import type {BillingAddress} from '~/types/orders';
+import type {SalesforceContract} from '~/types/salesforceContract';
 import type {SalesforceProject} from '~/types/salesforceProject';
 
 export type LicenseType = 'TRIAL' | 'PAID';
@@ -30,6 +31,7 @@ type AppPurchaseState = {
 	licenseType: LicenseType;
 	payment: Payment;
 	project: ConsoleUserProject;
+	salesforceContract: SalesforceContract | null;
 	salesforceProject: SalesforceProject | null;
 };
 
@@ -40,6 +42,7 @@ type AppPurchaseAction =
 	| {licenseType: LicenseType; type: 'setLicenseType'}
 	| {paymentMethodType: PaymentMethodType; type: 'setPaymentMethodType'}
 	| {project: ConsoleUserProject; type: 'setProject'}
+	| {salesforceContract: SalesforceContract; type: 'setSalesforceContract'}
 	| {salesforceProject: SalesforceProject; type: 'setSalesforceProject'}
 	| {type: 'toggleEulaAgreement'};
 
@@ -66,6 +69,7 @@ const initialState: AppPurchaseState = {
 		type: PaymentMethodType.PAY_NOW,
 	},
 	project: null as unknown as ConsoleUserProject,
+	salesforceContract: null,
 	salesforceProject: null,
 };
 
@@ -108,8 +112,14 @@ function appPurchaseReducer(
 			};
 		case 'setProject':
 			return {...state, project: action.project};
+		case 'setSalesforceContract':
+			return {...state, salesforceContract: action.salesforceContract};
 		case 'setSalesforceProject':
-			return {...state, salesforceProject: action.salesforceProject};
+			return {
+				...state,
+				salesforceContract: null,
+				salesforceProject: action.salesforceProject,
+			};
 		case 'toggleEulaAgreement':
 			return {
 				...state,
@@ -130,6 +140,7 @@ type AppPurchaseContextValue = AppPurchaseState & {
 	setLicenseType: (licenseType: LicenseType) => void;
 	setPaymentMethodType: (paymentMethodType: PaymentMethodType) => void;
 	setProject: (project: ConsoleUserProject) => void;
+	setSalesforceContract: (salesforceContract: SalesforceContract) => void;
 	setSalesforceProject: (salesforceProject: SalesforceProject) => void;
 	toggleEulaAgreement: () => void;
 };
@@ -152,6 +163,8 @@ export function AppPurchaseProvider({children}: {children: React.ReactNode}) {
 			setPaymentMethodType: (paymentMethodType) =>
 				dispatch({paymentMethodType, type: 'setPaymentMethodType'}),
 			setProject: (project) => dispatch({project, type: 'setProject'}),
+			setSalesforceContract: (salesforceContract) =>
+				dispatch({salesforceContract, type: 'setSalesforceContract'}),
 			setSalesforceProject: (salesforceProject) =>
 				dispatch({salesforceProject, type: 'setSalesforceProject'}),
 			toggleEulaAgreement: () => dispatch({type: 'toggleEulaAgreement'}),

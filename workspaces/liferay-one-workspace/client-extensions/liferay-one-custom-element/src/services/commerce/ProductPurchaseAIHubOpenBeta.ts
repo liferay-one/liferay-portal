@@ -10,6 +10,7 @@ import {OrderCustomFields} from '~/utils/orderUtils';
 import ProductPurchase from './ProductPurchase';
 
 import type {Cart, OrderTypes} from '~/types/orders';
+import type {SalesforceContract} from '~/types/salesforceContract';
 
 type AIHubOpenBetaForm = z.infer<typeof zodSchema.aiHubOpenBetaForm> & {
 	salesforceProjectId: string;
@@ -18,9 +19,24 @@ type AIHubOpenBetaForm = z.infer<typeof zodSchema.aiHubOpenBetaForm> & {
 export class ProductPurchaseAIHubOpenBeta extends ProductPurchase {
 	private form?: AIHubOpenBetaForm;
 	protected orderTypeExternalReferenceCode: OrderTypes = 'AI_HUB';
+	private salesforceContract?: SalesforceContract;
+	private skuId?: number;
+	private tier?: string;
 
 	setForm(form: AIHubOpenBetaForm) {
 		this.form = form;
+	}
+
+	setSalesforceContract(salesforceContract: SalesforceContract) {
+		this.salesforceContract = salesforceContract;
+	}
+
+	setSKUId(skuId: number) {
+		this.skuId = skuId;
+	}
+
+	setTier(tier: string) {
+		this.tier = tier;
 	}
 
 	protected getCart() {
@@ -28,11 +44,16 @@ export class ProductPurchaseAIHubOpenBeta extends ProductPurchase {
 
 		return {
 			...baseCart,
+			cartItems: super.getCartItems(this.skuId),
 			customFields: {
 				...baseCart?.customFields,
 				[OrderCustomFields.ORDER_METADATA]: JSON.stringify({
 					aiHubForm: this.form,
+					contractEntityId: this.salesforceContract?.id,
+					salesforceContractId:
+						this.salesforceContract?.externalReferenceCode,
 					salesforceProjectId: this.form?.salesforceProjectId,
+					tier: this.tier,
 				}),
 			},
 		} as Cart;
@@ -43,10 +64,13 @@ export class ProductPurchaseAIHubOpenBeta extends ProductPurchase {
 			throw new Error('Form is missing.');
 		}
 
+		const serviceCart = this.getCart();
+
 		return super.createOrder(
 			{
+				...serviceCart,
 				...cart,
-				...this.getCart(),
+				customFields: serviceCart.customFields,
 			},
 			cartOptions
 		);
