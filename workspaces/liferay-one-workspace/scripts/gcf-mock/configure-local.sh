@@ -24,10 +24,18 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 #
 # Usage: ./configure-local.sh [--remove]
 
-GCE_METADATA_HOST_VALUE="liferay-one-gcf-mock:80"
-LIFERAY_ONE_GCF_BASE_URL_VALUE="http://liferay-one-gcf-mock"
+K3S_CONTAINER="${LIFERAY_ONE_K3S_CONTAINER:-lec-one-test-k3s-k3s}"
 SERVICE_NAME="liferay-one-gcf-mock"
 WORKSPACE_DIR="${LIFERAY_ONE_WORKSPACE_DIR:-../..}"
+
+# The two environments reach the mock under different names. Docker compose uses
+# the service key from docker-compose.override.yaml, while the workspace build
+# rewrites LCP.json's __PROJECT_ID__ to the client extension name with the
+# dashes stripped, and the k3s recipe names the Deployment and Service after
+# that id -- the same reason the other pods are liferayoneetcspringboot rather
+# than liferay-one-etc-spring-boot.
+
+K3S_HOST="${SERVICE_NAME//-/}"
 
 function main {
 	local remove="false"
@@ -104,13 +112,20 @@ function _configure_env {
 
 	local path="${WORKSPACE_DIR}/.env.local"
 
+	local host="${SERVICE_NAME}"
+
+	if docker inspect "${K3S_CONTAINER}" > /dev/null 2>&1
+	then
+		host="${K3S_HOST}"
+	fi
+
 	local kept
 
 	kept=$(grep --invert-match --no-messages --regexp="^GCE_METADATA_HOST=" --regexp="^LIFERAY_ONE_GCF_BASE_URL=" "${path}")
 
 	if [ "${remove}" == "false" ]
 	then
-		kept=$(printf '%s\nGCE_METADATA_HOST=%s\nLIFERAY_ONE_GCF_BASE_URL=%s' "${kept}" "${GCE_METADATA_HOST_VALUE}" "${LIFERAY_ONE_GCF_BASE_URL_VALUE}")
+		kept=$(printf '%s\nGCE_METADATA_HOST=%s:80\nLIFERAY_ONE_GCF_BASE_URL=http://%s' "${kept}" "${host}" "${host}")
 	fi
 
 	# Drop a file that held nothing but these two overrides, rather than leaving
@@ -137,7 +152,7 @@ function _configure_env {
 		return 0
 	fi
 
-	echo "Set GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL in ${path}"
+	echo "Set GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL to ${host} in ${path}"
 }
 
 main "${@}"

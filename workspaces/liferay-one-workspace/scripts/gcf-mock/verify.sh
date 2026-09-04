@@ -14,6 +14,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 K3S_CONTAINER="${LIFERAY_ONE_K3S_CONTAINER:-lec-one-test-k3s-k3s}"
 PRODUCT_EXTERNAL_REFERENCE_CODE="${PRODUCT_EXTERNAL_REFERENCE_CODE:-PRDCT-DATA-PLATFORM}"
 PROJECT_EXTERNAL_REFERENCE_CODE="${PROJECT_EXTERNAL_REFERENCE_CODE:-PRJCT-028}"
+SERVICE_NAME="liferay-one-gcf-mock"
 SPRING_BOOT_DEPLOYMENT="liferayoneetcspringboot"
 SPRING_BOOT_SERVICE="liferay-one-etc-spring-boot"
 WORKSPACE_DIR="${LIFERAY_ONE_WORKSPACE_DIR:-../..}"
@@ -85,33 +86,6 @@ function _get_access_token {
 			sed --expression 's/.*"access_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/'
 }
 
-function _get_running_pod_ip {
-	# A pod that is terminating keeps the Running phase and a deleted pod keeps
-	# its IP for a moment, so the first matching item is not necessarily usable.
-	# Skip anything carrying a deletion timestamp and wait for an IP to appear.
-
-	local attempt
-
-	for attempt in $(seq 1 24)
-	do
-		local line
-
-		while read -r line
-		do
-			if [ -z "${line%%|*}" ] && [ -n "${line##*|}" ]
-			then
-				echo "${line##*|}"
-
-				return 0
-			fi
-		done < <(_kubectl get pod --output=jsonpath='{range .items[?(@.status.phase=="Running")]}{.metadata.deletionTimestamp}|{.status.podIP}{"\n"}{end}' --selector="app=${1}")
-
-		sleep 5
-	done
-
-	return 1
-}
-
 function _get_running_pod_name {
 	local line
 
@@ -181,31 +155,25 @@ function _verify_k3s {
 		return 1
 	fi
 
+	# The workspace build rewrites LCP.json's __PROJECT_ID__ to the client
+	# extension name with the dashes stripped, and the recipe names the
+	# Deployment and Service after that id.
+
 	local mock_pod_name
 
-	mock_pod_name=$(_get_running_pod_name gcf-mock)
+	mock_pod_name=$(_get_running_pod_name "${SERVICE_NAME//-/}")
 
 	if [ -z "${mock_pod_name}" ]
 	then
-		echo "Unable to find a running gcf-mock pod. Run ./deploy.sh first." >&2
+		echo "Unable to find a running ${SERVICE_NAME//-/} pod. Deploy the client extensions first." >&2
 
 		return 1
 	fi
 
-	local spring_boot_pod_ip
-
-	spring_boot_pod_ip=$(_get_running_pod_ip "${SPRING_BOOT_DEPLOYMENT}")
-
-	if [ -z "${spring_boot_pod_ip}" ]
-	then
-		echo "Unable to resolve a running ${SPRING_BOOT_DEPLOYMENT} pod IP." >&2
-
-		return 1
-	fi
-
-	# The requests are issued from inside the gcf-mock pod, because the client
-	# extension is only reachable by pod IP in this harness. That image carries
-	# wget rather than curl.
+	# The requests go out from the mock pod because the caddy image carries wget
+	# and the client extension image carries no HTTP client at all. Reaching the
+	# client extension by service name needs br_netfilter loaded on the host,
+	# otherwise bridged pod traffic bypasses the ClusterIP rules.
 
 	local path
 
@@ -217,7 +185,7 @@ function _verify_k3s {
 		echo ""
 		echo "--- ${path%%\?*} ---"
 
-		_kubectl exec "${mock_pod_name}" -- wget -O- -T 30 -q --header="Authorization: Bearer ${access_token}" "http://${spring_boot_pod_ip}:58081/projects/${PROJECT_EXTERNAL_REFERENCE_CODE}/${path}"
+		_kubectl exec "${mock_pod_name}" -- wget -O- -T 30 -q --header="Authorization: Bearer ${access_token}" "http://${SPRING_BOOT_DEPLOYMENT}:58081/projects/${PROJECT_EXTERNAL_REFERENCE_CODE}/${path}"
 
 		echo ""
 	done
