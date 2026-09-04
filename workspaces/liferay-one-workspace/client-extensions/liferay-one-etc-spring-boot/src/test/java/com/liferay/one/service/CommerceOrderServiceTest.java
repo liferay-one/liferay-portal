@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import org.springframework.test.util.ReflectionTestUtils;
-
 /**
  * @author Ricardo Mariz
  */
@@ -27,45 +25,11 @@ public class CommerceOrderServiceTest {
 	public void setUp() throws Exception {
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
 
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_settledPaymentRetryDelays", new long[0]);
-
 		Mockito.doNothing(
 		).when(
 			_commerceOrderService
 		).completeOrder(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
-		);
-	}
-
-	@Test
-	public void testCompleteSettledOrderCompletesOrderCheckedOutDuringRetry()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_settledPaymentRetryDelays",
-			new long[] {0, 0});
-
-		Mockito.doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_OPEN, "CLOUD_APP",
-				_PAYMENT_STATUS_PENDING)
-		).doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "CLOUD_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED)
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderService
-		).completeOrder(
-			_ORDER_ID, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
 		);
 	}
 
@@ -122,37 +86,6 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCompleteSettledOrderRetriesUntilPaymentSettles()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_settledPaymentRetryDelays",
-			new long[] {0, 0});
-
-		Mockito.doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-				_PAYMENT_STATUS_PENDING)
-		).doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderService
-		).completeOrder(
-			_ORDER_ID, CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED
-		);
-	}
-
-	@Test
 	public void testCompleteSettledOrderSkipsCanceledOrder() throws Exception {
 		_whenFetchCommerceOrder(
 			_createOrder(
@@ -198,33 +131,6 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCompleteSettledOrderSkipsOrderCanceledDuringRetry()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_settledPaymentRetryDelays",
-			new long[] {0, 0});
-
-		Mockito.doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-				_PAYMENT_STATUS_PENDING)
-		).doReturn(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_CANCELLED, "DXP_APP",
-				_PAYMENT_STATUS_PENDING)
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		_verifyNeverCompleted();
-	}
-
-	@Test
 	public void testCompleteSettledOrderSkipsOrderWithoutOrderType()
 		throws Exception {
 
@@ -234,30 +140,6 @@ public class CommerceOrderServiceTest {
 				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED));
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		_verifyNeverCompleted();
-	}
-
-	@Test
-	public void testCompleteSettledOrderSkipsPaymentPendingThroughEveryRetry()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_commerceOrderService, "_settledPaymentRetryDelays",
-			new long[] {0, 0});
-
-		_whenFetchCommerceOrder(
-			_createOrder(
-				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-				_PAYMENT_STATUS_PENDING));
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderService, Mockito.times(3)
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
 
 		_verifyNeverCompleted();
 	}

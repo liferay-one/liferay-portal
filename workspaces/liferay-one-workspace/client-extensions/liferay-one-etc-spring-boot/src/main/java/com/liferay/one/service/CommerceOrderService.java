@@ -44,7 +44,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
@@ -166,9 +165,9 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			Integer paymentStatus = _awaitCompletableOrder(order, orderId);
+			Integer paymentStatus = _getSettledPaymentStatus(order);
 
-			if (paymentStatus == null) {
+			if ((paymentStatus == null) || !_isCompletableOrderStatus(order)) {
 				return;
 			}
 
@@ -439,57 +438,6 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return orderResource.postOrder(order);
-	}
-
-	private Integer _awaitCompletableOrder(Order order, long orderId)
-		throws Exception {
-
-		int retryIndex = 0;
-
-		while (true) {
-			if (_isCompletableOrderStatus(order)) {
-				Integer paymentStatus = _getSettledPaymentStatus(order);
-
-				if (paymentStatus != null) {
-					return paymentStatus;
-				}
-			}
-			else if (!_isTransitionalOrderStatus(order)) {
-				return null;
-			}
-
-			if (retryIndex >= _settledPaymentRetryDelays.length) {
-				if (_isCompletableOrderStatus(order) && _log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Unable to complete order ", orderId,
-							" because its payment is still pending"));
-				}
-
-				return null;
-			}
-
-			try {
-				Thread.sleep(_settledPaymentRetryDelays[retryIndex++]);
-			}
-			catch (InterruptedException interruptedException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(interruptedException);
-				}
-
-				Thread thread = Thread.currentThread();
-
-				thread.interrupt();
-
-				return null;
-			}
-
-			order = fetchCommerceOrder(orderId);
-
-			if (order == null) {
-				return null;
-			}
-		}
 	}
 
 	private CurrencyResource _buildCurrencyResource() {
@@ -780,20 +728,6 @@ public class CommerceOrderService extends OneBaseService {
 		return false;
 	}
 
-	private boolean _isTransitionalOrderStatus(Order order) {
-		Integer orderStatus = order.getOrderStatus();
-
-		if (Objects.equals(
-				orderStatus, CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS) ||
-			Objects.equals(
-				orderStatus, CommerceOrderConstants.ORDER_STATUS_OPEN)) {
-
-			return true;
-		}
-
-		return false;
-	}
-
 	private void _provisionAiHub(Order order) throws Exception {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
@@ -930,11 +864,6 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private PostalAddressService _postalAddressService;
-
-	@Value(
-		"${liferay.one.commerce.order.settled.payment.retry.delays:2000,5000,10000}"
-	)
-	private long[] _settledPaymentRetryDelays;
 
 	@Autowired
 	private UserAccountService _userAccountService;
