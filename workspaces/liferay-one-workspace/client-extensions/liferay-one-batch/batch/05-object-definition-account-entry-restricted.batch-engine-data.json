@@ -17,6 +17,11 @@
 		},
 		{
 			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountToAIHubApplication_accountEntryId",
+			"externalReferenceCode": "C_AI_HUB_APPLICATION"
+		},
+		{
+			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountEntryToContract_accountEntryId",
 			"externalReferenceCode": "C_CONTRACT"
 		},
