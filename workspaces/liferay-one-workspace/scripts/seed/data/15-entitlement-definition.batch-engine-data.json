@@ -68,6 +68,52 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay AI Hub",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-AI-HUB-ACTIVATE",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000000,
+			"displayName": "AI Tokens",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
+			"grantType": "fixed",
+			"maxQuantity": 50000000,
+			"name": "aiTokens",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
+			"skuExternalReferenceCode": "PRDCT-AI-HUB-ACTIVATE",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay AI Hub",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-AI-HUB-STUDIO",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000000,
+			"displayName": "AI Tokens",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS",
+			"grantType": "fixed",
+			"maxQuantity": 50000000,
+			"name": "aiTokens",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
+			"skuExternalReferenceCode": "PRDCT-AI-HUB-STUDIO",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 50000000,
 			"displayName": "AI Tokens",
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_TOKENS",
