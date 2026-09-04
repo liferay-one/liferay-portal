@@ -59,9 +59,24 @@ function _configure_compose {
 	local path="${WORKSPACE_DIR}/docker-compose.override.yaml"
 
 	# The file can already hold a developer's own overrides, so the service is
-	# merged in rather than written over. yq is not used anywhere else in this
-	# workspace, while python3 is used throughout, so the structured edit goes
-	# through python3 for consistency.
+	# merged in rather than written over. That needs the document parsed rather
+	# than pattern matched, and PyYAML is the only dependency here that is not
+	# in the standard library, so say so plainly instead of failing on the
+	# import.
+
+	if ! python3 -c "import yaml" > /dev/null 2>&1
+	then
+		echo "Declaring the mock as a compose service needs PyYAML (pip install --user PyYAML), because docker compose does not run container client extensions. Everything else is configured; add this to ${path} by hand to finish:" >&2
+		echo "" >&2
+		echo "services:" >&2
+		echo "    ${SERVICE_NAME}:" >&2
+		echo "        depends_on:" >&2
+		echo "            liferay:" >&2
+		echo "                condition: service_healthy" >&2
+		echo "        image: ${SERVICE_NAME}:latest" >&2
+
+		return 1
+	fi
 
 	python3 - "${path}" "${SERVICE_NAME}" "${remove}" <<'EOF'
 import os
