@@ -42,12 +42,13 @@ Caddy image already carries bash, so no extra build stage is needed.
 Redirecting the DataOps calls at it takes two overrides:
 
 ```
-GCE_METADATA_HOST=liferay-one-gcf-mock:80
-LIFERAY_ONE_GCF_BASE_URL=http://liferay-one-gcf-mock
+GCE_METADATA_HOST=<mock host>:80
+LIFERAY_ONE_GCF_BASE_URL=http://<mock host>
 ```
 
 `configure-local.sh` writes them to the gitignored root `.env.local`, which is the channel
-the `one-deploy` skill documents: it is read after `build/local.env`, so it wins.
+the `one-deploy` skill documents: it is read after `build/local.env`, so it wins. It resolves
+the host itself, which differs between the two environments.
 
 ```bash
 ./configure-local.sh          # then rebuild or recreate the environment
@@ -55,32 +56,47 @@ the `one-deploy` skill documents: it is read after `build/local.env`, so it wins
 ./configure-local.sh --remove
 ```
 
-## The Two Environments
+## Docker Compose
 
-**docker compose.** `.env.local` is already listed as a second `env_file` on
-`liferay-one-etc-spring-boot`, so the overrides apply as soon as the container is recreated.
-Compose does not run container client extensions at all — there is no kong service there
-either — so `configure-local.sh` also declares the mock as a service in the gitignored
-`docker-compose.override.yaml`.
+`.env.local` is already listed as a second `env_file` on `liferay-one-etc-spring-boot`, so the
+overrides apply as soon as the container is recreated. Compose does not run container client
+extensions at all -- there is no kong service there either -- so `configure-local.sh` also
+declares the mock as a service in the gitignored `docker-compose.override.yaml`.
 
-No pod-IP handling is needed here because the client extension runs with
-`network_mode: service:liferay`: it shares the portal's network namespace, which is also why
-`.serviceAddress: localhost:8080` works there without the socat sidecar the k3s pods need.
-The same sharing means it inherits compose's resolver, so the mock resolves by name. The
-client extension publishes 58081 on the portal container, so `verify.sh` reaches it from the
-host.
+The client extension runs with `network_mode: service:liferay`, sharing the portal's network
+namespace, which is also why `.serviceAddress: localhost:8080` works there. That sharing means
+it inherits compose's resolver, so the mock resolves by service name, and the client extension
+publishes 58081 on the portal container, so `verify.sh` reaches it from the host.
 
-**k3s (the LEC harness).** The recipe deploys any directory carrying an `LCP.json`, so the
-client extension needs nothing extra. The staging step originally copied only
-`build/local.env` as the pod's env, which meant the documented `.env.local` override channel
-silently did nothing here; `setup-lec-one-test-k3s.sh` now appends `.env.local` onto the
-staged file. The recipe reads that file line by line into a map, so the appended entries win,
-matching compose's precedence.
+## k3s
 
-Addressing the mock by service name in this harness depends on Service DNS, which did not
-resolve when it was last checked. The likely cause is ClusterIP routing rather than DNS
-itself, since the pod resolver points at the kube-dns ClusterIP — worth confirming before
-assuming a name will work.
+Only relevant if you run the LEC k3s harness rather than docker compose. Everything above
+applies unchanged; two things are specific to it.
+
+The recipe deploys any directory carrying an `LCP.json`, so the client extension needs nothing
+extra, but it names the Deployment and Service after the `LCP.json` id, which the workspace
+build rewrites to the client extension name with the dashes stripped. The mock is therefore
+`liferayonegcfmock` here and `liferay-one-gcf-mock` under compose, which is why
+`configure-local.sh` resolves the host from whichever backend is running instead of writing a
+fixed name. Run it before building the environment: the pod environment is assembled as the
+environment comes up, so a value written afterwards does not reach a pod that is already
+running.
+
+Reaching a Service by name also needs the `br_netfilter` kernel module on the host. Pods sit
+on a CNI bridge, and bridged traffic bypasses netfilter unless that module is loaded, so
+kube-proxy's ClusterIP rules never apply. A request to a Service address then times out while
+the pod IP still works and names still resolve, which makes it look like a name resolution
+problem when it is not. It is a documented Kubernetes prerequisite that most installers
+arrange, and k3s in Docker shares the host kernel, so the host has to load it:
+
+```bash
+sudo modprobe br_netfilter
+sudo sysctl -w net.bridge.bridge-nf-call-iptables=1
+```
+
+Persist it through `/etc/modules-load.d/` and `/etc/sysctl.d/` to survive a reboot. Without it
+every cross client extension call in this harness fails the same way, as a hang rather than an
+error.
 
 ## Editing The Data
 
@@ -101,26 +117,13 @@ Rebuild the client extension image after editing.
 
 ## This Never Reaches A Deployed Environment
 
-The directory sits under `scripts/`, a workspace-level sibling of `client-extensions/`. The
-workspace only assembles and deploys client extensions, so nothing here is built, packaged,
-or applied by the build or by CI. The manifests take effect only when `deploy.sh` is run by
-hand.
+`LCP.json` carries a top level `"deploy": false`, so Liferay Cloud skips the client extension
+in every environment. It is a single switch rather than a list of environment names, so a new
+environment cannot pick the mock up by accident.
 
-`deploy.sh` additionally refuses to run when either guard trips:
+It still deploys locally because the local recipe never reads that field. It reads only `id`,
+`kind`, `env`, `dependencies`, `livenessProbe`, `readinessProbe`, `scale`, `schedule` and
+`loadBalancer`, discovering client extensions by the presence of an `LCP.json` at all.
 
-1. The local k3s container is absent.
-
-1. `LIFERAY_ONE_GCF_BASE_URL` on the client extension already points at an `https://` URL,
-which would mean a real Cloud Function is configured.
-
-## Harness Limitations
-
-Service DNS and ClusterIP routing both fail in this k3s-in-docker setup, so only pod IPs
-route. Kubelet probes reach pods directly, which means pods still report Ready and
-`kubectl get endpoints` looks healthy while pod-to-pod Service traffic times out. This is
-also why the client extensions reach Liferay through a `liferay-proxy` socat sidecar on
-`localhost` instead of a Service.
-
-Pod IPs change on every rollout, so `deploy.sh` re-resolves the mock address and re-points
-the client extension on each run. Restarting the mock alone leaves a stale address behind;
-run `deploy.sh` again rather than restarting the Deployment by hand.
+Nothing points the client extension at the mock on its own either. That takes the two
+overrides in `.env.local`, which `configure-local.sh` writes and `--remove` takes back out.
