@@ -39,6 +39,8 @@ import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
+import {Liferay} from '~/services/liferay/liferay';
+import {getSiteURL} from '~/utils/siteUtils';
 
 type ProjectItemDetailsProps = {
 	kind: ProjectItemKind;
@@ -153,8 +155,15 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 			header={
 				<DetailHeader
 					actions={
-						isAIHub ? (
-							<Button displayType="primary">
+						isAIHub && orderInfo.status === 'completed' ? (
+							<Button
+								displayType="primary"
+								onClick={() =>
+									Liferay.Util.navigate(
+										`${getSiteURL()}/product-purchase?productId=${productId}&aiHubTokens#/`
+									)
+								}
+							>
 								{i18n.translate('buy-liferay-tokens')}
 							</Button>
 						) : undefined

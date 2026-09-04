@@ -10,6 +10,7 @@ import {resolveProfile} from './resolveProfile';
 import type {DeliveryProduct} from '~/types/product';
 
 export type UtilizationProfile =
+	| 'ai-hub'
 	| 'experience-dashboard'
 	| 'legacy'
 	| 'none'
@@ -17,6 +18,7 @@ export type UtilizationProfile =
 	| 'usage-metrics';
 
 const UTILIZATION_PROFILES: UtilizationProfile[] = [
+	'ai-hub',
 	'experience-dashboard',
 	'legacy',
 	'none',

@@ -19,7 +19,11 @@ import ProductPurchaseLDP, {
 	LDPSettings,
 } from '~/services/commerce/ProductPurchaseLDP';
 import {Liferay} from '~/services/liferay/liferay';
-import {getProductPriceModel, isLDPProduct} from '~/utils/productUtils';
+import {
+	getAiHubTierSKU,
+	getProductPriceModel,
+	isLDPProduct,
+} from '~/utils/productUtils';
 
 import {useAppPurchaseContext} from '../../context/AppPurchaseContext';
 import useAccounts from '../../hooks/useAccounts';
@@ -94,9 +98,24 @@ const ProductPurchaseLayout = ({
 
 	const {isFreeApp, isPaidApp} = getProductPriceModel(product);
 
+	const skuRef = useRef<string | undefined>(
+		new URLSearchParams(window.location.search).get('skuRef') ??
+			product.skus?.[0]?.externalReferenceCode
+	);
+
+	const aiHubTierSKU = isAiHubTokens
+		? undefined
+		: getAiHubTierSKU(product, skuRef.current);
+
 	const priceLabel = isFreeApp
 		? i18n.translate('free')
 		: productPurchaseCart.cart?.summary?.totalFormatted ||
+			aiHubTierSKU?.price?.priceFormatted ||
+			product.skus?.find(
+				(sku) =>
+					sku?.externalReferenceCode === skuRef.current &&
+					sku?.price?.priceFormatted
+			)?.price?.priceFormatted ||
 			product.skus?.find((sku) => sku?.price?.priceFormatted)?.price
 				?.priceFormatted ||
 			i18n.translate('free');
@@ -105,10 +124,6 @@ const ProductPurchaseLayout = ({
 	const navigate = useNavigate();
 
 	const [form, setForm] = useState<Record<string, unknown>>({});
-	const skuRef = useRef<string | undefined>(
-		new URLSearchParams(window.location.search).get('skuRef') ??
-			product.skus?.[0]?.externalReferenceCode
-	);
 
 	const steps = stepItems.map((stepItem) => ({
 		active: pathname === stepItem.key,

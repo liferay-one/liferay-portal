@@ -100,8 +100,11 @@ export default class HeadlessAdminUser {
 		);
 	}
 
-	static async postAddress(accountId: number, body: Record<string, unknown>) {
-		return fetcher.post(
+	static async postAddress<T = unknown>(
+		accountId: number,
+		body: Record<string, unknown>
+	) {
+		return fetcher.post<T>(
 			`/o/headless-admin-user/v1.0/accounts/${accountId}/postal-addresses`,
 			body
 		);
