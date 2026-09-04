@@ -3,6 +3,12 @@
 	"deploy": false,
 	"id": "__PROJECT_ID__",
 	"kind": "Deployment",
+	"livenessProbe": {
+		"httpGet": {
+			"path": "/",
+			"port": 80
+		}
+	},
 	"loadBalancer": {
 		"targetPort": 80
 	},

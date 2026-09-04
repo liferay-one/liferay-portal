@@ -3,8 +3,9 @@
 	auto_https off
 }
 
-# Routing only. Every response body is a JSON file generated from fixtures.json
-# by deploy.sh, so the numbers live in one editable place rather than inline here.
+# Routing only. Every response body is a JSON file that generate-fixtures.sh
+# writes during the image build, so the numbers live in one editable place --
+# the data block at the top of that script -- rather than inline here.
 
 :80 {
 	log {
