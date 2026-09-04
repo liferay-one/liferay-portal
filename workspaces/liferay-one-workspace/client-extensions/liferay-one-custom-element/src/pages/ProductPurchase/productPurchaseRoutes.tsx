@@ -43,6 +43,7 @@ const AIHubTokenSelection = lazy(
 	() =>
 		import('./LiferayProduct/AIHub/AIHubTokenSelection/AIHubTokenSelection')
 );
+const ContractSelection = lazy(() => import('./LiferayProduct/Contract'));
 const ProjectSelection = lazy(() => import('./LiferayProduct/Project'));
 
 export type ProductPurchaseStep = {
@@ -123,6 +124,11 @@ export function getProductPurchaseSteps({
 					element: <ProjectSelection />,
 					path: 'project',
 					title: i18n.translate('project'),
+				},
+				{
+					element: <ContractSelection />,
+					path: 'contract',
+					title: i18n.translate('contract'),
 				},
 				{
 					element: <AIHubOpenBetaForm />,

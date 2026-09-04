@@ -31,6 +31,7 @@ import {getSiteURL} from '~/utils/siteUtils';
 
 import AIHubNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubNextSteps';
 import AIHubOpenBetaNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubOpenBetaNextSteps';
+import AIHubTokenNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubTokenNextSteps';
 
 import './NextSteps.css';
 
@@ -342,6 +343,19 @@ function NextStepsPage() {
 		productTypeCategory === ProductTypeVocabulary.LIFERAY_PRODUCT &&
 		solutionTypeSpecificationValue === SolutionTypes.AI_HUB_OPEN_BETA
 	) {
+		if (
+			data?.placedOrder?.orderTypeExternalReferenceCode ===
+			OrderTypes.AI_HUB_TOKEN
+		) {
+			return (
+				<AIHubTokenNextSteps
+					data={data}
+					error={error}
+					isLoading={isLoading}
+				/>
+			);
+		}
+
 		return (
 			<AIHubOpenBetaNextSteps
 				data={data}

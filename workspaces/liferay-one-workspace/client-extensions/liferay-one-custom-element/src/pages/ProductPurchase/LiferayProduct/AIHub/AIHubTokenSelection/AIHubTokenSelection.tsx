@@ -14,9 +14,7 @@ import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
 import {useCartContext} from '~/pages/ProductPurchase/context/CartContext';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
-import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {getAiHubTokenSKUs} from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
@@ -47,51 +45,13 @@ const AIHubTokenSelection = () => {
 	const [isCartLoading, setIsCartLoading] = useState(true);
 	const [selectedSkuId, setSelectedSkuId] = useState<number | undefined>();
 
-	const searchParams = useMemo(
-		() => new URLSearchParams(window.location.search),
-		[]
-	);
-	const [orderId, setOrderId] = useState<string | null>(
-		searchParams.get('orderId')
-	);
-
 	const onClickCancel = () => {
 		if (productPurchaseCart.cart.id) {
 			productPurchaseCart.removeCart(productPurchaseCart.cart.id);
 		}
 
-		if (orderId) {
-			return Liferay.Util.navigate(
-				`${getSiteURL()}/customer-dashboard#/products/${orderId}`
-			);
-		}
-
-		Liferay.Util.navigate(`${getSiteURL()}/customer-dashboard`);
+		Liferay.Util.navigate(`${getSiteURL()}/my-account`);
 	};
-
-	useEffect(() => {
-		if (orderId || !selectedAccount?.id) {
-			return;
-		}
-
-		HeadlessCommerceDeliveryOrder.getPlacedOrders(
-			Liferay.CommerceContext.commerceChannelId,
-			selectedAccount.id,
-			new URLSearchParams({
-				filter: SearchBuilder.eq(
-					'orderTypeExternalReferenceCode',
-					'AI_HUB'
-				),
-				pageSize: '1',
-			})
-		)
-			.then(({items}) => {
-				if (items.length) {
-					setOrderId(String(items[0].id));
-				}
-			})
-			.catch(console.error);
-	}, [orderId, selectedAccount?.id]);
 
 	useEffect(() => {
 		if (!selectedAccount?.id) {

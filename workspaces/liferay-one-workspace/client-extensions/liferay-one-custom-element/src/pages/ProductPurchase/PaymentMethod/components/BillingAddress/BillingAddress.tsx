@@ -25,6 +25,7 @@ const mapPostalAddressToBillingAddress = (
 	city: postalAddress?.city || '',
 	country: postalAddress?.countryISOCode || '',
 	countryISOCode: postalAddress?.countryISOCode || 'US',
+	id: postalAddress?.id,
 	name: postalAddress?.name || '',
 	phoneNumber: postalAddress?.phoneNumber || '',
 	regionISOCode: postalAddress?.regionISOCode || '',
@@ -32,6 +33,9 @@ const mapPostalAddressToBillingAddress = (
 	street2: postalAddress?.street2 || '',
 	zip: postalAddress?.zip || '',
 });
+
+const getAddressKey = (address: BillingAddressType) =>
+	address.id ? String(address.id) : address.name || '';
 
 type BillingAddressProps = {
 	hideNewAddressButton?: boolean;
@@ -51,7 +55,7 @@ const BillingAddress = ({
 	const {data: countriesResponse} = useCommerceRegions();
 
 	const [selectedAddress, setSelectedAddress] = useState(
-		payment.billingAddress?.name || ''
+		payment.billingAddress ? getAddressKey(payment.billingAddress) : ''
 	);
 	const [showNewAddressForm, setShowNewAddressForm] = useState(false);
 
@@ -79,7 +83,7 @@ const BillingAddress = ({
 			const address = addresses[0];
 			const newBillingAddress = mapPostalAddressToBillingAddress(address);
 
-			setSelectedAddress(address.name || '');
+			setSelectedAddress(getAddressKey(address));
 
 			setBillingAddress(newBillingAddress);
 		}
@@ -91,7 +95,7 @@ const BillingAddress = ({
 	]);
 
 	const onSelectAddress = (address: BillingAddressType) => {
-		setSelectedAddress(address.name || '');
+		setSelectedAddress(getAddressKey(address));
 		setShowNewAddressForm(false);
 
 		const newBillingAddress = mapPostalAddressToBillingAddress(address);
@@ -109,7 +113,7 @@ const BillingAddress = ({
 
 			await mutate();
 
-			if (selectedAddress === address.name) {
+			if (selectedAddress === getAddressKey(address)) {
 				setSelectedAddress('');
 
 				setBillingAddress(mapPostalAddressToBillingAddress());
@@ -135,22 +139,28 @@ const BillingAddress = ({
 				commerceRegion.regionCode === billingAddress.regionISOCode
 		);
 
-		await HeadlessAdminUser.postAddress(selectedAccount.id, {
-			addressCountry: country?.title_i18n?.en_US || country?.name,
-			addressLocality: billingAddress.city,
-			addressRegion: region?.name,
-			addressType: 'billing-and-shipping',
-			name: billingAddress.name,
-			phoneNumber: billingAddress.phoneNumber,
-			postalCode: billingAddress.zip,
-			primary: false,
-			streetAddressLine1: billingAddress.street1,
-			streetAddressLine2: billingAddress.street2,
-		});
+		const postalAddress =
+			await HeadlessAdminUser.postAddress<BillingAddressType>(
+				selectedAccount.id,
+				{
+					addressCountry: country?.title_i18n?.en_US || country?.name,
+					addressLocality: billingAddress.city,
+					addressRegion: region?.name,
+					addressType: 'billing-and-shipping',
+					name: billingAddress.name,
+					phoneNumber: billingAddress.phoneNumber,
+					postalCode: billingAddress.zip,
+					primary: false,
+					streetAddressLine1: billingAddress.street1,
+					streetAddressLine2: billingAddress.street2,
+				}
+			);
 
 		await mutate();
 
-		setSelectedAddress(billingAddress.name || '');
+		setSelectedAddress(
+			getAddressKey(postalAddress?.id ? postalAddress : billingAddress)
+		);
 		setShowNewAddressForm(false);
 
 		setBillingAddress(billingAddress);
@@ -173,7 +183,7 @@ const BillingAddress = ({
 								? undefined
 								: () => removeAddress(address)
 						}
-						selected={selectedAddress === address.name}
+						selected={selectedAddress === getAddressKey(address)}
 						title={title}
 					/>
 				);

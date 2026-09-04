@@ -17,6 +17,12 @@ let monthNames: string[] | undefined;
 
 let weekdayNarrowNames: string[] | undefined;
 
+function formatTermDate(date: string) {
+	const [year, month, day] = date.split('T')[0].split('-');
+
+	return `${month}.${day}.${year}`;
+}
+
 function normalize(date: Date | string) {
 	return typeof date === 'string' ? new Date(date) : date;
 }
@@ -54,6 +60,14 @@ export function formatDateTime(
 	catch {
 		return fallback;
 	}
+}
+
+export function formatTermRange(endDate?: string, startDate?: string) {
+	if (!endDate || !startDate) {
+		return '-';
+	}
+
+	return `${formatTermDate(startDate)} - ${formatTermDate(endDate)}`;
 }
 
 export function formatUTCMonthShort(date: Date): string {
