@@ -422,5 +422,9 @@
 	"tableRowBackgroundColorHover": {
 		"cssVariableMapping": "table-row-background-color-hover",
 		"value": "#FFFFFF"
+	},
+	"tableRowColorHover": {
+		"cssVariableMapping": "table-row-color-hover",
+		"value": "var(--color-neutral-10)"
 	}
 }
