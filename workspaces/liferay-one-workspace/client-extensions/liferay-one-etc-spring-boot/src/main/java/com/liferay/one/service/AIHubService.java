@@ -82,7 +82,7 @@ public class AIHubService extends OneBaseService {
 	}
 
 	public void purchaseQuotaPrepaidBlock(
-		int accountId, JSONObject jsonObject) {
+		long accountEntryId, JSONObject jsonObject) {
 
 		post(
 			_liferayOAuth2AccessTokenManager.getAuthorization(
@@ -91,7 +91,7 @@ public class AIHubService extends OneBaseService {
 			UriComponentsBuilder.fromUriString(
 				_externalAIHubHomePageURL
 			).path(
-				"/o/ai-hub-pricing/v1.0/accounts/" + accountId +
+				"/o/ai-hub-pricing/v1.0/accounts/" + accountEntryId +
 					"/quota-blocks/purchase"
 			).build(
 			).toUri());
