@@ -166,7 +166,9 @@ export default function ActivationKeyDownload({
 						style={{gap: 'var(--spacer-4)', maxWidth: '32rem'}}
 					>
 						<div className="flex-grow-1">
-							<label htmlFor={`${kebabProductTitle}-subscription`}>
+							<label
+								htmlFor={`${kebabProductTitle}-subscription`}
+							>
 								{translate('subscription')}
 							</label>
 

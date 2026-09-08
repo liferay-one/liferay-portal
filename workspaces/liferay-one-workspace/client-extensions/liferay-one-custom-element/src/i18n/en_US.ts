@@ -765,8 +765,7 @@ export default {
 	'last-update': 'Last Update',
 	'last-year': 'Last Year',
 	'learn-more': 'Learn More',
-	'learn-more-about-app-configuration':
-		'Learn more about app configuration.',
+	'learn-more-about-app-configuration': 'Learn more about app configuration.',
 	'learn-more-about-app-resource-requirements':
 		'Learn more about App Resource Requirements',
 	'learn-more-about-becoming-a-liferay-customer':
