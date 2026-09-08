@@ -1694,6 +1694,165 @@
 											}
 										],
 										"type": "Collection"
+									},
+									{
+										"definition": {
+											"fragment": {
+												"key": "conditional-wrapper",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"displayMode": "inRoleOnly",
+												"roles": "User"
+											},
+											"indexed": true
+										},
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentDropZoneId": "2"
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] {\n\tbackground: linear-gradient(90deg, color-mix(in srgb, var(--color-accent-1-lighten) 60%, var(--color-neutral-0)), var(--color-neutral-0));\n\tborder-radius: 8px;\n}\n\n.[$FRAGMENT_CLASS$] .component-paragraph {\n\tcolor: var(--color-neutral-10);\n\tfont-size: 1rem;\n\tfont-weight: 600;\n\tmargin-bottom: 0;\n}\n\n@media screen and (max-width: 767px) {\n\t.[$FRAGMENT_CLASS$] {\n\t\tflex-direction: column !important;\n\t\trow-gap: 1rem;\n\t\ttext-align: center;\n\t}\n}",
+															"fragmentStyle": {
+																"marginTop": "4",
+																"paddingBottom": "4",
+																"paddingLeft": "4",
+																"paddingRight": "4",
+																"paddingTop": "4"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Center",
+																"contentDisplay": "FlexRow",
+																"justify": "SpaceBetween"
+															}
+														},
+														"pageElements": [
+															{
+																"definition": {
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-image"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "image-square",
+																					"value": {
+																						"fragmentImage": {
+																							"url": {
+																								"mapping": {
+																									"fieldKey": "FileEntry_previewImage",
+																									"itemReference": {
+																										"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																										"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/announcements_subscribe.svg#]"
+																									}
+																								}
+																							}
+																						},
+																						"fragmentLink": {
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"height": "48px",
+																				"marginRight": "4",
+																				"width": "48px"
+																			},
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-paragraph"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "Get the latest updates on products, security, and system improvements.",
+																								"es_ES": "Recibe las últimas novedades sobre productos, seguridad y mejoras del sistema.",
+																								"ja_JP": "製品、セキュリティ、システム改善に関する最新情報を受け取りましょう。",
+																								"pt_BR": "Receba as últimas novidades sobre produtos, segurança e melhorias do sistema."
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-button"
+																	},
+																	"fragmentConfig": {
+																		"buttonSize": "lg",
+																		"buttonType": "primary",
+																		"type": "link"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "link",
+																			"value": {
+																				"fragmentLink": {
+																					"value": {
+																						"href": {
+																							"value_i18n": {
+																								"en_US": "https://www.subscribepage.com/liferay",
+																								"es_ES": "https://www.subscribepage.com/liferay",
+																								"ja_JP": "https://www.subscribepage.com/liferay",
+																								"pt_BR": "https://www.subscribepage.com/liferay"
+																							}
+																						},
+																						"target": "Blank"
+																					}
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Subscribe",
+																						"es_ES": "Suscribirse",
+																						"ja_JP": "購読する",
+																						"pt_BR": "Inscrever-se"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "FragmentDropZone"
+											}
+										],
+										"type": "Fragment"
 									}
 								],
 								"type": "Section"
