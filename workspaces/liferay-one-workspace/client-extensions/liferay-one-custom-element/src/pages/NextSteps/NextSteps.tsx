@@ -295,10 +295,7 @@ export function NextStepsBody(props: NextStepsBodyProps) {
 
 			{paymentStatus === PaymentStatus.PAID && (
 				<div className="d-flex justify-content-center next-step-page-learn-more">
-					<a
-						href={LearnLinks.MARKETPLACE}
-						target="_blank"
-					>
+					<a href={LearnLinks.MARKETPLACE} target="_blank">
 						{i18n.translate('learn-more-about-app-configuration')}
 					</a>
 				</div>
