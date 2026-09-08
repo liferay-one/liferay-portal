@@ -20,6 +20,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -258,6 +259,13 @@ public class SalesforceService extends BaseService {
 			"projectId",
 			orderMetadataJSONObject.getString("salesforceProjectId")
 		);
+
+		String salesforceContractId = orderMetadataJSONObject.optString(
+			"salesforceContractId");
+
+		if (Validator.isNotNull(salesforceContractId)) {
+			projectJSONObject.put("contractId", salesforceContractId);
+		}
 
 		if (Objects.equals(
 				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
