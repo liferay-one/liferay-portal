@@ -6,6 +6,10 @@
 import ClayLink from '@clayui/link';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import i18n from '~/i18n';
+import {
+	ProductLicenseTierLabels,
+	getProductLicenseTiers,
+} from '~/utils/licenseTierUtils';
 import {CONTACT_SALES_URL} from '~/utils/productUtils';
 
 import type {DeliveryProduct} from '~/types/product';
@@ -15,6 +19,8 @@ type ContactSalesProps = {
 };
 
 export default function ContactSales({product}: ContactSalesProps) {
+	const licenseTiers = getProductLicenseTiers(product);
+
 	return (
 		<EmptyState
 			description={i18n.sub(
@@ -24,6 +30,21 @@ export default function ContactSales({product}: ContactSalesProps) {
 			title={i18n.translate('contact-sales')}
 			type="EMPTY_STATE"
 		>
+			{!!licenseTiers.length && (
+				<p className="text-neutral-7">
+					{i18n.sub(
+						'available-license-tiers-x',
+						licenseTiers
+							.map((licenseTier) =>
+								i18n.translate(
+									ProductLicenseTierLabels[licenseTier]
+								)
+							)
+							.join(', ')
+					)}
+				</p>
+			)}
+
 			<ClayLink
 				button
 				displayType="primary"
