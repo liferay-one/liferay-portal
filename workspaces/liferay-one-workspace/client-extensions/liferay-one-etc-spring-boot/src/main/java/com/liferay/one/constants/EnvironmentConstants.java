@@ -22,6 +22,8 @@ public class EnvironmentConstants {
 
 	public static final String OFFERING_CLOUD_NATIVE = "Cloud Native";
 
+	public static final String OFFERING_LDP = "LDP";
+
 	public static final String OFFERING_PAAS = "PaaS";
 
 	public static final String OFFERING_SAAS = "SaaS";

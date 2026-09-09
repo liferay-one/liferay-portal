@@ -186,6 +186,57 @@ public class EnvironmentService extends OneBaseService {
 			));
 	}
 
+	public Environment upsertLiferayDataPlatformEnvironment(
+			long accountEntryId, JSONObject fieldsJSONObject)
+		throws Exception {
+
+		return _keyedLock.withLock(
+			StringBundler.concat(
+				accountEntryId, StringPool.POUND,
+				EnvironmentConstants.OFFERING_LDP),
+			() -> {
+				Environment environment = fetchEnvironment(
+					StringBundler.concat(
+						"(r_accountEntryToEnvironment_accountEntryId eq '",
+						accountEntryId, "') and (offering eq '",
+						EnvironmentConstants.OFFERING_LDP, "')"));
+
+				JSONObject environmentJSONObject = new JSONObject();
+
+				for (String fieldName : _LIFERAY_DATA_PLATFORM_FIELD_NAMES) {
+					if (fieldsJSONObject.has(fieldName)) {
+						environmentJSONObject.put(
+							fieldName, fieldsJSONObject.optString(fieldName));
+					}
+				}
+
+				if (environment != null) {
+					return new Environment(
+						new JSONObject(
+							_patchEnvironment(
+								environment.getId(), environmentJSONObject)));
+				}
+
+				environmentJSONObject.put(
+					"activationStatus",
+					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+				).put(
+					"offering", EnvironmentConstants.OFFERING_LDP
+				).put(
+					"r_accountEntryToEnvironment_accountEntryId", accountEntryId
+				);
+
+				String response = post(
+					getAuthorization(), environmentJSONObject.toString(),
+					UriComponentsBuilder.fromPath(
+						"/o/c/environments"
+					).build(
+					).toUri());
+
+				return new Environment(new JSONObject(response));
+			});
+	}
+
 	private Environment _addActivationEnvironment(
 			long accountEntryId, long contractId, JSONObject fieldsJSONObject,
 			String offering, String projectExternalReferenceCode)
@@ -224,10 +275,10 @@ public class EnvironmentService extends OneBaseService {
 		return new Environment(new JSONObject(response));
 	}
 
-	private void _patchEnvironment(long id, JSONObject environmentJSONObject)
+	private String _patchEnvironment(long id, JSONObject environmentJSONObject)
 		throws Exception {
 
-		patch(
+		return patch(
 			getAuthorization(), environmentJSONObject.toString(),
 			UriComponentsBuilder.fromPath(
 				"/o/c/environments/" + id
@@ -240,6 +291,11 @@ public class EnvironmentService extends OneBaseService {
 		"allowedEmailDomains", "disasterRecoveryRegion", "friendlyURL",
 		"githubUsername", "ownerEmailAddress", "projectId", "region",
 		"timeZone", "workspaceName"
+	};
+
+	private static final String[] _LIFERAY_DATA_PLATFORM_FIELD_NAMES = {
+		"allowedEmailDomains", "dataSourceAccessToken", "friendlyURL",
+		"ownerEmailAddress", "region", "timeZone", "workspaceName"
 	};
 
 	@Autowired

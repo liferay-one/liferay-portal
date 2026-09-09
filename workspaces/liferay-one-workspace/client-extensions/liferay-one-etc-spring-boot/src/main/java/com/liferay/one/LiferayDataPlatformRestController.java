@@ -10,8 +10,10 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EnvironmentService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.ZonedDateTime;
@@ -143,6 +145,8 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 					"provisioned for account ", accountExternalReferenceCode));
 		}
 
+		_upsertEnvironment(analyticsCloudProjectJSONObject, order);
+
 		_commerceOrderService.updateOrder(
 			HashMapBuilder.put(
 				"ldpAnalyticsCloudProject",
@@ -204,6 +208,47 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 		);
 	}
 
+	private JSONObject _getEnvironmentFieldsJSONObject(
+		JSONObject analyticsCloudProjectJSONObject) {
+
+		JSONObject jsonObject = new JSONObject();
+
+		JSONArray allowedEmailDomainsJSONArray =
+			analyticsCloudProjectJSONObject.optJSONArray(
+				"allowedEmailDomains", new JSONArray());
+
+		_putIfNotNull(
+			jsonObject, "allowedEmailDomains",
+			StringUtil.merge(allowedEmailDomainsJSONArray.toList(), ", "));
+
+		_putIfNotNull(
+			jsonObject, "dataSourceAccessToken",
+			analyticsCloudProjectJSONObject.optString("dataSourceAccessToken"));
+		_putIfNotNull(
+			jsonObject, "friendlyURL",
+			analyticsCloudProjectJSONObject.optString("friendlyURL"));
+		_putIfNotNull(
+			jsonObject, "ownerEmailAddress",
+			analyticsCloudProjectJSONObject.optString("ownerEmailAddress"));
+		_putIfNotNull(
+			jsonObject, "region",
+			analyticsCloudProjectJSONObject.optString("serverLocation"));
+
+		JSONObject timeZoneJSONObject =
+			analyticsCloudProjectJSONObject.optJSONObject(
+				"timeZone", new JSONObject());
+
+		_putIfNotNull(
+			jsonObject, "timeZone",
+			timeZoneJSONObject.optString("displayTimeZone"));
+
+		_putIfNotNull(
+			jsonObject, "workspaceName",
+			analyticsCloudProjectJSONObject.optString("corpProjectName"));
+
+		return jsonObject;
+	}
+
 	private String _getFriendlyURL(String friendlyURL) {
 		if (Validator.isNull(friendlyURL)) {
 			return "";
@@ -232,6 +277,30 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 		return new JSONObject(customFields.getOrDefault("ldpSettings", "{}"));
 	}
 
+	private void _putIfNotNull(
+		JSONObject jsonObject, String name, String value) {
+
+		if (Validator.isNotNull(value)) {
+			jsonObject.put(name, value);
+		}
+	}
+
+	private void _upsertEnvironment(
+		JSONObject analyticsCloudProjectJSONObject, Order order) {
+
+		try {
+			_environmentService.upsertLiferayDataPlatformEnvironment(
+				order.getAccountId(),
+				_getEnvironmentFieldsJSONObject(
+					analyticsCloudProjectJSONObject));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to store the LDP workspace for order " + order.getId(),
+				exception);
+		}
+	}
+
 	private static final String _ANALYTICS_CLOUD_ENVIRONMENT = "internal";
 
 	private static final Log _log = LogFactory.getLog(
@@ -242,5 +311,8 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private EnvironmentService _environmentService;
 
 }

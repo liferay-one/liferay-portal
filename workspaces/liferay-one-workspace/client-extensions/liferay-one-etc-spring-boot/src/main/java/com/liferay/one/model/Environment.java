@@ -26,6 +26,7 @@ public class Environment {
 			"r_contractToEnvironment_c_contractId");
 		_currentEntitlementHash = jsonObject.optString(
 			"currentEntitlementHash");
+		_dataSourceAccessToken = jsonObject.optString("dataSourceAccessToken");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_id = jsonObject.getLong("id");
 		_name = jsonObject.optString("name");
@@ -70,6 +71,10 @@ public class Environment {
 		return _currentEntitlementHash;
 	}
 
+	public String getDataSourceAccessToken() {
+		return _dataSourceAccessToken;
+	}
+
 	public String getExternalReferenceCode() {
 		return _externalReferenceCode;
 	}
@@ -112,6 +117,7 @@ public class Environment {
 	private final String _activationStatus;
 	private final long _contractId;
 	private final String _currentEntitlementHash;
+	private final String _dataSourceAccessToken;
 	private final String _externalReferenceCode;
 	private final long _id;
 	private final Instant _lastHeartbeatAtInstant;
