@@ -2783,6 +2783,24 @@
 					"type": "String"
 				},
 				{
+					"DBType": "Clob",
+					"businessType": "LongText",
+					"externalReferenceCode": "C_ENVIRONMENT_DATA_SOURCE_ACCESS_TOKEN",
+					"indexed": false,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Data Source Access Token"
+					},
+					"name": "dataSourceAccessToken",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Clob"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_DISASTER_RECOVERY_REGION",

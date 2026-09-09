@@ -456,6 +456,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `status` | string | `active` · `deactivated` · `expired` |
 | `lastHeartbeatAt` | datetime | Cloud only |
 | `currentEntitlementHash` | string | Identity hash; enables change detection on heartbeat |
+| `dataSourceAccessToken` | longtext | LDP only; the Analytics Cloud workspace token a DXP instance uses to connect. One token per workspace, reused by every DXP environment |
 | `hostName` | string | On-prem only |
 | `domains` | string | On-prem only; allowed domain list |
 | `ipAddresses` | longtext | On-prem only |
