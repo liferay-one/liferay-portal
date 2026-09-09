@@ -13,6 +13,7 @@ import {
 	getProductPriceModel,
 	getProductSpecificationValue,
 	getSkuByOptionValueKey,
+	isSEOStudioProduct,
 } from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
@@ -98,6 +99,10 @@ export default class ProductPurchaseApp extends ProductPurchase {
 	}
 
 	static getOrderTypeExternalReferenceCode(product: DeliveryProduct) {
+		if (isSEOStudioProduct(product)) {
+			return 'SEO_STUDIO';
+		}
+
 		return getProductOrderTypes(
 			getProductSpecificationValues(product?.productSpecifications || [])
 		).externalReferenceCode;
