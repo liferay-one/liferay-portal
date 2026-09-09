@@ -13,14 +13,19 @@ import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
 import {Liferay} from '~/services/liferay/liferay';
+import {hasAIHubOrder} from '~/utils/orderUtils';
 import {
 	ProductSpecificationKey,
 	getLicenseTagText,
 	getProductImageFallback,
 	getProductPriceModel,
 	getProductSpecificationValue,
+	isSEOStudioProduct,
 } from '~/utils/productUtils';
 import {normalizeURLProtocol} from '~/utils/stringUtils';
+
+import useAIHubOrders from '../hooks/useAIHubOrders';
+import {useSEOStudioRequirementsModal} from '../hooks/useSEOStudioRequirementsModal';
 
 const HELP_CENTER_URL = 'https://help.liferay.com';
 
@@ -39,6 +44,17 @@ const AccountSelection = () => {
 
 	const {isPaidApp} = getProductPriceModel(product);
 
+	const isSEOStudio = isSEOStudioProduct(product);
+
+	const {data: aiHubOrders, isLoading: isLoadingAIHubOrders} = useAIHubOrders(
+		isSEOStudio ? selectedAccount?.id : undefined
+	);
+
+	const {openModal: openSEOStudioRequirementsModal} =
+		useSEOStudioRequirementsModal();
+
+	const isEligible = !isSEOStudio || hasAIHubOrder(aiHubOrders);
+
 	useEffect(() => {
 		if (!product) {
 			return;
@@ -47,6 +63,10 @@ const AccountSelection = () => {
 		if (isSingleAccount) {
 			if (selectedAccount?.id !== accounts[0]?.id) {
 				setSelectedAccount(accounts[0]);
+			}
+
+			if (!isEligible) {
+				return;
 			}
 
 			const solutionType = getProductSpecificationValue(
@@ -63,6 +83,7 @@ const AccountSelection = () => {
 		}
 	}, [
 		accounts,
+		isEligible,
 		isPaidApp,
 		isSingleAccount,
 		navigate,
@@ -71,7 +92,10 @@ const AccountSelection = () => {
 		selectedAccount,
 	]);
 
-	if (isLoadingAccounts || isSingleAccount) {
+	if (
+		isLoadingAccounts ||
+		(isSingleAccount && (isLoadingAIHubOrders || isEligible))
+	) {
 		return (
 			<div className="d-flex justify-content-center my-5">
 				<Loading />
@@ -89,8 +113,11 @@ const AccountSelection = () => {
 			footerProps={{
 				backButtonProps: {className: 'd-none'},
 				continueButtonProps: {
-					disabled: !selectedAccount?.id,
-					onClick: () => nextStep(),
+					disabled: !selectedAccount?.id || isLoadingAIHubOrders,
+					onClick: () =>
+						isEligible
+							? nextStep()
+							: openSEOStudioRequirementsModal(),
 				},
 			}}
 			title={i18n.translate('account-selection')}

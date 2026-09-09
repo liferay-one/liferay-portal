@@ -1370,6 +1370,7 @@ export default {
 	'self-service-portal': 'Self-Service Portal',
 	'send-invitation': 'Send Invitation',
 	'send-request': 'Send Request',
+	'seo-studio-requirements': 'SEO Studio Requirements',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
 	'set-up-analytics-cloud': 'Set up Analytics Cloud',
@@ -1572,6 +1573,8 @@ export default {
 		'This order must be completed before downloading this app.',
 	'this-product-is-no-longer-available':
 		'This product is no longer available.',
+	'this-product-is-only-available-for-ai-hub-customers':
+		'This product is only available for AI Hub customers.',
 	'this-project-does-not-have-an-active-subscription-for-this-product-contact-your-liferay-sales-representative':
 		'This project does not have an active subscription for this product. Contact your Liferay sales representative.',
 	'this-project-has-no-extension-environments':

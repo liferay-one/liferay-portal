@@ -156,6 +156,15 @@ export const paymentWorkflowDisplayType = {
 	[PaymentStatus.PENDING]: 'secondary',
 } as const;
 
+export function hasAIHubOrder(placedOrders?: PlacedOrder[]) {
+	return Boolean(
+		placedOrders?.some(
+			({orderTypeExternalReferenceCode}) =>
+				orderTypeExternalReferenceCode === 'AI_HUB'
+		)
+	);
+}
+
 export function getOrderStatusLabel(order: PlacedOrder) {
 	const statusLabel =
 		order.orderStatusInfo?.label ||
