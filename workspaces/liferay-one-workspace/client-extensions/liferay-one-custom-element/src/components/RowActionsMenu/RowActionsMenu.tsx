@@ -6,12 +6,15 @@
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
+import {ClayTooltipProvider} from '@clayui/tooltip';
 import {useState} from 'react';
 import {Word, translate} from '~/i18n';
 
 export type RowAction = {
+	disabled?: boolean;
 	label: Word;
 	onClick?: () => void;
+	title?: string;
 };
 
 type RowActionsMenuProps = {
@@ -37,20 +40,27 @@ export default function RowActionsMenu({actions}: RowActionsMenuProps) {
 				</ClayButton>
 			}
 		>
-			<ClayDropDown.ItemList>
-				{actions.map((action) => (
-					<ClayDropDown.Item
-						key={action.label}
-						onClick={(event) => {
-							event.stopPropagation();
-							setActive(false);
-							action.onClick?.();
-						}}
-					>
-						{translate(action.label)}
-					</ClayDropDown.Item>
-				))}
-			</ClayDropDown.ItemList>
+			<ClayTooltipProvider>
+				<ClayDropDown.ItemList>
+					{actions.map((action) => (
+						<ClayDropDown.Item
+							disabled={action.disabled}
+							key={action.label}
+							onClick={(event) => {
+								if (action.disabled) {
+									return;
+								}
+								event.stopPropagation();
+								setActive(false);
+								action.onClick?.();
+							}}
+							title={action.title}
+						>
+							{translate(action.label)}
+						</ClayDropDown.Item>
+					))}
+				</ClayDropDown.ItemList>
+			</ClayTooltipProvider>
 		</ClayDropDown>
 	);
 }
