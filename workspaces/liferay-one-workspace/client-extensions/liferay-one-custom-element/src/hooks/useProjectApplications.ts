@@ -103,8 +103,8 @@ export function useProjectApplications(
 
 		for (const order of scopedOrders) {
 			for (const item of order.placedOrderItems ?? []) {
-				if (!map.has(item.name)) {
-					map.set(item.name, order);
+				if (!map.has(item.sku)) {
+					map.set(item.sku, order);
 				}
 			}
 		}
@@ -117,8 +117,8 @@ export function useProjectApplications(
 
 		for (const order of scopedOrders) {
 			for (const item of order.placedOrderItems ?? []) {
-				if (!map.has(item.name)) {
-					map.set(item.name, String(order.id));
+				if (!map.has(item.sku)) {
+					map.set(item.sku, String(order.id));
 				}
 			}
 		}
