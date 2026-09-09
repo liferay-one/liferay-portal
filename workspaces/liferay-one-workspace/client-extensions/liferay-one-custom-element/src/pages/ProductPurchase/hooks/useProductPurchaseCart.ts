@@ -9,7 +9,7 @@ import {Liferay} from '~/services/liferay/liferay';
 
 import {useCartContext} from '../context/CartContext';
 
-import type {Cart, CartItem} from '~/types/orders';
+import type {CartItem} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 const useProductPurchaseCart = (
