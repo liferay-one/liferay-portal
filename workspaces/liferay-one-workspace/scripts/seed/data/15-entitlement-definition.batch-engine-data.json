@@ -215,6 +215,17 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Content Marketing Platform Trial",
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_TRIAL",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING-TRIAL",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Liferay Data Platform",
 			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM",
 			"grantType": "fixed",
@@ -300,6 +311,17 @@
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"skuExternalReferenceCode": "PRDCT-DSR",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Digital Sales Room Trial",
+			"externalReferenceCode": "C_ENT_DEF_DSR_TRIAL",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-DSR-TRIAL",
 			"unit": "boolean"
 		},
 		{
