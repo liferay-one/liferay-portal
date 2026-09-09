@@ -69,7 +69,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -439,16 +441,15 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	@PostMapping(
-		"/products/{externalReferenceCode}/virtual-entry/{virtualEntryId}/download"
+		"/products/{skuExternalReferenceCode}/virtual-entry/{virtualEntryId}/download"
 	)
 	public ResponseEntity<StreamingResponseBody>
 			postProductsVirtualEntryDownload(
-				@PathVariable String externalReferenceCode,
+				@PathVariable String skuExternalReferenceCode,
 				@PathVariable long virtualEntryId, @RequestBody String body)
 		throws Exception {
 
-		Product product = _commerceProductService.fetchProduct(
-			externalReferenceCode);
+		Product product = _fetchProduct(skuExternalReferenceCode);
 
 		if (product == null) {
 			throw new ResponseStatusException(
@@ -482,8 +483,7 @@ public class CloudRestController extends OneBaseRestController {
 			Collections.singletonList(HttpHeaders.CONTENT_DISPOSITION));
 		httpHeaders.setContentDispositionFormData(
 			"attachment",
-			_getFileName(
-				externalReferenceCode, productVirtualSettingsFileEntry));
+			_getFileName(product, productVirtualSettingsFileEntry));
 		httpHeaders.setContentType(
 			_getMediaType(
 				httpResponse.headers(
@@ -679,6 +679,36 @@ public class CloudRestController extends OneBaseRestController {
 		return product;
 	}
 
+	/**
+	 * Resolves a product from the identifier the Cloud Native environment sent.
+	 * The Marketplace SKU external reference code is the identifier the
+	 * manifest publishes. A download link issued before LPD-102937 carries the
+	 * legacy Koroneiki product ID, which is the commerce product external
+	 * reference code, so fall back to it to keep an in flight download working.
+	 */
+	private Product _fetchProduct(String productIdentifier) throws Exception {
+		Long productId = _commerceSkuService.fetchProductId(productIdentifier);
+
+		if (productId != null) {
+			Product product = _commerceProductService.fetchProduct(productId);
+
+			if (product != null) {
+				return product;
+			}
+		}
+
+		Product product = _commerceProductService.fetchProduct(
+			productIdentifier);
+
+		if ((product != null) && _log.isWarnEnabled()) {
+			_log.warn(
+				"Resolved the legacy Koroneiki product ID " +
+					productIdentifier);
+		}
+
+		return product;
+	}
+
 	private String _generateAppLicenseXML(
 			Date expirationDate, String owner, String productId,
 			String productName, Date startDate)
@@ -746,12 +776,16 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private JSONArray _getAddOnsJSONArray(
-			List<Product> products, String dxpPatchProductVersion)
+			Map<String, Product> products, String dxpPatchProductVersion)
 		throws Exception {
 
 		JSONArray jsonArray = new JSONArray();
 
-		for (Product product : products) {
+		for (Map.Entry<String, Product> entry : products.entrySet()) {
+			String skuExternalReferenceCode = entry.getKey();
+
+			Product product = entry.getValue();
+
 			ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
 				_commerceProductVirtualSettingsService.
 					fetchProductVirtualSettingsFileEntry(
@@ -759,8 +793,8 @@ public class CloudRestController extends OneBaseRestController {
 
 			if (productVirtualSettingsFileEntry == null) {
 				_log.error(
-					"No package is available for product " +
-						product.getExternalReferenceCode());
+					"No package is available for SKU " +
+						skuExternalReferenceCode);
 
 				continue;
 			}
@@ -771,14 +805,14 @@ public class CloudRestController extends OneBaseRestController {
 					"downloadURL",
 					ServletUriComponentsBuilder.fromCurrentContextPath(
 					).path(
-						"/cloud/products/{externalReferenceCode}" +
+						"/cloud/products/{skuExternalReferenceCode}" +
 							"/virtual-entry/{virtualEntryId}/download"
 					).buildAndExpand(
-						product.getExternalReferenceCode(),
+						skuExternalReferenceCode,
 						productVirtualSettingsFileEntry.getId()
 					).toUriString()
 				).put(
-					"productId", product.getExternalReferenceCode()
+					"productId", skuExternalReferenceCode
 				).put(
 					"productName", CommerceProductUtil.getName(product)
 				).put(
@@ -796,8 +830,8 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private String _getAggregateLicenseXML(
-			JSONArray addOnsJSONArray, String accountName,
-			String dxpProductVersion, Date expirationDate,
+			JSONArray addOnsJSONArray, Map<String, Product> products,
+			String accountName, String dxpProductVersion, Date expirationDate,
 			String licenseEntryName, int maxClusterNodes, String owner,
 			Date startDate)
 		throws Exception {
@@ -807,10 +841,13 @@ public class CloudRestController extends OneBaseRestController {
 		for (int i = 0; i < addOnsJSONArray.length(); i++) {
 			JSONObject addOnJSONObject = addOnsJSONArray.getJSONObject(i);
 
+			Product product = products.get(
+				addOnJSONObject.getString("productId"));
+
 			licenseXMLs.add(
 				_generateAppLicenseXML(
 					expirationDate, accountName,
-					addOnJSONObject.getString("productId"),
+					product.getExternalReferenceCode(),
 					addOnJSONObject.getString("productName"), startDate));
 		}
 
@@ -827,19 +864,21 @@ public class CloudRestController extends OneBaseRestController {
 		return encoder.encodeToString(licenseXML.getBytes());
 	}
 
-	private List<Product> _getCloudEnabledProducts(
+	private Map<String, Product> _getCloudEnabledProducts(
 			List<Entitlement> entitlements)
 		throws Exception {
 
-		List<Product> products = new ArrayList<>();
+		Map<String, Product> cloudEnabledProducts = new LinkedHashMap<>();
 
-		for (Product product : _getProducts(entitlements)) {
-			if (_isCloudEnabled(product)) {
-				products.add(product);
+		Map<String, Product> products = _getProducts(entitlements);
+
+		for (Map.Entry<String, Product> entry : products.entrySet()) {
+			if (_isCloudEnabled(entry.getValue())) {
+				cloudEnabledProducts.put(entry.getKey(), entry.getValue());
 			}
 		}
 
-		return products;
+		return cloudEnabledProducts;
 	}
 
 	private String _getDXPVersion(String body) throws Exception {
@@ -869,7 +908,7 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private String _getFileName(
-		String externalReferenceCode,
+		Product product,
 		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry) {
 
 		String src = productVirtualSettingsFileEntry.getSrc();
@@ -888,7 +927,7 @@ public class CloudRestController extends OneBaseRestController {
 			}
 		}
 
-		return externalReferenceCode + ".lpkg";
+		return product.getExternalReferenceCode() + ".lpkg";
 	}
 
 	private JSONObject _getManifestJSONObject(
@@ -926,9 +965,10 @@ public class CloudRestController extends OneBaseRestController {
 		int maxClusterNodes = _getMaxClusterNodes(
 			entitlements, environment.getType());
 
+		Map<String, Product> products = _getCloudEnabledProducts(entitlements);
+
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
-			_getCloudEnabledProducts(entitlements),
-			ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
+			products, ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
 
 		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
 
@@ -944,7 +984,7 @@ public class CloudRestController extends OneBaseRestController {
 		).put(
 			"licenseXML",
 			_getAggregateLicenseXML(
-				addOnsJSONArray, _getAccountName(environment),
+				addOnsJSONArray, products, _getAccountName(environment),
 				ProductVersion.extractQuarterlyRelease(dxpVersion),
 				expirationDate, licenseEntryName, maxClusterNodes,
 				environment.getExternalReferenceCode(), startDate)
@@ -994,16 +1034,25 @@ public class CloudRestController extends OneBaseRestController {
 		return MediaType.parseMediaType(contentTypes.get(0));
 	}
 
-	private List<Product> _getProducts(List<Entitlement> entitlements)
+	private Map<String, Product> _getProducts(List<Entitlement> entitlements)
 		throws Exception {
 
-		List<Product> products = new ArrayList<>();
+		Map<String, Product> products = new LinkedHashMap<>();
 
 		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (entitlementDefinition == null) {
+				continue;
+			}
+
 			Product product = _fetchProduct(entitlement);
 
 			if (product != null) {
-				products.add(product);
+				products.put(
+					entitlementDefinition.getSkuExternalReferenceCode(),
+					product);
 			}
 		}
 
@@ -1018,18 +1067,22 @@ public class CloudRestController extends OneBaseRestController {
 		Environment environment = _getEnvironment(
 			body, jwtClaimsSet.getStringClaim("environmentID"));
 
+		Map<String, Product> products = _getCloudEnabledProducts(
+			_entitlementService.getActiveEntitlements(
+				environment.getAccountEntryId()));
+
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
-			_getCloudEnabledProducts(
-				_entitlementService.getActiveEntitlements(
-					environment.getAccountEntryId())),
-			StringPool.BLANK);
+			products, StringPool.BLANK);
 
 		for (int i = 0; i < addOnsJSONArray.length(); i++) {
 			JSONObject addOnJSONObject = addOnsJSONArray.getJSONObject(i);
 
-			if (Objects.equals(
-					addOnJSONObject.getString("productId"),
-					product.getExternalReferenceCode())) {
+			Product addOnProduct = products.get(
+				addOnJSONObject.getString("productId"));
+
+			if ((addOnProduct != null) &&
+				Objects.equals(
+					addOnProduct.getProductId(), product.getProductId())) {
 
 				return true;
 			}
@@ -1075,15 +1128,14 @@ public class CloudRestController extends OneBaseRestController {
 			JSONObject addOnJSONObject, ZipOutputStream zipOutputStream)
 		throws Exception {
 
-		String externalReferenceCode = addOnJSONObject.optString("productId");
+		String productIdentifier = addOnJSONObject.optString("productId");
 
-		Product product = _commerceProductService.fetchProduct(
-			externalReferenceCode);
+		Product product = _fetchProduct(productIdentifier);
 
 		if (product == null) {
 			throw new AddOnsUnavailableException(
 				"No product exists for external reference code " +
-					externalReferenceCode);
+					productIdentifier);
 		}
 
 		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
@@ -1094,7 +1146,7 @@ public class CloudRestController extends OneBaseRestController {
 
 		if (productVirtualSettingsFileEntry == null) {
 			throw new AddOnsUnavailableException(
-				"No package is available for product " + externalReferenceCode);
+				"No package is available for product " + productIdentifier);
 		}
 
 		HttpResponse<InputStream> httpResponse =
@@ -1102,7 +1154,7 @@ public class CloudRestController extends OneBaseRestController {
 				productVirtualSettingsFileEntry.getSrc());
 
 		String fileName = _getFileName(
-			externalReferenceCode, productVirtualSettingsFileEntry);
+			product, productVirtualSettingsFileEntry);
 
 		zipOutputStream.putNextEntry(new ZipEntry("add-ons/" + fileName));
 
