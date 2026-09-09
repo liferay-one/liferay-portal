@@ -34,6 +34,7 @@ export type LicensingPrices = {
 		developer?: {
 			[key: number]: number;
 		};
+		production?: undefined;
 		standard: {
 			[key: number]: number;
 		};

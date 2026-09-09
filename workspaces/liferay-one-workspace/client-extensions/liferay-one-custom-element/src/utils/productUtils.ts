@@ -41,6 +41,7 @@ export {
 	ProductWorkflowStatusCode,
 	ProductWorkflowStatusLabel,
 	SolutionTypeLabels,
+	SolutionTypeLicenseOptions,
 	SkuOptions,
 } from '~/enums/Product';
 
@@ -171,6 +172,7 @@ export function getSkuByOptionValueKey(
 				(skuOption) =>
 					[
 						'cloud-license-usage-type',
+						'cmp-license-usage-type',
 						'dxp-license-usage-type',
 					].includes(skuOption.skuOptionKey as ProductLicense) &&
 					skuOption.skuOptionValueKey === skuOptionValueKey

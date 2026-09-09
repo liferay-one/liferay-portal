@@ -38,6 +38,7 @@ export type ProductImageFallbackCategories =
 export const ProductLicense = {
 	BASE: 'base-license-usage-type',
 	CLOUD: 'cloud-license-usage-type',
+	CMP: 'cmp-license-usage-type',
 	DXP: 'dxp-license-usage-type',
 } as const;
 
@@ -46,6 +47,7 @@ export type ProductLicense =
 
 export const ProductLicenseTier = {
 	DEVELOPER: 'developer',
+	PRODUCTION: 'production',
 	STANDARD: 'standard',
 	TRIAL: 'trial',
 } as const;
@@ -214,6 +216,7 @@ export type ProductWorkflowStatusCode =
 export const SkuOptions = {
 	DEVELOPER: 'developer',
 	OPEN_BETA: 'open-beta',
+	PRODUCTION: 'production',
 	STANDARD: 'standard',
 	TRIAL: 'trial',
 } as const;
@@ -295,6 +298,16 @@ export const ProductTypeLicenseOptions: Record<
 	[ProductType.LOW_CODE_CONFIGURATION]: [ProductLicenseTier.STANDARD],
 	[ProductType.OTHER]: [ProductLicenseTier.STANDARD],
 	[ProductType.SSA_SAAS]: [ProductLicenseTier.STANDARD],
+};
+
+export const SolutionTypeLicenseOptions: Partial<
+	Record<SolutionTypes, ProductLicenseTier[]>
+> = {
+	[SolutionTypes.CMP]: [
+		ProductLicenseTier.DEVELOPER,
+		ProductLicenseTier.TRIAL,
+		ProductLicenseTier.PRODUCTION,
+	],
 };
 
 export const ProductWorkflowDisplayType = {
