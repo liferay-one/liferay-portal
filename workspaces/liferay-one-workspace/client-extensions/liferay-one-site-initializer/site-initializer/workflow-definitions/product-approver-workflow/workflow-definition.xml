@@ -81,7 +81,6 @@
 		<actions>
 			<action>
 				<name>draft</name>
-				<description></description>
 				<status>2</status>
 				<priority>1</priority>
 				<execution-type>onAssignment</execution-type>
@@ -163,60 +162,8 @@
 		<assignments>
 			<roles>
 				<role>
-					<role-type>account</role-type>
-					<name>Account Administrator</name>
-				</role>
-				<role>
-					<role-type>account</role-type>
-					<name>Account Member</name>
-				</role>
-				<role>
-					<role-type>account</role-type>
-					<name>Order Manager</name>
-				</role>
-				<role>
-					<role-type>depot</role-type>
-					<name>Asset Library Administrator</name>
-				</role>
-				<role>
-					<role-type>depot</role-type>
-					<name>Asset Library Content Reviewer</name>
-				</role>
-				<role>
-					<role-type>depot</role-type>
-					<name>Asset Library Owner</name>
-				</role>
-				<role>
-					<role-type>organization</role-type>
-					<name>Organization Administrator</name>
-				</role>
-				<role>
-					<role-type>organization</role-type>
-					<name>Organization Content Reviewer</name>
-				</role>
-				<role>
-					<role-type>organization</role-type>
-					<name>Organization Owner</name>
-				</role>
-				<role>
 					<role-type>regular</role-type>
 					<name>Administrator</name>
-				</role>
-				<role>
-					<role-type>regular</role-type>
-					<name>Portal Content Reviewer</name>
-				</role>
-				<role>
-					<role-type>site</role-type>
-					<name>Site Administrator</name>
-				</role>
-				<role>
-					<role-type>site</role-type>
-					<name>Site Content Reviewer</name>
-				</role>
-				<role>
-					<role-type>site</role-type>
-					<name>Site Owner</name>
 				</role>
 			</roles>
 		</assignments>
