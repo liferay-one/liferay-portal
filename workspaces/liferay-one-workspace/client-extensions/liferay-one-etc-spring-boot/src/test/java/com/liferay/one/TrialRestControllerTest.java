@@ -142,8 +142,7 @@ public class TrialRestControllerTest {
 		Order order = new Order();
 
 		order.setCustomFields(customFields);
-		order.setOrderTypeExternalReferenceCode(
-			orderTypeExternalReferenceCode);
+		order.setOrderTypeExternalReferenceCode(orderTypeExternalReferenceCode);
 
 		Mockito.when(
 			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)

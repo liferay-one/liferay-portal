@@ -27,7 +27,8 @@ public class TrialConstantsTest {
 
 	@Test
 	public void testGetDurationDaysWithoutSelfService() {
-		Assertions.assertEquals(7, TrialConstants.getDurationDays("SOLUTIONS7"));
+		Assertions.assertEquals(
+			7, TrialConstants.getDurationDays("SOLUTIONS7"));
 		Assertions.assertEquals(7, TrialConstants.getDurationDays("SSA_SAAS"));
 		Assertions.assertEquals(7, TrialConstants.getDurationDays(null));
 	}

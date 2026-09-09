@@ -31,15 +31,13 @@ public class TrialConstants {
 		return DURATION_DAYS_DEFAULT;
 	}
 
-	public static boolean isSelfService(
-		String orderTypeExternalReferenceCode) {
-
-		return _ORDER_TYPE_EXTERNAL_REFERENCE_CODES_SELF_SERVICE.contains(
+	public static boolean isSelfService(String orderTypeExternalReferenceCode) {
+		return _selfServiceOrderTypeExternalReferenceCodes.contains(
 			orderTypeExternalReferenceCode);
 	}
 
 	private static final List<String>
-		_ORDER_TYPE_EXTERNAL_REFERENCE_CODES_SELF_SERVICE = Arrays.asList(
+		_selfServiceOrderTypeExternalReferenceCodes = Arrays.asList(
 			ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP_TRIAL,
 			ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR_TRIAL);
 

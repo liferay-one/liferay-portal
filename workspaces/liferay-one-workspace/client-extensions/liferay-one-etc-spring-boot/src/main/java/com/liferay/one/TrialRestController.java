@@ -408,8 +408,7 @@ public class TrialRestController extends BaseRestController {
 			"duration",
 			TrialConstants.getDurationDays(orderTypeExternalReferenceCode));
 
-		ZonedDateTime startZonedDateTime = ZonedDateTime.now(
-			ZoneOffset.UTC);
+		ZonedDateTime startZonedDateTime = ZonedDateTime.now(ZoneOffset.UTC);
 
 		_commerceOrderService.updateOrder(
 			HashMapBuilder.put(
