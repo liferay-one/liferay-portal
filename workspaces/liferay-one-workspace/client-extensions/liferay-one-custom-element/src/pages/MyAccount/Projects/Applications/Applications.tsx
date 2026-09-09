@@ -5,9 +5,12 @@
 
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
+import {Word, translate} from '~/i18n';
+import DeliveryOrderModel from '~/models/DeliveryOrderModel';
 import {
 	ListColumn,
 	ListFilter,
@@ -27,8 +30,13 @@ export default function Applications() {
 		? undefined
 		: project?.name;
 
-	const {applications, error, loading, orderIdByProductName} =
-		useProjectApplications(projectId, projectName);
+	const {
+		applications,
+		error,
+		loading,
+		orderByProductName,
+		orderIdByProductName,
+	} = useProjectApplications(projectId, projectName);
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(
@@ -49,6 +57,76 @@ export default function Applications() {
 			statusFilter(applications),
 		];
 	}, [applications]);
+
+	const renderActions = (application: ProjectProduct): RowAction[] => {
+		const actions: RowAction[] = [
+			{
+				label: 'view-details',
+				onClick: () => navigate(application.externalReferenceCode),
+			},
+		];
+
+		const order = orderByProductName.get(application.name);
+
+		if (!order) {
+			return actions;
+		}
+
+		const deliveryOrder = new DeliveryOrderModel(order);
+		const {canDownload, canGenerateLicenses, isFreeApp, isOrderCompleted} =
+			deliveryOrder;
+		const orderId = order.id;
+
+		if (canGenerateLicenses) {
+			actions.push(
+				{
+					disabled: !isOrderCompleted,
+					label: 'create-license-key',
+					onClick: () => navigate(`/order/${orderId}/create-license`),
+					title: isOrderCompleted
+						? undefined
+						: translate(
+								'the-order-must-be-completed-before-licensing-this-app.' as Word
+						  ),
+				},
+				{
+					disabled: isFreeApp,
+					label: 'manage-license-keys',
+					onClick: () => navigate(`/order/${orderId}/licenses`),
+				}
+			);
+		}
+
+		if (!canDownload) {
+			actions.push({
+				label: 'cloud-provisioning',
+				onClick: () => navigate(`/order/${orderId}/cloud-provisioning`),
+			});
+		}
+
+		if (canDownload) {
+			const virtualURL =
+				order.placedOrderItems?.[0]?.virtualItemURLs?.[0] || '';
+
+			actions.push({
+				disabled: !isOrderCompleted,
+				label: 'download-app',
+				onClick: () => {
+					navigate(`/order/${orderId}/download`);
+					if (virtualURL.trim()) {
+						window.open(virtualURL);
+					}
+				},
+				title: !isOrderCompleted
+					? translate(
+							'this-order-must-be-completed-before-downloading-this-app.' as Word
+					  )
+					: undefined,
+			});
+		}
+
+		return actions;
+	};
 
 	const columns: ListColumn<ProjectProduct>[] = [
 		{
@@ -114,6 +192,7 @@ export default function Applications() {
 			onItemClick={(application) =>
 				navigate(application.externalReferenceCode)
 			}
+			renderActions={renderActions}
 			title="applications"
 		/>
 	);
