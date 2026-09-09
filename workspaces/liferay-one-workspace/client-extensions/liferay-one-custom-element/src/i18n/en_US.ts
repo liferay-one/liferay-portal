@@ -454,6 +454,8 @@ export default {
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
 	'development-framework': 'Development Framework',
+	'digital-sales-room': 'Digital Sales Room',
+	'digital-sales-room-setup': 'Digital Sales Room Setup',
 	'digital-workplace': 'Digital Workplace',
 	'disaster-recovery-data-center-location':
 		'Disaster Recovery Data Center Location',
@@ -629,6 +631,7 @@ export default {
 	'generate-new': 'Generate New',
 	'get-activation-key': 'Get Activation Key',
 	'get-app': 'Get App',
+	'get-digital-sales-room': 'Get Digital Sales Room',
 	'get-started': 'Get Started',
 	'getting-started-with-liferay-enterprise-search-article':
 		'Getting Started with Liferay Enterprise Search article.',
@@ -774,6 +777,7 @@ export default {
 	'learn-more-about-becoming-a-liferay-customer':
 		'Learn more about becoming a Liferay Customer',
 	'leave-a-comment': 'Leave a Comment',
+	'legal-liferay': 'Legal | Liferay',
 	'license': 'License',
 	'license-price': 'License Price',
 	'license-prices': 'License Prices',
@@ -918,6 +922,8 @@ export default {
 	'my-solutions': 'My Solutions',
 	'name': 'Name',
 	'name-example-com': 'name@example.com',
+	'name-the-workspace-your-digital-sales-room-runs-in-and-give-us-the-server-details-we-need-to-issue-its-activation-key':
+		'Name the workspace your Digital Sales Room runs in, and give us the server details we need to issue its activation key.',
 	'named-saved-active-segments-that-evaluate-in-real-time-as-events-arrive':
 		'Named, saved, active segments that evaluate in real time as events arrive.',
 	'named-saved-active-segments-that-evaluate-on-a-schedule':
