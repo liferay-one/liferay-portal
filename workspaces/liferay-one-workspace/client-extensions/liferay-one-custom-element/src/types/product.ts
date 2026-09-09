@@ -246,9 +246,14 @@ export type ProductImageFallbackCategories = 'productIcon' | 'productImage';
 export type ProductLicense =
 	| 'base-license-usage-type'
 	| 'cloud-license-usage-type'
+	| 'cmp-license-usage-type'
 	| 'dxp-license-usage-type';
 
-export type ProductLicenseTier = 'developer' | 'standard' | 'trial';
+export type ProductLicenseTier =
+	| 'developer'
+	| 'production'
+	| 'standard'
+	| 'trial';
 
 export type ProductLicenseType = 'Perpetual' | 'Subscription';
 
@@ -300,7 +305,12 @@ export type ProductVocabulary =
 	| 'Marketplace Solution Category'
 	| 'Marketplace Solution Tags';
 
-export type SkuOptions = 'developer' | 'standard' | 'trial';
+export type SkuOptions =
+	| 'developer'
+	| 'open-beta'
+	| 'production'
+	| 'standard'
+	| 'trial';
 
 export type SolutionTypes =
 	| 'ai-hub'
