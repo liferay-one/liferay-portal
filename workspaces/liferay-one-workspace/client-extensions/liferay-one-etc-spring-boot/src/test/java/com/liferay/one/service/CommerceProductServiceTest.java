@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
+import com.liferay.one.exception.NoSuchProductException;
 
 import java.util.List;
 import java.util.Map;
@@ -91,24 +92,24 @@ public class CommerceProductServiceTest {
 	}
 
 	@Test
-	public void testGetNameReadsLocalizedValue() {
+	public void testGetProductReturnsProduct() throws Exception {
 		Product product = new Product();
 
-		product.setName(
-			() -> Map.of("en_US", "PaaS Experience", "pt_BR", "ignorado"));
+		Mockito.when(
+			_productResource.getProduct(_PRODUCT_ID)
+		).thenReturn(
+			product
+		);
 
-		Assertions.assertEquals(
-			"PaaS Experience", _commerceProductService.getName(product));
+		Assertions.assertSame(
+			product, _commerceProductService.getProduct(_PRODUCT_ID));
 	}
 
 	@Test
-	public void testGetNameReturnsNullWhenNameIsAbsent() {
-		Assertions.assertNull(_commerceProductService.getName(new Product()));
-	}
-
-	@Test
-	public void testGetNameReturnsNullWhenProductIsAbsent() {
-		Assertions.assertNull(_commerceProductService.getName(null));
+	public void testGetProductThrowsWhenProductIsAbsent() {
+		Assertions.assertThrows(
+			NoSuchProductException.class,
+			() -> _commerceProductService.getProduct(_PRODUCT_ID));
 	}
 
 	@Test

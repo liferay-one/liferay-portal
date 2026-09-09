@@ -22,7 +22,6 @@ import {
 
 import HeadlessCommerceAdminCatalogImpl from '../headless/HeadlessCommerceAdminCatalog';
 import HeadlessCommerceAdminPricing from '../headless/HeadlessCommerceAdminPricing';
-import EntitlementDefinitions from '../spring-boot/EntitlementDefinitions';
 import BaseAppPublish from './BaseAppPublish';
 import PublisherAsset from './PublisherAsset';
 
@@ -498,16 +497,6 @@ export default class AppPublish extends BaseAppPublish {
 			}
 
 			await this.updateProduct(product);
-
-			try {
-				await EntitlementDefinitions.generate(product.productId);
-			}
-			catch (error) {
-				console.error(
-					'Unable to generate the entitlement definitions',
-					error
-				);
-			}
 		}
 		catch (error) {
 			console.error(error);

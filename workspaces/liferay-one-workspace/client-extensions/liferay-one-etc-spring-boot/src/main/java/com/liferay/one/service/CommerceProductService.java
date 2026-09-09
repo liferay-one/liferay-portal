@@ -6,15 +6,14 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
-import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
+import com.liferay.one.exception.NoSuchProductException;
+import com.liferay.one.util.CommerceProductUtil;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,7 +51,6 @@ public class CommerceProductService extends OneBaseService {
 		productResource.patchProduct(sku.getProductId(), product);
 	}
 
-	@Cacheable("product")
 	public Product fetchProduct(long id) throws Exception {
 		return _fetchProduct(id);
 	}
@@ -63,79 +61,26 @@ public class CommerceProductService extends OneBaseService {
 
 	@Cacheable("productName")
 	public String fetchProductName(long id) throws Exception {
-		return getName(_fetchProduct(id));
+		return CommerceProductUtil.getName(_fetchProduct(id));
 	}
 
 	@Cacheable("productName")
 	public String fetchProductName(String externalReferenceCode)
 		throws Exception {
 
-		return getName(_fetchProduct(externalReferenceCode));
+		return CommerceProductUtil.getName(
+			_fetchProduct(externalReferenceCode));
 	}
 
-	public List<String> getCategoryExternalReferenceCodes(long id)
-		throws Exception {
-
-		return getAllItems(
-			"/o/headless-commerce-admin-catalog/v1.0/products/" + id +
-				"/categories",
-			null, jsonObject -> jsonObject.optString("externalReferenceCode"));
-	}
-
-	public String getName(Product product) {
-		if (product == null) {
-			return null;
-		}
-
-		Map<String, String> name = product.getName();
-
-		if (name == null) {
-			return null;
-		}
-
-		return name.get("en_US");
-	}
-
-	public String getSpecificationValue(long id, String specificationKey)
-		throws Exception {
-
-		return getSpecificationValue(fetchProduct(id), specificationKey);
-	}
-
-	public String getSpecificationValue(
-		Product product, String specificationKey) {
+	public Product getProduct(long id) throws Exception {
+		Product product = _fetchProduct(id);
 
 		if (product == null) {
-			return null;
+			throw new NoSuchProductException(
+				"No product exists for commerce product ID " + id);
 		}
 
-		ProductSpecification[] productSpecifications =
-			product.getProductSpecifications();
-
-		if (productSpecifications == null) {
-			return null;
-		}
-
-		for (ProductSpecification productSpecification :
-				productSpecifications) {
-
-			if (!Objects.equals(
-					specificationKey,
-					productSpecification.getSpecificationKey())) {
-
-				continue;
-			}
-
-			Map<String, String> value = productSpecification.getValue();
-
-			if (value == null) {
-				return null;
-			}
-
-			return value.get("en_US");
-		}
-
-		return null;
+		return product;
 	}
 
 	public void updateProduct(

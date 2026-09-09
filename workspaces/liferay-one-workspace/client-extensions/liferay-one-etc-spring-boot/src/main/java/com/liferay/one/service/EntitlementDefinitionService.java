@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -55,27 +56,22 @@ public class EntitlementDefinitionService extends OneBaseService {
 	public void generateEntitlementDefinition(long cProductId)
 		throws Exception {
 
+		Product product = _commerceProductService.getProduct(cProductId);
+
 		List<String> categoryExternalReferenceCodes =
-			_commerceProductService.getCategoryExternalReferenceCodes(
-				cProductId);
+			CommerceProductUtil.getCategoryExternalReferenceCodes(product);
 
 		if (!categoryExternalReferenceCodes.contains(
 				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP) ||
 			!ArrayUtil.contains(
 				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING,
-				_commerceProductService.getSpecificationValue(
-					cProductId, ProductSpecificationConstants.KEY_TYPE))) {
+				CommerceProductUtil.getSpecificationValue(
+					product, ProductSpecificationConstants.KEY_TYPE))) {
 
 			return;
 		}
 
-		Product product = _commerceProductService.fetchProduct(cProductId);
-
-		if (product == null) {
-			return;
-		}
-
-		String productName = _commerceProductService.getName(product);
+		String productName = CommerceProductUtil.getName(product);
 
 		if (Validator.isNull(productName)) {
 			if (_log.isWarnEnabled()) {
@@ -209,16 +205,14 @@ public class EntitlementDefinitionService extends OneBaseService {
 		sb.append("skuExternalReferenceCode in (");
 
 		for (int i = 0; i < skus.size(); i++) {
+			Sku sku = skus.get(i);
+
 			if (i > 0) {
 				sb.append(",");
 			}
 
 			sb.append("'");
-			sb.append(
-				escapeODataString(
-					skus.get(
-						i
-					).getExternalReferenceCode()));
+			sb.append(escapeODataString(sku.getExternalReferenceCode()));
 			sb.append("'");
 		}
 
@@ -282,11 +276,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 		String skuExternalReferenceCode = sku.getExternalReferenceCode();
 
-		String name = productName;
-
-		if (Validator.isNotNull(sku.getSku())) {
-			name = StringBundler.concat(productName, " - ", sku.getSku());
-		}
+		String name = StringBundler.concat(productName, " - ", sku.getSku());
 
 		EntitlementDefinition generatedEntitlementDefinition = null;
 		boolean manualEntitlementDefinition = false;
@@ -313,24 +303,12 @@ public class EntitlementDefinitionService extends OneBaseService {
 			}
 
 			if (manualEntitlementDefinition) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
+				if (_log.isDebugEnabled()) {
+					_log.debug(
 						StringBundler.concat(
 							"Skipping SKU ", skuExternalReferenceCode,
 							" because a manually created entitlement ",
 							"definition already exists"));
-				}
-
-				return;
-			}
-
-			if (fetchEntitlementDefinition(skuExternalReferenceCode) != null) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						StringBundler.concat(
-							"Skipping SKU ", skuExternalReferenceCode,
-							" because another entitlement definition already ",
-							"uses its external reference code"));
 				}
 
 				return;
