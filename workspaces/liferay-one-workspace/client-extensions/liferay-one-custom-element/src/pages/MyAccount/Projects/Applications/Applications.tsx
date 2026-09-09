@@ -9,7 +9,7 @@ import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {Word, translate} from '~/i18n';
+import {translate} from '~/i18n';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
 import {
 	ListColumn,
@@ -30,13 +30,8 @@ export default function Applications() {
 		? undefined
 		: project?.name;
 
-	const {
-		applications,
-		error,
-		loading,
-		orderByProductName,
-		orderIdByProductName,
-	} = useProjectApplications(projectId, projectName);
+	const {applications, error, loading, orderByProductExternalReferenceCode} =
+		useProjectApplications(projectId, projectName);
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(
@@ -58,59 +53,37 @@ export default function Applications() {
 		];
 	}, [applications]);
 
-	const renderActions = (application: ProjectProduct): RowAction[] => {
-		const actions: RowAction[] = [
-			{
-				label: 'view-details',
-				onClick: () => navigate(application.externalReferenceCode),
-			},
-		];
-
-		const order = orderByProductName.get(application.externalReferenceCode);
+	const renderExtraActions = (application: ProjectProduct): RowAction[] => {
+		const order = orderByProductExternalReferenceCode.get(
+			application.externalReferenceCode
+		);
 
 		if (!order) {
-			return actions;
+			return [];
 		}
 
-		const deliveryOrder = new DeliveryOrderModel(order);
-		const {canDownload, canGenerateLicenses, isFreeApp, isOrderCompleted} =
-			deliveryOrder;
-		const orderId = order.id;
+		const {canDownload, canGenerateLicenses, isOrderCompleted} =
+			new DeliveryOrderModel(order);
+		const activationPath = `${application.externalReferenceCode}?tab=activation`;
+		const actions: RowAction[] = [];
 
 		if (canGenerateLicenses) {
 			actions.push(
 				{
 					disabled: !isOrderCompleted,
 					label: 'create-license-key',
-					onClick: () =>
-						navigate(
-							`${application.externalReferenceCode}?tab=activation`
-						),
+					onClick: () => navigate(activationPath),
 					title: isOrderCompleted
 						? undefined
 						: translate(
-								'the-order-must-be-completed-before-licensing-this-app.' as Word
+								'the-order-must-be-completed-before-licensing-this-app.'
 							),
 				},
 				{
-					disabled: isFreeApp,
 					label: 'manage-license-keys',
-					onClick: () =>
-						navigate(
-							`${application.externalReferenceCode}?tab=activation`
-						),
+					onClick: () => navigate(activationPath),
 				}
 			);
-		}
-
-		if (!canDownload) {
-			actions.push({
-				label: 'cloud-provisioning',
-				onClick: () =>
-					navigate(
-						`${application.externalReferenceCode}/install/${orderId}`
-					),
-			});
 		}
 
 		if (canDownload) {
@@ -121,11 +94,20 @@ export default function Applications() {
 					navigate(
 						`${application.externalReferenceCode}?tab=download`
 					),
-				title: !isOrderCompleted
-					? translate(
-							'this-order-must-be-completed-before-downloading-this-app.' as Word
-						)
-					: undefined,
+				title: isOrderCompleted
+					? undefined
+					: translate(
+							'this-order-must-be-completed-before-downloading-this-app.'
+						),
+			});
+		}
+		else {
+			actions.push({
+				label: 'cloud-provisioning',
+				onClick: () =>
+					navigate(
+						`${application.externalReferenceCode}/install/${order.id}`
+					),
 			});
 		}
 
@@ -178,8 +160,9 @@ export default function Applications() {
 			heading: 'order-id',
 			key: 'order-id',
 			render: (application) =>
-				orderIdByProductName.get(application.externalReferenceCode) ??
-				'-',
+				orderByProductExternalReferenceCode
+					.get(application.externalReferenceCode)
+					?.id.toString() ?? '-',
 			width: '1%',
 		},
 		statusColumn(),
@@ -197,7 +180,7 @@ export default function Applications() {
 			onItemClick={(application) =>
 				navigate(application.externalReferenceCode)
 			}
-			renderActions={renderActions}
+			renderExtraActions={renderExtraActions}
 			title="applications"
 		/>
 	);
