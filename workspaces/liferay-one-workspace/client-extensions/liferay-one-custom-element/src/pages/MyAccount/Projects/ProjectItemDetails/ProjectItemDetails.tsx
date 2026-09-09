@@ -9,6 +9,7 @@ import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
+import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {
 	getSpecificationValue,
 	getSpecificationValues,
@@ -38,7 +39,6 @@ import {PROJECT_TAB_LABELS} from '~/pages/MyAccount/Projects/utils/constants';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
-import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';
