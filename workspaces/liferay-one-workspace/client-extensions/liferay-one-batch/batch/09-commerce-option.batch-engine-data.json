@@ -132,6 +132,46 @@
 		},
 		{
 			"description": {
+				"en_US": "Content Marketing Platform can be licensed using this type."
+			},
+			"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "cmp-license-usage-type",
+			"name": {
+				"en_US": "CMP License Usage Type"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_DEVELOPER",
+					"key": "developer",
+					"name": {
+						"en_US": "Developer"
+					},
+					"priority": 0
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_PRODUCTION",
+					"key": "production",
+					"name": {
+						"en_US": "Production"
+					},
+					"priority": 2
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE_TRIAL",
+					"key": "trial",
+					"name": {
+						"en_US": "Trial"
+					},
+					"priority": 1
+				}
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"description": {
 				"en_US": "Apps built for Liferay DXP can be licensed using this type."
 			},
 			"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE",
