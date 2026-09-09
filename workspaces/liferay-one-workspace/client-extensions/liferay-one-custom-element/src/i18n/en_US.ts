@@ -214,6 +214,7 @@ export default {
 	'authenticated-logins-malus': 'Authenticated Logins (MALUs)',
 	'automation': 'Automation',
 	'available': 'Available',
+	'available-license-tiers-x': 'Available license tiers: {0}',
 	'awaiting-signature': 'Awaiting Signature',
 	'back': 'Back',
 	'back-to-apps': 'Back to Apps',
