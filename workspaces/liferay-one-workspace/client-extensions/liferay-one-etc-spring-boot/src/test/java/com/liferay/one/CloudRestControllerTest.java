@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
@@ -26,6 +27,7 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.lang.reflect.UndeclaredThrowableException;
@@ -34,8 +36,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +49,10 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -121,6 +128,124 @@ public class CloudRestControllerTest {
 			_cloudRestController, "_licenseKeyExporter", _licenseKeyExporter);
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_licenseKeyGenerator", _licenseKeyGenerator);
+	}
+
+	@AfterEach
+	public void tearDown() {
+		RequestContextHolder.resetRequestAttributes();
+	}
+
+	@Test
+	public void testFetchProductWithLegacyKoroneikiProductId()
+		throws Exception {
+
+		Product product = _createCloudEnabledProduct();
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId(_LEGACY_KORONEIKI_PRODUCT_ID)
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(_LEGACY_KORONEIKI_PRODUCT_ID)
+		).thenReturn(
+			product
+		);
+
+		Assertions.assertSame(
+			product, _fetchProduct(_LEGACY_KORONEIKI_PRODUCT_ID));
+	}
+
+	@Test
+	public void testFetchProductWithMarketplaceSku() throws Exception {
+		Product product = _createCloudEnabledProduct();
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(_C_PRODUCT_ID)
+		).thenReturn(
+			product
+		);
+
+		Assertions.assertSame(
+			product, _fetchProduct(_SKU_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verify(
+			_commerceProductService, Mockito.never()
+		).fetchProduct(
+			_SKU_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	@Test
+	public void testFetchProductWithUnknownIdentifier() throws Exception {
+		Mockito.when(
+			_commerceSkuService.fetchProductId("UNKNOWN")
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct("UNKNOWN")
+		).thenReturn(
+			null
+		);
+
+		Assertions.assertNull(_fetchProduct("UNKNOWN"));
+	}
+
+	@Test
+	public void testGetManifestJSONObjectIdentifiesAddOnsByMarketplaceSku()
+		throws Exception {
+
+		RequestContextHolder.setRequestAttributes(
+			new ServletRequestAttributes(new MockHttpServletRequest()));
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(
+					EntitlementConstants.
+						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
+					1),
+				_createProductEntitlement(_SKU_EXTERNAL_REFERENCE_CODE))
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(_C_PRODUCT_ID)
+		).thenReturn(
+			_createCloudEnabledProduct()
+		);
+
+		Mockito.when(
+			_commerceProductVirtualSettingsService.
+				fetchProductVirtualSettingsFileEntry(
+					Mockito.eq(_C_PRODUCT_ID), Mockito.anyString())
+		).thenReturn(
+			_createProductVirtualSettingsFileEntry()
+		);
+
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		JSONArray jsonArray = jsonObject.getJSONArray("add-ons");
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject addOnJSONObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			_SKU_EXTERNAL_REFERENCE_CODE,
+			addOnJSONObject.getString("productId"));
+		Assertions.assertTrue(
+			addOnJSONObject.getString(
+				"downloadURL"
+			).endsWith(
+				StringBundler.concat(
+					"/cloud/products/", _SKU_EXTERNAL_REFERENCE_CODE,
+					"/virtual-entry/", _VIRTUAL_ENTRY_ID, "/download")
+			));
 	}
 
 	@Test
@@ -465,6 +590,34 @@ public class CloudRestControllerTest {
 		);
 	}
 
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsUnknownIdentifier()
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("UNKNOWN")
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct("UNKNOWN")
+		).thenReturn(
+			null
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _cloudRestController.postProductsVirtualEntryDownload(
+					"UNKNOWN", _VIRTUAL_ENTRY_ID, "{}"));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_commerceProductVirtualSettingsService);
+	}
+
 	private String _createActivationRequestJSON(String environmentProfile) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -474,6 +627,24 @@ public class CloudRestControllerTest {
 		);
 
 		return jsonObject.toString();
+	}
+
+	private Product _createCloudEnabledProduct() {
+		Product product = new Product();
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(
+			() -> CommerceProductConstants.SPECIFICATION_KEY_CLOUD_ENABLED);
+		productSpecification.setValue(() -> Map.of("en_US", "true"));
+
+		product.setExternalReferenceCode(() -> _LEGACY_KORONEIKI_PRODUCT_ID);
+		product.setName(() -> Map.of("en_US", "Acme Add On"));
+		product.setProductId(() -> _C_PRODUCT_ID);
+		product.setProductSpecifications(
+			() -> new ProductSpecification[] {productSpecification});
+
+		return product;
 	}
 
 	private Entitlement _createEntitlement(String name, double quantity) {
@@ -553,6 +724,19 @@ public class CloudRestControllerTest {
 			));
 	}
 
+	private ProductVirtualSettingsFileEntry
+		_createProductVirtualSettingsFileEntry() {
+
+		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
+			new ProductVirtualSettingsFileEntry();
+
+		productVirtualSettingsFileEntry.setId(() -> _VIRTUAL_ENTRY_ID);
+		productVirtualSettingsFileEntry.setSrc(() -> "/documents/acme.lpkg");
+		productVirtualSettingsFileEntry.setVersion(() -> "1.0.0");
+
+		return productVirtualSettingsFileEntry;
+	}
+
 	private Project _createProject() {
 		return new Project(
 			new JSONObject(
@@ -561,6 +745,17 @@ public class CloudRestControllerTest {
 			).put(
 				"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
 			));
+	}
+
+	private Product _fetchProduct(String productIdentifier) throws Exception {
+		try {
+			return ReflectionTestUtils.invokeMethod(
+				_cloudRestController, "_fetchProduct", productIdentifier);
+		}
+		catch (UndeclaredThrowableException undeclaredThrowableException) {
+			throw (Exception)
+				undeclaredThrowableException.getUndeclaredThrowable();
+		}
 	}
 
 	private JSONObject _getManifestJSONObject(Environment environment)
@@ -585,9 +780,13 @@ public class CloudRestControllerTest {
 
 	private static final long _ENVIRONMENT_ID = 2000L;
 
+	private static final String _LEGACY_KORONEIKI_PRODUCT_ID = "PROD-3000";
+
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-005";
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE = "SKU-3000";
+
+	private static final long _VIRTUAL_ENTRY_ID = 5000L;
 
 	private AccountService _accountService;
 	private CloudActivationRequestService _cloudActivationRequestService;
