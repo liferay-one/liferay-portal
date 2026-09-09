@@ -11,6 +11,8 @@ const contactPublisherButtonElement = fragmentElement.querySelector(
 	'button#contact-publisher'
 );
 const contactPublisherModal = document.querySelector('#contact-publisher');
+const contactSalesButtonElement =
+	fragmentElement.querySelector('a#contact-sales');
 const getAppButtonElement = fragmentElement.querySelector('button#get-app');
 const getAppDescriptionElement = fragmentElement.querySelector(
 	'#get-app-description'
@@ -153,6 +155,23 @@ async function main() {
 	);
 
 	if (isReferral) {
+		return;
+	}
+
+	const isContactSalesProduct = product.productSpecifications.some(
+		({specificationKey, value}) =>
+			specificationKey === 'solution-type' && value === 'cmp'
+	);
+
+	if (isContactSalesProduct) {
+		contactSalesButtonElement.classList.remove('d-none');
+
+		contactSalesButtonElement.onclick = () => {
+			trackAnalytics('Click on Contact Sales Button', {
+				productName: product.name,
+			});
+		};
+
 		return;
 	}
 
