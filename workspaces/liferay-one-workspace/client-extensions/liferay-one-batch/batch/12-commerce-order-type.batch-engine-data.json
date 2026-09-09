@@ -83,6 +83,18 @@
 		{
 			"active": true,
 			"description": {
+				"en_US": "Designates that the order contains a Content Marketing Platform self service trial."
+			},
+			"displayOrder": 15,
+			"externalReferenceCode": "CMP_TRIAL",
+			"name": {
+				"en_US": "Content Marketing Platform Trial"
+			},
+			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
 				"en_US": "Designates that the order contains a free or paid composite app."
 			},
 			"displayOrder": 4,
@@ -101,6 +113,18 @@
 			"externalReferenceCode": "DSR",
 			"name": {
 				"en_US": "DSR"
+			},
+			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
+				"en_US": "Designates that the order contains a Digital Sales Room self service trial."
+			},
+			"displayOrder": 16,
+			"externalReferenceCode": "DSR_TRIAL",
+			"name": {
+				"en_US": "Digital Sales Room Trial"
 			},
 			"neverExpire": true
 		},
