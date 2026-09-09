@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
@@ -13,6 +14,7 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductR
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -71,6 +73,15 @@ public class CommerceProductService extends OneBaseService {
 		return getName(_fetchProduct(externalReferenceCode));
 	}
 
+	public List<String> getCategoryExternalReferenceCodes(long id)
+		throws Exception {
+
+		return getAllItems(
+			"/o/headless-commerce-admin-catalog/v1.0/products/" + id +
+				"/categories",
+			null, jsonObject -> jsonObject.optString("externalReferenceCode"));
+	}
+
 	public String getName(Product product) {
 		if (product == null) {
 			return null;
@@ -83,6 +94,48 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return name.get("en_US");
+	}
+
+	public String getSpecificationValue(long id, String specificationKey)
+		throws Exception {
+
+		return getSpecificationValue(fetchProduct(id), specificationKey);
+	}
+
+	public String getSpecificationValue(
+		Product product, String specificationKey) {
+
+		if (product == null) {
+			return null;
+		}
+
+		ProductSpecification[] productSpecifications =
+			product.getProductSpecifications();
+
+		if (productSpecifications == null) {
+			return null;
+		}
+
+		for (ProductSpecification productSpecification :
+				productSpecifications) {
+
+			if (!Objects.equals(
+					specificationKey,
+					productSpecification.getSpecificationKey())) {
+
+				continue;
+			}
+
+			Map<String, String> value = productSpecification.getValue();
+
+			if (value == null) {
+				return null;
+			}
+
+			return value.get("en_US");
+		}
+
+		return null;
 	}
 
 	public void updateProduct(
