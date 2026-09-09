@@ -11,22 +11,22 @@ import DownloadListCard, {
 
 import type {VirtualItem} from '~/types/orders';
 
-import type {ProjectItemType} from '../../types';
+import type {DownloadProfile} from '../../utils/resolveDownloadProfile';
 
 type DownloadTabProps = {
-	itemType: ProjectItemType;
+	profile?: DownloadProfile;
 	virtualItems?: VirtualItem[];
 };
 
 export default function DownloadTab({
-	itemType,
+	profile = 'app',
 	virtualItems = [],
 }: DownloadTabProps) {
 	const {bundles, loading} = useLiferayBundles();
 
-	const isProduct = itemType === 'product';
+	const isBundle = profile === 'bundle';
 
-	const items: DownloadItem[] = isProduct
+	const items: DownloadItem[] = isBundle
 		? bundles
 		: virtualItems.map((virtualItem, index) => ({
 				id: `${index}-${virtualItem.version}`,
@@ -36,11 +36,10 @@ export default function DownloadTab({
 
 	return (
 		<DownloadListCard
-			emptyLabel={isProduct ? 'no-bundles-yet' : 'no-versions-yet'}
-			heading={isProduct ? 'bundle-name' : 'supported-version'}
+			emptyLabel={isBundle ? 'no-bundles-yet' : 'no-versions-yet'}
+			heading={isBundle ? 'bundle-name' : 'supported-version'}
 			items={items}
-			loading={isProduct && loading}
-			title={isProduct ? 'bundle-list' : 'versions-list'}
+			title={isBundle ? 'bundle-list' : 'versions-list'}
 		/>
 	);
 }

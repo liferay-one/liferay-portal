@@ -110,6 +110,7 @@ export default function ProjectItemDetails({
 	const {
 		activationProfile,
 		detailsProfile,
+		downloadProfile,
 		environmentProfile,
 		learnUrl,
 		tabKeys,
@@ -138,7 +139,10 @@ export default function ProjectItemDetails({
 			/>
 		),
 		'download': () => (
-			<DownloadTab itemType={itemType} virtualItems={virtualItems} />
+			<DownloadTab
+				profile={downloadProfile}
+				virtualItems={virtualItems}
+			/>
 		),
 		'environment': () => (
 			<EnvironmentTab
