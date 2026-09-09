@@ -21,16 +21,22 @@
 </#function>
 
 <#function getSpecificationValues specificationGroupKey specificationKey productId>
+	<#local values=getUncategorizedSpecificationValues(specificationKey, productId) />
 	<#local specificationGroup=specificationGroups?filter(specificationGroup -> specificationGroup.getKey() == specificationGroupKey) />
-		<#if specificationGroup?has_content>
-			<#local specifications=cpContentHelper.getCategorizedCPDefinitionSpecificationOptionValues( productId, specificationGroup?first.getCPOptionCategoryId() ) />
-			<#local specificationsFiltered=specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey)) />
 
-			<#if specificationsFiltered?has_content>
-				<#return specificationsFiltered?map(item -> item.getValue(locale)) />
-			</#if>
-		</#if>
-	<#return [] />
+	<#if specificationGroup?has_content>
+		<#local specifications=cpContentHelper.getCategorizedCPDefinitionSpecificationOptionValues(productId, specificationGroup?first.getCPOptionCategoryId()) />
+
+		<#local values=values + specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey))?map(item -> item.getValue(locale)) />
+	</#if>
+
+	<#return values />
+</#function>
+
+<#function getUncategorizedSpecificationValues specificationKey productId>
+	<#local specifications=cpContentHelper.getCPDefinitionSpecificationOptionValues(productId) />
+
+	<#return specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey))?map(item -> item.getValue(locale)) />
 </#function>
 
 <div class="card-grid">
@@ -39,8 +45,8 @@
 			<#list entries as entry>
 				<#if entry?has_content>
 					<#assign
-						capabilities = getSpecificationValues("product-metadata", "liferay-products-capabilities", entry.getCPDefinitionId())
-						categories = getSpecificationValues("product-metadata", "liferay-products-categories", entry.getCPDefinitionId())
+						capabilities = getSpecificationValues("product-metadata", "liferay-product-capabilities", entry.getCPDefinitionId())
+						categories = getSpecificationValues("product-metadata", "liferay-product-categories", entry.getCPDefinitionId())
 						developerName = getSpecificationValue("product-metadata", "developer-name", entry.getCPDefinitionId())
 						productDescription = stringUtil.shorten(htmlUtil.stripHtml(entry.getDescription()!""), 160, "...")
 						productImage = cpContentHelper.getDefaultImageFileURL(-1, entry.getCPDefinitionId())
