@@ -38,6 +38,7 @@ import {PROJECT_TAB_LABELS} from '~/pages/MyAccount/Projects/utils/constants';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
+import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';
@@ -62,12 +63,18 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 		products,
 	} = useProjectProducts(projectId, selectedContractERC);
 
+	const {applications, loading: applicationsLoading} = useProjectApplications(
+		projectId,
+		projectName
+	);
+
 	const {hasActiveExperienceOffering, loading: experienceOfferingLoading} =
 		useHasActiveExperienceOffering();
 
 	const productId =
-		products.find((product) => product.externalReferenceCode === itemERC)
-			?.id ?? '';
+		(kind === 'application' ? applications : products).find(
+			(item) => item.externalReferenceCode === itemERC
+		)?.id ?? '';
 
 	const {data: product, isLoading} = useDeliveryProduct(productId);
 	const {placedOrders} = useProjectOrders(projectName);
@@ -79,7 +86,12 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 		/>
 	);
 
-	if (experienceOfferingLoading || productsLoading || isLoading) {
+	if (
+		experienceOfferingLoading ||
+		productsLoading ||
+		applicationsLoading ||
+		isLoading
+	) {
 		return renderMessage('loading');
 	}
 
