@@ -133,6 +133,22 @@ export const commerceSchemas = {
 		suggestionImprovements: z.string().optional(),
 		suggestionSatisfaction: z.string().optional(),
 	}),
+	selfServiceTrial: z.object({
+		businessEmailAddress: z
+			.string()
+			.email(i18n.translate('please-fill-in-a-valid-email')),
+		companyName: z
+			.string()
+			.min(1, {message: 'Please enter a company name to continue'}),
+		country: z
+			.string()
+			.min(2, {message: 'Please select the country to continue'}),
+		fullName: z.string().min(3, {message: 'Full name is required'}),
+		jobTitle: z.string().optional().or(z.literal('')),
+		notifyMeAboutProducts: z.boolean().optional(),
+		phoneNumber: z.string().optional(),
+		termsAndConditions: z.boolean().refine((value) => value === true),
+	}),
 	trialForm: z.object({
 		accountId: z.string().optional(),
 		consoleInviteEmailAddresses: z.array(z.string().email()),

@@ -6,6 +6,7 @@
 import {ReactNode, lazy} from 'react';
 import {getSpecificationValue} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
+import {isSelfServiceTrialProduct} from '~/utils/productUtils';
 import {AppRoute} from '~/utils/routeUtils';
 
 import type {DeliveryProduct} from '~/types/product';
@@ -19,6 +20,9 @@ const ActivationKeyForm = lazy(
 const LDPProvisioning = lazy(() => import('./LDPProvisioning/LDPProvisioning'));
 const License = lazy(() => import('./License/License'));
 const PaymentMethod = lazy(() => import('./PaymentMethod/PaymentMethod'));
+const SelfServiceTrialForm = lazy(
+	() => import('./SelfServiceTrialForm/SelfServiceTrialForm')
+);
 const Summary = lazy(() => import('./Summary/Summary'));
 
 const AIHubForm = lazy(
@@ -77,6 +81,21 @@ export function getProductPurchaseSteps({
 }): ProductPurchaseStep[] {
 	if (product) {
 		const solutionType = getSpecificationValue(product, 'solution-type');
+
+		if (isSelfServiceTrialProduct(product)) {
+			return [
+				{
+					element: <AccountSelection />,
+					index: true,
+					title: i18n.translate('account'),
+				},
+				{
+					element: <SelfServiceTrialForm />,
+					path: 'trial-form',
+					title: i18n.translate('trial'),
+				},
+			];
+		}
 
 		if (solutionType === 'ai-hub') {
 			return [

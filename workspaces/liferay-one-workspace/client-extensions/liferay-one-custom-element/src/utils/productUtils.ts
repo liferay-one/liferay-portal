@@ -5,12 +5,13 @@
 
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
-import {ProductSpecificationKey} from '~/enums/Product';
+import {ProductSpecificationKey, hasTrialLicenseTier} from '~/enums/Product';
 import i18n from '~/i18n';
 
 import {getValueFromDeliverySpecifications} from './getValueFromDeliverySpecifications';
 import {getSiteURL} from './siteUtils';
 
+import type {OrderTypes} from '~/types/orders';
 import type {
 	DeliveryProduct,
 	DeliverySKUOption,
@@ -41,7 +42,10 @@ export {
 	ProductWorkflowStatusCode,
 	ProductWorkflowStatusLabel,
 	SolutionTypeLabels,
+	SolutionTypeLicenseOptions,
 	SkuOptions,
+	getSolutionTypeLicenseOptions,
+	hasTrialLicenseTier,
 } from '~/enums/Product';
 
 export function getProductCategoriesByVocabularyName(
@@ -219,6 +223,34 @@ export function isLDPProduct(product: DeliveryProduct) {
 			product
 		) === 'liferay-data-platform'
 	);
+}
+
+const SELF_SERVICE_TRIAL_ORDER_TYPES: {[solutionType: string]: OrderTypes} = {
+	cmp: 'CMP_TRIAL',
+	dsr: 'DSR_TRIAL',
+};
+
+export function getProductSolutionType(product: DeliveryProduct) {
+	return getProductSpecificationValue(
+		ProductSpecificationKey.SOLUTION_TYPE,
+		product
+	);
+}
+
+export function getSelfServiceTrialOrderType(product: DeliveryProduct) {
+	const {isFreeApp} = getProductPriceModel(product);
+
+	const solutionType = getProductSolutionType(product);
+
+	if (!isFreeApp || !hasTrialLicenseTier(solutionType)) {
+		return undefined;
+	}
+
+	return SELF_SERVICE_TRIAL_ORDER_TYPES[solutionType];
+}
+
+export function isSelfServiceTrialProduct(product: DeliveryProduct) {
+	return Boolean(getSelfServiceTrialOrderType(product));
 }
 
 export function isDXPFreeTierProduct(product: DeliveryProduct) {

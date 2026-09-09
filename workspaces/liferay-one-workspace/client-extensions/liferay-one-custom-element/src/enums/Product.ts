@@ -297,6 +297,30 @@ export const ProductTypeLicenseOptions: Record<
 	[ProductType.SSA_SAAS]: [ProductLicenseTier.STANDARD],
 };
 
+export const SolutionTypeLicenseOptions: Record<
+	SolutionTypes,
+	ProductLicenseTier[]
+> = {
+	[SolutionTypes.AI_HUB]: [ProductLicenseTier.STANDARD],
+	[SolutionTypes.AI_HUB_OPEN_BETA]: [ProductLicenseTier.STANDARD],
+	[SolutionTypes.ANALYTICS]: [ProductLicenseTier.STANDARD],
+	[SolutionTypes.CMP]: [
+		ProductLicenseTier.STANDARD,
+		ProductLicenseTier.TRIAL,
+	],
+	[SolutionTypes.DSR]: [
+		ProductLicenseTier.STANDARD,
+		ProductLicenseTier.TRIAL,
+	],
+	[SolutionTypes.DXP]: [
+		ProductLicenseTier.STANDARD,
+		ProductLicenseTier.DEVELOPER,
+		ProductLicenseTier.TRIAL,
+	],
+	[SolutionTypes.LIFERAY_DATA_PLATFORM]: [ProductLicenseTier.STANDARD],
+	[SolutionTypes.PRE_BUILT_TRIAL]: [ProductLicenseTier.TRIAL],
+};
+
 export const ProductWorkflowDisplayType = {
 	[ProductWorkflowStatusCode.APPROVED]: 'success',
 	[ProductWorkflowStatusCode.DRAFT]: 'secondary',
@@ -312,4 +336,18 @@ export const ProductWorkflowStatusLabel = {
 
 export function getOfferingTypes(type: ProductType) {
 	return offeringTypes[type as keyof typeof offeringTypes];
+}
+
+export function getSolutionTypeLicenseOptions(solutionType?: string) {
+	return (
+		SolutionTypeLicenseOptions[solutionType as SolutionTypes] ?? [
+			ProductLicenseTier.STANDARD,
+		]
+	);
+}
+
+export function hasTrialLicenseTier(solutionType?: string) {
+	return getSolutionTypeLicenseOptions(solutionType).includes(
+		ProductLicenseTier.TRIAL
+	);
 }

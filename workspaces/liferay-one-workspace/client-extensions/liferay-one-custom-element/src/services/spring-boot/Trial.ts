@@ -46,6 +46,10 @@ class TrialOAuth2 extends OneSpringBootOAuth2 {
 	async provisioningTrial(orderId: number): Promise<void> {
 		await this.post(`/provisioning/${orderId}`);
 	}
+
+	async startSelfServiceTrial(orderId: number): Promise<void> {
+		await this.post(`/self-service-trials/${orderId}`);
+	}
 }
 
 const Trial = new TrialOAuth2('/trial');
