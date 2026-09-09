@@ -72,6 +72,7 @@ export default {
 	'content-management-operations': 'Gestão de conteúdo e operações',
 	'create-business-event': 'Criar Evento de Negócio',
 	'create-event': 'Criar Evento',
+	'create-license-key': 'Criar chave de licença',
 	'create-new-ticket': 'Criar Novo Ticket',
 	'crm': 'CRM',
 	'current-usage-could-not-be-loaded-the-limits-shown-come-from-your-entitlements':
@@ -166,6 +167,7 @@ export default {
 		'Verifique se o link do projeto está correto e se você tem acesso a este projeto.',
 	'make-sure-the-ticket-number-is-correct':
 		'Certifique-se de que o número do chamado está correto.',
+	'manage-license-keys': 'Gerenciar chaves de licença',
 	'manage-user-options': 'Gerenciar Opções do Usuário',
 	'manufacturing': 'Manufatura',
 	'metadata': 'Metadados',
