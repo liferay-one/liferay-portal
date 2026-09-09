@@ -51,7 +51,7 @@
 			}
 		],
 		"orderStatus": 5,
-		"orderTypeExternalReferenceCode": "SALESFORCE",
+		"orderTypeExternalReferenceCode": "CMP",
 		"projectExternalReferenceCode": "PRJCT-027"
 	},
 	"purchaseOrderNumber": "PO-CONTENT-MARKETING",
