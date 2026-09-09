@@ -7,7 +7,6 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
-import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
@@ -39,6 +38,7 @@ import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -70,7 +70,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -560,10 +559,11 @@ public class CloudRestController extends OneBaseRestController {
 				continue;
 			}
 
-			String specificationValue = _getSpecificationValue(
-				product,
-				CommerceProductConstants.
-					SPECIFICATION_KEY_PROJECT_ENVIRONMENT_PROFILE);
+			String specificationValue =
+				CommerceProductUtil.getSpecificationValue(
+					product,
+					CommerceProductConstants.
+						SPECIFICATION_KEY_PROJECT_ENVIRONMENT_PROFILE);
 
 			if (Validator.isNull(specificationValue) ||
 				!Objects.equals(environmentProfile, specificationValue)) {
@@ -780,7 +780,7 @@ public class CloudRestController extends OneBaseRestController {
 				).put(
 					"productId", product.getExternalReferenceCode()
 				).put(
-					"productName", _commerceProductService.getName(product)
+					"productName", CommerceProductUtil.getName(product)
 				).put(
 					"sha256Checksum",
 					_commerceProductVirtualSettingsService.getSHA256Checksum(
@@ -1010,38 +1010,6 @@ public class CloudRestController extends OneBaseRestController {
 		return products;
 	}
 
-	private String _getSpecificationValue(
-		Product product, String specificationKey) {
-
-		ProductSpecification[] productSpecifications =
-			product.getProductSpecifications();
-
-		if (productSpecifications == null) {
-			return StringPool.BLANK;
-		}
-
-		for (ProductSpecification productSpecification :
-				productSpecifications) {
-
-			if (!Objects.equals(
-					productSpecification.getSpecificationKey(),
-					specificationKey)) {
-
-				continue;
-			}
-
-			Map<String, String> value = productSpecification.getValue();
-
-			if (value == null) {
-				return StringPool.BLANK;
-			}
-
-			return GetterUtil.getString(value.get("en_US"));
-		}
-
-		return StringPool.BLANK;
-	}
-
 	private boolean _hasAddOn(Product product, String body) throws Exception {
 		SignedJWT signedJWT = SignedJWT.parse(body);
 
@@ -1090,7 +1058,7 @@ public class CloudRestController extends OneBaseRestController {
 
 	private boolean _isCloudEnabled(Product product) {
 		return GetterUtil.getBoolean(
-			_getSpecificationValue(
+			CommerceProductUtil.getSpecificationValue(
 				product,
 				CommerceProductConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
 	}

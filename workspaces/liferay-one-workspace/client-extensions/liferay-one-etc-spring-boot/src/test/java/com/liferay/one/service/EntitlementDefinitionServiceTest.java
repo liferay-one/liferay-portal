@@ -5,10 +5,13 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Category;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
+import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -75,21 +78,6 @@ public class EntitlementDefinitionServiceTest {
 		Assertions.assertFalse(jsonObject.has("productOptions"));
 		Assertions.assertEquals(
 			"SKU-LARGE", jsonObject.getString("skuExternalReferenceCode"));
-	}
-
-	@Test
-	public void testGenerateEntitlementDefinitionCreatesDefinitionWithoutSkuCode()
-		throws Exception {
-
-		_setUpAppProduct(_createSku("SKU-1", true, null));
-
-		_entitlementDefinitionService.generateEntitlementDefinition(
-			_C_PRODUCT_ID);
-
-		JSONObject jsonObject = new JSONObject(
-			_entitlementDefinitionService.putBodies.get(0));
-
-		Assertions.assertEquals("Test App", jsonObject.getString("name"));
 	}
 
 	@Test
@@ -171,6 +159,28 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionPropagatesMissingProduct()
+		throws Exception {
+
+		Mockito.when(
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
+		).thenThrow(
+			new NoSuchProductException(
+				"No product exists for commerce product ID " + _C_PRODUCT_ID)
+		);
+
+		Assertions.assertThrows(
+			NoSuchProductException.class,
+			() -> _entitlementDefinitionService.generateEntitlementDefinition(
+				_C_PRODUCT_ID));
+
+		Mockito.verifyNoInteractions(_commerceSkuService);
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionReactivatesDefinitionForRepublishedSku()
 		throws Exception {
 
@@ -202,10 +212,11 @@ public class EntitlementDefinitionServiceTest {
 		throws Exception {
 
 		Mockito.when(
-			_commerceProductService.getCategoryExternalReferenceCodes(
-				_C_PRODUCT_ID)
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
 		).thenReturn(
-			List.of("MARKETPLACE_PRODUCT_TYPE_SOLUTION")
+			_createProduct(
+				"MARKETPLACE_PRODUCT_TYPE_SOLUTION", "Test App",
+				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0])
 		);
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
@@ -222,17 +233,11 @@ public class EntitlementDefinitionServiceTest {
 		throws Exception {
 
 		Mockito.when(
-			_commerceProductService.getCategoryExternalReferenceCodes(
-				_C_PRODUCT_ID)
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
 		).thenReturn(
-			List.of(TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP)
-		);
-
-		Mockito.when(
-			_commerceProductService.getSpecificationValue(
-				_C_PRODUCT_ID, ProductSpecificationConstants.KEY_TYPE)
-		).thenReturn(
-			"theme"
+			_createProduct(
+				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP,
+				"Test App", "theme")
 		);
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
@@ -257,24 +262,6 @@ public class EntitlementDefinitionServiceTest {
 			_entitlementDefinitionService.putBodies.isEmpty());
 		Assertions.assertTrue(
 			_entitlementDefinitionService.patchBodies.isEmpty());
-	}
-
-	@Test
-	public void testGenerateEntitlementDefinitionSkipsSkuWithConflictingExternalReferenceCode()
-		throws Exception {
-
-		_setUpAppProduct(_createSku("SKU-LARGE", true, "Large"));
-		_setUpExistingEntitlementDefinitions(
-			_createEntitlementDefinitionJSONObject(
-				true, "SKU-LARGE", "Other", "OTHER-SKU"));
-
-		_entitlementDefinitionService.generateEntitlementDefinition(
-			_C_PRODUCT_ID);
-
-		Assertions.assertTrue(
-			_entitlementDefinitionService.patchBodies.isEmpty());
-		Assertions.assertTrue(
-			_entitlementDefinitionService.putBodies.isEmpty());
 	}
 
 	@Test
@@ -388,6 +375,29 @@ public class EntitlementDefinitionServiceTest {
 		);
 	}
 
+	private Product _createProduct(
+		String categoryExternalReferenceCode, String name, String type) {
+
+		Product product = new Product();
+
+		Category category = new Category();
+
+		category.setExternalReferenceCode(categoryExternalReferenceCode);
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(
+			ProductSpecificationConstants.KEY_TYPE);
+		productSpecification.setValue(Map.of("en_US", type));
+
+		product.setCategories(new Category[] {category});
+		product.setName(Map.of("en_US", name));
+		product.setProductSpecifications(
+			new ProductSpecification[] {productSpecification});
+
+		return product;
+	}
+
 	private Sku _createSku(
 		String externalReferenceCode, boolean published, String sku) {
 
@@ -412,29 +422,12 @@ public class EntitlementDefinitionServiceTest {
 
 	private void _setUpAppProduct(Sku... skus) throws Exception {
 		Mockito.when(
-			_commerceProductService.getCategoryExternalReferenceCodes(
-				_C_PRODUCT_ID)
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
 		).thenReturn(
-			List.of(TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP)
-		);
-
-		Mockito.when(
-			_commerceProductService.getName(Mockito.any())
-		).thenReturn(
-			"Test App"
-		);
-
-		Mockito.when(
-			_commerceProductService.getSpecificationValue(
-				_C_PRODUCT_ID, ProductSpecificationConstants.KEY_TYPE)
-		).thenReturn(
-			ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0]
-		);
-
-		Mockito.when(
-			_commerceProductService.fetchProduct(_C_PRODUCT_ID)
-		).thenReturn(
-			new Product()
+			_createProduct(
+				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP,
+				"Test App",
+				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0])
 		);
 
 		Mockito.when(
