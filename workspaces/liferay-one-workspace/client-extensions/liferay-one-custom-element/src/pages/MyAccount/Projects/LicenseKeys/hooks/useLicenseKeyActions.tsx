@@ -70,11 +70,14 @@ export function useLicenseKeyActions({
 		});
 	}
 
-	function handleNewKey() {
+	function handleNewKey(initialIncludedExternalReferenceCodes?: string[]) {
 		onOpenModal({
 			body: (
 				<LicenseKeyAdd
 					accountId={accountId}
+					initialIncludedExternalReferenceCodes={
+						initialIncludedExternalReferenceCodes
+					}
 					onClose={onClose}
 					onGenerated={revalidate}
 					products={products}
