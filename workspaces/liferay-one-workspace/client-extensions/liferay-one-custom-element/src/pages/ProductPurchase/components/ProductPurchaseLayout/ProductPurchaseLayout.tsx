@@ -153,6 +153,8 @@ const ProductPurchaseLayout = ({
 		isSubmittingRef.current = true;
 		setSubmitting(true);
 
+		let redirecting = false;
+
 		try {
 			const productPurchase =
 				customService ||
@@ -180,14 +182,20 @@ const ProductPurchaseLayout = ({
 					shippingAddress: payment.billingAddress,
 				});
 
-				productPurchaseCart.reset();
-
 				if (payment.type === PaymentMethodType.PAY_NOW) {
-					window.location.href =
+					const paymentNextStepsLink =
 						await productPurchase.getPaymentNextStepsLink(cart);
+
+					productPurchaseCart.reset();
+
+					redirecting = true;
+
+					window.location.href = paymentNextStepsLink;
 
 					return;
 				}
+
+				productPurchaseCart.reset();
 
 				navigate(`/bank-transfer-completed?orderId=${cart.id}`, {
 					state: {account: selectedAccount},
@@ -202,11 +210,13 @@ const ProductPurchaseLayout = ({
 				cartOptions?.cartOptions ?? options
 			);
 
-			productPurchaseCart.reset();
-
 			const nextLink = await productPurchase.getNextStepsLink(order);
 
+			productPurchaseCart.reset();
+
 			if (nextLink.startsWith('http')) {
+				redirecting = true;
+
 				window.location.href = nextLink;
 
 				return;
@@ -225,8 +235,10 @@ const ProductPurchaseLayout = ({
 			});
 		}
 		finally {
-			isSubmittingRef.current = false;
-			setSubmitting(false);
+			if (!redirecting) {
+				isSubmittingRef.current = false;
+				setSubmitting(false);
+			}
 		}
 	};
 
