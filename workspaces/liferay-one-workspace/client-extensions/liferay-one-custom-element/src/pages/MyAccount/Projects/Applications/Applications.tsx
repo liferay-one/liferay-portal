@@ -64,7 +64,7 @@ export default function Applications() {
 
 		const {canDownload, canGenerateLicenses, isOrderCompleted} =
 			new DeliveryOrderModel(order);
-		const activationPath = `${application.externalReferenceCode}?tab=activation`;
+		const activationKeysPath = '../activation-keys';
 		const actions: RowAction[] = [];
 
 		if (canGenerateLicenses) {
@@ -72,7 +72,10 @@ export default function Applications() {
 				{
 					disabled: !isOrderCompleted,
 					label: 'create-license-key',
-					onClick: () => navigate(activationPath),
+					onClick: () =>
+						navigate(
+							`${activationKeysPath}?new=${encodeURIComponent(application.externalReferenceCode)}`
+						),
 					title: isOrderCompleted
 						? undefined
 						: translate(
@@ -81,7 +84,7 @@ export default function Applications() {
 				},
 				{
 					label: 'manage-license-keys',
-					onClick: () => navigate(activationPath),
+					onClick: () => navigate(activationKeysPath),
 				}
 			);
 		}
