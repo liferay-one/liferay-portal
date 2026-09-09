@@ -5,7 +5,7 @@
 
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
-import {ProductSpecificationKey} from '~/enums/Product';
+import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
 import i18n from '~/i18n';
 
 import {getValueFromDeliverySpecifications} from './getValueFromDeliverySpecifications';
@@ -218,6 +218,19 @@ export function isLDPProduct(product: DeliveryProduct) {
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
 		) === 'liferay-data-platform'
+	);
+}
+
+export function isSEOStudioProduct(product?: DeliveryProduct) {
+	if (!product) {
+		return false;
+	}
+
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === SolutionTypes.SEO_STUDIO
 	);
 }
 

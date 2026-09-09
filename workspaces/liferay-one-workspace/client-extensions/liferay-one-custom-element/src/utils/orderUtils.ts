@@ -97,6 +97,7 @@ export const LIFERAY_PRODUCT_ORDER_TYPES: readonly OrderTypes[] = [
 	'DXP',
 	'LDP',
 	'SALESFORCE',
+	'SEO_STUDIO',
 ];
 
 export const orderTypeLabel = {
@@ -114,6 +115,7 @@ export const orderTypeLabel = {
 	LOW_CODE_CONFIGURATION: 'Low-Code Configuration',
 	OTHER: 'Other',
 	SALESFORCE: 'Salesforce',
+	SEO_STUDIO: 'SEO Studio',
 	SOLUTIONS7: 'Solutions 7',
 	SOLUTIONS30: 'Solutions 30',
 	SSA_SAAS: 'SSA SaaS',
@@ -186,7 +188,13 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		);
 	}
 
-	if (order.orderTypeExternalReferenceCode === 'AI_HUB') {
+	const requestableOrderTypes: OrderTypes[] = ['AI_HUB', 'SEO_STUDIO'];
+
+	if (
+		requestableOrderTypes.includes(
+			order.orderTypeExternalReferenceCode as OrderTypes
+		)
+	) {
 		if (order.orderStatusInfo.code !== OrderWorkflowStatusCode.COMPLETED) {
 			return 'Requested';
 		}

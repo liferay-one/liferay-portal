@@ -229,6 +229,7 @@ export const SolutionTypes = {
 	DXP: 'dxp',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
 	PRE_BUILT_TRIAL: 'pre-built-trial',
+	SEO_STUDIO: 'seo-studio',
 } as const;
 
 export type SolutionTypes = (typeof SolutionTypes)[keyof typeof SolutionTypes];
@@ -277,6 +278,7 @@ export const SolutionTypeLabels = {
 	[SolutionTypes.DXP]: 'DXP',
 	[SolutionTypes.LIFERAY_DATA_PLATFORM]: 'Liferay Data Platform',
 	[SolutionTypes.PRE_BUILT_TRIAL]: 'Pre-Built Trial',
+	[SolutionTypes.SEO_STUDIO]: 'SEO Studio',
 } as const;
 
 export const ProductTypeLicenseOptions: Record<
