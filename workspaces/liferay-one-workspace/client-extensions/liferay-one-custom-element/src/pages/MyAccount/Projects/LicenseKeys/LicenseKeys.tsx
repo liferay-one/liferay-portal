@@ -6,8 +6,8 @@
 import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {format} from 'date-fns';
-import {MouseEvent} from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {MouseEvent, useEffect, useRef} from 'react';
+import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import Button from '~/components/Button/Button';
 import Page from '~/components/Page/Page';
 import {
@@ -128,6 +128,7 @@ function KebabActions({
 export default function LicenseKeys() {
 	const {projectId = ''} = useParams();
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {products} = useProjectProducts(projectId);
@@ -143,6 +144,32 @@ export default function LicenseKeys() {
 		projectExternalReferenceCode: projectId,
 		revalidate,
 	});
+
+	const newKeyExternalReferenceCode = searchParams.get('new');
+	const openedNewKeyRef = useRef(false);
+
+	useEffect(() => {
+		if (!newKeyExternalReferenceCode || openedNewKeyRef.current) {
+			return;
+		}
+
+		openedNewKeyRef.current = true;
+
+		handleNewKey([newKeyExternalReferenceCode]);
+
+		setSearchParams(
+			(previousSearchParams) => {
+				const nextSearchParams = new URLSearchParams(
+					previousSearchParams
+				);
+
+				nextSearchParams.delete('new');
+
+				return nextSearchParams;
+			},
+			{replace: true}
+		);
+	}, [handleNewKey, newKeyExternalReferenceCode, setSearchParams]);
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
@@ -241,7 +268,10 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					<Button displayType="primary" onClick={handleNewKey}>
+					<Button
+						displayType="primary"
+						onClick={() => handleNewKey()}
+					>
 						{translate('new-key')}
 					</Button>
 				}
