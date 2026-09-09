@@ -89,7 +89,8 @@ public class EntitlementServiceTest {
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -100,8 +101,45 @@ public class EntitlementServiceTest {
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ORDER_ITEM_ID),
 			Mockito.eq(_CONTRACT_ID), Mockito.eq(1L), Mockito.isNull(),
 			Mockito.eq("fixed"), Mockito.isNull(), Mockito.eq("storage"),
-			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.eq(200.0),
-			Mockito.isNull()
+			Mockito.eq(Map.of()), Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(200.0), Mockito.isNull()
+		);
+	}
+
+	@Test
+	public void testGenerateEntitlementsPassesTheOrderItemOptions()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setOptions(
+			"[{\"key\": \"machineType\", \"value\": [\"small\"]}]");
+
+		_setUpOrderItem(orderItem);
+
+		Order order = new Order();
+
+		order.setAccountId(_ACCOUNT_ID);
+		order.setCustomFields(
+			Map.of(
+				"contractId", _CONTRACT_ID, "salesforceProjectId",
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.when(
+			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
+		).thenReturn(
+			order
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementDefinitionService
+		).getEntitlementDefinitions(
+			Mockito.eq(
+				"(skuExternalReferenceCode eq '" +
+					_SKU_EXTERNAL_REFERENCE_CODE + "') and (active eq true)"),
+			Mockito.eq(Map.of("machinetype", "small"))
 		);
 	}
 
@@ -151,7 +189,8 @@ public class EntitlementServiceTest {
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 	}
 

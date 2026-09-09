@@ -22,6 +22,7 @@ import {
 
 import HeadlessCommerceAdminCatalogImpl from '../headless/HeadlessCommerceAdminCatalog';
 import HeadlessCommerceAdminPricing from '../headless/HeadlessCommerceAdminPricing';
+import EntitlementDefinitions from '../spring-boot/EntitlementDefinitions';
 import BaseAppPublish from './BaseAppPublish';
 import PublisherAsset from './PublisherAsset';
 
@@ -455,7 +456,6 @@ export default class AppPublish extends BaseAppPublish {
 	}
 
 	public async sync(config: ProductConfig) {
-		const isNewProduct = !this.context._product;
 		let product: Product | undefined;
 
 		this.config = config;
@@ -497,8 +497,16 @@ export default class AppPublish extends BaseAppPublish {
 				);
 			}
 
-			if (!isNewProduct) {
-				await this.updateProduct(product);
+			await this.updateProduct(product);
+
+			try {
+				await EntitlementDefinitions.generate(product.productId);
+			}
+			catch (error) {
+				console.error(
+					'Unable to generate the entitlement definitions',
+					error
+				);
 			}
 		}
 		catch (error) {
