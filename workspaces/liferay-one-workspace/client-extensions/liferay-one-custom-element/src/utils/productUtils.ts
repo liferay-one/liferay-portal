@@ -214,6 +214,17 @@ export function getProductPriceModel(product: DeliveryProduct) {
 	};
 }
 
+export const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
+
+export function isContactSalesProduct(product: DeliveryProduct) {
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === 'cmp'
+	);
+}
+
 export function isLDPProduct(product: DeliveryProduct) {
 	return (
 		getProductSpecificationValue(
