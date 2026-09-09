@@ -66,7 +66,7 @@ export default function Applications() {
 			},
 		];
 
-		const order = orderByProductName.get(application.name);
+		const order = orderByProductName.get(application.externalReferenceCode);
 
 		if (!order) {
 			return actions;
@@ -82,17 +82,23 @@ export default function Applications() {
 				{
 					disabled: !isOrderCompleted,
 					label: 'create-license-key',
-					onClick: () => navigate(`/order/${orderId}/create-license`),
+					onClick: () =>
+						navigate(
+							`${application.externalReferenceCode}?tab=activation`
+						),
 					title: isOrderCompleted
 						? undefined
 						: translate(
 								'the-order-must-be-completed-before-licensing-this-app.' as Word
-						  ),
+							),
 				},
 				{
 					disabled: isFreeApp,
 					label: 'manage-license-keys',
-					onClick: () => navigate(`/order/${orderId}/licenses`),
+					onClick: () =>
+						navigate(
+							`${application.externalReferenceCode}?tab=activation`
+						),
 				}
 			);
 		}
@@ -100,27 +106,25 @@ export default function Applications() {
 		if (!canDownload) {
 			actions.push({
 				label: 'cloud-provisioning',
-				onClick: () => navigate(`/order/${orderId}/cloud-provisioning`),
+				onClick: () =>
+					navigate(
+						`${application.externalReferenceCode}/install/${orderId}`
+					),
 			});
 		}
 
 		if (canDownload) {
-			const virtualURL =
-				order.placedOrderItems?.[0]?.virtualItemURLs?.[0] || '';
-
 			actions.push({
 				disabled: !isOrderCompleted,
 				label: 'download-app',
-				onClick: () => {
-					navigate(`/order/${orderId}/download`);
-					if (virtualURL.trim()) {
-						window.open(virtualURL);
-					}
-				},
+				onClick: () =>
+					navigate(
+						`${application.externalReferenceCode}?tab=download`
+					),
 				title: !isOrderCompleted
 					? translate(
 							'this-order-must-be-completed-before-downloading-this-app.' as Word
-					  )
+						)
 					: undefined,
 			});
 		}
@@ -174,7 +178,8 @@ export default function Applications() {
 			heading: 'order-id',
 			key: 'order-id',
 			render: (application) =>
-				orderIdByProductName.get(application.name) ?? '-',
+				orderIdByProductName.get(application.externalReferenceCode) ??
+				'-',
 			width: '1%',
 		},
 		statusColumn(),
