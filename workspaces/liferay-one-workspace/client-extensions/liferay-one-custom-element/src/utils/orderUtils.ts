@@ -98,6 +98,7 @@ export const LIFERAY_PRODUCT_ORDER_TYPES: readonly OrderTypes[] = [
 	'AI_HUB',
 	'CMP',
 	'CMP_BETA',
+	'DSR',
 	'DXP',
 	'LDP',
 	'SALESFORCE',
