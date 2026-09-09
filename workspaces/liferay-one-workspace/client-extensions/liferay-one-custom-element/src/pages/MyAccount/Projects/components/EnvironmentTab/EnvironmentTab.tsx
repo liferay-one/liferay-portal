@@ -11,6 +11,7 @@ import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filt
 import AIHubEnvironment from '../AIHubEnvironment/AIHubEnvironment';
 import DSREnvironment from '../DSREnvironment/DSREnvironment';
 import EnvironmentCard from '../EnvironmentCard/EnvironmentCard';
+import LDPEnvironment from '../LDPEnvironment/LDPEnvironment';
 import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 
 import type {ProductEnvironmentInfo} from '~/hooks/useProjectOrders';
@@ -59,6 +60,10 @@ export default function EnvironmentTab({
 
 	if (profile === 'ac-token') {
 		return <DSREnvironment environment={environmentEntry} />;
+	}
+
+	if (profile === 'workspace') {
+		return <LDPEnvironment environment={environmentEntry} />;
 	}
 
 	return (

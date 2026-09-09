@@ -17,6 +17,7 @@ export type ProjectEnvironment = {
 	aiHubURL: string;
 	allowedEmailDomains: string;
 	currentEntitlementHash: string;
+	dataSourceAccessToken: string;
 	disasterRecoveryRegion: string;
 	domains: string;
 	externalReferenceCode: string;
@@ -47,6 +48,7 @@ type EnvironmentNode = {
 	aiHubURL?: string;
 	allowedEmailDomains?: string;
 	currentEntitlementHash?: string;
+	dataSourceAccessToken?: string;
 	disasterRecoveryRegion?: string;
 	domains?: string;
 	externalReferenceCode: string;
@@ -95,6 +97,7 @@ export function useProjectEnvironments() {
 			aiHubURL: node.aiHubURL ?? '',
 			allowedEmailDomains: node.allowedEmailDomains ?? '',
 			currentEntitlementHash: node.currentEntitlementHash ?? '',
+			dataSourceAccessToken: node.dataSourceAccessToken ?? '',
 			disasterRecoveryRegion: node.disasterRecoveryRegion ?? '',
 			domains: node.domains ?? '',
 			externalReferenceCode: node.externalReferenceCode,

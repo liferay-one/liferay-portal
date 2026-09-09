@@ -338,6 +338,7 @@ export default {
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
 	'congratulations': 'Congratulations',
 	'connect-anyway': 'Connect Anyway',
+	'connect-your-liferay-data-platform': 'Connect Your Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Connect Your Liferay DSR',
 	'connectors': 'Connectors',
 	'consumer-products': 'Consumer Products',
@@ -1506,6 +1507,8 @@ export default {
 		'The Cloud app is client extension based and is compatible with Liferay’s Self-Managed offering.',
 	'the-daily-view-is-limited-to-the-current-and-previous-month':
 		'The daily view is limited to the current and previous month.',
+	'the-data-source-token-is-not-available-yet-please-try-again-in-a-few-minutes':
+		'The data source token is not available yet. Please try again in a few minutes.',
 	'the-dxp-app-is-module-based-and-is-compatible-with-7-4-builds-of-liferay-dxp':
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay DXP.',
 	'the-dxp-app-is-module-based-and-is-compatible-with-7-4-builds-of-liferay-dxp-self-managed-liferay-cloud-formerly-dxp-cloud':
