@@ -1,0 +1,15 @@
+{
+	"externalReferenceCode": "AC-REGIONS",
+	"name": "AC Regions",
+	"name_i18n": {
+		"en-US": "AC Regions"
+	},
+	"permissions": [
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "User"
+		}
+	]
+}
