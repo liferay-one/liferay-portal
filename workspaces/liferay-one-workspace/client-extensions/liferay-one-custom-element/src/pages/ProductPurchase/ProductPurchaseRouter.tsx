@@ -12,11 +12,13 @@ import useRequireSignIn from '~/hooks/useRequireSignIn';
 import i18n from '~/i18n';
 import {
 	getProductPriceModel,
+	isContactSalesProduct,
 	isDXPFreeTierProduct,
 	isLDPProduct,
 } from '~/utils/productUtils';
 import {AppRoute, toRouteObjects} from '~/utils/routeUtils';
 
+import ContactSales from './ContactSales/ContactSales';
 import ProductPurchaseLayout from './components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {AppPurchaseProvider} from './context/AppPurchaseContext';
 import {CartProvider} from './context/CartContext';
@@ -104,6 +106,14 @@ const ProductPurchaseRouter = () => {
 				title={i18n.translate('product-unavailable')}
 				type="NOT_FOUND"
 			/>
+		);
+	}
+
+	if (isContactSalesProduct(product)) {
+		return (
+			<div className="my-7 product-purchase">
+				<ContactSales product={product} />
+			</div>
 		);
 	}
 

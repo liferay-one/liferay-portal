@@ -1789,6 +1789,8 @@ export default {
 	'x-is-already-a-member-of-this-account':
 		'{0} is already a member of this account.',
 	'x-is-required': '{0} is required',
+	'x-is-sold-through-our-sales-team-contact-sales-to-get-a-quote-and-choose-the-license-tier-that-fits-your-team':
+		'{0} is sold through our sales team. Contact Sales to get a quote and choose the license tier that fits your team.',
 	'x-items': '{0} Items',
 	'x-me': '{0} (me)',
 	'x-more': '+{0} more',
