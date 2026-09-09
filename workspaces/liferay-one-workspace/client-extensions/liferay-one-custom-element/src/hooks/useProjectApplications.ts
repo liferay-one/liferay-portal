@@ -37,14 +37,18 @@ export function useProjectApplications(
 		[placedOrders, projectId]
 	);
 
-	const applications = useMemo(() => {
-		const productsByProductId = new Map(
-			(channelProducts?.items ?? []).map((product) => [
-				product.productId,
-				product,
-			])
-		);
+	const productsByProductId = useMemo(
+		() =>
+			new Map(
+				(channelProducts?.items ?? []).map((product) => [
+					product.productId,
+					product,
+				])
+			),
+		[channelProducts]
+	);
 
+	const applications = useMemo(() => {
 		const applicationsByExternalReferenceCode = new Map<
 			string,
 			ProjectProduct
@@ -96,41 +100,30 @@ export function useProjectApplications(
 		}
 
 		return [...applicationsByExternalReferenceCode.values()];
-	}, [channelProducts, scopedOrders]);
+	}, [productsByProductId, scopedOrders]);
 
-	const orderByProductName = useMemo(() => {
+	const orderByProductExternalReferenceCode = useMemo(() => {
 		const map = new Map<string, PlacedOrder>();
 
 		for (const order of scopedOrders) {
 			for (const item of order.placedOrderItems ?? []) {
-				if (!map.has(item.sku)) {
-					map.set(item.sku, order);
+				const externalReferenceCode = productsByProductId.get(
+					item.productId
+				)?.externalReferenceCode;
+
+				if (externalReferenceCode && !map.has(externalReferenceCode)) {
+					map.set(externalReferenceCode, order);
 				}
 			}
 		}
 
 		return map;
-	}, [scopedOrders]);
-
-	const orderIdByProductName = useMemo(() => {
-		const map = new Map<string, string>();
-
-		for (const order of scopedOrders) {
-			for (const item of order.placedOrderItems ?? []) {
-				if (!map.has(item.sku)) {
-					map.set(item.sku, String(order.id));
-				}
-			}
-		}
-
-		return map;
-	}, [scopedOrders]);
+	}, [productsByProductId, scopedOrders]);
 
 	return {
 		applications,
 		error,
 		loading: productsLoading || ordersLoading,
-		orderByProductName,
-		orderIdByProductName,
+		orderByProductExternalReferenceCode,
 	};
 }
