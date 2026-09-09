@@ -71,6 +71,7 @@ export default {
 	'content-management-operations': 'コンテンツ管理と運用',
 	'create-business-event': 'ビジネスイベントを作成',
 	'create-event': 'イベント作成',
+	'create-license-key': 'ライセンスキーの作成',
 	'create-new-ticket': '新規チケットの作成',
 	'crm': 'CRM',
 	'current-usage-could-not-be-loaded-the-limits-shown-come-from-your-entitlements':
@@ -161,6 +162,7 @@ export default {
 		'プロジェクトリンクが正しいこと、およびこのプロジェクトへのアクセス権があることを確認してください。',
 	'make-sure-the-ticket-number-is-correct':
 		'チケット番号が正しいことを確認してください。',
+	'manage-license-keys': 'ライセンスキーの管理',
 	'manage-user-options': 'ユーザーオプションの管理',
 	'manufacturing': '製造',
 	'metadata': 'メタデータ',

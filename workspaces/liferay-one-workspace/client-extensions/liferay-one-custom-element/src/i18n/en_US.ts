@@ -380,6 +380,7 @@ export default {
 	'create-activation-key': 'Create Activation Key',
 	'create-business-event': 'Create Business Event',
 	'create-event': 'Create Event',
+	'create-license-key': 'Create License Key',
 	'create-new-licenses-and-they-will-show-up-here':
 		'Create new licenses and they will show up here.',
 	'create-new-ticket': 'Create New Ticket',
@@ -842,6 +843,7 @@ export default {
 	'manage-and-publish-solutions-on-the-marketplace':
 		'Manage and publish solutions on the Marketplace',
 	'manage-app': 'Manage App',
+	'manage-license-keys': 'Manage License Keys',
 	'manage-lxc-sm-users': 'Manage LXC - SM Users',
 	'manage-members-and-access-for-ssa-accounts':
 		'Manage members and access for SSA accounts.',
