@@ -14,6 +14,7 @@ import com.liferay.headless.portal.instances.client.dto.v1_0.PortalInstance;
 import com.liferay.headless.portal.instances.client.pagination.Page;
 import com.liferay.headless.portal.instances.client.resource.v1_0.PortalInstanceResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.TrialConstants;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.ConsoleService;
 import com.liferay.one.service.NotificationQueueEntryService;
@@ -27,6 +28,7 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -341,7 +343,8 @@ public class TrialRestController extends BaseRestController {
 					"trial-end-date",
 					ZonedDateTime.now(
 					).plusDays(
-						trialSettingsJSONObject.optInt("duration", 7)
+						trialSettingsJSONObject.optInt(
+							"duration", TrialConstants.DURATION_DAYS_DEFAULT)
 					).format(
 						DateTimeFormatter.ISO_INSTANT
 					)
@@ -377,6 +380,56 @@ public class TrialRestController extends BaseRestController {
 			_rollBackTrial(
 				exception.getMessage(), orderId, portalInstance,
 				trialProvisioningContextJSONObject);
+		}
+	}
+
+	@PostMapping("self-service-trials/{orderId}")
+	public void postSelfServiceTrialsOrder(@PathVariable long orderId)
+		throws Exception {
+
+		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
+
+		String orderTypeExternalReferenceCode =
+			order.getOrderTypeExternalReferenceCode();
+
+		if (!TrialConstants.isSelfService(orderTypeExternalReferenceCode)) {
+			throw new IllegalArgumentException(
+				"Unsupported order type " + orderTypeExternalReferenceCode);
+		}
+
+		JSONObject trialSettingsJSONObject = _getTrialSettingsJSONObject(order);
+
+		int durationDays = trialSettingsJSONObject.optInt(
+			"duration",
+			TrialConstants.getDurationDays(orderTypeExternalReferenceCode));
+
+		ZonedDateTime startZonedDateTime = ZonedDateTime.now(
+			ZoneOffset.UTC);
+
+		_commerceOrderService.updateOrder(
+			HashMapBuilder.put(
+				"trial-end-date",
+				startZonedDateTime.plusDays(
+					durationDays
+				).format(
+					DateTimeFormatter.ISO_INSTANT
+				)
+			).put(
+				"trial-start-date",
+				startZonedDateTime.format(DateTimeFormatter.ISO_INSTANT)
+			).build(),
+			orderId, CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS);
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Started a ", durationDays, " day self service trial for ",
+					"order ", orderId));
 		}
 	}
 
