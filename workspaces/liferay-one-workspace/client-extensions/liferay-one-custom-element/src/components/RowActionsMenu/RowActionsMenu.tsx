@@ -7,6 +7,7 @@ import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {ClayTooltipProvider} from '@clayui/tooltip';
+import classNames from 'classnames';
 import {useState} from 'react';
 import {Word, translate} from '~/i18n';
 
@@ -44,13 +45,20 @@ export default function RowActionsMenu({actions}: RowActionsMenuProps) {
 				<ClayDropDown.ItemList>
 					{actions.map((action) => (
 						<ClayDropDown.Item
-							disabled={action.disabled}
+							aria-disabled={action.disabled}
+							className={classNames({
+								disabled: action.disabled,
+							})}
 							key={action.label}
 							onClick={(event) => {
+								event.stopPropagation();
+
 								if (action.disabled) {
+									event.preventDefault();
+
 									return;
 								}
-								event.stopPropagation();
+
 								setActive(false);
 								action.onClick?.();
 							}}
