@@ -72,6 +72,7 @@ const ProductPurchaseLayout = ({
 	steps: stepItems,
 }: ProductPurchaseLayoutProps) => {
 	const [isSubmitting, setSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const [ldpSettings, setLDPSettings] = useState<LDPSettings | null>(null);
 	const [payment, setPayment] = useState<ProductPurchasePayment>({
 		billingAddress: {} as BillingAddress,
@@ -145,6 +146,11 @@ const ProductPurchaseLayout = ({
 		customService?: BasePurchase,
 		options?: unknown
 	) => {
+		if (isSubmittingRef.current) {
+			return;
+		}
+
+		isSubmittingRef.current = true;
 		setSubmitting(true);
 
 		try {
@@ -174,6 +180,8 @@ const ProductPurchaseLayout = ({
 					shippingAddress: payment.billingAddress,
 				});
 
+				productPurchaseCart.reset();
+
 				if (payment.type === PaymentMethodType.PAY_NOW) {
 					window.location.href =
 						await productPurchase.getPaymentNextStepsLink(cart);
@@ -193,6 +201,8 @@ const ProductPurchaseLayout = ({
 				cartOptions as Cart,
 				cartOptions?.cartOptions ?? options
 			);
+
+			productPurchaseCart.reset();
 
 			const nextLink = await productPurchase.getNextStepsLink(order);
 
@@ -214,8 +224,10 @@ const ProductPurchaseLayout = ({
 				type: 'danger',
 			});
 		}
-
-		setSubmitting(false);
+		finally {
+			isSubmittingRef.current = false;
+			setSubmitting(false);
+		}
 	};
 
 	const context: ProductPurchaseLayoutContext = {

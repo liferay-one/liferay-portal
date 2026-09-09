@@ -19,7 +19,7 @@ const useProductPurchaseCart = (
 ) => {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
 
-	const {cart, cartItems, setCart, setCartItems} = useCartContext();
+	const {cart, cartItems, reset, setCart, setCartItems} = useCartContext();
 
 	const cartId = cart?.id;
 
@@ -73,11 +73,10 @@ const useProductPurchaseCart = (
 		(id: number) =>
 			HeadlessCommerceDeliveryCart.deleteCart(id)
 				.then(() => {
-					setCart({} as Cart);
-					setCartItems([]);
+					reset();
 				})
 				.catch(console.error),
-		[setCart, setCartItems]
+		[reset]
 	);
 
 	useEffect(() => {
@@ -135,6 +134,7 @@ const useProductPurchaseCart = (
 		cartItems,
 		removeCart,
 		removeFromCart,
+		reset,
 		setCart,
 		updateCart: HeadlessCommerceDeliveryCart.updateCart.bind(
 			HeadlessCommerceDeliveryCart
