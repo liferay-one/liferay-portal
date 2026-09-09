@@ -4,7 +4,7 @@
  */
 
 import Page, {PageRendererProps} from '~/components/Page/Page';
-import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
+import RowActionsMenu, {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import i18n, {Word, translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
@@ -69,6 +69,7 @@ type ProductListPageProps = {
 	items: ProjectProduct[];
 	loading: boolean;
 	onItemClick: (product: ProjectProduct) => void;
+	renderActions?: (product: ProjectProduct) => RowAction[];
 	title: Word;
 };
 
@@ -81,6 +82,7 @@ export default function ProductListPage({
 	items,
 	loading,
 	onItemClick,
+	renderActions,
 	title,
 }: ProductListPageProps) {
 	const columnsWithActions: ListColumn<ProjectProduct>[] = [
@@ -89,12 +91,16 @@ export default function ProductListPage({
 			key: 'actions',
 			render: (product) => (
 				<RowActionsMenu
-					actions={[
-						{
-							label: 'view-details',
-							onClick: () => onItemClick(product),
-						},
-					]}
+					actions={
+						renderActions
+							? renderActions(product)
+							: [
+									{
+										label: 'view-details',
+										onClick: () => onItemClick(product),
+									},
+							  ]
+					}
 				/>
 			),
 			width: '1%',
