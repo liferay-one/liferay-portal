@@ -15,6 +15,8 @@ import {getProjectName, useProjectOrders} from '~/hooks/useProjectOrders';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {resolveProjectItemKind} from '~/pages/MyAccount/Projects/utils/resolveProjectItemKind';
 
+import type {PlacedOrder} from '~/types/orders';
+
 export function useProjectApplications(
 	projectId: string,
 	projectName?: string
@@ -96,6 +98,20 @@ export function useProjectApplications(
 		return [...applicationsByExternalReferenceCode.values()];
 	}, [channelProducts, scopedOrders]);
 
+	const orderByProductName = useMemo(() => {
+		const map = new Map<string, PlacedOrder>();
+
+		for (const order of scopedOrders) {
+			for (const item of order.placedOrderItems ?? []) {
+				if (!map.has(item.name)) {
+					map.set(item.name, order);
+				}
+			}
+		}
+
+		return map;
+	}, [scopedOrders]);
+
 	const orderIdByProductName = useMemo(() => {
 		const map = new Map<string, string>();
 
@@ -114,6 +130,7 @@ export function useProjectApplications(
 		applications,
 		error,
 		loading: productsLoading || ordersLoading,
+		orderByProductName,
 		orderIdByProductName,
 	};
 }
