@@ -4,6 +4,7 @@
  */
 
 import {formatCurrency} from '~/utils/formatCurrency';
+import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {Order, OrderTypes, PlacedOrder} from '~/types/orders';
 
@@ -90,9 +91,12 @@ export const APP_ORDER_TYPES: readonly OrderTypes[] = [
 	'OTHER',
 ];
 
+export const CMP_ORDER_TYPES: readonly OrderTypes[] = ['CMP', 'CMP_BETA'];
+
 export const LIFERAY_PRODUCT_ORDER_TYPES: readonly OrderTypes[] = [
 	'ADDONS',
 	'AI_HUB',
+	'CMP',
 	'CMP_BETA',
 	'DXP',
 	'LDP',
@@ -105,6 +109,7 @@ export const orderTypeLabel = {
 	AI_HUB_TOKEN: 'AI Hub Token',
 	CLIENT_EXTENSION: 'Client Extension',
 	CLOUD_APP: 'Cloud',
+	CMP: 'Content Marketing Platform',
 	CMP_BETA: 'Content Marketing Platform',
 	COMPOSITE_APP: 'Composite App',
 	DSR: 'Digital Sales Room',
@@ -163,6 +168,7 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 
 	const expirableOrderTypes: OrderTypes[] = [
 		'ADDONS',
+		'CMP',
 		'CMP_BETA',
 		'DSR',
 		'DXP',
@@ -207,4 +213,21 @@ export function toStatusToken(label: string): string {
 
 export function getOrderStatusToken(order: PlacedOrder): string {
 	return toStatusToken(getOrderStatusLabel(order));
+}
+
+const BETA_SKU_OPTION_VALUE_KEYS = ['beta', 'open-beta', 'private-beta'];
+
+export function isBetaOrder(placedOrder?: PlacedOrder): boolean {
+	const placedOrderItems = placedOrder?.placedOrderItems ?? [];
+
+	return placedOrderItems.some((placedOrderItem) => {
+		const options = safeJSONParse<{skuOptionValueKey: string}[]>(
+			placedOrderItem?.options || '',
+			[]
+		);
+
+		return options.some((option) =>
+			BETA_SKU_OPTION_VALUE_KEYS.includes(option.skuOptionValueKey)
+		);
+	});
 }
