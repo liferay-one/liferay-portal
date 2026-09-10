@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import analyticsOAuth2 from '~/services/spring-boot/Analytics';
+import LiferayDataPlatform from '~/services/spring-boot/LiferayDataPlatform';
 
 import ProductPurchase from './ProductPurchase';
 
@@ -40,7 +40,9 @@ export default class ProductPurchaseLDP extends ProductPurchase {
 			},
 		} as Cart);
 
-		analyticsOAuth2.provisioningOrder(order.id).catch(console.error);
+		LiferayDataPlatform.postProvisioningOrder(order.id).catch(
+			console.error
+		);
 
 		return order;
 	}
