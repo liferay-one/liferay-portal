@@ -11,6 +11,8 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
+import java.math.BigDecimal;
+
 import java.util.List;
 import java.util.Map;
 
@@ -95,14 +97,7 @@ public class CommerceOrderServiceTest {
 			"AI-HUB-ACCNT-TEST"
 		);
 
-		Mockito.doReturn(
-			new JSONObject("{\"data\": {\"opportunityId\": \"006TEST\"}}")
-		).when(
-			_salesforceService
-		).postSalesforceOpportunity(
-			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
-			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
-		);
+		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
@@ -130,6 +125,49 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).patchOrderExternalReferenceCode(
 			_ORDER_ID, "006TEST"
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderCompletesAIHubTokenOrderWithoutProject()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		_setAIHubOrderFields(order, "{}");
+
+		_whenFetchCommerceOrder(order);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.eq(4321L), ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			_ORDER_ID, CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED
+		);
+
+		Mockito.verify(
+			_salesforceService, Mockito.never()
+		).postSalesforceOpportunity(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
 		);
 	}
 
@@ -186,6 +224,84 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCompleteSettledOrderCountsAIHubTokenOrderItemQuantity()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		OrderItem orderItem = order.getOrderItems()[0];
+
+		orderItem.setQuantity(() -> BigDecimal.valueOf(3));
+
+		_whenFetchCommerceOrder(order);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		_whenPostSalesforceOpportunity("006TEST");
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.eq(4321L), jsonObjectArgumentCaptor.capture()
+		);
+
+		JSONObject jsonObject = jsonObjectArgumentCaptor.getValue();
+
+		Assertions.assertEquals(15000000L, jsonObject.getLong("size"));
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderOpportunityTwice()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		_setAIHubOrderFields(
+			order,
+			"{\"aiHubQuotaBlockSize\": 5000000, \"salesforceOpportunityId\": " +
+				"\"006TEST\", \"salesforceProjectId\": \"a1tTEST\"}");
+
+		order.setExternalReferenceCode("006TEST");
+
+		_whenFetchCommerceOrder(order);
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		Mockito.verify(
+			_salesforceService, Mockito.never()
+		).postSalesforceOpportunity(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderExternalReferenceCode(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			_ORDER_ID, CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED
+		);
+	}
+
+	@Test
 	public void testCompleteSettledOrderSkipsAIHubTokenOrderQuotaBlockTwice()
 		throws Exception {
 
@@ -197,6 +313,8 @@ public class CommerceOrderServiceTest {
 				"\"a1tTEST\"}");
 
 		_whenFetchCommerceOrder(order);
+
+		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
@@ -214,6 +332,34 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAddress()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		order.setBillingAddress((BillingAddress)null);
+
+		_whenFetchCommerceOrder(order);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
+
+		_verifyNeverCompleted();
+	}
+
+	@Test
 	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutApplication()
 		throws Exception {
 
@@ -228,6 +374,57 @@ public class CommerceOrderServiceTest {
 		);
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		_verifyNeverCompleted();
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutCustomFields()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "AI_HUB_TOKEN",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		_whenFetchCommerceOrder(order);
+
+		Mockito.doReturn(
+			null
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		_verifyNeverCompleted();
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutOpportunity()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		_setAIHubOrderFields(
+			order,
+			"{\"aiHubQuotaBlockSize\": 5000000, \"salesforceProjectId\": " +
+				"\"a1tTEST\"}");
+
+		_whenFetchCommerceOrder(order);
+
+		_whenPostSalesforceOpportunity(null);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
@@ -472,14 +669,7 @@ public class CommerceOrderServiceTest {
 					"\"800TEST\", \"salesforceProjectId\": \"a1tTEST\"}",
 				CommerceOrderConstants.ORDER_STATUS_PENDING));
 
-		Mockito.doReturn(
-			new JSONObject("{\"data\": {\"opportunityId\": \"006TEST\"}}")
-		).when(
-			_salesforceService
-		).postSalesforceOpportunity(
-			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
-			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
-		);
+		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
 
@@ -519,14 +709,7 @@ public class CommerceOrderServiceTest {
 				"{\"salesforceProjectId\": \"a1tTEST\"}",
 				CommerceOrderConstants.ORDER_STATUS_PENDING));
 
-		Mockito.doReturn(
-			null
-		).when(
-			_salesforceService
-		).postSalesforceOpportunity(
-			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
-			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
-		);
+		_whenPostSalesforceOpportunity(null);
 
 		Assertions.assertThrows(
 			IllegalStateException.class,
@@ -558,6 +741,27 @@ public class CommerceOrderServiceTest {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
 			() -> _commerceOrderService.createAIHubOpportunity(_ORDER_ID));
+	}
+
+	@Test
+	public void testCreateAIHubOpportunityRepairsExternalReferenceCode()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"salesforceOpportunityId\": \"006TEST\", " +
+					"\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PROCESSING));
+
+		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderExternalReferenceCode(
+			_ORDER_ID, "006TEST"
+		);
+
+		_verifyNeverPostedOpportunity();
 	}
 
 	@Test
@@ -608,6 +812,29 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCreateAIHubOpportunitySkipsOrderWithReferenceCode()
+		throws Exception {
+
+		Order order = _createAIHubOrder(
+			"{\"salesforceOpportunityId\": \"006TEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setExternalReferenceCode("006TEST");
+
+		_whenFetchCommerceOrder(order);
+
+		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderExternalReferenceCode(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
+		);
+
+		_verifyNeverPostedOpportunity();
+	}
+
+	@Test
 	public void testDispatchOrderUpdateCompletesSettledOrder()
 		throws Exception {
 
@@ -620,7 +847,7 @@ public class CommerceOrderServiceTest {
 		).when(
 			_commerceOrderService
 		).completeSettledOrder(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 
 		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
@@ -628,13 +855,13 @@ public class CommerceOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderService
 		).completeSettledOrder(
-			_ORDER_ID
+			ArgumentMatchers.any(Order.class)
 		);
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).createAIHubOpportunity(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 	}
 
@@ -651,7 +878,7 @@ public class CommerceOrderServiceTest {
 		).when(
 			_commerceOrderService
 		).createAIHubOpportunity(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 
 		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
@@ -659,13 +886,13 @@ public class CommerceOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderService
 		).createAIHubOpportunity(
-			_ORDER_ID
+			ArgumentMatchers.any(Order.class)
 		);
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).completeSettledOrder(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 	}
 
@@ -678,13 +905,13 @@ public class CommerceOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).completeSettledOrder(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).createAIHubOpportunity(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 	}
 
@@ -702,7 +929,7 @@ public class CommerceOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).createAIHubOpportunity(
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(Order.class)
 		);
 	}
 
@@ -816,6 +1043,32 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).fetchCommerceOrder(
 			_ORDER_ID
+		);
+	}
+
+	private void _whenPostSalesforceOpportunity(String opportunityId)
+		throws Exception {
+
+		JSONObject salesforceOpportunityJSONObject = null;
+
+		if (opportunityId != null) {
+			salesforceOpportunityJSONObject = new JSONObject(
+			).put(
+				"data",
+				new JSONObject(
+				).put(
+					"opportunityId", opportunityId
+				)
+			);
+		}
+
+		Mockito.doReturn(
+			salesforceOpportunityJSONObject
+		).when(
+			_salesforceService
+		).postSalesforceOpportunity(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
 		);
 	}
 

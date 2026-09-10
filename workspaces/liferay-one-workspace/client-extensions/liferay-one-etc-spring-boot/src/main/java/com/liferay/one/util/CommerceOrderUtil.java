@@ -31,6 +31,10 @@ public class CommerceOrderUtil {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
 
+		if (customFields == null) {
+			return new JSONObject();
+		}
+
 		return new JSONObject(
 			customFields.getOrDefault("order-metadata", "{}"));
 	}
