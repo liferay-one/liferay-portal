@@ -139,17 +139,21 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public void completeSettledOrder(long orderId) throws Exception {
+		completeSettledOrder(fetchCommerceOrder(orderId));
+	}
+
+	public void completeSettledOrder(Order order) throws Exception {
+		if (order == null) {
+			return;
+		}
+
+		long orderId = order.getId();
+
 		if (!_inFlightOrderIds.add(orderId)) {
 			return;
 		}
 
 		try {
-			Order order = fetchCommerceOrder(orderId);
-
-			if (order == null) {
-				return;
-			}
-
 			String orderTypeExternalReferenceCode =
 				order.getOrderTypeExternalReferenceCode();
 
@@ -215,31 +219,30 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public void createAIHubOpportunity(long orderId) throws Exception {
+		Order order = fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
+
+		createAIHubOpportunity(order);
+	}
+
+	public void createAIHubOpportunity(Order order) throws Exception {
+		long orderId = order.getId();
+
 		if (!_inFlightAIHubOpportunityOrderIds.add(orderId)) {
 			return;
 		}
 
 		try {
-			Order order = fetchCommerceOrder(orderId);
-
-			if (order == null) {
-				throw new IllegalArgumentException(
-					"No order exists with ID " + orderId);
-			}
-
 			if (!Objects.equals(
 					order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
 
 				throw new IllegalArgumentException(
 					"Unsupported order type " +
 						order.getOrderTypeExternalReferenceCode());
-			}
-
-			JSONObject orderMetadataJSONObject =
-				CommerceOrderUtil.getOrderMetadataJSONObject(order);
-
-			if (orderMetadataJSONObject.has("salesforceOpportunityId")) {
-				return;
 			}
 
 			if (!_isCompletableOrderStatus(order)) {
@@ -254,35 +257,12 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			String salesforceProjectId = orderMetadataJSONObject.optString(
-				"salesforceProjectId");
+			JSONObject orderMetadataJSONObject =
+				CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
-			if (Validator.isNull(salesforceProjectId)) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Skipping the Salesforce opportunity for order ",
-							orderId, " because it has no Salesforce project"));
-				}
-
+			if (!_createSalesforceOpportunity(order, orderMetadataJSONObject)) {
 				return;
 			}
-
-			JSONObject salesforceOpportunityJSONObject =
-				_postSalesforceOpportunity("Subscription", order);
-
-			if (salesforceOpportunityJSONObject == null) {
-				throw new IllegalStateException(
-					"Unable to create a Salesforce opportunity for order " +
-						orderId);
-			}
-
-			String opportunityId =
-				salesforceOpportunityJSONObject.getJSONObject(
-					"data"
-				).getString(
-					"opportunityId"
-				);
 
 			Map<String, Object> customFields = new HashMap<>();
 
@@ -294,17 +274,14 @@ public class CommerceOrderService extends OneBaseService {
 			}
 
 			customFields.put(
-				"order-metadata",
-				orderMetadataJSONObject.put(
-					"salesforceOpportunityId", opportunityId
-				).toString());
-			customFields.put("salesforceProjectId", salesforceProjectId);
+				"order-metadata", orderMetadataJSONObject.toString());
+			customFields.put(
+				"salesforceProjectId",
+				orderMetadataJSONObject.optString("salesforceProjectId"));
 
 			updateOrder(
 				customFields, orderId,
 				CommerceOrderConstants.ORDER_STATUS_PROCESSING);
-
-			patchOrderExternalReferenceCode(orderId, opportunityId);
 		}
 		finally {
 			_inFlightAIHubOpportunityOrderIds.remove(orderId);
@@ -326,7 +303,7 @@ public class CommerceOrderService extends OneBaseService {
 					CommerceOrderConstants.ORDER_STATUS_PENDING)) {
 
 				try {
-					createAIHubOpportunity(orderId);
+					createAIHubOpportunity(order);
 				}
 				catch (Exception exception) {
 					_log.error(
@@ -339,7 +316,7 @@ public class CommerceOrderService extends OneBaseService {
 			return;
 		}
 
-		completeSettledOrder(orderId);
+		completeSettledOrder(order);
 	}
 
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
@@ -615,12 +592,10 @@ public class CommerceOrderService extends OneBaseService {
 					"AI-HUB-" + order.getAccountExternalReferenceCode());
 
 			if (aiHubApplicationJSONObject == null) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Unable to complete order ", orderId,
-							" because its account has no AI Hub application"));
-				}
+				_log.error(
+					StringBundler.concat(
+						"Unable to complete order ", orderId,
+						" because its account has no AI Hub application"));
 
 				return;
 			}
@@ -640,39 +615,71 @@ public class CommerceOrderService extends OneBaseService {
 					"transactionId", orderId
 				));
 
+			orderMetadataJSONObject.put("aiHubQuotaBlockSize", quotaBlockSize);
+
 			patchOrderCustomFields(
 				orderId,
-				Map.of(
-					"order-metadata",
-					orderMetadataJSONObject.put(
-						"aiHubQuotaBlockSize", quotaBlockSize
-					).toString()));
+				Map.of("order-metadata", orderMetadataJSONObject.toString()));
+		}
+
+		if (_createSalesforceOpportunity(order, orderMetadataJSONObject)) {
+			patchOrderCustomFields(
+				orderId,
+				Map.of("order-metadata", orderMetadataJSONObject.toString()));
 		}
 
 		completeOrder(orderId, paymentStatus);
+	}
 
-		try {
-			JSONObject salesforceOpportunityJSONObject =
-				_postSalesforceOpportunity("Subscription", order);
+	private boolean _createSalesforceOpportunity(
+			Order order, JSONObject orderMetadataJSONObject)
+		throws Exception {
 
-			if (salesforceOpportunityJSONObject == null) {
-				return;
+		long orderId = order.getId();
+
+		String salesforceOpportunityId = orderMetadataJSONObject.optString(
+			"salesforceOpportunityId");
+
+		if (Validator.isNotNull(salesforceOpportunityId)) {
+			_patchOrderExternalReferenceCode(order, salesforceOpportunityId);
+
+			return false;
+		}
+
+		if (Validator.isNull(
+				orderMetadataJSONObject.optString("salesforceProjectId"))) {
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping the Salesforce opportunity for order ",
+						orderId, " because it has no Salesforce project"));
 			}
 
-			patchOrderExternalReferenceCode(
-				orderId,
-				salesforceOpportunityJSONObject.getJSONObject(
-					"data"
-				).getString(
-					"opportunityId"
-				));
+			return false;
 		}
-		catch (Exception exception) {
-			_log.error(
+
+		JSONObject salesforceOpportunityJSONObject = _postSalesforceOpportunity(
+			"Subscription", order);
+
+		if (salesforceOpportunityJSONObject == null) {
+			throw new IllegalStateException(
 				"Unable to create a Salesforce opportunity for order " +
-					orderId,
-				exception);
+					orderId);
 		}
+
+		salesforceOpportunityId = salesforceOpportunityJSONObject.getJSONObject(
+			"data"
+		).getString(
+			"opportunityId"
+		);
+
+		_patchOrderExternalReferenceCode(order, salesforceOpportunityId);
+
+		orderMetadataJSONObject.put(
+			"salesforceOpportunityId", salesforceOpportunityId);
+
+		return true;
 	}
 
 	private Long _fetchChannelId() throws Exception {
@@ -721,11 +728,14 @@ public class CommerceOrderService extends OneBaseService {
 
 		if (ArrayUtil.isEmpty(orderItems)) {
 			_log.error(
-				"Unable to complete order " + orderId +
-					" because it has no order items");
+				StringBundler.concat(
+					"Unable to complete order ", orderId,
+					" because it has no order items"));
 
 			return null;
 		}
+
+		long quotaBlockSize = 0;
 
 		for (OrderItem orderItem : orderItems) {
 			String options = orderItem.getOptions();
@@ -756,21 +766,36 @@ public class CommerceOrderService extends OneBaseService {
 				continue;
 			}
 
-			String quotaBlockSize = StringUtil.removeSubstring(
+			String orderItemQuotaBlockSize = StringUtil.removeSubstring(
 				skuOptionValue, _LR_TOKENS);
 
-			if (!Validator.isNumber(quotaBlockSize)) {
+			if (!Validator.isNumber(orderItemQuotaBlockSize)) {
 				continue;
 			}
 
-			return Long.valueOf(quotaBlockSize);
+			long quantity = 1;
+
+			BigDecimal orderItemQuantity = orderItem.getQuantity();
+
+			if ((orderItemQuantity != null) &&
+				(orderItemQuantity.signum() > 0)) {
+
+				quantity = orderItemQuantity.longValue();
+			}
+
+			quotaBlockSize += Long.valueOf(orderItemQuotaBlockSize) * quantity;
 		}
 
-		_log.error(
-			"Unable to complete order " + orderId +
-				" because it has no Liferay tokens order item");
+		if (quotaBlockSize == 0) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to complete order ", orderId,
+					" because it has no Liferay tokens order item"));
 
-		return null;
+			return null;
+		}
+
+		return quotaBlockSize;
 	}
 
 	private Map<String, Object> _getCustomFields(
@@ -1000,11 +1025,34 @@ public class CommerceOrderService extends OneBaseService {
 		return false;
 	}
 
+	private void _patchOrderExternalReferenceCode(
+			Order order, String externalReferenceCode)
+		throws Exception {
+
+		if (Objects.equals(
+				order.getExternalReferenceCode(), externalReferenceCode)) {
+
+			return;
+		}
+
+		patchOrderExternalReferenceCode(order.getId(), externalReferenceCode);
+	}
+
 	private JSONObject _postSalesforceOpportunity(
 			String licenseType, Order order)
 		throws Exception {
 
 		BillingAddress billingAddress = order.getBillingAddress();
+
+		if ((billingAddress == null) ||
+			Validator.isNull(billingAddress.getCountryISOCode())) {
+
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to create a Salesforce opportunity for order ",
+					order.getId(), " because it has no billing address ",
+					"country"));
+		}
 
 		return _salesforceService.postSalesforceOpportunity(
 			_countryService.getCountryByA2(billingAddress.getCountryISOCode()),
