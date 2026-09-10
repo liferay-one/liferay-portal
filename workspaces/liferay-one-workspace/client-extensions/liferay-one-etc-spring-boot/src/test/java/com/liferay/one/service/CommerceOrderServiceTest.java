@@ -635,6 +635,105 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateCompletesSettledOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createOrder(
+				CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED));
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			ArgumentMatchers.anyLong()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeSettledOrder(
+			_ORDER_ID
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).createAIHubOpportunity(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCreatesAIHubOpportunity()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).createAIHubOpportunity(
+			ArgumentMatchers.anyLong()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService
+		).createAIHubOpportunity(
+			_ORDER_ID
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsMissingOrder() throws Exception {
+		_whenFetchCommerceOrder(null);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).createAIHubOpportunity(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsProcessingAIHubOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PROCESSING));
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).createAIHubOpportunity(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
 	public void testOnApplicationReadyCompletesSettledOrders()
 		throws Exception {
 

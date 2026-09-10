@@ -27,7 +27,7 @@ public class ObjectActionCommerceOrderUpdateRestController
 	public void post(@RequestBody String json) throws Exception {
 		JSONObject jsonObject = new JSONObject(json);
 
-		_commerceOrderService.completeSettledOrder(
+		_commerceOrderService.dispatchOrderUpdate(
 			jsonObject.getLong("classPK"));
 	}
 
