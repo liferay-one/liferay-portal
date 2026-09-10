@@ -1484,6 +1484,7 @@ export default {
 	'thank-you-for-your': 'Thank you for your',
 	'thank-you-for-your-order-we-have-registered-your-request-and-will-send-you-the-invoice-by-email-with-all-the-details-to-complete-your-payment-check-your-spam-or-promotions-folder-if-you-dont-see-it-in-your-inbox-your-order-is-currently-pending-payment':
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
+	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-account-was-successfully-synced-to-jsm':
 		'The account was successfully synced to JSM.',
@@ -1865,6 +1866,8 @@ export default {
 	'your-current-liferay-version': 'Your Current Liferay Version',
 	'your-free-activation-key-has-been-generated':
 		'Your free activation key has been generated!',
+	'your-liferay-data-platform-workspace-is-being-provisioned-an-email-will-be-sent-with-everything-you-need-to-access-it-once-it-is-ready-if-the-email-does-not-arrive-within-a-few-minutes-check-your-spam-folder':
+		'Your Liferay Data Platform workspace is being provisioned. An email will be sent with everything you need to access it once it is ready. If the email does not arrive within a few minutes, check your spam folder.',
 	'your-liferay-paas-project-will-be-provisioned-in-2-3-business-days-at-that-time-liferay-paas-administrators-will-receive-several-onboarding-emails-giving-them-access-to-all-the-liferay-paas-environments-and-tools-included-in-your-subscription':
 		'Your Liferay PaaS project will be provisioned in 2-3 business days. At that time, Liferay PaaS Administrators will receive several onboarding emails, giving them access to all the Liferay PaaS environments and tools included in your subscription.',
 	'your-liferay-saas-project-will-be-provisioned-within-5-business-days-an-email-will-be-sent-once-your-project-is-ready':
