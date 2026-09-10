@@ -24,7 +24,7 @@ export default function ProjectLayout() {
 
 	function handleSelectProject(id: string) {
 		if (id !== projectId) {
-			navigate(`/${accountERC}/project/${id}/products`);
+			navigate(`/${accountERC}/project/${id}`);
 		}
 	}
 
