@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {PROJECT_ITEM_TYPES} from '../types';
+
 import type {DeliveryProductSpecification} from '~/types/product';
 
 import type {ProjectItemType} from '../types';
-
-const PROJECT_ITEM_TYPES: ProjectItemType[] = ['application', 'product'];
 
 export function resolveProjectItemType(
 	specifications: DeliveryProductSpecification[]
