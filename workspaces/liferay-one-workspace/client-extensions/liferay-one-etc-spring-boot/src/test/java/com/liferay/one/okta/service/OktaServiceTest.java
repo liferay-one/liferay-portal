@@ -8,6 +8,7 @@ package com.liferay.one.okta.service;
 import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
+import com.liferay.petra.string.StringPool;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class OktaServiceTest {
 		throws Exception {
 
 		OktaService oktaService = _createOktaService(
-			HttpStatus.NOT_FOUND, _BODY_NOT_FOUND);
+			_BODY_NOT_FOUND, HttpStatus.NOT_FOUND);
 
 		Assertions.assertNull(
 			oktaService.createContact(_EMAIL_ADDRESS, "Jane", null, "Doe"));
@@ -50,7 +51,7 @@ public class OktaServiceTest {
 	@Test
 	public void testCreateContactSkipsWhenContactExists() throws Exception {
 		OktaService oktaService = _createOktaService(
-			HttpStatus.OK, _BODY_CONTACT);
+			_BODY_CONTACT, HttpStatus.OK);
 
 		Assertions.assertNotNull(
 			oktaService.createContact(_EMAIL_ADDRESS, "Jane", null, "Doe"));
@@ -61,7 +62,7 @@ public class OktaServiceTest {
 	@Test
 	public void testCreateContactThrowsWhenOktaReturnsErrorStatus() {
 		OktaService oktaService = _createOktaService(
-			HttpStatus.UNAUTHORIZED, _BODY_ERROR);
+			_BODY_ERROR, HttpStatus.UNAUTHORIZED);
 
 		Assertions.assertThrows(
 			OktaUnavailableException.class,
@@ -76,7 +77,7 @@ public class OktaServiceTest {
 		throws Exception {
 
 		OktaService oktaService = _createOktaService(
-			HttpStatus.OK, _BODY_CONTACT);
+			_BODY_CONTACT, HttpStatus.OK);
 
 		OktaUser oktaUser = oktaService.fetchContactByEmailAddress(
 			_EMAIL_ADDRESS);
@@ -90,22 +91,33 @@ public class OktaServiceTest {
 		throws Exception {
 
 		OktaService oktaService = _createOktaService(
-			HttpStatus.NOT_FOUND, _BODY_NOT_FOUND);
+			_BODY_NOT_FOUND, HttpStatus.NOT_FOUND);
 
 		Assertions.assertNull(
 			oktaService.fetchContactByEmailAddress(_EMAIL_ADDRESS));
 	}
 
 	@Test
+	public void testFetchContactByEmailAddressThrowsWhenOktaRedirects() {
+		OktaService oktaService = _createOktaService(
+			StringPool.BLANK, HttpStatus.FOUND);
+
+		Assertions.assertThrows(
+			OktaUnavailableException.class,
+			() -> oktaService.fetchContactByEmailAddress(_EMAIL_ADDRESS));
+	}
+
+	@Test
 	public void testFetchContactByEmailAddressThrowsWhenOktaReturnsError() {
 		for (HttpStatus httpStatus :
 				List.of(
+					HttpStatus.MOVED_PERMANENTLY, HttpStatus.FOUND,
 					HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN,
 					HttpStatus.TOO_MANY_REQUESTS,
 					HttpStatus.INTERNAL_SERVER_ERROR)) {
 
 			OktaService oktaService = _createOktaService(
-				httpStatus, _BODY_ERROR);
+				_BODY_ERROR, httpStatus);
 
 			Assertions.assertThrows(
 				OktaUnavailableException.class,
@@ -114,20 +126,20 @@ public class OktaServiceTest {
 	}
 
 	private OktaService _createOktaService(
-		HttpStatusCode httpStatusCode, String body) {
+		String body, HttpStatusCode httpStatusCode) {
 
 		OktaService oktaService = new OktaService();
 
 		ReflectionTestUtils.setField(
 			oktaService, "_oktaPubsubPublisher", _oktaPubsubPublisher);
 		ReflectionTestUtils.setField(
-			oktaService, "_webClient", _createWebClient(httpStatusCode, body));
+			oktaService, "_webClient", _createWebClient(body, httpStatusCode));
 
 		return oktaService;
 	}
 
 	private WebClient _createWebClient(
-		HttpStatusCode httpStatusCode, String body) {
+		String body, HttpStatusCode httpStatusCode) {
 
 		return WebClient.builder(
 		).exchangeFunction(

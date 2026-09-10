@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -16,6 +17,9 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Objects;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -120,8 +124,19 @@ public class ProvisioningAssignmentService {
 	private void _addOktaGroupMembership(String groupName, String emailAddress)
 		throws Exception {
 
-		Integer status = _oktaService.fetchContactStatusByEmailAddress(
-			emailAddress);
+		Integer status = null;
+
+		try {
+			status = _oktaService.fetchContactStatusByEmailAddress(
+				emailAddress);
+		}
+		catch (OktaUnavailableException oktaUnavailableException) {
+			_log.error(
+				"Unable to read the Okta contact " + emailAddress,
+				oktaUnavailableException);
+
+			return;
+		}
 
 		if (status == null) {
 			return;
@@ -151,6 +166,9 @@ public class ProvisioningAssignmentService {
 	private static final String _ROLE_ACTION_ASSIGNED = "Assigned";
 
 	private static final String _ROLE_ACTION_UNASSIGNED = "Unassigned";
+
+	private static final Log _log = LogFactory.getLog(
+		ProvisioningAssignmentService.class);
 
 	@Autowired
 	private OktaService _oktaService;
