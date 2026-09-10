@@ -137,7 +137,7 @@ export function getProductOrderInfo(
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
-		purchasedBy: order.author ?? '',
+		purchasedBy: order.account ?? '',
 		status: getOrderStatusToken(order),
 	};
 }
