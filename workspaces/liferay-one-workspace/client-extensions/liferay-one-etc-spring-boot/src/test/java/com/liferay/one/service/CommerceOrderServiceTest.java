@@ -463,57 +463,6 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCreateAIHubOpportunitiesSweepsEveryPendingOrder()
-		throws Exception {
-
-		Order order1 = _createAIHubOrder(
-			"{\"salesforceProjectId\": \"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PENDING);
-
-		Order order2 = _createAIHubOrder(
-			"{\"salesforceProjectId\": \"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PROCESSING);
-
-		order2.setId(_ORDER_ID + 1);
-
-		Mockito.doReturn(
-			List.of(order1, order2)
-		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).createAIHubOpportunity(
-			ArgumentMatchers.anyLong()
-		);
-
-		_commerceOrderService.createAIHubOpportunities();
-
-		Mockito.verify(
-			_commerceOrderService
-		).getOrders(
-			"orderTypeExternalReferenceCode eq 'AI_HUB' and " +
-				"(orderStatus/any(x:x eq 1) or orderStatus/any(x:x eq 10))"
-		);
-
-		Mockito.verify(
-			_commerceOrderService
-		).createAIHubOpportunity(
-			_ORDER_ID
-		);
-
-		Mockito.verify(
-			_commerceOrderService
-		).createAIHubOpportunity(
-			_ORDER_ID + 1
-		);
-	}
-
-	@Test
 	public void testCreateAIHubOpportunityCreatesOpportunity()
 		throws Exception {
 
@@ -550,19 +499,7 @@ public class CommerceOrderServiceTest {
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
 
-		ArgumentCaptor<Map<String, Object>> markerArgumentCaptor =
-			ArgumentCaptor.forClass(Map.class);
-
-		Mockito.verify(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			ArgumentMatchers.eq(_ORDER_ID), markerArgumentCaptor.capture()
-		);
-
-		Map<String, Object> markerCustomFields =
-			markerArgumentCaptor.getValue();
-
-		String orderMetadata = (String)markerCustomFields.get("order-metadata");
+		String orderMetadata = (String)customFields.get("order-metadata");
 
 		Assertions.assertTrue(orderMetadata.contains("006TEST"));
 
@@ -570,6 +507,42 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).patchOrderExternalReferenceCode(
 			_ORDER_ID, "006TEST"
+		);
+	}
+
+	@Test
+	public void testCreateAIHubOpportunityKeepsOrderPendingOnFailure()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+
+		Mockito.doReturn(
+			null
+		).when(
+			_salesforceService
+		).postSalesforceOpportunity(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.createAIHubOpportunity(_ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
 	}
 
@@ -743,39 +716,11 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).completeSettledOrders();
 
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).createAIHubOpportunities();
-
 		_commerceOrderService.onApplicationReady();
 
 		Mockito.verify(
 			_commerceOrderService
 		).completeSettledOrders();
-	}
-
-	@Test
-	public void testOnApplicationReadyCreatesAIHubOpportunities()
-		throws Exception {
-
-		Mockito.doThrow(
-			new Exception()
-		).when(
-			_commerceOrderService
-		).completeSettledOrders();
-
-		Mockito.doThrow(
-			new Exception()
-		).when(
-			_commerceOrderService
-		).createAIHubOpportunities();
-
-		_commerceOrderService.onApplicationReady();
-
-		Mockito.verify(
-			_commerceOrderService
-		).createAIHubOpportunities();
 	}
 
 	private Order _createAIHubOrder(String orderMetadata, int orderStatus) {

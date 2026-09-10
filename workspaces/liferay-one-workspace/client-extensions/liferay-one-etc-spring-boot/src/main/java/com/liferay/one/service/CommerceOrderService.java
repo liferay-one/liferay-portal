@@ -214,29 +214,6 @@ public class CommerceOrderService extends OneBaseService {
 		}
 	}
 
-	@Scheduled(cron = "0 0 0 * * *")
-	public void createAIHubOpportunities() throws Exception {
-		List<Order> orders = getOrders(
-			StringBundler.concat(
-				"orderTypeExternalReferenceCode eq 'AI_HUB' and ",
-				"(orderStatus/any(x:x eq ",
-				CommerceOrderConstants.ORDER_STATUS_PENDING,
-				") or orderStatus/any(x:x eq ",
-				CommerceOrderConstants.ORDER_STATUS_PROCESSING, "))"));
-
-		for (Order order : orders) {
-			try {
-				createAIHubOpportunity(order.getId());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to create a Salesforce opportunity for order " +
-						order.getId(),
-					exception);
-			}
-		}
-	}
-
 	public void createAIHubOpportunity(long orderId) throws Exception {
 		if (!_inFlightAIHubOpportunityOrderIds.add(orderId)) {
 			return;
@@ -291,28 +268,6 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			Map<String, Object> customFields = new HashMap<>();
-
-			long contractEntityId = orderMetadataJSONObject.optLong(
-				"contractEntityId");
-
-			if (contractEntityId > 0) {
-				customFields.put("contractId", contractEntityId);
-			}
-
-			customFields.put("salesforceProjectId", salesforceProjectId);
-
-			if (order.getOrderStatus() ==
-					CommerceOrderConstants.ORDER_STATUS_PROCESSING) {
-
-				patchOrderCustomFields(orderId, customFields);
-			}
-			else {
-				updateOrder(
-					customFields, orderId,
-					CommerceOrderConstants.ORDER_STATUS_PROCESSING);
-			}
-
 			JSONObject salesforceOpportunityJSONObject =
 				_postSalesforceOpportunity("Subscription", order);
 
@@ -329,13 +284,25 @@ public class CommerceOrderService extends OneBaseService {
 					"opportunityId"
 				);
 
-			patchOrderCustomFields(
-				orderId,
-				Map.of(
-					"order-metadata",
-					orderMetadataJSONObject.put(
-						"salesforceOpportunityId", opportunityId
-					).toString()));
+			Map<String, Object> customFields = new HashMap<>();
+
+			long contractEntityId = orderMetadataJSONObject.optLong(
+				"contractEntityId");
+
+			if (contractEntityId > 0) {
+				customFields.put("contractId", contractEntityId);
+			}
+
+			customFields.put(
+				"order-metadata",
+				orderMetadataJSONObject.put(
+					"salesforceOpportunityId", opportunityId
+				).toString());
+			customFields.put("salesforceProjectId", salesforceProjectId);
+
+			updateOrder(
+				customFields, orderId,
+				CommerceOrderConstants.ORDER_STATUS_PROCESSING);
 
 			patchOrderExternalReferenceCode(orderId, opportunityId);
 		}
@@ -358,7 +325,15 @@ public class CommerceOrderService extends OneBaseService {
 					order.getOrderStatus(),
 					CommerceOrderConstants.ORDER_STATUS_PENDING)) {
 
-				createAIHubOpportunity(orderId);
+				try {
+					createAIHubOpportunity(orderId);
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to create a Salesforce opportunity for order " +
+							orderId,
+						exception);
+				}
 			}
 
 			return;
@@ -479,15 +454,6 @@ public class CommerceOrderService extends OneBaseService {
 		catch (Exception exception) {
 			_log.error(
 				"Unable to complete settled orders on application startup",
-				exception);
-		}
-
-		try {
-			createAIHubOpportunities();
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to create AI Hub opportunities on application startup",
 				exception);
 		}
 	}
