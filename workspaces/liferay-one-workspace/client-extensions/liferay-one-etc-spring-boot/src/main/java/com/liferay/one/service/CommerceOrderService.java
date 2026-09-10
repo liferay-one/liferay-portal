@@ -344,6 +344,29 @@ public class CommerceOrderService extends OneBaseService {
 		}
 	}
 
+	public void dispatchOrderUpdate(long orderId) throws Exception {
+		Order order = fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			return;
+		}
+
+		if (Objects.equals(
+				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
+
+			if (Objects.equals(
+					order.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_PENDING)) {
+
+				createAIHubOpportunity(orderId);
+			}
+
+			return;
+		}
+
+		completeSettledOrder(orderId);
+	}
+
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
 		OrderResource orderResource = _buildOrderResource();
 
