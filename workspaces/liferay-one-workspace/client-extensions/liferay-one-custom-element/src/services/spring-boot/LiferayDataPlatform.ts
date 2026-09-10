@@ -5,12 +5,14 @@
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
-class AnalyticsOAuth2 extends OneSpringBootOAuth2 {
-	async provisioningOrder(orderId: number): Promise<void> {
+class LiferayDataPlatformOAuth2 extends OneSpringBootOAuth2 {
+	async postProvisioningOrder(orderId: number | string): Promise<void> {
 		await this.post(`/provisioning/${orderId}`);
 	}
 }
 
-const Analytics = new AnalyticsOAuth2('/analytics');
+const LiferayDataPlatform = new LiferayDataPlatformOAuth2(
+	'/liferay-data-platform'
+);
 
-export default Analytics;
+export default LiferayDataPlatform;
