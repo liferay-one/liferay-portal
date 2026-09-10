@@ -11,12 +11,14 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -206,6 +208,32 @@ public class ProvisioningAssignmentServiceTest {
 			_oktaService, Mockito.never()
 		).activateUser(
 			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testAssignAccountRoleSkipsWhenOktaIsUnavailable()
+		throws Exception {
+
+		Mockito.when(
+			_oktaService.fetchContactStatusByEmailAddress(_EMAIL_ADDRESS)
+		).thenThrow(
+			new OktaUnavailableException("Okta returned status 429")
+		);
+
+		_provisioningAssignmentService.assignAccountRole(
+			_account, _USER_ID, RoleConstants.NAME_ACCOUNT_MEMBER);
+
+		Mockito.verify(
+			_oktaService, Mockito.never()
+		).activateUser(
+			ArgumentMatchers.anyString()
+		);
+
+		Mockito.verify(
+			_oktaService, Mockito.never()
+		).addMembership(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
 		);
 	}
 
