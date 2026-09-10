@@ -357,6 +357,88 @@ public class EntitlementDefinitionServiceTest {
 			"DEF-SMALL", entitlementDefinition.getExternalReferenceCode());
 	}
 
+	@Test
+	public void testReconcileDeactivatesDefinitionWithDeletedSku()
+		throws Exception {
+
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-GONE", "Test App - SKU-GONE", "SKU-GONE"));
+
+		Mockito.when(
+			_commerceSkuService.fetchSku("SKU-GONE")
+		).thenReturn(
+			null
+		);
+
+		_entitlementDefinitionService.reconcileEntitlementDefinitions();
+
+		Assertions.assertEquals(
+			List.of("SKU-GONE"),
+			_getExternalReferenceCodes(
+				_entitlementDefinitionService.patchURIs));
+
+		JSONObject jsonObject = new JSONObject(
+			_entitlementDefinitionService.patchBodies.get(0));
+
+		Assertions.assertFalse(jsonObject.getBoolean("active"));
+	}
+
+	@Test
+	public void testReconcileGeneratesForApprovedProducts() throws Exception {
+		_setUpAppProduct(_createSku("SKU-SMALL", true, "Small"));
+
+		_entitlementDefinitionService.productsJSONArray = new JSONArray(
+		).put(
+			new JSONObject(
+			).put(
+				"productId", _C_PRODUCT_ID
+			).put(
+				"productStatus", 0
+			)
+		);
+
+		_entitlementDefinitionService.reconcileEntitlementDefinitions();
+
+		Assertions.assertEquals(
+			List.of("SKU-SMALL"),
+			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
+	}
+
+	@Test
+	public void testReconcileSkipsDefinitionWithExistingSku() throws Exception {
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-LIVE", "Test App - SKU-LIVE", "SKU-LIVE"));
+
+		Mockito.when(
+			_commerceSkuService.fetchSku("SKU-LIVE")
+		).thenReturn(
+			_createSku("SKU-LIVE", true, "Live")
+		);
+
+		_entitlementDefinitionService.reconcileEntitlementDefinitions();
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
+	}
+
+	@Test
+	public void testReconcileSkipsManualDefinitionWithDeletedSku()
+		throws Exception {
+
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "MANUAL", "Manual", "SKU-GONE"));
+
+		_entitlementDefinitionService.reconcileEntitlementDefinitions();
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
+
+		Mockito.verifyNoInteractions(_commerceSkuService);
+	}
+
 	private JSONObject _createEntitlementDefinitionJSONObject(
 		boolean active, String externalReferenceCode, String name,
 		String skuExternalReferenceCode) {
@@ -467,6 +549,7 @@ public class EntitlementDefinitionServiceTest {
 		public JSONArray itemsJSONArray = new JSONArray();
 		public final List<String> patchBodies = new ArrayList<>();
 		public final List<String> patchURIs = new ArrayList<>();
+		public JSONArray productsJSONArray = new JSONArray();
 		public final List<String> putBodies = new ArrayList<>();
 		public final List<String> putURIs = new ArrayList<>();
 
@@ -474,12 +557,20 @@ public class EntitlementDefinitionServiceTest {
 		protected String get(String authorization, URI uri) {
 			getURIs.add(uri.toString());
 
-			JSONObject jsonObject = new JSONObject(
-			).put(
-				"items", _filterItemsJSONArray(uri.getQuery())
-			);
+			JSONArray responseJSONArray = productsJSONArray;
 
-			return jsonObject.toString();
+			if (!uri.getPath(
+				).contains(
+					"/products"
+				)) {
+
+				responseJSONArray = _filterItemsJSONArray(uri.getQuery());
+			}
+
+			return new JSONObject(
+			).put(
+				"items", responseJSONArray
+			).toString();
 		}
 
 		@Override
