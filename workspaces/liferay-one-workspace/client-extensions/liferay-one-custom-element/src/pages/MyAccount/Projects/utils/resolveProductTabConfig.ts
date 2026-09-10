@@ -14,7 +14,7 @@ import {resolveUtilizationProfile} from './resolveUtilizationProfile';
 
 import type {DeliveryProduct} from '~/types/product';
 
-import type {ProjectItemKind, ProjectTabKey} from '../types';
+import type {ProjectItemType, ProjectTabKey} from '../types';
 import type {ActivationProfile} from './resolveActivationProfile';
 import type {DetailsProfile} from './resolveDetailsProfile';
 import type {DownloadProfile} from './resolveDownloadProfile';
@@ -40,23 +40,23 @@ export type ProductTabConfig = {
 
 export function resolveProductTabConfig({
 	hasActiveExperienceOffering,
-	kind,
+	itemType,
 	product,
 }: {
 	hasActiveExperienceOffering: boolean;
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 	product: DeliveryProduct;
 }): ProductTabConfig {
-	const activationProfile = resolveActivationProfile({kind, product});
-	const detailsProfile = resolveDetailsProfile({kind, product});
-	const downloadProfile = resolveDownloadProfile({kind, product});
+	const activationProfile = resolveActivationProfile({itemType, product});
+	const detailsProfile = resolveDetailsProfile({itemType, product});
+	const downloadProfile = resolveDownloadProfile({itemType, product});
 	const environmentProfile = resolveEnvironmentProfile(product);
 	const utilizationProfile = resolveUtilizationProfile(product);
 	const learnUrl = getSpecificationValue(product, 'project-learn-url');
 
 	const hasSupportInfo =
 		Boolean(learnUrl) ||
-		(kind === 'application' &&
+		(itemType === 'application' &&
 			SUPPORT_SPECIFICATION_KEYS.some((specificationKey) =>
 				getSpecificationValue(product, specificationKey)
 			));

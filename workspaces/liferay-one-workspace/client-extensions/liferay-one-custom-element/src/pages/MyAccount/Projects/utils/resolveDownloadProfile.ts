@@ -10,7 +10,7 @@ import {resolveProfile} from './resolveProfile';
 
 import type {DeliveryProduct} from '~/types/product';
 
-import type {ProjectItemKind} from '../types';
+import type {ProjectItemType} from '../types';
 import type {AppType} from './getAppType';
 
 export type DownloadProfile = 'app' | 'bundle' | 'none';
@@ -27,10 +27,10 @@ const DOWNLOAD_PROFILE_BY_APP_TYPE: Record<AppType, DownloadProfile> = {
 };
 
 export function resolveDownloadProfile({
-	kind,
+	itemType,
 	product,
 }: {
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 	product: DeliveryProduct;
 }): DownloadProfile {
 	const profile = resolveProfile(
@@ -43,7 +43,7 @@ export function resolveDownloadProfile({
 		return profile;
 	}
 
-	if (kind === 'application') {
+	if (itemType === 'application') {
 		const appType = getAppType(product);
 
 		return appType ? DOWNLOAD_PROFILE_BY_APP_TYPE[appType] : 'none';

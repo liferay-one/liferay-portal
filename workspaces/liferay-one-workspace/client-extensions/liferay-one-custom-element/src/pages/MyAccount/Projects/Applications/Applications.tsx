@@ -6,9 +6,8 @@
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
-import {useProject} from '~/context/ProjectContext';
-import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import {translate} from '~/i18n';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
 import {
@@ -20,18 +19,12 @@ import ProductListPage, {
 	statusFilter,
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
-import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 export default function Applications() {
 	const navigate = useNavigate();
-	const {project, projectId} = useProject();
-
-	const projectName = isUnassignedProject(projectId)
-		? undefined
-		: project?.name;
 
 	const {applications, error, loading, orderByProductExternalReferenceCode} =
-		useProjectApplications(projectId, projectName);
+		useProjectItems();
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(

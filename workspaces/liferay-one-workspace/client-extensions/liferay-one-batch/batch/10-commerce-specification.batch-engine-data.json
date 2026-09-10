@@ -414,15 +414,15 @@
 		},
 		{
 			"description": {
-				"en_US": "Selects whether the project dashboard lists this product under products or applications."
+				"en_US": "Selects whether the project dashboard lists this product under products or applications. A product without this specification is listed under neither."
 			},
 			"facetable": false,
-			"key": "project-item-kind",
+			"key": "project-item-type",
 			"optionCategory": {
 				"externalReferenceCode": "PRODUCT_METADATA"
 			},
 			"title": {
-				"en_US": "Project Item Kind"
+				"en_US": "Project Item Type"
 			}
 		},
 		{

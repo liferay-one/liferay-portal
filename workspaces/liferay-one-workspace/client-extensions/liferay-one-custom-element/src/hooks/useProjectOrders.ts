@@ -71,6 +71,7 @@ export function useProjectOrders(projectName?: string) {
 
 	const {data, error, isLoading} = usePlacedOrders({
 		accountId: accountId ?? -1,
+		fetchAllPages: true,
 		page: 1,
 		pageSize: 100,
 		shouldFetch: Boolean(accountId),

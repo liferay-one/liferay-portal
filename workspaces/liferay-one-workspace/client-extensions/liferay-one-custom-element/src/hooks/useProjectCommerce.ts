@@ -3,17 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES} from '~/enums/Product';
 import {useFetch} from '~/hooks/useFetch';
 import i18n from '~/i18n';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
-import {
-	ONE_TIME_PURCHASES,
-	isUnassignedProject,
-} from '~/pages/MyAccount/Projects/projects';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -35,13 +31,11 @@ export type ProjectContract = {
 
 export type ProjectProduct = {
 	description: string;
-	endDate: string;
 	externalReferenceCode: string;
 	id: string;
 	name: string;
 	publisher: string;
 	saleType: string;
-	skuExternalReferenceCode?: string;
 	specifications: DeliveryProductSpecification[];
 	startDate: string;
 	status: string;
@@ -566,113 +560,5 @@ export function useAccountProjectContactRoles() {
 	return {
 		contactRoleExternalReferenceCodesByProjectId,
 		loading: contractsLoading || productsLoading,
-	};
-}
-
-export function useProjectProducts(
-	projectExternalReferenceCode: string,
-	contractExternalReferenceCode?: string
-) {
-	const unassigned = isUnassignedProject(projectExternalReferenceCode);
-
-	const {
-		contract,
-		contracts,
-		entitlements: projectEntitlements,
-		error: projectError,
-		loading: projectLoading,
-	} = useProjectCommerce(
-		unassigned ? '' : projectExternalReferenceCode,
-		contractExternalReferenceCode
-	);
-
-	const {
-		entitlements: accountOrderEntitlements,
-		error: accountError,
-		loading: accountLoading,
-	} = useAccountOrderEntitlements(unassigned);
-
-	const entitlements = useMemo(() => {
-		if (unassigned) {
-			return accountOrderEntitlements.filter(
-				(entitlement) => !entitlement.projectExternalReferenceCode
-			);
-		}
-
-		return projectEntitlements;
-	}, [accountOrderEntitlements, projectEntitlements, unassigned]);
-
-	const commerceError = projectError ?? accountError;
-	const commerceLoading = projectLoading || accountLoading;
-
-	const {
-		data: productsData,
-		error: productsError,
-		isLoading: productsLoading,
-	} = useChannelProducts();
-
-	const products = useMemo<ProjectProduct[]>(() => {
-		const productsBySkuExternalReferenceCode =
-			toProductsBySkuExternalReferenceCode(productsData?.items ?? []);
-
-		const seenProductKeys = new Set<string>();
-
-		return entitlements
-			.map((entitlement): ProjectProduct | null => {
-				const product = productsBySkuExternalReferenceCode.get(
-					entitlement.skuExternalReferenceCode as string
-				);
-
-				if (!product) {
-					return null;
-				}
-
-				return {
-					description: product.description,
-					endDate: entitlement.endDate
-						? format(new Date(entitlement.endDate), 'MMM d, yyyy')
-						: '',
-					externalReferenceCode: product.externalReferenceCode,
-					id: String(product.productId ?? product.id),
-					name: product.name,
-					publisher: getSpecificationValue(product, 'publisher-name'),
-					saleType: getSpecificationValue(product, 'price-model'),
-					skuExternalReferenceCode:
-						entitlement.skuExternalReferenceCode,
-					specifications: product.productSpecifications ?? [],
-					startDate: entitlement.startDate
-						? format(new Date(entitlement.startDate), 'MMM d, yyyy')
-						: '',
-					status: getEntitlementStatus(entitlement.endDate),
-					type:
-						getSpecificationValues(
-							product,
-							'liferay-products-categories'
-						)[0] ?? getSpecificationValue(product, 'price-model'),
-				};
-			})
-			.filter((product): product is ProjectProduct => {
-				if (!product) {
-					return false;
-				}
-
-				const productKey = `${product.externalReferenceCode}|${product.skuExternalReferenceCode}|${product.startDate}|${product.endDate}`;
-
-				if (seenProductKeys.has(productKey)) {
-					return false;
-				}
-
-				seenProductKeys.add(productKey);
-
-				return true;
-			});
-	}, [entitlements, productsData]);
-
-	return {
-		contract: unassigned ? undefined : contract,
-		contracts: unassigned ? [] : contracts,
-		error: commerceError ?? productsError,
-		loading: commerceLoading || productsLoading,
-		products,
 	};
 }
