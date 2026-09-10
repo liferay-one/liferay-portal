@@ -37,21 +37,32 @@ public class UsageReportService extends OneBaseService {
 
 	public static final String TARGET_TYPE_PROJECT = "project";
 
+	/**
+	 * Adds a usage report whose overage is billed in whole units of
+	 * <code>overageUnitQuantity</code> aggregate units. Consumption beyond the
+	 * entitled quantity is rounded up to the next whole overage unit, so the
+	 * report's overage quantity is a count of overage units and its overage
+	 * amount is that count times the usage definition's overage rate.
+	 */
 	public UsageReport addUsageReport(
 			double aggregateQuantity, String contractExternalReferenceCode,
 			Instant dateFromInstant, Instant dateToInstant,
 			double entitledQuantity, String externalReferenceCode,
-			Project project, String skuExternalReferenceCode,
-			UsageDefinition usageDefinition)
+			long overageUnitQuantity, Project project,
+			String skuExternalReferenceCode, UsageDefinition usageDefinition)
 		throws Exception {
 
-		double overageQuantity = Math.max(
-			aggregateQuantity - entitledQuantity, 0);
+		if (overageUnitQuantity <= 0) {
+			throw new IllegalArgumentException(
+				"Overage unit quantity must be positive");
+		}
 
-		// TODO LPD-99837: The overage amount assumes a per unit rate. Product
-		// has not yet decided whether LDP events overage is priced per event or
-		// per 200,000 event add-on bucket. Per bucket pricing would round the
-		// overage quantity up to whole buckets here before multiplying.
+		double overageQuantity = 0;
+
+		if (aggregateQuantity > entitledQuantity) {
+			overageQuantity = Math.ceil(
+				(aggregateQuantity - entitledQuantity) / overageUnitQuantity);
+		}
 
 		double overageAmount =
 			overageQuantity * usageDefinition.getOverageRate();

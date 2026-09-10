@@ -306,14 +306,16 @@ public class LDPEventUsageReportService {
 			ldpEventSummary.getTotalEventsCount(),
 			_fetchContractExternalReferenceCode(entitlements), startInstant,
 			endInstant.minusMillis(1), ldpEventAllotment.getEntitledQuantity(),
-			externalReferenceCode, project, skuExternalReferenceCode,
-			usageDefinition);
+			externalReferenceCode,
+			EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET, project,
+			skuExternalReferenceCode, usageDefinition);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				StringBundler.concat(
 					"Generated usage report ", externalReferenceCode, " with ",
-					usageReport.getOverageQuantity(), " overage events"));
+					usageReport.getOverageQuantity(),
+					" overage add-on buckets"));
 		}
 
 		return true;

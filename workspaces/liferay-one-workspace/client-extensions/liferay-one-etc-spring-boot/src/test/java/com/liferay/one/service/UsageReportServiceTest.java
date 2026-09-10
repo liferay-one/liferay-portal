@@ -12,6 +12,7 @@ import java.time.Instant;
 
 import org.json.JSONObject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,38 +42,74 @@ public class UsageReportServiceTest {
 
 	@Test
 	public void testDerivesCompletedReportWithoutOverage() throws Exception {
-		_usageReportService.addUsageReport(
-			999999, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
-			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, _project,
-			_SKU_EXTERNAL_REFERENCE_CODE, _usageDefinition);
+		_addUsageReport(999999);
 
-		Mockito.verify(
-			_usageReportService
-		).addUsageReport(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE, 999999,
-			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
-			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, 0, "USD", 0,
-			_PROJECT_ID, UsageReportService.REVIEW_STATUS_COMPLETED,
-			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
-		);
+		_verifyUsageReport(
+			999999, 0, UsageReportService.REVIEW_STATUS_COMPLETED);
 	}
 
 	@Test
 	public void testDerivesReadyForReviewReportWithOverage() throws Exception {
+		_addUsageReport(1300000);
+
+		_verifyUsageReport(
+			1300000, 2, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+	}
+
+	@Test
+	public void testRejectsNonpositiveOverageUnitQuantity() {
+		Assertions.assertThrows(
+			IllegalArgumentException.class,
+			() -> _usageReportService.addUsageReport(
+				1000001, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
+				_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, 0,
+				_project, _SKU_EXTERNAL_REFERENCE_CODE, _usageDefinition));
+	}
+
+	@Test
+	public void testRoundsOverageUpToWholeUnits() throws Exception {
+		_addUsageReport(1000001);
+
+		_verifyUsageReport(
+			1000001, 1, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+
+		Mockito.clearInvocations(_usageReportService);
+
+		_addUsageReport(1200000);
+
+		_verifyUsageReport(
+			1200000, 1, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+
+		Mockito.clearInvocations(_usageReportService);
+
+		_addUsageReport(1200001);
+
+		_verifyUsageReport(
+			1200001, 2, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+	}
+
+	private void _addUsageReport(double aggregateQuantity) throws Exception {
 		_usageReportService.addUsageReport(
-			1300000, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
-			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, _project,
+			aggregateQuantity, _CONTRACT_EXTERNAL_REFERENCE_CODE,
+			_DATE_FROM_INSTANT, _DATE_TO_INSTANT, 1000000,
+			_EXTERNAL_REFERENCE_CODE, _OVERAGE_UNIT_QUANTITY, _project,
 			_SKU_EXTERNAL_REFERENCE_CODE, _usageDefinition);
+	}
+
+	private void _verifyUsageReport(
+			double aggregateQuantity, double overageQuantity,
+			String reviewStatus)
+		throws Exception {
 
 		Mockito.verify(
 			_usageReportService
 		).addUsageReport(
-			_ACCOUNT_EXTERNAL_REFERENCE_CODE, 1300000,
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE, aggregateQuantity,
 			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
 			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE,
-			300000 * _OVERAGE_RATE, "USD", 300000, _PROJECT_ID,
-			UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW,
-			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
+			overageQuantity * _OVERAGE_RATE, "USD", overageQuantity,
+			_PROJECT_ID, reviewStatus, _SKU_EXTERNAL_REFERENCE_CODE,
+			_USAGE_DEFINITION_ID
 		);
 	}
 
@@ -90,12 +127,14 @@ public class UsageReportServiceTest {
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"C_USAGE_REPORT_PRJCT_001_2026_08";
 
-	private static final double _OVERAGE_RATE = 0.0001;
+	private static final double _OVERAGE_RATE = 20;
+
+	private static final long _OVERAGE_UNIT_QUANTITY = 200000;
 
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-DATA-PLATFORM";
+		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
 
 	private static final long _USAGE_DEFINITION_ID = 33;
 
