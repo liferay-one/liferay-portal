@@ -97,6 +97,13 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 					"field"));
 		}
 
+		String accountExternalReferenceCode =
+			order.getAccountExternalReferenceCode();
+
+		JSONObject analyticsCloudProjectJSONObject =
+			_analyticsCloudService.getAnalyticsCloudProjectJSONObject(
+				_ANALYTICS_CLOUD_ENVIRONMENT, accountExternalReferenceCode);
+
 		if (order.getOrderStatus() ==
 				CommerceOrderConstants.ORDER_STATUS_OPEN) {
 
@@ -107,38 +114,47 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 		_commerceOrderService.updateOrder(
 			null, orderId, CommerceOrderConstants.ORDER_STATUS_PROCESSING);
 
-		try {
-			JSONObject analyticsCloudProjectJSONObject =
-				_analyticsCloudService.provisionAnalyticsCloudProject(
-					"internal",
-					_getAnalyticsCloudProjectJSONObject(
-						ldpSettingsJSONObject, order),
-					order.getAccountExternalReferenceCode());
+		if (analyticsCloudProjectJSONObject == null) {
+			try {
+				analyticsCloudProjectJSONObject =
+					_analyticsCloudService.provisionAnalyticsCloudProject(
+						_ANALYTICS_CLOUD_ENVIRONMENT,
+						_getAnalyticsCloudProjectJSONObject(
+							ldpSettingsJSONObject, order),
+						accountExternalReferenceCode);
+			}
+			catch (WebClientResponseException webClientResponseException) {
+				_cancelOrder(
+					webClientResponseException.getResponseBodyAsString(),
+					orderId);
 
-			_commerceOrderService.updateOrder(
-				HashMapBuilder.put(
-					"ldpAnalyticsCloudProject",
-					analyticsCloudProjectJSONObject.toString()
-				).put(
-					"ldpWorkspaceName", workspaceName
-				).build(),
-				orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
-				paymentStatus);
+				throw webClientResponseException;
+			}
+			catch (Exception exception) {
+				_cancelOrder(exception.getMessage(), orderId);
 
-			return ResponseEntity.ok(
-			).build();
+				throw exception;
+			}
 		}
-		catch (WebClientResponseException webClientResponseException) {
-			_cancelOrder(
-				webClientResponseException.getResponseBodyAsString(), orderId);
-
-			throw webClientResponseException;
+		else if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Reusing the Liferay Data Platform workspace already ",
+					"provisioned for account ", accountExternalReferenceCode));
 		}
-		catch (Exception exception) {
-			_cancelOrder(exception.getMessage(), orderId);
 
-			throw exception;
-		}
+		_commerceOrderService.updateOrder(
+			HashMapBuilder.put(
+				"ldpAnalyticsCloudProject",
+				analyticsCloudProjectJSONObject.toString()
+			).put(
+				"ldpWorkspaceName", workspaceName
+			).build(),
+			orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+			paymentStatus);
+
+		return ResponseEntity.ok(
+		).build();
 	}
 
 	private void _cancelOrder(String errorMessage, long orderId)
@@ -170,7 +186,8 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 			"corpProjectName", ldpSettingsJSONObject.getString("workspaceName")
 		).put(
 			"friendlyURL",
-			ldpSettingsJSONObject.optString("friendlyWorkspaceURL")
+			_getFriendlyURL(
+				ldpSettingsJSONObject.optString("friendlyWorkspaceURL"))
 		).put(
 			"incidentReportEmailAddresses",
 			ldpSettingsJSONObject.optJSONArray(
@@ -187,6 +204,23 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 		);
 	}
 
+	private String _getFriendlyURL(String friendlyURL) {
+		if (Validator.isNull(friendlyURL)) {
+			return "";
+		}
+
+		friendlyURL = friendlyURL.trim(
+		).replaceAll(
+			"^/+", ""
+		);
+
+		if (Validator.isNull(friendlyURL)) {
+			return "";
+		}
+
+		return "/" + friendlyURL;
+	}
+
 	private JSONObject _getLDPSettingsJSONObject(Order order) {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
@@ -197,6 +231,8 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 
 		return new JSONObject(customFields.getOrDefault("ldpSettings", "{}"));
 	}
+
+	private static final String _ANALYTICS_CLOUD_ENVIRONMENT = "internal";
 
 	private static final Log _log = LogFactory.getLog(
 		LiferayDataPlatformRestController.class);

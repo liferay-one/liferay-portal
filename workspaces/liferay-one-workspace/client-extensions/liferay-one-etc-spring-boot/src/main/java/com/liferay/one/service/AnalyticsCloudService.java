@@ -90,6 +90,14 @@ public class AnalyticsCloudService extends BaseService {
 		}
 	}
 
+	public JSONObject getAnalyticsCloudProjectJSONObject(
+		String analyticsCloudEnvironment, String corpProjectUuid) {
+
+		return getAnalyticsCloudProjectJSONObject(
+			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment),
+			corpProjectUuid);
+	}
+
 	public String getAuthorization(JSONObject analyticsCloudContextJSONObject) {
 		Base64.Encoder encoder = Base64.getEncoder();
 
@@ -179,17 +187,6 @@ public class AnalyticsCloudService extends BaseService {
 			JSONObject analyticsCloudProjectJSONObject, String corpProjectUuid)
 		throws Exception {
 
-		JSONObject analyticsCloudContextJSONObject =
-			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment);
-
-		JSONObject curAnalyticsCloudProjectJSONObject =
-			getAnalyticsCloudProjectJSONObject(
-				analyticsCloudContextJSONObject, corpProjectUuid);
-
-		if (curAnalyticsCloudProjectJSONObject != null) {
-			return curAnalyticsCloudProjectJSONObject;
-		}
-
 		if (Objects.equals(analyticsCloudEnvironment, "internal")) {
 			analyticsCloudProjectJSONObject.put(
 				"serverLocation", "us-west1-ac-uat-c1");
@@ -198,7 +195,8 @@ public class AnalyticsCloudService extends BaseService {
 		analyticsCloudProjectJSONObject.put("corpProjectUuid", corpProjectUuid);
 
 		return provisionAnalyticsCloudProject(
-			analyticsCloudContextJSONObject, analyticsCloudProjectJSONObject);
+			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment),
+			analyticsCloudProjectJSONObject);
 	}
 
 	private static final Log _log = LogFactory.getLog(
