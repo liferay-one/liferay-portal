@@ -1644,6 +1644,22 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-DATA-PLATFORM"
+				},
+				{
+					"customFields": [
+						{
+							"customValue": {
+								"data": "Adds 200,000 events to your Data Platform monthly capacity."
+							},
+							"name": "description"
+						}
+					],
+					"externalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+					"neverExpire": true,
+					"price": 20,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET"
 				}
 			]
 		},

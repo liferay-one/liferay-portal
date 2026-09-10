@@ -30,6 +30,15 @@
 		},
 		{
 			"aggregationType": "count",
+			"externalReferenceCode": "events-add-on-bucket-monthly",
+			"overageCurrency": "USD",
+			"overageRate": 20,
+			"period": "per month",
+			"quantity": 1,
+			"unit": "buckets"
+		},
+		{
+			"aggregationType": "count",
 			"externalReferenceCode": "events-monthly",
 			"overageCurrency": "USD",
 			"overageRate": 0.0001,
