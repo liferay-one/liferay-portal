@@ -5,6 +5,7 @@
 
 package com.liferay.one.okta.service;
 
+import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
 import com.liferay.one.pubsub.Message;
@@ -25,6 +26,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -151,14 +153,24 @@ public class OktaService {
 		).block();
 
 		if (responseEntity == null) {
-			return null;
+			throw new OktaUnavailableException(
+				"Unable to fetch the Okta contact " + emailAddress);
 		}
 
 		HttpStatusCode httpStatusCode = responseEntity.getStatusCode();
 
-		int statusCode = httpStatusCode.value();
+		if (httpStatusCode.value() == HttpStatus.NOT_FOUND.value()) {
+			return null;
+		}
 
-		if ((statusCode == 404) || Validator.isNull(responseEntity.getBody())) {
+		if (httpStatusCode.isError()) {
+			throw new OktaUnavailableException(
+				StringBundler.concat(
+					"Unable to fetch the Okta contact ", emailAddress,
+					" because Okta returned status ", httpStatusCode.value()));
+		}
+
+		if (Validator.isNull(responseEntity.getBody())) {
 			return null;
 		}
 
