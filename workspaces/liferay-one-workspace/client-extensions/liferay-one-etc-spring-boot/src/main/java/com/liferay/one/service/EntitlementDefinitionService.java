@@ -167,17 +167,14 @@ public class EntitlementDefinitionService extends OneBaseService {
 	@Scheduled(cron = "${liferay.one.entitlement.definition.reconcile.cron}")
 	public void reconcileEntitlementDefinitions() {
 		if (!_reconciling.compareAndSet(false, true)) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Skipping entitlement definition reconciliation because " +
-						"another reconciliation is in progress");
-			}
-
 			return;
 		}
 
 		try {
-			List<Long> cProductIds = _getApprovedProductIds();
+			List<Long> cProductIds = getAllItems(
+				"/o/headless-commerce-admin-catalog/v1.0/products",
+				"statusCode eq " + WorkflowConstants.STATUS_APPROVED,
+				jsonObject -> jsonObject.optLong("productId"));
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -260,9 +257,10 @@ public class EntitlementDefinitionService extends OneBaseService {
 			}
 
 			try {
-				if (_commerceSkuService.fetchSku(skuExternalReferenceCode) !=
-						null) {
+				Sku sku = _commerceSkuService.fetchSku(
+					skuExternalReferenceCode);
 
+				if (sku != null) {
 					continue;
 				}
 
@@ -288,24 +286,6 @@ public class EntitlementDefinitionService extends OneBaseService {
 					exception);
 			}
 		}
-	}
-
-	private List<Long> _getApprovedProductIds() throws Exception {
-		List<Long> cProductIds = getAllItems(
-			"/o/headless-commerce-admin-catalog/v1.0/products", null,
-			jsonObject -> {
-				if (jsonObject.optInt("productStatus", -1) ==
-						WorkflowConstants.STATUS_APPROVED) {
-
-					return jsonObject.optLong("productId");
-				}
-
-				return null;
-			});
-
-		cProductIds.removeIf(Objects::isNull);
-
-		return cProductIds;
 	}
 
 	private Map<String, List<EntitlementDefinition>>
