@@ -7,6 +7,8 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {Navigate, useLocation} from 'react-router-dom';
 import {useFetch} from '~/hooks/useFetch';
 import {
+	PROJECT_SECTION_PATHS,
+	isUnassignedProject,
 	resolveDefaultProject,
 	useUserProjects,
 } from '~/pages/MyAccount/Projects/projects';
@@ -17,7 +19,7 @@ import type {Account} from '~/types/accounts';
 export default function ProjectRedirect() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 
-	const {pathname} = useLocation();
+	const {pathname, search} = useLocation();
 
 	const {data: account, isLoading: accountLoading} = useFetch<Account>(
 		currentAccountId
@@ -30,20 +32,40 @@ export default function ProjectRedirect() {
 	if (account && !projectsLoading) {
 		const accountERC = account.externalReferenceCode;
 
-		const target = resolveDefaultProject(projects);
+		const segments = pathname
+			.replace(/^\/project\/?/, '')
+			.split('/')
+			.filter(Boolean);
 
-		if (!target) {
+		const [firstSegment = '', ...restSegments] = segments;
+
+		const sectionRequested = PROJECT_SECTION_PATHS.includes(firstSegment);
+
+		const requestedProjectERC =
+			!sectionRequested &&
+			(isUnassignedProject(firstSegment) ||
+				projects.some(
+					(project) => project.externalReferenceCode === firstSegment
+				))
+				? firstSegment
+				: undefined;
+
+		const projectERC =
+			requestedProjectERC ??
+			resolveDefaultProject(projects)?.externalReferenceCode;
+
+		if (!projectERC) {
 			return <Navigate replace to={`/${accountERC}/project`} />;
 		}
 
-		const tab = pathname.replace(/^\/project\/?/, '');
+		const tab =
+			(sectionRequested ? segments : restSegments).join('/') ||
+			'products';
 
 		return (
 			<Navigate
 				replace
-				to={`/${accountERC}/project/${target.externalReferenceCode}/${
-					tab || 'products'
-				}`}
+				to={`/${accountERC}/project/${projectERC}/${tab}${search}`}
 			/>
 		);
 	}

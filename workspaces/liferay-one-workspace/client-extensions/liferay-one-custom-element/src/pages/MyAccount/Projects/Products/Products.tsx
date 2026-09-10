@@ -6,8 +6,8 @@
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {useProject} from '~/context/ProjectContext';
-import {ProjectProduct, useProjectProducts} from '~/hooks/useProjectCommerce';
+import {ProjectProduct} from '~/hooks/useProjectCommerce';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import i18n from '~/i18n';
 import {
 	ListColumn,
@@ -19,29 +19,15 @@ import ProductListPage, {
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
-import {resolveProjectItemKind} from '~/pages/MyAccount/Projects/utils/resolveProjectItemKind';
 
 export default function Products() {
 	const navigate = useNavigate();
-	const {projectId, selectedContractERC} = useProject();
 
-	const {error, loading, products} = useProjectProducts(
-		projectId,
-		selectedContractERC
-	);
-
-	const projectProducts = useMemo(
-		() =>
-			products.filter(
-				(product) =>
-					resolveProjectItemKind(product.specifications) === 'product'
-			),
-		[products]
-	);
+	const {error, loading, products} = useProjectItems();
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const types = Array.from(
-			new Set(projectProducts.map((product) => product.type))
+			new Set(products.map((product) => product.type))
 		).sort();
 
 		return [
@@ -51,9 +37,9 @@ export default function Products() {
 				matches: (product, values) => values.includes(product.type),
 				options: types.map((type) => ({label: type, value: type})),
 			},
-			statusFilter(projectProducts),
+			statusFilter(products),
 		];
-	}, [projectProducts]);
+	}, [products]);
 
 	const columns: ListColumn<ProjectProduct>[] = [
 		{
@@ -94,13 +80,6 @@ export default function Products() {
 			render: (product) => product.startDate,
 			width: '1%',
 		},
-		{
-			heading: 'end-date',
-			key: 'end-date',
-			noWrap: true,
-			render: (product) => product.endDate,
-			width: '1%',
-		},
 		statusColumn(),
 	];
 
@@ -111,7 +90,7 @@ export default function Products() {
 			emptyLabel="no-products-yet"
 			error={error}
 			filters={filters}
-			items={projectProducts}
+			items={products}
 			loading={loading}
 			onItemClick={(product) => navigate(product.externalReferenceCode)}
 			title="products"

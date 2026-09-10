@@ -37,6 +37,12 @@
 					"value": {
 						"en_US": "Paid"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -77,6 +83,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -119,6 +131,12 @@
 					"value": {
 						"en_US": "Paid"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -159,6 +177,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -321,6 +345,12 @@
 					"specificationKey": "project-environment-profile",
 					"value": {
 						"en_US": "ai-hub"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -601,6 +631,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Analytics Cloud (Subscription)"
@@ -665,7 +701,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -762,6 +798,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Software (Subscription)"
@@ -806,6 +848,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -877,6 +925,12 @@
 					"specificationKey": "project-environment-profile",
 					"value": {
 						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -1002,6 +1056,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Commerce (Subscription)"
@@ -1122,6 +1182,12 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-commerce"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -1278,6 +1344,12 @@
 					"specificationKey": "project-download-profile",
 					"value": {
 						"en_US": "bundle"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -1455,6 +1527,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "usage-metrics"
@@ -1620,6 +1698,12 @@
 					"specificationKey": "project-download-profile",
 					"value": {
 						"en_US": "bundle"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -1791,6 +1875,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com/w/dxp/getting-started/liferay-dxp-free-tier"
@@ -1869,6 +1959,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Enterprise Search (Subscription)"
@@ -1937,6 +2033,12 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "dates-status"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -2032,7 +2134,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -2174,6 +2276,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "experience-dashboard"
@@ -2263,6 +2371,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "experience-dashboard"
@@ -2326,6 +2440,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -2372,6 +2492,12 @@
 					"specificationKey": "partner-product",
 					"value": {
 						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -2420,6 +2546,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -2466,6 +2598,12 @@
 					"specificationKey": "partner-product",
 					"value": {
 						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -2514,6 +2652,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -2560,6 +2704,12 @@
 					"specificationKey": "partner-product",
 					"value": {
 						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -2608,6 +2758,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -2655,6 +2811,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -2701,6 +2863,12 @@
 					"specificationKey": "partner-product",
 					"value": {
 						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -2766,6 +2934,12 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-instance"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -2837,6 +3011,12 @@
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-instance"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -2932,7 +3112,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -3080,6 +3260,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "experience-dashboard"
@@ -3136,6 +3322,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -3207,6 +3399,12 @@
 					"specificationKey": "project-environment-profile",
 					"value": {
 						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -3299,6 +3497,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "saas-plan-dashboard"
@@ -3355,6 +3559,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -3429,6 +3639,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
 					"specificationKey": "project-utilization-profile",
 					"value": {
 						"en_US": "legacy"
@@ -3479,6 +3695,12 @@
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				}
 			],
@@ -3550,6 +3772,12 @@
 					"specificationKey": "project-environment-profile",
 					"value": {
 						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
 					}
 				},
 				{
@@ -3645,7 +3873,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -3732,7 +3960,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -3831,7 +4059,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -3925,7 +4153,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4008,7 +4236,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4117,7 +4345,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4229,7 +4457,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4338,7 +4566,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4467,7 +4695,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4578,7 +4806,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4707,7 +4935,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}
@@ -4860,7 +5088,7 @@
 					}
 				},
 				{
-					"specificationKey": "project-item-kind",
+					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "application"
 					}

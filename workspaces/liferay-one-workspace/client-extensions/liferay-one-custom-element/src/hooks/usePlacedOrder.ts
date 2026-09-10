@@ -9,8 +9,11 @@ import {Liferay} from '~/services/liferay/liferay';
 
 const channelId = Liferay.CommerceContext.commerceChannelId;
 
+const MAX_PAGES = 20;
+
 type Props = {
 	accountId: number | string;
+	fetchAllPages?: boolean;
 	filter?: string;
 	orderTypeExternalReferenceCodes?: string[];
 	page: number;
@@ -30,6 +33,7 @@ const usePlacedOrder = (
 
 const usePlacedOrders = ({
 	accountId,
+	fetchAllPages = false,
 	filter,
 	orderTypeExternalReferenceCodes,
 	page,
@@ -37,30 +41,52 @@ const usePlacedOrders = ({
 	shouldFetch = true,
 }: Props) =>
 	useSWR(
-		shouldFetch ? `/placed-orders/${accountId}/${page}/${pageSize}` : null,
+		shouldFetch
+			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}`
+			: null,
 		async () => {
-			const response =
-				await HeadlessCommerceDeliveryOrder.getPlacedOrders(
+			const getPage = (currentPage: number) =>
+				HeadlessCommerceDeliveryOrder.getPlacedOrders(
 					channelId,
 					accountId,
 					new URLSearchParams({
 						...(filter && {filter}),
 						nestedFields: 'placedOrderItems',
-						page: page.toString(),
+						page: currentPage.toString(),
 						pageSize: pageSize.toString(),
 						sort: 'createDate:desc',
 					})
 				);
 
+			const response = await getPage(page);
+
+			const items = [...response.items];
+
+			if (fetchAllPages && response.totalCount > items.length) {
+				const lastPage = Math.min(
+					Math.ceil(response.totalCount / pageSize),
+					page + MAX_PAGES - 1
+				);
+
+				const remainingPages = await Promise.all(
+					Array.from({length: lastPage - page}, (_, index) =>
+						getPage(page + index + 1)
+					)
+				);
+
+				remainingPages.forEach((remainingPage) =>
+					items.push(...remainingPage.items)
+				);
+			}
+
 			return {
 				...response,
-				items: response.items.filter(
-					({orderTypeExternalReferenceCode}) =>
-						orderTypeExternalReferenceCodes?.length
-							? orderTypeExternalReferenceCodes.includes(
-									orderTypeExternalReferenceCode
-								)
-							: true
+				items: items.filter(({orderTypeExternalReferenceCode}) =>
+					orderTypeExternalReferenceCodes?.length
+						? orderTypeExternalReferenceCodes.includes(
+								orderTypeExternalReferenceCode
+							)
+						: true
 				),
 			};
 		}
