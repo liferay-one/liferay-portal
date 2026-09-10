@@ -13,7 +13,63 @@ import {
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
 
+import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
 import type {PlacedOrder} from '~/types/orders';
+
+export function useProjectsWithProjectItemType(
+	projectItemType: ProjectItemType
+) {
+	const {projects} = useProject();
+
+	const {data: channelProducts, isLoading: productsLoading} =
+		useChannelProducts();
+	const {loading: ordersLoading, placedOrders} = useProjectOrders();
+
+	const productsByProductId = useMemo(
+		() => toProductsByProductId(channelProducts?.items ?? []),
+		[channelProducts]
+	);
+
+	const projectERCs = useMemo(() => {
+		const ordersByProjectName = new Map<string, PlacedOrder[]>();
+
+		for (const order of placedOrders) {
+			const projectName = getProjectName(order);
+
+			const orders = ordersByProjectName.get(projectName);
+
+			if (orders) {
+				orders.push(order);
+			}
+			else {
+				ordersByProjectName.set(projectName, [order]);
+			}
+		}
+
+		return projects
+			.filter((project) => {
+				const orders =
+					ordersByProjectName.get(
+						isUnassignedProject(project.externalReferenceCode)
+							? ''
+							: project.name
+					) ?? [];
+
+				const itemsByProjectItemType = toProjectItemsByType(
+					orders,
+					productsByProductId
+				);
+
+				return Boolean(itemsByProjectItemType[projectItemType].size);
+			})
+			.map((project) => project.externalReferenceCode);
+	}, [placedOrders, productsByProductId, projectItemType, projects]);
+
+	return {
+		loading: ordersLoading || productsLoading,
+		projectERCs,
+	};
+}
 
 export function useProjectItems() {
 	const {loading: projectLoading, project, projectId} = useProject();
