@@ -6,9 +6,9 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
-import com.liferay.one.constants.UsageDefinitionConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.model.UsageReport;
@@ -43,6 +43,9 @@ public class LDPEventUsageReportServiceTest {
 		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_contractService", _contractService);
 		ReflectionTestUtils.setField(
+			_ldpEventUsageReportService, "_entitlementDefinitionService",
+			_entitlementDefinitionService);
+		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_entitlementService",
 			_entitlementService);
 		ReflectionTestUtils.setField(
@@ -70,6 +73,23 @@ public class LDPEventUsageReportServiceTest {
 		);
 
 		Mockito.when(
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET)
+		).thenReturn(
+			new EntitlementDefinition(
+				new JSONObject(
+				).put(
+					_USAGE_DEFINITION_FIELD_NAME,
+					_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
+				).put(
+					"id", 44L
+				).put(
+					"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
+				))
+		);
+
+		Mockito.when(
 			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			_createProject(_PROJECT_EXTERNAL_REFERENCE_CODE, _PROJECT_ID)
@@ -90,7 +110,7 @@ public class LDPEventUsageReportServiceTest {
 
 		Mockito.when(
 			_usageDefinitionService.fetchUsageDefinition(
-				UsageDefinitionConstants.EXTERNAL_REFERENCE_CODE_EVENTS_MONTHLY)
+				_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			new UsageDefinition(
 				new JSONObject(
@@ -242,6 +262,25 @@ public class LDPEventUsageReportServiceTest {
 	}
 
 	@Test
+	public void testStopsWithoutAddOnBucketEntitlementDefinition()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				Mockito.anyString())
+		).thenReturn(
+			null
+		);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verifyNoInteractions(
+			_entitlementService, _usageDefinitionService);
+
+		_verifyNoReportAdded();
+	}
+
+	@Test
 	public void testStopsWithoutUsageDefinition() throws Exception {
 		Mockito.when(
 			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
@@ -267,7 +306,7 @@ public class LDPEventUsageReportServiceTest {
 			).put(
 				"id", 1L
 			).put(
-				"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
+				"skuExternalReferenceCode", "PRDCT-DATA-PLATFORM"
 			)
 		).put(
 			"grantType", grantType
@@ -373,7 +412,13 @@ public class LDPEventUsageReportServiceTest {
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-DATA-PLATFORM";
+		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
+
+	private static final String _USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE =
+		"events-add-on-bucket-monthly";
+
+	private static final String _USAGE_DEFINITION_FIELD_NAME =
+		"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC";
 
 	private static final long _USAGE_DEFINITION_ID = 33;
 
@@ -384,6 +429,8 @@ public class LDPEventUsageReportServiceTest {
 
 	private final ContractService _contractService = Mockito.mock(
 		ContractService.class);
+	private final EntitlementDefinitionService _entitlementDefinitionService =
+		Mockito.mock(EntitlementDefinitionService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private final GoogleCloudFunctionService _googleCloudFunctionService =

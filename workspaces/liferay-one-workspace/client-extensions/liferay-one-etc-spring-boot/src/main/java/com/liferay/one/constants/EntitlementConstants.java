@@ -10,6 +10,10 @@ package com.liferay.one.constants;
  */
 public class EntitlementConstants {
 
+	public static final String
+		EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET =
+			"C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET";
+
 	public static final String EXTERNAL_REFERENCE_CODE_DXP = "C_ENT_DEF_DXP";
 
 	public static final String EXTERNAL_REFERENCE_CODE_PORTAL =
