@@ -5,7 +5,6 @@
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import {useEffect} from 'react';
 import useSWR from 'swr';
 import documentCircleIcon from '~/assets/icons/document_circle_icon.svg';
 import {AccountAndAppCard} from '~/components/AccountAndAppCard/AccountAndAppCard';
@@ -15,7 +14,6 @@ import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import i18n from '~/i18n';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
-import AIHub from '~/services/spring-boot/AIHub';
 import {getAccountImage} from '~/utils/getAccountImage';
 import {getSiteURL} from '~/utils/siteUtils';
 
@@ -40,16 +38,6 @@ const AIHubOpenBetaNextSteps: React.FC<AIHubOpenBetaNextStepsProps> = ({
 		accountId ? `/next-steps/account-commerce/${accountId}` : null,
 		() => HeadlessAdminUser.getAccount(accountId as unknown as string)
 	);
-
-	const orderId = placedOrder?.id;
-
-	useEffect(() => {
-		if (!orderId) {
-			return;
-		}
-
-		AIHub.postOpportunities(orderId).catch(console.error);
-	}, [orderId]);
 
 	return (
 		<PageRenderer
