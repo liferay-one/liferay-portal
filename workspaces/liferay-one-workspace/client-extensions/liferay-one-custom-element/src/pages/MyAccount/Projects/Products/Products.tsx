@@ -5,9 +5,13 @@
 
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {Navigate, useNavigate, useParams} from 'react-router-dom';
+import {useProject} from '~/context/ProjectContext';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {useProjectItems} from '~/hooks/useProjectItems';
+import {
+	useProjectItems,
+	useProjectsWithProjectItemType,
+} from '~/hooks/useProjectItems';
 import i18n from '~/i18n';
 import {
 	ListColumn,
@@ -22,8 +26,13 @@ import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 
 export default function Products() {
 	const navigate = useNavigate();
+	const {accountERC} = useParams();
+
+	const {projectId} = useProject();
 
 	const {error, loading, products} = useProjectItems();
+	const {loading: projectERCsLoading, projectERCs} =
+		useProjectsWithProjectItemType('product');
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const types = Array.from(
@@ -82,6 +91,25 @@ export default function Products() {
 		},
 		statusColumn(),
 	];
+
+	const fallbackProjectERC = projectERCs.find(
+		(projectERC) => projectERC !== projectId
+	);
+
+	if (
+		!loading &&
+		!projectERCsLoading &&
+		!error &&
+		!products.length &&
+		fallbackProjectERC
+	) {
+		return (
+			<Navigate
+				replace
+				to={`/${accountERC}/project/${fallbackProjectERC}/products`}
+			/>
+		);
+	}
 
 	return (
 		<ProductListPage
