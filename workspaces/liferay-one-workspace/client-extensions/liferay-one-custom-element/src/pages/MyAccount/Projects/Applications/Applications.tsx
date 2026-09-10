@@ -4,14 +4,10 @@
  */
 
 import {useMemo} from 'react';
-import {Navigate, useNavigate, useParams} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
-import {useProject} from '~/context/ProjectContext';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {
-	useProjectItems,
-	useProjectsWithProjectItemType,
-} from '~/hooks/useProjectItems';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import {translate} from '~/i18n';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
 import {
@@ -22,22 +18,13 @@ import ProductListPage, {
 	statusColumn,
 	statusFilter,
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
-import {
-	ONE_TIME_PURCHASES,
-	isUnassignedProject,
-} from '~/pages/MyAccount/Projects/projects';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 
 export default function Applications() {
 	const navigate = useNavigate();
-	const {accountERC} = useParams();
-
-	const {projectId} = useProject();
 
 	const {applications, error, loading, orderByProductExternalReferenceCode} =
 		useProjectItems();
-	const {loading: projectERCsLoading, projectERCs} =
-		useProjectsWithProjectItemType('application');
 
 	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
 		const saleTypes = Array.from(
@@ -176,22 +163,6 @@ export default function Applications() {
 		},
 		statusColumn(),
 	];
-
-	if (
-		!loading &&
-		!projectERCsLoading &&
-		!error &&
-		!applications.length &&
-		!isUnassignedProject(projectId) &&
-		projectERCs.includes(ONE_TIME_PURCHASES)
-	) {
-		return (
-			<Navigate
-				replace
-				to={`/${accountERC}/project/${ONE_TIME_PURCHASES}/applications`}
-			/>
-		);
-	}
 
 	return (
 		<ProductListPage
