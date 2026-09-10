@@ -10,7 +10,7 @@ import {
 
 import type {DeliveryProduct} from '~/types/product';
 
-import type {ProjectItemKind} from '../types';
+import type {ProjectItemType} from '../types';
 
 export type DetailsProfile =
 	| 'analytics'
@@ -38,13 +38,13 @@ function isDetailsProfile(value: string): value is DetailsProfile {
 }
 
 export function resolveDetailsProfile({
-	kind,
+	itemType,
 	product,
 }: {
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 	product: DeliveryProduct;
 }): DetailsProfile {
-	if (kind === 'application') {
+	if (itemType === 'application') {
 		return 'basic';
 	}
 

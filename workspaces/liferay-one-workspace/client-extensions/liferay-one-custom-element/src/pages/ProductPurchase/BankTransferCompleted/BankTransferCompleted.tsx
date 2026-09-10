@@ -8,6 +8,7 @@ import {useLocation} from 'react-router-dom';
 import purchaseInvoiceIconUrl from '~/assets/icons/purchase_invoice.svg';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import i18n from '~/i18n';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import ProductPurchaseHeaderCards from '~/pages/ProductPurchase/components/ProductPurchaseHeaderCards/ProductPurchaseHeaderCards';
 import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';
@@ -74,7 +75,7 @@ const BankTransferCompleted = ({product}: BankTransferCompletedProps) => {
 					displayType="secondary"
 					onClick={() =>
 						Liferay.Util.navigate(
-							`${getSiteURL()}/my-account#/project/applications`
+							`${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}/applications`
 						)
 					}
 				>

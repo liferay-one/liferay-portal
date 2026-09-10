@@ -7,11 +7,12 @@ import ClayButton from '@clayui/button';
 import {ClayToggle} from '@clayui/form';
 import {useParams} from 'react-router-dom';
 import BackLink from '~/components/BackLink/BackLink';
+import {useProject} from '~/context/ProjectContext';
 import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import {useProjectProducts} from '~/hooks/useProjectCommerce';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import {translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
@@ -24,10 +25,11 @@ import useLicenseKeyActions from '../hooks/useLicenseKeyActions';
 import useLicenseKeySubscription from '../hooks/useLicenseKeySubscription';
 
 export default function LicenseKeyDetails() {
-	const {licenseKeyERC = '', projectId = ''} = useParams();
+	const {licenseKeyERC = ''} = useParams();
+	const {projectId} = useProject();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
-	const {products} = useProjectProducts(projectId);
+	const {products} = useProjectItems();
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
 		useLicenseKeyActions({

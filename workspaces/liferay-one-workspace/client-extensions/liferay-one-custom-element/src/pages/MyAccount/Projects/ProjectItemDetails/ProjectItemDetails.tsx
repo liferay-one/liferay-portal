@@ -9,13 +9,13 @@ import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
-import {useProjectApplications} from '~/hooks/useProjectApplications';
 import {
 	getSpecificationValue,
 	getSpecificationValues,
 	useHasActiveExperienceOffering,
-	useProjectProducts,
+	useProjectCommerce,
 } from '~/hooks/useProjectCommerce';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import {
 	getProductOrderInfo,
 	getProductVirtualItems,
@@ -34,7 +34,7 @@ import ProjectDetailTabs, {
 	DetailTab,
 } from '~/pages/MyAccount/Projects/components/ProjectDetailTabs/ProjectDetailTabs';
 import UtilizationTab from '~/pages/MyAccount/Projects/components/UtilizationTab/UtilizationTab';
-import {ProjectItemKind, ProjectTabKey} from '~/pages/MyAccount/Projects/types';
+import {ProjectItemType, ProjectTabKey} from '~/pages/MyAccount/Projects/types';
 import {PROJECT_TAB_LABELS} from '~/pages/MyAccount/Projects/utils/constants';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
@@ -44,10 +44,12 @@ import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';
 
 type ProjectItemDetailsProps = {
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 };
 
-export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
+export default function ProjectItemDetails({
+	itemType,
+}: ProjectItemDetailsProps) {
 	const {applicationERC, productERC} = useParams();
 	const {project, projectId, selectedContractERC} = useProject();
 
@@ -57,22 +59,18 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 		? undefined
 		: project?.name;
 
-	const {
-		contract,
-		loading: productsLoading,
-		products,
-	} = useProjectProducts(projectId, selectedContractERC);
-
-	const {applications, loading: applicationsLoading} = useProjectApplications(
-		projectId,
-		projectName
+	const {contract, loading: contractLoading} = useProjectCommerce(
+		isUnassignedProject(projectId) ? '' : projectId,
+		selectedContractERC
 	);
+
+	const {applications, loading: itemsLoading, products} = useProjectItems();
 
 	const {hasActiveExperienceOffering, loading: experienceOfferingLoading} =
 		useHasActiveExperienceOffering();
 
 	const productId =
-		(kind === 'application' ? applications : products).find(
+		(itemType === 'application' ? applications : products).find(
 			(item) => item.externalReferenceCode === itemERC
 		)?.id ?? '';
 
@@ -87,10 +85,10 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 	);
 
 	if (
+		contractLoading ||
 		experienceOfferingLoading ||
-		productsLoading ||
-		applicationsLoading ||
-		isLoading
+		isLoading ||
+		itemsLoading
 	) {
 		return renderMessage('loading');
 	}
@@ -113,7 +111,11 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 		learnUrl,
 		tabKeys,
 		utilizationProfile,
-	} = resolveProductTabConfig({hasActiveExperienceOffering, kind, product});
+	} = resolveProductTabConfig({
+		hasActiveExperienceOffering,
+		itemType,
+		product,
+	});
 
 	const tabContent: Record<ProjectTabKey, () => ReactNode> = {
 		'activation': () => (
@@ -133,7 +135,7 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 			/>
 		),
 		'download': () => (
-			<DownloadTab kind={kind} virtualItems={virtualItems} />
+			<DownloadTab itemType={itemType} virtualItems={virtualItems} />
 		),
 		'environment': () => (
 			<EnvironmentTab
@@ -182,10 +184,10 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 					}
 					banner={isAIHub ? <AIHubAlert /> : undefined}
 					description={
-						kind === 'product' ? product.description : undefined
+						itemType === 'product' ? product.description : undefined
 					}
 					icon={
-						kind === 'product'
+						itemType === 'product'
 							? getProductIcon(iconCategory)
 							: undefined
 					}
@@ -193,7 +195,7 @@ export default function ProjectItemDetails({kind}: ProjectItemDetailsProps) {
 					logoSrc={isAIHub ? aiHubIconUrl : undefined}
 					name={product.name}
 					publisher={getSpecificationValue(product, 'publisher-name')}
-					showByPrefix={kind === 'product'}
+					showByPrefix={itemType === 'product'}
 					status={orderInfo.status || 'active'}
 				/>
 			}

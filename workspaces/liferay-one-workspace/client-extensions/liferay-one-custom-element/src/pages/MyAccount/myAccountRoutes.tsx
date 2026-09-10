@@ -34,7 +34,7 @@ export const projectDetailRoutes: AppRoute[] = [
 		children: [
 			{element: <Products />, index: true},
 			{
-				element: <ProjectItemDetails kind="product" />,
+				element: <ProjectItemDetails itemType="product" />,
 				path: ':productERC',
 			},
 			{element: <Navigate replace to="." />, path: '*'},
@@ -46,7 +46,7 @@ export const projectDetailRoutes: AppRoute[] = [
 		children: [
 			{element: <Applications />, index: true},
 			{
-				element: <ProjectItemDetails kind="application" />,
+				element: <ProjectItemDetails itemType="application" />,
 				path: ':applicationERC',
 			},
 			{

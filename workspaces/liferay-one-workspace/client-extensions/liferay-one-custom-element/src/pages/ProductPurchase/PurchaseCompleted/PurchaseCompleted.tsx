@@ -15,6 +15,7 @@ import EmptyState from '~/components/EmptyState/EmptyState';
 import Loading from '~/components/Loading/Loading';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 import i18n from '~/i18n';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import ProductPurchaseHeaderCards from '~/pages/ProductPurchase/components/ProductPurchaseHeaderCards/ProductPurchaseHeaderCards';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
@@ -156,13 +157,15 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 
 	const isDXPFree = isDXPFreeTierProduct(product);
 
+	const projectURL = `${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}`;
+
 	const myItemsURL = isDXPFree
-		? `${getSiteURL()}/my-account#/project/products`
-		: `${getSiteURL()}/my-account#/project/applications`;
+		? `${projectURL}/products`
+		: `${projectURL}/applications`;
 
 	const itemDetailURL = isDXPFree
-		? `${getSiteURL()}/my-account#/project/products/${product.externalReferenceCode}?tab=activation`
-		: `${getSiteURL()}/my-account#/project/applications/${product.externalReferenceCode}?tab=${installTab}`;
+		? `${projectURL}/products/${product.externalReferenceCode}?tab=activation`
+		: `${projectURL}/applications/${product.externalReferenceCode}?tab=${installTab}`;
 
 	const showCardIcon = !isFreeApp && hasVatId;
 

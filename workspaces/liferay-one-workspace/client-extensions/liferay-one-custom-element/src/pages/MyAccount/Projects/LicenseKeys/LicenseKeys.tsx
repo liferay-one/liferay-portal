@@ -7,14 +7,15 @@ import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {format} from 'date-fns';
 import {MouseEvent, useEffect, useRef} from 'react';
-import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
+import {useNavigate, useSearchParams} from 'react-router-dom';
 import Button from '~/components/Button/Button';
 import Page from '~/components/Page/Page';
+import {useProject} from '~/context/ProjectContext';
 import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import {useProjectProducts} from '~/hooks/useProjectCommerce';
+import {useProjectItems} from '~/hooks/useProjectItems';
 import i18n, {translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 
@@ -126,12 +127,12 @@ function KebabActions({
 }
 
 export default function LicenseKeys() {
-	const {projectId = ''} = useParams();
+	const {projectId} = useProject();
 	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
-	const {products} = useProjectProducts(projectId);
+	const {products} = useProjectItems();
 
 	const {
 		handleDeactivate,
