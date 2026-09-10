@@ -19,6 +19,10 @@ import type {
 	DeliveryProductSpecification,
 } from '~/types/product';
 
+const MAX_PAGES = 20;
+
+const PAGE_SIZE = 100;
+
 export type ProjectContract = {
 	endDate?: string;
 	externalReferenceCode: string;
@@ -199,20 +203,45 @@ export function getSpecificationValues(
 export function useChannelProducts() {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
 
-	return useSWR(`/project-channel-products/${channelId}`, () =>
-		HeadlessCommerceDeliveryCatalog.getProductsPage(
-			channelId,
-			new URLSearchParams({
-				'accountId': '-1',
-				'images.accountId': '-1',
-				'nestedFields': 'images,productSpecifications,skus',
-				'pageSize': '100',
-				'skus.accountId': '-1',
-				'skus.currencyCode':
-					Liferay.CommerceContext.currency.currencyCode,
-			})
-		)
-	);
+	return useSWR(`/project-channel-products/${channelId}`, async () => {
+		const getPage = (page: number) =>
+			HeadlessCommerceDeliveryCatalog.getProductsPage(
+				channelId,
+				new URLSearchParams({
+					'accountId': '-1',
+					'images.accountId': '-1',
+					'nestedFields': 'images,productSpecifications,skus',
+					'page': page.toString(),
+					'pageSize': PAGE_SIZE.toString(),
+					'skus.accountId': '-1',
+					'skus.currencyCode':
+						Liferay.CommerceContext.currency.currencyCode,
+				})
+			);
+
+		const response = await getPage(1);
+
+		const items = [...response.items];
+
+		if (response.totalCount > items.length) {
+			const lastPage = Math.min(
+				Math.ceil(response.totalCount / PAGE_SIZE),
+				MAX_PAGES
+			);
+
+			const remainingPages = await Promise.all(
+				Array.from({length: lastPage - 1}, (_, index) =>
+					getPage(index + 2)
+				)
+			);
+
+			remainingPages.forEach((remainingPage) =>
+				items.push(...remainingPage.items)
+			);
+		}
+
+		return {...response, items};
+	});
 }
 
 export function useProjectCommerce(
