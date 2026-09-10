@@ -99,7 +99,7 @@ public class LDPEventUsageReportServiceTest {
 			_usageReportService.addUsageReport(
 				Mockito.anyDouble(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyDouble(), Mockito.anyString(),
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			new UsageReport(
 				new JSONObject(
@@ -152,8 +152,8 @@ public class LDPEventUsageReportServiceTest {
 		).addUsageReport(
 			Mockito.anyDouble(), Mockito.anyString(), Mockito.any(),
 			Mockito.any(), Mockito.anyDouble(),
-			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
-			Mockito.anyString(), Mockito.any()
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE),
+			Mockito.anyLong(), Mockito.any(), Mockito.anyString(), Mockito.any()
 		);
 	}
 
@@ -184,6 +184,7 @@ public class LDPEventUsageReportServiceTest {
 			Mockito.eq(
 				1000000D + EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET),
 			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET),
 			projectArgumentCaptor.capture(),
 			Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE),
 			usageDefinitionArgumentCaptor.capture()
@@ -393,8 +394,8 @@ public class LDPEventUsageReportServiceTest {
 			_usageReportService, Mockito.never()
 		).addUsageReport(
 			Mockito.anyDouble(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyDouble(), Mockito.anyString(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.anyDouble(), Mockito.anyString(), Mockito.anyLong(),
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
