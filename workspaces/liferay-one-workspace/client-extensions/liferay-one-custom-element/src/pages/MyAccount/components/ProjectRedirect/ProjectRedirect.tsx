@@ -58,14 +58,12 @@ export default function ProjectRedirect() {
 			return <Navigate replace to={`/${accountERC}/project`} />;
 		}
 
-		const tab =
-			(sectionRequested ? segments : restSegments).join('/') ||
-			'products';
+		const tab = (sectionRequested ? segments : restSegments).join('/');
 
 		return (
 			<Navigate
 				replace
-				to={`/${accountERC}/project/${projectERC}/${tab}${search}`}
+				to={`/${accountERC}/project/${projectERC}${tab ? `/${tab}` : ''}${search}`}
 			/>
 		);
 	}

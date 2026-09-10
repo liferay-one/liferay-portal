@@ -26,10 +26,16 @@ const ProjectItemDetails = lazy(
 	() => import('./Projects/ProjectItemDetails/ProjectItemDetails')
 );
 const Products = lazy(() => import('./Projects/Products/Products'));
+const ProjectSectionRedirect = lazy(
+	() =>
+		import(
+			'./Projects/components/ProjectSectionRedirect/ProjectSectionRedirect'
+		)
+);
 const ProjectMembers = lazy(() => import('./ProjectMembers/ProjectMembers'));
 
 export const projectDetailRoutes: AppRoute[] = [
-	{element: <Navigate replace to="products" />, index: true},
+	{element: <ProjectSectionRedirect />, index: true},
 	{
 		children: [
 			{element: <Products />, index: true},
