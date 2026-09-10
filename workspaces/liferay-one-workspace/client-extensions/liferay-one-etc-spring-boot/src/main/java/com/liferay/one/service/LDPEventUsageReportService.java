@@ -311,11 +311,18 @@ public class LDPEventUsageReportService {
 			skuExternalReferenceCode, usageDefinition);
 
 		if (_log.isInfoEnabled()) {
+			long overageQuantity = 0;
+
+			Double overageQuantityDouble = usageReport.getOverageQuantity();
+
+			if (overageQuantityDouble != null) {
+				overageQuantity = overageQuantityDouble.longValue();
+			}
+
 			_log.info(
 				StringBundler.concat(
 					"Generated usage report ", externalReferenceCode, " with ",
-					usageReport.getOverageQuantity(),
-					" overage add-on buckets"));
+					overageQuantity, " overage add-on buckets"));
 		}
 
 		return true;
