@@ -14,6 +14,7 @@ import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -161,6 +164,51 @@ public class EntitlementDefinitionService extends OneBaseService {
 		return entitlementDefinitions;
 	}
 
+	@Scheduled(cron = "${liferay.one.entitlement.definition.reconcile.cron}")
+	public void reconcileEntitlementDefinitions() {
+		if (!_reconciling.compareAndSet(false, true)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping entitlement definition reconciliation because " +
+						"another reconciliation is in progress");
+			}
+
+			return;
+		}
+
+		try {
+			List<Long> cProductIds = _getApprovedProductIds();
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Reconciling entitlement definitions for ",
+						cProductIds.size(), " approved products"));
+			}
+
+			for (Long cProductId : cProductIds) {
+				try {
+					generateEntitlementDefinition(cProductId);
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to reconcile entitlement definitions for " +
+							"product " + cProductId,
+						exception);
+				}
+			}
+
+			_deactivateOrphanedEntitlementDefinitions();
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to reconcile entitlement definitions", exception);
+		}
+		finally {
+			_reconciling.set(false);
+		}
+	}
+
 	private void _addEntitlementDefinition(
 			String name, String skuExternalReferenceCode)
 		throws Exception {
@@ -194,6 +242,70 @@ public class EntitlementDefinitionService extends OneBaseService {
 					"Generated the entitlement definition \"", name,
 					"\" for SKU ", skuExternalReferenceCode));
 		}
+	}
+
+	private void _deactivateOrphanedEntitlementDefinitions() throws Exception {
+		for (EntitlementDefinition entitlementDefinition :
+				getEntitlementDefinitions("active eq true")) {
+
+			String skuExternalReferenceCode =
+				entitlementDefinition.getSkuExternalReferenceCode();
+
+			if (Validator.isNull(skuExternalReferenceCode) ||
+				!Objects.equals(
+					entitlementDefinition.getExternalReferenceCode(),
+					skuExternalReferenceCode)) {
+
+				continue;
+			}
+
+			try {
+				if (_commerceSkuService.fetchSku(skuExternalReferenceCode) !=
+						null) {
+
+					continue;
+				}
+
+				_patchEntitlementDefinition(
+					new JSONObject(
+					).put(
+						"active", false
+					),
+					skuExternalReferenceCode);
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Deactivated the orphaned entitlement definition ",
+							skuExternalReferenceCode,
+							" because its SKU no longer exists"));
+				}
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to deactivate the orphaned entitlement " +
+						"definition " + skuExternalReferenceCode,
+					exception);
+			}
+		}
+	}
+
+	private List<Long> _getApprovedProductIds() throws Exception {
+		List<Long> cProductIds = getAllItems(
+			"/o/headless-commerce-admin-catalog/v1.0/products", null,
+			jsonObject -> {
+				if (jsonObject.optInt("productStatus", -1) ==
+						WorkflowConstants.STATUS_APPROVED) {
+
+					return jsonObject.optLong("productId");
+				}
+
+				return null;
+			});
+
+		cProductIds.removeIf(Objects::isNull);
+
+		return cProductIds;
 	}
 
 	private Map<String, List<EntitlementDefinition>>
@@ -361,5 +473,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	private final AtomicBoolean _reconciling = new AtomicBoolean();
 
 }
