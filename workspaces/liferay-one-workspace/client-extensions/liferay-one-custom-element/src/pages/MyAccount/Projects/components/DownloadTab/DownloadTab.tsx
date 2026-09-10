@@ -11,20 +11,20 @@ import DownloadListCard, {
 
 import type {VirtualItem} from '~/types/orders';
 
-import type {ProjectItemKind} from '../../types';
+import type {ProjectItemType} from '../../types';
 
 type DownloadTabProps = {
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 	virtualItems?: VirtualItem[];
 };
 
 export default function DownloadTab({
-	kind,
+	itemType,
 	virtualItems = [],
 }: DownloadTabProps) {
 	const {bundles} = useLiferayBundles();
 
-	const isProduct = kind === 'product';
+	const isProduct = itemType === 'product';
 
 	const items: DownloadItem[] = isProduct
 		? bundles
