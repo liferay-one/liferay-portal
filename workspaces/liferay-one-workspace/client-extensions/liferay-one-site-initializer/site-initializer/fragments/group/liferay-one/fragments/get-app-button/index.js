@@ -17,13 +17,62 @@ const getAppButtonElement = fragmentElement.querySelector('button#get-app');
 const getAppDescriptionElement = fragmentElement.querySelector(
 	'#get-app-description'
 );
+const tooltipElement = fragmentElement.querySelector('.clay-tooltip-bottom');
+
+const isFreeApp = (productSpecifications = []) =>
+	productSpecifications.some(
+		(productSpecification) =>
+			productSpecification.specificationKey === 'price-model' &&
+			productSpecification.value === 'Free'
+	);
+
+const trackAnalytics = (key, options) => {
+	if (!window.Analytics) {
+		return;
+	}
+
+	Analytics.track(key, options);
+};
+
 const productId = fragmentElement
 	.querySelector('.product-id')
 	.innerText.replace(/[\n\r]+|[\s]{2,}/g, ' ')
 	.trim();
-const tooltipElement = fragmentElement.querySelector('.clay-tooltip-bottom');
 
-async function customizeGetAppButton(product) {
+const getProductPrice = async (product) => {
+	const {productSpecifications = []} = product;
+
+	if (isFreeApp(productSpecifications)) {
+		return 'Free';
+	}
+
+	const skus = product.skus.filter(({purchasable}) => purchasable);
+
+	const hasTrialSku = skus.some(({skuOptions}) =>
+		skuOptions.find((skuOption) =>
+			['trial', 'yes'].includes(skuOption.skuOptionValueKey)
+		)
+	);
+
+	const standardSku = skus.find(({skuOptions}) =>
+		skuOptions.some((skuOption) =>
+			['standard', 'no'].includes(skuOption.skuOptionValueKey)
+		)
+	);
+
+	const licenseType = productSpecifications.find(
+		(productSpecification) =>
+			productSpecification.specificationKey === 'license-type'
+	);
+
+	const licenseTypeText =
+		licenseType?.value === 'Perpetual' ? 'One-Time' : 'Annually';
+	const price = `${hasTrialSku ? '30-day trial or' : ''} ${standardSku?.price?.priceFormatted}`;
+
+	return `${price} ${licenseTypeText}`;
+};
+
+const customizeGetAppButton = async (product) => {
 	getAppButtonElement.onclick = () => {
 		trackAnalytics('Click on Get App Button', {
 			isFree: isFreeApp(product.productSpecifications),
@@ -36,9 +85,34 @@ async function customizeGetAppButton(product) {
 	};
 
 	getAppDescriptionElement.innerText = await getProductPrice(product);
-}
+};
 
-async function customizeUnavailableButton(product) {
+const getCommerceProduct = async (channelId) => {
+	try {
+		const response = await Liferay.Util.fetch(
+			`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=productSpecifications,skus&accountId=-1&skus.accountId=-1&skus.currencyCode=${Liferay.CommerceContext.currency.currencyCode}`
+		);
+
+		const product = await response.json();
+
+		return product ?? {skus: []};
+	}
+	catch {
+		return {skus: []};
+	}
+};
+
+const getSiteURL = () => {
+	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
+
+	if (layoutRelativeURL.startsWith('/web/')) {
+		return layoutRelativeURL.split('/').slice(0, 3).join('/');
+	}
+
+	return '';
+};
+
+const customizeUnavailableButton = async (product) => {
 	contactPublisherButtonElement.onmouseover = () =>
 		tooltipElement.classList.replace('hide', 'show');
 
@@ -72,75 +146,9 @@ async function customizeUnavailableButton(product) {
 
 		sessionStorage.removeItem('@marketplace/redirect-to');
 	}
-}
+};
 
-async function getCommerceProduct(channelId) {
-	try {
-		const response = await Liferay.Util.fetch(
-			`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=productSpecifications,skus&accountId=-1&skus.accountId=-1&skus.currencyCode=${Liferay.CommerceContext.currency.currencyCode}`
-		);
-
-		const product = await response.json();
-
-		return product ?? {skus: []};
-	}
-	catch {
-		return {skus: []};
-	}
-}
-
-async function getProductPrice(product) {
-	const {productSpecifications = []} = product;
-
-	if (isFreeApp(productSpecifications)) {
-		return 'Free';
-	}
-
-	const skus = product.skus.filter(({purchasable}) => purchasable);
-
-	const hasTrialSku = skus.some(({skuOptions}) =>
-		skuOptions.find((skuOption) =>
-			['trial', 'yes'].includes(skuOption.skuOptionValueKey)
-		)
-	);
-
-	const standardSku = skus.find(({skuOptions}) =>
-		skuOptions.some((skuOption) =>
-			['standard', 'no'].includes(skuOption.skuOptionValueKey)
-		)
-	);
-
-	const licenseType = productSpecifications.find(
-		(productSpecification) =>
-			productSpecification.specificationKey === 'license-type'
-	);
-
-	const licenseTypeText =
-		licenseType?.value === 'Perpetual' ? 'One-Time' : 'Annually';
-	const price = `${hasTrialSku ? '30-day trial or' : ''} ${standardSku?.price?.priceFormatted}`;
-
-	return `${price} ${licenseTypeText}`;
-}
-
-function getSiteURL() {
-	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
-
-	if (layoutRelativeURL.startsWith('/web/')) {
-		return layoutRelativeURL.split('/').slice(0, 3).join('/');
-	}
-
-	return '';
-}
-
-function isFreeApp(productSpecifications = []) {
-	return productSpecifications.some(
-		(productSpecification) =>
-			productSpecification.specificationKey === 'price-model' &&
-			productSpecification.value === 'Free'
-	);
-}
-
-async function main() {
+const main = async () => {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
 
 	if (!channelId) {
@@ -160,7 +168,8 @@ async function main() {
 
 	const isContactSalesProduct = product.productSpecifications.some(
 		({specificationKey, value}) =>
-			specificationKey === 'solution-type' && value === 'cmp'
+			specificationKey === 'solution-type' &&
+			['cmp', 'dsr', 'liferay-data-platform'].includes(value)
 	);
 
 	if (isContactSalesProduct) {
@@ -186,14 +195,6 @@ async function main() {
 	contactPublisherButtonElement.classList.remove('d-none');
 
 	customizeUnavailableButton(product);
-}
-
-function trackAnalytics(key, options) {
-	if (!window.Analytics) {
-		return;
-	}
-
-	Analytics.track(key, options);
-}
+};
 
 main();
