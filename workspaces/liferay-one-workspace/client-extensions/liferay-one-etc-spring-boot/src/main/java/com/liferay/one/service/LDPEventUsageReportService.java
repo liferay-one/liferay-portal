@@ -6,7 +6,6 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
-import com.liferay.one.constants.UsageDefinitionConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
@@ -43,7 +42,9 @@ import org.springframework.stereotype.Component;
 /**
  * Generates one usage report per Liferay Data Platform project for a calendar
  * month, comparing the events the data warehouse counted against the events
- * the project's entitlements allow.
+ * the project's entitlements allow. Overage is billed in add-on buckets, so
+ * the SKU and usage definition of every report come from the add-on bucket
+ * entitlement definition rather than from the project's own entitlements.
  *
  * @author Drew Brokke
  */
@@ -55,18 +56,27 @@ public class LDPEventUsageReportService {
 			_log.info("Generating LDP event usage reports for " + yearMonth);
 		}
 
+		EntitlementDefinition addOnBucketEntitlementDefinition =
+			_fetchAddOnBucketEntitlementDefinition();
+
+		if (addOnBucketEntitlementDefinition == null) {
+			return;
+		}
+
+		String usageDefinitionExternalReferenceCode =
+			addOnBucketEntitlementDefinition.
+				getUsageDefinitionExternalReferenceCode();
+
 		UsageDefinition usageDefinition =
 			_usageDefinitionService.fetchUsageDefinition(
-				UsageDefinitionConstants.
-					EXTERNAL_REFERENCE_CODE_EVENTS_MONTHLY);
+				usageDefinitionExternalReferenceCode);
 
 		if ((usageDefinition == null) ||
 			(usageDefinition.getOverageRate() == null)) {
 
 			_log.error(
 				"Unable to find an overage rate for usage definition " +
-					UsageDefinitionConstants.
-						EXTERNAL_REFERENCE_CODE_EVENTS_MONTHLY);
+					usageDefinitionExternalReferenceCode);
 
 			return;
 		}
@@ -98,8 +108,10 @@ public class LDPEventUsageReportService {
 			try {
 				if (_generateUsageReport(
 						endInstant, entry.getValue(),
-						projectExternalReferenceCode, startInstant,
-						usageDefinition, yearMonth)) {
+						projectExternalReferenceCode,
+						addOnBucketEntitlementDefinition.
+							getSkuExternalReferenceCode(),
+						startInstant, usageDefinition, yearMonth)) {
 
 					generatedCount++;
 				}
@@ -141,6 +153,41 @@ public class LDPEventUsageReportService {
 				"Unable to generate LDP event usage reports for " + yearMonth,
 				exception);
 		}
+	}
+
+	private EntitlementDefinition _fetchAddOnBucketEntitlementDefinition()
+		throws Exception {
+
+		EntitlementDefinition entitlementDefinition =
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+
+		if (entitlementDefinition == null) {
+			_log.error(
+				"Unable to find entitlement definition " +
+					EntitlementConstants.
+						EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+
+			return null;
+		}
+
+		if (Validator.isNull(
+				entitlementDefinition.getSkuExternalReferenceCode()) ||
+			Validator.isNull(
+				entitlementDefinition.
+					getUsageDefinitionExternalReferenceCode())) {
+
+			_log.error(
+				StringBundler.concat(
+					"Unable to find a SKU and usage definition for ",
+					"entitlement definition ",
+					entitlementDefinition.getExternalReferenceCode()));
+
+			return null;
+		}
+
+		return entitlementDefinition;
 	}
 
 	private String _fetchContractExternalReferenceCode(
@@ -196,7 +243,8 @@ public class LDPEventUsageReportService {
 
 	private boolean _generateUsageReport(
 			Instant endInstant, List<Entitlement> entitlements,
-			String projectExternalReferenceCode, Instant startInstant,
+			String projectExternalReferenceCode,
+			String skuExternalReferenceCode, Instant startInstant,
 			UsageDefinition usageDefinition, YearMonth yearMonth)
 		throws Exception {
 
@@ -258,8 +306,8 @@ public class LDPEventUsageReportService {
 			ldpEventSummary.getTotalEventsCount(),
 			_fetchContractExternalReferenceCode(entitlements), startInstant,
 			endInstant.minusMillis(1), ldpEventAllotment.getEntitledQuantity(),
-			externalReferenceCode, project,
-			_getSkuExternalReferenceCode(entitlements), usageDefinition);
+			externalReferenceCode, project, skuExternalReferenceCode,
+			usageDefinition);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -309,24 +357,6 @@ public class LDPEventUsageReportService {
 			"_", yearMonth.format(_yearMonthDateTimeFormatter));
 	}
 
-	private String _getSkuExternalReferenceCode(
-		List<Entitlement> entitlements) {
-
-		for (Entitlement entitlement : entitlements) {
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
-
-			if ((entitlementDefinition != null) &&
-				Validator.isNotNull(
-					entitlementDefinition.getSkuExternalReferenceCode())) {
-
-				return entitlementDefinition.getSkuExternalReferenceCode();
-			}
-		}
-
-		return null;
-	}
-
 	private static final String _EXTERNAL_REFERENCE_CODE_PREFIX =
 		"C_USAGE_REPORT_";
 
@@ -341,6 +371,9 @@ public class LDPEventUsageReportService {
 
 	@Autowired
 	private ContractService _contractService;
+
+	@Autowired
+	private EntitlementDefinitionService _entitlementDefinitionService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
