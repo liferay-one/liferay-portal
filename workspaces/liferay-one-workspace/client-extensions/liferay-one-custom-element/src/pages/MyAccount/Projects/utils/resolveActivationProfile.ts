@@ -9,7 +9,7 @@ import {getAppType} from './getAppType';
 
 import type {DeliveryProduct} from '~/types/product';
 
-import type {ProjectItemKind} from '../types';
+import type {ProjectItemType} from '../types';
 import type {AppType} from './getAppType';
 
 export type ActivationProfile =
@@ -51,10 +51,10 @@ function isActivationProfile(value: string): value is ActivationProfile {
 }
 
 export function resolveActivationProfile({
-	kind,
+	itemType,
 	product,
 }: {
-	kind: ProjectItemKind;
+	itemType: ProjectItemType;
 	product: DeliveryProduct;
 }): ActivationProfile {
 	const profile = getSpecificationValue(
@@ -66,7 +66,7 @@ export function resolveActivationProfile({
 		return profile;
 	}
 
-	if (kind === 'application') {
+	if (itemType === 'application') {
 		const appType = getAppType(product);
 
 		return appType

@@ -19,6 +19,7 @@ import {PageRenderer} from '~/components/Page/Page';
 import {LearnLinks} from '~/enums/Learn';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import i18n from '~/i18n';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
 import CommerceOrders from '~/services/spring-boot/CommerceOrders';
@@ -284,7 +285,7 @@ export function NextStepsBody(props: NextStepsBodyProps) {
 						const url =
 							paymentStatus === PaymentStatus.PAID
 								? isCloudApp
-									? `${getSiteURL()}/my-account#/project/applications`
+									? `${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}/applications`
 									: `${getSiteURL()}/my-account#/orders`
 								: `${getSiteURL()}/marketplace/applications`;
 						Liferay.Util.navigate(url);

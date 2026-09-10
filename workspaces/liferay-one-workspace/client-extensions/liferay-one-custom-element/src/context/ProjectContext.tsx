@@ -12,7 +12,11 @@ import {
 	useState,
 } from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
-import {useUnassignedCommerce} from '~/hooks/useProjectCommerce';
+import {
+	useChannelProducts,
+	useUnassignedCommerce,
+} from '~/hooks/useProjectCommerce';
+import {getProjectName, useProjectOrders} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
 import {
 	LAST_PROJECT_STORAGE_KEY,
@@ -21,6 +25,10 @@ import {
 	resolveDefaultProject,
 	useUserProjects,
 } from '~/pages/MyAccount/Projects/projects';
+import {
+	toProductsByProductId,
+	toProjectItemsByType,
+} from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
 
 type ProjectContextValue = {
 	loading: boolean;
@@ -45,8 +53,25 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	const {entitlements: unassignedEntitlements, loading: unassignedLoading} =
 		useUnassignedCommerce();
 
+	const {loading: ordersLoading, placedOrders} = useProjectOrders();
+
+	const {data: channelProducts, isLoading: channelProductsLoading} =
+		useChannelProducts();
+
+	const hasUnassignedItems = useMemo(() => {
+		const itemsByProjectItemType = toProjectItemsByType(
+			placedOrders.filter((order) => !getProjectName(order)),
+			toProductsByProductId(channelProducts?.items ?? [])
+		);
+
+		return Boolean(
+			itemsByProjectItemType.application.size ||
+				itemsByProjectItemType.product.size
+		);
+	}, [channelProducts, placedOrders]);
+
 	const projects = useMemo<UserProject[]>(() => {
-		if (!unassignedEntitlements.length) {
+		if (!hasUnassignedItems && !unassignedEntitlements.length) {
 			return userProjects;
 		}
 
@@ -59,9 +84,13 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 				unassigned: true,
 			},
 		];
-	}, [unassignedEntitlements.length, userProjects]);
+	}, [hasUnassignedItems, unassignedEntitlements.length, userProjects]);
 
-	const loading = projectsLoading || unassignedLoading;
+	const loading =
+		channelProductsLoading ||
+		ordersLoading ||
+		projectsLoading ||
+		unassignedLoading;
 
 	const projectId = projectERC ?? '';
 
