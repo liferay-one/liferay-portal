@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.model.AccountInvitation;
+import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.service.AccountInvitationAcceptanceService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountService;
@@ -121,6 +122,41 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 	}
 
 	@Test
+	public void testPostCreatesOktaContact() throws Exception {
+		ObjectActionAccountInvitationAcceptedRestController
+			objectActionAccountInvitationAcceptedRestController =
+				_createController();
+
+		Mockito.when(
+			_accountInvitationService.fetchAccountInvitation(
+				_ACCOUNT_INVITATION_ID)
+		).thenReturn(
+			_createAccountInvitation(true, "", List.of())
+		);
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			_createUserAccount()
+		);
+
+		objectActionAccountInvitationAcceptedRestController.post(
+			null, _createPayload());
+
+		Mockito.verify(
+			_oktaService
+		).createContact(
+			_EMAIL_ADDRESS, "Jane", null, "Doe"
+		);
+	}
+
+	@Test
 	public void testPostCreatesUserAccountWithInvitedName() throws Exception {
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
@@ -168,6 +204,58 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisionsWhenOktaContactCreationFails()
+		throws Exception {
+
+		ObjectActionAccountInvitationAcceptedRestController
+			objectActionAccountInvitationAcceptedRestController =
+				_createController();
+
+		Mockito.when(
+			_accountInvitationService.fetchAccountInvitation(
+				_ACCOUNT_INVITATION_ID)
+		).thenReturn(
+			_createAccountInvitation(
+				true, _PROJECT_EXTERNAL_REFERENCE_CODE, List.of())
+		);
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			_createUserAccount()
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("Okta is unavailable")
+		).when(
+			_oktaService
+		).createContact(
+			_EMAIL_ADDRESS, "Jane", null, "Doe"
+		);
+
+		objectActionAccountInvitationAcceptedRestController.post(
+			null, _createPayload());
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountByEmailAddress(
+			_ACCOUNT_ID, _EMAIL_ADDRESS, null
+		);
+
+		Mockito.verify(
+			_projectMembershipService
+		).addProjectMembership(
+			_PROJECT_EXTERNAL_REFERENCE_CODE, _PROJECT_ROLE_ERC, _USER_ID
+		);
+	}
+
+	@Test
 	public void testPostSkipsMissingInvitation() throws Exception {
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
@@ -184,6 +272,7 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			null, _createPayload());
 
 		Mockito.verifyNoInteractions(_accountService);
+		Mockito.verifyNoInteractions(_oktaService);
 		Mockito.verifyNoInteractions(_userAccountService);
 	}
 
@@ -237,6 +326,7 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			null, _createPayload());
 
 		Mockito.verifyNoInteractions(_accountService);
+		Mockito.verifyNoInteractions(_oktaService);
 		Mockito.verifyNoInteractions(_userAccountService);
 	}
 
@@ -294,6 +384,8 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountInvitationAcceptanceService, "_accountService",
 			_accountService);
+		ReflectionTestUtils.setField(
+			accountInvitationAcceptanceService, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(
 			accountInvitationAcceptanceService, "_projectMembershipService",
 			_projectMembershipService);
@@ -356,6 +448,7 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		Mockito.mock(AccountInvitationService.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
