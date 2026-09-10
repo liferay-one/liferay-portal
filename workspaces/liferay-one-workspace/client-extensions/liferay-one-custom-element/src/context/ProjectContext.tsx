@@ -126,10 +126,9 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 			return;
 		}
 
-		navigate(
-			`/${accountERC}/project/${target.externalReferenceCode}/products`,
-			{replace: true}
-		);
+		navigate(`/${accountERC}/project/${target.externalReferenceCode}`, {
+			replace: true,
+		});
 	}, [accessible, accountERC, loading, navigate, projects]);
 
 	return (
