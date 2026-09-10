@@ -159,11 +159,11 @@ public class OktaService {
 
 		HttpStatusCode httpStatusCode = responseEntity.getStatusCode();
 
-		if (httpStatusCode.value() == HttpStatus.NOT_FOUND.value()) {
+		if (httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
 			return null;
 		}
 
-		if (httpStatusCode.isError()) {
+		if (!httpStatusCode.is2xxSuccessful()) {
 			throw new OktaUnavailableException(
 				StringBundler.concat(
 					"Unable to fetch the Okta contact ", emailAddress,
