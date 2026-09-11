@@ -50,7 +50,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	const {loading: projectsLoading, projects: userProjects} =
 		useUserProjects();
 
-	const {entitlements: unassignedEntitlements, loading: unassignedLoading} =
+	const {hasUnassignedEntitlements, loading: unassignedLoading} =
 		useUnassignedCommerce();
 
 	const {loading: ordersLoading, placedOrders} = useProjectOrders();
@@ -71,7 +71,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	}, [channelProducts, placedOrders]);
 
 	const projects = useMemo<UserProject[]>(() => {
-		if (!hasUnassignedItems && !unassignedEntitlements.length) {
+		if (!hasUnassignedItems && !hasUnassignedEntitlements) {
 			return userProjects;
 		}
 
@@ -84,7 +84,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 				unassigned: true,
 			},
 		];
-	}, [hasUnassignedItems, unassignedEntitlements.length, userProjects]);
+	}, [hasUnassignedEntitlements, hasUnassignedItems, userProjects]);
 
 	const loading =
 		channelProductsLoading ||

@@ -58,9 +58,6 @@ export type ProjectProduct = {
 };
 
 type EntitlementNode = {
-	commerceOrderItemToEntitlement?: {
-		orderExternalReferenceCode?: string;
-	};
 	endDate?: string;
 	entitlementDefinitionToEntitlement?: {
 		displayName?: string;
@@ -68,8 +65,6 @@ type EntitlementNode = {
 	};
 	externalReferenceCode: string;
 	name: string;
-	r_projectToEntitlement_c_projectERC?: string;
-	startDate?: string;
 };
 
 type ContractNode = {
@@ -90,10 +85,7 @@ type ProjectNode = {
 
 type ProductEntitlement = {
 	endDate?: string;
-	orderExternalReferenceCode?: string;
-	projectExternalReferenceCode?: string;
 	skuExternalReferenceCode?: string;
-	startDate?: string;
 };
 
 function toProjectContract(contractNode: ContractNode): ProjectContract {
@@ -158,15 +150,9 @@ function toProductEntitlements(
 	return (entitlementNodes ?? [])
 		.map((entitlement) => ({
 			endDate: entitlement.endDate,
-			orderExternalReferenceCode:
-				entitlement.commerceOrderItemToEntitlement
-					?.orderExternalReferenceCode,
-			projectExternalReferenceCode:
-				entitlement.r_projectToEntitlement_c_projectERC,
 			skuExternalReferenceCode:
 				entitlement.entitlementDefinitionToEntitlement
 					?.skuExternalReferenceCode,
-			startDate: entitlement.startDate,
 		}))
 		.filter((entitlement) => entitlement.skuExternalReferenceCode);
 }
@@ -366,8 +352,22 @@ function useAccountContracts(enabled = true) {
 		{
 			params: {
 				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
+				pageSize: PAGE_SIZE,
+			},
+		}
+	);
+}
+
+function useAccountContractEntitlements() {
+	const accountId = Liferay.CommerceContext?.account?.accountId;
+
+	return useFetch<APIResponse<ContractNode>>(
+		accountId ? '/o/c/contracts' : null,
+		{
+			params: {
+				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
 				nestedFields:
-					'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
+					'contractToEntitlement,entitlementDefinitionToEntitlement',
 				nestedFieldsDepth: 2,
 				pageSize: PAGE_SIZE,
 			},
@@ -375,37 +375,46 @@ function useAccountContracts(enabled = true) {
 	);
 }
 
-function useAccountOrderEntitlements(enabled = true) {
-	const {data, error, isLoading: loading} = useAccountContracts(enabled);
+export function useUnassignedCommerce(enabled = true) {
+	const {
+		data: contractData,
+		error: contractError,
+		isLoading: contractLoading,
+	} = useAccountContracts(enabled);
 
-	const entitlements = useMemo(
-		() =>
-			(data?.items ?? [])
-				.filter((contract) => !contract.r_projectToContract_c_projectId)
-				.flatMap((contract) =>
-					toProductEntitlements(contract.contractToEntitlement)
-				),
-		[data]
+	const projectlessContractNodes = (contractData?.items ?? []).filter(
+		(contract) => !contract.r_projectToContract_c_projectId
 	);
 
-	return {entitlements, error, loading};
-}
-
-export function useUnassignedCommerce(enabled = true) {
-	const {entitlements, error, loading} = useAccountOrderEntitlements(enabled);
+	const {data, error, isLoading} = useFetch<APIResponse<EntitlementNode>>(
+		projectlessContractNodes.length ? '/o/c/entitlements' : null,
+		{
+			params: {
+				filter: [
+					`(${projectlessContractNodes
+						.map(
+							(node) =>
+								`r_contractToEntitlement_c_contractId eq '${node.id}'`
+						)
+						.join(' or ')})`,
+					`r_projectToEntitlement_c_projectId eq '0'`,
+					`r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId ne '0'`,
+				].join(' and '),
+				pageSize: 1,
+			},
+		}
+	);
 
 	return {
-		entitlements: entitlements.filter(
-			(entitlement) => !entitlement.projectExternalReferenceCode
-		),
-		error,
-		loading,
+		error: contractError ?? error,
+		hasUnassignedEntitlements: Boolean(data?.totalCount),
+		loading: contractLoading || isLoading,
 	};
 }
 
 export function useAccountProducts() {
 	const {data: contractsData, isLoading: contractsLoading} =
-		useAccountContracts();
+		useAccountContractEntitlements();
 
 	const {data: productsData, isLoading: productsLoading} =
 		useChannelProducts();
@@ -440,7 +449,7 @@ export function useAccountProducts() {
 }
 
 export function useHasActiveExperienceOffering() {
-	const {data, error, isLoading: loading} = useAccountContracts();
+	const {data, error, isLoading: loading} = useAccountContractEntitlements();
 
 	const {
 		data: productsData,
@@ -480,7 +489,7 @@ export function useHasActiveExperienceOffering() {
 
 export function useAccountProjectContactRoles() {
 	const {data: contractsData, isLoading: contractsLoading} =
-		useAccountContracts();
+		useAccountContractEntitlements();
 
 	const {data: productsData, isLoading: productsLoading} =
 		useChannelProducts();
