@@ -36,11 +36,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
- * @author Ricardo Mariz
+ * @author Ryan Schuhler
  */
-@RequestMapping("/liferay-data-platform")
+@RequestMapping("/digital-sales-room")
 @RestController
-public class LiferayDataPlatformRestController extends BaseRestController {
+public class DigitalSalesRoomRestController extends BaseRestController {
 
 	@PostMapping("provisioning/{orderId}")
 	public ResponseEntity<Void> postProvisioningOrder(
@@ -58,7 +58,7 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 				"No order exists with ID " + orderId);
 		}
 
-		if (!Objects.equals(order.getOrderTypeExternalReferenceCode(), "LDP")) {
+		if (!Objects.equals(order.getOrderTypeExternalReferenceCode(), "DSR")) {
 			throw new IllegalArgumentException(
 				"Unsupported order type: " +
 					order.getOrderTypeExternalReferenceCode());
@@ -85,24 +85,17 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 			).build();
 		}
 
-		JSONObject ldpSettingsJSONObject = _getLDPSettingsJSONObject(order);
+		JSONObject dsrSettingsJSONObject = _getDSRSettingsJSONObject(order);
 
-		String workspaceName = ldpSettingsJSONObject.optString("workspaceName");
+		String workspaceName = dsrSettingsJSONObject.optString("workspaceName");
 
 		if (Validator.isNull(workspaceName)) {
 			throw new IllegalStateException(
 				StringBundler.concat(
 					"Order ", orderId,
-					" has no workspace name in the \"ldpSettings\" custom ",
+					" has no workspace name in the \"dsrSettings\" custom ",
 					"field"));
 		}
-
-		String accountExternalReferenceCode =
-			order.getAccountExternalReferenceCode();
-
-		JSONObject analyticsCloudProjectJSONObject =
-			_analyticsCloudService.getAnalyticsCloudProjectJSONObject(
-				_ANALYTICS_CLOUD_ENVIRONMENT, accountExternalReferenceCode);
 
 		if (order.getOrderStatus() ==
 				CommerceOrderConstants.ORDER_STATUS_OPEN) {
@@ -114,47 +107,39 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 		_commerceOrderService.updateOrder(
 			null, orderId, CommerceOrderConstants.ORDER_STATUS_PROCESSING);
 
-		if (analyticsCloudProjectJSONObject == null) {
-			try {
-				analyticsCloudProjectJSONObject =
-					_analyticsCloudService.provisionAnalyticsCloudProject(
-						_ANALYTICS_CLOUD_ENVIRONMENT,
-						_getAnalyticsCloudProjectJSONObject(
-							ldpSettingsJSONObject, order),
-						accountExternalReferenceCode);
-			}
-			catch (WebClientResponseException webClientResponseException) {
-				_cancelOrder(
-					webClientResponseException.getResponseBodyAsString(),
-					orderId);
+		try {
+			JSONObject analyticsCloudProjectJSONObject =
+				_analyticsCloudService.provisionAnalyticsCloudProject(
+					dsrSettingsJSONObject.optString(
+						"analyticsCloudEnvironment"),
+					_getAnalyticsCloudProjectJSONObject(
+						dsrSettingsJSONObject, order),
+					order.getAccountExternalReferenceCode());
 
-				throw webClientResponseException;
-			}
-			catch (Exception exception) {
-				_cancelOrder(exception.getMessage(), orderId);
+			_commerceOrderService.updateOrder(
+				HashMapBuilder.put(
+					"dsrAnalyticsCloudProject",
+					analyticsCloudProjectJSONObject.toString()
+				).put(
+					"dsrWorkspaceName", workspaceName
+				).build(),
+				orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+				paymentStatus);
 
-				throw exception;
-			}
+			return ResponseEntity.ok(
+			).build();
 		}
-		else if (_log.isInfoEnabled()) {
-			_log.info(
-				StringBundler.concat(
-					"Reusing the Liferay Data Platform workspace already ",
-					"provisioned for account ", accountExternalReferenceCode));
+		catch (WebClientResponseException webClientResponseException) {
+			_cancelOrder(
+				webClientResponseException.getResponseBodyAsString(), orderId);
+
+			throw webClientResponseException;
 		}
+		catch (Exception exception) {
+			_cancelOrder(exception.getMessage(), orderId);
 
-		_commerceOrderService.updateOrder(
-			HashMapBuilder.put(
-				"ldpAnalyticsCloudProject",
-				analyticsCloudProjectJSONObject.toString()
-			).put(
-				"ldpWorkspaceName", workspaceName
-			).build(),
-			orderId, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
-			paymentStatus);
-
-		return ResponseEntity.ok(
-		).build();
+			throw exception;
+		}
 	}
 
 	private void _cancelOrder(String errorMessage, long orderId)
@@ -162,14 +147,14 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 
 		_log.error(
 			StringBundler.concat(
-				"Unable to provision LDP workspace for order ", orderId, ": \n",
-				errorMessage));
+				"Unable to provision Digital Sales Room workspace for order ",
+				orderId, ": \n", errorMessage));
 
 		_commerceOrderService.updateOrder(
 			HashMapBuilder.put(
-				"ldpError", errorMessage
+				"dsrError", errorMessage
 			).put(
-				"ldpErrorDate",
+				"dsrErrorDate",
 				ZonedDateTime.now(
 				).format(
 					DateTimeFormatter.ISO_INSTANT
@@ -179,49 +164,37 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 	}
 
 	private JSONObject _getAnalyticsCloudProjectJSONObject(
-		JSONObject ldpSettingsJSONObject, Order order) {
+		JSONObject dsrSettingsJSONObject, Order order) {
+
+		String ownerEmailAddress = dsrSettingsJSONObject.optString(
+			"workspaceOwnerEmail");
+
+		if (Validator.isNull(ownerEmailAddress)) {
+			ownerEmailAddress = order.getCreatorEmailAddress();
+		}
 
 		return new JSONObject(
 		).put(
-			"corpProjectName", ldpSettingsJSONObject.getString("workspaceName")
-		).put(
-			"friendlyURL",
-			_getFriendlyURL(
-				ldpSettingsJSONObject.optString("friendlyWorkspaceURL"))
+			"corpProjectName", dsrSettingsJSONObject.getString("workspaceName")
 		).put(
 			"incidentReportEmailAddresses",
-			ldpSettingsJSONObject.optJSONArray(
-				"incidentReportContacts", new JSONArray())
+			dsrSettingsJSONObject.optJSONArray(
+				"incidentReportEmailAddresses",
+				new JSONArray(
+				).put(
+					ownerEmailAddress
+				))
 		).put(
-			"name", ldpSettingsJSONObject.getString("workspaceName")
+			"name", dsrSettingsJSONObject.getString("workspaceName")
 		).put(
-			"ownerEmailAddress",
-			ldpSettingsJSONObject.optString(
-				"workspaceOwnerEmail", order.getCreatorEmailAddress())
+			"ownerEmailAddress", ownerEmailAddress
 		).put(
 			"serverLocation",
-			ldpSettingsJSONObject.optString("dataCenterLocation", "INTERNAL")
+			dsrSettingsJSONObject.optString("dataCenterLocation", "INTERNAL")
 		);
 	}
 
-	private String _getFriendlyURL(String friendlyURL) {
-		if (Validator.isNull(friendlyURL)) {
-			return "";
-		}
-
-		friendlyURL = friendlyURL.trim(
-		).replaceAll(
-			"^/+", ""
-		);
-
-		if (Validator.isNull(friendlyURL)) {
-			return "";
-		}
-
-		return "/" + friendlyURL;
-	}
-
-	private JSONObject _getLDPSettingsJSONObject(Order order) {
+	private JSONObject _getDSRSettingsJSONObject(Order order) {
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
 
@@ -229,13 +202,11 @@ public class LiferayDataPlatformRestController extends BaseRestController {
 			return new JSONObject();
 		}
 
-		return new JSONObject(customFields.getOrDefault("ldpSettings", "{}"));
+		return new JSONObject(customFields.getOrDefault("dsrSettings", "{}"));
 	}
 
-	private static final String _ANALYTICS_CLOUD_ENVIRONMENT = "internal";
-
 	private static final Log _log = LogFactory.getLog(
-		LiferayDataPlatformRestController.class);
+		DigitalSalesRoomRestController.class);
 
 	@Autowired
 	private AnalyticsCloudService _analyticsCloudService;

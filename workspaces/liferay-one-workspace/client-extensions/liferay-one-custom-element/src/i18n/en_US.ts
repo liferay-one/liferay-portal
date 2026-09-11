@@ -214,6 +214,7 @@ export default {
 	'authenticated-logins-malus': 'Authenticated Logins (MALUs)',
 	'automation': 'Automation',
 	'available': 'Available',
+	'available-license-tiers-x': 'Available license tiers: {0}',
 	'awaiting-signature': 'Awaiting Signature',
 	'back': 'Back',
 	'back-to-apps': 'Back to Apps',
@@ -451,10 +452,13 @@ export default {
 	'designed-for-companies-with-a-tax-vat-number-this-account-type-also-lets-you-manage-multiple-users-under-one-profile-click-the-button-below-to-create-your-first-business-account-today':
 		'Designed for companies with a Tax/VAT number, this account type also lets you manage multiple users under one profile. Click the button below to create your first Business Account today!',
 	'details': 'Details',
+	'developer': 'Developer',
 	'developer-license-prices': 'Developer License Prices',
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
 	'development-framework': 'Development Framework',
+	'digital-sales-room': 'Digital Sales Room',
+	'digital-sales-room-setup': 'Digital Sales Room Setup',
 	'digital-workplace': 'Digital Workplace',
 	'disaster-recovery-data-center-location':
 		'Disaster Recovery Data Center Location',
@@ -630,6 +634,7 @@ export default {
 	'generate-new': 'Generate New',
 	'get-activation-key': 'Get Activation Key',
 	'get-app': 'Get App',
+	'get-digital-sales-room': 'Get Digital Sales Room',
 	'get-started': 'Get Started',
 	'getting-started-with-liferay-enterprise-search-article':
 		'Getting Started with Liferay Enterprise Search article.',
@@ -775,6 +780,7 @@ export default {
 	'learn-more-about-becoming-a-liferay-customer':
 		'Learn more about becoming a Liferay Customer',
 	'leave-a-comment': 'Leave a Comment',
+	'legal-liferay': 'Legal | Liferay',
 	'license': 'License',
 	'license-price': 'License Price',
 	'license-prices': 'License Prices',
@@ -920,6 +926,8 @@ export default {
 	'my-solutions': 'My Solutions',
 	'name': 'Name',
 	'name-example-com': 'name@example.com',
+	'name-the-workspace-your-digital-sales-room-runs-in-and-give-us-the-server-details-we-need-to-issue-its-activation-key':
+		'Name the workspace your Digital Sales Room runs in, and give us the server details we need to issue its activation key.',
 	'named-saved-active-segments-that-evaluate-in-real-time-as-events-arrive':
 		'Named, saved, active segments that evaluate in real time as events arrive.',
 	'named-saved-active-segments-that-evaluate-on-a-schedule':
@@ -1372,6 +1380,7 @@ export default {
 	'self-service-portal': 'Self-Service Portal',
 	'send-invitation': 'Send Invitation',
 	'send-request': 'Send Request',
+	'seo-studio-requirements': 'SEO Studio Requirements',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
 	'set-up-analytics-cloud': 'Set up Analytics Cloud',
@@ -1413,6 +1422,7 @@ export default {
 	'ssa-trial-summary': 'SSA Trial Summary',
 	'ssa-trials': 'SSA Trials',
 	'ssa-trials-limit-reached': 'SSA Trials Limit Reached',
+	'standard': 'Standard',
 	'standard-license': 'Standard License',
 	'standard-license-prices': 'Standard License Prices',
 	'standard-licenses-cover-the-following-dxp-environments-production-non-production-uat-and-backup-dr-for-both-standalone-and-virtual-cluster-servers':
@@ -1486,6 +1496,7 @@ export default {
 	'thank-you-for-your': 'Thank you for your',
 	'thank-you-for-your-order-we-have-registered-your-request-and-will-send-you-the-invoice-by-email-with-all-the-details-to-complete-your-payment-check-your-spam-or-promotions-folder-if-you-dont-see-it-in-your-inbox-your-order-is-currently-pending-payment':
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
+	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-account-was-successfully-synced-to-jsm':
 		'The account was successfully synced to JSM.',
@@ -1574,6 +1585,8 @@ export default {
 		'This order must be completed before downloading this app.',
 	'this-product-is-no-longer-available':
 		'This product is no longer available.',
+	'this-product-is-only-available-for-ai-hub-customers':
+		'This product is only available for AI Hub customers.',
 	'this-project-does-not-have-an-active-subscription-for-this-product-contact-your-liferay-sales-representative':
 		'This project does not have an active subscription for this product. Contact your Liferay sales representative.',
 	'this-project-has-no-extension-environments':
@@ -1789,6 +1802,8 @@ export default {
 	'x-is-already-a-member-of-this-account':
 		'{0} is already a member of this account.',
 	'x-is-required': '{0} is required',
+	'x-is-sold-through-our-sales-team-contact-sales-to-get-a-quote-and-choose-the-license-tier-that-fits-your-team':
+		'{0} is sold through our sales team. Contact Sales to get a quote and choose the license tier that fits your team.',
 	'x-items': '{0} Items',
 	'x-me': '{0} (me)',
 	'x-more': '+{0} more',
@@ -1867,6 +1882,8 @@ export default {
 	'your-current-liferay-version': 'Your Current Liferay Version',
 	'your-free-activation-key-has-been-generated':
 		'Your free activation key has been generated!',
+	'your-liferay-data-platform-workspace-is-being-provisioned-an-email-will-be-sent-with-everything-you-need-to-access-it-once-it-is-ready-if-the-email-does-not-arrive-within-a-few-minutes-check-your-spam-folder':
+		'Your Liferay Data Platform workspace is being provisioned. An email will be sent with everything you need to access it once it is ready. If the email does not arrive within a few minutes, check your spam folder.',
 	'your-liferay-paas-project-will-be-provisioned-in-2-3-business-days-at-that-time-liferay-paas-administrators-will-receive-several-onboarding-emails-giving-them-access-to-all-the-liferay-paas-environments-and-tools-included-in-your-subscription':
 		'Your Liferay PaaS project will be provisioned in 2-3 business days. At that time, Liferay PaaS Administrators will receive several onboarding emails, giving them access to all the Liferay PaaS environments and tools included in your subscription.',
 	'your-liferay-saas-project-will-be-provisioned-within-5-business-days-an-email-will-be-sent-once-your-project-is-ready':

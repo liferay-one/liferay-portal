@@ -1183,6 +1183,41 @@
 				"displayAvailability": true,
 				"displayStockQuantity": true
 			},
+			"productOptions": [
+				{
+					"fieldType": "radio",
+					"key": "cmp-license-usage-type",
+					"name": {
+						"en_US": "CMP License Usage Type"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CMP_LICENSE_USAGE",
+					"productOptionValues": [
+						{
+							"key": "developer",
+							"name": {
+								"en_US": "Developer"
+							},
+							"priority": 0
+						},
+						{
+							"key": "production",
+							"name": {
+								"en_US": "Production"
+							},
+							"priority": 2
+						},
+						{
+							"key": "trial",
+							"name": {
+								"en_US": "Trial"
+							},
+							"priority": 1
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
 			"productSpecifications": [
 				{
 					"specificationKey": "app-documentation-url",
@@ -1269,6 +1304,12 @@
 					}
 				},
 				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "cmp"
+					}
+				},
+				{
 					"specificationKey": "project-activation-profile",
 					"value": {
 						"en_US": "licenses"
@@ -1277,7 +1318,7 @@
 				{
 					"specificationKey": "project-download-profile",
 					"value": {
-						"en_US": "bundle"
+						"en_US": "app"
 					}
 				},
 				{
@@ -1303,6 +1344,48 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-CONTENT-MARKETING"
+				},
+				{
+					"externalReferenceCode": "PRDCT-CONTENT-MARKETING-DEVELOPER",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-CONTENT-MARKETING-DEVELOPER",
+					"skuOptions": [
+						{
+							"key": "cmp-license-usage-type",
+							"value": "developer"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-CONTENT-MARKETING-PRODUCTION",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-CONTENT-MARKETING-PRODUCTION",
+					"skuOptions": [
+						{
+							"key": "cmp-license-usage-type",
+							"value": "production"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-CONTENT-MARKETING-TRIAL",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-CONTENT-MARKETING-TRIAL",
+					"skuOptions": [
+						{
+							"key": "cmp-license-usage-type",
+							"value": "trial"
+						}
+					]
 				}
 			]
 		},
@@ -1578,6 +1661,12 @@
 					"specificationKey": "publisher-web-site-url",
 					"value": {
 						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "dsr"
 					}
 				},
 				{

@@ -5,7 +5,7 @@
 
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
-import {ProductSpecificationKey} from '~/enums/Product';
+import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
 import i18n from '~/i18n';
 
 import {getValueFromDeliverySpecifications} from './getValueFromDeliverySpecifications';
@@ -41,6 +41,7 @@ export {
 	ProductWorkflowStatusCode,
 	ProductWorkflowStatusLabel,
 	SolutionTypeLabels,
+	SolutionTypeLicenseOptions,
 	SkuOptions,
 } from '~/enums/Product';
 
@@ -171,6 +172,7 @@ export function getSkuByOptionValueKey(
 				(skuOption) =>
 					[
 						'cloud-license-usage-type',
+						'cmp-license-usage-type',
 						'dxp-license-usage-type',
 					].includes(skuOption.skuOptionKey as ProductLicense) &&
 					skuOption.skuOptionValueKey === skuOptionValueKey
@@ -212,12 +214,36 @@ export function getProductPriceModel(product: DeliveryProduct) {
 	};
 }
 
+export const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
+
+export function isContactSalesProduct(product: DeliveryProduct) {
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === 'cmp'
+	);
+}
+
 export function isLDPProduct(product: DeliveryProduct) {
 	return (
 		getProductSpecificationValue(
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
 		) === 'liferay-data-platform'
+	);
+}
+
+export function isSEOStudioProduct(product?: DeliveryProduct) {
+	if (!product) {
+		return false;
+	}
+
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === SolutionTypes.SEO_STUDIO
 	);
 }
 

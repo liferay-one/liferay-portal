@@ -44,6 +44,7 @@ const AIHubTokenSelection = lazy(
 		import('./LiferayProduct/AIHub/AIHubTokenSelection/AIHubTokenSelection')
 );
 const ContractSelection = lazy(() => import('./LiferayProduct/Contract'));
+const DSRForm = lazy(() => import('./LiferayProduct/DSR/DSRForm/DSRForm'));
 const ProjectSelection = lazy(() => import('./LiferayProduct/Project'));
 
 export type ProductPurchaseStep = {
@@ -142,7 +143,23 @@ export function getProductPurchaseSteps({
 				},
 			];
 		}
+
+		if (solutionType === 'dsr') {
+			return [
+				{
+					element: <AccountSelection />,
+					index: true,
+					title: i18n.translate('account'),
+				},
+				{
+					element: <DSRForm />,
+					path: 'dsr-form',
+					title: i18n.translate('digital-sales-room'),
+				},
+			];
+		}
 	}
+
 	const steps: ProductPurchaseStep[] = [
 		{
 			element: <AccountSelection />,

@@ -29,6 +29,7 @@ import {
 } from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
+import LDPNextSteps from '../ProductPurchase/LDPNextSteps/LDPNextSteps';
 import AIHubNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubNextSteps';
 import AIHubOpenBetaNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubOpenBetaNextSteps';
 import AIHubTokenNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubTokenNextSteps';
@@ -329,6 +330,12 @@ function NextStepsPage() {
 	);
 
 	const productTypeCategory = productTypes[0] as ProductTypeVocabulary;
+
+	if (
+		solutionTypeSpecificationValue === SolutionTypes.LIFERAY_DATA_PLATFORM
+	) {
+		return <LDPNextSteps data={data} error={error} isLoading={isLoading} />;
+	}
 
 	if (
 		productTypeCategory === ProductTypeVocabulary.LIFERAY_PRODUCT &&

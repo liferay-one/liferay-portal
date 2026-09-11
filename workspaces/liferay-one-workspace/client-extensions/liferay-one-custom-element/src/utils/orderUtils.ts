@@ -4,6 +4,7 @@
  */
 
 import {formatCurrency} from '~/utils/formatCurrency';
+import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {Order, OrderTypes, PlacedOrder} from '~/types/orders';
 
@@ -90,13 +91,18 @@ export const APP_ORDER_TYPES: readonly OrderTypes[] = [
 	'OTHER',
 ];
 
+export const CMP_ORDER_TYPES: readonly OrderTypes[] = ['CMP', 'CMP_BETA'];
+
 export const LIFERAY_PRODUCT_ORDER_TYPES: readonly OrderTypes[] = [
 	'ADDONS',
 	'AI_HUB',
+	'CMP',
 	'CMP_BETA',
+	'DSR',
 	'DXP',
 	'LDP',
 	'SALESFORCE',
+	'SEO_STUDIO',
 ];
 
 export const orderTypeLabel = {
@@ -105,6 +111,7 @@ export const orderTypeLabel = {
 	AI_HUB_TOKEN: 'AI Hub Token',
 	CLIENT_EXTENSION: 'Client Extension',
 	CLOUD_APP: 'Cloud',
+	CMP: 'Content Marketing Platform',
 	CMP_BETA: 'Content Marketing Platform',
 	COMPOSITE_APP: 'Composite App',
 	DSR: 'Digital Sales Room',
@@ -114,6 +121,7 @@ export const orderTypeLabel = {
 	LOW_CODE_CONFIGURATION: 'Low-Code Configuration',
 	OTHER: 'Other',
 	SALESFORCE: 'Salesforce',
+	SEO_STUDIO: 'SEO Studio',
 	SOLUTIONS7: 'Solutions 7',
 	SOLUTIONS30: 'Solutions 30',
 	SSA_SAAS: 'SSA SaaS',
@@ -154,6 +162,15 @@ export const paymentWorkflowDisplayType = {
 	[PaymentStatus.PENDING]: 'secondary',
 } as const;
 
+export function hasAIHubOrder(placedOrders?: PlacedOrder[]) {
+	return Boolean(
+		placedOrders?.some(
+			({orderTypeExternalReferenceCode}) =>
+				orderTypeExternalReferenceCode === 'AI_HUB'
+		)
+	);
+}
+
 export function getOrderStatusLabel(order: PlacedOrder) {
 	const statusLabel =
 		order.orderStatusInfo?.label ||
@@ -163,6 +180,7 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 
 	const expirableOrderTypes: OrderTypes[] = [
 		'ADDONS',
+		'CMP',
 		'CMP_BETA',
 		'DSR',
 		'DXP',
@@ -186,7 +204,13 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		);
 	}
 
-	if (order.orderTypeExternalReferenceCode === 'AI_HUB') {
+	const requestableOrderTypes: OrderTypes[] = ['AI_HUB', 'SEO_STUDIO'];
+
+	if (
+		requestableOrderTypes.includes(
+			order.orderTypeExternalReferenceCode as OrderTypes
+		)
+	) {
 		if (order.orderStatusInfo.code !== OrderWorkflowStatusCode.COMPLETED) {
 			return 'Requested';
 		}
@@ -207,4 +231,21 @@ export function toStatusToken(label: string): string {
 
 export function getOrderStatusToken(order: PlacedOrder): string {
 	return toStatusToken(getOrderStatusLabel(order));
+}
+
+const BETA_SKU_OPTION_VALUE_KEYS = ['beta', 'open-beta', 'private-beta'];
+
+export function isBetaOrder(placedOrder?: PlacedOrder): boolean {
+	const placedOrderItems = placedOrder?.placedOrderItems ?? [];
+
+	return placedOrderItems.some((placedOrderItem) => {
+		const options = safeJSONParse<{skuOptionValueKey: string}[]>(
+			placedOrderItem?.options || '',
+			[]
+		);
+
+		return options.some((option) =>
+			BETA_SKU_OPTION_VALUE_KEYS.includes(option.skuOptionValueKey)
+		);
+	});
 }

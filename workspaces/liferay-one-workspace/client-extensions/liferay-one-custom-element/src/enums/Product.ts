@@ -38,6 +38,7 @@ export type ProductImageFallbackCategories =
 export const ProductLicense = {
 	BASE: 'base-license-usage-type',
 	CLOUD: 'cloud-license-usage-type',
+	CMP: 'cmp-license-usage-type',
 	DXP: 'dxp-license-usage-type',
 } as const;
 
@@ -46,6 +47,7 @@ export type ProductLicense =
 
 export const ProductLicenseTier = {
 	DEVELOPER: 'developer',
+	PRODUCTION: 'production',
 	STANDARD: 'standard',
 	TRIAL: 'trial',
 } as const;
@@ -214,6 +216,7 @@ export type ProductWorkflowStatusCode =
 export const SkuOptions = {
 	DEVELOPER: 'developer',
 	OPEN_BETA: 'open-beta',
+	PRODUCTION: 'production',
 	STANDARD: 'standard',
 	TRIAL: 'trial',
 } as const;
@@ -229,6 +232,7 @@ export const SolutionTypes = {
 	DXP: 'dxp',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
 	PRE_BUILT_TRIAL: 'pre-built-trial',
+	SEO_STUDIO: 'seo-studio',
 } as const;
 
 export type SolutionTypes = (typeof SolutionTypes)[keyof typeof SolutionTypes];
@@ -277,6 +281,7 @@ export const SolutionTypeLabels = {
 	[SolutionTypes.DXP]: 'DXP',
 	[SolutionTypes.LIFERAY_DATA_PLATFORM]: 'Liferay Data Platform',
 	[SolutionTypes.PRE_BUILT_TRIAL]: 'Pre-Built Trial',
+	[SolutionTypes.SEO_STUDIO]: 'SEO Studio',
 } as const;
 
 export const ProductTypeLicenseOptions: Record<
@@ -295,6 +300,16 @@ export const ProductTypeLicenseOptions: Record<
 	[ProductType.LOW_CODE_CONFIGURATION]: [ProductLicenseTier.STANDARD],
 	[ProductType.OTHER]: [ProductLicenseTier.STANDARD],
 	[ProductType.SSA_SAAS]: [ProductLicenseTier.STANDARD],
+};
+
+export const SolutionTypeLicenseOptions: Partial<
+	Record<SolutionTypes, ProductLicenseTier[]>
+> = {
+	[SolutionTypes.CMP]: [
+		ProductLicenseTier.DEVELOPER,
+		ProductLicenseTier.TRIAL,
+		ProductLicenseTier.PRODUCTION,
+	],
 };
 
 export const ProductWorkflowDisplayType = {

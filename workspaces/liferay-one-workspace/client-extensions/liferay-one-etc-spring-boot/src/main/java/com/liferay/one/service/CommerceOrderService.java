@@ -44,6 +44,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
@@ -473,12 +474,13 @@ public class CommerceOrderService extends OneBaseService {
 				"/o/headless-commerce-admin-channel/v1.0/channels" +
 					"/by-externalReferenceCode/{externalReferenceCode}"
 			).buildAndExpand(
-				_LIFERAY_ONE_CHANNEL
+				_commerceChannelExternalReferenceCode
 			).toUri());
 
 		if (Validator.isNull(response)) {
 			throw new Exception(
-				"Unable to find commerce channel " + _LIFERAY_ONE_CHANNEL);
+				"Unable to find commerce channel " +
+					_commerceChannelExternalReferenceCode);
 		}
 
 		JSONObject jsonObject = new JSONObject(response);
@@ -834,8 +836,6 @@ public class CommerceOrderService extends OneBaseService {
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
 
-	private static final String _LIFERAY_ONE_CHANNEL = "LIFERAY_ONE_CHANNEL";
-
 	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
@@ -856,6 +856,9 @@ public class CommerceOrderService extends OneBaseService {
 	private AIHubService _aiHubService;
 
 	private volatile Long _channelId;
+
+	@Value("${liferay.one.commerce.channel.external.reference.code}")
+	private String _commerceChannelExternalReferenceCode;
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;

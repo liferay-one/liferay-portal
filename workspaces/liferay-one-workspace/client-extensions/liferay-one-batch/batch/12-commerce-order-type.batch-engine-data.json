@@ -71,6 +71,18 @@
 		{
 			"active": true,
 			"description": {
+				"en_US": "Designates that the order contains a Content Marketing Platform subscription sold through the sales channel."
+			},
+			"displayOrder": 3,
+			"externalReferenceCode": "CMP",
+			"name": {
+				"en_US": "Content Marketing Platform"
+			},
+			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
 				"en_US": "Designates that the order contains a CMP Beta."
 			},
 			"displayOrder": 3,
@@ -173,6 +185,18 @@
 			"externalReferenceCode": "SALESFORCE",
 			"name": {
 				"en_US": "Salesforce"
+			},
+			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
+				"en_US": "Designates that the order contains an SEO Studio beta."
+			},
+			"displayOrder": 15,
+			"externalReferenceCode": "SEO_STUDIO",
+			"name": {
+				"en_US": "SEO Studio"
 			},
 			"neverExpire": true
 		},
