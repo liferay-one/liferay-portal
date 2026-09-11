@@ -23,7 +23,7 @@ const PageRenderer: React.FC<PageRendererProps> = ({
 	isLoading,
 }) => {
 	if (isLoading) {
-		return <Loading className="mt-3" />;
+		return <Loading.Page />;
 	}
 
 	if (error) {

@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {buildEnvironmentSections} from '~/pages/MyAccount/Projects/utils/buildEnvironmentSections';
@@ -36,7 +37,7 @@ export default function EnvironmentTab({
 	profile,
 }: EnvironmentTabProps) {
 	const {projectId} = useProject();
-	const {environments} = useProjectEnvironments();
+	const {environments, loading} = useProjectEnvironments();
 
 	const expectedOffering = profile
 		? ENVIRONMENT_OFFERING_BY_PROFILE[profile]
@@ -48,6 +49,10 @@ export default function EnvironmentTab({
 	);
 
 	const [environmentEntry] = matchingEnvironments;
+
+	if (loading) {
+		return <Loading.Page />;
+	}
 
 	if (!profile || !environmentEntry) {
 		return <EnvironmentCard environment={environment} />;

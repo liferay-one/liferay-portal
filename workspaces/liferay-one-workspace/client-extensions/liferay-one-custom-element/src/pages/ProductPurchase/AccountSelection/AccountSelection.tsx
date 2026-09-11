@@ -72,11 +72,7 @@ const AccountSelection = () => {
 	]);
 
 	if (isLoadingAccounts || isSingleAccount) {
-		return (
-			<div className="d-flex justify-content-center my-5">
-				<Loading />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	const version = getProductSpecificationValue(

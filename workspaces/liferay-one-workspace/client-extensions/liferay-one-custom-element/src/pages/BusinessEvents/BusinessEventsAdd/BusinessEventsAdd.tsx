@@ -4,7 +4,6 @@
  */
 
 import {ClayInput, ClayRadio} from '@clayui/form';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
 	Controller,
@@ -15,6 +14,7 @@ import {
 import {useNavigate, useParams} from 'react-router-dom';
 import Button from '~/components/Button/Button';
 import DatePicker from '~/components/DatePicker/DatePicker';
+import Loading from '~/components/Loading/Loading';
 import TimePicker from '~/components/TimePicker/TimePicker';
 import {translate} from '~/i18n';
 import AssociatedTicketsContainer from '~/pages/BusinessEvents/components/AssociatedTicketsContainer/AssociatedTicketsContainer';
@@ -616,7 +616,7 @@ const BusinessEventsAddPage: React.FC = () => {
 					{hasImpactingEvents === 'yes' && (
 						<div className="mx-3 pb-3">
 							{loadingTickets ? (
-								<ClayLoadingIndicator size="sm" />
+								<Loading.Inline />
 							) : ticketOptions.length ? (
 								<>
 									<label>
@@ -660,9 +660,7 @@ const BusinessEventsAddPage: React.FC = () => {
 			/>
 		)
 	) : (
-		<div className="mx-auto">
-			<ClayLoadingIndicator size="sm" />
-		</div>
+		<Loading.Page />
 	);
 };
 

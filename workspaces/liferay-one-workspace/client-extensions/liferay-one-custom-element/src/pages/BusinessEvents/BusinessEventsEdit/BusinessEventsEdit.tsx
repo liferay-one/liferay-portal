@@ -6,7 +6,6 @@
 import {Nav, useModal} from '@clayui/core';
 import {ClayInput, ClayRadio} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import NavigationBar from '@clayui/navigation-bar';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
@@ -18,6 +17,7 @@ import {
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import Button from '~/components/Button/Button';
 import DatePicker from '~/components/DatePicker/DatePicker';
+import Loading from '~/components/Loading/Loading';
 import TimePicker from '~/components/TimePicker/TimePicker';
 import {Word, translate} from '~/i18n';
 import BusinessEventsConfirmation from '~/pages/BusinessEvents/BusinessEventsConfirmation/BusinessEventsConfirmation';
@@ -848,7 +848,7 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 						{hasImpactingEvents === 'yes' && (
 							<div className="event-edit-field mx-3 pb-3">
 								{loadingTickets ? (
-									<ClayLoadingIndicator size="sm" />
+									<Loading.Inline />
 								) : !!ticketOptions.length ||
 								  !!selectedTicketOptions.length ? (
 									<>
@@ -898,9 +898,7 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 			/>
 		)
 	) : (
-		<div className="w-25">
-			<ClayLoadingIndicator size="sm" />
-		</div>
+		<Loading.Page />
 	);
 };
 
@@ -936,11 +934,7 @@ const BusinessEventsEdit: React.FC = () => {
 	);
 
 	if (loading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!businessEvent) {

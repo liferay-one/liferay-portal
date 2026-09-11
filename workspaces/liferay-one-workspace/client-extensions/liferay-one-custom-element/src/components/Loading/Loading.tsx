@@ -4,6 +4,7 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import classNames from 'classnames';
 import {ComponentProps, ReactNode} from 'react';
 
 import './Loading.css';
@@ -14,12 +15,15 @@ type FullScreenProps = {
 	children: ReactNode;
 };
 
-const Loading: React.FC<LoadingProps> & {FullScreen: typeof FullScreen} = ({
-	displayType = 'primary',
-	shape = 'squares',
-	size = 'lg',
-	...props
-}) => (
+type InlineProps = LoadingProps & {
+	children?: ReactNode;
+};
+
+const Loading: React.FC<LoadingProps> & {
+	FullScreen: typeof FullScreen;
+	Inline: typeof Inline;
+	Page: typeof Page;
+} = ({displayType = 'primary', shape = 'squares', size = 'lg', ...props}) => (
 	<ClayLoadingIndicator
 		displayType={displayType}
 		shape={shape}
@@ -39,6 +43,33 @@ const FullScreen: React.FC<FullScreenProps> = ({children}) => (
 	</div>
 );
 
+const Inline: React.FC<InlineProps> = ({
+	children,
+	className,
+	size = 'sm',
+	...props
+}) => (
+	<span className="loading-inline">
+		<Loading
+			className={classNames('my-0', className)}
+			size={size}
+			{...props}
+		/>
+
+		{children ? (
+			<span className="loading-inline-text">{children}</span>
+		) : null}
+	</span>
+);
+
+const Page: React.FC<LoadingProps> = (props) => (
+	<div className="loading-page">
+		<Loading {...props} />
+	</div>
+);
+
 Loading.FullScreen = FullScreen;
+Loading.Inline = Inline;
+Loading.Page = Page;
 
 export default Loading;

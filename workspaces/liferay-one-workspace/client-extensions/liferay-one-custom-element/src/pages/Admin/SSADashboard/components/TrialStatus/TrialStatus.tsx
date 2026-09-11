@@ -4,8 +4,8 @@
  */
 
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import classNames from 'classnames';
+import Loading from '~/components/Loading/Loading';
 import {TRIAL_STATUS_LABEL} from '~/pages/Admin/SSADashboard/utils/constants';
 
 import './TrialStatus.css';
@@ -20,10 +20,7 @@ const TrialStatus = ({trialStatus}: TrialStatusProps) => {
 	if ('processing' === trialStatus) {
 		return (
 			<span className="d-flex trial-status-text">
-				<ClayLoadingIndicator
-					className="m-0 mr-1"
-					displayType="primary"
-				/>
+				<Loading.Inline className="m-0 mr-1" />
 				{
 					TRIAL_STATUS_LABEL[
 						trialStatus as keyof typeof TRIAL_STATUS_LABEL

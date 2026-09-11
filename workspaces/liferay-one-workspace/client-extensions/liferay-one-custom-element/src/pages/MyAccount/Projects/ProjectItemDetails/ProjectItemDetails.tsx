@@ -7,6 +7,7 @@ import {ReactNode} from 'react';
 import {useParams} from 'react-router-dom';
 import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
+import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
 import {
@@ -75,7 +76,8 @@ export default function ProjectItemDetails({
 		)?.id ?? '';
 
 	const {data: product, isLoading} = useDeliveryProduct(productId);
-	const {placedOrders} = useProjectOrders(projectName);
+	const {loading: ordersLoading, placedOrders} =
+		useProjectOrders(projectName);
 
 	const renderMessage = (word: Word) => (
 		<ProjectDetailTabs
@@ -88,9 +90,10 @@ export default function ProjectItemDetails({
 		contractLoading ||
 		experienceOfferingLoading ||
 		isLoading ||
-		itemsLoading
+		itemsLoading ||
+		ordersLoading
 	) {
-		return renderMessage('loading');
+		return <Loading.Page />;
 	}
 
 	if (!product) {

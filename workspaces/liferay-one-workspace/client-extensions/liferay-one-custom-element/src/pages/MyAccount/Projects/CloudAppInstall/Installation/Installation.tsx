@@ -51,7 +51,7 @@ const getStatuses = () => ({
 		bodyMessage: i18n.translate(
 			'the-installation-process-is-ongoing-and-may-take-some-time-navigating-to-other-sections-will-not-cancel-the-process'
 		),
-		icon: <Loading displayType="primary" shape="squares" size="lg" />,
+		icon: <Loading />,
 		title: i18n.translate('installation-in-progress'),
 	},
 	success: {

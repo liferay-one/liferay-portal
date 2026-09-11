@@ -247,7 +247,7 @@ export default function PublishedProductsListView({
 	);
 
 	if (isLoading) {
-		return <Loading className="mt-3" />;
+		return <Loading.Page />;
 	}
 
 	const emptyStateProps = {

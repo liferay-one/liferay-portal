@@ -5,6 +5,7 @@
 
 import classNames from 'classnames';
 import {useMemo, useState} from 'react';
+import Loading from '~/components/Loading/Loading';
 import {Tooltip} from '~/components/Tooltip/Tooltip';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectCommerce} from '~/hooks/useProjectCommerce';
@@ -229,9 +230,7 @@ export default function LDPEventsWidget({
 					)}
 				</p>
 			) : isLoading ? (
-				<p className="mt-3 text-neutral-7">
-					{i18n.translate('loading')}
-				</p>
+				<Loading.Page />
 			) : (
 				<>
 					<div className="ldp-events-summary">

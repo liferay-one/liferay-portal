@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useEffect} from 'react';
 import {Outlet, useNavigate, useParams} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {translate} from '~/i18n';
 import {
@@ -67,11 +67,7 @@ const BusinessEventsRedirect = () => {
 	]);
 
 	if (loading || (!isAccessible && !!projects.length)) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!projects.length) {

@@ -7,6 +7,7 @@ import ClayButton from '@clayui/button';
 import {ClayToggle} from '@clayui/form';
 import {useParams} from 'react-router-dom';
 import BackLink from '~/components/BackLink/BackLink';
+import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {
 	ProjectActivationKey,
@@ -45,7 +46,7 @@ export default function LicenseKeyDetails() {
 			<BackLink path="..">{translate('activation-keys')}</BackLink>
 
 			{loading ? (
-				<div className="p-4 text-neutral-7">{translate('loading')}</div>
+				<Loading.Page />
 			) : licenseKey ? (
 				<LicenseKeyDetailsContent
 					licenseKey={licenseKey}

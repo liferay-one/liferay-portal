@@ -5,9 +5,9 @@
 
 import Button from '@clayui/button';
 import ClayForm, {ClaySelect} from '@clayui/form';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {translate} from '~/i18n';
@@ -81,11 +81,7 @@ const TicketAttachmentsAdd = () => {
 	);
 
 	if (projectsLoading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!projects.length) {
@@ -125,7 +121,7 @@ const TicketAttachmentsAdd = () => {
 					</label>
 
 					{loadingTickets ? (
-						<ClayLoadingIndicator size="sm" />
+						<Loading.Inline />
 					) : (
 						<ClaySelect
 							disabled={!tickets.length}

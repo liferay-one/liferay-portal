@@ -11,6 +11,7 @@ import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
 import {ReactNode, useMemo, useState} from 'react';
 import Button from '~/components/Button/Button';
+import Loading from '~/components/Loading/Loading';
 import {Word, translate} from '~/i18n';
 
 import './FilterableListCard.css';
@@ -47,6 +48,7 @@ type FilterableListCardProps<T> = {
 	filters?: ListFilter<T>[];
 	hideToolbar?: boolean;
 	items: T[];
+	loading?: boolean;
 	matchesSearch?: (item: T, search: string) => boolean;
 	onItemClick?: (item: T) => void;
 	rowKey: (item: T) => string;
@@ -196,6 +198,7 @@ export default function FilterableListCard<T>({
 	filters = [],
 	hideToolbar = false,
 	items,
+	loading = false,
 	matchesSearch,
 	onItemClick,
 	rowKey,
@@ -400,7 +403,9 @@ export default function FilterableListCard<T>({
 				</div>
 			)}
 
-			{paginatedItems.length ? (
+			{loading ? (
+				<Loading.Page />
+			) : paginatedItems.length ? (
 				<>
 					<ClayTable
 						borderless

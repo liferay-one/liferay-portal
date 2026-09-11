@@ -147,7 +147,7 @@ export default function AccountInvitation() {
 						<div className="mt-4">{action}</div>
 					</>
 				) : (
-					<Loading />
+					<Loading.Page />
 				)}
 			</div>
 		</div>

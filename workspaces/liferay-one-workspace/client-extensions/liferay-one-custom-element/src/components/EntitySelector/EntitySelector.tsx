@@ -6,6 +6,7 @@
 import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {ReactNode, useCallback, useRef, useState} from 'react';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 
 import './EntitySelector.css';
@@ -272,7 +273,9 @@ export default function EntitySelector({
 			<ClayDropDown.ItemList>
 				{loading && (
 					<ClayDropDown.Item disabled>
-						{i18n.translate('loading')}
+						<Loading.Inline>
+							{i18n.translate('loading')}
+						</Loading.Inline>
 					</ClayDropDown.Item>
 				)}
 

@@ -5,13 +5,13 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {KeyedMutator} from 'swr';
 import {z} from 'zod';
 import FormInput from '~/components/FormInput/FormInput';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import {
 	EXTEND_OPTIONS,
@@ -202,7 +202,10 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 				>
 					<div className="align-items-center d-flex">
 						{submitting && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
+							<Loading.Inline
+								className="mr-3"
+								displayType="light"
+							/>
 						)}
 						{extendOptions?.actionText}
 					</div>
