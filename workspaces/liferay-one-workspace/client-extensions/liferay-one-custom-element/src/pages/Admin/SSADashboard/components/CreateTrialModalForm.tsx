@@ -5,7 +5,6 @@
 
 import Button from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {Observer, Size} from '@clayui/modal/lib/types';
 import MultiSelect from '@clayui/multi-select';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -215,7 +214,7 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 				visible={modal.open}
 			>
 				<div className="m-8">
-					<Loading className="mb-3" />
+					<Loading.Page />
 
 					<p className="mt-8 text-center">
 						{i18n.translate(
@@ -367,8 +366,12 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 				>
 					<div className="align-items-center d-flex">
 						{isSubmitting && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
+							<Loading.Inline
+								className="mr-3"
+								displayType="light"
+							/>
 						)}
+
 						{i18n.translate('create')}
 					</div>
 				</Button>

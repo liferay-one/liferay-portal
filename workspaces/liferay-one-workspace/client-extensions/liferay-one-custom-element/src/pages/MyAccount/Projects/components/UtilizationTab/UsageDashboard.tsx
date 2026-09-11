@@ -4,6 +4,7 @@
  */
 
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import {useProjectUsageDashboard} from '~/pages/MyAccount/Projects/hooks/useProjectUsageDashboard';
 import {
@@ -70,9 +71,7 @@ export default function UsageDashboard({
 	);
 
 	if (isLoading) {
-		return (
-			<p className="mt-3 text-neutral-7">{i18n.translate('loading')}</p>
-		);
+		return <Loading.Page />;
 	}
 
 	if (error) {

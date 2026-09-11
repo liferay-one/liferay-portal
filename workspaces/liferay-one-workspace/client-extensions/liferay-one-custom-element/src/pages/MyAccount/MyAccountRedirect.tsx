@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {Navigate, useLocation} from 'react-router-dom';
 import EmptyState from '~/components/EmptyState/EmptyState';
+import Loading from '~/components/Loading/Loading';
 import {useFetch} from '~/hooks/useFetch';
 import {translate} from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
@@ -33,11 +33,7 @@ export default function MyAccountRedirect() {
 	}
 
 	if (currentAccountId && loading) {
-		return (
-			<div className="mx-auto p-4">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	return (

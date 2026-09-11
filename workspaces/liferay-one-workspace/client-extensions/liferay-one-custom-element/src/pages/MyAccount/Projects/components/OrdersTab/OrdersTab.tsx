@@ -28,7 +28,7 @@ export default function OrdersTab() {
 
 	const projectName = project?.name;
 
-	const {orders} = useProjectOrders(projectName);
+	const {loading, orders} = useProjectOrders(projectName);
 
 	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(
@@ -124,6 +124,7 @@ export default function OrdersTab() {
 			emptyLabel="no-orders-yet"
 			filters={filters}
 			items={orders}
+			loading={loading}
 			matchesSearch={matchesSearch}
 			rowKey={(order) => order.id}
 			title="orders-list"

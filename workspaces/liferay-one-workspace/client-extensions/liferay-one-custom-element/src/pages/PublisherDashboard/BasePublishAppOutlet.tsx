@@ -10,6 +10,7 @@ import {Outlet} from 'react-router-dom';
 import AppPublish from '~/components/AppPublish/AppPublish';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import ExternalLink from '~/components/ExternalLink/ExternalLink';
+import Loading from '~/components/Loading/Loading';
 import {usePublishMode} from '~/context/PublishModeContextProvider';
 import {useAccount} from '~/hooks/data/useAccounts';
 import i18n from '~/i18n';
@@ -87,7 +88,7 @@ const BasePublishAppOutlet = <TContext extends PublishFlowContext>({
 	const hasSchemaErrors = parsedSchema ? !parsedSchema.success : false;
 
 	if (context.loading) {
-		return null;
+		return <Loading.Page />;
 	}
 
 	return (

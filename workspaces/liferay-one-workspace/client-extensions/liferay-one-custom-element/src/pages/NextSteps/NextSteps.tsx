@@ -5,7 +5,6 @@
 
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import DOMPurify from 'dompurify';
 import {ReactElement, useEffect} from 'react';
 import {HashRouter} from 'react-router-dom';
@@ -15,6 +14,7 @@ import paymentPendingIcon from '~/assets/icons/payment_pending_icon.svg';
 import timesCircleIcon from '~/assets/icons/times_circle_icon.svg';
 import {AccountAndAppCard} from '~/components/AccountAndAppCard/AccountAndAppCard';
 import {Header} from '~/components/Header/Header';
+import Loading from '~/components/Loading/Loading';
 import {PageRenderer} from '~/components/Page/Page';
 import {LearnLinks} from '~/enums/Learn';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
@@ -313,7 +313,7 @@ function NextStepsPage() {
 	const {data, error, isLoading} = useGetProductByOrderId(orderId as string);
 
 	if (isLoading) {
-		return <ClayLoadingIndicator />;
+		return <Loading.Page />;
 	}
 
 	const solutionTypeSpecification = getProductSpecification(

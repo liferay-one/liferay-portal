@@ -5,7 +5,6 @@
 
 import {Nav} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useModal} from '@clayui/modal';
 import NavigationBar from '@clayui/navigation-bar';
 import {useCallback, useMemo, useState} from 'react';
@@ -13,6 +12,7 @@ import {Link, useNavigate, useParams} from 'react-router-dom';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';
+import Loading from '~/components/Loading/Loading';
 import {translate} from '~/i18n';
 import ButtonDropDown from '~/pages/BusinessEvents/components/ButtonDropDown/ButtonDropDown';
 import ManageEventModal from '~/pages/BusinessEvents/components/ManageEventModal/ManageEventModal';
@@ -119,11 +119,7 @@ const BusinessEventsActivityHistory = () => {
 	}, [fetchBusinessEvent, fetchBusinessEventVersions]);
 
 	if (loading || loadingVersions) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!businessEvent) {

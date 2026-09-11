@@ -193,13 +193,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 											OrderWorkflowStatusCode.PROCESSING,
 										].includes(
 											orderStatusInfo?.code ?? -1
-										) && (
-											<Loading
-												displayType="primary"
-												shape="circle"
-												size="sm"
-											/>
-										)}
+										) && <Loading.Inline />}
 									</div>
 								);
 							},

@@ -20,6 +20,7 @@ type DownloadListCardProps = {
 	emptyLabel: Word;
 	heading: Word;
 	items: DownloadItem[];
+	loading?: boolean;
 	title: Word;
 };
 
@@ -31,6 +32,7 @@ export default function DownloadListCard({
 	emptyLabel,
 	heading,
 	items,
+	loading,
 	title,
 }: DownloadListCardProps) {
 	const columns: ListColumn<DownloadItem>[] = [
@@ -73,6 +75,7 @@ export default function DownloadListCard({
 			emptyLabel={emptyLabel}
 			filters={[]}
 			items={items}
+			loading={loading}
 			matchesSearch={matchesSearch}
 			onItemClick={() => {}}
 			rowKey={(item) => item.id}

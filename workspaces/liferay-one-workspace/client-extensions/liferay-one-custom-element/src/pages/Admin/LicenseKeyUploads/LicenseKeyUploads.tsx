@@ -228,7 +228,7 @@ function LicenseKeyUploadsPanel({productGroup}: LicenseKeyUploadsPanelProps) {
 			</form>
 
 			{isLoading ? (
-				<Loading />
+				<Loading.Page />
 			) : (
 				<Table
 					Actions={

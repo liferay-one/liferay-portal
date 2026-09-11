@@ -6,6 +6,7 @@
 import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
 import {Link} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import PublishModeContextProvider from '~/context/PublishModeContextProvider';
 import {useSolutionContext} from '~/context/SolutionContextProvider';
@@ -64,7 +65,7 @@ const PublishSolutionOutlet = () => {
 		!context?._product && isRequiredDraftFormFilled(context);
 
 	if (context.loading) {
-		return null;
+		return <Loading.Page />;
 	}
 
 	return (

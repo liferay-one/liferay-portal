@@ -154,7 +154,7 @@ const CloudAppInstall = () => {
 	};
 
 	if (isLoading) {
-		return <Loading />;
+		return <Loading.Page />;
 	}
 
 	if (error || !product) {

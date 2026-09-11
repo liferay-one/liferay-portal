@@ -4,7 +4,6 @@
  */
 
 import ClayAlert from '@clayui/alert';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
 import {Word, sub, translate} from '~/i18n';
@@ -69,17 +68,10 @@ const OfflineActivationModal: React.FC<OfflineActivationModalProps> = ({
 				<Button
 					className="ml-3"
 					disabled={isActivating || !token.trim()}
+					isLoading={isActivating}
 					onClick={() => onActivate(token.trim())}
 				>
-					<div className="align-items-center d-flex">
-						{isActivating && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
-						)}
-
-						{isActivating
-							? translate('activating')
-							: translate('ok')}
-					</div>
+					{isActivating ? translate('activating') : translate('ok')}
 				</Button>
 			</div>
 		</div>

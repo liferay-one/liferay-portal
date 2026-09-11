@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {Navigate} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {
 	RadioOption,
@@ -64,7 +64,7 @@ const ContractSelection = () => {
 	}
 
 	if (isLoading) {
-		return <ClayLoadingIndicator />;
+		return <Loading.Page />;
 	}
 
 	if (error) {

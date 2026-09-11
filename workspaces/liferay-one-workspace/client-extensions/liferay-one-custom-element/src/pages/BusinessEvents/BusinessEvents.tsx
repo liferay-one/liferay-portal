@@ -7,13 +7,13 @@ import './BusinessEvents.css';
 
 import Button from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useModal} from '@clayui/modal';
 import {useCallback, useMemo, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';
+import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {Word, sub, translate} from '~/i18n';
@@ -401,11 +401,7 @@ const BusinessEvents = () => {
 	]);
 
 	if (loading || projectsLoading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	const header = (

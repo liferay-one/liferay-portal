@@ -8,6 +8,7 @@ import ClayLabel from '@clayui/label';
 import {useModal} from '@clayui/modal';
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
+import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
@@ -203,9 +204,9 @@ export default function ActivationStatusCard({
 			</div>
 
 			{!status && statusLoading && (
-				<div className="py-2 text-neutral-7">
+				<Loading.Inline className="py-2">
 					{translate('loading')}
-				</div>
+				</Loading.Inline>
 			)}
 
 			{!status &&

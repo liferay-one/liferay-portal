@@ -5,8 +5,8 @@
 
 import {Button as ClayButton} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {filesize} from 'filesize';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 
 import CircularProgress from './CircularProgress/CircularProgress';
@@ -35,7 +35,7 @@ const FileList = ({
 					<div className="file-list-item-left-content-icon-container">
 						{(() => {
 							if (isInitializing) {
-								return <ClayLoadingIndicator size="md" />;
+								return <Loading.Inline size="md" />;
 							}
 							else if (isUploading) {
 								return (

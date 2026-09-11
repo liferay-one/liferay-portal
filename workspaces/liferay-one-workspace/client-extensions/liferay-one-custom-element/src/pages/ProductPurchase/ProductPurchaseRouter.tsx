@@ -88,11 +88,7 @@ const ProductPurchaseRouter = () => {
 	}
 
 	if (isLoading) {
-		return (
-			<div className="d-flex justify-content-center my-7">
-				<Loading />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!productId || !(product?.productId ?? product?.id)) {

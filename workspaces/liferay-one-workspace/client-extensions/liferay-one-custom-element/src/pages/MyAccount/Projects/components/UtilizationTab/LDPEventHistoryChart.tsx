@@ -17,6 +17,7 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
+import Loading from '~/components/Loading/Loading';
 import {Tooltip} from '~/components/Tooltip/Tooltip';
 import i18n, {Word} from '~/i18n';
 import {useProjectEventHistory} from '~/pages/MyAccount/Projects/hooks/useProjectEventHistory';
@@ -447,9 +448,7 @@ export default function LDPEventHistoryChart({
 					)}
 				</p>
 			) : isLoading ? (
-				<p className="mt-3 text-neutral-7">
-					{i18n.translate('loading')}
-				</p>
+				<Loading.Page />
 			) : (
 				<>
 					{eventHistory?.usageDataAvailable === false && (

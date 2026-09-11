@@ -7,6 +7,7 @@ import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
 import {useMemo} from 'react';
 import {Link} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
 import {useNewAppContext} from '~/context/NewAppContextProvider';
@@ -80,7 +81,7 @@ const PublishAppOutlet = ({mode}: {mode?: PublishMode}) => {
 	const isValidSchema = parsedSchema ? !parsedSchema.success : false;
 
 	if (context.loading) {
-		return null;
+		return <Loading.Page />;
 	}
 
 	return (

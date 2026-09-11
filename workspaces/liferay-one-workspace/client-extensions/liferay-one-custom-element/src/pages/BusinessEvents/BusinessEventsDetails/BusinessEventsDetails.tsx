@@ -5,11 +5,11 @@
 
 import {Nav} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useModal} from '@clayui/modal';
 import NavigationBar from '@clayui/navigation-bar';
 import {useCallback, useEffect, useState} from 'react';
 import {Link, useLocation, useNavigate, useParams} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import {Word, translate} from '~/i18n';
 import AssociatedTicketsContainer from '~/pages/BusinessEvents/components/AssociatedTicketsContainer/AssociatedTicketsContainer';
 import ButtonDropDown from '~/pages/BusinessEvents/components/ButtonDropDown/ButtonDropDown';
@@ -139,11 +139,7 @@ const BusinessEventsDetails = () => {
 	}, [businessEvent, location.search, onOpenChange, tickets]);
 
 	if (loading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!businessEvent) {
@@ -350,9 +346,7 @@ const BusinessEventsDetails = () => {
 							)
 						)
 					) : (
-						<div className="w-25">
-							<ClayLoadingIndicator size="sm" />
-						</div>
+						<Loading.Page />
 					)}
 				</div>
 			</div>

@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useState} from 'react';
+import Loading from '~/components/Loading/Loading';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {useUserProjects} from '~/pages/MyAccount/Projects/projects';
 import AttachmentAlreadyExists from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/AttachmentAlreadyExists';
@@ -59,11 +59,7 @@ const TicketAttachmentsUploaderOutlet = () => {
 	);
 
 	if (loading || projectsLoading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!projects.length) {

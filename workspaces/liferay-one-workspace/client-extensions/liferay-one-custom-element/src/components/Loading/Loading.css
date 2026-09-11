@@ -8,6 +8,15 @@
 	z-index: 100;
 }
 
+.loading-inline {
+	align-items: center;
+	display: inline-flex;
+}
+
+.loading-inline-text {
+	margin-left: 0.5rem;
+}
+
 .loading-overlay {
 	align-items: center;
 	display: flex;
@@ -33,6 +42,14 @@
 		width: 100%;
 		z-index: 2;
 	}
+}
+
+.loading-page {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	padding: 2rem 0;
+	width: 100%;
 }
 
 .loading-text {

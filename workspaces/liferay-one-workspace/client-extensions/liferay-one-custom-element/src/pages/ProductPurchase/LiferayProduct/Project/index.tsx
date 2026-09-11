@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {
 	RadioOption,
@@ -47,7 +47,7 @@ const ProjectSelection = () => {
 	});
 
 	if (isLoading) {
-		return <ClayLoadingIndicator />;
+		return <Loading.Page />;
 	}
 
 	const projects = projectsData?.items ?? [];

@@ -22,7 +22,7 @@ export default function DownloadTab({
 	itemType,
 	virtualItems = [],
 }: DownloadTabProps) {
-	const {bundles} = useLiferayBundles();
+	const {bundles, loading} = useLiferayBundles();
 
 	const isProduct = itemType === 'product';
 
@@ -39,6 +39,7 @@ export default function DownloadTab({
 			emptyLabel={isProduct ? 'no-bundles-yet' : 'no-versions-yet'}
 			heading={isProduct ? 'bundle-name' : 'supported-version'}
 			items={items}
+			loading={isProduct && loading}
 			title={isProduct ? 'bundle-list' : 'versions-list'}
 		/>
 	);

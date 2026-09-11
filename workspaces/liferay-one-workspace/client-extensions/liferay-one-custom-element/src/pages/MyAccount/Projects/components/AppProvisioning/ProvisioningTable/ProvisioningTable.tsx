@@ -141,11 +141,7 @@ const ProvisioningTable: React.FC<ProvisioningTableProps> = ({
 
 									{provisioningRow.status ===
 										InstallStatus.IN_PROGRESS && (
-										<Loading
-											displayType="primary"
-											shape="circle"
-											size="sm"
-										/>
+										<Loading.Inline />
 									)}
 								</div>
 							);

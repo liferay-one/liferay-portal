@@ -579,7 +579,7 @@ export default function SolutionContextProvider({
 	}, [productId]);
 
 	if (isLoading) {
-		return <Loading />;
+		return <Loading.Page />;
 	}
 
 	return (

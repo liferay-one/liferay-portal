@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import AttachmentNotFound from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/AttachmentNotFound';
 import ForbiddenAccessDownload from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/ForbiddenAccessDownload';
@@ -76,11 +76,7 @@ const TicketAttachmentsDownloaderOutlet = () => {
 	}, [hasAccess, ticketAttachmentERC, ticketAttachmentId]);
 
 	if (loading || downloadUrlLoading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (downloadError) {

@@ -21,7 +21,7 @@ export default function ProjectHeader() {
 	const {projectId, selectedContractERC, setSelectedContractERC} =
 		useProject();
 
-	const {contracts} = useProjectCommerce(projectId);
+	const {contracts, loading} = useProjectCommerce(projectId);
 
 	const [searchValue, setSearchValue] = useState('');
 
@@ -93,6 +93,7 @@ export default function ProjectHeader() {
 				ariaLabel={i18n.translate('select-contract')}
 				items={items}
 				label={i18n.translate('contract-term')}
+				loading={loading}
 				name={triggerName}
 				onSearchChange={setSearchValue}
 				onSelect={handleSelect}

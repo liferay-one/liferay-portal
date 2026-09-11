@@ -777,7 +777,7 @@ export default function NewAppContextProvider({
 	);
 
 	if (isLoadingVocabularies) {
-		return <Loading />;
+		return <Loading.Page />;
 	}
 
 	return (
