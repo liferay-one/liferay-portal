@@ -13,6 +13,21 @@ import {usePlacedOrders} from './usePlacedOrder';
 
 import type {PlacedOrder, VirtualItem} from '~/types/orders';
 
+const PAGE_SIZE = 200;
+
+const RESTRICTED_ORDER_FIELDS = [
+	'account',
+	'attachments',
+	'paymentMethod',
+	'placedOrderItems.adaptiveMediaImageHTMLTag',
+	'placedOrderItems.customFields',
+	'placedOrderItems.options',
+	'placedOrderItems.productURLs',
+	'placedOrderItems.settings',
+	'shippingOption',
+	'steps',
+].join(',');
+
 export type ProjectOrder = {
 	date: string;
 	id: string;
@@ -73,7 +88,8 @@ export function useProjectOrders(projectName?: string) {
 		accountId: accountId ?? -1,
 		fetchAllPages: true,
 		page: 1,
-		pageSize: 100,
+		pageSize: PAGE_SIZE,
+		restrictFields: RESTRICTED_ORDER_FIELDS,
 		shouldFetch: Boolean(accountId),
 	});
 
