@@ -7,8 +7,17 @@ import {Button as ClayButton} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {ReactNode, forwardRef} from 'react';
+import Loading from '~/components/Loading/Loading';
 
 import './Button.css';
+
+const FILLED_DISPLAY_TYPES = [
+	'danger',
+	'info',
+	'primary',
+	'success',
+	'warning',
+];
 
 interface IProps extends React.ComponentPropsWithoutRef<typeof ClayButton> {
 	appendIcon?: string;
@@ -71,7 +80,16 @@ const ButtonBase = (
 			)}
 
 			{isLoading && (
-				<span className="cp-spinner ml-2 spinner-border spinner-border-sm"></span>
+				<Loading.Inline
+					className="ml-2"
+					displayType={
+						FILLED_DISPLAY_TYPES.includes(
+							props.displayType ?? 'primary'
+						)
+							? 'light'
+							: 'primary'
+					}
+				/>
 			)}
 		</ClayButton>
 	);

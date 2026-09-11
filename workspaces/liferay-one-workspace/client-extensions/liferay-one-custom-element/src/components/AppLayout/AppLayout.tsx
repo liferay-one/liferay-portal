@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {ReactNode, Suspense} from 'react';
 import {Outlet} from 'react-router-dom';
+import Loading from '~/components/Loading/Loading';
 import SideNav, {NavItem} from '~/components/SideNav/SideNav';
 
 import '~/components/SideNav/SideNav.css';
@@ -47,7 +47,7 @@ export default function AppLayout({
 				<main className="flex-fill overflow-auto">
 					{contentHeader}
 
-					<Suspense fallback={<ClayLoadingIndicator />}>
+					<Suspense fallback={<Loading.Page />}>
 						<Outlet />
 					</Suspense>
 				</main>

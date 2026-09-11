@@ -152,7 +152,7 @@ const AdministratorMostPurchasedSection: React.FC = () => {
 	}, [reportsData]);
 
 	if (loading || loadingDetails) {
-		return <Loading />;
+		return <Loading.Page />;
 	}
 
 	return (

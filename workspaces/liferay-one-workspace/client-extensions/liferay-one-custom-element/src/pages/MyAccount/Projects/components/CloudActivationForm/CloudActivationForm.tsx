@@ -5,7 +5,6 @@
 
 import ClayAlert from '@clayui/alert';
 import {ClayCheckbox, ClaySelect} from '@clayui/form';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useEffect, useMemo, useState} from 'react';
 import {useFieldArray, useForm} from 'react-hook-form';
@@ -619,15 +618,10 @@ export default function CloudActivationForm({
 						isSubmitting ||
 						(profile === 'analytics-cloud' && !termsAccepted)
 					}
+					isLoading={isSubmitting}
 					type="submit"
 				>
-					<div className="align-items-center d-flex">
-						{isSubmitting && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
-						)}
-
-						{translate('submit')}
-					</div>
+					{translate('submit')}
 				</Button>
 			</div>
 		</form>

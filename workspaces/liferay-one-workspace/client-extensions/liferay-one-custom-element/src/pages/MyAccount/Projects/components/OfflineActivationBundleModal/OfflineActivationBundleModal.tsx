@@ -4,7 +4,6 @@
  */
 
 import ClayAlert from '@clayui/alert';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
 import {useDXPProductVersions} from '~/hooks/useDXPProductVersions';
@@ -66,17 +65,12 @@ const OfflineActivationBundleModal: React.FC<
 				<Button
 					className="ml-3"
 					disabled={isDownloading || !dxpVersion}
+					isLoading={isDownloading}
 					onClick={() => onDownload(dxpVersion)}
 				>
-					<div className="align-items-center d-flex">
-						{isDownloading && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
-						)}
-
-						{isDownloading
-							? translate('download-in-progress')
-							: translate('download')}
-					</div>
+					{isDownloading
+						? translate('download-in-progress')
+						: translate('download')}
 				</Button>
 			</div>
 		</div>

@@ -5,11 +5,11 @@
 
 import Button from '@clayui/button';
 import ClayLink from '@clayui/link';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useNavigate} from 'react-router-dom';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';
+import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {useOneContext} from '~/context/OneContextProvider';
@@ -154,11 +154,7 @@ const TicketAttachmentsList = () => {
 	);
 
 	if (projectsLoading) {
-		return (
-			<div className="mx-auto">
-				<ClayLoadingIndicator size="sm" />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	if (!projects.length) {
@@ -256,9 +252,7 @@ const TicketAttachmentsList = () => {
 
 			<div className="mt-3">
 				{!projectERC || loading ? (
-					<div className="mx-auto">
-						<ClayLoadingIndicator size="sm" />
-					</div>
+					<Loading.Page />
 				) : attachments.length ? (
 					<Table columns={columns} rows={rows as unknown as IRow[]} />
 				) : (

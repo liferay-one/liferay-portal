@@ -75,7 +75,7 @@ class WebComponent extends HTMLElement {
 						<PropertiesProvider value={properties}>
 							<OneContextProvider properties={properties}>
 								<ClayModalProvider>
-									<Suspense fallback={<Loading />}>
+									<Suspense fallback={<Loading.Page />}>
 										<Router />
 									</Suspense>
 								</ClayModalProvider>

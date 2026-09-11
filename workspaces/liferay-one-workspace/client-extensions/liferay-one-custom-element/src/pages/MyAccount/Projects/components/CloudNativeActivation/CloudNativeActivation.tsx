@@ -9,6 +9,7 @@ import ClayTable from '@clayui/table';
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
+import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import {Tooltip} from '~/components/Tooltip/Tooltip';
 import {useProject} from '~/context/ProjectContext';
@@ -168,9 +169,7 @@ export default function CloudNativeActivation() {
 				clayIcon="cloud"
 			>
 				{loading ? (
-					<div className="p-4 text-neutral-7">
-						{translate('loading')}
-					</div>
+					<Loading.Page />
 				) : activatedEnvironments.length ? (
 					<ClayTable borderless className="mt-3">
 						<ClayTable.Head>

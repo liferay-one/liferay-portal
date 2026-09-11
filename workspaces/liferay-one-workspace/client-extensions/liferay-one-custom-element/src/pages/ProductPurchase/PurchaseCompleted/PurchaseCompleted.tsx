@@ -76,11 +76,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 	}
 
 	if (isOrderLoading || isAccountLoading) {
-		return (
-			<div className="d-flex justify-content-center my-7">
-				<Loading />
-			</div>
-		);
+		return <Loading.Page />;
 	}
 
 	const account =

@@ -7,7 +7,6 @@ import ClayButton from '@clayui/button';
 import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {zodResolver} from '@hookform/resolvers/zod';
 import classNames from 'classnames';
 import {useState} from 'react';
@@ -15,6 +14,7 @@ import {useForm} from 'react-hook-form';
 import {z} from 'zod';
 import {RequiredMask} from '~/components/FieldBase/FieldBase';
 import {Input} from '~/components/Input/Input';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import Select from '~/components/Select/Select';
 import i18n from '~/i18n';
@@ -500,9 +500,9 @@ const AIHubForm = () => {
 				<div className="align-items-center d-flex justify-content-center">
 					<span>{i18n.translate('send-request')}</span>
 
-					<span className="ml-3">
-						{loading && <ClayLoadingIndicator />}
-					</span>
+					{loading && (
+						<Loading.Inline className="ml-3" displayType="light" />
+					)}
 				</div>
 			</ClayButton>
 		</ProductPurchase.Shell>

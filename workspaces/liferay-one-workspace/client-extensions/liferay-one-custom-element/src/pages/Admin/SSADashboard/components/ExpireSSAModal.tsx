@@ -5,9 +5,9 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useState} from 'react';
 import {KeyedMutator} from 'swr';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 import trialOAuth2 from '~/services/spring-boot/Trial';
@@ -89,7 +89,10 @@ const ExpireSSAModal: React.FC<ExpireSSAModalProps> = ({
 				>
 					<div className="align-items-center d-flex">
 						{isSubmitting && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
+							<Loading.Inline
+								className="mr-3"
+								displayType="light"
+							/>
 						)}
 						{i18n.translate('expire')}
 					</div>

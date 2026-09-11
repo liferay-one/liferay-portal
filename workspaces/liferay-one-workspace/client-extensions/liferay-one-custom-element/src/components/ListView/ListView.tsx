@@ -248,7 +248,7 @@ const ListViewBase = <T extends Record<string, unknown>>({
 	} = transformData(response || {items: []});
 
 	if (loading || (isValidating && searchParams.get('filter'))) {
-		return <Loading />;
+		return <Loading.Page />;
 	}
 
 	const Pagination = (

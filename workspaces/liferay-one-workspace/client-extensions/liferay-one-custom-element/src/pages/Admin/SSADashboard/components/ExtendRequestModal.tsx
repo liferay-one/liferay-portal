@@ -4,12 +4,12 @@
  */
 
 import ClayButton from '@clayui/button';
-import ClayLoadingIndicator from '@clayui/loading-indicator';
 import classNames from 'classnames';
 import {add} from 'date-fns';
 import {ReactElement, useState} from 'react';
 import {KeyedMutator} from 'swr';
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import {TRIAL_STATUS_LABEL} from '~/pages/Admin/SSADashboard/utils/constants';
 import {Liferay} from '~/services/liferay/liferay';
@@ -270,7 +270,10 @@ const ExtendRequestModal: React.FC<ExtendSSATrialModalProps> = ({
 				>
 					<div className="align-items-center d-flex">
 						{submitting === 'reject' && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
+							<Loading.Inline
+								className="mr-3"
+								displayType="light"
+							/>
 						)}
 						{i18n.translate('reject-request')}
 					</div>
@@ -329,7 +332,10 @@ const ExtendRequestModal: React.FC<ExtendSSATrialModalProps> = ({
 				>
 					<div className="align-items-center d-flex">
 						{submitting === 'approve' && (
-							<ClayLoadingIndicator className="mr-3 my-0" />
+							<Loading.Inline
+								className="mr-3"
+								displayType="light"
+							/>
 						)}
 
 						{i18n.translate('approve-request')}
