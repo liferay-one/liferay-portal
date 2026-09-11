@@ -26,11 +26,11 @@ import AIHubAlert from '~/pages/MyAccount/Projects/components/AIHubAlert/AIHubAl
 import ActivationTab from '~/pages/MyAccount/Projects/components/ActivationTab/ActivationTab';
 import DetailHeader from '~/pages/MyAccount/Projects/components/DetailHeader/DetailHeader';
 import DetailsTab from '~/pages/MyAccount/Projects/components/DetailsTab/DetailsTab';
-import SEOStudioDetails from '~/pages/MyAccount/Projects/components/ProductDetails/SEOStudioDetails';
 import DownloadTab from '~/pages/MyAccount/Projects/components/DownloadTab/DownloadTab';
 import EnvironmentTab from '~/pages/MyAccount/Projects/components/EnvironmentTab/EnvironmentTab';
 import HelpSupportTab from '~/pages/MyAccount/Projects/components/HelpSupportTab/HelpSupportTab';
 import OrdersTab from '~/pages/MyAccount/Projects/components/OrdersTab/OrdersTab';
+import SEOStudioDetails from '~/pages/MyAccount/Projects/components/ProductDetails/SEOStudioDetails';
 import ProjectDetailTabs, {
 	DetailTab,
 } from '~/pages/MyAccount/Projects/components/ProjectDetailTabs/ProjectDetailTabs';
