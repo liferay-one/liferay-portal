@@ -9,6 +9,7 @@ import React, {Suspense} from 'react';
 import {Root, createRoot} from 'react-dom/client';
 import {SWRConfig, SWRConfiguration} from 'swr';
 import ErrorBoundary from '~/components/ErrorBoundary/ErrorBoundary';
+import Loading from '~/components/Loading/Loading';
 import OneContextProvider from '~/context/OneContextProvider';
 import {PropertiesProvider} from '~/context/PropertiesContext';
 import SWRCacheProvider from '~/services/fetcher/SWRCacheProvider';
@@ -74,7 +75,7 @@ class WebComponent extends HTMLElement {
 						<PropertiesProvider value={properties}>
 							<OneContextProvider properties={properties}>
 								<ClayModalProvider>
-									<Suspense fallback={null}>
+									<Suspense fallback={<Loading />}>
 										<Router />
 									</Suspense>
 								</ClayModalProvider>

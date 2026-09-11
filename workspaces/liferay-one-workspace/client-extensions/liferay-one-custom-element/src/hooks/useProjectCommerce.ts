@@ -19,9 +19,20 @@ import type {
 	DeliveryProductSpecification,
 } from '~/types/product';
 
+const CHANNEL_PRODUCTS_DEDUPING_INTERVAL = 300000;
+
 const MAX_PAGES = 20;
 
 const PAGE_SIZE = 100;
+
+const RESTRICTED_PRODUCT_FIELDS = [
+	'attachments',
+	'customFields',
+	'productConfiguration',
+	'tags',
+	'urlImage',
+	'urls',
+].join(',');
 
 export type ProjectContract = {
 	endDate?: string;
@@ -66,6 +77,7 @@ type ContractNode = {
 	contractToEntitlement?: EntitlementNode[];
 	endDate?: string;
 	externalReferenceCode: string;
+	id: number;
 	r_projectToContract_c_projectId?: number;
 	spendLimit?: number;
 	startDate?: string;
@@ -74,7 +86,6 @@ type ContractNode = {
 type ProjectNode = {
 	name?: string;
 	projectToContract?: ContractNode[];
-	projectToEntitlement?: EntitlementNode[];
 };
 
 type ProductEntitlement = {
@@ -203,53 +214,55 @@ export function getSpecificationValues(
 export function useChannelProducts() {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
 
-	return useSWR(`/project-channel-products/${channelId}`, async () => {
-		const getPage = (page: number) =>
-			HeadlessCommerceDeliveryCatalog.getProductsPage(
-				channelId,
-				new URLSearchParams({
-					'accountId': '-1',
-					'images.accountId': '-1',
-					'nestedFields': 'images,productSpecifications,skus',
-					'page': page.toString(),
-					'pageSize': PAGE_SIZE.toString(),
-					'skus.accountId': '-1',
-					'skus.currencyCode':
-						Liferay.CommerceContext.currency.currencyCode,
-				})
-			);
+	return useSWR(
+		`/project-channel-products/${channelId}`,
+		async () => {
+			const getPage = (page: number) =>
+				HeadlessCommerceDeliveryCatalog.getProductsPage(
+					channelId,
+					new URLSearchParams({
+						'accountId': '-1',
+						'nestedFields': 'productSpecifications,skus',
+						'page': page.toString(),
+						'pageSize': PAGE_SIZE.toString(),
+						'restrictFields': RESTRICTED_PRODUCT_FIELDS,
+						'skus.accountId': '-1',
+						'skus.currencyCode':
+							Liferay.CommerceContext.currency.currencyCode,
+					})
+				);
 
-		const response = await getPage(1);
+			const response = await getPage(1);
 
-		const items = [...response.items];
+			const items = [...response.items];
 
-		if (response.totalCount > items.length) {
-			const lastPage = Math.min(
-				Math.ceil(response.totalCount / PAGE_SIZE),
-				MAX_PAGES
-			);
+			if (response.totalCount > items.length) {
+				const lastPage = Math.min(
+					Math.ceil(response.totalCount / PAGE_SIZE),
+					MAX_PAGES
+				);
 
-			const remainingPages = await Promise.all(
-				Array.from({length: lastPage - 1}, (_, index) =>
-					getPage(index + 2)
-				)
-			);
+				const remainingPages = await Promise.all(
+					Array.from({length: lastPage - 1}, (_, index) =>
+						getPage(index + 2)
+					)
+				);
 
-			remainingPages.forEach((remainingPage) =>
-				items.push(...remainingPage.items)
-			);
-		}
+				remainingPages.forEach((remainingPage) =>
+					items.push(...remainingPage.items)
+				);
+			}
 
-		return {...response, items};
-	});
+			return {...response, items};
+		},
+		{dedupingInterval: CHANNEL_PRODUCTS_DEDUPING_INTERVAL}
+	);
 }
 
 export function useProjectCommerce(
 	projectExternalReferenceCode: string,
 	contractExternalReferenceCode?: string
 ) {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-
 	const {
 		data,
 		error,
@@ -260,26 +273,35 @@ export function useProjectCommerce(
 			: null,
 		{
 			params: {
-				nestedFields:
-					'projectToContract,projectToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
-				nestedFieldsDepth: 3,
+				nestedFields: 'projectToContract',
+				nestedFieldsDepth: 1,
 			},
 		}
 	);
 
-	const {data: accountData, isLoading: accountLoading} = useFetch<
-		APIResponse<ContractNode>
-	>(projectExternalReferenceCode && accountId ? '/o/c/contracts' : null, {
-		params: {
-			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
-			nestedFields:
-				'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 2,
-			pageSize: 100,
-		},
-	});
+	const {data: accountData, isLoading: accountLoading} =
+		useAccountContracts();
 
 	const projectContractNodes = data?.projectToContract ?? [];
+
+	const {
+		data: oneTimeEntitlementData,
+		isLoading: oneTimeEntitlementsLoading,
+	} = useFetch<APIResponse<EntitlementNode>>(
+		data ? '/o/c/entitlements' : null,
+		{
+			params: {
+				filter: [
+					`r_projectToEntitlement_c_projectERC eq '${projectExternalReferenceCode}'`,
+					...projectContractNodes.map(
+						(node) =>
+							`r_contractToEntitlement_c_contractId ne '${node.id}'`
+					),
+				].join(' and '),
+				pageSize: 1,
+			},
+		}
+	);
 
 	const accountContractNodes = (accountData?.items ?? []).filter(
 		(contract) => !contract.r_projectToContract_c_projectId
@@ -291,23 +313,8 @@ export function useProjectCommerce(
 		? accountContractNodes
 		: projectContractNodes;
 
-	const contractEntitlementExternalReferenceCodes = new Set(
-		projectContractNodes.flatMap((node) =>
-			(node.contractToEntitlement ?? []).map(
-				(entitlement) => entitlement.externalReferenceCode
-			)
-		)
-	);
-
-	const oneTimeEntitlementNodes = (data?.projectToEntitlement ?? []).filter(
-		(node) =>
-			!contractEntitlementExternalReferenceCodes.has(
-				node.externalReferenceCode
-			)
-	);
-
 	const hasOneTimeEntitlements =
-		!!oneTimeEntitlementNodes.length &&
+		Boolean(oneTimeEntitlementData?.totalCount) &&
 		(!usingAccountFallback || !contractNodes.length);
 
 	const contracts = [
@@ -341,39 +348,20 @@ export function useProjectCommerce(
 
 	const contract = contractNode ? toProjectContract(contractNode) : undefined;
 
-	let entitlements;
-
-	if (usingAccountFallback) {
-		entitlements = toProductEntitlements(data?.projectToEntitlement);
-	}
-	else if (oneTimeSelected) {
-		entitlements = toProductEntitlements(oneTimeEntitlementNodes);
-	}
-	else {
-		entitlements = toProductEntitlements(
-			contractNode?.contractToEntitlement
-		);
-	}
-
 	return {
 		contract,
 		contracts,
-		entitlements,
 		error,
-		loading: loading || accountLoading,
+		loading: loading || accountLoading || oneTimeEntitlementsLoading,
 		projectName: data?.name,
 		usingAccountFallback,
 	};
 }
 
-function useAccountOrderEntitlements(enabled = true) {
+function useAccountContracts(enabled = true) {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 
-	const {
-		data,
-		error,
-		isLoading: loading,
-	} = useFetch<APIResponse<ContractNode>>(
+	return useFetch<APIResponse<ContractNode>>(
 		enabled && accountId ? '/o/c/contracts' : null,
 		{
 			params: {
@@ -381,10 +369,14 @@ function useAccountOrderEntitlements(enabled = true) {
 				nestedFields:
 					'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
 				nestedFieldsDepth: 2,
-				pageSize: 100,
+				pageSize: PAGE_SIZE,
 			},
 		}
 	);
+}
+
+function useAccountOrderEntitlements(enabled = true) {
+	const {data, error, isLoading: loading} = useAccountContracts(enabled);
 
 	const entitlements = useMemo(
 		() =>
@@ -412,19 +404,8 @@ export function useUnassignedCommerce(enabled = true) {
 }
 
 export function useAccountProducts() {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-
-	const {data: contractsData, isLoading: contractsLoading} = useFetch<
-		APIResponse<ContractNode>
-	>(accountId ? '/o/c/contracts' : null, {
-		params: {
-			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
-			nestedFields:
-				'contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 2,
-			pageSize: 100,
-		},
-	});
+	const {data: contractsData, isLoading: contractsLoading} =
+		useAccountContracts();
 
 	const {data: productsData, isLoading: productsLoading} =
 		useChannelProducts();
@@ -459,24 +440,7 @@ export function useAccountProducts() {
 }
 
 export function useHasActiveExperienceOffering() {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-
-	const {
-		data,
-		error,
-		isLoading: loading,
-	} = useFetch<APIResponse<ContractNode>>(
-		accountId ? '/o/c/contracts' : null,
-		{
-			params: {
-				filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
-				nestedFields:
-					'commerceOrderItemToEntitlement,contractToEntitlement,entitlementDefinitionToEntitlement',
-				nestedFieldsDepth: 2,
-				pageSize: 100,
-			},
-		}
-	);
+	const {data, error, isLoading: loading} = useAccountContracts();
 
 	const {
 		data: productsData,
@@ -515,19 +479,8 @@ export function useHasActiveExperienceOffering() {
 }
 
 export function useAccountProjectContactRoles() {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-
-	const {data: contractsData, isLoading: contractsLoading} = useFetch<
-		APIResponse<ContractNode>
-	>(accountId ? '/o/c/contracts' : null, {
-		params: {
-			filter: `r_accountEntryToContract_accountEntryId eq '${accountId}'`,
-			nestedFields:
-				'contractToEntitlement,entitlementDefinitionToEntitlement',
-			nestedFieldsDepth: 2,
-			pageSize: 100,
-		},
-	});
+	const {data: contractsData, isLoading: contractsLoading} =
+		useAccountContracts();
 
 	const {data: productsData, isLoading: productsLoading} =
 		useChannelProducts();

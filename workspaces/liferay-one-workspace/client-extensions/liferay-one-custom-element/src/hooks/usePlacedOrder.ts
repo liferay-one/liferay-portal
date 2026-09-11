@@ -18,6 +18,7 @@ type Props = {
 	orderTypeExternalReferenceCodes?: string[];
 	page: number;
 	pageSize: number;
+	restrictFields?: string;
 	shouldFetch?: boolean;
 };
 
@@ -38,11 +39,12 @@ const usePlacedOrders = ({
 	orderTypeExternalReferenceCodes,
 	page,
 	pageSize,
+	restrictFields,
 	shouldFetch = true,
 }: Props) =>
 	useSWR(
 		shouldFetch
-			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}`
+			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
 			: null,
 		async () => {
 			const getPage = (currentPage: number) =>
@@ -54,6 +56,7 @@ const usePlacedOrders = ({
 						nestedFields: 'placedOrderItems',
 						page: currentPage.toString(),
 						pageSize: pageSize.toString(),
+						...(restrictFields && {restrictFields}),
 						sort: 'createDate:desc',
 					})
 				);
