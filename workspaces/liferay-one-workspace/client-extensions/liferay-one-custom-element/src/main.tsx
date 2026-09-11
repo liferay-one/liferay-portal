@@ -21,6 +21,8 @@ type CacheProvider = Required<SWRConfiguration>['provider'];
 
 type RouterComponent = React.ComponentType;
 
+const WIDGET_ROUTES = ['account-invitation', 'account-selector'];
+
 const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 	'account-invitation': React.lazy(() => import('~/pages/AccountInvitation')),
 	'account-selector': React.lazy(
@@ -52,7 +54,9 @@ class WebComponent extends HTMLElement {
 	static observedAttributes = [...baseAttributes];
 
 	private renderApp() {
-		const Router = routers[this.getAttribute('route') ?? ''];
+		const route = this.getAttribute('route') ?? '';
+
+		const Router = routers[route];
 
 		if (!Router || !this.root) {
 			return;
@@ -75,7 +79,15 @@ class WebComponent extends HTMLElement {
 						<PropertiesProvider value={properties}>
 							<OneContextProvider properties={properties}>
 								<ClayModalProvider>
-									<Suspense fallback={<Loading.Page />}>
+									<Suspense
+										fallback={
+											WIDGET_ROUTES.includes(
+												route
+											) ? null : (
+												<Loading.Page />
+											)
+										}
+									>
 										<Router />
 									</Suspense>
 								</ClayModalProvider>
