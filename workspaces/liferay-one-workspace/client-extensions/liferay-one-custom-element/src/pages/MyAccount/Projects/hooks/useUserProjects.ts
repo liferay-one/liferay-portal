@@ -4,11 +4,13 @@
  */
 
 import {useOneContext} from '~/context/OneContextProvider';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
+import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 
 import type {UserProject} from '~/pages/MyAccount/Projects/types';
-import type {APIResponse} from '~/types/api';
+import type {APIResponse, DataQuery} from '~/types/api';
 
 type ProjectAPIItem = {
 	externalReferenceCode: string;
@@ -20,6 +22,20 @@ type ProjectAPIItem = {
 type ProjectMembershipAPIItem = {
 	r_projectToProjectMembership_c_projectERC: string;
 };
+
+export function userProjectsQuery(
+	accountId?: number | string | null
+): DataQuery<APIResponse<ProjectAPIItem>> {
+	return {
+		fetcher: () =>
+			queryGraphQL<{projects: APIResponse<ProjectAPIItem>}>(
+				`c { projects(filter: ${toGraphQLString(
+					`r_accountEntryToProject_accountEntryId eq '${accountId}'`
+				)}, pageSize: 200, sort: "name:asc") { items { externalReferenceCode id liferayVersion name } totalCount } }`
+			).then((data) => data.projects),
+		key: accountId ? `/graphql/projects/${accountId}` : null,
+	};
+}
 
 export function useUserProjects(): {
 	hasAccountProjects: boolean;
@@ -47,15 +63,9 @@ export function useUserProjects(): {
 		},
 	});
 
-	const {data: projectData, isLoading: projectsLoading} = useFetch<
-		APIResponse<ProjectAPIItem>
-	>(enabled ? '/o/c/projects' : null, {
-		params: {
-			filter: `r_accountEntryToProject_accountEntryId eq '${accountId}'`,
-			pageSize: 200,
-			sort: 'name:asc',
-		},
-	});
+	const {data: projectData, isLoading: projectsLoading} = useDataQuery(
+		userProjectsQuery(enabled ? accountId : null)
+	);
 
 	const memberProjectExternalReferenceCodes = new Set(
 		(membershipData?.items ?? []).map(

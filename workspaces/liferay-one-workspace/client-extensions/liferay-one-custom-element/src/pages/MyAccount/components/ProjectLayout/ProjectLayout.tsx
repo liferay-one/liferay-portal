@@ -18,7 +18,7 @@ import {projectDetailRoutes} from '../../myAccountRoutes';
 
 export default function ProjectLayout() {
 	const {accountERC} = useParams();
-	const {loading, projectId, projects} = useProject();
+	const {projectId, projects, resolvingProjects} = useProject();
 
 	const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export default function ProjectLayout() {
 			<ProjectHeader />
 		) : undefined;
 
-	if (!loading && !projects.length) {
+	if (!resolvingProjects && !projects.length) {
 		return (
 			<p className="text-neutral-7">
 				{i18n.translate('no-projects-yet')}
@@ -61,14 +61,14 @@ export default function ProjectLayout() {
 			header={
 				<ProjectSelector
 					emptyLabel="no-projects-yet"
-					loading={loading}
+					loading={resolvingProjects}
 					onSelect={handleSelectProject}
 					projects={projects}
 					selectedProjectERC={projectId}
 					showProjectCount
 				/>
 			}
-			headerBackground={loading || projects.length > 1}
+			headerBackground={resolvingProjects || projects.length > 1}
 			navItems={navItems}
 		/>
 	);

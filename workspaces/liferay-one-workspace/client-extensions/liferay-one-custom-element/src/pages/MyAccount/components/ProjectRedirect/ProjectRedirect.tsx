@@ -5,7 +5,7 @@
 
 import {Navigate, useLocation} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
-import {useFetch} from '~/hooks/useFetch';
+import {useCurrentAccount} from '~/hooks/useAccounts';
 import {
 	PROJECT_SECTION_PATHS,
 	isUnassignedProject,
@@ -14,18 +14,13 @@ import {
 } from '~/pages/MyAccount/Projects/projects';
 import {Liferay} from '~/services/liferay/liferay';
 
-import type {Account} from '~/types/accounts';
 
 export default function ProjectRedirect() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 
 	const {pathname, search} = useLocation();
 
-	const {data: account, isLoading: accountLoading} = useFetch<Account>(
-		currentAccountId
-			? `/o/headless-admin-user/v1.0/accounts/${currentAccountId}`
-			: null
-	);
+	const {data: account, isLoading: accountLoading} = useCurrentAccount();
 
 	const {loading: projectsLoading, projects} = useUserProjects();
 

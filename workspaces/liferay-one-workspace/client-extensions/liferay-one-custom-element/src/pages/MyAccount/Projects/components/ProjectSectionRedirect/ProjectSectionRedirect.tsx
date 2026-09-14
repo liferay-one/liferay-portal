@@ -25,7 +25,7 @@ export default function ProjectSectionRedirect() {
 		useProjectsWithProjectItemType('application');
 
 	if (loading || projectERCsLoading) {
-		return <Loading.Page />;
+		return <Loading.Page fill />;
 	}
 
 	if (!error && !products.length) {

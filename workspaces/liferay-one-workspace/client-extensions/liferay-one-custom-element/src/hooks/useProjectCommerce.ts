@@ -6,16 +6,21 @@
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES} from '~/enums/Product';
-import {useFetch} from '~/hooks/useFetch';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
-import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
+import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
+import {
+	ONE_TIME_PURCHASES,
+	isUnassignedProject,
+} from '~/pages/MyAccount/Projects/projects';
 import fetcher from '~/services/fetcher/fetcher';
+import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
 
-import type {APIResponse} from '~/types/api';
+import type {APIResponse, DataQuery} from '~/types/api';
 import type {
 	DeliveryProduct,
 	DeliveryProductSpecification,
@@ -114,6 +119,7 @@ type EntitlementNode = {
 	};
 	externalReferenceCode: string;
 	name: string;
+	r_contractToEntitlement_c_contractId?: number;
 };
 
 type ContractNode = {
@@ -125,11 +131,6 @@ type ContractNode = {
 	r_projectToContract_c_projectId?: number;
 	spendLimit?: number;
 	startDate?: string;
-};
-
-type ProjectNode = {
-	name?: string;
-	projectToContract?: ContractNode[];
 };
 
 type ProductEntitlement = {
@@ -275,12 +276,11 @@ export function getSpecificationValues(
 		.map((specification) => specification.value);
 }
 
-export function useChannelProducts() {
-	const channelId = Liferay.CommerceContext.commerceChannelId;
-
-	return useSWR(
-		`/project-channel-products/${channelId}`,
-		async () => {
+export function channelProductsQuery(
+	channelId: number | string
+): DataQuery<APIResponse<DeliveryProduct>> {
+	return {
+		fetcher: async () => {
 			const getPage = (page: number) =>
 				HeadlessCommerceDeliveryCatalog.getProductsPage(
 					channelId,
@@ -319,6 +319,13 @@ export function useChannelProducts() {
 
 			return {...response, items};
 		},
+		key: `/project-channel-products/${channelId}`,
+	};
+}
+
+export function useChannelProducts() {
+	return useDataQuery(
+		channelProductsQuery(Liferay.CommerceContext.commerceChannelId),
 		{dedupingInterval: CHANNEL_PRODUCTS_DEDUPING_INTERVAL}
 	);
 }
@@ -327,31 +334,28 @@ export function useProjectCommerce(
 	projectExternalReferenceCode: string,
 	contractExternalReferenceCode?: string
 ) {
+	const {loading: projectsLoading, projects} = useUserProjects();
+
+	const project = projects.find(
+		(userProject) =>
+			userProject.externalReferenceCode === projectExternalReferenceCode
+	);
+
 	const {
-		data,
+		data: projectContractData,
+		error: projectContractError,
+		isLoading: projectContractsLoading,
+	} = useProjectContracts(projectExternalReferenceCode);
+
+	const {
+		data: accountContractData,
 		error,
-		isLoading: loading,
-	} = useFetch<ProjectNode>(
-		projectExternalReferenceCode
-			? `/o/c/projects/by-external-reference-code/${projectExternalReferenceCode}`
-			: null,
-		{
-			params: {
-				nestedFields: 'projectToContract',
-				nestedFieldsDepth: 1,
-			},
-		}
-	);
+		isLoading: accountLoading,
+	} = useAccountLevelContracts(Boolean(projectExternalReferenceCode));
 
-	const {data: accountData, isLoading: accountLoading} = useAccountContracts(
-		Boolean(projectExternalReferenceCode)
-	);
+	const projectContractNodes = projectContractData?.items ?? [];
 
-	const projectContractNodes = data?.projectToContract ?? [];
-
-	const accountContractNodes = (accountData?.items ?? []).filter(
-		(contract) => !contract.r_projectToContract_c_projectId
-	);
+	const accountContractNodes = accountContractData?.items ?? [];
 
 	const usingAccountFallback = !projectContractNodes.length;
 
@@ -362,38 +366,21 @@ export function useProjectCommerce(
 	const countsOneTimeEntitlements =
 		!usingAccountFallback || !contractNodes.length;
 
-	const {
-		data: oneTimeEntitlementData,
-		isLoading: oneTimeEntitlementsLoading,
-	} = useFetch<APIResponse<EntitlementNode>>(
-		data &&
-			countsOneTimeEntitlements &&
-			isFilterValue(projectExternalReferenceCode)
-			? '/o/c/entitlements'
-			: null,
-		{
-			params: {
-				filter: projectContractNodes
-					.reduce(
-						(searchBuilder, node) =>
-							searchBuilder
-								.and()
-								.ne(
-									'r_contractToEntitlement_c_contractId',
-									node.id
-								),
-						new SearchBuilder().eq(
-							'r_projectToEntitlement_c_projectERC',
-							projectExternalReferenceCode
-						)
-					)
-					.build(),
-				pageSize: 1,
-			},
-		}
+	const {entitlements, loading: entitlementsLoading} =
+		useProjectEntitlements(projectExternalReferenceCode);
+
+	const projectContractIds = new Set(
+		projectContractNodes.map((node) => node.id)
 	);
 
-	const hasOneTimeEntitlements = Boolean(oneTimeEntitlementData?.totalCount);
+	const hasOneTimeEntitlements =
+		countsOneTimeEntitlements &&
+		entitlements.some(
+			(entitlement) =>
+				!projectContractIds.has(
+					entitlement.r_contractToEntitlement_c_contractId ?? 0
+				)
+		);
 
 	const contracts = [
 		...contractNodes.map(toProjectContract),
@@ -429,12 +416,22 @@ export function useProjectCommerce(
 	return {
 		contract,
 		contracts,
-		error,
-		loading: loading || accountLoading || oneTimeEntitlementsLoading,
-		projectName: data?.name,
+		error: error ?? projectContractError,
+		loading:
+			accountLoading ||
+			entitlementsLoading ||
+			projectContractsLoading ||
+			projectsLoading,
+		projectContractIds,
+		projectName: project?.name,
+		resolvedContractERC,
+		resolvedContractId: contractNode?.id,
 		usingAccountFallback,
 	};
 }
+
+const CONTRACT_FIELDS =
+	'contractTerm endDate externalReferenceCode id spendLimit startDate';
 
 function getAccountContractsPage(
 	accountId: number | string | null | undefined,
@@ -454,12 +451,121 @@ function getAccountContractsPage(
 	);
 }
 
-function useAccountContracts(enabled = true) {
+export function projectEntitlementsQuery(
+	projectExternalReferenceCode: string
+): DataQuery<APIResponse<EntitlementNode>> {
+	const enabled =
+		Boolean(projectExternalReferenceCode) &&
+		!isUnassignedProject(projectExternalReferenceCode) &&
+		isFilterValue(projectExternalReferenceCode);
+
+	return {
+		fetcher: () =>
+			fetchAllPages((page) =>
+				fetcher<APIResponse<EntitlementNode>>(
+					`/o/c/entitlements?${new URLSearchParams({
+						fields: 'entitlementDefinitionToEntitlement.skuExternalReferenceCode,externalReferenceCode,r_contractToEntitlement_c_contractId',
+						filter: SearchBuilder.eq(
+							'r_projectToEntitlement_c_projectERC',
+							projectExternalReferenceCode
+						),
+						nestedFields: 'entitlementDefinitionToEntitlement',
+						nestedFieldsDepth: '1',
+						page: page.toString(),
+						pageSize: PAGE_SIZE.toString(),
+					})}`
+				)
+			),
+		key: enabled
+			? `/project-entitlements/${projectExternalReferenceCode}`
+			: null,
+	};
+}
+
+export function useProjectEntitlements(projectExternalReferenceCode: string) {
+	const {data, error, isLoading} = useDataQuery(
+		projectEntitlementsQuery(projectExternalReferenceCode)
+	);
+
+	return {
+		entitlements: data?.items ?? [],
+		error,
+		loading: isLoading,
+	};
+}
+
+function countEntitlements(filter: string) {
+	return queryGraphQL<{entitlements: {totalCount: number}}>(
+		`c { entitlements(filter: ${toGraphQLString(
+			filter
+		)}, pageSize: 1) { totalCount } }`
+	).then((data) => Boolean(data.entitlements.totalCount));
+}
+
+function getContractsPage(filter: string, page: number) {
+	return queryGraphQL<{contracts: APIResponse<ContractNode>}>(
+		`c { contracts(filter: ${toGraphQLString(
+			filter
+		)}, page: ${page}, pageSize: ${PAGE_SIZE}) { items { ${CONTRACT_FIELDS} } totalCount } }`
+	).then((data) => data.contracts);
+}
+
+export function projectContractsQuery(
+	projectExternalReferenceCode: string
+): DataQuery<APIResponse<ContractNode>> {
+	const enabled =
+		Boolean(projectExternalReferenceCode) &&
+		!isUnassignedProject(projectExternalReferenceCode) &&
+		isFilterValue(projectExternalReferenceCode);
+
+	return {
+		fetcher: () =>
+			fetchAllPages((page) =>
+				getContractsPage(
+					SearchBuilder.eq(
+						'r_projectToContract_c_projectERC',
+						projectExternalReferenceCode
+					),
+					page
+				)
+			),
+		key: enabled
+			? `/graphql/project-contracts/${projectExternalReferenceCode}`
+			: null,
+	};
+}
+
+export function accountLevelContractsQuery(
+	accountId?: number | string | null
+): DataQuery<APIResponse<ContractNode>> {
+	return {
+		fetcher: () =>
+			fetchAllPages((page) =>
+				getContractsPage(
+					new SearchBuilder()
+						.eq(
+							'r_accountEntryToContract_accountEntryId',
+							accountId as number
+						)
+						.and()
+						.eq('r_projectToContract_c_projectId', '0')
+						.build(),
+					page
+				)
+			),
+		key: accountId ? `/graphql/account-level-contracts/${accountId}` : null,
+	};
+}
+
+function useProjectContracts(projectExternalReferenceCode: string) {
+	return useDataQuery(projectContractsQuery(projectExternalReferenceCode));
+}
+
+function useAccountLevelContracts(enabled = true) {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 
-	return useSWR(
-		enabled && accountId ? `/account-contracts/${accountId}` : null,
-		() => fetchAllPages((page) => getAccountContractsPage(accountId, page))
+	return useDataQuery(
+		accountLevelContractsQuery(enabled ? accountId : null)
 	);
 }
 
@@ -484,49 +590,46 @@ export function useUnassignedCommerce(enabled = true) {
 		data: contractData,
 		error: contractError,
 		isLoading: contractLoading,
-	} = useAccountContracts(enabled);
+	} = useAccountLevelContracts(enabled);
 
-	const projectlessContractNodes = (contractData?.items ?? [])
-		.filter((contract) => !contract.r_projectToContract_c_projectId)
-		.slice(0, MAX_FILTER_CLAUSES);
+	const projectlessContractNodes = (contractData?.items ?? []).slice(
+		0,
+		MAX_FILTER_CLAUSES
+	);
 
-	const {data, error, isLoading} = useFetch<APIResponse<EntitlementNode>>(
-		projectlessContractNodes.length ? '/o/c/entitlements' : null,
-		{
-			params: {
-				filter: projectlessContractNodes
-					.reduce(
-						(searchBuilder, node, index) =>
-							index
-								? searchBuilder
-										.or()
-										.eq(
-											'r_contractToEntitlement_c_contractId',
-											node.id
-										)
-								: searchBuilder.eq(
-										'r_contractToEntitlement_c_contractId',
-										node.id
-									),
-						new SearchBuilder().group('OPEN')
-					)
-					.group('CLOSE')
-					.and()
-					.eq('r_projectToEntitlement_c_projectId', 0)
-					.and()
-					.ne(
-						'r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId',
-						0
-					)
-					.build(),
-				pageSize: 1,
-			},
-		}
+	const unassignedEntitlementFilter = projectlessContractNodes
+		.reduce(
+			(searchBuilder, node, index) =>
+				index
+					? searchBuilder
+							.or()
+							.eq('r_contractToEntitlement_c_contractId', node.id)
+					: searchBuilder.eq(
+							'r_contractToEntitlement_c_contractId',
+							node.id
+						),
+			new SearchBuilder().group('OPEN')
+		)
+		.group('CLOSE')
+		.and()
+		.eq('r_projectToEntitlement_c_projectId', 0)
+		.and()
+		.ne(
+			'r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId',
+			0
+		)
+		.build();
+
+	const {data, error, isLoading} = useSWR(
+		projectlessContractNodes.length
+			? `/graphql/unassigned-entitlements/${unassignedEntitlementFilter}`
+			: null,
+		() => countEntitlements(unassignedEntitlementFilter)
 	);
 
 	return {
 		error: contractError ?? error,
-		hasUnassignedEntitlements: Boolean(data?.totalCount),
+		hasUnassignedEntitlements: Boolean(data),
 		loading: contractLoading || isLoading,
 	};
 }

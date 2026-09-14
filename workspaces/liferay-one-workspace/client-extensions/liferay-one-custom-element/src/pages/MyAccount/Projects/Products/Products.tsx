@@ -9,6 +9,7 @@ import {Navigate, useNavigate, useParams} from 'react-router-dom';
 import {useProject} from '~/context/ProjectContext';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {
+	useProjectContractItems,
 	useProjectItems,
 	useProjectsWithProjectItemType,
 } from '~/hooks/useProjectItems';
@@ -30,7 +31,8 @@ export default function Products() {
 
 	const {projectId} = useProject();
 
-	const {error, loading, products} = useProjectItems();
+	const {error, loading, products} = useProjectContractItems();
+	const {products: projectProducts} = useProjectItems();
 	const {loading: projectERCsLoading, projectERCs} =
 		useProjectsWithProjectItemType('product');
 
@@ -100,7 +102,7 @@ export default function Products() {
 		!loading &&
 		!projectERCsLoading &&
 		!error &&
-		!products.length &&
+		!projectProducts.length &&
 		fallbackProjectERC
 	) {
 		return (

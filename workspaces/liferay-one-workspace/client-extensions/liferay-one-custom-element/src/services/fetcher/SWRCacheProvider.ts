@@ -5,7 +5,13 @@
 
 const STORAGE_KEY = '@liferay-one/swr';
 
+let sharedCacheMap: Map<string, unknown> | undefined;
+
 const SWRCacheProvider = (): Map<string, unknown> => {
+	if (sharedCacheMap) {
+		return sharedCacheMap;
+	}
+
 	const cacheMap = new Map<string, unknown>(
 		JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]')
 	);
@@ -15,6 +21,8 @@ const SWRCacheProvider = (): Map<string, unknown> => {
 
 		sessionStorage.setItem(STORAGE_KEY, appCache);
 	});
+
+	sharedCacheMap = cacheMap;
 
 	return cacheMap;
 };

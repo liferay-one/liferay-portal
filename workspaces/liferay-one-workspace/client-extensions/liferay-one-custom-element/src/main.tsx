@@ -12,6 +12,7 @@ import ErrorBoundary from '~/components/ErrorBoundary/ErrorBoundary';
 import Loading from '~/components/Loading/Loading';
 import OneContextProvider from '~/context/OneContextProvider';
 import {PropertiesProvider} from '~/context/PropertiesContext';
+import preloadAppData from '~/preloadAppData';
 import SWRCacheProvider from '~/services/fetcher/SWRCacheProvider';
 import fetcher from '~/services/fetcher/fetcher';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
@@ -84,7 +85,7 @@ class WebComponent extends HTMLElement {
 											WIDGET_ROUTES.includes(
 												route
 											) ? null : (
-												<Loading.Page />
+												<Loading.Page fill />
 											)
 										}
 									>
@@ -113,6 +114,8 @@ class WebComponent extends HTMLElement {
 			}
 
 			this.root = createRoot(this);
+
+			preloadAppData(route);
 		}
 
 		this.renderApp();

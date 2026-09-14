@@ -4,8 +4,12 @@
  */
 
 import useSWR, {SWRConfiguration} from 'swr';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
+
+import type {APIResponse, DataQuery} from '~/types/api';
+import type {PlacedOrder} from '~/types/orders';
 
 const channelId = Liferay.CommerceContext.commerceChannelId;
 
@@ -32,7 +36,7 @@ const usePlacedOrder = (
 		swrOptions
 	);
 
-const usePlacedOrders = ({
+const placedOrdersQuery = ({
 	accountId,
 	fetchAllPages = false,
 	filter,
@@ -41,12 +45,8 @@ const usePlacedOrders = ({
 	pageSize,
 	restrictFields,
 	shouldFetch = true,
-}: Props) =>
-	useSWR(
-		shouldFetch
-			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
-			: null,
-		async () => {
+}: Props): DataQuery<APIResponse<PlacedOrder>> => ({
+		fetcher: async () => {
 			const getPage = (currentPage: number) =>
 				HeadlessCommerceDeliveryOrder.getPlacedOrders(
 					channelId,
@@ -91,8 +91,14 @@ const usePlacedOrders = ({
 							)
 						: true
 				),
-			};
-		}
-	);
+			} as APIResponse<PlacedOrder>;
+		},
+		key: shouldFetch
+			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
+			: null,
+	});
 
-export {usePlacedOrder, usePlacedOrders};
+const usePlacedOrders = (props: Props) =>
+	useDataQuery(placedOrdersQuery(props));
+
+export {placedOrdersQuery, usePlacedOrder, usePlacedOrders};

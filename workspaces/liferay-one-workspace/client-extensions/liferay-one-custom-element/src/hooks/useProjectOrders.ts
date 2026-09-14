@@ -9,7 +9,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
-import {usePlacedOrders} from './usePlacedOrder';
+import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
 
 import type {PlacedOrder, VirtualItem} from '~/types/orders';
 
@@ -139,17 +139,27 @@ function formatDate(value?: string): string {
 	return value ? format(new Date(value), 'MMM d, yyyy') : '';
 }
 
-export function useProjectOrders(projectName?: string) {
-	const accountId = Liferay.CommerceContext.account?.accountId;
-
-	const {data, error, isLoading} = usePlacedOrders({
+function toProjectOrdersProps(accountId?: number | string | null) {
+	return {
 		accountId: accountId ?? -1,
 		fetchAllPages: true,
 		page: 1,
 		pageSize: PAGE_SIZE,
 		restrictFields: RESTRICTED_ORDER_FIELDS,
 		shouldFetch: Boolean(accountId),
-	});
+	};
+}
+
+export function projectOrdersQuery(accountId?: number | string | null) {
+	return placedOrdersQuery(toProjectOrdersProps(accountId));
+}
+
+export function useProjectOrders(projectName?: string) {
+	const accountId = Liferay.CommerceContext.account?.accountId;
+
+	const {data, error, isLoading} = usePlacedOrders(
+		toProjectOrdersProps(accountId)
+	);
 
 	const placedOrders = useMemo(
 		() =>

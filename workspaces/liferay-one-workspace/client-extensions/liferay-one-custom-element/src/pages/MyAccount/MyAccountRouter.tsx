@@ -4,13 +4,13 @@
  */
 
 import {HashRouter, Navigate, useRoutes} from 'react-router-dom';
+import {AccountProvider} from '~/context/AccountContext';
 import {ProjectProvider} from '~/context/ProjectContext';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
 import {toRouteObjects} from '~/utils/routeUtils';
 
 import MyAccount from './MyAccount';
 import MyAccountRedirect from './MyAccountRedirect';
-import AccountGuard from './components/AccountGuard/AccountGuard';
 import AccountLayout from './components/AccountLayout/AccountLayout';
 import ProjectLayout from './components/ProjectLayout/ProjectLayout';
 import ProjectRedirect from './components/ProjectRedirect/ProjectRedirect';
@@ -52,7 +52,7 @@ function MyAccountRoutes() {
 							element: <AccountLayout />,
 						},
 					],
-					element: <AccountGuard />,
+					element: <AccountProvider />,
 					path: ':accountERC',
 				},
 				{element: <Navigate replace to="/" />, path: '*'},

@@ -47,7 +47,7 @@ export default function AppLayout({
 				<main className="flex-fill overflow-auto">
 					{contentHeader}
 
-					<Suspense fallback={<Loading.Page />}>
+					<Suspense fallback={<Loading.Page fill />}>
 						<Outlet />
 					</Suspense>
 				</main>

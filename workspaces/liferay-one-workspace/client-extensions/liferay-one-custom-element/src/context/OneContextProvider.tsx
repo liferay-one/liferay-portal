@@ -6,7 +6,9 @@
 import {ReactNode, createContext, useContext} from 'react';
 import useSWR, {KeyedMutator} from 'swr';
 import {UserAccountModel} from '~/models/UserAccountModel';
-import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
+import HeadlessAdminUser, {
+	MY_USER_ACCOUNT_URL,
+} from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
 import {Properties} from '~/utils/attributeUtils';
 
@@ -40,7 +42,7 @@ const OneContextProvider: React.FC<OneContextProviderProps> = ({
 	properties,
 }) => {
 	const {data: myUserAccount, mutate} = useSWR(
-		Liferay.ThemeDisplay.isSignedIn() ? '/one/my-user-account' : null,
+		Liferay.ThemeDisplay.isSignedIn() ? MY_USER_ACCOUNT_URL : null,
 		HeadlessAdminUser.getMyUserAccount
 	);
 
