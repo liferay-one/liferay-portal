@@ -11,7 +11,6 @@ import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
 import {ReactNode, useMemo, useState} from 'react';
 import Button from '~/components/Button/Button';
-import Loading from '~/components/Loading/Loading';
 import {Word, translate} from '~/i18n';
 
 import './FilterableListCard.css';
@@ -286,6 +285,26 @@ export default function FilterableListCard<T>({
 		(filter) => filter.key === activeFilterKey
 	);
 
+	const renderHead = () => (
+		<ClayTable.Head>
+			<ClayTable.Row>
+				{columns.map((column) => (
+					<ClayTable.Cell
+						expanded={column.expanded}
+						headingCell
+						key={column.key}
+						style={{
+							whiteSpace: column.noWrap ? 'nowrap' : undefined,
+							width: column.width,
+						}}
+					>
+						{column.heading ? translate(column.heading) : null}
+					</ClayTable.Cell>
+				))}
+			</ClayTable.Row>
+		</ClayTable.Head>
+	);
+
 	return (
 		<div className="list-card mt-3">
 			{title && (
@@ -404,7 +423,37 @@ export default function FilterableListCard<T>({
 			)}
 
 			{loading ? (
-				<Loading.Page />
+				<ClayTable borderless className="list-card-table">
+					{renderHead()}
+
+					<ClayTable.Body>
+						{Array.from({length: defaultPageSize}, (_, row) => (
+							<ClayTable.Row key={row}>
+								{columns.map((column) => (
+									<ClayTable.Cell
+										expanded={column.expanded}
+										key={column.key}
+										style={{width: column.width}}
+									>
+										{column.expanded ? (
+											<span className="list-card-name">
+												<span className="list-card-skeleton list-card-skeleton-icon" />
+
+												<span className="list-card-name-text w-100">
+													<span className="list-card-skeleton list-card-skeleton-label" />
+
+													<span className="list-card-skeleton list-card-skeleton-subtext" />
+												</span>
+											</span>
+										) : (
+											<span className="list-card-skeleton" />
+										)}
+									</ClayTable.Cell>
+								))}
+							</ClayTable.Row>
+						))}
+					</ClayTable.Body>
+				</ClayTable>
 			) : paginatedItems.length ? (
 				<>
 					<ClayTable
@@ -415,27 +464,7 @@ export default function FilterableListCard<T>({
 								: 'list-card-table'
 						}
 					>
-						<ClayTable.Head>
-							<ClayTable.Row>
-								{columns.map((column) => (
-									<ClayTable.Cell
-										expanded={column.expanded}
-										headingCell
-										key={column.key}
-										style={{
-											whiteSpace: column.noWrap
-												? 'nowrap'
-												: undefined,
-											width: column.width,
-										}}
-									>
-										{column.heading
-											? translate(column.heading)
-											: null}
-									</ClayTable.Cell>
-								))}
-							</ClayTable.Row>
-						</ClayTable.Head>
+						{renderHead()}
 
 						<ClayTable.Body>
 							{paginatedItems.map((item) => (

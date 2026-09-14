@@ -109,7 +109,7 @@ export default function ProductListPage({
 	return (
 		<Page
 			description={i18n.translate(description)}
-			pageRendererProps={{error, isLoading: loading}}
+			pageRendererProps={{error}}
 			title={i18n.translate(title)}
 		>
 			<FilterableListCard
@@ -117,6 +117,7 @@ export default function ProductListPage({
 				emptyLabel={emptyLabel}
 				filters={filters}
 				items={items}
+				loading={loading}
 				matchesSearch={matchesProductSearch}
 				onItemClick={onItemClick}
 				rowKey={(product) => product.id}

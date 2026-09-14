@@ -7,6 +7,9 @@ import {lazy} from 'react';
 import {Navigate} from 'react-router-dom';
 import {AppRoute} from '~/utils/routeUtils';
 
+import Applications from './Projects/Applications/Applications';
+import Products from './Projects/Products/Products';
+import ProjectSectionRedirect from './Projects/components/ProjectSectionRedirect/ProjectSectionRedirect';
 import AccountTabsLayout from './components/AccountTabsLayout/AccountTabsLayout';
 
 const AccountDetails = lazy(() => import('./AccountDetails/AccountDetails'));
@@ -14,7 +17,6 @@ const AccountMembers = lazy(() => import('./AccountMembers/AccountMembers'));
 const OrderDetails = lazy(() => import('./Orders/OrderDetails/OrderDetails'));
 const OrderHistory = lazy(() => import('./Orders/OrderHistory/OrderHistory'));
 const Orders = lazy(() => import('./Orders/Orders'));
-const Applications = lazy(() => import('./Projects/Applications/Applications'));
 const CloudAppInstall = lazy(
 	() => import('./Projects/CloudAppInstall/CloudAppInstall')
 );
@@ -24,13 +26,6 @@ const LicenseKeyDetails = lazy(
 );
 const ProjectItemDetails = lazy(
 	() => import('./Projects/ProjectItemDetails/ProjectItemDetails')
-);
-const Products = lazy(() => import('./Projects/Products/Products'));
-const ProjectSectionRedirect = lazy(
-	() =>
-		import(
-			'./Projects/components/ProjectSectionRedirect/ProjectSectionRedirect'
-		)
 );
 const ProjectMembers = lazy(() => import('./ProjectMembers/ProjectMembers'));
 

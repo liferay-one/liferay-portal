@@ -5,19 +5,14 @@
 
 import {Navigate} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
-import {useFetch} from '~/hooks/useFetch';
+import {useCurrentAccount} from '~/hooks/useAccounts';
 import {Liferay} from '~/services/liferay/liferay';
 
-import type {Account} from '~/types/accounts';
 
 export default function MyAccount() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 
-	const {data: account, isLoading: loading} = useFetch<Account>(
-		currentAccountId
-			? `/o/headless-admin-user/v1.0/accounts/${currentAccountId}`
-			: null
-	);
+	const {data: account, isLoading: loading} = useCurrentAccount();
 
 	if (account) {
 		return (

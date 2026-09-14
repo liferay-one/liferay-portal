@@ -224,6 +224,43 @@
 	font-size: 13px;
 }
 
+.list-card-skeleton {
+	animation: list-card-skeleton-pulse 1.4s ease-in-out infinite;
+	background-color: var(--color-neutral-2);
+	border-radius: 4px;
+	display: block;
+	height: 12px;
+	width: 100%;
+}
+
+.list-card-skeleton-icon {
+	border-radius: 8px;
+	flex-shrink: 0;
+	height: 32px;
+	width: 32px;
+}
+
+.list-card-skeleton-label {
+	width: 60%;
+}
+
+.list-card-skeleton-subtext {
+	height: 10px;
+	margin-top: 6px;
+	width: 35%;
+}
+
+@keyframes list-card-skeleton-pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.45;
+	}
+}
+
 .list-card-status {
 	align-items: center;
 	display: flex;

@@ -5,16 +5,23 @@
 
 import {useMemo} from 'react';
 import {useProject} from '~/context/ProjectContext';
-import {useChannelProducts} from '~/hooks/useProjectCommerce';
+import {
+	useChannelProducts,
+	useProjectCommerce,
+	useProjectEntitlements,
+} from '~/hooks/useProjectCommerce';
 import {getProjectName, useProjectOrders} from '~/hooks/useProjectOrders';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
 
+import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
 import type {PlacedOrder} from '~/types/orders';
+import type {DeliveryProduct} from '~/types/product';
 
 export function useProjectsWithProjectItemType(
 	projectItemType: ProjectItemType
@@ -145,3 +152,126 @@ export function useProjectItems() {
 }
 
 export default useProjectItems;
+
+function toProductExternalReferenceCodesByEntitledExternalReferenceCode(
+	products: DeliveryProduct[]
+) {
+	const productExternalReferenceCodes = new Map<string, string>();
+
+	for (const product of products) {
+		productExternalReferenceCodes.set(
+			product.externalReferenceCode,
+			product.externalReferenceCode
+		);
+	}
+
+	for (const product of products) {
+		for (const sku of product.skus ?? []) {
+			productExternalReferenceCodes.set(
+				sku.externalReferenceCode,
+				product.externalReferenceCode
+			);
+		}
+	}
+
+	return productExternalReferenceCodes;
+}
+
+export function useProjectContractItems() {
+	const {projectId, selectedContractERC} = useProject();
+
+	const projectItems = useProjectItems();
+
+	const {data: channelProducts} = useChannelProducts();
+
+	const {
+		loading: contractsLoading,
+		projectContractIds,
+		resolvedContractERC,
+		resolvedContractId,
+		usingAccountFallback,
+	} = useProjectCommerce(
+		isUnassignedProject(projectId) ? '' : projectId,
+		selectedContractERC
+	);
+
+	const {entitlements, loading: entitlementsLoading} = useProjectEntitlements(
+		isUnassignedProject(projectId) ? '' : projectId
+	);
+
+	const contractProductExternalReferenceCodes = useMemo(() => {
+		const productExternalReferenceCodes =
+			toProductExternalReferenceCodesByEntitledExternalReferenceCode(
+				channelProducts?.items ?? []
+			);
+
+		const entitled = new Set<string>();
+		const entitledUnderAnyContract = new Set<string>();
+
+		for (const entitlement of entitlements) {
+			const externalReferenceCode = productExternalReferenceCodes.get(
+				entitlement.entitlementDefinitionToEntitlement
+					?.skuExternalReferenceCode ?? ''
+			);
+
+			if (!externalReferenceCode) {
+				continue;
+			}
+
+			const contractId =
+				entitlement.r_contractToEntitlement_c_contractId ?? 0;
+
+			if (projectContractIds.has(contractId)) {
+				entitledUnderAnyContract.add(externalReferenceCode);
+			}
+
+			if (
+				resolvedContractERC === ONE_TIME_PURCHASES
+					? !projectContractIds.has(contractId)
+					: contractId === resolvedContractId
+			) {
+				entitled.add(externalReferenceCode);
+			}
+		}
+
+		return {entitled, entitledUnderAnyContract};
+	}, [
+		channelProducts,
+		entitlements,
+		projectContractIds,
+		resolvedContractERC,
+		resolvedContractId,
+	]);
+
+	const scoped = useMemo(() => {
+		const keep = (item: ProjectProduct) =>
+			contractProductExternalReferenceCodes.entitled.has(
+				item.externalReferenceCode
+			) ||
+			(resolvedContractERC === ONE_TIME_PURCHASES &&
+				!contractProductExternalReferenceCodes.entitledUnderAnyContract.has(
+					item.externalReferenceCode
+				));
+
+		return {
+			applications: projectItems.applications.filter(keep),
+			products: projectItems.products.filter(keep),
+		};
+	}, [
+		contractProductExternalReferenceCodes,
+		projectItems.applications,
+		projectItems.products,
+		resolvedContractERC,
+	]);
+
+	if (usingAccountFallback || !resolvedContractERC) {
+		return projectItems;
+	}
+
+	return {
+		...projectItems,
+		...scoped,
+		loading:
+			projectItems.loading || contractsLoading || entitlementsLoading,
+	};
+}

@@ -264,7 +264,6 @@ export default function LicenseKeys() {
 			description={i18n.translate(
 				'manage-the-activation-keys-within-your-project'
 			)}
-			pageRendererProps={{isLoading: loading}}
 			title={i18n.translate('activation-keys')}
 		>
 			<FilterableListCard
@@ -280,6 +279,7 @@ export default function LicenseKeys() {
 				emptyLabel="no-activation-keys-yet"
 				filters={filters}
 				items={activationKeys}
+				loading={loading}
 				matchesSearch={matchesSearch}
 				onItemClick={(row) => navigate(row.id)}
 				rowKey={(row) => row.id}

@@ -14,6 +14,8 @@ import type {
 } from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
 
+export const MY_USER_ACCOUNT_URL = '/o/headless-admin-user/v1.0/my-user-account';
+
 export default class HeadlessAdminUser {
 	static async deleteAccountUserAccountByEmailAddress(
 		accountExternalReferenceCode: string,
@@ -67,9 +69,7 @@ export default class HeadlessAdminUser {
 	}
 
 	static async getMyUserAccount() {
-		return fetcher<UserAccount>(
-			'/o/headless-admin-user/v1.0/my-user-account'
-		);
+		return fetcher<UserAccount>(MY_USER_ACCOUNT_URL);
 	}
 
 	static async getRolesPage(searchParams = new URLSearchParams()) {

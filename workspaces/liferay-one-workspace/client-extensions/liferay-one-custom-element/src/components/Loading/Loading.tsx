@@ -19,6 +19,10 @@ type InlineProps = LoadingProps & {
 	children?: ReactNode;
 };
 
+type PageProps = LoadingProps & {
+	fill?: boolean;
+};
+
 const Loading: React.FC<LoadingProps> & {
 	FullScreen: typeof FullScreen;
 	Inline: typeof Inline;
@@ -62,8 +66,8 @@ const Inline: React.FC<InlineProps> = ({
 	</span>
 );
 
-const Page: React.FC<LoadingProps> = (props) => (
-	<div className="loading-page">
+const Page: React.FC<PageProps> = ({fill, ...props}) => (
+	<div className={classNames('loading-page', {'loading-page-fill': fill})}>
 		<Loading {...props} />
 	</div>
 );
