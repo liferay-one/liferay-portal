@@ -12,6 +12,7 @@ import {
 	useState,
 } from 'react';
 import {useNavigate, useParams} from 'react-router-dom';
+import {useAccount} from '~/context/AccountContext';
 import {
 	useChannelProducts,
 	useUnassignedCommerce,
@@ -35,6 +36,7 @@ type ProjectContextValue = {
 	project?: UserProject;
 	projectId: string;
 	projects: UserProject[];
+	resolvingProjects: boolean;
 	selectedContractERC?: string;
 	setSelectedContractERC: (contractERC: string) => void;
 };
@@ -46,6 +48,8 @@ const ProjectContext = createContext<ProjectContextValue>(
 export function ProjectProvider({children}: {children: ReactNode}) {
 	const {accountERC, projectERC} = useParams();
 	const navigate = useNavigate();
+
+	const {loading: accountLoading} = useAccount();
 
 	const {loading: projectsLoading, projects: userProjects} =
 		useUserProjects();
@@ -87,10 +91,12 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	}, [hasUnassignedEntitlements, hasUnassignedItems, userProjects]);
 
 	const loading =
+		accountLoading ||
 		channelProductsLoading ||
 		ordersLoading ||
-		projectsLoading ||
-		unassignedLoading;
+		projectsLoading;
+
+	const resolvingProjects = loading || unassignedLoading;
 
 	const projectId = projectERC ?? '';
 
@@ -116,7 +122,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	}, [accessible, projectId]);
 
 	useEffect(() => {
-		if (loading || !projects.length || accessible) {
+		if (resolvingProjects || !projects.length || accessible) {
 			return;
 		}
 
@@ -129,7 +135,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 		navigate(`/${accountERC}/project/${target.externalReferenceCode}`, {
 			replace: true,
 		});
-	}, [accessible, accountERC, loading, navigate, projects]);
+	}, [accessible, accountERC, navigate, projects, resolvingProjects]);
 
 	return (
 		<ProjectContext.Provider
@@ -138,6 +144,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 				project,
 				projectId,
 				projects,
+				resolvingProjects,
 				selectedContractERC,
 				setSelectedContractERC,
 			}}

@@ -52,6 +52,10 @@
 	width: 100%;
 }
 
+.loading-page-fill {
+	min-height: 20rem;
+}
+
 .loading-text {
 	width: 300px;
 }

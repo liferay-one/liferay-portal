@@ -8,13 +8,10 @@ import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import EntitySelector, {
 	SelectorItem,
 } from '~/components/EntitySelector/EntitySelector';
-import {useFetch} from '~/hooks/useFetch';
+import {useAccounts, useCurrentAccount} from '~/hooks/useAccounts';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 import {setCurrentAccount} from '~/utils/setCurrentAccount';
-
-import type {Account} from '~/types/accounts';
-import type {APIResponse} from '~/types/api';
 
 const SEARCH_DELAY = 400;
 
@@ -41,25 +38,9 @@ export default function AccountSelector() {
 		return () => clearTimeout(timeout);
 	}, [searchValue]);
 
-	const {data: currentAccount} = useFetch<Account>(
-		currentAccountId
-			? `/o/headless-admin-user/v1.0/accounts/${currentAccountId}`
-			: null
-	);
+	const {data: currentAccount} = useCurrentAccount();
 
-	const {data, isLoading: loading} = useFetch<APIResponse<Account>>(
-		currentAccountId ? '/o/headless-admin-user/v1.0/accounts' : null,
-		{
-			params: {
-				fields: 'externalReferenceCode,id,logoURL,name,type',
-				filter: debouncedSearch
-					? `contains(name, '${debouncedSearch.replace(/'/g, "''")}')`
-					: undefined,
-				pageSize: 20,
-				sort: 'name:asc',
-			},
-		}
-	);
+	const {data, isLoading: loading} = useAccounts(debouncedSearch);
 
 	const totalAccountCountRef = useRef<number>();
 

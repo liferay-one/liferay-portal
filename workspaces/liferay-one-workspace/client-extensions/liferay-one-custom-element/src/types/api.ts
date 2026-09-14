@@ -14,6 +14,11 @@ export type ObjectActions = {
 	};
 };
 
+export type DataQuery<Data = unknown> = {
+	fetcher: () => Promise<Data>;
+	key: string | null;
+};
+
 export type APIResponse<Query = unknown> = {
 	actions: ObjectActions;
 	facets: Facets[];
