@@ -155,6 +155,7 @@ const SEOStudioAccountSelection = () => {
 		>
 			{!!accounts.length && (
 				<AccountSelection
+					accounts={accounts}
 					onSelectAccount={setSelectedAccount}
 					selectedAccount={selectedAccount}
 					userAccount={myUserAccount}
