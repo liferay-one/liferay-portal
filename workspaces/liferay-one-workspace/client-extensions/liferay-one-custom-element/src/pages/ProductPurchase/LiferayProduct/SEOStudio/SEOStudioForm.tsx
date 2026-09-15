@@ -148,7 +148,9 @@ const SEOStudioForm = () => {
 	return (
 		<ProductPurchase.Shell
 			className="liferay-seo-studio-form"
-			title={i18n.translate('request-access-to-seo-&-aeo-studio-beta' as any)}
+			title={i18n.translate(
+				'request-access-to-seo-&-aeo-studio-beta' as any
+			)}
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
@@ -322,7 +324,8 @@ const SEOStudioForm = () => {
 								<span>
 									{
 										PURPOSE_OPTIONS.find(
-											(item: any) => item.value === purpose
+											(item: any) =>
+												item.value === purpose
 										)?.title
 									}
 								</span>
@@ -366,7 +369,9 @@ const SEOStudioForm = () => {
 							className="w-100"
 							errorMessage={errors.seoStudioAccountName?.message}
 							id="seoStudioAccountName"
-							label={i18n.translate('seo-studio-account-name' as any)}
+							label={i18n.translate(
+								'seo-studio-account-name' as any
+							)}
 							placeholder={i18n.translate('account-name')}
 							required
 						/>

@@ -50,10 +50,7 @@ const SEOStudioNextSteps: React.FC<SEOStudioNextStepsProps> = ({
 				<div className="next-step-page-cards">
 					<AccountAndAppCard
 						category={product?.catalogName as string}
-						logo={
-							data?.orderModel?.productThumbnail ||
-							'catalog'
-						}
+						logo={data?.orderModel?.productThumbnail || 'catalog'}
 						title={
 							<div className="align-items-center d-flex">
 								{productName}{' '}

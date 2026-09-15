@@ -8,10 +8,7 @@ import {useEffect, useState} from 'react';
 import useSWR from 'swr';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import {useOneContext} from '~/context/OneContextProvider';
-import {
-	ProductSpecificationKey,
-	SolutionTypes,
-} from '~/enums/Product';
+import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
@@ -89,7 +86,11 @@ const SEOStudioAccountSelection = () => {
 	const skipAccountSelection = isSingleAccount;
 
 	useEffect(() => {
-		if (skipAccountSelection && !isSelectedAccountListed && !!accounts.length) {
+		if (
+			skipAccountSelection &&
+			!isSelectedAccountListed &&
+			!!accounts.length
+		) {
 			setSelectedAccount(accounts[0]);
 		}
 	}, [
@@ -107,7 +108,11 @@ const SEOStudioAccountSelection = () => {
 	);
 
 	useEffect(() => {
-		if (skipAccountSelection && singleAccountHasAIHubOrder && isSelectedAccountListed) {
+		if (
+			skipAccountSelection &&
+			singleAccountHasAIHubOrder &&
+			isSelectedAccountListed
+		) {
 			nextStep();
 		}
 	}, [
