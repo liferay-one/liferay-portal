@@ -113,6 +113,16 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		JSONObject jsonObject = new JSONObject(json);
 
+		String productExternalId = jsonObject.optString("productExternalId");
+
+		if (StringUtil.equals(
+				productExternalId, LicenseConstants.PRODUCT_ID_PORTAL)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"A portal license key cannot be created here");
+		}
+
 		long entitlementId = jsonObject.getLong("entitlementId");
 
 		Entitlement entitlement = _entitlementService.getEntitlement(
@@ -137,10 +147,9 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 			jsonObject.optString("ipAddresses"), StringPool.BLANK,
 			jsonObject.optString("licenseType"), _LICENSE_VERSION,
 			jsonObject.optString("macAddresses"), 0, 0L, 0, 0, 0L, productName,
-			jsonObject.optString("orderId"), owner,
-			jsonObject.optString("productExternalId"), productName,
-			jsonObject.optString("productVersion"), StringPool.BLANK,
-			StringPool.BLANK,
+			jsonObject.optString("orderId"), owner, productExternalId,
+			productName, jsonObject.optString("productVersion"),
+			StringPool.BLANK, StringPool.BLANK,
 			Date.from(Instant.parse(jsonObject.getString("startDate"))));
 	}
 
@@ -152,9 +161,7 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		for (long appLicenseKeyId : appLicenseKeyIds) {
-			_licenseKeyService.updateLicenseKeyActive(true, appLicenseKeyId);
-		}
+		_updateAppLicenseKeysActive(true, appLicenseKeyIds);
 	}
 
 	@PutMapping("/deactivate")
@@ -165,15 +172,28 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		for (long appLicenseKeyId : appLicenseKeyIds) {
-			_licenseKeyService.updateLicenseKeyActive(false, appLicenseKeyId);
-		}
+		_updateAppLicenseKeysActive(false, appLicenseKeyIds);
 	}
 
 	private boolean _isApp(LicenseKey licenseKey) {
 		return !StringUtil.equals(
 			licenseKey.getProductExternalId(),
 			LicenseConstants.PRODUCT_ID_PORTAL);
+	}
+
+	private void _updateAppLicenseKeysActive(
+			boolean active, long[] appLicenseKeyIds)
+		throws Exception {
+
+		for (long appLicenseKeyId : appLicenseKeyIds) {
+			if (!_isApp(_licenseKeyService.getLicenseKey(appLicenseKeyId))) {
+				throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+			}
+		}
+
+		for (long appLicenseKeyId : appLicenseKeyIds) {
+			_licenseKeyService.updateLicenseKeyActive(active, appLicenseKeyId);
+		}
 	}
 
 	private static final int _LICENSE_VERSION = 3;
