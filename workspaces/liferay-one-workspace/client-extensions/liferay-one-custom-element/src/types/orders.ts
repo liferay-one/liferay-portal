@@ -140,6 +140,7 @@ export type OrderItem = {
 	name?: {
 		en_US: string;
 	};
+	productId?: number;
 	quantity?: number;
 	skuId: number;
 	unitPriceWithTaxAmount?: number;

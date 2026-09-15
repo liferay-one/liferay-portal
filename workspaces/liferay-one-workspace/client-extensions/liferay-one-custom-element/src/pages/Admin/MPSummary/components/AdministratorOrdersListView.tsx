@@ -13,6 +13,12 @@ import {Fragment} from 'react';
 import ListView, {ListViewProps} from '~/components/ListView/ListView';
 import {ManagementToolbarProps} from '~/components/ManagementToolbar/ManagementToolbar';
 import i18n from '~/i18n';
+import {
+	getOrderProductId,
+	openCustomerDashboard,
+	openPublisherDashboard,
+} from '~/pages/Admin/MPSummary/utils/orderDashboardNavigationUtils';
+import {Liferay} from '~/services/liferay/liferay';
 import Orders from '~/services/spring-boot/Orders';
 import {FilterSchemaOption} from '~/types/filters';
 import {
@@ -39,6 +45,13 @@ type AdministratorOrdersListViewProps = {
 		| 'totalItems'
 	>;
 };
+
+function showUnexpectedErrorToast() {
+	Liferay.Util.openToast({
+		message: i18n.translate('an-unexpected-error-occurred'),
+		type: 'danger',
+	});
+}
 
 export function AdministratorOrdersListView({
 	isSortable = false,
@@ -83,8 +96,30 @@ export function AdministratorOrdersListView({
 			tableProps={{
 				actions: [
 					{
+						name: i18n.translate('customer-dashboard'),
+						onClick: (order: Order) => {
+							openCustomerDashboard(order).catch(
+								showUnexpectedErrorToast
+							);
+						},
+					},
+					{
+						disabled: (order: Order) => !getOrderProductId(order),
+						name: i18n.translate('publisher-dashboard'),
+						onClick: (order: Order) => {
+							openPublisherDashboard(order).catch(
+								showUnexpectedErrorToast
+							);
+						},
+					},
+					{
 						name: i18n.translate('order-details'),
-						onClick: () => {},
+						onClick: (order: Order) => {
+							window.open(
+								`/group/guest/~/control_panel/manage?p_p_id=com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet&p_p_lifecycle=0&p_p_state=maximized&_com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet_mvcRenderCommandName=%2Fcommerce_order%2Fedit_commerce_order&_com_liferay_commerce_order_web_internal_portlet_CommerceOrderPortlet_commerceOrderId=${order.id}`,
+								'_blank'
+							);
+						},
 					},
 				],
 				columns: [
