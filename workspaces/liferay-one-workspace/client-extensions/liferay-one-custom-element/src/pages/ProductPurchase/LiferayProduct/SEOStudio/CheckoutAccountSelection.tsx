@@ -7,14 +7,15 @@ import ClayLink from '@clayui/link';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {ReactNode, useMemo} from 'react';
 import useSWR from 'swr';
-
-import {Liferay} from '~/services/liferay/liferay';
-import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
+import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
+import {Liferay} from '~/services/liferay/liferay';
+
 import type {Account, UserAccount} from '~/types/accounts';
 import type {RadioOption} from '~/types/radioOption';
 
 type AccountSelectionProps = {
+	accounts?: Account[];
 	checkPersonalAccount?: boolean;
 	children?: ReactNode;
 	enabledAccountRoles?: string[];
@@ -26,6 +27,7 @@ type AccountSelectionProps = {
 };
 
 const AccountSelection: React.FC<AccountSelectionProps> = ({
+	accounts: accountsProp,
 	checkPersonalAccount = false,
 	children,
 	enabledAccountRoles,
@@ -42,8 +44,8 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 
 	const accountBriefIds = accountBriefs.map(({id}: any) => id);
 
-	const {data: accountsInfo = [], isLoading} = useSWR(
-		{accountBriefIds, key: 'commerce-account-info'},
+	const {data: accountsInfo = [], isLoading: SWRIsLoading} = useSWR(
+		!accountsProp && accountBriefIds.length ? {accountBriefIds, key: 'commerce-account-info'} : null,
 		() =>
 			Promise.all(
 				accountBriefIds.map((accountBriefId: any) =>
@@ -52,9 +54,23 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 			)
 	);
 
+	const isLoading = accountsProp ? false : SWRIsLoading;
+
 	const accounts = useMemo(
-		() =>
-			accountsInfo
+		() => {
+			if (accountsProp) {
+				return accountsProp.map((account) => ({
+					displayAccount: true,
+					id: account.id,
+					imageURL: account.logoURL,
+					selected: selectedAccount?.id === account.id,
+					title: account.name,
+					type: account.type,
+					value: account,
+				}));
+			}
+
+			return accountsInfo
 				.map((accountInfo: any, index: number) => {
 					const accountBrief = accountBriefs[index];
 					let displayAccount = checkPersonalAccount
@@ -84,13 +100,16 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 						value: accountInfo,
 					};
 				})
-				.filter(({displayAccount}: any) => displayAccount),
+				.filter(({displayAccount}: any) => displayAccount);
+		},
 		[
+			accountsProp,
 			accountBriefs,
 			accountsInfo,
 			checkPersonalAccount,
 			enabledAccountRoles,
 			selectedAccount?.externalReferenceCode,
+			selectedAccount?.id,
 		]
 	);
 
@@ -138,7 +157,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 
 						<b>{Liferay.ThemeDisplay.getUserEmailAddress()}</b>
 
-						{`.`}
+						.
 					</span>
 
 					{showContactSupport && (
@@ -146,7 +165,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 							{`Need help? `}
 
 							<ClayLink href="mailto:support@liferay.com">
-								{`Contact Support`}
+								Contact Support
 							</ClayLink>
 						</span>
 					)}
