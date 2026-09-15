@@ -5,7 +5,9 @@
 
 import {z} from 'zod';
 import zodSchema from '~/schema/zodSchema';
+
 import {OneSpringBootOAuth2} from './OAuth2Client';
+
 import type {Account} from '~/types/accounts';
 
 class MarketplaceOAuth2 extends OneSpringBootOAuth2 {

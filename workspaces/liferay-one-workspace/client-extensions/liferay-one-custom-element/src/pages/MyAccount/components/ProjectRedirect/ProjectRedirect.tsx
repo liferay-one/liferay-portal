@@ -14,7 +14,6 @@ import {
 } from '~/pages/MyAccount/Projects/projects';
 import {Liferay} from '~/services/liferay/liferay';
 
-
 export default function ProjectRedirect() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 

@@ -14,7 +14,8 @@ import type {
 } from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
 
-export const MY_USER_ACCOUNT_URL = '/o/headless-admin-user/v1.0/my-user-account';
+export const MY_USER_ACCOUNT_URL =
+	'/o/headless-admin-user/v1.0/my-user-account';
 
 export default class HeadlessAdminUser {
 	static async deleteAccountUserAccountByEmailAddress(
