@@ -1744,6 +1744,8 @@ export default {
 		'This Liferay DXP is requesting access to your Liferay One account.',
 	'this-may-restrict-the-functionality-available-to-you':
 		'This may restrict the functionality available to you.',
+	'this-order-does-not-have-a-publisher':
+		'This order does not have a publisher.',
 	'this-order-must-be-completed-before-downloading-this-app.':
 		'This order must be completed before downloading this app.',
 	'this-product-is-no-longer-available':
