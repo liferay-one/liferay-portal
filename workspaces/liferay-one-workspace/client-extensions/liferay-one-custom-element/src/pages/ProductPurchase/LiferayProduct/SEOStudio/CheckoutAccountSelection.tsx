@@ -45,7 +45,9 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 	const accountBriefIds = accountBriefs.map(({id}: any) => id);
 
 	const {data: accountsInfo = [], isLoading: SWRIsLoading} = useSWR(
-		!accountsProp && accountBriefIds.length ? {accountBriefIds, key: 'commerce-account-info'} : null,
+		!accountsProp && accountBriefIds.length
+			? {accountBriefIds, key: 'commerce-account-info'}
+			: null,
 		() =>
 			Promise.all(
 				accountBriefIds.map((accountBriefId: any) =>
@@ -56,62 +58,57 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 
 	const isLoading = accountsProp ? false : SWRIsLoading;
 
-	const accounts = useMemo(
-		() => {
-			if (accountsProp) {
-				return accountsProp.map((account) => ({
-					displayAccount: true,
-					id: account.id,
-					imageURL: account.logoURL,
-					selected: selectedAccount?.id === account.id,
-					title: account.name,
-					type: account.type,
-					value: account,
-				}));
-			}
+	const accounts = useMemo(() => {
+		if (accountsProp) {
+			return accountsProp.map((account) => ({
+				displayAccount: true,
+				id: account.id,
+				imageURL: account.logoURL,
+				selected: selectedAccount?.id === account.id,
+				title: account.name,
+				type: account.type,
+				value: account,
+			}));
+		}
 
-			return accountsInfo
-				.map((accountInfo: any, index: number) => {
-					const accountBrief = accountBriefs[index];
-					let displayAccount = checkPersonalAccount
-						? accountInfo.type === 'person'
-						: true;
+		return accountsInfo
+			.map((accountInfo: any, index: number) => {
+				const accountBrief = accountBriefs[index];
+				let displayAccount = checkPersonalAccount
+					? accountInfo.type === 'person'
+					: true;
 
-					if (accountBrief.roleBriefs.length) {
-						displayAccount = accountBriefs[index].roleBriefs.some(
-							(roleBrief: any) =>
-								enabledAccountRoles
-									? enabledAccountRoles.includes(
-											roleBrief.name
-										)
-									: true
-						);
-					}
+				if (accountBrief.roleBriefs.length) {
+					displayAccount = accountBriefs[index].roleBriefs.some(
+						(roleBrief: any) =>
+							enabledAccountRoles
+								? enabledAccountRoles.includes(roleBrief.name)
+								: true
+					);
+				}
 
-					return {
-						displayAccount,
-						id: accountBrief.id,
-						imageURL: accountInfo.logoURL,
-						selected:
-							selectedAccount?.externalReferenceCode ===
-							accountInfo.externalReferenceCode,
-						title: accountInfo.name,
-						type: accountInfo.type,
-						value: accountInfo,
-					};
-				})
-				.filter(({displayAccount}: any) => displayAccount);
-		},
-		[
-			accountsProp,
-			accountBriefs,
-			accountsInfo,
-			checkPersonalAccount,
-			enabledAccountRoles,
-			selectedAccount?.externalReferenceCode,
-			selectedAccount?.id,
-		]
-	);
+				return {
+					displayAccount,
+					id: accountBrief.id,
+					imageURL: accountInfo.logoURL,
+					selected:
+						selectedAccount?.externalReferenceCode ===
+						accountInfo.externalReferenceCode,
+					title: accountInfo.name,
+					type: accountInfo.type,
+					value: accountInfo,
+				};
+			})
+			.filter(({displayAccount}: any) => displayAccount);
+	}, [
+		accountsProp,
+		accountBriefs,
+		accountsInfo,
+		checkPersonalAccount,
+		enabledAccountRoles,
+		selectedAccount?.externalReferenceCode,
+		selectedAccount?.id,
+	]);
 
 	const handleSelectAccount = (radioOption: RadioOption<Account>) => {
 		onSelectAccount(radioOption.value);
@@ -154,10 +151,7 @@ const AccountSelection: React.FC<AccountSelectionProps> = ({
 				<div className="border d-flex flex-column p-4 rounded text-center">
 					<span>
 						{`No Marketplace business account exists associated with `}
-
-						<b>{Liferay.ThemeDisplay.getUserEmailAddress()}</b>
-
-						.
+						<b>{Liferay.ThemeDisplay.getUserEmailAddress()}</b>.
 					</span>
 
 					{showContactSupport && (
