@@ -4,10 +4,10 @@
  */
 
 import {z} from 'zod';
-
-import {OrderCustomFields} from '~/utils/orderUtils';
-import {Cart, OrderTypes} from '~/types/orders';
 import zodSchema from '~/schema/zodSchema';
+import {Cart, OrderTypes} from '~/types/orders';
+import {OrderCustomFields} from '~/utils/orderUtils';
+
 import ProductPurchase from './ProductPurchase';
 
 type SEOStudioForm = z.infer<typeof zodSchema.seoStudioForm> & {

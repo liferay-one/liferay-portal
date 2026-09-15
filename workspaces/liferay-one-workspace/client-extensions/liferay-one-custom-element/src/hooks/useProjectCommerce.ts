@@ -366,8 +366,9 @@ export function useProjectCommerce(
 	const countsOneTimeEntitlements =
 		!usingAccountFallback || !contractNodes.length;
 
-	const {entitlements, loading: entitlementsLoading} =
-		useProjectEntitlements(projectExternalReferenceCode);
+	const {entitlements, loading: entitlementsLoading} = useProjectEntitlements(
+		projectExternalReferenceCode
+	);
 
 	const projectContractIds = new Set(
 		projectContractNodes.map((node) => node.id)
@@ -564,9 +565,7 @@ function useProjectContracts(projectExternalReferenceCode: string) {
 function useAccountLevelContracts(enabled = true) {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 
-	return useDataQuery(
-		accountLevelContractsQuery(enabled ? accountId : null)
-	);
+	return useDataQuery(accountLevelContractsQuery(enabled ? accountId : null));
 }
 
 function useAccountContractsWithEntitlements() {
@@ -614,10 +613,7 @@ export function useUnassignedCommerce(enabled = true) {
 		.and()
 		.eq('r_projectToEntitlement_c_projectId', 0)
 		.and()
-		.ne(
-			'r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId',
-			0
-		)
+		.ne('r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId', 0)
 		.build();
 
 	const {data, error, isLoading} = useSWR(
