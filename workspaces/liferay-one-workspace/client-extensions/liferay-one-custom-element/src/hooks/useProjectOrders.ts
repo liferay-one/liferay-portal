@@ -100,7 +100,9 @@ export type ProductEnvironmentInfo = {
 	projectName: string;
 };
 
-export function getProjectName(order: PlacedOrder): string {
+export function getProjectName(order: {
+	customFields?: {[key: string]: string};
+}): string {
 	const customFields = order.customFields ?? {};
 
 	const projectName = customFields[OrderCustomFields.PROJECT_NAME];
