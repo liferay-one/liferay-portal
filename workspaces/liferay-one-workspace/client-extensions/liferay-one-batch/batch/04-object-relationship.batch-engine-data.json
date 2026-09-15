@@ -164,7 +164,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
+			"deletionType": "cascade",
 			"externalReferenceCode": "R_ACCOUNT_TO_AI_HUB_APPLICATION",
 			"label": {
 				"en_US": "Account to AI Hub Application"
