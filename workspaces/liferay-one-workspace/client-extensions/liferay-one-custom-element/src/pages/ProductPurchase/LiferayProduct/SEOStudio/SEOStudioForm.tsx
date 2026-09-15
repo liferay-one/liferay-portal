@@ -148,7 +148,7 @@ const SEOStudioForm = () => {
 	return (
 		<ProductPurchase.Shell
 			className="liferay-seo-studio-form"
-			title={i18n.translate('request-access-to-seo-studio-beta' as any)}
+			title={i18n.translate('request-access-to-seo-&-aeo-studio-beta' as any)}
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
