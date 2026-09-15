@@ -13,24 +13,24 @@ import classNames from 'classnames';
 import {useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {Navigate} from 'react-router-dom';
-
 import {RequiredMask} from '~/components/FieldBase/FieldBase';
 import {Input} from '~/components/Input/Input';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import Select from '~/components/Select/Select';
-import SearchBuilder from '~/utils/SearchBuilder';
-import {OrderTypes} from '~/types/orders';
-import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
 import i18n from '~/i18n';
-import {Liferay} from '~/services/liferay/liferay';
-import zodSchema, {z} from '~/schema/zodSchema';
-import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
-import {productAgreements} from '~/utils/productAgreements';
-import phones from '~/utils/phones';
-import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
-import {ProductPurchaseSEOStudio} from '~/services/commerce/ProductPurchaseSEOStudio';
-import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
 import {PURPOSE_OPTIONS} from '~/pages/ProductPurchase/LiferayProduct/AIHub/AIHubForm/AIHubForm';
+import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
+import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
+import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
+import zodSchema, {z} from '~/schema/zodSchema';
+import {ProductPurchaseSEOStudio} from '~/services/commerce/ProductPurchaseSEOStudio';
+import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
+import {Liferay} from '~/services/liferay/liferay';
+import {OrderTypes} from '~/types/orders';
+import SearchBuilder from '~/utils/SearchBuilder';
+import phones from '~/utils/phones';
+import {productAgreements} from '~/utils/productAgreements';
+
 import SEOStudioNotEligible from './SEOStudioNotEligible';
 
 import './SEOStudioForm.css';

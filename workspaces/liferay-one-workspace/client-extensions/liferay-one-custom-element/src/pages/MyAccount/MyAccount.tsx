@@ -8,7 +8,6 @@ import Loading from '~/components/Loading/Loading';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {Liferay} from '~/services/liferay/liferay';
 
-
 export default function MyAccount() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 

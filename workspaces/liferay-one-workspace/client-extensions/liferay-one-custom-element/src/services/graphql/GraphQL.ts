@@ -32,9 +32,7 @@ function toDocument(queries: PendingQuery[]): string {
 function toError(response: GraphQLResponse): Error {
 	const messages = (response.errors ?? []).map((error) => error.message);
 
-	return new Error(
-		messages.join(' ') || 'Unable to run the GraphQL query'
-	);
+	return new Error(messages.join(' ') || 'Unable to run the GraphQL query');
 }
 
 function retrySeparately(queries: PendingQuery[]) {

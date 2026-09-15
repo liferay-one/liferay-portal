@@ -6,7 +6,6 @@
 import ClayButton from '@clayui/button';
 import ClayModal, {useModal} from '@clayui/modal';
 import {useState} from 'react';
-
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import i18n from '~/i18n';
 

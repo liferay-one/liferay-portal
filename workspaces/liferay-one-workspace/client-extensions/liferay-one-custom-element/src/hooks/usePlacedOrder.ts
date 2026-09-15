@@ -46,57 +46,57 @@ const placedOrdersQuery = ({
 	restrictFields,
 	shouldFetch = true,
 }: Props): DataQuery<APIResponse<PlacedOrder>> => ({
-		fetcher: async () => {
-			const getPage = (currentPage: number) =>
-				HeadlessCommerceDeliveryOrder.getPlacedOrders(
-					channelId,
-					accountId,
-					new URLSearchParams({
-						...(filter && {filter}),
-						nestedFields: 'placedOrderItems',
-						page: currentPage.toString(),
-						pageSize: pageSize.toString(),
-						...(restrictFields && {restrictFields}),
-						sort: 'createDate:desc',
-					})
-				);
+	fetcher: async () => {
+		const getPage = (currentPage: number) =>
+			HeadlessCommerceDeliveryOrder.getPlacedOrders(
+				channelId,
+				accountId,
+				new URLSearchParams({
+					...(filter && {filter}),
+					nestedFields: 'placedOrderItems',
+					page: currentPage.toString(),
+					pageSize: pageSize.toString(),
+					...(restrictFields && {restrictFields}),
+					sort: 'createDate:desc',
+				})
+			);
 
-			const response = await getPage(page);
+		const response = await getPage(page);
 
-			const items = [...response.items];
+		const items = [...response.items];
 
-			if (fetchAllPages && response.totalCount > items.length) {
-				const lastPage = Math.min(
-					Math.ceil(response.totalCount / pageSize),
-					page + MAX_PAGES - 1
-				);
+		if (fetchAllPages && response.totalCount > items.length) {
+			const lastPage = Math.min(
+				Math.ceil(response.totalCount / pageSize),
+				page + MAX_PAGES - 1
+			);
 
-				const remainingPages = await Promise.all(
-					Array.from({length: lastPage - page}, (_, index) =>
-						getPage(page + index + 1)
-					)
-				);
+			const remainingPages = await Promise.all(
+				Array.from({length: lastPage - page}, (_, index) =>
+					getPage(page + index + 1)
+				)
+			);
 
-				remainingPages.forEach((remainingPage) =>
-					items.push(...remainingPage.items)
-				);
-			}
+			remainingPages.forEach((remainingPage) =>
+				items.push(...remainingPage.items)
+			);
+		}
 
-			return {
-				...response,
-				items: items.filter(({orderTypeExternalReferenceCode}) =>
-					orderTypeExternalReferenceCodes?.length
-						? orderTypeExternalReferenceCodes.includes(
-								orderTypeExternalReferenceCode
-							)
-						: true
-				),
-			} as APIResponse<PlacedOrder>;
-		},
-		key: shouldFetch
-			? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
-			: null,
-	});
+		return {
+			...response,
+			items: items.filter(({orderTypeExternalReferenceCode}) =>
+				orderTypeExternalReferenceCodes?.length
+					? orderTypeExternalReferenceCodes.includes(
+							orderTypeExternalReferenceCode
+						)
+					: true
+			),
+		} as APIResponse<PlacedOrder>;
+	},
+	key: shouldFetch
+		? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
+		: null,
+});
 
 const usePlacedOrders = (props: Props) =>
 	useDataQuery(placedOrdersQuery(props));
