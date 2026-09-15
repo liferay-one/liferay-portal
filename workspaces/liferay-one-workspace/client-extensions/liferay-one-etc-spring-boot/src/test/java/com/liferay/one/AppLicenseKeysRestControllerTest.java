@@ -298,6 +298,26 @@ public class AppLicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostAppLicenseKeyRejectsPortalProductExternalId()
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject();
+
+		jsonObject.put("productExternalId", LicenseConstants.PRODUCT_ID_PORTAL);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.postAppLicenseKey(
+					null, jsonObject.toString()));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
 	public void testPostAppLicenseKeyWhenDescriptionIsNull() throws Exception {
 		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
 
@@ -334,6 +354,14 @@ public class AppLicenseKeysRestControllerTest {
 
 	@Test
 	public void testPutAppLicenseKeysActivate() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
 		_appLicenseKeysRestController.putAppLicenseKeysActivate(
 			null, new long[] {1L, 2L});
 
@@ -357,7 +385,49 @@ public class AppLicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPutAppLicenseKeysActivateRejectsPortalLicense()
+		throws Exception {
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getProductExternalId()
+		).thenReturn(
+			LicenseConstants.PRODUCT_ID_PORTAL
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.putAppLicenseKeysActivate(
+					null, new long[] {1L}));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPutAppLicenseKeysDeactivate() throws Exception {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
 		_appLicenseKeysRestController.putAppLicenseKeysDeactivate(
 			null, new long[] {3L});
 
@@ -371,6 +441,40 @@ public class AppLicenseKeysRestControllerTest {
 			_adminPermission
 		).check(
 			null
+		);
+	}
+
+	@Test
+	public void testPutAppLicenseKeysDeactivateRejectsPortalLicense()
+		throws Exception {
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getProductExternalId()
+		).thenReturn(
+			LicenseConstants.PRODUCT_ID_PORTAL
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.anyLong())
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.putAppLicenseKeysDeactivate(
+					null, new long[] {1L}));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
 		);
 	}
 
