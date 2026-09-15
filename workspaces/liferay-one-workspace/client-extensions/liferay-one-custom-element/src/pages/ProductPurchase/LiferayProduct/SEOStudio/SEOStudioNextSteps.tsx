@@ -6,17 +6,16 @@
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import useSWR from 'swr';
-
 import documentCircleIcon from '~/assets/icons/document_circle_icon.svg';
 import {AccountAndAppCard} from '~/components/AccountAndAppCard/AccountAndAppCard';
 import {Header} from '~/components/Header/Header';
 import {PageRenderer} from '~/components/Page/Page';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import i18n from '~/i18n';
-import {Liferay} from '~/services/liferay/liferay';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
-import {getSiteURL} from '~/utils/siteUtils';
+import {Liferay} from '~/services/liferay/liferay';
 import {getAccountImage} from '~/utils/getAccountImage';
+import {getSiteURL} from '~/utils/siteUtils';
 
 type SEOStudioNextStepsProps = {
 	data: ReturnType<typeof useGetProductByOrderId>['data'];

@@ -42,9 +42,7 @@ const MarketplaceContextProvider: React.FC<MarketplaceContextProviderProps> = ({
 	properties,
 }) => {
 	const {data: myUserAccount, mutate} = useSWR(
-		Liferay.ThemeDisplay.isSignedIn()
-			? MY_USER_ACCOUNT_URL
-			: null,
+		Liferay.ThemeDisplay.isSignedIn() ? MY_USER_ACCOUNT_URL : null,
 		HeadlessAdminUser.getMyUserAccount
 	);
 

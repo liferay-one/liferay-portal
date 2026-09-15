@@ -10,7 +10,6 @@ import {useCurrentAccount} from '~/hooks/useAccounts';
 import {translate} from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 
-
 export default function MyAccountRedirect() {
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 

@@ -5,16 +5,17 @@
 
 import Button from '@clayui/button';
 import {useModal} from '@clayui/modal';
-
 import businessIcon from '~/assets/icons/business.svg';
 import userIcon from '~/assets/icons/user.svg';
 import {AccountTypes} from '~/enums/Account';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
+
 import CreateAccountModalForm from './CreateAccountModalForm';
-import type {Account} from '~/types/accounts';
 
 import './CreateNewAccount.css';
+
+import type {Account} from '~/types/accounts';
 
 type DisplayCardProps = {
 	description: string;

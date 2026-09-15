@@ -4,13 +4,13 @@
  */
 
 import {useOutletContext} from 'react-router-dom';
-
 import DetailTable, {Orientation} from '~/components/DetailTable/DetailTable';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import i18n from '~/i18n';
-import type {PlacedOrder} from '~/types/orders';
 import {OrderCustomFields} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
+
+import type {PlacedOrder} from '~/types/orders';
 
 const SEOStudioDetails = () => {
 	const {placedOrder} = useOutletContext<{placedOrder: PlacedOrder}>();
