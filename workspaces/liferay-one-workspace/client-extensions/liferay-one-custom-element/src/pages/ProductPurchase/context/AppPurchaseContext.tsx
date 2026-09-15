@@ -150,9 +150,10 @@ const AppPurchaseContext = createContext<AppPurchaseContextValue | null>(null);
 export function AppPurchaseProvider({children}: {children: React.ReactNode}) {
 	const [state, dispatch] = useReducer(appPurchaseReducer, initialState);
 
-	const value = useMemo<AppPurchaseContextValue>(
+	const actions = useMemo<
+		Omit<AppPurchaseContextValue, keyof AppPurchaseState>
+	>(
 		() => ({
-			...state,
 			setAccountTaxId: (taxId) =>
 				dispatch({taxId, type: 'setAccountTaxId'}),
 			setBillingAddress: (billingAddress) =>
@@ -169,7 +170,12 @@ export function AppPurchaseProvider({children}: {children: React.ReactNode}) {
 				dispatch({salesforceProject, type: 'setSalesforceProject'}),
 			toggleEulaAgreement: () => dispatch({type: 'toggleEulaAgreement'}),
 		}),
-		[state]
+		[]
+	);
+
+	const value = useMemo<AppPurchaseContextValue>(
+		() => ({...state, ...actions}),
+		[actions, state]
 	);
 
 	return (
