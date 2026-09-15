@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import { Liferay } from '~/services/liferay/liferay';
+import {Liferay} from '~/services/liferay/liferay';
 
 export default {
 	'1-data-source': '1 Data Source',
@@ -1280,8 +1280,10 @@ export default {
 		"Report and export API calls to LDP this month, including calls you initiate on top of product functions. Excludes data ingestion and Liferay's own built-in calls. Resets monthly.",
 	'request-a-marketplace-publisher-account':
 		'Request a Marketplace Publisher Account',
-	'request-access-to-ai-hub-private-beta': 'Request Access to AI Hub Private Beta',
-	'request-access-to-seo-&-aeo-studio-beta': 'Request Access to SEO&AEO Studio Beta',
+	'request-access-to-ai-hub-private-beta':
+		'Request Access to AI Hub Private Beta',
+	'request-access-to-seo-&-aeo-studio-beta':
+		'Request Access to SEO&AEO Studio Beta',
 	'request-access': 'Request Access',
 	'request-account': 'Request Account',
 	'request-description': 'Request Description',

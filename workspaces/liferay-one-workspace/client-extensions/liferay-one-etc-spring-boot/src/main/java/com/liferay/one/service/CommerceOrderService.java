@@ -1183,6 +1183,7 @@ public class CommerceOrderService extends OneBaseService {
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
 
 	private static final String _LR_TOKENS = "-lr-tokens";
+
 	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
