@@ -7,7 +7,7 @@ import ClayBadge from '@clayui/badge';
 import ClayButton from '@clayui/button';
 import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import {z} from 'zod';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
@@ -26,6 +26,8 @@ import {productAgreements} from '~/utils/productAgreements';
 import {getAiHubTierSKU} from '~/utils/productUtils';
 
 import './AIHubOrderSummary.css';
+
+import type {BillingAddress as BillingAddressType} from '~/types/orders';
 
 const AIHubOrderSummary = () => {
 	const {
@@ -65,12 +67,14 @@ const AIHubOrderSummary = () => {
 
 	const [hasSetAddress, setHasSetAddress] = useState(false);
 
+	const mirroredBillingAddressRef = useRef<BillingAddressType>();
+
 	useEffect(() => {
 		if (hasSetAddress) {
 			return;
 		}
 
-		if (!!addresses.length && !paymentStore.billingAddress?.name) {
+		if (addresses.length === 1 && !paymentStore.billingAddress?.name) {
 			const postalAddress = addresses[0];
 
 			const billingAddress = {
@@ -97,8 +101,16 @@ const AIHubOrderSummary = () => {
 	]);
 
 	useEffect(() => {
-		if (contextPayment?.billingAddress) {
-			setBillingAddress(contextPayment.billingAddress);
+		const billingAddress = contextPayment?.billingAddress;
+
+		if (
+			billingAddress &&
+			'name' in billingAddress &&
+			billingAddress !== mirroredBillingAddressRef.current
+		) {
+			mirroredBillingAddressRef.current = billingAddress;
+
+			setBillingAddress(billingAddress);
 		}
 	}, [contextPayment?.billingAddress, setBillingAddress]);
 
