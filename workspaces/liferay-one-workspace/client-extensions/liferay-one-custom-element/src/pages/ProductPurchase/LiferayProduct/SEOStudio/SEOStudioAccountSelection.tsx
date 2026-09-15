@@ -5,25 +5,24 @@
 
 import {useModal} from '@clayui/modal';
 import {useEffect, useState} from 'react';
-import {Navigate, useLocation} from 'react-router-dom';
 import useSWR from 'swr';
-
-import AccountSelection from './CheckoutAccountSelection';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
-import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
-import SearchBuilder from '~/utils/SearchBuilder';
-import {OrderTypes} from '~/types/orders';
+import {useOneContext} from '~/context/OneContextProvider';
 import {
 	ProductSpecificationKey,
 	SolutionTypes,
 } from '~/enums/Product';
 import i18n from '~/i18n';
-import {Liferay} from '~/services/liferay/liferay';
+import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
+import {Liferay} from '~/services/liferay/liferay';
+import {OrderTypes} from '~/types/orders';
+import SearchBuilder from '~/utils/SearchBuilder';
 import {getProductSpecification} from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
-import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
+
+import AccountSelection from './CheckoutAccountSelection';
 import CreateNewAccount from './CreateNewAccount';
 import SEOStudioRequirementsModal from './SEOStudioRequirementsModal';
 
@@ -72,9 +71,8 @@ async function hasAIHubOrder(accountId: number) {
 
 const SEOStudioAccountSelection = () => {
 	const [loading, setLoading] = useState(false);
-	const location = useLocation();
 	const requirementsModal = useModal();
-	const {myUserAccount} = useMarketplaceContext();
+	const {myUserAccount} = useOneContext();
 
 	const {
 		accounts,
@@ -91,7 +89,7 @@ const SEOStudioAccountSelection = () => {
 	const skipAccountSelection = isSingleAccount;
 
 	useEffect(() => {
-		if (skipAccountSelection && !isSelectedAccountListed && accounts.length > 0) {
+		if (skipAccountSelection && !isSelectedAccountListed && !!accounts.length) {
 			setSelectedAccount(accounts[0]);
 		}
 	}, [
@@ -102,7 +100,7 @@ const SEOStudioAccountSelection = () => {
 	]);
 
 	const {data: singleAccountHasAIHubOrder} = useSWR(
-		skipAccountSelection && accounts.length > 0
+		skipAccountSelection && !!accounts.length
 			? `/seo-studio/ai-hub-orders/${accounts[0].id}`
 			: null,
 		() => hasAIHubOrder(accounts[0].id)
