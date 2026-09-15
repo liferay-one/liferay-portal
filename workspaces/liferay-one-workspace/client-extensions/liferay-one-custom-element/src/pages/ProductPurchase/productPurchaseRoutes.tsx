@@ -45,9 +45,6 @@ const AIHubTokenSelection = lazy(
 );
 const ContractSelection = lazy(() => import('./LiferayProduct/Contract'));
 const DSRForm = lazy(() => import('./LiferayProduct/DSR/DSRForm/DSRForm'));
-const SEOStudioAccountSelection = lazy(
-	() => import('./LiferayProduct/SEOStudio/SEOStudioAccountSelection')
-);
 const SEOStudioForm = lazy(
 	() => import('./LiferayProduct/SEOStudio/SEOStudioForm')
 );
@@ -168,7 +165,7 @@ export function getProductPurchaseSteps({
 		if (solutionType === 'seo-studio') {
 			return [
 				{
-					element: <SEOStudioAccountSelection />,
+					element: <AccountSelection />,
 					index: true,
 					title: i18n.translate('account'),
 				},
