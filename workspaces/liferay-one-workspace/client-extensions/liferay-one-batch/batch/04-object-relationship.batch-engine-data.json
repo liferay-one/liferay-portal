@@ -187,28 +187,6 @@
 		},
 		{
 			"deletionType": "disassociate",
-			"externalReferenceCode": "R_ACTIVATION_KEY_TO_LICENSE_KEY",
-			"label": {
-				"en_US": "Activation Key to License Key"
-			},
-			"name": "activationKeyToLicenseKey",
-			"objectDefinitionExternalReferenceCode1": "C_ACTIVATION_KEY",
-			"objectDefinitionExternalReferenceCode2": "C_LICENSE_KEY",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_ACCOUNT_TO_AI_HUB_APPLICATION",
-			"label": {
-				"en_US": "Account to AI Hub Application"
-			},
-			"name": "accountToAIHubApplication",
-			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
-			"objectDefinitionExternalReferenceCode2": "C_AI_HUB_APPLICATION",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "disassociate",
 			"externalReferenceCode": "R_COMMERCE_ORDER_ITEM_TO_ENTITLEMENT",
 			"label": {
 				"en_US": "Commerce Order Item to Entitlement"
