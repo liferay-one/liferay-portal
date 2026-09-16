@@ -48,6 +48,28 @@ import reactor.util.retry.Retry;
 @Component
 public class ProductVersionService extends OneBaseService {
 
+	public String getFreeTierProductVersion() {
+		String productGroupVersion = null;
+
+		try {
+			productGroupVersion = getLatestProductGroupVersion(
+				_FREE_TIER_PRODUCT_GROUP);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to determine the latest product version",
+					exception);
+			}
+		}
+
+		if (Validator.isNull(productGroupVersion)) {
+			return _FREE_TIER_PRODUCT_VERSION;
+		}
+
+		return productGroupVersion;
+	}
+
 	public String getLatestProductGroupVersion(String productGroup)
 		throws Exception {
 
@@ -440,6 +462,10 @@ public class ProductVersionService extends OneBaseService {
 			)
 		).block();
 	}
+
+	private static final String _FREE_TIER_PRODUCT_GROUP = "dxp";
+
+	private static final String _FREE_TIER_PRODUCT_VERSION = "7.4";
 
 	private static final long _READINESS_MAX_RETRIES = 6;
 

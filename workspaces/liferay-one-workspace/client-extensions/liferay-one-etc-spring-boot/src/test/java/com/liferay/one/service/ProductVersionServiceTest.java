@@ -56,6 +56,54 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
+	public void testGetFreeTierProductVersionFallsBackToDefault()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_productVersionService
+		).getLatestProductGroupVersion(
+			"dxp"
+		);
+
+		Assertions.assertEquals(
+			"7.4", _productVersionService.getFreeTierProductVersion());
+	}
+
+	@Test
+	public void testGetFreeTierProductVersionFallsBackWhenLookupFails()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_productVersionService
+		).getLatestProductGroupVersion(
+			"dxp"
+		);
+
+		Assertions.assertEquals(
+			"7.4", _productVersionService.getFreeTierProductVersion());
+	}
+
+	@Test
+	public void testGetFreeTierProductVersionUsesLatestProductGroupVersion()
+		throws Exception {
+
+		Mockito.doReturn(
+			"2026.Q2"
+		).when(
+			_productVersionService
+		).getLatestProductGroupVersion(
+			"dxp"
+		);
+
+		Assertions.assertEquals(
+			"2026.Q2", _productVersionService.getFreeTierProductVersion());
+	}
+
+	@Test
 	public void testGetLatestProductGroupVersion() throws Exception {
 		_stubbedProductVersions = Arrays.asList(
 			new String[] {"DXP 7.4", "7.4"},
