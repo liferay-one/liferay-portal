@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.one.exception.NoSuchEntitlementException;
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.permission.AdminPermission;
@@ -28,7 +29,6 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -44,6 +44,7 @@ public class AppLicenseKeysRestControllerTest {
 
 		_adminPermission = Mockito.mock(AdminPermission.class);
 		_entitlementService = Mockito.mock(EntitlementService.class);
+		_licenseKeyExporter = Mockito.mock(LicenseKeyExporter.class);
 		_licenseKeyService = Mockito.mock(LicenseKeyService.class);
 
 		ReflectionTestUtils.setField(
@@ -52,6 +53,9 @@ public class AppLicenseKeysRestControllerTest {
 		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_entitlementService",
 			_entitlementService);
+		ReflectionTestUtils.setField(
+			_appLicenseKeysRestController, "_licenseKeyExporter",
+			_licenseKeyExporter);
 		ReflectionTestUtils.setField(
 			_appLicenseKeysRestController, "_licenseKeyService",
 			_licenseKeyService);
@@ -68,10 +72,6 @@ public class AppLicenseKeysRestControllerTest {
 		).check(
 			null
 		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> _appLicenseKeysRestController.getAppLicenseKeys(null, 1, 20));
 
 		Assertions.assertThrows(
 			PrincipalException.class,
@@ -155,40 +155,6 @@ public class AppLicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetAppLicenseKeys() throws Exception {
-		JSONObject pageJSONObject = new JSONObject(
-		).put(
-			"totalCount", 1
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysPage(
-				"productExternalId ne '" + LicenseConstants.PRODUCT_ID_PORTAL +
-					"'",
-				1, 20)
-		).thenReturn(
-			pageJSONObject
-		);
-
-		ResponseEntity<String> responseEntity =
-			_appLicenseKeysRestController.getAppLicenseKeys(null, 1, 20);
-
-		Assertions.assertEquals(
-			pageJSONObject.toString(), responseEntity.getBody());
-
-		HttpHeaders httpHeaders = responseEntity.getHeaders();
-
-		Assertions.assertEquals(
-			MediaType.APPLICATION_JSON, httpHeaders.getContentType());
-
-		Mockito.verify(
-			_adminPermission
-		).check(
-			null
-		);
-	}
-
-	@Test
 	public void testGetAppLicenseKeysDownload() throws Exception {
 		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
 
@@ -211,13 +177,13 @@ public class AppLicenseKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeyDownloadFileName(licenseKey)
+			_licenseKeyExporter.getFileName(licenseKey)
 		).thenReturn(
 			"activation-key.xml"
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+			_licenseKeyExporter.toXML(licenseKey)
 		).thenReturn(
 			"<license/>"
 		);
@@ -274,9 +240,9 @@ public class AppLicenseKeysRestControllerTest {
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
 		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).getLicenseKeyDownloadXML(
-			Mockito.any()
+			_licenseKeyExporter, Mockito.never()
+		).toXML(
+			Mockito.any(LicenseKey.class)
 		);
 	}
 
@@ -585,6 +551,7 @@ public class AppLicenseKeysRestControllerTest {
 	private AdminPermission _adminPermission;
 	private AppLicenseKeysRestController _appLicenseKeysRestController;
 	private EntitlementService _entitlementService;
+	private LicenseKeyExporter _licenseKeyExporter;
 	private LicenseKeyService _licenseKeyService;
 
 }

@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
-import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
 import com.liferay.one.model.LicenseKey;
@@ -17,10 +16,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.Validator;
-
-import java.io.ByteArrayOutputStream;
-
-import java.nio.charset.StandardCharsets;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -32,16 +27,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TimeZone;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -176,7 +163,8 @@ public class LicenseKeyService extends OneBaseService {
 
 		Date expirationDate = calendar.getTime();
 
-		String productVersion = getFreeTierProductVersion();
+		String productVersion =
+			_productVersionService.getFreeTierProductVersion();
 
 		String key = _licenseKeyGenerator.generateKey(
 			StringPool.BLANK, _FREE_TIER_LICENSE_NAME,
@@ -350,31 +338,6 @@ public class LicenseKeyService extends OneBaseService {
 		return licenseKeys.get(0);
 	}
 
-	public String getLicenseKeyDownloadFileName(LicenseKey licenseKey) {
-		return _licenseKeyExporter.getFileName(
-			licenseKey.getProductName(), licenseKey.getProductVersion(),
-			licenseKey.getName());
-	}
-
-	public String getLicenseKeyDownloadXML(LicenseKey licenseKey)
-		throws Exception {
-
-		return _licenseKeyExporter.toXML(
-			licenseKey.getKey(), licenseKey.getAccountName(),
-			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
-			licenseKey.getLicenseVersion(), licenseKey.getProductName(),
-			licenseKey.getProductExternalId(), licenseKey.getProductVersion(),
-			licenseKey.getOwner(), licenseKey.getMaxClusterNodes(),
-			licenseKey.getMaxServers(), licenseKey.getMaxHttpSessions(),
-			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxUsers(),
-			licenseKey.getSizing(), licenseKey.getDescription(),
-			licenseKey.getDomains(), licenseKey.getHostName(),
-			licenseKey.getIpAddresses(), licenseKey.getMacAddresses(),
-			licenseKey.getServerId(),
-			Date.from(licenseKey.getStartDateInstant()),
-			Date.from(licenseKey.getCustomExpirationDateInstant()));
-	}
-
 	public List<LicenseKey> getLicenseKeys(
 			boolean active, boolean complimentary, long entitlementId)
 		throws Exception {
@@ -491,106 +454,6 @@ public class LicenseKeyService extends OneBaseService {
 				escapeODataString(serverId), "')"));
 	}
 
-	public String getLicenseKeysDownloadFileName(List<LicenseKey> licenseKeys) {
-		Set<String> licenseKeyNames = new LinkedHashSet<>();
-		Set<String> productNames = new LinkedHashSet<>();
-
-		for (LicenseKey licenseKey : licenseKeys) {
-			licenseKeyNames.add(licenseKey.getName());
-			productNames.add(licenseKey.getProductName());
-		}
-
-		return _licenseKeyExporter.getFileName(
-			productNames.toArray(new String[0]),
-			licenseKeyNames.toArray(new String[0]));
-	}
-
-	public String getLicenseKeysDownloadXML(List<LicenseKey> licenseKeys)
-		throws Exception {
-
-		String[] xmls = new String[licenseKeys.size()];
-
-		for (int i = 0; i < licenseKeys.size(); i++) {
-			xmls[i] = getLicenseKeyDownloadXML(licenseKeys.get(i));
-		}
-
-		return _licenseKeyExporter.aggregateXMLs(xmls);
-	}
-
-	public byte[] getLicenseKeysDownloadZip(List<LicenseKey> licenseKeys)
-		throws Exception {
-
-		ByteArrayOutputStream byteArrayOutputStream =
-			new ByteArrayOutputStream();
-
-		Set<String> fileNames = new HashSet<>();
-
-		try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-				byteArrayOutputStream)) {
-
-			for (LicenseKey licenseKey : licenseKeys) {
-				String fileName = getLicenseKeyDownloadFileName(licenseKey);
-
-				if (!fileNames.add(fileName)) {
-					fileName = StringBundler.concat(
-						licenseKey.getLicenseKeyId(), "-", fileName);
-
-					fileNames.add(fileName);
-				}
-
-				zipOutputStream.putNextEntry(new ZipEntry(fileName));
-
-				byte[] bytes = getLicenseKeyDownloadXML(
-					licenseKey
-				).getBytes(
-					StandardCharsets.UTF_8
-				);
-
-				zipOutputStream.write(bytes, 0, bytes.length);
-
-				zipOutputStream.closeEntry();
-			}
-		}
-
-		return byteArrayOutputStream.toByteArray();
-	}
-
-	public JSONObject getLicenseKeysPage(int page, int pageSize)
-		throws Exception {
-
-		return getLicenseKeysPage(null, page, pageSize);
-	}
-
-	public JSONObject getLicenseKeysPage(
-			String filterString, int page, int pageSize)
-		throws Exception {
-
-		UriComponentsBuilder uriComponentsBuilder =
-			UriComponentsBuilder.fromPath(
-				"/o/c/licensekeys"
-			).queryParam(
-				"page", page
-			).queryParam(
-				"pageSize", pageSize
-			);
-
-		if (filterString != null) {
-			uriComponentsBuilder.queryParam("filter", filterString);
-		}
-
-		String response = get(
-			getAuthorization(),
-			uriComponentsBuilder.build(
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			throw new Exception(
-				"Unable to read page " + page + " of the license keys");
-		}
-
-		return new JSONObject(response);
-	}
-
 	public boolean hasValidLicenseKeyTypeFree(String domains, String owner)
 		throws Exception {
 
@@ -700,32 +563,6 @@ public class LicenseKeyService extends OneBaseService {
 			).toUri());
 
 		return new LicenseKey(new JSONObject(response));
-	}
-
-	protected String getFreeTierProductVersion() {
-		String productGroupVersion = null;
-
-		try {
-			productGroupVersion = getLatestSupportedProductGroupVersion();
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to determine the latest product version",
-					exception);
-			}
-		}
-
-		if (Validator.isNull(productGroupVersion)) {
-			return _FREE_TIER_PRODUCT_VERSION;
-		}
-
-		return productGroupVersion;
-	}
-
-	protected String getLatestSupportedProductGroupVersion() throws Exception {
-		return _productVersionService.getLatestProductGroupVersion(
-			_FREE_TIER_PRODUCT_GROUP);
 	}
 
 	private String _buildSearchFilter(
@@ -874,19 +711,10 @@ public class LicenseKeyService extends OneBaseService {
 
 	private static final String _FREE_TIER_PRODUCT_ERC = "PRDCT-DXP";
 
-	private static final String _FREE_TIER_PRODUCT_GROUP = "dxp";
-
 	private static final String _FREE_TIER_PRODUCT_NAME =
 		"Liferay DXP - Free Tier";
 
-	private static final String _FREE_TIER_PRODUCT_VERSION = "7.4";
-
 	private static final int _FREE_TIER_RENEWAL_THRESHOLD_DAYS = 90;
-
-	private static final Log _log = LogFactory.getLog(LicenseKeyService.class);
-
-	@Autowired
-	private LicenseKeyExporter _licenseKeyExporter;
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;

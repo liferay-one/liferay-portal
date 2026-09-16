@@ -12,6 +12,7 @@ import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
@@ -84,30 +85,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return licenseKey;
 	}
 
-	@GetMapping
-	public ResponseEntity<String> getLicenseKeys(
-			@AuthenticationPrincipal Jwt jwt, @RequestParam("page") int page,
-			@RequestParam("pageSize") int pageSize)
-		throws Exception {
-
-		_adminPermission.check(jwt);
-
-		if ((pageSize < 1) || (pageSize > _MAX_PAGE_SIZE)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"The page size must be between 1 and " + _MAX_PAGE_SIZE);
-		}
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.APPLICATION_JSON
-		).body(
-			_licenseKeyService.getLicenseKeysPage(
-				page, pageSize
-			).toString()
-		);
-	}
-
 	@GetMapping("/{licenseKeyId}/download")
 	public ResponseEntity<String> getLicenseKeysDownload(
 			@AuthenticationPrincipal Jwt jwt, @PathVariable long licenseKeyId)
@@ -123,8 +100,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 
-		String fileName = _licenseKeyService.getLicenseKeyDownloadFileName(
-			licenseKey);
+		String fileName = _licenseKeyExporter.getFileName(licenseKey);
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -133,7 +109,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			HttpHeaders.CONTENT_DISPOSITION,
 			"attachment; filename=\"" + fileName + "\""
 		).body(
-			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+			_licenseKeyExporter.toXML(licenseKey)
 		);
 	}
 
@@ -152,16 +128,16 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 
+		String fileName = _licenseKeyExporter.getFileName(licenseKeys);
+
 		return ResponseEntity.ok(
 		).contentType(
 			MediaType.TEXT_XML
 		).header(
 			HttpHeaders.CONTENT_DISPOSITION,
-			"attachment; filename=\"" +
-				_licenseKeyService.getLicenseKeysDownloadFileName(licenseKeys) +
-					"\""
+			"attachment; filename=\"" + fileName + "\""
 		).body(
-			_licenseKeyService.getLicenseKeysDownloadXML(licenseKeys)
+			_licenseKeyExporter.toXML(licenseKeys)
 		);
 	}
 
@@ -187,7 +163,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			HttpHeaders.CONTENT_DISPOSITION,
 			"attachment; filename=\"activation-keys.zip\""
 		).body(
-			_licenseKeyService.getLicenseKeysDownloadZip(licenseKeys)
+			_licenseKeyExporter.toZip(licenseKeys)
 		);
 	}
 
@@ -399,8 +375,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	private static final int _MAX_LICENSE_KEY_IDS = 100;
 
-	private static final int _MAX_PAGE_SIZE = 100;
-
 	@Autowired
 	private AdminPermission _adminPermission;
 
@@ -409,6 +383,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
+
+	@Autowired
+	private LicenseKeyExporter _licenseKeyExporter;
 
 	@Autowired
 	private LicenseKeyPermission _licenseKeyPermission;

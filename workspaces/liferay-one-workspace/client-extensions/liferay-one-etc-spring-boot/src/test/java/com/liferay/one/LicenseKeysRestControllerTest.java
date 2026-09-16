@@ -11,6 +11,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.license.LicenseKeyCSVExporter;
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
@@ -24,8 +25,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Arrays;
 import java.util.Collections;
-
-import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -95,34 +94,6 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetLicenseKeys() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		JSONObject pageJSONObject = new JSONObject(
-			"{\"items\": [], \"totalCount\": 0}");
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysPage(1, 20)
-		).thenReturn(
-			pageJSONObject
-		);
-
-		ResponseEntity<String> responseEntity =
-			licenseKeysRestController.getLicenseKeys(null, 1, 20);
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-		Assertions.assertEquals(
-			pageJSONObject.toString(), responseEntity.getBody());
-
-		Mockito.verify(
-			_adminPermission
-		).check(
-			null
-		);
-	}
-
-	@Test
 	public void testGetLicenseKeysDownload() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -148,13 +119,13 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeyDownloadFileName(licenseKey)
+			_licenseKeyExporter.getFileName(licenseKey)
 		).thenReturn(
 			"activation-key.xml"
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+			_licenseKeyExporter.toXML(licenseKey)
 		).thenReturn(
 			"<license/>"
 		);
@@ -208,13 +179,13 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeysDownloadFileName(Mockito.anyList())
+			_licenseKeyExporter.getFileName(Mockito.anyList())
 		).thenReturn(
 			"activation-keys.xml"
 		);
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeysDownloadXML(Mockito.anyList())
+			_licenseKeyExporter.toXML(Mockito.anyList())
 		).thenReturn(
 			"<licenses/>"
 		);
@@ -268,9 +239,9 @@ public class LicenseKeysRestControllerTest {
 			() -> licenseKeysRestController.getLicenseKeysDownload(null, 1L));
 
 		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).getLicenseKeyDownloadXML(
-			Mockito.any()
+			_licenseKeyExporter, Mockito.never()
+		).toXML(
+			Mockito.any(LicenseKey.class)
 		);
 	}
 
@@ -378,7 +349,7 @@ public class LicenseKeysRestControllerTest {
 		byte[] zip = {1, 2, 3};
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeysDownloadZip(Mockito.anyList())
+			_licenseKeyExporter.toZip(Mockito.anyList())
 		).thenReturn(
 			zip
 		);
@@ -556,58 +527,6 @@ public class LicenseKeysRestControllerTest {
 				null, new long[] {1L, 1L});
 
 		Assertions.assertEquals("csv", responseEntity.getBody());
-	}
-
-	@Test
-	public void testGetLicenseKeysThrowsBadRequestWhenPageSizeIsOutOfRange()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		for (int pageSize : new int[] {0, -1, 101}) {
-			ResponseStatusException responseStatusException =
-				Assertions.assertThrows(
-					ResponseStatusException.class,
-					() -> licenseKeysRestController.getLicenseKeys(
-						null, 1, pageSize));
-
-			Assertions.assertEquals(
-				HttpStatus.BAD_REQUEST,
-				responseStatusException.getStatusCode());
-		}
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).getLicenseKeysPage(
-			Mockito.anyInt(), Mockito.anyInt()
-		);
-	}
-
-	@Test
-	public void testGetLicenseKeysThrowsForbiddenWhenNotAdmin()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_adminPermission
-		).check(
-			null
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.getLicenseKeys(null, 1, 20));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).getLicenseKeysPage(
-			Mockito.anyInt(), Mockito.anyInt()
-		);
 	}
 
 	@Test
@@ -870,6 +789,10 @@ public class LicenseKeysRestControllerTest {
 			_licenseKeyCSVExporter);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_licenseKeyExporter",
+			_licenseKeyExporter);
+
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyPermission",
 			_licenseKeyPermission);
 
@@ -898,6 +821,8 @@ public class LicenseKeysRestControllerTest {
 		CommerceOrderService.class);
 	private final LicenseKeyCSVExporter _licenseKeyCSVExporter = Mockito.mock(
 		LicenseKeyCSVExporter.class);
+	private final LicenseKeyExporter _licenseKeyExporter = Mockito.mock(
+		LicenseKeyExporter.class);
 	private final LicenseKeyPermission _licenseKeyPermission = Mockito.mock(
 		LicenseKeyPermission.class);
 	private final LicenseKeyService _licenseKeyService = Mockito.mock(

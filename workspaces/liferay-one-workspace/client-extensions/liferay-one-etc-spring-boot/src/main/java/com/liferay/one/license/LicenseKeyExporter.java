@@ -5,6 +5,7 @@
 
 package com.liferay.one.license;
 
+import com.liferay.one.model.LicenseKey;
 import com.liferay.one.util.LocaleUtil;
 import com.liferay.one.xml.Document;
 import com.liferay.one.xml.Element;
@@ -18,13 +19,22 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.io.ByteArrayOutputStream;
+
+import java.nio.charset.StandardCharsets;
+
 import java.text.DateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -47,6 +57,26 @@ public class LicenseKeyExporter {
 		}
 
 		return document.formattedString();
+	}
+
+	public String getFileName(LicenseKey licenseKey) {
+		return getFileName(
+			licenseKey.getProductName(), licenseKey.getProductVersion(),
+			licenseKey.getName());
+	}
+
+	public String getFileName(List<LicenseKey> licenseKeys) {
+		Set<String> licenseKeyNames = new LinkedHashSet<>();
+		Set<String> productNames = new LinkedHashSet<>();
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			licenseKeyNames.add(licenseKey.getName());
+			productNames.add(licenseKey.getProductName());
+		}
+
+		return getFileName(
+			productNames.toArray(new String[0]),
+			licenseKeyNames.toArray(new String[0]));
 	}
 
 	public String getFileName(
@@ -83,6 +113,33 @@ public class LicenseKeyExporter {
 		}
 
 		return formatFileName(sb.toString());
+	}
+
+	public String toXML(LicenseKey licenseKey) throws Exception {
+		return toXML(
+			licenseKey.getKey(), licenseKey.getAccountName(),
+			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
+			licenseKey.getLicenseVersion(), licenseKey.getProductName(),
+			licenseKey.getProductExternalId(), licenseKey.getProductVersion(),
+			licenseKey.getOwner(), licenseKey.getMaxClusterNodes(),
+			licenseKey.getMaxServers(), licenseKey.getMaxHttpSessions(),
+			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxUsers(),
+			licenseKey.getSizing(), licenseKey.getDescription(),
+			licenseKey.getDomains(), licenseKey.getHostName(),
+			licenseKey.getIpAddresses(), licenseKey.getMacAddresses(),
+			licenseKey.getServerId(),
+			Date.from(licenseKey.getStartDateInstant()),
+			Date.from(licenseKey.getCustomExpirationDateInstant()));
+	}
+
+	public String toXML(List<LicenseKey> licenseKeys) throws Exception {
+		String[] xmls = new String[licenseKeys.size()];
+
+		for (int i = 0; i < licenseKeys.size(); i++) {
+			xmls[i] = toXML(licenseKeys.get(i));
+		}
+
+		return aggregateXMLs(xmls);
 	}
 
 	public String toXML(
@@ -188,6 +245,42 @@ public class LicenseKeyExporter {
 		}
 
 		return document.formattedString();
+	}
+
+	public byte[] toZip(List<LicenseKey> licenseKeys) throws Exception {
+		ByteArrayOutputStream byteArrayOutputStream =
+			new ByteArrayOutputStream();
+
+		Set<String> fileNames = new HashSet<>();
+
+		try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+				byteArrayOutputStream)) {
+
+			for (LicenseKey licenseKey : licenseKeys) {
+				String fileName = getFileName(licenseKey);
+
+				if (!fileNames.add(fileName)) {
+					fileName = StringBundler.concat(
+						licenseKey.getLicenseKeyId(), "-", fileName);
+
+					fileNames.add(fileName);
+				}
+
+				zipOutputStream.putNextEntry(new ZipEntry(fileName));
+
+				byte[] bytes = toXML(
+					licenseKey
+				).getBytes(
+					StandardCharsets.UTF_8
+				);
+
+				zipOutputStream.write(bytes, 0, bytes.length);
+
+				zipOutputStream.closeEntry();
+			}
+		}
+
+		return byteArrayOutputStream.toByteArray();
 	}
 
 	protected void exportServerToXML(

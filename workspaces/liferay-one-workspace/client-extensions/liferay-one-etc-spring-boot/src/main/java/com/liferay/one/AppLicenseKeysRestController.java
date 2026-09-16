@@ -5,12 +5,12 @@
 
 package com.liferay.one;
 
+import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -64,28 +63,6 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 		return licenseKey;
 	}
 
-	@GetMapping
-	public ResponseEntity<String> getAppLicenseKeys(
-			@AuthenticationPrincipal Jwt jwt, @RequestParam("page") int page,
-			@RequestParam("pageSize") int pageSize)
-		throws Exception {
-
-		_adminPermission.check(jwt);
-
-		JSONObject jsonObject = _licenseKeyService.getLicenseKeysPage(
-			StringBundler.concat(
-				"productExternalId ne '", LicenseConstants.PRODUCT_ID_PORTAL,
-				"'"),
-			page, pageSize);
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.APPLICATION_JSON
-		).body(
-			jsonObject.toString()
-		);
-	}
-
 	@GetMapping("/{appLicenseKeyId}/download")
 	public ResponseEntity<String> getAppLicenseKeysDownload(
 			@AuthenticationPrincipal Jwt jwt,
@@ -107,10 +84,9 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 		).header(
 			HttpHeaders.CONTENT_DISPOSITION,
 			"attachment; filename=\"" +
-				_licenseKeyService.getLicenseKeyDownloadFileName(licenseKey) +
-					"\""
+				_licenseKeyExporter.getFileName(licenseKey) + "\""
 		).body(
-			_licenseKeyService.getLicenseKeyDownloadXML(licenseKey)
+			_licenseKeyExporter.toXML(licenseKey)
 		);
 	}
 
@@ -213,6 +189,9 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private LicenseKeyExporter _licenseKeyExporter;
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;

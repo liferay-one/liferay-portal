@@ -30,6 +30,15 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LiferayBundle$]",
 		"roleName": "User",
 		"scope": "1"
