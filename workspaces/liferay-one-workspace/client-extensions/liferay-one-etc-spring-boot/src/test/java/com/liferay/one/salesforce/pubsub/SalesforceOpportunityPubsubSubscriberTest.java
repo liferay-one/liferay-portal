@@ -31,6 +31,7 @@ import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.ProvisioningEnvironmentService;
 import com.liferay.one.service.ProvisioningIssueService;
 import com.liferay.one.service.ProvisioningOrderService;
+import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringBundler;
@@ -78,6 +79,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			ProvisioningIssueService.class);
 		_provisioningOrderService = Mockito.mock(
 			ProvisioningOrderService.class);
+		_provisioningProjectEntitlementService = Mockito.mock(
+			ProvisioningProjectEntitlementService.class);
 		_provisioningSubdomainService = Mockito.mock(
 			ProvisioningSubdomainService.class);
 		_userAccountService = Mockito.mock(UserAccountService.class);
@@ -156,6 +159,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningOrderService",
 			_provisioningOrderService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_provisioningProjectEntitlementService",
+			_provisioningProjectEntitlementService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningEnvironmentService",
 			_provisioningEnvironmentService);
@@ -2067,6 +2073,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private ProvisioningEnvironmentService _provisioningEnvironmentService;
 	private ProvisioningIssueService _provisioningIssueService;
 	private ProvisioningOrderService _provisioningOrderService;
+	private ProvisioningProjectEntitlementService
+		_provisioningProjectEntitlementService;
 	private ProvisioningSubdomainService _provisioningSubdomainService;
 	private SalesforceOpportunityPubsubSubscriber _subscriber;
 	private UserAccountService _userAccountService;
