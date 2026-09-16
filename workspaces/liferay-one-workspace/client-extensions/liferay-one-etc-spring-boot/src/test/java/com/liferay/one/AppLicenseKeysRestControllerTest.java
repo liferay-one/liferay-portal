@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.permission.AdminPermission;
@@ -424,6 +425,24 @@ public class AppLicenseKeysRestControllerTest {
 		Assertions.assertSame(
 			licenseKey,
 			_appLicenseKeysRestController.postAppLicenseKey(null, _toJSON("")));
+	}
+
+	@Test
+	public void testPostAppLicenseKeyWhenEntitlementIsMissing()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getEntitlement(Mockito.anyLong())
+		).thenThrow(
+			new NoSuchEntitlementException("No entitlement exists with ID 1")
+		);
+
+		Assertions.assertThrows(
+			NoSuchEntitlementException.class,
+			() -> _appLicenseKeysRestController.postAppLicenseKey(
+				null, _toJSON("Acme App")));
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
 	}
 
 	@Test

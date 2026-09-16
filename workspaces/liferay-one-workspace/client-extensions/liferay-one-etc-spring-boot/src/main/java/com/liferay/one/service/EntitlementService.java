@@ -9,6 +9,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.exception.DuplicateEntitlementException;
+import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.CommerceOrderItemUtil;
@@ -38,7 +39,9 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 /**
@@ -310,15 +313,28 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	public Entitlement getEntitlement(long entitlementId) throws Exception {
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/entitlements/{id}"
-			).buildAndExpand(
-				entitlementId
-			).toUri());
+		try {
+			String response = get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/entitlements/{id}"
+				).buildAndExpand(
+					entitlementId
+				).toUri());
 
-		return new Entitlement(new JSONObject(response));
+			return new Entitlement(new JSONObject(response));
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				throw new NoSuchEntitlementException(
+					"No entitlement exists with ID " + entitlementId);
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public List<Entitlement> getEntitlements(long commerceOrderItemId)

@@ -11,6 +11,7 @@ import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchAccountException;
+import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.exception.AccountNotFoundException;
@@ -105,6 +106,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return _toResponseEntity(
 			HttpStatus.NOT_FOUND, "The account was not found");
+	}
+
+	@ExceptionHandler(NoSuchEntitlementException.class)
+	public ResponseEntity<?> handleException(
+		NoSuchEntitlementException noSuchEntitlementException) {
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(noSuchEntitlementException);
+		}
+
+		return _toResponseEntity(
+			HttpStatus.NOT_FOUND, "The entitlement was not found");
 	}
 
 	@ExceptionHandler(NoSuchLicenseKeyException.class)
