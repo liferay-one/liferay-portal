@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.time.Instant;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -162,7 +163,8 @@ public class AppLicenseKeysRestControllerTest {
 		List<LicenseKey> licenseKeys = List.of(Mockito.mock(LicenseKey.class));
 
 		Mockito.when(
-			_licenseKeyService.getLicenseKeys(argumentCaptor.capture())
+			_licenseKeyService.getLicenseKeys(
+				argumentCaptor.capture(), Mockito.anyInt())
 		).thenReturn(
 			licenseKeys
 		);
@@ -184,6 +186,12 @@ public class AppLicenseKeysRestControllerTest {
 	@Test
 	public void testGetAppLicenseKeysDownload() throws Exception {
 		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getLicenseVersion()
+		).thenReturn(
+			3
+		);
 
 		Mockito.when(
 			licenseKey.getProductExternalId()
@@ -228,6 +236,46 @@ public class AppLicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetAppLicenseKeysDownloadRejectsOldLicenseVersion()
+		throws Exception {
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getLicenseVersion()
+		).thenReturn(
+			1
+		);
+
+		Mockito.when(
+			licenseKey.getProductExternalId()
+		).thenReturn(
+			"commerce"
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(1L)
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.getAppLicenseKeysDownload(
+					null, 1L));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).getLicenseKeyDownloadXML(
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGetAppLicenseKeysDownloadRejectsPortalLicense()
 		throws Exception {
 
@@ -253,6 +301,32 @@ public class AppLicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testGetAppLicenseKeysRejectsAnOversizedResult()
+		throws Exception {
+
+		List<LicenseKey> licenseKeys = new ArrayList<>();
+
+		for (int i = 0; i <= 100; i++) {
+			licenseKeys.add(Mockito.mock(LicenseKey.class));
+		}
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(
+				Mockito.anyString(), Mockito.anyInt())
+		).thenReturn(
+			licenseKeys
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _appLicenseKeysRestController.getAppLicenseKeys(null));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 	}
 
 	@Test
