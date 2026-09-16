@@ -558,15 +558,29 @@ public class LicenseKeyService extends OneBaseService {
 	public JSONObject getLicenseKeysPage(int page, int pageSize)
 		throws Exception {
 
-		String response = get(
-			getAuthorization(),
+		return getLicenseKeysPage(null, page, pageSize);
+	}
+
+	public JSONObject getLicenseKeysPage(
+			String filterString, int page, int pageSize)
+		throws Exception {
+
+		UriComponentsBuilder uriComponentsBuilder =
 			UriComponentsBuilder.fromPath(
 				"/o/c/licensekeys"
 			).queryParam(
 				"page", page
 			).queryParam(
 				"pageSize", pageSize
-			).build(
+			);
+
+		if (filterString != null) {
+			uriComponentsBuilder.queryParam("filter", filterString);
+		}
+
+		String response = get(
+			getAuthorization(),
+			uriComponentsBuilder.build(
 			).toUri());
 
 		if (Validator.isNull(response)) {
