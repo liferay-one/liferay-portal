@@ -43,6 +43,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -308,15 +309,28 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public LicenseKey getLicenseKey(long licenseKeyId) throws Exception {
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/licensekeys/{id}"
-			).buildAndExpand(
-				licenseKeyId
-			).toUri());
+		try {
+			String response = get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/licensekeys/{id}"
+				).buildAndExpand(
+					licenseKeyId
+				).toUri());
 
-		return new LicenseKey(new JSONObject(response));
+			return new LicenseKey(new JSONObject(response));
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				throw new NoSuchLicenseKeyException(
+					"No license key exists with ID " + licenseKeyId);
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public LicenseKey getLicenseKeyByExternalReferenceCode(
@@ -389,6 +403,39 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return getAllItems("/o/c/licensekeys", filterString, LicenseKey::new);
+	}
+
+	public List<LicenseKey> getLicenseKeys(String filterString, int limit)
+		throws Exception {
+
+		String response = get(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/licensekeys"
+			).queryParam(
+				"filter", filterString
+			).queryParam(
+				"page", 1
+			).queryParam(
+				"pageSize", limit
+			).build(
+			).toUri());
+
+		if (Validator.isNull(response)) {
+			return new ArrayList<>();
+		}
+
+		JSONObject jsonObject = new JSONObject(response);
+
+		JSONArray jsonArray = jsonObject.getJSONArray("items");
+
+		List<LicenseKey> licenseKeys = new ArrayList<>();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			licenseKeys.add(new LicenseKey(jsonArray.getJSONObject(i)));
+		}
+
+		return licenseKeys;
 	}
 
 	public List<LicenseKey> getLicenseKeys(
