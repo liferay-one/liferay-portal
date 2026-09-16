@@ -75,6 +75,11 @@ liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-genera
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/commerce/order/item/entitlement/generation
     type: objectAction
+liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-update:
+    name: Liferay One Etc Spring Boot Object Action Commerce Order Item Entitlement Update
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/commerce/order/item/entitlement/update
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-commerce-order-item-update:
     name: Liferay One Etc Spring Boot Object Action Commerce Order Item Update
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
