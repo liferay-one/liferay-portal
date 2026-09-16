@@ -205,6 +205,45 @@ public class SalesforceModelTestUtil {
 		);
 	}
 
+	public static JSONObject createProjectEntitlementJSONObject(
+		String id, String projectId, String purchasingOpportunityId) {
+
+		return new JSONObject(
+		).put(
+			"Id", id
+		).put(
+			"Project__c", projectId
+		).put(
+			"Purchasing_Opportunity__c", purchasingOpportunityId
+		);
+	}
+
+	public static JSONObject createProjectEntitlementLineItemJSONObject(
+		String endDate, String id, String product2Id,
+		String projectEntitlementId, double quantity, String startDate) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"Id", id
+		).put(
+			"Product2__c", product2Id
+		).put(
+			"ProjectEntitlement__c", projectEntitlementId
+		).put(
+			"Quantity__c", quantity
+		);
+
+		if (endDate != null) {
+			jsonObject.put("End_Date__c", endDate);
+		}
+
+		if (startDate != null) {
+			jsonObject.put("Start_Date__c", startDate);
+		}
+
+		return jsonObject;
+	}
+
 	private static void _addCustomField(
 		List<CustomField> customFields, String name, String value) {
 
