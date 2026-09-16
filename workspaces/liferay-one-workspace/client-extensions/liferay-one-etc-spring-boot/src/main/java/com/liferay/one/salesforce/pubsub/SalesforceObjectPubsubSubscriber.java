@@ -22,6 +22,7 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -86,6 +87,18 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 				}
 				else if (Objects.equals(salesforceObjectName, "Project__c")) {
 					_processProject(recordJSONObject);
+				}
+				else if (Objects.equals(
+							salesforceObjectName, "ProjectEntitlement__c")) {
+
+					_processProjectEntitlement(action, recordJSONObject);
+				}
+				else if (Objects.equals(
+							salesforceObjectName,
+							"ProjectEntitlementLineItem__c")) {
+
+					_processProjectEntitlementLineItem(
+						action, recordJSONObject);
 				}
 				else if (_log.isInfoEnabled()) {
 					_log.info(
@@ -241,6 +254,34 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		_projectService.upsertProject(new SalesforceProject(recordJSONObject));
 	}
 
+	private void _processProjectEntitlement(
+			String action, JSONObject recordJSONObject)
+		throws Exception {
+
+		if (Objects.equals(action, "delete")) {
+			_provisioningProjectEntitlementService.deleteProjectEntitlement(
+				recordJSONObject);
+		}
+		else {
+			_provisioningProjectEntitlementService.upsertProjectEntitlement(
+				recordJSONObject);
+		}
+	}
+
+	private void _processProjectEntitlementLineItem(
+			String action, JSONObject recordJSONObject)
+		throws Exception {
+
+		if (Objects.equals(action, "delete")) {
+			_provisioningProjectEntitlementService.
+				deleteProjectEntitlementLineItem(recordJSONObject);
+		}
+		else {
+			_provisioningProjectEntitlementService.
+				upsertProjectEntitlementLineItem(recordJSONObject);
+		}
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		SalesforceObjectPubsubSubscriber.class);
 
@@ -267,6 +308,10 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private ProvisioningProjectEntitlementService
+		_provisioningProjectEntitlementService;
 
 	@Value("${liferay.one.salesforce.object.pubsub.subscriber.subscription}")
 	private String _subscription;

@@ -32,6 +32,7 @@ import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.ProvisioningEnvironmentService;
 import com.liferay.one.service.ProvisioningIssueService;
 import com.liferay.one.service.ProvisioningOrderService;
+import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.CommerceOrderItemUtil;
@@ -259,7 +260,8 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 
 		return Objects.equals(
-			salesforceOpportunity.getStageName(), _STAGE_NAME_CLOSED_WON);
+			salesforceOpportunity.getStageName(),
+			OpportunityConstants.STAGE_NAME_CLOSED_WON);
 	}
 
 	private void _processProvisioningRecord(JSONObject recordJSONObject)
@@ -602,6 +604,10 @@ public class SalesforceOpportunityPubsubSubscriber
 		_provisioningSubdomainService.provisionSubdomain(
 			account, provisionableSalesforceOpportunityLineItems);
 
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			account, contractId, currencyCode, recordJSONObject,
+			salesforceOpportunity, salesforceProject, warningMessages);
+
 		List<Long> userIds = new ArrayList<>();
 
 		if (!StringUtil.equalsIgnoreCase(
@@ -636,8 +642,6 @@ public class SalesforceOpportunityPubsubSubscriber
 	private static final String[] _PRODUCT_FAMILY_TOKENS = {"E", "P", "S"};
 
 	private static final String _STAGE_NAME_CLOSED_LOST = "Closed Lost";
-
-	private static final String _STAGE_NAME_CLOSED_WON = "Closed Won";
 
 	private static final Log _log = LogFactory.getLog(
 		SalesforceOpportunityPubsubSubscriber.class);
@@ -680,6 +684,10 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private ProvisioningOrderService _provisioningOrderService;
+
+	@Autowired
+	private ProvisioningProjectEntitlementService
+		_provisioningProjectEntitlementService;
 
 	@Autowired
 	private ProvisioningSubdomainService _provisioningSubdomainService;

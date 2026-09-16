@@ -10,6 +10,8 @@ package com.liferay.one.constants;
  */
 public class OpportunityConstants {
 
+	public static final String STAGE_NAME_CLOSED_WON = "Closed Won";
+
 	public static final String TYPE_EXISTING_BUSINESS = "Existing Business";
 
 	public static final String TYPE_NEW_BUSINESS = "New Business";

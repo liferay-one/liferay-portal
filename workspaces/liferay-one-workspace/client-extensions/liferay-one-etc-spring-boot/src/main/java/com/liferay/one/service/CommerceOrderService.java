@@ -500,6 +500,21 @@ public class CommerceOrderService extends OneBaseService {
 			SalesforceProject salesforceProject)
 		throws Exception {
 
+		return upsertOrder(
+			account, contractId, currencyCode, salesforceOpportunity.getId(),
+			salesforceOpportunity.getProjectId(), salesforceOpportunity,
+			salesforceOpportunityLineItems, salesforceProject);
+	}
+
+	public Order upsertOrder(
+			com.liferay.headless.admin.user.client.dto.v1_0.Account account,
+			Long contractId, String currencyCode, String externalReferenceCode,
+			String projectExternalReferenceCode,
+			SalesforceOpportunity salesforceOpportunity,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+			SalesforceProject salesforceProject)
+		throws Exception {
+
 		Order order = new Order();
 
 		order.setAccountExternalReferenceCode(
@@ -510,7 +525,7 @@ public class CommerceOrderService extends OneBaseService {
 
 		order.setChannelId(() -> channelId);
 
-		order.setExternalReferenceCode(salesforceOpportunity::getId);
+		order.setExternalReferenceCode(() -> externalReferenceCode);
 
 		if (account.getDefaultBillingAddressId() != null) {
 			order.setBillingAddressId(account::getDefaultBillingAddressId);
@@ -541,20 +556,54 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		Map<String, Object> customFields = _getCustomFields(
-			contractId, salesforceOpportunity, salesforceProject);
+			contractId, projectExternalReferenceCode, salesforceOpportunity,
+			salesforceProject);
 
 		order.setCustomFields(() -> customFields);
 
-		Order existingOrder = fetchOrderByExternalReferenceCode(
-			salesforceOpportunity.getId());
+		return _upsertOrder(externalReferenceCode, order);
+	}
 
-		OrderResource orderResource = _buildOrderResource();
+	public Order upsertProjectEntitlementOrder(
+			String externalReferenceCode, String projectExternalReferenceCode,
+			Order sourceOrder)
+		throws Exception {
 
-		if (existingOrder != null) {
-			return orderResource.patchOrder(existingOrder.getId(), order);
+		Order order = new Order();
+
+		order.setAccountExternalReferenceCode(
+			sourceOrder::getAccountExternalReferenceCode);
+		order.setAccountId(sourceOrder::getAccountId);
+
+		if (sourceOrder.getBillingAddressId() != null) {
+			order.setBillingAddressId(sourceOrder::getBillingAddressId);
 		}
 
-		return orderResource.postOrder(order);
+		order.setChannelId(sourceOrder::getChannelId);
+		order.setCurrencyCode(sourceOrder::getCurrencyCode);
+		order.setExternalReferenceCode(() -> externalReferenceCode);
+
+		if (sourceOrder.getShippingAddressId() != null) {
+			order.setShippingAddressId(sourceOrder::getShippingAddressId);
+		}
+
+		Map<String, Object> customFields = new HashMap<>();
+
+		Map<String, Object> sourceCustomFields =
+			(Map<String, Object>)sourceOrder.getCustomFields();
+
+		if (sourceCustomFields != null) {
+			customFields.putAll(sourceCustomFields);
+		}
+
+		if (Validator.isNotNull(projectExternalReferenceCode)) {
+			customFields.put(
+				"salesforceProjectId", projectExternalReferenceCode);
+		}
+
+		order.setCustomFields(() -> customFields);
+
+		return _upsertOrder(externalReferenceCode, order);
 	}
 
 	private CurrencyResource _buildCurrencyResource() {
@@ -801,7 +850,8 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private Map<String, Object> _getCustomFields(
-		Long contractId, SalesforceOpportunity salesforceOpportunity,
+		Long contractId, String projectExternalReferenceCode,
+		SalesforceOpportunity salesforceOpportunity,
 		SalesforceProject salesforceProject) {
 
 		Map<String, Object> customFields = new HashMap<>();
@@ -887,9 +937,9 @@ public class CommerceOrderService extends OneBaseService {
 				salesforceOpportunity.getPricebook2Id());
 		}
 
-		if (Validator.isNotNull(salesforceOpportunity.getProjectId())) {
+		if (Validator.isNotNull(projectExternalReferenceCode)) {
 			customFields.put(
-				"salesforceProjectId", salesforceOpportunity.getProjectId());
+				"salesforceProjectId", projectExternalReferenceCode);
 		}
 
 		return customFields;
@@ -1176,6 +1226,21 @@ public class CommerceOrderService extends OneBaseService {
 				"Unable to provision AI Hub for order: " + order.getId(),
 				exception);
 		}
+	}
+
+	private Order _upsertOrder(String externalReferenceCode, Order order)
+		throws Exception {
+
+		Order existingOrder = fetchOrderByExternalReferenceCode(
+			externalReferenceCode);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		if (existingOrder != null) {
+			return orderResource.patchOrder(existingOrder.getId(), order);
+		}
+
+		return orderResource.postOrder(order);
 	}
 
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
