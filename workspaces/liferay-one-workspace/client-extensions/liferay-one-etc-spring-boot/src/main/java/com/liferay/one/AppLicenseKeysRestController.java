@@ -70,10 +70,21 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		return _licenseKeyService.getLicenseKeys(
+		List<LicenseKey> licenseKeys = _licenseKeyService.getLicenseKeys(
 			StringBundler.concat(
 				"productExternalId ne '", LicenseConstants.PRODUCT_ID_PORTAL,
-				"'"));
+				"'"),
+			_MAX_LICENSE_KEYS + 1);
+
+		if (licenseKeys.size() > _MAX_LICENSE_KEYS) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				StringBundler.concat(
+					"More than ", _MAX_LICENSE_KEYS,
+					" app license keys exist"));
+		}
+
+		return licenseKeys;
 	}
 
 	@GetMapping("/{appLicenseKeyId}/download")
@@ -87,13 +98,13 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
 			appLicenseKeyId);
 
-		if (!_isApp(licenseKey)) {
+		if (!_isApp(licenseKey) || (licenseKey.getLicenseVersion() < 2)) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 		}
 
 		return ResponseEntity.ok(
 		).contentType(
-			MediaType.APPLICATION_XML
+			MediaType.TEXT_XML
 		).header(
 			HttpHeaders.CONTENT_DISPOSITION,
 			"attachment; filename=\"" +
@@ -197,6 +208,8 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 	}
 
 	private static final int _LICENSE_VERSION = 3;
+
+	private static final int _MAX_LICENSE_KEYS = 100;
 
 	@Autowired
 	private AdminPermission _adminPermission;
