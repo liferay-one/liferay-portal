@@ -16,9 +16,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.time.Instant;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.json.JSONObject;
 
@@ -26,11 +24,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
@@ -73,7 +71,7 @@ public class AppLicenseKeysRestControllerTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _appLicenseKeysRestController.getAppLicenseKeys(null));
+			() -> _appLicenseKeysRestController.getAppLicenseKeys(null, 1, 20));
 
 		Assertions.assertThrows(
 			PrincipalException.class,
@@ -158,24 +156,30 @@ public class AppLicenseKeysRestControllerTest {
 
 	@Test
 	public void testGetAppLicenseKeys() throws Exception {
-		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
-			String.class);
-
-		List<LicenseKey> licenseKeys = List.of(Mockito.mock(LicenseKey.class));
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeys(
-				argumentCaptor.capture(), Mockito.anyInt())
-		).thenReturn(
-			licenseKeys
+		JSONObject pageJSONObject = new JSONObject(
+		).put(
+			"totalCount", 1
 		);
 
-		Assertions.assertSame(
-			licenseKeys, _appLicenseKeysRestController.getAppLicenseKeys(null));
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysPage(
+				"productExternalId ne '" + LicenseConstants.PRODUCT_ID_PORTAL +
+					"'",
+				1, 20)
+		).thenReturn(
+			pageJSONObject
+		);
+
+		ResponseEntity<String> responseEntity =
+			_appLicenseKeysRestController.getAppLicenseKeys(null, 1, 20);
 
 		Assertions.assertEquals(
-			"productExternalId ne '" + LicenseConstants.PRODUCT_ID_PORTAL + "'",
-			argumentCaptor.getValue());
+			pageJSONObject.toString(), responseEntity.getBody());
+
+		HttpHeaders httpHeaders = responseEntity.getHeaders();
+
+		Assertions.assertEquals(
+			MediaType.APPLICATION_JSON, httpHeaders.getContentType());
 
 		Mockito.verify(
 			_adminPermission
@@ -302,32 +306,6 @@ public class AppLicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testGetAppLicenseKeysRejectsAnOversizedResult()
-		throws Exception {
-
-		List<LicenseKey> licenseKeys = new ArrayList<>();
-
-		for (int i = 0; i <= 100; i++) {
-			licenseKeys.add(Mockito.mock(LicenseKey.class));
-		}
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeys(
-				Mockito.anyString(), Mockito.anyInt())
-		).thenReturn(
-			licenseKeys
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> _appLicenseKeysRestController.getAppLicenseKeys(null));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 	}
 
 	@Test

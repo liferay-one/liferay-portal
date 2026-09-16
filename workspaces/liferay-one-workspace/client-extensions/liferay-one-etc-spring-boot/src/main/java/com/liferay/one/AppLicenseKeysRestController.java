@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 
 import java.util.Date;
-import java.util.List;
 
 import org.json.JSONObject;
 
@@ -36,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -65,26 +65,25 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 	}
 
 	@GetMapping
-	public List<LicenseKey> getAppLicenseKeys(@AuthenticationPrincipal Jwt jwt)
+	public ResponseEntity<String> getAppLicenseKeys(
+			@AuthenticationPrincipal Jwt jwt, @RequestParam("page") int page,
+			@RequestParam("pageSize") int pageSize)
 		throws Exception {
 
 		_adminPermission.check(jwt);
 
-		List<LicenseKey> licenseKeys = _licenseKeyService.getLicenseKeys(
+		JSONObject jsonObject = _licenseKeyService.getLicenseKeysPage(
 			StringBundler.concat(
 				"productExternalId ne '", LicenseConstants.PRODUCT_ID_PORTAL,
 				"'"),
-			_MAX_LICENSE_KEYS + 1);
+			page, pageSize);
 
-		if (licenseKeys.size() > _MAX_LICENSE_KEYS) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				StringBundler.concat(
-					"More than ", _MAX_LICENSE_KEYS,
-					" app license keys exist"));
-		}
-
-		return licenseKeys;
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			jsonObject.toString()
+		);
 	}
 
 	@GetMapping("/{appLicenseKeyId}/download")
@@ -208,8 +207,6 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 	}
 
 	private static final int _LICENSE_VERSION = 3;
-
-	private static final int _MAX_LICENSE_KEYS = 100;
 
 	@Autowired
 	private AdminPermission _adminPermission;
