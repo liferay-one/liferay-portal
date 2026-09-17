@@ -16,7 +16,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 0.00002,
 			"period": "per month",
-			"quantity": 1000000,
 			"unit": "AI tokens"
 		},
 		{
@@ -25,7 +24,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 0.0005,
 			"period": "per month",
-			"quantity": 5000000,
 			"unit": "API requests"
 		},
 		{
@@ -34,7 +32,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 20,
 			"period": "per month",
-			"quantity": 1,
 			"unit": "buckets"
 		},
 		{
@@ -43,7 +40,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 0.0001,
 			"period": "per month",
-			"quantity": 1000000,
 			"unit": "events"
 		},
 		{
@@ -52,7 +48,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 0,
 			"period": "per contract term",
-			"quantity": 100,
 			"unit": "licenses"
 		},
 		{
@@ -61,7 +56,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 0.001,
 			"period": "per month",
-			"quantity": 1000000,
 			"unit": "page views"
 		},
 		{
@@ -70,7 +64,6 @@
 			"overageCurrency": "USD",
 			"overageRate": 1.0,
 			"period": "per month",
-			"quantity": 100,
 			"unit": "GB"
 		}
 	]

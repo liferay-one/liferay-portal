@@ -381,7 +381,6 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 | `unit` | string | e.g. GB, page views, vcpu, AI tokens |
 | `aggregationType` | string | count / sum. Renamed from `aggregation`: a field literally named `aggregation` collides with Liferay's reserved OData aggregation term and generates an empty DB column name, so the object fails to publish (`CREATE TABLE` syntax error). |
 | `period` | string | Per month, day, hour |
-| `quantity` | double | Base unit quantity |
 | `overageRate` | double | |
 | `overageCurrency` | string | USD / EUR / JPY |
 
