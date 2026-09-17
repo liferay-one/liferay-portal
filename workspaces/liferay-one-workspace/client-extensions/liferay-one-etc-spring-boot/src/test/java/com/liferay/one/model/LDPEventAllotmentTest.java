@@ -31,12 +31,13 @@ public class LDPEventAllotmentTest {
 					2D),
 				_createEntitlement(
 					"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
-					1D)));
+					1D)),
+			_OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertEquals(3, ldpEventAllotment.getAddOnBucketCount());
 		Assertions.assertEquals(1000000, ldpEventAllotment.getBaseQuantity());
 		Assertions.assertEquals(
-			1000000 + (3 * EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET),
+			1000000 + (3 * _OVERAGE_BUCKET_SIZE),
 			ldpEventAllotment.getEntitledQuantity());
 		Assertions.assertFalse(ldpEventAllotment.isUnlimited());
 	}
@@ -48,7 +49,8 @@ public class LDPEventAllotmentTest {
 				_createEntitlement(
 					"fixed", EntitlementConstants.NAME_API_REQUESTS, 5000000D),
 				_createEntitlement(
-					"fixed", EntitlementConstants.NAME_EVENTS, 1000000D)));
+					"fixed", EntitlementConstants.NAME_EVENTS, 1000000D)),
+			_OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertEquals(
 			1000000, ldpEventAllotment.getEntitledQuantity());
@@ -57,7 +59,7 @@ public class LDPEventAllotmentTest {
 	@Test
 	public void testNoEntitlementsMeansNoAllotment() {
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
-			Collections.emptyList());
+			Collections.emptyList(), _OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertEquals(0, ldpEventAllotment.getEntitledQuantity());
 		Assertions.assertFalse(ldpEventAllotment.isUnlimited());
@@ -72,12 +74,12 @@ public class LDPEventAllotmentTest {
 					EntitlementConstants.NAME_EVENTS, null),
 				_createEntitlement(
 					"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
-					1D)));
+					1D)),
+			_OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertTrue(ldpEventAllotment.isUnlimited());
 		Assertions.assertEquals(
-			EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET,
-			ldpEventAllotment.getEntitledQuantity());
+			_OVERAGE_BUCKET_SIZE, ldpEventAllotment.getEntitledQuantity());
 	}
 
 	@Test
@@ -85,7 +87,8 @@ public class LDPEventAllotmentTest {
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
 			Collections.singletonList(
 				_createEntitlement(
-					"fixed", EntitlementConstants.NAME_EVENTS, -1D)));
+					"fixed", EntitlementConstants.NAME_EVENTS, -1D)),
+			_OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertTrue(ldpEventAllotment.isUnlimited());
 	}
@@ -108,5 +111,7 @@ public class LDPEventAllotmentTest {
 
 		return new Entitlement(jsonObject);
 	}
+
+	private static final long _OVERAGE_BUCKET_SIZE = 200000;
 
 }
