@@ -288,8 +288,8 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "events-add-on-bucket",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-add-on-bucket-monthly",
-			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
+			"skuExternalReferenceCode": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET",
 			"unit": "count"
 		},
 		{
