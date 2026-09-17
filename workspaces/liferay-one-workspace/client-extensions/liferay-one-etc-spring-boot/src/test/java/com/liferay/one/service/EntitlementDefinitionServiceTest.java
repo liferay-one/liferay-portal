@@ -84,6 +84,31 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionCreatesDefinitionPerSkuForLicenseActivationProfile()
+		throws Exception {
+
+		_setUpLicenseProfileProduct(
+			_createSku("SKU-LARGE", true, "Large"),
+			_createSku("SKU-SMALL", true, "Small"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertEquals(
+			Arrays.asList("SKU-LARGE", "SKU-SMALL"),
+			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
+
+		JSONObject jsonObject = new JSONObject(
+			_entitlementDefinitionService.putBodies.get(0));
+
+		Assertions.assertTrue(jsonObject.getBoolean("active"));
+		Assertions.assertEquals(
+			"Test Solution - Large", jsonObject.getString("name"));
+		Assertions.assertEquals(
+			"SKU-LARGE", jsonObject.getString("skuExternalReferenceCode"));
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionDeactivatesDefinitionDespiteManualDefinition()
 		throws Exception {
 
@@ -211,15 +236,16 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
-	public void testGenerateEntitlementDefinitionSkipsProductWithoutAppCategory()
+	public void testGenerateEntitlementDefinitionSkipsProductWithoutLicenseActivationProfile()
 		throws Exception {
 
 		Mockito.when(
 			_commerceProductService.getProduct(_C_PRODUCT_ID)
 		).thenReturn(
 			_createProduct(
-				"MARKETPLACE_PRODUCT_TYPE_SOLUTION", "Test App",
-				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0])
+				"MARKETPLACE_PRODUCT_TYPE_SOLUTION", "Test Solution",
+				ProductSpecificationConstants.KEY_PROJECT_ACTIVATION_PROFILE,
+				"status")
 		);
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
@@ -480,6 +506,15 @@ public class EntitlementDefinitionServiceTest {
 	private Product _createProduct(
 		String categoryExternalReferenceCode, String name, String type) {
 
+		return _createProduct(
+			categoryExternalReferenceCode, name,
+			ProductSpecificationConstants.KEY_TYPE, type);
+	}
+
+	private Product _createProduct(
+		String categoryExternalReferenceCode, String name,
+		String specificationKey, String specificationValue) {
+
 		Product product = new Product();
 
 		Category category = new Category();
@@ -488,9 +523,8 @@ public class EntitlementDefinitionServiceTest {
 
 		ProductSpecification productSpecification = new ProductSpecification();
 
-		productSpecification.setSpecificationKey(
-			ProductSpecificationConstants.KEY_TYPE);
-		productSpecification.setValue(Map.of("en_US", type));
+		productSpecification.setSpecificationKey(specificationKey);
+		productSpecification.setValue(Map.of("en_US", specificationValue));
 
 		product.setCategories(new Category[] {category});
 		product.setName(Map.of("en_US", name));
@@ -551,6 +585,23 @@ public class EntitlementDefinitionServiceTest {
 		}
 
 		_entitlementDefinitionService.itemsJSONArray = itemsJSONArray;
+	}
+
+	private void _setUpLicenseProfileProduct(Sku... skus) throws Exception {
+		Mockito.when(
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
+		).thenReturn(
+			_createProduct(
+				"MARKETPLACE_PRODUCT_TYPE_SOLUTION", "Test Solution",
+				ProductSpecificationConstants.KEY_PROJECT_ACTIVATION_PROFILE,
+				ProductSpecificationConstants.ACTIVATION_PROFILE_LICENSES)
+		);
+
+		Mockito.when(
+			_commerceSkuService.getSkus(_C_PRODUCT_ID)
+		).thenReturn(
+			Arrays.asList(skus)
+		);
 	}
 
 	private static final long _C_PRODUCT_ID = 3000L;
