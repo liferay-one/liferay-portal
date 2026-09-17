@@ -61,15 +61,9 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 		Product product = _commerceProductService.getProduct(cProductId);
 
-		List<String> categoryExternalReferenceCodes =
-			CommerceProductUtil.getCategoryExternalReferenceCodes(product);
-
-		if (!categoryExternalReferenceCodes.contains(
-				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP) ||
-			!ArrayUtil.contains(
-				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING,
-				CommerceProductUtil.getSpecificationValue(
-					product, ProductSpecificationConstants.KEY_TYPE))) {
+		if (!_isLicenseKeyGenerating(
+				CommerceProductUtil.getCategoryExternalReferenceCodes(product),
+				product)) {
 
 			return;
 		}
@@ -326,6 +320,28 @@ public class EntitlementDefinitionService extends OneBaseService {
 		}
 
 		return entitlementDefinitionsBySkuExternalReferenceCode;
+	}
+
+	private boolean _isLicenseKeyGenerating(
+		List<String> categoryExternalReferenceCodes, Product product) {
+
+		if (Objects.equals(
+				CommerceProductUtil.getSpecificationValue(
+					product,
+					ProductSpecificationConstants.
+						KEY_PROJECT_ACTIVATION_PROFILE),
+				ProductSpecificationConstants.ACTIVATION_PROFILE_LICENSES) ||
+			(categoryExternalReferenceCodes.contains(
+				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP) &&
+			 ArrayUtil.contains(
+				 ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING,
+				 CommerceProductUtil.getSpecificationValue(
+					 product, ProductSpecificationConstants.KEY_TYPE)))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _matches(
