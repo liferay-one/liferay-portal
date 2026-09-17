@@ -9,7 +9,7 @@ import {
 	ProductSpecificationKey,
 	getProductSpecificationValue,
 } from '~/utils/productUtils';
-import {getSiteName} from '~/utils/siteUtils';
+import {getSiteURL} from '~/utils/siteUtils';
 
 import type {DeliveryProduct} from '~/types/product';
 
@@ -32,7 +32,7 @@ const LicenseTermsCheckbox = ({
 		product
 	);
 
-	let eulaURL = `/documents/d/${getSiteName()}/end_user_license_agreement`;
+	let eulaURL = `${getSiteURL()}/license-agreement`;
 
 	if (appUsageTermsURL) {
 		eulaURL = appUsageTermsURL.startsWith('https://')
