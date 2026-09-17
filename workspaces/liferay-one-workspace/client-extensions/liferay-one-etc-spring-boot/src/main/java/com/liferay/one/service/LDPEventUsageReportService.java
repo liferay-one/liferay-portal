@@ -306,23 +306,17 @@ public class LDPEventUsageReportService {
 			ldpEventSummary.getTotalEventsCount(),
 			_fetchContractExternalReferenceCode(entitlements), startInstant,
 			endInstant.minusMillis(1), ldpEventAllotment.getEntitledQuantity(),
-			externalReferenceCode,
-			EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET, project,
-			skuExternalReferenceCode, usageDefinition);
+			externalReferenceCode, project, skuExternalReferenceCode,
+			usageDefinition);
 
 		if (_log.isInfoEnabled()) {
-			long overageQuantity = 0;
-
-			Double overageQuantityDouble = usageReport.getOverageQuantity();
-
-			if (overageQuantityDouble != null) {
-				overageQuantity = overageQuantityDouble.longValue();
-			}
-
 			_log.info(
 				StringBundler.concat(
 					"Generated usage report ", externalReferenceCode, " with ",
-					overageQuantity, " overage add-on buckets"));
+					_toLong(usageReport.getOverageQuantity()),
+					" overage events in ",
+					_toLong(usageReport.getOverageSkuQuantity()),
+					" add-on buckets"));
 		}
 
 		return true;
@@ -364,6 +358,14 @@ public class LDPEventUsageReportService {
 			StringUtil.toUpperCase(
 				StringUtil.replace(projectExternalReferenceCode, '-', '_')),
 			"_", yearMonth.format(_yearMonthDateTimeFormatter));
+	}
+
+	private long _toLong(Double value) {
+		if (value == null) {
+			return 0;
+		}
+
+		return value.longValue();
 	}
 
 	private static final String _EXTERNAL_REFERENCE_CODE_PREFIX =

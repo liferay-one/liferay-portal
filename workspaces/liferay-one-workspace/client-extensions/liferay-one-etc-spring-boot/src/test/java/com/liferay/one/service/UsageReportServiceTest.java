@@ -12,7 +12,6 @@ import java.time.Instant;
 
 import org.json.JSONObject;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +34,8 @@ public class UsageReportServiceTest {
 			Mockito.anyString(), Mockito.anyDouble(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.anyDouble(),
 			Mockito.anyString(), Mockito.anyDouble(), Mockito.anyString(),
-			Mockito.anyDouble(), Mockito.anyLong(), Mockito.anyString(),
-			Mockito.anyString(), Mockito.anyLong()
+			Mockito.anyDouble(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyString(), Mockito.anyString(), Mockito.anyLong()
 		);
 	}
 
@@ -45,60 +44,53 @@ public class UsageReportServiceTest {
 		_addUsageReport(999999);
 
 		_verifyUsageReport(
-			999999, 0, UsageReportService.REVIEW_STATUS_COMPLETED);
+			999999, 0, 0, UsageReportService.REVIEW_STATUS_COMPLETED);
 	}
 
 	@Test
-	public void testDerivesReadyForReviewReportWithOverage() throws Exception {
+	public void testPricesWholeOverageBuckets() throws Exception {
+		_addUsageReport(1400000);
+
+		_verifyUsageReport(
+			1400000, 400000, 2,
+			UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+	}
+
+	/**
+	 * A bucket is the smallest quantity that can go on an order, so an overage
+	 * of one and a half buckets bills as two.
+	 */
+	@Test
+	public void testRoundsPartialOverageBucketUp() throws Exception {
 		_addUsageReport(1300000);
 
 		_verifyUsageReport(
-			1300000, 2, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+			1300000, 300000, 2,
+			UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
 	}
 
+	/**
+	 * A single event over the allotment still buys a whole bucket.
+	 */
 	@Test
-	public void testRejectsNonpositiveOverageUnitQuantity() {
-		Assertions.assertThrows(
-			IllegalArgumentException.class,
-			() -> _usageReportService.addUsageReport(
-				1000001, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
-				_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, 0,
-				_project, _SKU_EXTERNAL_REFERENCE_CODE, _usageDefinition));
-	}
-
-	@Test
-	public void testRoundsOverageUpToWholeUnits() throws Exception {
+	public void testRoundsSingleUnitOverageUpToOneBucket() throws Exception {
 		_addUsageReport(1000001);
 
 		_verifyUsageReport(
-			1000001, 1, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
-
-		Mockito.clearInvocations(_usageReportService);
-
-		_addUsageReport(1200000);
-
-		_verifyUsageReport(
-			1200000, 1, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
-
-		Mockito.clearInvocations(_usageReportService);
-
-		_addUsageReport(1200001);
-
-		_verifyUsageReport(
-			1200001, 2, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
+			1000001, 1, 1, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW);
 	}
 
 	private void _addUsageReport(double aggregateQuantity) throws Exception {
 		_usageReportService.addUsageReport(
 			aggregateQuantity, _CONTRACT_EXTERNAL_REFERENCE_CODE,
 			_DATE_FROM_INSTANT, _DATE_TO_INSTANT, 1000000,
-			_EXTERNAL_REFERENCE_CODE, _OVERAGE_UNIT_QUANTITY, _project,
-			_SKU_EXTERNAL_REFERENCE_CODE, _usageDefinition);
+			_EXTERNAL_REFERENCE_CODE, _project, _SKU_EXTERNAL_REFERENCE_CODE,
+			_usageDefinition);
 	}
 
 	private void _verifyUsageReport(
 			double aggregateQuantity, double overageQuantity,
-			String reviewStatus)
+			long overageSkuQuantity, String reviewStatus)
 		throws Exception {
 
 		Mockito.verify(
@@ -107,9 +99,9 @@ public class UsageReportServiceTest {
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE, aggregateQuantity,
 			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
 			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE,
-			overageQuantity * _OVERAGE_RATE, "USD", overageQuantity,
-			_PROJECT_ID, reviewStatus, _SKU_EXTERNAL_REFERENCE_CODE,
-			_USAGE_DEFINITION_ID
+			overageSkuQuantity * _OVERAGE_RATE, "USD", overageQuantity,
+			overageSkuQuantity, _PROJECT_ID, reviewStatus,
+			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
 		);
 	}
 
@@ -127,14 +119,14 @@ public class UsageReportServiceTest {
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"C_USAGE_REPORT_PRJCT_001_2026_08";
 
-	private static final double _OVERAGE_RATE = 20;
+	private static final double _OVERAGE_BUCKET_SIZE = 200000;
 
-	private static final long _OVERAGE_UNIT_QUANTITY = 200000;
+	private static final double _OVERAGE_RATE = 20;
 
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
+		"PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET";
 
 	private static final long _USAGE_DEFINITION_ID = 33;
 
@@ -152,6 +144,8 @@ public class UsageReportServiceTest {
 		new JSONObject(
 		).put(
 			"id", _USAGE_DEFINITION_ID
+		).put(
+			"overageBucketSize", _OVERAGE_BUCKET_SIZE
 		).put(
 			"overageCurrency", "USD"
 		).put(
