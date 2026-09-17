@@ -72,11 +72,13 @@ public class LDPEventUsageReportService {
 				usageDefinitionExternalReferenceCode);
 
 		if ((usageDefinition == null) ||
-			(usageDefinition.getOverageRate() == null)) {
+			(usageDefinition.getOverageRate() == null) ||
+			!usageDefinition.hasOverageBucketSize()) {
 
 			_log.error(
-				"Unable to find an overage rate for usage definition " +
-					usageDefinitionExternalReferenceCode);
+				StringBundler.concat(
+					"Unable to find an overage bucket size and rate for usage ",
+					"definition ", usageDefinitionExternalReferenceCode));
 
 			return;
 		}
@@ -248,8 +250,10 @@ public class LDPEventUsageReportService {
 			UsageDefinition usageDefinition, YearMonth yearMonth)
 		throws Exception {
 
+		Double overageBucketSize = usageDefinition.getOverageBucketSize();
+
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
-			entitlements);
+			entitlements, overageBucketSize.longValue());
 
 		if (ldpEventAllotment.isUnlimited()) {
 			if (_log.isInfoEnabled()) {

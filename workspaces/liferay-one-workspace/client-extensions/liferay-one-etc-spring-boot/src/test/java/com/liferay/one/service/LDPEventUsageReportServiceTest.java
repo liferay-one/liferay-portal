@@ -117,6 +117,8 @@ public class LDPEventUsageReportServiceTest {
 				).put(
 					"id", _USAGE_DEFINITION_ID
 				).put(
+					"overageBucketSize", _OVERAGE_BUCKET_SIZE
+				).put(
 					"overageCurrency", "USD"
 				).put(
 					"overageRate", _OVERAGE_RATE
@@ -181,8 +183,7 @@ public class LDPEventUsageReportServiceTest {
 			Mockito.eq(1500000D), Mockito.eq(_CONTRACT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(Instant.parse("2026-08-01T00:00:00Z")),
 			Mockito.eq(Instant.parse("2026-08-31T23:59:59.999Z")),
-			Mockito.eq(
-				1000000D + EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET),
+			Mockito.eq(1000000D + _OVERAGE_BUCKET_SIZE),
 			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE),
 			projectArgumentCaptor.capture(),
 			Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE),
@@ -276,6 +277,29 @@ public class LDPEventUsageReportServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_entitlementService, _usageDefinitionService);
+
+		_verifyNoReportAdded();
+	}
+
+	@Test
+	public void testStopsWithoutOverageBucketSize() throws Exception {
+		Mockito.when(
+			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
+		).thenReturn(
+			new UsageDefinition(
+				new JSONObject(
+				).put(
+					"id", _USAGE_DEFINITION_ID
+				).put(
+					"overageCurrency", "USD"
+				).put(
+					"overageRate", _OVERAGE_RATE
+				))
+		);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verifyNoInteractions(_entitlementService);
 
 		_verifyNoReportAdded();
 	}
@@ -405,17 +429,19 @@ public class LDPEventUsageReportServiceTest {
 
 	private static final long _CONTRACT_ID = 11;
 
-	private static final double _OVERAGE_RATE = 0.0001;
+	private static final double _OVERAGE_BUCKET_SIZE = 200000;
+
+	private static final double _OVERAGE_RATE = 20;
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-001";
 
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
+		"PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET";
 
 	private static final String _USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE =
-		"events-add-on-bucket-monthly";
+		"events-monthly";
 
 	private static final String _USAGE_DEFINITION_FIELD_NAME =
 		"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC";
