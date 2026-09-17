@@ -224,7 +224,7 @@
 
 			<a
 				class="d-flex justify-content-between support-link w-100"
-				href="/documents/d/marketplace/end_user_license_agreement-pdf"
+				href="/documents/d/one/end_user_license_agreement"
 				target="_blank">
 
 				<span class="ml-1">
