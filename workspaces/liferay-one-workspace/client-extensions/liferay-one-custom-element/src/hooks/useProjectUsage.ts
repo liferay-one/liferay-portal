@@ -35,7 +35,6 @@ type EntitlementNode = {
 type UsageDefinitionNode = {
 	id: number;
 	period?: string;
-	quantity?: number;
 	unit?: string;
 };
 
