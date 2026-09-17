@@ -35,6 +35,8 @@ public class UsageReport {
 		_overageAmount = jsonObject.optDoubleObject("overageAmount", null);
 		_overageCurrency = jsonObject.optString("overageCurrency");
 		_overageQuantity = jsonObject.optDoubleObject("overageQuantity", null);
+		_overageSkuQuantity = jsonObject.optDoubleObject(
+			"overageSkuQuantity", null);
 		_projectId = jsonObject.optLong("r_projectToUsageReport_c_projectId");
 		_reviewStatus = _parseReviewStatus(jsonObject);
 		_skuExternalReferenceCode = jsonObject.optString(
@@ -97,6 +99,10 @@ public class UsageReport {
 
 	public Double getOverageQuantity() {
 		return _overageQuantity;
+	}
+
+	public Double getOverageSkuQuantity() {
+		return _overageSkuQuantity;
 	}
 
 	public long getProjectId() {
@@ -163,6 +169,7 @@ public class UsageReport {
 	private final Double _overageAmount;
 	private final String _overageCurrency;
 	private final Double _overageQuantity;
+	private final Double _overageSkuQuantity;
 	private final long _projectId;
 	private final String _reviewStatus;
 	private final String _skuExternalReferenceCode;
