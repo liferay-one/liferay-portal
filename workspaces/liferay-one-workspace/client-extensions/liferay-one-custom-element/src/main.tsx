@@ -36,6 +36,7 @@ const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 	'business-events': React.lazy(
 		() => import('~/pages/BusinessEvents/BusinessEventsRouter')
 	),
+	'license-agreement': React.lazy(() => import('~/pages/LicenseAgreement')),
 	'my-account': React.lazy(() => import('~/pages/MyAccount/MyAccountRouter')),
 	'next-steps': React.lazy(() => import('~/pages/NextSteps')),
 	'product-purchase': React.lazy(
