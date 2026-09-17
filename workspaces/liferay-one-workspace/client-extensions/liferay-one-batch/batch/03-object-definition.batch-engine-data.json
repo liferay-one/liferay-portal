@@ -7777,24 +7777,6 @@
 					"type": "Double"
 				},
 				{
-					"DBType": "Double",
-					"businessType": "Decimal",
-					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_SKU_QUANTITY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage SKU Quantity"
-					},
-					"name": "overageSkuQuantity",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_CURRENCY",
@@ -7823,6 +7805,24 @@
 						"en_US": "Overage Quantity"
 					},
 					"name": "overageQuantity",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Double"
+				},
+				{
+					"DBType": "Double",
+					"businessType": "Decimal",
+					"externalReferenceCode": "C_USAGE_REPORT_OVERAGE_SKU_QUANTITY",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Overage SKU Quantity"
+					},
+					"name": "overageSkuQuantity",
 					"objectFieldSettings": [
 					],
 					"required": false,
