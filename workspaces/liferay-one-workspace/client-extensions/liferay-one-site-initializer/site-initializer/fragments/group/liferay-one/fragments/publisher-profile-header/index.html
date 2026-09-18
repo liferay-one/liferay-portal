@@ -64,41 +64,67 @@
 	[/#attempt]
 [/#if]
 
+[#assign imageURL = publisherProfileImageURL /]
+
+[#if imageURL?has_content && !imageURL?starts_with("/")]
+	[#assign imageURL = "/" + imageURL /]
+[/#if]
+
 <div class="publisher-profile-header">
 	<div class="align-items-center d-flex flex-wrap justify-content-between">
 		<div class="align-items-center d-flex">
 			<div class="d-flex flex-column">
 				<div class="align-items-center d-flex">
-					[#if publisherProfileImageURL?has_content]
-						<img alt="${publisherName}" class="mr-3 publisher-image" draggable="false" src="${publisherProfileImageURL?js_string}" />
+
+					[#if imageURL?has_content]
+						<img
+							class="publisher-image"
+							src="${imageURL}"
+							alt=""
+						/>
+					[#elseif publisherName?has_content]
+						<div class="publisher-image publisher-image-fallback">
+							${publisherName?substring(0, 1)?upper_case}
+						</div>
 					[/#if]
 
-					<h1 class="mb-1 publisher-profile-header-name">${publisherName}</h1>
-				</div>
+					<div class="publisher-profile-header-info">
+						<h1 class="mb-1 publisher-profile-header-name">${publisherName}</h1>
 
-				<div class="align-items-center d-flex publisher-profile-header-stats">
-					<span>${appsCount} ${languageUtil.get(locale, "apps", "Apps")}</span>
+						<div class="align-items-center d-flex publisher-profile-header-stats">
+							<span>${appsCount} ${languageUtil.get(locale, "apps", "Apps")}</span>
 
-					[#if configuration.hideRatingInfo == false]
-						<span class="mx-2">&bull;</span>
+							[#if configuration.hideRatingInfo == false]
+								<span class="mx-2">&bull;</span>
 
-						<span class="stars">
-							[@clay["icon"] symbol="star" /]
-						</span>
-						<span class="ml-1">4.9 ${languageUtil.get(locale, "average-rating", "Average Rating")}</span>
+								<span class="stars">
+									[@clay["icon"] symbol="star" /]
+								</span>
 
-						<span class="mx-2">&bull;</span>
+								<span class="ml-1">
+									4.9 ${languageUtil.get(locale, "average-rating", "Average Rating")}
+								</span>
 
-						[@clay["icon"] symbol="download" /]
+								<span class="mx-2">&bull;</span>
 
-						<span class="ml-1">8.5k ${languageUtil.get(locale, "total-download", "Total Download")}</span>
-					[/#if]
+								[@clay["icon"] symbol="download" /]
+
+								<span class="ml-1">
+									8.5k ${languageUtil.get(locale, "total-download", "Total Download")}
+								</span>
+							[/#if]
+						</div>
+					</div>
+
 				</div>
 			</div>
 		</div>
 
 		[#if showContactForm && email?has_content]
-			<a class="btn btn-primary publisher-profile-header-contact" href="mailto:${email}">
+			<a
+				class="btn btn-primary publisher-profile-header-contact"
+				href="mailto:${email}"
+			>
 				${languageUtil.get(locale, "contact", "Contact")}
 			</a>
 		[/#if]
