@@ -5,6 +5,9 @@
 
 package com.liferay.one.model;
 
+import com.liferay.one.constants.EntitlementConstants;
+
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.json.JSONObject;
@@ -27,6 +30,24 @@ public class LDPEventUsageStrategyTest {
 	}
 
 	@Test
+	public void testToJSONObjectMaxCountMultipliesAddOnBucketsByBucketSize() {
+		LDPEventUsageStrategy ldpEventUsageStrategy = new LDPEventUsageStrategy(
+			Arrays.asList(
+				_createEntitlement(EntitlementConstants.NAME_EVENTS, 1000000D),
+				_createEntitlement(
+					EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET, 2D)),
+			_OVERAGE_BUCKET_SIZE, null);
+
+		JSONObject jsonObject = ldpEventUsageStrategy.toJSONObject();
+
+		Assertions.assertEquals(2, jsonObject.getInt("addOnBucketCount"));
+		Assertions.assertEquals(1000000, jsonObject.getInt("baseAllotment"));
+		Assertions.assertEquals(
+			1000000 + (2 * _OVERAGE_BUCKET_SIZE),
+			jsonObject.getInt("maxCount"));
+	}
+
+	@Test
 	public void testToJSONObjectOmitsUsedCountWithoutUsage() {
 		Assertions.assertFalse(
 			_toJSONObject(
@@ -36,11 +57,27 @@ public class LDPEventUsageStrategyTest {
 			));
 	}
 
+	private Entitlement _createEntitlement(String name, double quantity) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"grantType", "fixed"
+			).put(
+				"id", 1L
+			).put(
+				"name", name
+			).put(
+				"quantity", quantity
+			));
+	}
+
 	private JSONObject _toJSONObject(String response) {
 		LDPEventUsageStrategy ldpEventUsageStrategy = new LDPEventUsageStrategy(
-			response, Collections.emptyList());
+			Collections.emptyList(), _OVERAGE_BUCKET_SIZE, response);
 
 		return ldpEventUsageStrategy.toJSONObject();
 	}
+
+	private static final long _OVERAGE_BUCKET_SIZE = 200000;
 
 }

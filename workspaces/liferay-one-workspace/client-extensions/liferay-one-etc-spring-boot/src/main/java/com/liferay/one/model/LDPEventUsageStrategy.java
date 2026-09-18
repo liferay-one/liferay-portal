@@ -24,9 +24,12 @@ public class LDPEventUsageStrategy extends BaseUsageStrategy {
 	public static final String FIELD_EVENT_SUMMARY = "eventSummary";
 
 	public LDPEventUsageStrategy(
-		String response, List<Entitlement> entitlements) {
+		List<Entitlement> entitlements, long overageBucketSize,
+		String response) {
 
 		super(response);
+
+		_overageBucketSize = BigDecimal.valueOf(overageBucketSize);
 
 		for (Entitlement entitlement : entitlements) {
 			String name = entitlement.getName();
@@ -103,7 +106,7 @@ public class LDPEventUsageStrategy extends BaseUsageStrategy {
 		}
 
 		return _baseAllotment.add(
-			_addOnBucketCount.multiply(_QUANTITY_EVENTS_ADD_ON_BUCKET));
+			_addOnBucketCount.multiply(_overageBucketSize));
 	}
 
 	private BigDecimal _sumEventsCount(JSONArray eventSummaryJSONArray) {
@@ -125,15 +128,13 @@ public class LDPEventUsageStrategy extends BaseUsageStrategy {
 		return eventsCount;
 	}
 
-	private static final BigDecimal _QUANTITY_EVENTS_ADD_ON_BUCKET =
-		BigDecimal.valueOf(EntitlementConstants.QUANTITY_EVENTS_ADD_ON_BUCKET);
-
 	private static final BigDecimal _QUANTITY_UNLIMITED = new BigDecimal(-1);
 
 	private BigDecimal _addOnBucketCount = BigDecimal.ZERO;
 	private BigDecimal _baseAllotment = BigDecimal.ZERO;
 	private final JSONArray _eventHistoryJSONArray;
 	private final JSONArray _eventSummaryJSONArray;
+	private final BigDecimal _overageBucketSize;
 	private BigDecimal _usedCount = BigDecimal.ZERO;
 
 }
