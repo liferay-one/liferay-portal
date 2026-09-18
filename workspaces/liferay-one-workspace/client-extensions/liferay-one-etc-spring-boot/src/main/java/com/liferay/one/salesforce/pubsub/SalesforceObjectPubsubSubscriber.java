@@ -16,6 +16,7 @@ import com.liferay.one.salesforce.model.SalesforcePricebookEntry;
 import com.liferay.one.salesforce.model.SalesforceProduct2;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceAccountCurrencyService;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
@@ -156,6 +157,20 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		}
 
 		_accountService.upsertAccount(salesforceAccount);
+
+		try {
+			_commerceAccountCurrencyService.upsertAccountCurrency(
+				salesforceAccount.getId(),
+				salesforceAccount.getCurrencyIsoCode());
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to set the currency for account " +
+						salesforceAccount.getId(),
+					exception);
+			}
+		}
 	}
 
 	private void _processContract(String action, JSONObject recordJSONObject)
@@ -287,6 +302,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 
 	@Autowired
 	private CommercePriceEntryService _commercePriceEntryService;

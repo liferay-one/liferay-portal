@@ -21,6 +21,7 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceAccountCurrencyService;
 import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
@@ -404,6 +405,19 @@ public class SalesforceOpportunityPubsubSubscriber
 				null);
 		}
 
+		try {
+			_commerceAccountCurrencyService.upsertAccountCurrency(
+				salesforceAccount.getId(),
+				salesforceAccount.getCurrencyIsoCode());
+		}
+		catch (Exception exception) {
+			_addWarning(
+				warningMessages,
+				"Unable to set the currency for account " +
+					salesforceAccount.getId(),
+				exception);
+		}
+
 		SalesforceProject salesforceProject = null;
 
 		JSONObject projectJSONObject = recordJSONObject.optJSONObject(
@@ -644,6 +658,9 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;

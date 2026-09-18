@@ -13,6 +13,7 @@ import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceAccountCurrencyService;
 import com.liferay.one.service.CommercePriceEntryService;
 import com.liferay.one.service.CommercePriceListService;
 import com.liferay.one.service.CommerceProductService;
@@ -46,6 +47,8 @@ public class SalesforceObjectPubsubSubscriberTest {
 		_subscriber = new SalesforceObjectPubsubSubscriber();
 
 		_accountService = Mockito.mock(AccountService.class);
+		_commerceAccountCurrencyService = Mockito.mock(
+			CommerceAccountCurrencyService.class);
 		_commercePriceEntryService = Mockito.mock(
 			CommercePriceEntryService.class);
 		_commercePriceListService = Mockito.mock(
@@ -57,6 +60,9 @@ public class SalesforceObjectPubsubSubscriberTest {
 
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_commerceAccountCurrencyService",
+			_commerceAccountCurrencyService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_commercePriceEntryService",
 			_commercePriceEntryService);
@@ -140,9 +146,26 @@ public class SalesforceObjectPubsubSubscriberTest {
 		Assertions.assertDoesNotThrow(() -> _subscriber.receive(message));
 
 		Mockito.verifyNoInteractions(
-			_accountService, _commercePriceEntryService,
-			_commercePriceListService, _commerceProductService,
-			_commerceSkuService, _contractService, _projectService);
+			_accountService, _commerceAccountCurrencyService,
+			_commercePriceEntryService, _commercePriceListService,
+			_commerceProductService, _commerceSkuService, _contractService,
+			_projectService);
+	}
+
+	@Test
+	public void testReceiveDoesNotSetAccountCurrencyForInactiveAccount()
+		throws Exception {
+
+		_receiveMessage(
+			"update", "Account",
+			SalesforceModelTestUtil.createAccountJSONObject(
+				false, "", "EUR", "SF-ACCOUNT-1", "Test Account"));
+
+		Mockito.verify(
+			_commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -158,9 +181,10 @@ public class SalesforceObjectPubsubSubscriberTest {
 				)));
 
 		Mockito.verifyNoInteractions(
-			_accountService, _commercePriceEntryService,
-			_commercePriceListService, _commerceProductService,
-			_commerceSkuService, _contractService, _projectService);
+			_accountService, _commerceAccountCurrencyService,
+			_commercePriceEntryService, _commercePriceListService,
+			_commerceProductService, _commerceSkuService, _contractService,
+			_projectService);
 	}
 
 	@Test
@@ -232,11 +256,25 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveSetsAccountCurrency() throws Exception {
+		_receiveMessage(
+			"update", "Account",
+			SalesforceModelTestUtil.createAccountJSONObject(
+				true, "", "EUR", "SF-ACCOUNT-1", "Test Account"));
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"SF-ACCOUNT-1", "EUR"
+		);
+	}
+
+	@Test
 	public void testReceiveSkipsInactiveAccount() throws Exception {
 		_receiveMessage(
 			"update", "Account",
 			SalesforceModelTestUtil.createAccountJSONObject(
-				false, "", "SF-ACCOUNT-1", "Test Account"));
+				false, "", "", "SF-ACCOUNT-1", "Test Account"));
 
 		Mockito.verify(
 			_accountService, Mockito.never()
@@ -374,11 +412,36 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveUpsertsAccountWhenSettingAccountCurrencyFails()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to fetch active currency")
+		).when(
+			_commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertDoesNotThrow(
+			() -> _receiveMessage(
+				"update", "Account",
+				SalesforceModelTestUtil.createAccountJSONObject(
+					true, "", "EUR", "SF-ACCOUNT-1", "Test Account")));
+
+		Mockito.verify(
+			_accountService
+		).upsertAccount(
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveUpsertsActiveAccount() throws Exception {
 		_receiveMessage(
 			"update", "Account",
 			SalesforceModelTestUtil.createAccountJSONObject(
-				true, "", "SF-ACCOUNT-1", "Test Account"));
+				true, "", "", "SF-ACCOUNT-1", "Test Account"));
 
 		ArgumentCaptor<SalesforceAccount> salesforceAccountArgumentCaptor =
 			ArgumentCaptor.forClass(SalesforceAccount.class);
@@ -602,6 +665,7 @@ public class SalesforceObjectPubsubSubscriberTest {
 	private static final long _SKU_ID = 2000L;
 
 	private AccountService _accountService;
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 	private CommercePriceEntryService _commercePriceEntryService;
 	private CommercePriceListService _commercePriceListService;
 	private CommerceProductService _commerceProductService;

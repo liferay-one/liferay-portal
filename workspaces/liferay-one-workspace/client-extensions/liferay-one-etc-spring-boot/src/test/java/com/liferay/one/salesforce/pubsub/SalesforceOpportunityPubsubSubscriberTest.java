@@ -20,6 +20,7 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceAccountCurrencyService;
 import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
@@ -62,6 +63,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		_subscriber = new SalesforceOpportunityPubsubSubscriber();
 
 		_accountService = Mockito.mock(AccountService.class);
+		_commerceAccountCurrencyService = Mockito.mock(
+			CommerceAccountCurrencyService.class);
 		_commerceOrderItemService = Mockito.mock(
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
@@ -133,6 +136,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_commerceAccountCurrencyService",
+			_commerceAccountCurrencyService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_commerceOrderItemService",
 			_commerceOrderItemService);
@@ -704,6 +710,53 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveIgnoresOpportunityLineItemCurrency()
+		throws Exception {
+
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
+				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		JSONObject firstLineItemJSONObject =
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-1", "PROD-1", "Widget", "Subscription", 5,
+				null);
+
+		JSONObject secondLineItemJSONObject =
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-2", "PROD-2", "Gadget", "Subscription", 5,
+				null);
+
+		JSONObject recordJSONObject =
+			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+				SalesforceModelTestUtil.createAccountJSONObject(
+					true, "", "EUR", _ACCOUNT_ID_SF, "Test Salesforce Account"),
+				opportunityJSONObject,
+				new JSONArray(
+				).put(
+					firstLineItemJSONObject
+				).put(
+					secondLineItemJSONObject
+				),
+				new JSONArray(), null);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			_ACCOUNT_ID_SF, "EUR"
+		);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.eq("USD")
+		);
+	}
+
+	@Test
 	public void testReceiveProcessesEveryRecordWhenAllRecordsSucceed()
 		throws Exception {
 
@@ -947,6 +1000,30 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveProvisionsWhenSettingAccountCurrencyFails()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to fetch active currency")
+		).when(
+			_commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertDoesNotThrow(
+			() -> _receiveOpportunityMessage(
+				_createNewBusinessRecordJSONObject()));
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveReprocessesRedeliveredMessageWithoutDuplicating()
 		throws Exception {
 
@@ -1055,6 +1132,38 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 
 		Assertions.assertEquals("EUR", currencyCodeArgumentCaptor.getValue());
+	}
+
+	@Test
+	public void testReceiveSetsAccountCurrencyFromAccount() throws Exception {
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
+				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		JSONObject lineItemJSONObject =
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-1", "PROD-1", "Widget", "Subscription", 5,
+				null);
+
+		JSONObject recordJSONObject =
+			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+				SalesforceModelTestUtil.createAccountJSONObject(
+					true, "", "EUR", _ACCOUNT_ID_SF, "Test Salesforce Account"),
+				opportunityJSONObject,
+				new JSONArray(
+				).put(
+					lineItemJSONObject
+				),
+				new JSONArray(), null);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			_ACCOUNT_ID_SF, "EUR"
+		);
 	}
 
 	@Test
@@ -1217,6 +1326,12 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
 		);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -1249,6 +1364,12 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_accountService, Mockito.never()
 		).upsertAccount(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
 			Mockito.any(), Mockito.any()
 		);
 	}
@@ -2034,7 +2155,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 	private void _verifyNoProvisioningInteractions() {
 		Mockito.verifyNoInteractions(
-			_accountService, _commerceOrderItemService, _commerceOrderService,
+			_accountService, _commerceAccountCurrencyService,
+			_commerceOrderItemService, _commerceOrderService,
 			_commerceSkuService, _contractService, _entitlementService,
 			_projectService, _provisioningContactService,
 			_provisioningEmailService, _provisioningEnvironmentService,
@@ -2062,6 +2184,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 	private Account _account;
 	private AccountService _accountService;
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
 	private CommerceSkuService _commerceSkuService;

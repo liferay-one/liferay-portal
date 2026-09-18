@@ -61,6 +61,15 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
+			"channelId",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
 			"composableAccountUsage",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
@@ -68,6 +77,16 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
+		caffeineCacheManager.registerCustomCache(
+			"currencyId",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"customerAccountUsage",
 			Caffeine.newBuilder(
@@ -76,6 +95,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"ldpProjectEventHistory",
 			Caffeine.newBuilder(
@@ -84,6 +104,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"ldpProjectEventSummary",
 			Caffeine.newBuilder(
@@ -92,6 +113,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"ldpProjectUsage",
 			Caffeine.newBuilder(
@@ -100,6 +122,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"productName",
 			Caffeine.newBuilder(
@@ -108,6 +131,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"productVirtualSettingsFileEntryChecksum",
 			Caffeine.newBuilder(
@@ -116,6 +140,7 @@ public class CacheConfiguration {
 			).maximumSize(
 				1000
 			).build());
+
 		caffeineCacheManager.registerCustomCache(
 			"skuProductId",
 			Caffeine.newBuilder(
