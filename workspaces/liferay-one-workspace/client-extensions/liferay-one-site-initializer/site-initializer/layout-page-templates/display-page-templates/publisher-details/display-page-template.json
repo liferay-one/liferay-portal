@@ -3,7 +3,8 @@
 		"subtypeId": 0
 	},
 	"contentType": {
-		"className": "com.liferay.object.model.ObjectDefinition#V6B0"
+		"className": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]"
 	},
+	"defaultTemplate": true,
 	"name": "Publisher Details"
 }
