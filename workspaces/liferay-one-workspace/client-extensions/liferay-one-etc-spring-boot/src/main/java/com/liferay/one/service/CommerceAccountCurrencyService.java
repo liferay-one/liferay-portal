@@ -5,8 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
+import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.one.constants.CommerceCurrencyConstants;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -56,10 +57,10 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			return;
 		}
 
-		Long currencyId = _commerceCurrencyService.fetchCurrencyId(
+		Currency currency = _commerceCurrencyService.fetchCurrency(
 			currencyIsoCode);
 
-		if (currencyId == null) {
+		if ((currency == null) || !Boolean.TRUE.equals(currency.getActive())) {
 			if (_log.isWarnEnabled()) {
 				_log.warn("Unable to find active currency " + currencyIsoCode);
 			}
@@ -67,15 +68,12 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			return;
 		}
 
-		_keyedLock.withLock(
-			accountExternalReferenceCode,
-			() -> _upsertAccountChannelCurrency(
-				accountExternalReferenceCode, currencyId, currencyIsoCode));
+		_upsertAccountChannelCurrency(
+			accountExternalReferenceCode, currency.getId());
 	}
 
 	private void _upsertAccountChannelCurrency(
-			String accountExternalReferenceCode, long currencyId,
-			String currencyIsoCode)
+			String accountExternalReferenceCode, long currencyId)
 		throws Exception {
 
 		String path = UriComponentsBuilder.fromPath(
@@ -87,18 +85,24 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			accountExternalReferenceCode
 		).toUriString();
 
-		long channelId = _commerceChannelService.fetchChannelId(
+		Channel channel = _commerceChannelService.fetchChannel(
 			_commerceChannelExternalReferenceCode);
 
-		List<JSONObject> jsonObjects = getAllItems(
+		List<JSONObject> accountChannelEntryJSONObjects = getAllItems(
 			path, null, jsonObject -> jsonObject);
 
-		for (JSONObject jsonObject : jsonObjects) {
-			if (jsonObject.optLong("channelId") != channelId) {
+		for (JSONObject accountChannelEntryJSONObject :
+				accountChannelEntryJSONObjects) {
+
+			if (accountChannelEntryJSONObject.optLong("channelId") !=
+					channel.getId()) {
+
 				continue;
 			}
 
-			if (jsonObject.optLong("classPK") == currencyId) {
+			if (accountChannelEntryJSONObject.optLong("classPK") ==
+					currencyId) {
+
 				return;
 			}
 
@@ -112,15 +116,8 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 					"/o/headless-commerce-admin-account/v1.0" +
 						"/account-channel-currencies/{id}"
 				).buildAndExpand(
-					jsonObject.getLong("id")
+					accountChannelEntryJSONObject.getLong("id")
 				).toUri());
-
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					StringBundler.concat(
-						"Updated the channel currency to ", currencyIsoCode,
-						" for account ", accountExternalReferenceCode));
-			}
 
 			return;
 		}
@@ -145,18 +142,11 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 				webClientResponseException.getStatusCode();
 
 			if (httpStatusCode.isSameCodeAs(HttpStatus.CONFLICT)) {
-				_commerceChannelService.evictChannelId(
+				_commerceChannelService.evictChannel(
 					_commerceChannelExternalReferenceCode);
 			}
 
 			throw webClientResponseException;
-		}
-
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				StringBundler.concat(
-					"Set the channel currency to ", currencyIsoCode,
-					" for account ", accountExternalReferenceCode));
 		}
 	}
 
@@ -171,7 +161,5 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 
 	@Autowired
 	private CommerceCurrencyService _commerceCurrencyService;
-
-	private final KeyedLock _keyedLock = new KeyedLock();
 
 }
