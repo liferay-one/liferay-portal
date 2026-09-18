@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
+import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
@@ -520,10 +521,10 @@ public class CommerceOrderService extends OneBaseService {
 			account::getExternalReferenceCode);
 		order.setAccountId(account::getId);
 
-		Long channelId = _commerceChannelService.fetchChannelId(
+		Channel channel = _commerceChannelService.fetchChannel(
 			_commerceChannelExternalReferenceCode);
 
-		order.setChannelId(() -> channelId);
+		order.setChannelId(channel::getId);
 
 		order.setExternalReferenceCode(() -> externalReferenceCode);
 

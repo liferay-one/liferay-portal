@@ -61,7 +61,7 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
-			"channelId",
+			"channel",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)
@@ -79,7 +79,7 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
-			"currencyId",
+			"currency",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)
