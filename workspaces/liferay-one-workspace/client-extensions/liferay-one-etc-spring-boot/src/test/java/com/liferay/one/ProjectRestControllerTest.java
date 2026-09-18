@@ -426,6 +426,45 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testGetUsageEventSummaryCountsAddOnBucketsFromTheBucketProduct()
+		throws Exception {
+
+		_setUpProductName(_PRODUCT_NAME_LDP);
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "events", 1000000.0),
+			_createEntitlement(
+				2, null, "events-add-on-bucket", 2.0,
+				_SKU_EXTERNAL_REFERENCE_CODE_UNRELATED, null));
+
+		_setUpUnrelatedProduct();
+
+		Mockito.when(
+			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
+		).thenReturn(
+			CommerceProductConstants.NAME_DATA_PLATFORM_EVENTS_BUCKET
+		);
+
+		_setUpLDPEventSummary();
+
+		ResponseEntity<String> responseEntity = _getUsageEventSummary(
+			_END_DATE, _START_DATE_PREVIOUS_MONTH);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			2,
+			jsonObject.getBigDecimal(
+				"addOnBucketCount"
+			).intValue());
+		Assertions.assertEquals(
+			1400000,
+			jsonObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+	}
+
+	@Test
 	public void testGetUsageEventSummaryRejectsInvalidDate() throws Exception {
 		Assertions.assertThrows(
 			InvalidUsageParameterException.class,
