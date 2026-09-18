@@ -1,0 +1,9 @@
+{
+	"contentSubtype": {
+		"subtypeId": 0
+	},
+	"contentType": {
+		"className": "com.liferay.commerce.product.model.CPDefinition"
+	},
+	"name": "Camunda"
+}
