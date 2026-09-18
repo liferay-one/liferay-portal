@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
@@ -24,15 +25,18 @@ import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SaaSUsageStrategy;
+import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -389,10 +393,10 @@ public class ProjectRestController extends OneBaseRestController {
 		throws Exception {
 
 		LDPEventUsageStrategy ldpEventUsageStrategy = new LDPEventUsageStrategy(
-			response,
 			_getUsageDashboardEntitlements(
 				CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM,
-				projectExternalReferenceCode));
+				projectExternalReferenceCode),
+			_getLDPEventOverageBucketSize(), response);
 
 		if (!ldpEventUsageStrategy.hasUsage() && _log.isInfoEnabled()) {
 			_log.info(
@@ -405,6 +409,38 @@ public class ProjectRestController extends OneBaseRestController {
 		jsonObject.put("usageDataAvailable", ldpEventUsageStrategy.hasUsage());
 
 		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
+	private long _getLDPEventOverageBucketSize() throws Exception {
+		EntitlementDefinition entitlementDefinition =
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+
+		UsageDefinition usageDefinition = null;
+
+		if (entitlementDefinition != null) {
+			usageDefinition = _usageDefinitionService.fetchUsageDefinition(
+				entitlementDefinition);
+		}
+
+		if ((usageDefinition == null) ||
+			!usageDefinition.hasOverageBucketSize()) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to find an overage bucket size for entitlement " +
+						"definition " +
+							EntitlementConstants.
+								EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+			}
+
+			return 0;
+		}
+
+		Double overageBucketSize = usageDefinition.getOverageBucketSize();
+
+		return overageBucketSize.longValue();
 	}
 
 	private Project _getProject(String projectExternalReferenceCode)
@@ -778,6 +814,9 @@ public class ProjectRestController extends OneBaseRestController {
 	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
+	private EntitlementDefinitionService _entitlementDefinitionService;
+
+	@Autowired
 	private EntitlementService _entitlementService;
 
 	@Autowired
@@ -791,6 +830,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private PropertyService _propertyService;
+
+	@Autowired
+	private UsageDefinitionService _usageDefinitionService;
 
 	@Autowired
 	private UserAccountService _userAccountService;

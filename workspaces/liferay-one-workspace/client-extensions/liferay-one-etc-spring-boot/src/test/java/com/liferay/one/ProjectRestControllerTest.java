@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
@@ -18,19 +19,23 @@ import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -80,6 +85,9 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_commerceSkuService", _commerceSkuService);
 		ReflectionTestUtils.setField(
+			_projectRestController, "_entitlementDefinitionService",
+			_entitlementDefinitionService);
+		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_googleCloudFunctionService",
@@ -92,15 +100,44 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
+			_projectRestController, "_usageDefinitionService",
+			_usageDefinitionService);
+		ReflectionTestUtils.setField(
 			_projectRestController, "_userAccountService", _userAccountService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_userAccountSynchronizer",
 			_userAccountSynchronizer);
 
+		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
+			new JSONObject(
+			).put(
+				"id", 3L
+			));
+
+		Mockito.when(
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET)
+		).thenReturn(
+			entitlementDefinition
+		);
+
 		Mockito.when(
 			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			_createProject()
+		);
+
+		Mockito.when(
+			_usageDefinitionService.fetchUsageDefinition(entitlementDefinition)
+		).thenReturn(
+			new UsageDefinition(
+				new JSONObject(
+				).put(
+					"id", 4L
+				).put(
+					"overageBucketSize", 200000
+				))
 		);
 
 		_setUpProductName(_PRODUCT_NAME_EXPERIENCE);
@@ -386,6 +423,45 @@ public class ProjectRestControllerTest {
 			() -> _getUsageEventSummary(_END_DATE, _START_DATE_PREVIOUS_MONTH));
 
 		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+	}
+
+	@Test
+	public void testGetUsageEventSummaryCountsAddOnBucketsFromTheBucketProduct()
+		throws Exception {
+
+		_setUpProductName(_PRODUCT_NAME_LDP);
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "events", 1000000.0),
+			_createEntitlement(
+				2, null, "events-add-on-bucket", 2.0,
+				_SKU_EXTERNAL_REFERENCE_CODE_UNRELATED, null));
+
+		_setUpUnrelatedProduct();
+
+		Mockito.when(
+			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
+		).thenReturn(
+			CommerceProductConstants.NAME_DATA_PLATFORM_EVENTS_BUCKET
+		);
+
+		_setUpLDPEventSummary();
+
+		ResponseEntity<String> responseEntity = _getUsageEventSummary(
+			_END_DATE, _START_DATE_PREVIOUS_MONTH);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			2,
+			jsonObject.getBigDecimal(
+				"addOnBucketCount"
+			).intValue());
+		Assertions.assertEquals(
+			1400000,
+			jsonObject.getBigDecimal(
+				"maxCount"
+			).intValue());
 	}
 
 	@Test
@@ -1568,6 +1644,8 @@ public class ProjectRestControllerTest {
 		CommerceProductService.class);
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
 		CommerceSkuService.class);
+	private final EntitlementDefinitionService _entitlementDefinitionService =
+		Mockito.mock(EntitlementDefinitionService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private final GoogleCloudFunctionService _googleCloudFunctionService =
@@ -1579,6 +1657,8 @@ public class ProjectRestControllerTest {
 		ProjectService.class);
 	private final PropertyService _propertyService = Mockito.mock(
 		PropertyService.class);
+	private final UsageDefinitionService _usageDefinitionService = Mockito.mock(
+		UsageDefinitionService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 	private final UserAccountSynchronizer _userAccountSynchronizer =
