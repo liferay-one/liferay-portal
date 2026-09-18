@@ -1,0 +1,342 @@
+{
+    "pageElement": {
+        "id": "2dfe1b71-2af6-3a08-8b3c-a78cefb71c05",
+        "pageElements": [
+            {
+                "definition": {
+                    "fragmentStyle": {
+                        "minHeight": "100vh"
+                    },
+                    "indexed": true,
+                    "layout": {}
+                },
+                "id": "e9af9727-16b2-7bda-3020-58ff9d55fbf7",
+                "pageElements": [
+                    {
+                        "definition": {
+                            "cssClasses": [
+                                "bg-neutral-1"
+                            ],
+                            "fragmentStyle": {
+                                "backgroundColor": "#F7F7F8",
+                                "paddingLeft": "5",
+                                "paddingRight": "5"
+                            },
+                            "indexed": true,
+                            "layout": {
+                                "paddingLeft": 4,
+                                "paddingRight": 4
+                            }
+                        },
+                        "id": "be7232a7-927b-5c67-9572-e69de00831b4",
+                        "pageElements": [
+                            {
+                                "definition": {
+                                    "fragmentStyle": {
+                                        "paddingBottom": "5",
+                                        "paddingTop": "5"
+                                    },
+                                    "indexed": true,
+                                    "layout": {
+                                        "paddingBottom": 4,
+                                        "paddingTop": 4,
+                                        "widthType": "Fixed"
+                                    }
+                                },
+                                "id": "0d59afd5-9d25-c6b0-a35b-7d75b0d6e289",
+                                "pageElements": [
+                                    {
+                                        "definition": {
+                                            "indexed": true,
+                                            "layout": {
+                                                "contentDisplay": "FlexRow"
+                                            }
+                                        },
+                                        "id": "f7f103e3-2f05-deda-4074-82afb1884077",
+                                        "pageElements": [
+                                            {
+                                                "definition": {
+                                                    "fragment": {
+                                                        "key": "text",
+                                                        "siteKey": "One"
+                                                    },
+                                                    "fragmentConfig": {
+                                                        "fontSize": "font-size-paragraph-base",
+                                                        "smallCaps": false,
+                                                        "tabletScreenCenter": false
+                                                    },
+                                                    "fragmentFields": [
+                                                        {
+                                                            "id": "text",
+                                                            "value": {
+                                                                "fragmentLink": {},
+                                                                "text": {
+                                                                    "mapping": {
+                                                                        "fieldKey": "ddmTemplate__ddmTemplate_36282979",
+                                                                        "itemReference": {
+                                                                            "contextSource": "DisplayPageItem"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    ],
+                                                    "fragmentStyle": {
+                                                        "marginBottom": "4"
+                                                    },
+                                                    "indexed": true
+                                                },
+                                                "id": "7309f1cc-5bfe-e590-7ae5-3458fe6b52a9",
+                                                "type": "Fragment"
+                                            }
+                                        ],
+                                        "type": "Section"
+                                    },
+                                    {
+                                        "definition": {
+                                            "fragment": {
+                                                "key": "publisher-profile-header",
+                                                "siteKey": "One"
+                                            },
+                                            "fragmentConfig": {
+                                                "hideRatingInfo": true,
+                                                "channelId": ""
+                                            },
+                                            "fragmentFields": [],
+                                            "indexed": true
+                                        },
+                                        "id": "c03af177-4798-d840-4a23-8d109fbaffe6",
+                                        "type": "Fragment"
+                                    }
+                                ],
+                                "type": "Section"
+                            }
+                        ],
+                        "type": "Section"
+                    },
+                    {
+                        "definition": {
+                            "fragmentStyle": {
+                                "paddingLeft": "5",
+                                "paddingRight": "5"
+                            },
+                            "indexed": true,
+                            "layout": {
+                                "paddingLeft": 4,
+                                "paddingRight": 4
+                            }
+                        },
+                        "id": "ec1b60e6-fe15-b320-bdde-8d0942771da5",
+                        "pageElements": [
+                            {
+                                "definition": {
+                                    "fragmentStyle": {
+                                        "paddingBottom": "6",
+                                        "paddingTop": "6"
+                                    },
+                                    "indexed": true,
+                                    "layout": {
+                                        "paddingBottom": 6,
+                                        "paddingTop": 6,
+                                        "widthType": "Fixed"
+                                    }
+                                },
+                                "id": "5c37c5ae-3195-a9e3-7719-08fe1f302c1f",
+                                "pageElements": [
+                                    {
+                                        "definition": {
+                                            "gutters": true,
+                                            "indexed": true,
+                                            "modulesPerRow": 2,
+                                            "numberOfColumns": 2,
+                                            "reverseOrder": false,
+                                            "rowViewports": [
+                                                {
+                                                    "id": "landscapeMobile",
+                                                    "rowViewportDefinition": {
+                                                        "modulesPerRow": 1
+                                                    }
+                                                },
+                                                {
+                                                    "id": "portraitMobile",
+                                                    "rowViewportDefinition": {}
+                                                },
+                                                {
+                                                    "id": "tablet",
+                                                    "rowViewportDefinition": {}
+                                                }
+                                            ],
+                                            "verticalAlignment": "top"
+                                        },
+                                        "id": "6cc2beb4-7c49-f258-6557-bd1222cbfe51",
+                                        "pageElements": [
+                                            {
+                                                "definition": {
+                                                    "columnViewports": [
+                                                        {
+                                                            "columnViewportDefinition": {
+                                                                "size": 12
+                                                            },
+                                                            "id": "landscapeMobile"
+                                                        },
+                                                        {
+                                                            "columnViewportDefinition": {},
+                                                            "id": "portraitMobile"
+                                                        },
+                                                        {
+                                                            "columnViewportDefinition": {},
+                                                            "id": "tablet"
+                                                        }
+                                                    ],
+                                                    "size": 6
+                                                },
+                                                "id": "67918312-528e-9172-bb56-c9b38627684b",
+                                                "pageElements": [
+                                                    {
+                                                        "definition": {
+                                                            "fragment": {
+                                                                "key": "BASIC_COMPONENT-heading"
+                                                            },
+                                                            "fragmentConfig": {
+                                                                "headingLevel": "h4"
+                                                            },
+                                                            "fragmentFields": [
+                                                                {
+                                                                    "id": "element-text",
+                                                                    "value": {
+                                                                        "fragmentLink": {},
+                                                                        "text": {
+                                                                            "value_i18n": {
+                                                                                "en_US": "About Us"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "fragmentStyle": {
+                                                                "marginBottom": "3"
+                                                            },
+                                                            "indexed": true
+                                                        },
+                                                        "id": "d6f3eba4-390a-30c9-139d-dad158e93eaf",
+                                                        "type": "Fragment"
+                                                    },
+                                                    {
+                                                        "definition": {
+                                                            "fragment": {
+                                                                "key": "BASIC_COMPONENT-html"
+                                                            },
+                                                            "fragmentConfig": {},
+                                                            "fragmentFields": [
+                                                                {
+                                                                    "id": "element-html",
+                                                                    "value": {
+                                                                        "html": {
+                                                                            "mapping": {
+                                                                                "fieldKey": "ObjectField_description",
+                                                                                "itemReference": {
+                                                                                    "contextSource": "DisplayPageItem"
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ],
+                                                            "fragmentStyle": {
+                                                                "marginBottom": "5"
+                                                            },
+                                                            "indexed": true
+                                                        },
+                                                        "id": "4a663e62-1594-3e49-c0d8-b877bca2337b",
+                                                        "type": "Fragment"
+                                                    },
+                                                    {
+                                                        "definition": {
+                                                            "fragment": {
+                                                                "key": "publisher-profile-apps",
+                                                                "siteKey": "One"
+                                                            },
+                                                            "fragmentConfig": {
+                                                                "channelId": "34051603"
+                                                            },
+                                                            "fragmentFields": [],
+                                                            "indexed": true
+                                                        },
+                                                        "id": "92d4458c-65ed-3c8a-49be-9093a7b68b9e",
+                                                        "type": "Fragment"
+                                                    }
+                                                ],
+                                                "type": "Column"
+                                            },
+                                            {
+                                                "definition": {
+                                                    "columnViewports": [
+                                                        {
+                                                            "columnViewportDefinition": {
+                                                                "size": 12
+                                                            },
+                                                            "id": "landscapeMobile"
+                                                        },
+                                                        {
+                                                            "columnViewportDefinition": {},
+                                                            "id": "portraitMobile"
+                                                        },
+                                                        {
+                                                            "columnViewportDefinition": {},
+                                                            "id": "tablet"
+                                                        }
+                                                    ],
+                                                    "size": 6
+                                                },
+                                                "id": "176665db-247a-023f-5707-6dde15190ea0",
+                                                "pageElements": [
+                                                    {
+                                                        "definition": {
+                                                            "fragment": {
+                                                                "key": "publisher-profile-dettails",
+                                                                "siteKey": "One"
+                                                            },
+                                                            "fragmentConfig": {
+                                                                "hideRatingInfo": true,
+                                                                "pageSize": 8,
+                                                                "channelId": ""
+                                                            },
+                                                            "fragmentFields": [],
+                                                            "indexed": true
+                                                        },
+                                                        "id": "882522e6-010d-5005-51e2-79c3a07253f8",
+                                                        "type": "Fragment"
+                                                    }
+                                                ],
+                                                "type": "Column"
+                                            }
+                                        ],
+                                        "type": "Row"
+                                    }
+                                ],
+                                "type": "Section"
+                            }
+                        ],
+                        "type": "Section"
+                    }
+                ],
+                "type": "Section"
+            }
+        ],
+        "type": "Root"
+    },
+    "settings": {
+        "colorSchemeName": "01",
+        "masterPage": {
+            "key": "liferay-one"
+        },
+        "themeName": "Dialect",
+        "themeSettings": {
+            "lfr-theme:regular:show-header-search": "false",
+            "lfr-theme:regular:show-header": "false",
+            "lfr-theme:regular:show-footer": "false",
+            "lfr-theme:regular:wrap-widget-page-content": "false"
+        }
+    },
+    "version": 1.1
+}

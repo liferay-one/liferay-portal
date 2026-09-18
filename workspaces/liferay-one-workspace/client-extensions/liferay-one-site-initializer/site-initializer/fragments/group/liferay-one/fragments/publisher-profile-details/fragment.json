@@ -1,8 +1,9 @@
 {
-	"cssPath": "index.css",
-	"htmlPath": "index.html",
-	"icon": "info-circle",
-	"jsPath": "index.js",
-	"name": "Publisher Profile Details",
-	"type": "component"
+  "configurationPath": "configuration.json",
+  "jsPath": "index.js",
+  "htmlPath": "index.html",
+  "cssPath": "index.css",
+  "icon": "code",
+  "name": "Publisher Profile Details",
+  "type": "component"
 }
