@@ -59,7 +59,7 @@
 												"definition": {
 													"fragment": {
 														"key": "text",
-														"siteKey": "One"
+														"siteKey": "[$GROUP_KEY$]"
 													},
 													"fragmentConfig": {
 														"fontSize": "font-size-paragraph-base",
@@ -74,7 +74,7 @@
 																},
 																"text": {
 																	"mapping": {
-																		"fieldKey": "ddmTemplate__ddmTemplate_36282979",
+																		"fieldKey": "ddmTemplate__ddmTemplate_[$TEMPLATE_ENTRY_ID:Publisher Details Breadcrumb$]",
 																		"itemReference": {
 																			"contextSource": "DisplayPageItem"
 																		}
@@ -98,7 +98,7 @@
 										"definition": {
 											"fragment": {
 												"key": "publisher-profile-header",
-												"siteKey": "One"
+												"siteKey": "[$GROUP_KEY$]"
 											},
 											"fragmentConfig": {
 												"channelId": "",
@@ -263,10 +263,10 @@
 														"definition": {
 															"fragment": {
 																"key": "publisher-profile-apps",
-																"siteKey": "One"
+																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
-																"channelId": "34051603"
+																"channelId": ""
 															},
 															"fragmentFields": [
 															],
@@ -305,8 +305,8 @@
 													{
 														"definition": {
 															"fragment": {
-																"key": "publisher-profile-dettails",
-																"siteKey": "One"
+																"key": "publisher-profile-details",
+																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
 																"channelId": "",
