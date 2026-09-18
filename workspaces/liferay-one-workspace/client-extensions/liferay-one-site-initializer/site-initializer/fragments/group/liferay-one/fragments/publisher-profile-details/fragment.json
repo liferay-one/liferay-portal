@@ -1,7 +1,8 @@
 {
+	"configurationPath": "configuration.json",
 	"cssPath": "index.css",
 	"htmlPath": "index.html",
-	"icon": "info-circle",
+	"icon": "code",
 	"jsPath": "index.js",
 	"name": "Publisher Profile Details",
 	"type": "component"
