@@ -11,12 +11,17 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountSynchronizer;
 import com.liferay.one.license.LicenseKeyCSVExporter;
+import com.liferay.one.license.LicenseKeyEntitlementValidator;
+import com.liferay.one.license.LicenseKeyQuotaContext;
+import com.liferay.one.license.LicenseKeyValidator;
 import com.liferay.one.model.AccountInvitation;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -41,10 +46,16 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.FindUtil;
+import com.liferay.one.util.KeyedLock;
+import com.liferay.one.util.LicenseKeyLockUtil;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -52,8 +63,10 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -426,6 +439,36 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	@PostMapping("/{externalReferenceCode}/license-keys")
+	public List<LicenseKey> postLicenseKeys(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestBody String json)
+		throws Exception {
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		_licenseKeyPermission.check(account.getId(), ActionKeys.UPDATE, jwt);
+
+		JSONArray jsonArray = new JSONArray(json);
+
+		if ((jsonArray.length() == 0) ||
+			(jsonArray.length() > _MAX_LICENSE_KEYS)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Between 1 and " + _MAX_LICENSE_KEYS +
+					" license keys may be created at once");
+		}
+
+		UserAccount userAccount = getMyUserAccount(jwt);
+
+		return _keyedLock.withLock(
+			LicenseKeyLockUtil.toAccountLockKey(account.getId()),
+			() -> _addLicenseKeys(account.getId(), jsonArray, userAccount));
+	}
+
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
 	public ResponseEntity<Void> postSyncToJSM(
 			@AuthenticationPrincipal Jwt jwt,
@@ -583,6 +626,113 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	private LicenseKey _addLicenseKey(
+			Account account, Entitlement entitlement, JSONObject jsonObject)
+		throws Exception {
+
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		String productName = entitlementDefinition.getDisplayName();
+
+		String productVersion = jsonObject.optString("productVersion");
+
+		String description = _getDescription(account, jsonObject);
+		String owner = _getOwner(account, jsonObject);
+
+		return _licenseKeyService.addLicenseKey(
+			account.getId(), account.getName(), true, StringPool.BLANK,
+			jsonObject.optBoolean("complimentary"), description,
+			StringPool.BLANK, entitlement.getEntitlementId(),
+			Date.from(_toInstant(jsonObject, "expirationDate")),
+			jsonObject.optString("hostName"),
+			jsonObject.optString("ipAddresses"), StringPool.BLANK,
+			jsonObject.optString("licenseType"),
+			LicenseVersion.getLicenseVersion(productName, productVersion),
+			jsonObject.optString("macAddresses"),
+			jsonObject.optInt("maxClusterNodes"), 0L, 0, 0, 0L,
+			jsonObject.optString("name"), StringPool.BLANK, owner,
+			LicenseConstants.PRODUCT_ID_PORTAL, productName, productVersion,
+			StringPool.BLANK, jsonObject.optString("sizing"),
+			Date.from(_toInstant(jsonObject, "startDate")));
+	}
+
+	private List<LicenseKey> _addLicenseKeys(
+			long accountEntryId, JSONArray jsonArray, UserAccount userAccount)
+		throws Exception {
+
+		Account account = _accountService.fetchAccount(accountEntryId);
+
+		if (account == null) {
+			throw new PrincipalException(
+				"No account exists with ID " + accountEntryId);
+		}
+
+		_licenseKeyPermission.checkSelfProvisioning(
+			accountEntryId, userAccount);
+
+		boolean allowPermanentLicenses = AccountUtil.getCustomFieldBoolean(
+			account, "allowPermanentLicenses", true);
+		boolean complimentary = false;
+		List<Entitlement> entitlements = new ArrayList<>();
+		LicenseKeyQuotaContext licenseKeyQuotaContext =
+			new LicenseKeyQuotaContext();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			Entitlement entitlement = _entitlementService.getEntitlement(
+				jsonObject.getLong("entitlementId"));
+
+			if (entitlement.getAccountEntryId() != account.getId()) {
+				throw new PrincipalException(
+					StringBundler.concat(
+						"Entitlement ", entitlement.getEntitlementId(),
+						" does not belong to account ",
+						account.getExternalReferenceCode()));
+			}
+
+			_licenseKeyEntitlementValidator.validateEntitlementDefinition(
+				entitlement);
+
+			_validateMetadata(account, jsonObject);
+
+			if (jsonObject.optBoolean("complimentary")) {
+				if (complimentary) {
+					throw new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						"Only one complimentary license key may be created " +
+							"at once");
+				}
+
+				_validateComplimentary(account, jsonObject);
+
+				complimentary = true;
+			}
+			else {
+				_validateLicenseKey(
+					allowPermanentLicenses, entitlement, jsonObject,
+					licenseKeyQuotaContext);
+			}
+
+			entitlements.add(entitlement);
+		}
+
+		if (complimentary) {
+			_accountService.updateAllowComplimentary(account.getId(), false);
+		}
+
+		List<LicenseKey> licenseKeys = new ArrayList<>();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			licenseKeys.add(
+				_addLicenseKey(
+					account, entitlements.get(i), jsonArray.getJSONObject(i)));
+		}
+
+		return licenseKeys;
+	}
+
 	private void _createOktaContact(
 			Account account, String emailAddress, JSONObject jsonObject)
 		throws Exception {
@@ -660,6 +810,26 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 
 		return accountRoleNames;
+	}
+
+	private String _getDescription(Account account, JSONObject jsonObject) {
+		String description = jsonObject.optString("description");
+
+		if (Validator.isNull(description)) {
+			return _getOwner(account, jsonObject);
+		}
+
+		return description;
+	}
+
+	private String _getOwner(Account account, JSONObject jsonObject) {
+		String owner = jsonObject.optString("owner");
+
+		if (Validator.isNull(owner)) {
+			return account.getName();
+		}
+
+		return owner;
 	}
 
 	private AccountInvitation _getPendingAccountInvitation(
@@ -815,6 +985,16 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	private Instant _toInstant(JSONObject jsonObject, String key) {
+		try {
+			return Instant.parse(jsonObject.getString(key));
+		}
+		catch (Exception exception) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Invalid \"" + key + "\"", exception);
+		}
+	}
+
 	private JSONObject _toJSONObject(AccountInvitation accountInvitation)
 		throws Exception {
 
@@ -939,6 +1119,32 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _validateComplimentary(Account account, JSONObject jsonObject)
+		throws Exception {
+
+		if (!AccountUtil.getCustomFieldBoolean(
+				account, "allowComplimentary", false)) {
+
+			throw new PrincipalException(
+				"Account " + account.getExternalReferenceCode() +
+					" does not allow complimentary license keys");
+		}
+
+		Instant expirationDateInstant = _toInstant(
+			jsonObject, "expirationDate");
+		Instant startDateInstant = _toInstant(jsonObject, "startDate");
+
+		if ((ChronoUnit.DAYS.between(startDateInstant, expirationDateInstant) !=
+				_COMPLIMENTARY_DURATION_DAYS) ||
+			expirationDateInstant.isBefore(Instant.now())) {
+
+			throw new LicenseKeyDateException(
+				"A complimentary license key must last " +
+					_COMPLIMENTARY_DURATION_DAYS +
+						" days and must not have expired");
+		}
+	}
+
 	private void _validateInvitation(
 		String emailAddress, String familyName, String givenName) {
 
@@ -961,6 +1167,46 @@ public class AccountsRestController extends OneBaseRestController {
 				HttpStatus.BAD_REQUEST,
 				"Email address uses a reserved Liferay domain");
 		}
+	}
+
+	private void _validateLicenseKey(
+			boolean allowPermanentLicenses, Entitlement entitlement,
+			JSONObject jsonObject,
+			LicenseKeyQuotaContext licenseKeyQuotaContext)
+		throws Exception {
+
+		_licenseKeyEntitlementValidator.validateTerm(
+			allowPermanentLicenses, entitlement,
+			_toInstant(jsonObject, "expirationDate"),
+			_toInstant(jsonObject, "startDate"));
+
+		_licenseKeyEntitlementValidator.validateQuota(
+			entitlement, licenseKeyQuotaContext,
+			jsonObject.optInt("maxClusterNodes"));
+	}
+
+	private void _validateMetadata(Account account, JSONObject jsonObject)
+		throws Exception {
+
+		String licenseType = jsonObject.optString("licenseType");
+
+		_licenseKeyEntitlementValidator.validateLicenseType(licenseType);
+
+		_licenseKeyEntitlementValidator.validateMaxClusterNodes(
+			jsonObject.optInt("maxClusterNodes"));
+
+		_licenseKeyValidator.validateMetadata(
+			_getDescription(account, jsonObject), licenseType,
+			jsonObject.optInt("maxClusterNodes"), jsonObject.optString("name"),
+			_getOwner(account, jsonObject),
+			jsonObject.optString("productVersion"));
+
+		_licenseKeyValidator.validateDates(
+			Date.from(_toInstant(jsonObject, "expirationDate")),
+			jsonObject.optString("hostName"),
+			jsonObject.optString("ipAddresses"), licenseType,
+			jsonObject.optString("macAddresses"),
+			Date.from(_toInstant(jsonObject, "startDate")));
 	}
 
 	private void _validateProjectInvitation(
@@ -1006,8 +1252,12 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
+	private static final int _COMPLIMENTARY_DURATION_DAYS = 30;
+
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
+
+	private static final int _MAX_LICENSE_KEYS = 100;
 
 	private static final Log _log = LogFactory.getLog(
 		AccountsRestController.class);
@@ -1053,13 +1303,22 @@ public class AccountsRestController extends OneBaseRestController {
 	private EntitlementService _entitlementService;
 
 	@Autowired
+	private KeyedLock _keyedLock;
+
+	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
+
+	@Autowired
+	private LicenseKeyEntitlementValidator _licenseKeyEntitlementValidator;
 
 	@Autowired
 	private LicenseKeyPermission _licenseKeyPermission;
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
+
+	@Autowired
+	private LicenseKeyValidator _licenseKeyValidator;
 
 	@Autowired
 	private OktaService _oktaService;

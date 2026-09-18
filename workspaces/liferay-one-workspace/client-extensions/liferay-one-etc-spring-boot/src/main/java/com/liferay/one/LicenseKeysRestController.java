@@ -10,24 +10,42 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.exception.LicenseKeyDateException;
+import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
+import com.liferay.one.license.LicenseKeyEntitlementValidator;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.license.LicenseKeyQuotaContext;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.one.util.AccountUtil;
+import com.liferay.one.util.KeyedLock;
+import com.liferay.one.util.LicenseKeyLockUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+
+import java.time.Instant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -216,6 +234,74 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return false;
 	}
 
+	@PostMapping("/extend")
+	public List<LicenseKey> postLicenseKeysExtend(
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
+		throws Exception {
+
+		JSONArray jsonArray = new JSONArray(json);
+
+		if ((jsonArray.length() == 0) ||
+			(jsonArray.length() > _MAX_LICENSE_KEY_IDS)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Between 1 and " + _MAX_LICENSE_KEY_IDS +
+					" license keys may be extended at once");
+		}
+
+		long[] licenseKeyIds = new long[jsonArray.length()];
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			licenseKeyIds[i] = jsonObject.getLong("licenseKeyId");
+		}
+
+		Map<Long, LicenseKey> licenseKeysMap = new HashMap<>();
+
+		for (LicenseKey licenseKey : _getLicenseKeys(jwt, licenseKeyIds)) {
+			licenseKeysMap.put(licenseKey.getLicenseKeyId(), licenseKey);
+		}
+
+		List<LicenseKey> licenseKeys = new ArrayList<>();
+
+		for (long licenseKeyId : licenseKeyIds) {
+			licenseKeys.add(licenseKeysMap.get(licenseKeyId));
+		}
+
+		_checkManageLicenseKeys(true, licenseKeys, getMyUserAccount(jwt));
+
+		return _keyedLock.withLock(
+			LicenseKeyLockUtil.toAccountLockKey(_toAccountEntryId(licenseKeys)),
+			() -> {
+				LicenseKeyQuotaContext licenseKeyQuotaContext =
+					new LicenseKeyQuotaContext();
+
+				for (int i = 0; i < jsonArray.length(); i++) {
+					_validateExtension(
+						jsonArray.getJSONObject(i), licenseKeys.get(i),
+						licenseKeyQuotaContext);
+				}
+
+				List<LicenseKey> extendedLicenseKeys = new ArrayList<>();
+
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+					LicenseKey licenseKey = licenseKeys.get(i);
+
+					extendedLicenseKeys.add(
+						_licenseKeyService.extendLicenseKey(
+							Date.from(_toInstant(jsonObject, "expirationDate")),
+							licenseKey.getLicenseKeyId(),
+							Date.from(_toInstant(jsonObject, "startDate"))));
+				}
+
+				return extendedLicenseKeys;
+			});
+	}
+
 	@PostMapping("/type-free")
 	public LicenseKey postLicenseKeysTypeFree(@RequestBody String json)
 		throws Exception {
@@ -270,6 +356,24 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	@PutMapping("/activate")
+	public void putLicenseKeysActivate(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
+		throws Exception {
+
+		_updateLicenseKeysActive(true, jwt, licenseKeyIds);
+	}
+
+	@PutMapping("/deactivate")
+	public void putLicenseKeysDeactivate(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
+		throws Exception {
+
+		_updateLicenseKeysActive(false, jwt, licenseKeyIds);
+	}
+
 	@PutMapping("/subscriptions")
 	public void putSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -317,6 +421,28 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _checkManageLicenseKeys(
+			boolean selfProvisioning, List<LicenseKey> licenseKeys,
+			UserAccount userAccount)
+		throws Exception {
+
+		Set<Long> accountEntryIds = new LinkedHashSet<>();
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			accountEntryIds.add(licenseKey.getAccountEntryId());
+		}
+
+		for (long accountEntryId : accountEntryIds) {
+			_licenseKeyPermission.check(
+				userAccount, accountEntryId, ActionKeys.UPDATE);
+
+			if (selfProvisioning) {
+				_licenseKeyPermission.checkSelfProvisioning(
+					accountEntryId, userAccount);
+			}
+		}
+	}
+
 	private List<LicenseKey> _getActiveLicenseKeys(
 			Jwt jwt, long[] licenseKeyIds)
 		throws Exception {
@@ -352,6 +478,24 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return licenseKeys;
 	}
 
+	private long _toAccountEntryId(List<LicenseKey> licenseKeys) {
+		Set<Long> accountEntryIds = new TreeSet<>();
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			accountEntryIds.add(licenseKey.getAccountEntryId());
+		}
+
+		if (accountEntryIds.size() > 1) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Every license key must belong to the same account");
+		}
+
+		Iterator<Long> iterator = accountEntryIds.iterator();
+
+		return iterator.next();
+	}
+
 	private long[] _toDistinctLicenseKeyIds(long[] licenseKeyIds) {
 		Set<Long> distinctLicenseKeyIds = new LinkedHashSet<>();
 
@@ -370,10 +514,113 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return longs;
 	}
 
+	private Instant _toInstant(JSONObject jsonObject, String key) {
+		try {
+			return Instant.parse(jsonObject.getString(key));
+		}
+		catch (Exception exception) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Invalid \"" + key + "\"", exception);
+		}
+	}
+
+	private void _updateLicenseKeysActive(
+			boolean active, Jwt jwt, long[] licenseKeyIds)
+		throws Exception {
+
+		_checkLicenseKeyIds(licenseKeyIds);
+
+		List<LicenseKey> licenseKeys = _getLicenseKeys(jwt, licenseKeyIds);
+
+		_checkManageLicenseKeys(active, licenseKeys, getMyUserAccount(jwt));
+
+		_keyedLock.withLock(
+			LicenseKeyLockUtil.toAccountLockKey(_toAccountEntryId(licenseKeys)),
+			() -> {
+				if (active) {
+					LicenseKeyQuotaContext licenseKeyQuotaContext =
+						new LicenseKeyQuotaContext();
+
+					for (LicenseKey licenseKey : licenseKeys) {
+						long entitlementId = licenseKey.getEntitlementId();
+
+						if (licenseKey.isActive() ||
+							licenseKey.isComplimentary() ||
+							(entitlementId == 0)) {
+
+							continue;
+						}
+
+						_licenseKeyEntitlementValidator.validateQuota(
+							_entitlementService.getEntitlement(entitlementId),
+							licenseKeyQuotaContext,
+							licenseKey.getMaxClusterNodes());
+					}
+				}
+
+				for (LicenseKey licenseKey : licenseKeys) {
+					_licenseKeyService.updateLicenseKeyActive(
+						active, licenseKey.getLicenseKeyId());
+				}
+			});
+	}
+
+	private void _validateExtension(
+			JSONObject jsonObject, LicenseKey licenseKey,
+			LicenseKeyQuotaContext licenseKeyQuotaContext)
+		throws Exception {
+
+		long entitlementId = licenseKey.getEntitlementId();
+
+		if (entitlementId == 0) {
+			throw new LicenseKeyProductPurchaseKeyException(
+				"License key " + licenseKey.getLicenseKeyId() +
+					" is not backed by an entitlement");
+		}
+
+		Instant expirationDateInstant = _toInstant(
+			jsonObject, "expirationDate");
+		Instant startDateInstant = _toInstant(jsonObject, "startDate");
+
+		if (expirationDateInstant.isBefore(startDateInstant)) {
+			throw new LicenseKeyDateException(
+				"Invalid start date or expiration date");
+		}
+
+		Entitlement entitlement = _entitlementService.getEntitlement(
+			entitlementId);
+
+		_licenseKeyEntitlementValidator.validateEntitlementDefinition(
+			entitlement);
+
+		com.liferay.headless.admin.user.client.dto.v1_0.Account account =
+			_accountService.fetchAccount(licenseKey.getAccountEntryId());
+
+		boolean allowPermanentLicenses = true;
+
+		if (account != null) {
+			allowPermanentLicenses = AccountUtil.getCustomFieldBoolean(
+				account, "allowPermanentLicenses", true);
+		}
+
+		_licenseKeyEntitlementValidator.validateTerm(
+			allowPermanentLicenses, entitlement, expirationDateInstant,
+			startDateInstant);
+
+		if (!licenseKey.isComplimentary()) {
+			_licenseKeyEntitlementValidator.validateQuota(
+				entitlement, licenseKeyQuotaContext,
+				licenseKey.getMaxClusterNodes());
+		}
+	}
+
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
 
 	private static final int _MAX_LICENSE_KEY_IDS = 100;
+
+	@Autowired
+	private AccountService _accountService;
 
 	@Autowired
 	private AdminPermission _adminPermission;
@@ -382,7 +629,16 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
+	private EntitlementService _entitlementService;
+
+	@Autowired
+	private KeyedLock _keyedLock;
+
+	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
+
+	@Autowired
+	private LicenseKeyEntitlementValidator _licenseKeyEntitlementValidator;
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;

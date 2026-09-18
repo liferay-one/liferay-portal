@@ -318,6 +318,8 @@ public class EntitlementService extends OneBaseService {
 				getAuthorization(),
 				UriComponentsBuilder.fromPath(
 					"/o/c/entitlements/{id}"
+				).queryParam(
+					"nestedFields", _NESTED_FIELDS_ENTITLEMENT_DEFINITION
 				).buildAndExpand(
 					entitlementId
 				).toUri());

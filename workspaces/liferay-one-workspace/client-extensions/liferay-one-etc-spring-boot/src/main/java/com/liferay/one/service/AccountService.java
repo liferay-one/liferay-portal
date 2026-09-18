@@ -352,6 +352,27 @@ public class AccountService extends OneBaseService {
 			organizationId, new Long[] {accountId});
 	}
 
+	public void updateAllowComplimentary(
+			long accountEntryId, boolean allowComplimentary)
+		throws Exception {
+
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		Account account = new Account();
+
+		account.setCustomFields(
+			() -> new CustomField[] {
+				_toCustomField("allowComplimentary", allowComplimentary)
+			});
+
+		accountResource.patchAccount(accountEntryId, account);
+	}
+
 	public void upsertAccount(SalesforceAccount salesforceAccount)
 		throws Exception {
 

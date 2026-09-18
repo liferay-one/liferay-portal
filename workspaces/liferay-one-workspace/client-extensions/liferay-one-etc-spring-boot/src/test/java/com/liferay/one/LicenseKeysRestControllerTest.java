@@ -10,21 +10,37 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.exception.LicenseKeyDateException;
+import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
+import com.liferay.one.license.LicenseKeyEntitlementValidator;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
+import java.time.Instant;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -566,6 +582,267 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostLicenseKeysExtend() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		LicenseKey extendedLicenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			_licenseKeyService.extendLicenseKey(
+				Mockito.any(), Mockito.anyLong(), Mockito.any())
+		).thenReturn(
+			extendedLicenseKey
+		);
+
+		Assertions.assertEquals(
+			Collections.singletonList(extendedLicenseKey),
+			licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).extendLicenseKey(
+			Date.from(Instant.parse(_EXPIRATION_DATE)), 1L,
+			Date.from(Instant.parse(_START_DATE))
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendThrowsForbiddenWhenSelfProvisioningIsDisabled()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_licenseKeyPermission
+		).checkSelfProvisioning(
+			Mockito.eq(_ACCOUNT_ID), Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).extendLicenseKey(
+			Mockito.any(), Mockito.anyLong(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenBodyIsEmpty() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Assertions.assertThrows(
+			ResponseStatusException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(null, "[]"));
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenEntitlementIsExhausted()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			entitlement.getGrantType()
+		).thenReturn(
+			"metered"
+		);
+
+		Mockito.when(
+			entitlement.getQuantity()
+		).thenReturn(
+			1.0
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(true, false, _ENTITLEMENT_ID)
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).extendLicenseKey(
+			Mockito.any(), Mockito.anyLong(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenEntitlementIsMissing()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, 0L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Assertions.assertThrows(
+			LicenseKeyProductPurchaseKeyException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenExpirationDateExceedsEntitlement()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement(
+			Instant.parse(_START_DATE));
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		Assertions.assertThrows(
+			LicenseKeyDateException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).extendLicenseKey(
+			Mockito.any(), Mockito.anyLong(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenExpirationDatePrecedesStartDate()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		Assertions.assertThrows(
+			LicenseKeyDateException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null,
+				new JSONArray(
+				).put(
+					new JSONObject(
+					).put(
+						"expirationDate", _START_DATE
+					).put(
+						"licenseKeyId", 1L
+					).put(
+						"startDate", _EXPIRATION_DATE
+					)
+				).toString()));
+	}
+
+	@Test
 	public void testPostLicenseKeysTypeFree() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -658,6 +935,302 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPutLicenseKeysActivate() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		licenseKeysRestController.putLicenseKeysActivate(null, new long[] {1L});
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			true, 1L
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateRejectsMultipleAccounts()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey1 = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		LicenseKey licenseKey2 = _createLicenseKey(2L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			licenseKey2.getAccountEntryId()
+		).thenReturn(
+			_ACCOUNT_ID + 1
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			List.of(licenseKey1, licenseKey2)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.putLicenseKeysActivate(
+					null, new long[] {1L, 2L}));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateSkipsQuotaForComplimentary()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			licenseKey.isComplimentary()
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		licenseKeysRestController.putLicenseKeysActivate(null, new long[] {1L});
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			true, 1L
+		);
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateThrowsForbiddenWhenAccountNotManageable()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysActivate(
+				null, new long[] {1L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateWhenEntitlementIsExhausted()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Entitlement entitlement = _createEntitlement();
+
+		Mockito.when(
+			entitlement.getGrantType()
+		).thenReturn(
+			"metered"
+		);
+
+		Mockito.when(
+			entitlement.getQuantity()
+		).thenReturn(
+			1.0
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlement(_ENTITLEMENT_ID)
+		).thenReturn(
+			entitlement
+		);
+
+		LicenseKey activeLicenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			activeLicenseKey.getMaxClusterNodes()
+		).thenReturn(
+			1
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(true, false, _ENTITLEMENT_ID)
+		).thenReturn(
+			Collections.singletonList(activeLicenseKey)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysActivate(
+				null, new long[] {1L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateWhenLicenseKeyIdsIsEmpty()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Assertions.assertThrows(
+			ResponseStatusException.class,
+			() -> licenseKeysRestController.putLicenseKeysActivate(
+				null, new long[0]));
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivate() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey1 = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		LicenseKey licenseKey2 = _createLicenseKey(2L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			List.of(licenseKey1, licenseKey2)
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L, 2L});
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 1L
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 2L
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateSkipsSelfProvisioning()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L, _ENTITLEMENT_ID);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L});
+
+		Mockito.verify(
+			_licenseKeyPermission, Mockito.never()
+		).checkSelfProvisioning(
+			Mockito.anyLong(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 1L
+		);
 	}
 
 	@Test
@@ -785,8 +1358,29 @@ public class LicenseKeysRestControllerTest {
 			_commerceOrderService);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_accountService", _accountService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_entitlementService",
+			_entitlementService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_keyedLock", new KeyedLock());
+
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyCSVExporter",
 			_licenseKeyCSVExporter);
+
+		LicenseKeyEntitlementValidator licenseKeyEntitlementValidator =
+			new LicenseKeyEntitlementValidator();
+
+		ReflectionTestUtils.setField(
+			licenseKeyEntitlementValidator, "_licenseKeyService",
+			_licenseKeyService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_licenseKeyEntitlementValidator",
+			licenseKeyEntitlementValidator);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyExporter",
@@ -811,14 +1405,107 @@ public class LicenseKeysRestControllerTest {
 		return licenseKeysRestController;
 	}
 
+	private Entitlement _createEntitlement() {
+		return _createEntitlement(null);
+	}
+
+	private Entitlement _createEntitlement(Instant endDateInstant) {
+		EntitlementDefinition entitlementDefinition = Mockito.mock(
+			EntitlementDefinition.class);
+
+		Mockito.when(
+			entitlementDefinition.getExternalReferenceCode()
+		).thenReturn(
+			EntitlementConstants.EXTERNAL_REFERENCE_CODE_DXP
+		);
+
+		Entitlement entitlement = Mockito.mock(Entitlement.class);
+
+		Mockito.when(
+			entitlement.getEntitlementDefinition()
+		).thenReturn(
+			entitlementDefinition
+		);
+
+		Mockito.when(
+			entitlement.getEntitlementId()
+		).thenReturn(
+			_ENTITLEMENT_ID
+		);
+
+		Mockito.when(
+			entitlement.getEndDateInstant()
+		).thenReturn(
+			endDateInstant
+		);
+
+		Mockito.when(
+			entitlement.getGrantType()
+		).thenReturn(
+			EntitlementConstants.GRANT_TYPE_UNLIMITED
+		);
+
+		return entitlement;
+	}
+
+	private String _createExtensionBodyJSON(long licenseKeyId) {
+		return new JSONArray(
+		).put(
+			new JSONObject(
+			).put(
+				"expirationDate", _EXPIRATION_DATE
+			).put(
+				"licenseKeyId", licenseKeyId
+			).put(
+				"startDate", _START_DATE
+			)
+		).toString();
+	}
+
+	private LicenseKey _createLicenseKey(
+		long licenseKeyId, long entitlementId) {
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getAccountEntryId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			licenseKey.getEntitlementId()
+		).thenReturn(
+			entitlementId
+		);
+
+		Mockito.when(
+			licenseKey.getLicenseKeyId()
+		).thenReturn(
+			licenseKeyId
+		);
+
+		return licenseKey;
+	}
+
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final long _ENTITLEMENT_ID = 7L;
+
+	private static final String _EXPIRATION_DATE = "2027-01-01T00:00:00Z";
+
+	private static final String _START_DATE = "2026-01-01T00:00:00Z";
 
 	private static final long _USER_ID = 123L;
 
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private final LicenseKeyCSVExporter _licenseKeyCSVExporter = Mockito.mock(
 		LicenseKeyCSVExporter.class);
 	private final LicenseKeyExporter _licenseKeyExporter = Mockito.mock(
