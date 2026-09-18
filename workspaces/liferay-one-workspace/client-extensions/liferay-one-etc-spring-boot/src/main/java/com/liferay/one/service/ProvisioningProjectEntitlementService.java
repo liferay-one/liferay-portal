@@ -131,14 +131,8 @@ public class ProvisioningProjectEntitlementService {
 				_addWarning(
 					warningMessages,
 					"Unable to process project entitlement " +
-						salesforceProjectEntitlement.getId());
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to provision orders for project entitlement " +
-							salesforceProjectEntitlement.getId(),
-						exception);
-				}
+						salesforceProjectEntitlement.getId(),
+					exception);
 			}
 		}
 	}
@@ -151,16 +145,27 @@ public class ProvisioningProjectEntitlementService {
 
 		String projectEntitlementId = salesforceProjectEntitlement.getId();
 
+		String projectId = salesforceProjectEntitlement.getProjectId();
+
+		Project project = _projectService.fetchProject(projectId);
+
+		if (project == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to find project ", projectId,
+						" for project entitlement ", projectEntitlementId));
+			}
+
+			return;
+		}
+
 		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
 			projectEntitlementId);
 
 		if (order != null) {
-			String projectId = salesforceProjectEntitlement.getProjectId();
-
-			if (Validator.isNotNull(projectId)) {
-				_commerceOrderService.patchOrderCustomFields(
-					order.getId(), Map.of("salesforceProjectId", projectId));
-			}
+			_commerceOrderService.patchOrderCustomFields(
+				order.getId(), Map.of("salesforceProjectId", projectId));
 
 			return;
 		}
@@ -218,12 +223,13 @@ public class ProvisioningProjectEntitlementService {
 	}
 
 	private void _addWarning(
-		List<String> warningMessages, String warningMessage) {
+		List<String> warningMessages, String warningMessage,
+		Exception exception) {
 
 		warningMessages.add(warningMessage);
 
 		if (_log.isWarnEnabled()) {
-			_log.warn(warningMessage);
+			_log.warn(warningMessage, exception);
 		}
 	}
 
@@ -329,16 +335,13 @@ public class ProvisioningProjectEntitlementService {
 				warningMessages,
 				StringBundler.concat(
 					"Unable to find project ", projectId,
-					" for project entitlement ", projectEntitlementId));
+					" for project entitlement ", projectEntitlementId),
+				null);
 
 			return;
 		}
 
-		Order existingOrder =
-			_commerceOrderService.fetchOrderByExternalReferenceCode(
-				projectEntitlementId);
-
-		Order newOrder = _commerceOrderService.upsertOrder(
+		Order order = _commerceOrderService.upsertOrder(
 			account, contractId, currencyCode, projectEntitlementId, projectId,
 			salesforceOpportunity, salesforceOpportunityLineItems,
 			salesforceProject);
@@ -350,8 +353,7 @@ public class ProvisioningProjectEntitlementService {
 
 			try {
 				_upsertOrderItem(
-					newOrder, projectEntitlementId,
-					salesforceOpportunityLineItem,
+					order, projectEntitlementId, salesforceOpportunityLineItem,
 					salesforceOpportunity.getStageName());
 
 				provisionedOrderItemCount++;
@@ -362,36 +364,22 @@ public class ProvisioningProjectEntitlementService {
 					StringBundler.concat(
 						"Unable to provision line item ",
 						salesforceOpportunityLineItem.getId(),
-						" on project entitlement ", projectEntitlementId));
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						StringBundler.concat(
-							"Unable to provision order item for Salesforce ",
-							"product ",
-							salesforceOpportunityLineItem.getProduct2Id(),
-							" on project entitlement ", projectEntitlementId),
-						exception);
-				}
+						" on project entitlement ", projectEntitlementId),
+					exception);
 			}
 		}
 
-		if ((provisionedOrderItemCount > 0) && !_isCompleted(existingOrder)) {
+		if ((provisionedOrderItemCount > 0) && !_isCompleted(order)) {
 			try {
 				_commerceOrderService.completeOrder(
-					newOrder.getId(),
+					order.getId(),
 					CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
 			}
 			catch (Exception exception) {
 				_addWarning(
 					warningMessages,
-					"Unable to complete order " + projectEntitlementId);
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to complete order " + newOrder.getId(),
-						exception);
-				}
+					"Unable to complete order " + projectEntitlementId,
+					exception);
 			}
 		}
 	}

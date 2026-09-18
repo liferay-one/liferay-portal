@@ -19,6 +19,7 @@ import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.model.AccountSupportInfo;
+import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
@@ -569,6 +570,16 @@ public class CommerceOrderService extends OneBaseService {
 			Order sourceOrder)
 		throws Exception {
 
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new Exception(
+				StringBundler.concat(
+					"Unable to find project ", projectExternalReferenceCode,
+					" for order ", externalReferenceCode));
+		}
+
 		Order order = new Order();
 
 		order.setAccountExternalReferenceCode(
@@ -596,10 +607,7 @@ public class CommerceOrderService extends OneBaseService {
 			customFields.putAll(sourceCustomFields);
 		}
 
-		if (Validator.isNotNull(projectExternalReferenceCode)) {
-			customFields.put(
-				"salesforceProjectId", projectExternalReferenceCode);
-		}
+		customFields.put("salesforceProjectId", projectExternalReferenceCode);
 
 		order.setCustomFields(() -> customFields);
 
@@ -1285,6 +1293,9 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private PostalAddressService _postalAddressService;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	@Autowired
 	private SalesforceService _salesforceService;

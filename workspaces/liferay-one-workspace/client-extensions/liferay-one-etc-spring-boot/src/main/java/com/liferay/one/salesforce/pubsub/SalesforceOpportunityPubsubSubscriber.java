@@ -122,12 +122,13 @@ public class SalesforceOpportunityPubsubSubscriber
 	}
 
 	private void _addWarning(
-		List<String> warningMessages, String warningMessage) {
+		List<String> warningMessages, String warningMessage,
+		Exception exception) {
 
 		warningMessages.add(warningMessage);
 
 		if (_log.isWarnEnabled()) {
-			_log.warn(warningMessage);
+			_log.warn(warningMessage, exception);
 		}
 	}
 
@@ -155,7 +156,8 @@ public class SalesforceOpportunityPubsubSubscriber
 				_addWarning(
 					warningMessages,
 					"Unable to reconcile mixed currencies for opportunity " +
-						salesforceOpportunity.getId());
+						salesforceOpportunity.getId(),
+					null);
 
 				return _DEFAULT_CURRENCY_CODE;
 			}
@@ -341,7 +343,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			_addWarning(
 				warningMessages,
 				"Unable to provision opportunity " +
-					salesforceOpportunity.getId() + " without an account");
+					salesforceOpportunity.getId() + " without an account",
+				null);
 
 			return;
 		}
@@ -358,7 +361,8 @@ public class SalesforceOpportunityPubsubSubscriber
 				warningMessages,
 				StringBundler.concat(
 					"The opportunity type is ", salesforceOpportunity.getType(),
-					" and the project does not exist"));
+					" and the project does not exist"),
+				null);
 		}
 		else if ((project != null) &&
 				 (StringUtil.equalsIgnoreCase(
@@ -373,7 +377,8 @@ public class SalesforceOpportunityPubsubSubscriber
 				warningMessages,
 				StringBundler.concat(
 					"The opportunity type is ", salesforceOpportunity.getType(),
-					" and the project already exists"));
+					" and the project already exists"),
+				null);
 		}
 
 		_accountService.upsertAccount(
@@ -385,7 +390,7 @@ public class SalesforceOpportunityPubsubSubscriber
 		if (account == null) {
 			_addWarning(
 				warningMessages,
-				"Unable to find account " + salesforceAccount.getId());
+				"Unable to find account " + salesforceAccount.getId(), null);
 
 			return;
 		}
@@ -395,7 +400,8 @@ public class SalesforceOpportunityPubsubSubscriber
 
 			_addWarning(
 				warningMessages,
-				"Another account already uses the name " + account.getName());
+				"Another account already uses the name " + account.getName(),
+				null);
 		}
 
 		SalesforceProject salesforceProject = null;
@@ -429,7 +435,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			_addWarning(
 				warningMessages,
 				"Unable to find a contract for opportunity " +
-					salesforceOpportunity.getId());
+					salesforceOpportunity.getId(),
+				null);
 		}
 
 		if (!realignmentSalesforceOpportunityLineItems.isEmpty()) {
@@ -447,7 +454,8 @@ public class SalesforceOpportunityPubsubSubscriber
 					_addWarning(
 						warningMessages,
 						"Unable to find a parent opportunity for amended " +
-							"line " + productName);
+							"line " + productName,
+						null);
 				}
 			}
 			else {
@@ -487,7 +495,8 @@ public class SalesforceOpportunityPubsubSubscriber
 					warningMessages,
 					"Unable to find portal user " +
 						salesforceOpportunity.getOwnerEmailAddress() +
-							" for opportunity creator");
+							" for opportunity creator",
+					null);
 			}
 		}
 
@@ -512,7 +521,8 @@ public class SalesforceOpportunityPubsubSubscriber
 							provisionableSalesforceOpportunityLineItem.
 								getProductName(),
 							" differs from the end date of contract ",
-							contract.getExternalReferenceCode()));
+							contract.getExternalReferenceCode()),
+						null);
 				}
 			}
 		}
@@ -529,7 +539,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			if (_commerceSkuService.fetchSku(product2Id) == null) {
 				_addWarning(
 					warningMessages,
-					"Unable to find SKU for Salesforce product " + product2Id);
+					"Unable to find SKU for Salesforce product " + product2Id,
+					null);
 
 				continue;
 			}
@@ -564,17 +575,8 @@ public class SalesforceOpportunityPubsubSubscriber
 					provisionableSalesforceOpportunityLineItem.getProductName();
 
 				_addWarning(
-					warningMessages, "Unable to provision line " + productName);
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						StringBundler.concat(
-							"Unable to provision order item for Salesforce ",
-							"product ",
-							provisionableSalesforceOpportunityLineItem.
-								getProduct2Id()),
-						exception);
-				}
+					warningMessages, "Unable to provision line " + productName,
+					exception);
 			}
 		}
 
@@ -587,14 +589,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			catch (Exception exception) {
 				_addWarning(
 					warningMessages,
-					"Unable to complete order " +
-						salesforceOpportunity.getId());
-
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to complete order " + newOrder.getId(),
-						exception);
-				}
+					"Unable to complete order " + salesforceOpportunity.getId(),
+					exception);
 			}
 		}
 
