@@ -369,6 +369,12 @@ public class ProvisioningProjectEntitlementServiceTest {
 			order
 		);
 
+		Mockito.when(
+			_projectService.fetchProject("")
+		).thenReturn(
+			null
+		);
+
 		_provisioningProjectEntitlementService.upsertProjectEntitlement(
 			new JSONObject(
 			).put(
