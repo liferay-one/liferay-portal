@@ -20,6 +20,7 @@ public class SalesforceAccount {
 		_billingPostalCode = jsonObject.optString("BillingPostalCode");
 		_billingState = jsonObject.optString("BillingState");
 		_billingStreet = jsonObject.optString("BillingStreet");
+		_currencyIsoCode = jsonObject.optString("CurrencyIsoCode");
 		_description = jsonObject.optString("Description");
 		_fax = jsonObject.optString("Fax");
 		_id = jsonObject.optString("Id");
@@ -49,6 +50,7 @@ public class SalesforceAccount {
 			"AccountAddress_Billing_Address__r.State__c");
 		_billingStreet = opportunityJSONObject.optString(
 			"AccountAddress_Billing_Address__r.Street__c");
+		_currencyIsoCode = accountJSONObject.optString("CurrencyIsoCode");
 		_description = accountJSONObject.optString("Description");
 		_fax = accountJSONObject.optString("Fax");
 		_id = accountJSONObject.optString("Id");
@@ -90,6 +92,10 @@ public class SalesforceAccount {
 
 	public String getBillingStreet() {
 		return _billingStreet;
+	}
+
+	public String getCurrencyIsoCode() {
+		return _currencyIsoCode;
 	}
 
 	public String getDescription() {
@@ -151,6 +157,7 @@ public class SalesforceAccount {
 	private final String _billingPostalCode;
 	private final String _billingState;
 	private final String _billingStreet;
+	private final String _currencyIsoCode;
 	private final String _description;
 	private final String _fax;
 	private final String _id;

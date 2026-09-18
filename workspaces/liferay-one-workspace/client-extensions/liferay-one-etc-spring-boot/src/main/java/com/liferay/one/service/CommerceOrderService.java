@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
-import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.CurrencyResource;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
@@ -55,7 +54,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe Veloso
@@ -522,7 +520,8 @@ public class CommerceOrderService extends OneBaseService {
 			account::getExternalReferenceCode);
 		order.setAccountId(account::getId);
 
-		Long channelId = _fetchChannelId();
+		Long channelId = _commerceChannelService.fetchChannelId(
+			_commerceChannelExternalReferenceCode);
 
 		order.setChannelId(() -> channelId);
 
@@ -612,15 +611,6 @@ public class CommerceOrderService extends OneBaseService {
 		order.setCustomFields(() -> customFields);
 
 		return _upsertOrder(externalReferenceCode, order);
-	}
-
-	private CurrencyResource _buildCurrencyResource() {
-		return CurrencyResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
 	}
 
 	private OrderResource _buildOrderResource() {
@@ -738,33 +728,6 @@ public class CommerceOrderService extends OneBaseService {
 			"salesforceOpportunityId", salesforceOpportunityId);
 
 		return true;
-	}
-
-	private Long _fetchChannelId() throws Exception {
-		if (_channelId != null) {
-			return _channelId;
-		}
-
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/headless-commerce-admin-channel/v1.0/channels" +
-					"/by-externalReferenceCode/{externalReferenceCode}"
-			).buildAndExpand(
-				_commerceChannelExternalReferenceCode
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			throw new Exception(
-				"Unable to find commerce channel " +
-					_commerceChannelExternalReferenceCode);
-		}
-
-		JSONObject jsonObject = new JSONObject(response);
-
-		_channelId = jsonObject.getLong("id");
-
-		return _channelId;
 	}
 
 	private String _getAddressCountry(Long defaultBillingAddressId)
@@ -964,14 +927,7 @@ public class CommerceOrderService extends OneBaseService {
 			return customFields;
 		}
 
-		CurrencyResource currencyResource = _buildCurrencyResource();
-
-		Currency currency = currencyResource.getCurrenciesPage(
-			null, "code eq 'EUR'",
-			com.liferay.headless.commerce.admin.catalog.client.pagination.
-				Pagination.of(1, 1),
-			null
-		).fetchFirstItem();
+		Currency currency = _commerceCurrencyService.fetchCurrency("EUR");
 
 		if (currency == null) {
 			return customFields;
@@ -1276,10 +1232,14 @@ public class CommerceOrderService extends OneBaseService {
 	@Autowired
 	private AIHubService _aiHubService;
 
-	private volatile Long _channelId;
-
 	@Value("${liferay.one.commerce.channel.external.reference.code}")
 	private String _commerceChannelExternalReferenceCode;
+
+	@Autowired
+	private CommerceChannelService _commerceChannelService;
+
+	@Autowired
+	private CommerceCurrencyService _commerceCurrencyService;
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;
