@@ -52,10 +52,6 @@ public class ProvisioningContactService {
 				_addWarning(
 					warningMessages,
 					"Unable to process project contact " +
-						salesforceProjectContactRole.getEmailAddress());
-
-				_log.error(
-					"Unable to process project contact " +
 						salesforceProjectContactRole.getEmailAddress(),
 					exception);
 			}
@@ -114,7 +110,8 @@ public class ProvisioningContactService {
 			_addWarning(
 				warningMessages,
 				"Unable to find account role " +
-					salesforceProjectContactRole.getContactRole());
+					salesforceProjectContactRole.getContactRole(),
+				null);
 
 			_accountService.addAccountUserAccount(
 				account.getId(), userAccount.getId());
@@ -138,7 +135,8 @@ public class ProvisioningContactService {
 				_addWarning(
 					warningMessages,
 					"Unable to find account role " +
-						RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+						RoleConstants.NAME_ACCOUNT_ADMINISTRATOR,
+					null);
 			}
 		}
 
@@ -165,12 +163,13 @@ public class ProvisioningContactService {
 	}
 
 	private void _addWarning(
-		List<String> warningMessages, String warningMessage) {
+		List<String> warningMessages, String warningMessage,
+		Exception exception) {
 
 		warningMessages.add(warningMessage);
 
 		if (_log.isWarnEnabled()) {
-			_log.warn(warningMessage);
+			_log.warn(warningMessage, exception);
 		}
 	}
 
