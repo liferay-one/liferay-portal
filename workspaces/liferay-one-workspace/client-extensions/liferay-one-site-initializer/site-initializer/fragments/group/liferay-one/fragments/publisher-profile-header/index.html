@@ -77,11 +77,7 @@
 				<div class="align-items-center d-flex">
 
 					[#if imageURL?has_content]
-						<img
-							class="publisher-image"
-							src="${imageURL}"
-							alt=""
-						/>
+					<img alt="" class="publisher-image" src="${imageURL}" />
 					[#elseif publisherName?has_content]
 						<div class="publisher-image publisher-image-fallback">
 							${publisherName?substring(0, 1)?upper_case}
@@ -100,11 +96,9 @@
 								<span class="stars">
 									[@clay["icon"] symbol="star" /]
 								</span>
-
 								<span class="ml-1">
 									4.9 ${languageUtil.get(locale, "average-rating", "Average Rating")}
 								</span>
-
 								<span class="mx-2">&bull;</span>
 
 								[@clay["icon"] symbol="download" /]
@@ -115,16 +109,12 @@
 							[/#if]
 						</div>
 					</div>
-
 				</div>
 			</div>
 		</div>
 
 		[#if showContactForm && email?has_content]
-			<a
-				class="btn btn-primary publisher-profile-header-contact"
-				href="mailto:${email}"
-			>
+		<a class="btn btn-primary publisher-profile-header-contact" href="mailto:${email}">
 				${languageUtil.get(locale, "contact", "Contact")}
 			</a>
 		[/#if]
