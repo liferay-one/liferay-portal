@@ -20,6 +20,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommerceCurrencyService extends OneBaseService {
 
+	@Cacheable(
+		unless = "#result == null||#result.active != true", value = "currency"
+	)
 	public Currency fetchCurrency(String currencyIsoCode) throws Exception {
 		CurrencyResource currencyResource = _buildCurrencyResource();
 
@@ -29,17 +32,6 @@ public class CommerceCurrencyService extends OneBaseService {
 				"code eq '", escapeODataString(currencyIsoCode), "'"),
 			Pagination.of(1, 1), null
 		).fetchFirstItem();
-	}
-
-	@Cacheable(unless = "#result == null", value = "currencyId")
-	public Long fetchCurrencyId(String currencyIsoCode) throws Exception {
-		Currency currency = fetchCurrency(currencyIsoCode);
-
-		if ((currency == null) || !Boolean.TRUE.equals(currency.getActive())) {
-			return null;
-		}
-
-		return currency.getId();
 	}
 
 	private CurrencyResource _buildCurrencyResource() {

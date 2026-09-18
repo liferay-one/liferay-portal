@@ -5,6 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
+import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
+
 import java.net.URI;
 
 import java.util.ArrayDeque;
@@ -45,7 +48,7 @@ public class CommerceAccountCurrencyServiceTest {
 			Exception.class,
 			() -> ReflectionTestUtils.invokeMethod(
 				testCommerceAccountCurrencyService,
-				"_upsertAccountChannelCurrency", "SF-1", _CURRENCY_ID, "EUR"));
+				"_upsertAccountChannelCurrency", "SF-1", _CURRENCY_ID));
 
 		Assertions.assertEquals(
 			1,
@@ -71,7 +74,7 @@ public class CommerceAccountCurrencyServiceTest {
 
 		ReflectionTestUtils.invokeMethod(
 			testCommerceAccountCurrencyService, "_upsertAccountChannelCurrency",
-			"SF-1", _CURRENCY_ID, "EUR");
+			"SF-1", _CURRENCY_ID);
 
 		Assertions.assertTrue(
 			testCommerceAccountCurrencyService.patchURIs.isEmpty());
@@ -108,7 +111,7 @@ public class CommerceAccountCurrencyServiceTest {
 
 		ReflectionTestUtils.invokeMethod(
 			testCommerceAccountCurrencyService, "_upsertAccountChannelCurrency",
-			"SF-1", _CURRENCY_ID, "EUR");
+			"SF-1", _CURRENCY_ID);
 
 		Assertions.assertTrue(
 			testCommerceAccountCurrencyService.postURIs.isEmpty());
@@ -138,7 +141,7 @@ public class CommerceAccountCurrencyServiceTest {
 
 		ReflectionTestUtils.invokeMethod(
 			testCommerceAccountCurrencyService, "_upsertAccountChannelCurrency",
-			"SF-1", _CURRENCY_ID, "EUR");
+			"SF-1", _CURRENCY_ID);
 
 		Assertions.assertTrue(
 			testCommerceAccountCurrencyService.patchURIs.isEmpty());
@@ -165,7 +168,7 @@ public class CommerceAccountCurrencyServiceTest {
 			Exception.class,
 			() -> ReflectionTestUtils.invokeMethod(
 				testCommerceAccountCurrencyService,
-				"_upsertAccountChannelCurrency", "SF-1", _CURRENCY_ID, "EUR"));
+				"_upsertAccountChannelCurrency", "SF-1", _CURRENCY_ID));
 
 		Assertions.assertEquals(
 			0,
@@ -185,7 +188,7 @@ public class CommerceAccountCurrencyServiceTest {
 
 		ReflectionTestUtils.invokeMethod(
 			testCommerceAccountCurrencyService, "_upsertAccountChannelCurrency",
-			"SF-1", _CURRENCY_ID, "EUR");
+			"SF-1", _CURRENCY_ID);
 
 		Assertions.assertTrue(
 			testCommerceAccountCurrencyService.patchURIs.isEmpty());
@@ -212,6 +215,88 @@ public class CommerceAccountCurrencyServiceTest {
 		Assertions.assertDoesNotThrow(
 			() -> _commerceAccountCurrencyService.upsertAccountCurrency(
 				"SF-1", "CHF"));
+	}
+
+	@Test
+	public void testUpsertAccountCurrencyPostsWhenCurrencyIsActive()
+		throws Exception {
+
+		TestCommerceAccountCurrencyService testCommerceAccountCurrencyService =
+			new TestCommerceAccountCurrencyService();
+
+		testCommerceAccountCurrencyService.commerceCurrencyService.currency =
+			_createCurrency(true);
+
+		testCommerceAccountCurrencyService.upsertAccountCurrency("SF-1", "EUR");
+
+		Assertions.assertEquals(
+			1, testCommerceAccountCurrencyService.postURIs.size());
+
+		JSONObject postBodyJSONObject = new JSONObject(
+			testCommerceAccountCurrencyService.postBodies.get(0));
+
+		Assertions.assertEquals(
+			_CURRENCY_ID, postBodyJSONObject.getLong("classPK"));
+	}
+
+	@Test
+	public void testUpsertAccountCurrencySkipsWhenCurrencyActiveIsNull()
+		throws Exception {
+
+		TestCommerceAccountCurrencyService testCommerceAccountCurrencyService =
+			new TestCommerceAccountCurrencyService();
+
+		testCommerceAccountCurrencyService.commerceCurrencyService.currency =
+			_createCurrency(null);
+
+		testCommerceAccountCurrencyService.upsertAccountCurrency("SF-1", "EUR");
+
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.patchURIs.isEmpty());
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.postURIs.isEmpty());
+	}
+
+	@Test
+	public void testUpsertAccountCurrencySkipsWhenCurrencyIsInactive()
+		throws Exception {
+
+		TestCommerceAccountCurrencyService testCommerceAccountCurrencyService =
+			new TestCommerceAccountCurrencyService();
+
+		testCommerceAccountCurrencyService.commerceCurrencyService.currency =
+			_createCurrency(false);
+
+		testCommerceAccountCurrencyService.upsertAccountCurrency("SF-1", "EUR");
+
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.patchURIs.isEmpty());
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.postURIs.isEmpty());
+	}
+
+	@Test
+	public void testUpsertAccountCurrencySkipsWhenCurrencyIsMissing()
+		throws Exception {
+
+		TestCommerceAccountCurrencyService testCommerceAccountCurrencyService =
+			new TestCommerceAccountCurrencyService();
+
+		testCommerceAccountCurrencyService.upsertAccountCurrency("SF-1", "EUR");
+
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.patchURIs.isEmpty());
+		Assertions.assertTrue(
+			testCommerceAccountCurrencyService.postURIs.isEmpty());
+	}
+
+	private Currency _createCurrency(Boolean active) {
+		Currency currency = new Currency();
+
+		currency.setActive(active);
+		currency.setId(_CURRENCY_ID);
+
+		return currency;
 	}
 
 	private JSONObject _createEntryJSONObject(long classPK) {
@@ -243,10 +328,14 @@ public class CommerceAccountCurrencyServiceTest {
 				_CHANNEL_EXTERNAL_REFERENCE_CODE);
 			ReflectionTestUtils.setField(
 				this, "_commerceChannelService", commerceChannelService);
+			ReflectionTestUtils.setField(
+				this, "_commerceCurrencyService", commerceCurrencyService);
 		}
 
 		public final TestCommerceChannelService commerceChannelService =
 			new TestCommerceChannelService();
+		public final TestCommerceCurrencyService commerceCurrencyService =
+			new TestCommerceCurrencyService();
 		public final Deque<List<JSONObject>> getAllItemsResults =
 			new ArrayDeque<>();
 		public final List<String> patchBodies = new ArrayList<>();
@@ -307,16 +396,32 @@ public class CommerceAccountCurrencyServiceTest {
 		extends CommerceChannelService {
 
 		@Override
-		public void evictChannelId(String externalReferenceCode) {
+		public void evictChannel(String externalReferenceCode) {
 			evictCount++;
 		}
 
 		@Override
-		public Long fetchChannelId(String externalReferenceCode) {
-			return _CHANNEL_ID;
+		public Channel fetchChannel(String externalReferenceCode) {
+			Channel channel = new Channel();
+
+			channel.setId(_CHANNEL_ID);
+
+			return channel;
 		}
 
 		public int evictCount;
+
+	}
+
+	private static class TestCommerceCurrencyService
+		extends CommerceCurrencyService {
+
+		@Override
+		public Currency fetchCurrency(String currencyIsoCode) {
+			return currency;
+		}
+
+		public Currency currency;
 
 	}
 

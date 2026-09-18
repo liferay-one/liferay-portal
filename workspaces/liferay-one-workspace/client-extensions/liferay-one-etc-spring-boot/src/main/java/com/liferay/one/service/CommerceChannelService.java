@@ -5,14 +5,13 @@
 
 package com.liferay.one.service;
 
-import com.liferay.portal.kernel.util.Validator;
-
-import org.json.JSONObject;
+import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
+import com.liferay.headless.commerce.admin.channel.client.resource.v1_0.ChannelResource;
 
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe Franca
@@ -20,29 +19,25 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class CommerceChannelService extends OneBaseService {
 
-	@CacheEvict("channelId")
-	public void evictChannelId(String externalReferenceCode) {
+	@CacheEvict("channel")
+	public void evictChannel(String externalReferenceCode) {
 	}
 
-	@Cacheable("channelId")
-	public Long fetchChannelId(String externalReferenceCode) throws Exception {
-		String response = fetch(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/headless-commerce-admin-channel/v1.0/channels" +
-					"/by-externalReferenceCode/{externalReferenceCode}"
-			).buildAndExpand(
-				externalReferenceCode
-			).toUri());
+	@Cacheable("channel")
+	public Channel fetchChannel(String externalReferenceCode) throws Exception {
+		ChannelResource channelResource = _buildChannelResource();
 
-		if (Validator.isNull(response)) {
-			throw new Exception(
-				"Unable to find commerce channel " + externalReferenceCode);
-		}
+		return channelResource.getChannelByExternalReferenceCode(
+			externalReferenceCode);
+	}
 
-		JSONObject jsonObject = new JSONObject(response);
-
-		return jsonObject.getLong("id");
+	private ChannelResource _buildChannelResource() {
+		return ChannelResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
 	}
 
 }
