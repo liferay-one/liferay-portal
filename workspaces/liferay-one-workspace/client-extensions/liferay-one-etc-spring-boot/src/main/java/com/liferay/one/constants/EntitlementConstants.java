@@ -152,8 +152,6 @@ public class EntitlementConstants {
 		NAME_STANDARD_8_5_SUPPORT, NAME_STRATEGIC_24_7_SUPPORT
 	};
 
-	public static final long QUANTITY_EVENTS_ADD_ON_BUCKET = 200000;
-
 	public static final String STATE_ACTIVE = "Active";
 
 	public static final String STATE_EXPIRED = "Expired";
