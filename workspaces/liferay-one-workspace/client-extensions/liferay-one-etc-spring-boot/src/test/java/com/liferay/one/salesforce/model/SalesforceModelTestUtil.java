@@ -21,14 +21,16 @@ import org.json.JSONObject;
 public class SalesforceModelTestUtil {
 
 	public static JSONObject createAccountJSONObject(
-		boolean activeSubscription, String billingCountry, String id,
-		String name) {
+		boolean activeSubscription, String billingCountry,
+		String currencyIsoCode, String id, String name) {
 
 		return new JSONObject(
 		).put(
 			"Active_Subscription__c", activeSubscription
 		).put(
 			"BillingCountry", billingCountry
+		).put(
+			"CurrencyIsoCode", currencyIsoCode
 		).put(
 			"Id", id
 		).put(
@@ -37,13 +39,13 @@ public class SalesforceModelTestUtil {
 	}
 
 	public static JSONObject createAccountJSONObject(String id, String name) {
-		return createAccountJSONObject(true, "", id, name);
+		return createAccountJSONObject(true, "", "", id, name);
 	}
 
 	public static JSONObject createAccountJSONObject(
 		String billingCountry, String id, String name) {
 
-		return createAccountJSONObject(true, billingCountry, id, name);
+		return createAccountJSONObject(true, billingCountry, "", id, name);
 	}
 
 	public static JSONObject createObjectMessagePayload(

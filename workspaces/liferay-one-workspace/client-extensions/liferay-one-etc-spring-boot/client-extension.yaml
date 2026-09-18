@@ -15,6 +15,7 @@ liferay-one-etc-spring-boot-oahs:
     scopes:
         -   Liferay.Headless.Admin.Address.everything.read
         -   Liferay.Headless.Admin.User.everything
+        -   Liferay.Headless.Commerce.Admin.Account.everything
         -   Liferay.Headless.Commerce.Admin.Catalog.everything
         -   Liferay.Headless.Commerce.Admin.Channel.everything.read
         -   Liferay.Headless.Commerce.Admin.Order.everything
