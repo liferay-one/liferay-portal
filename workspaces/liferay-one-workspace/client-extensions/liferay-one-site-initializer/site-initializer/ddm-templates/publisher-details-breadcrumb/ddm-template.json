@@ -1,7 +1,7 @@
 {
 	"className": "com.liferay.template.model.TemplateEntry",
 	"ddmTemplateKey": "PUBLISHER_DETAILS_BREADCRUMB",
-	"infoItemClassName": "com.liferay.commerce.product.model.CPDefinition",
+	"infoItemClassName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]",
 	"name": "Publisher Details Breadcrumb",
 	"resourceClassName": "com.liferay.template.model.TemplateEntry"
 }

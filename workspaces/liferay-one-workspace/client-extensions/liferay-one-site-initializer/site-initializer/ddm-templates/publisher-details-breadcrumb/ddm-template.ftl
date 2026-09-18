@@ -1,15 +1,13 @@
 <nav aria-label="breadcrumb">
 <ol class="breadcrumb">
 	<li class="breadcrumb-item">
-			<a class="text-dark" href="https://one-uat.com/">
+			<a class="text-dark" href="/home">
 				Home
 			</a>
 		</li>
 
 	<li class="breadcrumb-item">
-			<a class="text-dark" href="<#if currentURL?has_content>
-	./${currentURL}
-</#if>">
+			<a class="text-dark" href="/marketplace/applications">
 				Applications
 			</a>
 		</li>
