@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-const appCards = fragmentElement.querySelectorAll('.publisher-profile-app-card');
+const appCards = fragmentElement.querySelectorAll(
+	'.publisher-profile-app-card'
+);
 const paginationBarElement = fragmentElement.querySelector(
 	'.publisher-profile-apps-pagination-bar'
 );
@@ -94,15 +96,20 @@ if (appCards.length && paginationBarElement) {
 
 		paginationElement.innerHTML = '';
 
-		addPageItem('angle-left', currentPageNumber - 1, currentPageNumber === 1, false);
+		addPageItem(
+			'angle-left',
+			currentPageNumber - 1,
+			currentPageNumber === 1,
+			false
+		);
 
 		let previousPageNumberShown = 0;
 
 		for (let pageNumber = 1; pageNumber <= pagesCount; pageNumber++) {
 			if (
-				(pageNumber !== 1) &&
-				(pageNumber !== pagesCount) &&
-				(Math.abs(pageNumber - currentPageNumber) > 2)
+				pageNumber !== 1 &&
+				pageNumber !== pagesCount &&
+				Math.abs(pageNumber - currentPageNumber) > 2
 			) {
 				continue;
 			}
