@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -52,6 +53,15 @@ import org.springframework.stereotype.Component;
 public class LDPEventUsageReportService {
 
 	public void generateUsageReports(YearMonth yearMonth) throws Exception {
+		YearMonth currentYearMonth = YearMonth.now(ZoneOffset.UTC);
+
+		if (!yearMonth.isBefore(currentYearMonth)) {
+			throw new InvalidUsageParameterException(
+				StringBundler.concat(
+					"Unable to generate LDP event usage reports for ",
+					yearMonth, " because the month is not complete"));
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info("Generating LDP event usage reports for " + yearMonth);
 		}
