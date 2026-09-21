@@ -166,9 +166,18 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 		try {
 			List<Long> cProductIds = getAllItems(
-				"/o/headless-commerce-admin-catalog/v1.0/products",
-				"statusCode eq " + WorkflowConstants.STATUS_APPROVED,
-				jsonObject -> jsonObject.optLong("productId"));
+				"/o/headless-commerce-admin-catalog/v1.0/products", null,
+				jsonObject -> {
+					if (jsonObject.optInt("productStatus", -1) !=
+							WorkflowConstants.STATUS_APPROVED) {
+
+						return null;
+					}
+
+					return jsonObject.optLong("productId");
+				});
+
+			cProductIds.removeIf(Objects::isNull);
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
