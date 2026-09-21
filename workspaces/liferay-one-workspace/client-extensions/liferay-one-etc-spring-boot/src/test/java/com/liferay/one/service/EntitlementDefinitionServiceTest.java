@@ -16,9 +16,6 @@ import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.net.URI;
-import java.net.URLDecoder;
-
-import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -422,6 +419,8 @@ public class EntitlementDefinitionServiceTest {
 			new JSONObject(
 			).put(
 				"productId", _C_PRODUCT_ID
+			).put(
+				"productStatus", 0
 			)
 		);
 
@@ -430,25 +429,6 @@ public class EntitlementDefinitionServiceTest {
 		Assertions.assertEquals(
 			List.of("SKU-SMALL"),
 			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
-	}
-
-	@Test
-	public void testReconcileRequestsOnlyApprovedProducts() throws Exception {
-		_entitlementDefinitionService.reconcileEntitlementDefinitions();
-
-		boolean filtered = false;
-
-		for (String uri : _entitlementDefinitionService.getURIs) {
-			String decodedURI = URLDecoder.decode(uri, StandardCharsets.UTF_8);
-
-			if (decodedURI.contains("/products") &&
-				decodedURI.contains("filter=statusCode eq 0")) {
-
-				filtered = true;
-			}
-		}
-
-		Assertions.assertTrue(filtered);
 	}
 
 	@Test
@@ -483,6 +463,26 @@ public class EntitlementDefinitionServiceTest {
 			_entitlementDefinitionService.patchBodies.isEmpty());
 
 		Mockito.verifyNoInteractions(_commerceSkuService);
+	}
+
+	@Test
+	public void testReconcileSkipsUnapprovedProduct() throws Exception {
+		_setUpAppProduct(_createSku("SKU-SMALL", true, "Small"));
+
+		_entitlementDefinitionService.productsJSONArray = new JSONArray(
+		).put(
+			new JSONObject(
+			).put(
+				"productId", _C_PRODUCT_ID
+			).put(
+				"productStatus", 2
+			)
+		);
+
+		_entitlementDefinitionService.reconcileEntitlementDefinitions();
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
 	}
 
 	private JSONObject _createEntitlementDefinitionJSONObject(
