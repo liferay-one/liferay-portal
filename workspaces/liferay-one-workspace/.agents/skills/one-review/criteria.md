@@ -38,6 +38,7 @@ The order is the weighting: a concurrency defect outranks a maintainability sugg
 	- **A widened or newly nullable return** that an existing caller dereferences unguarded, and a thrown exception type that a caller's `catch` no longer matches.
 	- **References no symbol-name grep will find** — ERCs and field names in batch object definitions, site-initializer JSON, FreeMarker templates, dynamic string keys, endpoint paths assembled from fragments, OAuth2 scope strings. Search the string form as well as the identifier.
 	- **A deletion whose callers outlived it**, and a shared component whose prop keeps its name while its meaning changes.
+	- **A data change that is a code change in disguise.** A new SKU on an entitlement definition, or a new link from an entitlement definition to a usage definition, changes which entitlements every consumer that filters or groups on that value picks up — the Java dashboard product lists in `CommerceProductConstants`, and the per-usage-definition rollup in `useProjectUsage.ts`, both of which sum `quantity` without knowing the unit. Trace the batch or seed value into those consumers as if it were a renamed method.
 
 	Ordering counts as much as call sites: a change to when something runs, how often, or what it leaves behind on a second pass is a regression even when every signature holds.
 

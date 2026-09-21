@@ -9,6 +9,10 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 
 import type {APIResponse} from '~/types/api';
 
+const ENTITLEMENT_NAME_EVENTS_ADD_ON_BUCKET = 'events-add-on-bucket';
+
+const ENTITLEMENT_NAME_EVENTS_OVERAGE_BUCKET = 'events-overage-bucket';
+
 const GRANT_TYPE_UNLIMITED = 'unlimited';
 
 const PERIOD_MONTHLY = 'per month';
@@ -28,12 +32,14 @@ type EntitlementDefinitionNode = {
 type EntitlementNode = {
 	grantType?: string;
 	id: number;
+	name?: string;
 	quantity?: number;
 	r_entitlementDefinitionToEntitlement_c_entitlementDefinition?: EntitlementDefinitionNode;
 };
 
 type UsageDefinitionNode = {
 	id: number;
+	overageBucketSize?: number;
 	period?: string;
 	unit?: string;
 };
@@ -45,6 +51,7 @@ type UsageEventNode = {
 };
 
 type Allowance = {
+	addOnBucketCount: number;
 	entitlementIds: number[];
 	included: number;
 	unlimited: boolean;
@@ -100,18 +107,29 @@ export function useProjectUsage() {
 				.r_entitlementDefinitionToEntitlement_c_entitlementDefinition
 				?.r_usageDefinitionToEntitlementDefinition_c_usageDefinitionId;
 
-		if (!usageDefinitionId) {
+		if (
+			!usageDefinitionId ||
+			entitlement.name === ENTITLEMENT_NAME_EVENTS_OVERAGE_BUCKET
+		) {
 			continue;
 		}
 
 		const allowance = allowancesByDefinitionId.get(usageDefinitionId) ?? {
+			addOnBucketCount: 0,
 			entitlementIds: [],
 			included: 0,
 			unlimited: false,
 		};
 
 		allowance.entitlementIds.push(entitlement.id);
-		allowance.included += entitlement.quantity ?? 0;
+
+		if (entitlement.name === ENTITLEMENT_NAME_EVENTS_ADD_ON_BUCKET) {
+			allowance.addOnBucketCount += entitlement.quantity ?? 0;
+		}
+		else {
+			allowance.included += entitlement.quantity ?? 0;
+		}
+
 		allowance.unlimited =
 			allowance.unlimited ||
 			entitlement.grantType === GRANT_TYPE_UNLIMITED;
@@ -171,7 +189,10 @@ export function useProjectUsage() {
 					definition.period === PERIOD_MONTHLY
 						? totalOfLatestMonth(events)
 						: totalOf(events),
-				included: allowance.included,
+				included:
+					allowance.included +
+					allowance.addOnBucketCount *
+						(definition.overageBucketSize ?? 0),
 				period: definition.period ?? '',
 				unit: definition.unit ?? '',
 				unlimited: allowance.unlimited,
