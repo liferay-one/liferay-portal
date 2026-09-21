@@ -270,6 +270,24 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	@PutMapping("/deactivate")
+	public void putLicenseKeysDeactivate(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
+		throws Exception {
+
+		_checkLicenseKeyIds(licenseKeyIds);
+
+		List<LicenseKey> licenseKeys = _getLicenseKeys(jwt, licenseKeyIds);
+
+		_checkManageLicenseKeys(licenseKeys, getMyUserAccount(jwt));
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			_licenseKeyService.updateLicenseKeyActive(
+				false, licenseKey.getLicenseKeyId());
+		}
+	}
+
 	@PutMapping("/subscriptions")
 	public void putSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -314,6 +332,22 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				HttpStatus.BAD_REQUEST,
 				"No more than " + _MAX_LICENSE_KEY_IDS +
 					" license keys may be requested at once");
+		}
+	}
+
+	private void _checkManageLicenseKeys(
+			List<LicenseKey> licenseKeys, UserAccount userAccount)
+		throws Exception {
+
+		Set<Long> accountEntryIds = new LinkedHashSet<>();
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			accountEntryIds.add(licenseKey.getAccountEntryId());
+		}
+
+		for (long accountEntryId : accountEntryIds) {
+			_licenseKeyPermission.check(
+				userAccount, accountEntryId, ActionKeys.UPDATE);
 		}
 	}
 

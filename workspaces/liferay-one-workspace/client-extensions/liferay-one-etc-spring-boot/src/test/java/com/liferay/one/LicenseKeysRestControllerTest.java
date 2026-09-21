@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -661,6 +662,115 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPutLicenseKeysDeactivate() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		List<LicenseKey> licenseKeys = Arrays.asList(
+			_createLicenseKey(1L), _createLicenseKey(2L));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			licenseKeys
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L, 2L});
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 1L
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 2L
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateThrowsForbiddenWhenAccountNotManageable()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysDeactivate(
+				null, new long[] {1L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsExceedsTheMaximum()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.putLicenseKeysDeactivate(
+					null, new long[101]));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsIsEmpty()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.putLicenseKeysDeactivate(
+					null, new long[0]));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
 	public void testPutSubscriptions() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -809,6 +919,24 @@ public class LicenseKeysRestControllerTest {
 			userAccountService);
 
 		return licenseKeysRestController;
+	}
+
+	private LicenseKey _createLicenseKey(long licenseKeyId) {
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getAccountEntryId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			licenseKey.getLicenseKeyId()
+		).thenReturn(
+			licenseKeyId
+		);
+
+		return licenseKey;
 	}
 
 	private static final long _ACCOUNT_ID = 555L;
