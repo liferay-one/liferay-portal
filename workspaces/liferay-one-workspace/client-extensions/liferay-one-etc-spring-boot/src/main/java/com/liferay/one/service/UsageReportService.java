@@ -15,8 +15,6 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import java.util.List;
-
 import org.json.JSONObject;
 
 import org.springframework.stereotype.Component;
@@ -82,12 +80,6 @@ public class UsageReportService extends OneBaseService {
 		}
 
 		return new UsageReport(new JSONObject(response));
-	}
-
-	public List<UsageReport> getUsageReports(String filterString)
-		throws Exception {
-
-		return getAllItems(_BASE_PATH, filterString, UsageReport::new);
 	}
 
 	protected UsageReport addUsageReport(
