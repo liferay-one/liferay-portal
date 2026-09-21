@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
@@ -117,7 +118,15 @@ public class AdminRestController extends OneBaseRestController {
 				dateTimeParseException);
 		}
 
-		_ldpEventUsageReportService.generateUsageReports(reportYearMonth);
+		try {
+			_ldpEventUsageReportService.generateUsageReports(reportYearMonth);
+		}
+		catch (InvalidUsageParameterException invalidUsageParameterException) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				invalidUsageParameterException.getMessage(),
+				invalidUsageParameterException);
+		}
 
 		JSONObject jsonObject = new JSONObject(
 		).put(

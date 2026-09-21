@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -15,6 +16,7 @@ import com.liferay.one.model.UsageReport;
 
 import java.time.Instant;
 import java.time.YearMonth;
+import java.time.ZoneOffset;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -205,6 +207,24 @@ public class LDPEventUsageReportServiceTest {
 		).fetchLDPProjectEventSummary(
 			"2026-08-31", _PROJECT_EXTERNAL_REFERENCE_CODE, "2026-08-01"
 		);
+	}
+
+	@Test
+	public void testRejectsIncompleteMonth() {
+		YearMonth currentYearMonth = YearMonth.now(ZoneOffset.UTC);
+
+		Assertions.assertThrows(
+			InvalidUsageParameterException.class,
+			() -> _ldpEventUsageReportService.generateUsageReports(
+				currentYearMonth));
+		Assertions.assertThrows(
+			InvalidUsageParameterException.class,
+			() -> _ldpEventUsageReportService.generateUsageReports(
+				currentYearMonth.plusMonths(1)));
+
+		Mockito.verifyNoInteractions(
+			_entitlementDefinitionService, _entitlementService,
+			_usageReportService);
 	}
 
 	@Test
