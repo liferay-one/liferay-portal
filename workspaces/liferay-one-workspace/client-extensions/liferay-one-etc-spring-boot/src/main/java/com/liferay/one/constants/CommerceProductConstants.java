@@ -21,9 +21,6 @@ public class CommerceProductConstants {
 	public static final String NAME_CLIENT_EXTENSIONS_RAM_1GB_COMMITMENT =
 		"Client Extensions RAM (1 GB) - Commitment";
 
-	public static final String NAME_DATA_PLATFORM_EVENTS_BUCKET =
-		"Data Platform Events Bucket";
-
 	public static final String
 		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE =
 			"Liferay Cloud Native - Digital Accelerator Bundle";
@@ -91,11 +88,6 @@ public class CommerceProductConstants {
 		NAME_LIFERAY_PAAS_SUBSCRIPTION_HA_PROD_ENV, NAME_PAAS_EXPERIENCE,
 		NAME_SAAS_EXPERIENCE
 	};
-
-	public static final String[]
-		NAMES_LIFERAY_DATA_PLATFORM_ENTITLEMENT_PRODUCTS = {
-			NAME_DATA_PLATFORM_EVENTS_BUCKET, NAME_LIFERAY_DATA_PLATFORM
-		};
 
 	public static final String[] NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS = {
 		NAME_LIFERAY_DATA_PLATFORM

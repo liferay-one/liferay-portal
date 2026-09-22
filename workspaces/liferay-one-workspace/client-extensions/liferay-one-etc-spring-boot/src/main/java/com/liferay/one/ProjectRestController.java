@@ -565,8 +565,7 @@ public class ProjectRestController extends OneBaseRestController {
 				dashboardProductName)) {
 
 			return ArrayUtil.contains(
-				CommerceProductConstants.
-					NAMES_LIFERAY_DATA_PLATFORM_ENTITLEMENT_PRODUCTS,
+				CommerceProductConstants.NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
 				productName);
 		}
 

@@ -126,7 +126,7 @@ public class UsageReportServiceTest {
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET";
+		"PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET";
 
 	private static final long _USAGE_DEFINITION_ID = 33;
 
