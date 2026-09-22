@@ -66,6 +66,10 @@ public class LicenseKeyExporter {
 	}
 
 	public String getFileName(List<LicenseKey> licenseKeys) {
+		if (licenseKeys.size() == 1) {
+			return getFileName(licenseKeys.get(0));
+		}
+
 		Set<String> licenseKeyNames = new LinkedHashSet<>();
 		Set<String> productNames = new LinkedHashSet<>();
 
@@ -115,19 +119,32 @@ public class LicenseKeyExporter {
 		return formatFileName(sb.toString());
 	}
 
+	public boolean isAggregatedDocument(String key) {
+		if (key == null) {
+			return false;
+		}
+
+		return key.startsWith(StringPool.LESS_THAN);
+	}
+
 	public String toXML(LicenseKey licenseKey) throws Exception {
+		String key = licenseKey.getKey();
+
+		if (isAggregatedDocument(key)) {
+			return key;
+		}
+
 		return toXML(
-			licenseKey.getKey(), licenseKey.getAccountName(),
-			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
-			licenseKey.getLicenseVersion(), licenseKey.getProductName(),
-			licenseKey.getProductExternalId(), licenseKey.getProductVersion(),
-			licenseKey.getOwner(), licenseKey.getMaxClusterNodes(),
-			licenseKey.getMaxServers(), licenseKey.getMaxHttpSessions(),
-			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxUsers(),
-			licenseKey.getSizing(), licenseKey.getDescription(),
-			licenseKey.getDomains(), licenseKey.getHostName(),
-			licenseKey.getIpAddresses(), licenseKey.getMacAddresses(),
-			licenseKey.getServerId(),
+			key, licenseKey.getAccountName(), licenseKey.getLicenseName(),
+			licenseKey.getLicenseType(), licenseKey.getLicenseVersion(),
+			licenseKey.getProductName(), licenseKey.getProductExternalId(),
+			licenseKey.getProductVersion(), licenseKey.getOwner(),
+			licenseKey.getMaxClusterNodes(), licenseKey.getMaxServers(),
+			licenseKey.getMaxHttpSessions(), licenseKey.getMaxConcurrentUsers(),
+			licenseKey.getMaxUsers(), licenseKey.getSizing(),
+			licenseKey.getDescription(), licenseKey.getDomains(),
+			licenseKey.getHostName(), licenseKey.getIpAddresses(),
+			licenseKey.getMacAddresses(), licenseKey.getServerId(),
 			Date.from(licenseKey.getStartDateInstant()),
 			Date.from(licenseKey.getCustomExpirationDateInstant()));
 	}
