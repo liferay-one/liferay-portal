@@ -294,11 +294,11 @@ public class AppLicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyService.addLicenseKey(
-				77L, "", true, "", false, "Acme description", "", 9L,
+				77L, "", true, "", false, "Acme description", "", 0L, 9L,
 				Date.from(Instant.parse("2027-01-01T00:00:00Z")), "acme.host",
-				"1.2.3.4", "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L, 0, 0,
-				0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
-				"Acme App", "1.0", "", "",
+				"1.2.3.4", null, "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L,
+				0, 0, 0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
+				"Acme App", "1.0", "", "", "",
 				Date.from(Instant.parse("2026-01-01T00:00:00Z")))
 		).thenReturn(
 			licenseKey
@@ -356,11 +356,11 @@ public class AppLicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyService.addLicenseKey(
-				77L, "", true, "", false, "acme@example.com", "", 9L,
+				77L, "", true, "", false, "acme@example.com", "", 0L, 9L,
 				Date.from(Instant.parse("2027-01-01T00:00:00Z")), "acme.host",
-				"1.2.3.4", "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L, 0, 0,
-				0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
-				"Acme App", "1.0", "", "",
+				"1.2.3.4", null, "", "commerce", 3, "AA:BB:CC:DD:EE:FF", 0, 0L,
+				0, 0, 0L, "Acme App", "ORDER-1", "acme@example.com", "acme-app",
+				"Acme App", "1.0", "", "", "",
 				Date.from(Instant.parse("2026-01-01T00:00:00Z")))
 		).thenReturn(
 			licenseKey
