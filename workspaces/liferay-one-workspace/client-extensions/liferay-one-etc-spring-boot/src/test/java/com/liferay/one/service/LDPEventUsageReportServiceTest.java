@@ -87,6 +87,24 @@ public class LDPEventUsageReportServiceTest {
 				).put(
 					"id", 44L
 				).put(
+					"skuExternalReferenceCode",
+					_ADD_ON_SKU_EXTERNAL_REFERENCE_CODE
+				))
+		);
+
+		Mockito.when(
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET)
+		).thenReturn(
+			new EntitlementDefinition(
+				new JSONObject(
+				).put(
+					_USAGE_DEFINITION_FIELD_NAME,
+					_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
+				).put(
+					"id", 45L
+				).put(
 					"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
 				))
 		);
@@ -302,6 +320,26 @@ public class LDPEventUsageReportServiceTest {
 	}
 
 	@Test
+	public void testStopsWithoutOverageBucketEntitlementDefinition()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementDefinitionService.fetchEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET)
+		).thenReturn(
+			null
+		);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verifyNoInteractions(
+			_entitlementService, _usageDefinitionService);
+
+		_verifyNoReportAdded();
+	}
+
+	@Test
 	public void testStopsWithoutOverageBucketSize() throws Exception {
 		Mockito.when(
 			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
@@ -444,6 +482,9 @@ public class LDPEventUsageReportServiceTest {
 
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
 
+	private static final String _ADD_ON_SKU_EXTERNAL_REFERENCE_CODE =
+		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
+
 	private static final String _CONTRACT_EXTERNAL_REFERENCE_CODE =
 		"C_CONTRACT_001";
 
@@ -458,7 +499,7 @@ public class LDPEventUsageReportServiceTest {
 	private static final long _PROJECT_ID = 22;
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET";
+		"PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET";
 
 	private static final String _USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE =
 		"events-monthly";

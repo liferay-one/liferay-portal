@@ -43,9 +43,11 @@ import org.springframework.stereotype.Component;
 /**
  * Generates one usage report per Liferay Data Platform project for a calendar
  * month, comparing the events the data warehouse counted against the events
- * the project's entitlements allow. Overage is billed in add-on buckets, so
- * the SKU and usage definition of every report come from the add-on bucket
- * entitlement definition rather than from the project's own entitlements.
+ * the project's entitlements allow. Overage is billed in whole buckets: the
+ * bucket size and usage definition come from the add-on bucket entitlement
+ * definition, and the SKU billed on the overage order comes from the overage
+ * bucket entitlement definition, so an overage order never grants an add-on
+ * bucket entitlement of its own.
  *
  * @author Drew Brokke
  */
@@ -67,9 +69,17 @@ public class LDPEventUsageReportService {
 		}
 
 		EntitlementDefinition addOnBucketEntitlementDefinition =
-			_fetchAddOnBucketEntitlementDefinition();
+			_fetchBucketEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+		EntitlementDefinition overageBucketEntitlementDefinition =
+			_fetchBucketEntitlementDefinition(
+				EntitlementConstants.
+					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET);
 
-		if (addOnBucketEntitlementDefinition == null) {
+		if ((addOnBucketEntitlementDefinition == null) ||
+			(overageBucketEntitlementDefinition == null)) {
+
 			return;
 		}
 
@@ -121,7 +131,7 @@ public class LDPEventUsageReportService {
 				if (_generateUsageReport(
 						endInstant, entry.getValue(),
 						projectExternalReferenceCode,
-						addOnBucketEntitlementDefinition.
+						overageBucketEntitlementDefinition.
 							getSkuExternalReferenceCode(),
 						startInstant, usageDefinition, yearMonth)) {
 
@@ -167,19 +177,18 @@ public class LDPEventUsageReportService {
 		}
 	}
 
-	private EntitlementDefinition _fetchAddOnBucketEntitlementDefinition()
+	private EntitlementDefinition _fetchBucketEntitlementDefinition(
+			String externalReferenceCode)
 		throws Exception {
 
 		EntitlementDefinition entitlementDefinition =
 			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+				externalReferenceCode);
 
 		if (entitlementDefinition == null) {
 			_log.error(
 				"Unable to find entitlement definition " +
-					EntitlementConstants.
-						EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+					externalReferenceCode);
 
 			return null;
 		}
