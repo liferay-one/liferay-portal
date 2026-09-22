@@ -15,7 +15,6 @@ import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import {useProjectItems} from '~/hooks/useProjectItems';
 import i18n, {translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 
@@ -23,6 +22,7 @@ import FilterableListCard, {
 	ListColumn,
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
+import useHasActivationPermission from '../hooks/useHasActivationPermission';
 import useLicenseKeyActions from './hooks/useLicenseKeyActions';
 
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
@@ -65,6 +65,7 @@ function stopAnd(callback: () => void) {
 }
 
 type KebabActionsProps = {
+	hasActivationPermission: boolean;
 	onDeactivate: () => void;
 	onDownload: () => void;
 	onReactivate: () => void;
@@ -74,6 +75,7 @@ type KebabActionsProps = {
 };
 
 function KebabActions({
+	hasActivationPermission,
 	onDeactivate,
 	onDownload,
 	onReactivate,
@@ -105,22 +107,25 @@ function KebabActions({
 					{translate('download')}
 				</ClayDropDown.Item>
 
-				<ClayDropDown.Item onClick={stopAnd(onRenew)}>
-					{translate('renew')}
-				</ClayDropDown.Item>
-
-				{row.active ? (
-					<ClayDropDown.Item
-						className="text-danger"
-						onClick={stopAnd(onDeactivate)}
-					>
-						{translate('deactivate')}
-					</ClayDropDown.Item>
-				) : (
-					<ClayDropDown.Item onClick={stopAnd(onReactivate)}>
-						{translate('reactivate')}
+				{hasActivationPermission && (
+					<ClayDropDown.Item onClick={stopAnd(onRenew)}>
+						{translate('renew')}
 					</ClayDropDown.Item>
 				)}
+
+				{hasActivationPermission &&
+					(row.active ? (
+						<ClayDropDown.Item
+							className="text-danger"
+							onClick={stopAnd(onDeactivate)}
+						>
+							{translate('deactivate')}
+						</ClayDropDown.Item>
+					) : (
+						<ClayDropDown.Item onClick={stopAnd(onReactivate)}>
+							{translate('reactivate')}
+						</ClayDropDown.Item>
+					))}
 			</ClayDropDown.ItemList>
 		</ClayDropDown>
 	);
@@ -129,10 +134,10 @@ function KebabActions({
 export default function LicenseKeys() {
 	const {projectId} = useProject();
 	const navigate = useNavigate();
-	const [searchParams, setSearchParams] = useSearchParams();
+	const [searchParams] = useSearchParams();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
-	const {products} = useProjectItems();
+	const {hasActivationPermission} = useHasActivationPermission(projectId);
 
 	const {
 		handleDeactivate,
@@ -140,11 +145,7 @@ export default function LicenseKeys() {
 		handleNewKey,
 		handleReactivate,
 		handleRenew,
-	} = useLicenseKeyActions({
-		products,
-		projectExternalReferenceCode: projectId,
-		revalidate,
-	});
+	} = useLicenseKeyActions({generatePath: 'generate', revalidate});
 
 	const newKeyExternalReferenceCode = searchParams.get('new');
 	const openedNewKeyRef = useRef(false);
@@ -156,21 +157,11 @@ export default function LicenseKeys() {
 
 		openedNewKeyRef.current = true;
 
-		handleNewKey([newKeyExternalReferenceCode]);
-
-		setSearchParams(
-			(previousSearchParams) => {
-				const nextSearchParams = new URLSearchParams(
-					previousSearchParams
-				);
-
-				nextSearchParams.delete('new');
-
-				return nextSearchParams;
-			},
+		navigate(
+			`generate?new=${encodeURIComponent(newKeyExternalReferenceCode)}`,
 			{replace: true}
 		);
-	}, [handleNewKey, newKeyExternalReferenceCode, setSearchParams]);
+	}, [navigate, newKeyExternalReferenceCode]);
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
@@ -219,6 +210,7 @@ export default function LicenseKeys() {
 			key: 'action',
 			render: (row) => (
 				<KebabActions
+					hasActivationPermission={hasActivationPermission}
 					onDeactivate={() => handleDeactivate(row)}
 					onDownload={() => handleDownload(row)}
 					onReactivate={() => handleReactivate(row)}
@@ -268,12 +260,14 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					<Button
-						displayType="primary"
-						onClick={() => handleNewKey()}
-					>
-						{translate('new-key')}
-					</Button>
+					hasActivationPermission ? (
+						<Button
+							displayType="primary"
+							onClick={() => handleNewKey()}
+						>
+							{translate('generate-new')}
+						</Button>
+					) : undefined
 				}
 				columns={columns}
 				emptyLabel="no-activation-keys-yet"
