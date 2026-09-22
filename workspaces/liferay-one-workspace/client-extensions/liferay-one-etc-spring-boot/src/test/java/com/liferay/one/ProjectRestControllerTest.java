@@ -426,7 +426,7 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageEventSummaryCountsAddOnBucketsFromTheBucketProduct()
+	public void testGetUsageEventSummaryCountsAddOnBucketsFromTheAddOnSku()
 		throws Exception {
 
 		_setUpProductName(_PRODUCT_NAME_LDP);
@@ -442,7 +442,7 @@ public class ProjectRestControllerTest {
 		Mockito.when(
 			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
 		).thenReturn(
-			CommerceProductConstants.NAME_DATA_PLATFORM_EVENTS_BUCKET
+			CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM
 		);
 
 		_setUpLDPEventSummary();
