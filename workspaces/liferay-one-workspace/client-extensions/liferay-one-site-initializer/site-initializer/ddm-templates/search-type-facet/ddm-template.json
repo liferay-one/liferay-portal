@@ -1,0 +1,6 @@
+{
+	"className": "com.liferay.portal.search.web.internal.type.facet.portlet.TypeFacetPortlet",
+	"ddmTemplateKey": "SEARCH_TYPE_FACET",
+	"name": "Search Type Facet",
+	"resourceClassName": "com.liferay.portlet.display.template.PortletDisplayTemplate"
+}
