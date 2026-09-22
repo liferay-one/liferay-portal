@@ -77,6 +77,26 @@ public class PropertyService extends OneBaseService {
 		return getAllItems("/o/c/properties", filterString, Property::new);
 	}
 
+	public List<Property> getProperties(String className, String name)
+		throws Exception {
+
+		return getProperties(
+			StringBundler.concat(
+				"(className eq '", escapeODataString(className),
+				"') and (name eq '", escapeODataString(name), "')"));
+	}
+
+	public List<Property> getProperties(
+			String className, String name, String value)
+		throws Exception {
+
+		return getProperties(
+			StringBundler.concat(
+				"(className eq '", escapeODataString(className),
+				"') and (name eq '", escapeODataString(name),
+				"') and (value eq '", escapeODataString(value), "')"));
+	}
+
 	public String getPropertyValue(long accountId, String name)
 		throws Exception {
 
