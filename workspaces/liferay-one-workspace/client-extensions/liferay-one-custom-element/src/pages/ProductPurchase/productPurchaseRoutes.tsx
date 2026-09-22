@@ -6,6 +6,11 @@
 import {ReactNode, lazy} from 'react';
 import {getSpecificationValue} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
+import {
+	ProductTypeVocabulary,
+	ProductVocabulary,
+	getProductCategoriesByVocabularyName,
+} from '~/utils/productUtils';
 import {AppRoute} from '~/utils/routeUtils';
 
 import type {DeliveryProduct} from '~/types/product';
@@ -49,6 +54,7 @@ const SEOStudioForm = lazy(
 	() => import('./LiferayProduct/SEOStudio/SEOStudioForm')
 );
 const ProjectSelection = lazy(() => import('./LiferayProduct/Project'));
+const Solution = lazy(() => import('./Solution/Solution'));
 
 export type ProductPurchaseStep = {
 	element: ReactNode;
@@ -80,6 +86,26 @@ export function getProductPurchaseSteps({
 	searchParams?: URLSearchParams;
 }): ProductPurchaseStep[] {
 	if (product) {
+		if (
+			getProductCategoriesByVocabularyName(
+				product.categories ?? [],
+				ProductVocabulary.PRODUCT_TYPE
+			).includes(ProductTypeVocabulary.SOLUTION)
+		) {
+			return [
+				{
+					element: <AccountSelection />,
+					index: true,
+					title: i18n.translate('account'),
+				},
+				{
+					element: <Solution />,
+					path: 'solution',
+					title: i18n.translate('form'),
+				},
+			];
+		}
+
 		const solutionType = getSpecificationValue(product, 'solution-type');
 
 		if (solutionType === 'ai-hub') {
