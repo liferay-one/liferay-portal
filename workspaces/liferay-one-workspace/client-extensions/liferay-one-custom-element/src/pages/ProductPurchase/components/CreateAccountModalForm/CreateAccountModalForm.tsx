@@ -22,7 +22,7 @@ import CommerceUI from '~/services/headless/CommerceUI';
 import {Liferay} from '~/services/liferay/liferay';
 import marketplaceOAuth2 from '~/services/spring-boot/Marketplace';
 
-import AcountSelectDropDown from './AccountSelectDropDown';
+import AccountSelectDropDown from '../AccountSelectDropDown/AccountSelectDropDown';
 
 import './CreateAccountModalForm.css';
 
@@ -169,7 +169,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 						{i18n.translate('account-type')}
 					</Form.Label>
 
-					<AcountSelectDropDown
+					<AccountSelectDropDown
 						onChange={(value: string) =>
 							setValue('accountType', value)
 						}
