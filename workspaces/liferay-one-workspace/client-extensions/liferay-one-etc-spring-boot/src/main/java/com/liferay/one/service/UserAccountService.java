@@ -253,6 +253,33 @@ public class UserAccountService extends OneBaseService {
 		userAccountResource.patchUserAccount(userId, userAccount);
 	}
 
+	public void updateUser(
+			String familyName, String givenName, long userId, String uuid)
+		throws Exception {
+
+		UserAccountResource userAccountResource = _buildUserAccountResource();
+
+		UserAccount userAccount = new UserAccount();
+
+		if (Validator.isNotNull(uuid)) {
+			CustomValue customValue = new CustomValue();
+
+			customValue.setData(() -> uuid);
+
+			CustomField customField = new CustomField();
+
+			customField.setCustomValue(() -> customValue);
+			customField.setName(() -> "uuid_");
+
+			userAccount.setCustomFields(() -> new CustomField[] {customField});
+		}
+
+		userAccount.setFamilyName(() -> familyName);
+		userAccount.setGivenName(() -> givenName);
+
+		userAccountResource.patchUserAccount(userId, userAccount);
+	}
+
 	private UserAccountResource _buildUserAccountResource(
 		Jwt jwt, String... parameters) {
 

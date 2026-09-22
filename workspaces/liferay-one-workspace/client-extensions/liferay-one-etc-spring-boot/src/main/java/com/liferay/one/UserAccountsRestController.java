@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
@@ -46,12 +45,7 @@ public class UserAccountsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		UserAccount userAccount = _userAccountService.getUserAccount(userId);
-
-		_oktaService.syncContact(
-			userAccount.getEmailAddress(), userAccount.getGivenName(),
-			userAccount.getFamilyName(),
-			userAccount.getExternalReferenceCode());
+		_oktaService.syncContact(_userAccountService.getUserAccount(userId));
 	}
 
 	@Autowired

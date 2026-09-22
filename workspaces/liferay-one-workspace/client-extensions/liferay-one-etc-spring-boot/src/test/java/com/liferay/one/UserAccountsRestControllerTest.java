@@ -66,7 +66,7 @@ public class UserAccountsRestControllerTest {
 		Mockito.verify(
 			_oktaService
 		).syncContact(
-			"jane@example.com", "Jane", "Doe", "uuid-1234"
+			userAccount
 		);
 	}
 

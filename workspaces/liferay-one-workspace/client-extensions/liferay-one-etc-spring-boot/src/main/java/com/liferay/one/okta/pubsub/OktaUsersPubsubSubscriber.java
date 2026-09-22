@@ -8,6 +8,7 @@ package com.liferay.one.okta.pubsub;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.okta.model.OktaUser;
+import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.service.AccountService;
@@ -110,11 +111,7 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 			return;
 		}
 
-		if (oktaUser.isEmailAddressVerified() &&
-			!UserAccountUtil.isVerified(userAccount)) {
-
-			_userAccountService.setVerified(userAccount.getId());
-		}
+		_oktaService.syncContact(userAccount);
 	}
 
 	private void _unassignAllMemberships(OktaUser oktaUser) throws Exception {
@@ -142,10 +139,12 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 			return;
 		}
 
-		if (oktaUser.isEmailAddressVerified() &&
-			!UserAccountUtil.isVerified(userAccount)) {
+		boolean verified = UserAccountUtil.isVerified(userAccount);
 
-			_userAccountService.setVerified(userAccount.getId());
+		OktaUser syncedOktaUser = _oktaService.syncContact(userAccount);
+
+		if (!verified && (syncedOktaUser != null) &&
+			syncedOktaUser.isEmailAddressVerified()) {
 
 			_provisioningEmailService.sendVerifiedWelcomeEmail(userAccount);
 		}
@@ -168,6 +167,9 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private OktaService _oktaService;
 
 	@Value("${liferay.one.okta.users.pubsub.subscriber.project.id}")
 	private String _projectId;

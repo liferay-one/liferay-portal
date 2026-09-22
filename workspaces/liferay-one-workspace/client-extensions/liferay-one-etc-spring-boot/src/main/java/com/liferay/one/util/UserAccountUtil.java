@@ -53,6 +53,30 @@ public class UserAccountUtil {
 		return roleNames;
 	}
 
+	public static String getUuid(UserAccount userAccount) {
+		CustomField[] customFields = userAccount.getCustomFields();
+
+		if (customFields == null) {
+			return null;
+		}
+
+		for (CustomField customField : customFields) {
+			if (!Objects.equals(customField.getName(), "uuid_")) {
+				continue;
+			}
+
+			CustomValue customValue = customField.getCustomValue();
+
+			if (customValue == null) {
+				return null;
+			}
+
+			return GetterUtil.getString(customValue.getData());
+		}
+
+		return null;
+	}
+
 	public static boolean hasAccountMembership(
 		UserAccount userAccount, long accountId) {
 
