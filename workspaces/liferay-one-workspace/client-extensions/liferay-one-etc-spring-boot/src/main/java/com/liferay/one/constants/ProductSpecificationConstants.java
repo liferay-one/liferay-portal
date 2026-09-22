@@ -10,7 +10,16 @@ package com.liferay.one.constants;
  */
 public class ProductSpecificationConstants {
 
+	public static final String KEY_GENERATES_ACTIVATION_KEY =
+		"generates-activation-key";
+
+	public static final String KEY_LICENSE_ENTRY_FAMILY =
+		"license-entry-family";
+
 	public static final String KEY_PRICE_MODEL = "price-model";
+
+	public static final String KEY_PROJECT_ACTIVATION_PROFILE =
+		"project-activation-profile";
 
 	public static final String KEY_SOLUTION_TYPE = "solution-type";
 
