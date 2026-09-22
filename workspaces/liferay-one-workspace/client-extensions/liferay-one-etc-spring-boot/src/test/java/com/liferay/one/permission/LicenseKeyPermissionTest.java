@@ -5,6 +5,8 @@
 
 package com.liferay.one.permission;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
@@ -27,6 +29,64 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Wellington Barbosa
  */
 public class LicenseKeyPermissionTest {
+
+	@Test
+	public void testCheckSelfProvisioningGrantsWhenCustomFieldIsMissing()
+		throws Exception {
+
+		LicenseKeyPermission licenseKeyPermission = _createPermission(
+			_createUserAccount(new String[0]));
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenReturn(
+			new Account()
+		);
+
+		licenseKeyPermission.checkSelfProvisioning(_ACCOUNT_ID);
+	}
+
+	@Test
+	public void testCheckSelfProvisioningThrowsWhenAccountIsMissing()
+		throws Exception {
+
+		LicenseKeyPermission licenseKeyPermission = _createPermission(
+			_createUserAccount(new String[0]));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeyPermission.checkSelfProvisioning(_ACCOUNT_ID));
+	}
+
+	@Test
+	public void testCheckSelfProvisioningThrowsWhenDisabled() throws Exception {
+		LicenseKeyPermission licenseKeyPermission = _createPermission(
+			_createUserAccount(new String[0]));
+
+		Account account = new Account();
+
+		CustomField customField = new CustomField();
+
+		customField.setName(() -> "allowSelfProvisioning");
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(() -> false);
+
+		customField.setCustomValue(() -> customValue);
+
+		account.setCustomFields(() -> new CustomField[] {customField});
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenReturn(
+			account
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeyPermission.checkSelfProvisioning(_ACCOUNT_ID));
+	}
 
 	@Test
 	public void testCheckUpdateGrantsManageLicenseKeysAccountRoles()

@@ -687,6 +687,12 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		Mockito.verify(
+			_licenseKeyPermission
+		).checkSelfProvisioning(
+			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
+		);
+
+		Mockito.verify(
 			_licenseKeyService
 		).updateLicenseKeyActive(
 			false, 1L
@@ -722,6 +728,42 @@ public class LicenseKeysRestControllerTest {
 		).check(
 			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
 			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysDeactivate(
+				null, new long[] {1L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateThrowsForbiddenWhenSelfProvisioningIsDisabled()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).checkSelfProvisioning(
+			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
 		);
 
 		Assertions.assertThrows(
