@@ -1,0 +1,50 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"defaultValue": true,
+					"label": "Available",
+					"name": "available",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": "",
+					"label": "Button Link",
+					"name": "buttonLink",
+					"type": "text"
+				},
+				{
+					"defaultValue": "Purchase",
+					"label": "Button Text",
+					"name": "buttonText",
+					"type": "text"
+				},
+				{
+					"defaultValue": false,
+					"label": "Custom Price",
+					"name": "customPrice",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": false,
+					"label": "Monthly Price",
+					"name": "monthlyPrice",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Purchasable",
+					"name": "purchasable",
+					"type": "checkbox"
+				},
+				{
+					"label": "SKU External Reference Code",
+					"name": "skuExternalReferenceCode",
+					"type": "text"
+				}
+			],
+			"label": "Tier Card"
+		}
+	]
+}

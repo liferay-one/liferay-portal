@@ -1,0 +1,2504 @@
+{
+	"pageElement": {
+		"id": "2cfcb64f-999a-d905-ba5d-1df75ba5b8b4",
+		"pageElements": [
+			{
+				"definition": {
+					"fragmentStyle": {
+						"backgroundColor": "",
+						"borderRadius": "10px",
+						"borderWidth": "0",
+						"minHeight": "100vh"
+					},
+					"indexed": true,
+					"layout": {
+					}
+				},
+				"id": "dcb5046b-e882-e593-ba19-68c7f6033c75",
+				"pageElements": [
+					{
+						"definition": {
+							"cssClasses": [
+								"sticky-container-24"
+							],
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:sticky;\ntop:12px;\nz-index:969;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#F7F7F8",
+								"paddingBottom": "4"
+							},
+							"indexed": true,
+							"layout": {
+								"paddingBottom": 2
+							}
+						},
+						"id": "73705427-265f-f836-ca55-ed1987076893",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"borderWidth": "0"
+									},
+									"indexed": true,
+									"layout": {
+										"contentDisplay": "FlexColumn",
+										"widthType": "Fixed"
+									}
+								},
+								"id": "dd0b1050-7f80-9024-9277-376d2aac5527",
+								"pageElements": [
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\nbackground-color: transparent;\n}",
+											"fragmentStyle": {
+												"paddingBottom": "4",
+												"paddingTop": "4"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyleGroupId": "[$SCOPE_GROUP_ID$]",
+													"showCurrentGroup": "true",
+													"showGuestGroup": "false",
+													"showLayout": "true",
+													"showParentGroups": "true",
+													"showPortletBreadcrumb": "true"
+												},
+												"widgetName": "com_liferay_site_navigation_breadcrumb_web_portlet_SiteNavigationBreadcrumbPortlet"
+											}
+										},
+										"id": "011f19d5-01a9-ecda-cf93-bba24d0e6067",
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"borderWidth": "0"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexRow",
+												"justify": "SpaceBetween"
+											}
+										},
+										"id": "2c534036-8b3f-9158-4344-9fbc4623b803",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "2f5e2287-4dd3-cb4e-6613-84dfd3e6eda2",
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "product-icon",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"imageSize": "w-100"
+															},
+															"fragmentFields": [
+																{
+																	"id": "icon",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "ddmTemplate__ddmTemplate_18426557",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"height": "80px",
+																"maxWidth": "80px",
+																"width": "80px"
+															},
+															"indexed": true
+														},
+														"id": "dbab2f53-7a19-2b66-c9f1-a0d860a09911",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"borderWidth": "0"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "045e0f2f-4026-2f24-7714-ec5fdea6affd",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"id": "4cd82209-38c8-ce16-42f1-f7698dcca81a",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "text",
+																				"siteKey": "[$GROUP_KEY$]"
+																			},
+																			"fragmentConfig": {
+																				"fontSize": "font-size-paragraph-base",
+																				"smallCaps": false,
+																				"tabletScreenCenter": false
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"mapping": {
+																								"fieldKey": "CPDefinition_name",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "28px",
+																				"fontWeight": "600",
+																				"paddingRight": "3"
+																			},
+																			"indexed": true
+																		},
+																		"id": "0cfd6d37-7ce1-a1a3-8eb4-e1240238582d",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<div class=\"beta-badge-box\">GA</div>\n\n<style>\n  .beta-badge-box {\n    align-items: center;\n    background-color: #d1ecfa;\n    border-radius: 4px;\n    color: #166e9e;\n    display: flex;\n    font-size: 13px;\n    font-weight: 600;\n    justify-content: center;\n    line-height: 16px;\n    padding: 4px 8px;\n    text-align: center;\n    vertical-align: middle;\n  }\n</style>"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"id": "a80455a9-a2e6-a097-3e43-e522b56802a1",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"id": "a3ecd304-ad30-535c-979d-9854d33ea832",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<span>By </span>\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"paddingRight": "1",
+																				"textColor": "#54555F"
+																			},
+																			"indexed": true
+																		},
+																		"id": "786045d5-d14d-9f41-58e1-481906c2d1fc",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"customCSS": ".[$FRAGMENT_CLASS$] a {\ncolor: #54555F;\n}",
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"mapping": {
+																								"fieldKey": "ddmTemplate__ddmTemplate_18426564",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"id": "a29ecbe3-4cd8-d3ef-47d6-f39e651bc268",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-image"
+													},
+													"fragmentConfig": {
+														"imageSize": "w-100"
+													},
+													"fragmentFields": [
+														{
+															"id": "image-square",
+															"value": {
+																"fragmentImage": {
+																	"description": {
+																		"value_i18n": {
+																		}
+																	},
+																	"url": {
+																		"value_i18n": {
+																		}
+																	}
+																},
+																"fragmentLink": {
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"hidden": true,
+														"marginBottom": "2",
+														"marginLeft": "2",
+														"marginRight": "2",
+														"marginTop": "2"
+													},
+													"indexed": true
+												},
+												"id": "abafb51e-0222-f846-d51c-ee93a839991b",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"align": "Center",
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "203067b8-4671-0841-0531-e02e69403cfc",
+												"pageElements": [
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] .main-button {\n width: max-content !important;\nz-index: 10;\n}",
+															"fragment": {
+																"key": "get-app-button",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"buttonText": "Try Beta",
+																"product-id": {
+																	"href": ""
+																},
+																"useDescription": false
+															},
+															"fragmentFields": [
+																{
+																	"id": "product-id",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "CPDefinition_cProductId",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"hidden": true
+															},
+															"indexed": true
+														},
+														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-button"
+															},
+															"fragmentConfig": {
+																"buttonSize": "nm",
+																"buttonType": "primary",
+																"type": "link"
+															},
+															"fragmentFields": [
+																{
+																	"id": "link",
+																	"value": {
+																		"fragmentLink": {
+																			"value": {
+																				"href": {
+																					"value_i18n": {
+																						"en_US": "https://www.liferay.com/contact-sales"
+																					}
+																				}
+																			}
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"en_US": "Contact Sales"
+																			}
+																		}
+																	}
+																}
+															],
+															"indexed": true
+														},
+														"id": "78770b82-a4fb-370e-0d43-d97e7c589081",
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragment": {
+								"key": "marketplace-modal",
+								"siteKey": "[$GROUP_KEY$]"
+							},
+							"fragmentConfig": {
+								"contentInitEvent": "",
+								"modalEditMode": false,
+								"modalId": "cmp-modal-1",
+								"modalOverlayColor": "primary",
+								"modalSize": "md"
+							},
+							"fragmentFields": [
+								{
+									"id": "buttonText",
+									"value": {
+										"fragmentLink": {
+										}
+									}
+								}
+							],
+							"fragmentStyle": {
+								"hidden": true
+							},
+							"indexed": true
+						},
+						"id": "794d5648-fbf9-a9ea-ce17-447891fd8dc6",
+						"pageElements": [
+							{
+								"definition": {
+								},
+								"id": "ed7e12ef-ccf0-1957-d584-9225eae7c512",
+								"pageElements": [
+									{
+										"definition": {
+											"indexed": true,
+											"layout": {
+											}
+										},
+										"id": "476f58e8-e88c-d9d8-130a-48a696ad0915",
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "text",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"fontSize": "font-size-paragraph-base",
+														"smallCaps": false,
+														"tabletScreenCenter": false
+													},
+													"fragmentFields": [
+														{
+															"id": "text",
+															"value": {
+																"fragmentLink": {
+																},
+																"text": {
+																	"value_i18n": {
+																		"en_US": "CONTENT MARKETING PLATFORM"
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "ecba5cb3-094a-d7b3-46c1-e8a90f69ec64",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "FragmentDropZone"
+							}
+						],
+						"type": "Fragment"
+					},
+					{
+						"definition": {
+							"fragment": {
+								"key": "marketplace-modal",
+								"siteKey": "[$GROUP_KEY$]"
+							},
+							"fragmentConfig": {
+								"contentInitEvent": "",
+								"modalEditMode": false,
+								"modalId": "",
+								"modalOverlayColor": "primary",
+								"modalSize": "md"
+							},
+							"fragmentFields": [
+								{
+									"id": "buttonText",
+									"value": {
+										"fragmentLink": {
+										}
+									}
+								}
+							],
+							"fragmentStyle": {
+								"hidden": true
+							},
+							"indexed": true
+						},
+						"id": "883ae40c-f911-fd6f-54c4-a8689af84529",
+						"type": "Fragment"
+					},
+					{
+						"definition": {
+							"fragment": {
+								"key": "text",
+								"siteKey": "[$GROUP_KEY$]"
+							},
+							"fragmentConfig": {
+								"fontSize": "font-size-paragraph-base",
+								"smallCaps": false,
+								"tabletScreenCenter": false
+							},
+							"fragmentFields": [
+								{
+									"id": "text",
+									"value": {
+										"fragmentLink": {
+										}
+									}
+								}
+							],
+							"fragmentStyle": {
+								"hidden": true
+							},
+							"indexed": true
+						},
+						"id": "c2e4940b-e52f-8059-2f22-9f84c9832045",
+						"type": "Fragment"
+					},
+					{
+						"definition": {
+							"fragment": {
+								"key": "BASIC_COMPONENT-paragraph"
+							},
+							"fragmentConfig": {
+							},
+							"fragmentFields": [
+								{
+									"id": "element-text",
+									"value": {
+										"fragmentLink": {
+										}
+									}
+								}
+							],
+							"fragmentStyle": {
+								"hidden": true
+							},
+							"indexed": true
+						},
+						"id": "aeb24c59-4366-5184-e7db-3ede1b9009af",
+						"type": "Fragment"
+					},
+					{
+						"definition": {
+							"customCSS": ".[$FRAGMENT_CLASS$] h1 {\n line-height: 56px !important;\nfont-size: 56px;\ntext-align: center;\n}",
+							"fragmentStyle": {
+								"paddingBottom": "9",
+								"paddingTop": "9"
+							},
+							"indexed": true,
+							"layout": {
+								"align": "Center",
+								"contentDisplay": "FlexColumn",
+								"widthType": "Fixed"
+							}
+						},
+						"id": "462fca70-9a58-fb7f-8d17-42691a0c8f93",
+						"pageElements": [
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<h1 class=\"dxp-gradient-text\">\nThe All-in-One Platform for Modern Content Marketing\n<mark></mark>\n</h1>"
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "56px",
+										"fontWeight": "700"
+									},
+									"indexed": true
+								},
+								"id": "2fd23496-066b-d854-0842-79e07f5d7fcd",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-paragraph"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-text",
+											"value": {
+												"fragmentLink": {
+												},
+												"text": {
+													"value_i18n": {
+														"en_US": "<p>Everything your team needs to plan, launch, and measure high-impact campaigns in one connected workspace.</p>\n\n\n\n\n"
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "24px",
+										"textAlign": "center"
+									},
+									"indexed": true
+								},
+								"id": "734a94a6-663c-f8f0-5a15-0a2467e23969",
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"paddingBottom": "9",
+								"paddingTop": "9"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexRow",
+								"widthType": "Fixed"
+							}
+						},
+						"id": "d6692e42-d7ad-d818-9413-0693ed6442de",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"height": "100%",
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "Start",
+										"contentDisplay": "FlexColumn",
+										"justify": "Center"
+									},
+									"name": "content"
+								},
+								"id": "63cd17a2-1a79-2203-5f13-5d07aa9e803c",
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentStyle": {
+												"marginTop": "5"
+											},
+											"indexed": true,
+											"layout": {
+												"marginTop": 4
+											}
+										},
+										"id": "8e67edc2-fff9-9724-a56f-3abbfd25c39c",
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "text",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"fontSize": "font-size-paragraph-base",
+														"smallCaps": false,
+														"tabletScreenCenter": false
+													},
+													"fragmentFields": [
+														{
+															"id": "text",
+															"value": {
+																"fragmentLink": {
+																},
+																"text": {
+																	"value_i18n": {
+																		"en_US": "<p><b id=\"docs-internal-guid-875ed6b6-7fff-94a7-9df5-6f3694f174ed\">What Is Liferay CMP?</b></p>\n\n\n\n\n"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "32px",
+														"fontWeight": "600",
+														"marginBottom": "3",
+														"textColor": "#1C1C24"
+													},
+													"indexed": true
+												},
+												"id": "366ed434-0378-278d-8f8c-d736a1d2cb4e",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "<p class=\"mb-0\">\n  A Content Marketing Platform helps marketing teams <b>plan, produce, coordinate, \n  and measure content across campaigns</b>.  Liferay CMP is built natively on Liferay CMS, \n  with built-in DAM capabilities, bringing content creation, asset management, \n  and campaign coordination into one place. \n No separate tools to connect. No integration to maintain.\n</p>\n"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "20px"
+													},
+													"indexed": true
+												},
+												"id": "1ebd1950-0de6-34a0-aaee-ac6d18ebd97b",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							},
+							{
+								"definition": {
+									"fragmentStyle": {
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "End",
+										"contentDisplay": "FlexColumn",
+										"justify": "Center"
+									}
+								},
+								"id": "69ab924c-d866-b8d5-6674-1be34f6ad9f5",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "image-container",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fragmentHeight": "381px",
+												"fragmentId": "1",
+												"fragmentRadius": "16px",
+												"fragmentWidth": "600px",
+												"shape": "rectangle"
+											},
+											"fragmentFields": [
+												{
+													"id": "icon",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"defaultFragmentInlineValue": {
+																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/image1.png$]"
+															},
+															"mapping": {
+																"fieldKey": "FileEntry_downloadURL",
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																	"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/image1.png#]"
+																}
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"textAlign": "right"
+											},
+											"indexed": true
+										},
+										"id": "ac3d6f9d-e5a6-d4ed-6dc5-98d74de7043b",
+										"type": "Fragment"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition: relative;\nz-index: 1;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#060B14",
+								"overflow": "hidden",
+								"paddingBottom": "80px"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexColumn"
+							}
+						},
+						"id": "f3f85c57-d7f6-5f66-4154-3fefac774423",
+						"pageElements": [
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:absolute;\ntop:0px;\nright:0px;\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<div>\n  <svg\n    width=\"1440\"\n    height=\"1711\"\n    viewBox=\"0 0 1440 1711\"\n    fill=\"none\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g opacity=\"0.6\">\n      <g opacity=\"0.3\" filter=\"url(#filter0_fn_5674_46315)\">\n        <path\n          d=\"M1692.57 434.065C1692.57 802.403 1025.29 1661 943 1472C882 1241 358 802.403 358 434.065C358 65.7262 656.754 -232.871 1025.29 -232.871C1393.82 -232.871 1692.57 65.7262 1692.57 434.065Z\"\n          fill=\"#8C3BF4\"\n        />\n      </g>\n      <g opacity=\"0.5\" filter=\"url(#filter1_fn_5674_46315)\">\n        <path\n          d=\"M1512.1 177.832C1512.1 404.729 1001 564.336 1001 373C1013.95 174.336 490 233.896 490 7C490 -219.896 874.033 -233 1101.05 -233C1328.06 -233 1512.1 -49.0641 1512.1 177.832Z\"\n          fill=\"#F43B3E\"\n        />\n      </g>\n      <g opacity=\"0.4\" filter=\"url(#filter2_fn_5674_46315)\">\n        <path\n          d=\"M1794 308.681C1794 541.47 1423.91 754 1191 754C958.088 754 1161.87 520 950.55 308.681C767 95 1139.36 -112.823 1372.28 -112.823C1605.19 -112.823 1794 75.8909 1794 308.681Z\"\n          fill=\"#FF690B\"\n        />\n      </g>\n      <g opacity=\"0.8\" filter=\"url(#filter3_fn_5674_46315)\">\n        <path\n          d=\"M1664 73.9781C1664 310.896 1468.41 678 1231.09 678C993.783 678 1099.66 285.155 804.619 73.9781C649.309 -72.07 996.998 -355 1234.31 -355C1471.62 -355 1664 -162.94 1664 73.9781Z\"\n          fill=\"#3B47F4\"\n        />\n      </g>\n    </g>\n    <defs>\n      <filter\n        id=\"filter0_fn_5674_46315\"\n        x=\"-242\"\n        y=\"-832.871\"\n        width=\"2534.57\"\n        height=\"2931.7\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter1_fn_5674_46315\"\n        x=\"90\"\n        y=\"-633\"\n        width=\"1822.1\"\n        height=\"1491.22\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter2_fn_5674_46315\"\n        x=\"501.351\"\n        y=\"-512.823\"\n        width=\"1692.65\"\n        height=\"1666.82\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feComposite\n          operator=\"in\"\n          in2=\"effect1_foregroundBlur_5674_46315\"\n          in=\"coloredNoise1\"\n          result=\"noise1Clipped\"\n        />\n        <feComponentTransfer in=\"noise1Clipped\" result=\"color1\">\n          <feFuncA type=\"table\" tableValues=\"0 0.55\" />\n        </feComponentTransfer>\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter3_fn_5674_46315\"\n        x=\"366\"\n        y=\"-755\"\n        width=\"1698\"\n        height=\"1833\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n    </defs>\n  </svg>\n</div>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true,
+									"name": "Gradient Top HTML"
+								},
+								"id": "6d2e465b-42d9-b22b-fd58-5c4f11219c8d",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"cssClasses": [
+										"bottom-gradient"
+									],
+									"customCSS": ".[$FRAGMENT_CLASS$] {\n  position: absolute;\n  bottom: 0;\n  left: -200px;\n  transform: scale(-1, -1);\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<div>\n  <svg\n    width=\"1440\"\n    height=\"1711\"\n    viewBox=\"0 0 1440 1711\"\n    fill=\"none\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g opacity=\"0.6\">\n      <g opacity=\"0.3\" filter=\"url(#filter0_fn_5674_46315)\">\n        <path\n          d=\"M1692.57 434.065C1692.57 802.403 1025.29 1661 943 1472C882 1241 358 802.403 358 434.065C358 65.7262 656.754 -232.871 1025.29 -232.871C1393.82 -232.871 1692.57 65.7262 1692.57 434.065Z\"\n          fill=\"#8C3BF4\"\n        />\n      </g>\n      <g opacity=\"0.5\" filter=\"url(#filter1_fn_5674_46315)\">\n        <path\n          d=\"M1512.1 177.832C1512.1 404.729 1001 564.336 1001 373C1013.95 174.336 490 233.896 490 7C490 -219.896 874.033 -233 1101.05 -233C1328.06 -233 1512.1 -49.0641 1512.1 177.832Z\"\n          fill=\"#F43B3E\"\n        />\n      </g>\n      <g opacity=\"0.4\" filter=\"url(#filter2_fn_5674_46315)\">\n        <path\n          d=\"M1794 308.681C1794 541.47 1423.91 754 1191 754C958.088 754 1161.87 520 950.55 308.681C767 95 1139.36 -112.823 1372.28 -112.823C1605.19 -112.823 1794 75.8909 1794 308.681Z\"\n          fill=\"#FF690B\"\n        />\n      </g>\n      <g opacity=\"0.8\" filter=\"url(#filter3_fn_5674_46315)\">\n        <path\n          d=\"M1664 73.9781C1664 310.896 1468.41 678 1231.09 678C993.783 678 1099.66 285.155 804.619 73.9781C649.309 -72.07 996.998 -355 1234.31 -355C1471.62 -355 1664 -162.94 1664 73.9781Z\"\n          fill=\"#3B47F4\"\n        />\n      </g>\n    </g>\n    <defs>\n      <filter\n        id=\"filter0_fn_5674_46315\"\n        x=\"-242\"\n        y=\"-832.871\"\n        width=\"2534.57\"\n        height=\"2931.7\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter1_fn_5674_46315\"\n        x=\"90\"\n        y=\"-633\"\n        width=\"1822.1\"\n        height=\"1491.22\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter2_fn_5674_46315\"\n        x=\"501.351\"\n        y=\"-512.823\"\n        width=\"1692.65\"\n        height=\"1666.82\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feComposite\n          operator=\"in\"\n          in2=\"effect1_foregroundBlur_5674_46315\"\n          in=\"coloredNoise1\"\n          result=\"noise1Clipped\"\n        />\n        <feComponentTransfer in=\"noise1Clipped\" result=\"color1\">\n          <feFuncA type=\"table\" tableValues=\"0 0.55\" />\n        </feComponentTransfer>\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter3_fn_5674_46315\"\n        x=\"366\"\n        y=\"-755\"\n        width=\"1698\"\n        height=\"1833\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n    </defs>\n  </svg>\n</div>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true,
+									"name": "Gradient Bottom HTML"
+								},
+								"id": "a58ace6d-b3b4-1ff1-306a-b61f06339394",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nz-index: 10;\n}",
+									"fragmentStyle": {
+										"paddingTop": "80px"
+									},
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8027aedf-93f2-07c4-2ddf-c1715dab602c",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "text",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fontSize": "font-size-paragraph-large",
+												"smallCaps": false,
+												"tabletScreenCenter": false
+											},
+											"fragmentFields": [
+												{
+													"id": "text",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"value_i18n": {
+																"en_US": "<p>Plan Better. Create Faster. Publish Everywhere.</p>\n\n\n\n\n"
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"fontSize": "48px",
+												"fontWeight": "fontWeightLight",
+												"textAlign": "center",
+												"textColor": "#FFFFFF"
+											},
+											"indexed": true
+										},
+										"id": "f1544b1a-702a-6af6-5275-9d2b6276c3b0",
+										"type": "Fragment"
+									},
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 136px\n}",
+											"fragmentStyle": {
+												"marginBottom": "80px",
+												"marginTop": "80px"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexColumn"
+											}
+										},
+										"id": "2652d95f-297f-0263-ff4e-b1f9546796e3",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "bc428e83-b1ed-221a-b233-0abbdd406a45",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"paddingRight": "5rem",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "1ed4b2ba-bbe3-d54e-2b78-f3bccab3fa66",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p><b id=\"docs-internal-guid-40d3df43-7fff-05ea-7e59-a0744d9ea5d2\">Know your audience coverage before you launch.</b></p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "083e9837-0a55-cd73-6698-84dc2f7d92e5",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nMost campaigns discover content gaps after launch, not before. \n<span class=\"highlight\">The Content Population Matrix maps every asset a campaign needs against each target \n  audience</span>, making gaps visible and actionable from day one. Set campaign goals and audience definitions once at the start of a campaign, and they flow through planning, execution, and attribution automatically, so every stage works from the same frame of reference.\n</p>\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "41ba1862-228b-8f5c-bb74-3a5625b6f221",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "513751ee-7883-8bcc-7c41-dff11f1f6151",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "381px",
+																		"fragmentId": "2",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "600px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_001.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_001.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"borderRadius": "20px",
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "2972acea-e9f0-aef4-b3a0-18fc21d59ac0",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "0a19ec57-f667-097b-ca44-b89b53ca124c",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "6b4faf1d-1adf-a04d-5a74-aa9505c0e29f",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "448px",
+																		"fragmentId": "3",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "597px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_004.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_004.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "7a5456cd-043d-ff9d-fe09-9853fbd35c8c",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "9dda70df-fe95-6ef5-fc6d-085cdafc76d1",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p><b id=\"docs-internal-guid-f6b7e12f-7fff-2558-bfea-32a77b6da509\">Replace the campaign coordination spreadsheet.</b></p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "fbdf4d81-4bdb-ff43-b9e8-443c1e9821b4",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n  Marketing teams run campaigns across email threads, spreadsheets, and chat with no single source of truth.  <span class=\"highlight\">Liferay CMP brings coordination into a structured workspace with tasks, owners, deadlines, Calendar and Kanban views</span>, and configurable approval flows. The full campaign lifecycle, from planning through execution, is operable by marketing without IT involvement.\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "17ddbf91-59a7-36db-3123-92ddeadb56ad",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "21e74c13-0c32-9bc7-492e-9e29a3742649",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "ea3e18d8-618a-4785-6576-d3c3039087ba",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p><b id=\"docs-internal-guid-3c00d44a-7fff-646a-1dd1-04c5e3deca4f\">Content and assets on one platform, with no integration.</b></p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "af121447-1612-e138-6f6e-d1f833b74516",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\nMost CMPs require a connection layer between campaign management and the CMS, even \nwhen both come from the same vendor. <span class=\"highlight\">Liferay CMP runs \nnatively on Liferay CMS, sharing the same data model, permissions, and publishing \ninfrastructure with no connection to configure or maintain.</span> \nBuilt-in DAM capabilities mean campaign tasks, content assets, and brand files all live in one governed workspace.\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "829aeaec-5f02-9c04-7067-1d2bd9bfbbc5",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "a135bc09-661b-4be7-1010-dfe7f34a6769",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "373px",
+																		"fragmentId": "4",
+																		"fragmentWidth": "601px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_003.jpg$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_003.jpg#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "c5ad7e60-8e12-3613-5714-da986fbf3db8",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "bcd631e6-90e6-6a50-907e-f954cac73041",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "822655a4-e431-21a3-3b93-e1f40c67d907",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "395px",
+																		"fragmentId": "6",
+																		"fragmentWidth": "602px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_005.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_005.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "562bc841-d7a8-dfc5-61ad-0493b4cc378a",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "f5af04e1-57df-a561-0d98-9653a21b15a1",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p><b id=\"docs-internal-guid-d69c7f49-7fff-3e0b-3429-f167e68d30ec\">Understand how your content is performing with built-in analytics.</b></p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "3538f1ef-9501-1a8b-8226-e3ad9455116b",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nGet insights into the effectiveness of your content so you can boost engagement and conversion rates and\nfocus on content quality. <span class=\"highlight\">Use the content dashboard to easily identify what content is being used where and see metrics on views, reads, and traffic.</span> Select any piece of content in Liferay CMS and view insights like views and shares immediately, without leaving the platform.\n</p>\n\n<small><i>Requires the Liferay Data Platform add-on.</i></small>\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "b73af79a-ad58-6071-66c2-bb687b0e7f13",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "88674438-d05f-7851-0d7f-4233d2760468",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "583a5439-35cc-595d-2313-28eae1605885",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p><b id=\"docs-internal-guid-404428bf-7fff-5b59-2f37-0eacc5342924\">Produce more content. Govern every output.</b></p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "bd7518fb-1fa6-c2dd-08d8-9d8457ea15e4",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "\n<p class=\"dxp-capabilities-description\">\n\n  <span class=\"highlight\">Liferay CMP includes embedded AI agents that surface content gaps, generate on-brand drafts and images, and automate tagging and translation across markets.</span> Every AI output follows a mandatory review step before it can be published, and all AI-assisted content carries provenance tags. Teams increase content velocity without introducing brand or compliance risk.\n</p>\n  \n<small><i>Requires the AI Hub add-on.</i></small>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "39c71885-fc77-e341-d308-6b3f4d95f312",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "ac0a7dd4-71d6-aa42-6dd2-81962e1d55e5",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "373px",
+																		"fragmentId": "7",
+																		"fragmentWidth": "601px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_002.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_002.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "3734613c-c994-ab51-e8cf-11a69abbf9e3",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"borderWidth": "0"
+							},
+							"indexed": true,
+							"layout": {
+							}
+						},
+						"id": "5ebdc963-5da4-20d0-3e94-1275b22880fc",
+						"pageElements": [
+							{
+								"definition": {
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8129590f-d1fe-21c7-de2e-1eacebbe57fd",
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "#FFFFFF"
+											},
+											"indexed": true,
+											"layout": {
+											}
+										},
+										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "",
+														"borderRadius": "10px",
+														"overflow": "hidden"
+													},
+													"indexed": true,
+													"layout": {
+														"widthType": "Fixed"
+													}
+												},
+												"id": "c5432183-cd54-185b-171b-1319a2049d21",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+															}
+														},
+														"id": "cd9ce237-bc33-4a7f-27a5-a9a883896fb9",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-large",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p>How Liferay CMP Works with Other Product Modules</p>\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "48px",
+																		"fontWeight": "300",
+																		"marginBottom": "7",
+																		"textAlign": "center"
+																	},
+																	"indexed": true
+																},
+																"id": "bddcabb0-82c1-2ea5-58f9-9c28a46afeb6",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"gutters": true,
+																	"indexed": true,
+																	"modulesPerRow": 2,
+																	"numberOfColumns": 4,
+																	"reverseOrder": false,
+																	"rowViewports": [
+																		{
+																			"id": "landscapeMobile",
+																			"rowViewportDefinition": {
+																				"modulesPerRow": 1
+																			}
+																		},
+																		{
+																			"id": "portraitMobile",
+																			"rowViewportDefinition": {
+																			}
+																		},
+																		{
+																			"id": "tablet",
+																			"rowViewportDefinition": {
+																			}
+																		}
+																	],
+																	"verticalAlignment": "top"
+																},
+																"id": "21a3f5e7-52dc-0f15-2174-8ce384c467e0",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "0d5813af-6166-980e-ea82-07b68baab830",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "e3151c63-3c49-a24e-5247-12886002eb42",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"67\" height=\"57\" viewBox=\"0 0 67 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M51.3273 31.2393C52.3085 30.2584 53.9 30.2582 54.881 31.2393L57.2668 33.625H60.6418C62.029 33.6253 63.1544 34.7504 63.1545 36.1377V39.5117L65.5402 41.8984C66.5211 42.8795 66.5209 44.47 65.5402 45.4512L63.1545 47.8379V51.2119C63.1545 52.5993 62.0291 53.7243 60.6418 53.7246H57.2668L54.881 56.1113C53.8999 57.0924 52.3085 57.0923 51.3273 56.1113L48.9416 53.7246H45.5666C44.1791 53.7245 43.0549 52.5994 43.0549 51.2119V47.8379L40.6682 45.4512C39.6872 44.47 39.6871 42.8796 40.6682 41.8984L43.0549 39.5117V36.1377C43.055 34.7503 44.1792 33.6251 45.5666 33.625H48.9416L51.3273 31.2393ZM36.466 18.0244C36.466 20.3216 38.328 22.1845 40.6252 22.1846H58.6496V29.7715L55.5363 26.6582C54.1938 25.3159 52.0167 25.3161 50.674 26.6582L47.4084 29.9238H42.7902C40.8919 29.9241 39.3531 31.463 39.3527 33.3613V37.9795L36.0871 41.2451C34.7447 42.5877 34.7446 44.7648 36.0871 46.1074L39.3527 49.373V53.9912C39.3527 54.1155 39.3594 54.2385 39.3723 54.3594C39.3752 54.3867 39.3794 54.4142 39.383 54.4414C39.3873 54.4743 39.3914 54.5075 39.3967 54.54C39.401 54.5668 39.4064 54.5936 39.4113 54.6201C39.4177 54.6547 39.4244 54.6894 39.4318 54.7236C39.4366 54.7458 39.4422 54.7681 39.4475 54.79C39.4854 54.9492 39.5347 55.1042 39.5939 55.2539C39.6004 55.2703 39.6058 55.2875 39.6125 55.3037C39.6344 55.3568 39.6583 55.4092 39.6828 55.4609H19.8273C16.7645 55.4608 14.2817 52.9778 14.2814 49.915V5.5459C14.2817 2.48321 16.7646 9.22497e-05 19.8273 0H36.466V18.0244ZM5.23652 1.11621C5.69878 1.1202 6.11106 1.41052 6.26972 1.84473L9.81367 11.5449L9.87714 11.7471C9.93125 11.9502 9.95625 12.1602 9.95429 12.3711L9.95527 12.3721L9.6291 50.4297C9.61789 51.706 9.09984 52.9255 8.18964 53.8203C7.27936 54.7151 6.05095 55.2119 4.7746 55.2012C4.14223 55.1959 3.51696 55.0662 2.93476 54.8193C2.35264 54.5724 1.82434 54.2136 1.38105 53.7627C0.937738 53.3117 0.587681 52.7768 0.350774 52.1904C0.113996 51.6042 -0.00541661 50.9769 0.000188568 50.3447L0.327337 12.2871C0.329606 12.0057 0.382557 11.7265 0.483587 11.4639L4.19257 1.82715L4.26581 1.67285C4.46297 1.32962 4.83205 1.1129 5.23652 1.11621ZM53.1037 39.9053C51.0224 39.9053 49.3352 41.5925 49.3351 43.6738C49.3352 45.7552 51.0224 47.4424 53.1037 47.4424C55.1847 47.442 56.8722 45.7549 56.8723 43.6738C56.8722 41.5927 55.1847 39.9057 53.1037 39.9053ZM42.0119 0.121094C43.054 0.341788 44.0195 0.859385 44.7844 1.62402L57.0256 13.8652C57.7903 14.63 58.3077 15.5956 58.5285 16.6377H42.0119V0.121094Z\" fill=\"url(#paint0_linear_7252_18182)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18182\" x1=\"53.6573\" y1=\"3.72617\" x2=\"1.71661\" y2=\"45.9537\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "2483dc8d-bf29-1951-7e8f-07a814382f4e",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Content Marketing Platform + CMS</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "3cd3ed7f-d05c-e7b6-ad13-92618a6fc9cc",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Go beyond content management and into campaign management. As an add-on to Liferay CMS, Liferay CMP adds the campaign coordination layer marketing teams need, from brief and planning through team coordination, approvals, and publishing. Marketing runs campaigns end to end on the same platform IT already manages and trusts, with no new infrastructure or vendor to add. Liferay CMS includes built-in DAM capabilities, so brand assets are immediately accessible within the campaign workflow without a separate tool or vendor.</p>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "ddb9f4cf-7c31-734c-54ad-1c54c18e8318",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "11aeec7b-a26e-cd02-8d22-8aeae0482372",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3f43587c-300f-4434-2ca3-c7a92f44aa66",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"62\" height=\"57\" viewBox=\"0 0 62 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M44.3564 27.7637C45.4708 26.6494 47.2782 26.6495 48.3926 27.7637L51.1025 30.4746H54.9346C56.5105 30.4746 57.7881 31.7522 57.7881 33.3281V37.1602L60.499 39.8701C61.6133 40.9845 61.6133 42.7919 60.499 43.9062L57.7881 46.6162V50.4482C57.7879 52.024 56.5104 53.3018 54.9346 53.3018H51.1025L48.3926 56.0117C47.2782 57.1257 45.4707 57.126 44.3564 56.0117L41.6465 53.3018H37.8145C36.2388 53.3015 34.9611 52.0239 34.9609 50.4482V46.6162L32.251 43.9062C31.1368 42.792 31.137 40.9845 32.251 39.8701L34.9609 37.1602V33.3281C34.9609 31.7523 36.2387 30.4748 37.8145 30.4746H41.6465L44.3564 27.7637ZM22.4971 0C24.3147 0.000144482 26.0344 0.826764 27.1699 2.24609L31.3574 7.47949H53.8545C57.159 7.47975 59.8386 10.1594 59.8389 13.4639V27.1299C59.2013 26.6126 58.3888 26.3019 57.5039 26.3018H52.5215L48.998 22.7783C47.5495 21.3303 45.2005 21.3303 43.752 22.7783L40.2295 26.3018H35.2471C33.1985 26.3018 31.5373 27.9632 31.5371 30.0117V34.9941L28.0146 38.5166C26.566 39.9653 26.566 42.314 28.0146 43.7627L31.5371 47.2861V52.2686C31.5371 52.8364 31.6655 53.3743 31.8936 53.8555H5.9834C2.67867 53.8554 0 51.1759 0 47.8711V5.98438C0.000236511 2.67982 2.67881 0.000106335 5.9834 0H22.4971ZM46.374 37.6074C44.0103 37.6076 42.0938 39.5239 42.0938 41.8877C42.0942 44.2511 44.0106 46.1668 46.374 46.167C48.7376 46.1669 50.6539 44.2512 50.6543 41.8877C50.6543 39.5238 48.7379 37.6075 46.374 37.6074Z\" fill=\"url(#paint0_linear_7252_18203)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18203\" x1=\"49.657\" y1=\"3.72619\" x2=\"-1.32369\" y2=\"42.0831\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "ed8e36c8-d547-64c3-30d4-533dc4f45896",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2><b id=\"docs-internal-guid-f173ff2e-7fff-6ab8-9a67-bbb594ac622e\">Content Marketing Platform + AI Hub</b></h2>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "cfd9d473-89df-ff11-41b2-a194ed85c534",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Scale AI-assisted content production without surrendering governance. Adding AI Hub gives marketing teams embedded agents that surface content gaps, generate on-brand drafts, and automate tagging and translation across markets. Every AI output follows a mandatory review step before publication, so teams increase content velocity without introducing brand or compliance risk.</p>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "b10f3284-0808-d12d-aad9-3a935a5dcb09",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "4c6ae040-9b57-d310-fa59-671349bc996b",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3866d610-fa81-1236-5a4a-eb0709510ab7",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M32.5 10.75C29.2373 10.75 26.5924 13.3244 26.5924 16.5H38.4076C38.4076 13.3244 35.7627 10.75 32.5 10.75ZM32.5 5C39.0254 5 44.3152 10.1487 44.3152 16.5H50.3264C53.507 16.5 56.1167 18.951 56.2302 22.0448L57.4962 56.5448C57.6156 59.7988 54.9377 62.5 51.5923 62.5H13.4077C10.0623 62.5 7.38444 59.7988 7.50384 56.5448L8.76976 22.0448C8.88328 18.951 11.493 16.5 14.6736 16.5H20.6848C20.6848 10.1487 25.9746 5 32.5 5Z\" fill=\"url(#paint0_linear_7253_14371)\"/>\n<circle cx=\"52.5\" cy=\"53.75\" r=\"17.5\" fill=\"white\"/>\n<path d=\"M52.335 39.2549C56.2314 39.3515 59.948 40.9413 62.7109 43.7041C65.5629 46.5561 67.165 50.4248 67.165 54.458C67.165 57.0558 66.4986 59.5836 65.2637 61.8164L73.2686 69.8203C74.9106 71.4627 74.911 74.1261 73.2686 75.7686C71.6261 77.411 68.9627 77.4106 67.3203 75.7686L59.3164 67.7637C57.0836 68.9986 54.5558 69.665 51.958 69.665C47.9248 69.665 44.0561 68.0629 41.2041 65.2109C38.3524 62.3591 36.7501 58.4911 36.75 54.458L36.7549 54.0801C36.8516 50.1836 38.4413 46.4669 41.2041 43.7041C44.056 40.8522 47.9247 39.25 51.958 39.25L52.335 39.2549ZM51.958 47.6621C50.1557 47.6621 48.4269 48.3778 47.1523 49.6523C45.8778 50.9269 45.1621 52.6557 45.1621 54.458C45.1622 56.2602 45.8779 57.9893 47.1523 59.2637L47.3965 59.4951C48.6431 60.624 50.2681 61.2539 51.958 61.2539C53.7604 61.2538 55.4894 60.5379 56.7637 59.2637C58.0379 57.9894 58.7538 56.2604 58.7539 54.458C58.7539 52.7681 58.124 51.1431 56.9951 49.8965L56.7637 49.6523C55.4893 48.3779 53.7602 47.6622 51.958 47.6621Z\" fill=\"url(#paint1_linear_7253_14371)\" stroke=\"white\" stroke-width=\"4\" stroke-linecap=\"round\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7253_14371\" x1=\"47.9803\" y1=\"8.76897\" x2=\"0.39276\" y2=\"37.625\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_7253_14371\" x1=\"66.0742\" y1=\"43.4622\" x2=\"36.5154\" y2=\"64.0746\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "5cc9ad81-1f5e-1dec-f6a9-8b9a3bf72963",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2><b id=\"docs-internal-guid-79741a70-7fff-a434-e248-727fb8e02032\">CMP + LDP</b></h2>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "fe854d2c-9057-0401-20f7-5303648b8d7b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Give marketing teams direct visibility into how their content is performing. Adding the Liferay Data Platform connects CMP to built-in content analytics, so teams can see views, reads, and traffic across their content library and get immediate performance insights on any piece of content directly within the CMS. No separate analytics tool or data team required to answer basic content performance questions.</p>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "d32c1478-e383-88f0-49bc-e1a2695f2f61",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "52c8ac14-011a-1035-13cd-2be0a686e999",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "be73ddf9-e120-780f-58ce-2a61565cfd70",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"80\" height=\"80\" viewBox=\"0 0 80 80\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M67.5039 8.36963C70.5417 8.3698 73.0048 10.8328 73.0049 13.8706V46.8755C73.0049 49.9134 70.5418 52.3763 67.5039 52.3765H56.501V66.1294C56.5009 69.1672 54.0388 71.6301 51.001 71.6304H12.4941C9.45658 71.6299 6.99427 69.167 6.99414 66.1294V33.1245C6.99414 30.0868 9.4565 27.624 12.4941 27.6235H23.4971V13.8706C23.4972 10.8327 25.9601 8.36967 28.998 8.36963H67.5039ZM12.4932 63.9282C12.4933 65.1432 13.4794 66.1282 14.6943 66.1284H48.7988C50.014 66.1284 50.9999 65.1433 51 63.9282V44.1255H12.4932V63.9282ZM28.999 27.6235H51.001C54.0388 27.6238 56.501 30.0866 56.501 33.1245V46.8745H65.3047C66.5196 46.8741 67.5049 45.8893 67.5049 44.6743V24.8716H28.999V27.6235ZM15.2441 33.1245C13.7253 33.1248 12.4932 34.3566 12.4932 35.8755C12.4934 37.3942 13.7255 38.6252 15.2441 38.6255C16.763 38.6254 17.9939 37.3943 17.9941 35.8755C17.9941 34.3565 16.7631 33.1246 15.2441 33.1245ZM23.4961 33.1245C21.9773 33.1248 20.7461 34.3567 20.7461 35.8755C20.7463 37.3942 21.9775 38.6252 23.4961 38.6255C25.015 38.6255 26.2469 37.3943 26.2471 35.8755C26.2471 34.3565 25.0151 33.1245 23.4961 33.1245ZM31.7471 33.1245C30.2285 33.125 28.9971 34.3568 28.9971 35.8755C28.9973 37.394 30.2286 38.625 31.7471 38.6255C33.266 38.6255 34.4979 37.3943 34.498 35.8755C34.498 34.3565 33.2661 33.1245 31.7471 33.1245ZM31.749 13.8706C30.2302 13.8706 28.9992 15.1018 28.999 16.6206C28.999 18.1396 30.23 19.3715 31.749 19.3716C33.2679 19.3714 34.499 18.1395 34.499 16.6206C34.4988 15.1019 33.2677 13.8708 31.749 13.8706ZM40 13.8706C38.4813 13.8708 37.2502 15.1019 37.25 16.6206C37.25 18.1395 38.4811 19.3714 40 19.3716C41.5189 19.3714 42.751 18.1395 42.751 16.6206C42.7508 15.1019 41.5187 13.8708 40 13.8706ZM48.251 13.8706C46.7321 13.8706 45.5002 15.1018 45.5 16.6206C45.5 18.1396 46.732 19.3715 48.251 19.3716C49.7698 19.3713 51.001 18.1395 51.001 16.6206C51.0008 15.1019 49.7696 13.8709 48.251 13.8706Z\" fill=\"url(#paint0_linear_7253_14339)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7253_14339\" x1=\"60.4369\" y1=\"12.5162\" x2=\"4.25637\" y2=\"53.3958\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "1425a9c9-0624-166f-7938-b5781f70f11d",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Content Marketing Platform + Sites</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "40242399-444f-4eb8-0393-ae991f7e975e",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Take campaigns from brief to live web experience without leaving the platform. CMP enables marketing teams to move approved campaign assets into landing pages, microsites, and full web experiences in a coordinated workflow. Launch new initiatives quickly, without switching to a separate publishing tool.</p>\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "edc662bf-d99d-e110-08e2-c2d23932aeaa",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	}
+																],
+																"type": "Row"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "\n<style>\n  .dxp-gradient-text mark {\n    color: #8881f9;\n    background-image: linear-gradient(90deg, #659aff, #7414ff80);\n    background-clip: text;\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n  }\n\n.dxp-capabilities-description .highlight {\n\tcolor: #C379FB;\n\tfont-weight: 700;\n}\n</style>"
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "3a290e5d-e501-0c0b-23be-aa3ff1209b3e",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"colorSchemeName": "01",
+		"masterPage": {
+			"key": "liferay-one"
+		},
+		"themeName": "Classic",
+		"themeSettings": {
+			"lfr-theme:regular:show-footer": "false",
+			"lfr-theme:regular:show-header": "false",
+			"lfr-theme:regular:show-header-search": "false",
+			"lfr-theme:regular:wrap-widget-page-content": "false"
+		}
+	},
+	"version": 1.1
+}

@@ -1,0 +1,63 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "0",
+					"description": "Fragment Id",
+					"label": "Fragment Id",
+					"name": "fragmentId",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "600px",
+					"description": "Fragment width (e.g., 100%, 600px)",
+					"label": "Width",
+					"name": "fragmentWidth",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "380px",
+					"description": "Fragment height (e.g., 400px)",
+					"label": "Height",
+					"name": "fragmentHeight",
+					"type": "text"
+				},
+				{
+					"defaultValue": false,
+					"label": "Drop shadow",
+					"name": "shadow",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Autoplay",
+					"name": "autoplay",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Loop",
+					"name": "loop",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": true,
+					"label": "Muted",
+					"name": "muted",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": false,
+					"label": "Show Controls",
+					"name": "controls",
+					"type": "checkbox"
+				}
+			],
+			"label": "Video Settings"
+		}
+	]
+}
