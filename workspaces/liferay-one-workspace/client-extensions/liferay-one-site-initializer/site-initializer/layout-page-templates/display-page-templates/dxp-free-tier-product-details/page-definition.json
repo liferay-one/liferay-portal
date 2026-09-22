@@ -1,0 +1,2107 @@
+{
+	"pageElement": {
+		"id": "2cfcb64f-999a-d905-ba5d-1df75ba5b8b4",
+		"pageElements": [
+			{
+				"definition": {
+					"fragmentStyle": {
+						"backgroundColor": "",
+						"borderRadius": "10px",
+						"borderWidth": "0",
+						"minHeight": "100vh"
+					},
+					"indexed": true,
+					"layout": {
+					}
+				},
+				"id": "dcb5046b-e882-e593-ba19-68c7f6033c75",
+				"pageElements": [
+					{
+						"definition": {
+							"cssClasses": [
+								"sticky-container-24"
+							],
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:sticky;\ntop:12px;\nz-index:969;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#F7F7F8",
+								"paddingBottom": "4"
+							},
+							"indexed": true,
+							"layout": {
+								"paddingBottom": 2
+							}
+						},
+						"id": "73705427-265f-f836-ca55-ed1987076893",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"borderWidth": "0"
+									},
+									"indexed": true,
+									"layout": {
+										"contentDisplay": "FlexColumn",
+										"widthType": "Fixed"
+									}
+								},
+								"id": "dd0b1050-7f80-9024-9277-376d2aac5527",
+								"pageElements": [
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\nbackground-color: transparent;\n}",
+											"fragmentStyle": {
+												"paddingBottom": "4",
+												"paddingTop": "4"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyleGroupId": "[$SCOPE_GROUP_ID$]",
+													"showCurrentGroup": "true",
+													"showGuestGroup": "false",
+													"showLayout": "true",
+													"showParentGroups": "true",
+													"showPortletBreadcrumb": "true"
+												},
+												"widgetName": "com_liferay_site_navigation_breadcrumb_web_portlet_SiteNavigationBreadcrumbPortlet"
+											}
+										},
+										"id": "011f19d5-01a9-ecda-cf93-bba24d0e6067",
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"borderWidth": "0"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexRow",
+												"justify": "SpaceBetween"
+											}
+										},
+										"id": "2c534036-8b3f-9158-4344-9fbc4623b803",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "2f5e2287-4dd3-cb4e-6613-84dfd3e6eda2",
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "product-icon",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"imageSize": "w-100"
+															},
+															"fragmentFields": [
+																{
+																	"id": "icon",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "ddmTemplate__ddmTemplate_18426557",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"height": "80px",
+																"maxHeight": "80px",
+																"maxWidth": "80px",
+																"width": "80px"
+															},
+															"indexed": true
+														},
+														"id": "c82be29a-8bfe-5ebe-7300-28ed19d1a3f2",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"borderWidth": "0"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "045e0f2f-4026-2f24-7714-ec5fdea6affd",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																	}
+																},
+																"id": "4cd82209-38c8-ce16-42f1-f7698dcca81a",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "text",
+																				"siteKey": "[$GROUP_KEY$]"
+																			},
+																			"fragmentConfig": {
+																				"fontSize": "font-size-paragraph-base",
+																				"smallCaps": false,
+																				"tabletScreenCenter": false
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"mapping": {
+																								"fieldKey": "CPDefinition_name",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"fontSize": "28px",
+																				"fontWeight": "600"
+																			},
+																			"indexed": true
+																		},
+																		"id": "0cfd6d37-7ce1-a1a3-8eb4-e1240238582d",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragmentStyle": {
+																		"borderWidth": "0",
+																		"marginLeft": "2",
+																		"marginRight": "2",
+																		"paddingLeft": "2",
+																		"paddingRight": "2"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"id": "a3ecd304-ad30-535c-979d-9854d33ea832",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<span>By </span>\n"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"paddingRight": "1",
+																				"textColor": "#54555F"
+																			},
+																			"indexed": true
+																		},
+																		"id": "786045d5-d14d-9f41-58e1-481906c2d1fc",
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"customCSS": ".[$FRAGMENT_CLASS$] a {\ncolor: #54555F;\n}",
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"mapping": {
+																								"fieldKey": "ddmTemplate__ddmTemplate_18426564",
+																								"itemReference": {
+																									"contextSource": "DisplayPageItem"
+																								}
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"id": "a29ecbe3-4cd8-d3ef-47d6-f39e651bc268",
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-image"
+													},
+													"fragmentConfig": {
+														"imageSize": "w-100"
+													},
+													"fragmentFields": [
+														{
+															"id": "image-square",
+															"value": {
+																"fragmentImage": {
+																	"description": {
+																		"value_i18n": {
+																		}
+																	},
+																	"url": {
+																		"value_i18n": {
+																		}
+																	}
+																},
+																"fragmentLink": {
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"hidden": true,
+														"marginBottom": "2",
+														"marginLeft": "2",
+														"marginRight": "2",
+														"marginTop": "2"
+													},
+													"indexed": true
+												},
+												"id": "abafb51e-0222-f846-d51c-ee93a839991b",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"align": "Center",
+														"contentDisplay": "FlexRow"
+													}
+												},
+												"id": "203067b8-4671-0841-0531-e02e69403cfc",
+												"pageElements": [
+													{
+														"definition": {
+															"fragment": {
+																"key": "BASIC_COMPONENT-html"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-html",
+																	"value": {
+																		"html": {
+																			"value_i18n": {
+																				"en_US": "  <button\n    class=\"btn btn-secondary\"\n    onclick=\"document.querySelector('.marketo-form').scrollIntoView({ behavior: 'smooth' })\"\n  >\n    Contact\n  </button>"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"hidden": true,
+																"marginRight": "2"
+															},
+															"indexed": true
+														},
+														"id": "6ee17e2a-d414-055a-bb01-c524aca0297a",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] .main-button {\n width: max-content !important;\nz-index: 10;\n}",
+															"fragment": {
+																"key": "get-app-button",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"buttonText": "Get Activation Key",
+																"product-id": {
+																	"href": ""
+																},
+																"useDescription": false
+															},
+															"fragmentFields": [
+																{
+																	"id": "product-id",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "CPDefinition_cProductId",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"indexed": true
+														},
+														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"paddingBottom": "8",
+								"paddingTop": "8"
+							},
+							"indexed": true,
+							"layout": {
+								"paddingBottom": 10,
+								"paddingTop": 10
+							}
+						},
+						"id": "462fca70-9a58-fb7f-8d17-42691a0c8f93",
+						"pageElements": [
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] h1 {\n line-height: 56px !important;\nfont-size: 56px;\ntext-align: center;\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<h1 class=\"dxp-gradient-text\">\n  Experience the Power of Liferay DXP with<br>\n   Liferay DXP -<mark>Free Tier</mark>\n</h1>"
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "56px",
+										"fontWeight": "fontWeightBold",
+										"textAlign": "center"
+									},
+									"indexed": true
+								},
+								"id": "3c252fb6-2f69-f86d-493c-b038d69a0676",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "BASIC_COMPONENT-paragraph"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-text",
+											"value": {
+												"fragmentLink": {
+												},
+												"text": {
+													"value_i18n": {
+														"en_US": "Discover, learn, and test CMS, DAM, Commerce, Sites, Low-Code, and more."
+													}
+												}
+											}
+										}
+									],
+									"fragmentStyle": {
+										"fontSize": "24px",
+										"marginTop": "4",
+										"textAlign": "center"
+									},
+									"indexed": true
+								},
+								"id": "734a94a6-663c-f8f0-5a15-0a2467e23969",
+								"type": "Fragment"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition: relative;\nz-index: 1;\n}",
+							"fragmentStyle": {
+								"backgroundColor": "#060B14",
+								"overflow": "hidden",
+								"paddingBottom": "80px"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexColumn"
+							}
+						},
+						"id": "f3f85c57-d7f6-5f66-4154-3fefac774423",
+						"pageElements": [
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:absolute;\ntop:0px;\nright:0px;\n}",
+									"fragment": {
+										"key": "BASIC_COMPONENT-html"
+									},
+									"fragmentConfig": {
+									},
+									"fragmentFields": [
+										{
+											"id": "element-html",
+											"value": {
+												"html": {
+													"value_i18n": {
+														"en_US": "<div>\n  <svg\n    width=\"1440\"\n    height=\"1711\"\n    viewBox=\"0 0 1440 1711\"\n    fill=\"none\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g opacity=\"0.6\">\n      <g opacity=\"0.3\" filter=\"url(#filter0_fn_5674_46315)\">\n        <path\n          d=\"M1692.57 434.065C1692.57 802.403 1025.29 1661 943 1472C882 1241 358 802.403 358 434.065C358 65.7262 656.754 -232.871 1025.29 -232.871C1393.82 -232.871 1692.57 65.7262 1692.57 434.065Z\"\n          fill=\"#8C3BF4\"\n        />\n      </g>\n      <g opacity=\"0.5\" filter=\"url(#filter1_fn_5674_46315)\">\n        <path\n          d=\"M1512.1 177.832C1512.1 404.729 1001 564.336 1001 373C1013.95 174.336 490 233.896 490 7C490 -219.896 874.033 -233 1101.05 -233C1328.06 -233 1512.1 -49.0641 1512.1 177.832Z\"\n          fill=\"#F43B3E\"\n        />\n      </g>\n      <g opacity=\"0.4\" filter=\"url(#filter2_fn_5674_46315)\">\n        <path\n          d=\"M1794 308.681C1794 541.47 1423.91 754 1191 754C958.088 754 1161.87 520 950.55 308.681C767 95 1139.36 -112.823 1372.28 -112.823C1605.19 -112.823 1794 75.8909 1794 308.681Z\"\n          fill=\"#FF690B\"\n        />\n      </g>\n      <g opacity=\"0.8\" filter=\"url(#filter3_fn_5674_46315)\">\n        <path\n          d=\"M1664 73.9781C1664 310.896 1468.41 678 1231.09 678C993.783 678 1099.66 285.155 804.619 73.9781C649.309 -72.07 996.998 -355 1234.31 -355C1471.62 -355 1664 -162.94 1664 73.9781Z\"\n          fill=\"#3B47F4\"\n        />\n      </g>\n    </g>\n    <defs>\n      <filter\n        id=\"filter0_fn_5674_46315\"\n        x=\"-242\"\n        y=\"-832.871\"\n        width=\"2534.57\"\n        height=\"2931.7\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter1_fn_5674_46315\"\n        x=\"90\"\n        y=\"-633\"\n        width=\"1822.1\"\n        height=\"1491.22\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter2_fn_5674_46315\"\n        x=\"501.351\"\n        y=\"-512.823\"\n        width=\"1692.65\"\n        height=\"1666.82\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feComposite\n          operator=\"in\"\n          in2=\"effect1_foregroundBlur_5674_46315\"\n          in=\"coloredNoise1\"\n          result=\"noise1Clipped\"\n        />\n        <feComponentTransfer in=\"noise1Clipped\" result=\"color1\">\n          <feFuncA type=\"table\" tableValues=\"0 0.55\" />\n        </feComponentTransfer>\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n      <filter\n        id=\"filter3_fn_5674_46315\"\n        x=\"366\"\n        y=\"-755\"\n        width=\"1698\"\n        height=\"1833\"\n        filterUnits=\"userSpaceOnUse\"\n        color-interpolation-filters=\"sRGB\"\n      >\n        <feFlood flood-opacity=\"0\" result=\"BackgroundImageFix\" />\n        <feBlend\n          mode=\"normal\"\n          in=\"SourceGraphic\"\n          in2=\"BackgroundImageFix\"\n          result=\"shape\"\n        />\n        <feGaussianBlur\n          stdDeviation=\"180\"\n          result=\"effect1_foregroundBlur_5674_46315\"\n        />\n        <feMerge result=\"effect2_noise_5674_46315\">\n          <feMergeNode in=\"effect1_foregroundBlur_5674_46315\" />\n          <feMergeNode in=\"color1\" />\n        </feMerge>\n      </filter>\n    </defs>\n  </svg>\n</div>"
+													}
+												}
+											}
+										}
+									],
+									"indexed": true
+								},
+								"id": "6d2e465b-42d9-b22b-fd58-5c4f11219c8d",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"customCSS": ".[$FRAGMENT_CLASS$] {\nz-index: 10;\n}",
+									"fragmentStyle": {
+										"paddingTop": "80px"
+									},
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8027aedf-93f2-07c4-2ddf-c1715dab602c",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "text",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fontSize": "font-size-paragraph-large",
+												"smallCaps": false,
+												"tabletScreenCenter": false
+											},
+											"fragmentFields": [
+												{
+													"id": "text",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"value_i18n": {
+																"en_US": "Explore Core Capabilities"
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"fontSize": "48px",
+												"fontWeight": "fontWeightLight",
+												"textAlign": "center",
+												"textColor": "#FFFFFF"
+											},
+											"indexed": true
+										},
+										"id": "f1544b1a-702a-6af6-5275-9d2b6276c3b0",
+										"type": "Fragment"
+									},
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 136px\n}",
+											"fragmentStyle": {
+												"marginBottom": "80px",
+												"marginTop": "80px"
+											},
+											"indexed": true,
+											"layout": {
+												"contentDisplay": "FlexColumn"
+											}
+										},
+										"id": "2652d95f-297f-0263-ff4e-b1f9546796e3",
+										"pageElements": [
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "bc428e83-b1ed-221a-b233-0abbdd406a45",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "1ed4b2ba-bbe3-d54e-2b78-f3bccab3fa66",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Prototype popular solutions like portals, websites, and intranets."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "083e9837-0a55-cd73-6698-84dc2f7d92e5",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tSee how you can consolidate your tech stack by testing powerful out-of-the-box \n\tfeatures and get a <span class=\"highlight\">preview of premium subscription</span> features.\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "41ba1862-228b-8f5c-bb74-3a5625b6f221",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "513751ee-7883-8bcc-7c41-dff11f1f6151",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "381px",
+																		"fragmentId": "2",
+																		"fragmentWidth": "600px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image1.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image1.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "2972acea-e9f0-aef4-b3a0-18fc21d59ac0",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "0a19ec57-f667-097b-ca44-b89b53ca124c",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "6b4faf1d-1adf-a04d-5a74-aa9505c0e29f",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "381px",
+																		"fragmentId": "5",
+																		"fragmentWidth": "600px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image2.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image2.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"id": "7a5456cd-043d-ff9d-fe09-9853fbd35c8c",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "9dda70df-fe95-6ef5-fc6d-085cdafc76d1",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Understand how to support the entire buyer’s journey."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "fbdf4d81-4bdb-ff43-b9e8-443c1e9821b4",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tCreate <span class=\"highlight\">personalized content and digital experiences</span> that \n  resonate across channels to every member of a buying group.\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "17ddbf91-59a7-36db-3123-92ddeadb56ad",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"indexed": true,
+													"layout": {
+														"contentDisplay": "FlexRow",
+														"widthType": "Fixed"
+													}
+												},
+												"id": "21e74c13-0c32-9bc7-492e-9e29a3742649",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"height": "380px",
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Start",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															},
+															"name": "text-content"
+														},
+														"id": "ea3e18d8-618a-4785-6576-d3c3039087ba",
+														"pageElements": [
+															{
+																"definition": {
+																	"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 40px;\n}",
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-base",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Experiment with designing storefronts that can increase revenue and retention."
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "32px",
+																		"fontWeight": "600",
+																		"marginBottom": "3",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "af121447-1612-e138-6f6e-d1f833b74516",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-html"
+																	},
+																	"fragmentConfig": {
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "element-html",
+																			"value": {
+																				"html": {
+																					"value_i18n": {
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n  Test <span class=\"highlight\">B2B and B2C commerce tools</span> like intuitive product catalogs \n  and carts that help maximize Customer Lifetime Value (CLV).\n</p>"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "18px",
+																		"textColor": "#FFFFFF"
+																	},
+																	"indexed": true
+																},
+																"id": "829aeaec-5f02-9c04-7067-1d2bd9bfbbc5",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													},
+													{
+														"definition": {
+															"fragmentStyle": {
+																"width": "100%"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "End",
+																"contentDisplay": "FlexColumn",
+																"justify": "Center"
+															}
+														},
+														"id": "a135bc09-661b-4be7-1010-dfe7f34a6769",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "image-container",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fragmentHeight": "381px",
+																		"fragmentId": "4",
+																		"fragmentWidth": "600px",
+																		"shape": "rectangle"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "icon",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"defaultFragmentInlineValue": {
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image3.png$]"
+																					},
+																					"mapping": {
+																						"fieldKey": "FileEntry_downloadURL",
+																						"itemReference": {
+																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image3.png#]"
+																						}
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"textAlign": "right"
+																	},
+																	"indexed": true
+																},
+																"id": "c5ad7e60-8e12-3613-5714-da986fbf3db8",
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"borderWidth": "0"
+							},
+							"indexed": true,
+							"layout": {
+							}
+						},
+						"id": "5ebdc963-5da4-20d0-3e94-1275b22880fc",
+						"pageElements": [
+							{
+								"definition": {
+									"indexed": true,
+									"layout": {
+									}
+								},
+								"id": "8129590f-d1fe-21c7-de2e-1eacebbe57fd",
+								"pageElements": [
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "#FFFFFF"
+											},
+											"indexed": true,
+											"layout": {
+											}
+										},
+										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "",
+														"borderRadius": "10px",
+														"overflow": "hidden"
+													},
+													"indexed": true,
+													"layout": {
+														"widthType": "Fixed"
+													}
+												},
+												"id": "c5432183-cd54-185b-171b-1319a2049d21",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+															}
+														},
+														"id": "cd9ce237-bc33-4a7f-27a5-a9a883896fb9",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-large",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Why Choose Liferay DXP"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "48px",
+																		"fontWeight": "300",
+																		"textAlign": "center"
+																	},
+																	"indexed": true
+																},
+																"id": "bddcabb0-82c1-2ea5-58f9-9c28a46afeb6",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"gutters": true,
+																	"indexed": true,
+																	"modulesPerRow": 2,
+																	"numberOfColumns": 4,
+																	"reverseOrder": false,
+																	"rowViewports": [
+																		{
+																			"id": "landscapeMobile",
+																			"rowViewportDefinition": {
+																				"modulesPerRow": 1
+																			}
+																		},
+																		{
+																			"id": "portraitMobile",
+																			"rowViewportDefinition": {
+																			}
+																		},
+																		{
+																			"id": "tablet",
+																			"rowViewportDefinition": {
+																			}
+																		}
+																	],
+																	"verticalAlignment": "top"
+																},
+																"id": "21a3f5e7-52dc-0f15-2174-8ce384c467e0",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "0d5813af-6166-980e-ea82-07b68baab830",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "e3151c63-3c49-a24e-5247-12886002eb42",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"54\" height=\"64\" viewBox=\"0 0 54 64\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M32.7051 11.5908C32.8788 11.8722 32.4986 12.071 32.4717 12.0713H29.2881V24.874C31.44 24.0166 33.7053 23.3625 36.0645 22.9404C38.0924 22.5789 40.1572 22.3941 42.2334 22.4033V18.4629L53.9277 26.2295L53.9297 26.2314L42.2363 34.2246V30.5166C39.411 30.3319 36.6102 30.6884 33.9336 31.4912C39.8586 33.6643 42.1074 40.3013 42.1074 44.9697L42.0742 63.75H34.7002V45.6074C34.7002 43.7382 34.3672 39.4613 30.6807 37.877C30.2186 37.6784 29.7552 37.5044 29.2881 37.3506V63.7295H21.6035V39.248C20.6904 40.2206 19.8412 41.2539 19.0693 42.3408C16.2832 46.262 15.3371 50.3663 14.8594 55.8262C14.6205 59.1565 14.4277 63.7314 14.4277 63.7314L7.16895 63.7002C7.16895 63.662 7.16895 59.5175 7.16895 59.2266C6.8206 49.9337 10.0332 41.2538 15.6641 34.6553C10.931 32.8477 6.06292 28.277 4.50195 23.6436C3.21331 19.8139 3.34449 15.899 3.38477 11.9014H0L7.29883 1.05371L14.3896 11.9014H10.792V18.3867C10.792 23.5372 14.8076 27.4634 21.0781 28.6777C21.2573 28.7124 21.4327 28.7453 21.6035 28.7783V12.0713H18.2002C18.1723 12.0687 17.8125 11.8425 17.9785 11.6025L25.2646 0H25.4424L32.7051 11.5908Z\" fill=\"url(#paint0_linear_7252_17902)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_17902\" x1=\"43.6618\" y1=\"4.17864\" x2=\"-8.41576\" y2=\"34.8999\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "f69e9b94-a88a-fd26-3f17-a284d4851d30",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Flexible and Evolvable</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "3cd3ed7f-d05c-e7b6-ad13-92618a6fc9cc",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Liferay DXP’s architecture enables you to meet today’s requirements and evolve as business needs change.</p>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "ddb9f4cf-7c31-734c-54ad-1c54c18e8318",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "11aeec7b-a26e-cd02-8d22-8aeae0482372",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3f43587c-300f-4434-2ca3-c7a92f44aa66",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"50\" height=\"55\" viewBox=\"0 0 50 55\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M24.6445 0C33.7184 0.000146151 41.0741 7.35579 41.0742 16.4297V16.4307H43.8135C46.8382 16.4307 49.29 18.8825 49.29 21.9072V49.291C49.2897 52.3154 46.838 54.7676 43.8135 54.7676H5.47656C2.45222 54.7674 0.000299454 52.3153 0 49.291V21.9072C0 18.8827 2.45204 16.4309 5.47656 16.4307H8.21387V16.4297C8.21395 7.35575 15.5706 7.34329e-05 24.6445 0ZM24.0967 27.3818C23.7756 27.3818 23.4711 27.453 23.1963 27.5771C20.8748 28.2124 19.1681 30.3363 19.168 32.8594C19.1681 34.8858 20.2701 36.6535 21.9062 37.6006V41.6221C21.9065 42.8317 22.887 43.8125 24.0967 43.8125H25.1914C26.4011 43.8125 27.3826 42.8317 27.3828 41.6221V37.6006C29.0192 36.6536 30.121 34.886 30.1211 32.8594C30.121 30.3354 28.4137 28.2105 26.0908 27.5762C25.8164 27.4524 25.512 27.3818 25.1914 27.3818H24.0967ZM24.6445 5.47656C18.5953 5.47664 13.6905 10.3804 13.6904 16.4297H35.5977C35.5976 10.3805 30.6937 5.47671 24.6445 5.47656Z\" fill=\"url(#paint0_linear_7252_17910)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_17910\" x1=\"39.9055\" y1=\"3.58987\" x2=\"-6.12533\" y2=\"32.4784\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "ebc4ca38-3436-7b3d-cc28-5c90902e25a8",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Security First</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "cfd9d473-89df-ff11-41b2-a194ed85c534",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>We’ve designed security, compliance, and data<br />\nprotection into the core of our technology.</p>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "b10f3284-0808-d12d-aad9-3a935a5dcb09",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "4c6ae040-9b57-d310-fa59-671349bc996b",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3866d610-fa81-1236-5a4a-eb0709510ab7",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"63\" height=\"63\" viewBox=\"0 0 63 63\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M34.0259 35.9375C35.4269 35.9378 36.117 38.3179 35.1379 39.3201C32.2494 42.277 30.4689 46.3209 30.4688 50.7812C30.4688 54.2171 31.5258 57.4062 33.3313 60.0415C33.9958 61.0115 33.3547 62.5012 32.179 62.5012H6.77124C3.0318 62.5012 0 59.5269 0 55.8594V52.5391C0.000321323 43.3705 7.57909 35.9375 16.9275 35.9375H34.0259Z\" fill=\"url(#paint0_linear_7253_14054)\"/>\n<path d=\"M50 40.2856C52.5173 38.907 55.3609 39.0457 57.7087 40.3699C60.6287 42.0169 62.5825 45.3563 62.4976 49.1431C62.3876 54.0453 58.5997 57.8855 53.4802 60.9265C51.0656 62.3609 49.0245 62.4143 46.5198 60.9265C41.4004 57.8855 37.6124 54.0453 37.5024 49.1431C37.4175 45.3563 39.3713 42.0169 42.2913 40.3699C44.6391 39.0456 47.4827 38.9071 50 40.2856Z\" fill=\"url(#paint1_linear_7253_14054)\"/>\n<path d=\"M28.125 0C36.7545 0 43.75 6.99552 43.75 15.625C43.75 24.2544 36.7545 31.25 28.125 31.25C19.4956 31.2499 12.5 24.2544 12.5 15.625C12.5 6.99556 19.4956 6.0401e-05 28.125 0Z\" fill=\"url(#paint2_linear_7253_14054)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7253_14054\" x1=\"50.6006\" y1=\"4.09679\" x2=\"-4.13872\" y2=\"42.2678\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_7253_14054\" x1=\"50.6006\" y1=\"4.09679\" x2=\"-4.13872\" y2=\"42.2678\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint2_linear_7253_14054\" x1=\"50.6006\" y1=\"4.09679\" x2=\"-4.13872\" y2=\"42.2678\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "26db7936-e45d-9bf2-454a-0ed425a28a5b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Experiences for Every Audience</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "fe854d2c-9057-0401-20f7-5303648b8d7b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>A wide range of capabilities help you build multiple solutions for a range of B2B, B2C, and B2E scenarios.</p>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "d32c1478-e383-88f0-49bc-e1a2695f2f61",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 6
+																		},
+																		"id": "52c8ac14-011a-1035-13cd-2be0a686e999",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "be73ddf9-e120-780f-58ce-2a61565cfd70",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"70\" height=\"67\" viewBox=\"0 0 70 67\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M23.4619 34.4769C26.0375 32.8675 29.1571 32.3741 32.1035 33.1107L46.6904 36.7572C49.8509 37.5475 51.6705 40.8618 50.6406 43.9525L49.6777 46.8382L57.8779 41.3724L58.0254 41.2796C58.0753 41.2507 58.1271 41.2234 58.1787 41.1976C63.2503 38.6622 69.2175 42.3499 69.2178 48.0199V48.2152C69.2176 50.6535 68.0696 52.9502 66.1191 54.4134L55.1309 62.6546C54.1288 63.4061 52.9704 63.9236 51.7422 64.1693L39.2705 66.6634C36.2215 67.2731 33.0555 66.8498 30.2744 65.4593L20.9053 60.7747C20.5171 60.5806 20.0883 60.4789 19.6543 60.4788H16.8955C15.8165 62.9476 13.3538 64.674 10.4873 64.6742H6.99219C3.13077 64.6742 3.33786e-06 61.5434 0 57.682V43.6986C0.000110745 39.8372 3.13083 36.7064 6.99219 36.7064H10.4873C12.6473 36.7065 14.5789 37.6868 15.8613 39.2259L23.4619 34.4769ZM30.7471 38.5374C29.2738 38.1691 27.7136 38.4153 26.4258 39.2201L18.0947 44.4271C17.8621 44.5725 17.6561 44.75 17.4795 44.9505V54.8861H19.6543C20.9567 54.8861 22.2424 55.1894 23.4072 55.7718L32.7764 60.4564C34.445 61.2905 36.3446 61.5449 38.1738 61.179L50.6455 58.6849C51.0545 58.603 51.4407 58.4302 51.7744 58.18L62.7627 49.9388C63.3049 49.532 63.6248 48.893 63.625 48.2152V48.0199C63.6247 46.5533 62.1269 45.584 60.8027 46.1439L51.9023 52.0785C50.5243 52.997 48.9041 53.4875 47.248 53.4876H34.959V47.8939H41.415C42.6183 47.8935 43.6866 47.1232 44.0674 45.9818L45.334 42.1839L30.7471 38.5374ZM52.2998 0.484705C52.9116 0.0443586 53.7753 -0.161625 54.624 0.148768C56.444 0.814676 58.1134 1.79069 59.5693 3.0101C60.2611 3.58959 60.5145 4.43831 60.4395 5.18783C60.3143 6.43659 60.5348 7.64272 61.1348 8.68197C61.735 9.72159 62.6698 10.5156 63.8145 11.0316C64.5025 11.3417 65.1129 11.9878 65.2676 12.8792C65.4285 13.807 65.5117 14.7604 65.5117 15.7318C65.5117 16.7032 65.4285 17.6565 65.2676 18.5843C65.1129 19.4757 64.5024 20.1218 63.8145 20.432C62.6698 20.948 61.735 21.7419 61.1348 22.7816C60.5348 23.8208 60.3144 25.027 60.4395 26.2757C60.5144 27.0252 60.2611 27.8741 59.5693 28.4535C58.1135 29.6728 56.4439 30.6479 54.624 31.3138C53.7752 31.6242 52.9117 31.4183 52.2998 30.9779C51.2803 30.2441 50.1248 29.8314 48.9238 29.8314C47.7229 29.8315 46.5673 30.244 45.5479 30.9779C44.9359 31.4183 44.0724 31.6244 43.2236 31.3138C41.4038 30.6479 39.7341 29.6728 38.2783 28.4535C37.5866 27.874 37.3332 27.0242 37.4082 26.2747C37.5331 25.0262 37.3128 23.8207 36.7129 22.7816C36.1126 21.7419 35.1779 20.948 34.0332 20.432C33.3453 20.1218 32.7347 19.4756 32.5801 18.5843C32.4192 17.6565 32.3359 16.7032 32.3359 15.7318C32.3359 14.7602 32.4191 13.8062 32.5801 12.8783C32.7348 11.9871 33.3454 11.3418 34.0332 11.0316C35.1778 10.5156 36.1126 9.72155 36.7129 8.68197C37.3129 7.64271 37.5333 6.43658 37.4082 5.18783C37.3332 4.43838 37.5867 3.58956 38.2783 3.0101C39.7342 1.79062 41.4036 0.814726 43.2236 0.148768C44.0723 -0.161751 44.936 0.044413 45.5479 0.484705C46.5673 1.21853 47.7229 1.63111 48.9238 1.63119C50.1248 1.63119 51.2803 1.2185 52.2998 0.484705ZM48.9248 10.7581C46.1767 10.7583 43.9485 12.9857 43.9482 15.7337C43.9482 18.482 46.1766 20.7101 48.9248 20.7103C51.6731 20.7102 53.9014 18.4821 53.9014 15.7337C53.9011 12.9856 51.673 10.7583 48.9248 10.7581Z\" fill=\"url(#paint0_linear_7253_14045)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7253_14045\" x1=\"56.0392\" y1=\"4.38741\" x2=\"-3.23753\" y2=\"47.1328\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "b2a374bb-e30c-efd3-e3ff-4b3370fc27a5",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Comprehensive Lifecycle Support</h2>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "40242399-444f-4eb8-0393-ae991f7e975e",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>From curious prospect to customer champion, Liferay DXP's features empower you to be there for your audience at every stage.</p>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "edc662bf-d99d-e110-08e2-c2d23932aeaa",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	}
+																],
+																"type": "Row"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "\n<style>\n  .dxp-gradient-text mark {\n    color: #8881f9;\n    background-image: linear-gradient(90deg, #659aff, #7414ff80);\n    background-clip: text;\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n  }\n\n.dxp-capabilities-description .highlight {\n\tcolor: #C379FB;\n\tfont-weight: 700;\n}\n</style>"
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "3a290e5d-e501-0c0b-23be-aa3ff1209b3e",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					},
+					{
+						"definition": {
+							"fragmentStyle": {
+								"paddingBottom": "9",
+								"paddingTop": "9"
+							},
+							"indexed": true,
+							"layout": {
+								"contentDisplay": "FlexRow",
+								"widthType": "Fixed"
+							}
+						},
+						"id": "d6692e42-d7ad-d818-9413-0693ed6442de",
+						"pageElements": [
+							{
+								"definition": {
+									"fragmentStyle": {
+										"height": "100%",
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "Start",
+										"contentDisplay": "FlexColumn",
+										"justify": "End"
+									},
+									"name": "content"
+								},
+								"id": "63cd17a2-1a79-2203-5f13-5d07aa9e803c",
+								"pageElements": [
+									{
+										"definition": {
+											"indexed": true,
+											"layout": {
+											}
+										},
+										"id": "9a3e1b1f-387e-74fc-de5e-d36bc36ba288",
+										"pageElements": [
+											{
+												"definition": {
+													"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "<div class=\"badge-gradient-background\">\n  <span>Enterprise Solution</span>\n</div>\n\n<style>\n.badge-gradient-background svg {\n  flex-shrink: 0;\n}\n.badge-gradient-background {\n  display: flex;\n  align-items: center;\n  white-space: nowrap;\n  gap: 8px;\n  background: linear-gradient(257.77deg, #E9ECFF 17.81%, #F4E8FF 100%);\n  width: 158px;\n  height: 38px;\n  border-radius: 167px;\n  opacity: 1;\npadding: 0 16px;\n} \n  \n  .badge-gradient-background span {\n    color: #0B5FFF;\n  }\n</style>"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"height": "38px",
+														"width": "158px"
+													},
+													"indexed": true
+												},
+												"id": "32490641-c164-3813-ebfe-f1b265d57b63",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"marginTop": "5"
+											},
+											"indexed": true,
+											"layout": {
+												"marginTop": 4
+											}
+										},
+										"id": "8e67edc2-fff9-9724-a56f-3abbfd25c39c",
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "text",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"fontSize": "font-size-paragraph-base",
+														"smallCaps": false,
+														"tabletScreenCenter": false
+													},
+													"fragmentFields": [
+														{
+															"id": "text",
+															"value": {
+																"fragmentLink": {
+																},
+																"text": {
+																	"value_i18n": {
+																		"en_US": "What If I Already Need More?"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "32px",
+														"fontWeight": "600",
+														"marginBottom": "3",
+														"textColor": "#1C1C24"
+													},
+													"indexed": true
+												},
+												"id": "366ed434-0378-278d-8f8c-d736a1d2cb4e",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"fragmentStyle": {
+														"marginBottom": "4"
+													},
+													"indexed": true,
+													"layout": {
+														"marginBottom": 2
+													}
+												},
+												"id": "b4627828-2b88-0efa-ddeb-fc740982a68f",
+												"pageElements": [
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] {\nline-height: 32px;\n}",
+															"fragment": {
+																"key": "BASIC_COMPONENT-html"
+															},
+															"fragmentConfig": {
+															},
+															"fragmentFields": [
+																{
+																	"id": "element-html",
+																	"value": {
+																		"html": {
+																			"value_i18n": {
+																				"en_US": "\t<p class=\"mb-0\">\n\t\tIf you work for an organization with complex requirements and know you’ll need the full range of Liferay DXP’s \n    capabilities but still want to test the waters before getting an enterprise subscription, we also offer a \n    <a href=\"https://www.liferay.com/free-trial/sandbox-trial\" target=\"_blank\" class=\"text-decoration-underline font-weight-bold\">30-Day DXP Sandbox Trial</a> of the entire platform.\n\t</p>\n"
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"fontSize": "18px"
+															},
+															"indexed": true
+														},
+														"id": "1ebd1950-0de6-34a0-aaee-ac6d18ebd97b",
+														"type": "Fragment"
+													}
+												],
+												"type": "Section"
+											}
+										],
+										"type": "Section"
+									},
+									{
+										"definition": {
+											"customCSS": ".[$FRAGMENT_CLASS$] {\ngap: 32px;\n}",
+											"fragmentStyle": {
+												"height": "100%",
+												"width": "100%"
+											},
+											"indexed": true,
+											"layout": {
+												"align": "Start",
+												"contentDisplay": "FlexColumn",
+												"justify": "SpaceBetween"
+											}
+										},
+										"id": "79f3c9cf-fb3f-c777-5828-0305ada84b23",
+										"pageElements": [
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "<div>\n  <svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M24 0V24H0V0H24Z\" fill=\"white\" fill-opacity=\"0.01\"/>\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M3.79476 13.5198C4.30379 13.645 4.9834 13.8304 5.68643 14.0737C5.30833 14.4354 5.04253 14.9963 4.8628 15.4577C4.67454 15.941 4.5112 16.4867 4.37863 16.9856C4.25366 17.4558 4.14641 17.93 4.04328 18.4054C3.93904 18.8858 3.83076 19.3849 4.22376 19.7779C4.61664 20.1708 5.11773 20.0622 5.59805 19.958C6.07288 19.8551 6.54647 19.7479 7.01613 19.6231C7.51498 19.4905 8.06074 19.3272 8.54405 19.1389C9.00539 18.9592 9.56619 18.6934 9.92788 18.3154C10.1676 19.0081 10.3511 19.6782 10.4763 20.1848C10.733 21.2238 11.8983 21.8295 12.911 21.3339L14.7748 20.4219C15.5373 20.0487 15.9812 19.2348 15.882 18.3917L15.7538 17.3026C15.7538 17.3026 15.7547 17.2998 15.7559 17.2972C15.7599 17.2884 15.7681 17.2775 15.7802 17.2688C19.3418 14.7117 20.7457 11.7578 21.1653 9.23691C21.579 6.75158 21.0245 4.7662 20.7988 4.09816C20.6549 3.67236 20.3223 3.3412 19.8919 3.20129C19.2265 2.985 17.2732 2.4666 14.8076 2.89519C12.3107 3.32923 9.36531 4.72289 6.75607 8.21021C6.74733 8.22189 6.73648 8.22962 6.7278 8.23339C6.72525 8.23449 6.72243 8.23528 6.72243 8.23528L5.59928 8.07481C4.72229 7.94952 3.86737 8.41608 3.49827 9.22142L2.62583 11.125C2.16356 12.1336 2.77175 13.2681 3.79476 13.5198ZM6.72647 16.1845C6.54826 16.642 6.38071 17.2201 6.24484 17.7578C6.78257 17.622 7.36068 17.4544 7.81819 17.2762C8.02691 17.1949 8.29849 17.1077 8.46646 16.9504C8.85684 16.56 8.85691 15.9268 8.46624 15.5361C8.07576 15.1457 7.44323 15.1452 7.05266 15.5358C6.90115 15.7196 6.81167 15.9657 6.72647 16.1845ZM15.5364 8.46664C14.7553 7.68559 13.489 7.68559 12.7079 8.46664C11.9269 9.24769 11.9269 10.514 12.7079 11.2951C13.489 12.0761 14.7553 12.0761 15.5364 11.2951C16.3174 10.514 16.3174 9.24769 15.5364 8.46664Z\" fill=\"url(#paint0_linear_7235_14111)\" style=\"mix-blend-mode:plus-darker\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7235_14111\" x1=\"2.46875\" y1=\"12.1201\" x2=\"21.3144\" y2=\"12.1201\" gradientUnits=\"userSpaceOnUse\">\n<stop stop-color=\"#0351DE\"/>\n<stop offset=\"1\" stop-color=\"#CC88FD\"/>\n</linearGradient>\n</defs>\n</svg>\n\n  <span class=\"p-1\"> Experience Liferay DXP without limits </span>\n</div>\n"
+																	}
+																}
+															}
+														}
+													],
+													"fragmentStyle": {
+														"fontSize": "20px",
+														"fontWeight": "600",
+														"textColor": "#282934"
+													},
+													"indexed": true
+												},
+												"id": "fe46f72e-820d-9241-33aa-a755183e9b58",
+												"type": "Fragment"
+											},
+											{
+												"definition": {
+													"customCSS": ".[$FRAGMENT_CLASS$] {\nmargin-top: auto;\n}\n\n.[$FRAGMENT_CLASS$] a {\nfont-size: 18px;\n}",
+													"fragment": {
+														"key": "icon-button",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"buttonSize": "nm",
+														"buttonType": "outline-primary",
+														"enableDebug": true,
+														"iconName": "order-arrow-right",
+														"iconPosition": "right"
+													},
+													"fragmentFields": [
+														{
+															"id": "01-link",
+															"value": {
+																"fragmentLink": {
+																	"value": {
+																		"href": {
+																			"value_i18n": {
+																				"en_US": "https://www.liferay.com/contact-sales"
+																			}
+																		},
+																		"target": "Blank"
+																	}
+																},
+																"text": {
+																	"value_i18n": {
+																		"en_US": "Get more details about a subscription"
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "ce485b15-d193-1f18-7134-7b712b85d31c",
+												"type": "Fragment"
+											}
+										],
+										"type": "Section"
+									}
+								],
+								"type": "Section"
+							},
+							{
+								"definition": {
+									"fragmentStyle": {
+										"width": "100%"
+									},
+									"indexed": true,
+									"layout": {
+										"align": "End",
+										"contentDisplay": "FlexColumn",
+										"justify": "Center"
+									}
+								},
+								"id": "69ab924c-d866-b8d5-6674-1be34f6ad9f5",
+								"pageElements": [
+									{
+										"definition": {
+											"fragment": {
+												"key": "image-container",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"fragmentHeight": "381px",
+												"fragmentId": "9",
+												"fragmentWidth": "600px",
+												"shape": "rectangle"
+											},
+											"fragmentFields": [
+												{
+													"id": "icon",
+													"value": {
+														"fragmentLink": {
+														},
+														"text": {
+															"defaultFragmentInlineValue": {
+																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image4.png$]"
+															},
+															"mapping": {
+																"fieldKey": "FileEntry_downloadURL",
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																	"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dxp_free_tier_media/image4.png#]"
+																}
+															}
+														}
+													}
+												}
+											],
+											"fragmentStyle": {
+												"textAlign": "right"
+											},
+											"indexed": true
+										},
+										"id": "ac3d6f9d-e5a6-d4ed-6dc5-98d74de7043b",
+										"type": "Fragment"
+									}
+								],
+								"type": "Section"
+							}
+						],
+						"type": "Section"
+					}
+				],
+				"type": "Section"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"colorSchemeName": "01",
+		"masterPage": {
+			"key": "liferay-one"
+		},
+		"themeName": "Classic",
+		"themeSettings": {
+			"lfr-theme:regular:show-footer": "false",
+			"lfr-theme:regular:show-header": "false",
+			"lfr-theme:regular:show-header-search": "false",
+			"lfr-theme:regular:wrap-widget-page-content": "false"
+		}
+	},
+	"version": 1.1
+}

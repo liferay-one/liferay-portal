@@ -1,0 +1,20 @@
+[#assign elementId = fragmentElementId?has_content?then(fragmentElementId[9..], '') /]
+<div class="component-button text-break">
+<a
+	class="btn btn-${configuration.buttonSize} btn-${configuration.buttonType} btn-icon"
+	data-lfr-editable-id="01-link"
+	data-lfr-editable-type="link"
+	href=""
+	id="button-${elementId}"
+>
+	Go Somewhere
+</a>
+</div>
+
+<div id="icon-${elementId}" style="display: none; width: 0; height: 0">
+<span class="svg-icon">
+	<svg class="lexicon-icon lexicon-icon-${configuration.iconName}" role="presentation" viewBox="0 0 512 512">
+	<use xlink:href="/o/admin-theme/images/clay/icons.svg#${configuration.iconName}"></use>
+	</svg>
+</span>
+</div>

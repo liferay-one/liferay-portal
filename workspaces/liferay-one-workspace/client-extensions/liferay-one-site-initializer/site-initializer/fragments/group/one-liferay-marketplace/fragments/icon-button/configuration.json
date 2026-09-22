@@ -1,0 +1,95 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "primary",
+					"label": "style",
+					"name": "buttonType",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"value": "primary"
+							},
+							{
+								"value": "secondary"
+							},
+							{
+								"value": "link"
+							},
+							{
+								"value": "outline-primary"
+							},
+							{
+								"value": "outline-secondary"
+							}
+						]
+					}
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "nm",
+					"label": "size",
+					"name": "buttonSize",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "small",
+								"value": "sm"
+							},
+							{
+								"label": "normal",
+								"value": "nm"
+							},
+							{
+								"label": "large",
+								"value": "lg"
+							}
+						]
+					}
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "check-circle",
+					"label": "icon-name",
+					"name": "iconName",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "left",
+					"label": "icon-position",
+					"name": "iconPosition",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "Left",
+								"value": "left"
+							},
+							{
+								"label": "Right",
+								"value": "right"
+							}
+						]
+					}
+				}
+			],
+			"label": "button-options"
+		},
+		{
+			"fields": [
+				{
+					"defaultValue": false,
+					"label": "Enable Debug Logging",
+					"name": "enableDebug",
+					"type": "checkbox"
+				}
+			],
+			"label": "Debugging"
+		}
+	]
+}
