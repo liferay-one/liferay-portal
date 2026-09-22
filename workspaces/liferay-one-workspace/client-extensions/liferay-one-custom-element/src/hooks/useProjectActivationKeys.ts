@@ -25,13 +25,18 @@ export type ProjectActivationKey = {
 	complimentary: boolean;
 	description: string;
 	domain: string;
+	entitlementId: number;
+	entitlementIds: number[];
 	environmentType: Word;
 	expirationDate: string;
 	expirationDateValue: string;
 	hostName: string;
 	id: string;
+	ipAddresses: string;
 	licenseKeyId: string;
+	licenseName: string;
 	licenseType: string;
+	macAddresses: string;
 	name: string;
 	productVersion: string;
 	products: ProjectActivationKeyProduct[];
@@ -49,10 +54,14 @@ type LicenseKeyNode = {
 	dateCreated?: string;
 	description?: string;
 	domains?: string;
+	entitlementId?: number;
 	externalReferenceCode: string;
 	hostName?: string;
 	id?: number;
+	ipAddresses?: string;
+	licenseName?: string;
 	licenseType?: string;
+	macAddresses?: string;
 	maxClusterNodes?: number;
 	maxServers?: number;
 	name: string;
@@ -134,6 +143,21 @@ function getDateValue(value?: string): string {
 	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
 }
 
+function getEntitlementIds(node: LicenseKeyNode): number[] {
+	if (node.additionalInfo) {
+		try {
+			const {entitlementIds} = JSON.parse(node.additionalInfo);
+
+			if (Array.isArray(entitlementIds) && entitlementIds.length) {
+				return entitlementIds;
+			}
+		}
+		catch {}
+	}
+
+	return node.entitlementId ? [node.entitlementId] : [];
+}
+
 function getProducts(additionalInfo?: string): ProjectActivationKeyProduct[] {
 	if (!additionalInfo) {
 		return [];
@@ -197,13 +221,18 @@ export function useProjectActivationKeys(productName?: string) {
 			complimentary: node.complimentary ?? false,
 			description: node.description ?? '',
 			domain: node.domains ?? '',
+			entitlementId: node.entitlementId ?? 0,
+			entitlementIds: getEntitlementIds(node),
 			environmentType: getEnvironmentType(node.licenseType),
 			expirationDate: formatDate(node.customExpirationDate),
 			expirationDateValue: getDateValue(node.customExpirationDate),
 			hostName: node.hostName ?? '',
 			id: node.externalReferenceCode,
+			ipAddresses: node.ipAddresses ?? '',
 			licenseKeyId: node.id ? String(node.id) : '',
+			licenseName: node.licenseName ?? '',
 			licenseType: node.licenseType ?? '',
+			macAddresses: node.macAddresses ?? '',
 			name: node.name,
 			productVersion: node.productVersion ?? '',
 			products: getProducts(node.additionalInfo),
