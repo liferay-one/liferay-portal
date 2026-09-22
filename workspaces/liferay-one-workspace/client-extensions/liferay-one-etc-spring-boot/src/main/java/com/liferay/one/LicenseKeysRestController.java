@@ -348,6 +348,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		for (long accountEntryId : accountEntryIds) {
 			_licenseKeyPermission.check(
 				userAccount, accountEntryId, ActionKeys.UPDATE);
+
+			_licenseKeyPermission.checkSelfProvisioning(
+				accountEntryId, userAccount);
 		}
 	}
 

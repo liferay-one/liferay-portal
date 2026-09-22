@@ -12,6 +12,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -42,6 +43,38 @@ public class LicenseKeyPermission {
 		if (!_contains(userAccount, accountEntryId, actionId)) {
 			throw new PrincipalException();
 		}
+	}
+
+	public void checkSelfProvisioning(Account account) throws Exception {
+		if (!AccountUtil.getCustomFieldBoolean(
+				account, "allowSelfProvisioning", true)) {
+
+			throw new PrincipalException(
+				"Account " + account.getExternalReferenceCode() +
+					" does not allow self provisioning");
+		}
+	}
+
+	public void checkSelfProvisioning(long accountEntryId) throws Exception {
+		Account account = _accountService.fetchAccount(accountEntryId);
+
+		if (account == null) {
+			throw new PrincipalException(
+				"No account exists with ID " + accountEntryId);
+		}
+
+		checkSelfProvisioning(account);
+	}
+
+	public void checkSelfProvisioning(
+			long accountEntryId, UserAccount userAccount)
+		throws Exception {
+
+		if (_hasGlobalRole(userAccount, ActionKeys.UPDATE)) {
+			return;
+		}
+
+		checkSelfProvisioning(accountEntryId);
 	}
 
 	private boolean _contains(
