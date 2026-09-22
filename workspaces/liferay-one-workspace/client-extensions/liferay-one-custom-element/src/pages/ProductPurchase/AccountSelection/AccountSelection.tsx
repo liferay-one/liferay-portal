@@ -16,6 +16,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import {hasAIHubOrder} from '~/utils/orderUtils';
 import {isSEOStudioProduct} from '~/utils/productUtils';
 
+import CreateNewAccount from '../components/CreateNewAccount/CreateNewAccount';
 import useAIHubOrders from '../hooks/useAIHubOrders';
 import {useSEOStudioRequirementsModal} from '../hooks/useSEOStudioRequirementsModal';
 
@@ -105,68 +106,66 @@ const AccountSelection = () => {
 				)}
 			</p>
 
-			{accounts.length ? (
-				accounts.map((account) => {
-					const selected = selectedAccount?.id === account.id;
+			{accounts.map((account) => {
+				const selected = selectedAccount?.id === account.id;
 
-					return (
-						<div
-							className={classNames(
-								'border mb-3 p-4 product-purchase-account-card rounded',
-								{selected}
-							)}
-							key={account.id}
-							onClick={() => setSelectedAccount(account)}
-							role="button"
-							tabIndex={0}
-						>
-							<div className="align-items-center d-flex">
-								<div className="mr-2">
-									<ClayRadio
-										checked={selected}
-										onChange={() =>
-											setSelectedAccount(account)
-										}
-										value={String(account.id)}
-									/>
-								</div>
-
-								<AccountAvatar
-									logoURL={account.logoURL}
-									type={account.type}
+				return (
+					<div
+						className={classNames(
+							'border mb-3 p-4 product-purchase-account-card rounded',
+							{selected}
+						)}
+						key={account.id}
+						onClick={() => setSelectedAccount(account)}
+						role="button"
+						tabIndex={0}
+					>
+						<div className="align-items-center d-flex">
+							<div className="mr-2">
+								<ClayRadio
+									checked={selected}
+									onChange={() => setSelectedAccount(account)}
+									value={String(account.id)}
 								/>
+							</div>
 
-								<div className="ml-3">
-									<strong className="d-block">
-										{account.name}
-									</strong>
+							<AccountAvatar
+								logoURL={account.logoURL}
+								type={account.type}
+							/>
 
-									<small className="text-capitalize text-muted">
-										{account.type}
-									</small>
-								</div>
+							<div className="ml-3">
+								<strong className="d-block">
+									{account.name}
+								</strong>
+
+								<small className="text-capitalize text-muted">
+									{account.type}
+								</small>
 							</div>
 						</div>
-					);
-				})
-			) : (
-				<p className="font-weight-bold my-5">
-					{i18n.translate('no-accounts-available')}
-				</p>
+					</div>
+				);
+			})}
+
+			<CreateNewAccount accounts={accounts} />
+
+			{!!accounts.length && (
+				<>
+					<span className="mr-1 text-muted">
+						{i18n.translate('not-seeing-a-specific-account')}
+					</span>
+
+					<a
+						className="font-weight-bold"
+						href={HELP_CENTER_URL}
+						rel="noopener noreferrer"
+						target="_blank"
+					>
+						{i18n.translate('contact-support')}
+					</a>
+				</>
 			)}
-
-			<span className="mr-1 text-muted">
-				{i18n.translate('not-seeing-a-specific-account')}
-			</span>
-
-			<a
-				className="font-weight-bold"
-				href={HELP_CENTER_URL}
-				rel="noopener noreferrer"
-				target="_blank"
-			>
-				{i18n.translate('contact-support')}
-			</a>
 		</ProductPurchaseShell>
 	);
 };

@@ -20,7 +20,7 @@ import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions
 import zodSchema, {z} from '~/schema/zodSchema';
 import CommerceUI from '~/services/headless/CommerceUI';
 import {Liferay} from '~/services/liferay/liferay';
-import marketplaceOAuth2 from '~/services/spring-boot/Marketplace';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import AccountSelectDropDown from '../AccountSelectDropDown/AccountSelectDropDown';
 
@@ -107,7 +107,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 
 	const onSubmit = async (data: FormFields) => {
 		try {
-			const account = await marketplaceOAuth2.createAccount(data);
+			const account = await Accounts.postAccounts(data);
 			await CommerceUI.selectAccount(account.id);
 			window.location.reload();
 		}

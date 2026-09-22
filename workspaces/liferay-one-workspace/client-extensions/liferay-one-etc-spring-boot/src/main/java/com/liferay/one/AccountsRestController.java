@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
@@ -42,8 +43,10 @@ import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -54,6 +57,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,7 +85,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -305,6 +311,101 @@ public class AccountsRestController extends OneBaseRestController {
 		).body(
 			_getProductUsageJSON(account, entitlements)
 		);
+	}
+
+	@PostMapping
+	public Account postAccounts(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestPart("account") String accountJSON,
+			@RequestPart(name = "file", required = false) MultipartFile
+				multipartFile)
+		throws Exception {
+
+		Account requestAccount = Account.toDTO(accountJSON);
+
+		if (requestAccount == null) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Unable to read the account");
+		}
+
+		Account.Type type = requestAccount.getType();
+
+		if ((type != null) && (type != Account.Type.BUSINESS) &&
+			(type != Account.Type.PERSON)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Unable to create an account of type " + type);
+		}
+
+		Account account = new Account();
+
+		account.setCustomFields(
+			() -> ArrayUtil.filter(
+				requestAccount.getCustomFields(),
+				customField -> Objects.equals(
+					customField.getName(), "Contact Email")));
+		account.setName(requestAccount::getName);
+		account.setPostalAddresses(requestAccount::getPostalAddresses);
+		account.setTaxId(requestAccount::getTaxId);
+		account.setType(() -> type);
+
+		if (multipartFile != null) {
+			Base64.Encoder encoder = Base64.getEncoder();
+
+			account.setLogoBase64(
+				() -> encoder.encodeToString(multipartFile.getBytes()));
+		}
+
+		Account newAccount = _keyedLock.withLock(
+			account.getName(),
+			() -> {
+				if (_accountService.hasDuplicateAccountName(
+						account.getName(),
+						account.getExternalReferenceCode())) {
+
+					throw new ResponseStatusException(
+						HttpStatus.CONFLICT,
+						"An account already exists with the name " +
+							account.getName());
+				}
+
+				return _accountService.addAccount(account);
+			});
+
+		PostalAddress[] postalAddresses = newAccount.getPostalAddresses();
+
+		if (ArrayUtil.isNotEmpty(postalAddresses)) {
+			PostalAddress postalAddress = postalAddresses[0];
+
+			Account patchAccount = new Account();
+
+			patchAccount.setDefaultBillingAddressId(postalAddress::getId);
+
+			_accountService.patchAccount(newAccount.getId(), patchAccount);
+		}
+
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		_accountService.addAccountUserAccountByEmailAddress(
+			newAccount.getId(), userAccount.getEmailAddress(), null);
+
+		AccountRole accountRole = _accountRoleService.fetchAccountRoleByName(
+			RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+
+		if (accountRole != null) {
+			_accountService.addAccountUserAccountRole(
+				newAccount.getId(), accountRole.getId(), userAccount.getId());
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"User ", userAccount.getEmailAddress(),
+					" was associated with account ", newAccount.getName()));
+		}
+
+		return newAccount;
 	}
 
 	@PostMapping("/{externalReferenceCode}/invitations")
@@ -1051,6 +1152,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private KeyedLock _keyedLock;
 
 	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
