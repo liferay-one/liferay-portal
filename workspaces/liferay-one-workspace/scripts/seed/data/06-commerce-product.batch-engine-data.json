@@ -2195,6 +2195,18 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/w/dxp/getting-started/liferay-dxp-free-tier"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "DXP"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -3256,6 +3268,18 @@
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Portal (License)"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "Portal"
 					}
 				}
 			],

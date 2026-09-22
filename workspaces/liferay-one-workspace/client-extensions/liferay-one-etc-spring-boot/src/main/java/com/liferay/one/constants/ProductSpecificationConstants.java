@@ -12,6 +12,12 @@ public class ProductSpecificationConstants {
 
 	public static final String ACTIVATION_PROFILE_LICENSES = "licenses";
 
+	public static final String KEY_GENERATES_ACTIVATION_KEY =
+		"generates-activation-key";
+
+	public static final String KEY_LICENSE_ENTRY_FAMILY =
+		"license-entry-family";
+
 	public static final String KEY_PROJECT_ACTIVATION_PROFILE =
 		"project-activation-profile";
 
