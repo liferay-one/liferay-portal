@@ -19,8 +19,7 @@
 					{
 						"definition": {
 							"cssClasses": [
-								"sticky-container-24",
-								"ai-hub-sticky"
+								"sticky-container-24"
 							],
 							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition:sticky;\ntop:12px;\nz-index:969;\n}",
 							"fragmentStyle": {
@@ -96,7 +95,7 @@
 															"cssClasses": [
 																"image-container"
 															],
-															"customCSS": ".[$FRAGMENT_CLASS$] img {\nobject-fit: contain;\n    height: 80px;\n    width: 80px;\nborder-radius: 8px;\n}",
+															"customCSS": ".[$FRAGMENT_CLASS$] img {\n    height: 80px;\n    width: 80px;\n   object-fit: contain;\n   border-radius: 8px;\n}",
 															"fragment": {
 																"key": "image",
 																"siteKey": "[$GROUP_KEY$]"
@@ -112,7 +111,45 @@
 																		},
 																		"text": {
 																			"mapping": {
-																				"fieldKey": "ddmTemplate__ddmTemplate_22329538",
+																				"fieldKey": "ddmTemplate__ddmTemplate_18426557",
+																				"itemReference": {
+																					"contextSource": "DisplayPageItem"
+																				}
+																			}
+																		}
+																	}
+																}
+															],
+															"fragmentStyle": {
+																"height": "80px",
+																"hidden": true,
+																"maxHeight": "80px",
+																"maxWidth": "80px",
+																"width": "80px"
+															},
+															"indexed": true
+														},
+														"id": "33ead4e3-2a0d-94d9-d080-3a060212d27a",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"fragment": {
+																"key": "product-icon",
+																"siteKey": "[$GROUP_KEY$]"
+															},
+															"fragmentConfig": {
+																"imageSize": "w-100"
+															},
+															"fragmentFields": [
+																{
+																	"id": "icon",
+																	"value": {
+																		"fragmentLink": {
+																		},
+																		"text": {
+																			"mapping": {
+																				"fieldKey": "ddmTemplate__ddmTemplate_18426557",
 																				"itemReference": {
 																					"contextSource": "DisplayPageItem"
 																				}
@@ -128,7 +165,7 @@
 															},
 															"indexed": true
 														},
-														"id": "32286b6f-4d3f-c0f7-3a7d-eac35d938f5e",
+														"id": "25df578c-ecb1-ef81-2f33-2f82690f7206",
 														"type": "Fragment"
 													},
 													{
@@ -202,38 +239,27 @@
 																	},
 																	{
 																		"definition": {
-																			"indexed": true,
-																			"layout": {
-																			}
-																		},
-																		"id": "97baac07-f5f6-c356-f363-1d0e46c4a91f",
-																		"pageElements": [
-																			{
-																				"definition": {
-																					"fragment": {
-																						"key": "BASIC_COMPONENT-html"
-																					},
-																					"fragmentConfig": {
-																					},
-																					"fragmentFields": [
-																						{
-																							"id": "element-html",
-																							"value": {
-																								"html": {
-																									"value_i18n": {
-																										"en_US": "<div class=\"beta-badge-box\">Beta</div>\n\n<style>\n  .beta-badge-box {\n    align-items: center;\n    background-color: #d1ecfa;\n    border-radius: 4px;\n    color: #166e9e;\n    display: flex;\n    font-size: 13px;\n    font-weight: 600;\n    justify-content: center;\n    line-height: 16px;\n    padding: 4px 8px;\n    text-align: center;\n    vertical-align: middle;\n  }\n</style>"
-																									}
-																								}
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-html"
+																			},
+																			"fragmentConfig": {
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-html",
+																					"value": {
+																						"html": {
+																							"value_i18n": {
+																								"en_US": "<div class=\"beta-badge-box\">GA</div>\n\n<style>\n  .beta-badge-box {\n    align-items: center;\n    background-color: #d1ecfa;\n    border-radius: 4px;\n    color: #166e9e;\n    display: flex;\n    font-size: 13px;\n    font-weight: 600;\n    justify-content: center;\n    line-height: 16px;\n    padding: 4px 8px;\n    text-align: center;\n    vertical-align: middle;\n  }\n</style>"
 																							}
 																						}
-																					],
-																					"indexed": true
-																				},
-																				"id": "9bf64b84-fd9b-c391-536a-6c05a83e5f6b",
-																				"type": "Fragment"
-																			}
-																		],
-																		"type": "Section"
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"id": "a80455a9-a2e6-a097-3e43-e522b56802a1",
+																		"type": "Fragment"
 																	}
 																],
 																"type": "Section"
@@ -297,7 +323,7 @@
 																					"value": {
 																						"html": {
 																							"mapping": {
-																								"fieldKey": "ddmTemplate__ddmTemplate_20514561",
+																								"fieldKey": "ddmTemplate__ddmTemplate_18426564",
 																								"itemReference": {
 																									"contextSource": "DisplayPageItem"
 																								}
@@ -400,12 +426,52 @@
 													{
 														"definition": {
 															"fragment": {
+																"key": "BASIC_COMPONENT-button"
+															},
+															"fragmentConfig": {
+																"buttonSize": "nm",
+																"buttonType": "primary",
+																"type": "link"
+															},
+															"fragmentFields": [
+																{
+																	"id": "link",
+																	"value": {
+																		"fragmentLink": {
+																			"value": {
+																				"href": {
+																					"value_i18n": {
+																						"en_US": "https://www.liferay.com/contact-sales"
+																					}
+																				}
+																			}
+																		},
+																		"text": {
+																			"value_i18n": {
+																				"en_US": "Contact Sales"
+																			}
+																		}
+																	}
+																}
+															],
+															"indexed": true
+														},
+														"id": "ff4b9c52-4907-44ea-800a-ea037d7ef2e7",
+														"type": "Fragment"
+													},
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] .main-button {\n width: max-content !important;\nz-index: 10;\n}",
+															"fragment": {
 																"key": "get-app-button",
 																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
-																"buttonText": "Request to Join",
-																"useDescription": true
+																"buttonText": "Try Beta",
+																"product-id": {
+																	"href": ""
+																},
+																"useDescription": false
 															},
 															"fragmentFields": [
 																{
@@ -424,49 +490,12 @@
 																	}
 																}
 															],
-															"indexed": true
-														},
-														"id": "23d88044-33de-b281-8f79-9eabaa0003c8",
-														"type": "Fragment"
-													},
-													{
-														"definition": {
-															"customCSS": ".[$FRAGMENT_CLASS$] {\ntext-wrap: nowrap;\n}",
-															"fragment": {
-																"key": "BASIC_COMPONENT-button"
-															},
-															"fragmentConfig": {
-																"buttonSize": "nm",
-																"buttonType": "primary",
-																"type": "link"
-															},
-															"fragmentFields": [
-																{
-																	"id": "link",
-																	"value": {
-																		"fragmentLink": {
-																			"value": {
-																				"href": {
-																					"value_i18n": {
-																						"en_US": "#ai-hub-plans"
-																					}
-																				}
-																			}
-																		},
-																		"text": {
-																			"value_i18n": {
-																				"en_US": "Request to Join"
-																			}
-																		}
-																	}
-																}
-															],
 															"fragmentStyle": {
 																"hidden": true
 															},
 															"indexed": true
 														},
-														"id": "2bc9ad60-bd3d-6ca3-dd9a-e7289c54511e",
+														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
 														"type": "Fragment"
 													}
 												],
@@ -483,15 +512,17 @@
 					},
 					{
 						"definition": {
-							"customCSS": ".[$FRAGMENT_CLASS$] h1 {\n line-height: 56px !important;\nfont-size: 56px;\nfont-weight: 700;\ntext-align: center;\n}",
+							"customCSS": ".[$FRAGMENT_CLASS$] h1 {\n line-height: 56px !important;\nfont-size: 56px;\ntext-align: center;\n}",
 							"fragmentStyle": {
-								"paddingBottom": "9",
-								"paddingTop": "9",
-								"width": "1008px"
+								"paddingBottom": "8",
+								"paddingTop": "8"
 							},
 							"indexed": true,
 							"layout": {
+								"align": "Center",
 								"contentDisplay": "FlexColumn",
+								"paddingBottom": 10,
+								"paddingTop": 10,
 								"widthType": "Fixed"
 							}
 						},
@@ -510,19 +541,19 @@
 											"value": {
 												"html": {
 													"value_i18n": {
-														"en_US": "<h1 class=\"dxp-gradient-text\">\n SEO & AEO Studio\n</h1>\n\n"
+														"en_US": "<h1 class=\"dxp-gradient-text\">\n  Make Buying Easier and Selling<mark>Faster</mark>\n</h1>"
 													}
 												}
 											}
 										}
 									],
 									"fragmentStyle": {
-										"fontSize": "fontSizeLg",
+										"fontSize": "56px",
 										"fontWeight": "700"
 									},
 									"indexed": true
 								},
-								"id": "61c7844e-fd19-3db3-66a2-e62918085c2e",
+								"id": "2fd23496-066b-d854-0842-79e07f5d7fcd",
 								"type": "Fragment"
 							},
 							{
@@ -540,7 +571,7 @@
 												},
 												"text": {
 													"value_i18n": {
-														"en_US": "<p>Ensure your digital experiences are discovered, optimized, and recommended by humans and machines alike.</p>\n\n\n\n\n"
+														"en_US": "<p>Offer a secure, collaborative space with Liferay Digital Sales Room where every step of the deal is clear, organized,<br>\nand built to close more quickly.</p>\n\n\n\n\n\n\n\n\n\n\n"
 													}
 												}
 											}
@@ -561,7 +592,6 @@
 					{
 						"definition": {
 							"fragmentStyle": {
-								"hidden": true,
 								"paddingBottom": "9",
 								"paddingTop": "9"
 							},
@@ -577,6 +607,7 @@
 								"definition": {
 									"fragmentStyle": {
 										"height": "100%",
+										"paddingRight": "5rem",
 										"width": "100%"
 									},
 									"indexed": true,
@@ -620,7 +651,7 @@
 																},
 																"text": {
 																	"value_i18n": {
-																		"en_US": "What Is a CMP?"
+																		"en_US": "<p>What Is a DSR?</p>\n\n\n\n\n"
 																	}
 																}
 															}
@@ -650,7 +681,7 @@
 															"value": {
 																"html": {
 																	"value_i18n": {
-																		"en_US": "\t<p class=\"mb-0\">\n\tA Content Marketing Platform (CMP) is a centralized software solution that <b>streamlines the \n    entire content marketing process</b>, from planning and creation to multi-channel distribution. \n    By offering full visibility across the content lifecycle, CMPs help <b>ensure brand consistency, \n    support data-driven decisions, and deliver relevant content to the right audience</b>, ultimately \n    driving engagement, lead nurturing, and revenue through high-quality storytelling.\n\t</p>\n"
+																		"en_US": "\t<p class=\"mb-0\">\nA Digital Sales Room (DSR) is a private, centralized, and secure microsite for B2B sellers and buyers to collaborate throughout the sales process. A DSR is designed to meet the needs of the modern, self-directed buyer by consolidating all sales-related content, communication, and key stakeholders into a single hub. Liferay DSR replaces fragmented email chains and disorganized files with a single source of truth, providing a streamlined and personalized buying experience that reduces friction and moves deals forward.\t</p>\n"
 																	}
 																}
 															}
@@ -691,10 +722,11 @@
 												"siteKey": "[$GROUP_KEY$]"
 											},
 											"fragmentConfig": {
-												"fragmentHeight": "381px",
+												"fragmentHeight": "388px",
 												"fragmentId": "1",
+												"fragmentRadius": "16px",
 												"fragmentWidth": "600px",
-												"shape": "trapezoid"
+												"shape": "rectangle"
 											},
 											"fragmentFields": [
 												{
@@ -703,11 +735,14 @@
 														"fragmentLink": {
 														},
 														"text": {
+															"defaultFragmentInlineValue": {
+																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_001.png$]"
+															},
 															"mapping": {
 																"fieldKey": "FileEntry_downloadURL",
 																"itemReference": {
 																	"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																	"classPK": 41976010
+																	"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_001.png#]"
 																}
 															}
 														}
@@ -733,7 +768,8 @@
 							"customCSS": ".[$FRAGMENT_CLASS$] {\nposition: relative;\nz-index: 1;\n}",
 							"fragmentStyle": {
 								"backgroundColor": "#060B14",
-								"overflow": "hidden"
+								"overflow": "hidden",
+								"paddingBottom": "80px"
 							},
 							"indexed": true,
 							"layout": {
@@ -828,7 +864,7 @@
 														},
 														"text": {
 															"value_i18n": {
-																"en_US": "<p>From audit to fixes in minutes, at scale</p>\n\n\n\n\n"
+																"en_US": "<p>Happier Buyers and More Productive Sales Teams</p>\n\n\n\n\n\n\n\n\n\n\n"
 															}
 														}
 													}
@@ -873,15 +909,14 @@
 														"definition": {
 															"fragmentStyle": {
 																"height": "380px",
-																"paddingRight": "4",
+																"paddingRight": "5rem",
 																"width": "100%"
 															},
 															"indexed": true,
 															"layout": {
 																"align": "Start",
 																"contentDisplay": "FlexColumn",
-																"justify": "Center",
-																"paddingRight": 2
+																"justify": "Center"
 															},
 															"name": "text-content"
 														},
@@ -907,7 +942,7 @@
 																				},
 																				"text": {
 																					"value_i18n": {
-																						"en_US": "<p>Scan your whole site for issues and opportunities</p>\n\n\n\n\n"
+																						"en_US": "<p>Centralize and organize deal content.</p>\n\n\n\n\n\n\n\n\n\n\n"
 																					}
 																				}
 																			}
@@ -937,7 +972,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "<p class=\"dxp-capabilities-description\">\nLiferay SEO & AEO Studio <span class=\"highlight\">monitors your site and surfaces prioritized improvement opportunities for both traditional search and AI answer engine visibility.</span>\nEach insight provides clear explanations of what is broken, why it matters, and what to do next. \n</p>\n\n\n\n\n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nEliminate the chaos of email attachments and scattered files. Liferay Digital Sales Room (DSR) provides a single, secure space for all proposals, contracts, demos, and case studies – so buyers can easily access the information they need, when they need it.</p>\n\n"
 																					}
 																				}
 																			}
@@ -976,9 +1011,10 @@
 																		"siteKey": "[$GROUP_KEY$]"
 																	},
 																	"fragmentConfig": {
-																		"fragmentHeight": "351px",
+																		"fragmentHeight": "421px",
 																		"fragmentId": "2",
-																		"fragmentWidth": "601px",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "600px",
 																		"shape": "rectangle"
 																	},
 																	"fragmentFields": [
@@ -989,13 +1025,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo001.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_002.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo001.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_002.png#]"
 																						}
 																					}
 																				}
@@ -1048,9 +1084,10 @@
 																		"siteKey": "[$GROUP_KEY$]"
 																	},
 																	"fragmentConfig": {
-																		"fragmentHeight": "351px",
+																		"fragmentHeight": "427px",
 																		"fragmentId": "3",
-																		"fragmentWidth": "601px",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "600px",
 																		"shape": "rectangle"
 																	},
 																	"fragmentFields": [
@@ -1061,13 +1098,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo002.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_003.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo002.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_003.png#]"
 																						}
 																					}
 																				}
@@ -1076,7 +1113,7 @@
 																	],
 																	"indexed": true
 																},
-																"id": "2b91c10f-9199-fb6d-2251-ecf434047fd2",
+																"id": "7a5456cd-043d-ff9d-fe09-9853fbd35c8c",
 																"type": "Fragment"
 															}
 														],
@@ -1086,15 +1123,14 @@
 														"definition": {
 															"fragmentStyle": {
 																"height": "380px",
-																"paddingLeft": "6",
+																"paddingLeft": "5rem",
 																"width": "100%"
 															},
 															"indexed": true,
 															"layout": {
 																"align": "Start",
 																"contentDisplay": "FlexColumn",
-																"justify": "Center",
-																"paddingLeft": 6
+																"justify": "Center"
 															},
 															"name": "text-content"
 														},
@@ -1120,7 +1156,7 @@
 																				},
 																				"text": {
 																					"value_i18n": {
-																						"en_US": "<p>Let AI Agents do the heavy work</p>\n\n\n\n\n"
+																						"en_US": "<p>Enable better communication<br>\nboth ways.</p>\n\n\n\n\n"
 																					}
 																				}
 																			}
@@ -1150,7 +1186,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "\n\n<p class=\"dxp-capabilities-description\">\nWith the auto fix tool, specialized AI agents generate missing meta descriptions, alt tags, structured data, and AI-ready summaries for your content.\n<span class=\"highlight\">Say goodbye to issues like internal 404s, redirect chains, missing page metadata, or unoptimized content.</span>\n</p>\n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tA DSR isn’t just for sellers. Prospects can share requirements, loop in buying group members, and work side-by-side with you – building trust and alignment at every step.\n</p>"
 																					}
 																				}
 																			}
@@ -1185,15 +1221,14 @@
 														"definition": {
 															"fragmentStyle": {
 																"height": "380px",
-																"paddingRight": "6",
+																"paddingRight": "5rem",
 																"width": "100%"
 															},
 															"indexed": true,
 															"layout": {
 																"align": "Start",
 																"contentDisplay": "FlexColumn",
-																"justify": "Center",
-																"paddingRight": 6
+																"justify": "Center"
 															},
 															"name": "text-content"
 														},
@@ -1219,7 +1254,7 @@
 																				},
 																				"text": {
 																					"value_i18n": {
-																						"en_US": "<p>Stop losing visibility in AI answer engines</p>\n\n\n\n\n"
+																						"en_US": "<p>Understand prospect interactions and expand the buying group.</p>\n\n\n\n\n\n\n\n\n\n\n"
 																					}
 																				}
 																			}
@@ -1249,7 +1284,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "<p class=\"dxp-capabilities-description\">Understand how AI answer engines are using your content. Discover how to improve your site to\n<span class=\"highlight\">make ChatGPT, Google Gemini, Claude, and other AI tools cite your brand even more.</span>\n</p>\n\n\n\n \n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n  Don't guess what resonates with your prospects. Liferay DSR tracks engagement with all shared content, showing what's been viewed and downloaded. This data provides insights into your prospect's interests, allowing sellers to prioritize their follow-ups and ensure the deal is moving forward. Liferay DSR also makes it easy for prospects to share content with other buyer group members, helping you identify additional stakeholders.\n</p>\n\n"
 																					}
 																				}
 																			}
@@ -1288,9 +1323,10 @@
 																		"siteKey": "[$GROUP_KEY$]"
 																	},
 																	"fragmentConfig": {
-																		"fragmentHeight": "351px",
+																		"fragmentHeight": "427px",
 																		"fragmentId": "4",
-																		"fragmentWidth": "601px",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "600px",
 																		"shape": "rectangle"
 																	},
 																	"fragmentFields": [
@@ -1301,13 +1337,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo003.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_004.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo003.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_004.png#]"
 																						}
 																					}
 																				}
@@ -1336,7 +1372,7 @@
 														"widthType": "Fixed"
 													}
 												},
-												"id": "ae8bda69-a75a-d24f-21a4-7aa67fbbaf45",
+												"id": "bcd631e6-90e6-6a50-907e-f954cac73041",
 												"pageElements": [
 													{
 														"definition": {
@@ -1350,7 +1386,7 @@
 																"justify": "Center"
 															}
 														},
-														"id": "56eab32e-e1c8-bf5e-4078-7f7af2342d7f",
+														"id": "822655a4-e431-21a3-3b93-e1f40c67d907",
 														"pageElements": [
 															{
 																"definition": {
@@ -1359,9 +1395,10 @@
 																		"siteKey": "[$GROUP_KEY$]"
 																	},
 																	"fragmentConfig": {
-																		"fragmentHeight": "351px",
-																		"fragmentId": "5",
-																		"fragmentWidth": "601px",
+																		"fragmentHeight": "375px",
+																		"fragmentId": "6",
+																		"fragmentRadius": "16px",
+																		"fragmentWidth": "600px",
 																		"shape": "rectangle"
 																	},
 																	"fragmentFields": [
@@ -1372,13 +1409,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo004.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_005.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/seo_studio_content/seo004.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_005.png#]"
 																						}
 																					}
 																				}
@@ -1387,7 +1424,7 @@
 																	],
 																	"indexed": true
 																},
-																"id": "9b03fd91-de2b-5272-2ae1-1d30940fa431",
+																"id": "562bc841-d7a8-dfc5-61ad-0493b4cc378a",
 																"type": "Fragment"
 															}
 														],
@@ -1397,6 +1434,7 @@
 														"definition": {
 															"fragmentStyle": {
 																"height": "380px",
+																"paddingLeft": "5rem",
 																"width": "100%"
 															},
 															"indexed": true,
@@ -1407,7 +1445,7 @@
 															},
 															"name": "text-content"
 														},
-														"id": "667387bf-00e5-d115-2a37-230a5766a724",
+														"id": "f5af04e1-57df-a561-0d98-9653a21b15a1",
 														"pageElements": [
 															{
 																"definition": {
@@ -1429,7 +1467,7 @@
 																				},
 																				"text": {
 																					"value_i18n": {
-																						"en_US": "<p>The right metrics, in one place</p>\n\n\n\n\n"
+																						"en_US": "<p>Target buying experiences to clinch prospects.</p>\n\n\n\n\n\n\n\n\n\n\n"
 																					}
 																				}
 																			}
@@ -1443,7 +1481,7 @@
 																	},
 																	"indexed": true
 																},
-																"id": "164e4df2-1cc0-2b06-8854-c997f623460c",
+																"id": "3538f1ef-9501-1a8b-8226-e3ad9455116b",
 																"type": "Fragment"
 															},
 															{
@@ -1459,7 +1497,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "<p class=\"dxp-capabilities-description\">\nBy connecting data from Liferay DXP, Google Search Console, and PageSpeed Insights, Liferay SEO & AEO Studio gives marketing and IT teams the right performance data at the right time.\n</p>\n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\n\tEvery deal is unique – and your sales experience should be too. With Liferay DSR, you can spin up a custom space with your prospect’s branding and curate the right mix of content, creating a custom experience that stands out from the competition.\n</p>\n\n"
 																					}
 																				}
 																			}
@@ -1471,7 +1509,7 @@
 																	},
 																	"indexed": true
 																},
-																"id": "d00a2e22-b785-abcd-317b-a4a0dc9056a6",
+																"id": "b73af79a-ad58-6071-66c2-bb687b0e7f13",
 																"type": "Fragment"
 															}
 														],
@@ -1518,75 +1556,661 @@
 											}
 										},
 										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentStyle": {
+														"backgroundColor": "",
+														"borderRadius": "10px",
+														"overflow": "hidden"
+													},
+													"indexed": true,
+													"layout": {
+														"widthType": "Fixed"
+													}
+												},
+												"id": "c5432183-cd54-185b-171b-1319a2049d21",
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentStyle": {
+																"paddingBottom": "9",
+																"paddingTop": "9"
+															},
+															"indexed": true,
+															"layout": {
+															}
+														},
+														"id": "cd9ce237-bc33-4a7f-27a5-a9a883896fb9",
+														"pageElements": [
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "text",
+																		"siteKey": "[$GROUP_KEY$]"
+																	},
+																	"fragmentConfig": {
+																		"fontSize": "font-size-paragraph-large",
+																		"smallCaps": false,
+																		"tabletScreenCenter": false
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "text",
+																			"value": {
+																				"fragmentLink": {
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "<p>How Liferay DSR Works with Other Product Modules</p>\n\n\n\n\n\n\n\n\n\n\n"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"fragmentStyle": {
+																		"fontSize": "48px",
+																		"fontWeight": "300",
+																		"marginBottom": "7",
+																		"textAlign": "center"
+																	},
+																	"indexed": true
+																},
+																"id": "bddcabb0-82c1-2ea5-58f9-9c28a46afeb6",
+																"type": "Fragment"
+															},
+															{
+																"definition": {
+																	"gutters": true,
+																	"indexed": true,
+																	"modulesPerRow": 3,
+																	"numberOfColumns": 3,
+																	"reverseOrder": false,
+																	"rowViewports": [
+																		{
+																			"id": "landscapeMobile",
+																			"rowViewportDefinition": {
+																				"modulesPerRow": 1
+																			}
+																		},
+																		{
+																			"id": "portraitMobile",
+																			"rowViewportDefinition": {
+																			}
+																		},
+																		{
+																			"id": "tablet",
+																			"rowViewportDefinition": {
+																			}
+																		}
+																	],
+																	"verticalAlignment": "top"
+																},
+																"id": "21a3f5e7-52dc-0f15-2174-8ce384c467e0",
+																"pageElements": [
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "0d5813af-6166-980e-ea82-07b68baab830",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "e3151c63-3c49-a24e-5247-12886002eb42",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"67\" height=\"57\" viewBox=\"0 0 67 57\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M51.3273 31.2393C52.3085 30.2584 53.9 30.2582 54.881 31.2393L57.2668 33.625H60.6418C62.029 33.6253 63.1544 34.7504 63.1545 36.1377V39.5117L65.5402 41.8984C66.5211 42.8795 66.5209 44.47 65.5402 45.4512L63.1545 47.8379V51.2119C63.1545 52.5993 62.0291 53.7243 60.6418 53.7246H57.2668L54.881 56.1113C53.8999 57.0924 52.3085 57.0923 51.3273 56.1113L48.9416 53.7246H45.5666C44.1791 53.7245 43.0549 52.5994 43.0549 51.2119V47.8379L40.6682 45.4512C39.6872 44.47 39.6871 42.8796 40.6682 41.8984L43.0549 39.5117V36.1377C43.055 34.7503 44.1792 33.6251 45.5666 33.625H48.9416L51.3273 31.2393ZM36.466 18.0244C36.466 20.3216 38.328 22.1845 40.6252 22.1846H58.6496V29.7715L55.5363 26.6582C54.1938 25.3159 52.0167 25.3161 50.674 26.6582L47.4084 29.9238H42.7902C40.8919 29.9241 39.3531 31.463 39.3527 33.3613V37.9795L36.0871 41.2451C34.7447 42.5877 34.7446 44.7648 36.0871 46.1074L39.3527 49.373V53.9912C39.3527 54.1155 39.3594 54.2385 39.3723 54.3594C39.3752 54.3867 39.3794 54.4142 39.383 54.4414C39.3873 54.4743 39.3914 54.5075 39.3967 54.54C39.401 54.5668 39.4064 54.5936 39.4113 54.6201C39.4177 54.6547 39.4244 54.6894 39.4318 54.7236C39.4366 54.7458 39.4422 54.7681 39.4475 54.79C39.4854 54.9492 39.5347 55.1042 39.5939 55.2539C39.6004 55.2703 39.6058 55.2875 39.6125 55.3037C39.6344 55.3568 39.6583 55.4092 39.6828 55.4609H19.8273C16.7645 55.4608 14.2817 52.9778 14.2814 49.915V5.5459C14.2817 2.48321 16.7646 9.22497e-05 19.8273 0H36.466V18.0244ZM5.23652 1.11621C5.69878 1.1202 6.11106 1.41052 6.26972 1.84473L9.81367 11.5449L9.87714 11.7471C9.93125 11.9502 9.95625 12.1602 9.95429 12.3711L9.95527 12.3721L9.6291 50.4297C9.61789 51.706 9.09984 52.9255 8.18964 53.8203C7.27936 54.7151 6.05095 55.2119 4.7746 55.2012C4.14223 55.1959 3.51696 55.0662 2.93476 54.8193C2.35264 54.5724 1.82434 54.2136 1.38105 53.7627C0.937738 53.3117 0.587681 52.7768 0.350774 52.1904C0.113996 51.6042 -0.00541661 50.9769 0.000188568 50.3447L0.327337 12.2871C0.329606 12.0057 0.382557 11.7265 0.483587 11.4639L4.19257 1.82715L4.26581 1.67285C4.46297 1.32962 4.83205 1.1129 5.23652 1.11621ZM53.1037 39.9053C51.0224 39.9053 49.3352 41.5925 49.3351 43.6738C49.3352 45.7552 51.0224 47.4424 53.1037 47.4424C55.1847 47.442 56.8722 45.7549 56.8723 43.6738C56.8722 41.5927 55.1847 39.9057 53.1037 39.9053ZM42.0119 0.121094C43.054 0.341788 44.0195 0.859385 44.7844 1.62402L57.0256 13.8652C57.7903 14.63 58.3077 15.5956 58.5285 16.6377H42.0119V0.121094Z\" fill=\"url(#paint0_linear_7252_18182)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_7252_18182\" x1=\"53.6573\" y1=\"3.72617\" x2=\"1.71661\" y2=\"45.9537\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "f789ab6e-4c02-8336-247b-cc5a9dd71f71",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Digital Sales Room + CMS</h2>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "3cd3ed7f-d05c-e7b6-ad13-92618a6fc9cc",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Easily add and manage all your sales collateral directly within the DSR. Liferay CMS provides a secure and organized way to store, update, and publish documents, ensuring sellers always have access to the latest, most accurate content.</p>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "ddb9f4cf-7c31-734c-54ad-1c54c18e8318",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "11aeec7b-a26e-cd02-8d22-8aeae0482372",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"hidden": true,
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3f43587c-300f-4434-2ca3-c7a92f44aa66",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"58\" height=\"59\" viewBox=\"0 0 58 59\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M16.0156 49.4983C18.4276 49.4985 20.3833 51.454 20.3833 53.866C20.3832 56.2778 18.4275 58.2334 16.0156 58.2336C13.6036 58.2336 11.6481 56.278 11.6479 53.866C11.6479 51.4538 13.6035 49.4983 16.0156 49.4983Z\" fill=\"url(#paint0_linear_8219_59516)\"/>\n<path d=\"M45.1318 49.4983C47.544 49.4983 49.4995 51.4538 49.4995 53.866C49.4994 56.278 47.5439 58.2336 45.1318 58.2336C42.7199 58.2335 40.7643 56.2779 40.7642 53.866C40.7642 51.4539 42.7198 49.4984 45.1318 49.4983Z\" fill=\"url(#paint1_linear_8219_59516)\"/>\n<path d=\"M2.9126 0C7.9368 0.000180989 11.7132 3.73569 12.0703 8.73535H51.8335C55.4667 8.73535 58.2134 12.026 57.5635 15.6006L52.7991 41.8054C52.2956 44.5744 49.8834 46.5869 47.0691 46.5869H14.3579C11.303 46.5867 8.76746 44.2252 8.5498 41.178L6.21704 8.52783C6.08862 6.72996 4.55629 5.82411 2.9126 5.82397C1.30452 5.82397 0 4.51946 0 2.91138C0.000167302 1.30344 1.30462 0 2.9126 0Z\" fill=\"url(#paint2_linear_8219_59516)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_8219_59516\" x1=\"46.6812\" y1=\"3.81706\" x2=\"-4.14414\" y2=\"38.9096\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint1_linear_8219_59516\" x1=\"46.6812\" y1=\"3.81706\" x2=\"-4.14414\" y2=\"38.9096\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n<linearGradient id=\"paint2_linear_8219_59516\" x1=\"46.6812\" y1=\"3.81706\" x2=\"-4.14414\" y2=\"38.9096\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "d0ffe963-c674-23c9-da57-3341ddb50151",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Digital Sales Room + Commerce</h2>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"fontWeight": "500",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "cfd9d473-89df-ff11-41b2-a194ed85c534",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Move buyers seamlessly from proposal to purchase. With Liferay Digital Sales Rooms, sellers can share quotes while buyers review, accept, and place orders. All within a single workspace that shortens your sales cycle.</p>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "b10f3284-0808-d12d-aad9-3a935a5dcb09",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			},
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "3866d610-fa81-1236-5a4a-eb0709510ab7",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"70\" height=\"40\" viewBox=\"0 0 70 40\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M59.9996 18.3333V17.0703L45.2014 31.8685C43.2488 33.8211 40.0838 33.8211 38.1311 31.8685L26.6663 20.4036L8.53478 38.5352C6.58216 40.4878 3.41709 40.4878 1.46447 38.5352C-0.488155 36.5825 -0.488155 33.4175 1.46447 31.4648L23.1311 9.79818L23.3175 9.62077C25.2803 7.84735 28.3098 7.90656 30.2014 9.79818L41.6663 21.263L52.9293 10H51.6663C48.9049 10 46.6663 7.76142 46.6663 5C46.6663 2.23858 48.9049 0 51.6663 0H64.9996C67.761 0 69.9996 2.23858 69.9996 5V18.3333C69.9996 21.0948 67.761 23.3333 64.9996 23.3333C62.2382 23.3333 59.9996 21.0948 59.9996 18.3333Z\" fill=\"url(#paint0_linear_8219_59533)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_8219_59533\" x1=\"56.6722\" y1=\"2.62187\" x2=\"20.0669\" y2=\"47.2927\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "27d75634-043c-ea8a-d328-55f1cb72409f",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Digital Sales Room + Analytics</h2>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "fe854d2c-9057-0401-20f7-5303648b8d7b",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Make data-driven decisions. Liferay DSR uses Liferay's analytics capabilities to track views, downloads, and engagement – so you know exactly which content resonates, who the key stakeholders are, and how to prioritize your next move.</p>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "d32c1478-e383-88f0-49bc-e1a2695f2f61",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	},
+																	{
+																		"definition": {
+																			"columnViewports": [
+																				{
+																					"columnViewportDefinition": {
+																						"size": 12
+																					},
+																					"id": "landscapeMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "portraitMobile"
+																				},
+																				{
+																					"columnViewportDefinition": {
+																					},
+																					"id": "tablet"
+																				}
+																			],
+																			"size": 4
+																		},
+																		"id": "4c6ae040-9b57-d310-fa59-671349bc996b",
+																		"pageElements": [
+																			{
+																				"definition": {
+																					"fragmentStyle": {
+																						"maxWidth": "392px",
+																						"paddingTop": "5",
+																						"textAlign": "center"
+																					},
+																					"indexed": true,
+																					"layout": {
+																						"align": "Center",
+																						"contentDisplay": "FlexColumn",
+																						"justify": "Center",
+																						"paddingTop": 4,
+																						"widthType": "Fixed"
+																					}
+																				},
+																				"id": "be73ddf9-e120-780f-58ce-2a61565cfd70",
+																				"pageElements": [
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-html"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-html",
+																									"value": {
+																										"html": {
+																											"value_i18n": {
+																												"en_US": "<svg width=\"66\" height=\"62\" viewBox=\"0 0 66 62\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n<path d=\"M46.5498 45.0615C49.7478 45.0615 52.525 46.8592 53.9297 49.498H61.0713C63.3684 49.4981 65.2302 51.3602 65.2305 53.6572C65.2305 55.9545 63.3685 57.8174 61.0713 57.8174H53.8965C53.8166 57.8174 53.737 57.815 53.6582 57.8105C52.1853 60.1892 49.5533 61.7744 46.5498 61.7744C43.5494 61.7743 40.92 60.1921 39.4463 57.8174H4.16016C1.86307 57.8172 -2.00822e-07 55.9544 0 53.6572C0.000224398 51.3603 1.86321 49.4982 4.16016 49.498H39.1699C40.5746 46.8592 43.3518 45.0616 46.5498 45.0615ZM24.5205 22.248C27.7429 22.2482 30.5375 24.0732 31.9316 26.7451H61.0713C63.3684 26.7452 65.2303 28.6082 65.2305 30.9053C65.2303 33.2024 63.3684 35.0644 61.0713 35.0645H31.585C30.1043 37.4051 27.495 38.9608 24.5205 38.9609C21.5459 38.9609 18.9359 37.4052 17.4551 35.0645H4.16016C1.86311 35.0643 0.000139885 33.2023 0 30.9053C0.000188857 28.6083 1.86313 26.7453 4.16016 26.7451H17.1094C18.5037 24.0733 21.2981 22.2481 24.5205 22.248ZM41.6973 0C44.7138 1.05014e-05 47.356 1.59912 48.8252 3.99512C48.8515 3.99462 48.8779 3.99317 48.9043 3.99316H61.0713C63.3682 3.99325 65.2301 5.85548 65.2305 8.15234C65.2305 10.4495 63.3685 12.3124 61.0713 12.3125H49.0586C47.6479 14.932 44.881 16.7129 41.6973 16.7129C38.5136 16.7129 35.7466 14.932 34.3359 12.3125H4.16016C1.86302 12.3124 -2.00825e-07 10.4495 0 8.15234C0.000398052 5.85552 1.86327 3.99331 4.16016 3.99316H34.5703C36.0397 1.59822 38.6815 3.33878e-05 41.6973 0Z\" fill=\"url(#paint0_linear_8219_59552)\"/>\n<defs>\n<linearGradient id=\"paint0_linear_8219_59552\" x1=\"52.811\" y1=\"4.04915\" x2=\"-2.24693\" y2=\"44.5909\" gradientUnits=\"userSpaceOnUse\">\n<stop offset=\"0.206731\" stop-color=\"#CC88FD\"/>\n<stop offset=\"1\" stop-color=\"#0351DE\"/>\n</linearGradient>\n</defs>\n</svg>\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"marginBottom": "5",
+																								"marginTop": "1"
+																							},
+																							"indexed": true
+																						},
+																						"id": "c7855221-3bee-7bda-9367-2c0931062802",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"customCSS": ".[$FRAGMENT_CLASS$] h2 {\n font-size: 24px;\n}",
+																							"fragment": {
+																								"key": "text",
+																								"siteKey": "[$GROUP_KEY$]"
+																							},
+																							"fragmentConfig": {
+																								"fontSize": "font-size-paragraph-base",
+																								"smallCaps": false,
+																								"tabletScreenCenter": false
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<h2>Digital Sales Room + Personalization</h2>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"fragmentStyle": {
+																								"fontSize": "24px",
+																								"marginBottom": "2"
+																							},
+																							"indexed": true
+																						},
+																						"id": "40242399-444f-4eb8-0393-ae991f7e975e",
+																						"type": "Fragment"
+																					},
+																					{
+																						"definition": {
+																							"fragment": {
+																								"key": "BASIC_COMPONENT-paragraph"
+																							},
+																							"fragmentConfig": {
+																							},
+																							"fragmentFields": [
+																								{
+																									"id": "element-text",
+																									"value": {
+																										"fragmentLink": {
+																										},
+																										"text": {
+																											"value_i18n": {
+																												"en_US": "<p>Go beyond generic sales collateral. Personalize the DSR for each account, delivering a tailored experience that helps prospects feel understood and moves them closer to a purchasing decision.</p>\n\n\n\n\n\n\n\n\n\n\n"
+																											}
+																										}
+																									}
+																								}
+																							],
+																							"indexed": true
+																						},
+																						"id": "edc662bf-d99d-e110-08e2-c2d23932aeaa",
+																						"type": "Fragment"
+																					}
+																				],
+																				"type": "Section"
+																			}
+																		],
+																		"type": "Column"
+																	}
+																],
+																"type": "Row"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "Section"
+											},
+											{
+												"definition": {
+													"fragment": {
+														"key": "BASIC_COMPONENT-html"
+													},
+													"fragmentConfig": {
+													},
+													"fragmentFields": [
+														{
+															"id": "element-html",
+															"value": {
+																"html": {
+																	"value_i18n": {
+																		"en_US": "\n<style>\n  .dxp-gradient-text mark {\n    color: #8881f9;\n    background-image: linear-gradient(90deg, #659aff, #7414ff80);\n    background-clip: text;\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n  }\n\n.dxp-capabilities-description .highlight {\n\tcolor: #C379FB;\n\tfont-weight: 700;\n}\n</style>"
+																	}
+																}
+															}
+														}
+													],
+													"indexed": true
+												},
+												"id": "3a290e5d-e501-0c0b-23be-aa3ff1209b3e",
+												"type": "Fragment"
+											}
+										],
 										"type": "Section"
-									},
-									{
-										"definition": {
-											"fragment": {
-												"key": "requirements-modal",
-												"siteKey": "[$GROUP_KEY$]"
-											},
-											"fragmentConfig": {
-												"description": "The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.",
-												"header": "Liferay Ai HUB",
-												"productId": "",
-												"solutionType": "cmp",
-												"title": "AI Hub Requirements"
-											},
-											"fragmentFields": [
-												{
-													"id": "header",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "description",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "title",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												}
-											],
-											"indexed": true
-										},
-										"id": "c476f489-5590-0bce-f169-d9ceadcc938a",
-										"type": "Fragment"
 									}
 								],
 								"type": "Section"
-							},
-							{
-								"definition": {
-									"fragment": {
-										"key": "BASIC_COMPONENT-html"
-									},
-									"fragmentConfig": {
-									},
-									"fragmentFields": [
-										{
-											"id": "element-html",
-											"value": {
-												"html": {
-													"value_i18n": {
-														"en_US": "\n<style>\n  .dxp-gradient-text mark {\n    color: #8881f9;\n    background-image: linear-gradient(90deg, #659aff, #7414ff80);\n    background-clip: text;\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n  }\n\n.dxp-capabilities-description .highlight {\n\tcolor: #C379FB;\n\tfont-weight: 700;\n}\n  \n.ai-hub-sticky.stop-sticky {\n\tposition: static !important;\n\ttop: auto !important;\n}\n\n</style>\n<script>\ndocument.addEventListener('DOMContentLoaded', () => {\n\tconst stickyElement = document.querySelector('.ai-hub-sticky');\n\tconst lastSection = document.querySelector('#ai-hub-plans');\n\tconst purchaseButton = document.querySelector(\n\t\t'a[href=\"#ai-hub-plans\"]'\n\t);\n\n\tif (purchaseButton && lastSection) {\n\t\tpurchaseButton.addEventListener('click', (event) => {\n\t\t\tevent.preventDefault();\n\n\t\t\twindow.scrollTo({\n\t\t\t\ttop: lastSection.offsetTop,\n\t\t\t\tbehavior: 'smooth',\n\t\t\t});\n\t\t});\n\t}\n\n\tif (stickyElement && lastSection) {\n\t\tconst observer = new IntersectionObserver(\n\t\t\t([entry]) => {\n\t\t\t\t\n\t\t\t\tstickyElement.classList.toggle(\n\t\t\t\t\t'stop-sticky',\n\t\t\t\t\tentry.intersectionRatio >= 0.5\n\t\t\t\t);\n\t\t\t},\n\t\t\t{\n\t\t\t\trootMargin: '0px 0px -200px 0px',\n\t\t\t\tthreshold: 0.5,\n\t\t\t}\n\t\t);\n\n\t\tobserver.observe(lastSection);\n\t}\n});\n</script>"
-													}
-												}
-											}
-										}
-									],
-									"indexed": true
-								},
-								"id": "3a290e5d-e501-0c0b-23be-aa3ff1209b3e",
-								"type": "Fragment"
 							}
 						],
 						"type": "Section"
