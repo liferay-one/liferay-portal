@@ -5,12 +5,15 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
@@ -39,6 +42,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -50,6 +54,7 @@ import java.time.Instant;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,6 +63,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -65,6 +71,8 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -728,6 +736,321 @@ public class AccountsRestControllerTest {
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
 		Mockito.verifyNoInteractions(_entitlementDefinitionService);
+	}
+
+	@Test
+	public void testPostAccountsAssignsCreatorAsAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = new Account();
+
+		account.setId(() -> _ACCOUNT_ID);
+		account.setName(() -> "Acme");
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setId(() -> _POSTAL_ADDRESS_ID);
+
+		account.setPostalAddresses(() -> new PostalAddress[] {postalAddress});
+
+		Mockito.when(
+			_accountService.addAccount(ArgumentMatchers.any(Account.class))
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> _EMAIL_ADDRESS);
+		userAccount.setId(() -> _USER_ID);
+
+		Jwt jwt = Mockito.mock(Jwt.class);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(jwt)
+		).thenReturn(
+			userAccount
+		);
+
+		AccountRole accountRole = new AccountRole();
+
+		accountRole.setId(() -> _ACCOUNT_ROLE_ID);
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByName(
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
+		).thenReturn(
+			accountRole
+		);
+
+		Account newAccount = accountsRestController.postAccounts(
+			jwt, "{\"name\": \"Acme\"}", null);
+
+		Assertions.assertEquals("Acme", newAccount.getName());
+
+		Mockito.verify(
+			_accountService
+		).patchAccount(
+			Mockito.eq(_ACCOUNT_ID),
+			ArgumentMatchers.argThat(
+				patchAccount -> Objects.equals(
+					patchAccount.getDefaultBillingAddressId(),
+					_POSTAL_ADDRESS_ID))
+		);
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountByEmailAddress(
+			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString(),
+			Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountRole(
+			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ACCOUNT_ROLE_ID),
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testPostAccountsOnlyForwardsFormFields() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = new Account();
+
+		account.setId(() -> _ACCOUNT_ID);
+		account.setName(() -> "Acme");
+
+		Mockito.when(
+			_accountService.addAccount(ArgumentMatchers.any(Account.class))
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> _EMAIL_ADDRESS);
+		userAccount.setId(() -> _USER_ID);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		JSONObject accountJSONObject = new JSONObject(
+		).put(
+			"customFields",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"customValue",
+					new JSONObject(
+					).put(
+						"data", _EMAIL_ADDRESS
+					)
+				).put(
+					"name", "Contact Email"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"customValue",
+					new JSONObject(
+					).put(
+						"data", "Platinum"
+					)
+				).put(
+					"name", "accountTier"
+				)
+			)
+		).put(
+			"name", "Acme"
+		).put(
+			"organizationIds", new JSONArray(List.of(1))
+		).put(
+			"parentAccountId", 2
+		).put(
+			"taxId", "123"
+		).put(
+			"type", "business"
+		);
+
+		accountsRestController.postAccounts(
+			null, accountJSONObject.toString(), null);
+
+		ArgumentCaptor<Account> argumentCaptor = ArgumentCaptor.forClass(
+			Account.class);
+
+		Mockito.verify(
+			_accountService
+		).addAccount(
+			argumentCaptor.capture()
+		);
+
+		Account capturedAccount = argumentCaptor.getValue();
+
+		CustomField[] customFields = capturedAccount.getCustomFields();
+
+		Assertions.assertEquals(1, customFields.length);
+		Assertions.assertEquals("Contact Email", customFields[0].getName());
+
+		Assertions.assertEquals("Acme", capturedAccount.getName());
+		Assertions.assertNull(capturedAccount.getOrganizationIds());
+		Assertions.assertNull(capturedAccount.getParentAccountId());
+		Assertions.assertEquals("123", capturedAccount.getTaxId());
+		Assertions.assertEquals(
+			Account.Type.BUSINESS, capturedAccount.getType());
+	}
+
+	@Test
+	public void testPostAccountsRejectsDuplicateName() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.hasDuplicateAccountName("Acme", null)
+		).thenReturn(
+			true
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.postAccounts(
+					null, "{\"name\": \"Acme\"}", null));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).addAccount(
+			ArgumentMatchers.any(Account.class)
+		);
+	}
+
+	@Test
+	public void testPostAccountsRejectsSupplierType() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.postAccounts(
+					null, "{\"name\": \"Acme\", \"type\": \"supplier\"}",
+					null));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).addAccount(
+			ArgumentMatchers.any(Account.class)
+		);
+	}
+
+	@Test
+	public void testPostAccountsSetsLogoFromFile() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = new Account();
+
+		account.setId(() -> _ACCOUNT_ID);
+		account.setName(() -> "Acme");
+
+		Mockito.when(
+			_accountService.addAccount(ArgumentMatchers.any(Account.class))
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> _EMAIL_ADDRESS);
+		userAccount.setId(() -> _USER_ID);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		accountsRestController.postAccounts(
+			null, "{\"name\": \"Acme\"}",
+			new MockMultipartFile(
+				"file", "logo.png", "image/png", new byte[] {1, 2, 3}));
+
+		ArgumentCaptor<Account> argumentCaptor = ArgumentCaptor.forClass(
+			Account.class);
+
+		Mockito.verify(
+			_accountService
+		).addAccount(
+			argumentCaptor.capture()
+		);
+
+		Account capturedAccount = argumentCaptor.getValue();
+
+		Assertions.assertEquals("AQID", capturedAccount.getLogoBase64());
+
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).patchAccount(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any(Account.class)
+		);
+	}
+
+	@Test
+	public void testPostAccountsWithoutAccountAdministratorRole()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = new Account();
+
+		account.setId(() -> _ACCOUNT_ID);
+		account.setName(() -> "Acme");
+
+		Mockito.when(
+			_accountService.addAccount(ArgumentMatchers.any(Account.class))
+		).thenReturn(
+			account
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> _EMAIL_ADDRESS);
+		userAccount.setId(() -> _USER_ID);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		Account newAccount = accountsRestController.postAccounts(
+			null, "{\"name\": \"Acme\"}", null);
+
+		Assertions.assertEquals("Acme", newAccount.getName());
+
+		Mockito.verify(
+			_accountService
+		).addAccountUserAccountByEmailAddress(
+			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString(),
+			Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).addAccountUserAccountRole(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyLong()
+		);
 	}
 
 	@Test
@@ -1878,6 +2201,8 @@ public class AccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountsRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_keyedLock", new KeyedLock());
+		ReflectionTestUtils.setField(
 			accountsRestController, "_licenseKeyCSVExporter",
 			_licenseKeyCSVExporter);
 		ReflectionTestUtils.setField(
@@ -1994,6 +2319,8 @@ public class AccountsRestControllerTest {
 	private static final String _EMAIL_ADDRESS = "jane@example.com";
 
 	private static final String _EXTERNAL_REFERENCE_CODE = "ACC-1";
+
+	private static final long _POSTAL_ADDRESS_ID = 77L;
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 

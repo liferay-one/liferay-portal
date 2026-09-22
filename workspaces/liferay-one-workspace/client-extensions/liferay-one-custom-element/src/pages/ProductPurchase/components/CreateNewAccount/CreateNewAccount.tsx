@@ -60,13 +60,14 @@ const CreateNewAccount = ({accounts}: {accounts: Account[]}) => {
 			{!hasAccounts && (
 				<>
 					<div className="mr-1">
-						There are no Liferay Marketplace accounts available for
+						{i18n.translate('there-are-no-accounts-available-for')}
 						<b className="ml-1">
 							{Liferay.ThemeDisplay.getUserEmailAddress()}
 						</b>
-						. You need to create a new personal or business account
-						or join an already existing Marketplace business account
-						to proceed.
+						.{' '}
+						{i18n.translate(
+							'you-need-to-create-a-new-personal-or-business-account-or-join-an-already-existing-business-account-to-proceed'
+						)}
 					</div>
 
 					<DisplayCard

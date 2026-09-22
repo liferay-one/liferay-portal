@@ -81,6 +81,19 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "Contact Email",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
 		"name": "Industry",
 		"properties": {
 			"hidden": false,

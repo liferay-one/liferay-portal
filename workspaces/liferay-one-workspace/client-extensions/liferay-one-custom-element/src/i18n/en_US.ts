@@ -956,7 +956,6 @@ export default {
 	'next': 'Next',
 	'no': 'No',
 	'no-account-members-were-found': 'No account members were found.',
-	'no-accounts-available': 'No accounts available',
 	'no-activation-keys-yet': 'No Activation Keys Yet',
 	'no-applications-yet': 'No Applications Yet',
 	'no-apps-yet': 'No Apps Yet',
@@ -1566,6 +1565,8 @@ export default {
 	'theme': 'Theme',
 	'there-are-currently-no-open-tickets-under-this-project':
 		'There are currently no open tickets under this project.',
+	'there-are-no-accounts-available-for':
+		'There are no accounts available for',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
@@ -1886,6 +1887,8 @@ export default {
 		'You need Administrator or Requester role on this project to upload a file.',
 	'you-need-administrator-role-on-this-project-to-submit-this-form':
 		'You need Administrator role on this project to submit this form.',
+	'you-need-to-create-a-new-personal-or-business-account-or-join-an-already-existing-business-account-to-proceed':
+		'You need to create a new personal or business account or join an already existing business account to proceed.',
 	'you-will-receive-an-invoice-via-email-with-all-the-details-needed-to-complete-your-payment-after-you-complete-the-payment-you-can-activate-your-license-from-the-customer-dashboard':
 		'You will receive an invoice via email with all the details needed to complete your payment. After you complete the payment, you can activate your license from the customer dashboard.',
 	'you-will-receive-an-invoice-via-email-with-the-instructions-to-complete-your-bank-transfer-payment':

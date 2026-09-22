@@ -40,6 +40,19 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class AccountService extends OneBaseService {
 
+	public Account addAccount(Account account) throws Exception {
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameter(
+			"nestedFields", "postalAddresses"
+		).build();
+
+		return accountResource.postAccount(account);
+	}
+
 	public void addAccountUserAccount(long accountId, Jwt jwt, long userId)
 		throws Exception {
 
