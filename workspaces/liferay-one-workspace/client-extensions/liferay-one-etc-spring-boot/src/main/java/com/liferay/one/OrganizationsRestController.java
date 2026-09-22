@@ -7,9 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
-import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Role;
-import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
@@ -21,11 +19,11 @@ import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.one.util.FindUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -35,7 +33,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -188,7 +185,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 			organizationId);
 
 		for (UserAccount userAccount : removedUserAccounts) {
-			_unassignContactRoles(organization, userAccount);
+			_organizationMembershipService.unassignContactRoles(
+				organization, userAccount);
 		}
 
 		for (String emailAddress : changedEmailAddresses) {
@@ -364,41 +362,6 @@ public class OrganizationsRestController extends OneBaseRestController {
 		}
 	}
 
-	private void _unassignContactRoles(
-		Organization organization, UserAccount userAccount) {
-
-		OrganizationBrief organizationBrief = FindUtil.findFirst(
-			userAccount.getOrganizationBriefs(),
-			organizationBrief1 -> Objects.equals(
-				organization.getExternalReferenceCode(),
-				organizationBrief1.getExternalReferenceCode()));
-
-		if (organizationBrief == null) {
-			return;
-		}
-
-		RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
-
-		if (roleBriefs == null) {
-			return;
-		}
-
-		for (RoleBrief roleBrief : roleBriefs) {
-			try {
-				_organizationUserAccountRoleSynchronizer.syncUnassignRole(
-					roleBrief.getExternalReferenceCode(),
-					userAccount.getExternalReferenceCode(),
-					organization.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to sync organization contact role unassignment " +
-						"for role " + roleBrief.getExternalReferenceCode(),
-					exception);
-			}
-		}
-	}
-
 	private static final Log _log = LogFactory.getLog(
 		OrganizationsRestController.class);
 
@@ -413,6 +376,9 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 	@Autowired
 	private OktaService _oktaService;
+
+	@Autowired
+	private OrganizationMembershipService _organizationMembershipService;
 
 	@Autowired
 	private OrganizationService _organizationService;

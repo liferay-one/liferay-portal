@@ -8,16 +8,24 @@ package com.liferay.one.okta.pubsub;
 import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.model.Property;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.OrganizationMembershipService;
+import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.portal.kernel.model.Organization;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.json.JSONObject;
 
@@ -41,6 +49,9 @@ public class OktaUsersPubsubSubscriberTest {
 
 		_accountService = Mockito.mock(AccountService.class);
 		_oktaService = Mockito.mock(OktaService.class);
+		_organizationMembershipService = Mockito.mock(
+			OrganizationMembershipService.class);
+		_propertyService = Mockito.mock(PropertyService.class);
 		_provisioningAssignmentService = Mockito.mock(
 			ProvisioningAssignmentService.class);
 		_provisioningEmailService = Mockito.mock(
@@ -50,7 +61,12 @@ public class OktaUsersPubsubSubscriberTest {
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
 		ReflectionTestUtils.setField(_subscriber, "_oktaService", _oktaService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_organizationMembershipService",
+			_organizationMembershipService);
 		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
+		ReflectionTestUtils.setField(
+			_subscriber, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningAssignmentService",
 			_provisioningAssignmentService);
@@ -67,6 +83,31 @@ public class OktaUsersPubsubSubscriberTest {
 	@Test
 	public void testIsAutoCreateTopicReturnsFalse() {
 		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
+	}
+
+	@Test
+	public void testReceiveAddsGroupOrganizationMembership() throws Exception {
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_mockGroupOrganization(_GROUP_ID, _ORGANIZATION_ID);
+
+		_receiveGroupMessage(
+			"group.user_membership.add", _GROUP_ID, "Account Access US");
+
+		Mockito.verify(
+			_organizationMembershipService
+		).addOrganizationUserAccount(
+			_ORGANIZATION_ID, userAccount
+		);
+
+		Mockito.verifyNoInteractions(_accountService, _oktaService);
 	}
 
 	@Test
@@ -148,6 +189,25 @@ public class OktaUsersPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveIgnoresGroupWithoutLinkedOrganization()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_receiveGroupMessage(
+			"group.user_membership.add", _GROUP_ID, "Everyone");
+
+		Mockito.verifyNoInteractions(_organizationMembershipService);
+	}
+
+	@Test
 	public void testReceiveIgnoresUnknownEventType() throws Exception {
 		_receiveMessage(_EMAIL_ADDRESS, "user.unknown.event", "ACTIVE");
 
@@ -190,6 +250,42 @@ public class OktaUsersPubsubSubscriberTest {
 		).unassignAccountMembership(
 			_FIRST_ACCOUNT_ID, _USER_ID
 		);
+	}
+
+	@Test
+	public void testReceiveRemovesGroupOrganizationMembership()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_addOrganizationBrief(userAccount, _ORGANIZATION_ID);
+		_addOrganizationBrief(userAccount, _OTHER_ORGANIZATION_ID);
+
+		_mockGroupOrganization(_GROUP_ID, _ORGANIZATION_ID);
+
+		_receiveGroupMessage(
+			"group.user_membership.remove", _GROUP_ID, "Account Access US");
+
+		Mockito.verify(
+			_organizationMembershipService
+		).removeOrganizationUserAccount(
+			_ORGANIZATION_ID, userAccount
+		);
+
+		Mockito.verify(
+			_organizationMembershipService, Mockito.never()
+		).removeOrganizationUserAccount(
+			Mockito.eq(_OTHER_ORGANIZATION_ID), Mockito.any()
+		);
+
+		Mockito.verifyNoInteractions(_accountService);
 	}
 
 	@Test
@@ -319,6 +415,41 @@ public class OktaUsersPubsubSubscriberTest {
 			_accountService, _provisioningAssignmentService);
 
 		Mockito.verifyNoInteractions(_oktaService);
+	}
+
+	@Test
+	public void testReceiveSkipsGroupEventWhenNoPortalUserExists()
+		throws Exception {
+
+		_mockGroupOrganization(_GROUP_ID, _ORGANIZATION_ID);
+
+		_receiveGroupMessage(
+			"group.user_membership.add", _GROUP_ID, "Account Access US");
+
+		Mockito.verifyNoInteractions(_organizationMembershipService);
+	}
+
+	@Test
+	public void testReceiveSkipsGroupOrganizationAlreadyAssigned()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_addOrganizationBrief(userAccount, _ORGANIZATION_ID);
+
+		_mockGroupOrganization(_GROUP_ID, _ORGANIZATION_ID);
+
+		_receiveGroupMessage(
+			"group.user_membership.add", _GROUP_ID, "Account Access US");
+
+		Mockito.verifyNoInteractions(_organizationMembershipService);
 	}
 
 	@Test
@@ -620,6 +751,95 @@ public class OktaUsersPubsubSubscriberTest {
 		Mockito.verifyNoInteractions(_oktaService);
 	}
 
+	@Test
+	public void testReceiveUnassignsAllMembershipsWhenRemovedFromEmployees()
+		throws Exception {
+
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setId(_FIRST_ACCOUNT_ID);
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true, accountBrief);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_addOrganizationBrief(userAccount, _ORGANIZATION_ID);
+		_addOrganizationBrief(userAccount, _OTHER_ORGANIZATION_ID);
+
+		_receiveGroupMessage(
+			"group.user_membership.remove", "00g-employees", "Employees");
+
+		Mockito.verify(
+			_accountService
+		).removeAccountUserAccount(
+			_FIRST_ACCOUNT_ID, _USER_ID
+		);
+
+		Mockito.verify(
+			_organizationMembershipService
+		).removeOrganizationUserAccount(
+			_ORGANIZATION_ID, userAccount
+		);
+
+		Mockito.verify(
+			_organizationMembershipService
+		).removeOrganizationUserAccount(
+			_OTHER_ORGANIZATION_ID, userAccount
+		);
+
+		Mockito.verifyNoInteractions(_propertyService);
+	}
+
+	@Test
+	public void testReceiveUnassignsOrganizationsOnDeactivate()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_addOrganizationBrief(userAccount, _ORGANIZATION_ID);
+
+		_receiveMessage(
+			_EMAIL_ADDRESS, "user.lifecycle.deactivate", "DEPROVISIONED");
+
+		Mockito.verify(
+			_organizationMembershipService
+		).removeOrganizationUserAccount(
+			_ORGANIZATION_ID, userAccount
+		);
+	}
+
+	private void _addOrganizationBrief(
+		UserAccount userAccount, long organizationId) {
+
+		List<OrganizationBrief> organizationBriefs = new ArrayList<>();
+
+		if (userAccount.getOrganizationBriefs() != null) {
+			Collections.addAll(
+				organizationBriefs, userAccount.getOrganizationBriefs());
+		}
+
+		OrganizationBrief organizationBrief = new OrganizationBrief();
+
+		organizationBrief.setId(organizationId);
+
+		organizationBriefs.add(organizationBrief);
+
+		userAccount.setOrganizationBriefs(
+			organizationBriefs.toArray(new OrganizationBrief[0]));
+	}
+
 	private UserAccount _createUserAccount(
 		String emailAddress, long id, boolean verified,
 		AccountBrief... accountBriefs) {
@@ -657,6 +877,25 @@ public class OktaUsersPubsubSubscriberTest {
 		);
 	}
 
+	private void _mockGroupOrganization(String groupId, long organizationId)
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getProperties(
+				Organization.class.getName(), PropertyConstants.NAME_OKTA_GROUP,
+				groupId)
+		).thenReturn(
+			List.of(
+				new Property(
+					new JSONObject(
+					).put(
+						"classPK", organizationId
+					).put(
+						"id", organizationId
+					)))
+		);
+	}
+
 	private void _mockSyncContact(String status, UserAccount userAccount)
 		throws Exception {
 
@@ -665,6 +904,31 @@ public class OktaUsersPubsubSubscriberTest {
 		).thenReturn(
 			new OktaUser(_createUserJSONObject(_EMAIL_ADDRESS, status))
 		);
+	}
+
+	private void _receiveGroupMessage(
+			String eventType, String groupId, String groupName)
+		throws Exception {
+
+		Message message = new Message(
+			Collections.emptyMap(),
+			new JSONObject(
+			).put(
+				"eventType", eventType
+			).put(
+				"group",
+				new JSONObject(
+				).put(
+					"displayName", groupName
+				).put(
+					"id", groupId
+				)
+			).put(
+				"user", _createUserJSONObject(_EMAIL_ADDRESS, "ACTIVE")
+			).toString(),
+			"test-topic");
+
+		_subscriber.receive(message);
 	}
 
 	private void _receiveMessage(String email, String eventType, String status)
@@ -687,12 +951,20 @@ public class OktaUsersPubsubSubscriberTest {
 
 	private static final long _FIRST_ACCOUNT_ID = 10L;
 
+	private static final String _GROUP_ID = "00g-account-access-us";
+
+	private static final long _ORGANIZATION_ID = 30L;
+
+	private static final long _OTHER_ORGANIZATION_ID = 31L;
+
 	private static final long _SECOND_ACCOUNT_ID = 20L;
 
 	private static final long _USER_ID = 100L;
 
 	private AccountService _accountService;
 	private OktaService _oktaService;
+	private OrganizationMembershipService _organizationMembershipService;
+	private PropertyService _propertyService;
 	private ProvisioningAssignmentService _provisioningAssignmentService;
 	private ProvisioningEmailService _provisioningEmailService;
 	private OktaUsersPubsubSubscriber _subscriber;

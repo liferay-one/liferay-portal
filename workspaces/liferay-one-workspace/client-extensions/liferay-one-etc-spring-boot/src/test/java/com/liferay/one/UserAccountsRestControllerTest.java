@@ -6,8 +6,10 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -44,6 +46,24 @@ public class UserAccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncWithOktaSkipsOrganizationsWhenContactIsCreated()
+		throws Exception {
+
+		UserAccountsRestController userAccountsRestController =
+			_createController();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			new UserAccount()
+		);
+
+		userAccountsRestController.postSyncWithOkta(null, _USER_ID);
+
+		Mockito.verifyNoInteractions(_organizationMembershipService);
+	}
+
+	@Test
 	public void testPostSyncWithOktaSyncsContact() throws Exception {
 		UserAccountsRestController userAccountsRestController =
 			_createController();
@@ -70,6 +90,36 @@ public class UserAccountsRestControllerTest {
 		);
 	}
 
+	@Test
+	public void testPostSyncWithOktaSyncsOrganizationsFromOktaGroups()
+		throws Exception {
+
+		UserAccountsRestController userAccountsRestController =
+			_createController();
+
+		UserAccount userAccount = new UserAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_oktaService.syncContact(userAccount)
+		).thenReturn(
+			Mockito.mock(OktaUser.class)
+		);
+
+		userAccountsRestController.postSyncWithOkta(null, _USER_ID);
+
+		Mockito.verify(
+			_organizationMembershipService
+		).syncOktaGroupOrganizations(
+			userAccount
+		);
+	}
+
 	private UserAccountsRestController _createController() {
 		UserAccountsRestController userAccountsRestController =
 			new UserAccountsRestController();
@@ -78,6 +128,9 @@ public class UserAccountsRestControllerTest {
 			userAccountsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			userAccountsRestController, "_oktaService", _oktaService);
+		ReflectionTestUtils.setField(
+			userAccountsRestController, "_organizationMembershipService",
+			_organizationMembershipService);
 		ReflectionTestUtils.setField(
 			userAccountsRestController, "_userAccountService",
 			_userAccountService);
@@ -90,6 +143,8 @@ public class UserAccountsRestControllerTest {
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
+	private final OrganizationMembershipService _organizationMembershipService =
+		Mockito.mock(OrganizationMembershipService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 

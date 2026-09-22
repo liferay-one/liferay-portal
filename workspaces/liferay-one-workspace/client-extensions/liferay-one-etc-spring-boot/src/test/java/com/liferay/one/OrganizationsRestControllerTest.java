@@ -18,6 +18,7 @@ import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
@@ -340,6 +341,19 @@ public class OrganizationsRestControllerTest {
 			organizationsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_oktaService", _oktaService);
+
+		OrganizationMembershipService organizationMembershipService =
+			new OrganizationMembershipService();
+
+		ReflectionTestUtils.setField(
+			organizationMembershipService,
+			"_organizationUserAccountRoleSynchronizer",
+			_organizationUserAccountRoleSynchronizer);
+
+		ReflectionTestUtils.setField(
+			organizationsRestController, "_organizationMembershipService",
+			organizationMembershipService);
+
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_organizationService",
 			_organizationService);
