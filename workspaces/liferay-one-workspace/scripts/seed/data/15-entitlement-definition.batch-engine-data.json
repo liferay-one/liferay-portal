@@ -289,7 +289,19 @@
 			"maxQuantity": 1,
 			"name": "events-add-on-bucket",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
-			"skuExternalReferenceCode": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET",
+			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Events Overage Buckets",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "events-overage-bucket",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
+			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
 			"unit": "count"
 		},
 		{

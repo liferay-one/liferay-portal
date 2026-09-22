@@ -139,7 +139,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET",
 				"name": "Liferay Data Platform Events Add-On Bucket",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET",
+				"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
 				"unitPrice": 20
 			}
 		],
