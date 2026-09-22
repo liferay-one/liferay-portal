@@ -6,18 +6,25 @@
 package com.liferay.one.okta.pubsub;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.model.Property;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.OrganizationMembershipService;
+import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.UserAccountUtil;
+import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.List;
 import java.util.Objects;
 
 import org.json.JSONObject;
@@ -48,6 +55,8 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		String eventType = jsonObject.optString("eventType");
 
+		JSONObject groupJSONObject = jsonObject.optJSONObject(
+			"group", new JSONObject());
 		OktaUser oktaUser = new OktaUser(
 			jsonObject.optJSONObject("user", new JSONObject()));
 
@@ -58,6 +67,24 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 		}
 		else if (Objects.equals(eventType, _EVENT_TYPE_LIFECYCLE_DEACTIVATE)) {
 			_unassignAllMemberships(oktaUser);
+		}
+		else if (Objects.equals(
+					eventType, _EVENT_TYPE_GROUP_USER_MEMBERSHIP_ADD)) {
+
+			_addGroupMemberships(groupJSONObject, oktaUser);
+		}
+		else if (Objects.equals(
+					eventType, _EVENT_TYPE_GROUP_USER_MEMBERSHIP_REMOVE)) {
+
+			if (Objects.equals(
+					groupJSONObject.optString("displayName"),
+					_GROUP_NAME_EMPLOYEES)) {
+
+				_unassignAllMemberships(oktaUser);
+			}
+			else {
+				_removeGroupMemberships(groupJSONObject, oktaUser);
+			}
 		}
 		else if (Objects.equals(
 					eventType, _EVENT_TYPE_ACCOUNT_UPDATE_PASSWORD) ||
@@ -83,6 +110,28 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 		return false;
 	}
 
+	private void _addGroupMemberships(
+			JSONObject groupJSONObject, OktaUser oktaUser)
+		throws Exception {
+
+		long organizationId = _getGroupOrganizationId(groupJSONObject);
+
+		if (organizationId == 0) {
+			return;
+		}
+
+		UserAccount userAccount = _fetchUserAccount(oktaUser.getEmail());
+
+		if ((userAccount == null) ||
+			_hasOrganization(organizationId, userAccount)) {
+
+			return;
+		}
+
+		_organizationMembershipService.addOrganizationUserAccount(
+			organizationId, userAccount);
+	}
+
 	private UserAccount _fetchUserAccount(String emailAddress)
 		throws Exception {
 
@@ -91,6 +140,47 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 		}
 
 		return _userAccountService.fetchUserAccountByEmailAddress(emailAddress);
+	}
+
+	private long _getGroupOrganizationId(JSONObject groupJSONObject)
+		throws Exception {
+
+		String groupId = groupJSONObject.optString("id");
+
+		if (Validator.isNull(groupId)) {
+			return 0;
+		}
+
+		List<Property> properties = _propertyService.getProperties(
+			Organization.class.getName(), PropertyConstants.NAME_OKTA_GROUP,
+			groupId);
+
+		if (properties.isEmpty()) {
+			return 0;
+		}
+
+		Property property = properties.get(0);
+
+		return property.getClassPK();
+	}
+
+	private boolean _hasOrganization(
+		long organizationId, UserAccount userAccount) {
+
+		OrganizationBrief[] organizationBriefs =
+			userAccount.getOrganizationBriefs();
+
+		if (organizationBriefs == null) {
+			return false;
+		}
+
+		for (OrganizationBrief organizationBrief : organizationBriefs) {
+			if (Objects.equals(organizationBrief.getId(), organizationId)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void _removeAccountUserAccount(
@@ -102,6 +192,28 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		_provisioningAssignmentService.unassignAccountMembership(
 			accountEntryId, userAccount.getId());
+	}
+
+	private void _removeGroupMemberships(
+			JSONObject groupJSONObject, OktaUser oktaUser)
+		throws Exception {
+
+		long organizationId = _getGroupOrganizationId(groupJSONObject);
+
+		if (organizationId == 0) {
+			return;
+		}
+
+		UserAccount userAccount = _fetchUserAccount(oktaUser.getEmail());
+
+		if ((userAccount == null) ||
+			!_hasOrganization(organizationId, userAccount)) {
+
+			return;
+		}
+
+		_organizationMembershipService.removeOrganizationUserAccount(
+			organizationId, userAccount);
 	}
 
 	private void _syncContact(OktaUser oktaUser) throws Exception {
@@ -123,12 +235,20 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		AccountBrief[] accountBriefs = userAccount.getAccountBriefs();
 
-		if (accountBriefs == null) {
-			return;
+		if (accountBriefs != null) {
+			for (AccountBrief accountBrief : accountBriefs) {
+				_removeAccountUserAccount(accountBrief.getId(), userAccount);
+			}
 		}
 
-		for (AccountBrief accountBrief : accountBriefs) {
-			_removeAccountUserAccount(accountBrief.getId(), userAccount);
+		OrganizationBrief[] organizationBriefs =
+			userAccount.getOrganizationBriefs();
+
+		if (organizationBriefs != null) {
+			for (OrganizationBrief organizationBrief : organizationBriefs) {
+				_organizationMembershipService.removeOrganizationUserAccount(
+					organizationBrief.getId(), userAccount);
+			}
 		}
 	}
 
@@ -156,6 +276,12 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 	private static final String _EVENT_TYPE_ACCOUNT_UPDATE_PROFILE =
 		"user.account.update_profile";
 
+	private static final String _EVENT_TYPE_GROUP_USER_MEMBERSHIP_ADD =
+		"group.user_membership.add";
+
+	private static final String _EVENT_TYPE_GROUP_USER_MEMBERSHIP_REMOVE =
+		"group.user_membership.remove";
+
 	private static final String _EVENT_TYPE_LIFECYCLE_ACTIVATE =
 		"user.lifecycle.activate";
 
@@ -165,14 +291,22 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 	private static final String _EVENT_TYPE_LIFECYCLE_DEACTIVATE =
 		"user.lifecycle.deactivate";
 
+	private static final String _GROUP_NAME_EMPLOYEES = "Employees";
+
 	@Autowired
 	private AccountService _accountService;
 
 	@Autowired
 	private OktaService _oktaService;
 
+	@Autowired
+	private OrganizationMembershipService _organizationMembershipService;
+
 	@Value("${liferay.one.okta.users.pubsub.subscriber.project.id}")
 	private String _projectId;
+
+	@Autowired
+	private PropertyService _propertyService;
 
 	@Autowired
 	private ProvisioningAssignmentService _provisioningAssignmentService;

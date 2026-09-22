@@ -6,7 +6,6 @@
 package com.liferay.one.okta.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
@@ -14,7 +13,6 @@ import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -231,7 +229,7 @@ public class OktaService {
 		return WorkflowConstants.STATUS_APPROVED;
 	}
 
-	public List<String> getContactGroupNames(String emailAddress)
+	public List<String> getContactGroupIds(String emailAddress)
 		throws Exception {
 
 		ResponseEntity<String> responseEntity = _webClient.get(
@@ -264,24 +262,21 @@ public class OktaService {
 			return Collections.emptyList();
 		}
 
-		List<String> groupNames = new ArrayList<>();
+		List<String> groupIds = new ArrayList<>();
 
 		JSONArray jsonArray = new JSONArray(responseEntity.getBody());
 
 		for (int i = 0; i < jsonArray.length(); i++) {
 			JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-			JSONObject profileJSONObject = jsonObject.optJSONObject(
-				"profile", new JSONObject());
+			String id = jsonObject.optString("id");
 
-			String name = profileJSONObject.optString("name");
-
-			if (Validator.isNotNull(name)) {
-				groupNames.add(name);
+			if (Validator.isNotNull(id)) {
+				groupIds.add(id);
 			}
 		}
 
-		return groupNames;
+		return groupIds;
 	}
 
 	public List<OktaUser> getGroupContacts(String groupId) throws Exception {
@@ -369,17 +364,10 @@ public class OktaService {
 					).toString(),
 					"okta-user-create"));
 
-			_syncGroups(
-				false, emailAddress, Collections.emptyList(), userAccount);
-
 			return null;
 		}
 
 		_updateUserAccount(oktaUser, userAccount);
-
-		_syncGroups(
-			oktaUser.isDeactivated(), emailAddress,
-			getContactGroupNames(emailAddress), userAccount);
 
 		return oktaUser;
 	}
@@ -432,40 +420,6 @@ public class OktaService {
 		return null;
 	}
 
-	private void _syncGroup(
-			boolean deactivated, String emailAddress, String groupName,
-			List<String> groupNames, boolean required)
-		throws Exception {
-
-		boolean assigned = groupNames.contains(groupName);
-
-		if (required && !assigned) {
-			if (deactivated) {
-				activateUser(emailAddress);
-			}
-			else {
-				addMembership(groupName, emailAddress);
-			}
-		}
-		else if (!required && assigned) {
-			removeMembership(groupName, emailAddress);
-		}
-	}
-
-	private void _syncGroups(
-			boolean deactivated, String emailAddress, List<String> groupNames,
-			UserAccount userAccount)
-		throws Exception {
-
-		_syncGroup(
-			deactivated, emailAddress, _GROUP_NAME_CUSTOMERS, groupNames,
-			ArrayUtil.isNotEmpty(userAccount.getAccountBriefs()));
-		_syncGroup(
-			deactivated, emailAddress, _GROUP_NAME_PARTNERS, groupNames,
-			UserAccountUtil.hasAccountRole(
-				userAccount, RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES));
-	}
-
 	private void _updateUserAccount(OktaUser oktaUser, UserAccount userAccount)
 		throws Exception {
 
@@ -501,10 +455,6 @@ public class OktaService {
 			_userAccountService.setVerified(userAccount.getId());
 		}
 	}
-
-	private static final String _GROUP_NAME_CUSTOMERS = "Customers";
-
-	private static final String _GROUP_NAME_PARTNERS = "Partners";
 
 	private static final String _URL_API_REST_GROUPS = "/api/v1/groups/";
 

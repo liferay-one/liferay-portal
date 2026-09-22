@@ -5,9 +5,11 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.UserAccountService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +47,12 @@ public class UserAccountsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		_oktaService.syncContact(_userAccountService.getUserAccount(userId));
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
+		if (_oktaService.syncContact(userAccount) != null) {
+			_organizationMembershipService.syncOktaGroupOrganizations(
+				userAccount);
+		}
 	}
 
 	@Autowired
@@ -53,6 +60,9 @@ public class UserAccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private OktaService _oktaService;
+
+	@Autowired
+	private OrganizationMembershipService _organizationMembershipService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
