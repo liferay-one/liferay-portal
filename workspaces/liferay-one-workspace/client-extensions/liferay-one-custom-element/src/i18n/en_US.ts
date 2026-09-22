@@ -378,6 +378,7 @@ export default {
 		'Create a DXP App to be delivered as a download.',
 	'create-a-new-marketplace-acccount-or-join-an-already-existing-one':
 		'Create a new Marketplace acccount or join an already existing one',
+	'create-a-trial': 'Create a Trial',
 	'create-activation-key': 'Create Activation Key',
 	'create-business-event': 'Create Business Event',
 	'create-event': 'Create Event',
@@ -428,6 +429,8 @@ export default {
 	'deactivate-activation-key-confirmation':
 		'Are you sure you want to deactivate this activation key?',
 	'deactivated': 'Deactivated',
+	'dear-x-based-on-our-records-you-have-already-completed-a-trial-therefore-currently-we-are-unable-to-start-your-trial-please-contact-our-sales-department-via-email':
+		'Dear {0}, based on our records, you have already completed a trial. Therefore currently we are unable to start your trial. Please contact our sales department via email',
 	'decline': 'Decline',
 	'define-company-profile-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront':
 		'Define company profile information for your solution. This will inform users about this version’s updates on the storefront.',
@@ -1301,6 +1304,7 @@ export default {
 	'return-to-the-product-activation-page-to-view-the-current-activation-status':
 		'Return to the product activation page to view the current activation status.',
 	'return-to-ticket': 'Return to Ticket',
+	'return-to-trial-page': 'Return to Trial Page',
 	'review': 'Review',
 	'review-and-accept-the-legal-agreement-between-you-and-liferay-before-proceeding-you-are-about-to-create-a-new-solution-submission':
 		'Review and accept the legal agreement between you and Liferay before proceeding. You are about to create a new solution submission.',
@@ -1619,6 +1623,8 @@ export default {
 	'title': 'Title',
 	'to': 'To',
 	'to-be-renewed': 'To be Renewed',
+	'to-continue-please-enter-the-required-information':
+		'To continue, please enter the required information.',
 	'to-generate-your-unique-activation-key-file-and-access-the-download-please-complete-your-profile-details-below-tell-us-a-bit-about-your-intended-use-to-help-us-support-your-experience':
 		'To generate your unique activation key file and access the download, please complete your profile details below. Tell us a bit about your intended use to help us support your experience',
 	'to-generate-your-unique-activation-key-file-please-provide-the-technical-specifications-required-below-these-details-are-used-exclusively-to-configure-the-software-for-your-environment-and-ensure-hardware-compatibility':
@@ -1655,6 +1661,7 @@ export default {
 	'trial-extension-rejected-successfully':
 		'Trial extension rejected successfully.',
 	'trial-info': 'Trial Info',
+	'trial-not-available': 'Trial Not Available',
 	'trial-resources': 'Trial Resources',
 	'trial-start-date': 'Trial Start Date',
 	'trial-status': 'Trial Status',
@@ -1902,6 +1909,8 @@ export default {
 		'Your request completed successfully',
 	'your-tokens-will-be-credited-to-your-ai-hub-account-shortly-we-will-notify-you-by-email-once-they-are-available':
 		'Your tokens will be credited to your AI Hub account shortly. We will notify you by email once they are available.',
+	'your-trial-is-provisioned-by-liferay':
+		'Your trial is provisioned by Liferay.',
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'zip-area-code': 'Zip/Area Code',
