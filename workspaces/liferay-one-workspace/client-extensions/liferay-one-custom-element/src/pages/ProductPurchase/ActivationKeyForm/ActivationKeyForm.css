@@ -1,0 +1,21 @@
+.activation-key-form .loading-animation {
+	margin: 0px !important;
+}
+
+.activation-key-form-agreements-text {
+	font-size: 11px;
+	text-align: justify;
+}
+
+.activation-key-form-fail {
+	border: solid 1px red !important;
+}
+
+.activation-key-form-label-check-box,
+.activation-key-form-purpose-helper-text {
+	font-size: 11px;
+}
+
+.activation-key-form-select-input {
+	height: 40px;
+}

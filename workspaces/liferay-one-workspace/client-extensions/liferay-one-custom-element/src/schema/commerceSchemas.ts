@@ -48,7 +48,7 @@ export const commerceSchemas = {
 		businessEmailAddress: z
 			.string()
 			.email(i18n.translate('please-fill-in-a-valid-email')),
-		companyName: z.string().optional().or(z.literal('')),
+		companyName: z.string().min(3, {message: 'Company name is required'}),
 		country: z
 			.string()
 			.min(2, {message: 'Please select the country to continue'}),
