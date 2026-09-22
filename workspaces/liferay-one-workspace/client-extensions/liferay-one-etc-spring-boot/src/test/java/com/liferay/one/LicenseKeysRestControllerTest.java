@@ -662,6 +662,120 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPutLicenseKeysActivate() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		List<LicenseKey> licenseKeys = Arrays.asList(
+			_createLicenseKey(1L), _createLicenseKey(2L));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			licenseKeys
+		);
+
+		licenseKeysRestController.putLicenseKeysActivate(
+			null, new long[] {1L, 2L});
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).checkSelfProvisioning(
+			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			true, 1L
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			true, 2L
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateThrowsForbiddenWhenSelfProvisioningIsDisabled()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).checkSelfProvisioning(
+			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysActivate(
+				null, new long[] {1L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateWhenLicenseKeyIdsExceedsTheMaximum()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.putLicenseKeysActivate(
+					null, new long[101]));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPutLicenseKeysActivateWhenLicenseKeyIdsIsEmpty()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.putLicenseKeysActivate(
+					null, new long[0]));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
 	public void testPutLicenseKeysDeactivate() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
