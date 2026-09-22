@@ -10,13 +10,18 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
+import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.LicenseKeyGenerateFormService;
+import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
@@ -26,9 +31,13 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import java.util.Arrays;
 import java.util.Collections;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
@@ -91,6 +100,65 @@ public class LicenseKeysRestControllerTest {
 		).check(
 			_ACCOUNT_ID, ActionKeys.VIEW, null
 		);
+	}
+
+	@Test
+	public void testGetLicenseKeysDeveloperDownload() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				project, "DXP", "7.4")
+		).thenReturn(
+			"<license />"
+		);
+
+		Mockito.when(
+			_licenseKeyExporter.getFileName("DXP", "7.4", "developer")
+		).thenReturn(
+			"activation-key-dxp-7.4-developer.xml"
+		);
+
+		ResponseEntity<String> responseEntity =
+			licenseKeysRestController.getLicenseKeysDeveloperDownload(
+				null, "DXP", _PROJECT_ERC, "7.4");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals("<license />", responseEntity.getBody());
+
+		HttpHeaders httpHeaders = responseEntity.getHeaders();
+
+		Assertions.assertEquals(
+			"attachment; filename=\"activation-key-dxp-7.4-developer.xml\"",
+			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
+	}
+
+	@Test
+	public void testGetLicenseKeysDeveloperDownloadThrowsWhenNoProject()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenReturn(
+			null
+		);
+
+		Assertions.assertThrows(
+			ProjectNotFoundException.class,
+			() -> licenseKeysRestController.getLicenseKeysDeveloperDownload(
+				null, "DXP", _PROJECT_ERC, "7.4"));
 	}
 
 	@Test
@@ -530,6 +598,56 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetLicenseKeysGenerateForm() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getGenerateForm(_PROJECT_ERC)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"products", new JSONArray()
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			licenseKeysRestController.getLicenseKeysGenerateForm(
+				null, _PROJECT_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			0,
+			jsonObject.getJSONArray(
+				"products"
+			).length());
+	}
+
+	@Test
+	public void testGetLicenseKeysGenerateFormChecksPermission()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.getLicenseKeysGenerateForm(
+				null, _PROJECT_ERC));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
 	public void testGetSubscriptionsReturnsFalseWhenNotSubscribed()
 		throws Exception {
 
@@ -563,6 +681,157 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertTrue(
 			licenseKeysRestController.getSubscriptions(null, 5L));
+	}
+
+	@Test
+	public void testPostLicenseKeysGenerate() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateLicenseKeys(Mockito.any())
+		).thenReturn(
+			Arrays.asList(11L, 12L)
+		);
+
+		ResponseEntity<String> responseEntity =
+			licenseKeysRestController.postLicenseKeysGenerate(
+				null, _toGenerateJSON());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		JSONArray jsonArray = jsonObject.getJSONArray("licenseKeyIds");
+
+		Assertions.assertEquals(2, jsonArray.length());
+		Assertions.assertEquals(11L, jsonArray.getLong(0));
+		Assertions.assertEquals(12L, jsonArray.getLong(1));
+	}
+
+	@Test
+	public void testPostLicenseKeysGenerateChecksPermission() throws Exception {
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.postLicenseKeysGenerate(
+				null, _toGenerateJSON()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostLicenseKeysGenerateChecksRenewedLicenseKeyOwner()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			project.getExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			"PRJCT-OTHER"
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(null, 77L)
+		).thenReturn(
+			licenseKey
+		);
+
+		JSONObject jsonObject = new JSONObject(_toGenerateJSON());
+
+		jsonObject.put(
+			"renewedLicenseKeyIds", new JSONArray(Arrays.asList(77L)));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.postLicenseKeysGenerate(
+				null, jsonObject.toString()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostLicenseKeysGeneratePassesEveryServer()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.check(null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateLicenseKeys(Mockito.any())
+		).thenReturn(
+			Collections.singletonList(11L)
+		);
+
+		licenseKeysRestController.postLicenseKeysGenerate(
+			null, _toGenerateJSON());
+
+		ArgumentCaptor<LicenseKeyGenerationService.GenerateRequest>
+			argumentCaptor = ArgumentCaptor.forClass(
+				LicenseKeyGenerationService.GenerateRequest.class);
+
+		Mockito.verify(
+			_licenseKeyGenerationService
+		).generateLicenseKeys(
+			argumentCaptor.capture()
+		);
+
+		LicenseKeyGenerationService.GenerateRequest generateRequest =
+			argumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			Arrays.asList(101L, 102L),
+			generateRequest.getBundleEntitlementIds());
+		Assertions.assertEquals(
+			"Desjardins Insurance", generateRequest.getEnvironmentName());
+		Assertions.assertEquals("DXP Backup", generateRequest.getKeyType());
+		Assertions.assertEquals(
+			2,
+			generateRequest.getServers(
+			).size());
+		Assertions.assertEquals(
+			101L, generateRequest.getSubscriptionEntitlementId());
+		Assertions.assertEquals("7.4", generateRequest.getVersion());
 	}
 
 	@Test
@@ -785,12 +1054,24 @@ public class LicenseKeysRestControllerTest {
 			_commerceOrderService);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_environmentActivationPermission",
+			_environmentActivationPermission);
+
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyCSVExporter",
 			_licenseKeyCSVExporter);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyExporter",
 			_licenseKeyExporter);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_licenseKeyGenerateFormService",
+			_licenseKeyGenerateFormService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_licenseKeyGenerationService",
+			_licenseKeyGenerationService);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyPermission",
@@ -811,7 +1092,44 @@ public class LicenseKeysRestControllerTest {
 		return licenseKeysRestController;
 	}
 
+	private String _toGenerateJSON() {
+		return new JSONObject(
+		).put(
+			"bundleEntitlementIds", new JSONArray(Arrays.asList(101L, 102L))
+		).put(
+			"environmentName", "Desjardins Insurance"
+		).put(
+			"keyType", "DXP Backup"
+		).put(
+			"projectExternalReferenceCode", _PROJECT_ERC
+		).put(
+			"servers",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"hostName", "plrlws389.dev.desjardins.com"
+				).put(
+					"ipAddresses", "10.2.16.123"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"hostName", "plrlws390.dev.desjardins.com"
+				).put(
+					"ipAddresses", "10.2.16.124"
+				)
+			)
+		).put(
+			"subscriptionEntitlementId", 101L
+		).put(
+			"version", "7.4"
+		).toString();
+	}
+
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final String _PROJECT_ERC = "PROJ-1";
 
 	private static final long _USER_ID = 123L;
 
@@ -819,10 +1137,17 @@ public class LicenseKeysRestControllerTest {
 		AdminPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
+	private final EnvironmentActivationPermission
+		_environmentActivationPermission = Mockito.mock(
+			EnvironmentActivationPermission.class);
 	private final LicenseKeyCSVExporter _licenseKeyCSVExporter = Mockito.mock(
 		LicenseKeyCSVExporter.class);
 	private final LicenseKeyExporter _licenseKeyExporter = Mockito.mock(
 		LicenseKeyExporter.class);
+	private final LicenseKeyGenerateFormService _licenseKeyGenerateFormService =
+		Mockito.mock(LicenseKeyGenerateFormService.class);
+	private final LicenseKeyGenerationService _licenseKeyGenerationService =
+		Mockito.mock(LicenseKeyGenerationService.class);
 	private final LicenseKeyPermission _licenseKeyPermission = Mockito.mock(
 		LicenseKeyPermission.class);
 	private final LicenseKeyService _licenseKeyService = Mockito.mock(

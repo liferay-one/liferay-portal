@@ -11,23 +11,32 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
+import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.LicenseKeyGenerateFormService;
+import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +48,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -83,6 +93,40 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			licenseKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
 
 		return licenseKey;
+	}
+
+	@GetMapping("/developer-download")
+	public ResponseEntity<String> getLicenseKeysDeveloperDownload(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("productName") String productName,
+			@RequestParam("projectExternalReferenceCode") String
+				projectExternalReferenceCode,
+			@RequestParam("version") String version)
+		throws Exception {
+
+		Project project = _environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException(projectExternalReferenceCode);
+		}
+
+		String licenseXML =
+			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				project, productName, version);
+
+		String fileName = _licenseKeyExporter.getFileName(
+			productName, version, "developer");
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.TEXT_XML
+		).header(
+			HttpHeaders.CONTENT_DISPOSITION,
+			"attachment; filename=\"" + fileName + "\""
+		).body(
+			licenseXML
+		);
 	}
 
 	@GetMapping("/{licenseKeyId}/download")
@@ -196,6 +240,26 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		);
 	}
 
+	@GetMapping("/generate-form")
+	public ResponseEntity<String> getLicenseKeysGenerateForm(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("projectExternalReferenceCode") String
+				projectExternalReferenceCode)
+		throws Exception {
+
+		_environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			_licenseKeyGenerateFormService.getGenerateForm(
+				projectExternalReferenceCode
+			).toString()
+		);
+	}
+
 	@GetMapping("/subscriptions")
 	public boolean getSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -214,6 +278,81 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 
 		return false;
+	}
+
+	@PatchMapping("/{licenseKeyId}/active")
+	public void patchLicenseKeysActive(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long licenseKeyId,
+			@RequestBody String json)
+		throws Exception {
+
+		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
+			jwt, licenseKeyId);
+
+		String projectExternalReferenceCode =
+			licenseKey.getProjectExternalReferenceCode();
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			_licenseKeyPermission.check(
+				licenseKey.getAccountEntryId(), ActionKeys.UPDATE, jwt);
+		}
+		else {
+			_environmentActivationPermission.check(
+				jwt, projectExternalReferenceCode);
+		}
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		_licenseKeyService.updateLicenseKeyActive(
+			jsonObject.optBoolean("active"), licenseKeyId);
+	}
+
+	@PostMapping("/generate")
+	public ResponseEntity<String> postLicenseKeysGenerate(
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		String projectExternalReferenceCode = jsonObject.optString(
+			"projectExternalReferenceCode");
+
+		Project project = _environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException(projectExternalReferenceCode);
+		}
+
+		List<Long> renewedLicenseKeyIds = _toLongs(
+			jsonObject.optJSONArray("renewedLicenseKeyIds"));
+
+		_checkRenewedLicenseKeys(jwt, project, renewedLicenseKeyIds);
+
+		List<Long> licenseKeyIds =
+			_licenseKeyGenerationService.generateLicenseKeys(
+				new LicenseKeyGenerationService.GenerateRequest(
+					_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
+					jsonObject.optString("dataCenterLocation"),
+					jsonObject.optString("description"),
+					jsonObject.optString("environmentName"),
+					jsonObject.optString("keyType"), project,
+					renewedLicenseKeyIds,
+					_toServers(jsonObject.optJSONArray("servers")),
+					jsonObject.optLong("subscriptionEntitlementId"),
+					jsonObject.optString("version"),
+					jsonObject.optString("workspaceName"),
+					jsonObject.optString("workspaceOwnerEmail")));
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			new JSONObject(
+			).put(
+				"licenseKeyIds", new JSONArray(licenseKeyIds)
+			).toString()
+		);
 	}
 
 	@PostMapping("/type-free")
@@ -317,6 +456,23 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _checkRenewedLicenseKeys(
+			Jwt jwt, Project project, List<Long> renewedLicenseKeyIds)
+		throws Exception {
+
+		for (long renewedLicenseKeyId : renewedLicenseKeyIds) {
+			LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
+				jwt, renewedLicenseKeyId);
+
+			if (!Objects.equals(
+					project.getExternalReferenceCode(),
+					licenseKey.getProjectExternalReferenceCode())) {
+
+				throw new PrincipalException();
+			}
+		}
+	}
+
 	private List<LicenseKey> _getActiveLicenseKeys(
 			Jwt jwt, long[] licenseKeyIds)
 		throws Exception {
@@ -370,6 +526,43 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return longs;
 	}
 
+	private List<Long> _toLongs(JSONArray jsonArray) {
+		List<Long> longs = new ArrayList<>();
+
+		if (jsonArray == null) {
+			return longs;
+		}
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			longs.add(jsonArray.getLong(i));
+		}
+
+		return longs;
+	}
+
+	private List<LicenseKeyGenerationService.GenerateRequest.Server> _toServers(
+		JSONArray jsonArray) {
+
+		List<LicenseKeyGenerationService.GenerateRequest.Server> servers =
+			new ArrayList<>();
+
+		if (jsonArray == null) {
+			return servers;
+		}
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			servers.add(
+				new LicenseKeyGenerationService.GenerateRequest.Server(
+					jsonObject.optString("hostName"),
+					jsonObject.optString("ipAddresses"),
+					jsonObject.optString("macAddresses")));
+		}
+
+		return servers;
+	}
+
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
 
@@ -382,10 +575,19 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
+	private EnvironmentActivationPermission _environmentActivationPermission;
+
+	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;
+
+	@Autowired
+	private LicenseKeyGenerateFormService _licenseKeyGenerateFormService;
+
+	@Autowired
+	private LicenseKeyGenerationService _licenseKeyGenerationService;
 
 	@Autowired
 	private LicenseKeyPermission _licenseKeyPermission;
