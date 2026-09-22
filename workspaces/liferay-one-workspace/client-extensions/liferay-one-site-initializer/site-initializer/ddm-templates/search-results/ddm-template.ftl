@@ -19,24 +19,40 @@
 						</#if>
 
 						<div class="align-items-center d-flex flex-wrap lo-search-card-meta">
+							<#if entry.isModelResourceVisible()>
+								<span class="label label-secondary lo-search-card-type mr-2">
+									${htmlUtil.escape(entry.getModelResource())}
+								</span>
+							</#if>
+
 							<#if entry.isCreationDateVisible()>
 								<span class="lo-search-card-date">
 									${entry.getCreationDateString()}
 								</span>
 							</#if>
 
-							<#if entry.isAssetCategoriesOrTagsVisible()>
-								<#assign
-									structuredContent = restClient.get("/headless-delivery/v1.0/structured-contents/" + entry.getClassPK()?c + "?fields=taxonomyCategoryBriefs")
-								/>
+							<#-- The categories of a result are read back from the
+							delivery API, which only knows web content. Pages and
+							products are indexed alongside it here, and asking for
+							either under /structured-contents answers 404, so the
+							lookup stays behind a class name check rather than the
+							visibility flag alone. -->
 
-								<#if structuredContent.taxonomyCategoryBriefs?has_content>
-									<span class="d-inline-flex flex-wrap lo-badge">
-										<#list structuredContent.taxonomyCategoryBriefs as taxonomyCategoryBrief>
-											<span class="product-tag px-2 py-1 rounded text-nowrap">${taxonomyCategoryBrief.taxonomyCategoryName}</span>
-										</#list>
-									</span>
-								</#if>
+							<#if entry.isAssetCategoriesOrTagsVisible() && stringUtil.equals(entry.getClassName(), "com.liferay.journal.model.JournalArticle")>
+								<#attempt>
+									<#assign
+										structuredContent = restClient.get("/headless-delivery/v1.0/structured-contents/" + entry.getClassPK()?c + "?fields=taxonomyCategoryBriefs")
+									/>
+
+									<#if structuredContent.taxonomyCategoryBriefs?has_content>
+										<span class="d-inline-flex flex-wrap lo-badge">
+											<#list structuredContent.taxonomyCategoryBriefs as taxonomyCategoryBrief>
+												<span class="product-tag px-2 py-1 rounded text-nowrap">${taxonomyCategoryBrief.taxonomyCategoryName}</span>
+											</#list>
+										</span>
+									</#if>
+								<#recover>
+								</#attempt>
 							</#if>
 						</div>
 					</a>
