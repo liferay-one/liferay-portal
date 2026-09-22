@@ -19,6 +19,65 @@ export type LicenseKey = {
 	startDate: string;
 };
 
+export type GenerateFormBundleProduct = {
+	availableCount: number;
+	entitlementId: number;
+	externalReferenceCode: string;
+	licensable: boolean;
+	name: string;
+};
+
+export type GenerateFormKeyType = {
+	label: string;
+	licenseEntryType: string;
+	productKey: string;
+};
+
+export type GenerateFormSubscription = {
+	availableCount: number;
+	endDate?: string;
+	entitlementId: number;
+	instanceSize: number;
+	startDate?: string;
+	totalCount: number;
+};
+
+export type GenerateFormProduct = {
+	developerVersions: string[];
+	entitlementId: number;
+	externalReferenceCode: string;
+	keyTypes: GenerateFormKeyType[];
+	name: string;
+	subscriptions: GenerateFormSubscription[];
+	versions: string[];
+};
+
+export type GenerateForm = {
+	bundleProducts: GenerateFormBundleProduct[];
+	products: GenerateFormProduct[];
+};
+
+export type GenerateServer = {
+	hostName: string;
+	ipAddresses: string;
+	macAddresses: string;
+};
+
+export type GenerateLicenseKeysRequest = {
+	bundleEntitlementIds: number[];
+	dataCenterLocation?: string;
+	description?: string;
+	environmentName: string;
+	keyType: string;
+	projectExternalReferenceCode: string;
+	renewedLicenseKeyIds?: number[];
+	servers: GenerateServer[];
+	subscriptionEntitlementId: number;
+	version: string;
+	workspaceName?: string;
+	workspaceOwnerEmail?: string;
+};
+
 class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 	createLicenseKeyTypeFree({
 		domains,
@@ -32,12 +91,69 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		return this.post('/type-free', {domains, orderId, owner});
 	}
 
+	async deactivateLicenseKey(licenseKeyId: string): Promise<void> {
+		await this.patch(`/${licenseKeyId}/active`, {active: false});
+	}
+
+	async downloadDeveloperKey({
+		name,
+		productName,
+		projectExternalReferenceCode,
+		version,
+	}: {
+		name: string;
+		productName: string;
+		projectExternalReferenceCode: string;
+		version: string;
+	}) {
+		const searchParams = new URLSearchParams({
+			productName,
+			projectExternalReferenceCode,
+			version,
+		});
+
+		const response = await this.get<Response>(
+			`/developer-download?${searchParams}`,
+			{earlyReturn: true}
+		);
+
+		await downloadFile(name, response);
+	}
+
 	async downloadLicenseKey(licenseKeyId: string, name: string) {
 		const response = await this.get<Response>(`/${licenseKeyId}/download`, {
 			earlyReturn: true,
 		});
 
 		await downloadFile(name, response);
+	}
+
+	async downloadLicenseKeys(licenseKeyIds: number[], name: string) {
+		const searchParams = new URLSearchParams({
+			licenseKeyIds: licenseKeyIds.join(','),
+		});
+
+		const response = await this.get<Response>(`/download?${searchParams}`, {
+			earlyReturn: true,
+		});
+
+		await downloadFile(name, response);
+	}
+
+	generateLicenseKeys(
+		body: GenerateLicenseKeysRequest
+	): Promise<{licenseKeyIds: number[]}> {
+		return this.post('/generate', body);
+	}
+
+	getGenerateForm(
+		projectExternalReferenceCode: string
+	): Promise<GenerateForm> {
+		const searchParams = new URLSearchParams({
+			projectExternalReferenceCode,
+		});
+
+		return this.get<GenerateForm>(`/generate-form?${searchParams}`);
 	}
 
 	getSubscription(licenseKeyId: string): Promise<boolean> {
@@ -52,6 +168,10 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		owner: string;
 	}) {
 		await this.post('/type-free-domains-check', {domains, owner});
+	}
+
+	async reactivateLicenseKey(licenseKeyId: string): Promise<void> {
+		await this.patch(`/${licenseKeyId}/active`, {active: true});
 	}
 
 	async subscribe(licenseKeyId: string): Promise<void> {
