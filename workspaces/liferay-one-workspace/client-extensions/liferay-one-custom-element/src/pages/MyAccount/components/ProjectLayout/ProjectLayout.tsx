@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useMemo} from 'react';
-import {useMatch, useNavigate, useParams} from 'react-router-dom';
+import ClayLoadingIndicator from '@clayui/loading-indicator';
+import {Suspense, useMemo} from 'react';
+import {Outlet, useMatch, useNavigate, useParams} from 'react-router-dom';
 import AppLayout from '~/components/AppLayout/AppLayout';
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
@@ -41,6 +42,10 @@ export default function ProjectLayout() {
 		'/:accountERC/project/:projectId/products/*'
 	);
 
+	const standaloneMatch = useMatch(
+		'/:accountERC/project/:projectId/activation-keys/generate'
+	);
+
 	const contentHeader =
 		!isUnassignedProject(projectId) && productsMatch ? (
 			<ProjectHeader />
@@ -51,6 +56,21 @@ export default function ProjectLayout() {
 			<p className="text-neutral-7">
 				{i18n.translate('no-projects-yet')}
 			</p>
+		);
+	}
+
+	if (standaloneMatch) {
+		return (
+			<div
+				style={{
+					paddingBottom: 'var(--spacer-5)',
+					paddingTop: 'var(--spacer-5)',
+				}}
+			>
+				<Suspense fallback={<ClayLoadingIndicator />}>
+					<Outlet />
+				</Suspense>
+			</div>
 		);
 	}
 

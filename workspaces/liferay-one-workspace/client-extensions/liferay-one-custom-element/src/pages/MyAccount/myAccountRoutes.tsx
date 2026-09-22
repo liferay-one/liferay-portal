@@ -20,6 +20,12 @@ const Orders = lazy(() => import('./Orders/Orders'));
 const CloudAppInstall = lazy(
 	() => import('./Projects/CloudAppInstall/CloudAppInstall')
 );
+const GenerateActivationKey = lazy(
+	() =>
+		import(
+			'./Projects/LicenseKeys/GenerateActivationKey/GenerateActivationKey'
+		)
+);
 const LicenseKeys = lazy(() => import('./Projects/LicenseKeys/LicenseKeys'));
 const LicenseKeyDetails = lazy(
 	() => import('./Projects/LicenseKeys/LicenseKeyDetails/LicenseKeyDetails')
@@ -62,10 +68,11 @@ export const projectDetailRoutes: AppRoute[] = [
 	{
 		children: [
 			{element: <LicenseKeys />, index: true},
+			{element: <GenerateActivationKey />, path: 'generate'},
 			{element: <LicenseKeyDetails />, path: ':licenseKeyERC'},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
-		nav: {icon: 'key-horizontal', label: 'Activation Keys'},
+		nav: {icon: 'key-horizontal', label: 'Activation'},
 		path: 'activation-keys',
 	},
 	{element: <Navigate replace to="products" />, path: '*'},
