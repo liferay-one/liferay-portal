@@ -12,9 +12,6 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
