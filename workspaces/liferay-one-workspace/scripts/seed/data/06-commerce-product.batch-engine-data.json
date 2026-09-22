@@ -66,53 +66,6 @@
 				}
 			],
 			"description": {
-				"en_US": "A bucket of 200,000 Liferay Data Platform events, sold to cover the events a project consumes beyond its entitlement."
-			},
-			"externalReferenceCode": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET",
-			"name": {
-				"en_US": "Data Platform Events Bucket"
-			},
-			"productSpecifications": [
-				{
-					"specificationKey": "publisher-name",
-					"value": {
-						"en_US": "Liferay, Inc."
-					}
-				},
-				{
-					"specificationKey": "price-model",
-					"value": {
-						"en_US": "Paid"
-					}
-				},
-				{
-					"specificationKey": "project-item-type",
-					"value": {
-						"en_US": "product"
-					}
-				}
-			],
-			"productType": "virtual",
-			"skus": [
-				{
-					"externalReferenceCode": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET",
-					"neverExpire": true,
-					"price": 20,
-					"published": true,
-					"purchasable": true,
-					"sku": "PRDCT-ADDON-DATA-PLATFORM-EVENTS-BUCKET"
-				}
-			]
-		},
-		{
-			"active": true,
-			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
-			"categories": [
-				{
-					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_PRODUCT"
-				}
-			],
-			"description": {
 				"en_US": "Disaster recovery add-on for testing boolean capability entitlements."
 			},
 			"externalReferenceCode": "PRDCT-ADDON-DISASTER-RECOVERY",
@@ -1691,6 +1644,22 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-DATA-PLATFORM"
+				},
+				{
+					"externalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+					"neverExpire": true,
+					"price": 20,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET"
+				},
+				{
+					"externalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+					"neverExpire": true,
+					"price": 20,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET"
 				}
 			]
 		},
