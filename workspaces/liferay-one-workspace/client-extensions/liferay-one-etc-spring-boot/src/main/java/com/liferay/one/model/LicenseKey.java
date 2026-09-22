@@ -15,6 +15,14 @@ import java.time.format.DateTimeParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -34,6 +42,8 @@ public class LicenseKey {
 			jsonObject.optString("customExpirationDate"));
 		_description = jsonObject.optString("description");
 		_domains = jsonObject.optString("domains");
+		_entitlementDefinitionId = jsonObject.optLong(
+			"entitlementDefinitionId");
 		_entitlementId = jsonObject.optLong("entitlementId");
 		_hostName = jsonObject.optString("hostName");
 		_ipAddresses = jsonObject.optString("ipAddresses");
@@ -55,6 +65,8 @@ public class LicenseKey {
 		_productName = jsonObject.optString("productName");
 		_productVersion = jsonObject.optString("productVersion");
 		_productVersionLabel = jsonObject.optString("productVersionLabel");
+		_projectExternalReferenceCode = jsonObject.optString(
+			"r_projectToLicenseKey_c_projectERC");
 		_serverId = jsonObject.optString("serverId");
 		_sizing = jsonObject.optString("sizing");
 		_startDateInstant = _toInstant(jsonObject.optString("startDate"));
@@ -88,8 +100,30 @@ public class LicenseKey {
 		return _domains;
 	}
 
+	public long getEntitlementDefinitionId() {
+		return _entitlementDefinitionId;
+	}
+
 	public long getEntitlementId() {
 		return _entitlementId;
+	}
+
+	public List<Long> getEntitlementIds() {
+		List<Long> entitlementIds = new ArrayList<>();
+
+		JSONArray jsonArray = _getAdditionalInfoJSONArray("entitlementIds");
+
+		if (jsonArray != null) {
+			for (int i = 0; i < jsonArray.length(); i++) {
+				entitlementIds.add(jsonArray.getLong(i));
+			}
+		}
+
+		if (entitlementIds.isEmpty() && (_entitlementId > 0)) {
+			entitlementIds.add(_entitlementId);
+		}
+
+		return entitlementIds;
 	}
 
 	public String getHostName() {
@@ -173,6 +207,10 @@ public class LicenseKey {
 		return _productVersionLabel;
 	}
 
+	public String getProjectExternalReferenceCode() {
+		return _projectExternalReferenceCode;
+	}
+
 	public String getServerId() {
 		return _serverId;
 	}
@@ -191,6 +229,28 @@ public class LicenseKey {
 
 	public boolean isComplimentary() {
 		return _complimentary;
+	}
+
+	private JSONArray _getAdditionalInfoJSONArray(String name) {
+		if ((_additionalInfo == null) || _additionalInfo.isEmpty()) {
+			return null;
+		}
+
+		try {
+			JSONObject jsonObject = new JSONObject(_additionalInfo);
+
+			return jsonObject.optJSONArray(name);
+		}
+		catch (JSONException jsonException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to read the additional info of license key " +
+						_licenseKeyId,
+					jsonException);
+			}
+
+			return null;
+		}
 	}
 
 	private Instant _toInstant(String value) {
@@ -220,6 +280,7 @@ public class LicenseKey {
 	private final Instant _customExpirationDateInstant;
 	private final String _description;
 	private final String _domains;
+	private final long _entitlementDefinitionId;
 	private final long _entitlementId;
 	private final String _hostName;
 	private final String _ipAddresses;
@@ -241,6 +302,7 @@ public class LicenseKey {
 	private final String _productName;
 	private final String _productVersion;
 	private final String _productVersionLabel;
+	private final String _projectExternalReferenceCode;
 	private final String _serverId;
 	private final String _sizing;
 	private final Instant _startDateInstant;
