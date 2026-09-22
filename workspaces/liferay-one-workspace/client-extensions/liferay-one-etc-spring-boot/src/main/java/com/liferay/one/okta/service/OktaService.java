@@ -5,15 +5,21 @@
 
 package com.liferay.one.okta.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.OktaUnavailableException;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
 import com.liferay.one.pubsub.Message;
+import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -225,6 +231,59 @@ public class OktaService {
 		return WorkflowConstants.STATUS_APPROVED;
 	}
 
+	public List<String> getContactGroupNames(String emailAddress)
+		throws Exception {
+
+		ResponseEntity<String> responseEntity = _webClient.get(
+		).uri(
+			StringBundler.concat(_URL_API_REST_USERS, emailAddress, "/groups")
+		).exchangeToMono(
+			clientResponse -> clientResponse.toEntity(String.class)
+		).block();
+
+		if (responseEntity == null) {
+			throw new OktaUnavailableException(
+				"Unable to fetch the Okta groups for contact " + emailAddress);
+		}
+
+		HttpStatusCode httpStatusCode = responseEntity.getStatusCode();
+
+		if (httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+			return Collections.emptyList();
+		}
+
+		if (!httpStatusCode.is2xxSuccessful()) {
+			throw new OktaUnavailableException(
+				StringBundler.concat(
+					"Unable to fetch the Okta groups for contact ",
+					emailAddress, " because Okta returned status ",
+					httpStatusCode.value()));
+		}
+
+		if (Validator.isNull(responseEntity.getBody())) {
+			return Collections.emptyList();
+		}
+
+		List<String> groupNames = new ArrayList<>();
+
+		JSONArray jsonArray = new JSONArray(responseEntity.getBody());
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			JSONObject profileJSONObject = jsonObject.optJSONObject(
+				"profile", new JSONObject());
+
+			String name = profileJSONObject.optString("name");
+
+			if (Validator.isNotNull(name)) {
+				groupNames.add(name);
+			}
+		}
+
+		return groupNames;
+	}
+
 	public List<OktaUser> getGroupContacts(String groupId) throws Exception {
 		List<OktaUser> oktaUsers = new ArrayList<>();
 
@@ -279,13 +338,22 @@ public class OktaService {
 				"okta-user-group-update"));
 	}
 
-	public OktaUser syncContact(
-			String emailAddress, String firstName, String lastName, String uuid)
-		throws Exception {
+	public OktaUser syncContact(UserAccount userAccount) throws Exception {
+		String emailAddress = userAccount.getEmailAddress();
 
 		OktaUser oktaUser = fetchContactByEmailAddress(emailAddress);
 
 		if (oktaUser == null) {
+			String uuid = UserAccountUtil.getUuid(userAccount);
+
+			if (Validator.isNull(uuid)) {
+				uuid = userAccount.getExternalReferenceCode();
+
+				_userAccountService.updateUser(
+					userAccount.getFamilyName(), userAccount.getGivenName(),
+					userAccount.getId(), uuid);
+			}
+
 			_oktaPubsubPublisher.publish(
 				new Message(
 					null,
@@ -293,16 +361,25 @@ public class OktaService {
 					).put(
 						"emailAddress", emailAddress
 					).put(
-						"firstName", firstName
+						"firstName", userAccount.getGivenName()
 					).put(
-						"lastName", lastName
+						"lastName", userAccount.getFamilyName()
 					).put(
 						"uuid", uuid
 					).toString(),
 					"okta-user-create"));
 
+			_syncGroups(
+				false, emailAddress, Collections.emptyList(), userAccount);
+
 			return null;
 		}
+
+		_updateUserAccount(oktaUser, userAccount);
+
+		_syncGroups(
+			oktaUser.isDeactivated(), emailAddress,
+			getContactGroupNames(emailAddress), userAccount);
 
 		return oktaUser;
 	}
@@ -355,6 +432,80 @@ public class OktaService {
 		return null;
 	}
 
+	private void _syncGroup(
+			boolean deactivated, String emailAddress, String groupName,
+			List<String> groupNames, boolean required)
+		throws Exception {
+
+		boolean assigned = groupNames.contains(groupName);
+
+		if (required && !assigned) {
+			if (deactivated) {
+				activateUser(emailAddress);
+			}
+			else {
+				addMembership(groupName, emailAddress);
+			}
+		}
+		else if (!required && assigned) {
+			removeMembership(groupName, emailAddress);
+		}
+	}
+
+	private void _syncGroups(
+			boolean deactivated, String emailAddress, List<String> groupNames,
+			UserAccount userAccount)
+		throws Exception {
+
+		_syncGroup(
+			deactivated, emailAddress, _GROUP_NAME_CUSTOMERS, groupNames,
+			ArrayUtil.isNotEmpty(userAccount.getAccountBriefs()));
+		_syncGroup(
+			deactivated, emailAddress, _GROUP_NAME_PARTNERS, groupNames,
+			UserAccountUtil.hasAccountRole(
+				userAccount, RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES));
+	}
+
+	private void _updateUserAccount(OktaUser oktaUser, UserAccount userAccount)
+		throws Exception {
+
+		String familyName = userAccount.getFamilyName();
+
+		if (Validator.isNotNull(oktaUser.getLastName())) {
+			familyName = oktaUser.getLastName();
+		}
+
+		String givenName = userAccount.getGivenName();
+
+		if (Validator.isNotNull(oktaUser.getFirstName())) {
+			givenName = oktaUser.getFirstName();
+		}
+
+		String uuid = UserAccountUtil.getUuid(userAccount);
+
+		if (Validator.isNotNull(oktaUser.getUuid())) {
+			uuid = oktaUser.getUuid();
+		}
+
+		if (!Objects.equals(familyName, userAccount.getFamilyName()) ||
+			!Objects.equals(givenName, userAccount.getGivenName()) ||
+			!Objects.equals(uuid, UserAccountUtil.getUuid(userAccount))) {
+
+			_userAccountService.updateUser(
+				familyName, givenName, userAccount.getId(), uuid);
+		}
+
+		if (oktaUser.isEmailAddressVerified() &&
+			!UserAccountUtil.isVerified(userAccount)) {
+
+			_userAccountService.setVerified(userAccount.getId());
+		}
+	}
+
+	private static final String _GROUP_NAME_CUSTOMERS = "Customers";
+
+	private static final String _GROUP_NAME_PARTNERS = "Partners";
+
 	private static final String _URL_API_REST_GROUPS = "/api/v1/groups/";
 
 	private static final String _URL_API_REST_USERS = "/api/v1/users/";
@@ -367,6 +518,9 @@ public class OktaService {
 
 	@Autowired
 	private OktaPubsubPublisher _oktaPubsubPublisher;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 	private WebClient _webClient;
 
