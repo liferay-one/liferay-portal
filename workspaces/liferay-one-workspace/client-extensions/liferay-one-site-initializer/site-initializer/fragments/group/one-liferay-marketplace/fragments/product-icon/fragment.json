@@ -1,0 +1,9 @@
+{
+	"cssPath": "index.css",
+	"htmlPath": "index.html",
+	"icon": "picture",
+	"jsPath": "index.js",
+	"name": "Liferay Product Icon",
+	"thumbnailPath": "thumbnail.png",
+	"type": "component"
+}
