@@ -1,0 +1,79 @@
+{
+	"configuration": {
+		"className": "com.liferay.search.experiences.rest.dto.v1_0.SXPBlueprint",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "DEFAULT",
+			"updateStrategy": "UPDATE"
+		}
+	},
+	"items": [
+		{
+			"configuration": {
+				"advancedConfiguration": {
+				},
+				"aggregationConfiguration": {
+				},
+				"generalConfiguration": {
+					"clauseContributorsExcludes": [
+					],
+					"clauseContributorsIncludes": [
+						"*"
+					],
+					"searchableAssetTypes": [
+						"com.liferay.commerce.product.model.CPDefinition",
+						"com.liferay.journal.model.JournalArticle",
+						"com.liferay.portal.kernel.model.Layout"
+					]
+				},
+				"highlightConfiguration": {
+				},
+				"parameterConfiguration": {
+				},
+				"queryConfiguration": {
+					"applyIndexerClauses": true,
+					"queryEntries": [
+						{
+							"clauses": [
+								{
+									"context": "query",
+									"occur": "filter",
+									"query": {
+										"bool": {
+											"should": [
+												{
+													"term": {
+														"entryClassName": "com.liferay.commerce.product.model.CPDefinition"
+													}
+												},
+												{
+													"term": {
+														"groupId": "${context.scope_group_id}"
+													}
+												}
+											]
+										}
+									}
+								}
+							]
+						}
+					]
+				},
+				"sortConfiguration": {
+				}
+			},
+			"description_i18n": {
+				"en_US": "Searches the web content, pages, and marketplace products a Liferay One visitor can reach from the site search page."
+			},
+			"elementInstances": [
+			],
+			"externalReferenceCode": "LIFERAY_ONE_SITE_SEARCH",
+			"schemaVersion": "1.0",
+			"title_i18n": {
+				"en_US": "Liferay One Site Search"
+			}
+		}
+	]
+}

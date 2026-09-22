@@ -22,4 +22,5 @@ liferay-one-batch-oahs:
         -   Liferay.Headless.Admin.User.everything
         -   Liferay.Headless.Batch.Engine.everything
         -   Liferay.Object.Admin.REST.everything
+        -   Liferay.Search.Experiences.REST.everything
     type: oAuthApplicationHeadlessServer
