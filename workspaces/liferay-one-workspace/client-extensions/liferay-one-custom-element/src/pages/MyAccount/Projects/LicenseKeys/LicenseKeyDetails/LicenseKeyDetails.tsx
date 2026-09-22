@@ -8,12 +8,10 @@ import {ClayToggle} from '@clayui/form';
 import {useParams} from 'react-router-dom';
 import BackLink from '~/components/BackLink/BackLink';
 import Loading from '~/components/Loading/Loading';
-import {useProject} from '~/context/ProjectContext';
 import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import {useProjectItems} from '~/hooks/useProjectItems';
 import {translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
@@ -27,17 +25,11 @@ import useLicenseKeySubscription from '../hooks/useLicenseKeySubscription';
 
 export default function LicenseKeyDetails() {
 	const {licenseKeyERC = ''} = useParams();
-	const {projectId} = useProject();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
-	const {products} = useProjectItems();
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
-		useLicenseKeyActions({
-			products,
-			projectExternalReferenceCode: projectId,
-			revalidate,
-		});
+		useLicenseKeyActions({generatePath: '../generate', revalidate});
 
 	const licenseKey = activationKeys.find((key) => key.id === licenseKeyERC);
 
