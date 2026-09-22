@@ -11,7 +11,7 @@ import {AccountTypes} from '~/enums/Account';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 
-import CreateAccountModalForm from './CreateAccountModalForm';
+import CreateAccountModalForm from '../CreateAccountModalForm/CreateAccountModalForm';
 
 import './CreateNewAccount.css';
 

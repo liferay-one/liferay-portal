@@ -21,7 +21,7 @@ interface DropdDownProps {
 	value?: Option;
 }
 
-export default function AcountSelectDropDown({
+export default function AccountSelectDropDown({
 	onChange,
 	options,
 	value,
