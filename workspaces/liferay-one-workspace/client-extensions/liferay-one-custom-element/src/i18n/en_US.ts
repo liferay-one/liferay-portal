@@ -1336,6 +1336,7 @@ export default {
 	'section-that-shows-the-payments': 'Section that shows the payments.',
 	'security': 'Security',
 	'security-breach-contacts': 'Security Breach Contacts',
+	'see-the-privacy-policy-for-details': 'See the privacy policy for details.',
 	'select-a-dxp-version': 'Select a DXP Version',
 	'select-a-file': 'Select a File',
 	'select-a-local-file-to-upload': 'Select a Local File to Upload',
@@ -1840,6 +1841,8 @@ export default {
 		'You can paste links directly from YouTube.',
 	'you-can-put-anything-you-want-here-but-a-good-guideline-is-no-more-than-4-5-paragraphs-this-field-does-not-allow-any-markup-tags-its-just-text-please-do-not-use-misleading-names-information-or-icons-descriptions-should-be-as-concise-as-possible-ensure-your-icons-images-descriptions-and-tags-are-free-of-profanity-or-other-offensive-material':
 		'You can put anything you want here, but a good guideline is no more than 4-5 paragraphs. This field does not allow any markup tags - it’s just text Please do not use misleading names, information, or icons. Descriptions should be as concise as possible. Ensure your icons, images, descriptions, and tags are free of profanity or other offensive material.',
+	'you-can-stop-receiving-marketing-emails-by-clicking-the-unsubscribe-link-in-each-email-or-withdraw-your-consent-at-any-time-by-either-using-opt-out-functionality-accessible-through-the-messages-you-receive-or-via-email-to':
+		'You can stop receiving marketing emails by clicking the unsubscribe link in each email or withdraw your consent at any time by either using opt-out functionality accessible through the messages you receive or via email to',
 	'you-can-upload-one-or-many-zip-files-max-total-size-is-500-mb':
 		'You can upload one or many ZIP files. Max total size is 500MB.',
 	'you-can-view-your-app-in-cloud-console-or-go-back-to-my-apps':
@@ -1899,6 +1902,8 @@ export default {
 		'Your request completed successfully',
 	'your-tokens-will-be-credited-to-your-ai-hub-account-shortly-we-will-notify-you-by-email-once-they-are-available':
 		'Your tokens will be credited to your AI Hub account shortly. We will notify you by email once they are available.',
+	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
+		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'zip-area-code': 'Zip/Area Code',
 	'zip-files-must-be-in-universal-file-format-archive-luffa-the-specially-structured-zip-encoded-archive-used-to-package-client-extension-project-outputs-this-format-must-support-the-following-use-cases-deliver-batch-engine-data-files-compatible-with-all-deployment-targets-deliver-dxp-configuration-resource-compatible-with-all-deployment-targets-deliver-static-resources-compatible-with-all-deployment-targets-deliver-the-infrastructure-metadata-necessary-to-deploy-to-lxc-sm-for-more-information-see':
 		'ZIP Files must be in universal file format archive (LUFFA) - the specially structured, ZIP encoded archive used to package client extension project outputs This format must support the following use cases: deliver batch engine data files compatible with all deployment targets deliver DXP configuration resource compatible with all deployment targets deliver static resources compatible with all deployment targets deliver the infrastructure metadata necessary to deploy to Liferay PaaS for more information see: ',
