@@ -342,7 +342,7 @@ const ProductPurchaseLayout = ({
 					</div>
 				}
 			>
-				{pathname !== '/' && selectedAccount?.id && (
+				{selectedAccount?.id && (
 					<>
 						<hr className="mx-n4 my-4" />
 
