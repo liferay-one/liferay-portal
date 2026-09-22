@@ -2,17 +2,7 @@
 	<#assign scopeGroupId = themeDisplay.getScopeGroupId() />
 </#if>
 
-<#if currentURL?has_content>
-	<#if currentURL?contains('web')>
-		<#assign
-			index = 2
-			partsUrl = currentURL?split('/')
-			siteName = partsUrl[index..index]?join('/')
-		/>
-	</#if>
-</#if>
-
-<#assign channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=name eq 'Marketplace Channel' and siteGroupId eq '${scopeGroupId}'") />
+<#assign channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${scopeGroupId}'") />
 
 <#if channel?has_content>
 	<#assign channelId = channel.items[0].id />
@@ -24,19 +14,15 @@
 
 <#assign
 	product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/"+ channelId +"/products/"+ productId +"?accountId=-1&nestedFields=productSpecifications")
+	catalogName = product.catalogName
 	productSpecifications = product.productSpecifications![]
-	catalogName=product.catalogName
 />
 
 <#if catalogName?has_content>
-	<#assign publisePages=restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'" ) />
-	<#assign redirectPath="https://marketplace.liferay.com/e/publisher-details/29282497"/>
-	
-	<#if publisePages?has_content>
-		<#assign publisePage=publisePages.items />
-			<#if publisePage?has_content>
-						<#assign publisherDetail=publisePage[0]/>
-			</#if>
+	<#assign publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'") />
+
+	<#if publisherDetailsResponse.items?has_content>
+		<#assign publisherDetails = publisherDetailsResponse.items[0] />
 	</#if>
 </#if>
 
@@ -46,14 +32,12 @@
 
 		<#if developerNames?has_content>
 			<#list developerNames as developerName>
-				<#if publisherDetail?has_content>
-					<a class="bg-neutral-8" href="${redirectPath}/${publisherDetail.id}">
+				<#if (publisherDetails.friendlyUrlPath)?has_content>
+					<a class="bg-neutral-8" href="/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
 						${developerName.value}
 					</a>
 				<#else>
-					<a class="bg-neutral-8" 	href="/?developer-name=${developerName.value}">
-						${developerName.value}
-					</a>
+					<span class="bg-neutral-8">${developerName.value}</span>
 				</#if>
 			</#list>
 		</#if>
