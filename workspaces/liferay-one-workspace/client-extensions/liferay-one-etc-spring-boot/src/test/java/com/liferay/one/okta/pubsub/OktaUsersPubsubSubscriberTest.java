@@ -9,6 +9,8 @@ import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.okta.model.OktaUser;
+import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProvisioningAssignmentService;
@@ -38,6 +40,7 @@ public class OktaUsersPubsubSubscriberTest {
 		_subscriber = new OktaUsersPubsubSubscriber();
 
 		_accountService = Mockito.mock(AccountService.class);
+		_oktaService = Mockito.mock(OktaService.class);
 		_provisioningAssignmentService = Mockito.mock(
 			ProvisioningAssignmentService.class);
 		_provisioningEmailService = Mockito.mock(
@@ -46,6 +49,7 @@ public class OktaUsersPubsubSubscriberTest {
 
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
+		ReflectionTestUtils.setField(_subscriber, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningAssignmentService",
@@ -78,14 +82,29 @@ public class OktaUsersPubsubSubscriberTest {
 			userAccount
 		);
 
+		_mockSyncContact("ACTIVE", userAccount);
+
 		_receiveMessage(
 			_EMAIL_ADDRESS, "user.account.update_profile", "ACTIVE");
 
-		Mockito.verify(
-			_userAccountService, Mockito.never()
-		).setVerified(
-			Mockito.anyLong()
+		Mockito.verifyNoInteractions(_provisioningEmailService);
+	}
+
+	@Test
+	public void testReceiveDoesNotSendWelcomeEmailWhenOktaContactIsMissing()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, false);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
 		);
+
+		_receiveMessage(
+			_EMAIL_ADDRESS, "user.account.update_profile", "ACTIVE");
 
 		Mockito.verifyNoInteractions(_provisioningEmailService);
 	}
@@ -103,61 +122,12 @@ public class OktaUsersPubsubSubscriberTest {
 			userAccount
 		);
 
+		_mockSyncContact("PROVISIONED", userAccount);
+
 		_receiveMessage(
 			_EMAIL_ADDRESS, "user.account.update_profile", "PROVISIONED");
 
-		Mockito.verify(
-			_userAccountService, Mockito.never()
-		).setVerified(
-			Mockito.anyLong()
-		);
-
 		Mockito.verifyNoInteractions(_provisioningEmailService);
-	}
-
-	@Test
-	public void testReceiveDoesNotSetVerifiedWhenAlreadyVerified()
-		throws Exception {
-
-		UserAccount userAccount = _createUserAccount(
-			_EMAIL_ADDRESS, _USER_ID, true);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			userAccount
-		);
-
-		_receiveMessage(_EMAIL_ADDRESS, "user.lifecycle.activate", "ACTIVE");
-
-		Mockito.verify(
-			_userAccountService, Mockito.never()
-		).setVerified(
-			Mockito.anyLong()
-		);
-	}
-
-	@Test
-	public void testReceiveDoesNotSetVerifiedWhenOktaStatusIsNotVerified()
-		throws Exception {
-
-		UserAccount userAccount = _createUserAccount(
-			_EMAIL_ADDRESS, _USER_ID, false);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			userAccount
-		);
-
-		_receiveMessage(
-			_EMAIL_ADDRESS, "user.lifecycle.activate", "PROVISIONED");
-
-		Mockito.verify(
-			_userAccountService, Mockito.never()
-		).setVerified(
-			Mockito.anyLong()
-		);
 	}
 
 	@Test
@@ -264,7 +234,7 @@ public class OktaUsersPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testReceiveSetsVerifiedOnActivateWhenUnverified()
+	public void testReceiveSendsVerifiedWelcomeEmailAfterSyncingContact()
 		throws Exception {
 
 		UserAccount userAccount = _createUserAccount(
@@ -276,62 +246,18 @@ public class OktaUsersPubsubSubscriberTest {
 			userAccount
 		);
 
-		_receiveMessage(_EMAIL_ADDRESS, "user.lifecycle.activate", "ACTIVE");
-
-		Mockito.verify(
-			_userAccountService
-		).setVerified(
-			_USER_ID
-		);
-
-		Mockito.verifyNoInteractions(_provisioningEmailService);
-	}
-
-	@Test
-	public void testReceiveSetsVerifiedOnCreateWhenUnverified()
-		throws Exception {
-
-		UserAccount userAccount = _createUserAccount(
-			_EMAIL_ADDRESS, _USER_ID, false);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			userAccount
-		);
-
-		_receiveMessage(_EMAIL_ADDRESS, "user.lifecycle.create", "ACTIVE");
-
-		Mockito.verify(
-			_userAccountService
-		).setVerified(
-			_USER_ID
-		);
-	}
-
-	@Test
-	public void testReceiveSetsVerifiedThenSendsVerifiedWelcomeEmail()
-		throws Exception {
-
-		UserAccount userAccount = _createUserAccount(
-			_EMAIL_ADDRESS, _USER_ID, false);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			userAccount
-		);
+		_mockSyncContact("ACTIVE", userAccount);
 
 		_receiveMessage(
 			_EMAIL_ADDRESS, "user.account.update_profile", "ACTIVE");
 
 		InOrder inOrder = Mockito.inOrder(
-			_provisioningEmailService, _userAccountService);
+			_oktaService, _provisioningEmailService);
 
 		inOrder.verify(
-			_userAccountService
-		).setVerified(
-			_USER_ID
+			_oktaService
+		).syncContact(
+			userAccount
 		);
 
 		inOrder.verify(
@@ -342,7 +268,7 @@ public class OktaUsersPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testReceiveSetsVerifiedThenSendsVerifiedWelcomeEmailOnPasswordUpdate()
+	public void testReceiveSendsVerifiedWelcomeEmailAfterSyncingContactOnPasswordUpdate()
 		throws Exception {
 
 		UserAccount userAccount = _createUserAccount(
@@ -354,16 +280,18 @@ public class OktaUsersPubsubSubscriberTest {
 			userAccount
 		);
 
+		_mockSyncContact("ACTIVE", userAccount);
+
 		_receiveMessage(
 			_EMAIL_ADDRESS, "user.account.update_password", "ACTIVE");
 
 		InOrder inOrder = Mockito.inOrder(
-			_provisioningEmailService, _userAccountService);
+			_oktaService, _provisioningEmailService);
 
 		inOrder.verify(
-			_userAccountService
-		).setVerified(
-			_USER_ID
+			_oktaService
+		).syncContact(
+			userAccount
 		);
 
 		inOrder.verify(
@@ -389,6 +317,8 @@ public class OktaUsersPubsubSubscriberTest {
 
 		Mockito.verifyNoInteractions(
 			_accountService, _provisioningAssignmentService);
+
+		Mockito.verifyNoInteractions(_oktaService);
 	}
 
 	@Test
@@ -414,6 +344,8 @@ public class OktaUsersPubsubSubscriberTest {
 		Mockito.verifyNoInteractions(
 			_accountService, _provisioningAssignmentService,
 			_provisioningEmailService);
+
+		Mockito.verifyNoInteractions(_oktaService);
 	}
 
 	@Test
@@ -436,6 +368,8 @@ public class OktaUsersPubsubSubscriberTest {
 		).setVerified(
 			Mockito.anyLong()
 		);
+
+		Mockito.verifyNoInteractions(_oktaService);
 	}
 
 	@Test
@@ -529,6 +463,112 @@ public class OktaUsersPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveSyncsContactOnActivate() throws Exception {
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_receiveMessage(_EMAIL_ADDRESS, "user.lifecycle.activate", "ACTIVE");
+
+		Mockito.verify(
+			_oktaService
+		).syncContact(
+			userAccount
+		);
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).setVerified(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testReceiveSyncsContactOnCreate() throws Exception {
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_receiveMessage(_EMAIL_ADDRESS, "user.lifecycle.create", "ACTIVE");
+
+		Mockito.verify(
+			_oktaService
+		).syncContact(
+			userAccount
+		);
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).setVerified(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testReceiveSyncsContactOnPasswordUpdate() throws Exception {
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_receiveMessage(
+			_EMAIL_ADDRESS, "user.account.update_password", "ACTIVE");
+
+		Mockito.verify(
+			_oktaService
+		).syncContact(
+			userAccount
+		);
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).setVerified(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testReceiveSyncsContactOnProfileUpdate() throws Exception {
+		UserAccount userAccount = _createUserAccount(
+			_EMAIL_ADDRESS, _USER_ID, true);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		_receiveMessage(
+			_EMAIL_ADDRESS, "user.account.update_profile", "ACTIVE");
+
+		Mockito.verify(
+			_oktaService
+		).syncContact(
+			userAccount
+		);
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).setVerified(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testReceiveUnassignsAllMembershipsOnDeactivate()
 		throws Exception {
 
@@ -576,6 +616,8 @@ public class OktaUsersPubsubSubscriberTest {
 		).unassignAccountMembership(
 			_SECOND_ACCOUNT_ID, _USER_ID
 		);
+
+		Mockito.verifyNoInteractions(_oktaService);
 	}
 
 	private UserAccount _createUserAccount(
@@ -615,6 +657,16 @@ public class OktaUsersPubsubSubscriberTest {
 		);
 	}
 
+	private void _mockSyncContact(String status, UserAccount userAccount)
+		throws Exception {
+
+		Mockito.when(
+			_oktaService.syncContact(userAccount)
+		).thenReturn(
+			new OktaUser(_createUserJSONObject(_EMAIL_ADDRESS, status))
+		);
+	}
+
 	private void _receiveMessage(String email, String eventType, String status)
 		throws Exception {
 
@@ -640,6 +692,7 @@ public class OktaUsersPubsubSubscriberTest {
 	private static final long _USER_ID = 100L;
 
 	private AccountService _accountService;
+	private OktaService _oktaService;
 	private ProvisioningAssignmentService _provisioningAssignmentService;
 	private ProvisioningEmailService _provisioningEmailService;
 	private OktaUsersPubsubSubscriber _subscriber;
