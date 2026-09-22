@@ -18,7 +18,6 @@ import {
 	ProductSpecificationKey,
 	getLicenseTagText,
 	getProductImageFallback,
-	getProductPriceModel,
 	getProductSpecificationValue,
 	isSEOStudioProduct,
 } from '~/utils/productUtils';
@@ -38,11 +37,10 @@ const AccountSelection = () => {
 		product,
 		selectedAccount,
 		setSelectedAccount,
+		steps,
 	} = useProductPurchaseLayoutContext();
 
 	const navigate = useNavigate();
-
-	const {isPaidApp} = getProductPriceModel(product);
 
 	const isSEOStudio = isSEOStudioProduct(product);
 
@@ -54,6 +52,8 @@ const AccountSelection = () => {
 		useSEOStudioRequirementsModal();
 
 	const isEligible = !isSEOStudio || hasAIHubOrder(aiHubOrders);
+
+	const stepAfterAccountKey = steps[1]?.key;
 
 	useEffect(() => {
 		if (!product) {
@@ -69,27 +69,19 @@ const AccountSelection = () => {
 				return;
 			}
 
-			const solutionType = getProductSpecificationValue(
-				ProductSpecificationKey.SOLUTION_TYPE,
-				product
-			);
-
-			if (solutionType === 'ai-hub-open-beta') {
-				navigate('/project', {replace: true});
-			}
-			else {
-				navigate(isPaidApp ? '/license' : '/summary', {replace: true});
+			if (stepAfterAccountKey) {
+				navigate(stepAfterAccountKey, {replace: true});
 			}
 		}
 	}, [
 		accounts,
 		isEligible,
-		isPaidApp,
 		isSingleAccount,
 		navigate,
 		setSelectedAccount,
 		product,
 		selectedAccount,
+		stepAfterAccountKey,
 	]);
 
 	if (
