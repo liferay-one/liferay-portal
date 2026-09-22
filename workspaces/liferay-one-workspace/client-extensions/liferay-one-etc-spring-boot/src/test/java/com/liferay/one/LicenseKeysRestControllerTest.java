@@ -706,6 +706,81 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPutLicenseKeysDeactivateChecksEveryAccount()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		List<LicenseKey> licenseKeys = Arrays.asList(
+			_createLicenseKey(_ACCOUNT_ID, 1L),
+			_createLicenseKey(_OTHER_ACCOUNT_ID, 2L));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			licenseKeys
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L, 2L});
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_OTHER_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateRejectsEveryKeyWhenOneAccountIsForbidden()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		List<LicenseKey> licenseKeys = Arrays.asList(
+			_createLicenseKey(_ACCOUNT_ID, 1L),
+			_createLicenseKey(_OTHER_ACCOUNT_ID, 2L));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			licenseKeys
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_OTHER_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.UPDATE)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.putLicenseKeysDeactivate(
+				null, new long[] {1L, 2L}));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPutLicenseKeysDeactivateThrowsForbiddenWhenAccountNotManageable()
 		throws Exception {
 
@@ -810,6 +885,64 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsRepeat()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L, 1L});
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.times(1)
+		).updateLicenseKeyActive(
+			false, 1L
+		);
+	}
+
+	@Test
+	public void testPutLicenseKeysDeactivateWhenLicenseKeyIsAlreadyInactive()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			licenseKey.isActive()
+		).thenReturn(
+			false
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		licenseKeysRestController.putLicenseKeysDeactivate(
+			null, new long[] {1L});
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 1L
+		);
 	}
 
 	@Test
@@ -963,13 +1096,15 @@ public class LicenseKeysRestControllerTest {
 		return licenseKeysRestController;
 	}
 
-	private LicenseKey _createLicenseKey(long licenseKeyId) {
+	private LicenseKey _createLicenseKey(
+		long accountEntryId, long licenseKeyId) {
+
 		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
 
 		Mockito.when(
 			licenseKey.getAccountEntryId()
 		).thenReturn(
-			_ACCOUNT_ID
+			accountEntryId
 		);
 
 		Mockito.when(
@@ -981,7 +1116,13 @@ public class LicenseKeysRestControllerTest {
 		return licenseKey;
 	}
 
+	private LicenseKey _createLicenseKey(long licenseKeyId) {
+		return _createLicenseKey(_ACCOUNT_ID, licenseKeyId);
+	}
+
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final long _OTHER_ACCOUNT_ID = 556L;
 
 	private static final long _USER_ID = 123L;
 
