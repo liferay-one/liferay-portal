@@ -117,7 +117,7 @@ class OAuth2Client {
 		return this.fetcher(resource, {
 			...options,
 			body: JSON.stringify(data),
-			method: 'patch',
+			method: 'PATCH',
 		});
 	}
 
@@ -129,7 +129,7 @@ class OAuth2Client {
 		return this.fetcher(resource, {
 			...options,
 			body: JSON.stringify(data),
-			method: 'put',
+			method: 'PUT',
 		});
 	}
 

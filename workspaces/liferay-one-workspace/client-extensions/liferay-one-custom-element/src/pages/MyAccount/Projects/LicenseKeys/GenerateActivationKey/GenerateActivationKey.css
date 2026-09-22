@@ -1,0 +1,230 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+.generate-activation-key {
+	font-family: var(--font-family-sans-serif, 'Source Sans 3', sans-serif);
+
+	& .btn-unstyled {
+		color: #51525c;
+
+		&:active,
+		&:focus,
+		&:hover {
+			color: #272833;
+		}
+	}
+
+	& .form-group label {
+		color: #51525c;
+		font-size: 16px;
+		font-weight: 600;
+	}
+
+	& .generate-activation-key-add-ons {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+
+	& .generate-activation-key-add-on {
+		align-items: center;
+		background-color: #fff;
+		border: 1px solid #c9c9ce;
+		border-radius: 8px;
+		display: flex;
+		gap: 8px;
+		height: 60px;
+		padding: 0 16px;
+
+		& .custom-control {
+			flex-grow: 1;
+			margin-bottom: 0;
+			min-width: 0;
+		}
+
+		& .custom-control label {
+			padding-left: 0;
+			width: 100%;
+		}
+
+		& .custom-control-label {
+			align-items: center;
+			display: flex;
+			position: relative;
+		}
+
+		& .custom-control-label::before {
+			flex: 0 0 auto;
+			float: none;
+			left: 0;
+			position: relative;
+			top: 0;
+		}
+
+		& .custom-control-label::after {
+			left: calc((1.5rem - 1rem) / -2);
+			top: calc(50% - 0.75rem);
+		}
+
+		& .custom-control-label-text {
+			color: #272833;
+			font-size: 18px;
+			font-weight: 700;
+			line-height: 1;
+			padding-left: 0.5rem;
+			top: 0;
+		}
+	}
+
+	& .generate-activation-key-add-on-required {
+		& .custom-control-label-text {
+			color: rgb(0 74 215 / 50%);
+		}
+	}
+
+	& .generate-activation-key-add-on-selected {
+		background-color: rgb(0 74 215 / 10%);
+		border-color: #004ad7;
+
+		& .custom-control-label-text {
+			color: #004ad7;
+		}
+	}
+
+	& .generate-activation-key-add-on-unavailable {
+		& .custom-control-label-text {
+			color: var(--color-neutral-5);
+		}
+	}
+
+	& .generate-activation-key-server-alert .autofit-col {
+		align-self: center;
+	}
+
+	& .generate-activation-key-select-icon-single {
+		fill: var(--color-neutral-5);
+	}
+
+	& select:disabled {
+		-moz-appearance: none;
+		-webkit-appearance: none;
+		appearance: none;
+		background-color: #fff;
+		background-image: none;
+		color: var(--color-neutral-5);
+		opacity: 1;
+	}
+
+	& .form-control:not(.radio-card) {
+		border-color: var(--color-neutral-7);
+		border-radius: 8px;
+		color: #51525c;
+		font-size: 16px;
+		font-weight: 400;
+	}
+
+	& .product-purchase-shell-heading {
+		margin-bottom: 40px !important;
+
+		& h1 {
+			color: #51525c;
+			text-align: left !important;
+		}
+
+		& span {
+			color: var(--color-neutral-7);
+			font-size: 16px;
+			font-weight: 400;
+			text-align: left;
+		}
+	}
+
+	& .generate-activation-key-subscription-help {
+		color: var(--color-neutral-7);
+		font-size: 13px;
+		font-weight: 400;
+	}
+
+	& .generate-activation-key-subscription-title {
+		color: #51525c;
+		font-size: 18px;
+		font-weight: 700;
+	}
+
+	& .radio-card {
+		margin-bottom: 8px !important;
+		padding-bottom: 1rem;
+		padding-top: 1rem;
+
+		& .col-1 {
+			flex: 0 0 auto;
+			margin-right: 8px;
+			max-width: none;
+			padding-left: 0;
+			padding-right: 0;
+			width: auto;
+		}
+
+		& .col-10 {
+			flex: 0 0 auto;
+			max-width: none;
+			padding-left: 0;
+			padding-right: 0;
+			width: auto;
+		}
+
+		& .col-11 {
+			flex: 0 0 100%;
+			max-width: 100%;
+			padding-left: 0;
+			padding-right: 0;
+		}
+
+		& .justify-content-end {
+			justify-content: flex-start !important;
+			padding-left: 26px;
+		}
+	}
+
+	& .generate-activation-key-subscription-alert {
+		margin-bottom: 0;
+		margin-top: 8px;
+
+		& .autofit-col {
+			align-self: center;
+		}
+	}
+
+	& .generate-activation-key-subscription-available {
+		color: var(--color-state-success);
+		font-size: 13px;
+		font-weight: 400;
+	}
+
+	& .generate-activation-key-subscription-unavailable {
+		color: var(--color-state-error);
+		font-size: 13px;
+		font-weight: 400;
+	}
+
+	& .generate-activation-key-subscription-size {
+		color: #555660;
+		font-size: 13px;
+		font-weight: 400;
+	}
+
+	& .radio-card.radio-disabled {
+		& .generate-activation-key-subscription-size,
+		& .generate-activation-key-subscription-title {
+			color: var(--color-neutral-7);
+		}
+	}
+
+	& .radio-card.radio-selected {
+		& .generate-activation-key-subscription-title {
+			color: #0b5fff;
+		}
+	}
+}
