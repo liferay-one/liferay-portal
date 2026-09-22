@@ -1,0 +1,62 @@
+[#assign shape = configuration.shape!"trapezoid"]
+
+<div class="ldp-product-${configuration.fragmentId} component-image overflow-hidden shape-${shape}-${configuration.fragmentId}">
+<h1
+	data-lfr-editable-id="icon"
+	data-lfr-editable-type="text"
+	hidden="true"
+	id="product-icon-${configuration.fragmentId}"
+/>
+
+<img
+	class="product-icon-img-${configuration.fragmentId}"
+	decoding="async"
+	loading="lazy"
+	src=""
+/>
+
+<svg
+	aria-hidden="true"
+	focusable="false"
+	height="0"
+	style="position: absolute"
+	width="0"
+>
+	<defs>
+<clipPath clipPathUnits="objectBoundingBox" id="svg-path-${configuration.fragmentId}">
+	<path d="m 103.71667,39.84281 c 0,1.6846 -0.6694,3.29988 -1.86055,4.49077 l -19.694,19.68844 c -1.19089,1.19036 -2.80564,1.85923 -4.48945,1.85923 H 6.35 C 2.843,65.88125 0,63.0383 0,59.53125 V 28.28449 C 0,26.60015 0.66927,24.98463 1.86052,23.79371 L 23.80139,1.85922 C 24.9922,0.66876 26.60703,0 28.29084,0 h 69.07583 c 3.50705,0 6.35,2.843 6.35,6.35 z" transform="scale(0.009, 0.015)" />
+	  </clipPath>
+	</defs>
+</svg>
+</div>
+
+<style>
+.ldp-product-${configuration.fragmentId} {
+	width: ${configuration.fragmentWidth!""};
+	height: ${configuration.fragmentHeight!""};
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.ldp-product-${configuration.fragmentId}
+.product-icon-img-${configuration.fragmentId} {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* trapezoid shape */
+.shape-trapezoid-${configuration.fragmentId}
+.product-icon-img-${configuration.fragmentId} {
+	clip-path: url(#svg-path-${configuration.fragmentId});
+	-webkit-clip-path: url(#svg-path-${configuration.fragmentId});
+}
+
+/* rectangle shape */
+.shape-rectangle-${configuration.fragmentId}
+.product-icon-img-${configuration.fragmentId} {
+	clip-path: none;
+	border-radius: ${configuration.fragmentRadius!""};
+}
+</style>

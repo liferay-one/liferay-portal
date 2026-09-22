@@ -1,0 +1,16 @@
+button.btn-icon > p,
+a.btn-icon > p {
+	display: inline-block;
+	margin-bottom: unset;
+}
+
+
+button.btn-icon span.svg-icon,
+a.btn-icon span.svg-icon.svg-left {
+	margin-right: var(--spacer-2, 0.5rem);
+}
+
+button.btn-icon span.svg-icon,
+a.btn-icon span.svg-icon.svg-right {
+	margin-left: var(--spacer-2, 0.5rem);
+}

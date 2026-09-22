@@ -1,0 +1,32 @@
+<div class="ldp-video-fragment video-${configuration.fragmentId} ${configuration.shadow?then('has-shadow','')}">
+<h1
+	data-lfr-editable-id="demo"
+	data-lfr-editable-type="text"
+	hidden="true"
+	id="product-demo-${configuration.fragmentId}"
+/>
+
+<video
+	${configuration.autoplay?then("autoplay","")}
+	${configuration.loop?then("loop","")}
+	${configuration.muted?then("muted","")}
+	${configuration.controls?then("controls","")}
+	class="demo-video"
+	playsinline
+>
+	<source class="product-demo-video-${configuration.fragmentId}" src="" type="video/mp4" />
+</video>
+</div>
+
+<style>
+.video-${configuration.fragmentId} .demo-video {
+width: ${configuration.fragmentWidth!""};
+height: ${configuration.fragmentHeight!""};
+object-fit: cover;
+border-radius: 16px;
+}
+
+.video-${configuration.fragmentId}.has-shadow .demo-video {
+box-shadow: 0px 24px 36px -12px #0B5FFF1F;
+}
+</style>

@@ -1,0 +1,14 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"defaultValue": "custom-container",
+					"label": "Container ID",
+					"name": "containerId",
+					"type": "text"
+				}
+			]
+		}
+	]
+}

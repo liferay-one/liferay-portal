@@ -1,0 +1,60 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "0",
+					"description": "Fragment Id",
+					"label": "Fragment Id",
+					"name": "fragmentId",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "392px",
+					"description": "Fragment width (e.g., 392px, 50%, 20rem)",
+					"label": "Width",
+					"name": "fragmentWidth",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "248px",
+					"description": "Fragment height (e.g., 248px, 50%, 20rem)",
+					"label": "Height",
+					"name": "fragmentHeight",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "24px",
+					"description": "Fragment border radius (e.g., 10px)",
+					"label": "Border radius",
+					"name": "fragmentRadius",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "trapezoid",
+					"label": "Shape",
+					"name": "shape",
+					"type": "select",
+					"typeOptions": {
+						"validValues": [
+							{
+								"label": "Trapezoid",
+								"value": "trapezoid"
+							},
+							{
+								"label": "Rectangle",
+								"value": "rectangle"
+							}
+						]
+					}
+				}
+			],
+			"label": "Configuration"
+		}
+	]
+}

@@ -1,0 +1,13 @@
+.liferay-product-icon-container {
+    background-color: white;
+	  border: 1px solid #E7EFFF;
+	  border-radius: 8px;
+    padding: 12px;
+	
+}
+
+.liferay-product-icon-container img {
+	  object-fit: contain;
+    height: 56px;
+    width: 56px;
+}
