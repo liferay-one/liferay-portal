@@ -6,14 +6,20 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.client.pagination.Page;
+import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
+import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductSpecificationResource;
 import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.util.CommerceProductUtil;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -81,6 +87,37 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return product;
+	}
+
+	public Map<String, String> getSpecificationValues(long id)
+		throws Exception {
+
+		ProductSpecificationResource productSpecificationResource =
+			ProductSpecificationResource.builder(
+			).endpoint(
+				getDXPEndpointAddress(), lxcDXPServerProtocol
+			).header(
+				HttpHeaders.AUTHORIZATION, getAuthorization()
+			).build();
+
+		Page<ProductSpecification> page =
+			productSpecificationResource.getProductIdProductSpecificationsPage(
+				id, Pagination.of(1, _PAGE_SIZE));
+
+		Map<String, String> specificationValues = new HashMap<>();
+
+		for (ProductSpecification productSpecification : page.getItems()) {
+			Map<String, String> value =
+				(Map<String, String>)productSpecification.getValue();
+
+			if (value != null) {
+				specificationValues.put(
+					productSpecification.getSpecificationKey(),
+					value.get("en_US"));
+			}
+		}
+
+		return specificationValues;
 	}
 
 	public void updateProduct(
@@ -195,6 +232,8 @@ public class CommerceProductService extends OneBaseService {
 
 		return _commerceSkuService.patchSku(salesforceProductId, sku);
 	}
+
+	private static final int _PAGE_SIZE = 200;
 
 	private static final Log _log = LogFactory.getLog(
 		CommerceProductService.class);
