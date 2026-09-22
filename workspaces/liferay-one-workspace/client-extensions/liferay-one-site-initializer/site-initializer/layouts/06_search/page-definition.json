@@ -77,7 +77,7 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Search across announcements, support policies, customer portal help, and more."
+																"en_US": "Search across announcements, support policies, site pages, marketplace products, and more."
 															}
 														}
 													}
@@ -191,17 +191,32 @@
 											},
 											"widgetInstance": {
 												"widgetConfig": {
-													"disabled": "false",
-													"displayStyle": "default",
-													"displayStyleGroupId": "[$GROUP_ID$]",
-													"filterField": "entryClassName",
-													"filterQueryType": "match",
-													"filterValue": "com.liferay.journal.model.JournalArticle",
-													"immutable": "true",
-													"invisible": "true",
-													"occur": "filter"
+													"federatedSearchKey": "",
+													"sxpBlueprintExternalReferenceCode": "LIFERAY_ONE_SITE_SEARCH"
 												},
-												"widgetName": "com_liferay_portal_search_web_internal_custom_filter_portlet_CustomFilterPortlet"
+												"widgetName": "com_liferay_search_experiences_web_internal_blueprint_options_portlet_SXPBlueprintOptionsPortlet"
+											}
+										},
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "whiteColor",
+												"borderRadius": "10px",
+												"overflow": "hidden"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"assetTypes": "com.liferay.commerce.product.model.CPDefinition,com.liferay.journal.model.JournalArticle,com.liferay.portal.kernel.model.Layout",
+													"displayStyle": "ddmTemplate_SEARCH_TYPE_FACET",
+													"displayStyleGroupId": "[$GROUP_ID$]",
+													"frequenciesVisible": "true",
+													"frequencyThreshold": "1",
+													"order": "count:desc",
+													"parameterName": "type"
+												},
+												"widgetName": "com_liferay_portal_search_web_type_facet_portlet_TypeFacetPortlet"
 											}
 										},
 										"type": "Widget"
@@ -275,7 +290,7 @@
 															"invisible": "false",
 															"keywordsParameterName": "q",
 															"scopeParameterName": "scope",
-															"searchScope": "this-site",
+															"searchScope": "everything",
 															"showStagedResults": "false",
 															"useAdvancedSearchSyntax": "false"
 														},
