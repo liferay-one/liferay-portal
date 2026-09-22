@@ -67,6 +67,7 @@ export type ProductPurchaseLayoutContext = {
 	setPayment: React.Dispatch<React.SetStateAction<ProductPurchasePayment>>;
 	setSelectedAccount: React.Dispatch<React.SetStateAction<Account>>;
 	skuRef: React.MutableRefObject<string | undefined>;
+	steps: ProductPurchaseStepItem[];
 };
 
 const ProductPurchaseLayout = ({
@@ -314,6 +315,7 @@ const ProductPurchaseLayout = ({
 		setPayment,
 		setSelectedAccount,
 		skuRef,
+		steps: stepItems,
 	};
 
 	return (
