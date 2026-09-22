@@ -142,6 +142,19 @@
 		},
 		{
 			"description": {
+				"en_US": "Whether this product produces an activation key."
+			},
+			"facetable": false,
+			"key": "generates-activation-key",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Generates Activation Key"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the latest version for the app or solution."
 			},
 			"facetable": false,
@@ -151,6 +164,19 @@
 			},
 			"title": {
 				"en_US": "Latest Version"
+			}
+		},
+		{
+			"description": {
+				"en_US": "The license entry family this product is licensed under, such as DXP or Portal."
+			},
+			"facetable": false,
+			"key": "license-entry-family",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "License Entry Family"
 			}
 		},
 		{
