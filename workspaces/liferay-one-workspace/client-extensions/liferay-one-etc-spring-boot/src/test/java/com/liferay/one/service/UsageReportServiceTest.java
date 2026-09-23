@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 
@@ -33,9 +34,9 @@ public class UsageReportServiceTest {
 		).addUsageReport(
 			Mockito.anyString(), Mockito.anyDouble(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.anyDouble(),
-			Mockito.anyString(), Mockito.anyDouble(), Mockito.anyString(),
-			Mockito.anyDouble(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyString(), Mockito.anyString(), Mockito.anyLong()
+			Mockito.anyString(), Mockito.any(), Mockito.anyDouble(),
+			Mockito.any(), Mockito.anyLong(), Mockito.anyString(),
+			Mockito.any(), Mockito.anyLong()
 		);
 	}
 
@@ -45,6 +46,25 @@ public class UsageReportServiceTest {
 
 		_verifyUsageReport(
 			999999, 0, 0, UsageReportService.REVIEW_STATUS_COMPLETED);
+	}
+
+	@Test
+	public void testLeavesBillingEmptyWithoutOveragePricing() throws Exception {
+		_usageReportService.addUsageReport(
+			1400000, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
+			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null, _project,
+			_usageDefinition);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE, 1400000,
+			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
+			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null, 400000,
+			null, _PROJECT_ID,
+			UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW, null,
+			_USAGE_DEFINITION_ID
+		);
 	}
 
 	@Test
@@ -84,7 +104,7 @@ public class UsageReportServiceTest {
 		_usageReportService.addUsageReport(
 			aggregateQuantity, _CONTRACT_EXTERNAL_REFERENCE_CODE,
 			_DATE_FROM_INSTANT, _DATE_TO_INSTANT, 1000000,
-			_EXTERNAL_REFERENCE_CODE, _project, _SKU_EXTERNAL_REFERENCE_CODE,
+			_EXTERNAL_REFERENCE_CODE, _overagePricing, _project,
 			_usageDefinition);
 	}
 
@@ -99,8 +119,8 @@ public class UsageReportServiceTest {
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE, aggregateQuantity,
 			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
 			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE,
-			overageSkuQuantity * _OVERAGE_RATE, "USD", overageQuantity,
-			overageSkuQuantity, _PROJECT_ID, reviewStatus,
+			overageSkuQuantity * _OVERAGE_RATE, overageQuantity,
+			Long.valueOf(overageSkuQuantity), _PROJECT_ID, reviewStatus,
 			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
 		);
 	}
@@ -130,6 +150,13 @@ public class UsageReportServiceTest {
 
 	private static final long _USAGE_DEFINITION_ID = 33;
 
+	private final OveragePricing _overagePricing = OveragePricing.of(
+		new JSONObject(
+		).put(
+			"overageRate", _OVERAGE_RATE
+		).put(
+			"overageSkuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
+		));
 	private final Project _project = new Project(
 		new JSONObject(
 		).put(
@@ -146,10 +173,6 @@ public class UsageReportServiceTest {
 			"id", _USAGE_DEFINITION_ID
 		).put(
 			"overageBucketSize", _OVERAGE_BUCKET_SIZE
-		).put(
-			"overageCurrency", "USD"
-		).put(
-			"overageRate", _OVERAGE_RATE
 		));
 	private UsageReportService _usageReportService;
 

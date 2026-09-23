@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.model.UsageReport;
@@ -36,15 +37,15 @@ public class UsageReportService extends OneBaseService {
 	public static final String TARGET_TYPE_PROJECT = "project";
 
 	/**
-	 * Adds a usage report for consumption beyond the entitled quantity. The
-	 * overage stays in the metric's own unit; the usage definition's bucket
-	 * size and rate decide how many overage SKUs cover it and what they cost.
+	 * Adds a usage report for consumption beyond the entitled quantity.
+	 * The SKU, bucket count, and amount stay empty when no pricing data is
+	 * present.
 	 */
 	public UsageReport addUsageReport(
 			double aggregateQuantity, String contractExternalReferenceCode,
 			Instant dateFromInstant, Instant dateToInstant,
 			double entitledQuantity, String externalReferenceCode,
-			Project project, String skuExternalReferenceCode,
+			OveragePricing overagePricing, Project project,
 			UsageDefinition usageDefinition)
 		throws Exception {
 
@@ -57,14 +58,26 @@ public class UsageReportService extends OneBaseService {
 			reviewStatus = REVIEW_STATUS_READY_FOR_REVIEW;
 		}
 
+		Double overageAmount = null;
+		Long overageSkuQuantity = null;
+		String skuExternalReferenceCode = null;
+
+		if (overagePricing != null) {
+			overageSkuQuantity = usageDefinition.getOverageBucketQuantity(
+				overageQuantity);
+
+			overageAmount = overagePricing.getAmount(overageSkuQuantity);
+
+			skuExternalReferenceCode =
+				overagePricing.getSkuExternalReferenceCode();
+		}
+
 		return addUsageReport(
 			project.getAccountExternalReferenceCode(), aggregateQuantity,
 			contractExternalReferenceCode, dateFromInstant, dateToInstant,
-			entitledQuantity, externalReferenceCode,
-			usageDefinition.getOverageAmount(overageQuantity),
-			usageDefinition.getOverageCurrency(), overageQuantity,
-			usageDefinition.getOverageBucketQuantity(overageQuantity),
-			project.getProjectId(), reviewStatus, skuExternalReferenceCode,
+			entitledQuantity, externalReferenceCode, overageAmount,
+			overageQuantity, overageSkuQuantity, project.getProjectId(),
+			reviewStatus, skuExternalReferenceCode,
 			usageDefinition.getUsageDefinitionId());
 	}
 
@@ -86,10 +99,10 @@ public class UsageReportService extends OneBaseService {
 			String accountExternalReferenceCode, double aggregateQuantity,
 			String contractExternalReferenceCode, Instant dateFromInstant,
 			Instant dateToInstant, double entitledQuantity,
-			String externalReferenceCode, double overageAmount,
-			String overageCurrency, double overageQuantity,
-			long overageSkuQuantity, long projectId, String reviewStatus,
-			String skuExternalReferenceCode, long usageDefinitionId)
+			String externalReferenceCode, Double overageAmount,
+			double overageQuantity, Long overageSkuQuantity, long projectId,
+			String reviewStatus, String skuExternalReferenceCode,
+			long usageDefinitionId)
 		throws Exception {
 
 		JSONObject usageReportJSONObject = new JSONObject(
@@ -117,8 +130,6 @@ public class UsageReportService extends OneBaseService {
 			"generatorClassName", UsageReportService.class.getName()
 		).put(
 			"overageAmount", overageAmount
-		).put(
-			"overageCurrency", overageCurrency
 		).put(
 			"overageQuantity", overageQuantity
 		).put(

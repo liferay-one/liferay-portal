@@ -13,6 +13,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LDPEventAllotment;
 import com.liferay.one.model.LDPEventSummary;
+import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.model.UsageReport;
@@ -27,9 +28,11 @@ import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,12 +45,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Generates one usage report per Liferay Data Platform project for a calendar
- * month, comparing the events the data warehouse counted against the events
- * the project's entitlements allow. Overage is billed in whole buckets: the
- * bucket size and usage definition come from the add-on bucket entitlement
- * definition, and the SKU billed on the overage order comes from the overage
- * bucket entitlement definition, so an overage order never grants an add-on
- * bucket entitlement of its own.
+ * month. The rate and SKU come from the project's <code>events</code>
+ * entitlements; missing or conflicting pricing gives an unpriced report.
  *
  * @author Drew Brokke
  */
@@ -68,41 +67,6 @@ public class LDPEventUsageReportService {
 			_log.info("Generating LDP event usage reports for " + yearMonth);
 		}
 
-		EntitlementDefinition addOnBucketEntitlementDefinition =
-			_fetchBucketEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
-		EntitlementDefinition overageBucketEntitlementDefinition =
-			_fetchBucketEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET);
-
-		if ((addOnBucketEntitlementDefinition == null) ||
-			(overageBucketEntitlementDefinition == null)) {
-
-			return;
-		}
-
-		String usageDefinitionExternalReferenceCode =
-			addOnBucketEntitlementDefinition.
-				getUsageDefinitionExternalReferenceCode();
-
-		UsageDefinition usageDefinition =
-			_usageDefinitionService.fetchUsageDefinition(
-				usageDefinitionExternalReferenceCode);
-
-		if ((usageDefinition == null) ||
-			(usageDefinition.getOverageRate() == null) ||
-			!usageDefinition.hasOverageBucketSize()) {
-
-			_log.error(
-				StringBundler.concat(
-					"Unable to find an overage bucket size and rate for usage ",
-					"definition ", usageDefinitionExternalReferenceCode));
-
-			return;
-		}
-
 		Instant startInstant = yearMonth.atDay(
 			1
 		).atStartOfDay(
@@ -121,6 +85,7 @@ public class LDPEventUsageReportService {
 			_getEntitlementsByProject(endInstant, startInstant);
 
 		int generatedCount = 0;
+		Map<String, UsageDefinition> usageDefinitions = new HashMap<>();
 
 		for (Map.Entry<String, List<Entitlement>> entry :
 				entitlementsByProject.entrySet()) {
@@ -130,10 +95,8 @@ public class LDPEventUsageReportService {
 			try {
 				if (_generateUsageReport(
 						endInstant, entry.getValue(),
-						projectExternalReferenceCode,
-						overageBucketEntitlementDefinition.
-							getSkuExternalReferenceCode(),
-						startInstant, usageDefinition, yearMonth)) {
+						projectExternalReferenceCode, startInstant,
+						usageDefinitions, yearMonth)) {
 
 					generatedCount++;
 				}
@@ -175,40 +138,6 @@ public class LDPEventUsageReportService {
 				"Unable to generate LDP event usage reports for " + yearMonth,
 				exception);
 		}
-	}
-
-	private EntitlementDefinition _fetchBucketEntitlementDefinition(
-			String externalReferenceCode)
-		throws Exception {
-
-		EntitlementDefinition entitlementDefinition =
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				externalReferenceCode);
-
-		if (entitlementDefinition == null) {
-			_log.error(
-				"Unable to find entitlement definition " +
-					externalReferenceCode);
-
-			return null;
-		}
-
-		if (Validator.isNull(
-				entitlementDefinition.getSkuExternalReferenceCode()) ||
-			Validator.isNull(
-				entitlementDefinition.
-					getUsageDefinitionExternalReferenceCode())) {
-
-			_log.error(
-				StringBundler.concat(
-					"Unable to find a SKU and usage definition for ",
-					"entitlement definition ",
-					entitlementDefinition.getExternalReferenceCode()));
-
-			return null;
-		}
-
-		return entitlementDefinition;
 	}
 
 	private String _fetchContractExternalReferenceCode(
@@ -262,17 +191,67 @@ public class LDPEventUsageReportService {
 		return new LDPEventSummary(new JSONObject(response));
 	}
 
-	private boolean _generateUsageReport(
-			Instant endInstant, List<Entitlement> entitlements,
-			String projectExternalReferenceCode,
-			String skuExternalReferenceCode, Instant startInstant,
-			UsageDefinition usageDefinition, YearMonth yearMonth)
+	private UsageDefinition _fetchUsageDefinition(
+			List<Entitlement> entitlements,
+			Map<String, UsageDefinition> usageDefinitions)
 		throws Exception {
 
-		Double overageBucketSize = usageDefinition.getOverageBucketSize();
+		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (!Objects.equals(
+					entitlement.getName(), EntitlementConstants.NAME_EVENTS) ||
+				(entitlementDefinition == null)) {
+
+				continue;
+			}
+
+			String usageDefinitionExternalReferenceCode =
+				entitlementDefinition.getUsageDefinitionExternalReferenceCode();
+
+			if (Validator.isNull(usageDefinitionExternalReferenceCode)) {
+				continue;
+			}
+
+			UsageDefinition usageDefinition = usageDefinitions.get(
+				usageDefinitionExternalReferenceCode);
+
+			if (usageDefinition == null) {
+				usageDefinition = _usageDefinitionService.fetchUsageDefinition(
+					usageDefinitionExternalReferenceCode);
+			}
+
+			if (usageDefinition != null) {
+				usageDefinitions.put(
+					usageDefinitionExternalReferenceCode, usageDefinition);
+
+				return usageDefinition;
+			}
+		}
+
+		return null;
+	}
+
+	private boolean _generateUsageReport(
+			Instant endInstant, List<Entitlement> entitlements,
+			String projectExternalReferenceCode, Instant startInstant,
+			Map<String, UsageDefinition> usageDefinitions, YearMonth yearMonth)
+		throws Exception {
+
+		UsageDefinition usageDefinition = _fetchUsageDefinition(
+			entitlements, usageDefinitions);
+
+		if (usageDefinition == null) {
+			_log.error(
+				"Unable to find the usage definition of the LDP event " +
+					"entitlements of project " + projectExternalReferenceCode);
+
+			return false;
+		}
 
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
-			entitlements, overageBucketSize.longValue());
+			entitlements, _getOverageBucketSize(usageDefinition));
 
 		if (ldpEventAllotment.isUnlimited()) {
 			if (_log.isInfoEnabled()) {
@@ -280,6 +259,18 @@ public class LDPEventUsageReportService {
 					"Skipping project " + projectExternalReferenceCode +
 						" because its LDP event allotment is unlimited");
 			}
+
+			return false;
+		}
+
+		if (!ldpEventAllotment.isEntitledQuantityKnown()) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to generate LDP event usage report for project ",
+					projectExternalReferenceCode, " because usage definition ",
+					usageDefinition.getExternalReferenceCode(),
+					" has no overage bucket size to measure its add-on ",
+					"buckets by"));
 
 			return false;
 		}
@@ -329,8 +320,11 @@ public class LDPEventUsageReportService {
 			ldpEventSummary.getTotalEventsCount(),
 			_fetchContractExternalReferenceCode(entitlements), startInstant,
 			endInstant.minusMillis(1), ldpEventAllotment.getEntitledQuantity(),
-			externalReferenceCode, project, skuExternalReferenceCode,
-			usageDefinition);
+			externalReferenceCode,
+			_getOveragePricing(
+				ldpEventAllotment, ldpEventSummary.getTotalEventsCount(),
+				projectExternalReferenceCode, usageDefinition),
+			project, usageDefinition);
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -383,6 +377,58 @@ public class LDPEventUsageReportService {
 			"_", yearMonth.format(_yearMonthDateTimeFormatter));
 	}
 
+	private long _getOverageBucketSize(UsageDefinition usageDefinition) {
+		if (!usageDefinition.hasOverageBucketSize()) {
+			return 0;
+		}
+
+		Double overageBucketSize = usageDefinition.getOverageBucketSize();
+
+		return overageBucketSize.longValue();
+	}
+
+	private OveragePricing _getOveragePricing(
+		LDPEventAllotment ldpEventAllotment, long totalEventsCount,
+		String projectExternalReferenceCode, UsageDefinition usageDefinition) {
+
+		OveragePricing overagePricing = ldpEventAllotment.getOveragePricing();
+
+		if ((overagePricing != null) &&
+			usageDefinition.hasOverageBucketSize()) {
+
+			return overagePricing;
+		}
+
+		if (totalEventsCount <= ldpEventAllotment.getEntitledQuantity()) {
+			return null;
+		}
+
+		if (!usageDefinition.hasOverageBucketSize()) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to price the LDP event overage of project ",
+					projectExternalReferenceCode, " because usage definition ",
+					usageDefinition.getExternalReferenceCode(),
+					" has no overage bucket size"));
+		}
+		else if (ldpEventAllotment.hasConflictingOveragePricing()) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to price the LDP event overage of project ",
+					projectExternalReferenceCode, " because its events ",
+					"entitlements carry conflicting overage pricing"));
+		}
+		else {
+			_log.error(
+				StringBundler.concat(
+					"Unable to price the LDP event overage of project ",
+					projectExternalReferenceCode, " because its events ",
+					"entitlements carry no overage pricing"));
+		}
+
+		return null;
+	}
+
 	private long _toLong(Double value) {
 		if (value == null) {
 			return 0;
@@ -405,9 +451,6 @@ public class LDPEventUsageReportService {
 
 	@Autowired
 	private ContractService _contractService;
-
-	@Autowired
-	private EntitlementDefinitionService _entitlementDefinitionService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
