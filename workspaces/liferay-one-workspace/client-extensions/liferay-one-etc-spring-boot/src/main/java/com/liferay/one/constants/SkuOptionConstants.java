@@ -8,10 +8,9 @@ package com.liferay.one.constants;
 /**
  * @author Felipe Veloso
  */
-public class ProductSpecificationConstants {
+public class SkuOptionConstants {
 
-	public static final String KEY_PRICE_MODEL = "price-model";
-
-	public static final String PRICE_MODEL_PAID = "Paid";
+	public static final String KEY_SUFFIX_LICENSE_USAGE_TYPE =
+		"-license-usage-type";
 
 }
