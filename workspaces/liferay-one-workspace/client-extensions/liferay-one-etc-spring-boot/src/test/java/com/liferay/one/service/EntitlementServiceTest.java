@@ -52,6 +52,60 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementsCopiesTheDefinitionOveragePricing()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
+			new JSONObject(
+			).put(
+				"defaultQuantity", 1000000.0
+			).put(
+				"grantType", "fixed"
+			).put(
+				"id", 1L
+			).put(
+				"name", "events"
+			).put(
+				"overageRate", 20.0
+			).put(
+				"overageSkuExternalReferenceCode",
+				"PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET"
+			));
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyString(), Mockito.anyMap())
+		).thenReturn(
+			List.of(entitlementDefinition)
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "events")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(),
+			Mockito.eq(entitlementDefinition.getOveragePricing()),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGenerateEntitlementsMatchesDefinitionsBySku()
 		throws Exception {
 
@@ -90,7 +144,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -101,8 +155,9 @@ public class EntitlementServiceTest {
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ORDER_ITEM_ID),
 			Mockito.eq(_CONTRACT_ID), Mockito.eq(1L), Mockito.isNull(),
 			Mockito.eq("fixed"), Mockito.isNull(), Mockito.eq("storage"),
-			Mockito.eq(Map.of()), Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
-			Mockito.eq(200.0), Mockito.isNull()
+			Mockito.isNull(), Mockito.eq(Map.of()),
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.eq(200.0),
+			Mockito.isNull()
 		);
 	}
 
@@ -190,7 +245,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 	}
 
