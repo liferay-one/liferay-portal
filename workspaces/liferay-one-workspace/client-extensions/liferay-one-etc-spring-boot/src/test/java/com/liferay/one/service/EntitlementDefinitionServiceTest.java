@@ -9,6 +9,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Category;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.exception.NoSuchProductException;
@@ -54,10 +55,25 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionCreatesDefinitionForBaseLicenseUsageType()
+		throws Exception {
+
+		_setUpProduct(
+			_createSku("SKU-BASE", true, "Base", "base-license-usage-type"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertEquals(
+			List.of("SKU-BASE"),
+			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionCreatesDefinitionPerSku()
 		throws Exception {
 
-		_setUpAppProduct(
+		_setUpProduct(
 			_createSku("SKU-LARGE", true, "Large"),
 			_createSku("SKU-SMALL", true, "Small"));
 
@@ -84,7 +100,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionDeactivatesDefinitionDespiteManualDefinition()
 		throws Exception {
 
-		_setUpAppProduct(_createSku("SKU-LARGE", false, "Large"));
+		_setUpProduct(_createSku("SKU-LARGE", false, "Large"));
 		_setUpExistingEntitlementDefinitions(
 			_createEntitlementDefinitionJSONObject(
 				true, "MANUAL", "Manual", "SKU-LARGE"),
@@ -111,7 +127,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionDeactivatesDefinitionForUnpublishedSku()
 		throws Exception {
 
-		_setUpAppProduct(
+		_setUpProduct(
 			_createSku("SKU-LARGE", false, "Large"),
 			_createSku("SKU-SMALL", true, "Small"));
 		_setUpExistingEntitlementDefinitions(
@@ -140,7 +156,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionEscapesSkuExternalReferenceCode()
 		throws Exception {
 
-		_setUpAppProduct(_createSku("SKU-O'BRIEN", true, "OBrien"));
+		_setUpProduct(_createSku("SKU-O'BRIEN", true, "OBrien"));
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
 			_C_PRODUCT_ID);
@@ -184,7 +200,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionReactivatesDefinitionForRepublishedSku()
 		throws Exception {
 
-		_setUpAppProduct(_createSku("SKU-SMALL", true, "Small"));
+		_setUpProduct(_createSku("SKU-SMALL", true, "Small"));
 		_setUpExistingEntitlementDefinitions(
 			_createEntitlementDefinitionJSONObject(
 				false, "SKU-SMALL", "Old Name", "SKU-SMALL"));
@@ -216,7 +232,7 @@ public class EntitlementDefinitionServiceTest {
 		).thenReturn(
 			_createProduct(
 				"MARKETPLACE_PRODUCT_TYPE_SOLUTION", "Test App",
-				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0])
+				ProductSpecificationConstants.PRICE_MODEL_PAID)
 		);
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
@@ -226,18 +242,18 @@ public class EntitlementDefinitionServiceTest {
 
 		Assertions.assertTrue(
 			_entitlementDefinitionService.putBodies.isEmpty());
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
 	}
 
 	@Test
-	public void testGenerateEntitlementDefinitionSkipsProductWithoutLicenseType()
+	public void testGenerateEntitlementDefinitionSkipsProductWithoutPaidPriceModel()
 		throws Exception {
 
 		Mockito.when(
 			_commerceProductService.getProduct(_C_PRODUCT_ID)
 		).thenReturn(
-			_createProduct(
-				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP,
-				"Test App", "theme")
+			_createProduct("Test App", "Free")
 		);
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
@@ -247,13 +263,15 @@ public class EntitlementDefinitionServiceTest {
 
 		Assertions.assertTrue(
 			_entitlementDefinitionService.putBodies.isEmpty());
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
 	}
 
 	@Test
 	public void testGenerateEntitlementDefinitionSkipsProductWithoutSkus()
 		throws Exception {
 
-		_setUpAppProduct();
+		_setUpProduct();
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
 			_C_PRODUCT_ID);
@@ -268,7 +286,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionSkipsSkuWithManualDefinition()
 		throws Exception {
 
-		_setUpAppProduct(
+		_setUpProduct(
 			_createSku("SKU-LARGE", true, "Large"),
 			_createSku("SKU-SMALL", true, "Small"));
 		_setUpExistingEntitlementDefinitions(
@@ -289,7 +307,7 @@ public class EntitlementDefinitionServiceTest {
 	public void testGenerateEntitlementDefinitionSkipsSkuWithoutExternalReferenceCode()
 		throws Exception {
 
-		_setUpAppProduct(
+		_setUpProduct(
 			_createSku(null, true, "Large"),
 			_createSku("SKU-SMALL", true, "Small"));
 
@@ -302,10 +320,25 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionSkipsSkuWithoutLicenseUsageType()
+		throws Exception {
+
+		_setUpProduct(_createSku("SKU-SMALL", true, "Small", null));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionSkipsUnpublishedSkuWithoutDefinition()
 		throws Exception {
 
-		_setUpAppProduct(_createSku("SKU-SMALL", false, "Small"));
+		_setUpProduct(_createSku("SKU-SMALL", false, "Small"));
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
 			_C_PRODUCT_ID);
@@ -386,7 +419,7 @@ public class EntitlementDefinitionServiceTest {
 
 	@Test
 	public void testReconcileGeneratesForApprovedProducts() throws Exception {
-		_setUpAppProduct(_createSku("SKU-SMALL", true, "Small"));
+		_setUpProduct(_createSku("SKU-SMALL", true, "Small"));
 
 		_entitlementDefinitionService.productsJSONArray = new JSONArray(
 		).put(
@@ -441,7 +474,7 @@ public class EntitlementDefinitionServiceTest {
 
 	@Test
 	public void testReconcileSkipsUnapprovedProduct() throws Exception {
-		_setUpAppProduct(_createSku("SKU-SMALL", true, "Small"));
+		_setUpProduct(_createSku("SKU-SMALL", true, "Small"));
 
 		_entitlementDefinitionService.productsJSONArray = new JSONArray(
 		).put(
@@ -477,8 +510,14 @@ public class EntitlementDefinitionServiceTest {
 		);
 	}
 
+	private Product _createProduct(String name, String priceModel) {
+		return _createProduct(
+			TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP, name,
+			priceModel);
+	}
+
 	private Product _createProduct(
-		String categoryExternalReferenceCode, String name, String type) {
+		String categoryExternalReferenceCode, String name, String priceModel) {
 
 		Product product = new Product();
 
@@ -489,8 +528,8 @@ public class EntitlementDefinitionServiceTest {
 		ProductSpecification productSpecification = new ProductSpecification();
 
 		productSpecification.setSpecificationKey(
-			ProductSpecificationConstants.KEY_TYPE);
-		productSpecification.setValue(Map.of("en_US", type));
+			ProductSpecificationConstants.KEY_PRICE_MODEL);
+		productSpecification.setValue(Map.of("en_US", priceModel));
 
 		product.setCategories(new Category[] {category});
 		product.setName(Map.of("en_US", name));
@@ -503,11 +542,31 @@ public class EntitlementDefinitionServiceTest {
 	private Sku _createSku(
 		String externalReferenceCode, boolean published, String sku) {
 
+		return _createSku(
+			externalReferenceCode, published, sku, "dxp-license-usage-type");
+	}
+
+	private Sku _createSku(
+		String externalReferenceCode, boolean published, String sku,
+		String skuOptionKey) {
+
 		Sku skuDTO = new Sku();
 
 		skuDTO.setExternalReferenceCode(externalReferenceCode);
 		skuDTO.setPublished(published);
 		skuDTO.setSku(sku);
+
+		if (skuOptionKey == null) {
+			skuDTO.setSkuOptions(new SkuOption[0]);
+		}
+		else {
+			SkuOption skuOption = new SkuOption();
+
+			skuOption.setKey(skuOptionKey);
+			skuOption.setValue("standard");
+
+			skuDTO.setSkuOptions(new SkuOption[] {skuOption});
+		}
 
 		return skuDTO;
 	}
@@ -522,23 +581,6 @@ public class EntitlementDefinitionServiceTest {
 		return externalReferenceCodes;
 	}
 
-	private void _setUpAppProduct(Sku... skus) throws Exception {
-		Mockito.when(
-			_commerceProductService.getProduct(_C_PRODUCT_ID)
-		).thenReturn(
-			_createProduct(
-				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP,
-				"Test App",
-				ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING[0])
-		);
-
-		Mockito.when(
-			_commerceSkuService.getSkus(_C_PRODUCT_ID)
-		).thenReturn(
-			Arrays.asList(skus)
-		);
-	}
-
 	private void _setUpExistingEntitlementDefinitions(
 		JSONObject... entitlementDefinitionJSONObjects) {
 
@@ -551,6 +593,21 @@ public class EntitlementDefinitionServiceTest {
 		}
 
 		_entitlementDefinitionService.itemsJSONArray = itemsJSONArray;
+	}
+
+	private void _setUpProduct(Sku... skus) throws Exception {
+		Mockito.when(
+			_commerceProductService.getProduct(_C_PRODUCT_ID)
+		).thenReturn(
+			_createProduct(
+				"Test App", ProductSpecificationConstants.PRICE_MODEL_PAID)
+		);
+
+		Mockito.when(
+			_commerceSkuService.getSkus(_C_PRODUCT_ID)
+		).thenReturn(
+			Arrays.asList(skus)
+		);
 	}
 
 	private static final long _C_PRODUCT_ID = 3000L;
