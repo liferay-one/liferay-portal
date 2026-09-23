@@ -13,16 +13,12 @@
 		{
 			"aggregationType": "sum",
 			"externalReferenceCode": "ai-tokens-monthly",
-			"overageCurrency": "USD",
-			"overageRate": 0.00002,
 			"period": "per month",
 			"unit": "AI tokens"
 		},
 		{
 			"aggregationType": "count",
 			"externalReferenceCode": "api-requests-monthly",
-			"overageCurrency": "USD",
-			"overageRate": 0.0005,
 			"period": "per month",
 			"unit": "API requests"
 		},
@@ -30,32 +26,24 @@
 			"aggregationType": "count",
 			"externalReferenceCode": "events-monthly",
 			"overageBucketSize": 200000,
-			"overageCurrency": "USD",
-			"overageRate": 20,
 			"period": "per month",
 			"unit": "events"
 		},
 		{
 			"aggregationType": "count",
 			"externalReferenceCode": "license-generations",
-			"overageCurrency": "USD",
-			"overageRate": 0,
 			"period": "per contract term",
 			"unit": "licenses"
 		},
 		{
 			"aggregationType": "count",
 			"externalReferenceCode": "page-views-monthly",
-			"overageCurrency": "USD",
-			"overageRate": 0.001,
 			"period": "per month",
 			"unit": "page views"
 		},
 		{
 			"aggregationType": "sum",
 			"externalReferenceCode": "storage-gb",
-			"overageCurrency": "USD",
-			"overageRate": 1.0,
 			"period": "per month",
 			"unit": "GB"
 		}

@@ -276,6 +276,8 @@
 			"grantType": "fixed",
 			"maxQuantity": 1000000,
 			"name": "events",
+			"overageRate": 20,
+			"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
 			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM",
 			"unit": "count"

@@ -76,6 +76,8 @@
 			"grantType": "fixed",
 			"maxQuantity": 1000000,
 			"name": "events",
+			"overageRate": 20,
+			"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
 			"quantity": 1000000,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-028",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_DATA_PLATFORM",
