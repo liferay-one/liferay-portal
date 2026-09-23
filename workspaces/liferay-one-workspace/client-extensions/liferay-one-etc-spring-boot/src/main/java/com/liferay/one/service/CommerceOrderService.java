@@ -330,61 +330,6 @@ public class CommerceOrderService extends OneBaseService {
 		completeSettledOrder(order);
 	}
 
-	private void _assignDefaultCurrency(Order order) throws Exception {
-		if (order.getAccountId() == null) {
-			return;
-		}
-
-		com.liferay.headless.admin.user.client.dto.v1_0.Account account =
-			_accountService.fetchAccount(order.getAccountId());
-
-		if (account == null) {
-			return;
-		}
-
-		String countryName = null;
-
-		Long defaultBillingAddressId = account.getDefaultBillingAddressId();
-
-		if (Validator.isNotNull(defaultBillingAddressId)) {
-			PostalAddress postalAddress =
-				_postalAddressService.getPostalAddress(defaultBillingAddressId);
-
-			if (postalAddress != null) {
-				countryName = postalAddress.getAddressCountry();
-			}
-		}
-
-		if (Validator.isNull(countryName)) {
-			BillingAddress billingAddress = order.getBillingAddress();
-
-			if ((billingAddress != null) &&
-				Validator.isNotNull(billingAddress.getCountryISOCode())) {
-
-				Country country = _countryService.getCountryByA2(
-					billingAddress.getCountryISOCode());
-
-				if (country != null) {
-					countryName = CommerceOrderUtil.getDefaultLocale(
-						country.getTitle_i18n());
-				}
-			}
-		}
-
-		if (Validator.isNull(countryName)) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Billing address or country name is missing for account: " +
-						account.getExternalReferenceCode());
-			}
-
-			return;
-		}
-
-		_commerceAccountCurrencyService.assignDefaultCurrency(
-			account, countryName);
-	}
-
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
 		OrderResource orderResource = _buildOrderResource();
 
@@ -677,6 +622,61 @@ public class CommerceOrderService extends OneBaseService {
 		order.setCustomFields(() -> customFields);
 
 		return _upsertOrder(externalReferenceCode, order);
+	}
+
+	private void _assignDefaultCurrency(Order order) throws Exception {
+		if (order.getAccountId() == null) {
+			return;
+		}
+
+		com.liferay.headless.admin.user.client.dto.v1_0.Account account =
+			_accountService.fetchAccount(order.getAccountId());
+
+		if (account == null) {
+			return;
+		}
+
+		String countryName = null;
+
+		Long defaultBillingAddressId = account.getDefaultBillingAddressId();
+
+		if (Validator.isNotNull(defaultBillingAddressId)) {
+			PostalAddress postalAddress =
+				_postalAddressService.getPostalAddress(defaultBillingAddressId);
+
+			if (postalAddress != null) {
+				countryName = postalAddress.getAddressCountry();
+			}
+		}
+
+		if (Validator.isNull(countryName)) {
+			BillingAddress billingAddress = order.getBillingAddress();
+
+			if ((billingAddress != null) &&
+				Validator.isNotNull(billingAddress.getCountryISOCode())) {
+
+				Country country = _countryService.getCountryByA2(
+					billingAddress.getCountryISOCode());
+
+				if (country != null) {
+					countryName = CommerceOrderUtil.getDefaultLocale(
+						country.getTitle_i18n());
+				}
+			}
+		}
+
+		if (Validator.isNull(countryName)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Billing address or country name is missing for account: " +
+						account.getExternalReferenceCode());
+			}
+
+			return;
+		}
+
+		_commerceAccountCurrencyService.assignDefaultCurrency(
+			account, countryName);
 	}
 
 	private OrderResource _buildOrderResource() {

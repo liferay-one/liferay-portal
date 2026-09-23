@@ -850,6 +850,103 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateAssignsCurrencyBasedOnPostalAddress()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+		userAccount.setDefaultBillingAddressId(456L);
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> "Australia");
+
+		Mockito.doReturn(
+			postalAddress
+		).when(
+			_postalAddressService
+		).getPostalAddress(
+			456L
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "Australia"
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateAssignsCurrencyFallbackToOrderBillingAddress()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode("JP");
+
+		order.setBillingAddress(billingAddress);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		Country country = new Country();
+
+		country.setTitle_i18n(() -> Map.of("en_US", "Japan"));
+
+		Mockito.doReturn(
+			country
+		).when(
+			_countryService
+		).getCountryByA2(
+			"JP"
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "Japan"
+		);
+	}
+
+	@Test
 	public void testDispatchOrderUpdateCompletesSettledOrder()
 		throws Exception {
 
@@ -908,6 +1005,57 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService, Mockito.never()
 		).completeSettledOrder(
 			ArgumentMatchers.any(Order.class)
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateDoesNotAssignCurrencyIfCountryNotMapped()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode("XX");
+
+		order.setBillingAddress(billingAddress);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		Country country = new Country();
+
+		country.setTitle_i18n(() -> Map.of("en_US", "UnknownCountry"));
+
+		Mockito.doReturn(
+			country
+		).when(
+			_countryService
+		).getCountryByA2(
+			"XX"
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "UnknownCountry"
 		);
 	}
 
@@ -1048,154 +1196,6 @@ public class CommerceOrderServiceTest {
 		).updateOrder(
 			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
 			ArgumentMatchers.anyInt()
-		);
-	}
-
-	@Test
-	public void testDispatchOrderUpdateAssignsCurrencyBasedOnPostalAddress()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
-
-		order.setAccountId(123L);
-
-		_whenFetchCommerceOrder(order);
-
-		Account userAccount = new Account();
-
-		userAccount.setExternalReferenceCode("ACC-123");
-		userAccount.setDefaultBillingAddressId(456L);
-
-		Mockito.doReturn(
-			userAccount
-		).when(
-			_accountService
-		).fetchAccount(
-			123L
-		);
-
-		PostalAddress postalAddress = new PostalAddress();
-
-		postalAddress.setAddressCountry(() -> "Australia");
-
-		Mockito.doReturn(
-			postalAddress
-		).when(
-			_postalAddressService
-		).getPostalAddress(
-			456L
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceAccountCurrencyService
-		).assignDefaultCurrency(
-			userAccount, "Australia"
-		);
-	}
-
-	@Test
-	public void testDispatchOrderUpdateAssignsCurrencyFallbackToOrderBillingAddress()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
-
-		order.setAccountId(123L);
-
-		BillingAddress billingAddress = new BillingAddress();
-
-		billingAddress.setCountryISOCode("JP");
-
-		order.setBillingAddress(billingAddress);
-
-		_whenFetchCommerceOrder(order);
-
-		Account userAccount = new Account();
-
-		userAccount.setExternalReferenceCode("ACC-123");
-
-		Mockito.doReturn(
-			userAccount
-		).when(
-			_accountService
-		).fetchAccount(
-			123L
-		);
-
-		Country country = new Country();
-
-		country.setTitle_i18n(() -> Map.of("en_US", "Japan"));
-
-		Mockito.doReturn(
-			country
-		).when(
-			_countryService
-		).getCountryByA2(
-			"JP"
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceAccountCurrencyService
-		).assignDefaultCurrency(
-			userAccount, "Japan"
-		);
-	}
-
-	@Test
-	public void testDispatchOrderUpdateDoesNotAssignCurrencyIfCountryNotMapped()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
-
-		order.setAccountId(123L);
-
-		BillingAddress billingAddress = new BillingAddress();
-
-		billingAddress.setCountryISOCode("XX");
-
-		order.setBillingAddress(billingAddress);
-
-		_whenFetchCommerceOrder(order);
-
-		Account userAccount = new Account();
-
-		userAccount.setExternalReferenceCode("ACC-123");
-
-		Mockito.doReturn(
-			userAccount
-		).when(
-			_accountService
-		).fetchAccount(
-			123L
-		);
-
-		Country country = new Country();
-
-		country.setTitle_i18n(() -> Map.of("en_US", "UnknownCountry"));
-
-		Mockito.doReturn(
-			country
-		).when(
-			_countryService
-		).getCountryByA2(
-			"XX"
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceAccountCurrencyService
-		).assignDefaultCurrency(
-			userAccount, "UnknownCountry"
 		);
 	}
 
