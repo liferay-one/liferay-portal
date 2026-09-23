@@ -10,21 +10,8 @@ package com.liferay.one.constants;
  */
 public class ProductSpecificationConstants {
 
-	public static final String ACTIVATION_PROFILE_LICENSES = "licenses";
+	public static final String KEY_PRICE_MODEL = "price-model";
 
-	public static final String KEY_PROJECT_ACTIVATION_PROFILE =
-		"project-activation-profile";
-
-	public static final String KEY_TYPE = "type";
-
-	public static final String TYPE_CLIENT_EXTENSION = "client-extension";
-
-	public static final String TYPE_COMPOSITE_APP = "composite-app";
-
-	public static final String TYPE_DXP = "dxp";
-
-	public static final String[] TYPES_LICENSE_KEY_GENERATING = {
-		TYPE_CLIENT_EXTENSION, TYPE_COMPOSITE_APP, TYPE_DXP
-	};
+	public static final String PRICE_MODEL_PAID = "Paid";
 
 }
