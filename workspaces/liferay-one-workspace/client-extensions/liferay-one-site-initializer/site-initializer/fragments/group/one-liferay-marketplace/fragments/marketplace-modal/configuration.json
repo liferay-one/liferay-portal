@@ -11,13 +11,6 @@
 				},
 				{
 					"dataType": "string",
-					"defaultValue": false,
-					"label": "modal-edit-mode",
-					"name": "modalEditMode",
-					"type": "checkbox"
-				},
-				{
-					"dataType": "string",
 					"defaultValue": "",
 					"description": "modal-id",
 					"label": "modal-id",

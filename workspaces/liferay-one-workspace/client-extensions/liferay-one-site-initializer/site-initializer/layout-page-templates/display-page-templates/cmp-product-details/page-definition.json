@@ -448,7 +448,6 @@
 							},
 							"fragmentConfig": {
 								"contentInitEvent": "",
-								"modalEditMode": false,
 								"modalId": "cmp-modal-1",
 								"modalOverlayColor": "primary",
 								"modalSize": "md"
@@ -529,7 +528,6 @@
 							},
 							"fragmentConfig": {
 								"contentInitEvent": "",
-								"modalEditMode": false,
 								"modalId": "",
 								"modalOverlayColor": "primary",
 								"modalSize": "md"
