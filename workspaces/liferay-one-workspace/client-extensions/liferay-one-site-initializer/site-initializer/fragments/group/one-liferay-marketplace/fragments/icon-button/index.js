@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-const isDebug = configuration.enableDebug;
-
 if (fragmentNamespace) {
 	const elementId = fragmentElement.id.replace('fragment-', '');
 
@@ -12,12 +10,6 @@ if (fragmentNamespace) {
 	const iconSpan = fragmentElement.querySelector(
 		`#icon-${elementId} span.svg-icon`
 	);
-
-	if (isDebug) {
-		console.debug('elementId', elementId);
-		console.debug('iconSpan', iconSpan);
-		console.debug('button', button);
-	}
 
 	if (button && iconSpan) {
 		if (configuration.iconPosition === 'right') {
@@ -31,7 +23,4 @@ if (fragmentNamespace) {
 			button.insertBefore(iconSpan, button.firstChild);
 		}
 	}
-}
-else if (isDebug) {
-	console.debug('fragmentNamespace is undefined');
 }
