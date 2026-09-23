@@ -9,7 +9,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.model.UsageReport;
@@ -45,9 +45,6 @@ public class LDPEventUsageReportServiceTest {
 		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_contractService", _contractService);
 		ReflectionTestUtils.setField(
-			_ldpEventUsageReportService, "_entitlementDefinitionService",
-			_entitlementDefinitionService);
-		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_entitlementService",
 			_entitlementService);
 		ReflectionTestUtils.setField(
@@ -71,41 +68,6 @@ public class LDPEventUsageReportServiceTest {
 					"externalReferenceCode", _CONTRACT_EXTERNAL_REFERENCE_CODE
 				).put(
 					"id", _CONTRACT_ID
-				))
-		);
-
-		Mockito.when(
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET)
-		).thenReturn(
-			new EntitlementDefinition(
-				new JSONObject(
-				).put(
-					_USAGE_DEFINITION_FIELD_NAME,
-					_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
-				).put(
-					"id", 44L
-				).put(
-					"skuExternalReferenceCode",
-					_ADD_ON_SKU_EXTERNAL_REFERENCE_CODE
-				))
-		);
-
-		Mockito.when(
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET)
-		).thenReturn(
-			new EntitlementDefinition(
-				new JSONObject(
-				).put(
-					_USAGE_DEFINITION_FIELD_NAME,
-					_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
-				).put(
-					"id", 45L
-				).put(
-					"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
 				))
 		);
 
@@ -138,10 +100,6 @@ public class LDPEventUsageReportServiceTest {
 					"id", _USAGE_DEFINITION_ID
 				).put(
 					"overageBucketSize", _OVERAGE_BUCKET_SIZE
-				).put(
-					"overageCurrency", "USD"
-				).put(
-					"overageRate", _OVERAGE_RATE
 				))
 		);
 	}
@@ -151,12 +109,10 @@ public class LDPEventUsageReportServiceTest {
 		String otherProjectExternalReferenceCode = "PRJCT-002";
 
 		_setUpEntitlements(
-			_createEntitlement(
-				"fixed", EntitlementConstants.NAME_EVENTS,
-				otherProjectExternalReferenceCode, 1000000D),
-			_createEntitlement(
-				"fixed", EntitlementConstants.NAME_EVENTS,
-				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D));
+			_createEventsEntitlement(
+				otherProjectExternalReferenceCode, 1000000D, _OVERAGE_RATE),
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
 
 		Mockito.when(
 			_projectService.fetchProject(otherProjectExternalReferenceCode)
@@ -175,16 +131,45 @@ public class LDPEventUsageReportServiceTest {
 			Mockito.anyDouble(), Mockito.anyString(), Mockito.any(),
 			Mockito.any(), Mockito.anyDouble(),
 			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
-			Mockito.anyString(), Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGeneratesUnpricedReportForConflictingOveragePricing()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE),
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 500000D, 25D));
+		_setUpEventSummary(_PROJECT_EXTERNAL_REFERENCE_CODE, 1800000);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		_verifyUnpricedReportAdded(1800000D, 1500000D);
+	}
+
+	@Test
+	public void testGeneratesUnpricedReportWithoutOveragePricing()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, null));
+		_setUpEventSummary(_PROJECT_EXTERNAL_REFERENCE_CODE, 1200000);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		_verifyUnpricedReportAdded(1200000D, 1000000D);
 	}
 
 	@Test
 	public void testPassesConsumedAndEntitledQuantities() throws Exception {
 		_setUpEntitlements(
-			_createEntitlement(
-				"fixed", EntitlementConstants.NAME_EVENTS,
-				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D),
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE),
 			_createEntitlement(
 				"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
 				_PROJECT_EXTERNAL_REFERENCE_CODE, 1D));
@@ -192,6 +177,8 @@ public class LDPEventUsageReportServiceTest {
 
 		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
 
+		ArgumentCaptor<OveragePricing> overagePricingArgumentCaptor =
+			ArgumentCaptor.forClass(OveragePricing.class);
 		ArgumentCaptor<Project> projectArgumentCaptor = ArgumentCaptor.forClass(
 			Project.class);
 		ArgumentCaptor<UsageDefinition> usageDefinitionArgumentCaptor =
@@ -205,10 +192,17 @@ public class LDPEventUsageReportServiceTest {
 			Mockito.eq(Instant.parse("2026-08-31T23:59:59.999Z")),
 			Mockito.eq(1000000D + _OVERAGE_BUCKET_SIZE),
 			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE),
+			overagePricingArgumentCaptor.capture(),
 			projectArgumentCaptor.capture(),
-			Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE),
 			usageDefinitionArgumentCaptor.capture()
 		);
+
+		OveragePricing overagePricing = overagePricingArgumentCaptor.getValue();
+
+		Assertions.assertEquals(_OVERAGE_RATE, overagePricing.getRate());
+		Assertions.assertEquals(
+			_SKU_EXTERNAL_REFERENCE_CODE,
+			overagePricing.getSkuExternalReferenceCode());
 
 		Project project = projectArgumentCaptor.getValue();
 
@@ -240,17 +234,40 @@ public class LDPEventUsageReportServiceTest {
 			() -> _ldpEventUsageReportService.generateUsageReports(
 				currentYearMonth.plusMonths(1)));
 
-		Mockito.verifyNoInteractions(
-			_entitlementDefinitionService, _entitlementService,
-			_usageReportService);
+		Mockito.verifyNoInteractions(_entitlementService, _usageReportService);
+	}
+
+	@Test
+	public void testSkipsAddOnBucketsWithoutBucketSize() throws Exception {
+		Mockito.when(
+			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
+		).thenReturn(
+			new UsageDefinition(
+				new JSONObject(
+				).put(
+					"id", _USAGE_DEFINITION_ID
+				))
+		);
+
+		_setUpEntitlements(
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE),
+			_createEntitlement(
+				"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1D));
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		_verifyNoReportAdded();
+
+		Mockito.verifyNoInteractions(_googleCloudFunctionService);
 	}
 
 	@Test
 	public void testSkipsExistingReport() throws Exception {
 		_setUpEntitlements(
-			_createEntitlement(
-				"fixed", EntitlementConstants.NAME_EVENTS,
-				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D));
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
 
 		Mockito.when(
 			_usageReportService.fetchUsageReport(
@@ -267,11 +284,29 @@ public class LDPEventUsageReportServiceTest {
 	}
 
 	@Test
+	public void testSkipsProjectWithoutUsageDefinition() throws Exception {
+		_setUpEntitlements(
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
+
+		Mockito.when(
+			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
+		).thenReturn(
+			null
+		);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		_verifyNoReportAdded();
+
+		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+	}
+
+	@Test
 	public void testSkipsProjectWithoutWarehouseData() throws Exception {
 		_setUpEntitlements(
-			_createEntitlement(
-				"fixed", EntitlementConstants.NAME_EVENTS,
-				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D));
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
 
 		Mockito.when(
 			_googleCloudFunctionService.fetchLDPProjectEventSummary(
@@ -300,84 +335,16 @@ public class LDPEventUsageReportServiceTest {
 		Mockito.verifyNoInteractions(_googleCloudFunctionService);
 	}
 
-	@Test
-	public void testStopsWithoutAddOnBucketEntitlementDefinition()
-		throws Exception {
-
-		Mockito.when(
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				Mockito.anyString())
-		).thenReturn(
-			null
-		);
-
-		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
-
-		Mockito.verifyNoInteractions(
-			_entitlementService, _usageDefinitionService);
-
-		_verifyNoReportAdded();
-	}
-
-	@Test
-	public void testStopsWithoutOverageBucketEntitlementDefinition()
-		throws Exception {
-
-		Mockito.when(
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET)
-		).thenReturn(
-			null
-		);
-
-		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
-
-		Mockito.verifyNoInteractions(
-			_entitlementService, _usageDefinitionService);
-
-		_verifyNoReportAdded();
-	}
-
-	@Test
-	public void testStopsWithoutOverageBucketSize() throws Exception {
-		Mockito.when(
-			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
-		).thenReturn(
-			new UsageDefinition(
-				new JSONObject(
-				).put(
-					"id", _USAGE_DEFINITION_ID
-				).put(
-					"overageCurrency", "USD"
-				).put(
-					"overageRate", _OVERAGE_RATE
-				))
-		);
-
-		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
-
-		Mockito.verifyNoInteractions(_entitlementService);
-
-		_verifyNoReportAdded();
-	}
-
-	@Test
-	public void testStopsWithoutUsageDefinition() throws Exception {
-		Mockito.when(
-			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
-		).thenReturn(
-			null
-		);
-
-		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
-
-		Mockito.verifyNoInteractions(_entitlementService);
-
-		_verifyNoReportAdded();
-	}
-
 	private Entitlement _createEntitlement(
+		String grantType, String name, String projectExternalReferenceCode,
+		Double quantity) {
+
+		return new Entitlement(
+			_createEntitlementJSONObject(
+				grantType, name, projectExternalReferenceCode, quantity));
+	}
+
+	private JSONObject _createEntitlementJSONObject(
 		String grantType, String name, String projectExternalReferenceCode,
 		Double quantity) {
 
@@ -385,6 +352,9 @@ public class LDPEventUsageReportServiceTest {
 		).put(
 			"entitlementDefinitionToEntitlement",
 			new JSONObject(
+			).put(
+				_USAGE_DEFINITION_FIELD_NAME,
+				_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
 			).put(
 				"id", 1L
 			).put(
@@ -404,6 +374,25 @@ public class LDPEventUsageReportServiceTest {
 
 		if (quantity != null) {
 			jsonObject.put("quantity", quantity);
+		}
+
+		return jsonObject;
+	}
+
+	private Entitlement _createEventsEntitlement(
+		String projectExternalReferenceCode, Double quantity,
+		Double overageRate) {
+
+		JSONObject jsonObject = _createEntitlementJSONObject(
+			"fixed", EntitlementConstants.NAME_EVENTS,
+			projectExternalReferenceCode, quantity);
+
+		if (overageRate != null) {
+			jsonObject.put(
+				"overageRate", overageRate
+			).put(
+				"overageSkuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
+			);
 		}
 
 		return new Entitlement(jsonObject);
@@ -480,10 +469,21 @@ public class LDPEventUsageReportServiceTest {
 		);
 	}
 
-	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
+	private void _verifyUnpricedReportAdded(
+			double aggregateQuantity, double entitledQuantity)
+		throws Exception {
 
-	private static final String _ADD_ON_SKU_EXTERNAL_REFERENCE_CODE =
-		"PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET";
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			Mockito.eq(aggregateQuantity), Mockito.anyString(), Mockito.any(),
+			Mockito.any(), Mockito.eq(entitledQuantity),
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.isNull(),
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
 
 	private static final String _CONTRACT_EXTERNAL_REFERENCE_CODE =
 		"C_CONTRACT_001";
@@ -516,8 +516,6 @@ public class LDPEventUsageReportServiceTest {
 
 	private final ContractService _contractService = Mockito.mock(
 		ContractService.class);
-	private final EntitlementDefinitionService _entitlementDefinitionService =
-		Mockito.mock(EntitlementDefinitionService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private final GoogleCloudFunctionService _googleCloudFunctionService =
