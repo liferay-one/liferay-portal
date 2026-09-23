@@ -51,17 +51,18 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class LicenseKeyService extends OneBaseService {
 
 	public LicenseKey addLicenseKey(
-			long accountEntryId, String accountName, boolean active,
-			String additionalInfo, boolean complimentary, String description,
-			String domains, long entitlementDefinitionId, long entitlementId,
-			Date expirationDate, String hostName, String ipAddresses,
-			String key, String licenseName, String licenseType,
-			int licenseVersion, String macAddresses, int maxClusterNodes,
-			long maxConcurrentUsers, int maxHttpSessions, int maxServers,
-			long maxUsers, String name, String orderId, String owner,
-			String productExternalId, String productName, String productVersion,
-			String projectExternalReferenceCode, String serverId, String sizing,
-			Date startDate)
+			long accountEntryId, String accountName, long activationKeyId,
+			boolean active, String additionalInfo,
+			String commerceProductExternalReferenceCode, boolean complimentary,
+			String description, String domains, long entitlementDefinitionId,
+			long entitlementId, Date expirationDate, String hostName,
+			String ipAddresses, String key, String licenseName,
+			String licenseType, int licenseVersion, String macAddresses,
+			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
+			int maxServers, long maxUsers, String name, String orderId,
+			String owner, String productExternalId, String productName,
+			String productVersion, String projectExternalReferenceCode,
+			String serverId, String sizing, Date startDate)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -139,6 +140,11 @@ public class LicenseKeyService extends OneBaseService {
 			"productVersion", productVersion
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
+		).put(
+			"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
+		).put(
+			"r_commerceProductToLicenseKey_CProductERC",
+			commerceProductExternalReferenceCode
 		).put(
 			"r_projectToLicenseKey_c_projectERC", projectExternalReferenceCode
 		).put(
@@ -265,13 +271,15 @@ public class LicenseKeyService extends OneBaseService {
 		for (LicenseKey licenseKey :
 				_getLicenseKeysByProject(projectExternalReferenceCode)) {
 
-			if (!licenseKey.isActive() || licenseKey.isComplimentary()) {
+			long entitlementId = licenseKey.getEntitlementId();
+
+			if ((entitlementId <= 0) || !licenseKey.isActive() ||
+				licenseKey.isComplimentary()) {
+
 				continue;
 			}
 
-			for (long entitlementId : licenseKey.getEntitlementIds()) {
-				counts.merge(entitlementId, 1, Integer::sum);
-			}
+			counts.merge(entitlementId, 1, Integer::sum);
 		}
 
 		return counts;
@@ -459,6 +467,16 @@ public class LicenseKeyService extends OneBaseService {
 			StringBundler.concat(
 				"r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId, "'"));
+	}
+
+	public List<LicenseKey> getLicenseKeysByActivationKeyId(
+			long activationKeyId)
+		throws Exception {
+
+		return getLicenseKeys(
+			StringBundler.concat(
+				"r_activationKeyToLicenseKey_c_activationKeyId eq '",
+				activationKeyId, "'"));
 	}
 
 	public List<LicenseKey> getLicenseKeysByIds(Jwt jwt, long[] licenseKeyIds)
@@ -663,10 +681,12 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return addLicenseKey(
-			licenseKey.getAccountEntryId(), licenseKey.getAccountName(), true,
-			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
-			licenseKey.getDescription(), licenseKey.getDomains(),
-			licenseKey.getEntitlementDefinitionId(),
+			licenseKey.getAccountEntryId(), licenseKey.getAccountName(),
+			licenseKey.getActivationKeyId(), true,
+			licenseKey.getAdditionalInfo(),
+			licenseKey.getCommerceProductExternalReferenceCode(),
+			licenseKey.isComplimentary(), licenseKey.getDescription(),
+			licenseKey.getDomains(), licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
 			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
 			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
