@@ -97,7 +97,6 @@
 																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
-																"imageSize": "w-100"
 															},
 															"fragmentFields": [
 																{

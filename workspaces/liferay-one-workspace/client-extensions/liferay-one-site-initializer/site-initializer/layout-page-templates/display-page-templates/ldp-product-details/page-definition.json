@@ -105,7 +105,6 @@
 																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
-																"imageSize": "w-100"
 															},
 															"fragmentFields": [
 																{
@@ -2271,7 +2270,6 @@
 																					},
 																					"fragmentConfig": {
 																						"available": true,
-																						"badgeText": "Coming Soon",
 																						"buttonLink": "https://www.liferay.com/contact-sales",
 																						"buttonText": "Contact sales",
 																						"customPrice": false,

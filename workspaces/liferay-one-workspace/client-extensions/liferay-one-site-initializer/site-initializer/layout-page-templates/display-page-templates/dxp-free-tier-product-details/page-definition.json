@@ -97,7 +97,6 @@
 																"siteKey": "[$GROUP_KEY$]"
 															},
 															"fragmentConfig": {
-																"imageSize": "w-100"
 															},
 															"fragmentFields": [
 																{
@@ -1986,7 +1985,6 @@
 													"fragmentConfig": {
 														"buttonSize": "nm",
 														"buttonType": "outline-primary",
-														"enableDebug": true,
 														"iconName": "order-arrow-right",
 														"iconPosition": "right"
 													},
