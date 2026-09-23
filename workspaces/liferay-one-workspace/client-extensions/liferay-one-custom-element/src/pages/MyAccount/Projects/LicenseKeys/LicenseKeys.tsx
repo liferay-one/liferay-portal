@@ -26,7 +26,7 @@ import FilterableListCard, {
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
-import useLicenseKeyActions from './hooks/useLicenseKeyActions';
+import useActivationKeyActions from './hooks/useActivationKeyActions';
 
 import './LicenseKeys.css';
 
@@ -46,10 +46,6 @@ function formatDateBound(value: string): string {
 		new Date(date),
 		'MMM d, yyyy'
 	)}`;
-}
-
-function getEnvironmentType(row: ProjectActivationKey): string {
-	return row.licenseName.slice(row.licenseName.indexOf(' ') + 1);
 }
 
 function getSubscriptionType(row: ProjectActivationKey): Word {
@@ -171,7 +167,7 @@ export default function LicenseKeys() {
 		handleNewKey,
 		handleReactivate,
 		handleRenew,
-	} = useLicenseKeyActions({generatePath: 'generate', revalidate});
+	} = useActivationKeyActions({generatePath: 'generate', revalidate});
 
 	const newKeyExternalReferenceCode = searchParams.get('new');
 	const openedNewKeyRef = useRef(false);
@@ -211,7 +207,7 @@ export default function LicenseKeys() {
 			key: 'environment-type',
 			render: (row) => (
 				<span className="d-flex flex-column">
-					<span>{row.licenseName || '-'}</span>
+					<span>{row.keyType || '-'}</span>
 
 					<span className="list-card-subtext">
 						{translate(getSubscriptionType(row))}
@@ -226,19 +222,7 @@ export default function LicenseKeys() {
 			render: (row) => {
 				const keyType = getKeyType(row.licenseType);
 
-				return (
-					<span className="d-flex flex-column">
-						<span>{translate(keyType)}</span>
-
-						<span className="list-card-subtext">
-							{keyType === 'on-premise'
-								? row.hostName || '-'
-								: i18n.sub('x-cluster-nodes-keys', [
-										row.clusterSize || '-',
-									])}
-						</span>
-					</span>
-				);
+				return <span>{translate(keyType)}</span>;
 			},
 			width: '25%',
 		},
@@ -295,10 +279,13 @@ export default function LicenseKeys() {
 			key: 'environmentType',
 			label: 'environment-type',
 			matches: (row, values) =>
-				values.includes(getEnvironmentType(row)) ||
+				values.includes(row.environmentType) ||
 				values.includes(getSubscriptionType(row)),
 			options: [
-				...toOptions(activationKeys.map(getEnvironmentType)),
+				...toOptions(
+					activationKeys.map((row) => row.environmentType),
+					(value) => translate(value as Word)
+				),
 				...toOptions(activationKeys.map(getSubscriptionType), (value) =>
 					translate(value as Word)
 				),
@@ -334,12 +321,6 @@ export default function LicenseKeys() {
 			label: 'product-version',
 			matches: (row, values) => values.includes(row.productVersion),
 			options: toOptions(activationKeys.map((row) => row.productVersion)),
-		},
-		{
-			key: 'instanceSize',
-			label: 'instance-size',
-			matches: (row, values) => values.includes(row.sizing),
-			options: toOptions(activationKeys.map((row) => row.sizing)),
 		},
 	];
 
