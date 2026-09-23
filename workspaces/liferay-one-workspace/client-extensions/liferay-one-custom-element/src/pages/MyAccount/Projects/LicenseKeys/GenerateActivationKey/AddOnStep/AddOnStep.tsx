@@ -11,7 +11,7 @@ import {translate} from '~/i18n';
 import {
 	GenerateForm,
 	GenerateFormBundleProduct,
-} from '~/services/spring-boot/LicenseKeys';
+} from '~/services/spring-boot/ActivationKeys';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import {GenerateActivationKeyForm} from '../types';

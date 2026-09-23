@@ -13,6 +13,7 @@ import {useProject} from '~/context/ProjectContext';
 import {Word, translate} from '~/i18n';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
+import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import {scrollToTop} from '~/utils/browserUtils';
 
@@ -227,30 +228,28 @@ export default function GenerateActivationKey() {
 		setSubmitting(true);
 
 		try {
-			const {licenseKeyIds} = await LicenseKeys.generateLicenseKeys({
-				bundleEntitlementIds: values.bundleEntitlementIds,
-				dataCenterLocation: values.dataCenterLocation || undefined,
-				description: values.description || undefined,
-				environmentName: values.environmentName,
-				keyType: values.keyType,
-				projectExternalReferenceCode: projectId,
-				servers: values.servers,
-				subscriptionEntitlementId: values.subscriptionEntitlementId,
-				version: values.version,
-				workspaceName: values.workspaceName || undefined,
-				workspaceOwnerEmail: values.workspaceOwnerEmail || undefined,
-			});
+			const {activationKeyId} =
+				await ActivationKeys.generateActivationKey({
+					bundleEntitlementIds: values.bundleEntitlementIds,
+					dataCenterLocation: values.dataCenterLocation || undefined,
+					description: values.description || undefined,
+					environmentName: values.environmentName,
+					keyType: values.keyType,
+					projectExternalReferenceCode: projectId,
+					servers: values.servers,
+					subscriptionEntitlementId: values.subscriptionEntitlementId,
+					version: values.version,
+					workspaceName: values.workspaceName || undefined,
+					workspaceOwnerEmail:
+						values.workspaceOwnerEmail || undefined,
+				});
 
 			if (values.notify) {
-				await Promise.all(
-					licenseKeyIds.map((licenseKeyId) =>
-						LicenseKeys.subscribe(String(licenseKeyId))
-					)
-				);
+				await ActivationKeys.subscribe(String(activationKeyId));
 			}
 
-			await LicenseKeys.downloadLicenseKeys(
-				licenseKeyIds,
+			await ActivationKeys.downloadActivationKey(
+				String(activationKeyId),
 				`${values.environmentName}.xml`
 			);
 
