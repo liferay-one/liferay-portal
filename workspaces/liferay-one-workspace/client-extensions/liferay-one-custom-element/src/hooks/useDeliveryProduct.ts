@@ -18,6 +18,7 @@ const useDeliveryProduct = (productId: string) => {
 				'images.accountId': '-1',
 				'nestedFields':
 					'attachments,categories,images,productSpecifications,skus',
+				'productSpecifications.pageSize': '-1',
 				'skus.accountId': '-1',
 				'skus.currencyCode':
 					Liferay.CommerceContext.currency.currencyCode,

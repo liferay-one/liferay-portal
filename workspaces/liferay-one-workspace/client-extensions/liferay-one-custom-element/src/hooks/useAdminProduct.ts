@@ -13,8 +13,9 @@ const useAdminProduct = (productId: string, swrOptions?: SWRConfiguration) => {
 			HeadlessCommerceAdminCatalog.getProduct(
 				productId,
 				new URLSearchParams({
-					nestedFields:
+					'nestedFields':
 						'attachments,categories,images,productSpecifications',
+					'productSpecifications.pageSize': '-1',
 				})
 			),
 		swrOptions

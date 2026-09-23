@@ -16,6 +16,7 @@ export function useTrialProducts(channelId: number, name: string) {
 				'filter': SearchBuilder.contains('name', name),
 				'nestedFields': 'productSpecifications,skus',
 				'pageSize': '10',
+				'productSpecifications.pageSize': '-1',
 				'skus.accountId': '-1',
 			})
 		)

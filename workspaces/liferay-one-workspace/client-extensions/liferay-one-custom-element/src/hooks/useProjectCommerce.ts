@@ -289,6 +289,7 @@ export function channelProductsQuery(
 						'nestedFields': 'productSpecifications,skus',
 						'page': page.toString(),
 						'pageSize': PAGE_SIZE.toString(),
+						'productSpecifications.pageSize': '-1',
 						'restrictFields': RESTRICTED_PRODUCT_FIELDS,
 						'skus.accountId': '-1',
 						'skus.currencyCode':

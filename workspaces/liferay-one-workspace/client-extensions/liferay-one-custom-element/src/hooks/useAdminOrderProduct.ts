@@ -38,7 +38,10 @@ const useAdminOrderProduct = (
 
 			const product = await HeadlessCommerceAdminCatalog.getProduct(
 				sku.productId,
-				new URLSearchParams({nestedFields: 'productSpecifications'})
+				new URLSearchParams({
+					'nestedFields': 'productSpecifications',
+					'productSpecifications.pageSize': '-1',
+				})
 			);
 
 			return {
