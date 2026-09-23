@@ -21,6 +21,17 @@
 			"type": "oneToMany"
 		},
 		{
+			"deletionType": "disassociate",
+			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_ACTIVATION_KEY",
+			"label": {
+				"en_US": "Account Entry to Activation Key"
+			},
+			"name": "accountEntryToActivationKey",
+			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
+			"objectDefinitionExternalReferenceCode2": "C_ACTIVATION_KEY",
+			"type": "oneToMany"
+		},
+		{
 			"deletionType": "prevent",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_ACTIVATION_KEY",
 			"label": {
@@ -183,6 +194,17 @@
 			"name": "accountToAIHubApplication",
 			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
 			"objectDefinitionExternalReferenceCode2": "C_AI_HUB_APPLICATION",
+			"type": "oneToMany"
+		},
+		{
+			"deletionType": "disassociate",
+			"externalReferenceCode": "R_ACTIVATION_KEY_TO_LICENSE_KEY",
+			"label": {
+				"en_US": "Activation Key to License Key"
+			},
+			"name": "activationKeyToLicenseKey",
+			"objectDefinitionExternalReferenceCode1": "C_ACTIVATION_KEY",
+			"objectDefinitionExternalReferenceCode2": "C_LICENSE_KEY",
 			"type": "oneToMany"
 		},
 		{
@@ -403,6 +425,17 @@
 			"name": "productEntryToPublisherAsset",
 			"objectDefinitionExternalReferenceCode1": "L_COMMERCE_PRODUCT_DEFINITION",
 			"objectDefinitionExternalReferenceCode2": "C_PUBLISHER_ASSET",
+			"type": "oneToMany"
+		},
+		{
+			"deletionType": "disassociate",
+			"externalReferenceCode": "R_PROJECT_TO_ACTIVATION_KEY",
+			"label": {
+				"en_US": "Project to Activation Key"
+			},
+			"name": "projectToActivationKey",
+			"objectDefinitionExternalReferenceCode1": "C_PROJECT",
+			"objectDefinitionExternalReferenceCode2": "C_ACTIVATION_KEY",
 			"type": "oneToMany"
 		},
 		{

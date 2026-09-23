@@ -22,6 +22,7 @@ liferay-one-etc-spring-boot-oahs:
         -   Liferay.Headless.Commerce.Admin.Pricing.everything
         -   Liferay.Notification.REST.everything
         -   c_accountinvitation.everything
+        -   c_activationkey.everything
         -   c_aihubapplication.everything
         -   c_commonlicensekey.everything
         -   c_contract.everything
@@ -46,6 +47,7 @@ liferay-one-etc-spring-boot-oaua:
     name: Liferay One Etc Spring Boot OAuth Application User Agent
     scopes:
         -   Liferay.Headless.Admin.User.everything
+        -   c_activationkey.everything.read
         -   c_environment.everything.read
         -   c_licensekey.everything.read
         -   c_project.everything.read
