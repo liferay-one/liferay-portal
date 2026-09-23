@@ -1494,6 +1494,41 @@
 				"displayAvailability": true,
 				"displayStockQuantity": true
 			},
+			"productOptions": [
+				{
+					"fieldType": "radio",
+					"key": "consumption-role",
+					"name": {
+						"en_US": "Consumption Role"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+					"productOptionValues": [
+						{
+							"key": "add-on",
+							"name": {
+								"en_US": "Add-On Bucket"
+							},
+							"priority": 1
+						},
+						{
+							"key": "allotment",
+							"name": {
+								"en_US": "Base Allotment"
+							},
+							"priority": 0
+						},
+						{
+							"key": "overage",
+							"name": {
+								"en_US": "Overage Bucket"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
 			"productSpecifications": [
 				{
 					"specificationKey": "app-documentation-url",
