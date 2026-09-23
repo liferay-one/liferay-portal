@@ -30,7 +30,6 @@ import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
-import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
@@ -50,6 +49,7 @@ import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -392,11 +392,13 @@ public class ProjectRestController extends OneBaseRestController {
 			String projectExternalReferenceCode, String response)
 		throws Exception {
 
+		List<Entitlement> entitlements = _getUsageDashboardEntitlements(
+			CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM,
+			projectExternalReferenceCode);
+
 		LDPEventUsageStrategy ldpEventUsageStrategy = new LDPEventUsageStrategy(
-			_getUsageDashboardEntitlements(
-				CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM,
-				projectExternalReferenceCode),
-			_getLDPEventOverageBucketSize(), response);
+			entitlements, _getLDPEventOverageBucketSize(entitlements),
+			response);
 
 		if (!ldpEventUsageStrategy.hasUsage() && _log.isInfoEnabled()) {
 			_log.info(
@@ -411,36 +413,41 @@ public class ProjectRestController extends OneBaseRestController {
 		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
 	}
 
-	private long _getLDPEventOverageBucketSize() throws Exception {
-		EntitlementDefinition entitlementDefinition =
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+	private long _getLDPEventOverageBucketSize(List<Entitlement> entitlements)
+		throws Exception {
 
-		UsageDefinition usageDefinition = null;
+		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
 
-		if (entitlementDefinition != null) {
-			usageDefinition = _usageDefinitionService.fetchUsageDefinition(
-				entitlementDefinition);
-		}
+			if (!Objects.equals(
+					entitlement.getName(), EntitlementConstants.NAME_EVENTS) ||
+				(entitlementDefinition == null)) {
 
-		if ((usageDefinition == null) ||
-			!usageDefinition.hasOverageBucketSize()) {
-
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to find an overage bucket size for entitlement " +
-						"definition " +
-							EntitlementConstants.
-								EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET);
+				continue;
 			}
 
-			return 0;
+			UsageDefinition usageDefinition =
+				_usageDefinitionService.fetchUsageDefinition(
+					entitlementDefinition);
+
+			if ((usageDefinition != null) &&
+				usageDefinition.hasOverageBucketSize()) {
+
+				Double overageBucketSize =
+					usageDefinition.getOverageBucketSize();
+
+				return overageBucketSize.longValue();
+			}
 		}
 
-		Double overageBucketSize = usageDefinition.getOverageBucketSize();
+		if (_log.isWarnEnabled()) {
+			_log.warn(
+				"Unable to find an overage bucket size for the LDP event " +
+					"entitlements");
+		}
 
-		return overageBucketSize.longValue();
+		return 0;
 	}
 
 	private Project _getProject(String projectExternalReferenceCode)
@@ -811,9 +818,6 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
-
-	@Autowired
-	private EntitlementDefinitionService _entitlementDefinitionService;
 
 	@Autowired
 	private EntitlementService _entitlementService;

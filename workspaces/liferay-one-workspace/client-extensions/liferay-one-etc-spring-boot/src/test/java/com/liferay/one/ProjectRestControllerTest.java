@@ -8,7 +8,6 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
-import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
@@ -29,7 +28,6 @@ import com.liferay.one.permission.BusinessEventPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
-import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
@@ -85,9 +83,6 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_commerceSkuService", _commerceSkuService);
 		ReflectionTestUtils.setField(
-			_projectRestController, "_entitlementDefinitionService",
-			_entitlementDefinitionService);
-		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_googleCloudFunctionService",
@@ -108,20 +103,6 @@ public class ProjectRestControllerTest {
 			_projectRestController, "_userAccountSynchronizer",
 			_userAccountSynchronizer);
 
-		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
-			new JSONObject(
-			).put(
-				"id", 3L
-			));
-
-		Mockito.when(
-			_entitlementDefinitionService.fetchEntitlementDefinition(
-				EntitlementConstants.
-					EXTERNAL_REFERENCE_CODE_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET)
-		).thenReturn(
-			entitlementDefinition
-		);
-
 		Mockito.when(
 			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
@@ -129,7 +110,8 @@ public class ProjectRestControllerTest {
 		);
 
 		Mockito.when(
-			_usageDefinitionService.fetchUsageDefinition(entitlementDefinition)
+			_usageDefinitionService.fetchUsageDefinition(
+				Mockito.any(EntitlementDefinition.class))
 		).thenReturn(
 			new UsageDefinition(
 				new JSONObject(
@@ -1644,8 +1626,6 @@ public class ProjectRestControllerTest {
 		CommerceProductService.class);
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
 		CommerceSkuService.class);
-	private final EntitlementDefinitionService _entitlementDefinitionService =
-		Mockito.mock(EntitlementDefinitionService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private final GoogleCloudFunctionService _googleCloudFunctionService =
