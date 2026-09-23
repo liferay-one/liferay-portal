@@ -23,7 +23,7 @@ import {ProductPurchaseAIHubOpenBeta} from '~/services/commerce/ProductPurchaseA
 import {Liferay} from '~/services/liferay/liferay';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {productAgreements} from '~/utils/productAgreements';
-import {getAiHubTierSKU} from '~/utils/productUtils';
+import {getAiHubTier, getAiHubTierSKU} from '~/utils/productUtils';
 
 import './AIHubOrderSummary.css';
 
@@ -154,11 +154,10 @@ const AIHubOrderSummary = () => {
 
 		productPurchase.setSKUId(aiHubTierSKU.id);
 
-		const aiHubTierName =
-			aiHubTierSKU.skuOptions?.[0]?.skuOptionValueNames?.[0];
+		const aiHubTier = getAiHubTier(aiHubTierSKU);
 
-		if (aiHubTierName) {
-			productPurchase.setTier(aiHubTierName);
+		if (aiHubTier) {
+			productPurchase.setTier(aiHubTier);
 		}
 
 		await handlePurchase(productPurchase, {
