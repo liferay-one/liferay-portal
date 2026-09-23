@@ -29,6 +29,7 @@ public class Entitlement {
 		_grantType = jsonObject.optString("grantType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
+		_overagePricing = OveragePricing.of(jsonObject);
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToEntitlement_c_projectERC");
 		_quantity = jsonObject.optDoubleObject("quantity", null);
@@ -103,6 +104,10 @@ public class Entitlement {
 		return _name;
 	}
 
+	public OveragePricing getOveragePricing() {
+		return _overagePricing;
+	}
+
 	public String getProjectExternalReferenceCode() {
 		return _projectExternalReferenceCode;
 	}
@@ -133,6 +138,7 @@ public class Entitlement {
 	private final String _grantType;
 	private final Double _maxQuantity;
 	private final String _name;
+	private final OveragePricing _overagePricing;
 	private final String _projectExternalReferenceCode;
 	private final Double _quantity;
 	private final Instant _startDateInstant;

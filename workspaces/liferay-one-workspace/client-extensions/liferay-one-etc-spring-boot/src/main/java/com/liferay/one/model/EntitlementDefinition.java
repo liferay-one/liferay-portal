@@ -31,6 +31,7 @@ public class EntitlementDefinition {
 		_grantType = jsonObject.optString("grantType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
+		_overagePricing = OveragePricing.of(jsonObject);
 		_productOptions = _getProductOptions(jsonObject);
 		_skuExternalReferenceCode = jsonObject.optString(
 			"skuExternalReferenceCode");
@@ -65,6 +66,10 @@ public class EntitlementDefinition {
 
 	public String getName() {
 		return _name;
+	}
+
+	public OveragePricing getOveragePricing() {
+		return _overagePricing;
 	}
 
 	public Map<String, String> getProductOptions() {
@@ -124,6 +129,7 @@ public class EntitlementDefinition {
 	private final String _grantType;
 	private final Double _maxQuantity;
 	private final String _name;
+	private final OveragePricing _overagePricing;
 	private final Map<String, String> _productOptions;
 	private final String _skuExternalReferenceCode;
 	private final String _unit;
