@@ -35,11 +35,11 @@
 		<#if developerNames?has_content>
 			<#list developerNames as developerName>
 				<#if (publisherDetails.friendlyUrlPath)?has_content>
-					<a class="bg-neutral-8" href="/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
+					<a href="/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
 						${developerName.value}
 					</a>
 				<#else>
-					<span class="bg-neutral-8">${developerName.value}</span>
+					<span>${developerName.value}</span>
 				</#if>
 			</#list>
 		</#if>
