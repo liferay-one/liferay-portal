@@ -339,7 +339,7 @@ public class LDPEventUsageReportService {
 					_toLong(usageReport.getOverageQuantity()),
 					" overage events in ",
 					_toLong(usageReport.getOverageSkuQuantity()),
-					" add-on buckets"));
+					" overage buckets"));
 		}
 
 		return true;
