@@ -254,6 +254,7 @@ export default {
 	'set-up-liferay-saas': 'Configurar Liferay SaaS',
 	'shared-investigator-platform': 'Plataforma compartida de investigadores',
 	'sites-and-users': 'Sitios y usuarios',
+	'solution-deleted-successfully': 'Solución eliminada con éxito.',
 	'storage': 'Almacenamiento',
 	'subscription': 'Suscripción',
 	'subscription-term': 'Período de la suscripción',

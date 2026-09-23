@@ -255,6 +255,7 @@ export default {
 	'shared-investigator-platform':
 		'Plataforma compartilhada de investigadores',
 	'sites-and-users': 'Sites e Usuários',
+	'solution-deleted-successfully': 'Solução excluída com sucesso.',
 	'storage': 'Armazenamento',
 	'subscription': 'Assinatura',
 	'subscription-term': 'Termo de assinatura',

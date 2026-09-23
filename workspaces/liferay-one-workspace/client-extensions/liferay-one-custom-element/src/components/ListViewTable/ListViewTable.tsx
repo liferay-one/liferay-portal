@@ -115,7 +115,12 @@ const ListViewTable = <T extends Record<string, unknown>>({
 									? action.hidden
 									: action?.hidden?.(item),
 							onClick: () => {
-								if (action.onClick) {
+								const isDisabled =
+									typeof action.disabled === 'boolean'
+										? action.disabled
+										: action?.disabled?.(item);
+
+								if (!isDisabled && action.onClick) {
 									return action?.onClick(item, mutate);
 								}
 							},
@@ -134,7 +139,11 @@ const ListViewTable = <T extends Record<string, unknown>>({
 							<ClayDropDown.Item
 								disabled={item.disabled}
 								hidden={!!item.hidden}
-								onClick={() => item.onClick()}
+								onClick={() => {
+									if (!item.disabled) {
+										item.onClick();
+									}
+								}}
 								{...{['keyValue']: index}}
 							>
 								{item.icon && (

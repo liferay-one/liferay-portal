@@ -249,6 +249,7 @@ export default {
 	'set-up-liferay-saas': 'Liferay SaaS のセットアップ',
 	'shared-investigator-platform': '共有治験責任医師プラットフォーム',
 	'sites-and-users': 'サイトとユーザー',
+	'solution-deleted-successfully': 'ソリューションは正常に削除されました。',
 	'storage': 'ストレージ',
 	'subscription': 'サブスクリプション',
 	'subscription-term': 'サブスクリプションの期間',
