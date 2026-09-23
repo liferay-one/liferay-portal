@@ -31,7 +31,11 @@ PRODUCT_DISPLAY_PAGES=(
 CHANNEL_EXTERNAL_REFERENCE_CODE="LIFERAY_ONE_CHANNEL"
 
 function main {
-	_acquire_oauth_token
+	# The display page templates are read through the JSON web service, which
+	# the OAuth2 token scopes do not cover, so the whole run uses the admin
+	# credentials, as site_reset.sh and instance_reset.sh do.
+
+	export LIFERAY_AUTH_MODE=basic
 
 	local channel_id
 
@@ -197,13 +201,13 @@ except Exception:
 	sys.exit(1)
 
 for item in items:
-	if ((item.get('pageTemplateUuid') == '${page_template_uuid}') and
-		(item.get('productExternalReferenceCode') == '${product_external_reference_code}')):
+	if ((item.get('pageTemplateUuid') == sys.argv[1]) and
+		(item.get('productExternalReferenceCode') == sys.argv[2])):
 
 		sys.exit(0)
 
 sys.exit(1)
-"
+" "${page_template_uuid}" "${product_external_reference_code}"
 }
 
 function _read_field {
@@ -214,10 +218,10 @@ import json
 import sys
 
 try:
-	print(json.load(sys.stdin).get('${field}', ''))
+	print(json.load(sys.stdin).get(sys.argv[1], ''))
 except Exception:
 	print('')
-"
+" "${field}"
 }
 
 function _read_template_uuid {
@@ -234,14 +238,20 @@ except Exception:
 
 	sys.exit()
 
+if not isinstance(layout_page_template_entries, list):
+	print('Unable to list the display page templates', file=sys.stderr)
+	print('')
+
+	sys.exit()
+
 for layout_page_template_entry in layout_page_template_entries:
-	if layout_page_template_entry.get('name') == '''${name}''':
+	if layout_page_template_entry.get('name') == sys.argv[1]:
 		print(layout_page_template_entry.get('uuid', ''))
 
 		sys.exit()
 
 print('')
-"
+" "${name}"
 }
 
 main "${@}"

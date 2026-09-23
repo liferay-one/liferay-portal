@@ -22,7 +22,9 @@
 
 <#if catalogName?has_content>
 	<#assign
-		publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'&pageSize=1")
+		publisherName = catalogName?replace("'", "''")
+
+		publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${publisherName}'&pageSize=1")
 
 		publisherDetails = (publisherDetailsResponse.items[0])!{}
 	/>
@@ -36,10 +38,10 @@
 			<#list developerNames as developerName>
 				<#if (publisherDetails.friendlyUrlPath)?has_content>
 					<a href="/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
-						${developerName.value}
+						${htmlUtil.escape(developerName.value)}
 					</a>
 				<#else>
-					<span>${developerName.value}</span>
+					<span>${htmlUtil.escape(developerName.value)}</span>
 				</#if>
 			</#list>
 		</#if>
