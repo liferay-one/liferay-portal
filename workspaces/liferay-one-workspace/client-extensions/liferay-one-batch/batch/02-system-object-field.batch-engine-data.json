@@ -287,6 +287,27 @@
 			"objectRelationships": [
 			],
 			"system": true
+		},
+		{
+			"externalReferenceCode": "L_POSTAL_ADDRESS",
+			"name": "Address",
+			"objectActions": [
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX when an address is created to automatically set it as the account default billing address and configure currency.",
+					"externalReferenceCode": "OA_POSTAL_ADDRESS_CREATE",
+					"name": "PostalAddressCreate",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-postal-address-create",
+					"objectActionTriggerKey": "onAfterAdd",
+					"parameters": {
+					}
+				}
+			],
+			"objectFields": [
+			],
+			"objectRelationships": [
+			],
+			"system": true
 		}
 	]
 }

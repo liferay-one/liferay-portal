@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceAccountCurrencyService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,15 @@ public class ObjectActionAccountUpdateRestController
 			return;
 		}
 
+		try {
+			_commerceAccountCurrencyService.assignDefaultCurrency(account);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to assign default currency for account: " + classPK,
+				exception);
+		}
+
 		_accountSynchronizer.syncAccount(account);
 	}
 
@@ -61,5 +71,8 @@ public class ObjectActionAccountUpdateRestController
 
 	@Autowired
 	private AccountSynchronizer _accountSynchronizer;
+
+	@Autowired
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 
 }
