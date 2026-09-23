@@ -7,8 +7,11 @@ package com.liferay.one.model;
 
 import com.liferay.one.constants.EntitlementConstants;
 
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * The number of Liferay Data Platform events a project is entitled to, rolled
@@ -25,6 +28,7 @@ public class LDPEventAllotment {
 
 		long addOnBucketCount = 0;
 		long baseQuantity = 0;
+		Set<OveragePricing> overagePricings = new LinkedHashSet<>();
 		boolean unlimited = false;
 
 		for (Entitlement entitlement : entitlements) {
@@ -34,6 +38,12 @@ public class LDPEventAllotment {
 				!name.equals(EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET)) {
 
 				continue;
+			}
+
+			if (name.equals(EntitlementConstants.NAME_EVENTS) &&
+				(entitlement.getOveragePricing() != null)) {
+
+				overagePricings.add(entitlement.getOveragePricing());
 			}
 
 			if (Objects.equals(
@@ -70,7 +80,17 @@ public class LDPEventAllotment {
 
 		_addOnBucketCount = addOnBucketCount;
 		_baseQuantity = baseQuantity;
+		_conflictingOveragePricing = overagePricings.size() > 1;
 		_unlimited = unlimited;
+
+		if (overagePricings.size() == 1) {
+			Iterator<OveragePricing> iterator = overagePricings.iterator();
+
+			_overagePricing = iterator.next();
+		}
+		else {
+			_overagePricing = null;
+		}
 	}
 
 	public long getAddOnBucketCount() {
@@ -89,13 +109,34 @@ public class LDPEventAllotment {
 		return _baseQuantity + getAddOnQuantity();
 	}
 
+	/**
+	 * Returns <code>null</code> when the pricing is missing or conflicting.
+	 */
+	public OveragePricing getOveragePricing() {
+		return _overagePricing;
+	}
+
+	public boolean hasConflictingOveragePricing() {
+		return _conflictingOveragePricing;
+	}
+
+	public boolean isEntitledQuantityKnown() {
+		if ((_addOnBucketCount > 0) && (_overageBucketSize <= 0)) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public boolean isUnlimited() {
 		return _unlimited;
 	}
 
 	private final long _addOnBucketCount;
 	private final long _baseQuantity;
+	private final boolean _conflictingOveragePricing;
 	private final long _overageBucketSize;
+	private final OveragePricing _overagePricing;
 	private final boolean _unlimited;
 
 }

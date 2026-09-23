@@ -43,6 +43,25 @@ public class LDPEventAllotmentTest {
 	}
 
 	@Test
+	public void testConflictingPricingLeavesOverageUnpriced() {
+		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
+			Arrays.asList(
+				_createEventsEntitlement(1000000D, _RATE),
+				_createEventsEntitlement(500000D, 25D),
+				_createEntitlement(
+					"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
+					1D)),
+			_OVERAGE_BUCKET_SIZE);
+
+		Assertions.assertTrue(ldpEventAllotment.hasConflictingOveragePricing());
+		Assertions.assertNull(ldpEventAllotment.getOveragePricing());
+		Assertions.assertEquals(
+			1500000 + _OVERAGE_BUCKET_SIZE,
+			ldpEventAllotment.getEntitledQuantity());
+		Assertions.assertTrue(ldpEventAllotment.isEntitledQuantityKnown());
+	}
+
+	@Test
 	public void testIgnoresUnrelatedEntitlements() {
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
 			Arrays.asList(
@@ -57,12 +76,43 @@ public class LDPEventAllotmentTest {
 	}
 
 	@Test
+	public void testIsEntitledQuantityUnknownForAddOnBucketsWithoutBucketSize() {
+		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
+			Arrays.asList(
+				_createEntitlement(
+					"fixed", EntitlementConstants.NAME_EVENTS, 1000000D),
+				_createEntitlement(
+					"fixed", EntitlementConstants.NAME_EVENTS_ADD_ON_BUCKET,
+					1D)),
+			0);
+
+		Assertions.assertFalse(ldpEventAllotment.isEntitledQuantityKnown());
+	}
+
+	@Test
 	public void testNoEntitlementsMeansNoAllotment() {
 		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
 			Collections.emptyList(), _OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertEquals(0, ldpEventAllotment.getEntitledQuantity());
+		Assertions.assertNull(ldpEventAllotment.getOveragePricing());
 		Assertions.assertFalse(ldpEventAllotment.isUnlimited());
+	}
+
+	@Test
+	public void testResolvesOveragePricingFromEventsEntitlements() {
+		LDPEventAllotment ldpEventAllotment = new LDPEventAllotment(
+			Arrays.asList(
+				_createEventsEntitlement(1000000D, _RATE),
+				_createEventsEntitlement(500000D, _RATE)),
+			_OVERAGE_BUCKET_SIZE);
+
+		OveragePricing overagePricing = ldpEventAllotment.getOveragePricing();
+
+		Assertions.assertEquals(_RATE, overagePricing.getRate());
+
+		Assertions.assertFalse(
+			ldpEventAllotment.hasConflictingOveragePricing());
 	}
 
 	@Test
@@ -96,6 +146,13 @@ public class LDPEventAllotmentTest {
 	private Entitlement _createEntitlement(
 		String grantType, String name, Double quantity) {
 
+		return new Entitlement(
+			_createEntitlementJSONObject(grantType, name, quantity));
+	}
+
+	private JSONObject _createEntitlementJSONObject(
+		String grantType, String name, Double quantity) {
+
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"grantType", grantType
@@ -109,9 +166,27 @@ public class LDPEventAllotmentTest {
 			jsonObject.put("quantity", quantity);
 		}
 
+		return jsonObject;
+	}
+
+	private Entitlement _createEventsEntitlement(
+		Double quantity, double overageRate) {
+
+		JSONObject jsonObject = _createEntitlementJSONObject(
+			"fixed", EntitlementConstants.NAME_EVENTS, quantity);
+
+		jsonObject.put(
+			"overageRate", overageRate
+		).put(
+			"overageSkuExternalReferenceCode",
+			"PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET"
+		);
+
 		return new Entitlement(jsonObject);
 	}
 
 	private static final long _OVERAGE_BUCKET_SIZE = 200000;
+
+	private static final double _RATE = 20;
 
 }
