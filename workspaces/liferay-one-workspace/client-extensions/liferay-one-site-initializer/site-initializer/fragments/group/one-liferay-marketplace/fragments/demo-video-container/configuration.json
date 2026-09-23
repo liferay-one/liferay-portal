@@ -3,20 +3,16 @@
 		{
 			"fields": [
 				{
-					"dataType": "string",
-					"defaultValue": "0",
-					"description": "Fragment Id",
-					"label": "Fragment Id",
-					"name": "fragmentId",
-					"type": "text"
+					"defaultValue": true,
+					"label": "Autoplay",
+					"name": "autoplay",
+					"type": "checkbox"
 				},
 				{
-					"dataType": "string",
-					"defaultValue": "600px",
-					"description": "Fragment width (e.g., 100%, 600px)",
-					"label": "Width",
-					"name": "fragmentWidth",
-					"type": "text"
+					"defaultValue": false,
+					"label": "Show Controls",
+					"name": "controls",
+					"type": "checkbox"
 				},
 				{
 					"dataType": "string",
@@ -27,16 +23,20 @@
 					"type": "text"
 				},
 				{
-					"defaultValue": false,
-					"label": "Drop shadow",
-					"name": "shadow",
-					"type": "checkbox"
+					"dataType": "string",
+					"defaultValue": "0",
+					"description": "Fragment Id",
+					"label": "Fragment ID",
+					"name": "fragmentId",
+					"type": "text"
 				},
 				{
-					"defaultValue": true,
-					"label": "Autoplay",
-					"name": "autoplay",
-					"type": "checkbox"
+					"dataType": "string",
+					"defaultValue": "600px",
+					"description": "Fragment width (e.g., 100%, 600px)",
+					"label": "Width",
+					"name": "fragmentWidth",
+					"type": "text"
 				},
 				{
 					"defaultValue": true,
@@ -52,8 +52,8 @@
 				},
 				{
 					"defaultValue": false,
-					"label": "Show Controls",
-					"name": "controls",
+					"label": "Drop Shadow",
+					"name": "shadow",
 					"type": "checkbox"
 				}
 			],
