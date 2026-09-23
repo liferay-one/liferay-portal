@@ -21,7 +21,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
+			"deletionType": "prevent",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_ACTIVATION_KEY",
 			"label": {
 				"en_US": "Account Entry to Activation Key"
@@ -65,7 +65,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
+			"deletionType": "prevent",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_LICENSE_KEY",
 			"label": {
 				"en_US": "Account Entry to License Key"
