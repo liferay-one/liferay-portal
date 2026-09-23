@@ -5,8 +5,6 @@
 
 package com.liferay.one.model;
 
-import java.math.BigDecimal;
-
 import org.json.JSONObject;
 
 /**
@@ -19,8 +17,6 @@ public class UsageDefinition {
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_overageBucketSize = jsonObject.optDoubleObject(
 			"overageBucketSize", null);
-		_overageCurrency = jsonObject.optString("overageCurrency");
-		_overageRate = jsonObject.optDoubleObject("overageRate", null);
 		_period = jsonObject.optString("period");
 		_unit = jsonObject.optString("unit");
 		_usageDefinitionId = jsonObject.getLong("id");
@@ -32,22 +28,6 @@ public class UsageDefinition {
 
 	public String getExternalReferenceCode() {
 		return _externalReferenceCode;
-	}
-
-	/**
-	 * The cost of the overage buckets needed to cover the given overage,
-	 * priced per bucket rather than per unit consumed.
-	 */
-	public double getOverageAmount(double overageQuantity) {
-		if (_overageRate == null) {
-			return 0;
-		}
-
-		return BigDecimal.valueOf(
-			_overageRate
-		).multiply(
-			BigDecimal.valueOf(getOverageBucketQuantity(overageQuantity))
-		).doubleValue();
 	}
 
 	/**
@@ -65,14 +45,6 @@ public class UsageDefinition {
 
 	public Double getOverageBucketSize() {
 		return _overageBucketSize;
-	}
-
-	public String getOverageCurrency() {
-		return _overageCurrency;
-	}
-
-	public Double getOverageRate() {
-		return _overageRate;
 	}
 
 	public String getPeriod() {
@@ -98,8 +70,6 @@ public class UsageDefinition {
 	private final String _aggregationType;
 	private final String _externalReferenceCode;
 	private final Double _overageBucketSize;
-	private final String _overageCurrency;
-	private final Double _overageRate;
 	private final String _period;
 	private final String _unit;
 	private final long _usageDefinitionId;
