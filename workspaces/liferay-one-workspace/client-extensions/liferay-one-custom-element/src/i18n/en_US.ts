@@ -51,6 +51,7 @@ export default {
 	'activation-keys-list': 'Activation Keys List',
 	'activation-keys-uploaded-successfully':
 		'Activation keys uploaded successfully.',
+	'activation-keys-will-be-valid': 'Activation Key(s) will be valid',
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
 	'activation-token': 'Activation Token',
@@ -77,6 +78,7 @@ export default {
 		'Add one IP address per line. IPv6 addresses are not supported.',
 	'add-one-mac-address-per-line': 'Add one MAC address per line.',
 	'add-packages': 'Add Package(s)',
+	'add-server': 'Add Server',
 	'add-up-to-x-images': 'Add up to {0} images',
 	'additional-admin': 'Additional Admin',
 	'additional-apps-requested': 'Additional Apps Requested',
@@ -453,6 +455,8 @@ export default {
 		'Designed for companies with a Tax/VAT number, this account type also lets you manage multiple users under one profile. Click the button below to create your first Business Account today!',
 	'details': 'Details',
 	'developer': 'Developer',
+	'developer-keys-are-not-tied-to-a-subscription-you-can-optionally-select-a-subscription-to-organize-and-track-your-keys':
+		'Developer keys are not tied to a subscription. You can optionally select a subscription to organize and track your keys.',
 	'developer-license-prices': 'Developer License Prices',
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
@@ -464,6 +468,7 @@ export default {
 		'Disaster Recovery Data Center Location',
 	'disaster-recovery-data-center-region':
 		'Disaster Recovery Data Center Region',
+	'disaster-recovery-details': 'Disaster Recovery Details',
 	'do-not-close-this-window': 'DO NOT CLOSE THIS WINDOW',
 	'documentation': 'Documentation',
 	'does-not-expire': 'Does Not Expire',
@@ -490,6 +495,9 @@ export default {
 		'DXP module-based apps are not supported on Liferay SaaS.',
 	'dxp-version': 'DXP Version',
 	'e-commerce': 'E-Commerce',
+	'e-g-liferay-dev-environment-ecom-dxp-7-2':
+		'e.g. Liferay Dev Environment – ECOM DXP 7.2',
+	'e-g-liferay-ecommerce-site': 'e.g. Liferay Ecommerce Site',
 	'each': 'each',
 	'ecm': 'ECM',
 	'edit': 'Edit',
@@ -600,6 +608,8 @@ export default {
 	'file-not-available-for-download': 'File not available for download.',
 	'file-to-download-doesnt-exist-anymore':
 		"File to download doesn't exist anymore.",
+	'fill-out-the-information-required-to-generate-the-activation-key':
+		'Fill out the information required to generate the activation key',
 	'filter': 'Filter',
 	'filter-by': 'Filter By',
 	'filters': 'Filters',
@@ -631,7 +641,10 @@ export default {
 	'gamification': 'Gamification',
 	'general-info': 'General Info',
 	'generate': 'Generate',
+	'generate-activation-keys': 'Generate Activation Key(s)',
 	'generate-new': 'Generate New',
+	'generate-x-key': 'Generate {0} Key',
+	'generate-x-keys': 'Generate {0} Keys',
 	'get-activation-key': 'Get Activation Key',
 	'get-app': 'Get App',
 	'get-digital-sales-room': 'Get Digital Sales Room',
@@ -707,6 +720,8 @@ export default {
 		'In the future, you will be able to submit your app source code for additional support and partnership opportunities with Liferay.',
 	'inactive': 'Inactive',
 	'incident-report-contacts': 'Incident Report Contacts',
+	'include-a-description-to-uniquely-identify-this-environment-this-cannot-be-edited-later':
+		'Include a description to uniquely identify this environment. This cannot be edited later.',
 	'includes-1-add-on-bucket-x-on-top-of-the-y-base-allotment-per-month':
 		'Includes 1 add-on bucket (+{0}) on top of the {1} base allotment per month.',
 	'includes-x-add-on-buckets-y-on-top-of-the-z-base-allotment-per-month':
@@ -726,6 +741,7 @@ export default {
 	'installation-success': 'Installation Success',
 	'installed': 'Installed',
 	'instance-size': 'Instance Size',
+	'instance-size-x': 'Instance size: {0}',
 	'instructions': 'Instructions',
 	'insufficient-resource-requirements': 'Insufficient Resource Requirements',
 	'insurance': 'Insurance',
@@ -928,6 +944,8 @@ export default {
 	'name-example-com': 'name@example.com',
 	'name-the-workspace-your-digital-sales-room-runs-in-and-give-us-the-server-details-we-need-to-issue-its-activation-key':
 		'Name the workspace your Digital Sales Room runs in, and give us the server details we need to issue its activation key.',
+	'name-this-environment-this-cannot-be-edited-later':
+		'Name this environment. This cannot be edited later.',
 	'named-saved-active-segments-that-evaluate-in-real-time-as-events-arrive':
 		'Named, saved, active segments that evaluate in real time as events arrive.',
 	'named-saved-active-segments-that-evaluate-on-a-schedule':
@@ -969,6 +987,10 @@ export default {
 	'no-further-edits-can-be-made-when-tickets-are-closed-please-open-a-new-support-ticket-if-assistance-is-needed':
 		'No further edits can be made when tickets are closed. Please open a new support ticket if assistance is needed.',
 	'no-history-of-activity-was-found': 'No history of activity was found.',
+	'no-key-activations-are-available-for-this-product':
+		'No key activations are available for this product.',
+	'no-license-is-available-for-this-product':
+		'No license is available for this product.',
 	'no-licenses-available': 'No licenses available',
 	'no-licenses-yet': 'No Licenses Yet',
 	'no-orders-yet': 'No Orders Yet',
@@ -1018,6 +1040,8 @@ export default {
 	'on-premise': 'On-Premise',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'Once canceled, no further edits can be made to this event.',
+	'one-host-name-ip-address-or-mac-address-is-required':
+		'One Host Name, IP Address, or MAC Address is required',
 	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
 		'One or more add-ons are not available for the selected DXP version.',
 	'one-time-purchases': 'One-Time Purchases',
@@ -1256,6 +1280,8 @@ export default {
 	'ready-to-install': 'Ready to Install',
 	'reason': 'Reason',
 	'reason-for-change': 'Reason for Change',
+	'receive-expiration-notifications-when-this-activation-key-is-about-to-expire':
+		'Receive Expiration Notifications when this Activation Key is about to expire.',
 	'recent-orders': 'Recent Orders',
 	'recent-published-apps': 'Recent Published Apps',
 	'recent-trials': 'Recent Trials',
@@ -1268,10 +1294,14 @@ export default {
 	'remove-all-roles': 'Remove all roles',
 	'remove-member': 'Remove Member',
 	'remove-project-admin': 'Remove Project Admin',
+	'remove-server': 'Remove Server',
 	'remove-this-member': 'Remove This Member',
 	'remove-user': 'Remove User',
 	'renew': 'Renew',
 	'renew-activation-key': 'Renew Activation Key',
+	'renew-activation-keys': 'Renew Activation Key(s)',
+	'renew-x-key': 'Renew {0} Key',
+	'renew-x-keys': 'Renew {0} Keys',
 	'renewal-will-be-available-3-months-before-your-activation-key-expires':
 		'Renewal will be available 3 months before your activation key expires.',
 	'renews-in-1-day': 'Renews in 1 day',
@@ -1366,6 +1396,8 @@ export default {
 	'select-project': 'Select Project',
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
+	'select-the-add-ons-you-would-like-to-include-in-the-activation-keys':
+		'Select the add-ons you would like to include in the activation key(s)',
 	'select-the-areas-of-liferay-your-app-extends-such-as-analytics-content-management-or-commerce-areas-help-customers-browsing-the-marketplace-by-capability-find-your-app':
 		'Select the areas of Liferay your app extends, such as analytics, content management, or commerce. Areas help customers browsing the Marketplace by capability find your app.',
 	'select-the-license-type-and-the-number-of-licenses-you-want-to-purchase':
@@ -1375,6 +1407,8 @@ export default {
 	'select-the-option': 'Select the Option',
 	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
 		'Select the project and ticket you want to attach a file to.',
+	'select-the-subscription-and-key-type-you-would-like-to-generate':
+		'Select the subscription and key type you would like to generate',
 	'select-the-versions-of-liferay-that-your-app-is-compatible-with':
 		'Select the versions of Liferay that your app is compatible with.',
 	'select-your-desired-publisher-type': 'Select your desired publisher type',

@@ -11,8 +11,10 @@ import com.liferay.one.model.LicenseKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -42,6 +44,87 @@ public class LicenseKeyServiceTest {
 			Mockito.eq("/o/c/licensekeys"), _filterCaptor.capture(),
 			Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCounts() throws Exception {
+		Mockito.doReturn(
+			Arrays.asList(
+				_createLicenseKey(true, false, 10L, 1L),
+				_createLicenseKey(true, false, 10L, 2L),
+				_createLicenseKey(true, false, 20L, 3L))
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(2, counts.get(10L));
+		Assertions.assertEquals(1, counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsExcludesRenewedKeys()
+		throws Exception {
+
+		Mockito.doReturn(
+			Arrays.asList(
+				_createLicenseKey(true, false, 10L, 1L),
+				_createLicenseKey(true, false, 10L, 2L))
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				"PRJCT-1", Collections.singletonList(1L));
+
+		Assertions.assertEquals(1, counts.get(10L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsSkipsComplimentaryKeys()
+		throws Exception {
+
+		Mockito.doReturn(
+			Arrays.asList(
+				_createLicenseKey(true, true, 10L, 1L),
+				_createLicenseKey(true, false, 10L, 2L))
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsSkipsInactiveKeys()
+		throws Exception {
+
+		Mockito.doReturn(
+			Arrays.asList(
+				_createLicenseKey(false, false, 10L, 1L),
+				_createLicenseKey(true, false, 10L, 2L))
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
 	}
 
 	@Test
@@ -215,6 +298,27 @@ public class LicenseKeyServiceTest {
 			null, null, null, null, null, null, null, null, null, null);
 
 		Assertions.assertNull(_filterCaptor.getValue());
+	}
+
+	private LicenseKey _createLicenseKey(
+		boolean active, boolean complimentary, long entitlementId,
+		long licenseKeyId) {
+
+		return new LicenseKey(
+			new JSONObject(
+			).put(
+				"active", active
+			).put(
+				"complimentary", complimentary
+			).put(
+				"customExpirationDate", "2027-01-01T00:00:00Z"
+			).put(
+				"entitlementId", entitlementId
+			).put(
+				"id", licenseKeyId
+			).put(
+				"startDate", "2026-01-01T00:00:00Z"
+			));
 	}
 
 	private LicenseKey _freeLicenseKey(Instant customExpirationDateInstant) {

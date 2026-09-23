@@ -9,6 +9,7 @@ import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyActiveException;
+import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.exception.NoSuchEntitlementException;
@@ -83,6 +84,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return _toResponseEntity(
 			HttpStatus.CONFLICT, "The license key is inactive");
+	}
+
+	@ExceptionHandler(LicenseKeyEntitlementException.class)
+	public ResponseEntity<?> handleException(
+		LicenseKeyEntitlementException licenseKeyEntitlementException) {
+
+		_log.error(
+			"The project is not entitled to the activation key",
+			licenseKeyEntitlementException);
+
+		return _toResponseEntity(
+			HttpStatus.CONFLICT, licenseKeyEntitlementException.getMessage());
 	}
 
 	@ExceptionHandler(LicenseKeyValidationException.class)

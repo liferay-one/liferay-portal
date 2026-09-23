@@ -25,9 +25,12 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -51,13 +54,14 @@ public class LicenseKeyService extends OneBaseService {
 	public LicenseKey addLicenseKey(
 			long accountEntryId, String accountName, boolean active,
 			String additionalInfo, boolean complimentary, String description,
-			String domains, long entitlementId, Date expirationDate,
-			String hostName, String ipAddresses, String licenseName,
-			String licenseType, int licenseVersion, String macAddresses,
-			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
-			int maxServers, long maxUsers, String name, String orderId,
-			String owner, String productExternalId, String productName,
-			String productVersion, String serverId, String sizing,
+			String domains, long entitlementDefinitionId, long entitlementId,
+			Date expirationDate, String hostName, String ipAddresses,
+			String key, String licenseName, String licenseType,
+			int licenseVersion, String macAddresses, int maxClusterNodes,
+			long maxConcurrentUsers, int maxHttpSessions, int maxServers,
+			long maxUsers, String name, String orderId, String owner,
+			String productExternalId, String productName, String productVersion,
+			String projectExternalReferenceCode, String serverId, String sizing,
 			Date startDate)
 		throws Exception {
 
@@ -69,12 +73,15 @@ public class LicenseKeyService extends OneBaseService {
 			expirationDate, hostName, ipAddresses, licenseType, macAddresses,
 			startDate);
 
-		String key = _licenseKeyGenerator.generateKey(
-			accountName, licenseName, licenseType, licenseVersion, productName,
-			productExternalId, productVersion, owner, maxClusterNodes,
-			maxServers, maxHttpSessions, maxConcurrentUsers, maxUsers, sizing,
-			description, domains, hostName, ipAddresses, macAddresses, serverId,
-			startDate, expirationDate);
+		if (Validator.isNull(key)) {
+			key = _licenseKeyGenerator.generateKey(
+				accountName, licenseName, licenseType, licenseVersion,
+				productName, productExternalId, productVersion, owner,
+				maxClusterNodes, maxServers, maxHttpSessions,
+				maxConcurrentUsers, maxUsers, sizing, description, domains,
+				hostName, ipAddresses, macAddresses, serverId, startDate,
+				expirationDate);
+		}
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -91,6 +98,8 @@ public class LicenseKeyService extends OneBaseService {
 			"description", description
 		).put(
 			"domains", domains
+		).put(
+			"entitlementDefinitionId", entitlementDefinitionId
 		).put(
 			"entitlementId", entitlementId
 		).put(
@@ -131,6 +140,8 @@ public class LicenseKeyService extends OneBaseService {
 			"productVersion", productVersion
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
+		).put(
+			"r_projectToLicenseKey_c_projectERC", projectExternalReferenceCode
 		).put(
 			"serverId", serverId
 		).put(
@@ -245,6 +256,38 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		return newLicenseKey;
+	}
+
+	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getActiveLicenseKeyCounts(
+			projectExternalReferenceCode, Collections.emptyList());
+	}
+
+	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			String projectExternalReferenceCode,
+			Collection<Long> excludedLicenseKeyIds)
+		throws Exception {
+
+		Map<Long, Integer> counts = new HashMap<>();
+
+		for (LicenseKey licenseKey :
+				_getLicenseKeysByProject(projectExternalReferenceCode)) {
+
+			if (!licenseKey.isActive() || licenseKey.isComplimentary() ||
+				excludedLicenseKeyIds.contains(licenseKey.getLicenseKeyId())) {
+
+				continue;
+			}
+
+			for (long entitlementId : licenseKey.getEntitlementIds()) {
+				counts.merge(entitlementId, 1, Integer::sum);
+			}
+		}
+
+		return counts;
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(
@@ -636,8 +679,9 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getAccountEntryId(), licenseKey.getAccountName(), true,
 			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
 			licenseKey.getDescription(), licenseKey.getDomains(),
+			licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
-			licenseKey.getHostName(), licenseKey.getIpAddresses(),
+			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
 			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
 			licenseKey.getLicenseVersion(), licenseKey.getMacAddresses(),
 			licenseKey.getMaxClusterNodes(), licenseKey.getMaxConcurrentUsers(),
@@ -645,8 +689,9 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getMaxUsers(), licenseKey.getName(),
 			licenseKey.getOrderId(), licenseKey.getOwner(),
 			licenseKey.getProductExternalId(), licenseKey.getProductName(),
-			licenseKey.getProductVersion(), licenseKey.getServerId(),
-			licenseKey.getSizing(), startDate);
+			licenseKey.getProductVersion(),
+			licenseKey.getProjectExternalReferenceCode(),
+			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
 	}
 
 	private int _getCount(String filterString) throws Exception {
@@ -669,6 +714,16 @@ public class LicenseKeyService extends OneBaseService {
 		JSONObject jsonObject = new JSONObject(response);
 
 		return jsonObject.optInt("totalCount");
+	}
+
+	private List<LicenseKey> _getLicenseKeysByProject(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getLicenseKeys(
+			StringBundler.concat(
+				"r_projectToLicenseKey_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode), "'"));
 	}
 
 	private String _toIdFilterString(long[] licenseKeyIds) {
