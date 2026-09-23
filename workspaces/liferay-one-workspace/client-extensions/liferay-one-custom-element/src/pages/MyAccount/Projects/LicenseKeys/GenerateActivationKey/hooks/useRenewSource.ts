@@ -4,15 +4,13 @@
  */
 
 import {useMemo} from 'react';
-import {
-	ProjectActivationKey,
-	useProjectActivationKeys,
-} from '~/hooks/useProjectActivationKeys';
+import {useActivationKeyLicenseKeys} from '~/hooks/useActivationKeyLicenseKeys';
+import {useProjectActivationKeys} from '~/hooks/useProjectActivationKeys';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {
 	GenerateForm,
 	GenerateFormProduct,
-} from '~/services/spring-boot/LicenseKeys';
+} from '~/services/spring-boot/ActivationKeys';
 
 import {GenerateActivationKeyServer} from '../types';
 
@@ -27,36 +25,26 @@ export type RenewSource = {
 	version: string;
 };
 
-function toServerKey(activationKey: ProjectActivationKey) {
-	return [
-		activationKey.hostName,
-		activationKey.ipAddresses,
-		activationKey.macAddresses,
-	].join('|');
-}
-
 export function useRenewSource(
-	licenseKeyExternalReferenceCode: string | null,
+	activationKeyExternalReferenceCode: string | null,
 	generateForm?: GenerateForm
 ) {
-	const {activationKeys, loading} = useProjectActivationKeys();
+	const {activationKeys, loading: loadingActivationKeys} =
+		useProjectActivationKeys();
+
+	const activationKey = activationKeyExternalReferenceCode
+		? activationKeys.find(
+				(current) => current.id === activationKeyExternalReferenceCode
+			)
+		: undefined;
+
+	const {licenseKeys, loading: loadingLicenseKeys} =
+		useActivationKeyLicenseKeys(activationKey?.activationKeyId);
 
 	const renewSource = useMemo<RenewSource | undefined>(() => {
-		if (!licenseKeyExternalReferenceCode) {
-			return undefined;
-		}
-
-		const activationKey = activationKeys.find(
-			(current) => current.id === licenseKeyExternalReferenceCode
-		);
-
 		if (!activationKey || !isRenewableKey(activationKey)) {
 			return undefined;
 		}
-
-		const siblings = activationKeys.filter(
-			(current) => current.name === activationKey.name
-		);
 
 		const productsByKeyType = new Map<string, GenerateFormProduct>();
 
@@ -69,28 +57,35 @@ export function useRenewSource(
 		const entitlementIds = new Set<number>();
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
-		let keyType = '';
+		let keyType = activationKey.keyType;
 		let productExternalReferenceCode = '';
 		let subscriptionEntitlementId = 0;
 
-		for (const sibling of siblings) {
-			for (const entitlementId of sibling.entitlementIds) {
-				entitlementIds.add(entitlementId);
+		for (const licenseKey of licenseKeys) {
+			if (licenseKey.entitlementId) {
+				entitlementIds.add(licenseKey.entitlementId);
 			}
 
-			servers.set(toServerKey(sibling), {
-				hostName: sibling.hostName,
-				ipAddresses: sibling.ipAddresses,
-				macAddresses: sibling.macAddresses,
-			});
+			servers.set(
+				[
+					licenseKey.hostName,
+					licenseKey.ipAddresses,
+					licenseKey.macAddresses,
+				].join('|'),
+				{
+					hostName: licenseKey.hostName,
+					ipAddresses: licenseKey.ipAddresses,
+					macAddresses: licenseKey.macAddresses,
+				}
+			);
 
-			const product = productsByKeyType.get(sibling.licenseName);
+			const product = productsByKeyType.get(licenseKey.licenseName);
 
-			if (product && !keyType) {
-				keyType = sibling.licenseName;
+			if (product && !productExternalReferenceCode) {
+				keyType = keyType || licenseKey.licenseName;
 				productExternalReferenceCode = product.externalReferenceCode;
 				subscriptionEntitlementId =
-					sibling.entitlementId || product.entitlementId;
+					licenseKey.entitlementId || product.entitlementId;
 			}
 		}
 
@@ -104,9 +99,12 @@ export function useRenewSource(
 			subscriptionEntitlementId,
 			version: activationKey.productVersion,
 		};
-	}, [activationKeys, generateForm, licenseKeyExternalReferenceCode]);
+	}, [activationKey, generateForm, licenseKeys]);
 
-	return {loading, renewSource};
+	return {
+		loading: loadingActivationKeys || loadingLicenseKeys,
+		renewSource,
+	};
 }
 
 export default useRenewSource;

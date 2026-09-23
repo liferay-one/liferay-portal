@@ -14,7 +14,7 @@ import {
 	GenerateForm,
 	GenerateFormProduct,
 	GenerateFormSubscription,
-} from '~/services/spring-boot/LicenseKeys';
+} from '~/services/spring-boot/ActivationKeys';
 import {formatDate} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';

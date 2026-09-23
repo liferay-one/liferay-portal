@@ -10,6 +10,10 @@ import BackLink from '~/components/BackLink/BackLink';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {
+	ActivationKeyLicenseKey,
+	useActivationKeyLicenseKeys,
+} from '~/hooks/useActivationKeyLicenseKeys';
+import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
@@ -23,8 +27,8 @@ import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
-import useLicenseKeyActions from '../hooks/useLicenseKeyActions';
-import useLicenseKeySubscription from '../hooks/useLicenseKeySubscription';
+import useActivationKeyActions from '../hooks/useActivationKeyActions';
+import useActivationKeySubscription from '../hooks/useActivationKeySubscription';
 
 export default function LicenseKeyDetails() {
 	const {licenseKeyERC = ''} = useParams();
@@ -34,9 +38,15 @@ export default function LicenseKeyDetails() {
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
-		useLicenseKeyActions({generatePath: '../generate', revalidate});
+		useActivationKeyActions({generatePath: '../generate', revalidate});
 
-	const licenseKey = activationKeys.find((key) => key.id === licenseKeyERC);
+	const activationKey = activationKeys.find(
+		(key) => key.id === licenseKeyERC
+	);
+
+	const {licenseKeys} = useActivationKeyLicenseKeys(
+		activationKey?.activationKeyId
+	);
 
 	return (
 		<div className="w-100">
@@ -44,14 +54,15 @@ export default function LicenseKeyDetails() {
 
 			{loading ? (
 				<Loading.Page />
-			) : licenseKey ? (
+			) : activationKey ? (
 				<LicenseKeyDetailsContent
+					activationKey={activationKey}
 					hasActivationPermission={hasActivationPermission}
-					licenseKey={licenseKey}
-					onDeactivate={() => handleDeactivate(licenseKey)}
-					onDownload={() => handleDownload(licenseKey)}
-					onReactivate={() => handleReactivate(licenseKey)}
-					onRenew={() => handleRenew(licenseKey)}
+					licenseKeys={licenseKeys}
+					onDeactivate={() => handleDeactivate(activationKey)}
+					onDownload={() => handleDownload(activationKey)}
+					onReactivate={() => handleReactivate(activationKey)}
+					onRenew={() => handleRenew(activationKey)}
 				/>
 			) : (
 				<div className="p-4 text-neutral-7">
@@ -63,71 +74,122 @@ export default function LicenseKeyDetails() {
 }
 
 type LicenseKeyDetailsContentProps = {
+	activationKey: ProjectActivationKey;
 	hasActivationPermission: boolean;
-	licenseKey: ProjectActivationKey;
+	licenseKeys: ActivationKeyLicenseKey[];
 	onDeactivate: () => void;
 	onDownload: () => void;
 	onReactivate: () => void;
 	onRenew: () => void;
 };
 
+function getProducts(licenseKeys: ActivationKeyLicenseKey[]) {
+	const products = new Map<string, ActivationKeyLicenseKey>();
+
+	for (const licenseKey of licenseKeys) {
+		const key =
+			licenseKey.productExternalReferenceCode || licenseKey.productName;
+
+		if (key && !products.has(key)) {
+			products.set(key, licenseKey);
+		}
+	}
+
+	return [...products.entries()];
+}
+
+function getServers(licenseKeys: ActivationKeyLicenseKey[]) {
+	const servers = new Map<string, ActivationKeyLicenseKey>();
+
+	for (const licenseKey of licenseKeys) {
+		const key = [
+			licenseKey.hostName,
+			licenseKey.ipAddresses,
+			licenseKey.macAddresses,
+		].join('|');
+
+		if (!servers.has(key)) {
+			servers.set(key, licenseKey);
+		}
+	}
+
+	return [...servers.entries()];
+}
+
 function LicenseKeyDetailsContent({
+	activationKey,
 	hasActivationPermission,
-	licenseKey,
+	licenseKeys,
 	onDeactivate,
 	onDownload,
 	onReactivate,
 	onRenew,
 }: LicenseKeyDetailsContentProps) {
-	const {subscribed, toggleSubscription} = useLicenseKeySubscription(
-		licenseKey.licenseKeyId
+	const {subscribed, toggleSubscription} = useActivationKeySubscription(
+		activationKey.activationKeyId
 	);
 
+	const products = getProducts(licenseKeys);
+	const servers = getServers(licenseKeys);
+
+	const [, firstLicenseKey] = servers[0] ?? [];
+
 	const detailsRows: DetailsRow[] = [
-		{label: translate('environment-name'), value: licenseKey.name},
+		{label: translate('environment-name'), value: activationKey.name},
 		{
 			label: translate('description'),
-			value: licenseKey.description || '-',
+			value: activationKey.description || '-',
 		},
 		{
 			label: translate('key-type'),
-			value: licenseKey.licenseType
-				? translate(getKeyType(licenseKey.licenseType))
+			value: activationKey.licenseType
+				? translate(getKeyType(activationKey.licenseType))
 				: '-',
 		},
-		{label: translate('host-name'), value: licenseKey.hostName || '-'},
+		{
+			label: translate('host-name'),
+			value: servers.length ? (
+				<span className="d-flex flex-column">
+					{servers.map(([key, server]) => (
+						<span key={key}>{server.hostName || '-'}</span>
+					))}
+				</span>
+			) : (
+				'-'
+			),
+		},
 		{
 			label: translate('cluster-size'),
-			value: licenseKey.clusterSize || '-',
+			value: firstLicenseKey?.clusterSize || '-',
 		},
 		{
 			label: translate('version'),
-			value: licenseKey.productVersion || '-',
+			value: activationKey.productVersion || '-',
 		},
 		{
 			label: translate('instance-size'),
-			value: licenseKey.sizing || '-',
+			value: firstLicenseKey?.sizing || '-',
 		},
 		{
 			label: translate('environment-type'),
-			value: translate(licenseKey.environmentType),
+			value: translate(activationKey.environmentType),
 		},
 		{
 			label: translate('subscription-type'),
 			value: translate(
-				licenseKey.complimentary ? 'complimentary' : 'subscription'
+				activationKey.complimentary ? 'complimentary' : 'subscription'
 			),
 		},
-		{label: translate('domains'), value: licenseKey.domain || '-'},
-		{label: translate('start-date'), value: licenseKey.startDate || '-'},
+		{label: translate('domains'), value: activationKey.domain || '-'},
+		{label: translate('start-date'), value: activationKey.startDate || '-'},
 		{
 			label: translate('expiration-date'),
 			value: isPermanentKey(
-				licenseKey.expirationDateValue,
-				licenseKey.startDateValue
+				activationKey.expirationDateValue,
+				activationKey.startDateValue
 			)
 				? translate('does-not-expire')
-				: licenseKey.expirationDate || '-',
+				: activationKey.expirationDate || '-',
 		},
 		{
 			label: translate('status'),
@@ -136,26 +198,28 @@ function LicenseKeyDetailsContent({
 					<span
 						className="list-card-status-dot"
 						style={{
-							backgroundColor: getStatusColor(licenseKey.status),
+							backgroundColor: getStatusColor(
+								activationKey.status
+							),
 						}}
 					/>
 
-					{translate(licenseKey.status)}
+					{translate(activationKey.status)}
 				</span>
 			),
 		},
 	];
 
-	if (licenseKey.products.length) {
+	if (products.length) {
 		detailsRows.push({
 			label: translate('products'),
 			value: (
 				<span className="d-flex flex-column">
-					{licenseKey.products.map((product) => (
-						<span key={product.externalReferenceCode}>
+					{products.map(([key, product]) => (
+						<span key={key}>
 							{product.sizing
-								? `${product.name} (${product.sizing})`
-								: product.name}
+								? `${product.productName} (${product.sizing})`
+								: product.productName}
 						</span>
 					))}
 				</span>
@@ -171,7 +235,7 @@ function LicenseKeyDetailsContent({
 				headerActions={
 					<div className="d-flex" style={{gap: 'var(--spacer-3)'}}>
 						<ClayButton
-							disabled={!licenseKey.active}
+							disabled={!activationKey.active}
 							displayType="secondary"
 							onClick={onDownload}
 						>
@@ -179,7 +243,7 @@ function LicenseKeyDetailsContent({
 						</ClayButton>
 
 						{hasActivationPermission &&
-							isRenewableKey(licenseKey) && (
+							isRenewableKey(activationKey) && (
 								<ClayButton
 									displayType="secondary"
 									onClick={onRenew}
@@ -189,7 +253,7 @@ function LicenseKeyDetailsContent({
 							)}
 
 						{hasActivationPermission &&
-							(licenseKey.active ? (
+							(activationKey.active ? (
 								<ClayButton
 									displayType="danger"
 									onClick={onDeactivate}
