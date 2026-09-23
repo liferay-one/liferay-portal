@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+const description = configuration.description || '';
 const header = configuration.header || '';
 const title = configuration.title || '';
-const description = configuration.description || '';
 
 function addModalClass() {
 	setTimeout(() => {
@@ -61,9 +61,7 @@ function openPurchaseInProgressModal() {
 }
 
 function openUnloggedUserModal() {
-
-const signInURL =
-	`${Liferay.ThemeDisplay.getPortalURL()}${Liferay.ThemeDisplay.getPathMain()}/portal/login?redirect=${encodeURIComponent(window.location.href)}`;
+	const signInURL = `${Liferay.ThemeDisplay.getPortalURL()}${Liferay.ThemeDisplay.getPathMain()}/portal/login?redirect=${encodeURIComponent(window.location.href)}`;
 
 	Liferay.Util.openModal({
 		headerHTML: '<h2>LIFERAY AI HUB</h2>',
@@ -88,12 +86,12 @@ const signInURL =
 					</button>
 
 					<button
-	class="btn btn-primary product-modal-primary-button"
-	id="product-modal-sign-in"
-	type="button"
->
-	Sign In
-</button>
+						class="btn btn-primary product-modal-primary-button"
+						id="product-modal-sign-in"
+						type="button"
+					>
+						Sign In
+					</button>
 				</div>
 			</div>
 		`,
@@ -106,10 +104,11 @@ const signInURL =
 
 			setTimeout(() => {
 				document
-	.querySelector('#product-modal-sign-in')
-	?.addEventListener('click', () => {
-		window.location.href = signInURL;
-	});
+					.querySelector('#product-modal-sign-in')
+					?.addEventListener('click', () => {
+						window.location.href = signInURL;
+					});
+
 				document
 					.querySelector('#product-modal-cancel')
 					?.addEventListener('click', () => {
@@ -171,8 +170,8 @@ function openProductRequirementsModal(destinationUrl) {
 					.querySelector('#product-modal-continue')
 					?.addEventListener('click', () => {
 						closeCurrentModal();
-						window.location.href =
-							destinationUrl;
+
+						window.location.href = destinationUrl;
 					});
 			}, 0);
 		},
@@ -182,10 +181,9 @@ function openProductRequirementsModal(destinationUrl) {
 document.addEventListener(
 	'click',
 	(event) => {
-		const purchaseInProgressButton =
-			event.target.closest(
-				'[data-purchase-in-progress="true"]'
-			);
+		const purchaseInProgressButton = event.target.closest(
+			'[data-purchase-in-progress="true"]'
+		);
 
 		if (purchaseInProgressButton) {
 			event.preventDefault();
@@ -219,9 +217,7 @@ document.addEventListener(
 			return;
 		}
 
-		openProductRequirementsModal(
-			purchaseButton.dataset.destinationUrl
-		);
+		openProductRequirementsModal(purchaseButton.dataset.destinationUrl);
 	},
 	true
 );

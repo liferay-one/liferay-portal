@@ -3,7 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-const liferayProductIcon = document.getElementById('liferay-product-icon');
-const liferayProductIconImg = document.getElementById('liferay-product-icon-img');
+const liferayProductIcon = fragmentElement.querySelector(
+	'#liferay-product-icon'
+);
+const liferayProductIconImg = fragmentElement.querySelector(
+	'#liferay-product-icon-img'
+);
 
-liferayProductIconImg.src = liferayProductIcon.textContent;
+if (liferayProductIcon && liferayProductIconImg) {
+	liferayProductIconImg.src = liferayProductIcon.textContent;
+}

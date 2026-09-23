@@ -12,11 +12,10 @@
 			</h3>
 
 			[#if !available]
-			<span class="tier-card__badge">
-				${configuration.badgeText!'Coming Soon'}
-			</span>
+				<span class="tier-card__badge">
+					${configuration.badgeText!'Coming Soon'}
+				</span>
 			[/#if]
-
 		</div>
 
 		<div class="tier-card__price-label" data-lfr-editable-id="price-label" data-lfr-editable-type="text">
@@ -24,20 +23,18 @@
 		</div>
 
 		<div class="tier-card__price">
-
 			[#if customPrice]
-			<span class="tier-card__price-value">
-				Custom
-			</span>
+				<span class="tier-card__price-value">
+					Custom
+				</span>
 			[#else]
-			<span class="tier-card__price-value" data-tier-card-price>
-				$0
-			</span>
-			<span class="tier-card__price-suffix" data-lfr-editable-id="price-suffix" data-lfr-editable-type="text">
-				per month
-			</span>
+				<span class="tier-card__price-value" data-tier-card-price>
+					$0
+				</span>
+				<span class="tier-card__price-suffix" data-lfr-editable-id="price-suffix" data-lfr-editable-type="text">
+					per month
+				</span>
 			[/#if]
-
 		</div>
 
 		<div class="tier-card__subtitle" data-lfr-editable-id="subtitle" data-lfr-editable-type="text">
@@ -52,7 +49,7 @@
 		</div>
 	</div>
 
-<a class="btn [#if available]btn-primary tier-card__button[#else]btn-secondary tier-card__button-secondary disable[/#if]" data-tier-card-button href="${configuration.buttonLink!'#'}" [#if !available]inert[/#if]>
+	<a class="btn [#if available]btn-primary tier-card__button[#else]btn-secondary tier-card__button-secondary disable[/#if]" data-tier-card-button href="${configuration.buttonLink!'#'}" [#if !available]inert[/#if]>
 		${configuration.buttonText!'Purchase'}
 	</a>
 
