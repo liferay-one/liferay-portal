@@ -19,7 +19,8 @@
 						"minHeight": "100vh"
 					},
 					"indexed": true,
-					"layout": {}
+					"layout": {
+					}
 				},
 				"id": "dcb5046b-e882-e593-ba19-68c7f6033c75",
 				"pageElements": [
@@ -110,7 +111,8 @@
 																{
 																	"id": "icon",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"mapping": {
 																				"fieldKey": "ddmTemplate__ddmTemplate_[$TEMPLATE_ENTRY_ID:Marketplace Apps Icon$]",
@@ -178,7 +180,8 @@
 																				{
 																					"id": "text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"mapping": {
 																								"fieldKey": "CPDefinition_name",
@@ -205,7 +208,8 @@
 																			"fragment": {
 																				"key": "BASIC_COMPONENT-html"
 																			},
-																			"fragmentConfig": {},
+																			"fragmentConfig": {
+																			},
 																			"fragmentFields": [
 																				{
 																					"id": "element-html",
@@ -248,7 +252,8 @@
 																			"fragment": {
 																				"key": "BASIC_COMPONENT-html"
 																			},
-																			"fragmentConfig": {},
+																			"fragmentConfig": {
+																			},
 																			"fragmentFields": [
 																				{
 																					"id": "element-html",
@@ -276,7 +281,8 @@
 																			"fragment": {
 																				"key": "BASIC_COMPONENT-html"
 																			},
-																			"fragmentConfig": {},
+																			"fragmentConfig": {
+																			},
 																			"fragmentFields": [
 																				{
 																					"id": "element-html",
@@ -320,13 +326,16 @@
 															"value": {
 																"fragmentImage": {
 																	"description": {
-																		"value_i18n": {}
+																		"value_i18n": {
+																		}
 																	},
 																	"url": {
-																		"value_i18n": {}
+																		"value_i18n": {
+																		}
 																	}
 																},
-																"fragmentLink": {}
+																"fragmentLink": {
+																}
 															}
 														}
 													],
@@ -357,7 +366,8 @@
 															"fragment": {
 																"key": "BASIC_COMPONENT-html"
 															},
-															"fragmentConfig": {},
+															"fragmentConfig": {
+															},
 															"fragmentFields": [
 																{
 																	"id": "element-html",
@@ -397,7 +407,8 @@
 																{
 																	"id": "product-id",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"mapping": {
 																				"fieldKey": "CPDefinition_cProductId",
@@ -496,7 +507,8 @@
 									"fragment": {
 										"key": "BASIC_COMPONENT-html"
 									},
-									"fragmentConfig": {},
+									"fragmentConfig": {
+									},
 									"fragmentFields": [
 										{
 											"id": "element-html",
@@ -523,12 +535,14 @@
 									"fragment": {
 										"key": "BASIC_COMPONENT-paragraph"
 									},
-									"fragmentConfig": {},
+									"fragmentConfig": {
+									},
 									"fragmentFields": [
 										{
 											"id": "element-text",
 											"value": {
-												"fragmentLink": {},
+												"fragmentLink": {
+												},
 												"text": {
 													"value_i18n": {
 														"en_US": "<p>Get a unified view of your customers with Liferay Data Platform, enabling organizations to manage and use data effectively for targeted engagement and actionable insights.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -607,7 +621,8 @@
 														{
 															"id": "text",
 															"value": {
-																"fragmentLink": {},
+																"fragmentLink": {
+																},
 																"text": {
 																	"value_i18n": {
 																		"en_US": "<p>Activate Account Signals to Accelerate Buyer Journeys</p>\n\n\n\n\n"
@@ -632,7 +647,8 @@
 													"fragment": {
 														"key": "BASIC_COMPONENT-html"
 													},
-													"fragmentConfig": {},
+													"fragmentConfig": {
+													},
 													"fragmentFields": [
 														{
 															"id": "element-html",
@@ -690,7 +706,8 @@
 												{
 													"id": "icon",
 													"value": {
-														"fragmentLink": {},
+														"fragmentLink": {
+														},
 														"text": {
 															"defaultFragmentInlineValue": {
 																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/ldp_content/image1.png$]"
@@ -741,7 +758,8 @@
 									"fragment": {
 										"key": "BASIC_COMPONENT-html"
 									},
-									"fragmentConfig": {},
+									"fragmentConfig": {
+									},
 									"fragmentFields": [
 										{
 											"id": "element-html",
@@ -769,7 +787,8 @@
 									"fragment": {
 										"key": "BASIC_COMPONENT-html"
 									},
-									"fragmentConfig": {},
+									"fragmentConfig": {
+									},
 									"fragmentFields": [
 										{
 											"id": "element-html",
@@ -795,7 +814,8 @@
 										"paddingTop": "80px"
 									},
 									"indexed": true,
-									"layout": {}
+									"layout": {
+									}
 								},
 								"id": "8027aedf-93f2-07c4-2ddf-c1715dab602c",
 								"pageElements": [
@@ -814,7 +834,8 @@
 												{
 													"id": "text",
 													"value": {
-														"fragmentLink": {},
+														"fragmentLink": {
+														},
 														"text": {
 															"value_i18n": {
 																"en_US": "<p>Translate Better Data into Better Results for Your Business</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -890,7 +911,8 @@
 																		{
 																			"id": "text",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"value_i18n": {
 																						"en_US": "<p>Smarter account engagement, from unified data to decisive action</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -915,7 +937,8 @@
 																	"fragment": {
 																		"key": "BASIC_COMPONENT-html"
 																	},
-																	"fragmentConfig": {},
+																	"fragmentConfig": {
+																	},
 																	"fragmentFields": [
 																		{
 																			"id": "element-html",
@@ -972,7 +995,8 @@
 																		{
 																			"id": "icon",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
 																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/ldp_content/image2.png$]"
@@ -1045,7 +1069,8 @@
 																		{
 																			"id": "icon",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
 																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/ldp_content/image3.png$]"
@@ -1101,7 +1126,8 @@
 																		{
 																			"id": "text",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"value_i18n": {
 																						"en_US": "<p>Know exactly which accounts to prioritize next</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1126,7 +1152,8 @@
 																	"fragment": {
 																		"key": "BASIC_COMPONENT-html"
 																	},
-																	"fragmentConfig": {},
+																	"fragmentConfig": {
+																	},
 																	"fragmentFields": [
 																		{
 																			"id": "element-html",
@@ -1196,7 +1223,8 @@
 																		{
 																			"id": "text",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"value_i18n": {
 																						"en_US": "<p>Act on buyer signals while they are still engaged</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1221,7 +1249,8 @@
 																	"fragment": {
 																		"key": "BASIC_COMPONENT-html"
 																	},
-																	"fragmentConfig": {},
+																	"fragmentConfig": {
+																	},
 																	"fragmentFields": [
 																		{
 																			"id": "element-html",
@@ -1278,7 +1307,8 @@
 																		{
 																			"id": "icon",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
 																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/ldp_content/image4.png$]"
@@ -1352,7 +1382,8 @@
 																		{
 																			"id": "icon",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
@@ -1405,7 +1436,8 @@
 																		{
 																			"id": "text",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"value_i18n": {
 																						"en_US": "<p>Create dynamic experiences to see results.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1430,7 +1462,8 @@
 																	"fragment": {
 																		"key": "BASIC_COMPONENT-html"
 																	},
-																	"fragmentConfig": {},
+																	"fragmentConfig": {
+																	},
 																	"fragmentFields": [
 																		{
 																			"id": "element-html",
@@ -1473,14 +1506,16 @@
 								"borderWidth": "0"
 							},
 							"indexed": true,
-							"layout": {}
+							"layout": {
+							}
 						},
 						"id": "5ebdc963-5da4-20d0-3e94-1275b22880fc",
 						"pageElements": [
 							{
 								"definition": {
 									"indexed": true,
-									"layout": {}
+									"layout": {
+									}
 								},
 								"id": "8129590f-d1fe-21c7-de2e-1eacebbe57fd",
 								"pageElements": [
@@ -1491,7 +1526,8 @@
 												"backgroundColor": "#FFFFFF"
 											},
 											"indexed": true,
-											"layout": {}
+											"layout": {
+											}
 										},
 										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
 										"pageElements": [
@@ -1515,7 +1551,8 @@
 																"paddingTop": "9"
 															},
 															"indexed": true,
-															"layout": {}
+															"layout": {
+															}
 														},
 														"id": "cd9ce237-bc33-4a7f-27a5-a9a883896fb9",
 														"pageElements": [
@@ -1534,7 +1571,8 @@
 																		{
 																			"id": "text",
 																			"value": {
-																				"fragmentLink": {},
+																				"fragmentLink": {
+																				},
 																				"text": {
 																					"value_i18n": {
 																						"en_US": "<p>How LDP Works with Liferay Capabilities</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1570,11 +1608,13 @@
 																		},
 																		{
 																			"id": "portraitMobile",
-																			"rowViewportDefinition": {}
+																			"rowViewportDefinition": {
+																			}
 																		},
 																		{
 																			"id": "tablet",
-																			"rowViewportDefinition": {}
+																			"rowViewportDefinition": {
+																			}
 																		}
 																	],
 																	"verticalAlignment": "top"
@@ -1591,11 +1631,13 @@
 																					"id": "landscapeMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "portraitMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "tablet"
 																				}
 																			],
@@ -1626,7 +1668,8 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-html"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-html",
@@ -1664,7 +1707,8 @@
 																								{
 																									"id": "text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<h2>LDP + Personalization</h2>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1689,12 +1733,14 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-paragraph"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<p>Respond to buyer interest while it is still current. Liferay Data Platform continuously evaluates account behavior and profile changes, then updates segments as accounts qualify or their activity expires. With Liferay DXP, those segments can immediately trigger more relevant content, calls to action, recommendations, and journey paths – without a separate activation platform or an IT ticket.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1724,11 +1770,13 @@
 																					"id": "landscapeMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "portraitMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "tablet"
 																				}
 																			],
@@ -1759,7 +1807,8 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-html"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-html",
@@ -1797,7 +1846,8 @@
 																								{
 																									"id": "text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<h2>LDP + Search</h2>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1821,12 +1871,14 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-paragraph"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<p>Help visitors find content that they require in their buying journey. Liferay Data Platform provides richer account and engagement context for segmentation, while Liferay Search can personalize results according to a user’s segment and digital context – making relevant resources easier to discover.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1856,11 +1908,13 @@
 																					"id": "landscapeMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "portraitMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "tablet"
 																				}
 																			],
@@ -1891,7 +1945,8 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-html"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-html",
@@ -1929,7 +1984,8 @@
 																								{
 																									"id": "text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<h2>LDP + Sites</h2>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1952,12 +2008,14 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-paragraph"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<p>Make your websites, portals, and other Liferay-powered experiences account-aware. Liferay Sites provides the pages, content, and applications used to build digital experiences, while Liferay Data Platform supplies the account profiles, lifecycle stages, and segments needed to tailor those experiences. With Liferay Sites, changes in buyer behavior can trigger relevant on-site experiences in real time.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -1987,11 +2045,13 @@
 																					"id": "landscapeMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "portraitMobile"
 																				},
 																				{
-																					"columnViewportDefinition": {},
+																					"columnViewportDefinition": {
+																					},
 																					"id": "tablet"
 																				}
 																			],
@@ -2022,7 +2082,8 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-html"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-html",
@@ -2060,7 +2121,8 @@
 																								{
 																									"id": "text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<h2>LDP + CMS</h2>\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -2083,12 +2145,14 @@
 																							"fragment": {
 																								"key": "BASIC_COMPONENT-paragraph"
 																							},
-																							"fragmentConfig": {},
+																							"fragmentConfig": {
+																							},
 																							"fragmentFields": [
 																								{
 																									"id": "element-text",
 																									"value": {
-																										"fragmentLink": {},
+																										"fragmentLink": {
+																										},
 																										"text": {
 																											"value_i18n": {
 																												"en_US": "<p>Turn connected account insight into more relevant content experiences. Use Liferay Data Platform segments to identify an account’s interests, activity, and lifecycle stage, then use Liferay CMS and Personalization to adapt page content, layouts, and messaging for each audience – while keeping content creation and governance centralized.</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -2123,7 +2187,8 @@
 														"width": "100%"
 													},
 													"indexed": true,
-													"layout": {}
+													"layout": {
+													}
 												},
 												"id": "a78e62bf-a134-690a-8093-e30ff6aa2d76",
 												"pageElements": [
@@ -2137,7 +2202,8 @@
 															"fragmentConfig": {
 																"containerId": "price-details"
 															},
-															"fragmentFields": [],
+															"fragmentFields": [
+															],
 															"fragmentStyle": {
 																"marginBottom": "9",
 																"paddingTop": "9"
@@ -2147,7 +2213,8 @@
 														"id": "2b98ea26-dc44-d16b-44f4-8d3094f6edc7",
 														"pageElements": [
 															{
-																"definition": {},
+																"definition": {
+																},
 																"id": "25994cce-e7f6-ed9c-1248-081ec257ff30",
 																"pageElements": [
 																	{
@@ -2165,7 +2232,8 @@
 																				{
 																					"id": "text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"value_i18n": {
 																								"en_US": "<p>All capabilities ship in only one plan</p>\n\n\n\n\n\n\n\n\n\n\n"
@@ -2189,7 +2257,8 @@
 																		"definition": {
 																			"customCSS": ".[$FRAGMENT_CLASS$] {\n}",
 																			"indexed": true,
-																			"layout": {}
+																			"layout": {
+																			}
 																		},
 																		"id": "8a90ebc5-b93e-9247-e1da-278acbde6794",
 																		"pageElements": [
@@ -2214,7 +2283,8 @@
 																						{
 																							"id": "description",
 																							"value": {
-																								"fragmentLink": {},
+																								"fragmentLink": {
+																								},
 																								"text": {
 																									"value_i18n": {
 																										"en_US": "<p>Full Liferay Data Platform with everything you need to analyze data.</p>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -2225,7 +2295,8 @@
 																						{
 																							"id": "features",
 																							"value": {
-																								"fragmentLink": {},
+																								"fragmentLink": {
+																								},
 																								"text": {
 																									"value_i18n": {
 																										"en_US": "<ul>\n\t<li>3 connectors</li>\n\t<li>Unified Profile View</li>\n\t<li>100,000 Report &amp; Export API requests / month</li>\n\t<li>Account Lifecycle Dashboard</li>\n\t<li>50 active batch segments ~ 20 active real-time segments</li>\n\t<li>Event analysis</li>\n\t<li>Batch and real-time segmentation</li>\n\t<li>Standard dashboards &amp; reporting</li>\n\t<li>Liferay DXP personalization</li>\n\t<li>SSO and audit logs</li>\n\t<li>Unified Account View</li>\n\t<li>Standard 8/5 support</li>\n</ul>\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
@@ -2236,13 +2307,15 @@
 																						{
 																							"id": "price-label",
 																							"value": {
-																								"fragmentLink": {}
+																								"fragmentLink": {
+																								}
 																							}
 																						},
 																						{
 																							"id": "price-suffix",
 																							"value": {
-																								"fragmentLink": {},
+																								"fragmentLink": {
+																								},
 																								"text": {
 																									"value_i18n": {
 																										"en_US": "per month"
@@ -2253,7 +2326,8 @@
 																						{
 																							"id": "product-id",
 																							"value": {
-																								"fragmentLink": {},
+																								"fragmentLink": {
+																								},
 																								"text": {
 																									"mapping": {
 																										"fieldKey": "CPDefinition_cProductId",
@@ -2267,7 +2341,8 @@
 																						{
 																							"id": "subtitle",
 																							"value": {
-																								"fragmentLink": {},
+																								"fragmentLink": {
+																								},
 																								"text": {
 																									"value_i18n": {
 																										"en_US": "Includes 2,000,000 events per month"
@@ -2319,11 +2394,13 @@
 														},
 														{
 															"id": "portraitMobile",
-															"rowViewportDefinition": {}
+															"rowViewportDefinition": {
+															}
 														},
 														{
 															"id": "tablet",
-															"rowViewportDefinition": {}
+															"rowViewportDefinition": {
+															}
 														}
 													],
 													"verticalAlignment": "top"
@@ -2340,11 +2417,13 @@
 																	"id": "landscapeMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "portraitMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "tablet"
 																}
 															],
@@ -2372,43 +2451,50 @@
 																		{
 																			"id": "features",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-suffix",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-label",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "subtitle",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "description",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "title",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		}
 																	],
@@ -2430,11 +2516,13 @@
 																	"id": "landscapeMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "portraitMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "tablet"
 																}
 															],
@@ -2462,43 +2550,50 @@
 																		{
 																			"id": "features",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-suffix",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-label",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "subtitle",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "description",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "title",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		}
 																	],
@@ -2520,11 +2615,13 @@
 																	"id": "landscapeMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "portraitMobile"
 																},
 																{
-																	"columnViewportDefinition": {},
+																	"columnViewportDefinition": {
+																	},
 																	"id": "tablet"
 																}
 															],
@@ -2552,43 +2649,50 @@
 																		{
 																			"id": "features",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-suffix",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "price-label",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "subtitle",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "description",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		},
 																		{
 																			"id": "title",
 																			"value": {
-																				"fragmentLink": {}
+																				"fragmentLink": {
+																				}
 																			}
 																		}
 																	],
@@ -2608,7 +2712,8 @@
 													"fragment": {
 														"key": "BASIC_COMPONENT-html"
 													},
-													"fragmentConfig": {},
+													"fragmentConfig": {
+													},
 													"fragmentFields": [
 														{
 															"id": "element-html",

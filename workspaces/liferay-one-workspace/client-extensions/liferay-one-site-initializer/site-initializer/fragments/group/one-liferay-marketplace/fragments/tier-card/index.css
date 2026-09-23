@@ -1,5 +1,4 @@
 .tier-card {
-	position: relative;
 	background: linear-gradient(
 		257.77deg,
 		rgba(233, 236, 255, 0.2) 17.81%,
@@ -13,63 +12,37 @@
 	height: 780px;
 	min-width: 392px;
 	padding: 0 32px 48px;
-}
-
-.tier-card::before {
-	border-radius: 20px;
-	content: "";
-	inset: 0;
-	padding: 2px;
-	position: absolute;
-	background: linear-gradient(
-		125deg,
-		rgba(233, 236, 255, 1) -6.56%,
-		rgba(244, 232, 255, 1) 111.4%
-	);
-
-	-webkit-mask:
-		linear-gradient(#000 0 0) content-box,
-		linear-gradient(#000 0 0);
-	-webkit-mask-composite: xor;
-
-	mask:
-		linear-gradient(#000 0 0) content-box,
-		linear-gradient(#000 0 0);
-	mask-composite: exclude;
-
-	pointer-events: none;
-}
-
-.tier-card--coming-soon::before {
-	display: none;
+	position: relative;
 }
 
 .tier-card--coming-soon {
 	border: 4px dashed #e9ecff;
 }
 
-.tier-card__content {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	min-height: 401px;
-  max-height: 401px;
+.tier-card--coming-soon::before {
+	display: none;
 }
 
-.tier-card__header {
-	align-items: center;
-	display: flex;
-	justify-content: space-between;
-	margin-bottom: 32px;
-	padding-top: 56px;
-}
-
-.tier-card__title {
-	align-items: baseline;
-	color: #272833;
-	font-size: 24px;
-	font-weight: 600;
-	margin: 0;
+.tier-card::before {
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	background: linear-gradient(
+		125deg,
+		rgba(233, 236, 255, 1) -6.56%,
+		rgba(244, 232, 255, 1) 111.4%
+	);
+	border-radius: 20px;
+	content: "";
+	inset: 0;
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask-composite: exclude;
+	padding: 2px;
+	pointer-events: none;
+	position: absolute;
 }
 
 .tier-card__badge {
@@ -84,50 +57,6 @@
 	line-height: 16px;
 	padding: 4px 8px;
 	white-space: nowrap;
-}
-
-.tier-card__price-label {
-	color: #282934;
-	font-size: 14px;
-	margin-bottom: 8px;
-	min-height: 24px;
-}
-
-.tier-card__price {
-	align-items: baseline;
-	display: flex;
-	gap: 8px;
-	margin-bottom: 8px;
-	min-height: 48px;
-}
-
-.tier-card__price-value {
-	color: #272833;
-	font-size: 30px;
-	font-weight: 600;
-	line-height: 1;
-}
-
-.tier-card__price-suffix {
-	color: #282934;
-	font-size: 20px;
-	font-weight: 400;
-}
-
-.tier-card__subtitle {
-	color: #82828c;
-	font-size: 18px;
-	margin-bottom: 24px;
-	min-height: 56px;
-}
-
-.tier-card__description {
-	color: #282934;
-	font-size: 16px;
-	font-weight: 400;
-	line-height: 1.6;
-	margin-bottom: 32px;
-	min-height: 74px;
 }
 
 .tier-card__button,
@@ -145,22 +74,27 @@
 	color: rgba(11, 95, 255, 1);
 }
 
-.tier-card__features-title {
+.tier-card__content {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	max-height: 401px;
+	min-height: 401px;
+}
+
+.tier-card__description {
+	color: #282934;
 	font-size: 16px;
-	font-weight: 600;
-	margin-bottom: 12px;
+	font-weight: 400;
+	line-height: 1.6;
+	margin-bottom: 32px;
+	min-height: 74px;
 }
 
 .tier-card__features {
 	color: #4b5563;
 	font-size: 15px;
 	line-height: 1.8;
-}
-
-.tier-card__features ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
 }
 
 .tier-card__features li {
@@ -179,4 +113,67 @@
 	position: absolute;
 	top: 2px;
 	width: 16px;
+}
+
+.tier-card__features ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.tier-card__features-title {
+	font-size: 16px;
+	font-weight: 600;
+	margin-bottom: 12px;
+}
+
+.tier-card__header {
+	align-items: center;
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 32px;
+	padding-top: 56px;
+}
+
+.tier-card__price {
+	align-items: baseline;
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+	min-height: 48px;
+}
+
+.tier-card__price-label {
+	color: #282934;
+	font-size: 14px;
+	margin-bottom: 8px;
+	min-height: 24px;
+}
+
+.tier-card__price-suffix {
+	color: #282934;
+	font-size: 20px;
+	font-weight: 400;
+}
+
+.tier-card__price-value {
+	color: #272833;
+	font-size: 30px;
+	font-weight: 600;
+	line-height: 1;
+}
+
+.tier-card__subtitle {
+	color: #82828c;
+	font-size: 18px;
+	margin-bottom: 24px;
+	min-height: 56px;
+}
+
+.tier-card__title {
+	align-items: baseline;
+	color: #272833;
+	font-size: 24px;
+	font-weight: 600;
+	margin: 0;
 }

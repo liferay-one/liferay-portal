@@ -1,29 +1,31 @@
-<#if themeDisplay?has_content>
-	<#assign scopeGroupId = themeDisplay.getScopeGroupId() />
-</#if>
-
-<#assign channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${scopeGroupId}'") />
-
-<#if channel?has_content>
-	<#assign channelId = channel.items[0].id />
-</#if>
-
-<#if (CPDefinition_cProductId.getData())??>
-	<#assign productId = CPDefinition_cProductId.getData() />
-</#if>
-
 <#assign
-	product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/"+ channelId +"/products/"+ productId +"?accountId=-1&nestedFields=productSpecifications")
-	catalogName = product.catalogName
-	productSpecifications = product.productSpecifications![]
+	productId = (CPDefinition_cProductId.getData())!""
+	scopeGroupId = (themeDisplay.getScopeGroupId())!""
+
+	channels = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${scopeGroupId}'&pageSize=1")
+
+	channelId = (channels.items[0].id)!""
+
+	catalogName = ""
+	productSpecifications = []
+	publisherDetails = {}
 />
 
-<#if catalogName?has_content>
-	<#assign publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'") />
+<#if channelId?has_content && productId?has_content>
+	<#assign
+		product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/" + channelId + "/products/" + productId + "?accountId=-1&nestedFields=productSpecifications")
 
-	<#if publisherDetailsResponse.items?has_content>
-		<#assign publisherDetails = publisherDetailsResponse.items[0] />
-	</#if>
+		catalogName = product.catalogName!""
+		productSpecifications = product.productSpecifications![]
+	/>
+</#if>
+
+<#if catalogName?has_content>
+	<#assign
+		publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'&pageSize=1")
+
+		publisherDetails = (publisherDetailsResponse.items[0])!{}
+	/>
 </#if>
 
 <div>
