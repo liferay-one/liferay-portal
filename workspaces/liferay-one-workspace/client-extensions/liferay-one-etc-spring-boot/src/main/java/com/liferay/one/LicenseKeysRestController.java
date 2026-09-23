@@ -24,7 +24,6 @@ import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.CommerceOrderService;
-import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
@@ -247,26 +246,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		);
 	}
 
-	@GetMapping("/generate-form")
-	public ResponseEntity<String> getLicenseKeysGenerateForm(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("projectExternalReferenceCode") String
-				projectExternalReferenceCode)
-		throws Exception {
-
-		_environmentActivationPermission.checkLicenseKeyActivation(
-			jwt, projectExternalReferenceCode);
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.APPLICATION_JSON
-		).body(
-			_licenseKeyGenerateFormService.getGenerateForm(
-				projectExternalReferenceCode
-			).toString()
-		);
-	}
-
 	@GetMapping("/subscriptions")
 	public boolean getSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -364,49 +343,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 
 		return extendedLicenseKeys;
-	}
-
-	@PostMapping("/generate")
-	public ResponseEntity<String> postLicenseKeysGenerate(
-			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
-		throws Exception {
-
-		JSONObject jsonObject = new JSONObject(json);
-
-		String projectExternalReferenceCode = jsonObject.optString(
-			"projectExternalReferenceCode");
-
-		Project project =
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
-
-		if (project == null) {
-			throw new ProjectNotFoundException(projectExternalReferenceCode);
-		}
-
-		List<Long> licenseKeyIds =
-			_licenseKeyGenerationService.generateLicenseKeys(
-				new LicenseKeyGenerationService.GenerateRequest(
-					_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
-					jsonObject.optString("dataCenterLocation"),
-					jsonObject.optString("description"),
-					jsonObject.optString("environmentName"),
-					jsonObject.optString("keyType"), project,
-					_toServers(jsonObject.optJSONArray("servers")),
-					jsonObject.optLong("subscriptionEntitlementId"),
-					jsonObject.optString("version"),
-					jsonObject.optString("workspaceName"),
-					jsonObject.optString("workspaceOwnerEmail")));
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.APPLICATION_JSON
-		).body(
-			new JSONObject(
-			).put(
-				"licenseKeyIds", new JSONArray(licenseKeyIds)
-			).toString()
-		);
 	}
 
 	@PostMapping("/type-free")
@@ -610,43 +546,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
-	private List<Long> _toLongs(JSONArray jsonArray) {
-		List<Long> longs = new ArrayList<>();
-
-		if (jsonArray == null) {
-			return longs;
-		}
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			longs.add(jsonArray.getLong(i));
-		}
-
-		return longs;
-	}
-
-	private List<LicenseKeyGenerationService.GenerateRequest.Server> _toServers(
-		JSONArray jsonArray) {
-
-		List<LicenseKeyGenerationService.GenerateRequest.Server> servers =
-			new ArrayList<>();
-
-		if (jsonArray == null) {
-			return servers;
-		}
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-			servers.add(
-				new LicenseKeyGenerationService.GenerateRequest.Server(
-					jsonObject.optString("hostName"),
-					jsonObject.optString("ipAddresses"),
-					jsonObject.optString("macAddresses")));
-		}
-
-		return servers;
-	}
-
 	private void _updateLicenseKeysActive(
 			boolean active, Jwt jwt, long[] licenseKeyIds)
 		throws Exception {
@@ -708,9 +607,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;
-
-	@Autowired
-	private LicenseKeyGenerateFormService _licenseKeyGenerateFormService;
 
 	@Autowired
 	private LicenseKeyGenerationService _licenseKeyGenerationService;

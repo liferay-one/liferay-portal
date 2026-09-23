@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.ProductGroupConstants;
+import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.util.LocaleUtil;
@@ -24,6 +25,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +63,18 @@ public class SubscriptionEntryService extends OneBaseService {
 	public void deleteAccountLicenseKeySubscriptionEntries(
 			long accountId, long userId)
 		throws Exception {
+
+		List<ActivationKey> activationKeys =
+			_activationKeyService.getActivationKeys(
+				StringBundler.concat(
+					"r_accountEntryToActivationKey_accountEntryId eq '",
+					accountId, "'"));
+
+		for (ActivationKey activationKey : activationKeys) {
+			deleteSubscriptionEntry(
+				ClassNameConstants.ACTIVATION_KEY,
+				activationKey.getActivationKeyId(), userId);
+		}
 
 		List<LicenseKey> licenseKeys = _licenseKeyService.getLicenseKeys(
 			StringBundler.concat(
@@ -127,9 +141,11 @@ public class SubscriptionEntryService extends OneBaseService {
 
 	@Scheduled(cron = "0 0 0 * * *")
 	protected void scheduledSendExpiringLicenseKeyEmails() throws Exception {
-		_sendExpiringLicenseKeyEmails(30);
-		_sendExpiringLicenseKeyEmails(14);
-		_sendExpiringLicenseKeyEmails(0);
+		for (int days : _EXPIRATION_DATE_OFFSETS) {
+			_sendExpiringActivationKeyEmails(days);
+
+			_sendExpiringLicenseKeyEmails(days);
+		}
 	}
 
 	private SubscriptionEntry _addSubscriptionEntry(
@@ -310,6 +326,56 @@ public class SubscriptionEntryService extends OneBaseService {
 			processedTemplateJSONObject.getString("body"));
 	}
 
+	private void _sendExpiringActivationKeyEmails(
+			int licenseKeyExpirationDateOffset)
+		throws Exception {
+
+		List<ActivationKey> activationKeys =
+			_activationKeyService.getExpiringActivationKeys(
+				_toDate(licenseKeyExpirationDateOffset),
+				_toDate(licenseKeyExpirationDateOffset + 1),
+				_toDate(licenseKeyExpirationDateOffset - 60));
+
+		for (ActivationKey activationKey : activationKeys) {
+			Account account = _accountService.fetchAccount(
+				activationKey.getAccountEntryId());
+
+			if (account == null) {
+				continue;
+			}
+
+			List<SubscriptionEntry> subscriptionEntries =
+				getSubscriptionEntries(
+					StringBundler.concat(
+						"(className eq '", ClassNameConstants.ACTIVATION_KEY,
+						"') and (classPK eq ",
+						activationKey.getActivationKeyId(), ")"));
+
+			if (subscriptionEntries.isEmpty()) {
+				continue;
+			}
+
+			List<LicenseKey> licenseKeys =
+				_licenseKeyService.getLicenseKeysByActivationKeyId(
+					activationKey.getActivationKeyId());
+
+			if (licenseKeys.isEmpty()) {
+				continue;
+			}
+
+			// Every license key under an activation key shares its dates, so
+			// the first one stands in for the environment in the email.
+
+			LicenseKey licenseKey = licenseKeys.get(0);
+
+			for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
+				_sendExpiringLicenseKeyEmail(
+					licenseKey, subscriptionEntry.getCustomUserId(),
+					licenseKeyExpirationDateOffset);
+			}
+		}
+	}
+
 	private void _sendExpiringLicenseKeyEmails(
 			int licenseKeyExpirationDateOffset)
 		throws Exception {
@@ -338,6 +404,10 @@ public class SubscriptionEntryService extends OneBaseService {
 				startDateLTCalendar.toInstant(), ")"));
 
 		for (LicenseKey licenseKey : licenseKeys) {
+			if (licenseKey.getActivationKeyId() > 0) {
+				continue;
+			}
+
 			Account account = _accountService.fetchAccount(
 				licenseKey.getAccountEntryId());
 
@@ -360,13 +430,26 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 	}
 
+	private Date _toDate(int days) {
+		Calendar calendar = Calendar.getInstance();
+
+		calendar.add(Calendar.DATE, days);
+
+		return calendar.getTime();
+	}
+
 	private static final String _DEFAULT_LANGUAGE_ID = "en_US";
+
+	private static final int[] _EXPIRATION_DATE_OFFSETS = {30, 14, 0};
 
 	private static final Set<String> _supportedLanguageIds = SetUtil.fromArray(
 		"en_US", "es_ES", "ja_JP", "pt_BR");
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private ActivationKeyService _activationKeyService;
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
