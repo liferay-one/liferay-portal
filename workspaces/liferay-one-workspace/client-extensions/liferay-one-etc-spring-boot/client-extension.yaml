@@ -113,6 +113,11 @@ liferay-one-etc-spring-boot-object-action-organization-update:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/organization/update
     type: objectAction
+liferay-one-etc-spring-boot-object-action-postal-address-create:
+    name: Liferay One Etc Spring Boot Object Action Postal Address Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/postal/address/create
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-user-create:
     name: Liferay One Etc Spring Boot Object Action User Create
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua

@@ -229,6 +229,19 @@ public class AccountService extends OneBaseService {
 		return accountResource.getAccount(accountEntryId);
 	}
 
+	public Account patchAccount(long accountId, Account account)
+		throws Exception {
+
+		AccountResource accountResource = AccountResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+
+		return accountResource.patchAccount(accountId, account);
+	}
+
 	public Account getAccount(String externalReferenceCode) throws Exception {
 		AccountResource accountResource = AccountResource.builder(
 		).endpoint(
