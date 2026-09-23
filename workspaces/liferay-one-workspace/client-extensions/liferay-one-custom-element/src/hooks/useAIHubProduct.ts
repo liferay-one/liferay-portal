@@ -19,12 +19,13 @@ const useAIHubProduct = () => {
 				await HeadlessCommerceDeliveryCatalog.getProductsPage(
 					commerceChannelId,
 					new URLSearchParams({
-						accountId: '-1',
-						filter: new SearchBuilder()
+						'accountId': '-1',
+						'filter': new SearchBuilder()
 							.lambda('specificationValues', SolutionTypes.AI_HUB)
 							.build(),
-						nestedFields: 'productSpecifications',
-						pageSize: '1',
+						'nestedFields': 'productSpecifications',
+						'pageSize': '1',
+						'productSpecifications.pageSize': '-1',
 					})
 				);
 
