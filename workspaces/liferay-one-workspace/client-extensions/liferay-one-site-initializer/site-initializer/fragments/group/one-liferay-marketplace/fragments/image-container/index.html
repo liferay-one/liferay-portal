@@ -1,6 +1,6 @@
 [#assign shape = configuration.shape!"trapezoid"]
 
-<div class="component-image ldp-product-${configuration.fragmentId} overflow-hidden shape-${shape}-${configuration.fragmentId}">
+<div class="component-image image-container-${configuration.fragmentId} overflow-hidden shape-${shape}-${configuration.fragmentId}">
 	<h1 data-lfr-editable-id="icon" data-lfr-editable-type="text" hidden="true" id="product-icon-${configuration.fragmentId}" />
 
 	<img class="product-icon-img-${configuration.fragmentId}" decoding="async" loading="lazy" src="" />
@@ -15,7 +15,7 @@
 </div>
 
 <style>
-	.ldp-product-${configuration.fragmentId} {
+	.image-container-${configuration.fragmentId} {
 		height: ${configuration.fragmentHeight!""};
 		min-height: 0;
 		min-width: 0;
@@ -23,7 +23,7 @@
 		width: ${configuration.fragmentWidth!""};
 	}
 
-	.ldp-product-${configuration.fragmentId} .product-icon-img-${configuration.fragmentId} {
+	.image-container-${configuration.fragmentId} .product-icon-img-${configuration.fragmentId} {
 		height: 100%;
 		object-fit: cover;
 		width: 100%;

@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-const description = configuration.description || '';
-const header = configuration.header || '';
-const title = configuration.title || '';
+const description = Liferay.Util.escapeHTML(configuration.description || '');
+const header = Liferay.Util.escapeHTML(configuration.header || '');
+const title = Liferay.Util.escapeHTML(configuration.title || '');
 
 function addModalClass() {
 	setTimeout(() => {
