@@ -4,7 +4,9 @@
  */
 
 import {useEffect, useState} from 'react';
-import LicenseKeys, {GenerateForm} from '~/services/spring-boot/LicenseKeys';
+import ActivationKeys, {
+	GenerateForm,
+} from '~/services/spring-boot/ActivationKeys';
 
 export function useGenerateActivationKeyForm(
 	projectExternalReferenceCode: string
@@ -26,7 +28,7 @@ export function useGenerateActivationKeyForm(
 		setError(false);
 		setLoading(true);
 
-		LicenseKeys.getGenerateForm(projectExternalReferenceCode)
+		ActivationKeys.getGenerateForm(projectExternalReferenceCode)
 			.then((value) => {
 				if (!cancelled) {
 					setGenerateForm(value);
