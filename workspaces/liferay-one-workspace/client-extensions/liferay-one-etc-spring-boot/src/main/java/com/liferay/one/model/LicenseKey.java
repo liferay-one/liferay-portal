@@ -12,14 +12,9 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -31,9 +26,13 @@ public class LicenseKey {
 		_accountEntryId = jsonObject.optLong(
 			"r_accountEntryToLicenseKey_accountEntryId");
 		_accountName = jsonObject.optString("accountName");
+		_activationKeyId = jsonObject.optLong(
+			"r_activationKeyToLicenseKey_c_activationKeyId");
 		_active = jsonObject.optBoolean("active");
 		_additionalInfo = jsonObject.optString("additionalInfo");
 		_clusterId = jsonObject.optLong("clusterId");
+		_commerceProductExternalReferenceCode = jsonObject.optString(
+			"r_commerceProductToLicenseKey_CProductERC");
 		_complimentary = jsonObject.optBoolean("complimentary");
 		_customExpirationDateInstant = _toInstant(
 			jsonObject.optString("customExpirationDate"));
@@ -77,12 +76,20 @@ public class LicenseKey {
 		return _accountName;
 	}
 
+	public long getActivationKeyId() {
+		return _activationKeyId;
+	}
+
 	public String getAdditionalInfo() {
 		return _additionalInfo;
 	}
 
 	public long getClusterId() {
 		return _clusterId;
+	}
+
+	public String getCommerceProductExternalReferenceCode() {
+		return _commerceProductExternalReferenceCode;
 	}
 
 	public Instant getCustomExpirationDateInstant() {
@@ -103,24 +110,6 @@ public class LicenseKey {
 
 	public long getEntitlementId() {
 		return _entitlementId;
-	}
-
-	public List<Long> getEntitlementIds() {
-		List<Long> entitlementIds = new ArrayList<>();
-
-		JSONArray jsonArray = _getAdditionalInfoJSONArray("entitlementIds");
-
-		if (jsonArray != null) {
-			for (int i = 0; i < jsonArray.length(); i++) {
-				entitlementIds.add(jsonArray.getLong(i));
-			}
-		}
-
-		if (entitlementIds.isEmpty() && (_entitlementId > 0)) {
-			entitlementIds.add(_entitlementId);
-		}
-
-		return entitlementIds;
 	}
 
 	public String getHostName() {
@@ -228,28 +217,6 @@ public class LicenseKey {
 		return _complimentary;
 	}
 
-	private JSONArray _getAdditionalInfoJSONArray(String name) {
-		if ((_additionalInfo == null) || _additionalInfo.isEmpty()) {
-			return null;
-		}
-
-		try {
-			JSONObject jsonObject = new JSONObject(_additionalInfo);
-
-			return jsonObject.optJSONArray(name);
-		}
-		catch (JSONException jsonException) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to read the additional info of license key " +
-						_licenseKeyId,
-					jsonException);
-			}
-
-			return null;
-		}
-	}
-
 	private Instant _toInstant(String value) {
 		if (Validator.isNull(value)) {
 			return null;
@@ -270,9 +237,11 @@ public class LicenseKey {
 
 	private final long _accountEntryId;
 	private final String _accountName;
+	private final long _activationKeyId;
 	private final boolean _active;
 	private final String _additionalInfo;
 	private final long _clusterId;
+	private final String _commerceProductExternalReferenceCode;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
 	private final String _description;
