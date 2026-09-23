@@ -34,6 +34,8 @@ ROLE_ASSIGNMENTS=(
 	"ACCNT-001=test@liferay.com=Account Administrator"
 	"ACCNT-021=admin@publisher.com=Account Administrator"
 	"ACCNT-021=test@liferay.com=Account Administrator"
+	"ACCNT-028=admin@customer.com=Account Administrator"
+	"ACCNT-028=member@customer.com=Buyer"
 )
 
 declare -A ACCOUNT_ROLE_IDS
