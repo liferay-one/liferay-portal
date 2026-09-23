@@ -1280,11 +1280,11 @@ export default {
 		"Report and export API calls to LDP this month, including calls you initiate on top of product functions. Excludes data ingestion and Liferay's own built-in calls. Resets monthly.",
 	'request-a-marketplace-publisher-account':
 		'Request a Marketplace Publisher Account',
+	'request-access': 'Request Access',
 	'request-access-to-ai-hub-private-beta':
 		'Request Access to AI Hub Private Beta',
 	'request-access-to-seo-&-aeo-studio-beta':
 		'Request Access to SEO&AEO Studio Beta',
-	'request-access': 'Request Access',
 	'request-account': 'Request Account',
 	'request-description': 'Request Description',
 	'request-details': 'Request Details',
@@ -1404,6 +1404,7 @@ export default {
 	'sizing': 'Sizing',
 	'sku': 'SKU',
 	'solution': 'Solution',
+	'solution-deleted-successfully': 'Solution deleted successfully.',
 	'solution-details': 'Solution Details',
 	'solution-header': 'Solution Header',
 	'solution-info': 'Solution Info',
