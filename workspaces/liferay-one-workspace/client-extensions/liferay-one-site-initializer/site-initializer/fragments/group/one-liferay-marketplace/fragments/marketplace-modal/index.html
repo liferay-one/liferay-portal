@@ -4,7 +4,7 @@
 	type="button"
 >
 	<span data-lfr-editable-id="buttonText" data-lfr-editable-type="text">
-	Open Modal
+		Open Modal
 	</span>
 </button>
 
@@ -13,11 +13,9 @@
 		<lfr-drop-zone></lfr-drop-zone>
 	</div>
 
-	[#if configuration.modalEditMode]
-
-	[/#if]		<style data-lfr-nonce>
-			.has-edit-mode-menu .page-editor__fragment-content #${configuration.modalId} {
-				display: block !important;
-			}
-		</style>
+	<style data-lfr-nonce>
+		.has-edit-mode-menu .page-editor__fragment-content #${configuration.modalId} {
+			display: block !important;
+		}
+	</style>
 [/#if]

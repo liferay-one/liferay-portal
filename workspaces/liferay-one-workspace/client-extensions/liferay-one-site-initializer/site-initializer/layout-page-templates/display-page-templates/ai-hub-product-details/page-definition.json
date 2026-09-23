@@ -3635,7 +3635,7 @@
 											},
 											"fragmentConfig": {
 												"description": "The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.",
-												"header": "Liferay Ai HUB",
+												"header": "Liferay AI Hub",
 												"productId": "",
 												"solutionType": "cmp",
 												"title": "AI Hub Requirements"

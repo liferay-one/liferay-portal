@@ -1519,47 +1519,6 @@
 										},
 										"id": "8780e910-103c-c56f-65b1-e5c2db2cd106",
 										"type": "Section"
-									},
-									{
-										"definition": {
-											"fragment": {
-												"key": "requirements-modal",
-												"siteKey": "[$GROUP_KEY$]"
-											},
-											"fragmentConfig": {
-												"description": "The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.",
-												"header": "Liferay Ai HUB",
-												"productId": "",
-												"solutionType": "cmp",
-												"title": "AI Hub Requirements"
-											},
-											"fragmentFields": [
-												{
-													"id": "header",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "description",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												},
-												{
-													"id": "title",
-													"value": {
-														"fragmentLink": {
-														}
-													}
-												}
-											],
-											"indexed": true
-										},
-										"id": "c476f489-5590-0bce-f169-d9ceadcc938a",
-										"type": "Fragment"
 									}
 								],
 								"type": "Section"

@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+const AI_HUB_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-AI-HUB';
+
 const available = configuration.available;
 const buttonLink = configuration.buttonLink;
 const purchasable = configuration.purchasable;
@@ -34,7 +36,7 @@ async function hasAIHubOrder(accountId) {
 		);
 
 		const response = await Liferay.Util.fetch(
-			`/o/headless-commerce-delivery-order/v1.0/channels/${channelId}/accounts/${accountId}/placed-orders?filter=${filter}`
+			`/o/headless-commerce-delivery-order/v1.0/channels/${channelId}/accounts/${accountId}/placed-orders?filter=${filter}&pageSize=1`
 		);
 
 		if (!response.ok) {
@@ -62,7 +64,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 			);
 
 			if (!response.ok) {
-				throw new Error(`Unable to load the product ${productId}`);
+				throw new Error(`Unable to load the product ID ${productId}`);
 			}
 
 			const product = await response.json();
@@ -74,7 +76,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 
 			if (!sku) {
 				throw new Error(
-					`Unable to find the SKU ${skuExternalReferenceCode} in the product ${productId}`
+					`Unable to find the SKU ${skuExternalReferenceCode} in the product ID ${productId}`
 				);
 			}
 
@@ -108,7 +110,11 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 
 			const accountId = Liferay.CommerceContext?.account?.accountId;
 
-			if (await hasAIHubOrder(accountId)) {
+			if (
+				product.externalReferenceCode ===
+					AI_HUB_PRODUCT_EXTERNAL_REFERENCE_CODE &&
+				(await hasAIHubOrder(accountId))
+			) {
 				buttonElement.href = '#';
 
 				buttonElement.dataset.purchaseInProgress = 'true';

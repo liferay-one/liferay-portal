@@ -32,7 +32,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 			);
 
 			if (!response.ok) {
-				throw new Error(`Unable to load the product ${productId}`);
+				throw new Error(`Unable to load the product ID ${productId}`);
 			}
 
 			const product = await response.json();
@@ -44,7 +44,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 
 			if (!sku) {
 				throw new Error(
-					`Unable to find the SKU ${skuExternalReferenceCode} in the product ${productId}`
+					`Unable to find the SKU ${skuExternalReferenceCode} in the product ID ${productId}`
 				);
 			}
 
@@ -90,9 +90,6 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 					`/product-purchase` +
 					`?productId=${productId}` +
 					`&skuRef=${sku.externalReferenceCode}`;
-
-				buttonElement.rel = 'noopener noreferrer';
-				buttonElement.target = '_blank';
 			}
 			else if (buttonLink) {
 				buttonElement.href = buttonLink;
