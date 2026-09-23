@@ -13,6 +13,7 @@ import {getSiteURL} from './siteUtils';
 
 import type {
 	DeliveryProduct,
+	DeliverySKU,
 	DeliverySKUOption,
 	ProductCategories,
 	ProductImageFallbackCategories,
@@ -254,6 +255,20 @@ export function isDXPFreeTierProduct(product: DeliveryProduct) {
 	return isFreeApp && isDXP;
 }
 
+const AI_HUB_TIERS = ['activate', 'studio'];
+
+export function getAiHubTier(sku?: DeliverySKU) {
+	for (const {skuOptionValueKey} of sku?.skuOptions ?? []) {
+		const tier = skuOptionValueKey.replace(/^plan-/, '');
+
+		if (AI_HUB_TIERS.includes(tier)) {
+			return tier;
+		}
+	}
+
+	return undefined;
+}
+
 export function getAiHubTierSKU(product: DeliveryProduct, skuRef?: string) {
 	const aiHubTierSKUs = getAiHubTierSKUs(product);
 
@@ -266,14 +281,7 @@ export function getAiHubTierSKU(product: DeliveryProduct, skuRef?: string) {
 
 export function getAiHubTierSKUs(product: DeliveryProduct) {
 	return (product.skus ?? [])
-		.filter(
-			({purchasable, skuOptions}) =>
-				purchasable &&
-				skuOptions &&
-				skuOptions.some(({skuOptionValueKey}) =>
-					['activate', 'studio'].includes(skuOptionValueKey)
-				)
-		)
+		.filter((sku) => sku.purchasable && !!getAiHubTier(sku))
 		.sort((a, b) => (a.price?.price ?? 0) - (b.price?.price ?? 0));
 }
 
