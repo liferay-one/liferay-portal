@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useRef, useState} from 'react';
+import {useMemo, useRef, useState} from 'react';
 import {
 	Outlet,
 	useLocation,
@@ -19,6 +19,7 @@ import ProductPurchaseLDP, {
 	LDPSettings,
 } from '~/services/commerce/ProductPurchaseLDP';
 import {Liferay} from '~/services/liferay/liferay';
+import {formatProductPrice, getCurrencyForCountry} from '~/utils/currencyUtils';
 import {
 	getAiHubTierSKU,
 	getProductPriceModel,
@@ -26,6 +27,7 @@ import {
 } from '~/utils/productUtils';
 
 import {useAppPurchaseContext} from '../../context/AppPurchaseContext';
+import useAccountAddresses from '../../hooks/useAccountAddresses';
 import useAccounts from '../../hooks/useAccounts';
 import useProductPurchaseCart from '../../hooks/useProductPurchaseCart';
 import {ProductPurchaseStepItem} from '../../productPurchaseRoutes';
@@ -108,17 +110,67 @@ const ProductPurchaseLayout = ({
 		? undefined
 		: getAiHubTierSKU(product, skuRef.current);
 
+	const activeSku =
+		product.skus?.find(
+			(sku) => sku?.externalReferenceCode === skuRef.current
+		) || product.skus?.[0];
+
+	const {data: accountAddressesResponse} = useAccountAddresses(
+		selectedAccount?.id
+	);
+
+	const defaultAddress = useMemo(() => {
+		const items = accountAddressesResponse?.items || [];
+
+		if (selectedAccount?.defaultBillingAddressId) {
+			const found = items.find(
+				(item) => item.id === selectedAccount.defaultBillingAddressId
+			);
+
+			if (found) {
+				return found;
+			}
+		}
+
+		return (
+			items.find(
+				(
+					item: BillingAddress & {
+						addressType?: string;
+						type?: number | string;
+					}
+				) =>
+					item.type === 1 ||
+					item.type === 3 ||
+					(typeof item.type === 'string' &&
+						item.type.toLowerCase().includes('billing')) ||
+					(typeof item.addressType === 'string' &&
+						item.addressType.toLowerCase().includes('billing'))
+			) || items[0]
+		);
+	}, [accountAddressesResponse, selectedAccount]);
+
+	const activeCurrencyCode =
+		getCurrencyForCountry(
+			payment.billingAddress?.country ||
+				payment.billingAddress?.countryISOCode ||
+				defaultAddress?.country ||
+				defaultAddress?.countryISOCode
+		) ||
+		Liferay.CommerceContext.currency.currencyCode ||
+		'USD';
+
+	const formattedSkuPrice = formatProductPrice(
+		activeSku?.price?.price ?? 99,
+		activeSku?.price?.priceFormatted,
+		activeCurrencyCode
+	);
+
 	const priceLabel = isFreeApp
 		? i18n.translate('free')
-		: productPurchaseCart.cart?.summary?.totalFormatted ||
+		: formattedSkuPrice ||
 			aiHubTierSKU?.price?.priceFormatted ||
-			product.skus?.find(
-				(sku) =>
-					sku?.externalReferenceCode === skuRef.current &&
-					sku?.price?.priceFormatted
-			)?.price?.priceFormatted ||
-			product.skus?.find((sku) => sku?.price?.priceFormatted)?.price
-				?.priceFormatted ||
+			productPurchaseCart.cart?.summary?.totalFormatted ||
 			i18n.translate('free');
 
 	const {pathname} = useLocation();

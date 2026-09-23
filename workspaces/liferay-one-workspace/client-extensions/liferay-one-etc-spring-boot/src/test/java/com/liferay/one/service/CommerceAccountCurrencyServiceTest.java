@@ -5,6 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountContactInformation;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 
@@ -23,6 +26,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -34,6 +40,142 @@ public class CommerceAccountCurrencyServiceTest {
 	@BeforeEach
 	public void setUp() {
 		_commerceAccountCurrencyService = new CommerceAccountCurrencyService();
+	}
+
+	@Test
+	public void testAssignDefaultCurrencyResolvesCountryFromPostalAddress()
+		throws Exception {
+
+		CommerceAccountCurrencyService commerceAccountCurrencyService =
+			Mockito.spy(new CommerceAccountCurrencyService());
+
+		PostalAddressService postalAddressService = Mockito.mock(
+			PostalAddressService.class);
+
+		ReflectionTestUtils.setField(
+			commerceAccountCurrencyService, "_postalAddressService",
+			postalAddressService);
+
+		Account account = new Account();
+
+		account.setDefaultBillingAddressId(101L);
+		account.setExternalReferenceCode("ACC-101");
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> "United Kingdom");
+
+		Mockito.doReturn(
+			postalAddress
+		).when(
+			postalAddressService
+		).getPostalAddress(
+			101L
+		);
+
+		Mockito.doNothing(
+		).when(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-101", "GBP"
+		);
+
+		commerceAccountCurrencyService.assignDefaultCurrency(account);
+
+		Mockito.verify(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-101", "GBP"
+		);
+	}
+
+	@Test
+	public void testAssignDefaultCurrencyResolvesCountryFromAccountContactInformation()
+		throws Exception {
+
+		CommerceAccountCurrencyService commerceAccountCurrencyService =
+			Mockito.spy(new CommerceAccountCurrencyService());
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACC-404");
+
+		AccountContactInformation accountContactInformation =
+			new AccountContactInformation();
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> "Brazil");
+		postalAddress.setAddressType("Billing and Shipping");
+
+		accountContactInformation.setPostalAddresses(
+			() -> new PostalAddress[] {postalAddress});
+
+		account.setAccountContactInformation(accountContactInformation);
+
+		Mockito.doNothing(
+		).when(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-404", "USD"
+		);
+
+		commerceAccountCurrencyService.assignDefaultCurrency(account);
+
+		Mockito.verify(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-404", "USD"
+		);
+	}
+
+	@Test
+	public void testAssignDefaultCurrencyWithExplicitCountry()
+		throws Exception {
+
+		CommerceAccountCurrencyService commerceAccountCurrencyService =
+			Mockito.spy(new CommerceAccountCurrencyService());
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACC-202");
+
+		Mockito.doNothing(
+		).when(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-202", "AUD"
+		);
+
+		commerceAccountCurrencyService.assignDefaultCurrency(
+			account, "Australia");
+
+		Mockito.verify(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-202", "AUD"
+		);
+	}
+
+	@Test
+	public void testAssignDefaultCurrencySkipsWhenCountryUnmapped()
+		throws Exception {
+
+		CommerceAccountCurrencyService commerceAccountCurrencyService =
+			Mockito.spy(new CommerceAccountCurrencyService());
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACC-303");
+
+		commerceAccountCurrencyService.assignDefaultCurrency(
+			account, "Atlantis");
+
+		Mockito.verify(
+			commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
+		);
 	}
 
 	@Test

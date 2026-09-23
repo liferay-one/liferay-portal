@@ -5,6 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.address.client.dto.v1_0.Country;
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
@@ -35,16 +38,28 @@ public class CommerceOrderServiceTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
+		_accountService = Mockito.mock(AccountService.class);
 		_aiHubService = Mockito.mock(AIHubService.class);
+		_commerceAccountCurrencyService = Mockito.mock(
+			CommerceAccountCurrencyService.class);
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
 		_countryService = Mockito.mock(CountryService.class);
+		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_salesforceService = Mockito.mock(SalesforceService.class);
 		_userAccountService = Mockito.mock(UserAccountService.class);
 
 		ReflectionTestUtils.setField(
+			_commerceOrderService, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
 			_commerceOrderService, "_aiHubService", _aiHubService);
 		ReflectionTestUtils.setField(
+			_commerceOrderService, "_commerceAccountCurrencyService",
+			_commerceAccountCurrencyService);
+		ReflectionTestUtils.setField(
 			_commerceOrderService, "_countryService", _countryService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_postalAddressService",
+			_postalAddressService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_salesforceService", _salesforceService);
 		ReflectionTestUtils.setField(
@@ -1036,6 +1051,154 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	@Test
+	public void testDispatchOrderUpdateAssignsCurrencyBasedOnPostalAddress()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+		userAccount.setDefaultBillingAddressId(456L);
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> "Australia");
+
+		Mockito.doReturn(
+			postalAddress
+		).when(
+			_postalAddressService
+		).getPostalAddress(
+			456L
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "Australia"
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateAssignsCurrencyFallbackToOrderBillingAddress()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode("JP");
+
+		order.setBillingAddress(billingAddress);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		Country country = new Country();
+
+		country.setTitle_i18n(() -> Map.of("en_US", "Japan"));
+
+		Mockito.doReturn(
+			country
+		).when(
+			_countryService
+		).getCountryByA2(
+			"JP"
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "Japan"
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateDoesNotAssignCurrencyIfCountryNotMapped()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setAccountId(123L);
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode("XX");
+
+		order.setBillingAddress(billingAddress);
+
+		_whenFetchCommerceOrder(order);
+
+		Account userAccount = new Account();
+
+		userAccount.setExternalReferenceCode("ACC-123");
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_accountService
+		).fetchAccount(
+			123L
+		);
+
+		Country country = new Country();
+
+		country.setTitle_i18n(() -> Map.of("en_US", "UnknownCountry"));
+
+		Mockito.doReturn(
+			country
+		).when(
+			_countryService
+		).getCountryByA2(
+			"XX"
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceAccountCurrencyService
+		).assignDefaultCurrency(
+			userAccount, "UnknownCountry"
+		);
+	}
+
 	private void _whenFetchCommerceOrder(Order order) throws Exception {
 		Mockito.doReturn(
 			order
@@ -1076,9 +1239,12 @@ public class CommerceOrderServiceTest {
 
 	private static final int _PAYMENT_STATUS_PENDING = 1;
 
+	private AccountService _accountService;
 	private AIHubService _aiHubService;
+	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 	private CommerceOrderService _commerceOrderService;
 	private CountryService _countryService;
+	private PostalAddressService _postalAddressService;
 	private SalesforceService _salesforceService;
 	private UserAccountService _userAccountService;
 

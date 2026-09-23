@@ -13,11 +13,12 @@ import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import HeadlessCommerceAdminAccount from '~/services/headless/HeadlessCommerceAdminAccount';
 import {Liferay} from '~/services/liferay/liferay';
+import {getCurrencyForCountry} from '~/utils/currencyUtils';
 
 import BillingAddressForm from '../BillingAddressForm/BillingAddressForm';
 import getPostalAddressDescription from './utils/getPostalAddressDescription';
 
-import type {BillingAddress as BillingAddressType} from '~/types/orders';
+import type {BillingAddress as BillingAddressType, Cart} from '~/types/orders';
 
 const mapPostalAddressToBillingAddress = (
 	postalAddress?: BillingAddressType
@@ -46,13 +47,39 @@ const BillingAddress = ({
 	hideNewAddressButton = false,
 	sectionName = i18n.translate('billing-address'),
 }: BillingAddressProps) => {
-	const {payment, selectedAccount, setPayment} =
+	const {payment, productPurchaseCart, selectedAccount, setPayment} =
 		useProductPurchaseLayoutContext();
 
 	const {data: addressesResponse, mutate} = useAccountAddresses(
 		selectedAccount?.id
 	);
 	const {data: countriesResponse} = useCommerceRegions();
+
+	const syncCartCurrency = useCallback(
+		async (country?: string) => {
+			const targetCurrency = getCurrencyForCountry(country);
+
+			if (targetCurrency) {
+				Liferay.CommerceContext.currency.currencyCode = targetCurrency;
+			}
+
+			const cartId = productPurchaseCart.cart?.id;
+
+			if (cartId) {
+				await productPurchaseCart
+					.updateCart(cartId, {
+						currencyCode: targetCurrency,
+					})
+					.then((updatedCart: Cart) => {
+						if (updatedCart) {
+							productPurchaseCart.setCart(updatedCart);
+						}
+					})
+					.catch(console.error);
+			}
+		},
+		[productPurchaseCart]
+	);
 
 	const [selectedAddress, setSelectedAddress] = useState(
 		payment.billingAddress ? getAddressKey(payment.billingAddress) : ''
@@ -94,13 +121,21 @@ const BillingAddress = ({
 		setBillingAddress,
 	]);
 
-	const onSelectAddress = (address: BillingAddressType) => {
+	const onSelectAddress = async (address: BillingAddressType) => {
 		setSelectedAddress(getAddressKey(address));
 		setShowNewAddressForm(false);
 
 		const newBillingAddress = mapPostalAddressToBillingAddress(address);
 
 		setBillingAddress(newBillingAddress);
+
+		if (address?.id) {
+			await HeadlessAdminUser.updateAccount(selectedAccount.id, {
+				defaultBillingAddressId: address.id,
+			}).catch(console.error);
+		}
+
+		await syncCartCurrency(address.country || address.countryISOCode);
 	};
 
 	const removeAddress = async (address: BillingAddressType) => {
@@ -150,11 +185,17 @@ const BillingAddress = ({
 					name: billingAddress.name,
 					phoneNumber: billingAddress.phoneNumber,
 					postalCode: billingAddress.zip,
-					primary: false,
+					primary: true,
 					streetAddressLine1: billingAddress.street1,
 					streetAddressLine2: billingAddress.street2,
 				}
 			);
+
+		if (postalAddress?.id) {
+			await HeadlessAdminUser.updateAccount(selectedAccount.id, {
+				defaultBillingAddressId: postalAddress.id,
+			}).catch(console.error);
+		}
 
 		await mutate();
 
@@ -164,6 +205,10 @@ const BillingAddress = ({
 		setShowNewAddressForm(false);
 
 		setBillingAddress(billingAddress);
+
+		await syncCartCurrency(
+			billingAddress.country || billingAddress.countryISOCode
+		);
 	};
 
 	return (
