@@ -4,22 +4,6 @@
 			"fields": [
 				{
 					"dataType": "string",
-					"defaultValue": "0",
-					"description": "Fragment Id",
-					"label": "Fragment Id",
-					"name": "fragmentId",
-					"type": "text"
-				},
-				{
-					"dataType": "string",
-					"defaultValue": "392px",
-					"description": "Fragment width (e.g., 392px, 50%, 20rem)",
-					"label": "Width",
-					"name": "fragmentWidth",
-					"type": "text"
-				},
-				{
-					"dataType": "string",
 					"defaultValue": "248px",
 					"description": "Fragment height (e.g., 248px, 50%, 20rem)",
 					"label": "Height",
@@ -28,10 +12,26 @@
 				},
 				{
 					"dataType": "string",
+					"defaultValue": "0",
+					"description": "Fragment Id",
+					"label": "Fragment ID",
+					"name": "fragmentId",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
 					"defaultValue": "24px",
 					"description": "Fragment border radius (e.g., 10px)",
-					"label": "Border radius",
+					"label": "Border Radius",
 					"name": "fragmentRadius",
+					"type": "text"
+				},
+				{
+					"dataType": "string",
+					"defaultValue": "392px",
+					"description": "Fragment width (e.g., 392px, 50%, 20rem)",
+					"label": "Width",
+					"name": "fragmentWidth",
 					"type": "text"
 				},
 				{
