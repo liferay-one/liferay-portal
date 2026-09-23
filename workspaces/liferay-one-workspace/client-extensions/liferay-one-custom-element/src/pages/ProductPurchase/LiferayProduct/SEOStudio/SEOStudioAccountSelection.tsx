@@ -28,9 +28,10 @@ async function goToAIHubProductPage() {
 		await HeadlessCommerceDeliveryCatalog.getProductsPage(
 			Liferay.CommerceContext.commerceChannelId,
 			new URLSearchParams({
-				accountId: '-1',
-				filter: SearchBuilder.contains('name', 'AI Hub'),
-				nestedFields: 'productSpecifications',
+				'accountId': '-1',
+				'filter': SearchBuilder.contains('name', 'AI Hub'),
+				'nestedFields': 'productSpecifications',
+				'productSpecifications.pageSize': '-1',
 			})
 		);
 
