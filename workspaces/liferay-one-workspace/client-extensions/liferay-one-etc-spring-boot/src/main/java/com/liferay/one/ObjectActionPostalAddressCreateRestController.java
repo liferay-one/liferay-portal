@@ -41,17 +41,6 @@ public class ObjectActionPostalAddressCreateRestController
 
 		long addressId = jsonObject.getLong("classPK");
 
-		PostalAddress postalAddress = _postalAddressService.getPostalAddress(
-			addressId);
-
-		if (postalAddress == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to find postal address " + addressId);
-			}
-
-			return;
-		}
-
 		long accountId = 0;
 
 		JSONObject modelAddressJSONObject = jsonObject.optJSONObject(
@@ -90,6 +79,9 @@ public class ObjectActionPostalAddressCreateRestController
 
 			_accountService.patchAccount(accountId, patchAccount);
 		}
+
+		PostalAddress postalAddress = _postalAddressService.getPostalAddress(
+			addressId);
 
 		String countryName = postalAddress.getAddressCountry();
 

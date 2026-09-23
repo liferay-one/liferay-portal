@@ -297,14 +297,7 @@ public class CommerceOrderService extends OneBaseService {
 			return;
 		}
 
-		try {
-			_assignDefaultCurrency(order);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to assign default currency for order: " + orderId,
-				exception);
-		}
+		_assignDefaultCurrency(order);
 
 		if (Objects.equals(
 				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
@@ -625,10 +618,6 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private void _assignDefaultCurrency(Order order) throws Exception {
-		if (order.getAccountId() == null) {
-			return;
-		}
-
 		com.liferay.headless.admin.user.client.dto.v1_0.Account account =
 			_accountService.fetchAccount(order.getAccountId());
 
@@ -644,9 +633,7 @@ public class CommerceOrderService extends OneBaseService {
 			PostalAddress postalAddress =
 				_postalAddressService.getPostalAddress(defaultBillingAddressId);
 
-			if (postalAddress != null) {
-				countryName = postalAddress.getAddressCountry();
-			}
+			countryName = postalAddress.getAddressCountry();
 		}
 
 		if (Validator.isNull(countryName)) {

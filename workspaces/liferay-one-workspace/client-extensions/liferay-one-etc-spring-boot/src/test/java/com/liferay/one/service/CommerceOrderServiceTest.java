@@ -857,8 +857,6 @@ public class CommerceOrderServiceTest {
 			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
 			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
 
-		order.setAccountId(123L);
-
 		_whenFetchCommerceOrder(order);
 
 		Account userAccount = new Account();
@@ -871,7 +869,7 @@ public class CommerceOrderServiceTest {
 		).when(
 			_accountService
 		).fetchAccount(
-			123L
+			_ACCOUNT_ID
 		);
 
 		PostalAddress postalAddress = new PostalAddress();
@@ -903,8 +901,6 @@ public class CommerceOrderServiceTest {
 			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
 			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
 
-		order.setAccountId(123L);
-
 		BillingAddress billingAddress = new BillingAddress();
 
 		billingAddress.setCountryISOCode("JP");
@@ -922,7 +918,7 @@ public class CommerceOrderServiceTest {
 		).when(
 			_accountService
 		).fetchAccount(
-			123L
+			_ACCOUNT_ID
 		);
 
 		Country country = new Country();
@@ -1016,8 +1012,6 @@ public class CommerceOrderServiceTest {
 			CommerceOrderConstants.ORDER_STATUS_PENDING, "DXP_APP",
 			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
 
-		order.setAccountId(123L);
-
 		BillingAddress billingAddress = new BillingAddress();
 
 		billingAddress.setCountryISOCode("XX");
@@ -1035,7 +1029,7 @@ public class CommerceOrderServiceTest {
 		).when(
 			_accountService
 		).fetchAccount(
-			123L
+			_ACCOUNT_ID
 		);
 
 		Country country = new Country();
@@ -1149,6 +1143,7 @@ public class CommerceOrderServiceTest {
 
 		Order order = new Order();
 
+		order.setAccountId(_ACCOUNT_ID);
 		order.setId(_ORDER_ID);
 		order.setOrderStatus(orderStatus);
 		order.setOrderTypeExternalReferenceCode(orderTypeExternalReferenceCode);
@@ -1234,6 +1229,8 @@ public class CommerceOrderServiceTest {
 			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
 		);
 	}
+
+	private static final long _ACCOUNT_ID = 123;
 
 	private static final long _ORDER_ID = 1000L;
 
