@@ -7,12 +7,13 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.one.constants.ProductSpecificationConstants;
+import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -61,10 +62,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 		Product product = _commerceProductService.getProduct(cProductId);
 
-		if (!_isLicenseKeyGenerating(
-				CommerceProductUtil.getCategoryExternalReferenceCodes(product),
-				product)) {
-
+		if (!_isPaidApp(product)) {
 			return;
 		}
 
@@ -81,6 +79,10 @@ public class EntitlementDefinitionService extends OneBaseService {
 		List<Sku> skus = new ArrayList<>();
 
 		for (Sku sku : _commerceSkuService.getSkus(cProductId)) {
+			if (!_hasLicenseUsageTypeOption(sku)) {
+				continue;
+			}
+
 			if (Validator.isNull(sku.getExternalReferenceCode())) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
@@ -95,13 +97,6 @@ public class EntitlementDefinitionService extends OneBaseService {
 		}
 
 		if (skus.isEmpty()) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Unable to generate entitlement definitions for ",
-						"product ", cProductId, " without SKUs"));
-			}
-
 			return;
 		}
 
@@ -331,21 +326,37 @@ public class EntitlementDefinitionService extends OneBaseService {
 		return entitlementDefinitionsBySkuExternalReferenceCode;
 	}
 
-	private boolean _isLicenseKeyGenerating(
-		List<String> categoryExternalReferenceCodes, Product product) {
+	private boolean _hasLicenseUsageTypeOption(Sku sku) {
+		SkuOption[] skuOptions = sku.getSkuOptions();
 
-		if (Objects.equals(
-				CommerceProductUtil.getSpecificationValue(
-					product,
-					ProductSpecificationConstants.
-						KEY_PROJECT_ACTIVATION_PROFILE),
-				ProductSpecificationConstants.ACTIVATION_PROFILE_LICENSES) ||
-			(categoryExternalReferenceCodes.contains(
+		if (skuOptions == null) {
+			return false;
+		}
+
+		for (SkuOption skuOption : skuOptions) {
+			String key = skuOption.getKey();
+
+			if ((key != null) &&
+				key.endsWith(
+					SkuOptionConstants.KEY_SUFFIX_LICENSE_USAGE_TYPE)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isPaidApp(Product product) {
+		List<String> categoryExternalReferenceCodes =
+			CommerceProductUtil.getCategoryExternalReferenceCodes(product);
+
+		if (categoryExternalReferenceCodes.contains(
 				TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP) &&
-			 ArrayUtil.contains(
-				 ProductSpecificationConstants.TYPES_LICENSE_KEY_GENERATING,
-				 CommerceProductUtil.getSpecificationValue(
-					 product, ProductSpecificationConstants.KEY_TYPE)))) {
+			Objects.equals(
+				CommerceProductUtil.getSpecificationValue(
+					product, ProductSpecificationConstants.KEY_PRICE_MODEL),
+				ProductSpecificationConstants.PRICE_MODEL_PAID)) {
 
 			return true;
 		}
