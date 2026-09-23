@@ -151,9 +151,11 @@ function _link_product_display_page {
 		return 1
 	fi
 
-	# Posting an override for a versionable product copies it into a new
-	# version, so an entry that already points at the right template is left
-	# alone to keep repeated runs from stacking versions.
+	# Posting an override for a versionable product copies it into a new draft
+	# version and maps that draft, so with product versioning enabled the
+	# storefront keeps the default template until the draft is published. An
+	# entry that already points at the right template is left alone to keep
+	# repeated runs from stacking versions.
 
 	if _has_product_display_page \
 		"${page_template_uuid}" \

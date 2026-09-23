@@ -1023,7 +1023,6 @@
 																		"fragmentWidth": "601px",
 																		"loop": true,
 																		"muted": true,
-																		"objectFit": "cover",
 																		"shadow": false
 																	},
 																	"fragmentFields": [
@@ -1335,7 +1334,6 @@
 																		"fragmentWidth": "601px",
 																		"loop": true,
 																		"muted": true,
-																		"objectFit": "cover",
 																		"shadow": false
 																	},
 																	"fragmentFields": [
@@ -1803,8 +1801,6 @@
 																		"fragmentWidth": "808px",
 																		"loop": true,
 																		"muted": true,
-																		"objectFit": "cover",
-																		"posterImage": "",
 																		"shadow": true
 																	},
 																	"fragmentFields": [
@@ -3636,8 +3632,6 @@
 											"fragmentConfig": {
 												"description": "The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.",
 												"header": "Liferay AI Hub",
-												"productId": "",
-												"solutionType": "cmp",
 												"title": "AI Hub Requirements"
 											},
 											"fragmentFields": [

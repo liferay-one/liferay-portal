@@ -37,7 +37,7 @@
 		<#if developerNames?has_content>
 			<#list developerNames as developerName>
 				<#if (publisherDetails.friendlyUrlPath)?has_content>
-					<a href="/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
+					<a href="/c_publisherdetails/${htmlUtil.escape(publisherDetails.friendlyUrlPath)}">
 						${htmlUtil.escape(developerName.value)}
 					</a>
 				<#else>

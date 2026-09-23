@@ -22,6 +22,16 @@ const productId = fragmentElement
 	.innerText.replace(/[\n\r]+|[\s]{2,}/g, ' ')
 	.trim();
 
+function getSiteURL() {
+	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
+
+	if (layoutRelativeURL.startsWith('/web/')) {
+		return layoutRelativeURL.split('/').slice(0, 3).join('/');
+	}
+
+	return '';
+}
+
 if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 	(async () => {
 		try {
@@ -68,7 +78,9 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 				}
 				else {
 					priceElement.textContent = new Intl.NumberFormat('en-US', {
-						currency: 'USD',
+						currency:
+							Liferay.CommerceContext?.currency?.currencyCode ??
+							'USD',
 						style: 'currency',
 					}).format(monthlyPrice ? skuPrice / 12 : skuPrice);
 				}
@@ -86,8 +98,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 				buttonElement.href = '#';
 
 				buttonElement.dataset.destinationUrl =
-					`${themeDisplay.getCDNBaseURL()}` +
-					`/product-purchase` +
+					`${getSiteURL()}/product-purchase` +
 					`?productId=${productId}` +
 					`&skuRef=${sku.externalReferenceCode}`;
 			}

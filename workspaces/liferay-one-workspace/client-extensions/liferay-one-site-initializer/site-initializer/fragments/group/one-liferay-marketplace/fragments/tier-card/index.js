@@ -23,6 +23,16 @@ const productId = fragmentElement
 	.innerText.replace(/[\n\r]+|[\s]{2,}/g, ' ')
 	.trim();
 
+function getSiteURL() {
+	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
+
+	if (layoutRelativeURL.startsWith('/web/')) {
+		return layoutRelativeURL.split('/').slice(0, 3).join('/');
+	}
+
+	return '';
+}
+
 async function hasAIHubOrder(accountId) {
 	if (!accountId || accountId === -1) {
 		return false;
@@ -134,8 +144,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 				buttonElement.href = '#';
 
 				buttonElement.dataset.destinationUrl =
-					`${themeDisplay.getCDNBaseURL()}` +
-					`/product-purchase` +
+					`${getSiteURL()}/product-purchase` +
 					`?productId=${productId}` +
 					`&skuRef=${sku.externalReferenceCode}`;
 			}
