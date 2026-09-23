@@ -17,6 +17,11 @@
 		},
 		{
 			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountEntryToActivationKey_accountEntryId",
+			"externalReferenceCode": "C_ACTIVATION_KEY"
+		},
+		{
+			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountToAIHubApplication_accountEntryId",
 			"externalReferenceCode": "C_AI_HUB_APPLICATION"
 		},
@@ -29,6 +34,11 @@
 			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountEntryToEntitlement_accountEntryId",
 			"externalReferenceCode": "C_ENTITLEMENT"
+		},
+		{
+			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountEntryToLicenseKey_accountEntryId",
+			"externalReferenceCode": "C_LICENSE_KEY"
 		},
 		{
 			"accountEntryRestricted": true,
