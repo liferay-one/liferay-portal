@@ -10,6 +10,9 @@ package com.liferay.one.constants;
  */
 public class ClassNameConstants {
 
+	public static final String ACTIVATION_KEY =
+		"com.liferay.object.model.ObjectDefinition#C_ACTIVATION_KEY";
+
 	public static final String LICENSE_KEY =
 		"com.liferay.object.model.ObjectDefinition#C_LICENSE_KEY";
 
