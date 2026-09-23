@@ -5,14 +5,19 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountContactInformation;
+import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.one.constants.CommerceCurrencyConstants;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +37,99 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Component
 public class CommerceAccountCurrencyService extends OneBaseService {
+
+	public void assignDefaultCurrency(Account account) throws Exception {
+		if (account == null) {
+			return;
+		}
+
+		String countryName = null;
+
+		Long defaultBillingAddressId = account.getDefaultBillingAddressId();
+
+		if ((defaultBillingAddressId != null) &&
+			(defaultBillingAddressId > 0)) {
+
+			PostalAddress postalAddress =
+				_postalAddressService.getPostalAddress(defaultBillingAddressId);
+
+			if (postalAddress != null) {
+				countryName = postalAddress.getAddressCountry();
+			}
+		}
+
+		if (Validator.isNull(countryName)) {
+			AccountContactInformation accountContactInformation =
+				account.getAccountContactInformation();
+
+			if (accountContactInformation != null) {
+				PostalAddress[] postalAddresses =
+					accountContactInformation.getPostalAddresses();
+
+				if (ArrayUtil.isNotEmpty(postalAddresses)) {
+					PostalAddress billingPostalAddress = null;
+
+					for (PostalAddress postalAddress : postalAddresses) {
+						String addressType = postalAddress.getAddressType();
+
+						if ((addressType != null) &&
+							addressType.toLowerCase(
+							).contains(
+								"billing"
+							)) {
+
+							billingPostalAddress = postalAddress;
+
+							break;
+						}
+					}
+
+					if (billingPostalAddress == null) {
+						billingPostalAddress = postalAddresses[0];
+					}
+
+					if (billingPostalAddress != null) {
+						countryName = billingPostalAddress.getAddressCountry();
+					}
+				}
+			}
+		}
+
+		if (Validator.isNotNull(countryName)) {
+			assignDefaultCurrency(account, countryName);
+		}
+	}
+
+	public void assignDefaultCurrency(Account account, String countryName)
+		throws Exception {
+
+		if ((account == null) || Validator.isNull(countryName)) {
+			return;
+		}
+
+		String currencyIsoCode = getCurrencyForCountry(countryName);
+
+		if (Validator.isNull(currencyIsoCode)) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"No country-to-currency mapping found for country: " +
+						countryName);
+			}
+
+			return;
+		}
+
+		upsertAccountCurrency(
+			account.getExternalReferenceCode(), currencyIsoCode);
+	}
+
+	public String getCurrencyForCountry(String countryName) {
+		if (Validator.isNull(countryName)) {
+			return null;
+		}
+
+		return _countryToCurrencyMap.get(countryName);
+	}
 
 	public void upsertAccountCurrency(
 			String accountExternalReferenceCode, String currencyIsoCode)
@@ -153,6 +251,167 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 	private static final Log _log = LogFactory.getLog(
 		CommerceAccountCurrencyService.class);
 
+	private static final Map<String, String> _countryToCurrencyMap =
+		HashMapBuilder.put(
+			"Algeria", "USD"
+		).put(
+			"Andorra", "EUR"
+		).put(
+			"Angola", "USD"
+		).put(
+			"Argentina", "USD"
+		).put(
+			"Australia", "AUD"
+		).put(
+			"Austria", "EUR"
+		).put(
+			"Bahrain", "USD"
+		).put(
+			"Bangladesh", "INR"
+		).put(
+			"Belarus", "EUR"
+		).put(
+			"Belgium", "EUR"
+		).put(
+			"Bermuda", "USD"
+		).put(
+			"Brazil", "USD"
+		).put(
+			"Bulgaria", "EUR"
+		).put(
+			"Cambodia", "USD"
+		).put(
+			"Cameroon", "USD"
+		).put(
+			"Canada", "USD"
+		).put(
+			"Cayman Islands", "USD"
+		).put(
+			"Chile", "USD"
+		).put(
+			"China", "USD"
+		).put(
+			"Colombia", "USD"
+		).put(
+			"Costa Rica", "USD"
+		).put(
+			"Croatia", "EUR"
+		).put(
+			"Cyprus", "EUR"
+		).put(
+			"Czech Republic", "EUR"
+		).put(
+			"Ecuador", "USD"
+		).put(
+			"Egypt", "USD"
+		).put(
+			"El Salvador", "USD"
+		).put(
+			"Estonia", "EUR"
+		).put(
+			"Ethiopia", "USD"
+		).put(
+			"Finland", "EUR"
+		).put(
+			"France", "EUR"
+		).put(
+			"French Polynesia", "EUR"
+		).put(
+			"Germany", "EUR"
+		).put(
+			"Greece", "EUR"
+		).put(
+			"Guatemala", "EUR"
+		).put(
+			"Hong Kong", "USD"
+		).put(
+			"Hungary", "EUR"
+		).put(
+			"India", "INR"
+		).put(
+			"Indonesia", "USD"
+		).put(
+			"Ireland", "EUR"
+		).put(
+			"Israel", "USD"
+		).put(
+			"Italy", "EUR"
+		).put(
+			"Ivory Coast", "USD"
+		).put(
+			"Jamaica", "USD"
+		).put(
+			"Japan", "JPY"
+		).put(
+			"Kenya", "USD"
+		).put(
+			"Kuwait", "USD"
+		).put(
+			"Libyan Arab Jamahiriya", "USD"
+		).put(
+			"Luxembourg", "EUR"
+		).put(
+			"Malaysia", "USD"
+		).put(
+			"Mexico", "USD"
+		).put(
+			"Morocco", "USD"
+		).put(
+			"Netherlands", "EUR"
+		).put(
+			"New Zealand", "AUD"
+		).put(
+			"Norway", "EUR"
+		).put(
+			"Oman", "USD"
+		).put(
+			"Panama", "USD"
+		).put(
+			"Paraguay", "USD"
+		).put(
+			"Peru", "USD"
+		).put(
+			"Poland", "EUR"
+		).put(
+			"Portugal", "EUR"
+		).put(
+			"Qatar", "USD"
+		).put(
+			"Romania", "EUR"
+		).put(
+			"Saudi Arabia", "USD"
+		).put(
+			"Singapore", "USD"
+		).put(
+			"Slovenia", "EUR"
+		).put(
+			"South Africa", "USD"
+		).put(
+			"Spain", "EUR"
+		).put(
+			"Sweden", "EUR"
+		).put(
+			"Switzerland", "EUR"
+		).put(
+			"Taiwan ROC", "EUR"
+		).put(
+			"Thailand", "USD"
+		).put(
+			"Togo", "USD"
+		).put(
+			"Trinidad and Tobago", "USD"
+		).put(
+			"United Arab Emirates", "USD"
+		).put(
+			"United Kingdom", "GBP"
+		).put(
+			"United States", "USD"
+		).put(
+			"Uruguay", "USD"
+		).put(
+			"Vietnam", "USD"
+		).build();
+
 	@Value("${liferay.one.commerce.channel.external.reference.code}")
 	private String _commerceChannelExternalReferenceCode;
 
@@ -161,5 +420,8 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 
 	@Autowired
 	private CommerceCurrencyService _commerceCurrencyService;
+
+	@Autowired
+	private PostalAddressService _postalAddressService;
 
 }
