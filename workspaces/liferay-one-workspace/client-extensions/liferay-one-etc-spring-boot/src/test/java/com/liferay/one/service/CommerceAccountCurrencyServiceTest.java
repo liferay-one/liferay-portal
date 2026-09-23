@@ -47,7 +47,7 @@ public class CommerceAccountCurrencyServiceTest {
 		throws Exception {
 
 		CommerceAccountCurrencyService commerceAccountCurrencyService =
-			Mockito.spy(new CommerceAccountCurrencyService());
+			Mockito.spy(new TestCommerceAccountCurrencyService());
 
 		Account account = new Account();
 
@@ -87,7 +87,7 @@ public class CommerceAccountCurrencyServiceTest {
 		throws Exception {
 
 		CommerceAccountCurrencyService commerceAccountCurrencyService =
-			Mockito.spy(new CommerceAccountCurrencyService());
+			Mockito.spy(new TestCommerceAccountCurrencyService());
 
 		PostalAddressService postalAddressService = Mockito.mock(
 			PostalAddressService.class);
@@ -134,7 +134,7 @@ public class CommerceAccountCurrencyServiceTest {
 		throws Exception {
 
 		CommerceAccountCurrencyService commerceAccountCurrencyService =
-			Mockito.spy(new CommerceAccountCurrencyService());
+			Mockito.spy(new TestCommerceAccountCurrencyService());
 
 		Account account = new Account();
 
@@ -151,11 +151,35 @@ public class CommerceAccountCurrencyServiceTest {
 	}
 
 	@Test
+	public void testAssignDefaultCurrencySkipsWhenCurrencyExists()
+		throws Exception {
+
+		TestCommerceAccountCurrencyService testCommerceAccountCurrencyService =
+			Mockito.spy(new TestCommerceAccountCurrencyService());
+
+		testCommerceAccountCurrencyService.getAllItemsResults.add(
+			Collections.singletonList(_createEntryJSONObject(_CURRENCY_ID)));
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACC-505");
+
+		testCommerceAccountCurrencyService.assignDefaultCurrency(
+			account, "Australia");
+
+		Mockito.verify(
+			testCommerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
 	public void testAssignDefaultCurrencyWithExplicitCountry()
 		throws Exception {
 
 		CommerceAccountCurrencyService commerceAccountCurrencyService =
-			Mockito.spy(new CommerceAccountCurrencyService());
+			Mockito.spy(new TestCommerceAccountCurrencyService());
 
 		Account account = new Account();
 

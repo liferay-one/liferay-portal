@@ -39,10 +39,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class CommerceAccountCurrencyService extends OneBaseService {
 
 	public void assignDefaultCurrency(Account account) throws Exception {
-		if (account == null) {
-			return;
-		}
-
 		String countryName = null;
 
 		Long defaultBillingAddressId = account.getDefaultBillingAddressId();
@@ -53,9 +49,7 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			PostalAddress postalAddress =
 				_postalAddressService.getPostalAddress(defaultBillingAddressId);
 
-			if (postalAddress != null) {
-				countryName = postalAddress.getAddressCountry();
-			}
+			countryName = postalAddress.getAddressCountry();
 		}
 
 		if (Validator.isNull(countryName)) {
@@ -103,7 +97,15 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 	public void assignDefaultCurrency(Account account, String countryName)
 		throws Exception {
 
-		if ((account == null) || Validator.isNull(countryName)) {
+		if (Validator.isNull(countryName)) {
+			return;
+		}
+
+		JSONObject accountChannelCurrencyJSONObject =
+			_fetchAccountChannelCurrencyJSONObject(
+				account.getExternalReferenceCode());
+
+		if (accountChannelCurrencyJSONObject != null) {
 			return;
 		}
 
@@ -170,11 +172,34 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			accountExternalReferenceCode, currency.getId());
 	}
 
-	private void _upsertAccountChannelCurrency(
-			String accountExternalReferenceCode, long currencyId)
+	private JSONObject _fetchAccountChannelCurrencyJSONObject(
+			String accountExternalReferenceCode)
 		throws Exception {
 
-		String path = UriComponentsBuilder.fromPath(
+		Channel channel = _commerceChannelService.fetchChannel(
+			_commerceChannelExternalReferenceCode);
+
+		List<JSONObject> accountChannelEntryJSONObjects = getAllItems(
+			_getAccountChannelCurrenciesPath(accountExternalReferenceCode),
+			null, jsonObject -> jsonObject);
+
+		for (JSONObject accountChannelEntryJSONObject :
+				accountChannelEntryJSONObjects) {
+
+			if (accountChannelEntryJSONObject.optLong("channelId") ==
+					channel.getId()) {
+
+				return accountChannelEntryJSONObject;
+			}
+		}
+
+		return null;
+	}
+
+	private String _getAccountChannelCurrenciesPath(
+		String accountExternalReferenceCode) {
+
+		return UriComponentsBuilder.fromPath(
 			StringBundler.concat(
 				"/o/headless-commerce-admin-account/v1.0/accounts",
 				"/by-externalReferenceCode/{externalReferenceCode}",
@@ -182,22 +207,17 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 		).buildAndExpand(
 			accountExternalReferenceCode
 		).toUriString();
+	}
 
-		Channel channel = _commerceChannelService.fetchChannel(
-			_commerceChannelExternalReferenceCode);
+	private void _upsertAccountChannelCurrency(
+			String accountExternalReferenceCode, long currencyId)
+		throws Exception {
 
-		List<JSONObject> accountChannelEntryJSONObjects = getAllItems(
-			path, null, jsonObject -> jsonObject);
+		JSONObject accountChannelEntryJSONObject =
+			_fetchAccountChannelCurrencyJSONObject(
+				accountExternalReferenceCode);
 
-		for (JSONObject accountChannelEntryJSONObject :
-				accountChannelEntryJSONObjects) {
-
-			if (accountChannelEntryJSONObject.optLong("channelId") !=
-					channel.getId()) {
-
-				continue;
-			}
-
+		if (accountChannelEntryJSONObject != null) {
 			if (accountChannelEntryJSONObject.optLong("classPK") ==
 					currencyId) {
 
@@ -231,7 +251,8 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 					"classPK", currencyId
 				).toString(),
 				UriComponentsBuilder.fromPath(
-					path
+					_getAccountChannelCurrenciesPath(
+						accountExternalReferenceCode)
 				).build(
 				).toUri());
 		}
