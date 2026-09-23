@@ -43,6 +43,46 @@ public class CommerceAccountCurrencyServiceTest {
 	}
 
 	@Test
+	public void testAssignDefaultCurrencyResolvesCountryFromAccountContactInformation()
+		throws Exception {
+
+		CommerceAccountCurrencyService commerceAccountCurrencyService =
+			Mockito.spy(new CommerceAccountCurrencyService());
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACC-404");
+
+		AccountContactInformation accountContactInformation =
+			new AccountContactInformation();
+
+		PostalAddress postalAddress = new PostalAddress();
+
+		postalAddress.setAddressCountry(() -> "Brazil");
+		postalAddress.setAddressType("Billing and Shipping");
+
+		accountContactInformation.setPostalAddresses(
+			() -> new PostalAddress[] {postalAddress});
+
+		account.setAccountContactInformation(accountContactInformation);
+
+		Mockito.doNothing(
+		).when(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-404", "USD"
+		);
+
+		commerceAccountCurrencyService.assignDefaultCurrency(account);
+
+		Mockito.verify(
+			commerceAccountCurrencyService
+		).upsertAccountCurrency(
+			"ACC-404", "USD"
+		);
+	}
+
+	@Test
 	public void testAssignDefaultCurrencyResolvesCountryFromPostalAddress()
 		throws Exception {
 
@@ -90,7 +130,7 @@ public class CommerceAccountCurrencyServiceTest {
 	}
 
 	@Test
-	public void testAssignDefaultCurrencyResolvesCountryFromAccountContactInformation()
+	public void testAssignDefaultCurrencySkipsWhenCountryUnmapped()
 		throws Exception {
 
 		CommerceAccountCurrencyService commerceAccountCurrencyService =
@@ -98,34 +138,15 @@ public class CommerceAccountCurrencyServiceTest {
 
 		Account account = new Account();
 
-		account.setExternalReferenceCode("ACC-404");
+		account.setExternalReferenceCode("ACC-303");
 
-		AccountContactInformation accountContactInformation =
-			new AccountContactInformation();
-
-		PostalAddress postalAddress = new PostalAddress();
-
-		postalAddress.setAddressCountry(() -> "Brazil");
-		postalAddress.setAddressType("Billing and Shipping");
-
-		accountContactInformation.setPostalAddresses(
-			() -> new PostalAddress[] {postalAddress});
-
-		account.setAccountContactInformation(accountContactInformation);
-
-		Mockito.doNothing(
-		).when(
-			commerceAccountCurrencyService
-		).upsertAccountCurrency(
-			"ACC-404", "USD"
-		);
-
-		commerceAccountCurrencyService.assignDefaultCurrency(account);
+		commerceAccountCurrencyService.assignDefaultCurrency(
+			account, "Atlantis");
 
 		Mockito.verify(
-			commerceAccountCurrencyService
+			commerceAccountCurrencyService, Mockito.never()
 		).upsertAccountCurrency(
-			"ACC-404", "USD"
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
 		);
 	}
 
@@ -154,27 +175,6 @@ public class CommerceAccountCurrencyServiceTest {
 			commerceAccountCurrencyService
 		).upsertAccountCurrency(
 			"ACC-202", "AUD"
-		);
-	}
-
-	@Test
-	public void testAssignDefaultCurrencySkipsWhenCountryUnmapped()
-		throws Exception {
-
-		CommerceAccountCurrencyService commerceAccountCurrencyService =
-			Mockito.spy(new CommerceAccountCurrencyService());
-
-		Account account = new Account();
-
-		account.setExternalReferenceCode("ACC-303");
-
-		commerceAccountCurrencyService.assignDefaultCurrency(
-			account, "Atlantis");
-
-		Mockito.verify(
-			commerceAccountCurrencyService, Mockito.never()
-		).upsertAccountCurrency(
-			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
 		);
 	}
 
