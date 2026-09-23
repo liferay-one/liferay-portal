@@ -12,6 +12,7 @@ import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.OveragePricing;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
@@ -53,7 +54,8 @@ public class EntitlementService extends OneBaseService {
 	public Entitlement addEntitlement(
 			long accountEntryId, long commerceOrderItemId, long contractId,
 			long entitlementDefinitionId, String endDate, String grantType,
-			Double maxQuantity, String name, Map<String, String> productOptions,
+			Double maxQuantity, String name, OveragePricing overagePricing,
+			Map<String, String> productOptions,
 			String projectExternalReferenceCode, Double quantity,
 			String startDate)
 		throws Exception {
@@ -102,6 +104,15 @@ public class EntitlementService extends OneBaseService {
 		if (contractId > 0) {
 			entitlementJSONObject.put(
 				"r_contractToEntitlement_c_contractId", contractId);
+		}
+
+		if (overagePricing != null) {
+			JSONObject overagePricingJSONObject = overagePricing.toJSONObject();
+
+			for (String key : overagePricingJSONObject.keySet()) {
+				entitlementJSONObject.put(
+					key, overagePricingJSONObject.get(key));
+			}
 		}
 
 		if ((productOptions != null) && !productOptions.isEmpty()) {
@@ -228,7 +239,8 @@ public class EntitlementService extends OneBaseService {
 					entitlementDefinition.getEntitlementDefinitionId(), endDate,
 					entitlementDefinition.getGrantType(),
 					entitlementDefinition.getMaxQuantity(),
-					entitlementDefinition.getName(), productOptions,
+					entitlementDefinition.getName(),
+					entitlementDefinition.getOveragePricing(), productOptions,
 					projectExternalReferenceCode,
 					_multiply(
 						orderItemQuantity,
