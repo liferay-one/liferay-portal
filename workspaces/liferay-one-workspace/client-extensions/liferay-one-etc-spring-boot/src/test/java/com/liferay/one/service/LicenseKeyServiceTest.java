@@ -52,9 +52,9 @@ public class LicenseKeyServiceTest {
 	public void testGetActiveLicenseKeyCounts() throws Exception {
 		Mockito.doReturn(
 			Arrays.asList(
-				_createLicenseKey(true, false, 10L, 1L),
-				_createLicenseKey(true, false, 10L, 2L),
-				_createLicenseKey(true, false, 20L, 3L))
+				_createLicenseKey(1L, true, false, 10L, 1L),
+				_createLicenseKey(2L, true, false, 10L, 2L),
+				_createLicenseKey(3L, true, false, 20L, 3L))
 		).when(
 			_licenseKeyService
 		).getAllItems(
@@ -74,8 +74,8 @@ public class LicenseKeyServiceTest {
 
 		Mockito.doReturn(
 			Arrays.asList(
-				_createLicenseKey(true, true, 10L, 1L),
-				_createLicenseKey(true, false, 10L, 2L))
+				_createLicenseKey(1L, true, true, 10L, 1L),
+				_createLicenseKey(2L, true, false, 10L, 2L))
 		).when(
 			_licenseKeyService
 		).getAllItems(
@@ -94,8 +94,8 @@ public class LicenseKeyServiceTest {
 
 		Mockito.doReturn(
 			Arrays.asList(
-				_createLicenseKey(false, false, 10L, 1L),
-				_createLicenseKey(true, false, 10L, 2L))
+				_createLicenseKey(1L, false, false, 10L, 1L),
+				_createLicenseKey(2L, true, false, 10L, 2L))
 		).when(
 			_licenseKeyService
 		).getAllItems(
@@ -283,8 +283,8 @@ public class LicenseKeyServiceTest {
 	}
 
 	private LicenseKey _createLicenseKey(
-		boolean active, boolean complimentary, long entitlementId,
-		long licenseKeyId) {
+		long activationKeyId, boolean active, boolean complimentary,
+		long entitlementId, long licenseKeyId) {
 
 		return new LicenseKey(
 			new JSONObject(
@@ -298,6 +298,8 @@ public class LicenseKeyServiceTest {
 				"entitlementId", entitlementId
 			).put(
 				"id", licenseKeyId
+			).put(
+				"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
 			).put(
 				"startDate", "2026-01-01T00:00:00Z"
 			));

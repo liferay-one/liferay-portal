@@ -12,6 +12,7 @@ import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
+import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
@@ -39,7 +40,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +103,7 @@ public class LicenseKeyGenerationService {
 			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
 	}
 
-	public List<Long> generateLicenseKeys(GenerateRequest generateRequest)
+	public ActivationKey generateActivationKey(GenerateRequest generateRequest)
 		throws Exception {
 
 		if (ListUtil.isEmpty(generateRequest.getBundleEntitlementIds())) {
@@ -124,7 +124,7 @@ public class LicenseKeyGenerationService {
 
 		return _keyedLock.withLock(
 			project.getExternalReferenceCode(),
-			() -> _generateLicenseKeys(generateRequest, project));
+			() -> _generateActivationKey(generateRequest, project));
 	}
 
 	public static class GenerateRequest {
@@ -235,62 +235,36 @@ public class LicenseKeyGenerationService {
 
 	}
 
-	private LicenseKey _addLicenseKey(
-			List<Entitlement> bundleEntitlements, Date expirationDate,
-			GenerateRequest generateRequest,
-			Map<Long, LicensedProduct> licensedProducts, Project project,
-			GenerateRequest.Server server, Date startDate)
+	private ActivationKey _addActivationKey(
+			String description, Date expirationDate,
+			GenerateRequest generateRequest, LicenseEntry leadingLicenseEntry,
+			Project project, Date startDate)
 		throws Exception {
 
-		Entitlement leadingEntitlement = _getLeadingEntitlement(
-			bundleEntitlements, generateRequest);
+		return _activationKeyService.addActivationKey(
+			project.getAccountId(), project.getName(), true,
+			_toAdditionalInfo(generateRequest), false, description,
+			StringPool.BLANK, expirationDate, generateRequest.getKeyType(),
+			leadingLicenseEntry.getType(), generateRequest.getEnvironmentName(),
+			generateRequest.getVersion(), project.getExternalReferenceCode(),
+			startDate);
+	}
 
-		LicensedProduct leadingLicensedProduct = licensedProducts.get(
-			leadingEntitlement.getEntitlementId());
+	private LicenseKey _addLicenseKey(
+			ActivationKey activationKey, String description,
+			Entitlement entitlement, Date expirationDate,
+			GenerateRequest generateRequest, LicensedProduct licensedProduct,
+			Project project, GenerateRequest.Server server, Date startDate)
+		throws Exception {
 
-		LicenseEntry licenseEntry = leadingLicensedProduct._getLicenseEntry();
-		String productName = leadingLicensedProduct._getProductName();
-
-		String description = generateRequest.getDescription();
-
-		if (Validator.isNull(description)) {
-			description = generateRequest.getEnvironmentName();
-		}
-
+		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
+		String productName = licensedProduct._getProductName();
 		String version = generateRequest.getVersion();
-
-		JSONArray entitlementIdsJSONArray = new JSONArray();
-		JSONArray productsJSONArray = new JSONArray();
-		String[] xmls = new String[bundleEntitlements.size()];
-
-		for (int i = 0; i < bundleEntitlements.size(); i++) {
-			Entitlement entitlement = bundleEntitlements.get(i);
-
-			LicensedProduct licensedProduct = licensedProducts.get(
-				entitlement.getEntitlementId());
-
-			entitlementIdsJSONArray.put(entitlement.getEntitlementId());
-
-			productsJSONArray.put(
-				new JSONObject(
-				).put(
-					"externalReferenceCode",
-					licensedProduct._getExternalReferenceCode()
-				).put(
-					"name", licensedProduct._getProductName()
-				).put(
-					"sizing", _SIZING_DEFAULT
-				));
-
-			xmls[i] = _toLicenseXML(
-				description, expirationDate, generateRequest, licensedProduct,
-				project, server, startDate);
-		}
 
 		long entitlementDefinitionId = 0;
 
 		EntitlementDefinition entitlementDefinition =
-			leadingEntitlement.getEntitlementDefinition();
+			entitlement.getEntitlementDefinition();
 
 		if (entitlementDefinition != null) {
 			entitlementDefinitionId =
@@ -298,15 +272,17 @@ public class LicenseKeyGenerationService {
 		}
 
 		return _licenseKeyService.addLicenseKey(
-			project.getAccountId(), project.getName(), true,
-			_toAdditionalInfo(
-				entitlementIdsJSONArray, generateRequest, productsJSONArray),
-			false, description, StringPool.BLANK, entitlementDefinitionId,
-			leadingEntitlement.getEntitlementId(), expirationDate,
+			project.getAccountId(), project.getName(),
+			activationKey.getActivationKeyId(), true, null,
+			licensedProduct._getExternalReferenceCode(), false, description,
+			StringPool.BLANK, entitlementDefinitionId,
+			entitlement.getEntitlementId(), expirationDate,
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),
-			_licenseKeyExporter.aggregateXMLs(xmls), licenseEntry.getName(),
-			licenseEntry.getType(),
+			_toLicenseXML(
+				description, expirationDate, generateRequest, licensedProduct,
+				project, server, startDate),
+			licenseEntry.getName(), licenseEntry.getType(),
 			LicenseVersion.getLicenseVersion(productName, version),
 			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()), 0, 0, 0,
 			0, 0, generateRequest.getEnvironmentName(), null,
@@ -360,7 +336,7 @@ public class LicenseKeyGenerationService {
 		return null;
 	}
 
-	private List<Long> _generateLicenseKeys(
+	private ActivationKey _generateActivationKey(
 			GenerateRequest generateRequest, Project project)
 		throws Exception {
 
@@ -388,17 +364,33 @@ public class LicenseKeyGenerationService {
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
 			bundleEntitlements, generateRequest);
 
-		List<Long> licenseKeyIds = new ArrayList<>();
+		Entitlement leadingEntitlement = _getLeadingEntitlement(
+			bundleEntitlements, generateRequest);
 
-		for (GenerateRequest.Server server : generateRequest.getServers()) {
-			LicenseKey licenseKey = _addLicenseKey(
-				bundleEntitlements, expirationDate, generateRequest,
-				licensedProducts, project, server, startDate);
+		LicensedProduct leadingLicensedProduct = licensedProducts.get(
+			leadingEntitlement.getEntitlementId());
 
-			licenseKeyIds.add(licenseKey.getLicenseKeyId());
+		String description = generateRequest.getDescription();
+
+		if (Validator.isNull(description)) {
+			description = generateRequest.getEnvironmentName();
 		}
 
-		return licenseKeyIds;
+		ActivationKey activationKey = _addActivationKey(
+			description, expirationDate, generateRequest,
+			leadingLicensedProduct._getLicenseEntry(), project, startDate);
+
+		for (GenerateRequest.Server server : generateRequest.getServers()) {
+			for (Entitlement entitlement : bundleEntitlements) {
+				_addLicenseKey(
+					activationKey, description, entitlement, expirationDate,
+					generateRequest,
+					licensedProducts.get(entitlement.getEntitlementId()),
+					project, server, startDate);
+			}
+		}
+
+		return activationKey;
 	}
 
 	private List<Entitlement> _getBundleEntitlements(
@@ -513,16 +505,8 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
-	private String _toAdditionalInfo(
-		JSONArray entitlementIdsJSONArray, GenerateRequest generateRequest,
-		JSONArray productsJSONArray) {
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"entitlementIds", entitlementIdsJSONArray
-		).put(
-			"products", productsJSONArray
-		);
+	private String _toAdditionalInfo(GenerateRequest generateRequest) {
+		JSONObject jsonObject = new JSONObject();
 
 		_put(
 			jsonObject, "dataCenterLocation",
@@ -584,10 +568,7 @@ public class LicenseKeyGenerationService {
 	private static final String _SIZING_DEFAULT = "Sizing 1";
 
 	@Autowired
-	private CommerceProductService _commerceProductService;
-
-	@Autowired
-	private CommerceSkuService _commerceSkuService;
+	private ActivationKeyService _activationKeyService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
