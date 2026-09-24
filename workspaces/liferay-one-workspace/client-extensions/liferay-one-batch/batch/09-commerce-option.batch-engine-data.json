@@ -172,6 +172,46 @@
 		},
 		{
 			"description": {
+				"en_US": "SKUs in a consumable product group are distinguished by their role using this type."
+			},
+			"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "consumption-role",
+			"name": {
+				"en_US": "Consumption Role"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_ADD_ON",
+					"key": "add-on",
+					"name": {
+						"en_US": "Add-On Bucket"
+					},
+					"priority": 1
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_ALLOTMENT",
+					"key": "allotment",
+					"name": {
+						"en_US": "Base Allotment"
+					},
+					"priority": 0
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE_OVERAGE",
+					"key": "overage",
+					"name": {
+						"en_US": "Overage Bucket"
+					},
+					"priority": 2
+				}
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"description": {
 				"en_US": "Apps built for Liferay DXP can be licensed using this type."
 			},
 			"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE",
