@@ -132,10 +132,12 @@
 
 						<div class="align-items-center carousel-inner d-flex">
 							<#list solutionHeaderImages as image>
-								<#assign imageSourceUrlSplited = image.src?split("/o") />
-
-								<#if imageSourceUrlSplited?has_content>
-									<#assign productThumbnail = "/o/${imageSourceUrlSplited[1]}" />
+								<#if image.src?? && image.src?has_content>
+									<#if image.src?contains("/o/")>
+										<#assign productThumbnail = "/o/" + image.src?keep_after("/o/") />
+									<#else>
+										<#assign productThumbnail = image.src />
+									</#if>
 
 									<div class="carousel-item<#if image?index == 0> active</#if>">
 										<img alt="Slide ${image?index}" class="d-block w-100" src="${productThumbnail}">

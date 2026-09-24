@@ -78,10 +78,12 @@
 		<div class="align-items-center container d-flex flex-column">
 			<#if solutionHeaderImages?has_content>
 				<#list solutionHeaderImages as image>
-					<#assign imageSourceSplitedUrl = image.src?split("/o") />
-
-					<#if imageSourceSplitedUrl?has_content>
-						<#assign productThumbnail = "/o/${imageSourceSplitedUrl[1]}" />
+					<#if image.src?? && image.src?has_content>
+						<#if image.src?contains("/o/")>
+							<#assign productThumbnail = "/o/" + image.src?keep_after("/o/") />
+						<#else>
+							<#assign productThumbnail = image.src />
+						</#if>
 
 						<img alt="Slide ${image?index}" class="catalog-icon mb-8" src="${productThumbnail}">
 					</#if>
