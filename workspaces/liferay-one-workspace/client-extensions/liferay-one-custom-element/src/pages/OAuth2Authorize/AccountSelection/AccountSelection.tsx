@@ -15,6 +15,7 @@ import i18n from '~/i18n';
 import CheckoutAccountSelection from '~/pages/ProductPurchase/LiferayProduct/SEOStudio/CheckoutAccountSelection';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
+import SearchBuilder from '~/utils/SearchBuilder';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
 
@@ -30,33 +31,58 @@ function hasRequiredBillingAddress(account?: Account) {
 
 export default function AccountSelection() {
 	const {myUserAccount} = useOneContext();
-	const {selectedAccount, setSelectedAccount} = useOAuth2AuthorizeContext();
+	const {code, origin, selectedAccount, setSelectedAccount} =
+		useOAuth2AuthorizeContext();
 
 	const navigate = useNavigate();
 
 	const accountIds = (myUserAccount?.accountBriefs ?? []).map(({id}) => id);
 
-	const {data: accounts, isLoading} = useSWR(
+	const {
+		data: accounts,
+		error,
+		isLoading,
+	} = useSWR(
 		accountIds.length
 			? {accountIds, key: 'oauth2-authorize-accounts'}
 			: null,
-		() =>
-			Promise.all(
-				accountIds.map((accountId) =>
-					HeadlessAdminUser.getAccount(accountId)
-				)
-			)
+		async () => {
+			const {items} = await HeadlessAdminUser.getAccounts(
+				new URLSearchParams({
+					filter: SearchBuilder.in('id', accountIds),
+					pageSize: '-1',
+				})
+			);
+
+			return items;
+		}
 	);
 
 	useEffect(() => {
-		if (accounts?.length !== 1 || !hasRequiredBillingAddress(accounts[0])) {
+		if (
+			selectedAccount ||
+			accounts?.length !== 1 ||
+			!hasRequiredBillingAddress(accounts[0])
+		) {
 			return;
 		}
 
 		setSelectedAccount(accounts[0]);
+	}, [accounts, selectedAccount, setSelectedAccount]);
 
-		navigate('/congratulations');
-	}, [accounts, navigate, setSelectedAccount]);
+	if (error || !code || !origin) {
+		return (
+			<div className="border mt-2 p-4 rounded">
+				<h1 className="align-items-center d-flex flex-column mt-2 p-2 pb-5">
+					{i18n.translate('something-went-wrong')}
+				</h1>
+
+				<p className="secondary-text">
+					{i18n.translate('an-unexpected-error-occurred')}
+				</p>
+			</div>
+		);
+	}
 
 	const missingBillingAddress =
 		Boolean(selectedAccount) && !hasRequiredBillingAddress(selectedAccount);
@@ -66,6 +92,19 @@ export default function AccountSelection() {
 			<h1 className="align-items-center d-flex flex-column mt-2 p-2 pb-5">
 				{i18n.translate('account-selection')}
 			</h1>
+
+			<ClayAlert
+				displayType="info"
+				spritemap={getIconSpriteMap()}
+				title={origin}
+			>
+				{i18n.translate(
+					'this-liferay-dxp-is-requesting-access-to-the-account-you-select-below'
+				)}{' '}
+				{i18n.translate(
+					'only-continue-if-you-started-this-connection-from-that-liferay-dxp'
+				)}
+			</ClayAlert>
 
 			<p className="secondary-text">
 				{i18n.translate(
@@ -108,7 +147,7 @@ export default function AccountSelection() {
 					disabled={!selectedAccount || missingBillingAddress}
 					onClick={() => navigate('/congratulations')}
 				>
-					{i18n.translate('continue')}
+					{i18n.translate('connect')}
 				</ClayButton>
 			</div>
 		</div>
