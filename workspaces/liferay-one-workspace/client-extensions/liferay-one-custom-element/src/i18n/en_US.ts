@@ -1446,6 +1446,8 @@ export default {
 	'street-address': 'Street Address',
 	'submit': 'Submit',
 	'submit-solution': 'Submit Solution',
+	'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed':
+		'Submit your request to getting started with AI Hub. After submission you will receive a DocuSign email with an order form to be signed.',
 	'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome':
 		'Submit your request to join the beta program. All submissions will be reviewed, and you’ll receive an email with the outcome.',
 	'subscription': 'Subscription',

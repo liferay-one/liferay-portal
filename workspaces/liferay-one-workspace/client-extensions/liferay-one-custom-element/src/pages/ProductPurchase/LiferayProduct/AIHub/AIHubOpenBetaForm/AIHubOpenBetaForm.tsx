@@ -112,7 +112,7 @@ const AIHubOpenBetaForm = () => {
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
-					'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome'
+					'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed'
 				)}
 			</p>
 
