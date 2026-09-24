@@ -17,24 +17,20 @@
 	productImage = product.images?filter(item -> item.tags?seq_contains("app icon"))![]
 />
 
-<#if productImage?has_content>
-	<#assign productThumbnail = productImage[0].src?split("/o") />
-	<#if productThumbnail?has_content && productThumbnail?size gte 2>
-		<#assign productThumbnail1 = "/o/${productThumbnail[1]}"!"" />
+<#if productImage?has_content && productImage[0].src?has_content>
+	<#if productImage[0].src?contains("/o/")>
+		<#assign productThumbnail1 = "/o/" + productImage[0].src?keep_after("/o/") />
 	<#else>
-		<#assign productThumbnail1 = "/o/commerce-media/default/?groupId=${scopeGroupId}" />
+		<#assign productThumbnail1 = productImage[0].src />
+	</#if>
+<#elseif product.urlImage?has_content>
+	<#if product.urlImage?contains("/o/")>
+		<#assign productThumbnail1 = "/o/" + product.urlImage?keep_after("/o/") />
+	<#else>
+		<#assign productThumbnail1 = product.urlImage />
 	</#if>
 <#else>
-	<#if product.urlImage?has_content>
-		<#assign productThumbnail = product.urlImage?split("/o") />
-		<#if productThumbnail?has_content && productThumbnail?size gte 2>
-			<#assign productThumbnail1 = "/o/${productThumbnail[1]}"!"" />
-		<#else>
-			<#assign productThumbnail1 = "/o/commerce-media/default/?groupId=${scopeGroupId}" />
-		</#if>
-	<#else>
-		<#assign productThumbnail1 = "/o/commerce-media/default/?groupId=${scopeGroupId}" />
-	</#if>
+	<#assign productThumbnail1 = "/o/commerce-media/default/?groupId=${scopeGroupId}" />
 </#if>
 
 ${productThumbnail1}
