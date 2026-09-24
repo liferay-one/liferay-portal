@@ -5,18 +5,16 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
@@ -24,10 +22,10 @@ import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.SaaSUsageStrategy;
 import com.liferay.one.model.UsageDefinition;
-import com.liferay.one.permission.BusinessEventPermission;
-import com.liferay.one.service.AccountService;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.EntitlementService;
@@ -37,6 +35,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.EntitlementUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -67,9 +66,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Amos Fong
@@ -88,12 +89,10 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable String accountRoleExternalReferenceCode)
 		throws Exception {
 
-		if (_projectMembershipService.deleteProjectMembership(
-				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
+		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
 
-			_syncDeletedMembership(
-				accountRoleExternalReferenceCode, projectId, userId);
-		}
+		_userAssignmentService.unassignProjectRole(
+			_getProject(projectId), accountRoleExternalReferenceCode, userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -102,8 +101,7 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return new ResponseEntity<>(
 			_accountAssetService.getAccountObjectKey(externalReferenceCode),
@@ -120,8 +118,7 @@ public class ProjectRestController extends OneBaseRestController {
 			String productExternalReferenceCode)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		BaseUsageStrategy usageStrategy = _getUsageStrategy(
 			productExternalReferenceCode, externalReferenceCode);
@@ -151,8 +148,7 @@ public class ProjectRestController extends OneBaseRestController {
 			@RequestParam("startDate") String startDate)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		LocalDate endLocalDate = _toLocalDate("endDate", endDate);
 		LocalDate startLocalDate = _toLocalDate("startDate", startDate);
@@ -176,8 +172,7 @@ public class ProjectRestController extends OneBaseRestController {
 			@RequestParam("startDate") String startDate)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		LocalDate endLocalDate = _toLocalDate("endDate", endDate);
 		LocalDate startLocalDate = _toLocalDate("startDate", startDate);
@@ -237,12 +232,12 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable String accountRoleExternalReferenceCode)
 		throws Exception {
 
-		if (_projectMembershipService.addProjectMembership(
-				jwt, projectId, accountRoleExternalReferenceCode, userId)) {
+		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
 
-			_syncAddedMembership(
-				accountRoleExternalReferenceCode, projectId, userId);
-		}
+		_validateProjectRole(accountRoleExternalReferenceCode);
+
+		_userAssignmentService.assignProjectRole(
+			_getProject(projectId), accountRoleExternalReferenceCode, userId);
 	}
 
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
@@ -251,13 +246,47 @@ public class ProjectRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.UPDATE, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		_accountSynchronizer.syncProject(
 			_projectService.getProject(externalReferenceCode));
 
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@PutMapping(
+		"/{projectId}/user-accounts/{userId}/account-roles" +
+			"/{accountRoleExternalReferenceCode}"
+	)
+	public void putProjectMemberships(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable String projectId,
+			@PathVariable long userId,
+			@PathVariable String accountRoleExternalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
+
+		_validateProjectRole(accountRoleExternalReferenceCode);
+
+		Project project = _getProject(projectId);
+
+		_userAssignmentService.assignProjectRole(
+			project, accountRoleExternalReferenceCode, userId);
+
+		for (ProjectMembership projectMembership :
+				_projectMembershipService.getProjectMemberships(
+					projectId, userId)) {
+
+			String roleExternalReferenceCode =
+				projectMembership.getRoleExternalReferenceCode();
+
+			if (!roleExternalReferenceCode.equals(
+					accountRoleExternalReferenceCode)) {
+
+				_userAssignmentService.unassignProjectRole(
+					project, roleExternalReferenceCode, userId);
+			}
+		}
 	}
 
 	private BaseUsageStrategy _createUsageStrategy(
@@ -356,18 +385,6 @@ public class ProjectRestController extends OneBaseRestController {
 			_logUnavailableUsage(
 				googleCloudFunctionUnavailableException,
 				projectExternalReferenceCode);
-
-			return null;
-		}
-	}
-
-	private UserAccount _fetchUserAccount(long userId) {
-		try {
-			return _userAccountService.getUserAccount(userId);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get user account for user " + userId, exception);
 
 			return null;
 		}
@@ -594,127 +611,6 @@ public class ProjectRestController extends OneBaseRestController {
 			googleCloudFunctionUnavailableException);
 	}
 
-	private void _syncAddedMembership(
-		String accountRoleExternalReferenceCode,
-		String projectExternalReferenceCode, long userId) {
-
-		UserAccount userAccount = _fetchUserAccount(userId);
-
-		if (userAccount == null) {
-			return;
-		}
-
-		_syncMembership(projectExternalReferenceCode, userAccount);
-
-		try {
-			_accountUserAccountRoleSynchronizer.syncAssignRole(
-				accountRoleExternalReferenceCode,
-				userAccount.getExternalReferenceCode(),
-				projectExternalReferenceCode);
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to sync contact role ",
-					accountRoleExternalReferenceCode, " for user ",
-					userAccount.getId()),
-				exception);
-		}
-	}
-
-	private void _syncDeletedMembership(
-		String accountRoleExternalReferenceCode,
-		String projectExternalReferenceCode, long userId) {
-
-		UserAccount userAccount = _fetchUserAccount(userId);
-
-		if (userAccount == null) {
-			return;
-		}
-
-		_syncMembership(projectExternalReferenceCode, userAccount);
-
-		try {
-			_accountUserAccountRoleSynchronizer.syncUnassignRole(
-				accountRoleExternalReferenceCode,
-				userAccount.getExternalReferenceCode(),
-				projectExternalReferenceCode);
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to sync contact role ",
-					accountRoleExternalReferenceCode, " for user ",
-					userAccount.getId()),
-				exception);
-		}
-	}
-
-	private void _syncMembership(
-		String projectExternalReferenceCode, UserAccount userAccount) {
-
-		_syncProjectAndAccountUserAccounts(projectExternalReferenceCode);
-
-		try {
-			_userAccountSynchronizer.syncUserAccountAccounts(userAccount);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync accounts for user " + userAccount.getId(),
-				exception);
-		}
-
-		try {
-			_userAccountSynchronizer.syncUserAccountRoles(userAccount);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync roles for user " + userAccount.getId(),
-				exception);
-		}
-	}
-
-	private void _syncProjectAndAccountUserAccounts(
-		String projectExternalReferenceCode) {
-
-		Project project = null;
-
-		try {
-			project = _projectService.getProject(projectExternalReferenceCode);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get project " + projectExternalReferenceCode,
-				exception);
-
-			return;
-		}
-
-		try {
-			_accountSynchronizer.syncProjectUserAccounts(project);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync users for project " +
-					projectExternalReferenceCode,
-				exception);
-		}
-
-		String accountExternalReferenceCode =
-			project.getAccountExternalReferenceCode();
-
-		try {
-			_accountSynchronizer.syncAccountUserAccounts(
-				_accountService.getAccount(accountExternalReferenceCode));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync users for account " +
-					accountExternalReferenceCode,
-				exception);
-		}
-	}
-
 	private LocalDate _toLocalDate(String name, String value) throws Exception {
 		try {
 			return LocalDate.parse(value);
@@ -777,6 +673,18 @@ public class ProjectRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _validateProjectRole(String accountRoleExternalReferenceCode) {
+		if (!ArrayUtil.contains(
+				RoleConstants.ERCS_SUPPORT_PROJECT,
+				accountRoleExternalReferenceCode)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Unable to find project role " +
+					accountRoleExternalReferenceCode);
+		}
+	}
+
 	private static final DateTimeFormatter _BILLING_PERIOD_DATE_TIME_FORMATTER =
 		DateTimeFormatter.ofPattern("yyyy-MM");
 
@@ -795,17 +703,7 @@ public class ProjectRestController extends OneBaseRestController {
 	private AccountAssetService _accountAssetService;
 
 	@Autowired
-	private AccountService _accountService;
-
-	@Autowired
 	private AccountSynchronizer _accountSynchronizer;
-
-	@Autowired
-	private AccountUserAccountRoleSynchronizer
-		_accountUserAccountRoleSynchronizer;
-
-	@Autowired
-	private BusinessEventPermission _businessEventPermission;
 
 	@Autowired
 	private CommerceProductService _commerceProductService;
@@ -823,6 +721,9 @@ public class ProjectRestController extends OneBaseRestController {
 	private ProjectMembershipService _projectMembershipService;
 
 	@Autowired
+	private ProjectPermission _projectPermission;
+
+	@Autowired
 	private ProjectService _projectService;
 
 	@Autowired
@@ -835,6 +736,6 @@ public class ProjectRestController extends OneBaseRestController {
 	private UserAccountService _userAccountService;
 
 	@Autowired
-	private UserAccountSynchronizer _userAccountSynchronizer;
+	private UserAssignmentService _userAssignmentService;
 
 }

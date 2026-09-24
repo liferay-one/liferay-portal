@@ -6,23 +6,27 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.model.AccountInvitation;
-import com.liferay.one.okta.service.OktaService;
+import com.liferay.one.model.Project;
 import com.liferay.one.service.AccountInvitationAcceptanceService;
 import com.liferay.one.service.AccountInvitationService;
+import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
-import com.liferay.one.service.ProjectMembershipService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 
 import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -33,126 +37,54 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 
 	@Test
-	public void testPostAddsProjectMembershipForProjectInvitation()
+	public void testPostAssignsAccountBeforeAccountRolesAndProjectRole()
 		throws Exception {
 
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
 				_createController();
 
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(
-				true, _PROJECT_EXTERNAL_REFERENCE_CODE, List.of())
-		);
+		_mockAccountInvitation(
+			true, _PROJECT_EXTERNAL_REFERENCE_CODE,
+			List.of("L_ACCOUNT_ADMINISTRATOR", "C_ACCOUNT_BUYER"));
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
+		AccountRole administratorAccountRole = _mockAccountRole(
+			"L_ACCOUNT_ADMINISTRATOR");
+		AccountRole buyerAccountRole = _mockAccountRole("C_ACCOUNT_BUYER");
 
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
-		);
+		Account account = _mockAccount();
+
+		Project project = _mockProject();
+
+		_mockUserAccount();
 
 		objectActionAccountInvitationAcceptedRestController.post(
 			null, _createPayload());
 
-		Mockito.verify(
-			_projectMembershipService
-		).addProjectMembership(
-			_PROJECT_EXTERNAL_REFERENCE_CODE, _PROJECT_ROLE_ERC, _USER_ID
-		);
-	}
+		InOrder inOrder = Mockito.inOrder(_userAssignmentService);
 
-	@Test
-	public void testPostAssignsAccountRolesByExternalReferenceCode()
-		throws Exception {
-
-		ObjectActionAccountInvitationAcceptedRestController
-			objectActionAccountInvitationAcceptedRestController =
-				_createController();
-
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(
-				true, "", List.of("L_ACCOUNT_ADMINISTRATOR", "C_ACCOUNT_BUYER"))
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccount(
+			account, _USER_ID
 		);
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			account, administratorAccountRole, _USER_ID
 		);
 
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			account, buyerAccountRole, _USER_ID
 		);
 
-		objectActionAccountInvitationAcceptedRestController.post(
-			null, _createPayload());
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRoleByExternalReferenceCode(
-			_EXTERNAL_REFERENCE_CODE, "L_ACCOUNT_ADMINISTRATOR", _EMAIL_ADDRESS
-		);
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRoleByExternalReferenceCode(
-			_EXTERNAL_REFERENCE_CODE, "C_ACCOUNT_BUYER", _EMAIL_ADDRESS
-		);
-
-		Mockito.verify(
-			_accountService, Mockito.never()
-		).addAccountUserAccountRole(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
-			ArgumentMatchers.anyLong()
-		);
-	}
-
-	@Test
-	public void testPostCreatesOktaContact() throws Exception {
-		ObjectActionAccountInvitationAcceptedRestController
-			objectActionAccountInvitationAcceptedRestController =
-				_createController();
-
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(true, "", List.of())
-		);
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
-		);
-
-		objectActionAccountInvitationAcceptedRestController.post(
-			null, _createPayload());
-
-		Mockito.verify(
-			_oktaService
-		).createContact(
-			_EMAIL_ADDRESS, "Jane", null, "Doe"
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, _PROJECT_ROLE_ERC, _USER_ID
 		);
 	}
 
@@ -162,24 +94,9 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			objectActionAccountInvitationAcceptedRestController =
 				_createController();
 
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(true, "", List.of())
-		);
+		_mockAccountInvitation(true, "", List.of());
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			null
-		);
+		Account account = _mockAccount();
 
 		Mockito.when(
 			_userAccountService.addUserAccount(_EMAIL_ADDRESS, "Doe", "Jane")
@@ -190,69 +107,71 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		objectActionAccountInvitationAcceptedRestController.post(
 			null, _createPayload());
 
-		Mockito.verify(
+		InOrder inOrder = Mockito.inOrder(
+			_userAccountService, _userAssignmentService);
+
+		inOrder.verify(
 			_userAccountService
 		).addUserAccount(
 			_EMAIL_ADDRESS, "Doe", "Jane"
 		);
 
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountByEmailAddress(
-			_ACCOUNT_ID, _EMAIL_ADDRESS, null
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccount(
+			account, _USER_ID
 		);
 	}
 
 	@Test
-	public void testPostProvisionsWhenOktaContactCreationFails()
-		throws Exception {
-
+	public void testPostPropagatesAssignmentFailure() throws Exception {
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
 				_createController();
 
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(
-				true, _PROJECT_EXTERNAL_REFERENCE_CODE, List.of())
-		);
+		_mockAccountInvitation(
+			true, _PROJECT_EXTERNAL_REFERENCE_CODE, List.of());
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
+		Account account = _mockAccount();
 
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
-		);
+		_mockProject();
+		_mockUserAccount();
 
 		Mockito.doThrow(
 			new RuntimeException("Okta is unavailable")
 		).when(
-			_oktaService
-		).createContact(
-			_EMAIL_ADDRESS, "Jane", null, "Doe"
+			_userAssignmentService
+		).assignAccount(
+			account, _USER_ID
 		);
 
-		objectActionAccountInvitationAcceptedRestController.post(
-			null, _createPayload());
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountByEmailAddress(
-			_ACCOUNT_ID, _EMAIL_ADDRESS, null
-		);
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> objectActionAccountInvitationAcceptedRestController.post(
+				null, _createPayload()));
 
 		Mockito.verify(
-			_projectMembershipService
-		).addProjectMembership(
-			_PROJECT_EXTERNAL_REFERENCE_CODE, _PROJECT_ROLE_ERC, _USER_ID
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
 		);
+	}
+
+	@Test
+	public void testPostRejectsUnknownAccountRole() throws Exception {
+		ObjectActionAccountInvitationAcceptedRestController
+			objectActionAccountInvitationAcceptedRestController =
+				_createController();
+
+		_mockAccountInvitation(true, "", List.of("C_UNKNOWN"));
+
+		Assertions.assertThrows(
+			IllegalArgumentException.class,
+			() -> objectActionAccountInvitationAcceptedRestController.post(
+				null, _createPayload()));
+
+		Mockito.verifyNoInteractions(
+			_accountService, _userAccountService, _userAssignmentService);
 	}
 
 	@Test
@@ -271,42 +190,61 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		objectActionAccountInvitationAcceptedRestController.post(
 			null, _createPayload());
 
-		Mockito.verifyNoInteractions(_accountService);
-		Mockito.verifyNoInteractions(_oktaService);
-		Mockito.verifyNoInteractions(_userAccountService);
+		Mockito.verifyNoInteractions(
+			_accountService, _userAccountService, _userAssignmentService);
 	}
 
 	@Test
-	public void testPostSkipsProjectMembershipForAccountInvitation()
+	public void testPostSkipsMissingProject() throws Exception {
+		ObjectActionAccountInvitationAcceptedRestController
+			objectActionAccountInvitationAcceptedRestController =
+				_createController();
+
+		_mockAccountInvitation(
+			true, _PROJECT_EXTERNAL_REFERENCE_CODE, List.of());
+
+		Account account = _mockAccount();
+
+		_mockUserAccount();
+
+		objectActionAccountInvitationAcceptedRestController.post(
+			null, _createPayload());
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignAccount(
+			account, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPostSkipsProjectRoleForAccountInvitation()
 		throws Exception {
 
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
 				_createController();
 
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(true, "", List.of())
-		);
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount()
-		);
+		_mockAccountInvitation(true, "", List.of());
+		_mockAccount();
+		_mockUserAccount();
 
 		objectActionAccountInvitationAcceptedRestController.post(
 			null, _createPayload());
 
-		Mockito.verifyNoInteractions(_projectMembershipService);
+		Mockito.verifyNoInteractions(_projectService);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
 	}
 
 	@Test
@@ -315,19 +253,13 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			objectActionAccountInvitationAcceptedRestController =
 				_createController();
 
-		Mockito.when(
-			_accountInvitationService.fetchAccountInvitation(
-				_ACCOUNT_INVITATION_ID)
-		).thenReturn(
-			_createAccountInvitation(false, "", List.of())
-		);
+		_mockAccountInvitation(false, "", List.of());
 
 		objectActionAccountInvitationAcceptedRestController.post(
 			null, _createPayload());
 
-		Mockito.verifyNoInteractions(_accountService);
-		Mockito.verifyNoInteractions(_oktaService);
-		Mockito.verifyNoInteractions(_userAccountService);
+		Mockito.verifyNoInteractions(
+			_accountService, _userAccountService, _userAssignmentService);
 	}
 
 	private Account _createAccount() {
@@ -382,16 +314,20 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			new AccountInvitationAcceptanceService();
 
 		ReflectionTestUtils.setField(
+			accountInvitationAcceptanceService, "_accountRoleService",
+			_accountRoleService);
+		ReflectionTestUtils.setField(
 			accountInvitationAcceptanceService, "_accountService",
 			_accountService);
 		ReflectionTestUtils.setField(
-			accountInvitationAcceptanceService, "_oktaService", _oktaService);
-		ReflectionTestUtils.setField(
-			accountInvitationAcceptanceService, "_projectMembershipService",
-			_projectMembershipService);
+			accountInvitationAcceptanceService, "_projectService",
+			_projectService);
 		ReflectionTestUtils.setField(
 			accountInvitationAcceptanceService, "_userAccountService",
 			_userAccountService);
+		ReflectionTestUtils.setField(
+			accountInvitationAcceptanceService, "_userAssignmentService",
+			_userAssignmentService);
 
 		ObjectActionAccountInvitationAcceptedRestController
 			objectActionAccountInvitationAcceptedRestController =
@@ -430,6 +366,74 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		return userAccount;
 	}
 
+	private Account _mockAccount() throws Exception {
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		return account;
+	}
+
+	private void _mockAccountInvitation(
+			boolean accepted, String projectExternalReferenceCode,
+			List<String> roleExternalReferenceCodes)
+		throws Exception {
+
+		Mockito.when(
+			_accountInvitationService.fetchAccountInvitation(
+				_ACCOUNT_INVITATION_ID)
+		).thenReturn(
+			_createAccountInvitation(
+				accepted, projectExternalReferenceCode,
+				roleExternalReferenceCodes)
+		);
+	}
+
+	private AccountRole _mockAccountRole(String externalReferenceCode)
+		throws Exception {
+
+		AccountRole accountRole = new AccountRole();
+
+		accountRole.setExternalReferenceCode(externalReferenceCode);
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				externalReferenceCode)
+		).thenReturn(
+			accountRole
+		);
+
+		return accountRole;
+	}
+
+	private Project _mockProject() throws Exception {
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			));
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			project
+		);
+
+		return project;
+	}
+
+	private void _mockUserAccount() throws Exception {
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			_createUserAccount()
+		);
+	}
+
 	private static final long _ACCOUNT_ID = 11111;
 
 	private static final long _ACCOUNT_INVITATION_ID = 44444;
@@ -446,12 +450,15 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 
 	private final AccountInvitationService _accountInvitationService =
 		Mockito.mock(AccountInvitationService.class);
+	private final AccountRoleService _accountRoleService = Mockito.mock(
+		AccountRoleService.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
-	private final OktaService _oktaService = Mockito.mock(OktaService.class);
-	private final ProjectMembershipService _projectMembershipService =
-		Mockito.mock(ProjectMembershipService.class);
+	private final ProjectService _projectService = Mockito.mock(
+		ProjectService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
+	private final UserAssignmentService _userAssignmentService = Mockito.mock(
+		UserAssignmentService.class);
 
 }

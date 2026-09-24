@@ -17,20 +17,16 @@ import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountSynchronizer;
 import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.model.AccountInvitation;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
-import com.liferay.one.okta.model.OktaUser;
-import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
-import com.liferay.one.permission.ProjectMembershipPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
@@ -40,9 +36,9 @@ import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
-import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -143,286 +139,31 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testDeleteUserAccountsAccountRoleResolvesRoleNameBeforeRemoving()
+	public void testDeleteUserAccountsChecksAssignMembersPermission()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
+		_denyAssignMembersPermission();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.deleteUserAccounts(
+				null, _EXTERNAL_REFERENCE_CODE, _USER_ID));
 
-		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Partner Manager")
-		);
-
-		Mockito.when(
-			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
-		).thenReturn(
-			true
-		);
-
-		accountsRestController.deleteUserAccountsAccountRole(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
-
-		InOrder inOrder = Mockito.inOrder(_accountRoleService, _accountService);
-
-		inOrder.verify(
-			_accountRoleService
-		).fetchAccountRole(
-			_ACCOUNT_ROLE_ID
-		);
-
-		inOrder.verify(
-			_accountService
-		).removeAccountUserAccountRole(
-			_ACCOUNT_ROLE_ID, _EXTERNAL_REFERENCE_CODE, null, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).unassignAccountRole(
-			account, _USER_ID, "Partner Manager"
-		);
+		Mockito.verifyNoInteractions(_accountService, _userAssignmentService);
 	}
 
 	@Test
-	public void testDeleteUserAccountsAccountRoleSkipsSideEffectsForUnknownRole()
+	public void testDeleteUserAccountsRejectsLastAccountManager()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
-		).thenReturn(
-			true
-		);
-
-		accountsRestController.deleteUserAccountsAccountRole(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
-
-		Mockito.verify(
-			_accountService
-		).removeAccountUserAccountRole(
-			_ACCOUNT_ROLE_ID, _EXTERNAL_REFERENCE_CODE, null, _USER_ID
-		);
-
-		Mockito.verifyNoInteractions(_provisioningAssignmentService);
-	}
-
-	@Test
-	public void testDeleteUserAccountsAccountRoleWhenUserAccountIsNotMember()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
-		).thenReturn(
-			false
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> accountsRestController.deleteUserAccountsAccountRole(
-					null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
-					_ACCOUNT_ROLE_ID));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(
-			_accountRoleService, _provisioningAssignmentService);
-	}
-
-	@Test
-	public void testDeleteUserAccountsByEmailAddressAccountRole()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Support Administrator")
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount(_ACCOUNT_ID, "Support Administrator")
-		);
-
-		accountsRestController.deleteUserAccountsByEmailAddressAccountRole(
-			null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS, _ACCOUNT_ROLE_ID);
-
-		Mockito.verify(
-			_accountPermission
-		).check(
-			_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null
-		);
-
-		Mockito.verify(
-			_accountService
-		).removeAccountUserAccountRole(
-			_ACCOUNT_ROLE_ID, _EXTERNAL_REFERENCE_CODE, null, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).unassignAccountRole(
-			account, _USER_ID, "Support Administrator"
-		);
-	}
-
-	@Test
-	public void testDeleteUserAccountsByEmailAddressAccountRoleWhenUserAccountIsNotMember()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			_createUserAccount(_ACCOUNT_ID + 1, "Support Administrator")
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() ->
-					accountsRestController.
-						deleteUserAccountsByEmailAddressAccountRole(
-							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
-							_ACCOUNT_ROLE_ID));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(
-			_accountRoleService, _provisioningAssignmentService);
-	}
-
-	@Test
-	public void testDeleteUserAccountsByEmailAddressAccountRoleWhenUserAccountIsNull()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			null
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() ->
-					accountsRestController.
-						deleteUserAccountsByEmailAddressAccountRole(
-							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
-							_ACCOUNT_ROLE_ID));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_provisioningAssignmentService);
-	}
-
-	@Test
-	public void testDeleteUserAccountsUnassignsAccountMembership()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenReturn(
-			_createUserAccount()
-		);
-
-		accountsRestController.deleteUserAccounts(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
-
-		Mockito.verify(
-			_accountService
-		).removeAccountUserAccount(
-			_EXTERNAL_REFERENCE_CODE, null, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).unassignAccountMembership(
-			_ACCOUNT_ID, _USER_ID
-		);
-	}
-
-	@Test
-	public void testDeleteUserAccountsUnassignsContactRolesAndSyncsMembership()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
+		_mockAccount();
 
 		UserAccount userAccount = _createUserAccount(
-			_ACCOUNT_ID, "Account Member");
-
-		userAccount.setExternalReferenceCode("USER-ERC-1");
-
-		AccountBrief accountBrief = userAccount.getAccountBriefs()[0];
-
-		accountBrief.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
-
-		RoleBrief roleBrief = accountBrief.getRoleBriefs()[0];
-
-		roleBrief.setExternalReferenceCode("ROLE-ERC-1");
+			_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
 
 		Mockito.when(
 			_userAccountService.getUserAccount(_USER_ID)
@@ -430,19 +171,90 @@ public class AccountsRestControllerTest {
 			userAccount
 		);
 
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(userAccount)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.deleteUserAccounts(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testDeleteUserAccountsRejectsNonmember() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			_createUserAccount(_ACCOUNT_ID + 1, "Account Member")
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.deleteUserAccounts(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testDeleteUserAccountsUnassignsAccount() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _mockAccount();
+
+		UserAccount managerUserAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+
+		managerUserAccount.setId(_USER_ID + 1);
+
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(managerUserAccount, userAccount)
+		);
+
 		accountsRestController.deleteUserAccounts(
 			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
 
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncUnassignRole(
-			"ROLE-ERC-1", "USER-ERC-1", _EXTERNAL_REFERENCE_CODE
+		InOrder inOrder = Mockito.inOrder(
+			_accountPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null
 		);
 
-		Mockito.verify(
-			_accountUserAccountSynchronizer
-		).syncAccountUserAccountMembership(
-			account, userAccount
+		inOrder.verify(
+			_userAssignmentService
+		).unassignAccount(
+			account, _USER_ID
 		);
 	}
 
@@ -462,7 +274,7 @@ public class AccountsRestControllerTest {
 			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
 				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			_createAccountRole("Account Administrator")
+			_createAccountRole(_ACCOUNT_ROLE_ID, "Account Administrator")
 		);
 
 		Mockito.when(
@@ -1094,7 +906,7 @@ public class AccountsRestControllerTest {
 			null, _EXTERNAL_REFERENCE_CODE, _createProjectInvitationBodyJSON());
 
 		Mockito.verify(
-			_projectMembershipPermission
+			_projectPermission
 		).check(
 			ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -1288,7 +1100,7 @@ public class AccountsRestControllerTest {
 			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
 				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			_createAccountRole("Account Administrator")
+			_createAccountRole(_ACCOUNT_ROLE_ID, "Account Administrator")
 		);
 
 		ResponseStatusException responseStatusException =
@@ -1348,7 +1160,7 @@ public class AccountsRestControllerTest {
 			null, _EXTERNAL_REFERENCE_CODE, _ACCOUNT_INVITATION_ID);
 
 		Mockito.verify(
-			_projectMembershipPermission
+			_projectPermission
 		).check(
 			ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -1538,7 +1350,7 @@ public class AccountsRestControllerTest {
 			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
 				"L_ACCOUNT_ADMINISTRATOR")
 		).thenReturn(
-			_createAccountRole("Account Administrator")
+			_createAccountRole(_ACCOUNT_ROLE_ID, "Account Administrator")
 		);
 
 		Mockito.when(
@@ -1619,86 +1431,12 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostUserAccountsAccountRoleAssignsAccountRole()
+	public void testPostUserAccountsByEmailAddressAccountRolesAddsMemberWithoutRoles()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Support Administrator")
-		);
-
-		accountsRestController.postUserAccountsAccountRole(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRole(
-			_ACCOUNT_ROLE_ID, _EXTERNAL_REFERENCE_CODE, null, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).assignAccountRole(
-			account, _USER_ID, "Support Administrator"
-		);
-	}
-
-	@Test
-	public void testPostUserAccountsAccountRoleSyncsMembershipToJSM()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
-
-		UserAccount userAccount = _createUserAccount();
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenReturn(
-			userAccount
-		);
-
-		accountsRestController.postUserAccountsAccountRole(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID, _ACCOUNT_ROLE_ID);
-
-		Mockito.verify(
-			_accountUserAccountSynchronizer
-		).syncAccountUserAccountMembership(
-			account, userAccount
-		);
-	}
-
-	@Test
-	public void testPostUserAccountsByEmailAddressAccountRolesAssignsCustomerGroup()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
+		Account account = _mockAccount();
 
 		Mockito.when(
 			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
@@ -1707,24 +1445,18 @@ public class AccountsRestControllerTest {
 		);
 
 		Mockito.when(
-			_oktaService.fetchContactByEmailAddress(_EMAIL_ADDRESS)
+			_userAssignmentService.assignAccount(account, _USER_ID)
 		).thenReturn(
-			Mockito.mock(OktaUser.class)
+			true
 		);
 
 		accountsRestController.postUserAccountsByEmailAddressAccountRoles(
 			null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS, "{}");
 
 		Mockito.verify(
-			_accountService
-		).addAccountUserAccountByEmailAddress(
-			_ACCOUNT_ID, _EMAIL_ADDRESS, null
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).assignCustomerGroup(
-			_USER_ID
+			_userAssignmentService, Mockito.never()
+		).assignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
 		);
 
 		Mockito.verify(
@@ -1735,36 +1467,24 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostUserAccountsByEmailAddressAccountRolesCreatesOktaUser()
+	public void testPostUserAccountsByEmailAddressAccountRolesAddsNewUser()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
+		Account account = _mockAccount();
+
+		AccountRole accountRole = _mockAccountRole(
+			_ACCOUNT_ROLE_ID, "Support Administrator");
 
 		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+			_userAccountService.addUserAccount(_EMAIL_ADDRESS, "Doe", "Jane")
 		).thenReturn(
-			account
+			_createUserAccount()
 		);
 
 		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Support Administrator")
-		);
-
-		UserAccount userAccount = _createUserAccount();
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			null, userAccount
-		);
-
-		Mockito.when(
-			_entitlementService.hasEntitlement(
-				Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.<String>any())
+			_userAssignmentService.assignAccount(account, _USER_ID)
 		).thenReturn(
 			true
 		);
@@ -1773,35 +1493,63 @@ public class AccountsRestControllerTest {
 			null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
 			_createBodyJSON(_ACCOUNT_ROLE_ID, "Jane", "Doe"));
 
-		Mockito.verify(
-			_oktaService
-		).createContact(
-			_EMAIL_ADDRESS, "Jane", StringPool.BLANK, "Doe"
+		InOrder inOrder = Mockito.inOrder(
+			_adminPermission, _provisioningEmailService, _userAccountService,
+			_userAssignmentService);
+
+		inOrder.verify(
+			_adminPermission
+		).check(
+			null
 		);
 
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountByEmailAddress(
-			_ACCOUNT_ID, _EMAIL_ADDRESS, null
+		inOrder.verify(
+			_userAccountService
+		).addUserAccount(
+			_EMAIL_ADDRESS, "Doe", "Jane"
 		);
 
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRole(
-			_ACCOUNT_ROLE_ID, _EXTERNAL_REFERENCE_CODE, null, _USER_ID
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccount(
+			account, _USER_ID
 		);
 
-		Mockito.verify(
-			_provisioningAssignmentService
+		inOrder.verify(
+			_userAssignmentService
 		).assignAccountRole(
-			account, _USER_ID, "Support Administrator"
+			account, accountRole, _USER_ID
 		);
 
-		Mockito.verify(
+		inOrder.verify(
 			_provisioningEmailService
 		).sendAssignedWelcomeEmail(
 			account, _USER_ID
 		);
+	}
+
+	@Test
+	public void testPostUserAccountsByEmailAddressAccountRolesChecksAdminPermission()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				accountsRestController.
+					postUserAccountsByEmailAddressAccountRoles(
+						null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS, "{}"));
+
+		Mockito.verifyNoInteractions(_accountService, _userAssignmentService);
 	}
 
 	@Test
@@ -1810,17 +1558,8 @@ public class AccountsRestControllerTest {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Account Member")
-		);
+		_mockAccount();
+		_mockAccountRole(_ACCOUNT_ROLE_ID, "Account Member");
 
 		Mockito.when(
 			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
@@ -1840,7 +1579,7 @@ public class AccountsRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
 
-		Mockito.verifyNoInteractions(_oktaService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -1849,11 +1588,7 @@ public class AccountsRestControllerTest {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
+		_mockAccount();
 
 		Assertions.assertThrows(
 			JSONException.class,
@@ -1863,7 +1598,7 @@ public class AccountsRestControllerTest {
 						null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
 						"not json"));
 
-		Mockito.verifyNoInteractions(_oktaService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -1890,20 +1625,45 @@ public class AccountsRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 
-		Mockito.verifyNoInteractions(_accountService);
+		Mockito.verifyNoInteractions(_accountService, _userAssignmentService);
 	}
 
 	@Test
-	public void testPostUserAccountsByEmailAddressAccountRolesRequiresEntitlement()
+	public void testPostUserAccountsByEmailAddressAccountRolesRejectsUnknownAccountRole()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
+		_mockAccount();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() ->
+					accountsRestController.
+						postUserAccountsByEmailAddressAccountRoles(
+							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
+							_createBodyJSON(_ACCOUNT_ROLE_ID, "Jane", "Doe")));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).addUserAccount(
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPostUserAccountsByEmailAddressAccountRolesRequiresNamesForNewUser()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
 
 		ResponseStatusException responseStatusException =
 			Assertions.assertThrows(
@@ -1915,15 +1675,15 @@ public class AccountsRestControllerTest {
 							"{}"));
 
 		Assertions.assertEquals(
-			HttpStatus.UNPROCESSABLE_ENTITY,
-			responseStatusException.getStatusCode());
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 
 		Mockito.verify(
-			_oktaService, Mockito.never()
-		).createContact(
-			Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
-			Mockito.anyString()
+			_userAccountService, Mockito.never()
+		).addUserAccount(
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -1932,19 +1692,10 @@ public class AccountsRestControllerTest {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
+		Account account = _mockAccount();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRole(_ACCOUNT_ROLE_ID)
-		).thenReturn(
-			_createAccountRole("Support Administrator")
-		);
+		AccountRole accountRole = _mockAccountRole(
+			_ACCOUNT_ROLE_ID, "Support Administrator");
 
 		Mockito.when(
 			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
@@ -1952,110 +1703,47 @@ public class AccountsRestControllerTest {
 			_createUserAccount(_ACCOUNT_ID, "Account Member")
 		);
 
-		Mockito.when(
-			_oktaService.fetchContactByEmailAddress(_EMAIL_ADDRESS)
-		).thenReturn(
-			Mockito.mock(OktaUser.class)
-		);
-
 		accountsRestController.postUserAccountsByEmailAddressAccountRoles(
 			null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
 			_createBodyJSON(_ACCOUNT_ROLE_ID, null, null));
 
 		Mockito.verify(
-			_accountService, Mockito.never()
-		).addAccountUserAccountByEmailAddress(
-			Mockito.anyLong(), Mockito.anyString(), Mockito.any()
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
+			_userAssignmentService
 		).assignAccountRole(
-			account, _USER_ID, "Support Administrator"
+			account, accountRole, _USER_ID
 		);
 
 		Mockito.verifyNoInteractions(_provisioningEmailService);
 	}
 
 	@Test
-	public void testPostUserAccountsSendsWelcomeEmailForNewMember()
+	public void testPutUserAccountsAccountRolesChecksAssignMembersPermission()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
+		_denyAssignMembersPermission();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.putUserAccountsAccountRoles(
+				null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
+				_createBodyJSON(_ACCOUNT_ROLE_ID, null, null)));
 
-		accountsRestController.postUserAccounts(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
-
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccount(
-			_ACCOUNT_ID, null, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).assignCustomerGroup(
-			_USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningEmailService
-		).sendAssignedWelcomeEmail(
-			account, _USER_ID
-		);
+		Mockito.verifyNoInteractions(_accountService, _userAssignmentService);
 	}
 
 	@Test
-	public void testPostUserAccountsSkipsWelcomeEmailForExistingMember()
+	public void testPutUserAccountsAccountRolesRejectsLastAccountManager()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createAccount()
-		);
+		_mockAccount();
+		_mockAccountRole(_ACCOUNT_ROLE_ID, "Support Administrator");
 
-		Mockito.when(
-			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
-		).thenReturn(
-			true
-		);
-
-		accountsRestController.postUserAccounts(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
-
-		Mockito.verify(
-			_provisioningAssignmentService
-		).assignCustomerGroup(
-			_USER_ID
-		);
-
-		Mockito.verifyNoInteractions(_provisioningEmailService);
-	}
-
-	@Test
-	public void testPostUserAccountsSyncsMembershipToJSM() throws Exception {
-		AccountsRestController accountsRestController = _createController();
-
-		Account account = _createAccount();
-
-		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			account
-		);
-
-		UserAccount userAccount = _createUserAccount();
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
 
 		Mockito.when(
 			_userAccountService.getUserAccount(_USER_ID)
@@ -2063,13 +1751,117 @@ public class AccountsRestControllerTest {
 			userAccount
 		);
 
-		accountsRestController.postUserAccounts(
-			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(userAccount, _createUserAccount(_ACCOUNT_ID, "Member"))
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.putUserAccountsAccountRoles(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
+					_createBodyJSON(_ACCOUNT_ROLE_ID, null, null)));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPutUserAccountsAccountRolesRejectsNonmember()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			_createUserAccount()
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.putUserAccountsAccountRoles(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
+					_createBodyJSON(_ACCOUNT_ROLE_ID, null, null)));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPutUserAccountsAccountRolesReplacesAccountRoles()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _mockAccount();
+
+		AccountRole addedAccountRole = _mockAccountRole(
+			_ACCOUNT_ROLE_ID, "Support Administrator");
+		AccountRole removedAccountRole = _mockAccountRole(
+			_OTHER_ACCOUNT_ROLE_ID, "Support User");
+
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, "Support Administrator");
+
+		AccountBrief accountBrief = userAccount.getAccountBriefs()[0];
+
+		RoleBrief keptRoleBrief = accountBrief.getRoleBriefs()[0];
+
+		keptRoleBrief.setId(_ACCOUNT_ROLE_ID);
+
+		RoleBrief removedRoleBrief = new RoleBrief();
+
+		removedRoleBrief.setId(_OTHER_ACCOUNT_ROLE_ID);
+		removedRoleBrief.setName("Support User");
+
+		accountBrief.setRoleBriefs(
+			new RoleBrief[] {keptRoleBrief, removedRoleBrief});
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		accountsRestController.putUserAccountsAccountRoles(
+			null, _EXTERNAL_REFERENCE_CODE, _USER_ID,
+			_createBodyJSON(_ACCOUNT_ROLE_ID, null, null));
+
+		InOrder inOrder = Mockito.inOrder(
+			_accountPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			account, addedAccountRole, _USER_ID
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).unassignAccountRole(
+			account, removedAccountRole, _USER_ID
+		);
 
 		Mockito.verify(
-			_accountUserAccountSynchronizer
-		).syncAccountUserAccountMembership(
-			account, userAccount
+			_userAssignmentService, Mockito.never()
+		).unassignAccountRole(
+			account, addedAccountRole, _USER_ID
 		);
 	}
 
@@ -2125,11 +1917,11 @@ public class AccountsRestControllerTest {
 			));
 	}
 
-	private AccountRole _createAccountRole(String name) {
+	private AccountRole _createAccountRole(long id, String name) {
 		AccountRole accountRole = new AccountRole();
 
 		accountRole.setExternalReferenceCode("L_ACCOUNT_ADMINISTRATOR");
-		accountRole.setId(_ACCOUNT_ROLE_ID);
+		accountRole.setId(id);
 		accountRole.setName(name);
 
 		return accountRole;
@@ -2188,12 +1980,6 @@ public class AccountsRestControllerTest {
 			accountsRestController, "_accountSynchronizer",
 			_accountSynchronizer);
 		ReflectionTestUtils.setField(
-			accountsRestController, "_accountUserAccountRoleSynchronizer",
-			_accountUserAccountRoleSynchronizer);
-		ReflectionTestUtils.setField(
-			accountsRestController, "_accountUserAccountSynchronizer",
-			_accountUserAccountSynchronizer);
-		ReflectionTestUtils.setField(
 			accountsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_emailAddressValidatorService",
@@ -2212,20 +1998,17 @@ public class AccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountsRestController, "_licenseKeyService", _licenseKeyService);
 		ReflectionTestUtils.setField(
-			accountsRestController, "_oktaService", _oktaService);
-		ReflectionTestUtils.setField(
-			accountsRestController, "_projectMembershipPermission",
-			_projectMembershipPermission);
+			accountsRestController, "_projectPermission", _projectPermission);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_projectService", _projectService);
-		ReflectionTestUtils.setField(
-			accountsRestController, "_provisioningAssignmentService",
-			_provisioningAssignmentService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_provisioningEmailService",
 			_provisioningEmailService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_userAccountService", _userAccountService);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_userAssignmentService",
+			_userAssignmentService);
 
 		return accountsRestController;
 	}
@@ -2311,6 +2094,42 @@ public class AccountsRestControllerTest {
 		return userAccount;
 	}
 
+	private void _denyAssignMembersPermission() throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null
+		);
+	}
+
+	private Account _mockAccount() throws Exception {
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			account
+		);
+
+		return account;
+	}
+
+	private AccountRole _mockAccountRole(long id, String name)
+		throws Exception {
+
+		AccountRole accountRole = _createAccountRole(id, name);
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRole(id)
+		).thenReturn(
+			accountRole
+		);
+
+		return accountRole;
+	}
+
 	private static final long _ACCOUNT_ID = 11111;
 
 	private static final long _ACCOUNT_INVITATION_ID = 44444;
@@ -2320,6 +2139,8 @@ public class AccountsRestControllerTest {
 	private static final String _EMAIL_ADDRESS = "jane@example.com";
 
 	private static final String _EXTERNAL_REFERENCE_CODE = "ACC-1";
+
+	private static final long _OTHER_ACCOUNT_ROLE_ID = 33334;
 
 	private static final long _POSTAL_ADDRESS_ID = 77L;
 
@@ -2343,12 +2164,6 @@ public class AccountsRestControllerTest {
 		AccountService.class);
 	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(
 		AccountSynchronizer.class);
-	private final AccountUserAccountRoleSynchronizer
-		_accountUserAccountRoleSynchronizer = Mockito.mock(
-			AccountUserAccountRoleSynchronizer.class);
-	private final AccountUserAccountSynchronizer
-		_accountUserAccountSynchronizer = Mockito.mock(
-			AccountUserAccountSynchronizer.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
 	private final EmailAddressValidatorService _emailAddressValidatorService =
@@ -2363,16 +2178,15 @@ public class AccountsRestControllerTest {
 		LicenseKeyPermission.class);
 	private final LicenseKeyService _licenseKeyService = Mockito.mock(
 		LicenseKeyService.class);
-	private final OktaService _oktaService = Mockito.mock(OktaService.class);
-	private final ProjectMembershipPermission _projectMembershipPermission =
-		Mockito.mock(ProjectMembershipPermission.class);
+	private final ProjectPermission _projectPermission = Mockito.mock(
+		ProjectPermission.class);
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
-	private final ProvisioningAssignmentService _provisioningAssignmentService =
-		Mockito.mock(ProvisioningAssignmentService.class);
 	private final ProvisioningEmailService _provisioningEmailService =
 		Mockito.mock(ProvisioningEmailService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
+	private final UserAssignmentService _userAssignmentService = Mockito.mock(
+		UserAssignmentService.class);
 
 }

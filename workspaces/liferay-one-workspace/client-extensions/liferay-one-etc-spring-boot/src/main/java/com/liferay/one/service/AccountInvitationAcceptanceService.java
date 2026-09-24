@@ -6,13 +6,14 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.model.AccountInvitation;
-import com.liferay.one.okta.service.OktaService;
+import com.liferay.one.model.Project;
 import com.liferay.portal.kernel.util.Validator;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,23 @@ public class AccountInvitationAcceptanceService {
 
 	public void provisionAccountInvitation(AccountInvitation accountInvitation)
 		throws Exception {
+
+		List<AccountRole> accountRoles = new ArrayList<>();
+
+		for (String roleExternalReferenceCode :
+				accountInvitation.getRoleExternalReferenceCodes()) {
+
+			AccountRole accountRole =
+				_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+					roleExternalReferenceCode);
+
+			if (accountRole == null) {
+				throw new IllegalArgumentException(
+					"Unable to find account role " + roleExternalReferenceCode);
+			}
+
+			accountRoles.add(accountRole);
+		}
 
 		Account account = _accountService.getAccount(
 			accountInvitation.getAccountExternalReferenceCode());
@@ -40,56 +58,46 @@ public class AccountInvitationAcceptanceService {
 				accountInvitation.getGivenName());
 		}
 
-		_createOktaContact(accountInvitation);
+		long userId = userAccount.getId();
 
-		_accountService.addAccountUserAccountByEmailAddress(
-			account.getId(), emailAddress, null);
+		_userAssignmentService.assignAccount(account, userId);
 
-		for (String roleExternalReferenceCode :
-				accountInvitation.getRoleExternalReferenceCodes()) {
-
-			_accountService.addAccountUserAccountRoleByExternalReferenceCode(
-				account.getExternalReferenceCode(), roleExternalReferenceCode,
-				userAccount.getEmailAddress());
+		for (AccountRole accountRole : accountRoles) {
+			_userAssignmentService.assignAccountRole(
+				account, accountRole, userId);
 		}
 
-		if (Validator.isNotNull(
-				accountInvitation.getProjectExternalReferenceCode())) {
+		String projectExternalReferenceCode =
+			accountInvitation.getProjectExternalReferenceCode();
 
-			_projectMembershipService.addProjectMembership(
-				accountInvitation.getProjectExternalReferenceCode(),
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			return;
+		}
+
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project != null) {
+			_userAssignmentService.assignProjectRole(
+				project,
 				accountInvitation.getProjectRoleExternalReferenceCode(),
-				userAccount.getId());
+				userId);
 		}
 	}
 
-	private void _createOktaContact(AccountInvitation accountInvitation) {
-		String emailAddress = accountInvitation.getEmailAddress();
-
-		try {
-			_oktaService.createContact(
-				emailAddress, accountInvitation.getGivenName(), null,
-				accountInvitation.getFamilyName());
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to create Okta contact " + emailAddress, exception);
-		}
-	}
-
-	private static final Log _log = LogFactory.getLog(
-		AccountInvitationAcceptanceService.class);
+	@Autowired
+	private AccountRoleService _accountRoleService;
 
 	@Autowired
 	private AccountService _accountService;
 
 	@Autowired
-	private OktaService _oktaService;
-
-	@Autowired
-	private ProjectMembershipService _projectMembershipService;
+	private ProjectService _projectService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAssignmentService _userAssignmentService;
 
 }

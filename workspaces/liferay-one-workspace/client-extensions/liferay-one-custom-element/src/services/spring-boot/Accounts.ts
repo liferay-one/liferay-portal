@@ -30,6 +30,15 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
+	async deleteUserAccounts(
+		accountExternalReferenceCode: string,
+		userId: number | string
+	) {
+		return this.delete(
+			`/${accountExternalReferenceCode}/user-accounts/${userId}`
+		);
+	}
+
 	async getInvitations(accountExternalReferenceCode: string) {
 		return this.get<AccountInvitation[]>(
 			`/${accountExternalReferenceCode}/invitations`
@@ -101,6 +110,18 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 
 	async postSyncToJSM(accountExternalReferenceCode: string) {
 		return this.post(`/${accountExternalReferenceCode}/sync-to-jsm`);
+	}
+
+	async putUserAccountsAccountRoles(
+		accountExternalReferenceCode: string,
+		userId: number | string,
+		accountRoleIds: number[]
+	) {
+		return this.put(
+			`/${accountExternalReferenceCode}/user-accounts/${userId}` +
+				'/account-roles',
+			{accountRoleIds}
+		);
 	}
 }
 

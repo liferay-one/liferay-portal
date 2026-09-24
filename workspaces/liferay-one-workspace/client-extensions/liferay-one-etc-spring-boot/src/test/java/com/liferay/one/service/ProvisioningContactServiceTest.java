@@ -9,7 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.okta.service.OktaService;
+import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -37,19 +38,17 @@ public class ProvisioningContactServiceTest {
 		_provisioningContactService = new ProvisioningContactService();
 
 		_accountRoleService = Mockito.mock(AccountRoleService.class);
-		_accountService = Mockito.mock(AccountService.class);
 		_emailAddressValidatorService = Mockito.mock(
 			EmailAddressValidatorService.class);
-		_oktaService = Mockito.mock(OktaService.class);
-		_projectMembershipService = Mockito.mock(
-			ProjectMembershipService.class);
-		_provisioningAssignmentService = Mockito.mock(
-			ProvisioningAssignmentService.class);
+		_projectService = Mockito.mock(ProjectService.class);
 		_userAccountService = Mockito.mock(UserAccountService.class);
+		_userAssignmentService = Mockito.mock(UserAssignmentService.class);
 
 		_account = new Account();
 
 		_account.setId(_ACCOUNT_ID);
+
+		_accountRole = _createAccountRole(_ACCOUNT_ROLE_ID);
 
 		Mockito.when(
 			_userAccountService.hasUserAccounts(_ACCOUNT_ID)
@@ -61,79 +60,52 @@ public class ProvisioningContactServiceTest {
 			_provisioningContactService, "_accountRoleService",
 			_accountRoleService);
 		ReflectionTestUtils.setField(
-			_provisioningContactService, "_accountService", _accountService);
-		ReflectionTestUtils.setField(
 			_provisioningContactService, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
 		ReflectionTestUtils.setField(
-			_provisioningContactService, "_oktaService", _oktaService);
-		ReflectionTestUtils.setField(
-			_provisioningContactService, "_projectMembershipService",
-			_projectMembershipService);
-		ReflectionTestUtils.setField(
-			_provisioningContactService, "_provisioningAssignmentService",
-			_provisioningAssignmentService);
+			_provisioningContactService, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
 			_provisioningContactService, "_userAccountService",
 			_userAccountService);
+		ReflectionTestUtils.setField(
+			_provisioningContactService, "_userAssignmentService",
+			_userAssignmentService);
 	}
 
 	@Test
-	public void testAddProjectContactsAddsProjectMembershipWhenProjectPresent()
+	public void testAddProjectContactsAssignsProjectRoleWhenProjectPresent()
 		throws Exception {
 
-		UserAccount newUserAccount = new UserAccount();
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
 
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
-
-		SalesforceProject salesforceProject = new SalesforceProject(
+		Project project = new Project(
 			new JSONObject(
 			).put(
-				"Id", "SF-PROJ-1"
+				"externalReferenceCode", "SF-PROJ-1"
 			));
+
+		Mockito.when(
+			_projectService.fetchProject("SF-PROJ-1")
+		).thenReturn(
+			project
+		);
 
 		_provisioningContactService.addProjectContacts(
 			_account, List.of(_createContactRole(_CONTACT_ROLE)),
-			salesforceProject, new ArrayList<>());
+			_createSalesforceProject(), new ArrayList<>());
 
 		Mockito.verify(
-			_projectMembershipService
-		).addProjectMembership(
-			"SF-PROJ-1", _USER_ID
+			_userAssignmentService
+		).assignProjectRole(
+			project, RoleConstants.ERC_PROJECT_USER, _USER_ID
 		);
 	}
 
 	@Test
 	public void testAddProjectContactsCreatesNewContact() throws Exception {
-		UserAccount newUserAccount = new UserAccount();
-
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -147,25 +119,22 @@ public class ProvisioningContactServiceTest {
 			_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME
 		);
 
-		Mockito.verify(
-			_oktaService
-		).createContact(
-			_EMAIL_ADDRESS, _FIRST_NAME, null, _LAST_NAME
+		InOrder inOrder = Mockito.inOrder(_userAssignmentService);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignAccount(
+			_account, _USER_ID
 		);
 
-		Mockito.verify(
-			_accountService
-		).addAccountUserAccount(
-			_ACCOUNT_ID, _ACCOUNT_ROLE_ID, _USER_ID
-		);
-
-		Mockito.verify(
-			_provisioningAssignmentService
+		inOrder.verify(
+			_userAssignmentService
 		).assignAccountRole(
-			_account, _USER_ID, _CONTACT_ROLE
+			_account, _accountRole, _USER_ID
 		);
 
 		Assertions.assertEquals(List.of(_USER_ID), userIds);
+		Assertions.assertTrue(warningMessages.isEmpty());
 	}
 
 	@Test
@@ -189,11 +158,7 @@ public class ProvisioningContactServiceTest {
 			secondUserAccount
 		);
 
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
+		_mockContactAccountRole();
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -221,38 +186,19 @@ public class ProvisioningContactServiceTest {
 			false
 		);
 
-		UserAccount newUserAccount = new UserAccount();
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
 
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(
-				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
-		).thenReturn(
-			_createAccountRole(_ADMINISTRATOR_ROLE_ID)
-		);
+		AccountRole administratorAccountRole = _mockAdministratorAccountRole();
 
 		_provisioningContactService.addProjectContacts(
 			_account, List.of(_createContactRole(_CONTACT_ROLE)), null,
 			new ArrayList<>());
 
 		Mockito.verify(
-			_accountService
-		).addAccountUserAccountRole(
-			_ACCOUNT_ID, _ADMINISTRATOR_ROLE_ID, _USER_ID
+			_userAssignmentService
+		).assignAccountRole(
+			_account, administratorAccountRole, _USER_ID
 		);
 	}
 
@@ -266,40 +212,12 @@ public class ProvisioningContactServiceTest {
 			false
 		);
 
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
+		_mockContactAccountRole();
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
 
-		UserAccount firstUserAccount = new UserAccount();
+		AccountRole administratorAccountRole = _mockAdministratorAccountRole();
 
-		firstUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			firstUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(
-				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
-		).thenReturn(
-			_createAccountRole(_ADMINISTRATOR_ROLE_ID)
-		);
-
-		UserAccount secondUserAccount = new UserAccount();
-
-		secondUserAccount.setId(_SECOND_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_SECOND_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			secondUserAccount
-		);
+		_mockNewUserAccount(_SECOND_EMAIL_ADDRESS, _SECOND_USER_ID);
 
 		_provisioningContactService.addProjectContacts(
 			_account,
@@ -311,9 +229,9 @@ public class ProvisioningContactServiceTest {
 			null, new ArrayList<>());
 
 		Mockito.verify(
-			_accountService, Mockito.never()
-		).addAccountUserAccountRole(
-			_ACCOUNT_ID, _ADMINISTRATOR_ROLE_ID, _SECOND_USER_ID
+			_userAssignmentService, Mockito.never()
+		).assignAccountRole(
+			_account, administratorAccountRole, _SECOND_USER_ID
 		);
 	}
 
@@ -341,11 +259,7 @@ public class ProvisioningContactServiceTest {
 
 		Assertions.assertTrue(userIds.isEmpty());
 
-		Mockito.verify(
-			_provisioningAssignmentService, Mockito.never()
-		).assignAccountRole(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
-		);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -364,84 +278,26 @@ public class ProvisioningContactServiceTest {
 
 		Assertions.assertTrue(userIds.isEmpty());
 
-		Mockito.verifyNoInteractions(_oktaService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
-	public void testAddProjectContactsSwallowsAssignmentSideEffectFailure()
+	public void testAddProjectContactsSkipsProjectRoleWhenProjectIsMissing()
 		throws Exception {
 
-		UserAccount newUserAccount = new UserAccount();
-
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
-
-		Mockito.doThrow(
-			new RuntimeException("Unable to assign account role")
-		).when(
-			_provisioningAssignmentService
-		).assignAccountRole(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
-		);
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
 
 		List<Long> userIds = _provisioningContactService.addProjectContacts(
-			_account, List.of(_createContactRole(_CONTACT_ROLE)), null,
-			new ArrayList<>());
-
-		Assertions.assertEquals(List.of(_USER_ID), userIds);
-	}
-
-	@Test
-	public void testAddProjectContactsSwallowsOktaContactCreationFailure()
-		throws Exception {
-
-		UserAccount newUserAccount = new UserAccount();
-
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
-
-		Mockito.doThrow(
-			new RuntimeException("Unable to create Okta contact")
-		).when(
-			_oktaService
-		).createContact(
-			_EMAIL_ADDRESS, _FIRST_NAME, null, _LAST_NAME
-		);
-
-		List<Long> userIds = _provisioningContactService.addProjectContacts(
-			_account, List.of(_createContactRole(_CONTACT_ROLE)), null,
-			new ArrayList<>());
+			_account, List.of(_createContactRole(_CONTACT_ROLE)),
+			_createSalesforceProject(), new ArrayList<>());
 
 		Assertions.assertEquals(List.of(_USER_ID), userIds);
 
 		Mockito.verify(
-			_accountService
-		).addAccountUserAccount(
-			_ACCOUNT_ID, _ACCOUNT_ROLE_ID, _USER_ID
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
 		);
 	}
 
@@ -449,22 +305,7 @@ public class ProvisioningContactServiceTest {
 	public void testAddProjectContactsWarnsOnUnknownContactRole()
 		throws Exception {
 
-		UserAccount newUserAccount = new UserAccount();
-
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			null
-		);
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -481,15 +322,15 @@ public class ProvisioningContactServiceTest {
 			));
 
 		Mockito.verify(
-			_accountService
-		).addAccountUserAccount(
-			_ACCOUNT_ID, _USER_ID
+			_userAssignmentService
+		).assignAccount(
+			_account, _USER_ID
 		);
 
 		Mockito.verify(
-			_provisioningAssignmentService, Mockito.never()
+			_userAssignmentService, Mockito.never()
 		).assignAccountRole(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
 		);
 	}
 
@@ -503,29 +344,8 @@ public class ProvisioningContactServiceTest {
 			false
 		);
 
-		UserAccount newUserAccount = new UserAccount();
-
-		newUserAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.addUserAccount(
-				_EMAIL_ADDRESS, _LAST_NAME, _FIRST_NAME)
-		).thenReturn(
-			newUserAccount
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_createAccountRole(_ACCOUNT_ROLE_ID)
-		);
-
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(
-				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
-		).thenReturn(
-			null
-		);
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -543,9 +363,41 @@ public class ProvisioningContactServiceTest {
 			));
 
 		Mockito.verify(
-			_accountService, Mockito.never()
-		).addAccountUserAccountRole(
-			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()
+			_userAssignmentService
+		).assignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testAddProjectContactsWarnsWhenAssignmentFails()
+		throws Exception {
+
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+		_mockContactAccountRole();
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to assign account")
+		).when(
+			_userAssignmentService
+		).assignAccount(
+			_account, _USER_ID
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		List<Long> userIds = _provisioningContactService.addProjectContacts(
+			_account, List.of(_createContactRole(_CONTACT_ROLE)), null,
+			warningMessages);
+
+		Assertions.assertTrue(userIds.isEmpty());
+
+		Assertions.assertEquals(1, warningMessages.size());
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
 		);
 	}
 
@@ -575,6 +427,51 @@ public class ProvisioningContactServiceTest {
 		return new SalesforceProjectContactRole(jsonObject);
 	}
 
+	private SalesforceProject _createSalesforceProject() {
+		return new SalesforceProject(
+			new JSONObject(
+			).put(
+				"Id", "SF-PROJ-1"
+			));
+	}
+
+	private void _mockContactAccountRole() throws Exception {
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
+		).thenReturn(
+			_accountRole
+		);
+	}
+
+	private AccountRole _mockAdministratorAccountRole() throws Exception {
+		AccountRole administratorAccountRole = _createAccountRole(
+			_ADMINISTRATOR_ROLE_ID);
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByName(
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)
+		).thenReturn(
+			administratorAccountRole
+		);
+
+		return administratorAccountRole;
+	}
+
+	private void _mockNewUserAccount(String emailAddress, long userId)
+		throws Exception {
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setId(userId);
+
+		Mockito.when(
+			_userAccountService.addUserAccount(
+				emailAddress, _LAST_NAME, _FIRST_NAME)
+		).thenReturn(
+			userAccount
+		);
+	}
+
 	private static final long _ACCOUNT_ID = 1000L;
 
 	private static final long _ACCOUNT_ROLE_ID = 500L;
@@ -599,13 +496,12 @@ public class ProvisioningContactServiceTest {
 	private static final long _USER_ID = 100L;
 
 	private Account _account;
+	private AccountRole _accountRole;
 	private AccountRoleService _accountRoleService;
-	private AccountService _accountService;
 	private EmailAddressValidatorService _emailAddressValidatorService;
-	private OktaService _oktaService;
-	private ProjectMembershipService _projectMembershipService;
-	private ProvisioningAssignmentService _provisioningAssignmentService;
+	private ProjectService _projectService;
 	private ProvisioningContactService _provisioningContactService;
 	private UserAccountService _userAccountService;
+	private UserAssignmentService _userAssignmentService;
 
 }

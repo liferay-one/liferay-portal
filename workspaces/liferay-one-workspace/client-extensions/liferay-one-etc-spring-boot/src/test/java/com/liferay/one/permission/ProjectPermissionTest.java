@@ -33,43 +33,112 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Amos Fong
  */
-public class ProjectMembershipPermissionTest {
+public class ProjectPermissionTest {
+
+	@Test
+	public void testCheckAssignMembersAllowsAccountManager() throws Exception {
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Mockito.when(
+			_accountPermission.contains(
+				_ACCOUNT_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS,
+				null, _userAccount)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckAssignMembersAllowsProjectAdmin() throws Exception {
+		ProjectPermission projectPermission = _createPermission(
+			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN)));
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckAssignMembersRejectsOrganizationMember()
+		throws Exception {
+
+		OrganizationBrief organizationBrief = new OrganizationBrief();
+
+		organizationBrief.setId(_ORGANIZATION_ID);
+
+		_userAccount = _createUserAccount(organizationBrief);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_accountService);
+	}
+
+	@Test
+	public void testCheckAssignMembersRejectsProjectUser() throws Exception {
+		ProjectPermission projectPermission = _createPermission(
+			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckAssignMembersRejectsUnknownProject() throws Exception {
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null, "PRJCT-UNKNOWN"));
+
+		Mockito.verifyNoInteractions(_accountPermission);
+	}
 
 	@Test
 	public void testCheckUpdateGrantsSecondaryTicketRole() throws Exception {
-		ProjectMembershipPermission projectMembershipPermission =
-			_createPermission(
-				List.of(
-					_createProjectMembership(RoleConstants.ERC_PROJECT_USER),
-					_createProjectMembership(
-						RoleConstants.ERC_PROJECT_REQUESTER)));
+		ProjectPermission projectPermission = _createPermission(
+			List.of(
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER),
+				_createProjectMembership(RoleConstants.ERC_PROJECT_REQUESTER)));
 
-		projectMembershipPermission.check(
+		projectPermission.check(
 			ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE);
 	}
 
 	@Test
 	public void testCheckUpdateThrowsWithoutTicketRole() throws Exception {
-		ProjectMembershipPermission projectMembershipPermission =
-			_createPermission(
-				List.of(
-					_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
+		ProjectPermission projectPermission = _createPermission(
+			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> projectMembershipPermission.check(
+			() -> projectPermission.check(
 				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test
 	public void testCheckViewGrantsWhenSupportRoleIsFirst() throws Exception {
-		ProjectMembershipPermission projectMembershipPermission =
-			_createPermission(
-				List.of(
-					_createProjectMembership(RoleConstants.ERC_PROJECT_USER),
-					_createProjectMembership("C_SOME_OTHER_ROLE")));
+		ProjectPermission projectPermission = _createPermission(
+			List.of(
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER),
+				_createProjectMembership("C_SOME_OTHER_ROLE")));
 
-		projectMembershipPermission.check(
+		projectPermission.check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE);
 	}
 
@@ -77,36 +146,31 @@ public class ProjectMembershipPermissionTest {
 	public void testCheckViewGrantsWhenSupportRoleIsNotFirst()
 		throws Exception {
 
-		ProjectMembershipPermission projectMembershipPermission =
-			_createPermission(
-				List.of(
-					_createProjectMembership("C_SOME_OTHER_ROLE"),
-					_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
+		ProjectPermission projectPermission = _createPermission(
+			List.of(
+				_createProjectMembership("C_SOME_OTHER_ROLE"),
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
 
-		projectMembershipPermission.check(
+		projectPermission.check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE);
 	}
 
 	@Test
 	public void testCheckViewThrowsWithoutSupportRole() throws Exception {
-		ProjectMembershipPermission projectMembershipPermission =
-			_createPermission(
-				List.of(_createProjectMembership("C_SOME_OTHER_ROLE")));
+		ProjectPermission projectPermission = _createPermission(
+			List.of(_createProjectMembership("C_SOME_OTHER_ROLE")));
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> projectMembershipPermission.check(
+			() -> projectPermission.check(
 				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
 	}
 
-	private ProjectMembershipPermission _createPermission(
+	private ProjectPermission _createPermission(
 			List<ProjectMembership> projectMemberships)
 		throws Exception {
 
-		ProjectMembershipPermission projectMembershipPermission =
-			new ProjectMembershipPermission();
-
-		UserAccount userAccount = _createUserAccount();
+		ProjectPermission projectPermission = new ProjectPermission();
 
 		UserAccountService userAccountService = Mockito.mock(
 			UserAccountService.class);
@@ -114,7 +178,7 @@ public class ProjectMembershipPermissionTest {
 		Mockito.when(
 			userAccountService.getMyUserAccount(Mockito.any())
 		).thenReturn(
-			userAccount
+			_userAccount
 		);
 
 		ProjectService projectService = Mockito.mock(ProjectService.class);
@@ -136,18 +200,18 @@ public class ProjectMembershipPermissionTest {
 		);
 
 		ReflectionTestUtils.setField(
-			projectMembershipPermission, "_accountService",
-			Mockito.mock(AccountService.class));
+			projectPermission, "_accountPermission", _accountPermission);
 		ReflectionTestUtils.setField(
-			projectMembershipPermission, "_projectMembershipService",
+			projectPermission, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			projectPermission, "_projectMembershipService",
 			projectMembershipService);
 		ReflectionTestUtils.setField(
-			projectMembershipPermission, "_projectService", projectService);
+			projectPermission, "_projectService", projectService);
 		ReflectionTestUtils.setField(
-			projectMembershipPermission, "_userAccountService",
-			userAccountService);
+			projectPermission, "_userAccountService", userAccountService);
 
-		return projectMembershipPermission;
+		return projectPermission;
 	}
 
 	private Project _createProject() {
@@ -176,7 +240,9 @@ public class ProjectMembershipPermissionTest {
 			));
 	}
 
-	private UserAccount _createUserAccount() {
+	private UserAccount _createUserAccount(
+		OrganizationBrief... organizationBriefs) {
+
 		UserAccount userAccount = Mockito.mock(UserAccount.class);
 
 		Mockito.when(
@@ -194,7 +260,7 @@ public class ProjectMembershipPermissionTest {
 		Mockito.when(
 			userAccount.getOrganizationBriefs()
 		).thenReturn(
-			new OrganizationBrief[0]
+			organizationBriefs
 		);
 
 		Mockito.when(
@@ -210,6 +276,14 @@ public class ProjectMembershipPermissionTest {
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
+	private static final long _ORGANIZATION_ID = 44444;
+
 	private static final long _USER_ID = 22222;
+
+	private final AccountPermission _accountPermission = Mockito.mock(
+		AccountPermission.class);
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
+	private UserAccount _userAccount = _createUserAccount();
 
 }

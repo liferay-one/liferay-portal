@@ -10,7 +10,6 @@ import {sub, translate} from '~/i18n';
 import EditPermissionsModal from '~/pages/MyAccount/AccountMembers/components/EditPermissionsModal/EditPermissionsModal';
 import InviteMemberModal from '~/pages/MyAccount/AccountMembers/components/InviteMemberModal/InviteMemberModal';
 import fetcher from '~/services/fetcher/fetcher';
-import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
 
@@ -18,7 +17,6 @@ import type {AccountMemberRow} from '~/pages/MyAccount/AccountMembers/types';
 import type {APIResponse} from '~/types/api';
 
 type ProjectMembershipItem = {
-	id: number;
 	r_projectToProjectMembership_c_projectERC: string;
 };
 
@@ -71,7 +69,6 @@ export function useAccountMemberActions({
 			body: (
 				<EditPermissionsModal
 					accountExternalReferenceCode={accountExternalReferenceCode}
-					accountId={accountId}
 					adminCount={adminCount}
 					memberName={member.name}
 					memberRoleBriefs={member.roleBriefs}
@@ -165,17 +162,9 @@ export function useAccountMemberActions({
 			header: translate('remove-member'),
 			onConfirm: async () => {
 				try {
-					await Promise.all(
-						memberships.map((membership) =>
-							fetcher.delete(
-								`/o/c/projectmemberships/${membership.id}`
-							)
-						)
-					);
-
-					await HeadlessAdminUser.deleteAccountUserAccountByEmailAddress(
+					await Accounts.deleteUserAccounts(
 						accountExternalReferenceCode,
-						member.email
+						member.id
 					);
 
 					await mutate();

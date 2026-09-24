@@ -33,6 +33,7 @@ type ProjectMembershipItem = {
 };
 
 type UserInfo = {
+	accountRoleIds: number[];
 	designations: string[];
 	email: string;
 	name: string;
@@ -136,6 +137,7 @@ export function useProjectMembers() {
 				)?.roleBriefs ?? [];
 
 			map.set(userAccount.id, {
+				accountRoleIds: accountRoleBriefs.map(({id}) => id),
 				designations: accountRoleBriefs
 					.map((roleBrief) => roleBrief.name)
 					.filter((roleName) =>
@@ -152,11 +154,15 @@ export function useProjectMembers() {
 	const accountMemberOptions = useMemo<AccountMemberOption[]>(
 		() =>
 			(userAccountData?.items ?? []).map((userAccount) => ({
+				accountRoleIds:
+					userAccount.accountBriefs
+						?.find((accountBrief) => accountBrief.id === accountId)
+						?.roleBriefs.map(({id}) => id) ?? [],
 				email: userAccount.emailAddress,
 				name: userAccount.name,
 				userId: userAccount.id,
 			})),
-		[userAccountData]
+		[accountId, userAccountData]
 	);
 
 	const rows = useMemo<ProjectMembersRow[]>(() => {
@@ -190,6 +196,7 @@ export function useProjectMembers() {
 					const userInfo = userInfoById.get(userId);
 
 					return {
+						accountRoleIds: userInfo?.accountRoleIds ?? [],
 						designations: userInfo?.designations ?? [],
 						email: userInfo?.email ?? '',
 						membershipId: membership.id,
