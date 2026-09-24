@@ -171,8 +171,7 @@ function _build_order_payload {
 	local file="${1}"
 	local channel_id="${2}"
 	local contract_id="${3}"
-	local project_id="${4}"
-	local publisher_sales_summary_id="${5}"
+	local publisher_sales_summary_id="${4}"
 
 	python3 -c "
 import json
@@ -181,10 +180,13 @@ with open('${file}') as file:
 	order = json.load(file)['order']
 
 # channelExternalReferenceCode is not resolved on create, so the numeric
-# channelId is required. The contract, project, and publisher sales summary are
-# linked through the contractToCommerceOrder, projectToCommerceOrder, and
-# publisherToCommerceOrder object relationships, whose foreign key fields on the
-# order take the numeric object entry IDs. The order item name is denormalized
+# channelId is required. The contract and project are linked through the
+# contractId and salesforceProjectId custom fields, which is what the runtime
+# reads -- contractId holds the numeric contract entry ID and salesforceProjectId
+# holds the project external reference code. The publisher sales summary is
+# linked through the publisherToCommerceOrder object relationship, whose foreign
+# key field on the order takes the numeric object entry ID. The order item name
+# is denormalized
 # from the SKU on create -- sending it rejects the nested mapping -- so it is
 # kept in the file for readability and dropped here. The order item custom
 # fields take a different shape from the plain object the file authors and are
@@ -192,20 +194,25 @@ with open('${file}') as file:
 
 order.pop('channelExternalReferenceCode', None)
 order.pop('contractExternalReferenceCode', None)
-order.pop('projectExternalReferenceCode', None)
 order.pop('publisherSalesSummaryExternalReferenceCode', None)
 
+project_external_reference_code = order.pop(
+	'projectExternalReferenceCode', None)
+
 order['channelId'] = ${channel_id}
+
+custom_fields = order.get('customFields') or {}
 
 contract_id = '${contract_id}'
 
 if contract_id:
-	order['r_contractToCommerceOrder_c_contractId'] = int(contract_id)
+	custom_fields['contractId'] = int(contract_id)
 
-project_id = '${project_id}'
+if project_external_reference_code:
+	custom_fields['salesforceProjectId'] = project_external_reference_code
 
-if project_id:
-	order['r_projectToCommerceOrder_c_projectId'] = int(project_id)
+if custom_fields:
+	order['customFields'] = custom_fields
 
 publisher_sales_summary_id = '${publisher_sales_summary_id}'
 
@@ -401,7 +408,7 @@ function _populate_order {
 
 	local payload
 
-	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}" "${project_id}" "${publisher_sales_summary_id}")
+	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}" "${publisher_sales_summary_id}")
 
 	# The order placement upserts by external reference code, so re-running is
 	# idempotent. A 4xx is a permanent rejection -- bad data such as an
@@ -620,9 +627,8 @@ function _resolve_contract_id {
 }
 
 # Resolves a project external reference code to its numeric ID and name,
-# emitted as a single tab-separated line. The ID sets the projectToCommerceOrder
-# relationship foreign key on the order; the name is the denormalized projectName
-# custom field the UI reads (see _set_order_fields).
+# emitted as a single tab-separated line. The name is the denormalized
+# projectName custom field the UI reads (see _set_order_fields).
 
 function _resolve_project {
 	local external_reference_code="${1}"
@@ -787,11 +793,10 @@ function _set_object_action_active {
 # order file once the order exists.
 #
 # projectName is a denormalized read cache: the project is linked authoritatively
-# through the projectToCommerceOrder relationship (see _build_order_payload), and
+# through the salesforceProjectId custom field (see _build_order_payload), and
 # projectName is derived here from that same project's name rather than authored
-# in the order file, so the relationship stays the single source of truth. The
-# commerce order read APIs surface expando custom fields but not object
-# relationship foreign keys, so the UI reads projectName off the order directly.
+# in the order file, so the external reference code stays the single source of
+# truth.
 
 function _set_order_fields {
 	local file="${1}"
