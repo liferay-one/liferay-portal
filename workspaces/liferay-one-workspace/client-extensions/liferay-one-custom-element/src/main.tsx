@@ -39,6 +39,9 @@ const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 	'license-agreement': React.lazy(() => import('~/pages/LicenseAgreement')),
 	'my-account': React.lazy(() => import('~/pages/MyAccount/MyAccountRouter')),
 	'next-steps': React.lazy(() => import('~/pages/NextSteps')),
+	'oauth2-authorize': React.lazy(
+		() => import('~/pages/OAuth2Authorize/OAuth2AuthorizeRouter')
+	),
 	'product-purchase': React.lazy(
 		() => import('~/pages/ProductPurchase/ProductPurchaseRouter')
 	),

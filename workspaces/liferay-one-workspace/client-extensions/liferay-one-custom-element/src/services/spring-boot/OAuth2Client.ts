@@ -22,6 +22,30 @@ class OAuth2Client {
 		protected basePath: string
 	) {}
 
+	async getHomePageURL() {
+		const response = await fetch(
+			`/o/oauth2/application?externalReferenceCode=${this.agentName}`
+		);
+
+		if (!response.ok) {
+			throw new Error(
+				`Unable to resolve the home page URL of ${this.agentName} with status ${response.status}`
+			);
+		}
+
+		const {homePageURL} = (await response.json()) as {
+			homePageURL?: string;
+		};
+
+		if (!homePageURL) {
+			throw new Error(
+				`Unable to resolve the home page URL of ${this.agentName}`
+			);
+		}
+
+		return homePageURL.replace(/\/$/, '');
+	}
+
 	private getOAuth2Client() {
 		if (!this.oAuth2ClientPromise) {
 			this.oAuth2ClientPromise = OAuth2.FromUserAgentApplication(
