@@ -17,7 +17,9 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
@@ -100,17 +102,26 @@ public abstract class OneBaseService extends BaseService {
 					"pageSize", _PAGE_SIZE
 				);
 
+			Map<String, Object> uriVariables = new HashMap<>();
+
 			if (filterString != null) {
-				uriComponentsBuilder.queryParam("filter", filterString);
+				uriComponentsBuilder.queryParam("filter", "{filter}");
+
+				uriVariables.put("filter", filterString);
 			}
 
 			if (nestedFields != null) {
-				uriComponentsBuilder.queryParam("nestedFields", nestedFields);
+				uriComponentsBuilder.queryParam(
+					"nestedFields", "{nestedFields}");
+
+				uriVariables.put("nestedFields", nestedFields);
 			}
 
 			String response = get(
 				getAuthorization(jwt),
-				uriComponentsBuilder.build(
+				uriComponentsBuilder.encode(
+				).buildAndExpand(
+					uriVariables
 				).toUri());
 
 			if (Validator.isNull(response)) {
