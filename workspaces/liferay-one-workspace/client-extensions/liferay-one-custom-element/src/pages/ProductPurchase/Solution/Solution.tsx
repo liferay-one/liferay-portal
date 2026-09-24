@@ -5,6 +5,7 @@
 
 import {Navigate} from 'react-router-dom';
 import {SolutionTypes} from '~/enums/Product';
+import ContactSales from '~/pages/ProductPurchase/ContactSales/ContactSales';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {
 	ProductSpecificationKey,
@@ -29,7 +30,7 @@ const Solution = () => {
 		return <PreBuiltTrialForm />;
 	}
 
-	return null;
+	return <ContactSales product={product} />;
 };
 
 export default Solution;
