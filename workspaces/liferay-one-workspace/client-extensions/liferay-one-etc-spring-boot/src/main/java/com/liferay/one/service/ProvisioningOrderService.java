@@ -13,6 +13,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.List;
 import java.util.Map;
@@ -95,7 +96,10 @@ public class ProvisioningOrderService {
 					}
 
 					if (effectiveEndDateInstant == null) {
-						effectiveEndDateInstant = Instant.now();
+						effectiveEndDateInstant = Instant.now(
+						).truncatedTo(
+							ChronoUnit.SECONDS
+						);
 					}
 
 					Instant orderItemEffectiveEndDateInstant =
@@ -129,10 +133,6 @@ public class ProvisioningOrderService {
 										parentOrderItem)));
 						}
 					}
-
-					_entitlementService.trimEntitlements(
-						parentOrderItem.getId(),
-						effectiveEndDateInstant.toString());
 				}
 			}
 
@@ -260,8 +260,5 @@ public class ProvisioningOrderService {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
-
-	@Autowired
-	private EntitlementService _entitlementService;
 
 }
