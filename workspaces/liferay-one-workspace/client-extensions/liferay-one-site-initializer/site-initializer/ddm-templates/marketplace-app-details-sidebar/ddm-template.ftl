@@ -69,7 +69,7 @@
 >
 <@section title = languageUtil.get(locale, "developer")>
 	<#if (publisherDetails.friendlyUrlPath)?has_content>
-		<a href = "/c_publisherdetails/${publisherDetails.friendlyUrlPath}">
+		<a href = "/publisher-details/${publisherDetails.friendlyUrlPath}">
 			${developerName}
 		</a>
 	<#else>
