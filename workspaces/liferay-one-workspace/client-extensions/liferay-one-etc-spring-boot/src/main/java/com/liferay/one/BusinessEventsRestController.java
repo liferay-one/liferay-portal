@@ -12,7 +12,7 @@ import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.one.jira.model.JiraBusinessEventVersion;
 import com.liferay.one.jira.model.JiraProductVersion;
 import com.liferay.one.jira.service.JiraBusinessEventService;
-import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.apache.commons.logging.Log;
@@ -47,8 +47,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@PathVariable("id") String id)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.UPDATE, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		_businessEventService.deleteJiraBusinessEvent(id);
 
@@ -78,8 +77,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
 			_businessEventService.getJiraBusinessEvents(externalReferenceCode),
@@ -93,8 +91,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@PathVariable("id") String id)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		JiraBusinessEvent jiraBusinessEvent =
 			_businessEventService.getJiraBusinessEvent(id);
@@ -114,8 +111,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@PathVariable("id") String id)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
 			_businessEventService.getJiraBusinessEventVersions(id),
@@ -129,8 +125,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@RequestBody String json)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.UPDATE, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
@@ -154,8 +149,7 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			_log.info("PUT business event " + id);
 		}
 
-		_businessEventPermission.check(
-			ActionKeys.UPDATE, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
@@ -179,9 +173,9 @@ public class BusinessEventsRestController extends OneBaseRestController {
 	private JiraBusinessEventConverter _businessEventConverter;
 
 	@Autowired
-	private BusinessEventPermission _businessEventPermission;
+	private JiraBusinessEventService _businessEventService;
 
 	@Autowired
-	private JiraBusinessEventService _businessEventService;
+	private ProjectPermission _projectPermission;
 
 }

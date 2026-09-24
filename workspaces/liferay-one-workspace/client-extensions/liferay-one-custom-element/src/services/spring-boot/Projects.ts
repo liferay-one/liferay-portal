@@ -6,6 +6,17 @@
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
 class ProjectsOAuth2 extends OneSpringBootOAuth2 {
+	async deleteProjectMembership(
+		projectExternalReferenceCode: string,
+		userId: number | string,
+		roleExternalReferenceCode: string
+	) {
+		return this.delete(
+			`/${projectExternalReferenceCode}/user-accounts/${userId}` +
+				`/account-roles/${roleExternalReferenceCode}`
+		);
+	}
+
 	async getProjectEventHistory(
 		endDate: string,
 		granularity: string,
@@ -56,6 +67,17 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 		roleExternalReferenceCode: string
 	) {
 		return this.post(
+			`/${projectExternalReferenceCode}/user-accounts/${userId}` +
+				`/account-roles/${roleExternalReferenceCode}`
+		);
+	}
+
+	async putProjectMembership(
+		projectExternalReferenceCode: string,
+		userId: number | string,
+		roleExternalReferenceCode: string
+	) {
+		return this.put(
 			`/${projectExternalReferenceCode}/user-accounts/${userId}` +
 				`/account-roles/${roleExternalReferenceCode}`
 		);

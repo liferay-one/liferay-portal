@@ -18,25 +18,6 @@ export const MY_USER_ACCOUNT_URL =
 	'/o/headless-admin-user/v1.0/my-user-account';
 
 export default class HeadlessAdminUser {
-	static async deleteAccountUserAccountByEmailAddress(
-		accountExternalReferenceCode: string,
-		emailAddress: string
-	) {
-		return fetcher.delete(
-			`/o/headless-admin-user/v1.0/accounts/by-external-reference-code/${accountExternalReferenceCode}/user-accounts/by-email-address/${emailAddress}`
-		);
-	}
-
-	static async deleteRoleAccountUser(
-		accountId: number | string,
-		roleId: number,
-		userId: number
-	) {
-		return fetcher.delete(
-			`/o/headless-admin-user/v1.0/accounts/${accountId}/account-roles/${roleId}/user-accounts/${userId}`
-		);
-	}
-
 	static async getAccount(accountId: string | number) {
 		return fetcher<Account>(
 			`/o/headless-admin-user/v1.0/accounts/${accountId}`
@@ -108,16 +89,6 @@ export default class HeadlessAdminUser {
 		return fetcher.post<T>(
 			`/o/headless-admin-user/v1.0/accounts/${accountId}/postal-addresses`,
 			body
-		);
-	}
-
-	static async sendRoleAccountUser(
-		accountId: number | string,
-		roleId: number,
-		userId: number
-	) {
-		return fetcher.post(
-			`/o/headless-admin-user/v1.0/accounts/${accountId}/account-roles/${roleId}/user-accounts/${userId}`
 		);
 	}
 

@@ -32,22 +32,24 @@ import org.springframework.stereotype.Component;
  * @author Felipe Franca
  */
 @Component
-public class ProjectMembershipPermission {
+public class ProjectPermission {
 
 	public void check(
 			String actionId, Jwt jwt, String projectExternalReferenceCode)
 		throws Exception {
 
-		if (!_contains(actionId, jwt, projectExternalReferenceCode)) {
+		if (!contains(
+				actionId, jwt, projectExternalReferenceCode,
+				_userAccountService.getMyUserAccount(jwt))) {
+
 			throw new PrincipalException();
 		}
 	}
 
-	private boolean _contains(
-			String actionId, Jwt jwt, String projectExternalReferenceCode)
+	public boolean contains(
+			String actionId, Jwt jwt, String projectExternalReferenceCode,
+			UserAccount userAccount)
 		throws Exception {
-
-		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
@@ -69,7 +71,11 @@ public class ProjectMembershipPermission {
 		}
 
 		if (_isAccountAdministrator(
-				project.getAccountExternalReferenceCode(), userAccount)) {
+				project.getAccountExternalReferenceCode(), userAccount) ||
+			(actionId.equals(ActionKeys.ASSIGN_MEMBERS) &&
+			 _accountPermission.contains(
+				 project.getAccountExternalReferenceCode(),
+				 ActionKeys.ASSIGN_MEMBERS, jwt, userAccount))) {
 
 			return true;
 		}
@@ -77,6 +83,14 @@ public class ProjectMembershipPermission {
 		for (ProjectMembership projectMembership :
 				_projectMembershipService.getProjectMemberships(
 					projectExternalReferenceCode, userAccount.getId())) {
+
+			if (Objects.equals(
+					projectMembership.getRoleExternalReferenceCode(),
+					RoleConstants.ERC_PROJECT_ADMIN) &&
+				actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
+
+				return true;
+			}
 
 			if (ArrayUtil.contains(
 					RoleConstants.ERCS_SUPPORT_PROJECT,
@@ -93,6 +107,10 @@ public class ProjectMembershipPermission {
 
 				return true;
 			}
+		}
+
+		if (actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
+			return false;
 		}
 
 		Account account = _accountService.getAccount(
@@ -135,6 +153,9 @@ public class ProjectMembershipPermission {
 
 		return false;
 	}
+
+	@Autowired
+	private AccountPermission _accountPermission;
 
 	@Autowired
 	private AccountService _accountService;

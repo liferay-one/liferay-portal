@@ -14,9 +14,11 @@ import {
 	hasAdministratorRole,
 	isAdministratorRole,
 	isPartnerRole,
+	MANAGEABLE_ACCOUNT_ROLES,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import '../../AccountMembers.css';
 
@@ -24,7 +26,6 @@ import type {RoleBrief} from '~/types/accounts';
 
 type EditPermissionsModalProps = {
 	accountExternalReferenceCode: string;
-	accountId: number | string;
 	adminCount: number;
 	memberName: string;
 	memberRoleBriefs: RoleBrief[];
@@ -36,7 +37,6 @@ type EditPermissionsModalProps = {
 
 const EditPermissionsModal = ({
 	accountExternalReferenceCode,
-	accountId,
 	adminCount,
 	memberName,
 	memberRoleBriefs,
@@ -113,51 +113,26 @@ const EditPermissionsModal = ({
 					accountExternalReferenceCode
 				);
 
-			const currentRoleNameSet = new Set(currentRoleNames);
+			const memberRoleNameSet = new Set(
+				memberRoleBriefs.map(({name}) => name)
+			);
 			const selectedRoleNameSet = new Set(selectedRoles);
 
-			const matchesSelectedRole = (accountRole: {
-				displayName: string;
-				name: string;
-			}) =>
-				selectedRoleNameSet.has(accountRole.name) ||
-				selectedRoleNameSet.has(accountRole.displayName);
+			const accountRoleIds = accountRoles
+				.filter(
+					(accountRole) =>
+						selectedRoleNameSet.has(accountRole.name) ||
+						selectedRoleNameSet.has(accountRole.displayName) ||
+						(memberRoleNameSet.has(accountRole.name) &&
+							!MANAGEABLE_ACCOUNT_ROLES.includes(accountRole.name))
+				)
+				.map(({id}) => id);
 
-			const matchesCurrentRole = (accountRole: {
-				displayName: string;
-				name: string;
-			}) =>
-				currentRoleNameSet.has(accountRole.name) ||
-				currentRoleNameSet.has(accountRole.displayName);
-
-			const rolesToAdd = accountRoles.filter(
-				(accountRole) =>
-					!matchesCurrentRole(accountRole) &&
-					matchesSelectedRole(accountRole)
+			await Accounts.putUserAccountsAccountRoles(
+				accountExternalReferenceCode,
+				userId,
+				accountRoleIds
 			);
-
-			const rolesToRemove = accountRoles.filter(
-				(accountRole) =>
-					matchesCurrentRole(accountRole) &&
-					!matchesSelectedRole(accountRole)
-			);
-
-			await Promise.all([
-				...rolesToAdd.map((accountRole) =>
-					HeadlessAdminUser.sendRoleAccountUser(
-						accountId,
-						accountRole.id,
-						userId
-					)
-				),
-				...rolesToRemove.map((accountRole) =>
-					HeadlessAdminUser.deleteRoleAccountUser(
-						accountId,
-						accountRole.id,
-						userId
-					)
-				),
-			]);
 
 			await mutate();
 

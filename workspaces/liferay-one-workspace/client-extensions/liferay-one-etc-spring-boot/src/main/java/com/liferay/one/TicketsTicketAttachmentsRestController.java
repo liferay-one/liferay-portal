@@ -12,7 +12,7 @@ import com.liferay.one.jira.exception.OrganizationNotFoundException;
 import com.liferay.one.jira.model.JiraOrganization;
 import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
-import com.liferay.one.permission.ProjectMembershipPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -101,8 +101,7 @@ public class TicketsTicketAttachmentsRestController
 			}
 		}
 
-		_projectMembershipPermission.check(
-			actionId, jwt, projectExternalReferenceCode);
+		_projectPermission.check(actionId, jwt, projectExternalReferenceCode);
 	}
 
 	private ResponseEntity<String> _getResponseEntity(
@@ -138,7 +137,7 @@ public class TicketsTicketAttachmentsRestController
 	private JiraIssueService _jiraIssueService;
 
 	@Autowired
-	private ProjectMembershipPermission _projectMembershipPermission;
+	private ProjectPermission _projectPermission;
 
 	@Autowired
 	private UserAccountService _userAccountService;

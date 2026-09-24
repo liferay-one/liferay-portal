@@ -14,15 +14,16 @@ import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import javax.annotation.PostConstruct;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,6 +43,32 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Component
 public class OktaService {
 
+	public void activateContact(long userId) throws Exception {
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
+		String emailAddress = userAccount.getEmailAddress();
+
+		OktaUser oktaUser = null;
+
+		try {
+			oktaUser = fetchContactByEmailAddress(emailAddress);
+		}
+		catch (OktaUnavailableException oktaUnavailableException) {
+			_log.error(
+				"Unable to read the Okta contact " + emailAddress,
+				oktaUnavailableException);
+
+			return;
+		}
+
+		if (oktaUser == null) {
+			createContact(userAccount);
+		}
+		else if (oktaUser.isDeactivated()) {
+			activateUser(emailAddress);
+		}
+	}
+
 	public void activateUser(String emailAddress) throws Exception {
 		_oktaPubsubPublisher.publish(
 			new Message(
@@ -53,23 +80,6 @@ public class OktaService {
 					"login", emailAddress
 				).toString(),
 				"okta-user-update"));
-	}
-
-	public void addMembership(String groupName, String emailAddress)
-		throws Exception {
-
-		_oktaPubsubPublisher.publish(
-			new Message(
-				null,
-				new JSONObject(
-				).put(
-					"action", "ADD"
-				).put(
-					"groupName", groupName
-				).put(
-					"login", emailAddress
-				).toString(),
-				"okta-user-group-update"));
 	}
 
 	public void assignUserToApplication(String appId, String emailAddress)
@@ -104,35 +114,31 @@ public class OktaService {
 				"okta-app-create"));
 	}
 
-	public OktaUser createContact(
-			String emailAddress, String firstName, String middleName,
-			String lastName)
-		throws Exception {
+	public void createContact(UserAccount userAccount) throws Exception {
+		String uuid = UserAccountUtil.getUuid(userAccount);
 
-		OktaUser oktaUser = fetchContactByEmailAddress(emailAddress);
+		if (Validator.isNull(uuid)) {
+			uuid = userAccount.getExternalReferenceCode();
 
-		if (oktaUser == null) {
-			_oktaPubsubPublisher.publish(
-				new Message(
-					null,
-					new JSONObject(
-					).put(
-						"emailAddress", emailAddress
-					).put(
-						"firstName", firstName
-					).put(
-						"lastName", lastName
-					).put(
-						"uuid",
-						UUID.randomUUID(
-						).toString()
-					).toString(),
-					"okta-user-create"));
-
-			return null;
+			_userAccountService.updateUser(
+				userAccount.getFamilyName(), userAccount.getGivenName(),
+				userAccount.getId(), uuid);
 		}
 
-		return oktaUser;
+		_oktaPubsubPublisher.publish(
+			new Message(
+				null,
+				new JSONObject(
+				).put(
+					"emailAddress", userAccount.getEmailAddress()
+				).put(
+					"firstName", userAccount.getGivenName()
+				).put(
+					"lastName", userAccount.getFamilyName()
+				).put(
+					"uuid", uuid
+				).toString(),
+				"okta-user-create"));
 	}
 
 	public void deleteApplication(String appId) throws Exception {
@@ -207,26 +213,6 @@ public class OktaService {
 		}
 
 		return new OktaUser(jsonArray.getJSONObject(0));
-	}
-
-	public Integer fetchContactStatusByEmailAddress(String emailAddress)
-		throws Exception {
-
-		OktaUser oktaUser = fetchContactByEmailAddress(emailAddress);
-
-		if (oktaUser == null) {
-			return null;
-		}
-
-		if (oktaUser.isDeactivated()) {
-			return WorkflowConstants.STATUS_INACTIVE;
-		}
-
-		if (oktaUser.isPending()) {
-			return WorkflowConstants.STATUS_PENDING;
-		}
-
-		return WorkflowConstants.STATUS_APPROVED;
 	}
 
 	public List<String> getContactGroupIds(String emailAddress)
@@ -316,53 +302,12 @@ public class OktaService {
 		return oktaUsers;
 	}
 
-	public void removeMembership(String groupName, String emailAddress)
-		throws Exception {
-
-		_oktaPubsubPublisher.publish(
-			new Message(
-				null,
-				new JSONObject(
-				).put(
-					"action", "REMOVE"
-				).put(
-					"groupName", groupName
-				).put(
-					"login", emailAddress
-				).toString(),
-				"okta-user-group-update"));
-	}
-
 	public OktaUser syncContact(UserAccount userAccount) throws Exception {
-		String emailAddress = userAccount.getEmailAddress();
-
-		OktaUser oktaUser = fetchContactByEmailAddress(emailAddress);
+		OktaUser oktaUser = fetchContactByEmailAddress(
+			userAccount.getEmailAddress());
 
 		if (oktaUser == null) {
-			String uuid = UserAccountUtil.getUuid(userAccount);
-
-			if (Validator.isNull(uuid)) {
-				uuid = userAccount.getExternalReferenceCode();
-
-				_userAccountService.updateUser(
-					userAccount.getFamilyName(), userAccount.getGivenName(),
-					userAccount.getId(), uuid);
-			}
-
-			_oktaPubsubPublisher.publish(
-				new Message(
-					null,
-					new JSONObject(
-					).put(
-						"emailAddress", emailAddress
-					).put(
-						"firstName", userAccount.getGivenName()
-					).put(
-						"lastName", userAccount.getFamilyName()
-					).put(
-						"uuid", uuid
-					).toString(),
-					"okta-user-create"));
+			createContact(userAccount);
 
 			return null;
 		}
@@ -459,6 +404,8 @@ public class OktaService {
 	private static final String _URL_API_REST_GROUPS = "/api/v1/groups/";
 
 	private static final String _URL_API_REST_USERS = "/api/v1/users/";
+
+	private static final Log _log = LogFactory.getLog(OktaService.class);
 
 	@Value("${liferay.one.okta.api.token}")
 	private String _apiToken;

@@ -5,26 +5,23 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Account;
-import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.UsageDefinition;
-import com.liferay.one.permission.BusinessEventPermission;
-import com.liferay.one.service.AccountService;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.EntitlementService;
@@ -34,6 +31,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -55,6 +53,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Felipe Veloso
@@ -66,16 +65,8 @@ public class ProjectRestControllerTest {
 		_projectRestController = new ProjectRestController();
 
 		ReflectionTestUtils.setField(
-			_projectRestController, "_accountService", _accountService);
-		ReflectionTestUtils.setField(
 			_projectRestController, "_accountSynchronizer",
 			_accountSynchronizer);
-		ReflectionTestUtils.setField(
-			_projectRestController, "_accountUserAccountRoleSynchronizer",
-			_accountUserAccountRoleSynchronizer);
-		ReflectionTestUtils.setField(
-			_projectRestController, "_businessEventPermission",
-			_businessEventPermission);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_commerceProductService",
 			_commerceProductService);
@@ -90,6 +81,8 @@ public class ProjectRestControllerTest {
 			_projectRestController, "_projectMembershipService",
 			_projectMembershipService);
 		ReflectionTestUtils.setField(
+			_projectRestController, "_projectPermission", _projectPermission);
+		ReflectionTestUtils.setField(
 			_projectRestController, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_propertyService", _propertyService);
@@ -99,8 +92,8 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_userAccountService", _userAccountService);
 		ReflectionTestUtils.setField(
-			_projectRestController, "_userAccountSynchronizer",
-			_userAccountSynchronizer);
+			_projectRestController, "_userAssignmentService",
+			_userAssignmentService);
 
 		Mockito.when(
 			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
@@ -124,62 +117,40 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testDeleteProjectMembershipsDoesNotSyncWhenNothingDeleted()
+	public void testDeleteProjectMembershipsChecksPermissionBeforeUnassigning()
 		throws Exception {
-
-		Mockito.when(
-			_projectMembershipService.deleteProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
-		).thenReturn(
-			false
-		);
 
 		_deleteProjectMemberships();
 
-		_assertNoSync();
+		InOrder inOrder = Mockito.inOrder(
+			_projectPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq(RoleConstants.ERC_PROJECT_ADMIN), Mockito.eq(_USER_ID)
+		);
 	}
 
 	@Test
-	public void testDeleteProjectMembershipsSyncsWhenDeleted()
+	public void testDeleteProjectMembershipsDoesNotUnassignWhenPermissionIsDenied()
 		throws Exception {
 
-		Mockito.when(
-			_projectMembershipService.deleteProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
-		).thenReturn(
-			true
-		);
+		_denyAssignMembersPermission();
 
-		_whenSyncDependencies();
+		Assertions.assertThrows(
+			PrincipalException.class, this::_deleteProjectMemberships);
 
-		_deleteProjectMemberships();
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncProjectUserAccounts(
-			Mockito.any()
-		);
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncAccountUserAccounts(
-			_account
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountAccounts(
-			Mockito.any()
-		);
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncUnassignRole(
-			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE,
-			_USER_EXTERNAL_REFERENCE_CODE, _PROJECT_EXTERNAL_REFERENCE_CODE
-		);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -192,11 +163,10 @@ public class ProjectRestControllerTest {
 
 		_getUsage();
 
-		InOrder inOrder = Mockito.inOrder(
-			_businessEventPermission, _projectService);
+		InOrder inOrder = Mockito.inOrder(_projectPermission, _projectService);
 
 		inOrder.verify(
-			_businessEventPermission
+			_projectPermission
 		).check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -215,7 +185,7 @@ public class ProjectRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_businessEventPermission
+			_projectPermission
 		).check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -393,7 +363,7 @@ public class ProjectRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_businessEventPermission
+			_projectPermission
 		).check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -1190,68 +1160,118 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testPostProjectMembershipsDoesNotSyncWhenNothingAdded()
+	public void testPostProjectMembershipsChecksPermissionBeforeAssigning()
 		throws Exception {
-
-		Mockito.when(
-			_projectMembershipService.addProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
-		).thenReturn(
-			false
-		);
 
 		_postProjectMemberships();
 
-		_assertNoSync();
+		InOrder inOrder = Mockito.inOrder(
+			_projectPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq(RoleConstants.ERC_PROJECT_ADMIN), Mockito.eq(_USER_ID)
+		);
 	}
 
 	@Test
-	public void testPostProjectMembershipsSyncsWhenAdded() throws Exception {
-		Mockito.when(
-			_projectMembershipService.addProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID)
-		).thenReturn(
-			true
-		);
+	public void testPostProjectMembershipsDoesNotAssignWhenPermissionIsDenied()
+		throws Exception {
 
-		_whenSyncDependencies();
+		_denyAssignMembersPermission();
 
-		_postProjectMemberships();
+		Assertions.assertThrows(
+			PrincipalException.class, this::_postProjectMemberships);
 
-		Mockito.verify(
-			_accountSynchronizer
-		).syncProjectUserAccounts(
-			Mockito.any()
-		);
-
-		Mockito.verify(
-			_accountSynchronizer
-		).syncAccountUserAccounts(
-			_account
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountAccounts(
-			Mockito.any()
-		);
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE,
-			_USER_EXTERNAL_REFERENCE_CODE, _PROJECT_EXTERNAL_REFERENCE_CODE
-		);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
-	private void _assertNoSync() throws Exception {
-		Mockito.verifyNoInteractions(_accountService);
-		Mockito.verifyNoInteractions(_accountSynchronizer);
-		Mockito.verifyNoInteractions(_accountUserAccountRoleSynchronizer);
-		Mockito.verifyNoInteractions(_userAccountService);
-		Mockito.verifyNoInteractions(_userAccountSynchronizer);
+	@Test
+	public void testPostProjectMembershipsRejectsNonprojectRole() {
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.postProjectMemberships(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+					"ACCT-ROLE-001"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPutProjectMembershipsRejectsNonprojectRole() {
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.putProjectMemberships(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+					"ACCT-ROLE-001"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPutProjectMembershipsUnassignsOtherProjectRoles()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN),
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER))
+		);
+
+		_projectRestController.putProjectMemberships(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			RoleConstants.ERC_PROJECT_ADMIN);
+
+		InOrder inOrder = Mockito.inOrder(
+			_projectPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			Mockito.any(), Mockito.eq(RoleConstants.ERC_PROJECT_ADMIN),
+			Mockito.eq(_USER_ID)
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.any(), Mockito.eq(RoleConstants.ERC_PROJECT_USER),
+			Mockito.eq(_USER_ID)
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).unassignProjectRole(
+			Mockito.any(), Mockito.eq(RoleConstants.ERC_PROJECT_ADMIN),
+			Mockito.anyLong()
+		);
 	}
 
 	private String _createComposableUsage() {
@@ -1409,10 +1429,35 @@ public class ProjectRestControllerTest {
 			));
 	}
 
+	private ProjectMembership _createProjectMembership(
+		String roleExternalReferenceCode) {
+
+		return new ProjectMembership(
+			new JSONObject(
+			).put(
+				"r_projectToProjectMembership_c_projectERC",
+				_PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_userToProjectMembership_userId", _USER_ID
+			).put(
+				"roleExternalReferenceCode", roleExternalReferenceCode
+			));
+	}
+
 	private void _deleteProjectMemberships() throws Exception {
 		_projectRestController.deleteProjectMemberships(
 			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
-			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE);
+			RoleConstants.ERC_PROJECT_ADMIN);
+	}
+
+	private void _denyAssignMembersPermission() throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	private JSONObject _getMetricsJSONObject() throws Exception {
@@ -1459,7 +1504,7 @@ public class ProjectRestControllerTest {
 	private void _postProjectMemberships() throws Exception {
 		_projectRestController.postProjectMemberships(
 			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
-			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE);
+			RoleConstants.ERC_PROJECT_ADMIN);
 	}
 
 	private void _setUpComposableUsage() throws Exception {
@@ -1545,38 +1590,10 @@ public class ProjectRestControllerTest {
 		);
 	}
 
-	private void _whenSyncDependencies() throws Exception {
-		Mockito.when(
-			_accountService.getAccount(_ACCOUNT_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_account
-		);
-
-		Mockito.when(
-			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_createProject()
-		);
-
-		UserAccount userAccount = new UserAccount();
-
-		userAccount.setExternalReferenceCode(_USER_EXTERNAL_REFERENCE_CODE);
-		userAccount.setId(_USER_ID);
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenReturn(
-			userAccount
-		);
-	}
-
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE =
 		"0015Y00002ABCDEabc";
 
 	private static final long _ACCOUNT_ID = 40001;
-
-	private static final String _ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE =
-		"ACCT-ROLE-001";
 
 	private static final long _CPRODUCT_ID = 55501;
 
@@ -1609,20 +1626,10 @@ public class ProjectRestControllerTest {
 
 	private static final String _START_DATE_PREVIOUS_MONTH = "2026-06-01";
 
-	private static final String _USER_EXTERNAL_REFERENCE_CODE = "USER-001";
-
 	private static final long _USER_ID = 1L;
 
-	private final Account _account = new Account();
-	private final AccountService _accountService = Mockito.mock(
-		AccountService.class);
 	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(
 		AccountSynchronizer.class);
-	private final AccountUserAccountRoleSynchronizer
-		_accountUserAccountRoleSynchronizer = Mockito.mock(
-			AccountUserAccountRoleSynchronizer.class);
-	private final BusinessEventPermission _businessEventPermission =
-		Mockito.mock(BusinessEventPermission.class);
 	private final CommerceProductService _commerceProductService = Mockito.mock(
 		CommerceProductService.class);
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
@@ -1633,6 +1640,8 @@ public class ProjectRestControllerTest {
 		Mockito.mock(GoogleCloudFunctionService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
+	private final ProjectPermission _projectPermission = Mockito.mock(
+		ProjectPermission.class);
 	private ProjectRestController _projectRestController;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
@@ -1642,7 +1651,7 @@ public class ProjectRestControllerTest {
 		UsageDefinitionService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
-	private final UserAccountSynchronizer _userAccountSynchronizer =
-		Mockito.mock(UserAccountSynchronizer.class);
+	private final UserAssignmentService _userAssignmentService = Mockito.mock(
+		UserAssignmentService.class);
 
 }

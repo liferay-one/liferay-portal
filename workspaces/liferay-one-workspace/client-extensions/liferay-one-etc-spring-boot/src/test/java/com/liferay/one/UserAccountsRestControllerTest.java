@@ -9,8 +9,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
-import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import org.junit.jupiter.api.Assertions;
@@ -60,7 +60,7 @@ public class UserAccountsRestControllerTest {
 
 		userAccountsRestController.postSyncWithOkta(null, _USER_ID);
 
-		Mockito.verifyNoInteractions(_organizationMembershipService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -99,6 +99,8 @@ public class UserAccountsRestControllerTest {
 
 		UserAccount userAccount = new UserAccount();
 
+		userAccount.setId(_USER_ID);
+
 		Mockito.when(
 			_userAccountService.getUserAccount(_USER_ID)
 		).thenReturn(
@@ -114,9 +116,9 @@ public class UserAccountsRestControllerTest {
 		userAccountsRestController.postSyncWithOkta(null, _USER_ID);
 
 		Mockito.verify(
-			_organizationMembershipService
+			_userAssignmentService
 		).syncOktaGroupOrganizations(
-			userAccount
+			_USER_ID
 		);
 	}
 
@@ -129,11 +131,11 @@ public class UserAccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			userAccountsRestController, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(
-			userAccountsRestController, "_organizationMembershipService",
-			_organizationMembershipService);
-		ReflectionTestUtils.setField(
 			userAccountsRestController, "_userAccountService",
 			_userAccountService);
+		ReflectionTestUtils.setField(
+			userAccountsRestController, "_userAssignmentService",
+			_userAssignmentService);
 
 		return userAccountsRestController;
 	}
@@ -143,9 +145,9 @@ public class UserAccountsRestControllerTest {
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
-	private final OrganizationMembershipService _organizationMembershipService =
-		Mockito.mock(OrganizationMembershipService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
+	private final UserAssignmentService _userAssignmentService = Mockito.mock(
+		UserAssignmentService.class);
 
 }
