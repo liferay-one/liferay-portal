@@ -703,17 +703,25 @@ public class CommerceOrderService extends OneBaseService {
 			CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
 		if (!orderMetadataJSONObject.has("aiHubQuotaBlockSize")) {
-			JSONObject aiHubApplicationJSONObject =
-				_aiHubService.getAIHubApplicationJSONObject(
-					"AI-HUB-" + order.getAccountExternalReferenceCode());
+			long accountEntryId = orderMetadataJSONObject.optLong(
+				"aiHubAccountEntryId");
 
-			if (aiHubApplicationJSONObject == null) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to complete order ", orderId,
-						" because its account has no AI Hub application"));
+			if (accountEntryId <= 0) {
+				JSONObject aiHubApplicationJSONObject =
+					_aiHubService.getAIHubApplicationJSONObject(
+						"AI-HUB-" + order.getAccountExternalReferenceCode());
 
-				return;
+				if (aiHubApplicationJSONObject == null) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to complete order ", orderId,
+							" because its account has no AI Hub application"));
+
+					return;
+				}
+
+				accountEntryId = aiHubApplicationJSONObject.getLong(
+					"accountEntryId");
 			}
 
 			Long quotaBlockSize = _getAIHubQuotaBlockSize(order);
@@ -723,7 +731,7 @@ public class CommerceOrderService extends OneBaseService {
 			}
 
 			_aiHubService.purchaseQuotaPrepaidBlock(
-				aiHubApplicationJSONObject.getLong("accountEntryId"),
+				accountEntryId,
 				new JSONObject(
 				).put(
 					"size", quotaBlockSize
@@ -1286,12 +1294,13 @@ public class CommerceOrderService extends OneBaseService {
 				provisionJSONObject);
 
 			if (aiHubJSONObject != null) {
+				long accountEntryId = aiHubJSONObject.getLong("accountEntryId");
+
 				_aiHubService.putAIHubApplication(
 					"AI-HUB-" + order.getAccountExternalReferenceCode(),
 					new JSONObject(
 					).put(
-						"accountEntryId",
-						aiHubJSONObject.getLong("accountEntryId")
+						"accountEntryId", accountEntryId
 					).put(
 						"accountName",
 						aiHubFormJSONObject.getString("aiHubAccountName")
@@ -1307,6 +1316,14 @@ public class CommerceOrderService extends OneBaseService {
 						"r_orderToAIHubApplication_commerceOrderERC",
 						order.getExternalReferenceCode()
 					));
+
+				orderMetadataJSONObject.put(
+					"aiHubAccountEntryId", accountEntryId);
+
+				patchOrderCustomFields(
+					order.getId(),
+					Map.of(
+						"order-metadata", orderMetadataJSONObject.toString()));
 			}
 		}
 		catch (Exception exception) {
