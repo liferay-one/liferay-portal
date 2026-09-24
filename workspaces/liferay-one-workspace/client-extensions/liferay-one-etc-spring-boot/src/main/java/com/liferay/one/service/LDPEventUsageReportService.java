@@ -10,13 +10,13 @@ import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LDPEventAllotment;
 import com.liferay.one.model.LDPEventSummary;
 import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.model.UsageReport;
+import com.liferay.one.util.EntitlementUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -196,41 +195,28 @@ public class LDPEventUsageReportService {
 			Map<String, UsageDefinition> usageDefinitions)
 		throws Exception {
 
-		for (Entitlement entitlement : entitlements) {
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
+		String usageDefinitionExternalReferenceCode =
+			EntitlementUtil.getUsageDefinitionExternalReferenceCode(
+				EntitlementConstants.NAME_EVENTS, entitlements);
 
-			if (!Objects.equals(
-					entitlement.getName(), EntitlementConstants.NAME_EVENTS) ||
-				(entitlementDefinition == null)) {
+		if (usageDefinitionExternalReferenceCode == null) {
+			return null;
+		}
 
-				continue;
-			}
+		UsageDefinition usageDefinition = usageDefinitions.get(
+			usageDefinitionExternalReferenceCode);
 
-			String usageDefinitionExternalReferenceCode =
-				entitlementDefinition.getUsageDefinitionExternalReferenceCode();
-
-			if (Validator.isNull(usageDefinitionExternalReferenceCode)) {
-				continue;
-			}
-
-			UsageDefinition usageDefinition = usageDefinitions.get(
+		if (usageDefinition == null) {
+			usageDefinition = _usageDefinitionService.fetchUsageDefinition(
 				usageDefinitionExternalReferenceCode);
-
-			if (usageDefinition == null) {
-				usageDefinition = _usageDefinitionService.fetchUsageDefinition(
-					usageDefinitionExternalReferenceCode);
-			}
 
 			if (usageDefinition != null) {
 				usageDefinitions.put(
 					usageDefinitionExternalReferenceCode, usageDefinition);
-
-				return usageDefinition;
 			}
 		}
 
-		return null;
+		return usageDefinition;
 	}
 
 	private boolean _generateUsageReport(
