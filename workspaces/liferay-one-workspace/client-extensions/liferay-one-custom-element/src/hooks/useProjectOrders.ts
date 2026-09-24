@@ -11,6 +11,7 @@ import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
 
+import type {AnalyticsProject} from '~/types/analytics';
 import type {PlacedOrder, VirtualItem} from '~/types/orders';
 
 const PAGE_SIZE = 200;
@@ -106,6 +107,7 @@ export type ProductOrderInfo = {
 
 export type ProductEnvironmentInfo = {
 	cloudProjectName: string;
+	ldpDataSourceAccessToken: string;
 	projectName: string;
 };
 
@@ -198,6 +200,7 @@ export function getProductOrderInfo(
 		return {
 			environment: {
 				cloudProjectName: '',
+				ldpDataSourceAccessToken: '',
 				projectName: '',
 			},
 			orderDate: '',
@@ -211,10 +214,17 @@ export function getProductOrderInfo(
 
 	const customFields = order.customFields ?? {};
 
+	const ldpAnalyticsCloudProject = safeJSONParse<Partial<AnalyticsProject>>(
+		customFields[OrderCustomFields.LDP_ANALYTICS_CLOUD_PROJECT] ?? null,
+		{}
+	);
+
 	return {
 		environment: {
 			cloudProjectName:
 				customFields[OrderCustomFields.CLOUD_PROJECT_NAME] ?? '',
+			ldpDataSourceAccessToken:
+				ldpAnalyticsCloudProject.dataSourceAccessToken ?? '',
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
 		orderDate: formatDate(order.createDate),

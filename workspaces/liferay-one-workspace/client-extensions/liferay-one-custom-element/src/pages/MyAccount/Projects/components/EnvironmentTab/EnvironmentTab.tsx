@@ -12,6 +12,7 @@ import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filt
 import AIHubEnvironment from '../AIHubEnvironment/AIHubEnvironment';
 import DSREnvironment from '../DSREnvironment/DSREnvironment';
 import EnvironmentCard from '../EnvironmentCard/EnvironmentCard';
+import LDPTokenCard from '../LDPTokenCard/LDPTokenCard';
 import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 
 import type {ProductEnvironmentInfo} from '~/hooks/useProjectOrders';
@@ -54,8 +55,21 @@ export default function EnvironmentTab({
 		return <Loading.Page />;
 	}
 
+	const ldpTokenCard =
+		profile === 'workspace' ? (
+			<LDPTokenCard
+				dataSourceAccessToken={environment.ldpDataSourceAccessToken}
+			/>
+		) : null;
+
 	if (!profile || !environmentEntry) {
-		return <EnvironmentCard environment={environment} />;
+		return (
+			<>
+				{ldpTokenCard}
+
+				<EnvironmentCard environment={environment} />
+			</>
+		);
 	}
 
 	if (profile === 'ai-hub') {
@@ -67,10 +81,17 @@ export default function EnvironmentTab({
 	}
 
 	return (
-		<SectionedDetailsCard
-			icon="cloud"
-			sections={buildEnvironmentSections(matchingEnvironments, profile)}
-			title="workspace-info"
-		/>
+		<>
+			{ldpTokenCard}
+
+			<SectionedDetailsCard
+				icon="cloud"
+				sections={buildEnvironmentSections(
+					matchingEnvironments,
+					profile
+				)}
+				title="workspace-info"
+			/>
+		</>
 	);
 }

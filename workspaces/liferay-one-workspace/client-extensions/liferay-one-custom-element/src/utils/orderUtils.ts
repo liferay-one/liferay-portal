@@ -38,6 +38,7 @@ export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',
 	KORONEIKI_PROJECT: 'koroneiki-project',
+	LDP_ANALYTICS_CLOUD_PROJECT: 'ldpAnalyticsCloudProject',
 	ORDER_METADATA: 'order-metadata',
 	PROJECT_NAME: 'projectName',
 	TRIAL_END_DATE: 'trial-end-date',
