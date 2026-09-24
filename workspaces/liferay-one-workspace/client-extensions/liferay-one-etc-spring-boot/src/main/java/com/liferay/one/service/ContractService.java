@@ -434,12 +434,10 @@ public class ContractService extends OneBaseService {
 			return;
 		}
 
-		String orderContractId = GetterUtil.getString(
+		long orderContractId = GetterUtil.getLong(
 			customFields.get("contractId"));
 
-		if (!Objects.equals(
-				orderContractId, String.valueOf(contract.getId()))) {
-
+		if (orderContractId != contract.getId()) {
 			_commerceOrderService.patchOrderCustomFields(
 				order.getId(), Map.of("contractId", contract.getId()));
 		}

@@ -68,7 +68,6 @@ function _build_order_payload {
 	local file="${1}"
 	local channel_id="${2}"
 	local contract_id="${3}"
-	local project_id="${4}"
 
 	python3 -c "
 import json
@@ -79,15 +78,18 @@ with open('${file}') as file:
 order.pop('channelExternalReferenceCode', None)
 order.pop('contractExternalReferenceCode', None)
 order.pop('customFields', None)
-order.pop('projectExternalReferenceCode', None)
+
+project_external_reference_code = order.pop(
+	'projectExternalReferenceCode', None)
 
 order['channelId'] = ${channel_id}
-order['r_contractToCommerceOrder_c_contractId'] = ${contract_id}
 
-project_id = '${project_id}'
+custom_fields = {'contractId': ${contract_id}}
 
-if project_id:
-	order['r_projectToCommerceOrder_c_projectId'] = int(project_id)
+if project_external_reference_code:
+	custom_fields['salesforceProjectId'] = project_external_reference_code
+
+order['customFields'] = custom_fields
 
 for order_item in order.get('orderItems', []):
 	order_item.pop('customFields', None)
@@ -187,7 +189,7 @@ function _populate_overage {
 
 	local payload
 
-	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}" "${project_id}")
+	payload=$(_build_order_payload "${file}" "${channel_id}" "${contract_id}")
 
 	# The order placement upserts by external reference code, so re-running is
 	# idempotent. A 4xx is a permanent rejection that retrying cannot fix, so it
@@ -357,9 +359,9 @@ function _resolve_contract_id {
 }
 
 # Resolves a project external reference code to its numeric ID and name, emitted
-# as a single tab-separated line. The ID sets the projectToCommerceOrder and
-# projectToUsageReport relationship foreign keys; the name is the denormalized
-# projectName custom field the UI reads (see _set_order_fields).
+# as a single tab-separated line. The ID sets the projectToUsageReport
+# relationship foreign key; the name is the denormalized projectName custom
+# field the UI reads (see _set_order_fields).
 
 function _resolve_project {
 	local external_reference_code="${1}"
@@ -405,7 +407,7 @@ except Exception:
 # They are applied with a follow-up PATCH from the customFields object and
 # purchaseOrderNumber in the overage file once the order exists. projectName is a
 # denormalized read cache derived from the project linked authoritatively through
-# the projectToCommerceOrder relationship.
+# the salesforceProjectId custom field.
 
 # Applies each order item's custom fields, which the order create does not accept.
 # The entitlement generator reads an order item's term from its startDate and
