@@ -14,6 +14,7 @@ import ProductPurchase from './ProductPurchase';
 import type {Cart, OrderTypes} from '~/types/orders';
 
 type AIHubOrderMetadata = {
+	aiHubAccountEntryId?: number;
 	contractEntityId?: number;
 	salesforceContractId?: string;
 	salesforceProjectId?: string;
@@ -33,6 +34,8 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 			customFields: {
 				...baseCart?.customFields,
 				[OrderCustomFields.ORDER_METADATA]: JSON.stringify({
+					aiHubAccountEntryId:
+						this.aiHubOrderMetadata.aiHubAccountEntryId,
 					contractEntityId: this.aiHubOrderMetadata.contractEntityId,
 					salesforceContractId:
 						this.aiHubOrderMetadata.salesforceContractId,
@@ -89,6 +92,7 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 		);
 
 		this.aiHubOrderMetadata = {
+			aiHubAccountEntryId: orderMetadata.aiHubAccountEntryId,
 			contractEntityId: orderMetadata.contractEntityId,
 			salesforceContractId: orderMetadata.salesforceContractId,
 			salesforceProjectId: orderMetadata.salesforceProjectId,
