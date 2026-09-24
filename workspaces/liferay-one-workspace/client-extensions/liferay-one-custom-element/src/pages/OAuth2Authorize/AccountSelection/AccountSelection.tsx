@@ -145,9 +145,9 @@ export default function AccountSelection() {
 			<div className="d-flex justify-content-end mt-3">
 				<ClayButton
 					disabled={!selectedAccount || missingBillingAddress}
-					onClick={() => navigate('/congratulations')}
+					onClick={() => navigate('/project-selection')}
 				>
-					{i18n.translate('connect')}
+					{i18n.translate('continue')}
 				</ClayButton>
 			</div>
 		</div>
