@@ -37,6 +37,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.EntitlementUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -49,7 +50,6 @@ import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -416,20 +416,14 @@ public class ProjectRestController extends OneBaseRestController {
 	private long _getLDPEventOverageBucketSize(List<Entitlement> entitlements)
 		throws Exception {
 
-		for (Entitlement entitlement : entitlements) {
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
+		String usageDefinitionExternalReferenceCode =
+			EntitlementUtil.getUsageDefinitionExternalReferenceCode(
+				EntitlementConstants.NAME_EVENTS, entitlements);
 
-			if (!Objects.equals(
-					entitlement.getName(), EntitlementConstants.NAME_EVENTS) ||
-				(entitlementDefinition == null)) {
-
-				continue;
-			}
-
+		if (usageDefinitionExternalReferenceCode != null) {
 			UsageDefinition usageDefinition =
 				_usageDefinitionService.fetchUsageDefinition(
-					entitlementDefinition);
+					usageDefinitionExternalReferenceCode);
 
 			if ((usageDefinition != null) &&
 				usageDefinition.hasOverageBucketSize()) {
