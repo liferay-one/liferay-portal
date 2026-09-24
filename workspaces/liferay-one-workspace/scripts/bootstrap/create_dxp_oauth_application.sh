@@ -90,7 +90,7 @@ function main {
 
 	_assign_scopes "${cookie_jar}" "${p_auth}" "${application_id}"
 
-	_verify_authorize_endpoint
+	_verify_authorize_endpoint "${cookie_jar}"
 
 	echo "OAuth2 application ${DXP_OAUTH_APPLICATION_NAME} (client id ${DXP_OAUTH_CLIENT_ID}, id ${application_id}) is ready for DXP connections."
 }
@@ -262,16 +262,20 @@ function _save_application {
 	fi
 }
 
-# A guest request to the authorize endpoint with the registered client id and
-# first redirect URI must answer with a redirect to the login page. A 400 means
-# the client id or the redirect URI did not register the way the DXP sends them.
+# The authorize endpoint sends every request without a session to the login
+# page before it looks at the client id or the redirect URI, so only a request
+# with the admin session proves the registration: the application is trusted,
+# so a valid client id and redirect URI answer with a redirect to that URI
+# carrying an authorization code, and anything else answers 400.
 
 function _verify_authorize_endpoint {
+	local cookie_jar="${1}"
+
 	local redirect_uri="${DXP_OAUTH_REDIRECT_URIS%% *}"
 
-	local status
+	local response
 
-	status=$(curl \
+	response=$(_curl_session "${cookie_jar}" \
 		--get \
 		--data-urlencode "client_id=${DXP_OAUTH_CLIENT_ID}" \
 		--data-urlencode "code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM" \
@@ -279,13 +283,12 @@ function _verify_authorize_endpoint {
 		--data-urlencode "redirect_uri=${redirect_uri}" \
 		--data-urlencode "response_type=code" \
 		--output /dev/null \
-		--silent \
-		--write-out "%{http_code}" \
+		--write-out "%{http_code} %{redirect_url}" \
 		"${LIFERAY_URL}/o/oauth2/authorize")
 
-	if [[ ${status} != 302 ]]
+	if [[ ${response} != "30"[23]" ${redirect_uri}?code="* ]]
 	then
-		echo "The authorize endpoint answered ${status} for client id ${DXP_OAUTH_CLIENT_ID} and redirect URI ${redirect_uri}; expected 302." >&2
+		echo "The authorize endpoint answered \"${response}\" for client id ${DXP_OAUTH_CLIENT_ID} and redirect URI ${redirect_uri}; expected a redirect to that URI with an authorization code." >&2
 
 		return 1
 	fi
