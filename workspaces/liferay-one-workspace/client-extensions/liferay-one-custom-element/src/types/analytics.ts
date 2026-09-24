@@ -8,6 +8,7 @@ export type AnalyticsProject = {
 	accountName: string;
 	corpProjectName: string;
 	corpProjectUuid: string;
+	dataSourceAccessToken?: string;
 	faroSubscription: FaroSubscription;
 	faroSubscriptionDisplay: FaroSubscription;
 	friendlyURL: string;
