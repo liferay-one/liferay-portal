@@ -14,6 +14,7 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.ConsoleService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.Objects;
 
@@ -173,8 +174,10 @@ public class ConsoleRestController extends OneBaseRestController {
 				"No order exists with ID " + orderId);
 		}
 
-		if (!Objects.equals(
-				order.getOrderTypeExternalReferenceCode(), "CLOUD_APP")) {
+		if (!ArrayUtil.contains(
+				CommerceOrderConstants.
+					CLOUD_APP_ORDER_TYPE_EXTERNAL_REFERENCE_CODES,
+				order.getOrderTypeExternalReferenceCode())) {
 
 			throw new IllegalArgumentException(
 				"Unsupported order type: " +

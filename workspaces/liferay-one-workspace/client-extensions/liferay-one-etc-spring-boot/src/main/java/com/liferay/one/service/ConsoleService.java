@@ -16,6 +16,7 @@ import java.util.Objects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -106,6 +107,38 @@ public class ConsoleService extends BaseService {
 		_tokenExpirationMillis = System.currentTimeMillis() + 900000;
 
 		return _authorization;
+	}
+
+	public JSONObject getProjectUsage(String emailAddress, String projectId)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(getProjectsUsage(emailAddress));
+
+		JSONArray userProjectsJSONArray = jsonObject.optJSONArray(
+			"userProjects", new JSONArray());
+
+		for (int i = 0; i < userProjectsJSONArray.length(); i++) {
+			JSONObject userProjectJSONObject =
+				userProjectsJSONArray.getJSONObject(i);
+
+			JSONArray environmentsJSONArray =
+				userProjectJSONObject.optJSONArray(
+					"environments", new JSONArray());
+
+			for (int j = 0; j < environmentsJSONArray.length(); j++) {
+				JSONObject environmentJSONObject =
+					environmentsJSONArray.getJSONObject(j);
+
+				if (Objects.equals(
+						environmentJSONObject.optString("projectId"),
+						projectId)) {
+
+					return userProjectJSONObject;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	public String getProjectsUsage(String userEmail) throws Exception {
