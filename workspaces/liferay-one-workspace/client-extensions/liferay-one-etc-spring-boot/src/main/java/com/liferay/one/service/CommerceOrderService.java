@@ -1275,8 +1275,8 @@ public class CommerceOrderService extends OneBaseService {
 
 	private static final Set<String>
 		_completableOrderTypeExternalReferenceCodes = Set.of(
-			"AI_HUB_TOKEN", "CLIENT_EXTENSION", "CLOUD_APP", "COMPOSITE_APP",
-			"DXP_APP", "LOW_CODE_CONFIGURATION", "OTHER");
+			"AI_HUB_TOKEN", "CLIENT_EXTENSION", "CLOUDAPP", "CLOUD_APP",
+			"COMPOSITE_APP", "DXP_APP", "LOW_CODE_CONFIGURATION", "OTHER");
 	private static final Set<String> _europeanCountryISOCodes = Set.of(
 		"AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR",
 		"HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO",
