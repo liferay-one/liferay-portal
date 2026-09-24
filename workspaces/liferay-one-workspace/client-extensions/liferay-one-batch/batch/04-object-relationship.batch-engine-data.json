@@ -208,17 +208,6 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_CONTRACT_TO_COMMERCE_ORDER",
-			"label": {
-				"en_US": "Contract to Commerce Order"
-			},
-			"name": "contractToCommerceOrder",
-			"objectDefinitionExternalReferenceCode1": "C_CONTRACT",
-			"objectDefinitionExternalReferenceCode2": "L_COMMERCE_ORDER",
-			"type": "oneToMany"
-		},
-		{
 			"deletionType": "cascade",
 			"externalReferenceCode": "R_CONTRACT_TO_ENTITLEMENT",
 			"label": {
@@ -403,17 +392,6 @@
 			"name": "productEntryToPublisherAsset",
 			"objectDefinitionExternalReferenceCode1": "L_COMMERCE_PRODUCT_DEFINITION",
 			"objectDefinitionExternalReferenceCode2": "C_PUBLISHER_ASSET",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_PROJECT_TO_COMMERCE_ORDER",
-			"label": {
-				"en_US": "Project to Commerce Order"
-			},
-			"name": "projectToCommerceOrder",
-			"objectDefinitionExternalReferenceCode1": "C_PROJECT",
-			"objectDefinitionExternalReferenceCode2": "L_COMMERCE_ORDER",
 			"type": "oneToMany"
 		},
 		{
