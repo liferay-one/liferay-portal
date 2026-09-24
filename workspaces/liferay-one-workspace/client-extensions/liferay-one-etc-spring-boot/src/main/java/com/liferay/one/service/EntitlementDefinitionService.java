@@ -17,8 +17,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -76,40 +74,13 @@ public class EntitlementDefinitionService extends OneBaseService {
 			return;
 		}
 
-		List<Sku> skus = new ArrayList<>();
-
 		for (Sku sku : _commerceSkuService.getSkus(cProductId)) {
 			if (!_hasLicenseUsageTypeOption(sku)) {
 				continue;
 			}
 
-			if (Validator.isNull(sku.getExternalReferenceCode())) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Skipping a SKU of product " + cProductId +
-							" without an external reference code");
-				}
-
-				continue;
-			}
-
-			skus.add(sku);
-		}
-
-		if (skus.isEmpty()) {
-			return;
-		}
-
-		Map<String, List<EntitlementDefinition>>
-			entitlementDefinitionsBySkuExternalReferenceCode =
-				_getEntitlementDefinitionsBySkuExternalReferenceCode(skus);
-
-		for (Sku sku : skus) {
 			try {
-				_syncEntitlementDefinition(
-					entitlementDefinitionsBySkuExternalReferenceCode.
-						getOrDefault(sku.getExternalReferenceCode(), List.of()),
-					productName, sku);
+				_syncEntitlementDefinition(productName, sku);
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -286,46 +257,6 @@ public class EntitlementDefinitionService extends OneBaseService {
 		}
 	}
 
-	private Map<String, List<EntitlementDefinition>>
-			_getEntitlementDefinitionsBySkuExternalReferenceCode(List<Sku> skus)
-		throws Exception {
-
-		StringBundler sb = new StringBundler((3 * skus.size()) + 1);
-
-		sb.append("skuExternalReferenceCode in (");
-
-		for (int i = 0; i < skus.size(); i++) {
-			Sku sku = skus.get(i);
-
-			if (i > 0) {
-				sb.append(",");
-			}
-
-			sb.append("'");
-			sb.append(escapeODataString(sku.getExternalReferenceCode()));
-			sb.append("'");
-		}
-
-		sb.append(")");
-
-		Map<String, List<EntitlementDefinition>>
-			entitlementDefinitionsBySkuExternalReferenceCode = new HashMap<>();
-
-		for (EntitlementDefinition entitlementDefinition :
-				getEntitlementDefinitions(sb.toString())) {
-
-			List<EntitlementDefinition> entitlementDefinitions =
-				entitlementDefinitionsBySkuExternalReferenceCode.
-					computeIfAbsent(
-						entitlementDefinition.getSkuExternalReferenceCode(),
-						key -> new ArrayList<>());
-
-			entitlementDefinitions.add(entitlementDefinition);
-		}
-
-		return entitlementDefinitionsBySkuExternalReferenceCode;
-	}
-
 	private boolean _hasLicenseUsageTypeOption(Sku sku) {
 		SkuOption[] skuOptions = sku.getSkuOptions();
 
@@ -397,12 +328,15 @@ public class EntitlementDefinitionService extends OneBaseService {
 			).toUri());
 	}
 
-	private void _syncEntitlementDefinition(
-			List<EntitlementDefinition> entitlementDefinitions,
-			String productName, Sku sku)
+	private void _syncEntitlementDefinition(String productName, Sku sku)
 		throws Exception {
 
 		String skuExternalReferenceCode = sku.getExternalReferenceCode();
+
+		List<EntitlementDefinition> entitlementDefinitions =
+			getEntitlementDefinitions(
+				"skuExternalReferenceCode eq '" +
+					escapeODataString(skuExternalReferenceCode) + "'");
 
 		String name = StringBundler.concat(productName, " - ", sku.getSku());
 
