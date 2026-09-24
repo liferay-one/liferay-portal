@@ -5,7 +5,6 @@
 
 package com.liferay.one.service;
 
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -19,20 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Component
 public class UsageDefinitionService extends OneBaseService {
-
-	public UsageDefinition fetchUsageDefinition(
-			EntitlementDefinition entitlementDefinition)
-		throws Exception {
-
-		String usageDefinitionExternalReferenceCode =
-			entitlementDefinition.getUsageDefinitionExternalReferenceCode();
-
-		if (Validator.isNull(usageDefinitionExternalReferenceCode)) {
-			return null;
-		}
-
-		return fetchUsageDefinition(usageDefinitionExternalReferenceCode);
-	}
 
 	public UsageDefinition fetchUsageDefinition(String externalReferenceCode)
 		throws Exception {
