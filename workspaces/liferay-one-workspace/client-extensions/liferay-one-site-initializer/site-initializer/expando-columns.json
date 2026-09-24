@@ -201,7 +201,7 @@
 		"name": "contractId",
 		"properties": {
 			"hidden": false,
-			"indexType": 0,
+			"indexType": 2,
 			"localizeField": false,
 			"localizeFieldName": true,
 			"secret": false,
