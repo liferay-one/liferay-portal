@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
@@ -496,6 +497,12 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	private void _validateExtension(
 			JSONObject jsonObject, LicenseKey licenseKey)
 		throws Exception {
+
+		if (!licenseKey.isActive()) {
+			throw new LicenseKeyActiveException(
+				"License key " + licenseKey.getLicenseKeyId() +
+					" is not active");
+		}
 
 		if (licenseKey.getEntitlementId() == 0) {
 			throw new LicenseKeyProductPurchaseKeyException(
