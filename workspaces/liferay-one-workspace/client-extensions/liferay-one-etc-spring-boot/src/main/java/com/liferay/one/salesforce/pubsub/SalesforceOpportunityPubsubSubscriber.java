@@ -8,7 +8,6 @@ package com.liferay.one.salesforce.pubsub;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
-import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.OpportunityConstants;
 import com.liferay.one.model.Contract;
@@ -26,7 +25,6 @@ import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
@@ -36,7 +34,6 @@ import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -565,24 +562,6 @@ public class SalesforceOpportunityPubsubSubscriber
 					salesforceOpportunity.getStageName());
 
 				provisionedOrderItemCount++;
-
-				OrderItem existingOrderItem =
-					CommerceOrderItemUtil.fetchOrderItem(
-						provisionableSalesforceOpportunityLineItem.getId(),
-						order);
-
-				if (existingOrderItem != null) {
-					try {
-						_entitlementService.updateEntitlements(
-							existingOrderItem.getId());
-					}
-					catch (Exception exception) {
-						_log.error(
-							"Unable to update entitlements for order item " +
-								existingOrderItem.getId(),
-							exception);
-					}
-				}
 			}
 			catch (Exception exception) {
 				String productName =
@@ -673,9 +652,6 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private ContractService _contractService;
-
-	@Autowired
-	private EntitlementService _entitlementService;
 
 	@Value("${liferay.one.salesforce.opportunity.pubsub.subscriber.project.id}")
 	private String _projectId;

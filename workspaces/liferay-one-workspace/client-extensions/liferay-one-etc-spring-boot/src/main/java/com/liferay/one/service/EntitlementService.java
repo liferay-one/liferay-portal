@@ -437,38 +437,6 @@ public class EntitlementService extends OneBaseService {
 			entitlementNames);
 	}
 
-	public void trimEntitlements(long commerceOrderItemId, String endDate)
-		throws Exception {
-
-		List<Entitlement> entitlements = getEntitlements(commerceOrderItemId);
-
-		Instant endDateInstant = Instant.parse(endDate);
-
-		for (Entitlement entitlement : entitlements) {
-			Instant curEndDateInstant = entitlement.getEndDateInstant();
-
-			if ((curEndDateInstant != null) &&
-				!curEndDateInstant.isAfter(endDateInstant)) {
-
-				continue;
-			}
-
-			Instant trimmedEndDateInstant = _getLatestInstant(
-				endDateInstant, entitlement.getStartDateInstant());
-
-			if (Objects.equals(curEndDateInstant, trimmedEndDateInstant)) {
-				continue;
-			}
-
-			_patchEntitlement(
-				entitlement.getEntitlementId(),
-				new JSONObject(
-				).put(
-					"endDate", trimmedEndDateInstant.toString()
-				));
-		}
-	}
-
 	public void updateEntitlementContract(long entitlementId, long contractId)
 		throws Exception {
 
@@ -497,9 +465,7 @@ public class EntitlementService extends OneBaseService {
 		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
 			commerceOrderItemId);
 
-		if ((orderItem == null) ||
-			CommerceOrderItemUtil.isCanceled(orderItem)) {
-
+		if (orderItem == null) {
 			return;
 		}
 

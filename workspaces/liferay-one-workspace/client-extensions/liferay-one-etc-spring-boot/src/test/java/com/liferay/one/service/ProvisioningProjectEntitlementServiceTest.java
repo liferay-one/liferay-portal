@@ -44,7 +44,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
-		_entitlementService = Mockito.mock(EntitlementService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 
 		ReflectionTestUtils.setField(
@@ -56,9 +55,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService, "_commerceSkuService",
 			_commerceSkuService);
-		ReflectionTestUtils.setField(
-			_provisioningProjectEntitlementService, "_entitlementService",
-			_entitlementService);
 		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService, "_projectService",
 			_projectService);
@@ -119,8 +115,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 		).patchOrderItemCustomFields(
 			Mockito.anyLong(), Mockito.anyMap()
 		);
-
-		Mockito.verifyNoInteractions(_entitlementService);
 	}
 
 	@Test
@@ -152,16 +146,61 @@ public class ProvisioningProjectEntitlementServiceTest {
 				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
 
 		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			Mockito.eq(7002L), Mockito.anyString()
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Mockito.eq(7002L), Mockito.anyMap()
 		);
 
 		Mockito.verify(
-			_entitlementService, Mockito.never()
-		).trimEntitlements(
-			Mockito.eq(7001L), Mockito.anyString()
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItemCustomFields(
+			Mockito.eq(7001L), Mockito.anyMap()
 		);
+	}
+
+	@Test
+	public void testDeleteProjectEntitlementLineItemTrimsToSecondPrecision()
+		throws Exception {
+
+		OrderItem orderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", null, "2027-01-01T00:00:00Z", _LINE_ITEM_ID_1, 7001L,
+			_PRODUCT_2_ID_1, "2026-01-01T00:00:00Z");
+
+		Order order = new Order();
+
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setOrderItems(new OrderItem[] {orderItem});
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		_provisioningProjectEntitlementService.deleteProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+
+		ArgumentCaptor<Map<String, Object>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Mockito.eq(7001L), argumentCaptor.capture()
+		);
+
+		Map<String, Object> customFieldValues = argumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			String.valueOf(
+				customFieldValues.get("effectiveEndDate")
+			).matches(
+				"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+			),
+			"The effective end date must carry no fractional seconds");
 	}
 
 	@Test
@@ -194,15 +233,15 @@ public class ProvisioningProjectEntitlementServiceTest {
 			));
 
 		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			Mockito.eq(7001L), Mockito.anyString()
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Mockito.eq(7001L), Mockito.anyMap()
 		);
 
 		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			Mockito.eq(7002L), Mockito.anyString()
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Mockito.eq(7002L), Mockito.anyMap()
 		);
 	}
 
@@ -432,8 +471,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 			Mockito.any(SalesforceOpportunityLineItem.class),
 			Mockito.anyString()
 		);
-
-		Mockito.verifyNoInteractions(_entitlementService);
 	}
 
 	@Test
@@ -600,7 +637,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
 	private CommerceSkuService _commerceSkuService;
-	private EntitlementService _entitlementService;
 	private ProjectService _projectService;
 	private ProvisioningProjectEntitlementService
 		_provisioningProjectEntitlementService;

@@ -285,6 +285,52 @@ public class EntitlementServiceTest {
 		);
 	}
 
+	@Test
+	public void testUpdateEntitlementsTrimsCanceledOrderItem()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setCustomFields(
+			new CustomField[] {
+				_createCustomField(
+					"customStatus", CommerceOrderItemConstants.STATUS_CANCELED),
+				_createCustomField("effectiveEndDate", "2026-01-01T00:00:00Z")
+			});
+
+		_setUpOrderItem(orderItem);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+	}
+
+	private CustomField _createCustomField(String name, String data) {
+		CustomField customField = new CustomField();
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(data);
+
+		customField.setCustomValue(customValue);
+
+		customField.setName(name);
+
+		return customField;
+	}
+
 	private Entitlement _createEntitlement(
 		long entitlementDefinitionId, String name) {
 

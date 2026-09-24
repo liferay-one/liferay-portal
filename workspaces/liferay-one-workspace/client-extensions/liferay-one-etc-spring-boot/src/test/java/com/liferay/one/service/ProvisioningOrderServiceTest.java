@@ -34,7 +34,6 @@ public class ProvisioningOrderServiceTest {
 		_commerceOrderItemService = Mockito.mock(
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
-		_entitlementService = Mockito.mock(EntitlementService.class);
 
 		ReflectionTestUtils.setField(
 			_provisioningOrderService, "_commerceOrderItemService",
@@ -42,9 +41,6 @@ public class ProvisioningOrderServiceTest {
 		ReflectionTestUtils.setField(
 			_provisioningOrderService, "_commerceOrderService",
 			_commerceOrderService);
-		ReflectionTestUtils.setField(
-			_provisioningOrderService, "_entitlementService",
-			_entitlementService);
 	}
 
 	@Test
@@ -75,7 +71,6 @@ public class ProvisioningOrderServiceTest {
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
-		Mockito.verifyNoInteractions(_entitlementService);
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -117,12 +112,6 @@ public class ProvisioningOrderServiceTest {
 		).patchOrderItemCustomFields(
 			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
 		);
-
-		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			5001L, "2026-01-01T00:00:00Z"
-		);
 	}
 
 	@Test
@@ -145,12 +134,6 @@ public class ProvisioningOrderServiceTest {
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
 			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
-		);
-
-		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			5001L, "2026-01-01T00:00:00Z"
 		);
 
 		boolean hasMismatchWarning = false;
@@ -185,12 +168,6 @@ public class ProvisioningOrderServiceTest {
 		).patchOrderItemCustomFields(
 			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
 		);
-
-		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			5001L, "2026-01-01T00:00:00Z"
-		);
 	}
 
 	@Test
@@ -210,7 +187,6 @@ public class ProvisioningOrderServiceTest {
 			List.of(_createRealignmentLineItem("2025-01-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
-		Mockito.verifyNoInteractions(_entitlementService);
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -242,7 +218,6 @@ public class ProvisioningOrderServiceTest {
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
-		Mockito.verifyNoInteractions(_entitlementService);
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -270,12 +245,6 @@ public class ProvisioningOrderServiceTest {
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
 
-		Mockito.verify(
-			_entitlementService
-		).trimEntitlements(
-			5001L, "2026-01-01T00:00:00Z"
-		);
-
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -296,7 +265,6 @@ public class ProvisioningOrderServiceTest {
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
-		Mockito.verifyNoInteractions(_entitlementService);
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -317,7 +285,6 @@ public class ProvisioningOrderServiceTest {
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
-		Mockito.verifyNoInteractions(_entitlementService);
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -439,7 +406,6 @@ public class ProvisioningOrderServiceTest {
 
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
-	private EntitlementService _entitlementService;
 	private ProvisioningOrderService _provisioningOrderService;
 
 }

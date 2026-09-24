@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -405,7 +406,10 @@ public class ProvisioningProjectEntitlementService {
 	}
 
 	private void _trimOrderItem(OrderItem orderItem) throws Exception {
-		Instant effectiveEndDateInstant = Instant.now();
+		Instant effectiveEndDateInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
 
 		Instant orderItemEffectiveEndDateInstant =
 			CommerceOrderItemUtil.getEffectiveEndDateInstant(orderItem);
@@ -420,9 +424,6 @@ public class ProvisioningProjectEntitlementService {
 		_commerceOrderItemService.patchOrderItemCustomFields(
 			orderItem.getId(),
 			Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
-
-		_entitlementService.trimEntitlements(
-			orderItem.getId(), effectiveEndDateInstant.toString());
 	}
 
 	private void _upsertOrderItem(
@@ -457,9 +458,6 @@ public class ProvisioningProjectEntitlementService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
-
-	@Autowired
-	private EntitlementService _entitlementService;
 
 	@Autowired
 	private ProjectService _projectService;
