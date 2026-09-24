@@ -3,32 +3,21 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {memo} from 'react';
-import useMarketoForm, {useMarketoFormProps} from '~/hooks/useMarketoForm';
-
-import Loading from '../Loading/Loading';
+import Loading from '~/components/Loading/Loading';
+import useMarketoForm, {UseMarketoFormProps} from '~/hooks/useMarketoForm';
 
 import './MarketoForm.css';
 
-type MarketoFormProps = {
-	formId: string;
-	hidden?: boolean;
-} & useMarketoFormProps;
-
-const MarketoForm = memo(({formId, hidden, ...hookProps}: MarketoFormProps) => {
-	const {started} = useMarketoForm({formId, ...hookProps});
+const MarketoForm = (props: UseMarketoFormProps) => {
+	const {started} = useMarketoForm(props);
 
 	return (
 		<>
 			{!started && <Loading />}
 
-			<form
-				aria-hidden="true"
-				className={hidden ? 'hidden' : 'block'}
-				id={`mktoForm_${formId}`}
-			/>
+			<form id={`mktoForm_${props.formId}`} />
 		</>
 	);
-});
+};
 
 export default MarketoForm;
