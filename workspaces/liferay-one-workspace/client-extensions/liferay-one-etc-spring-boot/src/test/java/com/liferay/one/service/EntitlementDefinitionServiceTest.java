@@ -14,16 +14,13 @@ import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.model.EntitlementDefinition;
-import com.liferay.portal.kernel.util.StringUtil;
 
 import java.net.URI;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -301,22 +298,6 @@ public class EntitlementDefinitionServiceTest {
 			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
 		Assertions.assertTrue(
 			_entitlementDefinitionService.patchBodies.isEmpty());
-	}
-
-	@Test
-	public void testGenerateEntitlementDefinitionSkipsSkuWithoutExternalReferenceCode()
-		throws Exception {
-
-		_setUpProduct(
-			_createSku(null, true, "Large"),
-			_createSku("SKU-SMALL", true, "Small"));
-
-		_entitlementDefinitionService.generateEntitlementDefinition(
-			_C_PRODUCT_ID);
-
-		Assertions.assertEquals(
-			List.of("SKU-SMALL"),
-			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
 	}
 
 	@Test
@@ -677,28 +658,17 @@ public class EntitlementDefinitionServiceTest {
 		}
 
 		private JSONArray _filterItemsJSONArray(String query) {
-			String externalReferenceCode = _getExternalReferenceCodeFilterValue(
-				query);
+			String fieldName = "externalReferenceCode";
 
-			if (externalReferenceCode != null) {
-				JSONArray filteredItemsJSONArray = new JSONArray();
+			String value = _getFilterValue(fieldName, query);
 
-				for (int i = 0; i < itemsJSONArray.length(); i++) {
-					JSONObject jsonObject = itemsJSONArray.getJSONObject(i);
+			if (value == null) {
+				fieldName = "skuExternalReferenceCode";
 
-					if (externalReferenceCode.equals(
-							jsonObject.optString("externalReferenceCode"))) {
-
-						filteredItemsJSONArray.put(jsonObject);
-					}
-				}
-
-				return filteredItemsJSONArray;
+				value = _getFilterValue(fieldName, query);
 			}
 
-			Set<String> skuExternalReferenceCodes = _getFilterValues(query);
-
-			if (skuExternalReferenceCodes == null) {
+			if (value == null) {
 				return itemsJSONArray;
 			}
 
@@ -707,9 +677,7 @@ public class EntitlementDefinitionServiceTest {
 			for (int i = 0; i < itemsJSONArray.length(); i++) {
 				JSONObject jsonObject = itemsJSONArray.getJSONObject(i);
 
-				if (skuExternalReferenceCodes.contains(
-						jsonObject.optString("skuExternalReferenceCode"))) {
-
+				if (value.equals(jsonObject.optString(fieldName))) {
 					filteredItemsJSONArray.put(jsonObject);
 				}
 			}
@@ -717,12 +685,12 @@ public class EntitlementDefinitionServiceTest {
 			return filteredItemsJSONArray;
 		}
 
-		private String _getExternalReferenceCodeFilterValue(String query) {
+		private String _getFilterValue(String fieldName, String query) {
 			if (query == null) {
 				return null;
 			}
 
-			String prefix = "filter=externalReferenceCode eq '";
+			String prefix = "filter=" + fieldName + " eq '";
 
 			int index = query.indexOf(prefix);
 
@@ -733,36 +701,6 @@ public class EntitlementDefinitionServiceTest {
 			int startIndex = index + prefix.length();
 
 			return query.substring(startIndex, query.indexOf('\'', startIndex));
-		}
-
-		private Set<String> _getFilterValues(String query) {
-			if (query == null) {
-				return null;
-			}
-
-			String prefix = "skuExternalReferenceCode in (";
-
-			int index = query.indexOf(prefix);
-
-			if (index < 0) {
-				return null;
-			}
-
-			int startIndex = index + prefix.length();
-
-			String values = query.substring(
-				startIndex, query.indexOf(')', startIndex));
-
-			Set<String> skuExternalReferenceCodes = new HashSet<>();
-
-			for (String value : values.split(",")) {
-				String skuExternalReferenceCode = StringUtil.removeSubstring(
-					value, "'");
-
-				skuExternalReferenceCodes.add(skuExternalReferenceCode.trim());
-			}
-
-			return skuExternalReferenceCodes;
 		}
 
 	}
