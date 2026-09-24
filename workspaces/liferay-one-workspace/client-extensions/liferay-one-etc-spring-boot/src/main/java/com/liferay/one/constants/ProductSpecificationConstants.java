@@ -12,6 +12,15 @@ public class ProductSpecificationConstants {
 
 	public static final String KEY_PRICE_MODEL = "price-model";
 
+	public static final String KEY_SOLUTION_TYPE = "solution-type";
+
 	public static final String PRICE_MODEL_PAID = "Paid";
+
+	public static final String SOLUTION_TYPE_CMP = "cmp";
+
+	public static final String SOLUTION_TYPE_DSR = "dsr";
+
+	public static final String SOLUTION_TYPE_LIFERAY_DATA_PLATFORM =
+		"liferay-data-platform";
 
 }
