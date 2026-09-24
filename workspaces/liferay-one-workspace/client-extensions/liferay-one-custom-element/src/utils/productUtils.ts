@@ -217,12 +217,17 @@ export function getProductPriceModel(product: DeliveryProduct) {
 
 export const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
 
+const CONTACT_SALES_SOLUTION_TYPES: string[] = [
+	SolutionTypes.CMP,
+	SolutionTypes.DSR,
+];
+
 export function isContactSalesProduct(product: DeliveryProduct) {
-	return (
+	return CONTACT_SALES_SOLUTION_TYPES.includes(
 		getProductSpecificationValue(
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
-		) === 'cmp'
+		)
 	);
 }
 
