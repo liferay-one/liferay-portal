@@ -8,31 +8,35 @@ source ../_common.sh
 #
 # Every DXP since 2025.Q1 ships marketplace-settings-web, whose Connect step runs
 # an OAuth2 Authorization Code flow with PKCE against the portal property
-# marketplace.url, using the client id in marketplace.client.id (default
+# marketplace.url, using the client ID in marketplace.client.id (default
 # "marketplace-client-id") and the redirect URI marketplace.url plus
 # marketplace.redirect. The DXP is a public client, keeps the refresh token, and
 # renews the access token with grant_type=refresh_token, so the application must
-# allow both the PKCE and the Refresh Token grants and register every redirect
-# URI a DXP may send, byte for byte.
+# allow both the PKCE and the Refresh Token grants and register, byte for byte,
+# the redirect URI a DXP sends, which is marketplace.url plus
+# marketplace.redirect. The portal default of marketplace.redirect is
+# /web/marketplace/authorize, so a DXP pointed at One also sets
+# marketplace.redirect=/authorize unless its environment maps that default path
+# to the authorize page.
 #
 # The oAuthApplicationUserAgent client extension type cannot provide this
-# application: it generates a random client id and grants only PKCE and JWT
+# application: it generates a random client ID and grants only PKCE and JWT
 # Bearer. Liferay exposes no headless API for OAuth2 application admin, and the
 # JSONWS bridge cannot take the grant type enum list the add method needs, so this
 # step drives the OAuth2 admin portlet action URLs with an admin session, the
 # same way the one-oauth-app skill creates the local-dev application. The step is
-# idempotent: when an application with the client id already exists it is
+# idempotent: when an application with the client ID already exists it is
 # updated in place, so the redirect URIs, grants and scopes converge on the
 # values below on every bootstrap and env reset.
 #
 # The Spring Boot client extension accepts the tokens this application issues
 # through the external-dxp entry in liferay.oauth.application.external.reference
-# .codes, whose client id is declared in application-default.properties; the
+# .codes, whose client ID is declared in application-default.properties; the
 # application therefore needs no external reference code.
 #
 # The delivery cart API registers no OAuth2 scope aliases and accepts any
-# valid token, so only the catalog and order delivery APIs and the user account
-# read the Spring Boot needs are granted.
+# valid token, and the catalog and order delivery APIs are read only for the
+# DXP, so only read scopes on them and on the user account are granted.
 #
 # Overrides (all optional):
 # DXP_OAUTH_CLIENT_ID (default marketplace-client-id)
@@ -42,12 +46,14 @@ source ../_common.sh
 DXP_OAUTH_APPLICATION_NAME="Marketplace DXP Connector"
 DXP_OAUTH_CLIENT_ID="${DXP_OAUTH_CLIENT_ID:-marketplace-client-id}"
 DXP_OAUTH_REDIRECT_URIS="${DXP_OAUTH_REDIRECT_URIS:-${LIFERAY_URL}/authorize http://one.localhost/authorize http://one.localhost:8080/authorize}"
-DXP_OAUTH_SCOPE_ALIASES="${DXP_OAUTH_SCOPE_ALIASES:-Liferay.Headless.Admin.User.everything.read Liferay.Headless.Commerce.Delivery.Catalog.everything Liferay.Headless.Commerce.Delivery.Order.everything}"
+DXP_OAUTH_SCOPE_ALIASES="${DXP_OAUTH_SCOPE_ALIASES:-Liferay.Headless.Admin.User.everything.read Liferay.Headless.Commerce.Delivery.Catalog.everything.read Liferay.Headless.Commerce.Delivery.Order.everything.read}"
 
 LOGIN_PORTLET="com_liferay_login_web_portlet_LoginPortlet"
 OAUTH_PORTLET="com_liferay_oauth2_provider_web_internal_portlet_OAuth2AdminPortlet"
 
-OAUTH_LIST_URL="${LIFERAY_URL}/group/control_panel/manage?p_p_id=${OAUTH_PORTLET}&p_p_lifecycle=0&p_p_state=maximized"
+# The application list is a search container paged at 20 rows, and 200 is the
+# largest page the portal serves, so the lookup by client ID reads that many.
+OAUTH_LIST_URL="${LIFERAY_URL}/group/control_panel/manage?p_p_id=${OAUTH_PORTLET}&p_p_lifecycle=0&p_p_state=maximized&_${OAUTH_PORTLET}_delta=200"
 
 function main {
 	local cookie_jar
@@ -64,7 +70,7 @@ function main {
 
 	local p_auth
 
-	p_auth=$(_curl_session "${cookie_jar}" "${OAUTH_LIST_URL}" | _read_auth_token)
+	p_auth=$(_curl_session "${cookie_jar}" "${OAUTH_LIST_URL}" | _read_auth_token || true)
 
 	if [[ -z ${p_auth} ]]
 	then
@@ -83,7 +89,7 @@ function main {
 
 	if [[ -z ${application_id} ]]
 	then
-		echo "Unable to find the OAuth2 application with client id ${DXP_OAUTH_CLIENT_ID} after saving it." >&2
+		echo "Unable to find the OAuth2 application with client ID ${DXP_OAUTH_CLIENT_ID} after saving it." >&2
 
 		return 1
 	fi
@@ -92,7 +98,7 @@ function main {
 
 	_verify_authorize_endpoint "${cookie_jar}"
 
-	echo "OAuth2 application ${DXP_OAUTH_APPLICATION_NAME} (client id ${DXP_OAUTH_CLIENT_ID}, id ${application_id}) is ready for DXP connections."
+	echo "OAuth2 application ${DXP_OAUTH_APPLICATION_NAME} (client ID ${DXP_OAUTH_CLIENT_ID}, id ${application_id}) is ready for DXP connections."
 }
 
 function _assign_scopes {
@@ -115,7 +121,7 @@ function _assign_scopes {
 
 	for scope_alias in ${DXP_OAUTH_SCOPE_ALIASES}
 	do
-		if ! grep --line-regexp --quiet "${scope_alias}" <<< "${available_scope_aliases}"
+		if ! grep --fixed-strings --line-regexp --quiet "${scope_alias}" <<< "${available_scope_aliases}"
 		then
 			echo "Scope alias ${scope_alias} is not available on ${LIFERAY_URL}." >&2
 
@@ -157,7 +163,7 @@ function _log_in {
 
 	local p_auth
 
-	p_auth=$(_curl_session "${cookie_jar}" "${login_url}" | _read_auth_token)
+	p_auth=$(_curl_session "${cookie_jar}" "${login_url}" | _read_auth_token || true)
 
 	_curl_session "${cookie_jar}" \
 		--data-urlencode "_${LOGIN_PORTLET}_login=${LIFERAY_ADMIN_EMAIL}" \
@@ -187,7 +193,10 @@ html = sys.stdin.read()
 for match in re.finditer(r'<tr\b[^>]*>(.*?)</tr>', html, re.DOTALL):
 	row = match.group(1)
 
-	if client_id not in row:
+	if not re.search(
+			r'lfr-client-id-column[^>]*>\s*' + re.escape(client_id) + r'\s*</td>',
+			row):
+
 		continue
 
 	id_match = re.search(r'oAuth2ApplicationId=(\d+)', row)
@@ -206,7 +215,7 @@ sys.exit(1)
 # links, and one of those fails CSRF validation on an action POST.
 
 function _read_auth_token {
-	grep --only-matching --extended-regexp "authToken: '[A-Za-z0-9]+'" | head --lines 1 | cut --delimiter "'" --fields 2
+	grep --extended-regexp --only-matching "authToken: '[A-Za-z0-9]+'" | head --lines 1 | cut --delimiter "'" --fields 2
 }
 
 function _read_scope_aliases {
@@ -263,35 +272,41 @@ function _save_application {
 }
 
 # The authorize endpoint sends every request without a session to the login
-# page before it looks at the client id or the redirect URI, so only a request
+# page before it looks at the client ID or the redirect URI, so only a request
 # with the admin session proves the registration: the application is trusted,
-# so a valid client id and redirect URI answer with a redirect to that URI
-# carrying an authorization code, and anything else answers 400.
+# so a valid client ID, a registered redirect URI and assigned scopes answer
+# with a redirect to that URI carrying an authorization code, and anything
+# else answers 400. Every redirect URI is probed with every scope alias; the
+# Refresh Token grant is the one setting this probe cannot observe.
 
 function _verify_authorize_endpoint {
 	local cookie_jar="${1}"
 
-	local redirect_uri="${DXP_OAUTH_REDIRECT_URIS%% *}"
+	local redirect_uri
 
-	local response
+	for redirect_uri in ${DXP_OAUTH_REDIRECT_URIS}
+	do
+		local response
 
-	response=$(_curl_session "${cookie_jar}" \
-		--get \
-		--data-urlencode "client_id=${DXP_OAUTH_CLIENT_ID}" \
-		--data-urlencode "code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM" \
-		--data-urlencode "code_challenge_method=S256" \
-		--data-urlencode "redirect_uri=${redirect_uri}" \
-		--data-urlencode "response_type=code" \
-		--output /dev/null \
-		--write-out "%{http_code} %{redirect_url}" \
-		"${LIFERAY_URL}/o/oauth2/authorize")
+		response=$(_curl_session "${cookie_jar}" \
+			--data-urlencode "client_id=${DXP_OAUTH_CLIENT_ID}" \
+			--data-urlencode "code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM" \
+			--data-urlencode "code_challenge_method=S256" \
+			--data-urlencode "redirect_uri=${redirect_uri}" \
+			--data-urlencode "response_type=code" \
+			--data-urlencode "scope=${DXP_OAUTH_SCOPE_ALIASES}" \
+			--get \
+			--output /dev/null \
+			--write-out "%{http_code} %{redirect_url}" \
+			"${LIFERAY_URL}/o/oauth2/authorize")
 
-	if [[ ${response} != "30"[23]" ${redirect_uri}?code="* ]]
-	then
-		echo "The authorize endpoint answered \"${response}\" for client id ${DXP_OAUTH_CLIENT_ID} and redirect URI ${redirect_uri}; expected a redirect to that URI with an authorization code." >&2
+		if [[ ${response} != "30"[23]" ${redirect_uri}?code="* ]]
+		then
+			echo "The authorize endpoint answered \"${response}\" for client ID ${DXP_OAUTH_CLIENT_ID}, redirect URI ${redirect_uri} and scopes ${DXP_OAUTH_SCOPE_ALIASES}; expected a redirect to that URI with an authorization code." >&2
 
-		return 1
-	fi
+			return 1
+		fi
+	done
 }
 
 main "${@}"
