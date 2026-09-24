@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -657,13 +659,19 @@ public class LicenseKeyService extends OneBaseService {
 				"pageSize", 1
 			);
 
+		Map<String, Object> uriVariables = new HashMap<>();
+
 		if (filterString != null) {
-			uriComponentsBuilder.queryParam("filter", filterString);
+			uriComponentsBuilder.queryParam("filter", "{filter}");
+
+			uriVariables.put("filter", filterString);
 		}
 
 		String response = get(
 			getAuthorization(),
-			uriComponentsBuilder.build(
+			uriComponentsBuilder.encode(
+			).buildAndExpand(
+				uriVariables
 			).toUri());
 
 		JSONObject jsonObject = new JSONObject(response);
