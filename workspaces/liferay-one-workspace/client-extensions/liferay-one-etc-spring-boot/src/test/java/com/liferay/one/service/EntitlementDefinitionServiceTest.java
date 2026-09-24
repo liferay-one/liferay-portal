@@ -16,6 +16,9 @@ import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.model.EntitlementDefinition;
 
 import java.net.URI;
+import java.net.URLDecoder;
+
+import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -161,7 +164,9 @@ public class EntitlementDefinitionServiceTest {
 		boolean escaped = false;
 
 		for (String uri : _entitlementDefinitionService.getURIs) {
-			if (uri.contains("SKU-O''BRIEN")) {
+			String decodedURI = URLDecoder.decode(uri, StandardCharsets.UTF_8);
+
+			if (decodedURI.contains("SKU-O''BRIEN")) {
 				escaped = true;
 			}
 		}
