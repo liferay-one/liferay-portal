@@ -1568,6 +1568,8 @@ export default {
 		'There are currently no open tickets under this project.',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
+	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
+		'This account has no default billing address, so a connected DXP cannot install products for it.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
