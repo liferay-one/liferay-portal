@@ -6,6 +6,7 @@
 import {useState} from 'react';
 import {HashRouter, Navigate, Outlet, useRoutes} from 'react-router-dom';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
+import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import AccountSelection from './AccountSelection/AccountSelection';
 import Congratulations from './Congratulations/Congratulations';
@@ -14,10 +15,23 @@ import type {Account} from '~/types/accounts';
 
 import type {OAuth2AuthorizeContext} from './types';
 
+const searchParams = new URLSearchParams(window.location.search);
+
+const code = searchParams.get('code') ?? '';
+
+const state = safeJSONParse<{origin?: unknown} | null>(
+	searchParams.get('state'),
+	null
+);
+
+const origin = typeof state?.origin === 'string' ? state.origin : '';
+
 function OAuth2AuthorizeLayout() {
 	const [selectedAccount, setSelectedAccount] = useState<Account>();
 
 	const context: OAuth2AuthorizeContext = {
+		code,
+		origin,
 		selectedAccount,
 		setSelectedAccount,
 	};

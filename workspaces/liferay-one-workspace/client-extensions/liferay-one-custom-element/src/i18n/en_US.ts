@@ -338,6 +338,7 @@ export default {
 	'confirm-uninstall': 'Confirm & Uninstall',
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
 	'congratulations': 'Congratulations',
+	'connect': 'Connect',
 	'connect-anyway': 'Connect Anyway',
 	'connect-your-liferay-data-platform': 'Connect Your Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Connect Your Liferay DSR',
@@ -1025,6 +1026,8 @@ export default {
 		'One or more add-ons are not available for the selected DXP version.',
 	'one-time-purchases': 'One-Time Purchases',
 	'online-payments-with-paypal': 'Online payments with PayPal',
+	'only-continue-if-you-started-this-connection-from-that-liferay-dxp':
+		'Only continue if you started this connection from that Liferay DXP.',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'Only GIF, JPG, JPEG, and PNG are allowed. Max file size is 5MB.',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':
@@ -1592,6 +1595,8 @@ export default {
 		'This is the first version of the app to be published.',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'This key is expired and cannot be downloaded.',
+	'this-liferay-dxp-is-requesting-access-to-the-account-you-select-below':
+		'This Liferay DXP is requesting access to the account you select below.',
 	'this-may-restrict-the-functionality-available-to-you':
 		'This may restrict the functionality available to you.',
 	'this-order-must-be-completed-before-downloading-this-app.':

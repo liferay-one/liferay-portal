@@ -6,6 +6,8 @@
 import type {Account} from '~/types/accounts';
 
 export type OAuth2AuthorizeContext = {
+	code: string;
+	origin: string;
 	selectedAccount?: Account;
 	setSelectedAccount: (account?: Account) => void;
 };

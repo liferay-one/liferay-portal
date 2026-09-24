@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import congratulationsIcon from '~/assets/icons/congratulations_icon.svg';
 import {useOneContext} from '~/context/OneContextProvider';
@@ -12,7 +12,6 @@ import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
 import DXP from '~/services/spring-boot/DXP';
 import SearchBuilder from '~/utils/SearchBuilder';
-import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
 
@@ -20,45 +19,37 @@ const POST_MESSAGE_DELAY = 3000;
 
 export default function Congratulations() {
 	const {channel, myUserAccount} = useOneContext();
-	const {selectedAccount} = useOAuth2AuthorizeContext();
+	const {code, origin, selectedAccount} = useOAuth2AuthorizeContext();
 
 	const [failed, setFailed] = useState(false);
 
+	const handedOffRef = useRef(false);
+
 	useEffect(() => {
-		if (!selectedAccount || !myUserAccount) {
+		if (!selectedAccount || !myUserAccount || handedOffRef.current) {
 			return;
 		}
 
-		const searchParams = new URLSearchParams(window.location.search);
-
-		const {origin} = safeJSONParse(searchParams.get('state'), {
-			origin: '',
-		});
-
-		if (!origin) {
+		if (!code || !origin) {
 			setFailed(true);
 
 			return;
 		}
 
-		let cancelled = false;
-		let timeout: number | undefined;
+		handedOffRef.current = true;
 
-		Promise.all([
-			fetcher.post('/o/c/oauth2dxpauthorizations', {
-				connectionSource: origin,
-				r_accountEntryToOAuth2DxpAuthorization_accountEntryId:
-					selectedAccount.id,
-			}),
-			DXP.getHomePageURL(),
-		])
-			.then(([, serviceURL]) => {
-				if (cancelled) {
-					return;
-				}
+		let cancelled = false;
+
+		DXP.getHomePageURL()
+			.then(async (serviceURL) => {
+				await fetcher.post('/o/c/oauth2dxpauthorizations', {
+					connectionSource: origin,
+					r_accountEntryToOAuth2DxpAuthorization_accountEntryId:
+						selectedAccount.id,
+				});
 
 				const payload = {
-					code: searchParams.get('code'),
+					code,
 					serviceURL,
 					settings: {
 						account: {
@@ -86,7 +77,7 @@ export default function Congratulations() {
 					},
 				};
 
-				timeout = window.setTimeout(() => {
+				window.setTimeout(() => {
 					window.opener?.postMessage(payload, origin);
 				}, POST_MESSAGE_DELAY);
 			})
@@ -98,10 +89,8 @@ export default function Congratulations() {
 
 		return () => {
 			cancelled = true;
-
-			window.clearTimeout(timeout);
 		};
-	}, [channel, myUserAccount, selectedAccount]);
+	}, [channel, code, myUserAccount, origin, selectedAccount]);
 
 	if (!selectedAccount) {
 		return <Navigate replace to="/" />;
