@@ -5,7 +5,12 @@
 
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
-import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
+import {
+	ProductLicenseFriendlyName,
+	ProductLicenseType,
+	ProductSpecificationKey,
+	SolutionTypes,
+} from '~/enums/Product';
 import i18n from '~/i18n';
 
 import {getValueFromDeliverySpecifications} from './getValueFromDeliverySpecifications';
@@ -194,12 +199,14 @@ export function getProductType(product: DeliveryProduct) {
 }
 
 export function getLicenseTagText(product: DeliveryProduct) {
-	const licenseTypeSpecification = getValueFromDeliverySpecifications(
-		product.productSpecifications,
-		ProductSpecificationKey.APP_LICENSING_TYPE
-	).toLowerCase();
-
-	return licenseTypeSpecification === 'Perpetual' ? 'One-Time' : 'Annually';
+	return (
+		ProductLicenseFriendlyName[
+			getValueFromDeliverySpecifications(
+				product.productSpecifications,
+				ProductSpecificationKey.APP_LICENSING_TYPE
+			) as ProductLicenseType
+		] ?? ''
+	);
 }
 
 export function getProductPriceModel(product: DeliveryProduct) {
