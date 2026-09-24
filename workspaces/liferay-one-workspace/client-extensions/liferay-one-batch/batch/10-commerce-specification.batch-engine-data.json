@@ -116,6 +116,19 @@
 		},
 		{
 			"description": {
+				"en_US": "This is the number of CPUs an app needs, read by the app installers."
+			},
+			"facetable": false,
+			"key": "cpu",
+			"optionCategory": {
+				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
+			},
+			"title": {
+				"en_US": "CPU"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the latest Liferay version supported."
 			},
 			"facetable": false,
@@ -475,6 +488,19 @@
 			},
 			"title": {
 				"en_US": "Publisher Web Site URL"
+			}
+		},
+		{
+			"description": {
+				"en_US": "This is the RAM in GB an app needs, read by the app installers."
+			},
+			"facetable": false,
+			"key": "ram",
+			"optionCategory": {
+				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
+			},
+			"title": {
+				"en_US": "RAM"
 			}
 		},
 		{
