@@ -25,7 +25,6 @@ import com.liferay.one.service.CommerceOrderItemService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
@@ -70,7 +69,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
 		_contractService = Mockito.mock(ContractService.class);
-		_entitlementService = Mockito.mock(EntitlementService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 		_provisioningContactService = Mockito.mock(
 			ProvisioningContactService.class);
@@ -148,8 +146,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_subscriber, "_commerceSkuService", _commerceSkuService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_contractService", _contractService);
-		ReflectionTestUtils.setField(
-			_subscriber, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
 		ReflectionTestUtils.setField(
 			_subscriber, "_projectService", _projectService);
@@ -468,47 +464,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_NEW_ORDER_ID,
 			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
 		);
-
-		Mockito.verify(
-			_provisioningEmailService
-		).sendAssignedWelcomeEmails(
-			Mockito.eq(_account), Mockito.anyList()
-		);
-	}
-
-	@Test
-	public void testReceiveContinuesWhenUpdateEntitlementsThrows()
-		throws Exception {
-
-		OrderItem existingOrderItem = SalesforceModelTestUtil.createOrderItem(
-			null, null, null, "LINE-1", _EXISTING_ORDER_ITEM_ID, "PROD-1",
-			null);
-
-		Order existingOrder = new Order();
-
-		existingOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
-		existingOrder.setOrderItems(new OrderItem[] {existingOrderItem});
-		existingOrder.setOrderStatus(
-			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
-
-		Mockito.when(
-			_commerceOrderService.fetchOrderByExternalReferenceCode(
-				_OPPORTUNITY_ID)
-		).thenReturn(
-			existingOrder
-		);
-
-		Mockito.doThrow(
-			new RuntimeException("Unable to update entitlements")
-		).when(
-			_entitlementService
-		).updateEntitlements(
-			_EXISTING_ORDER_ITEM_ID
-		);
-
-		Assertions.assertDoesNotThrow(
-			() -> _receiveOpportunityMessage(
-				_createNewBusinessRecordJSONObject()));
 
 		Mockito.verify(
 			_provisioningEmailService
@@ -1070,12 +1025,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningEmailService, Mockito.never()
 		).sendWelcomeEmails(
 			Mockito.any(), Mockito.any(), Mockito.any()
-		);
-
-		Mockito.verify(
-			_entitlementService
-		).updateEntitlements(
-			_EXISTING_ORDER_ITEM_ID
 		);
 
 		ArgumentCaptor<SalesforceOpportunity>
@@ -2157,11 +2106,11 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verifyNoInteractions(
 			_accountService, _commerceAccountCurrencyService,
 			_commerceOrderItemService, _commerceOrderService,
-			_commerceSkuService, _contractService, _entitlementService,
-			_projectService, _provisioningContactService,
-			_provisioningEmailService, _provisioningEnvironmentService,
-			_provisioningIssueService, _provisioningOrderService,
-			_provisioningSubdomainService, _userAccountService);
+			_commerceSkuService, _contractService, _projectService,
+			_provisioningContactService, _provisioningEmailService,
+			_provisioningEnvironmentService, _provisioningIssueService,
+			_provisioningOrderService, _provisioningSubdomainService,
+			_userAccountService);
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
@@ -2189,7 +2138,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private CommerceOrderService _commerceOrderService;
 	private CommerceSkuService _commerceSkuService;
 	private ContractService _contractService;
-	private EntitlementService _entitlementService;
 	private ProjectService _projectService;
 	private ProvisioningContactService _provisioningContactService;
 	private ProvisioningEmailService _provisioningEmailService;

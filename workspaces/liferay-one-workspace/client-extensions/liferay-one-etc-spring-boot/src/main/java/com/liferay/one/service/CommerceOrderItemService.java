@@ -11,6 +11,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
+import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
@@ -21,7 +22,10 @@ import java.math.BigDecimal;
 
 import java.time.Instant;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -161,14 +165,14 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		orderItem.setCustomFields(() -> customFields);
 
-		OrderItemResource orderItemResource = _buildOrderItemResource();
-
 		if (existingOrderItem != null) {
+			OrderItemResource orderItemResource = _buildOrderItemResource();
+
 			return orderItemResource.patchOrderItem(
 				existingOrderItem.getId(), orderItem);
 		}
 
-		return orderItemResource.postOrderIdOrderItem(order.getId(), orderItem);
+		return _postOrderItem(order, orderItem);
 	}
 
 	private OrderItemResource _buildOrderItemResource() {
@@ -179,6 +183,17 @@ public class CommerceOrderItemService extends OneBaseService {
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).parameters(
 			"nestedFields", "customFields"
+		).build();
+	}
+
+	private OrderResource _buildOrderResource() {
+		return OrderResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"nestedFields", "orderItems,orderItems.customFields"
 		).build();
 	}
 
@@ -246,6 +261,36 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return "On Hold";
+	}
+
+	private OrderItem _postOrderItem(Order order, OrderItem orderItem)
+		throws Exception {
+
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		OrderItem[] existingOrderItems = order.getOrderItems();
+
+		if (existingOrderItems != null) {
+			Collections.addAll(orderItems, existingOrderItems);
+		}
+
+		orderItems.add(orderItem);
+
+		OrderItem[] patchedOrderItems = orderItems.toArray(new OrderItem[0]);
+
+		Order patchedOrder = new Order();
+
+		patchedOrder.setOrderItems(() -> patchedOrderItems);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order updatedOrder = orderResource.patchOrder(
+			order.getId(), patchedOrder);
+
+		order.setOrderItems(updatedOrder::getOrderItems);
+
+		return CommerceOrderItemUtil.fetchOrderItem(
+			orderItem.getExternalReferenceCode(), updatedOrder);
 	}
 
 	private CustomField[] _toCustomFields(Map<String, ?> customFieldValues) {
