@@ -35,38 +35,57 @@ declare global {
 	}
 }
 
-export type useMarketoFormProps = {
+export type UseMarketoFormProps = {
 	footerElement?: (element: HTMLElement) => void;
 	formId: string;
 	onSubmit?: () => void;
 	submitText: string;
 };
 
-const defaultMktoForms2 = window.MktoForms2;
-
-const baseURL = '//pages.liferay.com';
+const BASE_URL = '//pages.liferay.com';
 
 const MARKETO_SUBMIT_TIMEOUT = 8000;
 
 const MUNCHKIN_ID = '212-DQY-814';
+
+const SCRIPT_SRC = `${BASE_URL}/js/forms2/js/forms2.min.js`;
 
 const useMarketoForm = ({
 	footerElement,
 	formId,
 	onSubmit,
 	submitText,
-}: useMarketoFormProps) => {
+}: UseMarketoFormProps) => {
 	const [form, setForm] = useState<MktoForm>();
 	const [started, setStarted] = useState(false);
 	const [formLoaded, setFormLoaded] = useState(false);
-	const [MktoForms2, setMktoForms2] = useState(defaultMktoForms2);
+	const [MktoForms2, setMktoForms2] = useState(() => window.MktoForms2);
+	const footerElementRef = useRef(footerElement);
+	const mountedRef = useRef(true);
+	const onSubmitRef = useRef(onSubmit);
+	const pendingSubmitRef = useRef<Promise<boolean>>();
 	const submitResolveRef = useRef<(submitted: boolean) => void>();
+
+	footerElementRef.current = footerElement;
+	onSubmitRef.current = onSubmit;
+
+	useEffect(() => {
+		mountedRef.current = true;
+
+		return () => {
+			mountedRef.current = false;
+		};
+	}, []);
 
 	function triggerSubmit(values: unknown): Promise<boolean> {
 		if (!form || !started) {
 			console.error('Marketo form is not available');
 
 			return Promise.resolve(false);
+		}
+
+		if (pendingSubmitRef.current) {
+			return pendingSubmitRef.current;
 		}
 
 		const submitted = new Promise<boolean>((resolve) => {
@@ -77,7 +96,7 @@ const useMarketoForm = ({
 
 		form.submit();
 
-		return Promise.race([
+		pendingSubmitRef.current = Promise.race([
 			submitted,
 			waitTimeout(MARKETO_SUBMIT_TIMEOUT).then(() => {
 				if (submitResolveRef.current) {
@@ -91,33 +110,47 @@ const useMarketoForm = ({
 
 				return false;
 			}),
-		]);
+		]).finally(() => {
+			pendingSubmitRef.current = undefined;
+		});
+
+		return pendingSubmitRef.current;
 	}
 
 	useEffect(() => {
 		if (!MktoForms2) {
-			const script = document.createElement('script');
+			let script = document.querySelector<HTMLScriptElement>(
+				`script[src="${SCRIPT_SRC}"]`
+			);
 
-			script.defer = true;
-			script.onload = () => setMktoForms2(window.MktoForms2);
-			script.src = `${baseURL}/js/forms2/js/forms2.min.js`;
+			if (!script) {
+				script = document.createElement('script');
 
-			document.head.appendChild(script);
+				script.defer = true;
+				script.src = SCRIPT_SRC;
 
-			return;
+				document.head.appendChild(script);
+			}
+
+			const handleLoad = () => setMktoForms2(window.MktoForms2);
+
+			script.addEventListener('load', handleLoad);
+
+			return () => script?.removeEventListener('load', handleLoad);
 		}
 
 		if (!formLoaded) {
-			MktoForms2.loadForm(baseURL, MUNCHKIN_ID, formId, (form) => {
+			MktoForms2.loadForm(BASE_URL, MUNCHKIN_ID, formId, (form) => {
+				if (!mountedRef.current) {
+					return;
+				}
+
 				setForm(form);
 
-				const arrayify = getSelection.call.bind([].slice) as <T>(
-					value: unknown
-				) => T[];
 				const formElement = form.getFormElem()[0];
 
-				const styledElements = arrayify<HTMLElement>(
-					formElement.querySelectorAll('[style]')
+				const styledElements = Array.from(
+					formElement.querySelectorAll<HTMLElement>('[style]')
 				).concat(formElement);
 
 				formElement
@@ -130,7 +163,7 @@ const useMarketoForm = ({
 
 				const mktoForms2BaseStyle = window.mktoForms2BaseStyle;
 				const mktoForms2ThemeStyle = window.mktoForms2ThemeStyle;
-				const styleSheets = arrayify<StyleSheet>(document.styleSheets);
+				const styleSheets = Array.from(document.styleSheets);
 
 				styleSheets.forEach((stylesheet: StyleSheet) => {
 					const ownerNode = stylesheet.ownerNode;
@@ -144,14 +177,14 @@ const useMarketoForm = ({
 					}
 				});
 
-				if (footerElement) {
+				if (footerElementRef.current) {
 					const buttonElement = form
 						.getFormElem()
 						.find('button.mktoButton');
 
 					buttonElement.html(submitText);
 
-					footerElement(buttonElement[0]);
+					footerElementRef.current(buttonElement[0]);
 				}
 
 				form.onSuccess(() => {
@@ -159,7 +192,9 @@ const useMarketoForm = ({
 
 					submitResolveRef.current = undefined;
 
-					onSubmit?.();
+					if (mountedRef.current) {
+						onSubmitRef.current?.();
+					}
 
 					return false;
 				});
@@ -169,12 +204,9 @@ const useMarketoForm = ({
 
 			setFormLoaded(true);
 		}
-	}, [MktoForms2, footerElement, formId, formLoaded, onSubmit, submitText]);
+	}, [MktoForms2, formId, formLoaded, submitText]);
 
 	return {
-		MktoForms2,
-		form,
-		formLoaded,
 		started,
 		triggerSubmit,
 	};
