@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
@@ -681,6 +682,41 @@ public class LicenseKeysRestControllerTest {
 		Assertions.assertThrows(
 			LicenseKeyDateException.class,
 			() -> licenseKeysRestController.postLicenseKeysExtend(null, json));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).extendLicenseKey(
+			Mockito.any(), Mockito.anyLong(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysExtendWhenLicenseKeyIsInactive()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKeyWithEntitlement(
+			_ENTITLEMENT_ID, 1L);
+
+		Mockito.when(
+			licenseKey.isActive()
+		).thenReturn(
+			false
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Assertions.assertThrows(
+			LicenseKeyActiveException.class,
+			() -> licenseKeysRestController.postLicenseKeysExtend(
+				null, _createExtensionBodyJSON(1L)));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.never()
@@ -1395,6 +1431,12 @@ public class LicenseKeysRestControllerTest {
 			licenseKey.getLicenseKeyId()
 		).thenReturn(
 			licenseKeyId
+		);
+
+		Mockito.when(
+			licenseKey.isActive()
+		).thenReturn(
+			true
 		);
 
 		return licenseKey;
