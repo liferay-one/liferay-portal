@@ -15,6 +15,14 @@ declare module '@liferay/oauth2-provider-web/client' {
 		_getOrRequestToken: () => Promise<string>;
 		fetch: (url: string, options?: RequestInit) => Promise<Response>;
 	}>;
+
+	export function getUserAgentApplication(
+		externalReferenceCode: string
+	): Promise<{
+		clientId: string;
+		homePageURL: string;
+		redirectURIs: string[];
+	}>;
 }
 
 declare module 'warning';
