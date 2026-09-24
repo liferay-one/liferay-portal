@@ -19,7 +19,8 @@ const POST_MESSAGE_DELAY = 3000;
 
 export default function Congratulations() {
 	const {channel, myUserAccount} = useOneContext();
-	const {code, origin, selectedAccount} = useOAuth2AuthorizeContext();
+	const {code, environment, origin, selectedAccount} =
+		useOAuth2AuthorizeContext();
 
 	const [failed, setFailed] = useState(false);
 
@@ -58,6 +59,7 @@ export default function Congratulations() {
 							name: selectedAccount.name,
 						},
 						channelId: channel.channelId,
+						cloudProject: environment?.projectId,
 						references: {
 							fragmentsFilter: SearchBuilder.lambda(
 								'categoryNames',
@@ -90,7 +92,7 @@ export default function Congratulations() {
 		return () => {
 			cancelled = true;
 		};
-	}, [channel, code, myUserAccount, origin, selectedAccount]);
+	}, [channel, code, environment, myUserAccount, origin, selectedAccount]);
 
 	if (!selectedAccount) {
 		return <Navigate replace to="/" />;
