@@ -792,7 +792,6 @@ export default {
 	'license-type': 'License Type',
 	'licenses': 'Licenses',
 	'licenses-list': 'Licenses List',
-	'licenses-summary': 'Licenses Summary',
 	'licensing': 'Licensing',
 	'life-sciences': 'Life Sciences',
 	'liferay-dsr-eula-disclaimer-prefix':

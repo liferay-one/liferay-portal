@@ -357,7 +357,7 @@ const ActivationKeyForm = () => {
 					onActiveChange={setActive}
 					trigger={
 						<ClayButton
-							className="activation-key-form-select-input align-items-center app-type-dropdown d-flex justify-content-between rounded-lg w-100"
+							className="activation-key-form-select-input align-items-center app-type-dropdown custom-input d-flex justify-content-between rounded w-100"
 							displayType="secondary"
 							onClick={() => setActive(!active)}
 						>
