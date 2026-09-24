@@ -5,15 +5,19 @@
 
 import {useState} from 'react';
 import {HashRouter, Navigate, Outlet, useRoutes} from 'react-router-dom';
+import useGetResourceInfo from '~/hooks/useGetResourceInfo';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import AccountSelection from './AccountSelection/AccountSelection';
 import Congratulations from './Congratulations/Congratulations';
+import EnvironmentSelection from './EnvironmentSelection/EnvironmentSelection';
+import ProjectSelection from './ProjectSelection/ProjectSelection';
 
+import type {ConsoleUserProject} from '~/services/spring-boot/Console';
 import type {Account} from '~/types/accounts';
 
-import type {OAuth2AuthorizeContext} from './types';
+import type {ConsoleEnvironment, OAuth2AuthorizeContext} from './types';
 
 const searchParams = new URLSearchParams(window.location.search);
 
@@ -27,12 +31,22 @@ const state = safeJSONParse<{origin?: unknown} | null>(
 const origin = typeof state?.origin === 'string' ? state.origin : '';
 
 function OAuth2AuthorizeLayout() {
+	const [environment, setEnvironment] = useState<ConsoleEnvironment>();
+	const [project, setProject] = useState<ConsoleUserProject>();
 	const [selectedAccount, setSelectedAccount] = useState<Account>();
+
+	const {isLoading, projectsUsage} = useGetResourceInfo();
 
 	const context: OAuth2AuthorizeContext = {
 		code,
+		environment,
+		isLoadingProjects: isLoading,
 		origin,
+		project,
+		projects: projectsUsage?.userProjects ?? [],
 		selectedAccount,
+		setEnvironment,
+		setProject,
 		setSelectedAccount,
 	};
 
@@ -49,6 +63,11 @@ function OAuth2AuthorizeRoutes() {
 			children: [
 				{element: <AccountSelection />, index: true},
 				{element: <Congratulations />, path: 'congratulations'},
+				{
+					element: <EnvironmentSelection />,
+					path: 'environment-selection',
+				},
+				{element: <ProjectSelection />, path: 'project-selection'},
 				{element: <Navigate replace to="/" />, path: '*'},
 			],
 			element: <OAuth2AuthorizeLayout />,
