@@ -8,10 +8,13 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.address.client.dto.v1_0.Country;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.math.BigDecimal;
@@ -43,6 +46,8 @@ public class CommerceOrderServiceTest {
 		_commerceAccountCurrencyService = Mockito.mock(
 			CommerceAccountCurrencyService.class);
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
+		_commerceProductService = Mockito.mock(CommerceProductService.class);
+		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
 		_countryService = Mockito.mock(CountryService.class);
 		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_salesforceService = Mockito.mock(SalesforceService.class);
@@ -55,6 +60,11 @@ public class CommerceOrderServiceTest {
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_commerceAccountCurrencyService",
 			_commerceAccountCurrencyService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_commerceProductService",
+			_commerceProductService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_commerceSkuService", _commerceSkuService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_countryService", _countryService);
 		ReflectionTestUtils.setField(
@@ -1091,6 +1101,103 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testGetOrderTypeExternalReferenceCodeFromSolutionType()
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("PRDCT-DSR")
+		).thenReturn(
+			5L
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(5L)
+		).thenReturn(
+			_createProduct("dsr")
+		);
+
+		Assertions.assertEquals(
+			"DSR",
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem("PRDCT-UNKNOWN"),
+					_createSalesforceOpportunityLineItem("PRDCT-DSR"))));
+	}
+
+	@Test
+	public void testGetOrderTypeExternalReferenceCodeWithMixedSolutionTypes()
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("PRDCT-DSR")
+		).thenReturn(
+			5L
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("PRDCT-LDP")
+		).thenReturn(
+			6L
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(5L)
+		).thenReturn(
+			_createProduct("dsr")
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(6L)
+		).thenReturn(
+			_createProduct("liferay-data-platform")
+		);
+
+		Assertions.assertEquals(
+			"DSR",
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem("PRDCT-DSR"),
+					_createSalesforceOpportunityLineItem("PRDCT-DSR"))));
+
+		Assertions.assertNull(
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem("PRDCT-DSR"),
+					_createSalesforceOpportunityLineItem("PRDCT-LDP"))));
+	}
+
+	@Test
+	public void testGetOrderTypeExternalReferenceCodeWithoutMappedSolutionType()
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("PRDCT-SEO")
+		).thenReturn(
+			7L
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(7L)
+		).thenReturn(
+			_createProduct("seo-studio")
+		);
+
+		Assertions.assertNull(
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem(""),
+					_createSalesforceOpportunityLineItem("PRDCT-SEO"))));
+	}
+
+	@Test
 	public void testOnApplicationReadyCompletesSettledOrders()
 		throws Exception {
 
@@ -1150,6 +1257,33 @@ public class CommerceOrderServiceTest {
 		order.setPaymentStatus(paymentStatus);
 
 		return order;
+	}
+
+	private Product _createProduct(String solutionType) {
+		Product product = new Product();
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(() -> "solution-type");
+		productSpecification.setValue(
+			() -> HashMapBuilder.put(
+				"en_US", solutionType
+			).build());
+
+		product.setProductSpecifications(
+			() -> new ProductSpecification[] {productSpecification});
+
+		return product;
+	}
+
+	private SalesforceOpportunityLineItem _createSalesforceOpportunityLineItem(
+		String product2Id) {
+
+		return new SalesforceOpportunityLineItem(
+			new JSONObject(
+			).put(
+				"Product2Id", product2Id
+			));
 	}
 
 	private void _setAIHubOrderFields(Order order, String orderMetadata) {
@@ -1240,6 +1374,8 @@ public class CommerceOrderServiceTest {
 	private AIHubService _aiHubService;
 	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
 	private CommerceOrderService _commerceOrderService;
+	private CommerceProductService _commerceProductService;
+	private CommerceSkuService _commerceSkuService;
 	private CountryService _countryService;
 	private PostalAddressService _postalAddressService;
 	private SalesforceService _salesforceService;

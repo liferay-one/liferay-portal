@@ -9,6 +9,7 @@ import com.liferay.headless.admin.address.client.dto.v1_0.Country;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
@@ -19,16 +20,19 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.util.CommerceOrderUtil;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -36,10 +40,12 @@ import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
@@ -565,6 +571,15 @@ public class CommerceOrderService extends OneBaseService {
 
 		order.setCustomFields(() -> customFields);
 
+		String orderTypeExternalReferenceCode =
+			_getOrderTypeExternalReferenceCode(
+				externalReferenceCode, salesforceOpportunityLineItems);
+
+		if (orderTypeExternalReferenceCode != null) {
+			order.setOrderTypeExternalReferenceCode(
+				() -> orderTypeExternalReferenceCode);
+		}
+
 		return _upsertOrder(externalReferenceCode, order);
 	}
 
@@ -1019,6 +1034,62 @@ public class CommerceOrderService extends OneBaseService {
 		return null;
 	}
 
+	private String _getOrderTypeExternalReferenceCode(
+			String externalReferenceCode,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
+		throws Exception {
+
+		Set<String> orderTypeExternalReferenceCodes = new TreeSet<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			String product2Id = salesforceOpportunityLineItem.getProduct2Id();
+
+			if (Validator.isNull(product2Id)) {
+				continue;
+			}
+
+			Long productId = _commerceSkuService.fetchProductId(product2Id);
+
+			if (productId == null) {
+				continue;
+			}
+
+			Product product = _commerceProductService.fetchProduct(productId);
+
+			String solutionType = CommerceProductUtil.getSpecificationValue(
+				product, ProductSpecificationConstants.KEY_SOLUTION_TYPE);
+
+			String orderTypeExternalReferenceCode =
+				_orderTypeExternalReferenceCodes.get(solutionType);
+
+			if (orderTypeExternalReferenceCode != null) {
+				orderTypeExternalReferenceCodes.add(
+					orderTypeExternalReferenceCode);
+			}
+		}
+
+		if (orderTypeExternalReferenceCodes.size() == 1) {
+			Iterator<String> iterator =
+				orderTypeExternalReferenceCodes.iterator();
+
+			return iterator.next();
+		}
+
+		if ((orderTypeExternalReferenceCodes.size() > 1) &&
+			_log.isWarnEnabled()) {
+
+			_log.warn(
+				StringBundler.concat(
+					"Unable to set a single order type on order ",
+					externalReferenceCode, " with the order types ",
+					orderTypeExternalReferenceCodes));
+		}
+
+		return null;
+	}
+
 	private Integer _getSettledPaymentStatus(Order order) {
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -1281,6 +1352,17 @@ public class CommerceOrderService extends OneBaseService {
 		"AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR",
 		"HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO",
 		"SE", "SI", "SK");
+	private static final Map<String, String> _orderTypeExternalReferenceCodes =
+		HashMapBuilder.put(
+			ProductSpecificationConstants.SOLUTION_TYPE_CMP,
+			CommerceOrderConstants.ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP
+		).put(
+			ProductSpecificationConstants.SOLUTION_TYPE_DSR,
+			CommerceOrderConstants.ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR
+		).put(
+			ProductSpecificationConstants.SOLUTION_TYPE_LIFERAY_DATA_PLATFORM,
+			CommerceOrderConstants.ORDER_TYPE_EXTERNAL_REFERENCE_CODE_LDP
+		).build();
 
 	@Autowired
 	private AccountService _accountService;
@@ -1302,6 +1384,12 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private CommerceOrderItemService _commerceOrderItemService;
+
+	@Autowired
+	private CommerceProductService _commerceProductService;
+
+	@Autowired
+	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
 	private CountryService _countryService;

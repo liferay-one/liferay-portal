@@ -28,4 +28,10 @@ public class CommerceOrderConstants {
 
 	public static final int ORDER_STATUS_PROCESSING = 10;
 
+	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP = "CMP";
+
+	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR = "DSR";
+
+	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_LDP = "LDP";
+
 }
