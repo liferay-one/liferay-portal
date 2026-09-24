@@ -227,6 +227,7 @@ export const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
 const CONTACT_SALES_SOLUTION_TYPES: string[] = [
 	SolutionTypes.CMP,
 	SolutionTypes.DSR,
+	SolutionTypes.LIFERAY_DATA_PLATFORM,
 ];
 
 export function isContactSalesProduct(product: DeliveryProduct) {
