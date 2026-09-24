@@ -18,7 +18,6 @@ import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
@@ -110,8 +109,7 @@ public class ProjectRestControllerTest {
 		);
 
 		Mockito.when(
-			_usageDefinitionService.fetchUsageDefinition(
-				Mockito.any(EntitlementDefinition.class))
+			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
 		).thenReturn(
 			new UsageDefinition(
 				new JSONObject(
@@ -1286,6 +1284,9 @@ public class ProjectRestControllerTest {
 			new JSONObject(
 			).put(
 				"id", entitlementDefinitionId
+			).put(
+				"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC",
+				"events-monthly"
 			).put(
 				"skuExternalReferenceCode", skuExternalReferenceCode
 			).put(
