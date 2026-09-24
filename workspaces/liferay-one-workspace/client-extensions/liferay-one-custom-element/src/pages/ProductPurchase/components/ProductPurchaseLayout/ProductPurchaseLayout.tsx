@@ -22,6 +22,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import {formatProductPrice, getCurrencyForCountry} from '~/utils/currencyUtils';
 import {
 	getAiHubTierSKU,
+	getLicenseTagText,
 	getProductPriceModel,
 	isLDPProduct,
 } from '~/utils/productUtils';
@@ -336,9 +337,15 @@ const ProductPurchaseLayout = ({
 							{i18n.translate('price')}
 						</small>
 
-						<span className="font-weight-semi-bold">
-							{priceLabel}
-						</span>
+						<div className="d-flex flex-column">
+							<span className="font-weight-semi-bold">
+								{priceLabel}
+							</span>
+
+							<span className="badge badge-primary m-0">
+								{getLicenseTagText(product)}
+							</span>
+						</div>
 					</div>
 				}
 			>

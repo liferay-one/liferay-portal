@@ -40,7 +40,7 @@ const BaseWrapper: React.FC<BaseWrapperProps> = ({
 	>
 		{label && (
 			<label
-				className={classNames('mb-1 mx-0 text-paragraph', {
+				className={classNames('mb-1 mx-0 mt-0 text-paragraph', {
 					disabled,
 					'font-weight-bold': boldLabel,
 					required,
