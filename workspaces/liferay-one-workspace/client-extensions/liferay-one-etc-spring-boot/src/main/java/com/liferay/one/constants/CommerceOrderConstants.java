@@ -10,6 +10,9 @@ package com.liferay.one.constants;
  */
 public class CommerceOrderConstants {
 
+	public static final String[] CLOUD_APP_ORDER_TYPE_EXTERNAL_REFERENCE_CODES =
+		{"CLOUDAPP", "CLOUD_APP"};
+
 	public static final int ORDER_PAYMENT_STATUS_COMPLETED = 0;
 
 	public static final int ORDER_PAYMENT_STATUS_NOT_REQUIRED = 23;
