@@ -14,14 +14,7 @@ import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/component
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
 import {Liferay} from '~/services/liferay/liferay';
 import {hasAIHubOrder} from '~/utils/orderUtils';
-import {
-	ProductSpecificationKey,
-	getLicenseTagText,
-	getProductImageFallback,
-	getProductSpecificationValue,
-	isSEOStudioProduct,
-} from '~/utils/productUtils';
-import {normalizeURLProtocol} from '~/utils/stringUtils';
+import {isSEOStudioProduct} from '~/utils/productUtils';
 
 import useAIHubOrders from '../hooks/useAIHubOrders';
 import {useSEOStudioRequirementsModal} from '../hooks/useSEOStudioRequirementsModal';
@@ -91,11 +84,6 @@ const AccountSelection = () => {
 		return <Loading.Page />;
 	}
 
-	const version = getProductSpecificationValue(
-		ProductSpecificationKey.APP_VERSION,
-		product
-	);
-
 	return (
 		<ProductPurchaseShell
 			footerProps={{
@@ -133,12 +121,15 @@ const AccountSelection = () => {
 							tabIndex={0}
 						>
 							<div className="align-items-center d-flex">
-								<ClayRadio
-									checked={selected}
-									className="mr-2"
-									onChange={() => setSelectedAccount(account)}
-									value={String(account.id)}
-								/>
+								<div className="mr-2">
+									<ClayRadio
+										checked={selected}
+										onChange={() =>
+											setSelectedAccount(account)
+										}
+										value={String(account.id)}
+									/>
+								</div>
 
 								<AccountAvatar
 									logoURL={account.logoURL}
@@ -155,56 +146,6 @@ const AccountSelection = () => {
 									</small>
 								</div>
 							</div>
-
-							{selected && (
-								<div className="mt-3 product-purchase-account-card-summary pt-3">
-									<small className="d-block font-weight-semi-bold mb-2 text-muted">
-										{i18n.translate('licenses-summary')}
-									</small>
-
-									<div className="align-items-center d-flex justify-content-between">
-										<div className="align-items-center d-flex">
-											<img
-												alt={product.name}
-												className="object-fit-cover rounded"
-												draggable={false}
-												height="32px"
-												src={
-													normalizeURLProtocol(
-														product.urlImage
-													) ||
-													getProductImageFallback(
-														'productIcon'
-													)
-												}
-												width="32px"
-											/>
-
-											<div className="ml-3">
-												<strong className="d-block">
-													{product.name}
-												</strong>
-
-												{version && (
-													<small className="text-muted">
-														{version}
-													</small>
-												)}
-											</div>
-										</div>
-
-										<div className="text-right">
-											<strong className="d-block">
-												{i18n.translate('free')}
-											</strong>
-
-											<span className="badge badge-primary">
-												{getLicenseTagText(product)}
-											</span>
-										</div>
-									</div>
-								</div>
-							)}
 						</div>
 					);
 				})
