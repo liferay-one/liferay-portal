@@ -691,6 +691,35 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostLicenseKeysExtendWhenLicenseKeyIdsExceedsTheMaximum()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (int i = 0; i < 101; i++) {
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"licenseKeyId", i + 1
+				));
+		}
+
+		String json = jsonArray.toString();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.postLicenseKeysExtend(
+					null, json));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+	}
+
+	@Test
 	public void testPostLicenseKeysExtendWhenLicenseKeyIsInactive()
 		throws Exception {
 
@@ -723,35 +752,6 @@ public class LicenseKeysRestControllerTest {
 		).extendLicenseKey(
 			Mockito.any(), Mockito.anyLong(), Mockito.any()
 		);
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		JSONArray jsonArray = new JSONArray();
-
-		for (int i = 0; i < 101; i++) {
-			jsonArray.put(
-				new JSONObject(
-				).put(
-					"licenseKeyId", i + 1
-				));
-		}
-
-		String json = jsonArray.toString();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.postLicenseKeysExtend(
-					null, json));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 	}
 
 	@Test
