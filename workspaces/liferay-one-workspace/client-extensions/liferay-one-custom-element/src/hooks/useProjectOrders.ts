@@ -190,10 +190,12 @@ export function getProductOrderInfo(
 	placedOrders: PlacedOrder[],
 	productName: string
 ): ProductOrderInfo {
-	const order = placedOrders.find((placedOrder) =>
-		(placedOrder.placedOrderItems ?? []).some(
-			(item) => item.name === productName
-		)
+	const order = placedOrders.find(
+		(placedOrder) =>
+			placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN' &&
+			(placedOrder.placedOrderItems ?? []).some(
+				(item) => item.name === productName
+			)
 	);
 
 	if (!order) {
