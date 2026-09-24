@@ -140,10 +140,12 @@
 
 			<div class="align-items-center carousel-inner d-flex">
 				<#list files as fileImage>
-					<#assign fileImageSourceUrlSplited = fileImage.src?split("/o") />
-
-					<#if fileImageSourceUrlSplited?has_content>
-						<#assign productThumbnail = "/o/${fileImageSourceUrlSplited[1]}" />
+					<#if fileImage.src?? && fileImage.src?has_content>
+						<#if fileImage.src?contains("/o/")>
+							<#assign productThumbnail = "/o/" + fileImage.src?keep_after("/o/") />
+						<#else>
+							<#assign productThumbnail = fileImage.src />
+						</#if>
 
 						<div class="carousel-item<#if fileImage?index == 0> active</#if>">
 							<img alt="Slide ${fileImage?index}" class="d-block w-100" src="${productThumbnail}">
