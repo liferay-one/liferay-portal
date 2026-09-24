@@ -308,8 +308,8 @@ public class LDPEventUsageReportService {
 			endInstant.minusMillis(1), ldpEventAllotment.getEntitledQuantity(),
 			externalReferenceCode,
 			_getOveragePricing(
-				ldpEventAllotment, ldpEventSummary.getTotalEventsCount(),
-				projectExternalReferenceCode, usageDefinition),
+				ldpEventAllotment, projectExternalReferenceCode,
+				ldpEventSummary.getTotalEventsCount(), usageDefinition),
 			project, usageDefinition);
 
 		if (_log.isInfoEnabled()) {
@@ -374,8 +374,9 @@ public class LDPEventUsageReportService {
 	}
 
 	private OveragePricing _getOveragePricing(
-		LDPEventAllotment ldpEventAllotment, long totalEventsCount,
-		String projectExternalReferenceCode, UsageDefinition usageDefinition) {
+		LDPEventAllotment ldpEventAllotment,
+		String projectExternalReferenceCode, long totalEventsCount,
+		UsageDefinition usageDefinition) {
 
 		OveragePricing overagePricing = ldpEventAllotment.getOveragePricing();
 
