@@ -9,7 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.okta.service.OktaService;
+import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.portal.kernel.util.Validator;
@@ -82,16 +82,6 @@ public class ProvisioningContactService {
 			userAccount = _userAccountService.addUserAccount(
 				emailAddress, salesforceProjectContactRole.getLastName(),
 				salesforceProjectContactRole.getFirstName());
-
-			try {
-				_oktaService.createContact(
-					emailAddress, salesforceProjectContactRole.getFirstName(),
-					null, salesforceProjectContactRole.getLastName());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to create Okta contact " + emailAddress, exception);
-			}
 		}
 
 		if (_userAccountService.hasAccountUserAccount(
@@ -112,13 +102,15 @@ public class ProvisioningContactService {
 				"Unable to find account role " +
 					salesforceProjectContactRole.getContactRole(),
 				null);
-
-			_accountService.addAccountUserAccount(
-				account.getId(), userAccount.getId());
 		}
-		else {
-			_accountService.addAccountUserAccount(
-				account.getId(), accountRole.getId(), userAccount.getId());
+
+		long userId = userAccount.getId();
+
+		_userAssignmentService.assignAccount(account, userId);
+
+		if (accountRole != null) {
+			_userAssignmentService.assignAccountRole(
+				account, accountRole, userId);
 		}
 
 		if (!hasUserAccounts && !hasDesignatedAdministrator) {
@@ -127,9 +119,8 @@ public class ProvisioningContactService {
 					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
 
 			if (administratorAccountRole != null) {
-				_accountService.addAccountUserAccountRole(
-					account.getId(), administratorAccountRole.getId(),
-					userAccount.getId());
+				_userAssignmentService.assignAccountRole(
+					account, administratorAccountRole, userId);
 			}
 			else {
 				_addWarning(
@@ -140,26 +131,17 @@ public class ProvisioningContactService {
 			}
 		}
 
-		if (accountRole != null) {
-			try {
-				_provisioningAssignmentService.assignAccountRole(
-					account, userAccount.getId(),
-					salesforceProjectContactRole.getContactRole());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to assign provisioning side effects for " +
-						emailAddress,
-					exception);
-			}
-		}
-
 		if (salesforceProject != null) {
-			_projectMembershipService.addProjectMembership(
-				salesforceProject.getId(), userAccount.getId());
+			Project project = _projectService.fetchProject(
+				salesforceProject.getId());
+
+			if (project != null) {
+				_userAssignmentService.assignProjectRole(
+					project, RoleConstants.ERC_PROJECT_USER, userId);
+			}
 		}
 
-		userIds.add(userAccount.getId());
+		userIds.add(userId);
 	}
 
 	private void _addWarning(
@@ -205,21 +187,15 @@ public class ProvisioningContactService {
 	private AccountRoleService _accountRoleService;
 
 	@Autowired
-	private AccountService _accountService;
-
-	@Autowired
 	private EmailAddressValidatorService _emailAddressValidatorService;
 
 	@Autowired
-	private OktaService _oktaService;
-
-	@Autowired
-	private ProjectMembershipService _projectMembershipService;
-
-	@Autowired
-	private ProvisioningAssignmentService _provisioningAssignmentService;
+	private ProjectService _projectService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAssignmentService _userAssignmentService;
 
 }

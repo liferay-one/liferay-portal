@@ -15,8 +15,6 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.AccountUserAccountSynchronizer;
 import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.model.AccountInvitation;
 import com.liferay.one.model.Entitlement;
@@ -24,11 +22,10 @@ import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
-import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
-import com.liferay.one.permission.ProjectMembershipPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
@@ -39,14 +36,13 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
-import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -57,8 +53,8 @@ import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -82,6 +78,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -117,82 +114,18 @@ public class AccountsRestController extends OneBaseRestController {
 			@PathVariable("userId") long userId)
 		throws Exception {
 
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
-
-		UserAccount userAccount = _userAccountService.getUserAccount(userId);
-
-		_accountService.removeAccountUserAccount(
-			externalReferenceCode, jwt, userId);
-
-		_unassignContactRoles(account, userAccount);
-
-		_syncMembership(account, userId);
-
-		_provisioningAssignmentService.unassignAccountMembership(
-			account.getId(), userId);
-	}
-
-	@DeleteMapping(
-		"/{externalReferenceCode}/user-accounts/{userId}/account-roles" +
-			"/{accountRoleId}"
-	)
-	public void deleteUserAccountsAccountRole(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("userId") long userId,
-			@PathVariable("accountRoleId") long accountRoleId)
-		throws Exception {
-
-		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
+		_accountPermission.check(
+			externalReferenceCode, ActionKeys.ASSIGN_MEMBERS, jwt);
 
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
-		if (!_userAccountService.hasAccountUserAccount(
-				account.getId(), userId)) {
+		UserAccount userAccount = _getAccountUserAccount(account, userId);
 
-			throw new ResponseStatusException(
-				HttpStatus.NOT_FOUND,
-				"No account member exists with the user ID " + userId);
-		}
+		_validateAccountManagerRemains(
+			account, Collections.emptySet(), userAccount);
 
-		_deleteUserAccountAccountRole(
-			account, accountRoleId, externalReferenceCode, jwt, userId);
-	}
-
-	@DeleteMapping(
-		"/{externalReferenceCode}/user-accounts/by-email-address" +
-			"/{emailAddress}/account-roles/{accountRoleId}"
-	)
-	public void deleteUserAccountsByEmailAddressAccountRole(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("emailAddress") String emailAddress,
-			@PathVariable("accountRoleId") long accountRoleId)
-		throws Exception {
-
-		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
-
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
-
-		UserAccount userAccount =
-			_userAccountService.fetchUserAccountByEmailAddress(emailAddress);
-
-		if ((userAccount == null) ||
-			!UserAccountUtil.hasAccountMembership(
-				userAccount, account.getId())) {
-
-			throw new ResponseStatusException(
-				HttpStatus.NOT_FOUND,
-				"No account member exists with the email address " +
-					emailAddress);
-		}
-
-		_deleteUserAccountAccountRole(
-			account, accountRoleId, externalReferenceCode, jwt,
-			userAccount.getId());
+		_userAssignmentService.unassignAccount(account, userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/invitations")
@@ -421,7 +354,7 @@ public class AccountsRestController extends OneBaseRestController {
 		Project project = null;
 
 		if (Validator.isNotNull(projectExternalReferenceCode)) {
-			_projectMembershipPermission.check(
+			_projectPermission.check(
 				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
 
 			project = _projectService.fetchProject(
@@ -526,58 +459,6 @@ public class AccountsRestController extends OneBaseRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@PostMapping("/{externalReferenceCode}/user-accounts/{userId}")
-	public void postUserAccounts(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("userId") long userId)
-		throws Exception {
-
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
-
-		boolean hasAccount = _userAccountService.hasAccountUserAccount(
-			account.getId(), userId);
-
-		_accountService.addAccountUserAccount(account.getId(), jwt, userId);
-
-		_syncMembership(account, userId);
-
-		_provisioningAssignmentService.assignCustomerGroup(userId);
-
-		if (!hasAccount) {
-			_provisioningEmailService.sendAssignedWelcomeEmail(account, userId);
-		}
-	}
-
-	@PostMapping(
-		"/{externalReferenceCode}/user-accounts/{userId}/account-roles" +
-			"/{accountRoleId}"
-	)
-	public void postUserAccountsAccountRole(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode,
-			@PathVariable("userId") long userId,
-			@PathVariable("accountRoleId") long accountRoleId)
-		throws Exception {
-
-		Account account = _accountService.getAccount(
-			externalReferenceCode, jwt);
-
-		_accountService.addAccountUserAccountRole(
-			accountRoleId, externalReferenceCode, jwt, userId);
-
-		_syncMembership(account, userId);
-
-		AccountRole accountRole = _accountRoleService.fetchAccountRole(
-			accountRoleId);
-
-		if (accountRole != null) {
-			_provisioningAssignmentService.assignAccountRole(
-				account, userId, accountRole.getName());
-		}
-	}
-
 	@PostMapping(
 		"/{externalReferenceCode}/user-accounts/by-email-address" +
 			"/{emailAddress}/account-roles"
@@ -589,7 +470,7 @@ public class AccountsRestController extends OneBaseRestController {
 			@RequestBody String json)
 		throws Exception {
 
-		_accountPermission.check(externalReferenceCode, ActionKeys.UPDATE, jwt);
+		_adminPermission.check(jwt);
 
 		if (_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
 			throw new ResponseStatusException(
@@ -602,7 +483,7 @@ public class AccountsRestController extends OneBaseRestController {
 		Account account = _accountService.getAccount(
 			externalReferenceCode, jwt);
 
-		Map<Long, String> accountRoleNames = _getAccountRoleNames(
+		List<AccountRole> accountRoles = _getAccountRoles(
 			jsonObject.optJSONArray("accountRoleIds"));
 
 		UserAccount userAccount =
@@ -613,121 +494,117 @@ public class AccountsRestController extends OneBaseRestController {
 				UserAccountUtil.getAccountRoleNames(
 					userAccount, account.getId());
 
-			for (String accountRoleName : accountRoleNames.values()) {
-				if (currentAccountRoleNames.contains(accountRoleName)) {
+			for (AccountRole accountRole : accountRoles) {
+				if (currentAccountRoleNames.contains(accountRole.getName())) {
 					throw new ResponseStatusException(
 						HttpStatus.CONFLICT,
-						"Account role " + accountRoleName +
+						"Account role " + accountRole.getName() +
 							" is already assigned");
 				}
 			}
 		}
 
-		if (_oktaService.fetchContactByEmailAddress(emailAddress) == null) {
-			_createOktaContact(account, emailAddress, jsonObject);
-		}
+		String firstName = jsonObject.optString("firstName");
+		String lastName = jsonObject.optString("lastName");
 
-		boolean hasAccount = false;
+		if ((userAccount == null) &&
+			(Validator.isNull(firstName) || Validator.isNull(lastName))) {
 
-		if ((userAccount != null) &&
-			UserAccountUtil.hasAccountMembership(
-				userAccount, account.getId())) {
-
-			hasAccount = true;
-		}
-
-		if (!hasAccount) {
-			_accountService.addAccountUserAccountByEmailAddress(
-				account.getId(), emailAddress, jwt);
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"\"firstName\" and \"lastName\" are required to add a new " +
+					"user");
 		}
 
 		if (userAccount == null) {
-			userAccount = _userAccountService.fetchUserAccountByEmailAddress(
-				emailAddress);
+			userAccount = _userAccountService.addUserAccount(
+				emailAddress, lastName, firstName);
 		}
 
 		long userId = userAccount.getId();
 
-		for (Map.Entry<Long, String> entry : accountRoleNames.entrySet()) {
-			_accountService.addAccountUserAccountRole(
-				entry.getKey(), externalReferenceCode, jwt, userId);
+		boolean assigned = _userAssignmentService.assignAccount(
+			account, userId);
+
+		for (AccountRole accountRole : accountRoles) {
+			_userAssignmentService.assignAccountRole(
+				account, accountRole, userId);
 		}
 
-		_syncMembership(account, userId);
-
-		if (accountRoleNames.isEmpty()) {
-			_provisioningAssignmentService.assignCustomerGroup(userId);
-		}
-
-		for (Map.Entry<Long, String> entry : accountRoleNames.entrySet()) {
-			_provisioningAssignmentService.assignAccountRole(
-				account, userId, entry.getValue());
-		}
-
-		if (!hasAccount) {
+		if (assigned) {
 			_provisioningEmailService.sendAssignedWelcomeEmail(account, userId);
 		}
 	}
 
-	private void _createOktaContact(
-			Account account, String emailAddress, JSONObject jsonObject)
+	@PutMapping("/{externalReferenceCode}/user-accounts/{userId}/account-roles")
+	public void putUserAccountsAccountRoles(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("userId") long userId, @RequestBody String json)
 		throws Exception {
 
-		if (!_entitlementService.hasEntitlement(
-				account.getId(),
-				ArrayUtil.append(
-					EntitlementConstants.NAMES_SLAS,
-					EntitlementConstants.NAME_PARTNER))) {
+		_accountPermission.check(
+			externalReferenceCode, ActionKeys.ASSIGN_MEMBERS, jwt);
 
-			throw new ResponseStatusException(
-				HttpStatus.UNPROCESSABLE_ENTITY,
-				"Unable to create an Okta user for an account without " +
-					"support or partner entitlements");
+		JSONObject jsonObject = new JSONObject(json);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		UserAccount userAccount = _getAccountUserAccount(account, userId);
+
+		List<AccountRole> accountRoles = _getAccountRoles(
+			jsonObject.optJSONArray("accountRoleIds"));
+
+		Set<Long> accountRoleIds = new HashSet<>();
+		Set<String> accountRoleNames = new HashSet<>();
+
+		for (AccountRole accountRole : accountRoles) {
+			accountRoleIds.add(accountRole.getId());
+			accountRoleNames.add(accountRole.getName());
 		}
 
-		String firstName = jsonObject.optString("firstName");
-		String lastName = jsonObject.optString("lastName");
+		_validateAccountManagerRemains(account, accountRoleNames, userAccount);
 
-		if (Validator.isNull(firstName) || Validator.isNull(lastName)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"\"firstName\" and \"lastName\" are required to create a new " +
-					"Okta user");
+		for (AccountRole accountRole : accountRoles) {
+			_userAssignmentService.assignAccountRole(
+				account, accountRole, userId);
 		}
 
-		_oktaService.createContact(
-			emailAddress, firstName, StringPool.BLANK, lastName);
+		AccountBrief accountBrief = FindUtil.findFirst(
+			userAccount.getAccountBriefs(),
+			accountBrief1 -> Objects.equals(
+				account.getId(), accountBrief1.getId()));
+
+		RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+
+		if (roleBriefs == null) {
+			return;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			if (accountRoleIds.contains(roleBrief.getId())) {
+				continue;
+			}
+
+			AccountRole accountRole = _accountRoleService.fetchAccountRole(
+				roleBrief.getId());
+
+			if (accountRole != null) {
+				_userAssignmentService.unassignAccountRole(
+					account, accountRole, userId);
+			}
+		}
 	}
 
-	private void _deleteUserAccountAccountRole(
-			Account account, long accountRoleId, String externalReferenceCode,
-			Jwt jwt, long userId)
-		throws Exception {
-
-		AccountRole accountRole = _accountRoleService.fetchAccountRole(
-			accountRoleId);
-
-		_accountService.removeAccountUserAccountRole(
-			accountRoleId, externalReferenceCode, jwt, userId);
-
-		_unassignContactRole(account, accountRoleId, userId);
-
-		_syncMembership(account, userId);
-
-		if (accountRole != null) {
-			_provisioningAssignmentService.unassignAccountRole(
-				account, userId, accountRole.getName());
-		}
-	}
-
-	private Map<Long, String> _getAccountRoleNames(
+	private List<AccountRole> _getAccountRoles(
 			JSONArray accountRoleIdsJSONArray)
 		throws Exception {
 
-		Map<Long, String> accountRoleNames = new LinkedHashMap<>();
+		List<AccountRole> accountRoles = new ArrayList<>();
 
 		if (accountRoleIdsJSONArray == null) {
-			return accountRoleNames;
+			return accountRoles;
 		}
 
 		for (int i = 0; i < accountRoleIdsJSONArray.length(); i++) {
@@ -742,10 +619,26 @@ public class AccountsRestController extends OneBaseRestController {
 					"Unable to find account role " + accountRoleId);
 			}
 
-			accountRoleNames.put(accountRoleId, accountRole.getName());
+			accountRoles.add(accountRole);
 		}
 
-		return accountRoleNames;
+		return accountRoles;
+	}
+
+	private UserAccount _getAccountUserAccount(Account account, long userId)
+		throws Exception {
+
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
+		if (!UserAccountUtil.hasAccountMembership(
+				userAccount, account.getId())) {
+
+			throw new ResponseStatusException(
+				HttpStatus.NOT_FOUND,
+				"No account member exists with the user ID " + userId);
+		}
+
+		return userAccount;
 	}
 
 	private AccountInvitation _getPendingAccountInvitation(
@@ -775,7 +668,7 @@ public class AccountsRestController extends OneBaseRestController {
 				externalReferenceCode, ActionKeys.UPDATE, jwt);
 		}
 		else {
-			_projectMembershipPermission.check(
+			_projectPermission.check(
 				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
 		}
 
@@ -890,17 +783,6 @@ public class AccountsRestController extends OneBaseRestController {
 		return roleExternalReferenceCodes;
 	}
 
-	private void _syncMembership(Account account, long userId) {
-		try {
-			_accountUserAccountSynchronizer.syncAccountUserAccountMembership(
-				account, _userAccountService.getUserAccount(userId));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync membership for user " + userId, exception);
-		}
-	}
-
 	private JSONObject _toJSONObject(AccountInvitation accountInvitation)
 		throws Exception {
 
@@ -950,66 +832,44 @@ public class AccountsRestController extends OneBaseRestController {
 		);
 	}
 
-	private void _unassignContactRole(
-		Account account, long accountRoleId, long userId) {
-
-		try {
-			AccountRole accountRole = _accountRoleService.fetchAccountRole(
-				accountRoleId);
-
-			if (accountRole == null) {
-				return;
+	private boolean _hasAccountManagerRole(Set<String> accountRoleNames) {
+		for (String accountRoleName : RoleConstants.NAMES_ACCOUNT_MANAGER) {
+			if (accountRoleNames.contains(accountRoleName)) {
+				return true;
 			}
-
-			UserAccount userAccount = _userAccountService.getUserAccount(
-				userId);
-
-			_accountUserAccountRoleSynchronizer.syncUnassignRole(
-				accountRole.getExternalReferenceCode(),
-				userAccount.getExternalReferenceCode(),
-				account.getExternalReferenceCode());
 		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync account contact role unassignment for user " +
-					userId,
-				exception);
-		}
+
+		return false;
 	}
 
-	private void _unassignContactRoles(
-		Account account, UserAccount userAccount) {
+	private void _validateAccountManagerRemains(
+			Account account, Set<String> accountRoleNames,
+			UserAccount userAccount)
+		throws Exception {
 
-		AccountBrief accountBrief = FindUtil.findFirst(
-			userAccount.getAccountBriefs(),
-			accountBrief1 -> Objects.equals(
-				account.getExternalReferenceCode(),
-				accountBrief1.getExternalReferenceCode()));
+		if (!_hasAccountManagerRole(
+				UserAccountUtil.getAccountRoleNames(
+					userAccount, account.getId())) ||
+			_hasAccountManagerRole(accountRoleNames)) {
 
-		if (accountBrief == null) {
 			return;
 		}
 
-		RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+		for (UserAccount accountUserAccount :
+				_userAccountService.getAccountUserAccounts(account.getId())) {
 
-		if (roleBriefs == null) {
-			return;
-		}
+			if (!Objects.equals(
+					accountUserAccount.getId(), userAccount.getId()) &&
+				_hasAccountManagerRole(
+					UserAccountUtil.getAccountRoleNames(
+						accountUserAccount, account.getId()))) {
 
-		for (RoleBrief roleBrief : roleBriefs) {
-			try {
-				_accountUserAccountRoleSynchronizer.syncUnassignRole(
-					roleBrief.getExternalReferenceCode(),
-					userAccount.getExternalReferenceCode(),
-					account.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to sync account contact role unassignment for " +
-						"role " + roleBrief.getExternalReferenceCode(),
-					exception);
+				return;
 			}
 		}
+
+		throw new ResponseStatusException(
+			HttpStatus.CONFLICT, "At least one account manager is required");
 	}
 
 	private void _validateAccountInvitation(
@@ -1120,13 +980,6 @@ public class AccountsRestController extends OneBaseRestController {
 	private AccountSynchronizer _accountSynchronizer;
 
 	@Autowired
-	private AccountUserAccountRoleSynchronizer
-		_accountUserAccountRoleSynchronizer;
-
-	@Autowired
-	private AccountUserAccountSynchronizer _accountUserAccountSynchronizer;
-
-	@Autowired
 	private AdminPermission _adminPermission;
 
 	@Autowired
@@ -1148,24 +1001,21 @@ public class AccountsRestController extends OneBaseRestController {
 	private LicenseKeyService _licenseKeyService;
 
 	@Autowired
-	private OktaService _oktaService;
-
-	@Autowired
-	private ProjectMembershipPermission _projectMembershipPermission;
-
-	@Autowired
 	private ProjectMembershipService _projectMembershipService;
 
 	@Autowired
-	private ProjectService _projectService;
+	private ProjectPermission _projectPermission;
 
 	@Autowired
-	private ProvisioningAssignmentService _provisioningAssignmentService;
+	private ProjectService _projectService;
 
 	@Autowired
 	private ProvisioningEmailService _provisioningEmailService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAssignmentService _userAssignmentService;
 
 }

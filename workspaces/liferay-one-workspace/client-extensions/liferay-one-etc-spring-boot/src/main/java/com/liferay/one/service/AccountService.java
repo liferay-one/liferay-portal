@@ -363,6 +363,20 @@ public class AccountService extends OneBaseService {
 	}
 
 	public void removeAccountUserAccountRole(
+			long accountId, long accountRoleId, long userId)
+		throws Exception {
+
+		delete(
+			getAuthorization(), StringPool.BLANK,
+			UriComponentsBuilder.fromPath(
+				"/o/headless-admin-user/v1.0/accounts/{accountId}" +
+					"/account-roles/{accountRoleId}/user-accounts/{userId}"
+			).buildAndExpand(
+				accountId, accountRoleId, userId
+			).toUri());
+	}
+
+	public void removeAccountUserAccountRole(
 			long accountRoleId, String externalReferenceCode, Jwt jwt,
 			long userId)
 		throws Exception {

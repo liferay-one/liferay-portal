@@ -15,11 +15,10 @@ import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.service.AccountService;
-import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.PropertyService;
-import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.util.Validator;
@@ -122,14 +121,12 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		UserAccount userAccount = _fetchUserAccount(oktaUser.getEmail());
 
-		if ((userAccount == null) ||
-			_hasOrganization(organizationId, userAccount)) {
-
+		if (userAccount == null) {
 			return;
 		}
 
-		_organizationMembershipService.addOrganizationUserAccount(
-			organizationId, userAccount);
+		_userAssignmentService.assignOrganization(
+			organizationId, userAccount.getId());
 	}
 
 	private UserAccount _fetchUserAccount(String emailAddress)
@@ -164,36 +161,6 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 		return property.getClassPK();
 	}
 
-	private boolean _hasOrganization(
-		long organizationId, UserAccount userAccount) {
-
-		OrganizationBrief[] organizationBriefs =
-			userAccount.getOrganizationBriefs();
-
-		if (organizationBriefs == null) {
-			return false;
-		}
-
-		for (OrganizationBrief organizationBrief : organizationBriefs) {
-			if (Objects.equals(organizationBrief.getId(), organizationId)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private void _removeAccountUserAccount(
-			long accountEntryId, UserAccount userAccount)
-		throws Exception {
-
-		_accountService.removeAccountUserAccount(
-			accountEntryId, userAccount.getId());
-
-		_provisioningAssignmentService.unassignAccountMembership(
-			accountEntryId, userAccount.getId());
-	}
-
 	private void _removeGroupMemberships(
 			JSONObject groupJSONObject, OktaUser oktaUser)
 		throws Exception {
@@ -206,14 +173,12 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		UserAccount userAccount = _fetchUserAccount(oktaUser.getEmail());
 
-		if ((userAccount == null) ||
-			!_hasOrganization(organizationId, userAccount)) {
-
+		if (userAccount == null) {
 			return;
 		}
 
-		_organizationMembershipService.removeOrganizationUserAccount(
-			organizationId, userAccount);
+		_userAssignmentService.unassignOrganization(
+			organizationId, userAccount.getId());
 	}
 
 	private void _syncContact(OktaUser oktaUser) throws Exception {
@@ -237,7 +202,9 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		if (accountBriefs != null) {
 			for (AccountBrief accountBrief : accountBriefs) {
-				_removeAccountUserAccount(accountBrief.getId(), userAccount);
+				_userAssignmentService.unassignAccount(
+					_accountService.getAccount(accountBrief.getId(), null),
+					userAccount.getId());
 			}
 		}
 
@@ -246,8 +213,8 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 		if (organizationBriefs != null) {
 			for (OrganizationBrief organizationBrief : organizationBriefs) {
-				_organizationMembershipService.removeOrganizationUserAccount(
-					organizationBrief.getId(), userAccount);
+				_userAssignmentService.unassignOrganization(
+					organizationBrief.getId(), userAccount.getId());
 			}
 		}
 	}
@@ -299,17 +266,11 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 	@Autowired
 	private OktaService _oktaService;
 
-	@Autowired
-	private OrganizationMembershipService _organizationMembershipService;
-
 	@Value("${liferay.one.okta.users.pubsub.subscriber.project.id}")
 	private String _projectId;
 
 	@Autowired
 	private PropertyService _propertyService;
-
-	@Autowired
-	private ProvisioningAssignmentService _provisioningAssignmentService;
 
 	@Autowired
 	private ProvisioningEmailService _provisioningEmailService;
@@ -322,5 +283,8 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Autowired
 	private UserAccountService _userAccountService;
+
+	@Autowired
+	private UserAssignmentService _userAssignmentService;
 
 }

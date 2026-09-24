@@ -21,7 +21,7 @@ import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.TicketAttachment;
-import com.liferay.one.permission.ProjectMembershipPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.GoogleCloudStorageService;
 import com.liferay.one.service.NotificationQueueEntryService;
 import com.liferay.one.service.ProjectService;
@@ -548,8 +548,7 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 			}
 		}
 
-		_projectMembershipPermission.check(
-			actionId, jwt, projectExternalReferenceCode);
+		_projectPermission.check(actionId, jwt, projectExternalReferenceCode);
 	}
 
 	private void _deleteTicketAttachments(String jiraIssueKey)
@@ -714,7 +713,7 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 	private String _onePortalURL;
 
 	@Autowired
-	private ProjectMembershipPermission _projectMembershipPermission;
+	private ProjectPermission _projectPermission;
 
 	@Autowired
 	private ProjectService _projectService;

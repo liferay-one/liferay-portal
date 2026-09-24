@@ -42,44 +42,111 @@ import reactor.core.publisher.Mono;
 public class OktaServiceTest {
 
 	@Test
-	public void testCreateContactPublishesWhenContactIsAbsent()
+	public void testActivateContactActivatesDeactivatedContact()
+		throws Exception {
+
+		OktaService oktaService = _createOktaService(
+			_getContactBody("Jane", "Doe", "DEPROVISIONED"), HttpStatus.OK);
+
+		_mockGetUserAccount();
+
+		oktaService.activateContact(_USER_ID);
+
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-update");
+
+		Assertions.assertEquals("ACTIVATE", jsonObject.getString("action"));
+		Assertions.assertEquals(_EMAIL_ADDRESS, jsonObject.getString("login"));
+	}
+
+	@Test
+	public void testActivateContactCreatesMissingContact() throws Exception {
+		OktaService oktaService = _createOktaService(
+			_BODY_NOT_FOUND, HttpStatus.NOT_FOUND);
+
+		_mockGetUserAccount();
+
+		oktaService.activateContact(_USER_ID);
+
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-create");
+
+		Assertions.assertEquals(
+			_EMAIL_ADDRESS, jsonObject.getString("emailAddress"));
+	}
+
+	@Test
+	public void testActivateContactSkipsActiveContact() throws Exception {
+		OktaService oktaService = _createOktaService(
+			_getContactBody("Jane", "Doe", "ACTIVE"), HttpStatus.OK);
+
+		_mockGetUserAccount();
+
+		oktaService.activateContact(_USER_ID);
+
+		Mockito.verifyNoInteractions(_oktaPubsubPublisher);
+	}
+
+	@Test
+	public void testActivateContactSkipsWhenOktaIsUnavailable()
+		throws Exception {
+
+		OktaService oktaService = _createOktaService(
+			_BODY_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+
+		_mockGetUserAccount();
+
+		Assertions.assertDoesNotThrow(
+			() -> oktaService.activateContact(_USER_ID));
+
+		Mockito.verifyNoInteractions(_oktaPubsubPublisher);
+	}
+
+	@Test
+	public void testCreateContactPublishesUserAccountDetails()
 		throws Exception {
 
 		OktaService oktaService = _createOktaService(
 			_BODY_NOT_FOUND, HttpStatus.NOT_FOUND);
 
-		Assertions.assertNull(
-			oktaService.createContact(_EMAIL_ADDRESS, "Jane", null, "Doe"));
+		oktaService.createContact(_createUserAccount());
+
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-create");
+
+		Assertions.assertEquals(
+			_EMAIL_ADDRESS, jsonObject.getString("emailAddress"));
+		Assertions.assertEquals("Jane", jsonObject.getString("firstName"));
+		Assertions.assertEquals("Doe", jsonObject.getString("lastName"));
+		Assertions.assertEquals(_KORONEIKI_UUID, jsonObject.getString("uuid"));
+
+		Mockito.verifyNoInteractions(_userAccountService);
+	}
+
+	@Test
+	public void testCreateContactSavesExternalReferenceCodeWhenUuidIsMissing()
+		throws Exception {
+
+		OktaService oktaService = _createOktaService(
+			_BODY_NOT_FOUND, HttpStatus.NOT_FOUND);
+
+		UserAccount userAccount = _createUserAccount();
+
+		userAccount.setCustomFields(new CustomField[0]);
+
+		oktaService.createContact(userAccount);
 
 		Mockito.verify(
-			_oktaPubsubPublisher
-		).publish(
-			Mockito.any()
+			_userAccountService
+		).updateUser(
+			"Doe", "Jane", _USER_ID, _EXTERNAL_REFERENCE_CODE
 		);
-	}
 
-	@Test
-	public void testCreateContactSkipsWhenContactExists() throws Exception {
-		OktaService oktaService = _createOktaService(
-			_BODY_CONTACT, HttpStatus.OK);
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-create");
 
-		Assertions.assertNotNull(
-			oktaService.createContact(_EMAIL_ADDRESS, "Jane", null, "Doe"));
-
-		Mockito.verifyNoInteractions(_oktaPubsubPublisher);
-	}
-
-	@Test
-	public void testCreateContactThrowsWhenOktaReturnsErrorStatus() {
-		OktaService oktaService = _createOktaService(
-			_BODY_ERROR, HttpStatus.UNAUTHORIZED);
-
-		Assertions.assertThrows(
-			OktaUnavailableException.class,
-			() -> oktaService.createContact(
-				_EMAIL_ADDRESS, "Jane", null, "Doe"));
-
-		Mockito.verifyNoInteractions(_oktaPubsubPublisher);
+		Assertions.assertEquals(
+			_EXTERNAL_REFERENCE_CODE, jsonObject.getString("uuid"));
 	}
 
 	@Test
@@ -426,6 +493,33 @@ public class OktaServiceTest {
 		);
 
 		return jsonObject.toString();
+	}
+
+	private JSONObject _getPublishedPayloadJSONObject(String topic)
+		throws Exception {
+
+		ArgumentCaptor<Message> argumentCaptor = ArgumentCaptor.forClass(
+			Message.class);
+
+		Mockito.verify(
+			_oktaPubsubPublisher
+		).publish(
+			argumentCaptor.capture()
+		);
+
+		Message message = argumentCaptor.getValue();
+
+		Assertions.assertEquals(topic, message.getTopic());
+
+		return new JSONObject(message.getPayload());
+	}
+
+	private void _mockGetUserAccount() throws Exception {
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			_createUserAccount()
+		);
 	}
 
 	private static final String _BODY_CONTACT =

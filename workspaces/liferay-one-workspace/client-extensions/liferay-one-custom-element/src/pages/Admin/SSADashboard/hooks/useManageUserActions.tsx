@@ -10,10 +10,9 @@ import {useOneContext} from '~/context/OneContextProvider';
 import useModalContext from '~/hooks/useModalContext';
 import i18n from '~/i18n';
 import ManageUserModal from '~/pages/Admin/SSADashboard/components/ManageUserRolesModal';
-import {useSSADashboardOutlet} from '~/pages/Admin/SSADashboard/hooks/useSSADashboardOutlet';
 import {ssaRoles as ssaRolesValues} from '~/pages/Admin/SSADashboard/utils/constants';
-import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 import {Action} from '~/utils/appConstants';
 
 import type {UserAccount} from '~/types/accounts';
@@ -48,7 +47,6 @@ function mutateUser(
 
 const useManageUserActions = () => {
 	const {properties} = useOneContext();
-	const {ssaAccount} = useSSADashboardOutlet();
 	const modalContext = useModalContext();
 
 	return useMemo(
@@ -124,27 +122,30 @@ const useManageUserActions = () => {
 									displayType="warning"
 									key="confirm"
 									onClick={async () => {
-										const {items: roles} =
-											await HeadlessAdminUser.getAccountRoles(
-												properties.ssaAccountExternalReferenceCode
+										const ssaAccountBrief =
+											userAccount.accountBriefs.find(
+												(accountBrief) =>
+													accountBrief.externalReferenceCode ===
+													properties.ssaAccountExternalReferenceCode
 											);
 
-										const ssaRoles = roles.filter((role) =>
-											ssaRolesValues.some(
-												(ssaRole) =>
-													ssaRole.key === role.name
-											)
-										);
-
 										try {
-											await Promise.allSettled(
-												ssaRoles.map((role) =>
-													HeadlessAdminUser.deleteRoleAccountUser(
-														ssaAccount?.id,
-														role.id,
-														userAccount.id
+											await Accounts.putUserAccountsAccountRoles(
+												properties.ssaAccountExternalReferenceCode,
+												userAccount.id,
+												(ssaAccountBrief?.roleBriefs ?? [])
+													.filter(
+														(roleBrief) =>
+															!ssaRolesValues.some(
+																(ssaRole) =>
+																	ssaRole.key ===
+																	roleBrief.name
+															)
 													)
-												)
+													.map(
+														(roleBrief) =>
+															roleBrief.id
+													)
 											);
 										}
 										catch {
@@ -188,11 +189,7 @@ const useManageUserActions = () => {
 					},
 				},
 			] as Action[],
-		[
-			modalContext,
-			properties.ssaAccountExternalReferenceCode,
-			ssaAccount?.id,
-		]
+		[modalContext, properties.ssaAccountExternalReferenceCode]
 	);
 };
 

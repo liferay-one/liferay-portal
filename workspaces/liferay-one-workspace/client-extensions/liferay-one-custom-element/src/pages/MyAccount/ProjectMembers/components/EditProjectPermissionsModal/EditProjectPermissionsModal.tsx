@@ -9,9 +9,9 @@ import ClayIcon from '@clayui/icon';
 import {useState} from 'react';
 import {translate} from '~/i18n';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
-import fetcher from '~/services/fetcher/fetcher';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 import Projects from '~/services/spring-boot/Projects';
 
 import '../../ProjectMembers.css';
@@ -66,6 +66,7 @@ const MemberDropDown = ({
 };
 
 type WorkingMember = {
+	accountRoleIds: number[];
 	designations: string[];
 	email: string;
 	isNew: boolean;
@@ -97,6 +98,7 @@ const EditProjectPermissionsModal = ({
 
 	const [members, setMembers] = useState<WorkingMember[]>(
 		project.members.map((member) => ({
+			accountRoleIds: member.accountRoleIds,
 			designations: member.designations,
 			email: member.email,
 			isNew: false,
@@ -163,43 +165,41 @@ const EditProjectPermissionsModal = ({
 		}
 
 		try {
-			const operations: Promise<unknown>[] = [];
-
-			members.forEach((member) => {
-				if (member.isNew && !member.removed) {
-					operations.push(
-						Projects.postProjectMembership(
+			await Promise.all(
+				members.map((member) => {
+					if (member.isNew && !member.removed) {
+						return Projects.postProjectMembership(
 							project.externalReferenceCode,
 							member.userId,
 							member.roleExternalReferenceCode
-						)
-					);
-				}
-				else if (!member.isNew && member.removed) {
-					operations.push(
-						fetcher.delete(
-							`/o/c/projectmemberships/${member.membershipId}`
-						)
-					);
-				}
-				else if (
-					!member.isNew &&
-					member.roleExternalReferenceCode !==
-						member.originalRoleExternalReferenceCode
-				) {
-					operations.push(
-						fetcher.patch(
-							`/o/c/projectmemberships/${member.membershipId}`,
-							{
-								roleExternalReferenceCode:
-									member.roleExternalReferenceCode,
-							}
-						)
-					);
-				}
-			});
+						);
+					}
 
-			const hasDesignationChanges = members.some(
+					if (!member.isNew && member.removed) {
+						return Projects.deleteProjectMembership(
+							project.externalReferenceCode,
+							member.userId,
+							member.originalRoleExternalReferenceCode
+						);
+					}
+
+					if (
+						!member.isNew &&
+						member.roleExternalReferenceCode !==
+							member.originalRoleExternalReferenceCode
+					) {
+						return Projects.putProjectMembership(
+							project.externalReferenceCode,
+							member.userId,
+							member.roleExternalReferenceCode
+						);
+					}
+
+					return null;
+				})
+			);
+
+			const designationMembers = members.filter(
 				(member) =>
 					!member.removed &&
 					member.userId &&
@@ -210,63 +210,47 @@ const EditProjectPermissionsModal = ({
 					)
 			);
 
-			if (hasDesignationChanges) {
-				const [account, {items: accountRoles}] = await Promise.all([
-					HeadlessAdminUser.getAccountByExternalReferenceCode(
+			if (designationMembers.length) {
+				const {items: accountRoles} =
+					await HeadlessAdminUser.getAccountRoles(
 						accountExternalReferenceCode
-					),
-					HeadlessAdminUser.getAccountRoles(
-						accountExternalReferenceCode
-					),
-				]);
+					);
 
-				const accountRoleByName = new Map(
+				const accountRoleIdsByName = new Map(
 					accountRoles.map((accountRole) => [
 						accountRole.name,
-						accountRole,
+						accountRole.id,
 					])
 				);
 
-				members.forEach((member) => {
-					if (member.removed || !member.userId) {
-						return;
-					}
+				await Promise.all(
+					designationMembers.map((member) => {
+						const accountRoleIds = new Set(member.accountRoleIds);
 
-					availableDesignations.forEach((designation) => {
-						const accountRole = accountRoleByName.get(designation);
+						availableDesignations.forEach((designation) => {
+							const accountRoleId =
+								accountRoleIdsByName.get(designation);
 
-						if (!accountRole) {
-							return;
-						}
+							if (!accountRoleId) {
+								return;
+							}
 
-						const selected =
-							member.designations.includes(designation);
-						const original =
-							member.originalDesignations.includes(designation);
+							if (member.designations.includes(designation)) {
+								accountRoleIds.add(accountRoleId);
+							}
+							else {
+								accountRoleIds.delete(accountRoleId);
+							}
+						});
 
-						if (selected && !original) {
-							operations.push(
-								HeadlessAdminUser.sendRoleAccountUser(
-									account.id,
-									accountRole.id,
-									member.userId
-								)
-							);
-						}
-						else if (!selected && original) {
-							operations.push(
-								HeadlessAdminUser.deleteRoleAccountUser(
-									account.id,
-									accountRole.id,
-									member.userId
-								)
-							);
-						}
-					});
-				});
+						return Accounts.putUserAccountsAccountRoles(
+							accountExternalReferenceCode,
+							member.userId,
+							[...accountRoleIds]
+						);
+					})
+				);
 			}
-
-			await Promise.all(operations);
 
 			await mutate();
 
@@ -316,6 +300,8 @@ const EditProjectPermissionsModal = ({
 									)}
 									onChange={(option) =>
 										updateMember(index, {
+											accountRoleIds:
+												option.accountRoleIds,
 											email: option.email,
 											name: option.name,
 											userId: option.userId,
@@ -366,6 +352,7 @@ const EditProjectPermissionsModal = ({
 					setMembers((previous) => [
 						...previous,
 						{
+							accountRoleIds: [],
 							designations: [],
 							email: '',
 							isNew: true,

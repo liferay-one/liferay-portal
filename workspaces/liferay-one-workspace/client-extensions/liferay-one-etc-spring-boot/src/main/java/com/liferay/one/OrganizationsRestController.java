@@ -7,31 +7,24 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
-import com.liferay.headless.admin.user.client.dto.v1_0.Role;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
-import com.liferay.one.jira.synchronizer.OrganizationUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.OrganizationUserAccountSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.AccountService;
-import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
-import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,12 +76,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		_roleService.removeOrganizationUserAccountRole(
+		_userAssignmentService.unassignOrganizationRole(
 			organizationId, organizationRoleId, userId);
-
-		_unassignContactRole(organizationId, organizationRoleId, userId);
-
-		_syncMembership(organizationId, userId);
 	}
 
 	@PostMapping("/{organizationId}/accounts/{accountId}")
@@ -149,18 +138,30 @@ public class OrganizationsRestController extends OneBaseRestController {
 			}
 		}
 
-		Set<String> changedEmailAddresses = new LinkedHashSet<>();
-
 		for (String emailAddress : oktaEmailAddresses) {
-			if (!organizationUserAccounts.containsKey(emailAddress)) {
-				_organizationService.addOrganizationUserAccountByEmailAddress(
-					emailAddress, organizationId);
-
-				changedEmailAddresses.add(emailAddress);
+			if (organizationUserAccounts.containsKey(emailAddress)) {
+				continue;
 			}
-		}
 
-		List<UserAccount> removedUserAccounts = new ArrayList<>();
+			UserAccount userAccount =
+				_userAccountService.fetchUserAccountByEmailAddress(
+					emailAddress);
+
+			if (userAccount == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to add Okta group member ", emailAddress,
+							" to organization ", organizationId,
+							" because no user account exists"));
+				}
+
+				continue;
+			}
+
+			_userAssignmentService.assignOrganization(
+				organizationId, userAccount.getId());
+		}
 
 		for (Map.Entry<String, UserAccount> entry :
 				organizationUserAccounts.entrySet()) {
@@ -169,46 +170,11 @@ public class OrganizationsRestController extends OneBaseRestController {
 				continue;
 			}
 
-			_organizationService.removeOrganizationUserAccountByEmailAddress(
-				entry.getKey(), organizationId);
+			UserAccount userAccount = entry.getValue();
 
-			changedEmailAddresses.add(entry.getKey());
-
-			removedUserAccounts.add(entry.getValue());
+			_userAssignmentService.unassignOrganization(
+				organizationId, userAccount.getId());
 		}
-
-		if (changedEmailAddresses.isEmpty()) {
-			return;
-		}
-
-		Organization organization = _organizationService.getOrganization(
-			organizationId);
-
-		for (UserAccount userAccount : removedUserAccounts) {
-			_organizationMembershipService.unassignContactRoles(
-				organization, userAccount);
-		}
-
-		for (String emailAddress : changedEmailAddresses) {
-			try {
-				UserAccount userAccount =
-					_userAccountService.fetchUserAccountByEmailAddress(
-						emailAddress);
-
-				if (userAccount != null) {
-					_userAccountSynchronizer.syncUserAccountOrganizations(
-						userAccount);
-					_userAccountSynchronizer.syncUserAccountRoles(userAccount);
-				}
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to sync user account " + emailAddress + " to JSM",
-					exception);
-			}
-		}
-
-		_syncOrganizationUserAccounts(organization);
 	}
 
 	@PostMapping("/{organizationId}/sync-to-jsm")
@@ -236,12 +202,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		_roleService.addOrganizationUserAccountRole(
+		_userAssignmentService.assignOrganizationRole(
 			organizationId, organizationRoleId, userId);
-
-		_assignContactRole(organizationId, organizationRoleId, userId);
-
-		_syncMembership(organizationId, userId);
 	}
 
 	private void _assignAccount(long accountId, long organizationId) {
@@ -263,55 +225,6 @@ public class OrganizationsRestController extends OneBaseRestController {
 			_log.error(
 				"Unable to sync account team role assignment for account " +
 					accountId,
-				exception);
-		}
-	}
-
-	private void _assignContactRole(
-		long organizationId, long organizationRoleId, long userId) {
-
-		try {
-			Organization organization = _organizationService.getOrganization(
-				organizationId);
-			Role role = _roleService.getRole(organizationRoleId);
-			UserAccount userAccount = _userAccountService.getUserAccount(
-				userId);
-
-			_organizationUserAccountRoleSynchronizer.syncAssignRole(
-				role.getExternalReferenceCode(),
-				userAccount.getExternalReferenceCode(),
-				organization.getExternalReferenceCode());
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync organization contact role assignment for " +
-					"user " + userId,
-				exception);
-		}
-	}
-
-	private void _syncMembership(long organizationId, long userId) {
-		try {
-			_organizationUserAccountSynchronizer.
-				syncOrganizationUserAccountMembership(
-					_organizationService.getOrganization(organizationId),
-					_userAccountService.getUserAccount(userId));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync membership for user " + userId, exception);
-		}
-	}
-
-	private void _syncOrganizationUserAccounts(Organization organization) {
-		try {
-			_organizationSynchronizer.syncOrganizationUserAccounts(
-				organization);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync user accounts for organization " +
-					organization.getExternalReferenceCode(),
 				exception);
 		}
 	}
@@ -339,29 +252,6 @@ public class OrganizationsRestController extends OneBaseRestController {
 		}
 	}
 
-	private void _unassignContactRole(
-		long organizationId, long organizationRoleId, long userId) {
-
-		try {
-			Organization organization = _organizationService.getOrganization(
-				organizationId);
-			Role role = _roleService.getRole(organizationRoleId);
-			UserAccount userAccount = _userAccountService.getUserAccount(
-				userId);
-
-			_organizationUserAccountRoleSynchronizer.syncUnassignRole(
-				role.getExternalReferenceCode(),
-				userAccount.getExternalReferenceCode(),
-				organization.getExternalReferenceCode());
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to sync organization contact role unassignment for " +
-					"user " + userId,
-				exception);
-		}
-	}
-
 	private static final Log _log = LogFactory.getLog(
 		OrganizationsRestController.class);
 
@@ -378,32 +268,18 @@ public class OrganizationsRestController extends OneBaseRestController {
 	private OktaService _oktaService;
 
 	@Autowired
-	private OrganizationMembershipService _organizationMembershipService;
-
-	@Autowired
 	private OrganizationService _organizationService;
 
 	@Autowired
 	private OrganizationSynchronizer _organizationSynchronizer;
 
 	@Autowired
-	private OrganizationUserAccountRoleSynchronizer
-		_organizationUserAccountRoleSynchronizer;
-
-	@Autowired
-	private OrganizationUserAccountSynchronizer
-		_organizationUserAccountSynchronizer;
-
-	@Autowired
 	private PropertyService _propertyService;
-
-	@Autowired
-	private RoleService _roleService;
 
 	@Autowired
 	private UserAccountService _userAccountService;
 
 	@Autowired
-	private UserAccountSynchronizer _userAccountSynchronizer;
+	private UserAssignmentService _userAssignmentService;
 
 }

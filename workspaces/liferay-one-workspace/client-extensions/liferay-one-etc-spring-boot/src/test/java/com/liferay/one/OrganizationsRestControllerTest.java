@@ -5,24 +5,16 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
-import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
-import com.liferay.headless.admin.user.client.dto.v1_0.Role;
-import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
-import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
-import com.liferay.one.jira.synchronizer.OrganizationUserAccountRoleSynchronizer;
-import com.liferay.one.jira.synchronizer.OrganizationUserAccountSynchronizer;
-import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
-import com.liferay.one.service.OrganizationMembershipService;
 import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
-import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.service.UserAssignmentService;
+import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.util.Arrays;
@@ -43,53 +35,19 @@ import org.springframework.web.server.ResponseStatusException;
 public class OrganizationsRestControllerTest {
 
 	@Test
-	public void testDeleteUserAccountsOrganizationRoleSyncsMembershipToJSM()
+	public void testDeleteUserAccountsOrganizationRoleUnassignsRole()
 		throws Exception {
 
 		OrganizationsRestController organizationsRestController =
 			_createController();
 
-		Organization organization = _setUpOrganization();
-
-		Role role = new Role();
-
-		role.setExternalReferenceCode("ROLE-ERC-1");
-
-		Mockito.when(
-			_roleService.getRole(_ROLE_ID)
-		).thenReturn(
-			role
-		);
-
-		UserAccount userAccount = _createUserAccount("ana@example.com");
-
-		userAccount.setExternalReferenceCode("USER-ERC-1");
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenReturn(
-			userAccount
-		);
-
 		organizationsRestController.deleteUserAccountsOrganizationRole(
 			null, _ORGANIZATION_ID, _USER_ID, _ROLE_ID);
 
 		Mockito.verify(
-			_roleService
-		).removeOrganizationUserAccountRole(
+			_userAssignmentService
+		).unassignOrganizationRole(
 			_ORGANIZATION_ID, _ROLE_ID, _USER_ID
-		);
-
-		Mockito.verify(
-			_organizationUserAccountRoleSynchronizer
-		).syncUnassignRole(
-			"ROLE-ERC-1", "USER-ERC-1", _ORGANIZATION_EXTERNAL_REFERENCE_CODE
-		);
-
-		Mockito.verify(
-			_organizationUserAccountSynchronizer
-		).syncOrganizationUserAccountMembership(
-			organization, userAccount
 		);
 	}
 
@@ -111,7 +69,7 @@ public class OrganizationsRestControllerTest {
 			() -> organizationsRestController.postSyncFromOkta(
 				null, _ORGANIZATION_ID));
 
-		Mockito.verifyNoInteractions(_oktaService);
+		Mockito.verifyNoInteractions(_oktaService, _userAssignmentService);
 	}
 
 	@Test
@@ -120,11 +78,12 @@ public class OrganizationsRestControllerTest {
 			_createController();
 
 		_setUpOktaGroup("Ana@Example.com");
-		_setUpOrganizationUserAccounts("ana@example.com");
+		_setUpOrganizationUserAccounts(
+			_createUserAccount("ana@example.com", 1));
 
 		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
 
-		Mockito.verifyNoInteractions(_organizationService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -133,30 +92,32 @@ public class OrganizationsRestControllerTest {
 			_createController();
 
 		_setUpOktaGroup("ana@example.com", "carla@example.com");
-		_setUpOrganization();
-		_setUpOrganizationUserAccounts("ana@example.com", "daniel@example.com");
+		_setUpOrganizationUserAccounts(
+			_createUserAccount("ana@example.com", 1),
+			_createUserAccount("daniel@example.com", 3));
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(
+				"carla@example.com")
+		).thenReturn(
+			_createUserAccount("carla@example.com", 2)
+		);
 
 		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
 
 		Mockito.verify(
-			_organizationService
-		).addOrganizationUserAccountByEmailAddress(
-			"carla@example.com", _ORGANIZATION_ID
+			_userAssignmentService
+		).assignOrganization(
+			_ORGANIZATION_ID, 2
 		);
 
 		Mockito.verify(
-			_organizationService
-		).removeOrganizationUserAccountByEmailAddress(
-			"daniel@example.com", _ORGANIZATION_ID
+			_userAssignmentService
+		).unassignOrganization(
+			_ORGANIZATION_ID, 3
 		);
 
-		Mockito.verify(
-			_organizationService
-		).getOrganization(
-			_ORGANIZATION_ID
-		);
-
-		Mockito.verifyNoMoreInteractions(_organizationService);
+		Mockito.verifyNoMoreInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -175,7 +136,7 @@ public class OrganizationsRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
-		Mockito.verifyNoInteractions(_oktaService);
+		Mockito.verifyNoInteractions(_oktaService, _userAssignmentService);
 	}
 
 	@Test
@@ -186,150 +147,49 @@ public class OrganizationsRestControllerTest {
 			_createController();
 
 		_setUpOktaGroup("ana@example.com", null);
-		_setUpOrganizationUserAccounts("ana@example.com");
+		_setUpOrganizationUserAccounts(
+			_createUserAccount("ana@example.com", 1));
 
 		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
 
-		Mockito.verifyNoInteractions(_organizationService);
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
-	public void testPostSyncFromOktaSyncsContactsToJSM() throws Exception {
-		OrganizationsRestController organizationsRestController =
-			_createController();
-
-		_setUpOktaGroup("carla@example.com");
-
-		Organization organization = _setUpOrganization();
-
-		UserAccount removedUserAccount = _createUserAccount(
-			"daniel@example.com");
-
-		removedUserAccount.setExternalReferenceCode("USER-ERC-1");
-
-		OrganizationBrief organizationBrief = new OrganizationBrief();
-
-		organizationBrief.setExternalReferenceCode(
-			_ORGANIZATION_EXTERNAL_REFERENCE_CODE);
-
-		RoleBrief roleBrief = new RoleBrief();
-
-		roleBrief.setExternalReferenceCode("ROLE-ERC-1");
-
-		organizationBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
-
-		removedUserAccount.setOrganizationBriefs(
-			new OrganizationBrief[] {organizationBrief});
-
-		Mockito.when(
-			_userAccountService.getOrganizationUserAccounts(_ORGANIZATION_ID)
-		).thenReturn(
-			List.of(removedUserAccount)
-		);
-
-		UserAccount addedUserAccount = _createUserAccount("carla@example.com");
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(
-				"carla@example.com")
-		).thenReturn(
-			addedUserAccount
-		);
-
-		Mockito.when(
-			_userAccountService.fetchUserAccountByEmailAddress(
-				"daniel@example.com")
-		).thenReturn(
-			removedUserAccount
-		);
-
-		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
-
-		Mockito.verify(
-			_organizationUserAccountRoleSynchronizer
-		).syncUnassignRole(
-			"ROLE-ERC-1", "USER-ERC-1", _ORGANIZATION_EXTERNAL_REFERENCE_CODE
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountOrganizations(
-			addedUserAccount
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountRoles(
-			addedUserAccount
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountOrganizations(
-			removedUserAccount
-		);
-
-		Mockito.verify(
-			_userAccountSynchronizer
-		).syncUserAccountRoles(
-			removedUserAccount
-		);
-
-		Mockito.verify(
-			_organizationSynchronizer
-		).syncOrganizationUserAccounts(
-			organization
-		);
-	}
-
-	@Test
-	public void testPostUserAccountsOrganizationRoleSyncsMembershipToJSM()
+	public void testPostSyncFromOktaSkipsOktaUsersWithoutUserAccount()
 		throws Exception {
 
 		OrganizationsRestController organizationsRestController =
 			_createController();
 
-		Organization organization = _setUpOrganization();
+		_setUpOktaGroup("carla@example.com");
+		_setUpOrganizationUserAccounts();
 
-		Role role = new Role();
+		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
 
-		role.setExternalReferenceCode("ROLE-ERC-1");
-
-		Mockito.when(
-			_roleService.getRole(_ROLE_ID)
-		).thenReturn(
-			role
+		Mockito.verify(
+			_userAccountService
+		).fetchUserAccountByEmailAddress(
+			"carla@example.com"
 		);
 
-		UserAccount userAccount = _createUserAccount("ana@example.com");
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
 
-		userAccount.setExternalReferenceCode("USER-ERC-1");
+	@Test
+	public void testPostUserAccountsOrganizationRoleAssignsRole()
+		throws Exception {
 
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenReturn(
-			userAccount
-		);
+		OrganizationsRestController organizationsRestController =
+			_createController();
 
 		organizationsRestController.postUserAccountsOrganizationRole(
 			null, _ORGANIZATION_ID, _USER_ID, _ROLE_ID);
 
 		Mockito.verify(
-			_roleService
-		).addOrganizationUserAccountRole(
+			_userAssignmentService
+		).assignOrganizationRole(
 			_ORGANIZATION_ID, _ROLE_ID, _USER_ID
-		);
-
-		Mockito.verify(
-			_organizationUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"ROLE-ERC-1", "USER-ERC-1", _ORGANIZATION_EXTERNAL_REFERENCE_CODE
-		);
-
-		Mockito.verify(
-			_organizationUserAccountSynchronizer
-		).syncOrganizationUserAccountMembership(
-			organization, userAccount
 		);
 	}
 
@@ -341,42 +201,17 @@ public class OrganizationsRestControllerTest {
 			organizationsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_oktaService", _oktaService);
-
-		OrganizationMembershipService organizationMembershipService =
-			new OrganizationMembershipService();
-
-		ReflectionTestUtils.setField(
-			organizationMembershipService,
-			"_organizationUserAccountRoleSynchronizer",
-			_organizationUserAccountRoleSynchronizer);
-
-		ReflectionTestUtils.setField(
-			organizationsRestController, "_organizationMembershipService",
-			organizationMembershipService);
-
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_organizationService",
 			_organizationService);
 		ReflectionTestUtils.setField(
-			organizationsRestController, "_organizationSynchronizer",
-			_organizationSynchronizer);
-		ReflectionTestUtils.setField(
-			organizationsRestController,
-			"_organizationUserAccountRoleSynchronizer",
-			_organizationUserAccountRoleSynchronizer);
-		ReflectionTestUtils.setField(
-			organizationsRestController, "_organizationUserAccountSynchronizer",
-			_organizationUserAccountSynchronizer);
-		ReflectionTestUtils.setField(
 			organizationsRestController, "_propertyService", _propertyService);
-		ReflectionTestUtils.setField(
-			organizationsRestController, "_roleService", _roleService);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_userAccountService",
 			_userAccountService);
 		ReflectionTestUtils.setField(
-			organizationsRestController, "_userAccountSynchronizer",
-			_userAccountSynchronizer);
+			organizationsRestController, "_userAssignmentService",
+			_userAssignmentService);
 
 		return organizationsRestController;
 	}
@@ -393,10 +228,11 @@ public class OrganizationsRestControllerTest {
 		return oktaUser;
 	}
 
-	private UserAccount _createUserAccount(String emailAddress) {
+	private UserAccount _createUserAccount(String emailAddress, long id) {
 		UserAccount userAccount = new UserAccount();
 
 		userAccount.setEmailAddress(emailAddress);
+		userAccount.setId(id);
 
 		return userAccount;
 	}
@@ -404,8 +240,8 @@ public class OrganizationsRestControllerTest {
 	private void _setUpOktaGroup(String... emailAddresses) throws Exception {
 		Mockito.when(
 			_propertyService.getPropertyValue(
-				com.liferay.portal.kernel.model.Organization.class.getName(),
-				_ORGANIZATION_ID, PropertyConstants.NAME_OKTA_GROUP)
+				Organization.class.getName(), _ORGANIZATION_ID,
+				PropertyConstants.NAME_OKTA_GROUP)
 		).thenReturn(
 			_OKTA_GROUP_ID
 		);
@@ -423,41 +259,17 @@ public class OrganizationsRestControllerTest {
 		);
 	}
 
-	private Organization _setUpOrganization() throws Exception {
-		Organization organization = new Organization();
-
-		organization.setExternalReferenceCode(
-			_ORGANIZATION_EXTERNAL_REFERENCE_CODE);
-		organization.setId(String.valueOf(_ORGANIZATION_ID));
-
-		Mockito.when(
-			_organizationService.getOrganization(_ORGANIZATION_ID)
-		).thenReturn(
-			organization
-		);
-
-		return organization;
-	}
-
-	private void _setUpOrganizationUserAccounts(String... emailAddresses)
+	private void _setUpOrganizationUserAccounts(UserAccount... userAccounts)
 		throws Exception {
-
-		List<UserAccount> userAccounts = Arrays.stream(
-			emailAddresses
-		).map(
-			this::_createUserAccount
-		).toList();
 
 		Mockito.when(
 			_userAccountService.getOrganizationUserAccounts(_ORGANIZATION_ID)
 		).thenReturn(
-			userAccounts
+			Arrays.asList(userAccounts)
 		);
 	}
 
 	private static final String _OKTA_GROUP_ID = "00g1abcd2efGHIJK3l4m";
-
-	private static final String _ORGANIZATION_EXTERNAL_REFERENCE_CODE = "ORG-1";
 
 	private static final long _ORGANIZATION_ID = 44444;
 
@@ -470,20 +282,11 @@ public class OrganizationsRestControllerTest {
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final OrganizationService _organizationService = Mockito.mock(
 		OrganizationService.class);
-	private final OrganizationSynchronizer _organizationSynchronizer =
-		Mockito.mock(OrganizationSynchronizer.class);
-	private final OrganizationUserAccountRoleSynchronizer
-		_organizationUserAccountRoleSynchronizer = Mockito.mock(
-			OrganizationUserAccountRoleSynchronizer.class);
-	private final OrganizationUserAccountSynchronizer
-		_organizationUserAccountSynchronizer = Mockito.mock(
-			OrganizationUserAccountSynchronizer.class);
 	private final PropertyService _propertyService = Mockito.mock(
 		PropertyService.class);
-	private final RoleService _roleService = Mockito.mock(RoleService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
-	private final UserAccountSynchronizer _userAccountSynchronizer =
-		Mockito.mock(UserAccountSynchronizer.class);
+	private final UserAssignmentService _userAssignmentService = Mockito.mock(
+		UserAssignmentService.class);
 
 }

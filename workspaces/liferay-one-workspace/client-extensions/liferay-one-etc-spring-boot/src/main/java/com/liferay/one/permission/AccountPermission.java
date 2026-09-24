@@ -17,6 +17,8 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -31,16 +33,18 @@ public class AccountPermission {
 			String accountExternalReferenceCode, String actionId, Jwt jwt)
 		throws Exception {
 
-		if (!_contains(accountExternalReferenceCode, actionId, jwt)) {
+		if (!contains(
+				accountExternalReferenceCode, actionId, jwt,
+				_userAccountService.getMyUserAccount(jwt))) {
+
 			throw new PrincipalException();
 		}
 	}
 
-	private boolean _contains(
-			String accountExternalReferenceCode, String actionId, Jwt jwt)
+	public boolean contains(
+			String accountExternalReferenceCode, String actionId, Jwt jwt,
+			UserAccount userAccount)
 		throws Exception {
-
-		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
@@ -53,13 +57,22 @@ public class AccountPermission {
 		}
 
 		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
-			if (!accountExternalReferenceCode.equals(
+			if (!Objects.equals(
+					accountExternalReferenceCode,
 					accountBrief.getExternalReferenceCode())) {
 
 				continue;
 			}
 
 			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
+				if (ArrayUtil.contains(
+						RoleConstants.NAMES_ACCOUNT_MANAGER,
+						roleBrief.getName()) &&
+					actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
+
+					return true;
+				}
+
 				if (ArrayUtil.contains(
 						RoleConstants.NAMES_SUPPORT_ACCOUNT,
 						roleBrief.getName()) &&
@@ -76,6 +89,10 @@ public class AccountPermission {
 					return true;
 				}
 			}
+		}
+
+		if (actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
+			return false;
 		}
 
 		Account account = _accountService.getAccount(

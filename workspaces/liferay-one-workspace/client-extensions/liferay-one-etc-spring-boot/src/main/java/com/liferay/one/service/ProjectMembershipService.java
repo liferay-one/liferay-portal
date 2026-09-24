@@ -27,71 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class ProjectMembershipService extends OneBaseService {
 
-	/**
-	 * @return <code>true</code> if a project membership was added;
-	 *         <code>false</code> if one already existed or the project was not
-	 *         found
-	 */
-	public boolean addProjectMembership(
-			Jwt jwt, String projectExternalReferenceCode,
-			String roleExternalReferenceCode, long userId)
-		throws Exception {
-
-		List<ProjectMembership> projectMemberships = _getProjectMemberships(
-			jwt, projectExternalReferenceCode, roleExternalReferenceCode,
-			userId);
-
-		if (!projectMemberships.isEmpty()) {
-			return false;
-		}
-
-		Project project = _projectService.fetchProject(
-			projectExternalReferenceCode, jwt);
-
-		if (project == null) {
-			return false;
-		}
-
-		if (!_userAccountService.hasAccountUserAccount(
-				project.getAccountId(), userId)) {
-
-			_accountService.addAccountUserAccount(
-				project.getAccountId(), jwt, userId);
-		}
-
-		JSONObject jsonObject = new JSONObject();
-
-		jsonObject.put(
-			"r_accountEntryToProjectMembership_accountEntryId",
-			project.getAccountId()
-		).put(
-			"r_projectToProjectMembership_c_projectERC",
-			projectExternalReferenceCode
-		).put(
-			"r_userToProjectMembership_userId", userId
-		).put(
-			"roleExternalReferenceCode", roleExternalReferenceCode
-		);
-
-		post(
-			getAuthorization(jwt), jsonObject.toString(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/projectmemberships"
-			).build(
-			).toUri());
-
-		return true;
-	}
-
-	public void addProjectMembership(
-			String projectExternalReferenceCode, long userId)
-		throws Exception {
-
-		addProjectMembership(
-			projectExternalReferenceCode,
-			_PROJECT_USER_ROLE_EXTERNAL_REFERENCE_CODE, userId);
-	}
-
 	public void addProjectMembership(
 			String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
@@ -276,16 +211,7 @@ public class ProjectMembershipService extends OneBaseService {
 			jwt);
 	}
 
-	private static final String _PROJECT_USER_ROLE_EXTERNAL_REFERENCE_CODE =
-		"C_PROJECT_USER";
-
-	@Autowired
-	private AccountService _accountService;
-
 	@Autowired
 	private ProjectService _projectService;
-
-	@Autowired
-	private UserAccountService _userAccountService;
 
 }

@@ -7,7 +7,7 @@ package com.liferay.one;
 
 import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
-import com.liferay.one.permission.BusinessEventPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -36,8 +36,7 @@ public class JiraRestController extends OneBaseRestController {
 				String[] ticketIds)
 		throws Exception {
 
-		_businessEventPermission.check(
-			ActionKeys.VIEW, jwt, externalReferenceCode);
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
 		return getResponseEntity(
 			_jiraIssueService.getJiraSupportIssues(
@@ -46,9 +45,9 @@ public class JiraRestController extends OneBaseRestController {
 	}
 
 	@Autowired
-	private BusinessEventPermission _businessEventPermission;
+	private JiraIssueService _jiraIssueService;
 
 	@Autowired
-	private JiraIssueService _jiraIssueService;
+	private ProjectPermission _projectPermission;
 
 }

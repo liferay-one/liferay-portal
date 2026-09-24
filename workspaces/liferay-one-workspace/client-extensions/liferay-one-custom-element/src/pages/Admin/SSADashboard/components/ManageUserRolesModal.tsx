@@ -12,6 +12,7 @@ import {ssaRoles} from '~/pages/Admin/SSADashboard/utils/constants';
 import getFilteredItems from '~/pages/Admin/SSADashboard/utils/getFilteredItems';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import type {UserAccount} from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
@@ -68,41 +69,27 @@ const ManageUserRolesModal = ({
 			const {items: roles} =
 				await HeadlessAdminUser.getAccountRoles(accountERC);
 
-			const currentRolesSet = new Set(
-				currentRoles.map((role) => role.value)
-			);
 			const newRolesSet = new Set(
 				formData.roles.map((role) => role.value)
 			);
 
-			const rolesToAdd = roles.filter(
-				(role) =>
-					!currentRolesSet.has(role.name) &&
-					newRolesSet.has(role.name)
+			await Accounts.putUserAccountsAccountRoles(
+				accountERC,
+				user.id,
+				[
+					...ssaAccount.roleBriefs
+						.filter(
+							(roleBrief) =>
+								!ssaRoles.some(
+									(ssaRole) => ssaRole.key === roleBrief.name
+								)
+						)
+						.map((roleBrief) => roleBrief.id),
+					...roles
+						.filter((role) => newRolesSet.has(role.name))
+						.map((role) => role.id),
+				]
 			);
-
-			const rolesToRemove = roles.filter(
-				(role) =>
-					currentRolesSet.has(role.name) &&
-					!newRolesSet.has(role.name)
-			);
-
-			await Promise.all([
-				...rolesToRemove.map((role) =>
-					HeadlessAdminUser.deleteRoleAccountUser(
-						ssaAccount?.id,
-						role.id,
-						user.id
-					)
-				),
-				...rolesToAdd.map((role) =>
-					HeadlessAdminUser.sendRoleAccountUser(
-						ssaAccount?.id,
-						role.id,
-						user.id
-					)
-				),
-			]);
 
 			const updatedRoleBriefs = roles.filter((role) =>
 				newRolesSet.has(role.name)

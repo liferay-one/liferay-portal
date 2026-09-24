@@ -4,6 +4,7 @@
  */
 
 export type ProjectMember = {
+	accountRoleIds: number[];
 	designations: string[];
 	email: string;
 	membershipId: number;
@@ -22,6 +23,7 @@ export type ProjectMembersRow = {
 };
 
 export type AccountMemberOption = {
+	accountRoleIds: number[];
 	email: string;
 	name: string;
 	userId: number;
