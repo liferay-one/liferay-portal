@@ -23,19 +23,9 @@ class OAuth2Client {
 	) {}
 
 	async getHomePageURL() {
-		const response = await fetch(
-			`/o/oauth2/application?externalReferenceCode=${this.agentName}`
+		const {homePageURL} = await OAuth2.getUserAgentApplication(
+			this.agentName
 		);
-
-		if (!response.ok) {
-			throw new Error(
-				`Unable to resolve the home page URL of ${this.agentName} with status ${response.status}`
-			);
-		}
-
-		const {homePageURL} = (await response.json()) as {
-			homePageURL?: string;
-		};
 
 		if (!homePageURL) {
 			throw new Error(
