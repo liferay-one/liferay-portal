@@ -1,0 +1,35 @@
+{
+	"pageElement": {
+		"pageElements": [
+			{
+				"definition": {
+					"fragmentSettings": {
+						"unallowedFragments": [
+						]
+					}
+				},
+				"type": "DropZone"
+			}
+		],
+		"type": "Root"
+	},
+	"settings": {
+		"colorSchemeName": "01",
+		"globalCSSClientExtensions": [
+			{
+				"externalReferenceCode": "LXC:liferay-one-global-css",
+				"name": "Liferay One Global CSS"
+			}
+		],
+		"styleBook": {
+			"key": "liferay-one",
+			"name": "Liferay One"
+		},
+		"themeSettings": {
+			"lfr-theme:regular:show-footer": "false",
+			"lfr-theme:regular:show-header": "false",
+			"lfr-theme:regular:show-header-search": "false",
+			"lfr-theme:regular:wrap-widget-page-content": "false"
+		}
+	}
+}
