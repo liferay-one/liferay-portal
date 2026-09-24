@@ -26,6 +26,7 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.ProvisioningAnalyticsCloudService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.ProvisioningEnvironmentService;
@@ -70,6 +71,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
 		_contractService = Mockito.mock(ContractService.class);
 		_projectService = Mockito.mock(ProjectService.class);
+		_provisioningAnalyticsCloudService = Mockito.mock(
+			ProvisioningAnalyticsCloudService.class);
 		_provisioningContactService = Mockito.mock(
 			ProvisioningContactService.class);
 		_provisioningEmailService = Mockito.mock(
@@ -149,6 +152,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
 		ReflectionTestUtils.setField(
 			_subscriber, "_projectService", _projectService);
+		ReflectionTestUtils.setField(
+			_subscriber, "_provisioningAnalyticsCloudService",
+			_provisioningAnalyticsCloudService);
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningContactService",
 			_provisioningContactService);
@@ -796,6 +802,30 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveProvisionsAnalyticsCloudAfterCompletingOrder()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		InOrder inOrder = Mockito.inOrder(
+			_commerceOrderService, _provisioningAnalyticsCloudService);
+
+		inOrder.verify(
+			_commerceOrderService
+		).completeOrder(
+			_NEW_ORDER_ID,
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+
+		inOrder.verify(
+			_provisioningAnalyticsCloudService
+		).provisionAnalyticsCloudProject(
+			Mockito.eq(_account), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+	}
+
+	@Test
 	public void testReceiveProvisionsExistingBusinessOpportunity()
 		throws Exception {
 
@@ -1135,6 +1165,13 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_commerceOrderService, Mockito.never()
 		).completeOrder(
 			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		Mockito.verify(
+			_provisioningAnalyticsCloudService, Mockito.never()
+		).provisionAnalyticsCloudProject(
+			Mockito.any(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyList(), Mockito.anyList()
 		);
 
 		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
@@ -2107,10 +2144,10 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_accountService, _commerceAccountCurrencyService,
 			_commerceOrderItemService, _commerceOrderService,
 			_commerceSkuService, _contractService, _projectService,
-			_provisioningContactService, _provisioningEmailService,
-			_provisioningEnvironmentService, _provisioningIssueService,
-			_provisioningOrderService, _provisioningSubdomainService,
-			_userAccountService);
+			_provisioningAnalyticsCloudService, _provisioningContactService,
+			_provisioningEmailService, _provisioningEnvironmentService,
+			_provisioningIssueService, _provisioningOrderService,
+			_provisioningSubdomainService, _userAccountService);
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
@@ -2139,6 +2176,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private CommerceSkuService _commerceSkuService;
 	private ContractService _contractService;
 	private ProjectService _projectService;
+	private ProvisioningAnalyticsCloudService
+		_provisioningAnalyticsCloudService;
 	private ProvisioningContactService _provisioningContactService;
 	private ProvisioningEmailService _provisioningEmailService;
 	private ProvisioningEnvironmentService _provisioningEnvironmentService;

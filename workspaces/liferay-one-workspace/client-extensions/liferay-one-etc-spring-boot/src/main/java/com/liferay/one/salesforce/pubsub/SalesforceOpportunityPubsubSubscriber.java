@@ -26,6 +26,7 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.ProvisioningAnalyticsCloudService;
 import com.liferay.one.service.ProvisioningContactService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.ProvisioningEnvironmentService;
@@ -590,6 +591,16 @@ public class SalesforceOpportunityPubsubSubscriber
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
 			account, contract, provisionableSalesforceOpportunityLineItems);
 
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles =
+			_getSalesforceProjectContactRoles(recordJSONObject);
+
+		if (provisionedOrderItemCount > 0) {
+			_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+				account, newOrder.getId(), salesforceOpportunity,
+				salesforceProject, salesforceProjectContactRoles,
+				warningMessages);
+		}
+
 		_provisioningSubdomainService.provisionSubdomain(
 			account, provisionableSalesforceOpportunityLineItems);
 
@@ -604,8 +615,8 @@ public class SalesforceOpportunityPubsubSubscriber
 				OpportunityConstants.TYPE_RENEWAL)) {
 
 			userIds = _provisioningContactService.addProjectContacts(
-				account, _getSalesforceProjectContactRoles(recordJSONObject),
-				salesforceProject, warningMessages);
+				account, salesforceProjectContactRoles, salesforceProject,
+				warningMessages);
 		}
 
 		if (reprocessing) {
@@ -658,6 +669,10 @@ public class SalesforceOpportunityPubsubSubscriber
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private ProvisioningAnalyticsCloudService
+		_provisioningAnalyticsCloudService;
 
 	@Autowired
 	private ProvisioningContactService _provisioningContactService;
