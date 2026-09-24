@@ -84,7 +84,7 @@ public class AIHubService extends OneBaseService {
 	public void purchaseQuotaPrepaidBlock(
 		long accountEntryId, JSONObject jsonObject) {
 
-		post(
+		String response = post(
 			_liferayOAuth2AccessTokenManager.getAuthorization(
 				"external-ai-hub"),
 			jsonObject.toString(),
@@ -97,7 +97,10 @@ public class AIHubService extends OneBaseService {
 			).toUri());
 
 		if (_log.isInfoEnabled()) {
-			_log.info("AI Hub prepaid block  " + jsonObject);
+			_log.info(
+				StringBundler.concat(
+					"AI Hub prepaid block ", jsonObject, " for account ",
+					accountEntryId, " returned ", response));
 		}
 	}
 
