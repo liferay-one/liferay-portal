@@ -86,6 +86,17 @@ public class DXPRestController extends OneBaseRestController {
 
 		_commerceOrderPermission.check(orderId, userAccount);
 
+		JSONObject jsonObject = new JSONObject(json);
+
+		String projectId = jsonObject.getString("projectId");
+
+		JSONObject projectUsageJSONObject = _consoleService.getProjectUsage(
+			userAccount.getEmailAddress(), projectId);
+
+		if (projectUsageJSONObject == null) {
+			throw new PrincipalException();
+		}
+
 		Order order = _getCloudAppOrder(orderId);
 
 		_commerceOrderService.completeSettledOrder(order);
@@ -111,17 +122,6 @@ public class DXPRestController extends OneBaseRestController {
 			return ResponseEntity.status(
 				HttpStatus.CONFLICT
 			).build();
-		}
-
-		JSONObject jsonObject = new JSONObject(json);
-
-		String projectId = jsonObject.getString("projectId");
-
-		JSONObject projectUsageJSONObject = _consoleService.getProjectUsage(
-			userAccount.getEmailAddress(), projectId);
-
-		if (projectUsageJSONObject == null) {
-			throw new PrincipalException();
 		}
 
 		_cloudAppService.deployCloudApp(
