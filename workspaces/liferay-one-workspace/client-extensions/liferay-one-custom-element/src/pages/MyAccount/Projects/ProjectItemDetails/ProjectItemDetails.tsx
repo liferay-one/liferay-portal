@@ -188,7 +188,7 @@ export default function ProjectItemDetails({
 								displayType="primary"
 								onClick={() =>
 									Liferay.Util.navigate(
-										`${getSiteURL()}/product-purchase?productId=${productId}&projectExternalReferenceCode=${encodeURIComponent(projectId)}&aiHubTokens#/`
+										`${getSiteURL()}/product-purchase?productId=${productId}${isUnassignedProject(projectId) ? '' : `&projectExternalReferenceCode=${encodeURIComponent(projectId)}`}&aiHubTokens#/`
 									)
 								}
 							>
