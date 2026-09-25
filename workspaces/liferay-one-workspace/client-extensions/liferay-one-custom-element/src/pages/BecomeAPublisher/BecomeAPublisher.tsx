@@ -63,7 +63,7 @@ export function BecomeAPublisher() {
 					displayType="secondary"
 					onClick={() => {
 						Liferay.Util.navigate(
-							`${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/home`
+							`${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/marketplace`
 						);
 					}}
 				>
