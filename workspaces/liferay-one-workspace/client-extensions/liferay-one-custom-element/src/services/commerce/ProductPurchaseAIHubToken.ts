@@ -11,10 +11,11 @@ import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import ProductPurchase from './ProductPurchase';
 
+import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
+import type {DeliveryProduct} from '~/types/product';
 
 type AIHubOrderMetadata = {
-	aiHubAccountEntryId?: number;
 	contractEntityId?: number;
 	salesforceContractId?: string;
 	salesforceProjectId?: string;
@@ -23,6 +24,14 @@ type AIHubOrderMetadata = {
 export class ProductPurchaseAIHubToken extends ProductPurchase {
 	private aiHubOrderMetadata: AIHubOrderMetadata = {};
 	protected orderTypeExternalReferenceCode: OrderTypes = 'AI_HUB_TOKEN';
+
+	constructor(
+		account: Account,
+		product: DeliveryProduct,
+		private readonly projectExternalReferenceCode?: string | null
+	) {
+		super(account, product);
+	}
 
 	protected getCart() {
 		const baseCart = super.getCart();
@@ -34,8 +43,6 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 			customFields: {
 				...baseCart?.customFields,
 				[OrderCustomFields.ORDER_METADATA]: JSON.stringify({
-					aiHubAccountEntryId:
-						this.aiHubOrderMetadata.aiHubAccountEntryId,
 					contractEntityId: this.aiHubOrderMetadata.contractEntityId,
 					salesforceContractId:
 						this.aiHubOrderMetadata.salesforceContractId,
@@ -77,22 +84,30 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 					'AI_HUB'
 				),
 				nestedFields: 'customFields',
-				pageSize: '1',
+				pageSize: '20',
 				sort: 'createDate:desc',
 			})
 		);
 
-		const aiHubOrder = response?.items?.[0];
-
-		const orderMetadata = safeJSONParse<AIHubOrderMetadata>(
-			aiHubOrder?.customFields?.[
-				OrderCustomFields.ORDER_METADATA
-			] as string,
-			{}
+		const orderMetadatas = (response?.items ?? []).map((aiHubOrder) =>
+			safeJSONParse<AIHubOrderMetadata>(
+				aiHubOrder?.customFields?.[
+					OrderCustomFields.ORDER_METADATA
+				] as string,
+				{}
+			)
 		);
 
+		const orderMetadata =
+			(this.projectExternalReferenceCode
+				? orderMetadatas.find(
+						({salesforceProjectId}) =>
+							salesforceProjectId ===
+							this.projectExternalReferenceCode
+					)
+				: orderMetadatas[0]) ?? {};
+
 		this.aiHubOrderMetadata = {
-			aiHubAccountEntryId: orderMetadata.aiHubAccountEntryId,
 			contractEntityId: orderMetadata.contractEntityId,
 			salesforceContractId: orderMetadata.salesforceContractId,
 			salesforceProjectId: orderMetadata.salesforceProjectId,
