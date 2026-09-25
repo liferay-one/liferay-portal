@@ -5,6 +5,7 @@
 
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
+import SearchBuilder from '~/utils/SearchBuilder';
 
 import type {CommerceAccount, CommerceOption} from '~/types/commerce';
 import type {ContactSales} from '~/types/contactSales';
@@ -636,6 +637,26 @@ export async function postEmailAppInformation(emailInformation: unknown) {
 		headers,
 		method: 'POST',
 	});
+}
+
+export async function getSiteStructuredContentByFriendlyURLPath(
+	friendlyURLPath: string
+) {
+	const parameters = new URLSearchParams({
+		filter: SearchBuilder.eq('friendlyUrlPath', friendlyURLPath),
+		pageSize: '1',
+	});
+
+	const response = await fetch(
+		`${baseURL}/o/headless-delivery/v1.0/sites/${Liferay.ThemeDisplay.getScopeGroupId()}/structured-contents?${parameters.toString()}`,
+		{
+			headers,
+		}
+	);
+
+	const {items} = await response.json();
+
+	return items?.[0];
 }
 
 export async function getSiteStructuredContentByKey(key: string) {
