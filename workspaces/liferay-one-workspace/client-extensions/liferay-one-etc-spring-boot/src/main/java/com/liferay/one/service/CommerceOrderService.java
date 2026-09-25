@@ -724,25 +724,17 @@ public class CommerceOrderService extends OneBaseService {
 			CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
 		if (!orderMetadataJSONObject.has("aiHubQuotaBlockSize")) {
-			long accountEntryId = orderMetadataJSONObject.optLong(
-				"aiHubAccountEntryId");
+			long accountEntryId = _getAIHubAccountEntryId(
+				order,
+				orderMetadataJSONObject.optString("salesforceProjectId"));
 
 			if (accountEntryId <= 0) {
-				JSONObject aiHubApplicationJSONObject =
-					_aiHubService.getAIHubApplicationJSONObject(
-						"AI-HUB-" + order.getAccountExternalReferenceCode());
+				_log.error(
+					StringBundler.concat(
+						"Unable to complete order ", orderId,
+						" because no AI Hub was provisioned for its project"));
 
-				if (aiHubApplicationJSONObject == null) {
-					_log.error(
-						StringBundler.concat(
-							"Unable to complete order ", orderId,
-							" because its account has no AI Hub application"));
-
-					return;
-				}
-
-				accountEntryId = aiHubApplicationJSONObject.getLong(
-					"accountEntryId");
+				return;
 			}
 
 			Long quotaBlockSize = _getAIHubQuotaBlockSize(order);
@@ -838,6 +830,57 @@ public class CommerceOrderService extends OneBaseService {
 			defaultBillingAddressId);
 
 		return postalAddress.getAddressCountry();
+	}
+
+	private long _getAIHubAccountEntryId(
+			Order order, String salesforceProjectId)
+		throws Exception {
+
+		List<Order> aiHubOrders = getOrders(
+			StringBundler.concat(
+				"accountId/any(x:x eq ", order.getAccountId(),
+				") and orderTypeExternalReferenceCode eq 'AI_HUB'"));
+
+		long accountEntryId = 0;
+		long aiHubOrderId = 0;
+		boolean provisioned = false;
+
+		for (Order aiHubOrder : aiHubOrders) {
+			JSONObject orderMetadataJSONObject =
+				CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
+
+			long aiHubAccountEntryId = orderMetadataJSONObject.optLong(
+				"aiHubAccountEntryId");
+
+			if (aiHubAccountEntryId <= 0) {
+				continue;
+			}
+
+			provisioned = true;
+
+			if (Objects.equals(
+					orderMetadataJSONObject.optString("salesforceProjectId"),
+					salesforceProjectId) &&
+				(aiHubOrder.getId() > aiHubOrderId)) {
+
+				accountEntryId = aiHubAccountEntryId;
+				aiHubOrderId = aiHubOrder.getId();
+			}
+		}
+
+		if (provisioned) {
+			return accountEntryId;
+		}
+
+		JSONObject aiHubApplicationJSONObject =
+			_aiHubService.getAIHubApplicationJSONObject(
+				"AI-HUB-" + order.getAccountExternalReferenceCode());
+
+		if (aiHubApplicationJSONObject == null) {
+			return 0;
+		}
+
+		return aiHubApplicationJSONObject.getLong("accountEntryId");
 	}
 
 	private Long _getAIHubQuotaBlockSize(Order order) {
