@@ -159,6 +159,12 @@ public class DXPRestControllerTest {
 			() -> _dxpRestController.postProvisioning(
 				null, _ORDER_ID, _createProvisioningJSON("someone-else-prd")));
 
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.any(Order.class)
+		);
+
 		_verifyNeverDeployed();
 	}
 
