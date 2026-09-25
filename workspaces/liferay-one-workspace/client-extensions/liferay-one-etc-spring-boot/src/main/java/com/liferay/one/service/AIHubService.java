@@ -143,9 +143,10 @@ public class AIHubService extends OneBaseService {
 				put(
 					getAuthorization(), jsonObject.toString(),
 					UriComponentsBuilder.fromPath(
-						"/o/c/environments/by-external-reference-code/" +
-							externalReferenceCode
-					).build(
+						"/o/c/environments/by-external-reference-code" +
+							"/{externalReferenceCode}"
+					).buildAndExpand(
+						externalReferenceCode
 					).toUri()));
 		}
 		catch (Exception exception) {
