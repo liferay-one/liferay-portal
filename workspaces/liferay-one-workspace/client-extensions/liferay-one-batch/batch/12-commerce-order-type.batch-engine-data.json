@@ -59,6 +59,18 @@
 		{
 			"active": true,
 			"description": {
+				"en_US": "Designates that the order contains a cloud app installed from a connected DXP."
+			},
+			"displayOrder": 2,
+			"externalReferenceCode": "CLOUDAPP",
+			"name": {
+				"en_US": "Cloud App (DXP)"
+			},
+			"neverExpire": true
+		},
+		{
+			"active": true,
+			"description": {
 				"en_US": "Designates that the order contains a free or paid cloud app."
 			},
 			"displayOrder": 2,

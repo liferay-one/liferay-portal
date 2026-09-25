@@ -21,7 +21,6 @@ import java.util.Objects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,51 +29,79 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Keven Leone
  * @author Ricardo Mariz
  */
-@RequestMapping("/console")
+@CrossOrigin("*")
+@RequestMapping("/dxp")
 @RestController
-public class ConsoleRestController extends OneBaseRestController {
+public class DXPRestController extends OneBaseRestController {
 
-	@GetMapping("projects-usage")
-	public ResponseEntity<String> getProjectsUsage(
-			@AuthenticationPrincipal Jwt jwt)
+	@GetMapping("project-usage")
+	public ResponseEntity<String> getProjectUsage(
+			@AuthenticationPrincipal Jwt jwt, @RequestParam String projectId)
 		throws Exception {
 
 		UserAccount userAccount = getMyUserAccount(jwt);
+
+		JSONObject projectUsageJSONObject = _consoleService.getProjectUsage(
+			userAccount.getEmailAddress(), projectId);
+
+		if (projectUsageJSONObject == null) {
+			throw new ResponseStatusException(
+				HttpStatus.NOT_FOUND,
+				"No cloud project exists with ID " + projectId);
+		}
 
 		return ResponseEntity.ok(
 		).contentType(
 			MediaType.APPLICATION_JSON
 		).body(
-			_consoleService.getProjectsUsage(userAccount.getEmailAddress())
+			projectUsageJSONObject.toString()
 		);
 	}
 
 	@PostMapping("provisioning/{orderId}")
-	public ResponseEntity<Void> postProvisioningOrder(
+	public ResponseEntity<Void> postProvisioning(
 			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId,
 			@RequestBody String json)
 		throws Exception {
 
 		if (_log.isInfoEnabled()) {
-			_log.info("Provisioning order " + orderId);
+			_log.info("Provisioning order " + orderId + " from a DXP");
 		}
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
 		_commerceOrderPermission.check(orderId, userAccount);
 
+		JSONObject jsonObject = new JSONObject(json);
+
+		String projectId = jsonObject.getString("projectId");
+
+		JSONObject projectUsageJSONObject = _consoleService.getProjectUsage(
+			userAccount.getEmailAddress(), projectId);
+
+		if (projectUsageJSONObject == null) {
+			throw new PrincipalException();
+		}
+
 		Order order = _getCloudAppOrder(orderId);
+
+		_commerceOrderService.completeSettledOrder(order);
+
+		order = _getCloudAppOrder(orderId);
 
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -97,73 +124,11 @@ public class ConsoleRestController extends OneBaseRestController {
 			).build();
 		}
 
-		JSONObject jsonObject = new JSONObject(json);
-
-		String projectId = jsonObject.getString("projectId");
-
-		_checkConsoleProject(projectId, userAccount);
-
 		_cloudAppService.deployCloudApp(
 			orderId, jsonObject.getLong("orderItemId"), projectId);
 
 		return ResponseEntity.ok(
 		).build();
-	}
-
-	@PostMapping("uninstall-app/{orderId}")
-	public ResponseEntity<Void> postUninstallApp(
-			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId,
-			@RequestBody String json)
-		throws Exception {
-
-		_commerceOrderPermission.check(orderId, jwt);
-
-		_getCloudAppOrder(orderId);
-
-		JSONObject jsonObject = new JSONObject(json);
-
-		_cloudAppService.uninstallCloudApp(
-			jsonObject.getString("id"), orderId,
-			jsonObject.getLong("orderItemId"));
-
-		if (_log.isInfoEnabled()) {
-			_log.info("Uninstalled app for order " + orderId);
-		}
-
-		return ResponseEntity.ok(
-		).build();
-	}
-
-	private void _checkConsoleProject(String projectId, UserAccount userAccount)
-		throws Exception {
-
-		JSONObject jsonObject = new JSONObject(
-			_consoleService.getProjectsUsage(userAccount.getEmailAddress()));
-
-		JSONArray userProjectsJSONArray = jsonObject.getJSONArray(
-			"userProjects");
-
-		for (int i = 0; i < userProjectsJSONArray.length(); i++) {
-			JSONObject userProjectJSONObject =
-				userProjectsJSONArray.getJSONObject(i);
-
-			JSONArray environmentsJSONArray =
-				userProjectJSONObject.getJSONArray("environments");
-
-			for (int j = 0; j < environmentsJSONArray.length(); j++) {
-				JSONObject environmentJSONObject =
-					environmentsJSONArray.getJSONObject(j);
-
-				if (Objects.equals(
-						environmentJSONObject.getString("projectId"),
-						projectId)) {
-
-					return;
-				}
-			}
-		}
-
-		throw new PrincipalException();
 	}
 
 	private Order _getCloudAppOrder(long orderId) throws Exception {
@@ -180,15 +145,14 @@ public class ConsoleRestController extends OneBaseRestController {
 				order.getOrderTypeExternalReferenceCode())) {
 
 			throw new IllegalArgumentException(
-				"Unsupported order type: " +
+				"Unsupported order type " +
 					order.getOrderTypeExternalReferenceCode());
 		}
 
 		return order;
 	}
 
-	private static final Log _log = LogFactory.getLog(
-		ConsoleRestController.class);
+	private static final Log _log = LogFactory.getLog(DXPRestController.class);
 
 	@Autowired
 	private CloudAppService _cloudAppService;

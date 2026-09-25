@@ -15,7 +15,6 @@ import com.liferay.one.service.ConsoleService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -28,15 +27,16 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Ricardo Mariz
  */
-public class ConsoleRestControllerTest {
+public class DXPRestControllerTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		_consoleRestController = new ConsoleRestController();
+		_dxpRestController = new DXPRestController();
 
 		_cloudAppService = Mockito.mock(CloudAppService.class);
 		_commerceOrderPermission = Mockito.mock(CommerceOrderPermission.class);
@@ -55,46 +55,87 @@ public class ConsoleRestControllerTest {
 		);
 
 		Mockito.when(
-			_consoleService.getProjectsUsage(_EMAIL_ADDRESS)
+			_consoleService.getProjectUsage(_EMAIL_ADDRESS, _PROJECT_ID)
 		).thenReturn(
-			_createProjectsUsageJSON(_PROJECT_ID)
+			_createProjectUsageJSONObject()
 		);
 
 		ReflectionTestUtils.setField(
-			_consoleRestController, "_cloudAppService", _cloudAppService);
+			_dxpRestController, "_cloudAppService", _cloudAppService);
 		ReflectionTestUtils.setField(
-			_consoleRestController, "_commerceOrderPermission",
+			_dxpRestController, "_commerceOrderPermission",
 			_commerceOrderPermission);
 		ReflectionTestUtils.setField(
-			_consoleRestController, "_commerceOrderService",
-			_commerceOrderService);
+			_dxpRestController, "_commerceOrderService", _commerceOrderService);
 		ReflectionTestUtils.setField(
-			_consoleRestController, "_consoleService", _consoleService);
+			_dxpRestController, "_consoleService", _consoleService);
 		ReflectionTestUtils.setField(
-			_consoleRestController, "_userAccountService", _userAccountService);
+			_dxpRestController, "_userAccountService", _userAccountService);
 	}
 
 	@Test
-	public void testGetProjectsUsage() throws Exception {
+	public void testGetProjectUsage() throws Exception {
 		ResponseEntity<String> responseEntity =
-			_consoleRestController.getProjectsUsage(null);
+			_dxpRestController.getProjectUsage(null, _PROJECT_ID);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		Assertions.assertEquals(
-			_createProjectsUsageJSON(_PROJECT_ID), responseEntity.getBody());
+			_createProjectUsageJSONObject().toString(),
+			responseEntity.getBody());
 	}
 
 	@Test
-	public void testPostProvisioningOrderDeploysAuthorizedProject()
+	public void testGetProjectUsageRejectsForeignProject() throws Exception {
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _dxpRestController.getProjectUsage(
+					null, "someone-else-prd"));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPostProvisioningCompletesSettledOrderBeforeDeploying()
+		throws Exception {
+
+		Order order = _createOrder(
+			"CLOUDAPP",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+
+		_whenFetchCommerceOrder(order);
+
+		ResponseEntity<Void> responseEntity =
+			_dxpRestController.postProvisioning(
+				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeSettledOrder(
+			order
+		);
+
+		Mockito.verify(
+			_cloudAppService
+		).deployCloudApp(
+			_ORDER_ID, _ORDER_ITEM_ID, _PROJECT_ID
+		);
+	}
+
+	@Test
+	public void testPostProvisioningDeploysCloudAppOrderType()
 		throws Exception {
 
 		_whenFetchCommerceOrder(
 			_createOrder(
 				"CLOUD_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED));
 
 		ResponseEntity<Void> responseEntity =
-			_consoleRestController.postProvisioningOrder(
+			_dxpRestController.postProvisioning(
 				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID));
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -107,102 +148,62 @@ public class ConsoleRestControllerTest {
 	}
 
 	@Test
-	public void testPostProvisioningOrderDeploysDXPOrderType()
-		throws Exception {
-
+	public void testPostProvisioningRejectsForeignProject() throws Exception {
 		_whenFetchCommerceOrder(
 			_createOrder(
 				"CLOUDAPP",
 				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
 
-		ResponseEntity<Void> responseEntity =
-			_consoleRestController.postProvisioningOrder(
-				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID));
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		Mockito.verify(
-			_cloudAppService
-		).deployCloudApp(
-			_ORDER_ID, _ORDER_ITEM_ID, _PROJECT_ID
-		);
-	}
-
-	@Test
-	public void testPostProvisioningOrderRejectsForeignProject()
-		throws Exception {
-
-		_whenFetchCommerceOrder(
-			_createOrder(
-				"CLOUD_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
-
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _consoleRestController.postProvisioningOrder(
+			() -> _dxpRestController.postProvisioning(
 				null, _ORDER_ID, _createProvisioningJSON("someone-else-prd")));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.any(Order.class)
+		);
 
 		_verifyNeverDeployed();
 	}
 
 	@Test
-	public void testPostProvisioningOrderRejectsOtherOrderType()
-		throws Exception {
-
+	public void testPostProvisioningRejectsOtherOrderType() throws Exception {
 		_whenFetchCommerceOrder(
 			_createOrder(
-				"DXP_APP",
+				"LOW_CODE_CONFIGURATION",
 				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
 
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
-			() -> _consoleRestController.postProvisioningOrder(
+			() -> _dxpRestController.postProvisioning(
 				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID)));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.any(Order.class)
+		);
 
 		_verifyNeverDeployed();
 	}
 
 	@Test
-	public void testPostProvisioningOrderReturnsConflictForPendingPayment()
+	public void testPostProvisioningReturnsConflictForPendingPayment()
 		throws Exception {
 
 		_whenFetchCommerceOrder(
-			_createOrder("CLOUD_APP", _PAYMENT_STATUS_PENDING));
+			_createOrder("CLOUDAPP", _PAYMENT_STATUS_PENDING));
 
 		ResponseEntity<Void> responseEntity =
-			_consoleRestController.postProvisioningOrder(
+			_dxpRestController.postProvisioning(
 				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID));
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseEntity.getStatusCode());
 
 		_verifyNeverDeployed();
-	}
-
-	@Test
-	public void testPostUninstallApp() throws Exception {
-		_whenFetchCommerceOrder(
-			_createOrder(
-				"CLOUD_APP",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
-
-		ResponseEntity<Void> responseEntity =
-			_consoleRestController.postUninstallApp(
-				null, _ORDER_ID,
-				new JSONObject(
-				).put(
-					"id", _DEPLOYMENT_ID
-				).put(
-					"orderItemId", _ORDER_ITEM_ID
-				).toString());
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		Mockito.verify(
-			_cloudAppService
-		).uninstallCloudApp(
-			_DEPLOYMENT_ID, _ORDER_ID, _ORDER_ITEM_ID
-		);
 	}
 
 	private Order _createOrder(
@@ -216,25 +217,11 @@ public class ConsoleRestControllerTest {
 		return order;
 	}
 
-	private String _createProjectsUsageJSON(String projectId) {
+	private JSONObject _createProjectUsageJSONObject() {
 		return new JSONObject(
 		).put(
-			"userProjects",
-			new JSONArray(
-			).put(
-				new JSONObject(
-				).put(
-					"environments",
-					new JSONArray(
-					).put(
-						new JSONObject(
-						).put(
-							"projectId", projectId
-						)
-					)
-				)
-			)
-		).toString();
+			"rootProjectId", "omnitest"
+		);
 	}
 
 	private String _createProvisioningJSON(String projectId) {
@@ -263,8 +250,6 @@ public class ConsoleRestControllerTest {
 		);
 	}
 
-	private static final String _DEPLOYMENT_ID = "mock-deployment-1";
-
 	private static final String _EMAIL_ADDRESS = "buyer@example.com";
 
 	private static final long _ORDER_ID = 1000L;
@@ -278,8 +263,8 @@ public class ConsoleRestControllerTest {
 	private CloudAppService _cloudAppService;
 	private CommerceOrderPermission _commerceOrderPermission;
 	private CommerceOrderService _commerceOrderService;
-	private ConsoleRestController _consoleRestController;
 	private ConsoleService _consoleService;
+	private DXPRestController _dxpRestController;
 	private UserAccountService _userAccountService;
 
 }

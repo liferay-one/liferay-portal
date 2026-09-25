@@ -75,6 +75,9 @@ function main {
 	echo "Setting payment methods."
 	./scripts/bootstrap/set_payment_methods.sh
 
+	echo "Creating the DXP connector OAuth2 application."
+	./scripts/bootstrap/create_dxp_oauth_application.sh
+
 	echo "Re-provisioning etc-spring-boot OAuth redirect URIs."
 	./scripts/bootstrap/reprovision_etc_spring_boot_oauth.sh
 

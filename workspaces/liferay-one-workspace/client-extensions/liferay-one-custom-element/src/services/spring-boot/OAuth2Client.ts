@@ -22,6 +22,20 @@ class OAuth2Client {
 		protected basePath: string
 	) {}
 
+	async getHomePageURL() {
+		const {homePageURL} = await OAuth2.getUserAgentApplication(
+			this.agentName
+		);
+
+		if (!homePageURL) {
+			throw new Error(
+				`Unable to resolve the home page URL of ${this.agentName}`
+			);
+		}
+
+		return homePageURL.replace(/\/$/, '');
+	}
+
 	private getOAuth2Client() {
 		if (!this.oAuth2ClientPromise) {
 			this.oAuth2ClientPromise = OAuth2.FromUserAgentApplication(
