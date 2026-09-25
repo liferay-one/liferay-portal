@@ -9,6 +9,7 @@ import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import i18n from '~/i18n';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 export default function AIHubAlert() {
@@ -17,9 +18,10 @@ export default function AIHubAlert() {
 	const {projectId} = useProject();
 	const {environments} = useProjectEnvironments();
 
-	const environment = filterEnvironmentsByProject(
-		projectId,
-		environments
+	const environment = (
+		isUnassignedProject(projectId)
+			? environments
+			: filterEnvironmentsByProject(projectId, environments)
 	).find((item) => item.offering === 'AI Hub');
 
 	if (!showAlert) {
