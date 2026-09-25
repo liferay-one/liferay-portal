@@ -44,6 +44,7 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';
+import {removeHTMLTags} from '~/utils/stringUtils';
 
 type ProjectItemDetailsProps = {
 	itemType: ProjectItemType;
@@ -198,7 +199,9 @@ export default function ProjectItemDetails({
 					}
 					banner={isAIHub ? <AIHubAlert /> : undefined}
 					description={
-						itemType === 'product' ? product.description : undefined
+						itemType === 'product'
+							? removeHTMLTags(product.description ?? '')
+							: undefined
 					}
 					icon={
 						itemType === 'product'
@@ -208,8 +211,11 @@ export default function ProjectItemDetails({
 					logoColor={getLogoColor(product.name)}
 					logoSrc={isAIHub ? aiHubIconUrl : undefined}
 					name={product.name}
-					publisher={getSpecificationValue(product, 'publisher-name')}
-					showByPrefix={itemType === 'product'}
+					publisher={
+						getSpecificationValue(product, 'publisher-name') ||
+						product.catalogName
+					}
+					showByPrefix={itemType === 'product' && !isAIHub}
 					status={orderInfo.status || 'active'}
 				/>
 			}
