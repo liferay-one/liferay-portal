@@ -14,6 +14,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.jira.synchronizer.AccountUserAccountRoleSynchronizer;
@@ -42,7 +43,6 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -912,24 +912,27 @@ public class AccountsRestControllerTest {
 		AccountsRestController accountsRestController = _createController();
 
 		Mockito.when(
-			_accountService.hasDuplicateAccountName("Acme", null)
-		).thenReturn(
-			true
+			_accountService.addAccount(ArgumentMatchers.any(Account.class))
+		).thenThrow(
+			new DuplicateAccountException(
+				"An account already exists with the name Acme")
 		);
 
-		ResponseStatusException responseStatusException =
+		DuplicateAccountException duplicateAccountException =
 			Assertions.assertThrows(
-				ResponseStatusException.class,
+				DuplicateAccountException.class,
 				() -> accountsRestController.postAccounts(
 					null, "{\"name\": \"Acme\"}", null));
 
 		Assertions.assertEquals(
-			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+			"An account already exists with the name Acme",
+			duplicateAccountException.getMessage());
 
 		Mockito.verify(
 			_accountService, Mockito.never()
-		).addAccount(
-			ArgumentMatchers.any(Account.class)
+		).addAccountUserAccountByEmailAddress(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.any()
 		);
 	}
 
@@ -2200,8 +2203,6 @@ public class AccountsRestControllerTest {
 			_entitlementDefinitionService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_entitlementService", _entitlementService);
-		ReflectionTestUtils.setField(
-			accountsRestController, "_keyedLock", new KeyedLock());
 		ReflectionTestUtils.setField(
 			accountsRestController, "_licenseKeyCSVExporter",
 			_licenseKeyCSVExporter);

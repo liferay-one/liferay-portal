@@ -150,8 +150,14 @@ public class ProvisioningAnalyticsCloudService {
 		SalesforceOpportunity salesforceOpportunity,
 		List<SalesforceProjectContactRole> salesforceProjectContactRoles) {
 
-		String administratorContactRole =
-			ldp ? "LDP Administrator" : "DSR Administrator";
+		String administratorContactRole = null;
+
+		if (ldp) {
+			administratorContactRole = "LDP Administrator";
+		}
+		else {
+			administratorContactRole = "DSR Administrator";
+		}
 
 		for (SalesforceProjectContactRole salesforceProjectContactRole :
 				salesforceProjectContactRoles) {
@@ -225,7 +231,14 @@ public class ProvisioningAnalyticsCloudService {
 			return;
 		}
 
-		String customFieldPrefix = ldp ? "ldp" : "dsr";
+		String customFieldPrefix = null;
+
+		if (ldp) {
+			customFieldPrefix = "ldp";
+		}
+		else {
+			customFieldPrefix = "dsr";
+		}
 
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();
