@@ -5,16 +5,24 @@
 
 import ClayAlert from '@clayui/alert';
 import {useState} from 'react';
+import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import i18n from '~/i18n';
+import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 export default function AIHubAlert() {
 	const [showAlert, setShowAlert] = useState(true);
 
+	const {projectId} = useProject();
 	const {environments} = useProjectEnvironments();
 
-	const environment = environments.find((item) => item.offering === 'AI Hub');
+	const environment = (
+		isUnassignedProject(projectId)
+			? environments
+			: filterEnvironmentsByProject(projectId, environments)
+	).find((item) => item.offering === 'AI Hub');
 
 	if (!showAlert) {
 		return null;

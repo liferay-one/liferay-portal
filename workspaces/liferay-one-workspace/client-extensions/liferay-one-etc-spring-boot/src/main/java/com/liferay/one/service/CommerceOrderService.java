@@ -20,8 +20,10 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.AccountSupportInfo;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -57,6 +59,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Async;
@@ -268,6 +271,35 @@ public class CommerceOrderService extends OneBaseService {
 			JSONObject orderMetadataJSONObject =
 				CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
+			Map<String, String> pendingCustomFields = new HashMap<>();
+
+			if (orderMetadataJSONObject.has("aiHubAccountEntryId")) {
+				orderMetadataJSONObject.remove("aiHubAccountEntryId");
+
+				pendingCustomFields.put(
+					"order-metadata", orderMetadataJSONObject.toString());
+			}
+
+			String salesforceProjectId = orderMetadataJSONObject.optString(
+				"salesforceProjectId");
+
+			String projectName = _getProjectName(order, salesforceProjectId);
+
+			Map<String, String> orderCustomFields =
+				(Map<String, String>)order.getCustomFields();
+
+			if (Validator.isNotNull(projectName) &&
+				((orderCustomFields == null) ||
+				 !Objects.equals(
+					 orderCustomFields.get("projectName"), projectName))) {
+
+				pendingCustomFields.put("projectName", projectName);
+			}
+
+			if (!pendingCustomFields.isEmpty()) {
+				patchOrderCustomFields(orderId, pendingCustomFields);
+			}
+
 			if (!_createSalesforceOpportunity(order, orderMetadataJSONObject)) {
 				return;
 			}
@@ -283,9 +315,7 @@ public class CommerceOrderService extends OneBaseService {
 
 			customFields.put(
 				"order-metadata", orderMetadataJSONObject.toString());
-			customFields.put(
-				"salesforceProjectId",
-				orderMetadataJSONObject.optString("salesforceProjectId"));
+			customFields.put("salesforceProjectId", salesforceProjectId);
 
 			updateOrder(
 				customFields, orderId,
@@ -703,15 +733,15 @@ public class CommerceOrderService extends OneBaseService {
 			CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
 		if (!orderMetadataJSONObject.has("aiHubQuotaBlockSize")) {
-			JSONObject aiHubApplicationJSONObject =
-				_aiHubService.getAIHubApplicationJSONObject(
-					"AI-HUB-" + order.getAccountExternalReferenceCode());
+			long accountEntryId = _getAIHubAccountEntryId(
+				order,
+				orderMetadataJSONObject.optString("salesforceProjectId"));
 
-			if (aiHubApplicationJSONObject == null) {
+			if (accountEntryId <= 0) {
 				_log.error(
 					StringBundler.concat(
 						"Unable to complete order ", orderId,
-						" because its account has no AI Hub application"));
+						" because no AI Hub was provisioned for its project"));
 
 				return;
 			}
@@ -723,7 +753,7 @@ public class CommerceOrderService extends OneBaseService {
 			}
 
 			_aiHubService.purchaseQuotaPrepaidBlock(
-				aiHubApplicationJSONObject.getLong("accountEntryId"),
+				accountEntryId,
 				new JSONObject(
 				).put(
 					"size", quotaBlockSize
@@ -809,6 +839,98 @@ public class CommerceOrderService extends OneBaseService {
 			defaultBillingAddressId);
 
 		return postalAddress.getAddressCountry();
+	}
+
+	private long _getAIHubAccountEntryId(
+			Order order, String salesforceProjectId)
+		throws Exception {
+
+		List<Order> aiHubOrders = getOrders(
+			StringBundler.concat(
+				"accountId/any(x:x eq ", order.getAccountId(),
+				") and orderStatus/any(x:x eq ",
+				CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+				") and orderTypeExternalReferenceCode eq 'AI_HUB'"));
+
+		boolean accountRecordsAIHub = false;
+		long accountEntryId = 0;
+		long aiHubOrderId = 0;
+		Map<Long, String> salesforceProjectIds = new HashMap<>();
+
+		for (Order aiHubOrder : aiHubOrders) {
+			if (!Objects.equals(
+					aiHubOrder.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+
+				continue;
+			}
+
+			JSONObject orderMetadataJSONObject = null;
+
+			try {
+				orderMetadataJSONObject =
+					CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to read the order metadata of order " +
+						aiHubOrder.getId(),
+					exception);
+
+				continue;
+			}
+
+			String aiHubOrderSalesforceProjectId =
+				orderMetadataJSONObject.optString("salesforceProjectId");
+
+			salesforceProjectIds.put(
+				aiHubOrder.getId(), aiHubOrderSalesforceProjectId);
+
+			long aiHubAccountEntryId = orderMetadataJSONObject.optLong(
+				"aiHubAccountEntryId");
+
+			if (aiHubAccountEntryId <= 0) {
+				continue;
+			}
+
+			accountRecordsAIHub = true;
+
+			if (Objects.equals(
+					aiHubOrderSalesforceProjectId, salesforceProjectId) &&
+				(aiHubOrder.getId() > aiHubOrderId)) {
+
+				accountEntryId = aiHubAccountEntryId;
+				aiHubOrderId = aiHubOrder.getId();
+			}
+		}
+
+		if (accountEntryId > 0) {
+			return accountEntryId;
+		}
+
+		JSONObject aiHubApplicationJSONObject =
+			_aiHubService.getAIHubApplicationJSONObject(
+				"AI-HUB-" + order.getAccountExternalReferenceCode());
+
+		if (aiHubApplicationJSONObject == null) {
+			return 0;
+		}
+
+		String applicationSalesforceProjectId = salesforceProjectIds.get(
+			aiHubApplicationJSONObject.optLong(
+				"r_orderToAIHubApplication_commerceOrderId"));
+
+		boolean applicationMatchesProject = Objects.equals(
+			applicationSalesforceProjectId, salesforceProjectId);
+		boolean applicationPredatesRecordedAIHubs =
+			!accountRecordsAIHub &&
+			Validator.isNull(applicationSalesforceProjectId);
+
+		if (applicationMatchesProject || applicationPredatesRecordedAIHubs) {
+			return aiHubApplicationJSONObject.getLong("accountEntryId");
+		}
+
+		return 0;
 	}
 
 	private Long _getAIHubQuotaBlockSize(Order order) {
@@ -1090,6 +1212,31 @@ public class CommerceOrderService extends OneBaseService {
 		return null;
 	}
 
+	private String _getProjectName(Order order, String salesforceProjectId) {
+		if (Validator.isNull(salesforceProjectId)) {
+			return null;
+		}
+
+		try {
+			Project project = _projectService.fetchProject(salesforceProjectId);
+
+			if ((project != null) &&
+				Objects.equals(project.getAccountId(), order.getAccountId())) {
+
+				return project.getName();
+			}
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to get the name of project ", salesforceProjectId,
+					" for order ", order.getId()),
+				exception);
+		}
+
+		return null;
+	}
+
 	private Integer _getSettledPaymentStatus(Order order) {
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -1272,6 +1419,23 @@ public class CommerceOrderService extends OneBaseService {
 				"salesforceProjectId");
 
 			if (Validator.isNotNull(salesforceProjectId)) {
+				Project project = _projectService.fetchProject(
+					salesforceProjectId);
+
+				if ((project == null) ||
+					!Objects.equals(
+						project.getAccountId(), order.getAccountId())) {
+
+					_log.error(
+						StringBundler.concat(
+							"Unable to provision AI Hub for order ",
+							order.getId(), " because project ",
+							salesforceProjectId,
+							" does not belong to its account"));
+
+					return;
+				}
+
 				provisionJSONObject.put(
 					"accountEntryExternalReferenceCode", salesforceProjectId);
 			}
@@ -1286,12 +1450,13 @@ public class CommerceOrderService extends OneBaseService {
 				provisionJSONObject);
 
 			if (aiHubJSONObject != null) {
+				long accountEntryId = aiHubJSONObject.getLong("accountEntryId");
+
 				_aiHubService.putAIHubApplication(
 					"AI-HUB-" + order.getAccountExternalReferenceCode(),
 					new JSONObject(
 					).put(
-						"accountEntryId",
-						aiHubJSONObject.getLong("accountEntryId")
+						"accountEntryId", accountEntryId
 					).put(
 						"accountName",
 						aiHubFormJSONObject.getString("aiHubAccountName")
@@ -1307,6 +1472,56 @@ public class CommerceOrderService extends OneBaseService {
 						"r_orderToAIHubApplication_commerceOrderERC",
 						order.getExternalReferenceCode()
 					));
+
+				orderMetadataJSONObject.put(
+					"aiHubAccountEntryId", accountEntryId);
+
+				patchOrderCustomFields(
+					order.getId(),
+					Map.of(
+						"order-metadata", orderMetadataJSONObject.toString()));
+
+				if (Validator.isNotNull(salesforceProjectId)) {
+					JSONObject environmentJSONObject = new JSONObject(
+					).put(
+						"activationStatus",
+						EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+					).put(
+						"offering", EnvironmentConstants.OFFERING_AI_HUB
+					).put(
+						"ownerEmailAddress", emailAddress
+					).put(
+						"r_accountEntryToEnvironment_accountEntryId",
+						order.getAccountId()
+					).put(
+						"r_projectToEnvironment_c_projectERC",
+						salesforceProjectId
+					);
+
+					String salesforceContractId =
+						orderMetadataJSONObject.optString(
+							"salesforceContractId");
+
+					if (Validator.isNotNull(salesforceContractId)) {
+						Contract contract =
+							_contractService.
+								fetchContractByExternalReferenceCode(
+									salesforceContractId);
+
+						if ((contract != null) &&
+							Objects.equals(
+								contract.getProjectExternalReferenceCode(),
+								salesforceProjectId)) {
+
+							environmentJSONObject.put(
+								"r_contractToEnvironment_c_contractERC",
+								salesforceContractId);
+						}
+					}
+
+					_aiHubService.putAIHubEnvironment(
+						"AI-HUB-" + salesforceProjectId, environmentJSONObject);
+				}
 			}
 		}
 		catch (Exception exception) {
@@ -1390,6 +1605,10 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	@Lazy
+	private ContractService _contractService;
 
 	@Autowired
 	private CountryService _countryService;

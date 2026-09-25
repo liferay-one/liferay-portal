@@ -84,7 +84,7 @@ public class AIHubService extends OneBaseService {
 	public void purchaseQuotaPrepaidBlock(
 		long accountEntryId, JSONObject jsonObject) {
 
-		post(
+		String response = post(
 			_liferayOAuth2AccessTokenManager.getAuthorization(
 				"external-ai-hub"),
 			jsonObject.toString(),
@@ -96,8 +96,18 @@ public class AIHubService extends OneBaseService {
 			).build(
 			).toUri());
 
+		if (response == null) {
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to purchase AI Hub prepaid block ", jsonObject,
+					" for account ", accountEntryId));
+		}
+
 		if (_log.isInfoEnabled()) {
-			_log.info("AI Hub prepaid block  " + jsonObject);
+			_log.info(
+				StringBundler.concat(
+					"AI Hub prepaid block ", jsonObject, " for account ",
+					accountEntryId, " returned ", response));
 		}
 	}
 
@@ -117,6 +127,31 @@ public class AIHubService extends OneBaseService {
 		catch (Exception exception) {
 			_log.error(
 				"Unable to put AI Hub Application " + externalReferenceCode,
+				exception);
+
+			return null;
+		}
+	}
+
+	public JSONObject putAIHubEnvironment(
+		String externalReferenceCode, JSONObject jsonObject) {
+
+		jsonObject.put("aiHubURL", _externalAIHubHomePageURL);
+
+		try {
+			return new JSONObject(
+				put(
+					getAuthorization(), jsonObject.toString(),
+					UriComponentsBuilder.fromPath(
+						"/o/c/environments/by-external-reference-code" +
+							"/{externalReferenceCode}"
+					).buildAndExpand(
+						externalReferenceCode
+					).toUri()));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to put AI Hub environment " + externalReferenceCode,
 				exception);
 
 			return null;

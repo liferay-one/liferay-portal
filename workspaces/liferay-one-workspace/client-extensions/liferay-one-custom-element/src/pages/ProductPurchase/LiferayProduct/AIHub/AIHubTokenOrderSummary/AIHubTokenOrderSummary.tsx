@@ -92,7 +92,10 @@ const AIHubTokenOrderSummary = () => {
 	const onSubmit = async () => {
 		const productPurchase = new ProductPurchaseAIHubToken(
 			selectedAccount,
-			product
+			product,
+			new URLSearchParams(window.location.search).get(
+				'projectExternalReferenceCode'
+			)
 		);
 
 		await handlePurchase(productPurchase, {

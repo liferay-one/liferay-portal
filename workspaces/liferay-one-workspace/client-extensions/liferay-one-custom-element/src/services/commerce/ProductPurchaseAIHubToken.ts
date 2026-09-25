@@ -6,12 +6,14 @@
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
-import {OrderCustomFields} from '~/utils/orderUtils';
+import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import ProductPurchase from './ProductPurchase';
 
+import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
+import type {DeliveryProduct} from '~/types/product';
 
 type AIHubOrderMetadata = {
 	contractEntityId?: number;
@@ -22,6 +24,14 @@ type AIHubOrderMetadata = {
 export class ProductPurchaseAIHubToken extends ProductPurchase {
 	private aiHubOrderMetadata: AIHubOrderMetadata = {};
 	protected orderTypeExternalReferenceCode: OrderTypes = 'AI_HUB_TOKEN';
+
+	constructor(
+		account: Account,
+		product: DeliveryProduct,
+		private readonly projectExternalReferenceCode?: string | null
+	) {
+		super(account, product);
+	}
 
 	protected getCart() {
 		const baseCart = super.getCart();
@@ -74,24 +84,42 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 					'AI_HUB'
 				),
 				nestedFields: 'customFields',
-				pageSize: '1',
+				pageSize: '100',
 				sort: 'createDate:desc',
 			})
 		);
 
-		const aiHubOrder = response?.items?.[0];
+		const orderMetadatas = (response?.items ?? [])
+			.filter(
+				(aiHubOrder) => getOrderStatusToken(aiHubOrder) === 'completed'
+			)
+			.map((aiHubOrder) =>
+				safeJSONParse<AIHubOrderMetadata>(
+					aiHubOrder?.customFields?.[
+						OrderCustomFields.ORDER_METADATA
+					] as string,
+					{}
+				)
+			);
 
-		const orderMetadata = safeJSONParse<AIHubOrderMetadata>(
-			aiHubOrder?.customFields?.[
-				OrderCustomFields.ORDER_METADATA
-			] as string,
-			{}
-		);
+		const orderMetadata = this.projectExternalReferenceCode
+			? orderMetadatas.find(
+					({salesforceProjectId}) =>
+						salesforceProjectId ===
+						this.projectExternalReferenceCode
+				)
+			: orderMetadatas[0];
+
+		if (this.projectExternalReferenceCode && !orderMetadata) {
+			throw new Error(
+				`No AI Hub order exists for project ${this.projectExternalReferenceCode}`
+			);
+		}
 
 		this.aiHubOrderMetadata = {
-			contractEntityId: orderMetadata.contractEntityId,
-			salesforceContractId: orderMetadata.salesforceContractId,
-			salesforceProjectId: orderMetadata.salesforceProjectId,
+			contractEntityId: orderMetadata?.contractEntityId,
+			salesforceContractId: orderMetadata?.salesforceContractId,
+			salesforceProjectId: orderMetadata?.salesforceProjectId,
 		};
 	}
 }
