@@ -44,7 +44,7 @@ export default function ProjectSelection() {
 
 		setProject(singleProject);
 
-		navigate('/environment-selection');
+		navigate('/environment-selection', {replace: true});
 	}, [navigate, setProject, singleProject]);
 
 	if (!selectedAccount) {
