@@ -98,19 +98,24 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 			)
 		);
 
-		const orderMetadata =
-			(this.projectExternalReferenceCode
-				? orderMetadatas.find(
-						({salesforceProjectId}) =>
-							salesforceProjectId ===
-							this.projectExternalReferenceCode
-					)
-				: orderMetadatas[0]) ?? {};
+		const orderMetadata = this.projectExternalReferenceCode
+			? orderMetadatas.find(
+					({salesforceProjectId}) =>
+						salesforceProjectId ===
+						this.projectExternalReferenceCode
+				)
+			: orderMetadatas[0];
+
+		if (this.projectExternalReferenceCode && !orderMetadata) {
+			throw new Error(
+				`No AI Hub order exists for project ${this.projectExternalReferenceCode}`
+			);
+		}
 
 		this.aiHubOrderMetadata = {
-			contractEntityId: orderMetadata.contractEntityId,
-			salesforceContractId: orderMetadata.salesforceContractId,
-			salesforceProjectId: orderMetadata.salesforceProjectId,
+			contractEntityId: orderMetadata?.contractEntityId,
+			salesforceContractId: orderMetadata?.salesforceContractId,
+			salesforceProjectId: orderMetadata?.salesforceProjectId,
 		};
 	}
 }
