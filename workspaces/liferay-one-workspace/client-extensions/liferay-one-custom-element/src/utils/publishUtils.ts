@@ -11,6 +11,7 @@ import i18n from '../i18n';
 import {
 	createProductSpecification,
 	getProductSpecifications,
+	getSiteStructuredContentByFriendlyURLPath,
 	getSiteStructuredContentByKey,
 	updateProductSpecification,
 } from './apiUtils';
@@ -91,9 +92,13 @@ export function getDxpProductOptionBody(newOptionId: number) {
 
 export async function getEulaDescription() {
 	const keyEula = 'EULA';
-	const response = await getSiteStructuredContentByKey(keyEula);
+	let response = await getSiteStructuredContentByKey(keyEula);
 
-	return response?.contentFields[0]?.contentFieldValue?.data;
+	if (!response?.contentFields) {
+		response = await getSiteStructuredContentByFriendlyURLPath('eula');
+	}
+
+	return response?.contentFields?.[0]?.contentFieldValue?.data;
 }
 
 export function getLicenceTypesObject() {
