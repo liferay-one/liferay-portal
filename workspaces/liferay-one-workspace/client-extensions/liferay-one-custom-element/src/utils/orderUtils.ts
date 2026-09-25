@@ -205,7 +205,17 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		);
 	}
 
-	const requestableOrderTypes: OrderTypes[] = ['AI_HUB', 'SEO_STUDIO'];
+	if (order.orderTypeExternalReferenceCode === 'AI_HUB') {
+		return (
+			{
+				[OrderWorkflowStatusCode.ON_HOLD]: 'Pending',
+				[OrderWorkflowStatusCode.PENDING]: 'Pending',
+				[OrderWorkflowStatusCode.PROCESSING]: 'Pending',
+			}[order.orderStatusInfo.code] || statusLabel
+		);
+	}
+
+	const requestableOrderTypes: OrderTypes[] = ['SEO_STUDIO'];
 
 	if (
 		requestableOrderTypes.includes(
