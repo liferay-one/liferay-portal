@@ -133,6 +133,30 @@ public class AIHubService extends OneBaseService {
 		}
 	}
 
+	public JSONObject putAIHubEnvironment(
+		String externalReferenceCode, JSONObject jsonObject) {
+
+		jsonObject.put("aiHubURL", _externalAIHubHomePageURL);
+
+		try {
+			return new JSONObject(
+				put(
+					getAuthorization(), jsonObject.toString(),
+					UriComponentsBuilder.fromPath(
+						"/o/c/environments/by-external-reference-code/" +
+							externalReferenceCode
+					).build(
+					).toUri()));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to put AI Hub environment " + externalReferenceCode,
+				exception);
+
+			return null;
+		}
+	}
+
 	@Override
 	protected ExchangeFilterFunction getWebClientExchangeFilterFunction() {
 		return (clientRequest, exchangeFunction) -> exchangeFunction.exchange(
