@@ -357,6 +357,45 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWhenQuotaBlockFails()
+		throws Exception {
+
+		_whenFetchCommerceOrder(_createAIHubTokenOrder());
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			"AI-HUB-ACCNT-TEST"
+		);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_aiHubService
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		_verifyNeverCompleted();
+		_verifyNeverPostedOpportunity();
+	}
+
+	@Test
 	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAddress()
 		throws Exception {
 
