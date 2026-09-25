@@ -20,6 +20,7 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Project;
@@ -283,9 +284,29 @@ public class CommerceOrderService extends OneBaseService {
 
 			customFields.put(
 				"order-metadata", orderMetadataJSONObject.toString());
-			customFields.put(
-				"salesforceProjectId",
-				orderMetadataJSONObject.optString("salesforceProjectId"));
+
+			String salesforceProjectId = orderMetadataJSONObject.optString(
+				"salesforceProjectId");
+
+			try {
+				Project project = _projectService.fetchProject(
+					salesforceProjectId);
+
+				if ((project != null) &&
+					Validator.isNotNull(project.getName())) {
+
+					customFields.put("projectName", project.getName());
+				}
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to get the name of project ",
+						salesforceProjectId, " for order ", orderId),
+					exception);
+			}
+
+			customFields.put("salesforceProjectId", salesforceProjectId);
 
 			updateOrder(
 				customFields, orderId,
@@ -1324,6 +1345,37 @@ public class CommerceOrderService extends OneBaseService {
 					order.getId(),
 					Map.of(
 						"order-metadata", orderMetadataJSONObject.toString()));
+
+				if (Validator.isNotNull(salesforceProjectId)) {
+					JSONObject environmentJSONObject = new JSONObject(
+					).put(
+						"activationStatus",
+						EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+					).put(
+						"offering", EnvironmentConstants.OFFERING_AI_HUB
+					).put(
+						"ownerEmailAddress", emailAddress
+					).put(
+						"r_accountEntryToEnvironment_accountEntryId",
+						order.getAccountId()
+					).put(
+						"r_projectToEnvironment_c_projectERC",
+						salesforceProjectId
+					);
+
+					String salesforceContractId =
+						orderMetadataJSONObject.optString(
+							"salesforceContractId");
+
+					if (Validator.isNotNull(salesforceContractId)) {
+						environmentJSONObject.put(
+							"r_contractToEnvironment_c_contractERC",
+							salesforceContractId);
+					}
+
+					_aiHubService.putAIHubEnvironment(
+						"AI-HUB-" + salesforceProjectId, environmentJSONObject);
+				}
 			}
 		}
 		catch (Exception exception) {
