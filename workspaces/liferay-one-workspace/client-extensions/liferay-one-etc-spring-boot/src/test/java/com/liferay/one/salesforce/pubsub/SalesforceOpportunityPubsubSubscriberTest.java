@@ -35,6 +35,7 @@ import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Collections;
@@ -1506,6 +1507,66 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_OPPORTUNITY_ID),
 			Mockito.anyList(), Mockito.anyList()
 		);
+	}
+
+	@Test
+	public void testReceiveUpdatesPreStampedOrderItemInPlace()
+		throws Exception {
+
+		OrderItem existingOrderItem = SalesforceModelTestUtil.createOrderItem(
+			null, null, null, "LINE-1", _EXISTING_ORDER_ITEM_ID, "PROD-1",
+			null);
+
+		Order existingOrder = new Order();
+
+		existingOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
+		existingOrder.setOrderItems(new OrderItem[] {existingOrderItem});
+		existingOrder.setOrderStatus(
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		Mockito.when(
+			_commerceOrderService.upsertOrder(
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyList(), Mockito.any())
+		).thenReturn(
+			existingOrder
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+		ArgumentCaptor<SalesforceOpportunityLineItem>
+			salesforceOpportunityLineItemArgumentCaptor =
+				ArgumentCaptor.forClass(SalesforceOpportunityLineItem.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItem(
+			orderArgumentCaptor.capture(),
+			salesforceOpportunityLineItemArgumentCaptor.capture(), Mockito.any()
+		);
+
+		Order capturedOrder = orderArgumentCaptor.getValue();
+
+		SalesforceOpportunityLineItem capturedSalesforceOpportunityLineItem =
+			salesforceOpportunityLineItemArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			existingOrderItem.getExternalReferenceCode(),
+			capturedSalesforceOpportunityLineItem.getId());
+
+		Assertions.assertSame(
+			existingOrderItem,
+			CommerceOrderItemUtil.fetchOrderItem(
+				capturedSalesforceOpportunityLineItem.getId(), capturedOrder));
 	}
 
 	@Test

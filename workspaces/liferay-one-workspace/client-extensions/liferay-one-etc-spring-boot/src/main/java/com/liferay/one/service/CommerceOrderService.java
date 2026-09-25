@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -784,13 +785,14 @@ public class CommerceOrderService extends OneBaseService {
 					orderId);
 		}
 
-		salesforceOpportunityId = salesforceOpportunityJSONObject.getJSONObject(
-			"data"
-		).getString(
-			"opportunityId"
-		);
+		JSONObject dataJSONObject =
+			salesforceOpportunityJSONObject.getJSONObject("data");
+
+		salesforceOpportunityId = dataJSONObject.getString("opportunityId");
 
 		_patchOrderExternalReferenceCode(order, salesforceOpportunityId);
+
+		_patchOrderItemExternalReferenceCodes(dataJSONObject, order);
 
 		orderMetadataJSONObject.put(
 			"salesforceOpportunityId", salesforceOpportunityId);
@@ -1090,6 +1092,28 @@ public class CommerceOrderService extends OneBaseService {
 		return null;
 	}
 
+	private String _getSalesforceLineItemId(
+		Set<String> claimedIds, JSONArray lineItemsJSONArray, String sku) {
+
+		for (int i = 0; i < lineItemsJSONArray.length(); i++) {
+			JSONObject lineItemJSONObject = lineItemsJSONArray.getJSONObject(i);
+
+			String id = lineItemJSONObject.optString("id");
+
+			if (Validator.isNull(id) || claimedIds.contains(id)) {
+				continue;
+			}
+
+			if (Objects.equals(
+					lineItemJSONObject.optString("productId"), sku)) {
+
+				return id;
+			}
+		}
+
+		return null;
+	}
+
 	private Integer _getSettledPaymentStatus(Order order) {
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -1176,6 +1200,95 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		patchOrderExternalReferenceCode(order.getId(), externalReferenceCode);
+	}
+
+	private void _patchOrderItemExternalReferenceCodes(
+			JSONObject dataJSONObject, Order order)
+		throws Exception {
+
+		JSONArray lineItemsJSONArray = dataJSONObject.optJSONArray("lineItems");
+
+		if ((lineItemsJSONArray == null) ||
+			(lineItemsJSONArray.length() == 0)) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(),
+						" because the Salesforce opportunity response has no ",
+						"line items"));
+			}
+
+			return;
+		}
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to stamp the order items of order ", order.getId(),
+					" because it has no order items"));
+
+			return;
+		}
+
+		Set<String> claimedIds = new HashSet<>();
+
+		for (OrderItem orderItem : orderItems) {
+			String sku = orderItem.getSkuExternalReferenceCode();
+
+			if (Validator.isNull(sku)) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp order item ", orderItem.getId(),
+						" of order ", order.getId(), " because it has no SKU"));
+
+				continue;
+			}
+
+			String externalReferenceCode = _getSalesforceLineItemId(
+				claimedIds, lineItemsJSONArray, sku);
+
+			if (Validator.isNull(externalReferenceCode)) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp order item ", orderItem.getId(),
+						" of order ", order.getId(),
+						" because no Salesforce line item matches SKU ", sku));
+
+				continue;
+			}
+
+			claimedIds.add(externalReferenceCode);
+
+			if (Objects.equals(
+					orderItem.getExternalReferenceCode(),
+					externalReferenceCode)) {
+
+				continue;
+			}
+
+			OrderItem patchedOrderItem = new OrderItem();
+
+			patchedOrderItem.setExternalReferenceCode(
+				() -> externalReferenceCode);
+
+			try {
+				_commerceOrderItemService.patchOrderItem(
+					orderItem.getId(), patchedOrderItem);
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp order item ", orderItem.getId(),
+						" of order ", order.getId(),
+						" with external reference code ",
+						externalReferenceCode),
+					exception);
+			}
+		}
 	}
 
 	private JSONObject _postSalesforceOpportunity(
