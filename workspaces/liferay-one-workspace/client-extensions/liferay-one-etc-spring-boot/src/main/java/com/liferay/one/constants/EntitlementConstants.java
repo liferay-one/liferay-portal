@@ -97,6 +97,9 @@ public class EntitlementConstants {
 
 	public static final String NAME_RAM = "ram";
 
+	public static final String NAME_SELF_SERVICE_SUPPORT =
+		"Self-Service Support";
+
 	public static final String NAME_SILVER_SUBSCRIPTION = "Silver Subscription";
 
 	public static final String NAME_SITES = "sites";
@@ -144,8 +147,9 @@ public class EntitlementConstants {
 	public static final String[] NAMES_SLAS = {
 		NAME_GLOBAL_24_7_SUPPORT, NAME_GOLD_SUPPORT, NAME_LIMITED_SUPPORT,
 		NAME_PLATINUM_SUPPORT, NAME_PREMIER_24_7_SUPPORT,
-		NAME_PREMIUM_SUBSCRIPTION, NAME_SILVER_SUBSCRIPTION,
-		NAME_STANDARD_8_5_SUPPORT, NAME_STRATEGIC_24_7_SUPPORT
+		NAME_PREMIUM_SUBSCRIPTION, NAME_SELF_SERVICE_SUPPORT,
+		NAME_SILVER_SUBSCRIPTION, NAME_STANDARD_8_5_SUPPORT,
+		NAME_STRATEGIC_24_7_SUPPORT
 	};
 
 	public static final String STATE_ACTIVE = "Active";
