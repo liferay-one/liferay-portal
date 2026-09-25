@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.exception.CommonLicenseKeyEntitlementException;
+import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchAccountException;
@@ -55,6 +56,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 
 		return _toResponseEntity(
 			HttpStatus.NOT_FOUND, "The account was not found");
+	}
+
+	@ExceptionHandler(DuplicateAccountException.class)
+	public ResponseEntity<?> handleException(
+		DuplicateAccountException duplicateAccountException) {
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(duplicateAccountException);
+		}
+
+		return _toResponseEntity(
+			HttpStatus.CONFLICT, duplicateAccountException.getMessage());
 	}
 
 	@ExceptionHandler(Exception.class)
