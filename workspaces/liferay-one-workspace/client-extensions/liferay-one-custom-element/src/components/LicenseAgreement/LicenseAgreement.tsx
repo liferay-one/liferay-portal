@@ -6,15 +6,11 @@
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import i18n from '~/i18n';
-import {getSiteName} from '~/utils/siteUtils';
+import {productAgreements} from '~/utils/productAgreements';
 
 import './LicenseAgreement.css';
 
-import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
-
 const LicenseAgreement = () => {
-	const {properties} = useMarketplaceContext();
-
 	return (
 		<div className="license-agreement-container">
 			<div className="border-details mb-4">
@@ -32,7 +28,8 @@ const LicenseAgreement = () => {
 						displayType="secondary"
 						onClick={() =>
 							window.open(
-								`/documents/d/${getSiteName()}/${properties.publisherLicenseAgreement}`
+								productAgreements.links
+									.publisherLicenseAgreement
 							)
 						}
 					>
