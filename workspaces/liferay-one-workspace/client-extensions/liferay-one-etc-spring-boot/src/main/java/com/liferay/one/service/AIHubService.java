@@ -96,6 +96,13 @@ public class AIHubService extends OneBaseService {
 			).build(
 			).toUri());
 
+		if (response == null) {
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to purchase AI Hub prepaid block ", jsonObject,
+					" for account ", accountEntryId));
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				StringBundler.concat(
