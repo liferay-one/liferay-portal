@@ -12,7 +12,6 @@ import WizardFooter from '~/pages/MyAccount/Projects/CloudAppInstall/WizardFoote
 import {parseProjectId} from '~/utils/parseProjectId';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
-import {hasExtensionEnvironment} from '../utils';
 
 import type {ConsoleEnvironment} from '../types';
 
@@ -29,8 +28,6 @@ export default function EnvironmentSelection() {
 	if (!project) {
 		return <Navigate replace to="/project-selection" />;
 	}
-
-	const connectableProjects = projects.filter(hasExtensionEnvironment);
 
 	return (
 		<div className="border mt-2 p-4 pt-2 rounded">
@@ -81,7 +78,7 @@ export default function EnvironmentSelection() {
 
 			<WizardFooter
 				backButtonProps={
-					connectableProjects.length > 1
+					projects.length > 1
 						? {onClick: () => navigate('/project-selection')}
 						: undefined
 				}
