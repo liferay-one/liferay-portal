@@ -16,8 +16,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.WebUrl;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.AccountResource;
+import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -41,16 +43,29 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AccountService extends OneBaseService {
 
 	public Account addAccount(Account account) throws Exception {
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).parameter(
-			"nestedFields", "postalAddresses"
-		).build();
+		return _keyedLock.withLock(
+			account.getName(),
+			() -> {
+				if (hasDuplicateAccountName(
+						account.getName(),
+						account.getExternalReferenceCode())) {
 
-		return accountResource.postAccount(account);
+					throw new DuplicateAccountException(
+						"An account already exists with the name " +
+							account.getName());
+				}
+
+				AccountResource accountResource = AccountResource.builder(
+				).endpoint(
+					getDXPEndpointAddress(), lxcDXPServerProtocol
+				).header(
+					HttpHeaders.AUTHORIZATION, getAuthorization()
+				).parameter(
+					"nestedFields", "postalAddresses"
+				).build();
+
+				return accountResource.postAccount(account);
+			});
 	}
 
 	public void addAccountUserAccount(long accountId, Jwt jwt, long userId)
@@ -721,6 +736,9 @@ public class AccountService extends OneBaseService {
 	private static final int _MAX_CITY_LENGTH = 75;
 
 	private static final int _MAX_STREET_LENGTH = 255;
+
+	@Autowired
+	private KeyedLock _keyedLock;
 
 	@Autowired
 	private UserAccountService _userAccountService;

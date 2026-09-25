@@ -43,7 +43,6 @@ import com.liferay.one.service.ProvisioningAssignmentService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
-import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
@@ -357,21 +356,7 @@ public class AccountsRestController extends OneBaseRestController {
 				() -> encoder.encodeToString(multipartFile.getBytes()));
 		}
 
-		Account newAccount = _keyedLock.withLock(
-			account.getName(),
-			() -> {
-				if (_accountService.hasDuplicateAccountName(
-						account.getName(),
-						account.getExternalReferenceCode())) {
-
-					throw new ResponseStatusException(
-						HttpStatus.CONFLICT,
-						"An account already exists with the name " +
-							account.getName());
-				}
-
-				return _accountService.addAccount(account);
-			});
+		Account newAccount = _accountService.addAccount(account);
 
 		PostalAddress[] postalAddresses = newAccount.getPostalAddresses();
 
@@ -1152,9 +1137,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
-
-	@Autowired
-	private KeyedLock _keyedLock;
 
 	@Autowired
 	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
