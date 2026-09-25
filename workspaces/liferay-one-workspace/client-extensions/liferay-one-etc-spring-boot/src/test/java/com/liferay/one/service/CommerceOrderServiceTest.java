@@ -14,6 +14,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -49,6 +50,7 @@ public class CommerceOrderServiceTest {
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
 		_commerceProductService = Mockito.mock(CommerceProductService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
+		_contractService = Mockito.mock(ContractService.class);
 		_countryService = Mockito.mock(CountryService.class);
 		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_projectService = Mockito.mock(ProjectService.class);
@@ -67,6 +69,8 @@ public class CommerceOrderServiceTest {
 			_commerceProductService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_commerceSkuService", _commerceSkuService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_contractService", _contractService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_countryService", _countryService);
 		ReflectionTestUtils.setField(
@@ -231,6 +235,38 @@ public class CommerceOrderServiceTest {
 			_aiHubService
 		).purchaseQuotaPrepaidBlock(
 			ArgumentMatchers.eq(4321L), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderCompletesAIHubTokenOrderPastMalformedMetadata()
+		throws Exception {
+
+		_whenFetchCommerceOrder(_createAIHubTokenOrder());
+
+		Order malformedAIHubOrder = _createAIHubOrder(
+			"{malformed", CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		malformedAIHubOrder.setId(1500L);
+
+		Mockito.doReturn(
+			List.of(
+				malformedAIHubOrder,
+				_createProvisionedAIHubOrder(5678L, 2000L, "a1tTEST"))
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.anyString()
+		);
+
+		_whenPostSalesforceOpportunity("006TEST");
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.eq(5678L), ArgumentMatchers.any()
 		);
 	}
 
@@ -515,7 +551,7 @@ public class CommerceOrderServiceTest {
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
 		Mockito.doReturn(
-			List.of(_createProvisionedAIHubOrder(5678L, 2000L, "a1tOTHER"))
+			List.of(_createProvisionedAIHubOrder(0L, 2000L, "a1tOTHER"))
 		).when(
 			_commerceOrderService
 		).getOrders(
@@ -873,21 +909,13 @@ public class CommerceOrderServiceTest {
 					"\"800TEST\", \"salesforceProjectId\": \"a1tTEST\"}",
 				CommerceOrderConstants.ORDER_STATUS_PENDING));
 
-		Mockito.doReturn(
-			new Project(
-				new JSONObject(
-				).put(
-					"name", "Test Project"
-				))
-		).when(
-			_projectService
-		).fetchProject(
-			"a1tTEST"
-		);
+		_whenFetchProject(_ACCOUNT_ID);
 
 		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		_verifyPatchedProjectName("Test Project");
 
 		ArgumentCaptor<Map<String, Object>> mapArgumentCaptor =
 			ArgumentCaptor.forClass(Map.class);
@@ -902,8 +930,6 @@ public class CommerceOrderServiceTest {
 		Map<String, Object> customFields = mapArgumentCaptor.getValue();
 
 		Assertions.assertEquals(123L, customFields.get("contractId"));
-		Assertions.assertEquals(
-			"Test Project", customFields.get("projectName"));
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
 
@@ -985,6 +1011,26 @@ public class CommerceOrderServiceTest {
 		).patchOrderCustomFields(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
+	}
+
+	@Test
+	public void testCreateAIHubOpportunityRecordsProjectNameWhenOpportunityFails()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+
+		_whenFetchProject(_ACCOUNT_ID);
+
+		_whenPostSalesforceOpportunity(null);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.createAIHubOpportunity(_ORDER_ID));
+
+		_verifyPatchedProjectName("Test Project");
 	}
 
 	@Test
@@ -1480,9 +1526,49 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testProvisionAIHubIgnoresContractOfAnotherProject()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		_whenFetchContract("a1tOTHER");
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).putAIHubEnvironment(
+			ArgumentMatchers.eq("AI-HUB-a1tTEST"),
+			jsonObjectArgumentCaptor.capture()
+		);
+
+		JSONObject jsonObject = jsonObjectArgumentCaptor.getValue();
+
+		Assertions.assertFalse(
+			jsonObject.has("r_contractToEnvironment_c_contractERC"));
+	}
+
+	@Test
 	public void testProvisionAIHubPutsAIHubEnvironment() throws Exception {
 		Order order = _createProvisionableAIHubOrder();
 
+		_whenFetchContract("a1tTEST");
 		_whenFetchProject(_ACCOUNT_ID);
 
 		Mockito.doReturn(
@@ -1732,6 +1818,23 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	private void _verifyPatchedProjectName(String projectName)
+		throws Exception {
+
+		ArgumentCaptor<Map<String, String>> mapArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_ORDER_ID), mapArgumentCaptor.capture()
+		);
+
+		Map<String, String> customFields = mapArgumentCaptor.getValue();
+
+		Assertions.assertEquals(projectName, customFields.get("projectName"));
+	}
+
 	private void _whenFetchCommerceOrder(Order order) throws Exception {
 		Mockito.doReturn(
 			order
@@ -1742,10 +1845,29 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	private void _whenFetchContract(String projectExternalReferenceCode)
+		throws Exception {
+
+		Mockito.doReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"r_projectToContract_c_projectERC",
+					projectExternalReferenceCode
+				))
+		).when(
+			_contractService
+		).fetchContractByExternalReferenceCode(
+			"800TEST"
+		);
+	}
+
 	private void _whenFetchProject(long accountId) throws Exception {
 		Mockito.doReturn(
 			new Project(
 				new JSONObject(
+				).put(
+					"name", "Test Project"
 				).put(
 					"r_accountEntryToProject_accountEntryId", accountId
 				))
@@ -1809,6 +1931,7 @@ public class CommerceOrderServiceTest {
 	private CommerceOrderService _commerceOrderService;
 	private CommerceProductService _commerceProductService;
 	private CommerceSkuService _commerceSkuService;
+	private ContractService _contractService;
 	private CountryService _countryService;
 	private PostalAddressService _postalAddressService;
 	private ProjectService _projectService;
