@@ -269,6 +269,15 @@ public class CommerceOrderService extends OneBaseService {
 			JSONObject orderMetadataJSONObject =
 				CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
+			if (orderMetadataJSONObject.has("aiHubAccountEntryId")) {
+				orderMetadataJSONObject.remove("aiHubAccountEntryId");
+
+				patchOrderCustomFields(
+					orderId,
+					Map.of(
+						"order-metadata", orderMetadataJSONObject.toString()));
+			}
+
 			if (!_createSalesforceOpportunity(order, orderMetadataJSONObject)) {
 				return;
 			}
@@ -844,10 +853,36 @@ public class CommerceOrderService extends OneBaseService {
 		long accountEntryId = 0;
 		long aiHubOrderId = 0;
 		boolean provisioned = false;
+		Map<Long, String> salesforceProjectIds = new HashMap<>();
 
 		for (Order aiHubOrder : aiHubOrders) {
-			JSONObject orderMetadataJSONObject =
-				CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
+			if (!Objects.equals(
+					aiHubOrder.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+
+				continue;
+			}
+
+			JSONObject orderMetadataJSONObject = null;
+
+			try {
+				orderMetadataJSONObject =
+					CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to read the order metadata of order " +
+						aiHubOrder.getId(),
+					exception);
+
+				continue;
+			}
+
+			String aiHubOrderSalesforceProjectId =
+				orderMetadataJSONObject.optString("salesforceProjectId");
+
+			salesforceProjectIds.put(
+				aiHubOrder.getId(), aiHubOrderSalesforceProjectId);
 
 			long aiHubAccountEntryId = orderMetadataJSONObject.optLong(
 				"aiHubAccountEntryId");
@@ -859,8 +894,7 @@ public class CommerceOrderService extends OneBaseService {
 			provisioned = true;
 
 			if (Objects.equals(
-					orderMetadataJSONObject.optString("salesforceProjectId"),
-					salesforceProjectId) &&
+					aiHubOrderSalesforceProjectId, salesforceProjectId) &&
 				(aiHubOrder.getId() > aiHubOrderId)) {
 
 				accountEntryId = aiHubAccountEntryId;
@@ -868,7 +902,7 @@ public class CommerceOrderService extends OneBaseService {
 			}
 		}
 
-		if (provisioned) {
+		if (accountEntryId > 0) {
 			return accountEntryId;
 		}
 
@@ -880,7 +914,19 @@ public class CommerceOrderService extends OneBaseService {
 			return 0;
 		}
 
-		return aiHubApplicationJSONObject.getLong("accountEntryId");
+		String applicationSalesforceProjectId = salesforceProjectIds.get(
+			aiHubApplicationJSONObject.optLong(
+				"r_orderToAIHubApplication_commerceOrderId"));
+
+		if (Objects.equals(
+				applicationSalesforceProjectId, salesforceProjectId) ||
+			(!provisioned &&
+			 Validator.isNull(applicationSalesforceProjectId))) {
+
+			return aiHubApplicationJSONObject.getLong("accountEntryId");
+		}
+
+		return 0;
 	}
 
 	private Long _getAIHubQuotaBlockSize(Order order) {
@@ -1344,6 +1390,23 @@ public class CommerceOrderService extends OneBaseService {
 				"salesforceProjectId");
 
 			if (Validator.isNotNull(salesforceProjectId)) {
+				Project project = _projectService.fetchProject(
+					salesforceProjectId);
+
+				if ((project == null) ||
+					!Objects.equals(
+						project.getAccountId(), order.getAccountId())) {
+
+					_log.error(
+						StringBundler.concat(
+							"Unable to provision AI Hub for order ",
+							order.getId(), " because project ",
+							salesforceProjectId,
+							" does not belong to its account"));
+
+					return;
+				}
+
 				provisionJSONObject.put(
 					"accountEntryExternalReferenceCode", salesforceProjectId);
 			}
