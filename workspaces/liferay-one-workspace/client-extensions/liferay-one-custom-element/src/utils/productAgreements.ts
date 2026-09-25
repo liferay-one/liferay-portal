@@ -23,16 +23,17 @@ export const productAgreements = {
 	links: {
 		aiHub: {
 			agreement:
-				'https://marketplace.liferay.com/documents/d/marketplace/evaluation-agreement-cloud-services-1202603_gl',
+				'/documents/d/one/evaluation_agreement_cloud_services_1202603_gl',
 		},
-		eula: `https://www.liferay.com/documents/d/guest/Liferay-EULA-2102602_GL`,
+		eula: '/documents/d/one/liferay_eula_2102602_gl',
 		privacyPolicy: 'https://www.liferay.com/privacy-policy',
+		publisherLicenseAgreement:
+			'/documents/d/one/marketplace_liferay_developer_agreement',
 		seoStudio: {
 			agreement:
-				'https://marketplace.liferay.com/documents/d/marketplace/evaluation-agreement-cloud-services-1202603_gl',
+				'/documents/d/one/evaluation_agreement_cloud_services_1202603_gl',
 		},
-		userAgreement:
-			'https://www.liferay.com/documents/d/guest/Liferay-EULA-2102602_GL',
+		userAgreement: '/documents/d/one/liferay_eula_2102602_gl',
 	},
 };
 
