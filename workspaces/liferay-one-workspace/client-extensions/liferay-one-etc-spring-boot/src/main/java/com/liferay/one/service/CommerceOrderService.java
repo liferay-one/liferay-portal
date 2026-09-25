@@ -814,13 +814,14 @@ public class CommerceOrderService extends OneBaseService {
 					orderId);
 		}
 
-		salesforceOpportunityId = salesforceOpportunityJSONObject.getJSONObject(
-			"data"
-		).getString(
-			"opportunityId"
-		);
+		JSONObject dataJSONObject =
+			salesforceOpportunityJSONObject.getJSONObject("data");
+
+		salesforceOpportunityId = dataJSONObject.getString("opportunityId");
 
 		_patchOrderExternalReferenceCode(order, salesforceOpportunityId);
+
+		_patchOrderItemExternalReferenceCodes(dataJSONObject, order);
 
 		orderMetadataJSONObject.put(
 			"salesforceOpportunityId", salesforceOpportunityId);
@@ -1323,6 +1324,143 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		patchOrderExternalReferenceCode(order.getId(), externalReferenceCode);
+	}
+
+	private void _patchOrderItemExternalReferenceCodes(
+			JSONObject dataJSONObject, Order order)
+		throws Exception {
+
+		JSONArray lineItemsJSONArray = dataJSONObject.optJSONArray("lineItems");
+
+		if ((lineItemsJSONArray == null) ||
+			(lineItemsJSONArray.length() == 0)) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(),
+						" because the Salesforce opportunity response has no ",
+						"line items"));
+			}
+
+			return;
+		}
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to stamp the order items of order ", order.getId(),
+					" because it has no order items"));
+
+			return;
+		}
+
+		Map<String, String> lineItemIdsByProductId = new HashMap<>();
+
+		for (int i = 0; i < lineItemsJSONArray.length(); i++) {
+			JSONObject lineItemJSONObject = lineItemsJSONArray.getJSONObject(i);
+
+			String id = lineItemJSONObject.optString("id");
+			String productId = lineItemJSONObject.optString("productId");
+
+			if (Validator.isNull(id) || Validator.isNull(productId)) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(),
+						" because a Salesforce line item has no ID or no ",
+						"product ID"));
+
+				return;
+			}
+
+			if (lineItemIdsByProductId.put(productId, id) != null) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(),
+						" because the Salesforce opportunity has more than ",
+						"one line item for SKU ", productId));
+
+				return;
+			}
+		}
+
+		Map<String, OrderItem> orderItemsBySku = new HashMap<>();
+
+		for (OrderItem orderItem : orderItems) {
+			String sku = orderItem.getSkuExternalReferenceCode();
+
+			if (Validator.isNull(sku)) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(), " because order item ",
+						orderItem.getId(), " has no SKU"));
+
+				return;
+			}
+
+			if (orderItemsBySku.put(sku, orderItem) != null) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp the order items of order ",
+						order.getId(),
+						" because it has more than one order item for SKU ",
+						sku));
+
+				return;
+			}
+		}
+
+		if (!Objects.equals(
+				lineItemIdsByProductId.keySet(), orderItemsBySku.keySet())) {
+
+			_log.error(
+				StringBundler.concat(
+					"Unable to stamp the order items of order ", order.getId(),
+					" because its order item SKUs ", orderItemsBySku.keySet(),
+					" do not match the Salesforce line item SKUs ",
+					lineItemIdsByProductId.keySet()));
+
+			return;
+		}
+
+		for (Map.Entry<String, OrderItem> entry : orderItemsBySku.entrySet()) {
+			OrderItem orderItem = entry.getValue();
+
+			String externalReferenceCode = lineItemIdsByProductId.get(
+				entry.getKey());
+
+			if (Objects.equals(
+					orderItem.getExternalReferenceCode(),
+					externalReferenceCode)) {
+
+				continue;
+			}
+
+			OrderItem patchedOrderItem = new OrderItem();
+
+			patchedOrderItem.setExternalReferenceCode(
+				() -> externalReferenceCode);
+
+			try {
+				_commerceOrderItemService.patchOrderItem(
+					orderItem.getId(), patchedOrderItem);
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to stamp order item ", orderItem.getId(),
+						" of order ", order.getId(),
+						" with external reference code ",
+						externalReferenceCode),
+					exception);
+			}
+		}
 	}
 
 	private JSONObject _postSalesforceOpportunity(
