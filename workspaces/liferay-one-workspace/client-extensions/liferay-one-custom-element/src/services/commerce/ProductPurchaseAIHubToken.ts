@@ -6,7 +6,7 @@
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
-import {OrderCustomFields} from '~/utils/orderUtils';
+import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import ProductPurchase from './ProductPurchase';
@@ -84,19 +84,23 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 					'AI_HUB'
 				),
 				nestedFields: 'customFields',
-				pageSize: '20',
+				pageSize: '100',
 				sort: 'createDate:desc',
 			})
 		);
 
-		const orderMetadatas = (response?.items ?? []).map((aiHubOrder) =>
-			safeJSONParse<AIHubOrderMetadata>(
-				aiHubOrder?.customFields?.[
-					OrderCustomFields.ORDER_METADATA
-				] as string,
-				{}
+		const orderMetadatas = (response?.items ?? [])
+			.filter(
+				(aiHubOrder) => getOrderStatusToken(aiHubOrder) === 'completed'
 			)
-		);
+			.map((aiHubOrder) =>
+				safeJSONParse<AIHubOrderMetadata>(
+					aiHubOrder?.customFields?.[
+						OrderCustomFields.ORDER_METADATA
+					] as string,
+					{}
+				)
+			);
 
 		const orderMetadata = this.projectExternalReferenceCode
 			? orderMetadatas.find(
