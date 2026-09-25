@@ -479,7 +479,7 @@ const ActivationKeyForm = () => {
 						rel="noopener noreferrer"
 						target="_blank"
 					>
-						{productAgreements.links.eula}
+						{`${window.location.origin}${productAgreements.links.eula}`}
 					</a>
 
 					<span className="ml-1">{productAgreements.agreement}</span>
