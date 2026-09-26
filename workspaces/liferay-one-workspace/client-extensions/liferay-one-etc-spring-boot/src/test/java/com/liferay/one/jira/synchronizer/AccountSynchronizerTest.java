@@ -342,7 +342,7 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncAccountUnassignsStaleAssignments() throws Exception {
+	public void testSyncAccountSyncsAccountRoles() throws Exception {
 		RoleBrief roleBrief = new RoleBrief();
 
 		roleBrief.setExternalReferenceCode("role-erc");
@@ -392,7 +392,7 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
-		).syncUnassignStaleRoles(
+		).syncRoles(
 			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(
 				Collections.singletonMap(
@@ -435,9 +435,7 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncAccountUnassignsStaleProjectAssignments()
-		throws Exception {
-
+	public void testSyncAccountSyncsProjectRoles() throws Exception {
 		Project project = _mockProjectMemberships();
 
 		Mockito.when(
@@ -450,14 +448,14 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
-		).syncUnassignStaleRoles(
+		).syncRoles(
 			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(Collections.emptyMap()), Mockito.any(Date.class)
 		);
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
-		).syncUnassignStaleRoles(
+		).syncRoles(
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
 			Mockito.any(Date.class)
@@ -465,7 +463,7 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncProjectUnassignsStaleAssignments() throws Exception {
+	public void testSyncProjectSyncsProjectRoles() throws Exception {
 		Project project = _mockProjectMemberships();
 
 		Mockito.when(
@@ -478,19 +476,7 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-1", "user-account-erc", _PROJECT_EXTERNAL_REFERENCE_CODE
-		);
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-2", "user-account-erc", _PROJECT_EXTERNAL_REFERENCE_CODE
-		);
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncUnassignStaleRoles(
+		).syncRoles(
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
 			Mockito.any(Date.class)
