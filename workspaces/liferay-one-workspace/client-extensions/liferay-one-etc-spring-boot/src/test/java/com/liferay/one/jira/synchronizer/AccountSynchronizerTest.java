@@ -21,17 +21,27 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.model.AccountSupportInfo;
+import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.OrganizationService;
+import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -91,10 +101,13 @@ public class AccountSynchronizerTest {
 			Collections.emptyList()
 		);
 
-		ProjectService projectService = Mockito.mock(ProjectService.class);
+		_projectMembershipService = Mockito.mock(
+			ProjectMembershipService.class);
+
+		_projectService = Mockito.mock(ProjectService.class);
 
 		Mockito.when(
-			projectService.getProjects(Mockito.anyLong())
+			_projectService.getProjects(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -117,6 +130,8 @@ public class AccountSynchronizerTest {
 
 		_userAccountSynchronizer = Mockito.mock(UserAccountSynchronizer.class);
 
+		_accountService = Mockito.mock(AccountService.class);
+
 		_accountOrganizationSynchronizer = Mockito.mock(
 			AccountOrganizationSynchronizer.class);
 		_accountUserAccountRoleSynchronizer = Mockito.mock(
@@ -127,6 +142,8 @@ public class AccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_accountOrganizationSynchronizer",
 			_accountOrganizationSynchronizer);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_accountUserAccountRoleSynchronizer",
 			_accountUserAccountRoleSynchronizer);
@@ -158,9 +175,15 @@ public class AccountSynchronizerTest {
 			_accountSynchronizer, "_postalAddressConverter",
 			Mockito.mock(PostalAddressConverter.class));
 		ReflectionTestUtils.setField(
-			_accountSynchronizer, "_projectService", projectService);
+			_accountSynchronizer, "_projectMembershipService",
+			_projectMembershipService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_propertyService", propertyService);
+		ReflectionTestUtils.setField(
+			_accountSynchronizer, "_roleService",
+			Mockito.mock(RoleService.class));
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_teamConverter",
 			Mockito.mock(TeamConverter.class));
@@ -411,16 +434,156 @@ public class AccountSynchronizerTest {
 		);
 	}
 
+	@Test
+	public void testSyncAccountUnassignsStaleProjectAssignments()
+		throws Exception {
+
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(project)
+		);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(Collections.emptyMap()), Mockito.any(Date.class)
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
+			Mockito.any(Date.class)
+		);
+	}
+
+	@Test
+	public void testSyncProjectUnassignsStaleAssignments() throws Exception {
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		_accountSynchronizer.syncProject(project);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-1", "user-account-erc", _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-2", "user-account-erc", _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
+			Mockito.any(Date.class)
+		);
+	}
+
+	private Account _createAccount() {
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		account.setId(1L);
+		account.setName("Test Account");
+
+		return account;
+	}
+
+	private ProjectMembership _createProjectMembership(
+		String roleExternalReferenceCode) {
+
+		return new ProjectMembership(
+			new JSONObject(
+			).put(
+				"externalReferenceCode",
+				roleExternalReferenceCode + "-membership"
+			).put(
+				"r_projectToProjectMembership_c_projectERC",
+				_PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_userToProjectMembership_userId", 2L
+			).put(
+				"roleExternalReferenceCode", roleExternalReferenceCode
+			));
+	}
+
+	private Map<String, Set<String>>
+		_getExpectedRoleExternalKeysByUserAccountExternalKey() {
+
+		return Collections.singletonMap(
+			"user-account-erc",
+			new LinkedHashSet<>(Arrays.asList("role-erc-1", "role-erc-2")));
+	}
+
+	private Project _mockProjectMemberships() throws Exception {
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership("role-erc-1"),
+				_createProjectMembership("role-erc-2"))
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setExternalReferenceCode("user-account-erc");
+		userAccount.setId(2L);
+
+		Mockito.when(
+			_userAccountService.getUserAccounts(Mockito.anyCollection())
+		).thenReturn(
+			Collections.singletonList(userAccount)
+		);
+
+		return new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"name", "Test Project"
+			).put(
+				"r_accountEntryToProject_accountEntryERC",
+				_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryId", 1L
+			));
+	}
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE =
+		"test-project-external-reference-code";
+
 	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
+	private AccountService _accountService;
 	private AccountSynchronizer _accountSynchronizer;
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private OrganizationService _organizationService;
+	private ProjectMembershipService _projectMembershipService;
+	private ProjectService _projectService;
 	private UserAccountService _userAccountService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
