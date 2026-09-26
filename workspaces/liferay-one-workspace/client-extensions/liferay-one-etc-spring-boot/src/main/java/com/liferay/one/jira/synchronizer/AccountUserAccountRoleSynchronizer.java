@@ -61,6 +61,43 @@ public class AccountUserAccountRoleSynchronizer {
 			null);
 	}
 
+	public void syncRoles(
+		String accountExternalKey,
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey,
+		Date startDate) {
+
+		for (Map.Entry<String, Set<String>> entry :
+				roleExternalKeysByUserAccountExternalKey.entrySet()) {
+
+			for (String roleExternalKey : entry.getValue()) {
+				try {
+					syncAssignRole(
+						roleExternalKey, entry.getKey(), accountExternalKey);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to assign role ", roleExternalKey,
+							" for user account ", entry.getKey(),
+							" on account ", accountExternalKey),
+						exception);
+				}
+			}
+		}
+
+		try {
+			syncUnassignStaleRoles(
+				accountExternalKey, roleExternalKeysByUserAccountExternalKey,
+				startDate);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to unassign stale roles on account " +
+					accountExternalKey,
+				exception);
+		}
+	}
+
 	public void syncUnassignRole(
 			String roleExternalKey, String userAccountExternalKey,
 			String accountExternalKey)

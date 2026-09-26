@@ -17,8 +17,12 @@ import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -133,6 +138,74 @@ public class AccountUserAccountRoleSynchronizerTest {
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
 			Mockito.isNull()
+		);
+	}
+
+	@Test
+	public void testSyncRolesAssignsRolesThenUnassignsStaleRoles()
+		throws Exception {
+
+		AccountUserAccountRoleSynchronizer accountUserAccountRoleSynchronizer =
+			Mockito.spy(_accountUserAccountRoleSynchronizer);
+
+		Date startDate = new Date();
+
+		accountUserAccountRoleSynchronizer.syncRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			_getRoleExternalKeysByUserAccountExternalKey(), startDate);
+
+		InOrder inOrder = Mockito.inOrder(accountUserAccountRoleSynchronizer);
+
+		inOrder.verify(
+			accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-1", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+		);
+
+		inOrder.verify(
+			accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-2", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+		);
+
+		inOrder.verify(
+			accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			_getRoleExternalKeysByUserAccountExternalKey(), startDate
+		);
+	}
+
+	@Test
+	public void testSyncRolesContinuesWhenAssignRoleFails() throws Exception {
+		AccountUserAccountRoleSynchronizer accountUserAccountRoleSynchronizer =
+			Mockito.spy(_accountUserAccountRoleSynchronizer);
+
+		Mockito.doThrow(
+			new Exception("Unable to assign role")
+		).when(
+			accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-1", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+		);
+
+		Date startDate = new Date();
+
+		accountUserAccountRoleSynchronizer.syncRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			_getRoleExternalKeysByUserAccountExternalKey(), startDate);
+
+		Mockito.verify(
+			accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc-2", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+		);
+
+		Mockito.verify(
+			accountUserAccountRoleSynchronizer
+		).syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			_getRoleExternalKeysByUserAccountExternalKey(), startDate
 		);
 	}
 
@@ -317,6 +390,14 @@ public class AccountUserAccountRoleSynchronizerTest {
 		);
 
 		return aqlAtomicReference;
+	}
+
+	private Map<String, Set<String>>
+		_getRoleExternalKeysByUserAccountExternalKey() {
+
+		return Collections.singletonMap(
+			_USER_ACCOUNT_EXTERNAL_KEY,
+			new LinkedHashSet<>(Arrays.asList("role-erc-1", "role-erc-2")));
 	}
 
 	private JiraAssetObject _mockAssignment(String roleExternalKey) {

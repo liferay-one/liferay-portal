@@ -17,8 +17,10 @@ import com.liferay.one.util.role.EmployeeRoles;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -67,29 +69,10 @@ public class ProjectSyncModel {
 		return _project;
 	}
 
-	public List<ProjectMembership> getProjectMemberships() throws Exception {
-		if (_projectMemberships == null) {
-			_projectMemberships =
-				_projectMembershipService.getProjectMemberships(
-					_project.getExternalReferenceCode());
+	public List<ProjectMember> getProjectMembers() throws Exception {
+		if (_projectMembers != null) {
+			return _projectMembers;
 		}
-
-		return _projectMemberships;
-	}
-
-	public List<UserAccount> getWorkerUserAccounts() throws Exception {
-		UserAccountBucket userAccountBucket = _getUserAccountBucket();
-
-		return userAccountBucket.getWorkerUserAccounts();
-	}
-
-	private UserAccountBucket _getUserAccountBucket() throws Exception {
-		if (_userAccountBucket != null) {
-			return _userAccountBucket;
-		}
-
-		Map<String, Role> accountRolesByExternalReferenceCode =
-			_accountSyncModel.getAccountRolesByExternalReferenceCode();
 
 		List<ProjectMembership> projectMemberships = getProjectMemberships();
 
@@ -107,7 +90,7 @@ public class ProjectSyncModel {
 			userAccountsByUserId.put(userAccount.getId(), userAccount);
 		}
 
-		_userAccountBucket = new UserAccountBucket();
+		List<ProjectMember> projectMembers = new ArrayList<>();
 
 		for (ProjectMembership projectMembership : projectMemberships) {
 			UserAccount userAccount = userAccountsByUserId.get(
@@ -120,6 +103,78 @@ public class ProjectSyncModel {
 
 				continue;
 			}
+
+			projectMembers.add(
+				new ProjectMember(projectMembership, userAccount));
+		}
+
+		_projectMembers = projectMembers;
+
+		return _projectMembers;
+	}
+
+	public List<ProjectMembership> getProjectMemberships() throws Exception {
+		if (_projectMemberships == null) {
+			_projectMemberships =
+				_projectMembershipService.getProjectMemberships(
+					_project.getExternalReferenceCode());
+		}
+
+		return _projectMemberships;
+	}
+
+	public Map<String, Set<String>>
+			getRoleExternalKeysByUserAccountExternalKey()
+		throws Exception {
+
+		if (_roleExternalKeysByUserAccountExternalKey != null) {
+			return _roleExternalKeysByUserAccountExternalKey;
+		}
+
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+			new LinkedHashMap<>();
+
+		for (ProjectMember projectMember : getProjectMembers()) {
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+
+			UserAccount userAccount = projectMember.getUserAccount();
+
+			Set<String> roleExternalKeys =
+				roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
+					userAccount.getExternalReferenceCode(),
+					userAccountExternalKey -> new LinkedHashSet<>());
+
+			roleExternalKeys.add(
+				projectMembership.getRoleExternalReferenceCode());
+		}
+
+		_roleExternalKeysByUserAccountExternalKey =
+			roleExternalKeysByUserAccountExternalKey;
+
+		return _roleExternalKeysByUserAccountExternalKey;
+	}
+
+	public List<UserAccount> getWorkerUserAccounts() throws Exception {
+		UserAccountBucket userAccountBucket = _getUserAccountBucket();
+
+		return userAccountBucket.getWorkerUserAccounts();
+	}
+
+	private UserAccountBucket _getUserAccountBucket() throws Exception {
+		if (_userAccountBucket != null) {
+			return _userAccountBucket;
+		}
+
+		Map<String, Role> accountRolesByExternalReferenceCode =
+			_accountSyncModel.getAccountRolesByExternalReferenceCode();
+
+		_userAccountBucket = new UserAccountBucket();
+
+		for (ProjectMember projectMember : getProjectMembers()) {
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+			UserAccount userAccount = projectMember.getUserAccount();
 
 			Role role = accountRolesByExternalReferenceCode.get(
 				projectMembership.getRoleExternalReferenceCode());
@@ -142,8 +197,10 @@ public class ProjectSyncModel {
 	private final List<String> _employeeRoleNames = EmployeeRoles.getNames();
 	private final EntitlementService _entitlementService;
 	private final Project _project;
+	private List<ProjectMember> _projectMembers;
 	private List<ProjectMembership> _projectMemberships;
 	private final ProjectMembershipService _projectMembershipService;
+	private Map<String, Set<String>> _roleExternalKeysByUserAccountExternalKey;
 	private UserAccountBucket _userAccountBucket;
 	private final UserAccountService _userAccountService;
 
