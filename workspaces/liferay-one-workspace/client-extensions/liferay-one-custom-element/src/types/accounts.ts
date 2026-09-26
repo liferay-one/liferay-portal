@@ -65,9 +65,9 @@ export type AccountRole = {
 
 export type AccountRoleType =
 	| 'Account Administrator'
-	| 'SSA Admin'
+	| 'SSA Administrator'
 	| 'SSA User'
-	| 'Solution Publisher';
+	| 'Account Solution Publisher';
 
 export type RegularRoleType = 'Administrator' | 'Liferay Staff';
 

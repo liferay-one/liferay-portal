@@ -5,8 +5,8 @@
 
 export enum AccountRoleType {
 	ADMINISTRATOR = 'Administrator',
-	SOLUTION_PUBLISHER = 'Solution Publisher',
-	SSA_ADMIN = 'SSA Admin',
+	SOLUTION_PUBLISHER = 'Account Solution Publisher',
+	SSA_ADMIN = 'SSA Administrator',
 	SSA_USER = 'SSA User',
 }
 

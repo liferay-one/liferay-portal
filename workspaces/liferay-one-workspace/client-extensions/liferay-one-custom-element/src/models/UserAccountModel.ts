@@ -39,11 +39,11 @@ export class UserAccountModel {
 	}
 
 	get isSolutionPublisher() {
-		return this.hasAccountRole('Solution Publisher');
+		return this.hasAccountRole('Account Solution Publisher');
 	}
 
 	get isSSAAdmin() {
-		return this.hasAccountRole('SSA Admin') || this.isAdmin;
+		return this.hasAccountRole('SSA Administrator') || this.isAdmin;
 	}
 
 	get isSSAUser() {
