@@ -19,6 +19,35 @@ import org.junit.jupiter.api.Test;
 public class LicenseKeyTest {
 
 	@Test
+	public void testReadsLicenseKeyWithoutDates() {
+		LicenseKey licenseKey = Assertions.assertDoesNotThrow(
+			() -> new LicenseKey(
+				new JSONObject(
+				).put(
+					"id", 1L
+				).put(
+					"name", "key-1"
+				)));
+
+		Assertions.assertNull(licenseKey.getCustomExpirationDateInstant());
+		Assertions.assertNull(licenseKey.getStartDateInstant());
+	}
+
+	@Test
+	public void testReadsLicenseKeyWithUnparsableDate() {
+		LicenseKey licenseKey = Assertions.assertDoesNotThrow(
+			() -> new LicenseKey(
+				new JSONObject(
+				).put(
+					"customExpirationDate", "not a date"
+				).put(
+					"id", 1L
+				)));
+
+		Assertions.assertNull(licenseKey.getCustomExpirationDateInstant());
+	}
+
+	@Test
 	public void testSerializationOmitsKey() throws Exception {
 		ObjectMapper objectMapper = new ObjectMapper();
 

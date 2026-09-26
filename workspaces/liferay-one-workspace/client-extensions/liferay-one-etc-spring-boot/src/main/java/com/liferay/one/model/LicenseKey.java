@@ -7,7 +7,13 @@ package com.liferay.one.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.liferay.portal.kernel.util.Validator;
+
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -24,8 +30,8 @@ public class LicenseKey {
 		_additionalInfo = jsonObject.optString("additionalInfo");
 		_clusterId = jsonObject.optLong("clusterId");
 		_complimentary = jsonObject.optBoolean("complimentary");
-		_customExpirationDateInstant = Instant.parse(
-			jsonObject.getString("customExpirationDate"));
+		_customExpirationDateInstant = _toInstant(
+			jsonObject.optString("customExpirationDate"));
 		_description = jsonObject.optString("description");
 		_domains = jsonObject.optString("domains");
 		_entitlementId = jsonObject.optLong("entitlementId");
@@ -51,7 +57,7 @@ public class LicenseKey {
 		_productVersionLabel = jsonObject.optString("productVersionLabel");
 		_serverId = jsonObject.optString("serverId");
 		_sizing = jsonObject.optString("sizing");
-		_startDateInstant = Instant.parse(jsonObject.getString("startDate"));
+		_startDateInstant = _toInstant(jsonObject.optString("startDate"));
 	}
 
 	public long getAccountEntryId() {
@@ -186,6 +192,24 @@ public class LicenseKey {
 	public boolean isComplimentary() {
 		return _complimentary;
 	}
+
+	private Instant _toInstant(String value) {
+		if (Validator.isNull(value)) {
+			return null;
+		}
+
+		try {
+			return Instant.parse(value);
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			_log.error(
+				"Unable to read the date " + value, dateTimeParseException);
+
+			return null;
+		}
+	}
+
+	private static final Log _log = LogFactory.getLog(LicenseKey.class);
 
 	private final long _accountEntryId;
 	private final String _accountName;
