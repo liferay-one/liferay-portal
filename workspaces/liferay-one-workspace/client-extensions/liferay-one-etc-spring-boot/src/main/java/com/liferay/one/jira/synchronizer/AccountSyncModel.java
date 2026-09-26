@@ -36,9 +36,11 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -170,6 +172,51 @@ public class AccountSyncModel {
 		}
 
 		return _projects;
+	}
+
+	public Map<String, Set<String>>
+			getRoleExternalKeysByUserAccountExternalKey()
+		throws Exception {
+
+		if (_roleExternalKeysByUserAccountExternalKey != null) {
+			return _roleExternalKeysByUserAccountExternalKey;
+		}
+
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+			new LinkedHashMap<>();
+
+		for (UserAccount accountUserAccount : getAccountUserAccounts()) {
+			AccountBrief accountBrief = FindUtil.findFirst(
+				accountUserAccount.getAccountBriefs(),
+				accountBrief1 -> Objects.equals(
+					getExternalReferenceCode(),
+					accountBrief1.getExternalReferenceCode()));
+
+			if (accountBrief == null) {
+				continue;
+			}
+
+			RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+
+			if (roleBriefs == null) {
+				continue;
+			}
+
+			Set<String> roleExternalKeys = new LinkedHashSet<>();
+
+			for (RoleBrief roleBrief : roleBriefs) {
+				roleExternalKeys.add(roleBrief.getExternalReferenceCode());
+			}
+
+			roleExternalKeysByUserAccountExternalKey.put(
+				accountUserAccount.getExternalReferenceCode(),
+				roleExternalKeys);
+		}
+
+		_roleExternalKeysByUserAccountExternalKey =
+			roleExternalKeysByUserAccountExternalKey;
+
+		return _roleExternalKeysByUserAccountExternalKey;
 	}
 
 	public String getSupportLanguage() throws Exception {
@@ -316,6 +363,7 @@ public class AccountSyncModel {
 	private List<Project> _projects;
 	private final ProjectService _projectService;
 	private final PropertyService _propertyService;
+	private Map<String, Set<String>> _roleExternalKeysByUserAccountExternalKey;
 	private final RoleService _roleService;
 	private UserAccountBucket _userAccountBucket;
 	private final UserAccountService _userAccountService;

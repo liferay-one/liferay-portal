@@ -6,9 +6,7 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
-import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
-import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.AccountConstants;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -23,7 +21,6 @@ import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
-import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
@@ -34,7 +31,6 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringBundler;
@@ -43,11 +39,8 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -117,7 +110,10 @@ public class AccountSynchronizer {
 			jiraAssetObject -> _setAttributeValues(
 				accountSyncModel, jiraAssetObject));
 
-		_syncContactRoleAssignments(accountSyncModel, startDate);
+		_accountUserAccountRoleSynchronizer.syncRoles(
+			accountSyncModel.getExternalReferenceCode(),
+			accountSyncModel.getRoleExternalKeysByUserAccountExternalKey(),
+			startDate);
 		_syncAccountOrganizationAssignments(accountSyncModel, startDate);
 
 		List<UserAccount> userAccountsToSync = new ArrayList<>(
@@ -369,70 +365,6 @@ public class AccountSynchronizer {
 		}
 	}
 
-	private void _syncContactRoleAssignments(
-			AccountSyncModel accountSyncModel, Date startDate)
-		throws Exception {
-
-		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
-			new LinkedHashMap<>();
-
-		for (UserAccount accountUserAccount :
-				accountSyncModel.getAccountUserAccounts()) {
-
-			AccountBrief accountBrief = FindUtil.findFirst(
-				accountUserAccount.getAccountBriefs(),
-				accountBrief1 -> Objects.equals(
-					accountSyncModel.getExternalReferenceCode(),
-					accountBrief1.getExternalReferenceCode()));
-
-			if (accountBrief == null) {
-				continue;
-			}
-
-			RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
-
-			if (roleBriefs == null) {
-				continue;
-			}
-
-			Set<String> roleExternalKeys = new LinkedHashSet<>();
-
-			roleExternalKeysByUserAccountExternalKey.put(
-				accountUserAccount.getExternalReferenceCode(),
-				roleExternalKeys);
-
-			for (RoleBrief roleBrief : roleBriefs) {
-				roleExternalKeys.add(roleBrief.getExternalReferenceCode());
-
-				try {
-					_accountUserAccountRoleSynchronizer.syncAssignRole(
-						roleBrief.getExternalReferenceCode(),
-						accountUserAccount.getExternalReferenceCode(),
-						accountSyncModel.getExternalReferenceCode());
-				}
-				catch (Exception exception) {
-					_log.error(
-						StringBundler.concat(
-							"Unable to sync account contact role assignment ",
-							"for role ", roleBrief.getExternalReferenceCode()),
-						exception);
-				}
-			}
-		}
-
-		try {
-			_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
-				accountSyncModel.getExternalReferenceCode(),
-				roleExternalKeysByUserAccountExternalKey, startDate);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to unassign stale contact roles for account " +
-					accountSyncModel.getExternalReferenceCode(),
-				exception);
-		}
-	}
-
 	private void _syncProject(ProjectSyncModel projectSyncModel, Date startDate)
 		throws Exception {
 
@@ -446,59 +378,10 @@ public class AccountSynchronizer {
 			jiraAssetObject -> _setAttributeValues(
 				jiraAssetObject, projectSyncModel));
 
-		_syncProjectMemberships(projectSyncModel, startDate);
-	}
-
-	private void _syncProjectMemberships(
-			ProjectSyncModel projectSyncModel, Date startDate)
-		throws Exception {
-
-		Project project = projectSyncModel.getProject();
-
-		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
-			new LinkedHashMap<>();
-
-		for (ProjectMember projectMember :
-				projectSyncModel.getProjectMembers()) {
-
-			ProjectMembership projectMembership =
-				projectMember.getProjectMembership();
-
-			UserAccount userAccount = projectMember.getUserAccount();
-
-			Set<String> roleExternalKeys =
-				roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
-					userAccount.getExternalReferenceCode(),
-					userAccountExternalKey -> new LinkedHashSet<>());
-
-			roleExternalKeys.add(
-				projectMembership.getRoleExternalReferenceCode());
-
-			try {
-				_accountUserAccountRoleSynchronizer.syncAssignRole(
-					projectMembership.getRoleExternalReferenceCode(),
-					userAccount.getExternalReferenceCode(),
-					project.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to sync project membership " +
-						projectMembership.getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		try {
-			_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
-				project.getExternalReferenceCode(),
-				roleExternalKeysByUserAccountExternalKey, startDate);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to unassign stale contact roles for project " +
-					project.getExternalReferenceCode(),
-				exception);
-		}
+		_accountUserAccountRoleSynchronizer.syncRoles(
+			project.getExternalReferenceCode(),
+			projectSyncModel.getRoleExternalKeysByUserAccountExternalKey(),
+			startDate);
 	}
 
 	private void _syncUserAccounts(Collection<UserAccount> userAccounts) {
