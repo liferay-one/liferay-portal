@@ -59,7 +59,7 @@ export const siteInitializers = [
 	},
 ];
 
-export const ssaRoles = ['SSA Admin', 'SSA User'].map((role) => ({
+export const ssaRoles = ['SSA Administrator', 'SSA User'].map((role) => ({
 	key: role,
 	label: role,
 	value: role,

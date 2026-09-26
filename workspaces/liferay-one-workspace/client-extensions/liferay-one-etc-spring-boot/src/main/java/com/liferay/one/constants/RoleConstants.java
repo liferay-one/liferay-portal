@@ -61,7 +61,7 @@ public class RoleConstants {
 
 	public static final String NAME_PROVISIONING_MEMBER = "Provisioning Member";
 
-	public static final String NAME_SSA_ADMIN = "SSA Admin";
+	public static final String NAME_SSA_ADMIN = "SSA Administrator";
 
 	public static final String NAME_SUPPORT_ADMINISTRATOR =
 		"Support Administrator";
