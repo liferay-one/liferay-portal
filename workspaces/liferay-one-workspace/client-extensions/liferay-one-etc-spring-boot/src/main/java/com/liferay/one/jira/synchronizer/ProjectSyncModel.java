@@ -67,6 +67,50 @@ public class ProjectSyncModel {
 		return _project;
 	}
 
+	public List<ProjectMember> getProjectMembers() throws Exception {
+		if (_projectMembers != null) {
+			return _projectMembers;
+		}
+
+		List<ProjectMembership> projectMemberships = getProjectMemberships();
+
+		List<Long> userIds = new ArrayList<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			userIds.add(projectMembership.getUserId());
+		}
+
+		Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
+
+		for (UserAccount userAccount :
+				_userAccountService.getUserAccounts(userIds)) {
+
+			userAccountsByUserId.put(userAccount.getId(), userAccount);
+		}
+
+		List<ProjectMember> projectMembers = new ArrayList<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			UserAccount userAccount = userAccountsByUserId.get(
+				projectMembership.getUserId());
+
+			if (userAccount == null) {
+				_log.error(
+					"Unable to get user account for user " +
+						projectMembership.getUserId());
+
+				continue;
+			}
+
+			projectMembers.add(
+				new ProjectMember(projectMembership, userAccount));
+		}
+
+		_projectMembers = projectMembers;
+
+		return _projectMembers;
+	}
+
 	public List<ProjectMembership> getProjectMemberships() throws Exception {
 		if (_projectMemberships == null) {
 			_projectMemberships =
@@ -91,35 +135,12 @@ public class ProjectSyncModel {
 		Map<String, Role> accountRolesByExternalReferenceCode =
 			_accountSyncModel.getAccountRolesByExternalReferenceCode();
 
-		List<ProjectMembership> projectMemberships = getProjectMemberships();
-
-		List<Long> userIds = new ArrayList<>();
-
-		for (ProjectMembership projectMembership : projectMemberships) {
-			userIds.add(projectMembership.getUserId());
-		}
-
-		Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
-
-		for (UserAccount userAccount :
-				_userAccountService.getUserAccounts(userIds)) {
-
-			userAccountsByUserId.put(userAccount.getId(), userAccount);
-		}
-
 		_userAccountBucket = new UserAccountBucket();
 
-		for (ProjectMembership projectMembership : projectMemberships) {
-			UserAccount userAccount = userAccountsByUserId.get(
-				projectMembership.getUserId());
-
-			if (userAccount == null) {
-				_log.error(
-					"Unable to get user account for user " +
-						projectMembership.getUserId());
-
-				continue;
-			}
+		for (ProjectMember projectMember : getProjectMembers()) {
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+			UserAccount userAccount = projectMember.getUserAccount();
 
 			Role role = accountRolesByExternalReferenceCode.get(
 				projectMembership.getRoleExternalReferenceCode());
@@ -142,6 +163,7 @@ public class ProjectSyncModel {
 	private final List<String> _employeeRoleNames = EmployeeRoles.getNames();
 	private final EntitlementService _entitlementService;
 	private final Project _project;
+	private List<ProjectMember> _projectMembers;
 	private List<ProjectMembership> _projectMemberships;
 	private final ProjectMembershipService _projectMembershipService;
 	private UserAccountBucket _userAccountBucket;

@@ -128,7 +128,7 @@ public class AccountSynchronizer {
 				ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 					accountSyncModel, project);
 
-				_syncProject(projectSyncModel);
+				_syncProject(projectSyncModel, startDate);
 
 				userAccountsToSync.addAll(
 					projectSyncModel.getCustomerUserAccounts());
@@ -176,13 +176,15 @@ public class AccountSynchronizer {
 					" to JSM");
 		}
 
+		Date startDate = new Date();
+
 		AccountSyncModel accountSyncModel = _createAccountSyncModel(
 			_getProjectAccount(project));
 
 		ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 			accountSyncModel, project);
 
-		_syncProject(projectSyncModel);
+		_syncProject(projectSyncModel, startDate);
 
 		List<UserAccount> userAccounts = new ArrayList<>(
 			projectSyncModel.getCustomerUserAccounts());
@@ -431,7 +433,7 @@ public class AccountSynchronizer {
 		}
 	}
 
-	private void _syncProject(ProjectSyncModel projectSyncModel)
+	private void _syncProject(ProjectSyncModel projectSyncModel, Date startDate)
 		throws Exception {
 
 		AccountSyncModel accountSyncModel =
@@ -444,21 +446,35 @@ public class AccountSynchronizer {
 			jiraAssetObject -> _setAttributeValues(
 				jiraAssetObject, projectSyncModel));
 
-		_syncProjectMemberships(projectSyncModel);
+		_syncProjectMemberships(projectSyncModel, startDate);
 	}
 
-	private void _syncProjectMemberships(ProjectSyncModel projectSyncModel)
+	private void _syncProjectMemberships(
+			ProjectSyncModel projectSyncModel, Date startDate)
 		throws Exception {
 
 		Project project = projectSyncModel.getProject();
 
-		for (ProjectMembership projectMembership :
-				projectSyncModel.getProjectMemberships()) {
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+			new LinkedHashMap<>();
+
+		for (ProjectMember projectMember :
+				projectSyncModel.getProjectMembers()) {
+
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+
+			UserAccount userAccount = projectMember.getUserAccount();
+
+			Set<String> roleExternalKeys =
+				roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
+					userAccount.getExternalReferenceCode(),
+					userAccountExternalKey -> new LinkedHashSet<>());
+
+			roleExternalKeys.add(
+				projectMembership.getRoleExternalReferenceCode());
 
 			try {
-				UserAccount userAccount = _userAccountService.getUserAccount(
-					projectMembership.getUserId());
-
 				_accountUserAccountRoleSynchronizer.syncAssignRole(
 					projectMembership.getRoleExternalReferenceCode(),
 					userAccount.getExternalReferenceCode(),
@@ -470,6 +486,18 @@ public class AccountSynchronizer {
 						projectMembership.getExternalReferenceCode(),
 					exception);
 			}
+		}
+
+		try {
+			_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+				project.getExternalReferenceCode(),
+				roleExternalKeysByUserAccountExternalKey, startDate);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to unassign stale contact roles for project " +
+					project.getExternalReferenceCode(),
+				exception);
 		}
 	}
 
