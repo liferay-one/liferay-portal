@@ -70,7 +70,6 @@ export type GenerateLicenseKeysRequest = {
 	environmentName: string;
 	keyType: string;
 	projectExternalReferenceCode: string;
-	renewedLicenseKeyIds?: number[];
 	servers: GenerateServer[];
 	subscriptionEntitlementId: number;
 	version: string;

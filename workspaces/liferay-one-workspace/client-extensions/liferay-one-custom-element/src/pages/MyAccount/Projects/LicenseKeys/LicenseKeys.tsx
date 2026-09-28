@@ -15,15 +15,20 @@ import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import i18n, {translate} from '~/i18n';
+import i18n, {Word, translate} from '~/i18n';
+import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
 import FilterableListCard, {
+	FilterOption,
 	ListColumn,
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
-import useHasActivationPermission from '../hooks/useHasActivationPermission';
+import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import useLicenseKeyActions from './hooks/useLicenseKeyActions';
+
+import './LicenseKeys.css';
 
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
 	return (
@@ -43,6 +48,14 @@ function formatDateBound(value: string): string {
 	)}`;
 }
 
+function getEnvironmentType(row: ProjectActivationKey): string {
+	return row.licenseName.slice(row.licenseName.indexOf(' ') + 1);
+}
+
+function getSubscriptionType(row: ProjectActivationKey): Word {
+	return row.complimentary ? 'complimentary' : 'subscription';
+}
+
 function matchesDateBound(dateValue: string, values: string[]): boolean {
 	return values.every((value) => {
 		const bound = value.split(':')[0];
@@ -54,6 +67,19 @@ function matchesDateBound(dateValue: string, values: string[]): boolean {
 
 		return bound === 'after' ? dateValue >= date : dateValue <= date;
 	});
+}
+
+function toOptions(
+	values: string[],
+	getLabel: (value: string) => string = (value) => value
+): FilterOption[] {
+	return [...new Set(values.filter(Boolean))]
+		.map((value) => ({label: getLabel(value), value}))
+		.sort((option1, option2) =>
+			option1.label.localeCompare(option2.label, undefined, {
+				numeric: true,
+			})
+		);
 }
 
 function stopAnd(callback: () => void) {
@@ -107,7 +133,7 @@ function KebabActions({
 					{translate('download')}
 				</ClayDropDown.Item>
 
-				{hasActivationPermission && (
+				{hasActivationPermission && isRenewableKey(row) && (
 					<ClayDropDown.Item onClick={stopAnd(onRenew)}>
 						{translate('renew')}
 					</ClayDropDown.Item>
@@ -137,7 +163,7 @@ export default function LicenseKeys() {
 	const [searchParams] = useSearchParams();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
-	const {hasActivationPermission} = useHasActivationPermission(projectId);
+	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 
 	const {
 		handleDeactivate,
@@ -169,22 +195,57 @@ export default function LicenseKeys() {
 			key: 'environment-name',
 			render: (row) => (
 				<span className="d-flex flex-column">
-					<span className="fw-bold">{row.name}</span>
+					<span className="license-keys-environment-name">
+						{row.name}
+					</span>
 
 					<span className="list-card-subtext">
 						{row.domain || '-'}
 					</span>
 				</span>
 			),
+			width: '25%',
 		},
 		{
 			heading: 'environment-type',
 			key: 'environment-type',
-			render: (row) => translate(row.environmentType),
+			render: (row) => (
+				<span className="d-flex flex-column">
+					<span>{row.licenseName || '-'}</span>
+
+					<span className="list-card-subtext">
+						{translate(getSubscriptionType(row))}
+					</span>
+				</span>
+			),
+			width: '25%',
+		},
+		{
+			heading: 'key-type',
+			key: 'key-type',
+			render: (row) => {
+				const keyType = getKeyType(row.licenseType);
+
+				return (
+					<span className="d-flex flex-column">
+						<span>{translate(keyType)}</span>
+
+						<span className="list-card-subtext">
+							{keyType === 'on-premise'
+								? row.hostName || '-'
+								: i18n.sub('x-cluster-nodes-keys', [
+										row.clusterSize || '-',
+									])}
+						</span>
+					</span>
+				);
+			},
+			width: '25%',
 		},
 		{
 			heading: 'start-date-exp-date',
 			key: 'start-date-exp-date',
+			noWrap: true,
 			render: (row) => (
 				<span className="list-card-status">
 					<ClayTooltipProvider>
@@ -198,11 +259,7 @@ export default function LicenseKeys() {
 						/>
 					</ClayTooltipProvider>
 
-					<span className="d-flex flex-column">
-						<span>{`${row.startDate} -`}</span>
-
-						<span>{row.expirationDate}</span>
-					</span>
+					<span>{`${row.startDate} - ${row.expirationDate}`}</span>
 				</span>
 			),
 		},
@@ -225,12 +282,26 @@ export default function LicenseKeys() {
 
 	const filters: ListFilter<ProjectActivationKey>[] = [
 		{
+			key: 'keyType',
+			label: 'key-type',
+			matches: (row, values) =>
+				values.includes(getKeyType(row.licenseType)),
+			options: toOptions(
+				activationKeys.map((row) => getKeyType(row.licenseType)),
+				(value) => translate(value as Word)
+			),
+		},
+		{
 			key: 'environmentType',
 			label: 'environment-type',
-			matches: (row, values) => values.includes(row.environmentType),
+			matches: (row, values) =>
+				values.includes(getEnvironmentType(row)) ||
+				values.includes(getSubscriptionType(row)),
 			options: [
-				{label: translate('non-production'), value: 'non-production'},
-				{label: translate('production'), value: 'production'},
+				...toOptions(activationKeys.map(getEnvironmentType)),
+				...toOptions(activationKeys.map(getSubscriptionType), (value) =>
+					translate(value as Word)
+				),
 			],
 		},
 		{
@@ -243,20 +314,41 @@ export default function LicenseKeys() {
 		},
 		{
 			formatValue: formatDateBound,
-			key: 'endDate',
-			label: 'end-date',
+			key: 'expirationDate',
+			label: 'expiration-date',
 			matches: (row, values) =>
 				matchesDateBound(row.expirationDateValue, values),
 			variant: 'date-range',
+		},
+		{
+			key: 'status',
+			label: 'status',
+			matches: (row, values) => values.includes(row.status),
+			options: toOptions(
+				activationKeys.map((row) => row.status),
+				(value) => translate(value as Word)
+			),
+		},
+		{
+			key: 'productVersion',
+			label: 'product-version',
+			matches: (row, values) => values.includes(row.productVersion),
+			options: toOptions(activationKeys.map((row) => row.productVersion)),
+		},
+		{
+			key: 'instanceSize',
+			label: 'instance-size',
+			matches: (row, values) => values.includes(row.sizing),
+			options: toOptions(activationKeys.map((row) => row.sizing)),
 		},
 	];
 
 	return (
 		<Page
 			description={i18n.translate(
-				'manage-the-activation-keys-within-your-project'
+				'manage-the-activation-within-your-project'
 			)}
-			title={i18n.translate('activation-keys')}
+			title={i18n.translate('activation')}
 		>
 			<FilterableListCard
 				action={
@@ -265,13 +357,16 @@ export default function LicenseKeys() {
 							displayType="primary"
 							onClick={() => handleNewKey()}
 						>
-							{translate('generate-new')}
+							{translate('new-key')}
 						</Button>
 					) : undefined
 				}
+				className="license-keys"
 				columns={columns}
-				emptyLabel="no-activation-keys-yet"
-				filters={filters}
+				emptyLabel="no-activation-keys"
+				filters={filters.filter(
+					(filter) => filter.variant || filter.options?.length
+				)}
 				items={activationKeys}
 				loading={loading}
 				matchesSearch={matchesSearch}
