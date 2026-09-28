@@ -15,8 +15,11 @@ import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -147,6 +151,110 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncOrganizationsAssignsOrganizationsThenUnassignsStaleOrganizations()
+		throws Exception {
+
+		AccountOrganizationSynchronizer accountOrganizationSynchronizer =
+			Mockito.spy(_accountOrganizationSynchronizer);
+
+		Date startDate = new Date();
+
+		accountOrganizationSynchronizer.syncOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, _getOrganizationExternalKeys(), startDate);
+
+		InOrder inOrder = Mockito.inOrder(
+			_accountTeamRoleAssignmentConverter,
+			accountOrganizationSynchronizer);
+
+		inOrder.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq("organization-erc-1"),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
+		);
+
+		inOrder.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq("organization-erc-2"),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
+		);
+
+		inOrder.verify(
+			accountOrganizationSynchronizer
+		).syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, _getOrganizationExternalKeys(), startDate
+		);
+	}
+
+	@Test
+	public void testSyncOrganizationsContinuesWhenAssignOrganizationFails()
+		throws Exception {
+
+		AccountOrganizationSynchronizer accountOrganizationSynchronizer =
+			Mockito.spy(_accountOrganizationSynchronizer);
+
+		Mockito.when(
+			_accountTeamRoleAssignmentConverter.toAssetObject(
+				Mockito.any(), Mockito.eq("organization-erc-1"), Mockito.any(),
+				Mockito.anyBoolean(), Mockito.any())
+		).thenThrow(
+			new RuntimeException("Unable to assign organization")
+		);
+
+		Date startDate = new Date();
+
+		accountOrganizationSynchronizer.syncOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, _getOrganizationExternalKeys(), startDate);
+
+		Mockito.verify(
+			_accountTeamRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.any(), Mockito.eq("organization-erc-2"),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
+		);
+
+		Mockito.verify(
+			accountOrganizationSynchronizer
+		).syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, _getOrganizationExternalKeys(), startDate
+		);
+	}
+
+	@Test
+	public void testSyncOrganizationsSkipsAssignmentsUpdatedSinceStartDate()
+		throws Exception {
+
+		Date startDate = new Date();
+
+		_accountOrganizationSynchronizer.syncOrganizations(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY), startDate);
+
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Assertions.assertFalse(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_accountTeamRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+	}
+
+	@Test
 	public void testSyncUnassignOrganizationMarksAssignmentDeleted()
 		throws Exception {
 
@@ -212,16 +320,8 @@ public class AccountOrganizationSynchronizerTest {
 		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
 			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet(), startDate);
 
-		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
-			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
-				BiPredicate.class);
-
-		Mockito.verify(
-			_jiraAssetService
-		).upsert(
-			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
-			biPredicateArgumentCaptor.capture()
-		);
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
 
 		JiraAssetObject existingJiraAssetObject = Mockito.mock(
 			JiraAssetObject.class);
@@ -233,9 +333,6 @@ public class AccountOrganizationSynchronizerTest {
 		).thenReturn(
 			true
 		);
-
-		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
-			biPredicateArgumentCaptor.getValue();
 
 		Assertions.assertTrue(
 			biPredicate.test(
@@ -312,6 +409,28 @@ public class AccountOrganizationSynchronizerTest {
 		);
 
 		return aqlAtomicReference;
+	}
+
+	private BiPredicate<JiraAssetObject, JiraAssetObject>
+		_captureShouldSkipUpdateBiPredicate() {
+
+		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
+			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
+				BiPredicate.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
+			biPredicateArgumentCaptor.capture()
+		);
+
+		return biPredicateArgumentCaptor.getValue();
+	}
+
+	private Set<String> _getOrganizationExternalKeys() {
+		return new LinkedHashSet<>(
+			Arrays.asList("organization-erc-1", "organization-erc-2"));
 	}
 
 	private JiraAssetObject _mockAssignment() {
