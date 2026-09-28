@@ -178,9 +178,7 @@ public class TrialRestController extends BaseRestController {
 		if (!(Objects.equals(
 				dueStatusJSONObject.getString("key"), "approved") ||
 			  Objects.equals(
-				  dueStatusJSONObject.getString("key"), "autoApproved") ||
-			  Objects.equals(
-				  dueStatusJSONObject.getString("key"), "pending"))) {
+				  dueStatusJSONObject.getString("key"), "autoApproved"))) {
 
 			return;
 		}
@@ -207,20 +205,6 @@ public class TrialRestController extends BaseRestController {
 		if (Validator.isNull(trialEndDate)) {
 			throw new IllegalStateException(
 				"Order " + orderId + " has no \"trial-end-date\" custom field");
-		}
-
-		if (Objects.equals(dueStatusJSONObject.getString("key"), "pending")) {
-			patch(
-				_liferayOAuth2AccessTokenManager.getAuthorization(
-					"liferay-one-etc-spring-boot-oahs"),
-				new JSONObject(
-				).put(
-					"dueStatus", "approved"
-				).toString(),
-				UriComponentsBuilder.fromPath(
-					"/o/c/trialextensionrequests/" + id
-				).build(
-				).toUri());
 		}
 
 		customFields.put(
