@@ -90,6 +90,28 @@ public class UserAccountService extends OneBaseService {
 		}
 	}
 
+	public UserAccount fetchUserAccountByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception {
+
+		UserAccountResource userAccountResource = _buildUserAccountResource(
+			"nestedFields", "accountBriefs");
+
+		try {
+			return userAccountResource.getUserAccountByExternalReferenceCode(
+				externalReferenceCode);
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				return null;
+			}
+
+			throw problemException;
+		}
+	}
+
 	public List<UserAccount> getAccountUserAccounts(long accountId)
 		throws Exception {
 
