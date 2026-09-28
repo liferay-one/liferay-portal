@@ -21,11 +21,6 @@ public class OktaPubsubPublisher extends BasePubsubPublisher {
 		return _projectId;
 	}
 
-	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
-	}
-
 	@Value("${liferay.one.okta.pubsub.publisher.project.id}")
 	private String _projectId;
 
