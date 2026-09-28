@@ -1,7 +1,7 @@
 [
 	{
 		"active": true,
-		"conditionExpression": "dueStatus == \"Approved\" OR dueStatus == \"Rejected\"",
+		"conditionExpression": "dueStatus == \"approved\" OR dueStatus == \"rejected\"",
 		"externalReferenceCode": "TRIAL-ADMIN-EXTENSION-RESPONSE-EMAIL",
 		"label": {
 			"en_US": "Admin Extension Response Email"

@@ -4,9 +4,9 @@
  */
 
 export type ExtendRequestStatus =
-	| 'Approved'
-	| 'AutoApproved'
+	| 'approved'
+	| 'autoApproved'
 	| 'extension-expired'
 	| 'not-requested'
-	| 'Pending'
-	| 'Rejected';
+	| 'pending'
+	| 'rejected';
