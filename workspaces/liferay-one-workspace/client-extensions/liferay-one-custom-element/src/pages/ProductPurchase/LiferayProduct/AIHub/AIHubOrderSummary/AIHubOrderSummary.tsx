@@ -40,6 +40,7 @@ const AIHubOrderSummary = () => {
 		skuRef,
 	} = useProductPurchaseOutletContext();
 
+	const [termsAndConditions, setTermsAndConditions] = useState(false);
 	const [userAgreement, setUserAgreement] = useState(false);
 
 	const {
@@ -258,6 +259,16 @@ const AIHubOrderSummary = () => {
 
 				<div className="d-flex mx-5">
 					<div className="col-1 d-flex justify-content-end m-0 p-0">
+						{i18n.translate('vat')}:
+					</div>
+					<span className="font-weight-bold ml-2">
+						{summary?.taxValueFormatted ||
+							formatCurrency(0, currencyCode)}
+					</span>
+				</div>
+
+				<div className="d-flex mx-5">
+					<div className="col-1 d-flex justify-content-end m-0 p-0">
 						{i18n.translate('total')}:
 					</div>
 					<span className="d-flex font-weight-bold ml-2">
@@ -269,6 +280,41 @@ const AIHubOrderSummary = () => {
 					</span>
 				</div>
 			</Section>
+
+			<p className="liferay-ai-hub-form-aggreements-text text-justify">
+				Please read
+				<a
+					className="mx-1"
+					href={productAgreements.links.aiHub.agreement}
+					target="_blank"
+				>
+					this agreement
+				</a>
+				carefully before accessing or in any way using the AI Hub
+				experience.
+			</p>
+
+			<div className="d-flex flex-row text-justify">
+				<ClayCheckbox
+					checked={termsAndConditions}
+					id="terms-and-conditions"
+					onChange={() => {
+						setTermsAndConditions(!termsAndConditions);
+					}}
+					required
+				/>
+
+				<label
+					className="font-weight-normal px-1"
+					htmlFor="terms-and-conditions"
+				>
+					I signify my assent to and acceptance of this agreement and
+					acknowledge that I have read and understand the terms. If I
+					am an individual acting on behalf of an entity, I represent
+					that I have the authority to enter into this agreement on
+					behalf of that entity.
+				</label>
+			</div>
 
 			<div className="d-flex flex-row text-justify">
 				<ClayCheckbox
@@ -326,6 +372,7 @@ const AIHubOrderSummary = () => {
 					disabled={
 						!aiHubTierSKU ||
 						!isBillingAddressValid ||
+						!termsAndConditions ||
 						!userAgreement
 					}
 					displayType="primary"
