@@ -59,6 +59,7 @@ const OrderDetails = () => {
 			isLoading={isLoading}
 		>
 			<PaymentDetailsHeader
+				backLabel={i18n.translate('back-to-finance-orders')}
 				backLink="/mp-finance-orders"
 				onClick={async () =>
 					HeadlessCommerceAdminOrder.patchOrder(orderId as string, {
