@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {useOneContext} from '~/context/OneContextProvider';
 import useModalContext from '~/hooks/useModalContext';
 import i18n from '~/i18n';
@@ -32,6 +32,7 @@ const getOrderExtendRequests =
 const useSSAActions = () => {
 	const {userAccountModel} = useOneContext();
 	const modalContext = useModalContext();
+	const {pathname} = useLocation();
 	const navigate = useNavigate();
 
 	const {selectedAccountId, ssaTrialExtend, ssaTrialExtendMutate} =
@@ -46,7 +47,7 @@ const useSSAActions = () => {
 			{
 				name: i18n.translate('details'),
 				onClick: (order: PlacedOrder) =>
-					navigate(`/details/${order.id}`),
+					navigate(`/details/${order.id}?from=${pathname}`),
 			},
 			{
 				disabled: (order: PlacedOrder) =>
@@ -160,6 +161,7 @@ const useSSAActions = () => {
 		userAccountModel.isSSAAdmin,
 		modalContext,
 		navigate,
+		pathname,
 		selectedAccountId,
 		ssaTrialExtend?.items,
 		ssaTrialExtendMutate,
