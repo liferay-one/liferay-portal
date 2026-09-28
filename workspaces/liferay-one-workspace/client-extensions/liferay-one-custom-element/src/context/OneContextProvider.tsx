@@ -55,7 +55,8 @@ const OneContextProvider: React.FC<OneContextProviderProps> = ({
 					myUserAccount,
 					properties,
 					userAccountModel: new UserAccountModel(
-						myUserAccount as UserAccount
+						myUserAccount as UserAccount,
+						properties.ssaAccountExternalReferenceCode
 					),
 				} as Context
 			}
