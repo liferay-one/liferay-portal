@@ -84,11 +84,6 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testIsAutoCreateTopicReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
-	}
-
-	@Test
 	public void testReceiveDeactivatesProduct2OnDelete() throws Exception {
 		_receiveMessage(
 			"delete", "Product2", _createProduct2JSONObject("Widget"));

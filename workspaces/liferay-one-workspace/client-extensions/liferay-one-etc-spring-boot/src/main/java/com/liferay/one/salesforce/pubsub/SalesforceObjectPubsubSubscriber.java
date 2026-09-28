@@ -138,8 +138,8 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	}
 
 	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
+	protected boolean isAutoCreateSubscription() {
+		return true;
 	}
 
 	private void _processAccount(JSONObject recordJSONObject) throws Exception {

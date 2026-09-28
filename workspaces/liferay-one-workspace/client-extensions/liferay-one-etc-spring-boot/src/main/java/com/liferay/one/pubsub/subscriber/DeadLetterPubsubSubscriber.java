@@ -45,11 +45,6 @@ public class DeadLetterPubsubSubscriber extends BaseDeadLetterPubsubSubscriber {
 	}
 
 	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
-	}
-
-	@Override
 	protected void onDeadLetter(
 		int deliveryAttempt, Message message, String sourceSubscriptionName) {
 

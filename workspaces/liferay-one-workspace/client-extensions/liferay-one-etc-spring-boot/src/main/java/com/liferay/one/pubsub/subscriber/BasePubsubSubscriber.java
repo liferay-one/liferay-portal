@@ -63,6 +63,10 @@ public abstract class BasePubsubSubscriber extends BasePubsubClient {
 
 		if (isAutoCreateTopic()) {
 			ensureTopicExists(getTopic());
+		}
+
+		if (isAutoCreateSubscription()) {
+			ensureDeadLetterTopicExists();
 
 			_ensureSubscriptionExists(projectSubscriptionName, getTopic());
 		}
@@ -157,6 +161,10 @@ public abstract class BasePubsubSubscriber extends BasePubsubClient {
 		return StringPool.BLANK;
 	}
 
+	protected boolean isAutoCreateSubscription() {
+		return false;
+	}
+
 	protected String getSubscriptionName() {
 		return StringPool.BLANK;
 	}
@@ -185,8 +193,8 @@ public abstract class BasePubsubSubscriber extends BasePubsubClient {
 				return;
 			}
 			catch (NotFoundException notFoundException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(
+				if (_log.isInfoEnabled()) {
+					_log.info(
 						"Unable to find subscription. Creating subscription " +
 							projectSubscriptionName,
 						notFoundException);

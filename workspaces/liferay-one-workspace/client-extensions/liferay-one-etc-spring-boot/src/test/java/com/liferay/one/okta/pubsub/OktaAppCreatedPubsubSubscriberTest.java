@@ -58,11 +58,6 @@ public class OktaAppCreatedPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testIsAutoCreateTopicReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
-	}
-
-	@Test
 	public void testReceiveAddsOktaApplicationProperty() throws Exception {
 		_receiveMessage(_ACCOUNT_KEY, _APP_ID);
 

@@ -62,11 +62,6 @@ public class DeadLetterPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testIsAutoCreateTopicReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
-	}
-
-	@Test
 	public void testIsDeadLetterTopicEnabledReturnsFalse() {
 		Assertions.assertFalse(_subscriber.isDeadLetterTopicEnabled());
 	}

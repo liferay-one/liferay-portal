@@ -184,11 +184,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testIsAutoCreateTopicReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
-	}
-
-	@Test
 	public void testReceiveAddsErrorIssueForEveryFailedRecord()
 		throws Exception {
 
