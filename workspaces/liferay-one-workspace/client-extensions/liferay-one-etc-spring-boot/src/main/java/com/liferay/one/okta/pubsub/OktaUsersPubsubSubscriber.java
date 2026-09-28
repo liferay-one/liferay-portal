@@ -203,7 +203,7 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 		if (accountBriefs != null) {
 			for (AccountBrief accountBrief : accountBriefs) {
 				_userAssignmentService.unassignAccount(
-					_accountService.getAccount(accountBrief.getId(), null),
+					_accountService.getAccount(accountBrief.getId()),
 					userAccount.getId());
 			}
 		}

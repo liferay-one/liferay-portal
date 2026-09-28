@@ -74,12 +74,12 @@ public class ProjectMembershipService extends OneBaseService {
 	 *         <code>false</code> if none matched
 	 */
 	public boolean deleteProjectMembership(
-			Jwt jwt, String projectExternalReferenceCode,
+			String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
 		throws Exception {
 
 		List<ProjectMembership> projectMemberships = _getProjectMemberships(
-			jwt, projectExternalReferenceCode, roleExternalReferenceCode,
+			null, projectExternalReferenceCode, roleExternalReferenceCode,
 			userId);
 
 		if (projectMemberships.isEmpty()) {
@@ -88,7 +88,7 @@ public class ProjectMembershipService extends OneBaseService {
 
 		for (ProjectMembership projectMembership : projectMemberships) {
 			delete(
-				getAuthorization(jwt), StringPool.BLANK,
+				getAuthorization(), StringPool.BLANK,
 				UriComponentsBuilder.fromPath(
 					"/o/c/projectmemberships/by-external-reference-code" +
 						"/{externalReferenceCode}"

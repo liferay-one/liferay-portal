@@ -326,7 +326,7 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).getAllItems(
 			Mockito.anyString(), Mockito.anyString(), Mockito.any(),
-			Mockito.isNull(), Mockito.anyString()
+			Mockito.anyString()
 		);
 
 		_entitlementService.getEntitlements("name eq 'sites'");
@@ -335,8 +335,7 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).getAllItems(
 			Mockito.eq("/o/c/entitlements"), Mockito.eq("name eq 'sites'"),
-			Mockito.any(), Mockito.isNull(),
-			Mockito.eq("entitlementDefinitionToEntitlement")
+			Mockito.any(), Mockito.eq("entitlementDefinitionToEntitlement")
 		);
 	}
 

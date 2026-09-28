@@ -306,7 +306,7 @@ public class AccountsRestController extends OneBaseRestController {
 		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		_accountService.addAccountUserAccountByEmailAddress(
-			newAccount.getId(), userAccount.getEmailAddress(), null);
+			newAccount.getId(), userAccount.getEmailAddress());
 
 		AccountRole accountRole = _accountRoleService.fetchAccountRoleByName(
 			RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);

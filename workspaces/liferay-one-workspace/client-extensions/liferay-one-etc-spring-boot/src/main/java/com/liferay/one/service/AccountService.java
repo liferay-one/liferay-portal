@@ -117,11 +117,11 @@ public class AccountService extends OneBaseService {
 	}
 
 	public void addAccountUserAccountByEmailAddress(
-			long accountId, String emailAddress, Jwt jwt)
+			long accountId, String emailAddress)
 		throws Exception {
 
 		post(
-			getAuthorization(jwt), StringPool.BLANK,
+			getAuthorization(), StringPool.BLANK,
 			UriComponentsBuilder.fromPath(
 				"/o/headless-admin-user/v1.0/accounts/{accountId}" +
 					"/user-accounts/by-email-address/{emailAddress}"
@@ -246,54 +246,22 @@ public class AccountService extends OneBaseService {
 		}
 	}
 
-	public Account getAccount(long accountEntryId, Jwt jwt) throws Exception {
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).build();
+	public Account getAccount(long accountEntryId) throws Exception {
+		return _getAccount(accountEntryId, null);
+	}
 
-		return accountResource.getAccount(accountEntryId);
+	public Account getAccount(long accountEntryId, Jwt jwt) throws Exception {
+		return _getAccount(accountEntryId, jwt);
 	}
 
 	public Account getAccount(String externalReferenceCode) throws Exception {
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-
-		return accountResource.getAccountByExternalReferenceCode(
-			externalReferenceCode);
+		return _getAccountByExternalReferenceCode(externalReferenceCode, null);
 	}
 
 	public Account getAccount(String externalReferenceCode, Jwt jwt)
 		throws Exception {
 
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue()
-		).build();
-
-		try {
-			return accountResource.getAccountByExternalReferenceCode(
-				externalReferenceCode);
-		}
-		catch (Problem.ProblemException problemException) {
-			Problem problem = problemException.getProblem();
-
-			if ((problem != null) && isNotFound(problem.getStatus())) {
-				throw new NoSuchAccountException(
-					"No account exists with external reference code " +
-						externalReferenceCode);
-			}
-
-			throw problemException;
-		}
+		return _getAccountByExternalReferenceCode(externalReferenceCode, jwt);
 	}
 
 	public boolean hasDuplicateAccountName(
@@ -425,6 +393,44 @@ public class AccountService extends OneBaseService {
 
 		_setDefaultLicensingCustomFields(
 			account, salesforceAccount.getBillingCountry(), soldBy);
+	}
+
+	private AccountResource _buildAccountResource(Jwt jwt) {
+		return AccountResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization(jwt)
+		).build();
+	}
+
+	private Account _getAccount(long accountEntryId, Jwt jwt) throws Exception {
+		AccountResource accountResource = _buildAccountResource(jwt);
+
+		return accountResource.getAccount(accountEntryId);
+	}
+
+	private Account _getAccountByExternalReferenceCode(
+			String externalReferenceCode, Jwt jwt)
+		throws Exception {
+
+		AccountResource accountResource = _buildAccountResource(jwt);
+
+		try {
+			return accountResource.getAccountByExternalReferenceCode(
+				externalReferenceCode);
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				throw new NoSuchAccountException(
+					"No account exists with external reference code " +
+						externalReferenceCode);
+			}
+
+			throw problemException;
+		}
 	}
 
 	private void _setAccountContactInformation(
