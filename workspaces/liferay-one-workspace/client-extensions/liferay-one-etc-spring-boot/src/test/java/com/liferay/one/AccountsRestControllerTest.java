@@ -615,8 +615,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountService
 		).addAccountUserAccountByEmailAddress(
-			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString(),
-			Mockito.isNull()
+			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString()
 		);
 
 		Mockito.verify(
@@ -743,8 +742,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountService, Mockito.never()
 		).addAccountUserAccountByEmailAddress(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString(),
-			ArgumentMatchers.any()
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
 		);
 	}
 
@@ -856,8 +854,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountService
 		).addAccountUserAccountByEmailAddress(
-			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString(),
-			Mockito.isNull()
+			Mockito.eq(_ACCOUNT_ID), ArgumentMatchers.anyString()
 		);
 
 		Mockito.verify(

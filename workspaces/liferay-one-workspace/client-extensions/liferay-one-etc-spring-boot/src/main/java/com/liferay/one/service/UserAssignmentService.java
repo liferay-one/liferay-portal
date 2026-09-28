@@ -320,7 +320,7 @@ public class UserAssignmentService {
 		throws Exception {
 
 		if (!_projectMembershipService.deleteProjectMembership(
-				null, project.getExternalReferenceCode(),
+				project.getExternalReferenceCode(),
 				projectRoleExternalReferenceCode, userId)) {
 
 			return;

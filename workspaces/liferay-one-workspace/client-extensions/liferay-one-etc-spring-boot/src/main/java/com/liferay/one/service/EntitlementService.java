@@ -392,7 +392,7 @@ public class EntitlementService extends OneBaseService {
 		throws Exception {
 
 		return getAllItems(
-			"/o/c/entitlements", filterString, Entitlement::new, null,
+			"/o/c/entitlements", filterString, Entitlement::new,
 			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
 	}
 

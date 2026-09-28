@@ -72,7 +72,7 @@ public abstract class OneBaseService extends BaseService {
 			String path, String filterString, Function<JSONObject, T> function)
 		throws Exception {
 
-		return getAllItems(path, filterString, function, null);
+		return _getAllItems(path, filterString, function, null, null);
 	}
 
 	protected <T> List<T> getAllItems(
@@ -80,10 +80,68 @@ public abstract class OneBaseService extends BaseService {
 			Jwt jwt)
 		throws Exception {
 
-		return getAllItems(path, filterString, function, jwt, null);
+		return _getAllItems(path, filterString, function, jwt, null);
 	}
 
 	protected <T> List<T> getAllItems(
+			String path, String filterString, Function<JSONObject, T> function,
+			String nestedFields)
+		throws Exception {
+
+		return _getAllItems(path, filterString, function, null, nestedFields);
+	}
+
+	protected String getAuthorization() {
+		return _liferayOAuth2AccessTokenManager.getAuthorization(
+			"liferay-one-etc-spring-boot-oahs");
+	}
+
+	protected String getAuthorization(Jwt jwt) {
+		if (jwt == null) {
+			return getAuthorization();
+		}
+
+		return "Bearer " + jwt.getTokenValue();
+	}
+
+	protected String getDXPEndpointAddress() {
+		if (lxcDXPMainDomain.contains(":")) {
+			return lxcDXPMainDomain;
+		}
+
+		int port = 80;
+
+		if (StringUtil.equals(lxcDXPServerProtocol, "https")) {
+			port = 443;
+		}
+
+		return lxcDXPMainDomain + ":" + port;
+	}
+
+	@Override
+	protected ExchangeFilterFunction getWebClientExchangeFilterFunction() {
+		return super.getWebClientExchangeFilterFunction(
+		).andThen(
+			(clientRequest, exchangeFunction) -> exchangeFunction.exchange(
+				clientRequest
+			).doOnNext(
+				clientResponse -> {
+					int statusCode = clientResponse.statusCode(
+					).value();
+
+					if (statusCode == 403) {
+						_logForbidden(clientRequest);
+					}
+				}
+			)
+		);
+	}
+
+	protected boolean isNotFound(String status) {
+		return Objects.equals(HttpStatus.NOT_FOUND.name(), status);
+	}
+
+	private <T> List<T> _getAllItems(
 			String path, String filterString, Function<JSONObject, T> function,
 			Jwt jwt, String nestedFields)
 		throws Exception {
@@ -142,56 +200,6 @@ public abstract class OneBaseService extends BaseService {
 
 			page++;
 		}
-	}
-
-	protected String getAuthorization() {
-		return _liferayOAuth2AccessTokenManager.getAuthorization(
-			"liferay-one-etc-spring-boot-oahs");
-	}
-
-	protected String getAuthorization(Jwt jwt) {
-		if (jwt == null) {
-			return getAuthorization();
-		}
-
-		return "Bearer " + jwt.getTokenValue();
-	}
-
-	protected String getDXPEndpointAddress() {
-		if (lxcDXPMainDomain.contains(":")) {
-			return lxcDXPMainDomain;
-		}
-
-		int port = 80;
-
-		if (StringUtil.equals(lxcDXPServerProtocol, "https")) {
-			port = 443;
-		}
-
-		return lxcDXPMainDomain + ":" + port;
-	}
-
-	@Override
-	protected ExchangeFilterFunction getWebClientExchangeFilterFunction() {
-		return super.getWebClientExchangeFilterFunction(
-		).andThen(
-			(clientRequest, exchangeFunction) -> exchangeFunction.exchange(
-				clientRequest
-			).doOnNext(
-				clientResponse -> {
-					int statusCode = clientResponse.statusCode(
-					).value();
-
-					if (statusCode == 403) {
-						_logForbidden(clientRequest);
-					}
-				}
-			)
-		);
-	}
-
-	protected boolean isNotFound(String status) {
-		return Objects.equals(HttpStatus.NOT_FOUND.name(), status);
 	}
 
 	private String _getObjectScope(URI uri) {

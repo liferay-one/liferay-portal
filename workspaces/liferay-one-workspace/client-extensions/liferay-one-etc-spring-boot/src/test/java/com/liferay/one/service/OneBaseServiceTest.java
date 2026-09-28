@@ -32,7 +32,7 @@ public class OneBaseServiceTest {
 
 		testOneBaseService.getAllItems(
 			"/o/headless-admin-user/v1.0/accounts",
-			"name eq 'Johnson & Johnson + A=B'", jsonObject -> jsonObject, null,
+			"name eq 'Johnson & Johnson + A=B'", jsonObject -> jsonObject,
 			"postalAddresses,accountRoles");
 
 		Assertions.assertEquals(1, testOneBaseService.uris.size());

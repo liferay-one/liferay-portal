@@ -798,7 +798,7 @@ public class OktaUsersPubsubSubscriberTest {
 		account.setId(accountId);
 
 		Mockito.when(
-			_accountService.getAccount(accountId, null)
+			_accountService.getAccount(accountId)
 		).thenReturn(
 			account
 		);
