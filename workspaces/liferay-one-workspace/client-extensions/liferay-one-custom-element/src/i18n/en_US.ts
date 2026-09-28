@@ -1599,8 +1599,8 @@ export default {
 		'This is the first version of the app to be published.',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'This key is expired and cannot be downloaded.',
-	'this-liferay-dxp-is-requesting-access-to-the-account-you-select-below':
-		'This Liferay DXP is requesting access to the account you select below.',
+	'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account':
+		'This Liferay DXP is requesting access to your Liferay One account.',
 	'this-may-restrict-the-functionality-available-to-you':
 		'This may restrict the functionality available to you.',
 	'this-order-must-be-completed-before-downloading-this-app.':
