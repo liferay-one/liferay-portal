@@ -45,6 +45,23 @@ public abstract class BasePubsubClient {
 		return _serviceAccountCredentialsProvider.getCredentialsProvider();
 	}
 
+	protected void ensureDeadLetterTopicExists() throws Exception {
+		if (!isDeadLetterTopicEnabled()) {
+			return;
+		}
+
+		TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder(
+		).setCredentialsProvider(
+			getCredentialsProvider()
+		).build();
+
+		try (TopicAdminClient topicAdminClient = TopicAdminClient.create(
+				topicAdminSettings)) {
+
+			_ensureTopicExists(getDeadLetterTopic(), topicAdminClient);
+		}
+	}
+
 	protected String getDeadLetterTopic() {
 		return "one-liferay-dead-letter";
 	}
@@ -56,7 +73,7 @@ public abstract class BasePubsubClient {
 	protected abstract String getProjectId();
 
 	protected boolean isAutoCreateTopic() {
-		return true;
+		return false;
 	}
 
 	protected boolean isDeadLetterTopicEnabled() {
@@ -74,8 +91,8 @@ public abstract class BasePubsubClient {
 			topicAdminClient.getTopic(topicName);
 		}
 		catch (NotFoundException notFoundException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(
+			if (_log.isInfoEnabled()) {
+				_log.info(
 					"Unable to find topic. Creating topic " + topicName,
 					notFoundException);
 			}

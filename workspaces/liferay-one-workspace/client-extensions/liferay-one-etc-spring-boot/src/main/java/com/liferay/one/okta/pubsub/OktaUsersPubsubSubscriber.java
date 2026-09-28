@@ -105,8 +105,8 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 	}
 
 	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
+	protected boolean isAutoCreateSubscription() {
+		return true;
 	}
 
 	private void _addGroupMemberships(

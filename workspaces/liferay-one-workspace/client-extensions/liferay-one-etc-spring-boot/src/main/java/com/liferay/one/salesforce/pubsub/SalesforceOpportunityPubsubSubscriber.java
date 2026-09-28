@@ -115,11 +115,6 @@ public class SalesforceOpportunityPubsubSubscriber
 		return _subscription;
 	}
 
-	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
-	}
-
 	private void _addWarning(
 		List<String> warningMessages, String warningMessage,
 		Exception exception) {

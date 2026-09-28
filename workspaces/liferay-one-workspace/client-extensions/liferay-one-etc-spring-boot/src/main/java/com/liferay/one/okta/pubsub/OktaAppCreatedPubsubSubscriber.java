@@ -78,8 +78,8 @@ public class OktaAppCreatedPubsubSubscriber extends BasePubsubSubscriber {
 	}
 
 	@Override
-	protected boolean isAutoCreateTopic() {
-		return false;
+	protected boolean isAutoCreateSubscription() {
+		return true;
 	}
 
 	@Autowired

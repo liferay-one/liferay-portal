@@ -74,8 +74,8 @@ public class OktaUsersPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testIsAutoCreateTopicReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isAutoCreateTopic());
+	public void testIsAutoCreateSubscriptionReturnsTrue() {
+		Assertions.assertTrue(_subscriber.isAutoCreateSubscription());
 	}
 
 	@Test
