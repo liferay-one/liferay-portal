@@ -5,6 +5,9 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.AccountContactRoleAssignmentConstants;
 import com.liferay.one.jira.converter.AccountContactRoleAssignmentConverter;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -12,9 +15,13 @@ import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.ProjectMembershipService;
+import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -153,6 +160,22 @@ public class AccountUserAccountRoleSynchronizer {
 					ATTRIBUTE_NAME_CONTACT_EXTERNAL_KEY);
 
 			try {
+				if (_isRoleAssigned(
+						roleExternalKey, userAccountExternalKey,
+						accountExternalKey)) {
+
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Skipping stale role ", roleExternalKey,
+								" for user account ", userAccountExternalKey,
+								" on account ", accountExternalKey,
+								" because it is still assigned"));
+					}
+
+					continue;
+				}
+
 				_syncAssignment(
 					roleExternalKey, userAccountExternalKey, accountExternalKey,
 					true,
@@ -170,6 +193,51 @@ public class AccountUserAccountRoleSynchronizer {
 					exception);
 			}
 		}
+	}
+
+	/**
+	 * Confirm each removal against the database before soft deleting. The
+	 * account external key is an account or a project external reference code,
+	 * so check both.
+	 */
+	private boolean _isRoleAssigned(
+			String roleExternalKey, String userAccountExternalKey,
+			String accountExternalKey)
+		throws Exception {
+
+		UserAccount userAccount =
+			_userAccountService.fetchUserAccountByExternalReferenceCode(
+				userAccountExternalKey);
+
+		if (userAccount == null) {
+			return false;
+		}
+
+		AccountBrief accountBrief = FindUtil.findFirst(
+			userAccount.getAccountBriefs(),
+			accountBrief1 -> StringUtil.equalsIgnoreCase(
+				accountExternalKey, accountBrief1.getExternalReferenceCode()));
+
+		if (accountBrief != null) {
+			RoleBrief roleBrief = FindUtil.findFirst(
+				accountBrief.getRoleBriefs(),
+				roleBrief1 -> StringUtil.equalsIgnoreCase(
+					roleExternalKey, roleBrief1.getExternalReferenceCode()));
+
+			if (roleBrief != null) {
+				return true;
+			}
+		}
+
+		ProjectMembership projectMembership =
+			_projectMembershipService.fetchProjectMembership(
+				accountExternalKey, roleExternalKey, userAccount.getId());
+
+		if (projectMembership != null) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private void _syncAssignment(
@@ -245,5 +313,11 @@ public class AccountUserAccountRoleSynchronizer {
 
 	@Autowired
 	private KeyedLock _keyedLock;
+
+	@Autowired
+	private ProjectMembershipService _projectMembershipService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }
