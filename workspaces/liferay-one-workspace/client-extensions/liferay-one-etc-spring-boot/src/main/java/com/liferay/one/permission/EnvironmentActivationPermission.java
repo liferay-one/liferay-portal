@@ -33,10 +33,28 @@ public class EnvironmentActivationPermission {
 	public Project check(Jwt jwt, String projectExternalReferenceCode)
 		throws Exception {
 
+		return _check(false, jwt, projectExternalReferenceCode);
+	}
+
+	public Project checkLicenseKeyActivation(
+			Jwt jwt, String projectExternalReferenceCode)
+		throws Exception {
+
+		return _check(true, jwt, projectExternalReferenceCode);
+	}
+
+	private Project _check(
+			boolean allowPartnerManager, Jwt jwt,
+			String projectExternalReferenceCode)
+		throws Exception {
+
 		Project project = _projectService.fetchProject(
 			projectExternalReferenceCode);
 
-		if (!_contains(jwt, project, projectExternalReferenceCode)) {
+		if (!_contains(
+				allowPartnerManager, jwt, project,
+				projectExternalReferenceCode)) {
+
 			throw new PrincipalException();
 		}
 
@@ -44,7 +62,8 @@ public class EnvironmentActivationPermission {
 	}
 
 	private boolean _contains(
-			Jwt jwt, Project project, String projectExternalReferenceCode)
+			boolean allowPartnerManager, Jwt jwt, Project project,
+			String projectExternalReferenceCode)
 		throws Exception {
 
 		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
@@ -79,6 +98,13 @@ public class EnvironmentActivationPermission {
 			return true;
 		}
 
+		if (allowPartnerManager &&
+			Validator.isNotNull(accountExternalReferenceCode) &&
+			_isPartnerManager(accountExternalReferenceCode, userAccount)) {
+
+			return true;
+		}
+
 		ProjectMembership projectMembership =
 			_projectMembershipService.fetchProjectMembership(
 				projectExternalReferenceCode, RoleConstants.ERC_PROJECT_ADMIN,
@@ -91,7 +117,7 @@ public class EnvironmentActivationPermission {
 		return false;
 	}
 
-	private boolean _isAccountAdministrator(
+	private RoleBrief[] _getAccountRoleBriefs(
 		String accountExternalReferenceCode, UserAccount userAccount) {
 
 		AccountBrief accountBrief = FindUtil.findFirst(
@@ -101,10 +127,17 @@ public class EnvironmentActivationPermission {
 				accountBrief1.getExternalReferenceCode()));
 
 		if (accountBrief == null) {
-			return false;
+			return null;
 		}
 
-		RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+		return accountBrief.getRoleBriefs();
+	}
+
+	private boolean _isAccountAdministrator(
+		String accountExternalReferenceCode, UserAccount userAccount) {
+
+		RoleBrief[] roleBriefs = _getAccountRoleBriefs(
+			accountExternalReferenceCode, userAccount);
 
 		if (roleBriefs == null) {
 			return false;
@@ -114,6 +147,27 @@ public class EnvironmentActivationPermission {
 			if (Objects.equals(
 					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR,
 					roleBrief.getName())) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isPartnerManager(
+		String accountExternalReferenceCode, UserAccount userAccount) {
+
+		RoleBrief[] roleBriefs = _getAccountRoleBriefs(
+			accountExternalReferenceCode, userAccount);
+
+		if (roleBriefs == null) {
+			return false;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			if (Objects.equals(
+					RoleConstants.NAME_PARTNER_MANAGER, roleBrief.getName())) {
 
 				return true;
 			}

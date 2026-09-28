@@ -122,6 +122,42 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
+	public void testCheckLicenseKeyActivationGrantsPartnerManager()
+		throws Exception {
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_PARTNER_MANAGER}),
+				project, null);
+
+		Assertions.assertSame(
+			project,
+			environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC));
+	}
+
+	@Test
+	public void testCheckLicenseKeyActivationThrowsForPartnerManagerOfOtherAccount()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _OTHER_ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_PARTNER_MANAGER}),
+				_createProject(_ACCOUNT_ERC), null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC));
+	}
+
+	@Test
 	public void testCheckThrowsForNullAccountBriefs() throws Exception {
 		UserAccount userAccount = _createUserAccount(
 			new String[0], null, new String[0]);
@@ -146,6 +182,20 @@ public class EnvironmentActivationPermissionTest {
 			_createPermission(
 				_createUserAccount(new String[0], null, new String[0]), null,
 				null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> environmentActivationPermission.check(null, _PROJECT_ERC));
+	}
+
+	@Test
+	public void testCheckThrowsForPartnerManager() throws Exception {
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_PARTNER_MANAGER}),
+				_createProject(_ACCOUNT_ERC), null);
 
 		Assertions.assertThrows(
 			PrincipalException.class,
@@ -327,6 +377,8 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	private static final String _ACCOUNT_ERC = "ACCOUNT-1";
+
+	private static final String _OTHER_ACCOUNT_ERC = "ACCOUNT-2";
 
 	private static final String _PROJECT_ERC = "PRJCT-001";
 
