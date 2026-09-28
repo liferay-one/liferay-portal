@@ -57,8 +57,7 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyService);
 
 		Mockito.when(
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Mockito.anyString(), Mockito.any())
+			_licenseKeyService.getActiveLicenseKeyCounts(Mockito.anyString())
 		).thenReturn(
 			new HashMap<>()
 		);
@@ -107,8 +106,7 @@ public class LicenseKeyGenerationServiceTest {
 		).build();
 
 		Mockito.when(
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Mockito.anyString(), Mockito.any())
+			_licenseKeyService.getActiveLicenseKeyCounts(Mockito.anyString())
 		).thenReturn(
 			licenseKeyCounts
 		);
@@ -229,7 +227,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			bundleEntitlementIds, "us-east-1", "Description", "Environment",
-			"DXP Backup", _toProject(), Collections.emptyList(),
+			"DXP Backup", _toProject(),
 			Collections.singletonList(
 				new LicenseKeyGenerationService.GenerateRequest.Server(
 					"host.example.com", "", "")),
