@@ -5,6 +5,7 @@
 
 import {lazy} from 'react';
 import {Navigate} from 'react-router-dom';
+import {UserAccountModel} from '~/models/UserAccountModel';
 import {AppRoute} from '~/utils/routeUtils';
 
 const AppDetail = lazy(() => import('./Apps/AppDetail/AppDetail'));
@@ -37,95 +38,124 @@ const TrialDetails = lazy(
 );
 const Trials = lazy(() => import('./Trials/Trials'));
 
-export const adminRoutes: AppRoute[] = [
-	{element: <Navigate replace to="mp-summary" />, index: true},
+const canAccessAdmin = (userAccountModel: UserAccountModel) =>
+	userAccountModel.isAdmin;
 
+const canAccessFinance = (userAccountModel: UserAccountModel) =>
+	userAccountModel.isAdmin || userAccountModel.isFinanceAdministrator;
+
+const canAccessSSA = (userAccountModel: UserAccountModel) =>
+	userAccountModel.isSSAAdmin || userAccountModel.isSSAUser;
+
+const canAccessSSAAdmin = (userAccountModel: UserAccountModel) =>
+	userAccountModel.isSSAAdmin;
+
+export const adminRoutes: AppRoute[] = [
 	{
+		canAccess: canAccessAdmin,
 		element: <MPSummary />,
 		nav: {icon: 'polls', label: 'Marketplace Summary'},
 		path: 'mp-summary',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <Orders />,
 		nav: {icon: 'order-form', label: 'Marketplace Orders'},
 		path: 'mp-orders',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <Apps />,
 		nav: {icon: 'grid', label: 'Marketplace Apps'},
 		path: 'mp-apps',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <AppDetail />,
 		path: 'mp-apps/:productId',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <Solutions />,
 		nav: {icon: 'union', label: 'Marketplace Solutions'},
 		path: 'mp-solutions',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <SolutionDetail />,
 		path: 'mp-solutions/:productId',
 	},
 	{
+		canAccess: canAccessFinance,
 		element: <MPFinanceOrders />,
 		nav: {icon: 'order-form', label: 'Marketplace Finance Orders'},
 		path: 'mp-finance-orders',
 	},
 	{
+		canAccess: canAccessFinance,
 		element: <OrderDetails />,
 		path: 'mp-finance-orders/:orderId',
 	},
 	{
+		canAccess: canAccessFinance,
 		element: <Payments />,
 		nav: {icon: 'order-form', label: 'Marketplace Payments'},
 		path: 'mp-payments',
 	},
 	{
+		canAccess: canAccessFinance,
 		element: <PaymentDetails />,
 		path: 'mp-payments/:entryId',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <Publishers />,
 		nav: {icon: 'squares-clock', label: 'Publishers'},
 		path: 'publishers',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <PublisherRequests />,
 		nav: {icon: 'order-form', label: 'Publisher Requests'},
 		path: 'publisher-requests',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <Trials />,
 		nav: {icon: 'grid', label: '7 Days Trials'},
 		path: 'trials',
 	},
 	{
+		canAccess: canAccessSSA,
 		element: <MySsaSaasDemo />,
 		nav: {icon: 'union', label: 'My SSA SaaS Demo'},
 		path: 'my-ssa-saas-demo',
 	},
 	{
+		canAccess: canAccessSSAAdmin,
 		element: <Environments />,
 		nav: {icon: 'squares-clock', label: 'SSA SaaS Environments'},
 		path: 'ssa-saas-environments',
 	},
 	{
+		canAccess: canAccessSSAAdmin,
 		element: <ManageSsaSaasUsers />,
 		nav: {icon: 'users', label: 'Manage SSA SaaS Users'},
 		path: 'manage-ssa-saas-users',
 	},
 	{
+		canAccess: canAccessSSA,
 		element: <TrialDetails />,
 		path: 'details/:orderId',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <PubSub />,
 		nav: {icon: 'message-boards', label: 'PubSub'},
 		path: 'pub-sub',
 	},
 	{
+		canAccess: canAccessAdmin,
 		element: <LicenseKeyUploads />,
 		nav: {icon: 'password-policies', label: 'Activation Key Uploads'},
 		path: 'activation-key-uploads',

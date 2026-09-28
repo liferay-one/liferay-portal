@@ -5,7 +5,6 @@
 
 import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
-import EmptyState from '~/components/EmptyState/EmptyState';
 import Page from '~/components/Page/Page';
 import {useOneContext} from '~/context/OneContextProvider';
 import useModalContext from '~/hooks/useModalContext';
@@ -25,15 +24,12 @@ export default function MySsaSaasDemo() {
 
 	const canCreateTrial = isSSAAdmin ? true : myTrialsInProgress < 3;
 
-	const hasSSAPermission = isSSAAdmin || userAccountModel.isSSAUser;
-
 	return (
 		<Page
 			description={i18n.translate('manage-your-current-trials')}
 			pageRendererProps={{className: 'border py-2'}}
 			rightButton={
 				<ClayButton
-					disabled={!hasSSAPermission}
 					onClick={() => {
 						if (canCreateTrial) {
 							return createTrialFormModal.onOpenChange(true);
@@ -56,29 +52,16 @@ export default function MySsaSaasDemo() {
 			}
 			title={i18n.translate('my-saas-demos')}
 		>
-			{hasSSAPermission ? (
-				<TrialListView
-					actions={actions}
-					authorOnlyTrials
-					createTrialFormModal={createTrialFormModal}
-					isSortable
-					managementToolbarProps={{
-						searchVisible: true,
-						visible: isSSAAdmin,
-					}}
-				/>
-			) : (
-				<EmptyState
-					description={
-						<p>
-							Reach out to the <strong>#help-ssa</strong> channel
-							on slack for permission to continue
-						</p>
-					}
-					title={i18n.translate('access-required')}
-					type="NO_ACCESS"
-				/>
-			)}
+			<TrialListView
+				actions={actions}
+				authorOnlyTrials
+				createTrialFormModal={createTrialFormModal}
+				isSortable
+				managementToolbarProps={{
+					searchVisible: true,
+					visible: isSSAAdmin,
+				}}
+			/>
 		</Page>
 	);
 }
