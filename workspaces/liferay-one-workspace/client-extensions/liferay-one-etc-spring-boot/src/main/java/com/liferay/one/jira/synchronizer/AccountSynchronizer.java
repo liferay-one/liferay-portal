@@ -336,33 +336,11 @@ public class AccountSynchronizer {
 
 			organizationExternalKeys.add(
 				organization.getExternalReferenceCode());
-
-			try {
-				_accountOrganizationSynchronizer.syncAssignOrganization(
-					organization.getExternalReferenceCode(),
-					accountSyncModel.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to sync account organization assignment for ",
-						"organization ",
-						organization.getExternalReferenceCode()),
-					exception);
-			}
 		}
 
-		try {
-			_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-				accountSyncModel.getExternalReferenceCode(),
-				organizationExternalKeys, startDate);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to unassign stale organizations from account " +
-					accountSyncModel.getExternalReferenceCode(),
-				exception);
-		}
+		_accountOrganizationSynchronizer.syncOrganizations(
+			accountSyncModel.getExternalReferenceCode(),
+			organizationExternalKeys, startDate);
 	}
 
 	private void _syncProject(ProjectSyncModel projectSyncModel, Date startDate)

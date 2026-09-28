@@ -58,6 +58,43 @@ public class AccountOrganizationSynchronizer {
 				organizationExternalKey, accountExternalKey, false, null));
 	}
 
+	public void syncOrganizations(
+		String accountExternalKey, Set<String> organizationExternalKeys,
+		Date startDate) {
+
+		for (String organizationExternalKey : organizationExternalKeys) {
+			try {
+				_keyedLock.withLock(
+					accountExternalKey,
+					() -> _syncAssignment(
+						organizationExternalKey, accountExternalKey, false,
+						(existingJiraAssetObject, newJiraAssetObject) ->
+							_jiraAssetService.isUpdatedSince(
+								_accountTeamRoleAssignmentConverter, startDate,
+								existingJiraAssetObject)));
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to assign organization ",
+						organizationExternalKey, " to account ",
+						accountExternalKey),
+					exception);
+			}
+		}
+
+		try {
+			syncUnassignStaleOrganizations(
+				accountExternalKey, organizationExternalKeys, startDate);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to unassign stale organizations from account " +
+					accountExternalKey,
+				exception);
+		}
+	}
+
 	public void syncUnassignOrganization(
 			String organizationExternalKey, String accountExternalKey)
 		throws Exception {
