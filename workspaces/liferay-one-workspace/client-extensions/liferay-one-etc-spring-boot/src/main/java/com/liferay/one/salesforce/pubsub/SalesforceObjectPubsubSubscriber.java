@@ -137,16 +137,6 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		return _subscription;
 	}
 
-	@Override
-	protected boolean isAutoCreateSubscription() {
-		return true;
-	}
-
-	@Override
-	protected boolean isDeadLetterTopicEnabled() {
-		return false;
-	}
-
 	private void _processAccount(JSONObject recordJSONObject) throws Exception {
 		SalesforceAccount salesforceAccount = new SalesforceAccount(
 			recordJSONObject);
