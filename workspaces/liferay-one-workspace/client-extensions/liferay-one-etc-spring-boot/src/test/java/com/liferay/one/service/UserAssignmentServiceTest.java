@@ -630,7 +630,7 @@ public class UserAssignmentServiceTest {
 
 		Mockito.when(
 			_projectMembershipService.deleteProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
 				RoleConstants.ERC_PROJECT_USER, _USER_ID)
 		).thenReturn(
 			true
@@ -652,8 +652,8 @@ public class UserAssignmentServiceTest {
 		inOrder.verify(
 			_projectMembershipService
 		).deleteProjectMembership(
-			null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-			RoleConstants.ERC_PROJECT_USER, _USER_ID
+			_PROJECT_EXTERNAL_REFERENCE_CODE, RoleConstants.ERC_PROJECT_USER,
+			_USER_ID
 		);
 
 		inOrder.verify(
@@ -828,7 +828,7 @@ public class UserAssignmentServiceTest {
 	public void testUnassignProjectRoleSyncsToJSM() throws Exception {
 		Mockito.when(
 			_projectMembershipService.deleteProjectMembership(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
 				RoleConstants.ERC_PROJECT_ADMIN, _USER_ID)
 		).thenReturn(
 			true

@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import org.springframework.security.oauth2.jwt.Jwt;
+
 /**
  * @author Allen Ziegenfus
  */
@@ -84,7 +86,8 @@ public class LicenseKeyServiceTest {
 		Mockito.verify(
 			_licenseKeyService, Mockito.never()
 		).getAllItems(
-			Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.anyString(), Mockito.any(), Mockito.any(),
+			Mockito.any(Jwt.class)
 		);
 	}
 

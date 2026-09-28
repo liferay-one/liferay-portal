@@ -48,7 +48,95 @@ public class SubscriptionEntryService extends OneBaseService {
 			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
-		SubscriptionEntry existingSubscriptionEntry = fetchSubscriptionEntry(
+		return _addSubscriptionEntry(jwt, className, classPK, userId);
+	}
+
+	public SubscriptionEntry addSubscriptionEntry(
+			String className, long classPK, long userId)
+		throws Exception {
+
+		return _addSubscriptionEntry(null, className, classPK, userId);
+	}
+
+	public void deleteAccountLicenseKeySubscriptionEntries(
+			long accountId, long userId)
+		throws Exception {
+
+		List<LicenseKey> licenseKeys = _licenseKeyService.getLicenseKeys(
+			StringBundler.concat(
+				"r_accountEntryToLicenseKey_accountEntryId eq '", accountId,
+				"'"));
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			deleteSubscriptionEntry(
+				ClassNameConstants.LICENSE_KEY, licenseKey.getLicenseKeyId(),
+				userId);
+		}
+	}
+
+	public void deleteSubscriptionEntries(long userId) throws Exception {
+		List<SubscriptionEntry> subscriptionEntries = getSubscriptionEntries(
+			"(customUserId eq " + userId + ")");
+
+		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
+			_deleteSubscriptionEntry(
+				null, subscriptionEntry.getSubscriptionEntryId());
+		}
+	}
+
+	public void deleteSubscriptionEntry(
+			Jwt jwt, String className, long classPK, long userId)
+		throws Exception {
+
+		_deleteSubscriptionEntry(jwt, className, classPK, userId);
+	}
+
+	public void deleteSubscriptionEntry(
+			String className, long classPK, long userId)
+		throws Exception {
+
+		_deleteSubscriptionEntry(null, className, classPK, userId);
+	}
+
+	public SubscriptionEntry fetchSubscriptionEntry(
+			Jwt jwt, String className, long classPK, long userId)
+		throws Exception {
+
+		return _fetchSubscriptionEntry(jwt, className, classPK, userId);
+	}
+
+	public SubscriptionEntry fetchSubscriptionEntry(
+			String className, long classPK, long userId)
+		throws Exception {
+
+		return _fetchSubscriptionEntry(null, className, classPK, userId);
+	}
+
+	public List<SubscriptionEntry> getSubscriptionEntries(
+			Jwt jwt, String filterString)
+		throws Exception {
+
+		return _getSubscriptionEntries(jwt, filterString);
+	}
+
+	public List<SubscriptionEntry> getSubscriptionEntries(String filterString)
+		throws Exception {
+
+		return _getSubscriptionEntries(null, filterString);
+	}
+
+	@Scheduled(cron = "0 0 0 * * *")
+	protected void scheduledSendExpiringLicenseKeyEmails() throws Exception {
+		_sendExpiringLicenseKeyEmails(30);
+		_sendExpiringLicenseKeyEmails(14);
+		_sendExpiringLicenseKeyEmails(0);
+	}
+
+	private SubscriptionEntry _addSubscriptionEntry(
+			Jwt jwt, String className, long classPK, long userId)
+		throws Exception {
+
+		SubscriptionEntry existingSubscriptionEntry = _fetchSubscriptionEntry(
 			jwt, className, classPK, userId);
 
 		if (existingSubscriptionEntry != null) {
@@ -74,37 +162,22 @@ public class SubscriptionEntryService extends OneBaseService {
 		return new SubscriptionEntry(new JSONObject(response));
 	}
 
-	public void deleteAccountLicenseKeySubscriptionEntries(
-			long accountId, long userId)
+	private void _deleteSubscriptionEntry(Jwt jwt, long subscriptionEntryId)
 		throws Exception {
 
-		List<LicenseKey> licenseKeys = _licenseKeyService.getLicenseKeys(
-			StringBundler.concat(
-				"r_accountEntryToLicenseKey_accountEntryId eq '", accountId,
-				"'"));
-
-		for (LicenseKey licenseKey : licenseKeys) {
-			deleteSubscriptionEntry(
-				null, ClassNameConstants.LICENSE_KEY,
-				licenseKey.getLicenseKeyId(), userId);
-		}
+		delete(
+			getAuthorization(jwt), StringPool.BLANK,
+			UriComponentsBuilder.fromPath(
+				"/o/c/subscriptionentries/" + subscriptionEntryId
+			).build(
+			).toUri());
 	}
 
-	public void deleteSubscriptionEntries(long userId) throws Exception {
-		List<SubscriptionEntry> subscriptionEntries = getSubscriptionEntries(
-			"(customUserId eq " + userId + ")");
-
-		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
-			_deleteSubscriptionEntry(
-				null, subscriptionEntry.getSubscriptionEntryId());
-		}
-	}
-
-	public void deleteSubscriptionEntry(
+	private void _deleteSubscriptionEntry(
 			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
-		SubscriptionEntry subscriptionEntry = fetchSubscriptionEntry(
+		SubscriptionEntry subscriptionEntry = _fetchSubscriptionEntry(
 			jwt, className, classPK, userId);
 
 		if (subscriptionEntry == null) {
@@ -115,11 +188,11 @@ public class SubscriptionEntryService extends OneBaseService {
 			jwt, subscriptionEntry.getSubscriptionEntryId());
 	}
 
-	public SubscriptionEntry fetchSubscriptionEntry(
+	private SubscriptionEntry _fetchSubscriptionEntry(
 			Jwt jwt, String className, long classPK, long userId)
 		throws Exception {
 
-		List<SubscriptionEntry> subscriptionEntries = getSubscriptionEntries(
+		List<SubscriptionEntry> subscriptionEntries = _getSubscriptionEntries(
 			jwt,
 			StringBundler.concat(
 				"(className eq '", className, "') and (classPK eq ", classPK,
@@ -130,39 +203,6 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 
 		return subscriptionEntries.get(0);
-	}
-
-	public List<SubscriptionEntry> getSubscriptionEntries(
-			Jwt jwt, String filterString)
-		throws Exception {
-
-		return getAllItems(
-			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new,
-			jwt);
-	}
-
-	public List<SubscriptionEntry> getSubscriptionEntries(String filterString)
-		throws Exception {
-
-		return getSubscriptionEntries(null, filterString);
-	}
-
-	@Scheduled(cron = "0 0 0 * * *")
-	protected void scheduledSendExpiringLicenseKeyEmails() throws Exception {
-		_sendExpiringLicenseKeyEmails(30);
-		_sendExpiringLicenseKeyEmails(14);
-		_sendExpiringLicenseKeyEmails(0);
-	}
-
-	private void _deleteSubscriptionEntry(Jwt jwt, long subscriptionEntryId)
-		throws Exception {
-
-		delete(
-			getAuthorization(jwt), StringPool.BLANK,
-			UriComponentsBuilder.fromPath(
-				"/o/c/subscriptionentries/" + subscriptionEntryId
-			).build(
-			).toUri());
 	}
 
 	private String _getExpirationMessage(
@@ -210,6 +250,15 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 
 		return _DEFAULT_LANGUAGE_ID;
+	}
+
+	private List<SubscriptionEntry> _getSubscriptionEntries(
+			Jwt jwt, String filterString)
+		throws Exception {
+
+		return getAllItems(
+			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new,
+			jwt);
 	}
 
 	private void _sendExpiringLicenseKeyEmail(

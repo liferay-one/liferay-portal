@@ -134,7 +134,7 @@ public class EnvironmentService extends OneBaseService {
 			String externalReferenceCode)
 		throws Exception {
 
-		return fetchEnvironmentByExternalReferenceCode(
+		return _fetchEnvironmentByExternalReferenceCode(
 			externalReferenceCode, null);
 	}
 
@@ -142,20 +142,8 @@ public class EnvironmentService extends OneBaseService {
 			String externalReferenceCode, Jwt jwt)
 		throws Exception {
 
-		String response = fetch(
-			getAuthorization(jwt),
-			UriComponentsBuilder.fromPath(
-				"/o/c/environments/by-external-reference-code" +
-					"/{externalReferenceCode}"
-			).buildAndExpand(
-				externalReferenceCode
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			return null;
-		}
-
-		return new Environment(new JSONObject(response));
+		return _fetchEnvironmentByExternalReferenceCode(
+			externalReferenceCode, jwt);
 	}
 
 	public List<Environment> getEnvironments(String filterString)
@@ -220,6 +208,26 @@ public class EnvironmentService extends OneBaseService {
 				"/o/c/environments"
 			).build(
 			).toUri());
+
+		return new Environment(new JSONObject(response));
+	}
+
+	private Environment _fetchEnvironmentByExternalReferenceCode(
+			String externalReferenceCode, Jwt jwt)
+		throws Exception {
+
+		String response = fetch(
+			getAuthorization(jwt),
+			UriComponentsBuilder.fromPath(
+				"/o/c/environments/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).buildAndExpand(
+				externalReferenceCode
+			).toUri());
+
+		if (Validator.isNull(response)) {
+			return null;
+		}
 
 		return new Environment(new JSONObject(response));
 	}

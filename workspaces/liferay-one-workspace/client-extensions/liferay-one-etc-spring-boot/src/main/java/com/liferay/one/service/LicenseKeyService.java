@@ -241,8 +241,7 @@ public class LicenseKeyService extends OneBaseService {
 
 		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 			_subscriptionEntryService.addSubscriptionEntry(
-				null, ClassNameConstants.LICENSE_KEY,
-				newLicenseKey.getLicenseKeyId(),
+				ClassNameConstants.LICENSE_KEY, newLicenseKey.getLicenseKeyId(),
 				subscriptionEntry.getCustomUserId());
 		}
 
