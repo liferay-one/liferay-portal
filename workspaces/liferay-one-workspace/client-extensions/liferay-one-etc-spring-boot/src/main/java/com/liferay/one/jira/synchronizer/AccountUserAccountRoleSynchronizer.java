@@ -78,8 +78,13 @@ public class AccountUserAccountRoleSynchronizer {
 
 			for (String roleExternalKey : entry.getValue()) {
 				try {
-					syncAssignRole(
-						roleExternalKey, entry.getKey(), accountExternalKey);
+					_syncAssignment(
+						roleExternalKey, entry.getKey(), accountExternalKey,
+						false,
+						(existingJiraAssetObject, newJiraAssetObject) ->
+							_jiraAssetService.isUpdatedSince(
+								_accountContactRoleAssignmentConverter,
+								startDate, existingJiraAssetObject));
 				}
 				catch (Exception exception) {
 					_log.error(

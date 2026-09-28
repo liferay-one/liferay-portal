@@ -173,18 +173,22 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_ACCOUNT_EXTERNAL_KEY,
 			_getRoleExternalKeysByUserAccountExternalKey(), startDate);
 
-		InOrder inOrder = Mockito.inOrder(accountUserAccountRoleSynchronizer);
+		InOrder inOrder = Mockito.inOrder(
+			_accountContactRoleAssignmentConverter,
+			accountUserAccountRoleSynchronizer);
 
 		inOrder.verify(
-			accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-1", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq("role-erc-1"), Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
 		);
 
 		inOrder.verify(
-			accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-2", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq("role-erc-2"), Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
 		);
 
 		inOrder.verify(
@@ -200,12 +204,12 @@ public class AccountUserAccountRoleSynchronizerTest {
 		AccountUserAccountRoleSynchronizer accountUserAccountRoleSynchronizer =
 			Mockito.spy(_accountUserAccountRoleSynchronizer);
 
-		Mockito.doThrow(
-			new Exception("Unable to assign role")
-		).when(
-			accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-1", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+		Mockito.when(
+			_accountContactRoleAssignmentConverter.toAssetObject(
+				Mockito.eq("role-erc-1"), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean(), Mockito.any())
+		).thenThrow(
+			new RuntimeException("Unable to assign role")
 		);
 
 		Date startDate = new Date();
@@ -215,9 +219,10 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_getRoleExternalKeysByUserAccountExternalKey(), startDate);
 
 		Mockito.verify(
-			accountUserAccountRoleSynchronizer
-		).syncAssignRole(
-			"role-erc-2", _USER_ACCOUNT_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq("role-erc-2"), Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -226,6 +231,42 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_ACCOUNT_EXTERNAL_KEY,
 			_getRoleExternalKeysByUserAccountExternalKey(), startDate
 		);
+	}
+
+	@Test
+	public void testSyncRolesSkipsAssignmentsUpdatedSinceStartDate()
+		throws Exception {
+
+		Date startDate = new Date();
+
+		_accountUserAccountRoleSynchronizer.syncRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singletonMap(
+				_USER_ACCOUNT_EXTERNAL_KEY,
+				Collections.singleton(_ROLE_EXTERNAL_KEY)),
+			startDate);
+
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Assertions.assertFalse(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_accountContactRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
 	}
 
 	@Test
@@ -345,16 +386,8 @@ public class AccountUserAccountRoleSynchronizerTest {
 		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
 			_ACCOUNT_EXTERNAL_KEY, Collections.emptyMap(), startDate);
 
-		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
-			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
-				BiPredicate.class);
-
-		Mockito.verify(
-			_jiraAssetService
-		).upsert(
-			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
-			biPredicateArgumentCaptor.capture()
-		);
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
 
 		JiraAssetObject existingJiraAssetObject = Mockito.mock(
 			JiraAssetObject.class);
@@ -366,9 +399,6 @@ public class AccountUserAccountRoleSynchronizerTest {
 		).thenReturn(
 			true
 		);
-
-		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
-			biPredicateArgumentCaptor.getValue();
 
 		Assertions.assertTrue(
 			biPredicate.test(
@@ -479,6 +509,23 @@ public class AccountUserAccountRoleSynchronizerTest {
 		);
 
 		return aqlAtomicReference;
+	}
+
+	private BiPredicate<JiraAssetObject, JiraAssetObject>
+		_captureShouldSkipUpdateBiPredicate() {
+
+		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
+			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
+				BiPredicate.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
+			biPredicateArgumentCaptor.capture()
+		);
+
+		return biPredicateArgumentCaptor.getValue();
 	}
 
 	private Map<String, Set<String>>
