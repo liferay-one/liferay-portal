@@ -6,6 +6,8 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -26,6 +28,7 @@ import com.liferay.petra.function.UnsafeRunnable;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 import org.json.JSONObject;
 
@@ -243,6 +246,47 @@ public class UserAccountSynchronizerTest {
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			() -> _userAccountSynchronizer.syncUserAccountRoles(
 				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountAssignsContactRolesSinceStartDate()
+		throws Exception {
+
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setExternalReferenceCode("role-erc");
+
+		AccountBrief accountBrief = _createAccountBrief();
+
+		accountBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		OrganizationBrief organizationBrief = new OrganizationBrief();
+
+		organizationBrief.setExternalReferenceCode("organization-erc");
+		organizationBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		UserAccount userAccount = _createUserAccount();
+
+		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
+		userAccount.setOrganizationBriefs(
+			new OrganizationBrief[] {organizationBrief});
+
+		Date startDate = new Date();
+
+		_userAccountSynchronizer.syncUserAccount(userAccount, startDate);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc", _EXTERNAL_REFERENCE_CODE,
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE, startDate
+		);
+
+		Mockito.verify(
+			_organizationUserAccountRoleSynchronizer
+		).syncAssignRole(
+			"role-erc", _EXTERNAL_REFERENCE_CODE, "organization-erc", startDate
+		);
 	}
 
 	@Test

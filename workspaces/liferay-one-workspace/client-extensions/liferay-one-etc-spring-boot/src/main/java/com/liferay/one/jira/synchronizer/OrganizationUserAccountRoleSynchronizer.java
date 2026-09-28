@@ -16,6 +16,7 @@ import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
+import java.util.function.BiPredicate;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +52,21 @@ public class OrganizationUserAccountRoleSynchronizer {
 
 		_syncAssignment(
 			roleExternalKey, userAccountExternalKey, organizationExternalKey,
-			false);
+			false, null);
+	}
+
+	public void syncAssignRole(
+			String roleExternalKey, String userAccountExternalKey,
+			String organizationExternalKey, Date startDate)
+		throws Exception {
+
+		_syncAssignment(
+			roleExternalKey, userAccountExternalKey, organizationExternalKey,
+			false,
+			(existingJiraAssetObject, newJiraAssetObject) ->
+				_jiraAssetService.isUpdatedSince(
+					_teamContactRoleAssignmentConverter, startDate,
+					existingJiraAssetObject));
 	}
 
 	public void syncUnassignRole(
@@ -61,24 +76,28 @@ public class OrganizationUserAccountRoleSynchronizer {
 
 		_syncAssignment(
 			roleExternalKey, userAccountExternalKey, organizationExternalKey,
-			true);
+			true, null);
 	}
 
 	private void _syncAssignment(
 			String roleExternalKey, String userAccountExternalKey,
-			String organizationExternalKey, boolean deleted)
+			String organizationExternalKey, boolean deleted,
+			BiPredicate<JiraAssetObject, JiraAssetObject>
+				shouldSkipUpdateBiPredicate)
 		throws Exception {
 
 		_keyedLock.withLock(
 			userAccountExternalKey,
 			() -> _syncAssignmentWithinLock(
 				roleExternalKey, userAccountExternalKey,
-				organizationExternalKey, deleted));
+				organizationExternalKey, deleted, shouldSkipUpdateBiPredicate));
 	}
 
 	private void _syncAssignmentWithinLock(
 		String roleExternalKey, String userAccountExternalKey,
-		String organizationExternalKey, boolean deleted) {
+		String organizationExternalKey, boolean deleted,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -108,7 +127,8 @@ public class OrganizationUserAccountRoleSynchronizer {
 				_teamConverter, organizationExternalKey));
 
 		_jiraAssetService.upsert(
-			_teamContactRoleAssignmentConverter, jiraAssetObject);
+			_teamContactRoleAssignmentConverter, jiraAssetObject,
+			shouldSkipUpdateBiPredicate);
 	}
 
 	private static final Log _log = LogFactory.getLog(
