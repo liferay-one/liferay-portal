@@ -6,8 +6,12 @@
 import {ReactNode} from 'react';
 import {RouteObject} from 'react-router-dom';
 import {NavItem} from '~/components/SideNav/SideNav';
+import {UserAccountModel} from '~/models/UserAccountModel';
+
+type CanAccess = (userAccountModel: UserAccountModel) => boolean;
 
 type IndexRoute = {
+	canAccess?: never;
 	children?: AppRoute[];
 	element?: ReactNode;
 	index: true;
@@ -16,6 +20,7 @@ type IndexRoute = {
 };
 
 type PathRoute = {
+	canAccess?: CanAccess;
 	children?: AppRoute[];
 	element?: ReactNode;
 	index?: never;
@@ -24,6 +29,7 @@ type PathRoute = {
 };
 
 type LayoutRoute = {
+	canAccess?: never;
 	children: AppRoute[];
 	element?: ReactNode;
 	index?: never;
@@ -32,6 +38,27 @@ type LayoutRoute = {
 };
 
 export type AppRoute = IndexRoute | LayoutRoute | PathRoute;
+
+export function filterAccessibleRoutes(
+	routes: AppRoute[],
+	userAccountModel: UserAccountModel
+): AppRoute[] {
+	return routes
+		.filter(
+			(route) => !route.canAccess || route.canAccess(userAccountModel)
+		)
+		.map((route) =>
+			route.children
+				? ({
+						...route,
+						children: filterAccessibleRoutes(
+							route.children,
+							userAccountModel
+						),
+					} as AppRoute)
+				: route
+		);
+}
 
 export function toRouteObjects(routes: AppRoute[]): RouteObject[] {
 	return routes.map((route) => {

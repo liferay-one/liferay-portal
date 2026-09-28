@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
 import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import {useOneContext} from '~/context/OneContextProvider';
@@ -16,16 +14,8 @@ import {formatDate} from '~/utils/dateUtils';
 import type {UserAccount} from '~/types/accounts';
 
 export default function ManageSsaSaasUsers() {
-	const {userAccountModel} = useOneContext();
 	const {properties} = useOneContext();
 	const actions = useManageUserActions();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (!userAccountModel.isSSAAdmin) {
-			navigate('/');
-		}
-	}, [userAccountModel.isSSAAdmin, navigate]);
 
 	return (
 		<Page

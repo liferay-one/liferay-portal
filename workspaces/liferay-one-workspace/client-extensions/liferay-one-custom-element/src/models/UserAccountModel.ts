@@ -12,7 +12,10 @@ import type {
 } from '~/types/accounts';
 
 export class UserAccountModel {
-	constructor(protected userAccount: UserAccount) {}
+	constructor(
+		protected userAccount: UserAccount,
+		private ssaAccountExternalReferenceCode?: string
+	) {}
 
 	get accountBriefs() {
 		return this.userAccount?.accountBriefs ?? [];
@@ -34,6 +37,10 @@ export class UserAccountModel {
 		return this.hasRegularRole('Administrator');
 	}
 
+	get isFinanceAdministrator() {
+		return this.hasRegularRole('Finance Administrator');
+	}
+
 	get isLiferayStaff() {
 		return this.hasRegularRole('Liferay Staff');
 	}
@@ -43,11 +50,11 @@ export class UserAccountModel {
 	}
 
 	get isSSAAdmin() {
-		return this.hasAccountRole('SSA Administrator') || this.isAdmin;
+		return this.hasSSAAccountRole('SSA Administrator') || this.isAdmin;
 	}
 
 	get isSSAUser() {
-		return this.hasAccountRole('SSA User');
+		return this.hasSSAAccountRole('SSA User');
 	}
 
 	hasAccountRoleName(roleName: string) {
@@ -68,6 +75,17 @@ export class UserAccountModel {
 	private hasRegularRole(roleName: RegularRoleType) {
 		return this.userAccount?.roleBriefs.some(
 			(role) => role?.name === roleName
+		);
+	}
+
+	private hasSSAAccountRole(roleName: AccountRoleType) {
+		return this.accountBriefs.some(
+			(accountBrief) =>
+				accountBrief.externalReferenceCode ===
+					this.ssaAccountExternalReferenceCode &&
+				accountBrief.roleBriefs.some(
+					(roleBrief) => roleBrief.name === roleName
+				)
 		);
 	}
 }
