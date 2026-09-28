@@ -40,6 +40,7 @@ export default function Congratulations() {
 		handedOffRef.current = true;
 
 		let cancelled = false;
+		let timeoutId: number | undefined;
 
 		DXP.getHomePageURL()
 			.then(async (serviceURL) => {
@@ -79,7 +80,11 @@ export default function Congratulations() {
 					},
 				};
 
-				window.setTimeout(() => {
+				if (cancelled) {
+					return;
+				}
+
+				timeoutId = window.setTimeout(() => {
 					window.opener?.postMessage(payload, origin);
 				}, POST_MESSAGE_DELAY);
 			})
@@ -91,6 +96,8 @@ export default function Congratulations() {
 
 		return () => {
 			cancelled = true;
+
+			window.clearTimeout(timeoutId);
 		};
 	}, [channel, code, environment, myUserAccount, origin, selectedAccount]);
 

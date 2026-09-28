@@ -10,11 +10,11 @@ import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useEffect} from 'react';
 import {useNavigate} from 'react-router-dom';
 import useSWR from 'swr';
+import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
-import CheckoutAccountSelection from '~/pages/ProductPurchase/LiferayProduct/SEOStudio/CheckoutAccountSelection';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
-import {getIconSpriteMap} from '~/services/liferay/liferay';
+import {Liferay, getIconSpriteMap} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
@@ -84,6 +84,8 @@ export default function AccountSelection() {
 		);
 	}
 
+	const isLoadingAccounts = isLoading || !myUserAccount;
+
 	const missingBillingAddress =
 		Boolean(selectedAccount) && !hasRequiredBillingAddress(selectedAccount);
 
@@ -93,35 +95,46 @@ export default function AccountSelection() {
 				{i18n.translate('account-selection')}
 			</h1>
 
-			<ClayAlert
-				displayType="info"
-				spritemap={getIconSpriteMap()}
-				title={origin}
-			>
-				{i18n.translate(
-					'this-liferay-dxp-is-requesting-access-to-the-account-you-select-below'
-				)}{' '}
-				{i18n.translate(
-					'only-continue-if-you-started-this-connection-from-that-liferay-dxp'
-				)}
-			</ClayAlert>
-
 			<p className="secondary-text">
 				{i18n.translate(
 					'please-select-the-account-you-wish-to-link-to-your-liferay-dxp-below'
 				)}
 			</p>
 
-			{isLoading ? (
-				<ClayLoadingIndicator />
-			) : (
-				<CheckoutAccountSelection
-					accounts={accounts}
-					onSelectAccount={setSelectedAccount}
-					selectedAccount={selectedAccount}
-					showAccountsAvailableText={false}
-					showContactSupport={false}
-					userAccount={myUserAccount}
+			{isLoadingAccounts && <ClayLoadingIndicator />}
+
+			{!isLoadingAccounts && !accounts?.length && (
+				<p className="text-neutral-7">
+					{i18n.translate('there-are-no-accounts-available-for')}{' '}
+					<strong>
+						{Liferay.ThemeDisplay.getUserEmailAddress()}
+					</strong>
+				</p>
+			)}
+
+			{!isLoadingAccounts && !!accounts?.length && (
+				<RadioCardList<Account>
+					contentList={accounts.map((account, index) => ({
+						fullTitle: true,
+						id: index,
+						imageURL: account.logoURL,
+						selected: selectedAccount?.id === account.id,
+						title: (
+							<div className="d-flex flex-column w-100">
+								<div className="h5 m-0">{account.name}</div>
+
+								<p className="m-0 secondary-text text-capitalize">
+									{account.type}
+								</p>
+							</div>
+						),
+						value: account,
+					}))}
+					leftRadio
+					onSelect={(radioOption) =>
+						setSelectedAccount(radioOption.value)
+					}
+					showImage
 				/>
 			)}
 

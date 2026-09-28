@@ -5,6 +5,19 @@
 
 import type {ConsoleUserProject} from '~/services/spring-boot/Console';
 
+export function getConnectionOrigin(value: unknown) {
+	if (typeof value !== 'string' || !value) {
+		return '';
+	}
+
+	try {
+		return new URL(value).origin === value ? value : '';
+	}
+	catch {
+		return '';
+	}
+}
+
 export function hasExtensionEnvironment(project: ConsoleUserProject) {
 	return project.environments.some(
 		({isExtensionEnvironment}) => isExtensionEnvironment

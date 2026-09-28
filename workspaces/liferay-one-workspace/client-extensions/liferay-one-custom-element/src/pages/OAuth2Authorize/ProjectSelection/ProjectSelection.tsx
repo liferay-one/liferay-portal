@@ -23,6 +23,7 @@ export default function ProjectSelection() {
 		isLoadingProjects,
 		project,
 		projects,
+		projectsError,
 		selectedAccount,
 		setEnvironment,
 		setProject,
@@ -52,7 +53,7 @@ export default function ProjectSelection() {
 	}
 
 	const noCloudProjectsAvailable =
-		!isLoadingProjects && !connectableProjects.length;
+		!isLoadingProjects && !projectsError && !connectableProjects.length;
 
 	const sortedProjects = [...projects].sort((projectA, projectB) =>
 		projectA.rootProjectId.localeCompare(projectB.rootProjectId)
@@ -83,46 +84,61 @@ export default function ProjectSelection() {
 
 			{isLoadingProjects && <ClayLoadingIndicator />}
 
+			{!isLoadingProjects && projectsError && (
+				<p className="text-neutral-7">
+					{i18n.translate('an-unexpected-error-occurred')}{' '}
+					{i18n.translate('try-again-later')}
+				</p>
+			)}
+
 			{noCloudProjectsAvailable && (
 				<p className="text-neutral-7">
 					{i18n.translate('no-cloud-projects-available')}
 				</p>
 			)}
 
-			{!isLoadingProjects && !noCloudProjectsAvailable && (
-				<RadioCardList<ConsoleUserProject>
-					contentList={sortedProjects.map((userProject, index) => ({
-						disabled: !hasExtensionEnvironment(userProject),
-						fullTitle: true,
-						id: index,
-						selected:
-							project?.rootProjectId ===
-							userProject.rootProjectId,
-						title: (
-							<div className="d-flex flex-column w-100">
-								<div className="h5 m-0">
-									{userProject.rootProjectId.toUpperCase()}
-								</div>
+			{!isLoadingProjects &&
+				!projectsError &&
+				!noCloudProjectsAvailable && (
+					<RadioCardList<ConsoleUserProject>
+						contentList={sortedProjects.map(
+							(userProject, index) => ({
+								disabled: !hasExtensionEnvironment(userProject),
+								fullTitle: true,
+								id: index,
+								selected:
+									project?.rootProjectId ===
+									userProject.rootProjectId,
+								title: (
+									<div className="d-flex flex-column w-100">
+										<div className="h5 m-0">
+											{userProject.rootProjectId.toUpperCase()}
+										</div>
 
-								<p className="m-0 secondary-text">
-									{getResourceSummary(userProject)}
-								</p>
+										<p className="m-0 secondary-text">
+											{getResourceSummary(userProject)}
+										</p>
 
-								{!hasExtensionEnvironment(userProject) && (
-									<small className="text-danger">
-										{i18n.translate(
-											'this-project-has-no-extension-environments'
+										{!hasExtensionEnvironment(
+											userProject
+										) && (
+											<small className="text-danger">
+												{i18n.translate(
+													'this-project-has-no-extension-environments'
+												)}
+											</small>
 										)}
-									</small>
-								)}
-							</div>
-						),
-						value: userProject,
-					}))}
-					leftRadio
-					onSelect={(radioOption) => selectProject(radioOption.value)}
-				/>
-			)}
+									</div>
+								),
+								value: userProject,
+							})
+						)}
+						leftRadio
+						onSelect={(radioOption) =>
+							selectProject(radioOption.value)
+						}
+					/>
+				)}
 
 			<WizardFooter
 				backButtonProps={
@@ -137,7 +153,7 @@ export default function ProjectSelection() {
 								onClick: () => navigate('/congratulations'),
 							}
 						: {
-								disabled: !project,
+								disabled: !project || projectsError,
 								onClick: () =>
 									navigate('/environment-selection'),
 							}

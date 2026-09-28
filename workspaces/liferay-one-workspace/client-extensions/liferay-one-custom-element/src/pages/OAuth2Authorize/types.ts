@@ -15,6 +15,7 @@ export type OAuth2AuthorizeContext = {
 	origin: string;
 	project?: ConsoleUserProject;
 	projects: ConsoleUserProject[];
+	projectsError: boolean;
 	selectedAccount?: Account;
 	setEnvironment: (environment?: ConsoleEnvironment) => void;
 	setProject: (project?: ConsoleUserProject) => void;

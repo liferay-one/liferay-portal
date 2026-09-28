@@ -3,16 +3,20 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import {useState} from 'react';
 import {HashRouter, Navigate, Outlet, useRoutes} from 'react-router-dom';
 import useGetResourceInfo from '~/hooks/useGetResourceInfo';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
+import i18n from '~/i18n';
+import {getIconSpriteMap} from '~/services/liferay/liferay';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import AccountSelection from './AccountSelection/AccountSelection';
 import Congratulations from './Congratulations/Congratulations';
 import EnvironmentSelection from './EnvironmentSelection/EnvironmentSelection';
 import ProjectSelection from './ProjectSelection/ProjectSelection';
+import {getConnectionOrigin} from './utils';
 
 import type {ConsoleUserProject} from '~/services/spring-boot/Console';
 import type {Account} from '~/types/accounts';
@@ -28,14 +32,14 @@ const state = safeJSONParse<{origin?: unknown} | null>(
 	null
 );
 
-const origin = typeof state?.origin === 'string' ? state.origin : '';
+const origin = getConnectionOrigin(state?.origin);
 
 function OAuth2AuthorizeLayout() {
 	const [environment, setEnvironment] = useState<ConsoleEnvironment>();
 	const [project, setProject] = useState<ConsoleUserProject>();
 	const [selectedAccount, setSelectedAccount] = useState<Account>();
 
-	const {isLoading, projectsUsage} = useGetResourceInfo();
+	const {error, isLoading, projectsUsage} = useGetResourceInfo();
 
 	const context: OAuth2AuthorizeContext = {
 		code,
@@ -44,6 +48,7 @@ function OAuth2AuthorizeLayout() {
 		origin,
 		project,
 		projects: projectsUsage?.userProjects ?? [],
+		projectsError: Boolean(error),
 		selectedAccount,
 		setEnvironment,
 		setProject,
@@ -52,6 +57,21 @@ function OAuth2AuthorizeLayout() {
 
 	return (
 		<div className="container mt-5">
+			{Boolean(origin) && (
+				<ClayAlert
+					displayType="info"
+					spritemap={getIconSpriteMap()}
+					title={origin}
+				>
+					{i18n.translate(
+						'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account'
+					)}{' '}
+					{i18n.translate(
+						'only-continue-if-you-started-this-connection-from-that-liferay-dxp'
+					)}
+				</ClayAlert>
+			)}
+
 			<Outlet context={context} />
 		</div>
 	);

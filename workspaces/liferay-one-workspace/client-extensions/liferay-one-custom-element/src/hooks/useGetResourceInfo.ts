@@ -8,12 +8,17 @@ import {Liferay} from '~/services/liferay/liferay';
 import Console from '~/services/spring-boot/Console';
 
 const useGetResourceInfo = () => {
-	const {data: projectsUsage, isLoading} = useSWR(
+	const {
+		data: projectsUsage,
+		error,
+		isLoading,
+	} = useSWR(
 		`/projects-usage/${Liferay.ThemeDisplay.getUserEmailAddress()}`,
 		() => Console.getProjectsUsage()
 	);
 
 	return {
+		error,
 		isLoading,
 		projectsUsage,
 	};
