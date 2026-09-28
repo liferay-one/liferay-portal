@@ -102,6 +102,16 @@
 	},
 	{
 		"actionIds": [
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"MANAGE_USERS",
 			"VIEW_ACCOUNT_ROLES"
 		],
@@ -248,6 +258,15 @@
 		"resourceName": "com.liferay.commerce.order",
 		"roleName": "Partner Member",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.payment.model.CommercePaymentEntry",
+		"roleName": "Finance Administrator",
+		"scope": "1"
 	},
 	{
 		"actionIds": [
