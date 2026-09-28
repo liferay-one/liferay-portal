@@ -195,11 +195,6 @@ public class AccountUserAccountRoleSynchronizer {
 		}
 	}
 
-	/**
-	 * Confirm each removal against the database before soft deleting. The
-	 * account external key is an account or a project external reference code,
-	 * so check both.
-	 */
 	private boolean _isRoleAssigned(
 			String roleExternalKey, String userAccountExternalKey,
 			String accountExternalKey)
