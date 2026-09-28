@@ -44,7 +44,9 @@ const TrialDetailsBody: React.FC<TrialDetailsBodyProps> = ({
 		placedOrder?.orderStatusInfo?.code === OrderWorkflowStatusCode.COMPLETED
 			? 'extension-expired'
 			: ssaTrialExtend?.items?.find(
-					(trialExtend) => trialExtend.projectId === projectId
+					(trialExtend) =>
+						trialExtend.r_orderToTrialExtensionRequest_commerceOrderId ===
+						Number(placedOrder?.id)
 				)?.dueStatus?.key;
 
 	return (

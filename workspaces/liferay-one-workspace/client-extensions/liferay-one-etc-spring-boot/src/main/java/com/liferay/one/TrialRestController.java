@@ -176,11 +176,11 @@ public class TrialRestController extends BaseRestController {
 			trialExtensionRequestJSONObject.getJSONObject("dueStatus");
 
 		if (!(Objects.equals(
-				dueStatusJSONObject.getString("key"), "Approved") ||
+				dueStatusJSONObject.getString("key"), "approved") ||
 			  Objects.equals(
-				  dueStatusJSONObject.getString("key"), "AutoApproved") ||
+				  dueStatusJSONObject.getString("key"), "autoApproved") ||
 			  Objects.equals(
-				  dueStatusJSONObject.getString("key"), "Pending"))) {
+				  dueStatusJSONObject.getString("key"), "pending"))) {
 
 			return;
 		}
@@ -209,13 +209,13 @@ public class TrialRestController extends BaseRestController {
 				"Order " + orderId + " has no \"trial-end-date\" custom field");
 		}
 
-		if (Objects.equals(dueStatusJSONObject.getString("key"), "Pending")) {
+		if (Objects.equals(dueStatusJSONObject.getString("key"), "pending")) {
 			patch(
 				_liferayOAuth2AccessTokenManager.getAuthorization(
 					"liferay-one-etc-spring-boot-oahs"),
 				new JSONObject(
 				).put(
-					"dueStatus", "Approved"
+					"dueStatus", "approved"
 				).toString(),
 				UriComponentsBuilder.fromPath(
 					"/o/c/trialextensionrequests/" + id

@@ -1,7 +1,7 @@
 [
 	{
 		"active": true,
-		"conditionExpression": "dueStatus != \"AutoApproved\"",
+		"conditionExpression": "dueStatus != \"autoApproved\"",
 		"externalReferenceCode": "TRIAL-EXTENSION-REQUEST-EMAIL",
 		"label": {
 			"en_US": "Extension Request Email"

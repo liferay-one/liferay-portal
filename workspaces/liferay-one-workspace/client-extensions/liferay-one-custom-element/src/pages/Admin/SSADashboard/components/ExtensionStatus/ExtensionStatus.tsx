@@ -22,16 +22,16 @@ const ExtensionStatus = ({
 		<span
 			className={classNames('extension-status', {
 				'extension-status-approved': [
-					'Approved',
-					'AutoApproved',
+					'approved',
+					'autoApproved',
 				].includes(extensionStatus as ExtendRequestStatus),
 				'extension-status-expired': [
 					'extension-expired',
-					'Rejected',
+					'rejected',
 				].includes(extensionStatus as ExtendRequestStatus),
 				'extension-status-not-requested':
 					extensionStatus === 'not-requested' || !extensionStatus,
-				'extension-status-pending': extensionStatus === 'Pending',
+				'extension-status-pending': extensionStatus === 'pending',
 			})}
 		>
 			{EXTEND_TRIAL_STATUS_LABEL[extensionStatus ?? 'not-requested']}

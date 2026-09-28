@@ -69,7 +69,7 @@ const useSSAActions = () => {
 
 					const extendRequests = _getOrderExtendRequests(order);
 
-					return extendRequests[0]?.dueStatus?.key !== 'Pending';
+					return extendRequests[0]?.dueStatus?.key !== 'pending';
 				},
 				name: i18n.translate('view-request'),
 				onClick: (order: PlacedOrder, orderMutate) => {
@@ -91,8 +91,8 @@ const useSSAActions = () => {
 									extendRequests.filter(
 										({dueStatus}: TrialExtend) =>
 											[
-												'Approved',
-												'AutoApproved',
+												'approved',
+												'autoApproved',
 											].includes(
 												dueStatus?.key as ExtendRequestStatus
 											)
@@ -114,7 +114,7 @@ const useSSAActions = () => {
 
 					return (
 						order.orderStatusInfo.label !== 'in-progress' ||
-						extendRequests[0]?.dueStatus.key === 'Pending'
+						extendRequests[0]?.dueStatus.key === 'pending'
 					);
 				},
 				name: i18n.translate('extend-trial'),
