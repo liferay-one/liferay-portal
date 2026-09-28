@@ -384,7 +384,7 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_accountOrganizationSynchronizer
-		).syncUnassignStaleOrganizations(
+		).syncOrganizations(
 			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(Collections.singleton("organization-erc")),
 			Mockito.any(Date.class)
