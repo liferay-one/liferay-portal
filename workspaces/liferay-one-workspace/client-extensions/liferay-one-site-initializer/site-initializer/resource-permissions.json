@@ -210,8 +210,8 @@
 	},
 	{
 		"actionIds": [
-			"MANAGE_COMMERCE_ORDER_PRICES",
 			"MANAGE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_PRICES",
 			"VIEW_COMMERCE_ORDERS"
 		],
 		"primKey": "0",
