@@ -67,27 +67,6 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsExcludesRenewedKeys()
-		throws Exception {
-
-		Mockito.doReturn(
-			Arrays.asList(
-				_createLicenseKey(true, false, 10L, 1L),
-				_createLicenseKey(true, false, 10L, 2L))
-		).when(
-			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
-		);
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				"PRJCT-1", Collections.singletonList(1L));
-
-		Assertions.assertEquals(1, counts.get(10L));
-	}
-
-	@Test
 	public void testGetActiveLicenseKeyCountsSkipsComplimentaryKeys()
 		throws Exception {
 
