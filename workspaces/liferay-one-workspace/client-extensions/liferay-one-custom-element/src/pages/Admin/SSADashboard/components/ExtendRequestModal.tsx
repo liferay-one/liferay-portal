@@ -238,10 +238,10 @@ const ExtendRequestModal: React.FC<ExtendSSATrialModalProps> = ({
 						try {
 							await TrialExtensionRequests.updateTrialExtensionRequest(
 								trialExtend.id,
-								{dueStatus: {key: 'Rejected'}}
+								{dueStatus: {key: 'rejected'}}
 							);
 
-							mutateTrialExtendRequest('Rejected');
+							mutateTrialExtendRequest('rejected');
 
 							setSubmitting(null);
 
@@ -287,10 +287,10 @@ const ExtendRequestModal: React.FC<ExtendSSATrialModalProps> = ({
 						try {
 							await TrialExtensionRequests.updateTrialExtensionRequest(
 								trialExtend.id,
-								{dueStatus: {key: 'Approved'}}
+								{dueStatus: {key: 'approved'}}
 							);
 
-							mutateTrialExtendRequest('Approved');
+							mutateTrialExtendRequest('approved');
 
 							await trialOAuth2.extendTrial(trialExtend.id);
 

@@ -92,8 +92,8 @@ const ExtendSSATrialModal: React.FC<ExtendSSATrialModalProps> = ({
 				dueStatus: {
 					key:
 						extendType === EXTEND_TYPES.AUTO_EXTEND
-							? 'AutoApproved'
-							: 'Pending',
+							? 'autoApproved'
+							: 'pending',
 				},
 				duration: form.duration,
 				projectId,

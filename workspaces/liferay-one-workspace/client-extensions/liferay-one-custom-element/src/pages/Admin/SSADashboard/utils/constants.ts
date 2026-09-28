@@ -28,12 +28,12 @@ export const EXTEND_OPTIONS = [
 ] as const;
 
 export const EXTEND_TRIAL_STATUS_LABEL = {
-	'Approved': 'Approved',
-	'AutoApproved': 'Auto Approved',
-	'Pending': 'Request Pending',
-	'Rejected': 'Rejected',
+	'approved': 'Approved',
+	'autoApproved': 'Auto Approved',
 	'extension-expired': 'Extension Expired',
 	'not-requested': 'Not Requested',
+	'pending': 'Request Pending',
+	'rejected': 'Rejected',
 };
 
 export const siteInitializers = [
