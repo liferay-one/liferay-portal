@@ -308,7 +308,7 @@ public class AccountSynchronizerTest {
 		).when(
 			_userAccountSynchronizer
 		).syncUserAccount(
-			failingUserAccount
+			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
 		);
 
 		Account account = new Account();
@@ -331,13 +331,13 @@ public class AccountSynchronizerTest {
 		inOrder.verify(
 			_userAccountSynchronizer
 		).syncUserAccount(
-			failingUserAccount
+			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
 		);
 
 		inOrder.verify(
 			_userAccountSynchronizer
 		).syncUserAccount(
-			userAccount
+			Mockito.eq(userAccount), Mockito.any(Date.class)
 		);
 	}
 

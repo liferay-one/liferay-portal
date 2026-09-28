@@ -139,7 +139,7 @@ public class AccountSynchronizer {
 			}
 		}
 
-		_syncUserAccounts(userAccountsToSync);
+		_syncUserAccounts(userAccountsToSync, startDate);
 	}
 
 	public void syncAccountUserAccounts(Account account) throws Exception {
@@ -187,7 +187,7 @@ public class AccountSynchronizer {
 
 		userAccounts.addAll(projectSyncModel.getWorkerUserAccounts());
 
-		_syncUserAccounts(userAccounts);
+		_syncUserAccounts(userAccounts, startDate);
 	}
 
 	public void syncProjectUserAccounts(Project project) throws Exception {
@@ -362,7 +362,9 @@ public class AccountSynchronizer {
 			startDate);
 	}
 
-	private void _syncUserAccounts(Collection<UserAccount> userAccounts) {
+	private void _syncUserAccounts(
+		Collection<UserAccount> userAccounts, Date startDate) {
+
 		List<String> seenUserAccountExternalKeys = new ArrayList<>();
 
 		int failureCount = 0;
@@ -384,7 +386,8 @@ public class AccountSynchronizer {
 				userAccount.getExternalReferenceCode());
 
 			try {
-				_userAccountSynchronizer.syncUserAccount(userAccount);
+				_userAccountSynchronizer.syncUserAccount(
+					userAccount, startDate);
 			}
 			catch (Exception exception) {
 				failureCount++;
