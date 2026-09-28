@@ -63,6 +63,16 @@
 	},
 	{
 		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherSalesSummary$]",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"DELETE",
 			"UPDATE",
 			"VIEW"
@@ -88,6 +98,16 @@
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:UsageEvent$]",
 		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Finance Administrator",
 		"scope": "1"
 	},
 	{
@@ -182,6 +202,35 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrder",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"MANAGE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_PRICES",
+			"VIEW_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -209,6 +258,24 @@
 		"resourceName": "com.liferay.commerce.order",
 		"roleName": "Partner Member",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.payment.model.CommercePaymentEntry",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.product.model.CommerceCatalog",
+		"roleName": "Finance Administrator",
+		"scope": "1"
 	},
 	{
 		"actionIds": [
@@ -663,6 +730,15 @@
 		"resourceName": "com.liferay.portal.kernel.model.Group",
 		"roleName": "Site Content Reviewer",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$ROLE_ID:Finance Administrator$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Finance Administrator",
+		"scope": "4"
 	},
 	{
 		"actionIds": [

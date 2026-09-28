@@ -8,6 +8,13 @@
 	"permissions": [
 		{
 			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "Finance Administrator",
+			"scope": 4
+		},
+		{
+			"actionIds": [
 			],
 			"roleName": "Guest",
 			"scope": 4
