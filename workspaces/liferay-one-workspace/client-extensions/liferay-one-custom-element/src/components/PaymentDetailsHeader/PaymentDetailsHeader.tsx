@@ -9,6 +9,7 @@ import PaymentStatusBadge from '~/components/PaymentStatusBadge/PaymentStatusBad
 import i18n from '~/i18n';
 
 type PaymentDetailsHeaderProps = {
+	backLabel: string;
 	backLink: string;
 	onClick: () => void;
 	paymentStatusCode: number;
@@ -17,6 +18,7 @@ type PaymentDetailsHeaderProps = {
 };
 
 const PaymentDetailsHeader = ({
+	backLabel,
 	backLink,
 	onClick,
 	paymentStatusCode,
@@ -26,9 +28,7 @@ const PaymentDetailsHeader = ({
 	return (
 		<div className="align-items-center d-flex justify-content-between">
 			<div>
-				<BackLink path={backLink}>
-					{i18n.translate('back-to-last-transaction')}
-				</BackLink>
+				<BackLink path={backLink}>{backLabel}</BackLink>
 
 				<h2 className="mt-2">{title}</h2>
 

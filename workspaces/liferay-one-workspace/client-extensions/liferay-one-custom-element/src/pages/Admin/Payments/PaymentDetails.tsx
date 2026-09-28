@@ -141,6 +141,7 @@ const PaymentDetails = () => {
 			isLoading={isLoading}
 		>
 			<PaymentDetailsHeader
+				backLabel={i18n.translate('back-to-payments')}
 				backLink="/mp-payments"
 				onClick={() =>
 					PublisherSalesSummaries.patchPublisherSalesSummary(
