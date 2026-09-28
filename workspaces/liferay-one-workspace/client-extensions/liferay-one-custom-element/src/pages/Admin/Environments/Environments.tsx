@@ -35,7 +35,6 @@ export default function Environments() {
 					searchVisible: true,
 					visible: true,
 				}}
-				parentPath="/saas-trials"
 			/>
 		</Page>
 	);

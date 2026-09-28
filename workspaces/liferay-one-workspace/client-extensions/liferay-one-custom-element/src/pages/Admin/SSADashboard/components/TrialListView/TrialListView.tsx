@@ -5,7 +5,7 @@
 
 import {useModal} from '@clayui/core';
 import {useMemo} from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useLocation} from 'react-router-dom';
 import ListView, {ListViewProps} from '~/components/ListView/ListView';
 import {ManagementToolbarProps} from '~/components/ManagementToolbar/ManagementToolbar';
 import {useOneContext} from '~/context/OneContextProvider';
@@ -42,7 +42,6 @@ type TrialsListViewProps = {
 		| 'tableProps'
 		| 'totalItems'
 	>;
-	parentPath?: string;
 };
 
 const refreshInterval = 60 * 1000;
@@ -61,12 +60,12 @@ export default function TrialListView({
 	createTrialFormModal,
 	listViewProps,
 	managementToolbarProps,
-	parentPath,
 }: TrialsListViewProps) {
 	const {ssaAccount, ssaTrialExtend} = useSSADashboardOutlet();
 	const {myUserAccount} = useOneContext();
 
 	const {properties} = useOneContext();
+	const {pathname} = useLocation();
 
 	const isFilterByAuthorIdEnabled =
 		properties.featureFlags.includes('LPD-63837');
@@ -122,11 +121,7 @@ export default function TrialListView({
 							render: (_, {customFields, id}) => (
 								<Link
 									className="font-weight-semi-bold ml-2"
-									to={
-										parentPath
-											? `/details/${id}?from=${parentPath}`
-											: `/details/${id}`
-									}
+									to={`/details/${id}?from=${pathname}`}
 								>
 									{customFields &&
 										safeJSONParse(
