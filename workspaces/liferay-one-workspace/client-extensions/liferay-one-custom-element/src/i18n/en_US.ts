@@ -648,7 +648,6 @@ export default {
 	'general-info': 'General Info',
 	'generate': 'Generate',
 	'generate-activation-keys': 'Generate Activation Key(s)',
-	'generate-new': 'Generate New',
 	'generate-x-key': 'Generate {0} Key',
 	'generate-x-keys': 'Generate {0} Keys',
 	'get-activation-key': 'Get Activation Key',
@@ -881,8 +880,8 @@ export default {
 	'manage-roles': 'Manage Roles',
 	'manage-roles-and-permissions-of-users-within-each-product':
 		'Manage roles and permissions of users within each product.',
-	'manage-the-activation-keys-within-your-project':
-		'Manage the activation keys within your project',
+	'manage-the-activation-within-your-project':
+		'Manage the activation within your project.',
 	'manage-the-applications-within-your-project':
 		'Manage the applications within your project',
 	'manage-the-members-of-x': 'Manage the members of {0}.',
@@ -976,7 +975,7 @@ export default {
 	'next': 'Next',
 	'no': 'No',
 	'no-account-members-were-found': 'No account members were found.',
-	'no-activation-keys-yet': 'No Activation Keys Yet',
+	'no-activation-keys': 'No Activation Keys',
 	'no-applications-yet': 'No Applications Yet',
 	'no-apps-yet': 'No Apps Yet',
 	'no-bundles-yet': 'No Bundles Yet',
@@ -1196,6 +1195,7 @@ export default {
 	'product-type-other-description':
 		'Apps that do not fit into the standard categories. This may include external integrations, legacy solutions, prototypes, or custom deployments.',
 	'product-unavailable': 'Product Unavailable',
+	'product-version': 'Product Version',
 	'production': 'Production',
 	'products': 'Products',
 	'profile': 'Profile',
@@ -1607,11 +1607,15 @@ export default {
 		'There are currently no open tickets under this project.',
 	'there-are-no-accounts-available-for':
 		'There are no accounts available for',
+	'there-are-no-key-activations-available-deactivate-a-key-or-contact-the-provisioning-team':
+		'There are no key activations available. Deactivate a key or contact the Provisioning team.',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
 		'This account has no default billing address, so a connected DXP cannot install products for it.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
+	'this-activation-key-cannot-be-renewed':
+		'This activation key cannot be renewed.',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
 	'this-email-address-is-duplicated': 'This email address is duplicated.',

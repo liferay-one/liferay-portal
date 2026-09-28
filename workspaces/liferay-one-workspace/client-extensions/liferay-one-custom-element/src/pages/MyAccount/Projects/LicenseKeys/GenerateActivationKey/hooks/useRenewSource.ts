@@ -8,6 +8,7 @@ import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
+import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {
 	GenerateForm,
 	GenerateFormProduct,
@@ -20,7 +21,6 @@ export type RenewSource = {
 	description: string;
 	environmentName: string;
 	keyType: string;
-	licenseKeyIds: number[];
 	productExternalReferenceCode: string;
 	servers: GenerateActivationKeyServer[];
 	subscriptionEntitlementId: number;
@@ -50,7 +50,7 @@ export function useRenewSource(
 			(current) => current.id === licenseKeyExternalReferenceCode
 		);
 
-		if (!activationKey) {
+		if (!activationKey || !isRenewableKey(activationKey)) {
 			return undefined;
 		}
 
@@ -67,7 +67,6 @@ export function useRenewSource(
 		}
 
 		const entitlementIds = new Set<number>();
-		const licenseKeyIds: number[] = [];
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
 		let keyType = '';
@@ -77,10 +76,6 @@ export function useRenewSource(
 		for (const sibling of siblings) {
 			for (const entitlementId of sibling.entitlementIds) {
 				entitlementIds.add(entitlementId);
-			}
-
-			if (sibling.active && sibling.licenseKeyId) {
-				licenseKeyIds.push(Number(sibling.licenseKeyId));
 			}
 
 			servers.set(toServerKey(sibling), {
@@ -104,7 +99,6 @@ export function useRenewSource(
 			description: activationKey.description,
 			environmentName: activationKey.name,
 			keyType,
-			licenseKeyIds,
 			productExternalReferenceCode,
 			servers: [...servers.values()],
 			subscriptionEntitlementId,

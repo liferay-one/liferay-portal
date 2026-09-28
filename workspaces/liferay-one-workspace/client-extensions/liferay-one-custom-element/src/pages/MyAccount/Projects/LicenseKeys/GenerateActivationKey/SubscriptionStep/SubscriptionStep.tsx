@@ -143,11 +143,21 @@ export default function SubscriptionStep({
 		};
 	}
 
+	const noActivationsAvailable =
+		!developer &&
+		Boolean(subscriptions.length) &&
+		(selectedSubscription
+			? selectedSubscription.availableCount <= 0
+			: subscriptions.every(
+					(subscription) => subscription.availableCount <= 0
+				));
+
 	const canContinue = Boolean(
 		productExternalReferenceCode &&
 			keyType &&
 			version &&
-			(developer || subscriptionEntitlementId)
+			(developer || subscriptionEntitlementId) &&
+			!noActivationsAvailable
 	);
 
 	return (
@@ -290,7 +300,21 @@ export default function SubscriptionStep({
 						}
 					/>
 
-					{selectedSubscription && (
+					{noActivationsAvailable && (
+						<ClayAlert
+							className="generate-activation-key-subscription-alert"
+							displayType="warning"
+							role={null}
+							spritemap={getIconSpriteMap()}
+							symbol="warning-full"
+						>
+							{translate(
+								'there-are-no-key-activations-available-deactivate-a-key-or-contact-the-provisioning-team'
+							)}
+						</ClayAlert>
+					)}
+
+					{selectedSubscription && !noActivationsAvailable && (
 						<ClayAlert
 							className="generate-activation-key-subscription-alert"
 							displayType="info"

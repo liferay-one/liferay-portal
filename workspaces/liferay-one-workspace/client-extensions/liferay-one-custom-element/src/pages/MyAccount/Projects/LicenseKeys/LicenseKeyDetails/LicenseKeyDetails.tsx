@@ -8,6 +8,7 @@ import {ClayToggle} from '@clayui/form';
 import {useParams} from 'react-router-dom';
 import BackLink from '~/components/BackLink/BackLink';
 import Loading from '~/components/Loading/Loading';
+import {useProject} from '~/context/ProjectContext';
 import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
@@ -16,17 +17,21 @@ import {translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
+import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
 import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
+import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
 import useLicenseKeyActions from '../hooks/useLicenseKeyActions';
 import useLicenseKeySubscription from '../hooks/useLicenseKeySubscription';
 
 export default function LicenseKeyDetails() {
 	const {licenseKeyERC = ''} = useParams();
+	const {projectId} = useProject();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
+	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
 		useLicenseKeyActions({generatePath: '../generate', revalidate});
@@ -41,6 +46,7 @@ export default function LicenseKeyDetails() {
 				<Loading.Page />
 			) : licenseKey ? (
 				<LicenseKeyDetailsContent
+					hasActivationPermission={hasActivationPermission}
 					licenseKey={licenseKey}
 					onDeactivate={() => handleDeactivate(licenseKey)}
 					onDownload={() => handleDownload(licenseKey)}
@@ -57,6 +63,7 @@ export default function LicenseKeyDetails() {
 }
 
 type LicenseKeyDetailsContentProps = {
+	hasActivationPermission: boolean;
 	licenseKey: ProjectActivationKey;
 	onDeactivate: () => void;
 	onDownload: () => void;
@@ -65,6 +72,7 @@ type LicenseKeyDetailsContentProps = {
 };
 
 function LicenseKeyDetailsContent({
+	hasActivationPermission,
 	licenseKey,
 	onDeactivate,
 	onDownload,
@@ -170,22 +178,29 @@ function LicenseKeyDetailsContent({
 							{translate('download')}
 						</ClayButton>
 
-						<ClayButton displayType="secondary" onClick={onRenew}>
-							{translate('renew')}
-						</ClayButton>
+						{hasActivationPermission &&
+							isRenewableKey(licenseKey) && (
+								<ClayButton
+									displayType="secondary"
+									onClick={onRenew}
+								>
+									{translate('renew')}
+								</ClayButton>
+							)}
 
-						{licenseKey.active ? (
-							<ClayButton
-								displayType="danger"
-								onClick={onDeactivate}
-							>
-								{translate('deactivate')}
-							</ClayButton>
-						) : (
-							<ClayButton onClick={onReactivate}>
-								{translate('reactivate')}
-							</ClayButton>
-						)}
+						{hasActivationPermission &&
+							(licenseKey.active ? (
+								<ClayButton
+									displayType="danger"
+									onClick={onDeactivate}
+								>
+									{translate('deactivate')}
+								</ClayButton>
+							) : (
+								<ClayButton onClick={onReactivate}>
+									{translate('reactivate')}
+								</ClayButton>
+							))}
 					</div>
 				}
 				icon="key-horizontal"
