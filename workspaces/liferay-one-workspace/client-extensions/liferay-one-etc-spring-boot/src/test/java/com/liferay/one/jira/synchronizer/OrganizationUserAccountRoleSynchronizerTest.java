@@ -11,9 +11,14 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.util.KeyedLock;
 
+import java.util.Date;
+import java.util.function.BiPredicate;
+
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -97,8 +102,52 @@ public class OrganizationUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService
 		).upsert(
-			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any()
+			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
 		);
+	}
+
+	@Test
+	public void testSyncAssignRoleSkipsAssignmentsUpdatedSinceStartDate()
+		throws Exception {
+
+		Date startDate = new Date();
+
+		_organizationUserAccountRoleSynchronizer.syncAssignRole(
+			"role-erc", "user-account-erc", "organization-erc", startDate);
+
+		ArgumentCaptor<BiPredicate<JiraAssetObject, JiraAssetObject>>
+			biPredicateArgumentCaptor = ArgumentCaptor.forClass(
+				BiPredicate.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any(),
+			biPredicateArgumentCaptor.capture()
+		);
+
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			biPredicateArgumentCaptor.getValue();
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Assertions.assertFalse(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_teamContactRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
 	}
 
 	@Test
@@ -116,7 +165,8 @@ public class OrganizationUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService
 		).upsert(
-			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any()
+			Mockito.eq(_teamContactRoleAssignmentConverter), Mockito.any(),
+			Mockito.isNull()
 		);
 	}
 

@@ -161,6 +161,19 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAssignRoleSkipsAssignmentsUpdatedSinceStartDate()
+		throws Exception {
+
+		Date startDate = new Date();
+
+		_accountUserAccountRoleSynchronizer.syncAssignRole(
+			_ROLE_EXTERNAL_KEY, _USER_ACCOUNT_EXTERNAL_KEY,
+			_ACCOUNT_EXTERNAL_KEY, startDate);
+
+		_assertSkipsAssignmentsUpdatedSinceStartDate(startDate);
+	}
+
+	@Test
 	public void testSyncRolesAssignsRolesThenUnassignsStaleRoles()
 		throws Exception {
 
@@ -246,27 +259,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 				Collections.singleton(_ROLE_EXTERNAL_KEY)),
 			startDate);
 
-		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
-			_captureShouldSkipUpdateBiPredicate();
-
-		JiraAssetObject existingJiraAssetObject = Mockito.mock(
-			JiraAssetObject.class);
-
-		Assertions.assertFalse(
-			biPredicate.test(
-				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
-
-		Mockito.when(
-			_jiraAssetService.isUpdatedSince(
-				_accountContactRoleAssignmentConverter, startDate,
-				existingJiraAssetObject)
-		).thenReturn(
-			true
-		);
-
-		Assertions.assertTrue(
-			biPredicate.test(
-				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+		_assertSkipsAssignmentsUpdatedSinceStartDate(startDate);
 	}
 
 	@Test
@@ -438,6 +431,30 @@ public class AccountUserAccountRoleSynchronizerTest {
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
 			Mockito.any()
 		);
+	}
+
+	private void _assertSkipsAssignmentsUpdatedSinceStartDate(Date startDate) {
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Assertions.assertFalse(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_accountContactRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
 	}
 
 	private void _assertKept() {

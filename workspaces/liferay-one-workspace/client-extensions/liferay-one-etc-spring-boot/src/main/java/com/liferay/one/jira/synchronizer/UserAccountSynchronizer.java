@@ -28,6 +28,7 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -84,9 +85,16 @@ public class UserAccountSynchronizer {
 	}
 
 	public void syncUserAccount(UserAccount userAccount) throws Exception {
+		syncUserAccount(userAccount, null);
+	}
+
+	public void syncUserAccount(UserAccount userAccount, Date startDate)
+		throws Exception {
+
 		_keyedLock.withLock(
 			userAccount.getExternalReferenceCode(),
-			() -> _syncUserAccount(_createUserAccountSyncModel(userAccount)));
+			() -> _syncUserAccount(
+				_createUserAccountSyncModel(userAccount), startDate));
 	}
 
 	public void syncUserAccountAccounts(UserAccount userAccount)
@@ -180,7 +188,7 @@ public class UserAccountSynchronizer {
 	}
 
 	private void _syncContactRoleAssignments(
-		UserAccountSyncModel userAccountSyncModel) {
+		UserAccountSyncModel userAccountSyncModel, Date startDate) {
 
 		for (AccountBrief accountBrief :
 				userAccountSyncModel.getAccountBriefs()) {
@@ -196,7 +204,7 @@ public class UserAccountSynchronizer {
 					_accountUserAccountRoleSynchronizer.syncAssignRole(
 						roleBrief.getExternalReferenceCode(),
 						userAccountSyncModel.getExternalReferenceCode(),
-						accountBrief.getExternalReferenceCode());
+						accountBrief.getExternalReferenceCode(), startDate);
 				}
 				catch (Exception exception) {
 					_log.error(
@@ -210,7 +218,7 @@ public class UserAccountSynchronizer {
 	}
 
 	private void _syncOrganizationRoleAssignments(
-		UserAccountSyncModel userAccountSyncModel) {
+		UserAccountSyncModel userAccountSyncModel, Date startDate) {
 
 		for (OrganizationBrief organizationBrief :
 				userAccountSyncModel.getOrganizationBriefs()) {
@@ -226,7 +234,8 @@ public class UserAccountSynchronizer {
 					_organizationUserAccountRoleSynchronizer.syncAssignRole(
 						roleBrief.getExternalReferenceCode(),
 						userAccountSyncModel.getExternalReferenceCode(),
-						organizationBrief.getExternalReferenceCode());
+						organizationBrief.getExternalReferenceCode(),
+						startDate);
 				}
 				catch (Exception exception) {
 					_log.error(
@@ -240,7 +249,8 @@ public class UserAccountSynchronizer {
 		}
 	}
 
-	private void _syncUserAccount(UserAccountSyncModel userAccountSyncModel)
+	private void _syncUserAccount(
+			UserAccountSyncModel userAccountSyncModel, Date startDate)
 		throws Exception {
 
 		UserAccount userAccount = userAccountSyncModel.getUserAccount();
@@ -289,8 +299,8 @@ public class UserAccountSynchronizer {
 
 		_jiraAssetService.upsert(_contactConverter, jiraAssetObject);
 
-		_syncContactRoleAssignments(userAccountSyncModel);
-		_syncOrganizationRoleAssignments(userAccountSyncModel);
+		_syncContactRoleAssignments(userAccountSyncModel, startDate);
+		_syncOrganizationRoleAssignments(userAccountSyncModel, startDate);
 	}
 
 	private static final Log _log = LogFactory.getLog(
