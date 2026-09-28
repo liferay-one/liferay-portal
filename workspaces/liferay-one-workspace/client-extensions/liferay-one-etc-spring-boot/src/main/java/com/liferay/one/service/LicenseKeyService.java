@@ -25,7 +25,6 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -261,23 +260,12 @@ public class LicenseKeyService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return getActiveLicenseKeyCounts(
-			projectExternalReferenceCode, Collections.emptyList());
-	}
-
-	public Map<Long, Integer> getActiveLicenseKeyCounts(
-			String projectExternalReferenceCode,
-			Collection<Long> excludedLicenseKeyIds)
-		throws Exception {
-
 		Map<Long, Integer> counts = new HashMap<>();
 
 		for (LicenseKey licenseKey :
 				_getLicenseKeysByProject(projectExternalReferenceCode)) {
 
-			if (!licenseKey.isActive() || licenseKey.isComplimentary() ||
-				excludedLicenseKeyIds.contains(licenseKey.getLicenseKeyId())) {
-
+			if (!licenseKey.isActive() || licenseKey.isComplimentary()) {
 				continue;
 			}
 

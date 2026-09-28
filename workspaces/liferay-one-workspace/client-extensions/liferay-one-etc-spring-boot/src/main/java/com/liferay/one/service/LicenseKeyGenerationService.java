@@ -132,9 +132,9 @@ public class LicenseKeyGenerationService {
 		public GenerateRequest(
 			List<Long> bundleEntitlementIds, String dataCenterLocation,
 			String description, String environmentName, String keyType,
-			Project project, List<Long> renewedLicenseKeyIds,
-			List<Server> servers, long subscriptionEntitlementId,
-			String version, String workspaceName, String workspaceOwnerEmail) {
+			Project project, List<Server> servers,
+			long subscriptionEntitlementId, String version,
+			String workspaceName, String workspaceOwnerEmail) {
 
 			_bundleEntitlementIds = bundleEntitlementIds;
 			_dataCenterLocation = dataCenterLocation;
@@ -142,7 +142,6 @@ public class LicenseKeyGenerationService {
 			_environmentName = environmentName;
 			_keyType = keyType;
 			_project = project;
-			_renewedLicenseKeyIds = renewedLicenseKeyIds;
 			_servers = servers;
 			_subscriptionEntitlementId = subscriptionEntitlementId;
 			_version = version;
@@ -172,10 +171,6 @@ public class LicenseKeyGenerationService {
 
 		public Project getProject() {
 			return _project;
-		}
-
-		public List<Long> getRenewedLicenseKeyIds() {
-			return _renewedLicenseKeyIds;
 		}
 
 		public List<Server> getServers() {
@@ -232,7 +227,6 @@ public class LicenseKeyGenerationService {
 		private final String _environmentName;
 		private final String _keyType;
 		private final Project _project;
-		private final List<Long> _renewedLicenseKeyIds;
 		private final List<Server> _servers;
 		private final long _subscriptionEntitlementId;
 		private final String _version;
@@ -333,8 +327,7 @@ public class LicenseKeyGenerationService {
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				project.getExternalReferenceCode(),
-				generateRequest.getRenewedLicenseKeyIds());
+				project.getExternalReferenceCode());
 
 		for (Entitlement entitlement : bundleEntitlements) {
 			int totalCount = LicenseKeyGenerateFormService.getTotalCount(
@@ -403,13 +396,6 @@ public class LicenseKeyGenerationService {
 				licensedProducts, project, server, startDate);
 
 			licenseKeyIds.add(licenseKey.getLicenseKeyId());
-		}
-
-		for (long renewedLicenseKeyId :
-				generateRequest.getRenewedLicenseKeyIds()) {
-
-			_licenseKeyService.updateLicenseKeyActive(
-				false, renewedLicenseKeyId);
 		}
 
 		return licenseKeyIds;

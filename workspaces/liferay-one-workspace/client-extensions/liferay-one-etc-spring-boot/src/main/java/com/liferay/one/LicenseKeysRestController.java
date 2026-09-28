@@ -28,7 +28,6 @@ import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -41,7 +40,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -112,8 +110,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			@RequestParam("version") String version)
 		throws Exception {
 
-		Project project = _environmentActivationPermission.check(
-			jwt, projectExternalReferenceCode);
+		Project project =
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				jwt, projectExternalReferenceCode);
 
 		if (project == null) {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
@@ -255,7 +254,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				projectExternalReferenceCode)
 		throws Exception {
 
-		_environmentActivationPermission.check(
+		_environmentActivationPermission.checkLicenseKeyActivation(
 			jwt, projectExternalReferenceCode);
 
 		return ResponseEntity.ok(
@@ -305,7 +304,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				licenseKey.getAccountEntryId(), ActionKeys.UPDATE, jwt);
 		}
 		else {
-			_environmentActivationPermission.check(
+			_environmentActivationPermission.checkLicenseKeyActivation(
 				jwt, projectExternalReferenceCode);
 		}
 
@@ -377,17 +376,13 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		String projectExternalReferenceCode = jsonObject.optString(
 			"projectExternalReferenceCode");
 
-		Project project = _environmentActivationPermission.check(
-			jwt, projectExternalReferenceCode);
+		Project project =
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				jwt, projectExternalReferenceCode);
 
 		if (project == null) {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
-
-		List<Long> renewedLicenseKeyIds = _toLongs(
-			jsonObject.optJSONArray("renewedLicenseKeyIds"));
-
-		_checkRenewedLicenseKeys(jwt, project, renewedLicenseKeyIds);
 
 		List<Long> licenseKeyIds =
 			_licenseKeyGenerationService.generateLicenseKeys(
@@ -397,7 +392,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 					jsonObject.optString("description"),
 					jsonObject.optString("environmentName"),
 					jsonObject.optString("keyType"), project,
-					renewedLicenseKeyIds,
 					_toServers(jsonObject.optJSONArray("servers")),
 					jsonObject.optLong("subscriptionEntitlementId"),
 					jsonObject.optString("version"),
@@ -550,23 +544,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 			_licenseKeyPermission.checkSelfProvisioning(
 				accountEntryId, userAccount);
-		}
-	}
-
-	private void _checkRenewedLicenseKeys(
-			Jwt jwt, Project project, List<Long> renewedLicenseKeyIds)
-		throws Exception {
-
-		for (long renewedLicenseKeyId : renewedLicenseKeyIds) {
-			LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
-				jwt, renewedLicenseKeyId);
-
-			if (!Objects.equals(
-					project.getExternalReferenceCode(),
-					licenseKey.getProjectExternalReferenceCode())) {
-
-				throw new PrincipalException();
-			}
 		}
 	}
 

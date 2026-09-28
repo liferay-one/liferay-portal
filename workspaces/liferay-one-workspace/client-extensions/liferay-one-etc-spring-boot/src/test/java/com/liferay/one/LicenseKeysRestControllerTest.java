@@ -117,7 +117,8 @@ public class LicenseKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -157,7 +158,8 @@ public class LicenseKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			null
 		);
@@ -641,7 +643,8 @@ public class LicenseKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenThrow(
 			new PrincipalException()
 		);
@@ -877,7 +880,8 @@ public class LicenseKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -909,7 +913,8 @@ public class LicenseKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenThrow(
 			new PrincipalException()
 		);
@@ -923,54 +928,6 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testPostLicenseKeysGenerateChecksRenewedLicenseKeyOwner()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		Project project = Mockito.mock(Project.class);
-
-		Mockito.when(
-			project.getExternalReferenceCode()
-		).thenReturn(
-			_PROJECT_ERC
-		);
-
-		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
-		).thenReturn(
-			project
-		);
-
-		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
-
-		Mockito.when(
-			licenseKey.getProjectExternalReferenceCode()
-		).thenReturn(
-			"PRJCT-OTHER"
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKey(null, 77L)
-		).thenReturn(
-			licenseKey
-		);
-
-		JSONObject jsonObject = new JSONObject(_toGenerateJSON());
-
-		jsonObject.put(
-			"renewedLicenseKeyIds", new JSONArray(Arrays.asList(77L)));
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.postLicenseKeysGenerate(
-				null, jsonObject.toString()));
-
-		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
-	}
-
-	@Test
 	public void testPostLicenseKeysGeneratePassesEveryServer()
 		throws Exception {
 
@@ -978,7 +935,8 @@ public class LicenseKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			Mockito.mock(Project.class)
 		);
