@@ -5,6 +5,7 @@
 
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
+import {PARTNER_MANAGER} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
@@ -12,25 +13,22 @@ import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';
 
+type ActivationPermission = {
+	hasActivationPermission: boolean;
+	loading: boolean;
+};
+
 type ProjectMembershipAPIItem = {
 	roleExternalReferenceCode: string;
 };
 
-export function useHasActivationPermission(
+function useProjectAdminPermission(
+	hasElevatedRole: boolean,
 	projectExternalReferenceCode: string
-): {
-	hasActivationPermission: boolean;
-	loading: boolean;
-} {
-	const {myUserAccount, userAccountModel} = useOneContext();
+): ActivationPermission {
+	const {myUserAccount} = useOneContext();
 
 	const userId = Liferay.ThemeDisplay.getUserId();
-
-	const hasElevatedRole = Boolean(
-		userAccountModel?.isAccountAdministrator ||
-			userAccountModel?.isAdmin ||
-			userAccountModel?.isLiferayStaff
-	);
 
 	const filter = [
 		SearchBuilder.eq(
@@ -72,6 +70,35 @@ export function useHasActivationPermission(
 			membershipRoleExternalReferenceCode === PROJECT_ADMIN_ERC,
 		loading: membershipLoading,
 	};
+}
+
+export function useHasActivationPermission(
+	projectExternalReferenceCode: string
+): ActivationPermission {
+	const {userAccountModel} = useOneContext();
+
+	return useProjectAdminPermission(
+		Boolean(
+			userAccountModel?.isAccountAdministrator ||
+				userAccountModel?.isAdmin ||
+				userAccountModel?.isLiferayStaff
+		),
+		projectExternalReferenceCode
+	);
+}
+
+export function useHasLicenseKeyPermission(
+	projectExternalReferenceCode: string
+): ActivationPermission {
+	const {userAccountModel} = useOneContext();
+
+	return useProjectAdminPermission(
+		Boolean(
+			userAccountModel?.isAccountAdministrator ||
+				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER)
+		),
+		projectExternalReferenceCode
+	);
 }
 
 export default useHasActivationPermission;

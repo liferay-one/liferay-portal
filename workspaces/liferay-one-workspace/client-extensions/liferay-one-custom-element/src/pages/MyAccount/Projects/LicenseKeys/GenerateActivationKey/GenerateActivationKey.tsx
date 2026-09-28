@@ -16,7 +16,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import {scrollToTop} from '~/utils/browserUtils';
 
-import useHasActivationPermission from '../../hooks/useHasActivationPermission';
+import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
 import AddOnStep from './AddOnStep/AddOnStep';
 import DSRStep from './DSRStep/DSRStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
@@ -41,7 +41,7 @@ export default function GenerateActivationKey() {
 	const {error, generateForm, loading} =
 		useGenerateActivationKeyForm(projectId);
 	const {hasActivationPermission, loading: permissionLoading} =
-		useHasActivationPermission(projectId);
+		useHasLicenseKeyPermission(projectId);
 	const {hasWorkspace} = useHasWorkspace(projectId);
 	const {loading: renewLoading, renewSource} = useRenewSource(
 		renewExternalReferenceCode,
@@ -234,7 +234,6 @@ export default function GenerateActivationKey() {
 				environmentName: values.environmentName,
 				keyType: values.keyType,
 				projectExternalReferenceCode: projectId,
-				renewedLicenseKeyIds: renewSource?.licenseKeyIds,
 				servers: values.servers,
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
 				version: values.version,
@@ -291,6 +290,14 @@ export default function GenerateActivationKey() {
 		return (
 			<p className="text-neutral-7">
 				{translate('an-unexpected-error-occurred')}
+			</p>
+		);
+	}
+
+	if (renewing && !renewSource) {
+		return (
+			<p className="text-neutral-7">
+				{translate('this-activation-key-cannot-be-renewed')}
 			</p>
 		);
 	}

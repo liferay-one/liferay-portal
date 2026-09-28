@@ -9,6 +9,7 @@ import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
+import classNames from 'classnames';
 import {ReactNode, useMemo, useState} from 'react';
 import Button from '~/components/Button/Button';
 import {Word, translate} from '~/i18n';
@@ -41,6 +42,7 @@ export type ListColumn<T> = {
 
 type FilterableListCardProps<T> = {
 	action?: ReactNode;
+	className?: string;
 	columns: ListColumn<T>[];
 	defaultPageSize?: number;
 	emptyLabel: Word;
@@ -191,6 +193,7 @@ function FilterSubPanel({
 
 export default function FilterableListCard<T>({
 	action,
+	className,
 	columns,
 	defaultPageSize = PAGE_SIZE_OPTIONS[0],
 	emptyLabel,
@@ -306,7 +309,7 @@ export default function FilterableListCard<T>({
 	);
 
 	return (
-		<div className="list-card mt-3">
+		<div className={classNames('list-card mt-3', className)}>
 			{title && (
 				<div className="list-card-header">{translate(title)}</div>
 			)}
