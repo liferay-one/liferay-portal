@@ -282,8 +282,12 @@ public class LicenseKeyService extends OneBaseService {
 
 			long entitlementId = licenseKey.getEntitlementId();
 
+			// A complimentary key counts against the entitlement that granted
+			// it, which allows one. It keeps counting once it expires, since
+			// expiring does not hand the grant back, and stops only when the
+			// key is deactivated.
+
 			if ((entitlementId <= 0) || !licenseKey.isActive() ||
-				licenseKey.isComplimentary() ||
 				excludedActivationKeyIds.contains(
 					licenseKey.getActivationKeyId())) {
 
