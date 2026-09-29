@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -85,6 +86,8 @@ public class OrganizationSynchronizer {
 					organization.getExternalReferenceCode() + " to JSM");
 		}
 
+		Date startDate = new Date();
+
 		List<AccountBrief> accountBriefs = ListUtil.fromArray(
 			organization.getAccountBriefs());
 
@@ -129,7 +132,7 @@ public class OrganizationSynchronizer {
 			organization.getExternalReferenceCode(),
 			() -> _jiraAssetService.upsert(_teamConverter, jiraAssetObject));
 
-		_syncOrganizationAssignments(organization, accountBriefs);
+		_syncOrganizationAssignments(organization, accountBriefs, startDate);
 	}
 
 	public void syncOrganizationUserAccounts(Organization organization)
@@ -175,13 +178,14 @@ public class OrganizationSynchronizer {
 	}
 
 	private void _syncOrganizationAssignments(
-		Organization organization, List<AccountBrief> accountBriefs) {
+		Organization organization, List<AccountBrief> accountBriefs,
+		Date startDate) {
 
 		for (AccountBrief accountBrief : accountBriefs) {
 			try {
 				_accountOrganizationSynchronizer.syncAssignOrganization(
 					organization.getExternalReferenceCode(),
-					accountBrief.getExternalReferenceCode());
+					accountBrief.getExternalReferenceCode(), startDate);
 			}
 			catch (Exception exception) {
 				_log.error(

@@ -141,6 +141,18 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAssignOrganizationSkipsAssignmentsUpdatedSinceStartDate()
+		throws Exception {
+
+		Date startDate = new Date();
+
+		_accountOrganizationSynchronizer.syncAssignOrganization(
+			_ORGANIZATION_EXTERNAL_KEY, _ACCOUNT_EXTERNAL_KEY, startDate);
+
+		_assertSkipsAssignmentsUpdatedSinceStartDate(startDate);
+	}
+
+	@Test
 	public void testSyncAssignOrganizationWaitsForSyncAssignOrganization()
 		throws Exception {
 
@@ -244,27 +256,7 @@ public class AccountOrganizationSynchronizerTest {
 			_ACCOUNT_EXTERNAL_KEY,
 			Collections.singleton(_ORGANIZATION_EXTERNAL_KEY), startDate);
 
-		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
-			_captureShouldSkipUpdateBiPredicate();
-
-		JiraAssetObject existingJiraAssetObject = Mockito.mock(
-			JiraAssetObject.class);
-
-		Assertions.assertFalse(
-			biPredicate.test(
-				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
-
-		Mockito.when(
-			_jiraAssetService.isUpdatedSince(
-				_accountTeamRoleAssignmentConverter, startDate,
-				existingJiraAssetObject)
-		).thenReturn(
-			true
-		);
-
-		Assertions.assertTrue(
-			biPredicate.test(
-				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+		_assertSkipsAssignmentsUpdatedSinceStartDate(startDate);
 	}
 
 	@Test
@@ -423,6 +415,30 @@ public class AccountOrganizationSynchronizerTest {
 			Mockito.eq(_accountTeamRoleAssignmentConverter), Mockito.any(),
 			Mockito.any()
 		);
+	}
+
+	private void _assertSkipsAssignmentsUpdatedSinceStartDate(Date startDate) {
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
+			_captureShouldSkipUpdateBiPredicate();
+
+		JiraAssetObject existingJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Assertions.assertFalse(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.when(
+			_jiraAssetService.isUpdatedSince(
+				_accountTeamRoleAssignmentConverter, startDate,
+				existingJiraAssetObject)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(
+			biPredicate.test(
+				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
 	}
 
 	private void _assertSkipped(String organizationExternalKey) {

@@ -5,6 +5,7 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -18,6 +19,7 @@ import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 
 import java.util.Collections;
+import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,6 +196,30 @@ public class OrganizationSynchronizerTest {
 			() -> _organizationSynchronizer.deleteOrganization(
 				_EXTERNAL_REFERENCE_CODE),
 			"upsert", "delete");
+	}
+
+	@Test
+	public void testSyncOrganizationAssignsAccountsSinceStartDate()
+		throws Exception {
+
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setExternalReferenceCode("account-erc");
+
+		Organization organization = new Organization();
+
+		organization.setAccountBriefs(new AccountBrief[] {accountBrief});
+		organization.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		organization.setId("1");
+
+		_organizationSynchronizer.syncOrganization(organization);
+
+		Mockito.verify(
+			_accountOrganizationSynchronizer
+		).syncAssignOrganization(
+			Mockito.eq(_EXTERNAL_REFERENCE_CODE), Mockito.eq("account-erc"),
+			Mockito.any(Date.class)
+		);
 	}
 
 	@Test
