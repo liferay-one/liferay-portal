@@ -12,13 +12,16 @@ export type GenerateFormBundleProduct = {
 	entitlementId: number;
 	externalReferenceCode: string;
 	licensable: boolean;
+	licenseEntryFamily: string;
 	name: string;
 };
 
 export type GenerateFormKeyType = {
-	label: string;
+	entitlementId: number;
+	key: string;
 	licenseEntryType: string;
 	productKey: string;
+	subscriptions: GenerateFormSubscription[];
 };
 
 export type GenerateFormSubscription = {
@@ -35,8 +38,8 @@ export type GenerateFormProduct = {
 	entitlementId: number;
 	externalReferenceCode: string;
 	keyTypes: GenerateFormKeyType[];
+	label: string;
 	name: string;
-	subscriptions: GenerateFormSubscription[];
 	versions: string[];
 };
 
@@ -91,11 +94,19 @@ class ActivationKeysOAuth2 extends OneSpringBootOAuth2 {
 	}
 
 	getGenerateForm(
-		projectExternalReferenceCode: string
+		projectExternalReferenceCode: string,
+		renewedActivationKeyExternalReferenceCode?: string
 	): Promise<GenerateForm> {
 		const searchParams = new URLSearchParams({
 			projectExternalReferenceCode,
 		});
+
+		if (renewedActivationKeyExternalReferenceCode) {
+			searchParams.set(
+				'renewedActivationKeyExternalReferenceCode',
+				renewedActivationKeyExternalReferenceCode
+			);
+		}
 
 		return this.get<GenerateForm>(`/generate-form?${searchParams}`);
 	}

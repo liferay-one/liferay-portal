@@ -33,17 +33,20 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 	}
 
 	async downloadDeveloperKey({
+		keyType,
 		name,
 		productName,
 		projectExternalReferenceCode,
 		version,
 	}: {
+		keyType: string;
 		name: string;
 		productName: string;
 		projectExternalReferenceCode: string;
 		version: string;
 	}) {
 		const searchParams = new URLSearchParams({
+			keyType,
 			productName,
 			projectExternalReferenceCode,
 			version,

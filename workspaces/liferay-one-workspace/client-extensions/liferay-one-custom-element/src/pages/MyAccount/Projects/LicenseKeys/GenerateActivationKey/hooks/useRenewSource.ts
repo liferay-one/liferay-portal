@@ -46,18 +46,22 @@ export function useRenewSource(
 			return undefined;
 		}
 
-		const productsByKeyType = new Map<string, GenerateFormProduct>();
+		const productsByExternalReferenceCode = new Map<
+			string,
+			GenerateFormProduct
+		>();
 
 		for (const product of generateForm?.products ?? []) {
-			for (const productKeyType of product.keyTypes) {
-				productsByKeyType.set(productKeyType.label, product);
-			}
+			productsByExternalReferenceCode.set(
+				product.externalReferenceCode,
+				product
+			);
 		}
 
 		const entitlementIds = new Set<number>();
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
-		let keyType = activationKey.keyType;
+		const keyType = activationKey.keyType;
 		let productExternalReferenceCode = '';
 		let subscriptionEntitlementId = 0;
 
@@ -79,10 +83,11 @@ export function useRenewSource(
 				}
 			);
 
-			const product = productsByKeyType.get(licenseKey.licenseName);
+			const product = productsByExternalReferenceCode.get(
+				licenseKey.productExternalReferenceCode
+			);
 
 			if (product && !productExternalReferenceCode) {
-				keyType = keyType || licenseKey.licenseName;
 				productExternalReferenceCode = product.externalReferenceCode;
 				subscriptionEntitlementId =
 					licenseKey.entitlementId || product.entitlementId;

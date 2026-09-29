@@ -9,14 +9,22 @@ export type GenerateActivationKeyServer = {
 	macAddresses: string;
 };
 
+export type GenerateActivationKeyServerField =
+	| 'hostName'
+	| 'ipAddresses'
+	| 'macAddresses';
+
 export type GenerateActivationKeyForm = {
+	activationToken: string;
 	bundleEntitlementIds: number[];
 	dataCenterLocation: string;
 	description: string;
 	environmentName: string;
 	keyType: string;
 	notify: boolean;
+	offlineSubscriptionIds: number[];
 	productExternalReferenceCode: string;
+	serverField: GenerateActivationKeyServerField;
 	servers: GenerateActivationKeyServer[];
 	subscriptionEntitlementId: number;
 	version: string;
@@ -25,7 +33,11 @@ export type GenerateActivationKeyForm = {
 };
 
 export type GenerateActivationKeyStep =
+	| 'activation-codes'
 	| 'add-ons'
 	| 'dsr'
 	| 'environment'
+	| 'non-production-environments'
+	| 'offline-package'
+	| 'offline-token'
 	| 'subscription';
