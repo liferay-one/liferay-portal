@@ -111,9 +111,9 @@ export default function AddOnStep({
 									'generate-activation-key-add-on',
 									{
 										'generate-activation-key-add-on-required':
-											checked && required,
+											required,
 										'generate-activation-key-add-on-selected':
-											checked && !required,
+											checked,
 										'generate-activation-key-add-on-unavailable':
 											unavailableReason,
 									}
