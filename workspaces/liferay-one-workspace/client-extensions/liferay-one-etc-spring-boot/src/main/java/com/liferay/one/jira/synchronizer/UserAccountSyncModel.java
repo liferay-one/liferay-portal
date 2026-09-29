@@ -55,81 +55,77 @@ public class UserAccountSyncModel {
 	}
 
 	public List<String> getAccountExternalReferenceCodes() {
-		if (_accountExternalReferenceCodes != null) {
-			return _accountExternalReferenceCodes;
-		}
+		if (_accountExternalReferenceCodes == null) {
+			try {
+				List<String> accountExternalReferenceCodes = new ArrayList<>();
 
-		try {
-			List<String> accountExternalReferenceCodes = new ArrayList<>();
+				for (AccountBrief accountBrief : getAccountBriefs()) {
+					accountExternalReferenceCodes.add(
+						accountBrief.getExternalReferenceCode());
+				}
 
-			for (AccountBrief accountBrief : getAccountBriefs()) {
-				accountExternalReferenceCodes.add(
-					accountBrief.getExternalReferenceCode());
+				accountExternalReferenceCodes.addAll(
+					_getProjectExternalReferenceCodes());
+
+				_accountExternalReferenceCodes = accountExternalReferenceCodes;
 			}
-
-			accountExternalReferenceCodes.addAll(
-				_getProjectExternalReferenceCodes());
-
-			_accountExternalReferenceCodes = accountExternalReferenceCodes;
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get accounts for user account " +
-					getExternalReferenceCode(),
-				exception);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get accounts for user account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _accountExternalReferenceCodes;
 	}
 
 	public List<EntitlementDefinition> getEntitlementDefinitions() {
-		if (_entitlementDefinitions != null) {
-			return _entitlementDefinitions;
-		}
+		if (_entitlementDefinitions == null) {
+			try {
+				List<EntitlementDefinition> entitlementDefinitions =
+					new ArrayList<>();
 
-		try {
-			List<EntitlementDefinition> entitlementDefinitions =
-				new ArrayList<>();
+				for (AccountBrief accountBrief : getAccountBriefs()) {
+					entitlementDefinitions.addAll(
+						_entitlementService.getActiveEntitlementDefinitions(
+							accountBrief.getId()));
+				}
 
-			for (AccountBrief accountBrief : getAccountBriefs()) {
-				entitlementDefinitions.addAll(
-					_entitlementService.getActiveEntitlementDefinitions(
-						accountBrief.getId()));
+				_entitlementDefinitions = entitlementDefinitions;
 			}
-
-			_entitlementDefinitions = entitlementDefinitions;
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get entitlements for user account " +
-					getExternalReferenceCode(),
-				exception);
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get entitlements for user account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _entitlementDefinitions;
 	}
 
 	public List<Property> getExternalLinkProperties() {
-		if (_externalLinkProperties != null) {
-			return _externalLinkProperties;
-		}
+		if (_externalLinkProperties == null) {
+			try {
+				List<Property> externalLinkProperties = new ArrayList<>();
 
-		try {
-			List<Property> externalLinkProperties = new ArrayList<>();
+				for (Property property : _getUserAccountProperties()) {
+					if (_externalLinkConverter.isExternalLinkProperty(
+							property)) {
 
-			for (Property property : _getUserAccountProperties()) {
-				if (_externalLinkConverter.isExternalLinkProperty(property)) {
-					externalLinkProperties.add(property);
+						externalLinkProperties.add(property);
+					}
 				}
-			}
 
-			_externalLinkProperties = externalLinkProperties;
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get external links for user account " +
-					getExternalReferenceCode(),
-				exception);
+				_externalLinkProperties = externalLinkProperties;
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get external links for user account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _externalLinkProperties;
@@ -149,26 +145,26 @@ public class UserAccountSyncModel {
 	}
 
 	public List<RoleBrief> getRoleBriefs() {
-		if (_roleBriefs != null) {
-			return _roleBriefs;
-		}
+		if (_roleBriefs == null) {
+			_roleBriefs = new ArrayList<>();
 
-		_roleBriefs = new ArrayList<>();
+			for (AccountBrief accountBrief : getAccountBriefs()) {
+				RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
 
-		for (AccountBrief accountBrief : getAccountBriefs()) {
-			RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
-
-			if (accountRoleBriefs != null) {
-				Collections.addAll(_roleBriefs, accountRoleBriefs);
+				if (accountRoleBriefs != null) {
+					Collections.addAll(_roleBriefs, accountRoleBriefs);
+				}
 			}
-		}
 
-		for (OrganizationBrief organizationBrief : getOrganizationBriefs()) {
-			RoleBrief[] organizationRoleBriefs =
-				organizationBrief.getRoleBriefs();
+			for (OrganizationBrief organizationBrief :
+					getOrganizationBriefs()) {
 
-			if (organizationRoleBriefs != null) {
-				Collections.addAll(_roleBriefs, organizationRoleBriefs);
+				RoleBrief[] organizationRoleBriefs =
+					organizationBrief.getRoleBriefs();
+
+				if (organizationRoleBriefs != null) {
+					Collections.addAll(_roleBriefs, organizationRoleBriefs);
+				}
 			}
 		}
 
@@ -176,19 +172,17 @@ public class UserAccountSyncModel {
 	}
 
 	public List<Phone> getTelephones() {
-		if (_telephones != null) {
-			return _telephones;
-		}
+		if (_telephones == null) {
+			UserAccountContactInformation userAccountContactInformation =
+				_userAccount.getUserAccountContactInformation();
 
-		UserAccountContactInformation userAccountContactInformation =
-			_userAccount.getUserAccountContactInformation();
-
-		if (userAccountContactInformation == null) {
-			_telephones = Collections.emptyList();
-		}
-		else {
-			_telephones = ListUtil.fromArray(
-				userAccountContactInformation.getTelephones());
+			if (userAccountContactInformation == null) {
+				_telephones = Collections.emptyList();
+			}
+			else {
+				_telephones = ListUtil.fromArray(
+					userAccountContactInformation.getTelephones());
+			}
 		}
 
 		return _telephones;
@@ -199,22 +193,20 @@ public class UserAccountSyncModel {
 	}
 
 	private List<String> _getProjectExternalReferenceCodes() throws Exception {
-		if (_projectExternalReferenceCodes != null) {
-			return _projectExternalReferenceCodes;
+		if (_projectExternalReferenceCodes == null) {
+			List<String> projectExternalReferenceCodes = new ArrayList<>();
+
+			List<ProjectMembership> projectMemberships =
+				_projectMembershipService.getProjectMembershipsByUserId(
+					_userAccount.getId());
+
+			for (ProjectMembership projectMembership : projectMemberships) {
+				projectExternalReferenceCodes.add(
+					projectMembership.getProjectExternalReferenceCode());
+			}
+
+			_projectExternalReferenceCodes = projectExternalReferenceCodes;
 		}
-
-		List<String> projectExternalReferenceCodes = new ArrayList<>();
-
-		List<ProjectMembership> projectMemberships =
-			_projectMembershipService.getProjectMembershipsByUserId(
-				_userAccount.getId());
-
-		for (ProjectMembership projectMembership : projectMemberships) {
-			projectExternalReferenceCodes.add(
-				projectMembership.getProjectExternalReferenceCode());
-		}
-
-		_projectExternalReferenceCodes = projectExternalReferenceCodes;
 
 		return _projectExternalReferenceCodes;
 	}
