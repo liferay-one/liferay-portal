@@ -138,7 +138,7 @@ public class LicenseKeyTypeTest {
 		Map<String, String> types = licenseKeyTypeService.getTypes();
 
 		Assertions.assertTrue(types.containsKey("PRDCT-CLOUD-NATIVE"));
-		Assertions.assertTrue(types.containsKey("PRDCT-PAAS"));
+		Assertions.assertTrue(types.containsKey("PRDCT-PORTAL"));
 
 		List<String> keys = new ArrayList<>();
 
@@ -160,11 +160,11 @@ public class LicenseKeyTypeTest {
 
 		_setTypes(
 			HashMapBuilder.put(
-				"PRDCT-PAAS", "developer"
+				"PRDCT-NOT-SHIPPED", "developer"
 			).build());
 
 		Assertions.assertEquals(
-			Arrays.asList("developer"), _toKeys("PRDCT-PAAS"));
+			Arrays.asList("developer"), _toKeys("PRDCT-NOT-SHIPPED"));
 	}
 
 	@Test
