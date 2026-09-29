@@ -50,9 +50,9 @@ public class OrganizationUserAccountRoleSynchronizer {
 			String organizationExternalKey)
 		throws Exception {
 
-		_syncAssignment(
+		syncAssignRole(
 			roleExternalKey, userAccountExternalKey, organizationExternalKey,
-			false, null);
+			null);
 	}
 
 	public void syncAssignRole(
@@ -60,13 +60,18 @@ public class OrganizationUserAccountRoleSynchronizer {
 			String organizationExternalKey, Date startDate)
 		throws Exception {
 
-		_syncAssignment(
-			roleExternalKey, userAccountExternalKey, organizationExternalKey,
-			false,
-			(existingJiraAssetObject, newJiraAssetObject) ->
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate = null;
+
+		if (startDate != null) {
+			biPredicate = (existingJiraAssetObject, newJiraAssetObject) ->
 				_jiraAssetService.isUpdatedSince(
 					_teamContactRoleAssignmentConverter, startDate,
-					existingJiraAssetObject));
+					existingJiraAssetObject);
+		}
+
+		_syncAssignment(
+			roleExternalKey, userAccountExternalKey, organizationExternalKey,
+			false, biPredicate);
 	}
 
 	public void syncUnassignRole(
