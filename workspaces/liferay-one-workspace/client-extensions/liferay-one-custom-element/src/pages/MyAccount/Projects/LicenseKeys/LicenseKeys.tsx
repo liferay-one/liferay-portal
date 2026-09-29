@@ -27,6 +27,8 @@ import FilterableListCard, {
 } from '../components/FilterableListCard/FilterableListCard';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
+import {useGenerateActivationKeyForm} from './GenerateActivationKey/hooks/useGenerateActivationKeyForm';
+import {isGeneratable} from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
 
 import './LicenseKeys.css';
@@ -175,6 +177,7 @@ export default function LicenseKeys() {
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
+	const {generateForm} = useGenerateActivationKeyForm(projectId);
 
 	const {
 		handleDeactivate,
@@ -343,7 +346,7 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					hasActivationPermission ? (
+					hasActivationPermission && isGeneratable(generateForm) ? (
 						<Button
 							displayType="primary"
 							onClick={() => handleNewKey()}

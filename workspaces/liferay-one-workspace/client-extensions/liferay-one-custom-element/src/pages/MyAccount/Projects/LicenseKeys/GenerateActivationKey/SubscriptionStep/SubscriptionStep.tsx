@@ -24,6 +24,8 @@ import {GenerateActivationKeyForm} from '../types';
 import {
 	COMPLIMENTARY_DURATION_DAYS,
 	FREE_KEY_TYPE,
+	hasAvailableActivations,
+	hasAvailableKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
@@ -88,14 +90,15 @@ export default function SubscriptionStep({
 	}, [keyType, keyTypes]);
 
 	useEffect(() => {
-		const [firstKeyType] = keyTypes;
+		const selectableKeyType =
+			keyTypes.find(hasAvailableActivations) ?? keyTypes[0];
 
 		if (
 			(!renewing || !keyType) &&
-			firstKeyType &&
+			selectableKeyType &&
 			!keyTypes.some((current) => current.key === keyType)
 		) {
-			setValue('keyType', firstKeyType.key);
+			setValue('keyType', selectableKeyType.key);
 		}
 	}, [keyType, keyTypes, renewing, setValue]);
 
@@ -223,6 +226,10 @@ export default function SubscriptionStep({
 							>
 								{generateForm.products.map((current) => (
 									<ClaySelect.Option
+										disabled={
+											!renewing &&
+											!hasAvailableKeyType(current)
+										}
 										key={current.externalReferenceCode}
 										label={current.label}
 										value={current.externalReferenceCode}
@@ -262,6 +269,12 @@ export default function SubscriptionStep({
 								) : (
 									keyTypes.map((current) => (
 										<ClaySelect.Option
+											disabled={
+												!renewing &&
+												!hasAvailableActivations(
+													current
+												)
+											}
 											key={current.key}
 											label={translate(
 												current.key as Word
