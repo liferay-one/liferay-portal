@@ -2660,12 +2660,6 @@
 					"value": {
 						"en_US": "Liferay PaaS (Subscription)"
 					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "PaaS"
-					}
 				}
 			],
 			"productType": "virtual",
