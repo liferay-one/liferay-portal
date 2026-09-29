@@ -797,31 +797,24 @@
 						},
 						{
 							"label": {
-								"en_US": "Account Name"
-							},
-							"objectFieldName": "accountName",
-							"priority": 2
-						},
-						{
-							"label": {
 								"en_US": "Active"
 							},
 							"objectFieldName": "active",
-							"priority": 3
+							"priority": 2
 						},
 						{
 							"label": {
 								"en_US": "Start Date"
 							},
 							"objectFieldName": "startDate",
-							"priority": 4
+							"priority": 3
 						},
 						{
 							"label": {
 								"en_US": "Expiration Date"
 							},
 							"objectFieldName": "customExpirationDate",
-							"priority": 5
+							"priority": 4
 						}
 					]
 				}
