@@ -39,6 +39,17 @@
 			]
 		},
 		{
+			"externalReferenceCode": "PRDCT-PAAS",
+			"productSpecifications": [
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "PaaS"
+					}
+				}
+			]
+		},
+		{
 			"externalReferenceCode": "PRDCT-PORTAL",
 			"productSpecifications": [
 				{
