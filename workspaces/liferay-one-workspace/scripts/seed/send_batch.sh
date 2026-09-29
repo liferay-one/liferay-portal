@@ -56,7 +56,7 @@ _TOKEN=$(curl --silent \
 	--data-urlencode "client_id=${LIFERAY_OAUTH_CLIENT_ID}" \
 	--data-urlencode "client_secret=${LIFERAY_OAUTH_CLIENT_SECRET}" \
 	--data-urlencode "grant_type=client_credentials" \
-	--data-urlencode "scope=Liferay.Headless.Batch.Engine.everything" \
+	--data-urlencode "scope=Liferay.Headless.Batch.Engine.everything Liferay.Object.Admin.REST.everything" \
 	"${LIFERAY_OAUTH_TOKEN_URL}" | python3 -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))")
 
 if [[ -z ${_TOKEN} ]]
@@ -115,7 +115,65 @@ echo "   className: ${CLASS_NAME}"
 echo "   items:     ${ITEM_COUNT}"
 echo "   params:    ${QUERY}"
 
-IMPORT_URL="${LIFERAY_URL}/o/headless-batch-engine/v1.0/import-task/${CLASS_NAME}?${QUERY}"
+# The batch engine's import-task endpoint is keyed by the Java class names of
+# the registered task item delegates, so it accepts system entities only. A
+# custom object's entries are not one of those: its className is the object
+# definition's ERC-qualified form, and its entries import through the object's
+# own REST path instead, which resolves them to
+# com.liferay.object.rest.dto.v1_0.ObjectEntry on the server.
+
+if [[ ${CLASS_NAME} == *"#"* ]]
+then
+	OBJECT_EXTERNAL_REFERENCE_CODE="${CLASS_NAME##*#}"
+
+	read -r REST_CONTEXT_PATH OBJECT_NAME < <(curl --silent \
+		--header "Authorization: Bearer ${_TOKEN}" \
+		"${LIFERAY_URL}/o/object-admin/v1.0/object-definitions?pageSize=200" \
+		| python3 -c "
+import json, sys
+
+needle = sys.argv[1]
+
+for item in json.load(sys.stdin).get('items', []):
+	if item.get('externalReferenceCode') == needle:
+		print(item.get('restContextPath', ''), item.get('name', ''))
+
+		break
+" "${OBJECT_EXTERNAL_REFERENCE_CODE}")
+
+	if [[ -z ${REST_CONTEXT_PATH} ]]
+	then
+		echo "   ✗ No object definition ${OBJECT_EXTERNAL_REFERENCE_CODE}" >&2
+
+		exit 1
+	fi
+
+	# Writing object entries is authorized by the object's own scope alias,
+	# which neither the batch engine nor the object admin scope covers. Mint it
+	# on its own rather than widening the first token, since a token carrying
+	# every alias overruns Tomcat's header limit.
+
+	OBJECT_SCOPE="c_$(echo "${OBJECT_NAME}" | tr "[:upper:]" "[:lower:]").everything"
+
+	_TOKEN=$(curl --silent \
+		--data-urlencode "client_id=${LIFERAY_OAUTH_CLIENT_ID}" \
+		--data-urlencode "client_secret=${LIFERAY_OAUTH_CLIENT_SECRET}" \
+		--data-urlencode "grant_type=client_credentials" \
+		--data-urlencode "scope=Liferay.Headless.Batch.Engine.everything ${OBJECT_SCOPE}" \
+		"${LIFERAY_OAUTH_TOKEN_URL}" \
+		| python3 -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))")
+
+	if [[ -z ${_TOKEN} ]]
+	then
+		echo "   ✗ Unable to mint a token for scope ${OBJECT_SCOPE}" >&2
+
+		exit 1
+	fi
+
+	IMPORT_URL="${LIFERAY_URL}${REST_CONTEXT_PATH}/batch?${QUERY}"
+else
+	IMPORT_URL="${LIFERAY_URL}/o/headless-batch-engine/v1.0/import-task/${CLASS_NAME}?${QUERY}"
+fi
 
 RESPONSE=$(curl --silent \
 	--header "Authorization: Bearer ${_TOKEN}" \
