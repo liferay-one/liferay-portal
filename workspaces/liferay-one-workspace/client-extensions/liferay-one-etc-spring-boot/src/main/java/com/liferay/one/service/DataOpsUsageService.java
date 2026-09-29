@@ -11,7 +11,7 @@ import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
-import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.DataOpsUnavailableException;
 
 import java.net.URI;
 
@@ -33,7 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @author Felipe Veloso
  */
 @Component
-public class GoogleCloudFunctionService extends BaseService {
+public class DataOpsUsageService extends BaseService {
 
 	@Cacheable("composableAccountUsage")
 	public String fetchComposableAccountUsage(String accountKey, String month)
@@ -178,7 +178,7 @@ public class GoogleCloudFunctionService extends BaseService {
 			authorization = _getAuthorization(audience);
 		}
 		catch (Exception exception) {
-			throw new GoogleCloudFunctionUnavailableException(
+			throw new DataOpsUnavailableException(
 				"Unable to authenticate to DataOps for " + subject, exception);
 		}
 
@@ -196,12 +196,12 @@ public class GoogleCloudFunctionService extends BaseService {
 				return null;
 			}
 
-			throw new GoogleCloudFunctionUnavailableException(
+			throw new DataOpsUnavailableException(
 				"Unable to read DataOps usage for " + subject,
 				webClientResponseException);
 		}
 		catch (WebClientException webClientException) {
-			throw new GoogleCloudFunctionUnavailableException(
+			throw new DataOpsUnavailableException(
 				"Unable to reach DataOps for " + subject, webClientException);
 		}
 	}
@@ -213,7 +213,7 @@ public class GoogleCloudFunctionService extends BaseService {
 		"/customer_usage_api";
 
 	private static final Log _log = LogFactory.getLog(
-		GoogleCloudFunctionService.class);
+		DataOpsUsageService.class);
 
 	@Value("${liferay.one.gcf.base.url}")
 	private String _gcfBaseURL;

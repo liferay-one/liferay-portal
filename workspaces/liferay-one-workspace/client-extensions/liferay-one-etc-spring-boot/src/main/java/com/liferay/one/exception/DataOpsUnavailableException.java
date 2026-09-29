@@ -8,18 +8,16 @@ package com.liferay.one.exception;
 /**
  * @author Felipe Veloso
  */
-public class GoogleCloudFunctionUnavailableException extends Exception {
+public class DataOpsUnavailableException extends Exception {
 
-	public GoogleCloudFunctionUnavailableException() {
+	public DataOpsUnavailableException() {
 	}
 
-	public GoogleCloudFunctionUnavailableException(
-		String message, Throwable throwable) {
-
+	public DataOpsUnavailableException(String message, Throwable throwable) {
 		super(message, throwable);
 	}
 
-	public GoogleCloudFunctionUnavailableException(Throwable throwable) {
+	public DataOpsUnavailableException(Throwable throwable) {
 		super(throwable);
 	}
 

@@ -9,7 +9,7 @@ import com.google.auth.oauth2.IdToken;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
 
-import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.petra.string.StringBundler;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -40,7 +40,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Veloso
  */
-public class GoogleCloudFunctionServiceTest {
+public class DataOpsUsageServiceTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
@@ -76,19 +76,19 @@ public class GoogleCloudFunctionServiceTest {
 			}
 		);
 
-		_googleCloudFunctionService = new GoogleCloudFunctionService();
+		_dataOpsUsageService = new DataOpsUsageService();
 
 		InetSocketAddress inetSocketAddress = _httpServer.getAddress();
 
 		ReflectionTestUtils.setField(
-			_googleCloudFunctionService, "_gcfBaseURL",
+			_dataOpsUsageService, "_gcfBaseURL",
 			"http://localhost:" + inetSocketAddress.getPort());
 
 		ReflectionTestUtils.setField(
-			_googleCloudFunctionService, "_idTokenProvider", _idTokenProvider);
+			_dataOpsUsageService, "_idTokenProvider", _idTokenProvider);
 
 		ReflectionTestUtils.setField(
-			_googleCloudFunctionService, "_ldpBaseURL",
+			_dataOpsUsageService, "_ldpBaseURL",
 			"http://localhost:" + inetSocketAddress.getPort());
 	}
 
@@ -103,7 +103,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		Assertions.assertEquals(
 			_EVENT_HISTORY_RESPONSE,
-			_googleCloudFunctionService.fetchLDPProjectEventHistory(
+			_dataOpsUsageService.fetchLDPProjectEventHistory(
 				"2026-08-31", "month", _SALESFORCE_PROJECT_ID, "2026-06-01"));
 
 		String requestURI = _requestURI.get();
@@ -123,7 +123,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		Assertions.assertEquals(
 			_EVENT_SUMMARY_RESPONSE,
-			_googleCloudFunctionService.fetchLDPProjectEventSummary(
+			_dataOpsUsageService.fetchLDPProjectEventSummary(
 				"2026-08-31", _SALESFORCE_PROJECT_ID, "2026-06-01"));
 
 		String requestURI = _requestURI.get();
@@ -142,8 +142,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		Assertions.assertEquals(
 			_USAGE_RESPONSE,
-			_googleCloudFunctionService.fetchLDPProjectUsage(
-				_SALESFORCE_PROJECT_ID));
+			_dataOpsUsageService.fetchLDPProjectUsage(_SALESFORCE_PROJECT_ID));
 		Assertions.assertEquals(
 			"/api/v1/projects/" + _SALESFORCE_PROJECT_ID + "/ldp/usage",
 			_requestURI.get());
@@ -155,8 +154,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		_responseBody = _USAGE_RESPONSE;
 
-		_googleCloudFunctionService.fetchLDPProjectUsage(
-			_SALESFORCE_PROJECT_ID);
+		_dataOpsUsageService.fetchLDPProjectUsage(_SALESFORCE_PROJECT_ID);
 
 		Assertions.assertTrue(
 			_requestAuthorization.get(
@@ -169,16 +167,16 @@ public class GoogleCloudFunctionServiceTest {
 	public void testFetchLDPProjectUsageWhenIdTokenProviderFails() {
 		_idTokenException = new IOException("Unable to mint an ID token");
 
-		GoogleCloudFunctionUnavailableException
-			googleCloudFunctionUnavailableException = Assertions.assertThrows(
-				GoogleCloudFunctionUnavailableException.class,
-				() -> _googleCloudFunctionService.fetchLDPProjectUsage(
+		DataOpsUnavailableException dataOpsUnavailableException =
+			Assertions.assertThrows(
+				DataOpsUnavailableException.class,
+				() -> _dataOpsUsageService.fetchLDPProjectUsage(
 					_SALESFORCE_PROJECT_ID));
 
 		Assertions.assertEquals(
 			"Unable to authenticate to DataOps for project " +
 				_SALESFORCE_PROJECT_ID,
-			googleCloudFunctionUnavailableException.getMessage());
+			dataOpsUnavailableException.getMessage());
 
 		Assertions.assertNull(_requestURI.get());
 	}
@@ -190,24 +188,23 @@ public class GoogleCloudFunctionServiceTest {
 		_responseStatus = 404;
 
 		Assertions.assertNull(
-			_googleCloudFunctionService.fetchLDPProjectUsage(
-				_SALESFORCE_PROJECT_ID));
+			_dataOpsUsageService.fetchLDPProjectUsage(_SALESFORCE_PROJECT_ID));
 	}
 
 	@Test
 	public void testFetchLDPProjectUsageWhenResponseIsServerError() {
 		_responseStatus = 500;
 
-		GoogleCloudFunctionUnavailableException
-			googleCloudFunctionUnavailableException = Assertions.assertThrows(
-				GoogleCloudFunctionUnavailableException.class,
-				() -> _googleCloudFunctionService.fetchLDPProjectUsage(
+		DataOpsUnavailableException dataOpsUnavailableException =
+			Assertions.assertThrows(
+				DataOpsUnavailableException.class,
+				() -> _dataOpsUsageService.fetchLDPProjectUsage(
 					_SALESFORCE_PROJECT_ID));
 
 		Assertions.assertEquals(
 			"Unable to read DataOps usage for project " +
 				_SALESFORCE_PROJECT_ID,
-			googleCloudFunctionUnavailableException.getMessage());
+			dataOpsUnavailableException.getMessage());
 	}
 
 	@Test
@@ -229,7 +226,7 @@ public class GoogleCloudFunctionServiceTest {
 		Assertions.assertSame(
 			_idTokenProvider,
 			ReflectionTestUtils.invokeMethod(
-				_googleCloudFunctionService, "_getIdTokenProvider"));
+				_dataOpsUsageService, "_getIdTokenProvider"));
 	}
 
 	private String _createIdTokenValue(String audience) {
@@ -260,7 +257,7 @@ public class GoogleCloudFunctionServiceTest {
 
 	private IdTokenCredentials _getIdTokenCredentials(String audience) {
 		return ReflectionTestUtils.invokeMethod(
-			_googleCloudFunctionService, "_getIdTokenCredentials", audience);
+			_dataOpsUsageService, "_getIdTokenCredentials", audience);
 	}
 
 	private void _respond(HttpExchange httpExchange) throws IOException {
@@ -295,7 +292,7 @@ public class GoogleCloudFunctionServiceTest {
 	private static final String _USAGE_RESPONSE =
 		"{\"apiRequestsCount\": 45000}";
 
-	private GoogleCloudFunctionService _googleCloudFunctionService;
+	private DataOpsUsageService _dataOpsUsageService;
 	private HttpServer _httpServer;
 	private IOException _idTokenException;
 	private final IdTokenProvider _idTokenProvider = Mockito.mock(
