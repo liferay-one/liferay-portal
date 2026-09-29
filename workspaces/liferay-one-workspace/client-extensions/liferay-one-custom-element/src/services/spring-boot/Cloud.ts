@@ -11,11 +11,12 @@ import {OneSpringBootOAuth2} from './OAuth2Client';
 class CloudOAuth2 extends OneSpringBootOAuth2 {
 	async downloadOfflineActivationBundle(
 		dxpVersion: string,
-		environmentId: string
+		environmentId: string,
+		entitlementIds: number[] = []
 	) {
 		const response = await this.post<Response>(
 			`/environments/${environmentId}/offline-activation-bundle`,
-			{dxpVersion},
+			{dxpVersion, entitlementIds},
 			{earlyReturn: true}
 		);
 

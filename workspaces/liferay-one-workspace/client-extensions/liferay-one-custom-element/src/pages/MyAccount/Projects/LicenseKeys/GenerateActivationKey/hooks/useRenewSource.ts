@@ -13,6 +13,7 @@ import {
 } from '~/services/spring-boot/ActivationKeys';
 
 import {GenerateActivationKeyServer} from '../types';
+import {getLeadingProductRank} from '../utils';
 
 export type RenewSource = {
 	bundleEntitlementIds: number[];
@@ -61,11 +62,19 @@ export function useRenewSource(
 		const entitlementIds = new Set<number>();
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
+		const orderedLicenseKeys = licenseKeys
+			.filter((licenseKey) => licenseKey.active)
+			.sort(
+				(a, b) =>
+					getLeadingProductRank(a.productExternalReferenceCode) -
+					getLeadingProductRank(b.productExternalReferenceCode)
+			);
+
 		const keyType = activationKey.keyType;
 		let productExternalReferenceCode = '';
 		let subscriptionEntitlementId = 0;
 
-		for (const licenseKey of licenseKeys) {
+		for (const licenseKey of orderedLicenseKeys) {
 			if (licenseKey.entitlementId) {
 				entitlementIds.add(licenseKey.entitlementId);
 			}
