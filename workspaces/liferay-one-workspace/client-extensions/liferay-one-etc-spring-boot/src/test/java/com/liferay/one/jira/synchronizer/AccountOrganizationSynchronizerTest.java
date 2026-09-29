@@ -5,6 +5,8 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.one.jira.constants.AccountTeamRoleAssignmentConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
@@ -12,6 +14,8 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.util.AQLUtil;
+import com.liferay.one.service.AccountService;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.util.StringUtil;
 
@@ -57,9 +61,18 @@ public class AccountOrganizationSynchronizerTest {
 			Mockito.mock(JiraAssetObject.class)
 		);
 
+		_accountService = Mockito.mock(AccountService.class);
+		_organizationService = Mockito.mock(OrganizationService.class);
+
 		ReflectionTestUtils.setField(
 			_accountOrganizationSynchronizer, "_accountConverter",
 			Mockito.mock(AccountConverter.class));
+		ReflectionTestUtils.setField(
+			_accountOrganizationSynchronizer, "_accountService",
+			_accountService);
+		ReflectionTestUtils.setField(
+			_accountOrganizationSynchronizer, "_organizationService",
+			_organizationService);
 		ReflectionTestUtils.setField(
 			_accountOrganizationSynchronizer,
 			"_accountTeamRoleAssignmentConverter",
@@ -290,6 +303,49 @@ public class AccountOrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUnassignStaleOrganizationsKeepsAssignedOrganizations()
+		throws Exception {
+
+		Account account = new Account();
+
+		account.setId(7L);
+
+		Mockito.when(
+			_accountService.fetchAccountByExternalReferenceCode(
+				_ACCOUNT_EXTERNAL_KEY)
+		).thenReturn(
+			account
+		);
+
+		Organization organization = new Organization();
+
+		organization.setExternalReferenceCode(_ORGANIZATION_EXTERNAL_KEY);
+
+		Mockito.when(
+			_organizationService.getAccountOrganizations(7L)
+		).thenReturn(
+			Collections.singletonList(organization)
+		);
+
+		JiraAssetObject jiraAssetObject = _mockAssignment();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptySet(), new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSyncUnassignStaleOrganizationsSkipsCaseDifferingCurrentAssignments()
 		throws Exception {
 
@@ -452,8 +508,10 @@ public class AccountOrganizationSynchronizerTest {
 	private static final String _ORGANIZATION_EXTERNAL_KEY = "organization-erc";
 
 	private AccountOrganizationSynchronizer _accountOrganizationSynchronizer;
+	private AccountService _accountService;
 	private AccountTeamRoleAssignmentConverter
 		_accountTeamRoleAssignmentConverter;
 	private JiraAssetService _jiraAssetService;
+	private OrganizationService _organizationService;
 
 }
