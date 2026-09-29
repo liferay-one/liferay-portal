@@ -70,45 +70,44 @@ public class ProjectSyncModel {
 	}
 
 	public List<ProjectMember> getProjectMembers() throws Exception {
-		if (_projectMembers != null) {
-			return _projectMembers;
-		}
+		if (_projectMembers == null) {
+			List<ProjectMembership> projectMemberships =
+				getProjectMemberships();
 
-		List<ProjectMembership> projectMemberships = getProjectMemberships();
+			List<Long> userIds = new ArrayList<>();
 
-		List<Long> userIds = new ArrayList<>();
-
-		for (ProjectMembership projectMembership : projectMemberships) {
-			userIds.add(projectMembership.getUserId());
-		}
-
-		Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
-
-		for (UserAccount userAccount :
-				_userAccountService.getUserAccounts(userIds)) {
-
-			userAccountsByUserId.put(userAccount.getId(), userAccount);
-		}
-
-		List<ProjectMember> projectMembers = new ArrayList<>();
-
-		for (ProjectMembership projectMembership : projectMemberships) {
-			UserAccount userAccount = userAccountsByUserId.get(
-				projectMembership.getUserId());
-
-			if (userAccount == null) {
-				_log.error(
-					"Unable to get user account for user " +
-						projectMembership.getUserId());
-
-				continue;
+			for (ProjectMembership projectMembership : projectMemberships) {
+				userIds.add(projectMembership.getUserId());
 			}
 
-			projectMembers.add(
-				new ProjectMember(projectMembership, userAccount));
-		}
+			Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
 
-		_projectMembers = projectMembers;
+			for (UserAccount userAccount :
+					_userAccountService.getUserAccounts(userIds)) {
+
+				userAccountsByUserId.put(userAccount.getId(), userAccount);
+			}
+
+			List<ProjectMember> projectMembers = new ArrayList<>();
+
+			for (ProjectMembership projectMembership : projectMemberships) {
+				UserAccount userAccount = userAccountsByUserId.get(
+					projectMembership.getUserId());
+
+				if (userAccount == null) {
+					_log.error(
+						"Unable to get user account for user " +
+							projectMembership.getUserId());
+
+					continue;
+				}
+
+				projectMembers.add(
+					new ProjectMember(projectMembership, userAccount));
+			}
+
+			_projectMembers = projectMembers;
+		}
 
 		return _projectMembers;
 	}
@@ -127,30 +126,28 @@ public class ProjectSyncModel {
 			getRoleExternalKeysByUserAccountExternalKey()
 		throws Exception {
 
-		if (_roleExternalKeysByUserAccountExternalKey != null) {
-			return _roleExternalKeysByUserAccountExternalKey;
+		if (_roleExternalKeysByUserAccountExternalKey == null) {
+			Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+				new LinkedHashMap<>();
+
+			for (ProjectMember projectMember : getProjectMembers()) {
+				ProjectMembership projectMembership =
+					projectMember.getProjectMembership();
+
+				UserAccount userAccount = projectMember.getUserAccount();
+
+				Set<String> roleExternalKeys =
+					roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
+						userAccount.getExternalReferenceCode(),
+						userAccountExternalKey -> new LinkedHashSet<>());
+
+				roleExternalKeys.add(
+					projectMembership.getRoleExternalReferenceCode());
+			}
+
+			_roleExternalKeysByUserAccountExternalKey =
+				roleExternalKeysByUserAccountExternalKey;
 		}
-
-		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
-			new LinkedHashMap<>();
-
-		for (ProjectMember projectMember : getProjectMembers()) {
-			ProjectMembership projectMembership =
-				projectMember.getProjectMembership();
-
-			UserAccount userAccount = projectMember.getUserAccount();
-
-			Set<String> roleExternalKeys =
-				roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
-					userAccount.getExternalReferenceCode(),
-					userAccountExternalKey -> new LinkedHashSet<>());
-
-			roleExternalKeys.add(
-				projectMembership.getRoleExternalReferenceCode());
-		}
-
-		_roleExternalKeysByUserAccountExternalKey =
-			roleExternalKeysByUserAccountExternalKey;
 
 		return _roleExternalKeysByUserAccountExternalKey;
 	}
@@ -162,28 +159,28 @@ public class ProjectSyncModel {
 	}
 
 	private UserAccountBucket _getUserAccountBucket() throws Exception {
-		if (_userAccountBucket != null) {
-			return _userAccountBucket;
-		}
+		if (_userAccountBucket == null) {
+			Map<String, Role> accountRolesByExternalReferenceCode =
+				_accountSyncModel.getAccountRolesByExternalReferenceCode();
 
-		Map<String, Role> accountRolesByExternalReferenceCode =
-			_accountSyncModel.getAccountRolesByExternalReferenceCode();
+			_userAccountBucket = new UserAccountBucket();
 
-		_userAccountBucket = new UserAccountBucket();
+			for (ProjectMember projectMember : getProjectMembers()) {
+				ProjectMembership projectMembership =
+					projectMember.getProjectMembership();
+				UserAccount userAccount = projectMember.getUserAccount();
 
-		for (ProjectMember projectMember : getProjectMembers()) {
-			ProjectMembership projectMembership =
-				projectMember.getProjectMembership();
-			UserAccount userAccount = projectMember.getUserAccount();
+				Role role = accountRolesByExternalReferenceCode.get(
+					projectMembership.getRoleExternalReferenceCode());
 
-			Role role = accountRolesByExternalReferenceCode.get(
-				projectMembership.getRoleExternalReferenceCode());
+				if ((role != null) &&
+					_employeeRoleNames.contains(role.getName())) {
 
-			if ((role != null) && _employeeRoleNames.contains(role.getName())) {
-				_userAccountBucket.addWorkerUserAccount(userAccount);
-			}
-			else {
-				_userAccountBucket.addCustomerUserAccount(userAccount);
+					_userAccountBucket.addWorkerUserAccount(userAccount);
+				}
+				else {
+					_userAccountBucket.addCustomerUserAccount(userAccount);
+				}
 			}
 		}
 
