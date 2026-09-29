@@ -6,7 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
-import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
@@ -167,18 +167,16 @@ public class LDPEventUsageReportService {
 		String response = null;
 
 		try {
-			response = _googleCloudFunctionService.fetchLDPProjectEventSummary(
+			response = _dataOpsUsageService.fetchLDPProjectEventSummary(
 				String.valueOf(yearMonth.atEndOfMonth()),
 				projectExternalReferenceCode,
 				String.valueOf(yearMonth.atDay(1)));
 		}
-		catch (GoogleCloudFunctionUnavailableException
-					googleCloudFunctionUnavailableException) {
-
+		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_log.error(
 				"Unable to read LDP event usage for project " +
 					projectExternalReferenceCode,
-				googleCloudFunctionUnavailableException);
+				dataOpsUnavailableException);
 
 			return null;
 		}
@@ -443,7 +441,7 @@ public class LDPEventUsageReportService {
 	private EntitlementService _entitlementService;
 
 	@Autowired
-	private GoogleCloudFunctionService _googleCloudFunctionService;
+	private DataOpsUsageService _dataOpsUsageService;
 
 	@Autowired
 	private ProjectService _projectService;
