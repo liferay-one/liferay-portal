@@ -9,7 +9,7 @@ import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -28,8 +28,8 @@ import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
-import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
@@ -315,15 +315,12 @@ public class ProjectRestController extends OneBaseRestController {
 		throws Exception {
 
 		try {
-			return _googleCloudFunctionService.fetchLDPProjectEventHistory(
+			return _dataOpsUsageService.fetchLDPProjectEventHistory(
 				endDate, granularity, projectExternalReferenceCode, startDate);
 		}
-		catch (GoogleCloudFunctionUnavailableException
-					googleCloudFunctionUnavailableException) {
-
+		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_logUnavailableUsage(
-				googleCloudFunctionUnavailableException,
-				projectExternalReferenceCode);
+				dataOpsUnavailableException, projectExternalReferenceCode);
 
 			return null;
 		}
@@ -335,15 +332,12 @@ public class ProjectRestController extends OneBaseRestController {
 		throws Exception {
 
 		try {
-			return _googleCloudFunctionService.fetchLDPProjectEventSummary(
+			return _dataOpsUsageService.fetchLDPProjectEventSummary(
 				endDate, projectExternalReferenceCode, startDate);
 		}
-		catch (GoogleCloudFunctionUnavailableException
-					googleCloudFunctionUnavailableException) {
-
+		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_logUnavailableUsage(
-				googleCloudFunctionUnavailableException,
-				projectExternalReferenceCode);
+				dataOpsUnavailableException, projectExternalReferenceCode);
 
 			return null;
 		}
@@ -362,7 +356,7 @@ public class ProjectRestController extends OneBaseRestController {
 
 				LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
 
-				return _googleCloudFunctionService.fetchComposableAccountUsage(
+				return _dataOpsUsageService.fetchComposableAccountUsage(
 					_getAccountKey(project),
 					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER));
 			}
@@ -372,19 +366,16 @@ public class ProjectRestController extends OneBaseRestController {
 						NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
 					productName)) {
 
-				return _googleCloudFunctionService.fetchLDPProjectUsage(
+				return _dataOpsUsageService.fetchLDPProjectUsage(
 					projectExternalReferenceCode);
 			}
 
-			return _googleCloudFunctionService.fetchCustomerAccountUsage(
+			return _dataOpsUsageService.fetchCustomerAccountUsage(
 				_getAccountKey(project));
 		}
-		catch (GoogleCloudFunctionUnavailableException
-					googleCloudFunctionUnavailableException) {
-
+		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_logUnavailableUsage(
-				googleCloudFunctionUnavailableException,
-				projectExternalReferenceCode);
+				dataOpsUnavailableException, projectExternalReferenceCode);
 
 			return null;
 		}
@@ -601,14 +592,13 @@ public class ProjectRestController extends OneBaseRestController {
 	}
 
 	private void _logUnavailableUsage(
-		GoogleCloudFunctionUnavailableException
-			googleCloudFunctionUnavailableException,
+		DataOpsUnavailableException dataOpsUnavailableException,
 		String projectExternalReferenceCode) {
 
 		_log.error(
 			"Unable to reach the DataOps usage API for project " +
 				projectExternalReferenceCode,
-			googleCloudFunctionUnavailableException);
+			dataOpsUnavailableException);
 	}
 
 	private LocalDate _toLocalDate(String name, String value) throws Exception {
@@ -715,7 +705,7 @@ public class ProjectRestController extends OneBaseRestController {
 	private EntitlementService _entitlementService;
 
 	@Autowired
-	private GoogleCloudFunctionService _googleCloudFunctionService;
+	private DataOpsUsageService _dataOpsUsageService;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;

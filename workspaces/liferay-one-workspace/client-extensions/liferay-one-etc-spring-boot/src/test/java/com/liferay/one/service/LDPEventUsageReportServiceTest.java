@@ -48,8 +48,8 @@ public class LDPEventUsageReportServiceTest {
 			_ldpEventUsageReportService, "_entitlementService",
 			_entitlementService);
 		ReflectionTestUtils.setField(
-			_ldpEventUsageReportService, "_googleCloudFunctionService",
-			_googleCloudFunctionService);
+			_ldpEventUsageReportService, "_dataOpsUsageService",
+			_dataOpsUsageService);
 		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
@@ -215,7 +215,7 @@ public class LDPEventUsageReportServiceTest {
 			_USAGE_DEFINITION_ID, usageDefinition.getUsageDefinitionId());
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchLDPProjectEventSummary(
 			"2026-08-31", _PROJECT_EXTERNAL_REFERENCE_CODE, "2026-08-01"
 		);
@@ -260,7 +260,7 @@ public class LDPEventUsageReportServiceTest {
 
 		_verifyNoReportAdded();
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -280,7 +280,7 @@ public class LDPEventUsageReportServiceTest {
 
 		_verifyNoReportAdded();
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -299,7 +299,7 @@ public class LDPEventUsageReportServiceTest {
 
 		_verifyNoReportAdded();
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -309,7 +309,7 @@ public class LDPEventUsageReportServiceTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectEventSummary(
+			_dataOpsUsageService.fetchLDPProjectEventSummary(
 				Mockito.anyString(), Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			null
@@ -332,7 +332,7 @@ public class LDPEventUsageReportServiceTest {
 
 		_verifyNoReportAdded();
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	private Entitlement _createEntitlement(
@@ -437,7 +437,7 @@ public class LDPEventUsageReportServiceTest {
 		throws Exception {
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectEventSummary(
+			_dataOpsUsageService.fetchLDPProjectEventSummary(
 				Mockito.anyString(), Mockito.eq(projectExternalReferenceCode),
 				Mockito.anyString())
 		).thenReturn(
@@ -518,8 +518,8 @@ public class LDPEventUsageReportServiceTest {
 		ContractService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
-	private final GoogleCloudFunctionService _googleCloudFunctionService =
-		Mockito.mock(GoogleCloudFunctionService.class);
+	private final DataOpsUsageService _dataOpsUsageService = Mockito.mock(
+		DataOpsUsageService.class);
 	private LDPEventUsageReportService _ldpEventUsageReportService;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);

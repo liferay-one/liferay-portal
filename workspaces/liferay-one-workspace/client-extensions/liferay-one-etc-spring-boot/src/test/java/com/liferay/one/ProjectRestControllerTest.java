@@ -8,7 +8,7 @@ package com.liferay.one;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
-import com.liferay.one.exception.GoogleCloudFunctionUnavailableException;
+import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -24,8 +24,8 @@ import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
-import com.liferay.one.service.GoogleCloudFunctionService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
@@ -75,8 +75,8 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
-			_projectRestController, "_googleCloudFunctionService",
-			_googleCloudFunctionService);
+			_projectRestController, "_dataOpsUsageService",
+			_dataOpsUsageService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectMembershipService",
 			_projectMembershipService);
@@ -192,7 +192,7 @@ public class ProjectRestControllerTest {
 
 		Assertions.assertThrows(PrincipalException.class, this::_getUsage);
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -218,7 +218,7 @@ public class ProjectRestControllerTest {
 				_END_DATE, "month", _START_DATE_PREVIOUS_MONTH);
 
 			Mockito.verify(
-				_googleCloudFunctionService
+				_dataOpsUsageService
 			).fetchLDPProjectEventHistory(
 				_END_DATE, "month", _PROJECT_EXTERNAL_REFERENCE_CODE,
 				_START_DATE_PREVIOUS_MONTH
@@ -238,7 +238,7 @@ public class ProjectRestControllerTest {
 			() -> _getUsageEventHistory(
 				_END_DATE, "week", _START_DATE_PREVIOUS_MONTH));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class ProjectRestControllerTest {
 			InvalidUsageParameterException.class,
 			() -> _getUsageEventHistory("2036-07-28", "month", "2026-06-01"));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -266,7 +266,7 @@ public class ProjectRestControllerTest {
 				null, _PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN, _END_DATE,
 				"month", _START_DATE_PREVIOUS_MONTH));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -278,7 +278,7 @@ public class ProjectRestControllerTest {
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectEventHistory(
+			_dataOpsUsageService.fetchLDPProjectEventHistory(
 				_END_DATE, "month", _PROJECT_EXTERNAL_REFERENCE_CODE,
 				_START_DATE_PREVIOUS_MONTH)
 		).thenReturn(
@@ -324,7 +324,7 @@ public class ProjectRestControllerTest {
 		// empty, so the same date on both sides has to be a valid request.
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchLDPProjectEventSummary(
 			_END_DATE, _PROJECT_EXTERNAL_REFERENCE_CODE, _END_DATE
 		);
@@ -344,7 +344,7 @@ public class ProjectRestControllerTest {
 		_getUsageEventSummary("2036-06-01", _START_DATE_PREVIOUS_MONTH);
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchLDPProjectEventSummary(
 			"2036-06-01", _PROJECT_EXTERNAL_REFERENCE_CODE,
 			_START_DATE_PREVIOUS_MONTH
@@ -372,7 +372,7 @@ public class ProjectRestControllerTest {
 			PrincipalException.class,
 			() -> _getUsageEventSummary(_END_DATE, _START_DATE_PREVIOUS_MONTH));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -420,7 +420,7 @@ public class ProjectRestControllerTest {
 			InvalidUsageParameterException.class,
 			() -> _getUsageEventSummary(_END_DATE, "06/01/2026"));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -431,7 +431,7 @@ public class ProjectRestControllerTest {
 			InvalidUsageParameterException.class,
 			() -> _getUsageEventSummary("2036-07-28", "2026-06-01"));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -442,7 +442,7 @@ public class ProjectRestControllerTest {
 			InvalidUsageParameterException.class,
 			() -> _getUsageEventSummary(_START_DATE_PREVIOUS_MONTH, _END_DATE));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -455,7 +455,7 @@ public class ProjectRestControllerTest {
 				null, _PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN, _END_DATE,
 				_START_DATE_PREVIOUS_MONTH));
 
-		Mockito.verifyNoInteractions(_googleCloudFunctionService);
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -467,11 +467,11 @@ public class ProjectRestControllerTest {
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectEventSummary(
+			_dataOpsUsageService.fetchLDPProjectEventSummary(
 				_END_DATE, _PROJECT_EXTERNAL_REFERENCE_CODE,
 				_START_DATE_PREVIOUS_MONTH)
 		).thenThrow(
-			new GoogleCloudFunctionUnavailableException()
+			new DataOpsUnavailableException()
 		);
 
 		ResponseEntity<String> responseEntity = _getUsageEventSummary(
@@ -736,7 +736,7 @@ public class ProjectRestControllerTest {
 		_getMetricsJSONObject(_PRODUCT_NAME_LDP);
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchLDPProjectUsage(
 			_PROJECT_EXTERNAL_REFERENCE_CODE
 		);
@@ -895,7 +895,7 @@ public class ProjectRestControllerTest {
 		_getUsage();
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchComposableAccountUsage(
 			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE),
 			Mockito.matches("\\d{4}-\\d{2}")
@@ -918,7 +918,7 @@ public class ProjectRestControllerTest {
 		_getUsage();
 
 		Mockito.verify(
-			_googleCloudFunctionService
+			_dataOpsUsageService
 		).fetchComposableAccountUsage(
 			Mockito.eq(_KORONEIKI_ACCOUNT_KEY), Mockito.matches("\\d{4}-\\d{2}")
 		);
@@ -931,7 +931,7 @@ public class ProjectRestControllerTest {
 		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableAccountUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			new JSONObject(
@@ -983,16 +983,16 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageReturnsEntitlementsWhenGoogleCloudFunctionIsUnavailable()
+	public void testGetUsageReturnsEntitlementsWhenDataOpsIsUnavailable()
 		throws Exception {
 
 		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
 
 		Mockito.when(
-			_googleCloudFunctionService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableAccountUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenThrow(
-			new GoogleCloudFunctionUnavailableException()
+			new DataOpsUnavailableException()
 		);
 
 		ResponseEntity<String> responseEntity = _getUsage();
@@ -1509,7 +1509,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpComposableUsage() throws Exception {
 		Mockito.when(
-			_googleCloudFunctionService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableAccountUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			_createComposableUsage()
@@ -1518,8 +1518,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpCustomerUsage() throws Exception {
 		Mockito.when(
-			_googleCloudFunctionService.fetchCustomerAccountUsage(
-				Mockito.anyString())
+			_dataOpsUsageService.fetchCustomerAccountUsage(Mockito.anyString())
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -1543,7 +1542,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpLDPEventSummary() throws Exception {
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectEventSummary(
+			_dataOpsUsageService.fetchLDPProjectEventSummary(
 				_END_DATE, _PROJECT_EXTERNAL_REFERENCE_CODE,
 				_START_DATE_PREVIOUS_MONTH)
 		).thenReturn(
@@ -1553,7 +1552,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpLDPUsage() throws Exception {
 		Mockito.when(
-			_googleCloudFunctionService.fetchLDPProjectUsage(
+			_dataOpsUsageService.fetchLDPProjectUsage(
 				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			_createLDPUsage()
@@ -1636,8 +1635,8 @@ public class ProjectRestControllerTest {
 		CommerceSkuService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
-	private final GoogleCloudFunctionService _googleCloudFunctionService =
-		Mockito.mock(GoogleCloudFunctionService.class);
+	private final DataOpsUsageService _dataOpsUsageService = Mockito.mock(
+		DataOpsUsageService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private final ProjectPermission _projectPermission = Mockito.mock(
