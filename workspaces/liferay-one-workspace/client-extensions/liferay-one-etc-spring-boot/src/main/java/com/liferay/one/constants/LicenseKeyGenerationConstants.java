@@ -12,6 +12,8 @@ public class LicenseKeyGenerationConstants {
 
 	public static final int COMPLIMENTARY_DURATION_DAYS = 30;
 
+	public static final int DEVELOPER_DURATION_DAYS = 365;
+
 	public static final int DEVELOPER_MAJOR_VERSION_COUNT = 2;
 
 	public static final String[] DOWNLOADABLE_KEY_TYPES = {
