@@ -10,7 +10,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MY_ACCOUNT_PROJECT",
 						"friendlyURL": "/my-account",
 						"name_i18n": {
-							"en_US": "Project"
+							"en_US": "Project",
+							"es_ES": "Proyecto",
+							"ja_JP": "プロジェクト",
+							"pt_BR": "Projeto"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -19,7 +22,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_MY_ACCOUNT_ORDERS",
 						"name_i18n": {
-							"en_US": "Orders"
+							"en_US": "Orders",
+							"es_ES": "Pedidos",
+							"ja_JP": "注文",
+							"pt_BR": "Pedidos"
 						},
 						"type": "url",
 						"url": "/my-account/#/orders",
@@ -28,7 +34,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_MY_ACCOUNT_ACCOUNT_DETAILS",
 						"name_i18n": {
-							"en_US": "Account Details"
+							"en_US": "Account Details",
+							"es_ES": "Detalles de la Cuenta",
+							"ja_JP": "アカウントの詳細",
+							"pt_BR": "Detalhes da Conta"
 						},
 						"type": "url",
 						"url": "/my-account/#/account-details",
@@ -37,7 +46,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_MY_ACCOUNT_ACCOUNT_MEMBERS",
 						"name_i18n": {
-							"en_US": "Account Members"
+							"en_US": "Account Members",
+							"es_ES": "Miembros de la Cuenta",
+							"ja_JP": "アカウントメンバー",
+							"pt_BR": "Membros da Conta"
 						},
 						"type": "url",
 						"url": "/my-account/#/account-members",
@@ -45,7 +57,10 @@
 					}
 				],
 				"name_i18n": {
-					"en_US": "My Account"
+					"en_US": "My Account",
+					"es_ES": "Mi Cuenta",
+					"ja_JP": "マイアカウント",
+					"pt_BR": "Minha Conta"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -58,7 +73,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_SUPPORT_TOOLS",
 						"name_i18n": {
-							"en_US": "Support Tools"
+							"en_US": "Support Tools",
+							"es_ES": "Herramientas de Soporte",
+							"ja_JP": "サポートツール",
+							"pt_BR": "Ferramentas de Suporte"
 						},
 						"type": "url",
 						"url": "https://liferay.atlassian.net/servicedesk/customer/portals",
@@ -68,7 +86,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_SUPPORT_BUSINESS_EVENTS",
 						"friendlyURL": "/support/business-events",
 						"name_i18n": {
-							"en_US": "Business Events"
+							"en_US": "Business Events",
+							"es_ES": "Eventos de Negocio",
+							"ja_JP": "ビジネスイベント",
+							"pt_BR": "Eventos de Negócios"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -78,7 +99,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_SUPPORT_CUSTOMER_PORTAL_HELP",
 						"friendlyURL": "/support/customer-portal-help",
 						"name_i18n": {
-							"en_US": "One Liferay Help"
+							"en_US": "One Liferay Help",
+							"es_ES": "Ayuda de One Liferay",
+							"ja_JP": "One Liferayヘルプ",
+							"pt_BR": "Ajuda do One Liferay"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -87,7 +111,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_SUPPORT_LIFERAY_LEARN",
 						"name_i18n": {
-							"en_US": "Liferay Learn"
+							"en_US": "Liferay Learn",
+							"es_ES": "Liferay Learn",
+							"ja_JP": "Liferay Learn",
+							"pt_BR": "Liferay Learn"
 						},
 						"type": "url",
 						"url": "https://learn.liferay.com",
@@ -96,7 +123,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_SUPPORT_POLICIES",
 						"name_i18n": {
-							"en_US": "Support Policies"
+							"en_US": "Support Policies",
+							"es_ES": "Políticas de Soporte",
+							"ja_JP": "サポートポリシー",
+							"pt_BR": "Políticas de Suporte"
 						},
 						"type": "url",
 						"url": "/search?category=[$TAXONOMY_CATEGORY_ID:/site-initializer/taxonomy-vocabularies/group/article-categories/support-policies.json$]",
@@ -104,7 +134,10 @@
 					}
 				],
 				"name_i18n": {
-					"en_US": "Support"
+					"en_US": "Support",
+					"es_ES": "Soporte",
+					"ja_JP": "サポート",
+					"pt_BR": "Suporte"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -118,7 +151,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MARKETPLACE_OVERVIEW",
 						"friendlyURL": "/marketplace",
 						"name_i18n": {
-							"en_US": "Marketplace Overview"
+							"en_US": "Marketplace Overview",
+							"es_ES": "Resumen del Marketplace",
+							"ja_JP": "Marketplaceの概要",
+							"pt_BR": "Visão Geral do Marketplace"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -128,7 +164,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MARKETPLACE_PRODUCTS_CATALOG",
 						"friendlyURL": "/marketplace/products",
 						"name_i18n": {
-							"en_US": "Products Catalog"
+							"en_US": "Products Catalog",
+							"es_ES": "Catálogo de Productos",
+							"ja_JP": "製品カタログ",
+							"pt_BR": "Catálogo de Produtos"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -138,7 +177,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MARKETPLACE_APPLICATIONS_CATALOG",
 						"friendlyURL": "/marketplace/applications",
 						"name_i18n": {
-							"en_US": "Applications Catalog"
+							"en_US": "Applications Catalog",
+							"es_ES": "Catálogo de Aplicaciones",
+							"ja_JP": "アプリケーションカタログ",
+							"pt_BR": "Catálogo de Aplicativos"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -148,7 +190,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MARKETPLACE_SOLUTIONS_CATALOG",
 						"friendlyURL": "/marketplace/solutions",
 						"name_i18n": {
-							"en_US": "Solutions Catalog"
+							"en_US": "Solutions Catalog",
+							"es_ES": "Catálogo de Soluciones",
+							"ja_JP": "ソリューションカタログ",
+							"pt_BR": "Catálogo de Soluções"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -158,7 +203,10 @@
 						"externalReferenceCode": "LO_NAV_FOOTER_MARKETPLACE_BECOME_A_PUBLISHER",
 						"friendlyURL": "/marketplace/become-a-publisher",
 						"name_i18n": {
-							"en_US": "Become a Publisher"
+							"en_US": "Become a Publisher",
+							"es_ES": "Convertirse en Publicador",
+							"ja_JP": "パブリッシャーになる",
+							"pt_BR": "Torne-se um Publicador"
 						},
 						"privateLayout": false,
 						"type": "layout",
@@ -166,7 +214,10 @@
 					}
 				],
 				"name_i18n": {
-					"en_US": "Marketplace"
+					"en_US": "Marketplace",
+					"es_ES": "Marketplace",
+					"ja_JP": "Marketplace",
+					"pt_BR": "Marketplace"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -178,7 +229,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_EXPAND_CONNECT_COMMUNITY",
 						"name_i18n": {
-							"en_US": "Community"
+							"en_US": "Community",
+							"es_ES": "Comunidad",
+							"ja_JP": "コミュニティ",
+							"pt_BR": "Comunidade"
 						},
 						"type": "url",
 						"url": "https://liferay.dev",
@@ -187,7 +241,10 @@
 					{
 						"externalReferenceCode": "LO_NAV_FOOTER_EXPAND_CONNECT_CONTACT_US",
 						"name_i18n": {
-							"en_US": "Contact Us"
+							"en_US": "Contact Us",
+							"es_ES": "Contáctanos",
+							"ja_JP": "お問い合わせ",
+							"pt_BR": "Fale Conosco"
 						},
 						"type": "url",
 						"url": "/contact-us",
@@ -195,7 +252,10 @@
 					}
 				],
 				"name_i18n": {
-					"en_US": "Expand & Connect"
+					"en_US": "Expand & Connect",
+					"es_ES": "Expandir y Conectar",
+					"ja_JP": "拡張と接続",
+					"pt_BR": "Expandir e Conectar"
 				},
 				"title": "Expand & Connect",
 				"type": "node"
@@ -203,7 +263,10 @@
 		],
 		"name": "Footer Navigation",
 		"name_i18n": {
-			"en_US": "Footer Navigation"
+			"en_US": "Footer Navigation",
+			"es_ES": "Navegación del Pie de Página",
+			"ja_JP": "フッターナビゲーション",
+			"pt_BR": "Navegação do Rodapé"
 		},
 		"title": "Footer Navigation"
 	},
@@ -221,7 +284,10 @@
 								"externalReferenceCode": "LO_NAV_MY_ACCOUNT_PROJECTS",
 								"friendlyURL": "/my-account",
 								"name_i18n": {
-									"en_US": "Projects"
+									"en_US": "Projects",
+									"es_ES": "Proyectos",
+									"ja_JP": "プロジェクト",
+									"pt_BR": "Projetos"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -230,7 +296,10 @@
 							{
 								"externalReferenceCode": "LO_NAV_MY_ACCOUNT_ORDERS",
 								"name_i18n": {
-									"en_US": "Orders"
+									"en_US": "Orders",
+									"es_ES": "Pedidos",
+									"ja_JP": "注文",
+									"pt_BR": "Pedidos"
 								},
 								"type": "url",
 								"url": "/my-account/#/orders",
@@ -238,7 +307,10 @@
 							}
 						],
 						"name_i18n": {
-							"en_US": "Project and Orders"
+							"en_US": "Project and Orders",
+							"es_ES": "Proyectos y Pedidos",
+							"ja_JP": "プロジェクトと注文",
+							"pt_BR": "Projetos e Pedidos"
 						},
 						"title": "Project and Orders",
 						"type": "node"
@@ -249,7 +321,10 @@
 							{
 								"externalReferenceCode": "LO_NAV_MY_ACCOUNT_ACCOUNT_DETAILS",
 								"name_i18n": {
-									"en_US": "Account Details"
+									"en_US": "Account Details",
+									"es_ES": "Detalles de la Cuenta",
+									"ja_JP": "アカウントの詳細",
+									"pt_BR": "Detalhes da Conta"
 								},
 								"type": "url",
 								"url": "/my-account/#/account-details",
@@ -258,7 +333,10 @@
 							{
 								"externalReferenceCode": "LO_NAV_MY_ACCOUNT_ACCOUNT_MEMBERS",
 								"name_i18n": {
-									"en_US": "Account Members"
+									"en_US": "Account Members",
+									"es_ES": "Miembros de la Cuenta",
+									"ja_JP": "アカウントメンバー",
+									"pt_BR": "Membros da Conta"
 								},
 								"type": "url",
 								"url": "/my-account/#/account-members",
@@ -268,7 +346,10 @@
 								"externalReferenceCode": "LO_NAV_MY_ACCOUNT_PUBLISHER_DASHBOARD",
 								"friendlyURL": "/my-account/publisher-dashboard",
 								"name_i18n": {
-									"en_US": "Publisher Dashboard"
+									"en_US": "Publisher Dashboard",
+									"es_ES": "Panel del Publicador",
+									"ja_JP": "パブリッシャーダッシュボード",
+									"pt_BR": "Painel do Publicador"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -276,14 +357,20 @@
 							}
 						],
 						"name_i18n": {
-							"en_US": "Account and Members"
+							"en_US": "Account and Members",
+							"es_ES": "Cuenta y Miembros",
+							"ja_JP": "アカウントとメンバー",
+							"pt_BR": "Conta e Membros"
 						},
 						"title": "Account and Members",
 						"type": "node"
 					}
 				],
 				"name_i18n": {
-					"en_US": "My Account"
+					"en_US": "My Account",
+					"es_ES": "Mi Cuenta",
+					"ja_JP": "マイアカウント",
+					"pt_BR": "Minha Conta"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -490,7 +577,10 @@
 								"externalReferenceCode": "LO_NAV_MARKETPLACE_OVERVIEW",
 								"friendlyURL": "/marketplace",
 								"name_i18n": {
-									"en_US": "Marketplace Overview"
+									"en_US": "Marketplace Overview",
+									"es_ES": "Resumen del Marketplace",
+									"ja_JP": "Marketplaceの概要",
+									"pt_BR": "Visão Geral do Marketplace"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -498,7 +588,10 @@
 							}
 						],
 						"name_i18n": {
-							"en_US": "Landing Page"
+							"en_US": "Landing Page",
+							"es_ES": "Página de Inicio",
+							"ja_JP": "ランディングページ",
+							"pt_BR": "Página de Destino"
 						},
 						"title": "Landing Page",
 						"type": "node"
@@ -510,7 +603,10 @@
 								"externalReferenceCode": "LO_NAV_MARKETPLACE_PRODUCTS_CATALOG",
 								"friendlyURL": "/marketplace/products",
 								"name_i18n": {
-									"en_US": "Products Catalog"
+									"en_US": "Products Catalog",
+									"es_ES": "Catálogo de Productos",
+									"ja_JP": "製品カタログ",
+									"pt_BR": "Catálogo de Produtos"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -520,7 +616,10 @@
 								"externalReferenceCode": "LO_NAV_MARKETPLACE_APPLICATIONS_CATALOG",
 								"friendlyURL": "/marketplace/applications",
 								"name_i18n": {
-									"en_US": "Applications Catalog"
+									"en_US": "Applications Catalog",
+									"es_ES": "Catálogo de Aplicaciones",
+									"ja_JP": "アプリケーションカタログ",
+									"pt_BR": "Catálogo de Aplicativos"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -530,7 +629,10 @@
 								"externalReferenceCode": "LO_NAV_MARKETPLACE_SOLUTIONS_CATALOG",
 								"friendlyURL": "/marketplace/solutions",
 								"name_i18n": {
-									"en_US": "Solutions Catalog"
+									"en_US": "Solutions Catalog",
+									"es_ES": "Catálogo de Soluciones",
+									"ja_JP": "ソリューションカタログ",
+									"pt_BR": "Catálogo de Soluções"
 								},
 								"privateLayout": false,
 								"type": "layout",
@@ -538,14 +640,20 @@
 							}
 						],
 						"name_i18n": {
-							"en_US": "Catalogs"
+							"en_US": "Catalogs",
+							"es_ES": "Catálogos",
+							"ja_JP": "カタログ",
+							"pt_BR": "Catálogos"
 						},
 						"title": "Catalogs",
 						"type": "node"
 					}
 				],
 				"name_i18n": {
-					"en_US": "Marketplace"
+					"en_US": "Marketplace",
+					"es_ES": "Marketplace",
+					"ja_JP": "Marketplace",
+					"pt_BR": "Marketplace"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -555,7 +663,10 @@
 				"externalReferenceCode": "LO_NAV_ADMIN",
 				"friendlyURL": "/admin",
 				"name_i18n": {
-					"en_US": "Admin"
+					"en_US": "Admin",
+					"es_ES": "Administración",
+					"ja_JP": "管理",
+					"pt_BR": "Administração"
 				},
 				"privateLayout": false,
 				"type": "layout",
@@ -564,7 +675,10 @@
 		],
 		"name": "Primary Navigation",
 		"name_i18n": {
-			"en_US": "Primary Navigation"
+			"en_US": "Primary Navigation",
+			"es_ES": "Navegación Principal",
+			"ja_JP": "プライマリナビゲーション",
+			"pt_BR": "Navegação Principal"
 		},
 		"title": "Primary Navigation"
 	},
@@ -574,7 +688,10 @@
 			{
 				"externalReferenceCode": "LO_NAV_SITES_LIFERAY_COM",
 				"name_i18n": {
-					"en_US": "Liferay.com"
+					"en_US": "Liferay.com",
+					"es_ES": "Liferay.com",
+					"ja_JP": "Liferay.com",
+					"pt_BR": "Liferay.com"
 				},
 				"type": "url",
 				"url": "https://www.liferay.com",
@@ -583,7 +700,10 @@
 			{
 				"externalReferenceCode": "LO_NAV_SITES_CUSTOMER_PORTAL",
 				"name_i18n": {
-					"en_US": "Customer Portal"
+					"en_US": "Customer Portal",
+					"es_ES": "Portal de Clientes",
+					"ja_JP": "カスタマーポータル",
+					"pt_BR": "Portal do Cliente"
 				},
 				"type": "url",
 				"url": "https://support.liferay.com",
@@ -592,7 +712,10 @@
 			{
 				"externalReferenceCode": "LO_NAV_SITES_PARTNER_PORTAL",
 				"name_i18n": {
-					"en_US": "Partner Portal"
+					"en_US": "Partner Portal",
+					"es_ES": "Portal de Socios",
+					"ja_JP": "パートナーポータル",
+					"pt_BR": "Portal do Parceiro"
 				},
 				"type": "url",
 				"url": "https://partner.liferay.com",
@@ -601,7 +724,10 @@
 			{
 				"externalReferenceCode": "LO_NAV_SITES_COMMUNITY",
 				"name_i18n": {
-					"en_US": "Community"
+					"en_US": "Community",
+					"es_ES": "Comunidad",
+					"ja_JP": "コミュニティ",
+					"pt_BR": "Comunidade"
 				},
 				"type": "url",
 				"url": "https://liferay.dev",
@@ -610,7 +736,10 @@
 			{
 				"externalReferenceCode": "LO_NAV_SITES_LIFERAY_LEARN",
 				"name_i18n": {
-					"en_US": "Liferay Learn"
+					"en_US": "Liferay Learn",
+					"es_ES": "Liferay Learn",
+					"ja_JP": "Liferay Learn",
+					"pt_BR": "Liferay Learn"
 				},
 				"type": "url",
 				"url": "https://learn.liferay.com",
@@ -619,7 +748,10 @@
 		],
 		"name": "Sites Navigation",
 		"name_i18n": {
-			"en_US": "Sites Navigation"
+			"en_US": "Sites Navigation",
+			"es_ES": "Navegación de Sitios",
+			"ja_JP": "サイトナビゲーション",
+			"pt_BR": "Navegação de Sites"
 		},
 		"title": "Sites Navigation"
 	},

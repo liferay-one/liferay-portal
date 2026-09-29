@@ -6,6 +6,7 @@
 import {lazy} from 'react';
 import {Navigate} from 'react-router-dom';
 import {UserAccountModel} from '~/models/UserAccountModel';
+import i18n from '~/i18n';
 import {AppRoute} from '~/utils/routeUtils';
 
 const AppDetail = lazy(() => import('./Apps/AppDetail/AppDetail'));
@@ -54,19 +55,19 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <MPSummary />,
-		nav: {icon: 'polls', label: 'Marketplace Summary'},
+		nav: {icon: 'polls', label: i18n.translate('marketplace-summary')},
 		path: 'mp-summary',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <Orders />,
-		nav: {icon: 'order-form', label: 'Marketplace Orders'},
+		nav: {icon: 'order-form', label: i18n.translate('marketplace-orders')},
 		path: 'mp-orders',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <Apps />,
-		nav: {icon: 'grid', label: 'Marketplace Apps'},
+		nav: {icon: 'grid', label: i18n.translate('marketplace-apps')},
 		path: 'mp-apps',
 	},
 	{
@@ -77,7 +78,7 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <Solutions />,
-		nav: {icon: 'union', label: 'Marketplace Solutions'},
+		nav: {icon: 'union', label: i18n.translate('marketplace-solutions')},
 		path: 'mp-solutions',
 	},
 	{
@@ -88,7 +89,10 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessFinance,
 		element: <MPFinanceOrders />,
-		nav: {icon: 'order-form', label: 'Marketplace Finance Orders'},
+		nav: {
+			icon: 'order-form',
+			label: i18n.translate('marketplace-finance-orders'),
+		},
 		path: 'mp-finance-orders',
 	},
 	{
@@ -99,7 +103,10 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessFinance,
 		element: <Payments />,
-		nav: {icon: 'order-form', label: 'Marketplace Payments'},
+		nav: {
+			icon: 'order-form',
+			label: i18n.translate('marketplace-payments'),
+		},
 		path: 'mp-payments',
 	},
 	{
@@ -110,37 +117,43 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <Publishers />,
-		nav: {icon: 'squares-clock', label: 'Publishers'},
+		nav: {icon: 'squares-clock', label: i18n.translate('publishers')},
 		path: 'publishers',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <PublisherRequests />,
-		nav: {icon: 'order-form', label: 'Publisher Requests'},
+		nav: {
+			icon: 'order-form',
+			label: i18n.translate('publisher-requests'),
+		},
 		path: 'publisher-requests',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <Trials />,
-		nav: {icon: 'grid', label: '7 Days Trials'},
+		nav: {icon: 'grid', label: i18n.translate('7-days-trials')},
 		path: 'trials',
 	},
 	{
 		canAccess: canAccessSSA,
 		element: <MySsaSaasDemo />,
-		nav: {icon: 'union', label: 'My SSA SaaS Demo'},
+		nav: {icon: 'union', label: i18n.translate('my-ssa-saas-demo')},
 		path: 'my-ssa-saas-demo',
 	},
 	{
 		canAccess: canAccessSSAAdmin,
 		element: <Environments />,
-		nav: {icon: 'squares-clock', label: 'SSA SaaS Environments'},
+		nav: {
+			icon: 'squares-clock',
+			label: i18n.translate('ssa-saas-environments'),
+		},
 		path: 'ssa-saas-environments',
 	},
 	{
 		canAccess: canAccessSSAAdmin,
 		element: <ManageSsaSaasUsers />,
-		nav: {icon: 'users', label: 'Manage SSA SaaS Users'},
+		nav: {icon: 'users', label: i18n.translate('manage-ssa-saas-users')},
 		path: 'manage-ssa-saas-users',
 	},
 	{
@@ -151,13 +164,16 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <PubSub />,
-		nav: {icon: 'message-boards', label: 'PubSub'},
+		nav: {icon: 'message-boards', label: i18n.translate('pub-sub')},
 		path: 'pub-sub',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <LicenseKeyUploads />,
-		nav: {icon: 'password-policies', label: 'Activation Key Uploads'},
+		nav: {
+			icon: 'password-policies',
+			label: i18n.translate('activation-key-uploads'),
+		},
 		path: 'activation-key-uploads',
 	},
 

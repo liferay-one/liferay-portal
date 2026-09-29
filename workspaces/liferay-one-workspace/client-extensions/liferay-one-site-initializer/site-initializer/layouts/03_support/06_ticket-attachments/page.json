@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Ticket Attachments",
 	"name_i18n": {
-		"en_US": "Ticket Attachments"
+		"en_US": "Ticket Attachments",
+		"es_ES": "Archivos Adjuntos del Ticket",
+		"ja_JP": "チケットの添付ファイル",
+		"pt_BR": "Anexos do Chamado"
 	},
 	"permissions": [
 		{

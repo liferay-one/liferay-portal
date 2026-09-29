@@ -7,6 +7,7 @@ import classNames from 'classnames';
 import {CSSProperties, ReactNode} from 'react';
 import {NavLink} from 'react-router-dom';
 import CustomIcon from '~/components/CustomIcon/CustomIcon';
+import i18n, {Word, languages} from '~/i18n';
 
 import './SideNav.css';
 
@@ -27,6 +28,17 @@ function SideNavItem({depth, item}: SideNavItemProps) {
 	const hasChildren = Boolean(item.children && item.children.length);
 	const icon = item.icon;
 
+	const labelKey = (
+		item.label in languages.en_US
+			? item.label
+			: item.label
+					?.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-|-$/g, '')
+	) as Word;
+
+	const label = i18n.translate(labelKey) || item.label;
+
 	return (
 		<li className="side-nav-item">
 			<NavLink
@@ -41,7 +53,7 @@ function SideNavItem({depth, item}: SideNavItemProps) {
 			>
 				{icon && <CustomIcon className="side-nav-icon" symbol={icon} />}
 
-				<span className="side-nav-label">{item.label}</span>
+				<span className="side-nav-label">{label}</span>
 			</NavLink>
 
 			{hasChildren && (
@@ -72,6 +84,19 @@ export default function SideNav({
 	items,
 	title,
 }: SideNavProps) {
+	const titleKey =
+		title &&
+		(title in languages.en_US
+			? title
+			: title
+					.toLowerCase()
+					.replace(/[^a-z0-9]+/g, '-')
+					.replace(/^-|-$/g, ''));
+
+	const displayTitle = titleKey
+		? i18n.translate(titleKey as Word) || title
+		: title;
+
 	return (
 		<nav className="side-nav">
 			{header && (
@@ -85,7 +110,9 @@ export default function SideNav({
 			)}
 
 			<div className="side-nav-panel">
-				{title && <div className="side-nav-title">{title}</div>}
+				{displayTitle && (
+					<div className="side-nav-title">{displayTitle}</div>
+				)}
 
 				<ul className="side-nav-list">
 					{items.map((item) => (
