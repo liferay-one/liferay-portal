@@ -45,11 +45,11 @@ public class LDPEventUsageReportServiceTest {
 		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_contractService", _contractService);
 		ReflectionTestUtils.setField(
-			_ldpEventUsageReportService, "_entitlementService",
-			_entitlementService);
-		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_dataOpsUsageService",
 			_dataOpsUsageService);
+		ReflectionTestUtils.setField(
+			_ldpEventUsageReportService, "_entitlementService",
+			_entitlementService);
 		ReflectionTestUtils.setField(
 			_ldpEventUsageReportService, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
