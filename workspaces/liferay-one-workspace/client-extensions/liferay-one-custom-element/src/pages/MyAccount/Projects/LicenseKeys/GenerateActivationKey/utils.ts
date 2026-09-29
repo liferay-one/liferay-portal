@@ -7,6 +7,8 @@ import {Word} from '~/i18n';
 import {
 	GenerateForm,
 	GenerateFormBundleProduct,
+	GenerateFormKeyType,
+	GenerateFormProduct,
 } from '~/services/spring-boot/ActivationKeys';
 
 import type {
@@ -106,4 +108,18 @@ export function getLeadingProductRank(externalReferenceCode: string): number {
 	return index === -1
 		? LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.length
 		: index;
+}
+
+export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
+	return keyType.subscriptions.some(
+		(subscription) => subscription.availableCount > 0
+	);
+}
+
+export function hasAvailableKeyType(product: GenerateFormProduct): boolean {
+	return product.keyTypes.some(hasAvailableActivations);
+}
+
+export function isGeneratable(generateForm?: GenerateForm): boolean {
+	return Boolean(generateForm?.products.some(hasAvailableKeyType));
 }

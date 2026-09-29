@@ -385,12 +385,13 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
+			// A key type whose activations are spent stays in the form so the
+			// wizard can show it greyed out against its count. Dropping it
+			// leaves a product the customer owns looking as though it was
+			// never bought.
+
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
 				entitlement, licenseKeyCounts);
-
-			if (!_hasAvailableCount(subscriptionsJSONArray)) {
-				continue;
-			}
 
 			jsonArray.put(
 				new JSONObject(
@@ -569,18 +570,6 @@ public class LicenseKeyGenerateFormService {
 			));
 
 		return jsonArray;
-	}
-
-	private boolean _hasAvailableCount(JSONArray subscriptionsJSONArray) {
-		for (int i = 0; i < subscriptionsJSONArray.length(); i++) {
-			JSONObject jsonObject = subscriptionsJSONArray.getJSONObject(i);
-
-			if (jsonObject.optInt("availableCount") > 0) {
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private boolean _hasLicenseEntries(

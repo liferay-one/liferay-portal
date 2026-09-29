@@ -36,6 +36,7 @@ import {
 	NON_PRODUCTION_KEY_TYPE,
 	buildEmptyServer,
 	getBundleProducts,
+	hasAvailableKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
@@ -195,7 +196,9 @@ export default function GenerateActivationKey() {
 				(current) =>
 					current.externalReferenceCode ===
 					preselectedExternalReferenceCode
-			) ?? generateForm.products[0];
+			) ??
+			generateForm.products.find(hasAvailableKeyType) ??
+			generateForm.products[0];
 
 		if (product) {
 			setValue(
