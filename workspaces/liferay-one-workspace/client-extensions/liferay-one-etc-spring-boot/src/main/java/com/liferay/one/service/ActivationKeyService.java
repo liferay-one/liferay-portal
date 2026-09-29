@@ -35,10 +35,11 @@ public class ActivationKeyService extends OneBaseService {
 
 	public ActivationKey addActivationKey(
 			long accountEntryId, String accountName, boolean active,
-			String additionalInfo, boolean complimentary, String description,
-			String domains, Date expirationDate, String keyType,
-			String licenseType, String name, String productVersion,
-			String projectExternalReferenceCode, Date startDate)
+			boolean complimentary, String dataCenterLocation,
+			String description, String domains, Date expirationDate,
+			String keyType, String licenseType, String name,
+			String productVersion, String projectExternalReferenceCode,
+			Date startDate, String workspaceName, String workspaceOwnerEmail)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
@@ -47,11 +48,11 @@ public class ActivationKeyService extends OneBaseService {
 		).put(
 			"active", active
 		).put(
-			"additionalInfo", additionalInfo
-		).put(
 			"complimentary", complimentary
 		).put(
 			"customExpirationDate", _toISO8601(expirationDate)
+		).put(
+			"dataCenterLocation", dataCenterLocation
 		).put(
 			"description", description
 		).put(
@@ -71,6 +72,10 @@ public class ActivationKeyService extends OneBaseService {
 			projectExternalReferenceCode
 		).put(
 			"startDate", _toISO8601(startDate)
+		).put(
+			"workspaceName", workspaceName
+		).put(
+			"workspaceOwnerEmail", workspaceOwnerEmail
 		);
 
 		String response = post(
@@ -86,13 +91,39 @@ public class ActivationKeyService extends OneBaseService {
 	public ActivationKey getActivationKey(Jwt jwt, long activationKeyId)
 		throws Exception {
 
-		return _getActivationKey(getAuthorization(jwt), activationKeyId);
+		return _getActivationKey(activationKeyId, getAuthorization(jwt));
 	}
 
 	public ActivationKey getActivationKey(long activationKeyId)
 		throws Exception {
 
-		return _getActivationKey(getAuthorization(), activationKeyId);
+		return _getActivationKey(activationKeyId, getAuthorization());
+	}
+
+	public ActivationKey fetchActivationKey(String externalReferenceCode)
+		throws Exception {
+
+		try {
+			String response = get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/activationkeys/by-external-reference-code/{erc}"
+				).buildAndExpand(
+					externalReferenceCode
+				).toUri());
+
+			return new ActivationKey(new JSONObject(response));
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				return null;
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public List<ActivationKey> getActivationKeys(String filterString)
@@ -115,16 +146,12 @@ public class ActivationKeyService extends OneBaseService {
 	}
 
 	public ActivationKey updateActivationKeyActive(
-			boolean active, long activationKeyId)
+			long activationKeyId, boolean active)
 		throws Exception {
 
-		for (LicenseKey licenseKey :
-				_licenseKeyService.getLicenseKeysByActivationKeyId(
-					activationKeyId)) {
-
-			_licenseKeyService.updateLicenseKeyActive(
-				active, licenseKey.getLicenseKeyId());
-		}
+		// The activation key carries the state the UI reads, so flip it first.
+		// A license key left behind by a failure below is still reachable for
+		// a retry, whereas a silently unflipped parent is not.
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -139,11 +166,19 @@ public class ActivationKeyService extends OneBaseService {
 				activationKeyId
 			).toUri());
 
+		for (LicenseKey licenseKey :
+				_licenseKeyService.getLicenseKeysByActivationKeyId(
+					activationKeyId)) {
+
+			_licenseKeyService.updateLicenseKeyActive(
+				active, licenseKey.getLicenseKeyId());
+		}
+
 		return new ActivationKey(new JSONObject(response));
 	}
 
 	private ActivationKey _getActivationKey(
-			String authorization, long activationKeyId)
+			long activationKeyId, String authorization)
 		throws Exception {
 
 		try {

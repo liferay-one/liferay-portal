@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
@@ -107,7 +108,7 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(_PROJECT_ERC)
+			_licenseKeyGenerateFormService.getGenerateForm(_PROJECT_ERC, null)
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -117,7 +118,7 @@ public class ActivationKeysRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC);
+				null, _PROJECT_ERC, null);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -138,7 +139,8 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenThrow(
 			new PrincipalException()
 		);
@@ -146,7 +148,7 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC));
+				null, _PROJECT_ERC, null));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -157,7 +159,8 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			Mockito.mock(Project.class)
 		);
@@ -197,7 +200,8 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenThrow(
 			new PrincipalException()
 		);
@@ -211,7 +215,49 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
-	public void testPostActivationKeysGenerateChecksRenewedActivationKeyOwner()
+	public void testPatchActivationKeysActiveRejectsComplimentary()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		ActivationKey activationKey = Mockito.mock(ActivationKey.class);
+
+		Mockito.when(
+			activationKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Mockito.when(
+			activationKey.isComplimentary()
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_activationKeyService.getActivationKey(null, 77L)
+		).thenReturn(
+			activationKey
+		);
+
+		// Deactivating would hand the activation back to the quota and let a
+		// second complimentary key be generated.
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> activationKeysRestController.patchActivationKeysActive(
+				null, 77L, "{\"active\": false}"));
+
+		Mockito.verify(
+			_activationKeyService, Mockito.never()
+		).updateActivationKeyActive(
+			Mockito.anyLong(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormChecksRenewedActivationKeyOwner()
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
@@ -226,7 +272,8 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -240,22 +287,17 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_activationKeyService.getActivationKey(null, 77L)
+			_activationKeyService.fetchActivationKey("ACTVK-OTHER")
 		).thenReturn(
 			activationKey
 		);
 
-		JSONObject jsonObject = new JSONObject(_toGenerateJSON());
-
-		jsonObject.put(
-			"renewedActivationKeyIds", new JSONArray(Arrays.asList(77L)));
-
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> activationKeysRestController.postActivationKeysGenerate(
-				null, jsonObject.toString()));
+			() -> activationKeysRestController.getActivationKeysGenerateForm(
+				null, _PROJECT_ERC, "ACTVK-OTHER"));
 
-		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
 
 	@Test
@@ -266,7 +308,8 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_environmentActivationPermission.check(null, _PROJECT_ERC)
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
 		).thenReturn(
 			Mockito.mock(Project.class)
 		);

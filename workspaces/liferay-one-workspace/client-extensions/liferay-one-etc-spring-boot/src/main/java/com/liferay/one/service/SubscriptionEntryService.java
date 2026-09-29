@@ -60,7 +60,7 @@ public class SubscriptionEntryService extends OneBaseService {
 		return _addSubscriptionEntry(null, className, classPK, userId);
 	}
 
-	public void deleteAccountLicenseKeySubscriptionEntries(
+	public void deleteAccountActivationKeySubscriptionEntries(
 			long accountId, long userId)
 		throws Exception {
 
@@ -277,55 +277,6 @@ public class SubscriptionEntryService extends OneBaseService {
 			jwt);
 	}
 
-	private void _sendExpiringLicenseKeyEmail(
-			LicenseKey licenseKey, long userId, int days)
-		throws Exception {
-
-		UserAccount userAccount = _userAccountService.getUserAccount(userId);
-
-		if ((userAccount == null) ||
-			Validator.isNull(userAccount.getEmailAddress())) {
-
-			return;
-		}
-
-		String languageId = _getLanguageId(userAccount);
-
-		Map<String, String> placeholders = HashMapBuilder.put(
-			"EXPIRATION_STATUS", _getExpirationStatus(languageId, days)
-		).put(
-			"LICENSE_KEY_EXPIRATION_MESSAGE",
-			_getExpirationMessage(
-				languageId, days, licenseKey.getCustomExpirationDateInstant(),
-				licenseKey.getProductName())
-		).put(
-			"LICENSE_KEY_LICENSE_NAME", licenseKey.getLicenseName()
-		).put(
-			"LICENSE_KEY_PRODUCT_GROUP",
-			ProductGroupConstants.getProductGroup(licenseKey.getProductName())
-		).put(
-			"LICENSE_KEY_PRODUCT_VERSION", licenseKey.getProductVersion()
-		).put(
-			"LICENSE_KEY_SIZING", licenseKey.getSizing()
-		).put(
-			"USER_FIRST_NAME", userAccount.getGivenName()
-		).put(
-			"YEAR",
-			Year.now(
-			).toString()
-		).build();
-
-		JSONObject processedTemplateJSONObject =
-			_notificationTemplateService.getAndProcessTemplateJSONObject(
-				"LICENSE-KEY-EXPIRATION-WARNING", languageId, placeholders);
-
-		_notificationQueueEntryService.addNotificationQueueEntry(
-			"customer-service@liferay.com", "Liferay Support",
-			userAccount.getEmailAddress(),
-			processedTemplateJSONObject.getString("subject"),
-			processedTemplateJSONObject.getString("body"));
-	}
-
 	private void _sendExpiringActivationKeyEmails(
 			int licenseKeyExpirationDateOffset)
 		throws Exception {
@@ -374,6 +325,55 @@ public class SubscriptionEntryService extends OneBaseService {
 					licenseKeyExpirationDateOffset);
 			}
 		}
+	}
+
+	private void _sendExpiringLicenseKeyEmail(
+			LicenseKey licenseKey, long userId, int days)
+		throws Exception {
+
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
+		if ((userAccount == null) ||
+			Validator.isNull(userAccount.getEmailAddress())) {
+
+			return;
+		}
+
+		String languageId = _getLanguageId(userAccount);
+
+		Map<String, String> placeholders = HashMapBuilder.put(
+			"EXPIRATION_STATUS", _getExpirationStatus(languageId, days)
+		).put(
+			"LICENSE_KEY_EXPIRATION_MESSAGE",
+			_getExpirationMessage(
+				languageId, days, licenseKey.getCustomExpirationDateInstant(),
+				licenseKey.getProductName())
+		).put(
+			"LICENSE_KEY_LICENSE_NAME", licenseKey.getLicenseName()
+		).put(
+			"LICENSE_KEY_PRODUCT_GROUP",
+			ProductGroupConstants.getProductGroup(licenseKey.getProductName())
+		).put(
+			"LICENSE_KEY_PRODUCT_VERSION", licenseKey.getProductVersion()
+		).put(
+			"LICENSE_KEY_SIZING", licenseKey.getSizing()
+		).put(
+			"USER_FIRST_NAME", userAccount.getGivenName()
+		).put(
+			"YEAR",
+			Year.now(
+			).toString()
+		).build();
+
+		JSONObject processedTemplateJSONObject =
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				"LICENSE-KEY-EXPIRATION-WARNING", languageId, placeholders);
+
+		_notificationQueueEntryService.addNotificationQueueEntry(
+			"customer-service@liferay.com", "Liferay Support",
+			userAccount.getEmailAddress(),
+			processedTemplateJSONObject.getString("subject"),
+			processedTemplateJSONObject.getString("body"));
 	}
 
 	private void _sendExpiringLicenseKeyEmails(

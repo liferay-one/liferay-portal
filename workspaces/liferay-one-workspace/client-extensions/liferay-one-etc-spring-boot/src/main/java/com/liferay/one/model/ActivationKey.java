@@ -20,10 +20,10 @@ public class ActivationKey {
 		_accountName = jsonObject.optString("accountName");
 		_activationKeyId = jsonObject.optLong("id");
 		_active = jsonObject.optBoolean("active");
-		_additionalInfo = jsonObject.optString("additionalInfo");
 		_complimentary = jsonObject.optBoolean("complimentary");
 		_customExpirationDateInstant = _toInstant(
 			jsonObject, "customExpirationDate");
+		_dataCenterLocation = jsonObject.optString("dataCenterLocation");
 		_description = jsonObject.optString("description");
 		_domains = jsonObject.optString("domains");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
@@ -34,6 +34,8 @@ public class ActivationKey {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToActivationKey_c_projectERC");
 		_startDateInstant = _toInstant(jsonObject, "startDate");
+		_workspaceName = jsonObject.optString("workspaceName");
+		_workspaceOwnerEmail = jsonObject.optString("workspaceOwnerEmail");
 	}
 
 	public long getAccountEntryId() {
@@ -48,12 +50,12 @@ public class ActivationKey {
 		return _activationKeyId;
 	}
 
-	public String getAdditionalInfo() {
-		return _additionalInfo;
-	}
-
 	public Instant getCustomExpirationDateInstant() {
 		return _customExpirationDateInstant;
+	}
+
+	public String getDataCenterLocation() {
+		return _dataCenterLocation;
 	}
 
 	public String getDescription() {
@@ -92,6 +94,14 @@ public class ActivationKey {
 		return _startDateInstant;
 	}
 
+	public String getWorkspaceName() {
+		return _workspaceName;
+	}
+
+	public String getWorkspaceOwnerEmail() {
+		return _workspaceOwnerEmail;
+	}
+
 	public boolean isActive() {
 		return _active;
 	}
@@ -114,9 +124,9 @@ public class ActivationKey {
 	private final String _accountName;
 	private final long _activationKeyId;
 	private final boolean _active;
-	private final String _additionalInfo;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
+	private final String _dataCenterLocation;
 	private final String _description;
 	private final String _domains;
 	private final String _externalReferenceCode;
@@ -126,5 +136,7 @@ public class ActivationKey {
 	private final String _productVersion;
 	private final String _projectExternalReferenceCode;
 	private final Instant _startDateInstant;
+	private final String _workspaceName;
+	private final String _workspaceOwnerEmail;
 
 }

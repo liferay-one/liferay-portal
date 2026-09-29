@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -20,9 +21,11 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
@@ -30,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -146,38 +150,6 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateDeveloperLicenseXMLBelowMinimumVersion() {
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					_toProject(), "DXP", "7.3"));
-
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"minimum version is 7.4"
-			));
-	}
-
-	@Test
-	public void testGenerateDeveloperLicenseXMLWithoutEntitledProduct() {
-		_stubEntitlements();
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					_toProject(), "DXP", "7.4"));
-
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"not entitled to DXP"
-			));
-	}
-
-	@Test
 	public void testGenerateActivationKeyWithoutActivationsLeft()
 		throws Exception {
 
@@ -276,6 +248,228 @@ public class LicenseKeyGenerationServiceTest {
 			));
 	}
 
+	@Test
+	public void testGenerateDeveloperLicenseXMLBelowMinimumVersion() {
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					"developer", "DXP", _toProject(), "7.3"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"minimum version is 7.4"
+			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLWithoutEntitledProduct() {
+		_stubEntitlements();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					"developer", "DXP", _toProject(), "7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to DXP"
+			));
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryBundlesNothingElse()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0), _toEntitlement(2L, 5.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		// The add-on entitlement is offered but must not reach the bundle.
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Arrays.asList(1L, 2L), "us-east-1", "Description",
+				"Environment", "complimentary", _toProject(), _toServers(1), 1L,
+				"DXP 7.4", "Workspace One", "owner@example.com"));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.times(1)
+		).addLicenseKey(
+			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryIsFlaggedAndTimeBoxed()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		long before = System.currentTimeMillis();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Collections.singletonList(1L), "us-east-1", "Description",
+				"Environment", "complimentary", _toProject(), _toServers(1), 1L,
+				"DXP 7.4", "Workspace One", "owner@example.com"));
+
+		ArgumentCaptor<Date> expirationDateArgumentCaptor =
+			ArgumentCaptor.forClass(Date.class);
+		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
+			Date.class);
+
+		Mockito.verify(
+			_activationKeyService
+		).addActivationKey(
+			Mockito.anyLong(), Mockito.any(), Mockito.eq(true),
+			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.any(),
+			expirationDateArgumentCaptor.capture(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			startDateArgumentCaptor.capture(), Mockito.any(), Mockito.any()
+		);
+
+		Date expirationDate = expirationDateArgumentCaptor.getValue();
+
+		Date startDate = startDateArgumentCaptor.getValue();
+
+		// The term runs from now, not from the entitlement, and lasts exactly
+		// the complimentary duration.
+
+		Assertions.assertTrue(startDate.getTime() >= (before - 1000));
+
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(
+				LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS),
+			expirationDate.getTime() - startDate.getTime());
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryWithoutActivationsLeft()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyService.getActiveLicenseKeyCounts(Mockito.anyString())
+		).thenReturn(
+			HashMapBuilder.put(
+				1L, 1
+			).build()
+		);
+
+		// A second complimentary key is refused until the entitlement is
+		// topped back up.
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					new LicenseKeyGenerationService.GenerateRequest(
+						Collections.singletonList(1L), "us-east-1",
+						"Description", "Environment", "complimentary",
+						_toProject(), _toServers(1), 1L, "DXP 7.4",
+						"Workspace One", "owner@example.com")));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"0 activations left"
+			));
+	}
+
+	@Test
+	public void testGenerateActivationKeyDeactivatesThePartialActivationKey()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0));
+
+		_stubLicensedProducts();
+
+		ActivationKey activationKey = _stubActivationKey();
+
+		Mockito.when(
+			_licenseKeyService.addLicenseKey(
+				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
+				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.any(), Mockito.anyInt(), Mockito.any(),
+				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
+				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.any())
+		).thenThrow(
+			new RuntimeException("The license key could not be added")
+		);
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				_toGenerateRequest(Collections.singletonList(1L), 1L)));
+
+		// A half built activation key would keep consuming activations its
+		// license keys never earned.
+
+		Mockito.verify(
+			_activationKeyService
+		).updateActivationKeyActive(
+			activationKey.getActivationKeyId(), false
+		);
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLWithoutLicenseGeneration()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.grantsLicense(Mockito.any())
+		).thenReturn(
+			false
+		);
+
+		// The project holds the product, but not the entitlement that grants
+		// license generation for it.
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					"developer", "DXP", _toProject(), "7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to DXP"
+			));
+	}
+
 	private ActivationKey _stubActivationKey() throws Exception {
 		ActivationKey activationKey = new ActivationKey(
 			new JSONObject(
@@ -286,9 +480,10 @@ public class LicenseKeyGenerationServiceTest {
 		Mockito.when(
 			_activationKeyService.addActivationKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.anyBoolean(), Mockito.any(),
+				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.any(), Mockito.any())
 		).thenReturn(
 			activationKey
 		);
@@ -328,6 +523,12 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyGenerateFormService.getLicenseEntryFamily(Mockito.any())
 		).thenReturn(
 			"dxp"
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.grantsLicense(Mockito.any())
+		).thenReturn(
+			true
 		);
 
 		Mockito.when(
@@ -371,6 +572,16 @@ public class LicenseKeyGenerationServiceTest {
 			"owner@example.com");
 	}
 
+	private Project _toProject() {
+		return new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", "PROJ-1"
+			).put(
+				"name", "Project One"
+			));
+	}
+
 	private List<LicenseKeyGenerationService.GenerateRequest.Server> _toServers(
 		int serverCount) {
 
@@ -384,16 +595,6 @@ public class LicenseKeyGenerationServiceTest {
 		}
 
 		return servers;
-	}
-
-	private Project _toProject() {
-		return new Project(
-			new JSONObject(
-			).put(
-				"externalReferenceCode", "PROJ-1"
-			).put(
-				"name", "Project One"
-			));
 	}
 
 	private ActivationKeyService _activationKeyService;

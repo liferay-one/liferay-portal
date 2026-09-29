@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -263,6 +264,7 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			Collection<Long> excludedActivationKeyIds,
 			String projectExternalReferenceCode)
 		throws Exception {
 
@@ -274,7 +276,9 @@ public class LicenseKeyService extends OneBaseService {
 			long entitlementId = licenseKey.getEntitlementId();
 
 			if ((entitlementId <= 0) || !licenseKey.isActive() ||
-				licenseKey.isComplimentary()) {
+				licenseKey.isComplimentary() ||
+				excludedActivationKeyIds.contains(
+					licenseKey.getActivationKeyId())) {
 
 				continue;
 			}
@@ -283,6 +287,14 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		return counts;
+	}
+
+	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getActiveLicenseKeyCounts(
+			Collections.emptyList(), projectExternalReferenceCode);
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(

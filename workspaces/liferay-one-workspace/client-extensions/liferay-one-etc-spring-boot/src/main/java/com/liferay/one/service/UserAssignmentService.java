@@ -249,7 +249,7 @@ public class UserAssignmentService {
 			}
 		}
 
-		_subscriptionEntryService.deleteAccountLicenseKeySubscriptionEntries(
+		_subscriptionEntryService.deleteAccountActivationKeySubscriptionEntries(
 			account.getId(), userId);
 
 		_syncAccountMembershipToJSM(account, userId);

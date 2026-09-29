@@ -119,18 +119,10 @@ public class LicenseKeyExporter {
 		return formatFileName(sb.toString());
 	}
 
-	public boolean isAggregatedDocument(String key) {
-		if (key == null) {
-			return false;
-		}
-
-		return key.startsWith(StringPool.LESS_THAN);
-	}
-
 	public String toXML(LicenseKey licenseKey) throws Exception {
 		String key = licenseKey.getKey();
 
-		if (isAggregatedDocument(key)) {
+		if (_isXMLDocument(key)) {
 			return key;
 		}
 
@@ -337,6 +329,14 @@ public class LicenseKeyExporter {
 				_addElement(serverIdElement, "server-id", serverId);
 			}
 		}
+	}
+
+	private boolean _isXMLDocument(String key) {
+		if (key == null) {
+			return false;
+		}
+
+		return key.startsWith(StringPool.LESS_THAN);
 	}
 
 	protected String formatFileName(String fileName) {

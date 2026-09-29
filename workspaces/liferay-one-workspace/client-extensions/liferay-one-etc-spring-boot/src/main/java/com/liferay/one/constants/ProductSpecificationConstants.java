@@ -18,9 +18,6 @@ public class ProductSpecificationConstants {
 
 	public static final String KEY_PRICE_MODEL = "price-model";
 
-	public static final String KEY_PROJECT_ACTIVATION_PROFILE =
-		"project-activation-profile";
-
 	public static final String KEY_SOLUTION_TYPE = "solution-type";
 
 	public static final String PRICE_MODEL_PAID = "Paid";
