@@ -45,64 +45,76 @@ export const SOLUTION_FLOW_ITEMS: AppFlowItem<SolutionInitialState>[] = [
 	},
 	{
 		description: () =>
-			'Design the storefront for your solution. This will set the information displayed on the solution page. This section is dedicated to creating the solution header.',
-		label: 'Solution Header',
+			i18n.translate(
+				'design-the-storefront-for-your-solution-this-will-set-the-information-displayed-on-the-solutions-page-this-section-is-dedicated-to-creating-the-solutions-header'
+			),
+		label: i18n.translate('solution-header'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: SolutionInitialState) =>
 			zodSchema.solutionPublishing.header.safeParse(context.header),
 		path: 'header',
 		saveAsDraftRequired: false,
 		title: (isEditing = false) =>
-			`${isEditing ? 'Edit' : 'Customize'} solution header`,
+			isEditing ? 'Edit' : i18n.translate('customize-solution-header'),
 		visible: () => true,
 	},
 	{
 		description: () =>
-			'Design the storefront for your solution. This will set the information displayed on the solution page. This section is dedicated to creating the solution detail content.',
-		label: 'Solution Details',
+			i18n.translate(
+				'design-the-storefront-for-your-solution-this-will-set-the-information-displayed-on-the-solutions-page-this-section-is-dedicated-to-creating-the-solutions-detail-content'
+			),
+		label: i18n.translate('solution-details'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: SolutionInitialState) =>
 			zodSchema.solutionPublishing.details.safeParse(context.details),
 		path: 'details',
 		saveAsDraftRequired: false,
 		title: (isEditing = false) =>
-			`${isEditing ? 'Edit' : 'Customize'} storefront solution details`,
+			isEditing
+				? 'Edit'
+				: i18n.translate('customize-storefront-solutions-details'),
 		visible: () => true,
 	},
 	{
 		description: () =>
-			'Define company profile information for your solution. This will inform users about your company on the storefront.',
-		label: 'Company Profile',
+			i18n.translate(
+				'define-company-profile-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront'
+			),
+		label: i18n.translate('company-profile'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: SolutionInitialState) =>
 			zodSchema.solutionPublishing.company.safeParse(context.company),
 		path: 'company',
 		saveAsDraftRequired: false,
 		title: (isEditing = false) =>
-			`${isEditing ? 'Edit' : 'Provide'} company profile details`,
+			isEditing
+				? 'Edit'
+				: i18n.translate('provide-company-profile-details'),
 		visible: () => true,
 	},
 	{
 		description: () =>
-			'Define contact information for your solution. This will tell users how to reach you from the storefront.',
-		label: 'Contact Us',
+			i18n.translate(
+				'define-contact-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront'
+			),
+		label: i18n.translate('contact-us'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: SolutionInitialState) =>
 			zodSchema.solutionPublishing.contactUs.safeParse(context.contactUs),
 		path: 'contact',
 		saveAsDraftRequired: false,
 		title: (isEditing = false) =>
-			`${isEditing ? 'Edit' : 'Provide'} contact us details`,
+			isEditing ? 'Edit' : i18n.translate('provide-contact-us-details'),
 		visible: () => true,
 	},
 	{
 		description: () =>
 			'Please, review before submitting. Once sent, you will not be able to edit any information until this submission is completely reviewed by Liferay.',
-		label: 'Submit',
+		label: i18n.translate('submit'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		path: 'submit',
 		saveAsDraftRequired: false,
-		title: () => 'Review and submit solution',
+		title: () => i18n.translate('review-and-submit-solution'),
 		visible: () => true,
 	},
 ];

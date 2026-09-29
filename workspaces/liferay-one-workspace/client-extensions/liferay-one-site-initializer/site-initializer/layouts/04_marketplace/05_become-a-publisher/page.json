@@ -5,7 +5,10 @@
 	"hidden": true,
 	"name": "Become a Publisher",
 	"name_i18n": {
-		"en_US": "Become a Publisher"
+		"en_US": "Become a Publisher",
+		"es_ES": "Convertirse en Publicador",
+		"ja_JP": "パブリッシャーになる",
+		"pt_BR": "Torne-se um Publicador"
 	},
 	"permissions": [
 		{

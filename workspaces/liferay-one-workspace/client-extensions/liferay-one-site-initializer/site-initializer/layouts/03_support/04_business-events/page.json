@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Business Events",
 	"name_i18n": {
-		"en_US": "Business Events"
+		"en_US": "Business Events",
+		"es_ES": "Eventos de Negocio",
+		"ja_JP": "ビジネスイベント",
+		"pt_BR": "Eventos de Negócios"
 	},
 	"private": false,
 	"system": false,

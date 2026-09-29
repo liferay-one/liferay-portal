@@ -5,7 +5,10 @@
 	"hidden": false,
 	"name": "Solutions",
 	"name_i18n": {
-		"en_US": "Solutions"
+		"en_US": "Solutions",
+		"es_ES": "Soluciones",
+		"ja_JP": "ソリューション",
+		"pt_BR": "Soluções"
 	},
 	"private": false,
 	"system": false,

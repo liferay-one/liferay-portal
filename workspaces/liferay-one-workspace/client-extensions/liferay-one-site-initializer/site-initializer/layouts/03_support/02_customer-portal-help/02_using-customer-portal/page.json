@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Using One Liferay",
 	"name_i18n": {
-		"en_US": "Using One Liferay"
+		"en_US": "Using One Liferay",
+		"es_ES": "Uso de One Liferay",
+		"ja_JP": "One Liferayの使い方",
+		"pt_BR": "Usando o One Liferay"
 	},
 	"private": false,
 	"system": false,

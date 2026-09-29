@@ -330,7 +330,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 								</div>
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										Phone
+										{i18n.translate('phone')}
 									</Form.Label>
 
 									<Input
@@ -348,7 +348,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 							<div className="c-gap-4 d-flex">
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										Street address
+										{i18n.translate('street-address')}
 									</Form.Label>
 
 									<Input
@@ -364,7 +364,9 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 								</div>
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2">
-										Apt, Suite, Unit (optional)
+										{i18n.translate(
+											'apt-suite-unit-optional'
+										)}
 									</Form.Label>
 
 									<Input
@@ -380,7 +382,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 							<div className="c-gap-4 d-flex">
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										Country
+										{i18n.translate('country')}
 									</Form.Label>
 
 									<Select
@@ -427,7 +429,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 								</div>
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										State/Region
+										{i18n.translate('state-region')}
 									</Form.Label>
 
 									<Select
@@ -454,7 +456,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 							<div className="c-gap-4 d-flex">
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										City
+										{i18n.translate('city')}
 									</Form.Label>
 
 									<Input
@@ -469,7 +471,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 								</div>
 								<div className="pr-2 w-100">
 									<Form.Label className="mb-2" required>
-										Zip Code
+										{i18n.translate('zip-code')}
 									</Form.Label>
 
 									<Input

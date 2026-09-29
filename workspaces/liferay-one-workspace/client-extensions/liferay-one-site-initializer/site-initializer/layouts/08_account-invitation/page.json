@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "Account Invitation",
 	"name_i18n": {
-		"en_US": "Account Invitation"
+		"en_US": "Account Invitation",
+		"es_ES": "Invitación a la Cuenta",
+		"ja_JP": "アカウントへの招待",
+		"pt_BR": "Convite para a Conta"
 	},
 	"private": false,
 	"system": false,

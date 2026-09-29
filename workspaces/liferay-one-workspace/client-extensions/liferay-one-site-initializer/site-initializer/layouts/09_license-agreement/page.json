@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "License Agreement",
 	"name_i18n": {
-		"en_US": "License Agreement"
+		"en_US": "License Agreement",
+		"es_ES": "Acuerdo de Licencia",
+		"ja_JP": "ライセンス契約",
+		"pt_BR": "Contrato de Licença"
 	},
 	"permissions": [
 		{

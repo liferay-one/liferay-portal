@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Liferay} from '~/services/liferay/liferay';
+import { Liferay } from '~/services/liferay/liferay';
 
 export default {
 	'1-data-source': '1 Data Source',
 	'1-ticket': '1 Ticket',
+	'7-days-trials': '7 Days Trials',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'A request will be sent to deactivate the selected activation key. From now on, it will be hidden and no longer visible.',
 	'a-role-is-required': 'A role is required.',
@@ -184,6 +185,7 @@ export default {
 	'apps-and-connectors-supporting-quarterly-release':
 		'Apps & Connectors Supporting Quarterly Release',
 	'apps-sold': 'Apps Sold',
+	'apt-suite-unit-optional': 'Apt, Suite, Unit (optional)',
 	'architecture': 'Architecture',
 	'are-there-any-support-tickets-impacting-this-event':
 		'Are there any support tickets impacting this event?',
@@ -396,6 +398,7 @@ export default {
 		'Create new licenses and they will show up here.',
 	'create-new-ticket': 'Create New Ticket',
 	'create-template': 'Create Template',
+	'create-trial': 'Create Trial',
 	'created-at': 'Created At',
 	'created-by': 'Created By',
 	'critical-incident-contacts': 'Critical Incident Contacts',
@@ -898,6 +901,7 @@ export default {
 	'manage-roles': 'Manage Roles',
 	'manage-roles-and-permissions-of-users-within-each-product':
 		'Manage roles and permissions of users within each product.',
+	'manage-ssa-saas-users': 'Manage SSA SaaS Users',
 	'manage-the-activation-keys-within-your-project':
 		'Manage the activation keys within your project',
 	'manage-the-applications-within-your-project':
@@ -921,8 +925,13 @@ export default {
 	'manufacturing': 'Manufacturing',
 	'mark-as-paid': 'Mark as Paid',
 	'marked-as-paid': 'Marked as paid.',
+	'marketplace-apps': 'Marketplace Apps',
+	'marketplace-finance-orders': 'Marketplace Finance Orders',
 	'marketplace-licensor-eula': 'Marketplace Licensor EULA',
 	'marketplace-orders': 'Marketplace Orders',
+	'marketplace-payments': 'Marketplace Payments',
+	'marketplace-solutions': 'Marketplace Solutions',
+	'marketplace-summary': 'Marketplace Summary',
 	'maximum-cluster-nodes': 'Maximum Cluster Nodes',
 	'maximum-number-of-active-nodes-available-for-this-environment':
 		'Maximum number of active nodes available for this environment. This does not include expired or future nodes.',
@@ -965,6 +974,7 @@ export default {
 	'my-products': 'My Products',
 	'my-saas-demos': 'My SaaS Demos',
 	'my-solutions': 'My Solutions',
+	'my-ssa-saas-demo': 'My SSA SaaS Demo',
 	'name': 'Name',
 	'name-example-com': 'name@example.com',
 	'name-the-workspace-your-digital-sales-room-runs-in-and-give-us-the-server-details-we-need-to-issue-its-activation-key':
@@ -1031,6 +1041,7 @@ export default {
 	'no-role': 'No Role',
 	'no-support-tickets-were-found': 'No support tickets were found.',
 	'no-ticket-attachments-were-found': 'No ticket attachments were found.',
+	'no-tokens-available': 'No tokens available',
 	'no-trials-yet': 'No Trials Yet',
 	'no-usage-data-yet': 'No Usage Data Yet',
 	'no-versions-yet': 'No Versions Yet',
@@ -1076,6 +1087,7 @@ export default {
 	'online-payments-with-paypal': 'Online payments with PayPal',
 	'only-continue-if-you-started-this-connection-from-that-liferay-dxp':
 		'Only continue if you started this connection from that Liferay DXP.',
+	'online-payments-with-x': 'Online payments with {0}',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'Only GIF, JPG, JPEG, and PNG are allowed. Max file size is 5MB.',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':
@@ -1497,6 +1509,7 @@ export default {
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Specify your app’s version. This will help the user understand the latest version of your app offered on the Marketplace.',
 	'ssa-dashboard': 'SSA Dashboard',
+	'ssa-saas-environments': 'SSA SaaS Environments',
 	'ssa-trial-installation-in-progress': 'SSA Trial Installation in Progress',
 	'ssa-trial-summary': 'SSA Trial Summary',
 	'ssa-trials': 'SSA Trials',
@@ -1510,6 +1523,7 @@ export default {
 	'start-date-exp-date': 'Start Date - Exp. Date',
 	'start-trial': 'Start Trial',
 	'state': 'State',
+	'state-region': 'State/Region',
 	'status': 'Status',
 	'step-x-of-x': 'Step {0} of {1}',
 	'storage': 'Storage',
@@ -1921,7 +1935,7 @@ export default {
 	'x-roles': '{0} Roles',
 	'x-saved-as-a-draft-successfully':
 		'<b>{0}</b> saved as a <b>draft</b> successfully',
-	'x-selected': 'X Selected',
+	'x-selected': '{0} Selected',
 	'x-solutions-available': '{0} solutions available',
 	'x-tickets': '{0} Tickets',
 	'x-tokens': '{0} tokens',
@@ -2012,6 +2026,7 @@ export default {
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'zip-area-code': 'Zip/Area Code',
+	'zip-code': 'Zip Code',
 	'zip-files-must-be-in-universal-file-format-archive-luffa-the-specially-structured-zip-encoded-archive-used-to-package-client-extension-project-outputs-this-format-must-support-the-following-use-cases-deliver-batch-engine-data-files-compatible-with-all-deployment-targets-deliver-dxp-configuration-resource-compatible-with-all-deployment-targets-deliver-static-resources-compatible-with-all-deployment-targets-deliver-the-infrastructure-metadata-necessary-to-deploy-to-lxc-sm-for-more-information-see':
 		'ZIP Files must be in universal file format archive (LUFFA) - the specially structured, ZIP encoded archive used to package client extension project outputs This format must support the following use cases: deliver batch engine data files compatible with all deployment targets deliver DXP configuration resource compatible with all deployment targets deliver static resources compatible with all deployment targets deliver the infrastructure metadata necessary to deploy to Liferay PaaS for more information see: ',
 	'zurich-switzerland': 'Zurich, Switzerland',

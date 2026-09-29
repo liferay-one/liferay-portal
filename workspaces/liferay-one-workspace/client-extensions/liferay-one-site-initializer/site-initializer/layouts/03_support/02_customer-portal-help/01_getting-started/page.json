@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Getting Started",
 	"name_i18n": {
-		"en_US": "Getting Started"
+		"en_US": "Getting Started",
+		"es_ES": "Primeros Pasos",
+		"ja_JP": "はじめに",
+		"pt_BR": "Primeiros Passos"
 	},
 	"private": false,
 	"system": false,

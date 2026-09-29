@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Publishers",
 	"name_i18n": {
-		"en_US": "Publishers"
+		"en_US": "Publishers",
+		"es_ES": "Publicadores",
+		"ja_JP": "パブリッシャー",
+		"pt_BR": "Publicadores"
 	},
 	"private": false,
 	"system": false,
