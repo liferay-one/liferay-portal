@@ -633,24 +633,6 @@
 					"type": "Boolean"
 				},
 				{
-					"DBType": "Clob",
-					"businessType": "LongText",
-					"externalReferenceCode": "C_ACTIVATION_KEY_ADDITIONAL_INFO",
-					"indexed": false,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Additional Info"
-					},
-					"name": "additionalInfo",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Clob"
-				},
-				{
 					"DBType": "Boolean",
 					"businessType": "Boolean",
 					"defaultValue": "false",
@@ -690,6 +672,24 @@
 					"state": false,
 					"system": false,
 					"type": "Date"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ACTIVATION_KEY_DATA_CENTER_LOCATION",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Data Center Location"
+					},
+					"name": "dataCenterLocation",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				},
 				{
 					"DBType": "String",
@@ -820,6 +820,42 @@
 					"state": false,
 					"system": false,
 					"type": "Date"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ACTIVATION_KEY_WORKSPACE_NAME",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Workspace Name"
+					},
+					"name": "workspaceName",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ACTIVATION_KEY_WORKSPACE_OWNER_EMAIL",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Workspace Owner Email"
+					},
+					"name": "workspaceOwnerEmail",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				}
 			],
 			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
@@ -2889,6 +2925,24 @@
 						"en_US": "Grant Type"
 					},
 					"name": "grantType",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_TYPE",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Type"
+					},
+					"name": "licenseKeyType",
 					"objectFieldSettings": [
 					],
 					"required": false,

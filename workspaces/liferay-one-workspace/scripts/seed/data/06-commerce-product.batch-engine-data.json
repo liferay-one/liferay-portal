@@ -808,6 +808,12 @@
 					"value": {
 						"en_US": "Software (Subscription)"
 					}
+				},
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "Cloud Native"
+					}
 				}
 			],
 			"productType": "virtual",
