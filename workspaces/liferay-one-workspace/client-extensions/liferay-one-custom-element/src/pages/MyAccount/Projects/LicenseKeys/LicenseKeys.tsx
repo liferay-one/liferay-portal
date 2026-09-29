@@ -16,7 +16,6 @@ import {
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
 import i18n, {Word, translate} from '~/i18n';
-import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
@@ -36,7 +35,8 @@ import './LicenseKeys.css';
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
 	return (
 		row.name.toLowerCase().includes(search) ||
-		row.description.toLowerCase().includes(search)
+		row.description.toLowerCase().includes(search) ||
+		row.productName.toLowerCase().includes(search)
 	);
 }
 
@@ -205,6 +205,20 @@ export default function LicenseKeys() {
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
+			heading: 'product',
+			key: 'product',
+			render: (row) => <span>{row.productName || '-'}</span>,
+			width: '25%',
+		},
+		{
+			heading: 'type',
+			key: 'type',
+			render: (row) => (
+				<span>{row.type ? translate(row.type as Word) : '-'}</span>
+			),
+			width: '25%',
+		},
+		{
 			heading: 'environment-name',
 			key: 'environment-name',
 			render: (row) => (
@@ -212,30 +226,6 @@ export default function LicenseKeys() {
 					{row.name}
 				</span>
 			),
-			width: '25%',
-		},
-		{
-			heading: 'environment-type',
-			key: 'environment-type',
-			render: (row) => (
-				<span className="d-flex flex-column">
-					<span>{row.keyType || '-'}</span>
-
-					<span className="list-card-subtext">
-						{translate(getSubscriptionType(row))}
-					</span>
-				</span>
-			),
-			width: '25%',
-		},
-		{
-			heading: 'key-type',
-			key: 'key-type',
-			render: (row) => {
-				const keyType = getKeyType(row.licenseType);
-
-				return <span>{translate(keyType)}</span>;
-			},
 			width: '25%',
 		},
 		{
@@ -279,12 +269,17 @@ export default function LicenseKeys() {
 
 	const filters: ListFilter<ProjectActivationKey>[] = [
 		{
-			key: 'keyType',
-			label: 'key-type',
-			matches: (row, values) =>
-				values.includes(getKeyType(row.licenseType)),
+			key: 'product',
+			label: 'product',
+			matches: (row, values) => values.includes(row.productName),
+			options: toOptions(activationKeys.map((row) => row.productName)),
+		},
+		{
+			key: 'type',
+			label: 'type',
+			matches: (row, values) => values.includes(row.type),
 			options: toOptions(
-				activationKeys.map((row) => getKeyType(row.licenseType)),
+				activationKeys.map((row) => row.type),
 				(value) => translate(value as Word)
 			),
 		},

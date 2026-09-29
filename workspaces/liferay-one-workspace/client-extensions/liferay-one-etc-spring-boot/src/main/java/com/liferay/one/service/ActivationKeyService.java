@@ -34,29 +34,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ActivationKeyService extends OneBaseService {
 
 	public ActivationKey addActivationKey(
-			long accountEntryId, boolean active, boolean complimentary,
-			String description, Date expirationDate, String keyType,
-			String licenseType, String name, String productVersion,
-			String projectExternalReferenceCode, Date startDate)
+			long accountEntryId, boolean active, Date endDate,
+			String projectExternalReferenceCode, Date startDate, String type)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"active", active
 		).put(
-			"complimentary", complimentary
-		).put(
-			"customExpirationDate", _toISO8601(expirationDate)
-		).put(
-			"description", description
-		).put(
-			"keyType", keyType
-		).put(
-			"licenseType", licenseType
-		).put(
-			"name", name
-		).put(
-			"productVersion", productVersion
+			"endDate", _toISO8601(endDate)
 		).put(
 			"r_accountEntryToActivationKey_accountEntryId", accountEntryId
 		).put(
@@ -64,6 +50,8 @@ public class ActivationKeyService extends OneBaseService {
 			projectExternalReferenceCode
 		).put(
 			"startDate", _toISO8601(startDate)
+		).put(
+			"type", type
 		);
 
 		String response = post(
@@ -122,15 +110,14 @@ public class ActivationKeyService extends OneBaseService {
 	}
 
 	public List<ActivationKey> getExpiringActivationKeys(
-			Date expirationDateGT, Date expirationDateLT, Date startDateLT)
+			Date endDateGT, Date endDateLT, Date startDateLT)
 		throws Exception {
 
 		return getActivationKeys(
 			StringBundler.concat(
-				"(active eq true) and (customExpirationDate gt ",
-				_toISO8601(expirationDateGT), ") and (customExpirationDate lt ",
-				_toISO8601(expirationDateLT), ") and (startDate lt ",
-				_toISO8601(startDateLT), ")"));
+				"(active eq true) and (endDate gt ", _toISO8601(endDateGT),
+				") and (endDate lt ", _toISO8601(endDateLT),
+				") and (startDate lt ", _toISO8601(startDateLT), ")"));
 	}
 
 	public ActivationKey updateActivationKeyActive(

@@ -5,8 +5,12 @@
 
 package com.liferay.one.model;
 
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
+
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,18 +27,12 @@ public class ActivationKey {
 			"r_accountEntryToActivationKey_accountEntryId");
 		_activationKeyId = jsonObject.optLong("id");
 		_active = jsonObject.optBoolean("active");
-		_complimentary = jsonObject.optBoolean("complimentary");
-		_customExpirationDateInstant = _toInstant(
-			jsonObject, "customExpirationDate");
-		_description = jsonObject.optString("description");
+		_endDateInstant = _toInstant(jsonObject, "endDate");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
-		_keyType = jsonObject.optString("keyType");
-		_licenseType = jsonObject.optString("licenseType");
-		_name = jsonObject.optString("name");
-		_productVersion = jsonObject.optString("productVersion");
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToActivationKey_c_projectERC");
 		_startDateInstant = _toInstant(jsonObject, "startDate");
+		_type = jsonObject.optString("type");
 	}
 
 	public long getAccountEntryId() {
@@ -45,32 +43,12 @@ public class ActivationKey {
 		return _activationKeyId;
 	}
 
-	public Instant getCustomExpirationDateInstant() {
-		return _customExpirationDateInstant;
-	}
-
-	public String getDescription() {
-		return _description;
+	public Instant getEndDateInstant() {
+		return _endDateInstant;
 	}
 
 	public String getExternalReferenceCode() {
 		return _externalReferenceCode;
-	}
-
-	public String getKeyType() {
-		return _keyType;
-	}
-
-	public String getLicenseType() {
-		return _licenseType;
-	}
-
-	public String getName() {
-		return _name;
-	}
-
-	public String getProductVersion() {
-		return _productVersion;
 	}
 
 	public String getProjectExternalReferenceCode() {
@@ -81,12 +59,21 @@ public class ActivationKey {
 		return _startDateInstant;
 	}
 
+	public String getType() {
+		return _type;
+	}
+
 	public boolean isActive() {
 		return _active;
 	}
 
+	// A complimentary key is the one the customer was granted rather than
+	// bought, which the key type already says. It is read often enough, and by
+	// callers that have no reason to know the constant, to name here.
+
 	public boolean isComplimentary() {
-		return _complimentary;
+		return Objects.equals(
+			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY, _type);
 	}
 
 	private Instant _toInstant(JSONObject jsonObject, String name) {
@@ -112,15 +99,10 @@ public class ActivationKey {
 	private final long _accountEntryId;
 	private final long _activationKeyId;
 	private final boolean _active;
-	private final boolean _complimentary;
-	private final Instant _customExpirationDateInstant;
-	private final String _description;
+	private final Instant _endDateInstant;
 	private final String _externalReferenceCode;
-	private final String _keyType;
-	private final String _licenseType;
-	private final String _name;
-	private final String _productVersion;
 	private final String _projectExternalReferenceCode;
 	private final Instant _startDateInstant;
+	private final String _type;
 
 }

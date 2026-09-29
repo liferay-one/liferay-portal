@@ -462,7 +462,7 @@ export default function GenerateActivationKey() {
 		'activation-codes':
 			'please-copy-and-paste-the-activation-code-for-the-environment-type-you-would-like-to-activate-into-your-server',
 		'add-ons':
-			'select-the-add-ons-you-would-like-to-include-in-the-activation-key',
+			'select-the-items-you-would-like-to-include-in-the-activation-key',
 		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',

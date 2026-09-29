@@ -406,6 +406,12 @@
 					"value": {
 						"en_US": "ai-hub"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -640,6 +646,12 @@
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Analytics Cloud (Subscription)"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],
@@ -955,6 +967,12 @@
 					"specificationKey": "license-entry-family",
 					"value": {
 						"en_US": "CMP"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],
@@ -1410,6 +1428,12 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/content-marketing-platform"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -1673,6 +1697,12 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/liferay-data-platform"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -1892,6 +1922,12 @@
 					"specificationKey": "license-entry-family",
 					"value": {
 						"en_US": "DSR"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],
@@ -4467,6 +4503,12 @@
 					"value": {
 						"en_US": "client-extension"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -4770,6 +4812,12 @@
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "Experience Management"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],
@@ -5090,6 +5138,12 @@
 					"value": {
 						"en_US": "Experience Management"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -5307,6 +5361,12 @@
 					"value": {
 						"en_US": "client-extension"
 					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -5417,6 +5477,12 @@
 					"specificationKey": "type",
 					"value": {
 						"en_US": "low-code-configuration"
+					}
+				},
+				{
+					"specificationKey": "generates-activation-key",
+					"value": {
+						"en_US": "true"
 					}
 				}
 			],

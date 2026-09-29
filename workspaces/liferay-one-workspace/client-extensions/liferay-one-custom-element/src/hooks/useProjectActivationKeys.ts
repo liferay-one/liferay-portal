@@ -5,8 +5,17 @@
 
 import {differenceInDays, format} from 'date-fns';
 import {useProject} from '~/context/ProjectContext';
+import {
+	ActivationKeyLicenseKey,
+	LicenseKeyNode,
+	toActivationKeyLicenseKey,
+} from '~/hooks/useActivationKeyLicenseKeys';
 import {useFetch} from '~/hooks/useFetch';
 import {Word} from '~/i18n';
+import {
+	getLeadingProductLabel,
+	getLeadingProductRank,
+} from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
@@ -24,29 +33,28 @@ export type ProjectActivationKey = {
 	expirationDate: string;
 	expirationDateValue: string;
 	id: string;
-	keyType: string;
-	licenseType: string;
 	name: string;
+	productName: string;
 	productVersion: string;
 	startDate: string;
 	startDateValue: string;
 	status: Word;
+	type: string;
 };
 
 type ActivationKeyNode = {
 	active: boolean;
-	complimentary?: boolean;
-	customExpirationDate?: string;
 	dateCreated?: string;
-	description?: string;
+	endDate?: string;
 	externalReferenceCode: string;
 	id?: number;
-	keyType?: string;
-	licenseType?: string;
-	name: string;
-	productVersion?: string;
 	startDate?: string;
+	type?: string;
 };
+
+const ACTIVATION_KEY_PAGE_SIZE = 200;
+
+const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
 const NEW_KEY_WINDOW_DAYS = 15;
 
@@ -57,6 +65,8 @@ const NON_PRODUCTION_KEY_TYPES = [
 	'non-production',
 	'uat',
 ];
+
+const PROJECT_LICENSE_KEY_PAGE_SIZE = 1000;
 
 const RENEWAL_WINDOW_DAYS = 90;
 
@@ -69,12 +79,12 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 		return 'new-activation-key';
 	}
 
-	if (!node.active || !node.customExpirationDate) {
+	if (!node.active || !node.endDate) {
 		return undefined;
 	}
 
 	const daysUntilExpiration = differenceInDays(
-		new Date(node.customExpirationDate),
+		new Date(node.endDate),
 		new Date()
 	);
 
@@ -88,12 +98,32 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 	return undefined;
 }
 
-function getEnvironmentType(keyType?: string): Word {
-	if (keyType && NON_PRODUCTION_KEY_TYPES.includes(keyType)) {
+function getEnvironmentType(type?: string): Word {
+	if (type && NON_PRODUCTION_KEY_TYPES.includes(type)) {
 		return 'non-production';
 	}
 
 	return 'production';
+}
+
+function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
+	let leadingRank = Number.MAX_SAFE_INTEGER;
+	let leadingProductName = '';
+
+	for (const licenseKey of licenseKeys) {
+		const rank = getLeadingProductRank(
+			licenseKey.productExternalReferenceCode
+		);
+
+		if (rank < leadingRank) {
+			leadingProductName = getLeadingProductLabel(
+				licenseKey.productExternalReferenceCode
+			);
+			leadingRank = rank;
+		}
+	}
+
+	return leadingProductName;
 }
 
 function getStatus(node: ActivationKeyNode): Word {
@@ -103,10 +133,7 @@ function getStatus(node: ActivationKeyNode): Word {
 		return 'not-activated';
 	}
 
-	if (
-		node.customExpirationDate &&
-		now > new Date(node.customExpirationDate)
-	) {
+	if (node.endDate && now > new Date(node.endDate)) {
 		return 'expired';
 	}
 
@@ -129,15 +156,15 @@ export function useProjectActivationKeys() {
 	const projectExternalReferenceCode =
 		projectId && !isUnassignedProject(projectId) ? projectId : undefined;
 
-	const scope = projectExternalReferenceCode
-		? SearchBuilder.eq(
-				'r_projectToActivationKey_c_projectERC',
-				escapeODataString(projectExternalReferenceCode)
-			)
-		: SearchBuilder.eq(
-				'r_accountEntryToActivationKey_accountEntryId',
-				String(accountId)
-			);
+	const enabled = Boolean(projectExternalReferenceCode || accountId);
+
+	const scope = (projectField: string, accountField: string) =>
+		projectExternalReferenceCode
+			? SearchBuilder.eq(
+					projectField,
+					escapeODataString(projectExternalReferenceCode)
+				)
+			: SearchBuilder.eq(accountField, String(accountId));
 
 	const {
 		data,
@@ -145,38 +172,87 @@ export function useProjectActivationKeys() {
 		isLoading: loading,
 		revalidate,
 	} = useFetch<APIResponse<ActivationKeyNode>>(
-		projectExternalReferenceCode || accountId
-			? '/o/c/activationkeys'
-			: null,
+		enabled ? '/o/c/activationkeys' : null,
 		{
 			params: {
-				filter: scope,
-				pageSize: 200,
+				filter: scope(
+					'r_projectToActivationKey_c_projectERC',
+					'r_accountEntryToActivationKey_accountEntryId'
+				),
+				pageSize: ACTIVATION_KEY_PAGE_SIZE,
 				sort: 'startDate:desc',
 			},
 		}
 	);
 
+	const {data: licenseKeyData, isLoading: loadingLicenseKeys} = useFetch<
+		APIResponse<LicenseKeyNode>
+	>(enabled ? '/o/c/licensekeys' : null, {
+		params: {
+			filter: scope(
+				'r_projectToLicenseKey_c_projectERC',
+				'r_accountEntryToLicenseKey_accountEntryId'
+			),
+			pageSize: PROJECT_LICENSE_KEY_PAGE_SIZE,
+		},
+	});
+
+	const licenseKeysByActivationKeyId = new Map<
+		number,
+		ActivationKeyLicenseKey[]
+	>();
+
+	for (const node of licenseKeyData?.items ?? []) {
+		const licenseKey = toActivationKeyLicenseKey(node);
+
+		if (!licenseKey.activationKeyId) {
+			continue;
+		}
+
+		const activationKeyLicenseKeys =
+			licenseKeysByActivationKeyId.get(licenseKey.activationKeyId) ?? [];
+
+		activationKeyLicenseKeys.push(licenseKey);
+
+		licenseKeysByActivationKeyId.set(
+			licenseKey.activationKeyId,
+			activationKeyLicenseKeys
+		);
+	}
+
 	const activationKeys: ProjectActivationKey[] = (data?.items ?? []).map(
-		(node) => ({
-			activationKeyId: node.id ? String(node.id) : '',
-			active: node.active,
-			badge: getBadge(node),
-			complimentary: node.complimentary ?? false,
-			description: node.description ?? '',
-			environmentType: getEnvironmentType(node.keyType),
-			expirationDate: formatDate(node.customExpirationDate),
-			expirationDateValue: getDateValue(node.customExpirationDate),
-			id: node.externalReferenceCode,
-			keyType: node.keyType ?? '',
-			licenseType: node.licenseType ?? '',
-			name: node.name,
-			productVersion: node.productVersion ?? '',
-			startDate: formatDate(node.startDate),
-			startDateValue: getDateValue(node.startDate),
-			status: getStatus(node),
-		})
+		(node) => {
+			const activationKeyLicenseKeys = node.id
+				? licenseKeysByActivationKeyId.get(node.id) ?? []
+				: [];
+
+			const [licenseKey] = activationKeyLicenseKeys;
+
+			return {
+				activationKeyId: node.id ? String(node.id) : '',
+				active: node.active,
+				badge: getBadge(node),
+				complimentary: node.type === COMPLIMENTARY_KEY_TYPE,
+				description: licenseKey?.description ?? '',
+				environmentType: getEnvironmentType(node.type),
+				expirationDate: formatDate(node.endDate),
+				expirationDateValue: getDateValue(node.endDate),
+				id: node.externalReferenceCode,
+				name: licenseKey?.name ?? '',
+				productName: getLeadingProductName(activationKeyLicenseKeys),
+				productVersion: licenseKey?.productVersion ?? '',
+				startDate: formatDate(node.startDate),
+				startDateValue: getDateValue(node.startDate),
+				status: getStatus(node),
+				type: node.type ?? '',
+			};
+		}
 	);
 
-	return {activationKeys, error, loading, revalidate};
+	return {
+		activationKeys,
+		error,
+		loading: loading || loadingLicenseKeys,
+		revalidate,
+	};
 }

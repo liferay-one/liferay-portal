@@ -33,6 +33,12 @@ export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
 	'PRDCT-PORTAL',
 ];
 
+const LEADING_PRODUCT_LABELS: Record<string, string> = {
+	[CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE]: 'Cloud Native',
+	'PRDCT-DXP': 'DXP',
+	'PRDCT-PORTAL': 'Portal',
+};
+
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
 export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
@@ -60,8 +66,11 @@ export function getBundleProducts(
 
 	return generateForm.bundleProducts.filter(
 		(bundleProduct) =>
-			!bundleProduct.licenseEntryFamily ||
-			bundleProduct.licenseEntryFamily === product.label
+			bundleProduct.externalReferenceCode ===
+				product.externalReferenceCode ||
+			!LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.includes(
+				bundleProduct.externalReferenceCode
+			)
 	);
 }
 
@@ -98,6 +107,10 @@ export function toServerField(
 			Boolean(server[serverField].trim())
 		) ?? 'hostName'
 	);
+}
+
+export function getLeadingProductLabel(externalReferenceCode: string): string {
+	return LEADING_PRODUCT_LABELS[externalReferenceCode] ?? '';
 }
 
 export function getLeadingProductRank(externalReferenceCode: string): number {
