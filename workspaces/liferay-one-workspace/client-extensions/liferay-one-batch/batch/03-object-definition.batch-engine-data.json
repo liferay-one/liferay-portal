@@ -596,24 +596,6 @@
 			"name": "ActivationKey",
 			"objectFields": [
 				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_ACCOUNT_NAME",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Account Name"
-					},
-					"name": "accountName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
 					"DBType": "Boolean",
 					"businessType": "Boolean",
 					"defaultValue": "true",
@@ -633,35 +615,16 @@
 					"type": "Boolean"
 				},
 				{
-					"DBType": "Boolean",
-					"businessType": "Boolean",
-					"defaultValue": "false",
-					"externalReferenceCode": "C_ACTIVATION_KEY_COMPLIMENTARY",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Complimentary"
-					},
-					"name": "complimentary",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Boolean"
-				},
-				{
 					"DBType": "Date",
 					"businessType": "DateTime",
-					"externalReferenceCode": "C_ACTIVATION_KEY_CUSTOM_EXPIRATION_DATE",
+					"externalReferenceCode": "C_ACTIVATION_KEY_END_DATE",
 					"indexed": true,
 					"indexedAsKeyword": false,
 					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Expiration Date"
+						"en_US": "End Date"
 					},
-					"name": "customExpirationDate",
+					"name": "endDate",
 					"objectFieldSettings": [
 						{
 							"name": "timeStorage",
@@ -672,132 +635,6 @@
 					"state": false,
 					"system": false,
 					"type": "Date"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_DATA_CENTER_LOCATION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Data Center Location"
-					},
-					"name": "dataCenterLocation",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_DESCRIPTION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Description"
-					},
-					"name": "description",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_DOMAINS",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Domains"
-					},
-					"name": "domains",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_KEY_TYPE",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Key Type"
-					},
-					"name": "keyType",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_LICENSE_TYPE",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "License Type"
-					},
-					"name": "licenseType",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_NAME",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Name"
-					},
-					"name": "name",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_PRODUCT_VERSION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Product Version"
-					},
-					"name": "productVersion",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
 				},
 				{
 					"DBType": "Date",
@@ -824,32 +661,14 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_WORKSPACE_NAME",
+					"externalReferenceCode": "C_ACTIVATION_KEY_TYPE",
 					"indexed": true,
 					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
+					"indexedLanguageId": "",
 					"label": {
-						"en_US": "Workspace Name"
+						"en_US": "Type"
 					},
-					"name": "workspaceName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ACTIVATION_KEY_WORKSPACE_OWNER_EMAIL",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Workspace Owner Email"
-					},
-					"name": "workspaceOwnerEmail",
+					"name": "type",
 					"objectFieldSettings": [
 					],
 					"required": false,
@@ -880,38 +699,31 @@
 						},
 						{
 							"label": {
-								"en_US": "Name"
+								"en_US": "Type"
 							},
-							"objectFieldName": "name",
+							"objectFieldName": "type",
 							"priority": 1
-						},
-						{
-							"label": {
-								"en_US": "Account Name"
-							},
-							"objectFieldName": "accountName",
-							"priority": 2
 						},
 						{
 							"label": {
 								"en_US": "Active"
 							},
 							"objectFieldName": "active",
-							"priority": 3
+							"priority": 2
 						},
 						{
 							"label": {
 								"en_US": "Start Date"
 							},
 							"objectFieldName": "startDate",
-							"priority": 4
+							"priority": 3
 						},
 						{
 							"label": {
-								"en_US": "Expiration Date"
+								"en_US": "End Date"
 							},
-							"objectFieldName": "customExpirationDate",
-							"priority": 5
+							"objectFieldName": "endDate",
+							"priority": 4
 						}
 					]
 				}
@@ -4141,6 +3953,24 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_KEY_DATA_CENTER_LOCATION",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Data Center Location"
+					},
+					"name": "dataCenterLocation",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
 					"externalReferenceCode": "C_LICENSE_KEY_DESCRIPTION",
 					"indexed": true,
 					"indexedAsKeyword": false,
@@ -4157,12 +3987,12 @@
 					"type": "String"
 				},
 				{
-					"DBType": "String",
-					"businessType": "Text",
+					"DBType": "Clob",
+					"businessType": "LongText",
 					"externalReferenceCode": "C_LICENSE_KEY_DOMAINS",
-					"indexed": true,
+					"indexed": false,
 					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
+					"indexedLanguageId": "",
 					"label": {
 						"en_US": "Domains"
 					},
@@ -4172,7 +4002,7 @@
 					"required": false,
 					"state": false,
 					"system": false,
-					"type": "String"
+					"type": "Clob"
 				},
 				{
 					"DBType": "Long",
@@ -4609,6 +4439,42 @@
 					"state": false,
 					"system": false,
 					"type": "Date"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_KEY_WORKSPACE_NAME",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Workspace Name"
+					},
+					"name": "workspaceName",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_KEY_WORKSPACE_OWNER_EMAIL",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "en_US",
+					"label": {
+						"en_US": "Workspace Owner Email"
+					},
+					"name": "workspaceOwnerEmail",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				}
 			],
 			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",
