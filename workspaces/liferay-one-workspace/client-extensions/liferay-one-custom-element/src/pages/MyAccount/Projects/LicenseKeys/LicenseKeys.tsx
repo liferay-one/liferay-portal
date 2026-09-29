@@ -26,6 +26,7 @@ import FilterableListCard, {
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
+import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
 
 import './LicenseKeys.css';
@@ -86,6 +87,7 @@ function stopAnd(callback: () => void) {
 }
 
 type KebabActionsProps = {
+	admin: boolean;
 	hasActivationPermission: boolean;
 	onDeactivate: () => void;
 	onDownload: () => void;
@@ -96,6 +98,7 @@ type KebabActionsProps = {
 };
 
 function KebabActions({
+	admin,
 	hasActivationPermission,
 	onDeactivate,
 	onDownload,
@@ -130,26 +133,35 @@ function KebabActions({
 
 				{hasActivationPermission &&
 					!row.complimentary &&
-					isRenewableKey(row) && (
+					isRenewableKey(row, admin) && (
 						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
 							{translate('renew')}
 						</ClayDropDown.Item>
 					)}
 
-				{hasActivationPermission &&
-					!row.complimentary &&
-					(row.active ? (
-						<ClayDropDown.Item
-							className="text-danger"
-							onClick={stopAnd(onDeactivate)}
-						>
-							{translate('deactivate')}
-						</ClayDropDown.Item>
-					) : (
-						<ClayDropDown.Item onClick={stopAnd(onReactivate)}>
-							{translate('reactivate')}
-						</ClayDropDown.Item>
-					))}
+				{row.complimentary
+					? admin &&
+						row.active && (
+							<ClayDropDown.Item
+								className="text-danger"
+								onClick={stopAnd(onDeactivate)}
+							>
+								{translate('deactivate')}
+							</ClayDropDown.Item>
+						)
+					: hasActivationPermission &&
+						(row.active ? (
+							<ClayDropDown.Item
+								className="text-danger"
+								onClick={stopAnd(onDeactivate)}
+							>
+								{translate('deactivate')}
+							</ClayDropDown.Item>
+						) : (
+							<ClayDropDown.Item onClick={stopAnd(onReactivate)}>
+								{translate('reactivate')}
+							</ClayDropDown.Item>
+						))}
 			</ClayDropDown.ItemList>
 		</ClayDropDown>
 	);
@@ -162,6 +174,7 @@ export default function LicenseKeys() {
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
+	const admin = useHasAdminPermission();
 
 	const {
 		handleDeactivate,
@@ -247,6 +260,7 @@ export default function LicenseKeys() {
 			key: 'action',
 			render: (row) => (
 				<KebabActions
+					admin={admin}
 					hasActivationPermission={hasActivationPermission}
 					onDeactivate={() => handleDeactivate(row)}
 					onDownload={() => handleDownload(row)}

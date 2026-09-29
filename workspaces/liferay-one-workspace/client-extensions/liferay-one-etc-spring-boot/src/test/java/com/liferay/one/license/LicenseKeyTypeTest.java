@@ -248,7 +248,12 @@ public class LicenseKeyTypeTest {
 
 	@Test
 	public void testMatchesVirtualClusterName() {
-		Assertions.assertNull(
+
+		// Virtual cluster entries are recognised so an administrator can issue
+		// one; the key type itself is what is withheld from customers.
+
+		Assertions.assertEquals(
+			LicenseKeyType.VIRTUAL_CLUSTER,
 			LicenseKeyType.fetchLicenseKeyType(
 				_toLicenseEntry(
 					"DXP Production (Virtual Cluster)", "virtual-cluster")));

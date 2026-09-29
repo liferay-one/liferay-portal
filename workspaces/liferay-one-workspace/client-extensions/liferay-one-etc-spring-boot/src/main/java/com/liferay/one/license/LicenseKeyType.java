@@ -23,7 +23,8 @@ public enum LicenseKeyType {
 	NON_PRODUCTION(null, "non-production", "Non-Production", "production"),
 	OEM(null, "oem", null, "oem"),
 	PRODUCTION("Non-Production", "production", "Production", "production"),
-	UAT(null, "uat", null, null);
+	UAT(null, "uat", null, null),
+	VIRTUAL_CLUSTER(null, "virtual-cluster", null, "virtual-cluster");
 
 	public static LicenseKeyType fetchLicenseKeyType(
 		LicenseEntry licenseEntry) {

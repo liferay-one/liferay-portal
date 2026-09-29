@@ -22,6 +22,7 @@ import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
 import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
+import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
 import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
@@ -36,6 +37,7 @@ export default function LicenseKeyDetails() {
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
+	const admin = useHasAdminPermission();
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
 		useActivationKeyActions({generatePath: '../generate', revalidate});
@@ -57,6 +59,7 @@ export default function LicenseKeyDetails() {
 			) : activationKey ? (
 				<LicenseKeyDetailsContent
 					activationKey={activationKey}
+					admin={admin}
 					hasActivationPermission={hasActivationPermission}
 					licenseKeys={licenseKeys}
 					onDeactivate={() => handleDeactivate(activationKey)}
@@ -75,6 +78,7 @@ export default function LicenseKeyDetails() {
 
 type LicenseKeyDetailsContentProps = {
 	activationKey: ProjectActivationKey;
+	admin: boolean;
 	hasActivationPermission: boolean;
 	licenseKeys: ActivationKeyLicenseKey[];
 	onDeactivate: () => void;
@@ -118,6 +122,7 @@ function getServers(licenseKeys: ActivationKeyLicenseKey[]) {
 
 function LicenseKeyDetailsContent({
 	activationKey,
+	admin,
 	hasActivationPermission,
 	licenseKeys,
 	onDeactivate,
@@ -243,7 +248,7 @@ function LicenseKeyDetailsContent({
 
 						{hasActivationPermission &&
 							!activationKey.complimentary &&
-							isRenewableKey(activationKey) && (
+							isRenewableKey(activationKey, admin) && (
 								<ClayButton
 									displayType="secondary"
 									onClick={onRenew}
@@ -252,20 +257,29 @@ function LicenseKeyDetailsContent({
 								</ClayButton>
 							)}
 
-						{hasActivationPermission &&
-							!activationKey.complimentary &&
-							(activationKey.active ? (
-								<ClayButton
-									displayType="danger"
-									onClick={onDeactivate}
-								>
-									{translate('deactivate')}
-								</ClayButton>
-							) : (
-								<ClayButton onClick={onReactivate}>
-									{translate('reactivate')}
-								</ClayButton>
-							))}
+						{activationKey.complimentary
+							? admin &&
+								activationKey.active && (
+									<ClayButton
+										displayType="danger"
+										onClick={onDeactivate}
+									>
+										{translate('deactivate')}
+									</ClayButton>
+								)
+							: hasActivationPermission &&
+								(activationKey.active ? (
+									<ClayButton
+										displayType="danger"
+										onClick={onDeactivate}
+									>
+										{translate('deactivate')}
+									</ClayButton>
+								) : (
+									<ClayButton onClick={onReactivate}>
+										{translate('reactivate')}
+									</ClayButton>
+								))}
 					</div>
 				}
 				icon="key-horizontal"

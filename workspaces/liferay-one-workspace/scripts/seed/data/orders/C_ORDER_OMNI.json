@@ -310,6 +310,20 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_DXP_VIRTUAL_CLUSTER",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay DXP Virtual Cluster",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_DXP",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_ENTERPRISE_SEARCH",
 			"grantType": "fixed",
 			"maxQuantity": 1,
@@ -473,6 +487,20 @@
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_PORTAL",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_PRODUCTION",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_PORTAL_VIRTUAL_CLUSTER",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Portal Virtual Cluster",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_PORTAL",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
