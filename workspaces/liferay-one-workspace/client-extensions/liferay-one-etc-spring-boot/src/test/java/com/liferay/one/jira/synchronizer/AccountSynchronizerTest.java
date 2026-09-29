@@ -304,7 +304,7 @@ public class AccountSynchronizerTest {
 		);
 
 		Mockito.doThrow(
-			new Exception("Unable to sync user account")
+			new RuntimeException("Unable to sync user account")
 		).when(
 			_userAccountSynchronizer
 		).syncUserAccount(
