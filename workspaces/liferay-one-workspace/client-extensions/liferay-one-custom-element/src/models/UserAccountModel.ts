@@ -41,6 +41,10 @@ export class UserAccountModel {
 		return this.hasRegularRole('Finance Administrator');
 	}
 
+	get isProvisioningAdministrator() {
+		return this.hasRegularRole('Provisioning Administrator');
+	}
+
 	get isLiferayStaff() {
 		return this.hasRegularRole('Liferay Staff');
 	}

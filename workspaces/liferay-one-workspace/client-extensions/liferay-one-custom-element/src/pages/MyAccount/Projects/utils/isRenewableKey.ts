@@ -7,9 +7,12 @@ import {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 
 import {isPermanentKey} from './isPermanentKey';
 
-export function isRenewableKey(activationKey: ProjectActivationKey): boolean {
+export function isRenewableKey(
+	activationKey: ProjectActivationKey,
+	admin = false
+): boolean {
 	return (
-		activationKey.licenseType !== 'virtual-cluster' &&
+		(admin || activationKey.licenseType !== 'virtual-cluster') &&
 		!isPermanentKey(
 			activationKey.expirationDateValue,
 			activationKey.startDateValue

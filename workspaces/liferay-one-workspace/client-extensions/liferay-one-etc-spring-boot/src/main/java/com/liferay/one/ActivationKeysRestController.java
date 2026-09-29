@@ -10,6 +10,8 @@ import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.license.LicenseKeyType;
+import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
@@ -138,7 +140,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			MediaType.APPLICATION_JSON
 		).body(
 			_licenseKeyGenerateFormService.getGenerateForm(
-				projectExternalReferenceCode,
+				_adminPermission.contains(jwt), projectExternalReferenceCode,
 				renewedActivationKeyExternalReferenceCode
 			).toString()
 		);
@@ -232,6 +234,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
 
+		_checkKeyType(jsonObject.optString("keyType"), jwt);
+
 		String renewedActivationKeyExternalReferenceCode = jsonObject.optString(
 			"renewedActivationKeyExternalReferenceCode", null);
 
@@ -283,6 +287,21 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			_subscriptionEntryService.addSubscriptionEntry(
 				jwt, ClassNameConstants.ACTIVATION_KEY, activationKeyId,
 				userAccount.getId());
+		}
+	}
+
+	private void _checkKeyType(String keyType, Jwt jwt) throws Exception {
+
+		// A key type reserved for administrators is filtered out of the
+		// generate form, so a request naming one did not come from the form.
+
+		LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
+			keyType);
+
+		if ((licenseKeyType != null) &&
+			_licenseKeyTypeService.isAdminType(licenseKeyType)) {
+
+			_adminPermission.check(jwt);
 		}
 	}
 
@@ -410,6 +429,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
+
+	@Autowired
+	private LicenseKeyTypeService _licenseKeyTypeService;
 
 	@Autowired
 	private SubscriptionEntryService _subscriptionEntryService;
