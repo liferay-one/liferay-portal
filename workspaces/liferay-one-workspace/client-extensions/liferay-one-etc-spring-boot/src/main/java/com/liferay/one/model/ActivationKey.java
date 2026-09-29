@@ -21,15 +21,12 @@ public class ActivationKey {
 	public ActivationKey(JSONObject jsonObject) {
 		_accountEntryId = jsonObject.optLong(
 			"r_accountEntryToActivationKey_accountEntryId");
-		_accountName = jsonObject.optString("accountName");
 		_activationKeyId = jsonObject.optLong("id");
 		_active = jsonObject.optBoolean("active");
 		_complimentary = jsonObject.optBoolean("complimentary");
 		_customExpirationDateInstant = _toInstant(
 			jsonObject, "customExpirationDate");
-		_dataCenterLocation = jsonObject.optString("dataCenterLocation");
 		_description = jsonObject.optString("description");
-		_domains = jsonObject.optString("domains");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_keyType = jsonObject.optString("keyType");
 		_licenseType = jsonObject.optString("licenseType");
@@ -38,16 +35,10 @@ public class ActivationKey {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToActivationKey_c_projectERC");
 		_startDateInstant = _toInstant(jsonObject, "startDate");
-		_workspaceName = jsonObject.optString("workspaceName");
-		_workspaceOwnerEmail = jsonObject.optString("workspaceOwnerEmail");
 	}
 
 	public long getAccountEntryId() {
 		return _accountEntryId;
-	}
-
-	public String getAccountName() {
-		return _accountName;
 	}
 
 	public long getActivationKeyId() {
@@ -58,16 +49,8 @@ public class ActivationKey {
 		return _customExpirationDateInstant;
 	}
 
-	public String getDataCenterLocation() {
-		return _dataCenterLocation;
-	}
-
 	public String getDescription() {
 		return _description;
-	}
-
-	public String getDomains() {
-		return _domains;
 	}
 
 	public String getExternalReferenceCode() {
@@ -96,14 +79,6 @@ public class ActivationKey {
 
 	public Instant getStartDateInstant() {
 		return _startDateInstant;
-	}
-
-	public String getWorkspaceName() {
-		return _workspaceName;
-	}
-
-	public String getWorkspaceOwnerEmail() {
-		return _workspaceOwnerEmail;
 	}
 
 	public boolean isActive() {
@@ -135,14 +110,11 @@ public class ActivationKey {
 	private static final Log _log = LogFactory.getLog(ActivationKey.class);
 
 	private final long _accountEntryId;
-	private final String _accountName;
 	private final long _activationKeyId;
 	private final boolean _active;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
-	private final String _dataCenterLocation;
 	private final String _description;
-	private final String _domains;
 	private final String _externalReferenceCode;
 	private final String _keyType;
 	private final String _licenseType;
@@ -150,7 +122,5 @@ public class ActivationKey {
 	private final String _productVersion;
 	private final String _projectExternalReferenceCode;
 	private final Instant _startDateInstant;
-	private final String _workspaceName;
-	private final String _workspaceOwnerEmail;
 
 }

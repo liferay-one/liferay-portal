@@ -55,15 +55,16 @@ public class LicenseKeyService extends OneBaseService {
 			long accountEntryId, String accountName, long activationKeyId,
 			boolean active, String additionalInfo,
 			String commerceProductExternalReferenceCode, boolean complimentary,
-			String description, String domains, long entitlementDefinitionId,
-			long entitlementId, Date expirationDate, String hostName,
-			String ipAddresses, String key, String licenseName,
-			String licenseType, int licenseVersion, String macAddresses,
-			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
-			int maxServers, long maxUsers, String name, String orderId,
-			String owner, String productExternalId, String productName,
-			String productVersion, String projectExternalReferenceCode,
-			String serverId, String sizing, Date startDate)
+			String dataCenterLocation, String description, String domains,
+			long entitlementDefinitionId, long entitlementId,
+			Date expirationDate, String hostName, String ipAddresses,
+			String key, String licenseName, String licenseType,
+			int licenseVersion, String macAddresses, int maxClusterNodes,
+			long maxConcurrentUsers, int maxHttpSessions, int maxServers,
+			long maxUsers, String name, String orderId, String owner,
+			String productExternalId, String productName, String productVersion,
+			String projectExternalReferenceCode, String serverId, String sizing,
+			Date startDate, String workspaceName, String workspaceOwnerEmail)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -95,6 +96,8 @@ public class LicenseKeyService extends OneBaseService {
 			"complimentary", complimentary
 		).put(
 			"customExpirationDate", _toISO8601(expirationDate)
+		).put(
+			"dataCenterLocation", dataCenterLocation
 		).put(
 			"description", description
 		).put(
@@ -154,6 +157,10 @@ public class LicenseKeyService extends OneBaseService {
 			"sizing", sizing
 		).put(
 			"startDate", _toISO8601(startDate)
+		).put(
+			"workspaceName", workspaceName
+		).put(
+			"workspaceOwnerEmail", workspaceOwnerEmail
 		);
 
 		String response = post(
@@ -697,8 +704,9 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getActivationKeyId(), true,
 			licenseKey.getAdditionalInfo(),
 			licenseKey.getCommerceProductExternalReferenceCode(),
-			licenseKey.isComplimentary(), licenseKey.getDescription(),
-			licenseKey.getDomains(), licenseKey.getEntitlementDefinitionId(),
+			licenseKey.isComplimentary(), licenseKey.getDataCenterLocation(),
+			licenseKey.getDescription(), licenseKey.getDomains(),
+			licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
 			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
 			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
@@ -710,7 +718,8 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getProductExternalId(), licenseKey.getProductName(),
 			licenseKey.getProductVersion(),
 			licenseKey.getProjectExternalReferenceCode(),
-			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
+			licenseKey.getServerId(), licenseKey.getSizing(), startDate,
+			licenseKey.getWorkspaceName(), licenseKey.getWorkspaceOwnerEmail());
 	}
 
 	private int _getCount(String filterString) throws Exception {
