@@ -13,6 +13,7 @@ import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchAccountException;
+import com.liferay.one.exception.NoSuchActivationKeyException;
 import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -134,6 +135,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 			HttpStatus.NOT_FOUND, "The account was not found");
 	}
 
+	@ExceptionHandler(NoSuchActivationKeyException.class)
+	public ResponseEntity<?> handleException(
+		NoSuchActivationKeyException noSuchActivationKeyException) {
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(noSuchActivationKeyException);
+		}
+
+		return _toResponseEntity(
+			HttpStatus.NOT_FOUND, "The activation key was not found");
+	}
+
 	@ExceptionHandler(NoSuchEntitlementException.class)
 	public ResponseEntity<?> handleException(
 		NoSuchEntitlementException noSuchEntitlementException) {
@@ -210,6 +223,23 @@ public abstract class OneBaseRestController extends BaseRestController {
 		return new ResponseEntity<>(
 			responseStatusException.getBody(),
 			responseStatusException.getStatusCode());
+	}
+
+	protected boolean getRequiredBoolean(JSONObject jsonObject, String name)
+		throws LicenseKeyValidationException {
+
+		// An absent or malformed flag must not read as false. Defaulting it
+		// turns a typo in the body into a deactivation the caller never asked
+		// for.
+
+		Object value = jsonObject.opt(name);
+
+		if (!(value instanceof Boolean)) {
+			throw new LicenseKeyValidationException(
+				"No boolean " + name + " was given");
+		}
+
+		return (Boolean)value;
 	}
 
 	protected UserAccount getMyUserAccount(Jwt jwt) throws Exception {

@@ -64,6 +64,10 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			@RequestParam("activationKeyIds") long[] activationKeyIds)
 		throws Exception {
 
+		for (long activationKeyId : activationKeyIds) {
+			_getActivationKey(jwt, activationKeyId);
+		}
+
 		UserAccount userAccount = getMyUserAccount(jwt);
 
 		for (long activationKeyId : activationKeyIds) {
@@ -195,7 +199,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		JSONObject jsonObject = new JSONObject(json);
 
 		_activationKeyService.updateActivationKeyActive(
-			activationKeyId, jsonObject.optBoolean("active"));
+			activationKeyId, getRequiredBoolean(jsonObject, "active"));
 	}
 
 	@PostMapping("/generate")
@@ -216,6 +220,12 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
 
+		String renewedActivationKeyExternalReferenceCode = jsonObject.optString(
+			"renewedActivationKeyExternalReferenceCode", null);
+
+		_checkRenewedActivationKey(
+			jwt, project, renewedActivationKeyExternalReferenceCode);
+
 		ActivationKey activationKey =
 			_licenseKeyGenerationService.generateActivationKey(
 				new LicenseKeyGenerationService.GenerateRequest(
@@ -224,6 +234,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 					jsonObject.optString("description"),
 					jsonObject.optString("environmentName"),
 					jsonObject.optString("keyType"), project,
+					renewedActivationKeyExternalReferenceCode,
 					_toServers(jsonObject.optJSONArray("servers")),
 					jsonObject.optLong("subscriptionEntitlementId"),
 					jsonObject.optString("version"),

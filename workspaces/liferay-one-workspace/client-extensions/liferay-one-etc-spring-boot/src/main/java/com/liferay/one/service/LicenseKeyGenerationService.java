@@ -76,7 +76,9 @@ public class LicenseKeyGenerationService {
 
 		// The quota is read and then spent, so the whole sequence is
 		// serialized per project. Two concurrent requests would otherwise both
-		// pass a check neither one had yet consumed.
+		// pass a check neither one had yet consumed. The lock is held in this
+		// JVM, so it serializes one replica: running more than one instance
+		// needs the check moved behind something both of them see.
 
 		return _keyedLock.withLock(
 			project.getExternalReferenceCode(),
@@ -149,9 +151,9 @@ public class LicenseKeyGenerationService {
 		public GenerateRequest(
 			List<Long> bundleEntitlementIds, String dataCenterLocation,
 			String description, String environmentName, String keyType,
-			Project project, List<Server> servers,
-			long subscriptionEntitlementId, String version,
-			String workspaceName, String workspaceOwnerEmail) {
+			Project project, String renewedActivationKeyExternalReferenceCode,
+			List<Server> servers, long subscriptionEntitlementId,
+			String version, String workspaceName, String workspaceOwnerEmail) {
 
 			_bundleEntitlementIds = bundleEntitlementIds;
 			_dataCenterLocation = dataCenterLocation;
@@ -159,6 +161,8 @@ public class LicenseKeyGenerationService {
 			_environmentName = environmentName;
 			_keyType = keyType;
 			_project = project;
+			_renewedActivationKeyExternalReferenceCode =
+				renewedActivationKeyExternalReferenceCode;
 			_servers = servers;
 			_subscriptionEntitlementId = subscriptionEntitlementId;
 			_version = version;
@@ -188,6 +192,10 @@ public class LicenseKeyGenerationService {
 
 		public Project getProject() {
 			return _project;
+		}
+
+		public String getRenewedActivationKeyExternalReferenceCode() {
+			return _renewedActivationKeyExternalReferenceCode;
 		}
 
 		public List<Server> getServers() {
@@ -244,6 +252,7 @@ public class LicenseKeyGenerationService {
 		private final String _environmentName;
 		private final String _keyType;
 		private final Project _project;
+		private final String _renewedActivationKeyExternalReferenceCode;
 		private final List<Server> _servers;
 		private final long _subscriptionEntitlementId;
 		private final String _version;
@@ -269,8 +278,8 @@ public class LicenseKeyGenerationService {
 	}
 
 	private LicenseKey _addLicenseKey(
-			ActivationKey activationKey, String description,
-			Entitlement entitlement, Date expirationDate,
+			ActivationKey activationKey, boolean complimentary,
+			String description, Entitlement entitlement, Date expirationDate,
 			GenerateRequest generateRequest, LicensedProduct licensedProduct,
 			Project project, GenerateRequest.Server server, Date startDate)
 		throws Exception {
@@ -292,8 +301,8 @@ public class LicenseKeyGenerationService {
 		return _licenseKeyService.addLicenseKey(
 			project.getAccountId(), project.getName(),
 			activationKey.getActivationKeyId(), true, null,
-			licensedProduct._getExternalReferenceCode(), false, description,
-			StringPool.BLANK, entitlementDefinitionId,
+			licensedProduct._getExternalReferenceCode(), complimentary,
+			description, StringPool.BLANK, entitlementDefinitionId,
 			entitlement.getEntitlementId(), expirationDate,
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),
@@ -319,8 +328,14 @@ public class LicenseKeyGenerationService {
 
 		int requestedCount = servers.size();
 
+		// A renewal gives back the activations the key being renewed holds, so
+		// they are discounted here exactly as the generate form discounts them.
+		// Without this the form offers a slot the check then refuses, which is
+		// the normal state for a key at its limit.
+
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
+				_getRenewedActivationKeyIds(generateRequest),
 				project.getExternalReferenceCode());
 
 		for (Entitlement entitlement : bundleEntitlements) {
@@ -421,6 +436,10 @@ public class LicenseKeyGenerationService {
 			bundleEntitlements = Collections.singletonList(
 				subscriptionEntitlement);
 		}
+		else {
+			bundleEntitlements = _toBundleEntitlements(
+				bundleEntitlements, subscriptionEntitlement);
+		}
 
 		_checkQuota(bundleEntitlements, generateRequest, project);
 
@@ -447,11 +466,23 @@ public class LicenseKeyGenerationService {
 			for (GenerateRequest.Server server : generateRequest.getServers()) {
 				for (Entitlement entitlement : bundleEntitlements) {
 					_addLicenseKey(
-						activationKey, description, entitlement, expirationDate,
-						generateRequest,
+						activationKey, complimentary, description, entitlement,
+						expirationDate, generateRequest,
 						licensedProducts.get(entitlement.getEntitlementId()),
 						project, server, startDate);
 				}
+			}
+
+			// The renewed key hands its activations to the key that replaces
+			// it. Retiring it here is what makes the discount above sound:
+			// leaving it active would let both keys hold the same activations.
+
+			ActivationKey renewedActivationKey = _fetchRenewedActivationKey(
+				generateRequest);
+
+			if (renewedActivationKey != null) {
+				_activationKeyService.updateActivationKeyActive(
+					renewedActivationKey.getActivationKeyId(), false);
 			}
 		}
 		catch (Exception exception) {
@@ -493,6 +524,40 @@ public class LicenseKeyGenerationService {
 		return bundleEntitlements;
 	}
 
+	private ActivationKey _fetchRenewedActivationKey(
+			GenerateRequest generateRequest)
+		throws Exception {
+
+		String externalReferenceCode =
+			generateRequest.getRenewedActivationKeyExternalReferenceCode();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return null;
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			externalReferenceCode);
+
+		if (activationKey == null) {
+			return null;
+		}
+
+		Project project = generateRequest.getProject();
+
+		// A renewal only discounts a key the project already owns. Anything
+		// else would let a caller spend another project's activations.
+
+		if (!Objects.equals(
+				project.getExternalReferenceCode(),
+				activationKey.getProjectExternalReferenceCode())) {
+
+			throw new LicenseKeyEntitlementException(
+				"The activation key being renewed belongs to another project");
+		}
+
+		return activationKey;
+	}
+
 	private String _getDeveloperLabel(String keyType) {
 		if (Objects.equals(keyType, LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
 			return "Developer Cluster";
@@ -512,6 +577,31 @@ public class LicenseKeyGenerationService {
 		}
 
 		return bundleEntitlements.get(0);
+	}
+
+	private List<Long> _getRenewedActivationKeyIds(
+			GenerateRequest generateRequest)
+		throws Exception {
+
+		ActivationKey activationKey = _fetchRenewedActivationKey(
+			generateRequest);
+
+		if (activationKey == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(activationKey.getActivationKeyId());
+	}
+
+	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return null;
+		}
+
+		return entitlementDefinition.getSkuExternalReferenceCode();
 	}
 
 	private Map<Long, LicensedProduct> _getLicensedProducts(
@@ -584,6 +674,40 @@ public class LicenseKeyGenerationService {
 		}
 
 		return false;
+	}
+
+	private List<Entitlement> _toBundleEntitlements(
+		List<Entitlement> bundleEntitlements,
+		Entitlement subscriptionEntitlement) {
+
+		// The leading product enters the bundle as the entitlement backing the
+		// product itself, but the caller was gated on the entitlement for the
+		// key type they picked, which is a second entitlement over the same
+		// SKU. Spend the one they were gated on, so the count the form showed
+		// is the count that moves.
+
+		List<Entitlement> entitlements = new ArrayList<>();
+
+		entitlements.add(subscriptionEntitlement);
+
+		String skuExternalReferenceCode = _getSkuExternalReferenceCode(
+			subscriptionEntitlement);
+
+		for (Entitlement bundleEntitlement : bundleEntitlements) {
+			if ((bundleEntitlement.getEntitlementId() ==
+					subscriptionEntitlement.getEntitlementId()) ||
+				(Validator.isNotNull(skuExternalReferenceCode) &&
+				 Objects.equals(
+					 skuExternalReferenceCode,
+					 _getSkuExternalReferenceCode(bundleEntitlement)))) {
+
+				continue;
+			}
+
+			entitlements.add(bundleEntitlement);
+		}
+
+		return entitlements;
 	}
 
 	private Date _toDate(Instant instant) {

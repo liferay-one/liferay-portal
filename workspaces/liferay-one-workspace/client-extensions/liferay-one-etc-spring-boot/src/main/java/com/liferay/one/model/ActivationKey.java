@@ -6,6 +6,10 @@
 package com.liferay.one.model;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -117,8 +121,18 @@ public class ActivationKey {
 			return null;
 		}
 
-		return Instant.parse(value);
+		try {
+			return Instant.parse(value);
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			_log.error(
+				"Unable to read the date " + value, dateTimeParseException);
+
+			return null;
+		}
 	}
+
+	private static final Log _log = LogFactory.getLog(ActivationKey.class);
 
 	private final long _accountEntryId;
 	private final String _accountName;

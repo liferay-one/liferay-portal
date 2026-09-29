@@ -569,7 +569,7 @@ public class CloudRestControllerTest {
 		try {
 			return ReflectionTestUtils.invokeMethod(
 				_cloudRestController, "_getManifestJSONObject", "DXP 2025.Q3.1",
-				environment);
+				Collections.emptySet(), environment);
 		}
 		catch (UndeclaredThrowableException undeclaredThrowableException) {
 			throw (Exception)

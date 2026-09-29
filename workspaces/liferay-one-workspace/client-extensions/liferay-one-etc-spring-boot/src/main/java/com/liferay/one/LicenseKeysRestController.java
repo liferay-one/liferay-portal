@@ -12,6 +12,7 @@ import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
+import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -283,6 +284,16 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
 			jwt, licenseKeyId);
 
+		// An activation key activates and deactivates its license keys as one
+		// unit, so flipping one of them on its own would be undone the next
+		// time its parent is flipped. Those go through the activation key.
+
+		if (licenseKey.getActivationKeyId() > 0) {
+			throw new LicenseKeyEntitlementException(
+				"A license key under an activation key is activated or " +
+					"deactivated through that activation key");
+		}
+
 		String projectExternalReferenceCode =
 			licenseKey.getProjectExternalReferenceCode();
 
@@ -298,7 +309,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		JSONObject jsonObject = new JSONObject(json);
 
 		_licenseKeyService.updateLicenseKeyActive(
-			jsonObject.optBoolean("active"), licenseKeyId);
+			getRequiredBoolean(jsonObject, "active"), licenseKeyId);
 	}
 
 	@PostMapping("/extend")

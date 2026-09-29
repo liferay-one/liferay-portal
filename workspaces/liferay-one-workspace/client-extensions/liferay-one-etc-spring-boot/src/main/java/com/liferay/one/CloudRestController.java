@@ -69,6 +69,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -318,7 +319,8 @@ public class CloudRestController extends OneBaseRestController {
 				"Retrieving entitlements for environment " + environmentId);
 		}
 
-		JSONObject jsonObject = _getManifestJSONObject(dxpVersion, environment);
+		JSONObject jsonObject = _getManifestJSONObject(
+			dxpVersion, Collections.emptySet(), environment);
 
 		return ResponseEntity.ok(jsonObject.toString());
 	}
@@ -412,7 +414,9 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
-		Path path = _createOfflineActivationBundle(dxpVersion, environment);
+		Path path = _createOfflineActivationBundle(
+			dxpVersion, _toLongs(jsonObject.optJSONArray("entitlementIds")),
+			environment);
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -603,11 +607,12 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private Path _createOfflineActivationBundle(
-			String dxpVersion, Environment environment)
+			String dxpVersion, Set<Long> entitlementIds,
+			Environment environment)
 		throws Exception {
 
 		JSONObject manifestJSONObject = _getManifestJSONObject(
-			dxpVersion, environment);
+			dxpVersion, entitlementIds, environment);
 
 		Path path = Files.createTempFile("offline-activation-bundle-", ".zip");
 
@@ -827,6 +832,38 @@ public class CloudRestController extends OneBaseRestController {
 		return encoder.encodeToString(licenseXML.getBytes());
 	}
 
+	private List<Entitlement> _filterByEntitlementId(
+		List<Entitlement> entitlements, Set<Long> entitlementIds) {
+
+		if (entitlementIds.isEmpty()) {
+			return entitlements;
+		}
+
+		List<Entitlement> filteredEntitlements = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (entitlementIds.contains(entitlement.getEntitlementId())) {
+				filteredEntitlements.add(entitlement);
+			}
+		}
+
+		return filteredEntitlements;
+	}
+
+	private Set<Long> _toLongs(JSONArray jsonArray) {
+		Set<Long> longs = new LinkedHashSet<>();
+
+		if (jsonArray == null) {
+			return longs;
+		}
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			longs.add(jsonArray.getLong(i));
+		}
+
+		return longs;
+	}
+
 	private List<Product> _getCloudEnabledProducts(
 			List<Entitlement> entitlements)
 		throws Exception {
@@ -892,7 +929,8 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private JSONObject _getManifestJSONObject(
-			String dxpVersion, Environment environment)
+			String dxpVersion, Set<Long> entitlementIds,
+			Environment environment)
 		throws Exception {
 
 		List<Entitlement> entitlements =
@@ -926,8 +964,14 @@ public class CloudRestController extends OneBaseRestController {
 		int maxClusterNodes = _getMaxClusterNodes(
 			entitlements, environment.getType());
 
+		// The caller chooses which subscriptions the package covers. The rest
+		// of the manifest still reads every entitlement, since the term and
+		// the cluster size belong to the environment rather than to the
+		// add-ons that were picked.
+
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
-			_getCloudEnabledProducts(entitlements),
+			_getCloudEnabledProducts(
+				_filterByEntitlementId(entitlements, entitlementIds)),
 			ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
 
 		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
