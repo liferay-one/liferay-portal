@@ -330,7 +330,7 @@ export default function LicenseKeys() {
 	return (
 		<Page
 			description={i18n.translate(
-				'manage-the-activation-within-your-project'
+				'manage-the-activation-keys-within-your-project'
 			)}
 			title={i18n.translate('activation')}
 		>

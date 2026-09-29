@@ -9,6 +9,8 @@ import {useFetch} from '~/hooks/useFetch';
 import {Word} from '~/i18n';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
+import SearchBuilder from '~/utils/SearchBuilder';
+import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';
 
@@ -130,8 +132,14 @@ export function useProjectActivationKeys() {
 		projectId && !isUnassignedProject(projectId) ? projectId : undefined;
 
 	const scope = projectExternalReferenceCode
-		? `r_projectToActivationKey_c_projectERC eq '${projectExternalReferenceCode}'`
-		: `r_accountEntryToActivationKey_accountEntryId eq '${accountId}'`;
+		? SearchBuilder.eq(
+				'r_projectToActivationKey_c_projectERC',
+				escapeODataString(projectExternalReferenceCode)
+			)
+		: SearchBuilder.eq(
+				'r_accountEntryToActivationKey_accountEntryId',
+				String(accountId)
+			);
 
 	const {
 		data,

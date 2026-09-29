@@ -1,9 +1,11 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 import {useFetch} from '~/hooks/useFetch';
+import SearchBuilder from '~/utils/SearchBuilder';
+import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';
 
@@ -52,7 +54,10 @@ export function useActivationKeyLicenseKeys(activationKeyId?: string) {
 		activationKeyId ? '/o/c/licensekeys' : null,
 		{
 			params: {
-				filter: `r_activationKeyToLicenseKey_c_activationKeyId eq '${activationKeyId}'`,
+				filter: SearchBuilder.eq(
+					'r_activationKeyToLicenseKey_c_activationKeyId',
+					escapeODataString(activationKeyId ?? '')
+				),
 				pageSize: 200,
 			},
 		}
