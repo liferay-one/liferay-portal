@@ -9,7 +9,8 @@ import ActivationKeys, {
 } from '~/services/spring-boot/ActivationKeys';
 
 export function useGenerateActivationKeyForm(
-	projectExternalReferenceCode: string
+	projectExternalReferenceCode: string,
+	renewedActivationKeyExternalReferenceCode?: string | null
 ) {
 	const [error, setError] = useState(false);
 	const [generateForm, setGenerateForm] = useState<GenerateForm>();
@@ -28,7 +29,10 @@ export function useGenerateActivationKeyForm(
 		setError(false);
 		setLoading(true);
 
-		ActivationKeys.getGenerateForm(projectExternalReferenceCode)
+		ActivationKeys.getGenerateForm(
+			projectExternalReferenceCode,
+			renewedActivationKeyExternalReferenceCode ?? undefined
+		)
 			.then((value) => {
 				if (!cancelled) {
 					setGenerateForm(value);
@@ -48,7 +52,10 @@ export function useGenerateActivationKeyForm(
 		return () => {
 			cancelled = true;
 		};
-	}, [projectExternalReferenceCode]);
+	}, [
+		projectExternalReferenceCode,
+		renewedActivationKeyExternalReferenceCode,
+	]);
 
 	return {error, generateForm, loading};
 }

@@ -8,7 +8,10 @@ import Button from '~/components/Button/Button';
 import {Input} from '~/components/Input/Input';
 import {translate} from '~/i18n';
 
-import {GenerateActivationKeyForm} from '../../types';
+import {
+	GenerateActivationKeyForm,
+	GenerateActivationKeyServerField,
+} from '../../types';
 
 type ServerFieldGroupProps = {
 	disabled?: boolean;
@@ -16,6 +19,7 @@ type ServerFieldGroupProps = {
 	onClickAdd?: () => void;
 	onClickRemove?: () => void;
 	register: UseFormRegister<GenerateActivationKeyForm>;
+	serverField: GenerateActivationKeyServerField;
 };
 
 export default function ServerFieldGroup({
@@ -24,34 +28,41 @@ export default function ServerFieldGroup({
 	onClickAdd,
 	onClickRemove,
 	register,
+	serverField,
 }: ServerFieldGroupProps) {
 	return (
 		<div className="border-bottom mb-4 pb-3">
-			<Input
-				{...register(`servers.${index}.hostName`)}
-				disabled={disabled}
-				label={translate('host-name')}
-			/>
+			{serverField === 'hostName' && (
+				<Input
+					{...register(`servers.${index}.hostName`)}
+					disabled={disabled}
+					label={translate('host-name')}
+				/>
+			)}
 
-			<Input
-				{...register(`servers.${index}.ipAddresses`)}
-				component="textarea"
-				disabled={disabled}
-				helpMessage={translate(
-					'add-one-ip-address-per-line-ipv-six-addresses-are-not-supported'
-				)}
-				label={translate('ip-addresses')}
-				placeholder={'1.1.1.1\n2.2.2.2'}
-			/>
+			{serverField === 'ipAddresses' && (
+				<Input
+					{...register(`servers.${index}.ipAddresses`)}
+					component="textarea"
+					disabled={disabled}
+					helpMessage={translate(
+						'add-one-ip-address-per-line-ipv-six-addresses-are-not-supported'
+					)}
+					label={translate('ip-addresses')}
+					placeholder={'1.1.1.1\n2.2.2.2'}
+				/>
+			)}
 
-			<Input
-				{...register(`servers.${index}.macAddresses`)}
-				component="textarea"
-				disabled={disabled}
-				helpMessage={translate('add-one-mac-address-per-line')}
-				label={translate('mac-addresses')}
-				placeholder={'XX-XX-XX-XX-XX-XX\nXX-XX-XX-XX-XX-XX'}
-			/>
+			{serverField === 'macAddresses' && (
+				<Input
+					{...register(`servers.${index}.macAddresses`)}
+					component="textarea"
+					disabled={disabled}
+					helpMessage={translate('add-one-mac-address-per-line')}
+					label={translate('mac-addresses')}
+					placeholder={'XX-XX-XX-XX-XX-XX\nXX-XX-XX-XX-XX-XX'}
+				/>
+			)}
 
 			<div className="d-flex gap-3">
 				{onClickRemove && (

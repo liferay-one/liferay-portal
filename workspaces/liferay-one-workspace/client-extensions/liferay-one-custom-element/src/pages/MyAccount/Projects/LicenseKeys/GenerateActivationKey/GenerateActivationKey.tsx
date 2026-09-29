@@ -14,23 +14,37 @@ import {Word, translate} from '~/i18n';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
+import Cloud from '~/services/spring-boot/Cloud';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import {scrollToTop} from '~/utils/browserUtils';
 
 import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
+import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
 import DSRStep from './DSRStep/DSRStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
+import NonProductionEnvironmentsStep from './NonProductionEnvironmentsStep/NonProductionEnvironmentsStep';
+import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
+import OfflineTokenStep from './OfflineTokenStep/OfflineTokenStep';
 import SubscriptionStep from './SubscriptionStep/SubscriptionStep';
+import useCloudNativeEnvironments from './hooks/useCloudNativeEnvironments';
 import useGenerateActivationKeyForm from './hooks/useGenerateActivationKeyForm';
 import useHasWorkspace from './hooks/useHasWorkspace';
 import useRenewSource from './hooks/useRenewSource';
 import {GenerateActivationKeyForm, GenerateActivationKeyStep} from './types';
-import {buildEmptyServer} from './utils';
+import {
+	NON_PRODUCTION_KEY_TYPE,
+	buildEmptyServer,
+	getBundleProducts,
+	isCloudNativeProduct,
+	isComplimentaryKeyType,
+	isDeveloperKeyType,
+	toServerField,
+} from './utils';
 
 import './GenerateActivationKey.css';
 
-const DSR_PRODUCT_NAME = 'DSR';
+const DSR_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-ADDON-DISASTER-RECOVERY';
 
 export default function GenerateActivationKey() {
 	const {projectId} = useProject();
@@ -39,11 +53,15 @@ export default function GenerateActivationKey() {
 
 	const renewExternalReferenceCode = searchParams.get('renew');
 
-	const {error, generateForm, loading} =
-		useGenerateActivationKeyForm(projectId);
+	const {error, generateForm, loading} = useGenerateActivationKeyForm(
+		projectId,
+		renewExternalReferenceCode
+	);
 	const {hasActivationPermission, loading: permissionLoading} =
 		useHasLicenseKeyPermission(projectId);
 	const {hasWorkspace} = useHasWorkspace(projectId);
+	const {environments: cloudNativeEnvironments} =
+		useCloudNativeEnvironments(projectId);
 	const {loading: renewLoading, renewSource} = useRenewSource(
 		renewExternalReferenceCode,
 		generateForm
@@ -51,19 +69,23 @@ export default function GenerateActivationKey() {
 
 	const renewing = Boolean(renewExternalReferenceCode);
 
+	const [generated, setGenerated] = useState(false);
 	const [step, setStep] = useState<GenerateActivationKeyStep>('subscription');
 	const [submitError, setSubmitError] = useState('');
 	const [submitting, setSubmitting] = useState(false);
 
 	const form = useForm<GenerateActivationKeyForm>({
 		defaultValues: {
+			activationToken: '',
 			bundleEntitlementIds: [],
 			dataCenterLocation: '',
 			description: '',
 			environmentName: '',
 			keyType: '',
 			notify: true,
+			offlineSubscriptionIds: [],
 			productExternalReferenceCode: '',
+			serverField: 'hostName',
 			servers: [buildEmptyServer()],
 			subscriptionEntitlementId: 0,
 			version: '',
@@ -75,29 +97,44 @@ export default function GenerateActivationKey() {
 	const {getValues, setValue, watch} = form;
 
 	const bundleEntitlementIds = watch('bundleEntitlementIds');
+	const keyType = watch('keyType');
+
+	const complimentary = isComplimentaryKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
+	const version = watch('version');
 
 	const preselectedExternalReferenceCode = searchParams.get('new');
 
 	useEffect(() => {
-		if (!generateForm || bundleEntitlementIds.length) {
+		if (!generateForm || !renewing || bundleEntitlementIds.length) {
 			return;
 		}
 
-		if (renewing) {
-			if (renewSource) {
-				setValue(
-					'bundleEntitlementIds',
-					renewSource.bundleEntitlementIds
-				);
-			}
+		if (renewSource) {
+			setValue('bundleEntitlementIds', renewSource.bundleEntitlementIds);
+		}
+	}, [
+		bundleEntitlementIds.length,
+		generateForm,
+		renewSource,
+		renewing,
+		setValue,
+	]);
+
+	useEffect(() => {
+		if (!generateForm || renewing || !productExternalReferenceCode) {
+			return;
+		}
+
+		if (complimentary) {
+			setValue('bundleEntitlementIds', []);
 
 			return;
 		}
 
 		setValue(
 			'bundleEntitlementIds',
-			generateForm.bundleProducts
+			getBundleProducts(generateForm, productExternalReferenceCode)
 				.filter(
 					(bundleProduct) =>
 						bundleProduct.licensable &&
@@ -106,9 +143,9 @@ export default function GenerateActivationKey() {
 				.map((bundleProduct) => bundleProduct.entitlementId)
 		);
 	}, [
-		bundleEntitlementIds.length,
+		complimentary,
 		generateForm,
-		renewSource,
+		productExternalReferenceCode,
 		renewing,
 		setValue,
 	]);
@@ -134,6 +171,9 @@ export default function GenerateActivationKey() {
 		}
 
 		if (renewSource.servers.length) {
+			const [server] = renewSource.servers;
+
+			setValue('serverField', toServerField(server));
 			setValue('servers', renewSource.servers);
 		}
 
@@ -176,17 +216,113 @@ export default function GenerateActivationKey() {
 			return false;
 		}
 
-		return generateForm.bundleProducts.some(
+		return getBundleProducts(
+			generateForm,
+			productExternalReferenceCode
+		).some(
 			(bundleProduct) =>
 				bundleEntitlementIds.includes(bundleProduct.entitlementId) &&
-				bundleProduct.name.includes(DSR_PRODUCT_NAME)
+				bundleProduct.externalReferenceCode ===
+					DSR_PRODUCT_EXTERNAL_REFERENCE_CODE
 		);
-	}, [bundleEntitlementIds, generateForm]);
+	}, [bundleEntitlementIds, generateForm, productExternalReferenceCode]);
 
 	const needsDSRStep = includesDSR && !hasWorkspace;
 
+	const versions = useMemo(() => {
+		const product = generateForm?.products.find(
+			(current) =>
+				current.externalReferenceCode === productExternalReferenceCode
+		);
+
+		if (!product) {
+			return [];
+		}
+
+		if (isDeveloperKeyType(keyType)) {
+			return product.developerVersions;
+		}
+
+		return product.versions;
+	}, [generateForm, keyType, productExternalReferenceCode]);
+
+	useEffect(() => {
+		const [firstVersion] = versions;
+
+		if (
+			(!renewing || !version) &&
+			firstVersion &&
+			!versions.includes(version)
+		) {
+			setValue('version', firstVersion);
+		}
+	}, [renewing, setValue, version, versions]);
+
+	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+
 	function onClickCancel() {
 		navigate('..');
+	}
+
+	function onClickContinueSubscription() {
+		if (complimentary) {
+			goTo('environment');
+
+			return;
+		}
+
+		if (!cloudNative) {
+			goTo('add-ons');
+
+			return;
+		}
+
+		goTo(
+			keyType === NON_PRODUCTION_KEY_TYPE
+				? 'non-production-environments'
+				: 'activation-codes'
+		);
+	}
+
+	async function onClickDownloadPackage() {
+		const values = getValues();
+
+		const environment = cloudNativeEnvironments.find(
+			(current) => current.type === values.keyType
+		);
+
+		if (!environment) {
+			setSubmitError(
+				translate(
+					'no-cloud-native-environments-are-available-for-this-project'
+				)
+			);
+
+			return;
+		}
+
+		setSubmitError('');
+		setSubmitting(true);
+
+		try {
+			await Cloud.offlineActivation(
+				environment.activationCode,
+				values.activationToken.trim()
+			);
+
+			await Cloud.downloadOfflineActivationBundle(
+				values.version,
+				environment.id
+			);
+
+			navigate('..');
+		}
+		catch (error) {
+			setSubmitError(_toSubmitError(error));
+		}
+		finally {
+			setSubmitting(false);
+		}
 	}
 
 	function goTo(nextStep: GenerateActivationKeyStep) {
@@ -203,7 +339,8 @@ export default function GenerateActivationKey() {
 
 		try {
 			await LicenseKeys.downloadDeveloperKey({
-				name: `activation-key-developer-${values.version}.xml`,
+				keyType: values.keyType,
+				name: `activation-key-${values.keyType}-${values.version}.xml`,
 				productName: getProductName(
 					values.productExternalReferenceCode
 				),
@@ -227,23 +364,33 @@ export default function GenerateActivationKey() {
 		setSubmitError('');
 		setSubmitting(true);
 
-		try {
-			const {activationKeyId} =
-				await ActivationKeys.generateActivationKey({
-					bundleEntitlementIds: values.bundleEntitlementIds,
-					dataCenterLocation: values.dataCenterLocation || undefined,
-					description: values.description || undefined,
-					environmentName: values.environmentName,
-					keyType: values.keyType,
-					projectExternalReferenceCode: projectId,
-					servers: values.servers,
-					subscriptionEntitlementId: values.subscriptionEntitlementId,
-					version: values.version,
-					workspaceName: values.workspaceName || undefined,
-					workspaceOwnerEmail:
-						values.workspaceOwnerEmail || undefined,
-				});
+		let activationKeyId;
 
+		try {
+			({activationKeyId} = await ActivationKeys.generateActivationKey({
+				bundleEntitlementIds: values.bundleEntitlementIds,
+				dataCenterLocation: values.dataCenterLocation || undefined,
+				description: values.description || undefined,
+				environmentName: values.environmentName,
+				keyType: values.keyType,
+				projectExternalReferenceCode: projectId,
+				servers: values.servers,
+				subscriptionEntitlementId: values.subscriptionEntitlementId,
+				version: values.version,
+				workspaceName: values.workspaceName || undefined,
+				workspaceOwnerEmail: values.workspaceOwnerEmail || undefined,
+			}));
+		}
+		catch (error) {
+			setSubmitError(_toSubmitError(error));
+			setSubmitting(false);
+
+			return;
+		}
+
+		setGenerated(true);
+
+		try {
 			if (values.notify) {
 				await ActivationKeys.subscribe(String(activationKeyId));
 			}
@@ -256,7 +403,11 @@ export default function GenerateActivationKey() {
 			navigate('..');
 		}
 		catch (error) {
-			setSubmitError(_toSubmitError(error));
+			setSubmitError(
+				translate(
+					'the-activation-key-was-generated-but-could-not-be-downloaded-download-it-from-the-list'
+				)
+			);
 		}
 		finally {
 			setSubmitting(false);
@@ -302,13 +453,28 @@ export default function GenerateActivationKey() {
 	}
 
 	const subtitles: Record<GenerateActivationKeyStep, Word> = {
+		'activation-codes':
+			'please-copy-and-paste-the-activation-code-for-the-environment-type-you-would-like-to-activate-into-your-server',
 		'add-ons':
 			'select-the-add-ons-you-would-like-to-include-in-the-activation-keys',
 		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
+		'non-production-environments':
+			'modify-your-existing-non-production-environment-or-activate-a-new-non-production-environment',
+		'offline-package':
+			'select-the-product-and-key-type-you-would-like-to-generate',
+		'offline-token':
+			'select-the-product-and-key-type-you-would-like-to-generate',
 		'subscription':
-			'select-the-subscription-and-key-type-you-would-like-to-generate',
+			'select-the-product-and-key-type-you-would-like-to-generate',
+	};
+
+	const titles: Partial<Record<GenerateActivationKeyStep, Word>> = {
+		'activation-codes': 'activation-codes',
+		'non-production-environments': 'non-production-environments',
+		'offline-package': 'download-offline-activation-package',
+		'offline-token': 'download-offline-activation-package',
 	};
 
 	return (
@@ -317,9 +483,10 @@ export default function GenerateActivationKey() {
 				className="generate-activation-key"
 				subtitle={translate(subtitles[step])}
 				title={translate(
-					renewing
-						? 'renew-activation-keys'
-						: 'generate-activation-keys'
+					titles[step] ??
+						(renewing
+							? 'renew-activation-keys'
+							: 'generate-activation-keys')
 				)}
 			>
 				<ProductPurchase.Body>
@@ -335,14 +502,15 @@ export default function GenerateActivationKey() {
 
 					{step === 'subscription' && (
 						<SubscriptionStep
+							contractTermHelp="you-can-use-this-option-to-generate-activation-keys-with-a-selected-contract-term"
 							form={form}
 							generateForm={generateForm}
 							onClickCancel={onClickCancel}
-							onClickContinue={() => goTo('add-ons')}
+							onClickContinue={onClickContinueSubscription}
 							onClickDownload={onClickDownload}
 							renewing={renewing}
 							submitting={submitting}
-							subscriptionHelp="developer-keys-are-not-tied-to-a-subscription-you-can-optionally-select-a-subscription-to-organize-and-track-your-keys"
+							versions={versions}
 						/>
 					)}
 
@@ -359,6 +527,49 @@ export default function GenerateActivationKey() {
 						/>
 					)}
 
+					{step === 'activation-codes' && (
+						<ActivationCodesStep
+							onClickBack={() => goTo('subscription')}
+							onClickCancel={onClickCancel}
+							onClickFinish={() => navigate('..')}
+							onClickOffline={() => goTo('offline-token')}
+						/>
+					)}
+
+					{step === 'non-production-environments' && (
+						<NonProductionEnvironmentsStep
+							onClickActivate={() => goTo('offline-token')}
+							onClickBack={() => goTo('subscription')}
+							onClickCancel={onClickCancel}
+						/>
+					)}
+
+					{step === 'offline-token' && (
+						<OfflineTokenStep
+							form={form}
+							onClickBack={() =>
+								goTo(
+									keyType === NON_PRODUCTION_KEY_TYPE
+										? 'non-production-environments'
+										: 'activation-codes'
+								)
+							}
+							onClickCancel={onClickCancel}
+							onClickContinue={() => goTo('offline-package')}
+						/>
+					)}
+
+					{step === 'offline-package' && (
+						<OfflinePackageStep
+							bundleProducts={generateForm.bundleProducts}
+							form={form}
+							onClickBack={() => goTo('offline-token')}
+							onClickCancel={onClickCancel}
+							onClickDownload={onClickDownloadPackage}
+							submitting={submitting}
+						/>
+					)}
+
 					{step === 'dsr' && (
 						<DSRStep
 							form={form}
@@ -371,13 +582,22 @@ export default function GenerateActivationKey() {
 					{step === 'environment' && (
 						<EnvironmentStep
 							form={form}
+							generated={generated}
 							onClickBack={() =>
-								goTo(needsDSRStep ? 'dsr' : 'add-ons')
+								goTo(
+									complimentary
+										? 'subscription'
+										: needsDSRStep
+											? 'dsr'
+											: 'add-ons'
+								)
 							}
 							onClickCancel={onClickCancel}
+							onClickDone={() => navigate('..')}
 							onClickGenerate={onClickGenerate}
 							renewing={renewing}
 							submitting={submitting}
+							versions={versions}
 						/>
 					)}
 				</ProductPurchase.Body>

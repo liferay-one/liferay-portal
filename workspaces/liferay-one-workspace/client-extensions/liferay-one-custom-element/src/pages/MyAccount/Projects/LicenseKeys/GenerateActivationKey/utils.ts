@@ -4,35 +4,90 @@
  */
 
 import {Word} from '~/i18n';
+import {
+	GenerateForm,
+	GenerateFormBundleProduct,
+} from '~/services/spring-boot/ActivationKeys';
 
-import type {GenerateActivationKeyServer} from './types';
+import type {
+	GenerateActivationKeyServer,
+	GenerateActivationKeyServerField,
+} from './types';
 
-const DEVELOPER_KEY_TYPE_SUFFIX = 'Development';
+const DEVELOPER_KEY_TYPES = ['developer', 'developer-cluster'];
+
+export const CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE =
+	'PRDCT-CLOUD-NATIVE';
+
+export const COMPLIMENTARY_DURATION_DAYS = 30;
+
+export const COMPLIMENTARY_KEY_TYPE = 'complimentary';
+
+export const FREE_KEY_TYPE = 'free';
+
+export const NON_PRODUCTION_KEY_TYPE = 'non-production';
+
+export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
+	'hostName',
+	'ipAddresses',
+	'macAddresses',
+];
 
 export function buildEmptyServer(): GenerateActivationKeyServer {
 	return {hostName: '', ipAddresses: '', macAddresses: ''};
 }
 
-export function getGenerateButtonLabel(
-	renewing: boolean,
-	serverCount: number
-): Word {
-	if (renewing) {
-		return serverCount === 1 ? 'renew-x-key' : 'renew-x-keys';
+export function getBundleProducts(
+	generateForm: GenerateForm,
+	productExternalReferenceCode: string
+): GenerateFormBundleProduct[] {
+	const product = generateForm.products.find(
+		(current) =>
+			current.externalReferenceCode === productExternalReferenceCode
+	);
+
+	if (!product) {
+		return [];
 	}
 
-	return serverCount === 1 ? 'generate-x-key' : 'generate-x-keys';
+	return generateForm.bundleProducts.filter(
+		(bundleProduct) =>
+			!bundleProduct.licenseEntryFamily ||
+			bundleProduct.licenseEntryFamily === product.label
+	);
+}
+
+export function getGenerateButtonLabel(renewing: boolean): Word {
+	return renewing ? 'renew-key' : 'generate-key';
+}
+
+export function isCloudNativeProduct(externalReferenceCode: string): boolean {
+	return (
+		externalReferenceCode === CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+	);
+}
+
+export function isComplimentaryKeyType(keyType: string): boolean {
+	return keyType === COMPLIMENTARY_KEY_TYPE;
 }
 
 export function isDeveloperKeyType(keyType: string): boolean {
-	return keyType.endsWith(DEVELOPER_KEY_TYPE_SUFFIX);
+	return DEVELOPER_KEY_TYPES.includes(keyType);
 }
 
-export function hasServerInfo(servers: GenerateActivationKeyServer[]): boolean {
-	return servers.every(
-		(server) =>
-			Boolean(server.hostName.trim()) ||
-			Boolean(server.ipAddresses.trim()) ||
-			Boolean(server.macAddresses.trim())
+export function hasServerInfo(
+	servers: GenerateActivationKeyServer[],
+	serverField: GenerateActivationKeyServerField
+): boolean {
+	return servers.every((server) => Boolean(server[serverField].trim()));
+}
+
+export function toServerField(
+	server: GenerateActivationKeyServer
+): GenerateActivationKeyServerField {
+	return (
+		SERVER_FIELDS.find((serverField) =>
+			Boolean(server[serverField].trim())
+		) ?? 'hostName'
 	);
 }

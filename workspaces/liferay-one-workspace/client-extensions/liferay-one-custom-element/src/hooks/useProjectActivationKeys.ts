@@ -50,7 +50,13 @@ type ActivationKeyNode = {
 
 const NEW_KEY_WINDOW_DAYS = 15;
 
-const NON_PRODUCTION_LICENSE_TYPES = ['developer', 'developer-cluster', 'free'];
+const NON_PRODUCTION_KEY_TYPES = [
+	'developer',
+	'developer-cluster',
+	'free',
+	'non-production',
+	'uat',
+];
 
 const RENEWAL_WINDOW_DAYS = 90;
 
@@ -82,8 +88,8 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 	return undefined;
 }
 
-function getEnvironmentType(licenseType?: string): Word {
-	if (licenseType && NON_PRODUCTION_LICENSE_TYPES.includes(licenseType)) {
+function getEnvironmentType(keyType?: string): Word {
+	if (keyType && NON_PRODUCTION_KEY_TYPES.includes(keyType)) {
 		return 'non-production';
 	}
 
@@ -153,7 +159,7 @@ export function useProjectActivationKeys() {
 			complimentary: node.complimentary ?? false,
 			description: node.description ?? '',
 			domain: node.domains ?? '',
-			environmentType: getEnvironmentType(node.licenseType),
+			environmentType: getEnvironmentType(node.keyType),
 			expirationDate: formatDate(node.customExpirationDate),
 			expirationDateValue: getDateValue(node.customExpirationDate),
 			id: node.externalReferenceCode,

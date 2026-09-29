@@ -6,6 +6,12 @@
 .generate-activation-key {
 	font-family: var(--font-family-sans-serif, 'Source Sans 3', sans-serif);
 
+	& .border,
+	& .border-bottom,
+	& hr {
+		border-color: var(--color-neutral-2);
+	}
+
 	& .btn-unstyled {
 		color: #51525c;
 
@@ -101,6 +107,26 @@
 
 	& .generate-activation-key-server-alert .autofit-col {
 		align-self: center;
+	}
+
+	& .generate-activation-key-server-field {
+		border-color: var(--color-neutral-7);
+		border-radius: 8px;
+		height: 100%;
+
+		& strong {
+			color: #51525c;
+			font-weight: 600;
+		}
+
+		&.selected {
+			background-color: rgb(0 74 215 / 10%);
+			border-color: #004ad7;
+
+			& strong {
+				color: #004ad7;
+			}
+		}
 	}
 
 	& .generate-activation-key-select-icon-single {
