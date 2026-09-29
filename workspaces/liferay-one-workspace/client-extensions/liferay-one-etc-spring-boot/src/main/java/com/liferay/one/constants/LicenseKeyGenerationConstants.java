@@ -25,13 +25,6 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String KEY_TYPE_PRODUCTION = "production";
 
-	public static final String[] LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = {
-		LicenseKeyGenerationConstants.
-			PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
-		LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
-		LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL
-	};
-
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
 
 	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE =

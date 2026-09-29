@@ -21,7 +21,6 @@ import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -187,9 +186,7 @@ public class LicenseKeyGenerateFormService {
 						licenseKeyCounts));
 			}
 
-			if ((keyTypesJSONArray.length() == 0) ||
-				!_leadsActivationKey(entitledProduct)) {
-
+			if (keyTypesJSONArray.length() == 0) {
 				continue;
 			}
 
@@ -595,13 +592,6 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return false;
-	}
-
-	private boolean _leadsActivationKey(EntitledProduct entitledProduct) {
-		return ArrayUtil.contains(
-			LicenseKeyGenerationConstants.
-				LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES,
-			entitledProduct.getExternalReferenceCode());
 	}
 
 	private List<Entitlement> _orderByLicenseKeyType(
