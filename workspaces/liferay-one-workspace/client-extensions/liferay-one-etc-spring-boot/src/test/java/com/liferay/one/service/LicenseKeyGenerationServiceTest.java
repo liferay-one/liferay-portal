@@ -283,6 +283,43 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLTakesItsTermFromTheDefinition()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP", 90));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			"developer", "DXP", _toProject(), "7.4");
+
+		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
+			Date.class);
+		ArgumentCaptor<Date> expirationDateArgumentCaptor =
+			ArgumentCaptor.forClass(Date.class);
+
+		Mockito.verify(
+			_licenseKeyGenerator
+		).generateKey(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), startDateArgumentCaptor.capture(),
+			expirationDateArgumentCaptor.capture()
+		);
+
+		Date startDate = startDateArgumentCaptor.getValue();
+		Date expirationDate = expirationDateArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			90,
+			TimeUnit.MILLISECONDS.toDays(
+				expirationDate.getTime() - startDate.getTime()));
+	}
+
+	@Test
 	public void testGenerateActivationKeyChargesTheSelectedKeyType()
 		throws Exception {
 
@@ -748,12 +785,22 @@ public class LicenseKeyGenerationServiceTest {
 		long entitlementId, Double maxQuantity,
 		String skuExternalReferenceCode) {
 
+		return _toEntitlement(
+			entitlementId, maxQuantity, skuExternalReferenceCode, 0);
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, Double maxQuantity, String skuExternalReferenceCode,
+		int licenseKeyDurationDays) {
+
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"entitlementDefinitionToEntitlement",
 			new JSONObject(
 			).put(
 				"id", entitlementId
+			).put(
+				"licenseKeyDurationDays", licenseKeyDurationDays
 			).put(
 				"skuExternalReferenceCode", skuExternalReferenceCode
 			)
