@@ -275,13 +275,11 @@ public class LicenseKeyGenerationService {
 		throws Exception {
 
 		return _activationKeyService.addActivationKey(
-			project.getAccountId(), project.getName(), true, complimentary,
-			generateRequest.getDataCenterLocation(), description,
-			StringPool.BLANK, expirationDate, generateRequest.getKeyType(),
+			project.getAccountId(), true, complimentary, description,
+			expirationDate, generateRequest.getKeyType(),
 			leadingLicenseEntry.getType(), generateRequest.getEnvironmentName(),
 			generateRequest.getVersion(), project.getExternalReferenceCode(),
-			startDate, generateRequest.getWorkspaceName(),
-			generateRequest.getWorkspaceOwnerEmail());
+			startDate);
 	}
 
 	private LicenseKey _addLicenseKey(
@@ -309,7 +307,8 @@ public class LicenseKeyGenerationService {
 			project.getAccountId(), project.getName(),
 			activationKey.getActivationKeyId(), true, null,
 			licensedProduct._getExternalReferenceCode(), complimentary,
-			description, StringPool.BLANK, entitlementDefinitionId,
+			generateRequest.getDataCenterLocation(), description,
+			StringPool.BLANK, entitlementDefinitionId,
 			entitlement.getEntitlementId(), expirationDate,
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),
@@ -323,7 +322,8 @@ public class LicenseKeyGenerationService {
 			generateRequest.getEnvironmentName(),
 			LicenseConstants.PRODUCT_ID_PORTAL, productName, version,
 			project.getExternalReferenceCode(), StringPool.BLANK,
-			_SIZING_DEFAULT, startDate);
+			_SIZING_DEFAULT, startDate, generateRequest.getWorkspaceName(),
+			generateRequest.getWorkspaceOwnerEmail());
 	}
 
 	private void _checkQuota(

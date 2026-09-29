@@ -34,17 +34,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ActivationKeyService extends OneBaseService {
 
 	public ActivationKey addActivationKey(
-			long accountEntryId, String accountName, boolean active,
-			boolean complimentary, String dataCenterLocation,
-			String description, String domains, Date expirationDate,
-			String keyType, String licenseType, String name,
-			String productVersion, String projectExternalReferenceCode,
-			Date startDate, String workspaceName, String workspaceOwnerEmail)
+			long accountEntryId, boolean active, boolean complimentary,
+			String description, Date expirationDate, String keyType,
+			String licenseType, String name, String productVersion,
+			String projectExternalReferenceCode, Date startDate)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
-		).put(
-			"accountName", accountName
 		).put(
 			"active", active
 		).put(
@@ -52,11 +48,7 @@ public class ActivationKeyService extends OneBaseService {
 		).put(
 			"customExpirationDate", _toISO8601(expirationDate)
 		).put(
-			"dataCenterLocation", dataCenterLocation
-		).put(
 			"description", description
-		).put(
-			"domains", domains
 		).put(
 			"keyType", keyType
 		).put(
@@ -72,10 +64,6 @@ public class ActivationKeyService extends OneBaseService {
 			projectExternalReferenceCode
 		).put(
 			"startDate", _toISO8601(startDate)
-		).put(
-			"workspaceName", workspaceName
-		).put(
-			"workspaceOwnerEmail", workspaceOwnerEmail
 		);
 
 		String response = post(

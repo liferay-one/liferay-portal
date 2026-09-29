@@ -96,14 +96,14 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.anyInt(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
@@ -121,14 +121,15 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.eq(7L),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		for (long entitlementId : new long[] {1L, 2L}) {
@@ -138,14 +139,14 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.anyLong(), Mockito.eq(entitlementId), Mockito.any(),
+				Mockito.any(), Mockito.anyLong(), Mockito.eq(entitlementId),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.anyInt(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any()
+				Mockito.any(), Mockito.any(), Mockito.any()
 			);
 		}
 	}
@@ -349,14 +350,15 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), entitlementIdArgumentCaptor.capture(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
 			Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
 			Mockito.anyInt(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		Assertions.assertEquals(
@@ -390,14 +392,15 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
-			Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
-			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 	}
 
@@ -509,14 +512,15 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 	}
 
@@ -547,11 +551,10 @@ public class LicenseKeyGenerationServiceTest {
 		Mockito.verify(
 			_activationKeyService
 		).addActivationKey(
-			Mockito.anyLong(), Mockito.any(), Mockito.eq(true),
-			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.any(),
-			expirationDateArgumentCaptor.capture(), Mockito.any(),
+			Mockito.anyLong(), Mockito.eq(true), Mockito.eq(true),
+			Mockito.any(), expirationDateArgumentCaptor.capture(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			startDateArgumentCaptor.capture(), Mockito.any(), Mockito.any()
+			Mockito.any(), startDateArgumentCaptor.capture()
 		);
 
 		Date expirationDate = expirationDateArgumentCaptor.getValue();
@@ -621,14 +624,14 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.anyInt(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenThrow(
 			new RuntimeException("The license key could not be added")
 		);
@@ -687,11 +690,9 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_activationKeyService.addActivationKey(
-				Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+				Mockito.anyLong(), Mockito.anyBoolean(), Mockito.anyBoolean(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			activationKey
 		);
@@ -705,14 +706,14 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.anyInt(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
