@@ -25,6 +25,12 @@ export const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
 export const FREE_KEY_TYPE = 'free';
 
+export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
+	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
+	'PRDCT-DXP',
+	'PRDCT-PORTAL',
+];
+
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
 export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
@@ -90,4 +96,14 @@ export function toServerField(
 			Boolean(server[serverField].trim())
 		) ?? 'hostName'
 	);
+}
+
+export function getLeadingProductRank(externalReferenceCode: string): number {
+	const index = LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.indexOf(
+		externalReferenceCode
+	);
+
+	return index === -1
+		? LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.length
+		: index;
 }

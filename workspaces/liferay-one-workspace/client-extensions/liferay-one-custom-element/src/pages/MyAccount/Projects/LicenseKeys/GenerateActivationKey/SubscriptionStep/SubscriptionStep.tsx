@@ -355,7 +355,7 @@ export default function SubscriptionStep({
 							spritemap={getIconSpriteMap()}
 							symbol="info-circle"
 						>
-							{translate('activation-keys-will-be-valid')}{' '}
+							{translate('activation-key-will-be-valid')}{' '}
 							<strong>
 								{`${formatDate(
 									selectedSubscription.startDate

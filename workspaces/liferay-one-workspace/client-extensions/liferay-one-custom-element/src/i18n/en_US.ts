@@ -48,11 +48,11 @@ export default {
 	'activation-key-details': 'Activation Key Details',
 	'activation-key-server-details': 'Activation Key Server Details',
 	'activation-key-uploads': 'Activation Key Uploads',
+	'activation-key-will-be-valid': 'Activation key will be valid',
 	'activation-keys': 'Activation Keys',
 	'activation-keys-list': 'Activation Keys List',
 	'activation-keys-uploaded-successfully':
 		'Activation keys uploaded successfully.',
-	'activation-keys-will-be-valid': 'Activation Key will be valid',
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
 	'activation-token': 'Activation Token',
@@ -658,7 +658,7 @@ export default {
 	'gamification': 'Gamification',
 	'general-info': 'General Info',
 	'generate': 'Generate',
-	'generate-activation-keys': 'Generate Activation Key',
+	'generate-activation-key': 'Generate Activation Key',
 	'generate-key': 'Generate Key',
 	'generate-new': 'Generate New',
 	'generate-x-key': 'Generate {0} Key',
@@ -872,7 +872,7 @@ export default {
 	'make-sure-the-ticket-number-is-correct':
 		'Make sure the ticket number is correct.',
 	'manage': 'Manage',
-	'manage-activation-keys': 'Manage Activation Key',
+	'manage-activation-key': 'Manage Activation Key',
 	'manage-all-your-app-purchases-and-subscriptions-in-one-place-read-other-users-reviews-get-notifications-when-updates-are-available-and-get-the-most-out-of-our-apps-catalog':
 		'Manage all your app purchases and subscriptions in one place, read other users’ reviews, get notifications when updates are available, and get the most out of our Apps catalog.',
 	'manage-all-your-apps-in-one-place': 'Manage All Your Apps in One Place',
@@ -895,8 +895,8 @@ export default {
 	'manage-roles': 'Manage Roles',
 	'manage-roles-and-permissions-of-users-within-each-product':
 		'Manage roles and permissions of users within each product.',
-	'manage-the-activation-within-your-project':
-		'Manage the activation within your project.',
+	'manage-the-activation-keys-within-your-project':
+		'Manage the activation keys within your project',
 	'manage-the-applications-within-your-project':
 		'Manage the applications within your project',
 	'manage-the-members-of-x': 'Manage the members of {0}.',
@@ -1330,7 +1330,6 @@ export default {
 	'remove-user': 'Remove User',
 	'renew': 'Renew',
 	'renew-activation-key': 'Renew Activation Key',
-	'renew-activation-keys': 'Renew Activation Key',
 	'renew-key': 'Renew Key',
 	'renew-x-key': 'Renew {0} Key',
 	'renew-x-keys': 'Renew {0} Keys',
@@ -1431,7 +1430,7 @@ export default {
 	'select-project': 'Select Project',
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
-	'select-the-add-ons-you-would-like-to-include-in-the-activation-keys':
+	'select-the-add-ons-you-would-like-to-include-in-the-activation-key':
 		'Select the add-ons you would like to include in the activation key.',
 	'select-the-areas-of-liferay-your-app-extends-such-as-analytics-content-management-or-commerce-areas-help-customers-browsing-the-marketplace-by-capability-find-your-app':
 		'Select the areas of Liferay your app extends, such as analytics, content management, or commerce. Areas help customers browsing the Marketplace by capability find your app.',
