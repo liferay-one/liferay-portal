@@ -129,13 +129,16 @@ function KebabActions({
 					{translate('download')}
 				</ClayDropDown.Item>
 
-				{hasActivationPermission && isRenewableKey(row) && (
-					<ClayDropDown.Item onClick={stopAnd(onRenew)}>
-						{translate('renew')}
-					</ClayDropDown.Item>
-				)}
+				{hasActivationPermission &&
+					!row.complimentary &&
+					isRenewableKey(row) && (
+						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
+							{translate('renew')}
+						</ClayDropDown.Item>
+					)}
 
 				{hasActivationPermission &&
+					!row.complimentary &&
 					(row.active ? (
 						<ClayDropDown.Item
 							className="text-danger"

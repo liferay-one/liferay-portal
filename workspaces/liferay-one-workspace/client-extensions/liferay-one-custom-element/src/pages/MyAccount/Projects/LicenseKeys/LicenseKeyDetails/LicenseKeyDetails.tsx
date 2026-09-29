@@ -243,6 +243,7 @@ function LicenseKeyDetailsContent({
 						</ClayButton>
 
 						{hasActivationPermission &&
+							!activationKey.complimentary &&
 							isRenewableKey(activationKey) && (
 								<ClayButton
 									displayType="secondary"
@@ -253,6 +254,7 @@ function LicenseKeyDetailsContent({
 							)}
 
 						{hasActivationPermission &&
+							!activationKey.complimentary &&
 							(activationKey.active ? (
 								<ClayButton
 									displayType="danger"

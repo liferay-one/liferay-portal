@@ -34,6 +34,7 @@ export default {
 	'accounts-available-for-x-you': 'Accounts available for {0} (you)',
 	'actions': 'Actions',
 	'activate': 'Activate',
+	'activate-new-non-prod-environment': 'Activate New Non-Prod Environment',
 	'activated': 'Activated',
 	'activating': 'Activating...',
 	'activating-liferay-commerce': 'Activating Liferay Commerce',
@@ -51,7 +52,7 @@ export default {
 	'activation-keys-list': 'Activation Keys List',
 	'activation-keys-uploaded-successfully':
 		'Activation keys uploaded successfully.',
-	'activation-keys-will-be-valid': 'Activation Key(s) will be valid',
+	'activation-keys-will-be-valid': 'Activation Key will be valid',
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
 	'activation-token': 'Activation Token',
@@ -229,6 +230,7 @@ export default {
 	'back-to-project': 'Back to Project',
 	'back-to-solutions': 'Back to Solutions',
 	'back-to-the-list': 'Back to the list',
+	'backup': 'Backup',
 	'banking': 'Banking',
 	'batch': 'Batch',
 	'becoming-a-liferay-marketplace-publisher':
@@ -292,6 +294,7 @@ export default {
 	'city': 'City',
 	'clear': 'Clear',
 	'clear-all-filters': 'Clear All Filters',
+	'click-here': 'click here',
 	'click-on-browse-catalog-to-start': "Click on 'Browse Catalog' to start.",
 	'client-extension': 'Client Extension',
 	'client-extension-type': 'Client Extension Type',
@@ -310,6 +313,7 @@ export default {
 	'cloud-upload': 'Cloud Upload',
 	'cluster': 'Cluster',
 	'cluster-size': 'Cluster Size',
+	'cne-environment-token': 'CNE Environment Token',
 	'collaboration': 'Collaboration',
 	'collaboration-knowledge-sharing': 'Collaboration and Knowledge Sharing',
 	'columns': 'Columns',
@@ -453,6 +457,7 @@ export default {
 	'delhi-india': 'Delhi, India',
 	'denied': 'Denied',
 	'description': 'Description',
+	'deselect-all': 'Deselect All',
 	'design-the-storefront-for-your-solution-this-will-set-the-information-displayed-on-the-solutions-page-this-section-is-dedicated-to-creating-the-solutions-detail-content':
 		'Design the storefront for your solution. This will set the information displayed on the solution’s page. This section is dedicated to creating the solution’s detail content.',
 	'design-the-storefront-for-your-solution-this-will-set-the-information-displayed-on-the-solutions-page-this-section-is-dedicated-to-creating-the-solutions-header':
@@ -461,6 +466,7 @@ export default {
 		'Designed for companies with a Tax/VAT number, this account type also lets you manage multiple users under one profile. Click the button below to create your first Business Account today!',
 	'details': 'Details',
 	'developer': 'Developer',
+	'developer-cluster': 'Developer Cluster',
 	'developer-keys-are-not-tied-to-a-subscription-you-can-optionally-select-a-subscription-to-organize-and-track-your-keys':
 		'Developer keys are not tied to a subscription. You can optionally select a subscription to organize and track your keys.',
 	'developer-license-prices': 'Developer License Prices',
@@ -488,6 +494,9 @@ export default {
 	'download-in-progress': 'Download in Progress',
 	'download-key': 'Download Key',
 	'download-offline-activation-bundle': 'Download Offline Activation Bundle',
+	'download-offline-activation-package':
+		'Download Offline Activation Package',
+	'download-package': 'Download Package',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
@@ -550,6 +559,7 @@ export default {
 	'enter-your-vat-id': 'Enter your VAT ID',
 	'entering-an-actual-event-date-will-close-this-business-event-no-further-edits-will-be-possible':
 		'Entering an actual event date will close this business event. No further edits will be possible.',
+	'enterprise': 'Enterprise',
 	'enterprise-search': 'Enterprise Search',
 	'entity-type': 'Entity Type',
 	'environment': 'Environment',
@@ -622,6 +632,7 @@ export default {
 	'finance-dashboard': 'Finance Dashboard',
 	'financial-portal': 'Financial Portal',
 	'finish-activation': 'Finish Activation',
+	'finish-online-activation': 'Finish Online Activation',
 	'first-name': 'First Name',
 	'for-businesses-with-a-vat-tax-number-this-account-type-support-multiple-users':
 		'For businesses with a VAT/Tax number; this account type support multiple users.',
@@ -647,7 +658,9 @@ export default {
 	'gamification': 'Gamification',
 	'general-info': 'General Info',
 	'generate': 'Generate',
-	'generate-activation-keys': 'Generate Activation Key(s)',
+	'generate-activation-keys': 'Generate Activation Key',
+	'generate-key': 'Generate Key',
+	'generate-new': 'Generate New',
 	'generate-x-key': 'Generate {0} Key',
 	'generate-x-keys': 'Generate {0} Keys',
 	'get-activation-key': 'Get Activation Key',
@@ -715,6 +728,8 @@ export default {
 		'If you could choose 3 top priorities for improvements, what would they be?',
 	'if-you-need-more-information-about-the-availability-of-your-x-activation-keys-please-ask-one-of-your-administrator-team-members-to-update-your-permissions-so-you-can-contact-liferay-support-alternatively-team-members-with-administrator-or-requester-role-can-submit-a-support-ticket-on-your-behalf':
 		' If you need more information about the availability of your {0} activation keys, please ask one of your Administrator team members to update your permissions, so you can contact Liferay Support. Alternatively, team members with Administrator or Requester role can submit a support ticket on your behalf.',
+	'if-your-environment-doesn-t-have-internet-access-click-here-for-offline-activation':
+		"If your environment doesn't have internet access, {0} for offline activation.",
 	'images': 'Images',
 	'important-images-will-be-displayed-following-the-numerical-order-above':
 		'Important: Images will be displayed following the numerical order above.',
@@ -857,7 +872,7 @@ export default {
 	'make-sure-the-ticket-number-is-correct':
 		'Make sure the ticket number is correct.',
 	'manage': 'Manage',
-	'manage-activation-keys': 'Manage Activation Key(s)',
+	'manage-activation-keys': 'Manage Activation Key',
 	'manage-all-your-app-purchases-and-subscriptions-in-one-place-read-other-users-reviews-get-notifications-when-updates-are-available-and-get-the-most-out-of-our-apps-catalog':
 		'Manage all your app purchases and subscriptions in one place, read other users’ reviews, get notifications when updates are available, and get the most out of our Apps catalog.',
 	'manage-all-your-apps-in-one-place': 'Manage All Your Apps in One Place',
@@ -916,6 +931,9 @@ export default {
 	'migration': 'Migration',
 	'mm-dd-yyyy': 'MM-DD-YYYY',
 	'modified-date': 'Modified Date',
+	'modify': 'Modify',
+	'modify-your-existing-non-production-environment-or-activate-a-new-non-production-environment':
+		'Modify your existing non-production environment or activate a new non-production environment.',
 	'modular-components-built-with-html-css-and-javascript-offer-extensible-and-reusable-elements-or-collections-of-elements-for-constructing-content-pages-and-templates':
 		'Modular components, built with HTML, CSS, and JavaScript, offer extensible and reusable elements or collections of elements for constructing content pages and templates.',
 	'module-based-apps-delivered-as-lpkg-files-that-the-user-can-install-to-modify-native-liferay-behavior':
@@ -980,6 +998,8 @@ export default {
 	'no-apps-yet': 'No Apps Yet',
 	'no-bundles-yet': 'No Bundles Yet',
 	'no-business-events-were-found': 'No business events were found.',
+	'no-cloud-native-environments-are-available-for-this-project':
+		'No Cloud Native environments are available for this project.',
 	'no-cloud-native-environments-yet': 'No cloud native environments yet.',
 	'no-cloud-projects-available': 'No Cloud Projects Available',
 	'no-code': 'No-code',
@@ -1013,6 +1033,7 @@ export default {
 	'no-versions-yet': 'No Versions Yet',
 	'no-x': 'No {0}',
 	'non-production': 'Non-Production',
+	'non-production-environments': 'Non-Production Environments',
 	'none': 'None',
 	'not-activated': 'Not Activated',
 	'not-installed': 'Not Installed',
@@ -1031,6 +1052,7 @@ export default {
 	'object-action': 'Object Action',
 	'object-definition': 'Object Definition',
 	'objective': 'Objective',
+	'oem': 'OEM',
 	'of-service': 'of Service.',
 	'of-target': 'of target',
 	'of-x': 'of {0}',
@@ -1094,6 +1116,7 @@ export default {
 	'partner-roles': 'Partner Roles',
 	'password-policy': 'Password Policy',
 	'paste-your-activation-token-here': 'Paste your activation token here',
+	'paste-your-cne-environment-token': 'Paste your CNE Environment Token',
 	'pay-with-bank-transfer': 'Pay with Bank Transfer',
 	'pay-with-card': 'Pay with Card',
 	'pay-with-invoice': 'Pay with Invoice',
@@ -1134,6 +1157,8 @@ export default {
 		'Please check this box if the file you upload does not contain any personal data and therefore can be uploaded to and accessed from any Liferay support location globally.',
 	'please-complete-at-least-one-of-the-following-fields-to-proceed':
 		'Please complete at least one of the following fields to proceed',
+	'please-copy-and-paste-the-activation-code-for-the-environment-type-you-would-like-to-activate-into-your-server':
+		'Please copy and paste the activation code for the environment type you would like to activate into your server.',
 	'please-copy-and-paste-this-activation-code-to-your-cloud-native-instance':
 		'Please copy and paste this activation code to your Cloud Native instance.',
 	'please-enter-a-valid-email-address': 'Please enter a valid email address.',
@@ -1305,7 +1330,8 @@ export default {
 	'remove-user': 'Remove User',
 	'renew': 'Renew',
 	'renew-activation-key': 'Renew Activation Key',
-	'renew-activation-keys': 'Renew Activation Key(s)',
+	'renew-activation-keys': 'Renew Activation Key',
+	'renew-key': 'Renew Key',
 	'renew-x-key': 'Renew {0} Key',
 	'renew-x-keys': 'Renew {0} Keys',
 	'renewal-will-be-available-3-months-before-your-activation-key-expires':
@@ -1387,6 +1413,7 @@ export default {
 	'select-a-ticket': 'Select a Ticket',
 	'select-a-topic': 'Select a Topic',
 	'select-account': 'Select Account',
+	'select-all': 'Select All',
 	'select-an-account-to-view-this-page':
 		'Select an account to view this page.',
 	'select-an-active-liferay-x-subscription-to-download-the-activation-key':
@@ -1405,7 +1432,7 @@ export default {
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
 	'select-the-add-ons-you-would-like-to-include-in-the-activation-keys':
-		'Select the add-ons you would like to include in the activation key(s)',
+		'Select the add-ons you would like to include in the activation key.',
 	'select-the-areas-of-liferay-your-app-extends-such-as-analytics-content-management-or-commerce-areas-help-customers-browsing-the-marketplace-by-capability-find-your-app':
 		'Select the areas of Liferay your app extends, such as analytics, content management, or commerce. Areas help customers browsing the Marketplace by capability find your app.',
 	'select-the-license-type-and-the-number-of-licenses-you-want-to-purchase':
@@ -1413,6 +1440,8 @@ export default {
 	'select-the-offering-of-liferay-your-app-is-compatible-with-the-compatibility-selections-will-determine-on-what-platforms-your-app-is-tested':
 		'Select the offering of Liferay your app is compatible with. The compatibility selections will determine on what platforms your app is tested.',
 	'select-the-option': 'Select the Option',
+	'select-the-product-and-key-type-you-would-like-to-generate':
+		'Select the product and key type you would like to generate.',
 	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
 		'Select the project and ticket you want to attach a file to.',
 	'select-the-subscription-and-key-type-you-would-like-to-generate':
@@ -1492,6 +1521,7 @@ export default {
 	'subscription-id': 'Subscription ID',
 	'subscription-term': 'Subscription Term',
 	'subscription-type': 'Subscription Type',
+	'subscriptions-to-activate': 'Subscriptions to Activate',
 	'subtotal': 'Subtotal',
 	'subtotal-discount': 'Subtotal Discount',
 	'success': 'Success',
@@ -1549,6 +1579,8 @@ export default {
 	'the-account-was-successfully-synced-to-jsm':
 		'The account was successfully synced to JSM.',
 	'the-activation-code-was-not-found': 'The activation code was not found.',
+	'the-activation-key-was-generated-but-could-not-be-downloaded-download-it-from-the-list':
+		'The activation key was generated but could not be downloaded. Download it from the activation key list.',
 	'the-activation-token-is-not-valid': 'The activation token is not valid.',
 	'the-app-and-all-its-client-extensions-services-will-be-deleted-and-uninstalled-from-liferay-dxp':
 		'The app and all its client extensions (services) will be deleted and uninstalled from Liferay DXP.',
@@ -1635,8 +1667,13 @@ export default {
 		'This is the email address that will receive the AI Hub account management invite.',
 	'this-is-the-first-version-of-the-app-to-be-published':
 		'This is the first version of the app to be published.',
+	'this-key-can-be-generated-once': 'This key can be generated once.',
+	'this-key-expires-after-x-days':
+		'This key expires {0} days after generation.',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'This key is expired and cannot be downloaded.',
+	'this-key-is-not-tied-to-a-subscription-and-is-intended-for-temporary-access-only':
+		'This key is not tied to a subscription and is intended for temporary access only.',
 	'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account':
 		'This Liferay DXP is requesting access to your Liferay One account.',
 	'this-may-restrict-the-functionality-available-to-you':
@@ -1804,7 +1841,9 @@ export default {
 	'view-all-account-orders': 'View All Account Orders',
 	'view-app-in-cloud': 'View App in Cloud',
 	'view-details': 'View Details',
+	'view-less': 'View Less',
 	'view-license-details': 'View License Details',
+	'view-more': 'View More',
 	'view-request': 'View Request',
 	'view-the-documentation': 'View the documentation',
 	'virtual-cluster': 'Virtual Cluster',
@@ -1903,6 +1942,8 @@ export default {
 		'You can stop receiving marketing emails by clicking the unsubscribe link in each email or withdraw your consent at any time by either using opt-out functionality accessible through the messages you receive or via email to',
 	'you-can-upload-one-or-many-zip-files-max-total-size-is-500-mb':
 		'You can upload one or many ZIP files. Max total size is 500MB.',
+	'you-can-use-this-option-to-generate-activation-keys-with-a-selected-contract-term':
+		'You can use this option to generate Activation Keys with a selected contract term.',
 	'you-can-view-your-app-in-cloud-console-or-go-back-to-my-apps':
 		'You can view your app in Cloud Console or go back to My Apps.',
 	'you-cannot-upload-more-than-x-files':

@@ -6,6 +6,7 @@
 import {ClayCheckbox} from '@clayui/form';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
+import {useEffect} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import {translate} from '~/i18n';
 import {
@@ -15,6 +16,7 @@ import {
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import {GenerateActivationKeyForm} from '../types';
+import {getBundleProducts} from '../utils';
 
 type AddOnStepProps = {
 	form: UseFormReturn<GenerateActivationKeyForm>;
@@ -38,6 +40,42 @@ export default function AddOnStep({
 	const bundleEntitlementIds = watch('bundleEntitlementIds');
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 
+	const bundleProducts = getBundleProducts(
+		generateForm,
+		productExternalReferenceCode
+	);
+
+	function getUnavailableReason(bundleProduct: GenerateFormBundleProduct) {
+		if (!bundleProduct.licensable) {
+			return translate('no-license-is-available-for-this-product');
+		}
+
+		if (!renewing && bundleProduct.availableCount <= 0) {
+			return translate(
+				'no-key-activations-are-available-for-this-product'
+			);
+		}
+
+		return '';
+	}
+
+	const unavailableEntitlementIds = bundleProducts
+		.filter((bundleProduct) => getUnavailableReason(bundleProduct))
+		.map((bundleProduct) => bundleProduct.entitlementId);
+
+	useEffect(() => {
+		const selectableEntitlementIds = bundleEntitlementIds.filter(
+			(entitlementId) =>
+				!unavailableEntitlementIds.includes(entitlementId)
+		);
+
+		if (selectableEntitlementIds.length !== bundleEntitlementIds.length) {
+			setValue('bundleEntitlementIds', selectableEntitlementIds);
+		}
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [bundleEntitlementIds.join(), unavailableEntitlementIds.join()]);
+
 	function isRequired(bundleProduct: GenerateFormBundleProduct) {
 		return (
 			bundleProduct.externalReferenceCode === productExternalReferenceCode
@@ -58,26 +96,13 @@ export default function AddOnStep({
 	return (
 		<>
 			<div className="generate-activation-key-add-ons">
-				{generateForm.bundleProducts.map((bundleProduct) => {
-					const available =
-						renewing || bundleProduct.availableCount > 0;
+				{bundleProducts.map((bundleProduct) => {
 					const checked = bundleEntitlementIds.includes(
 						bundleProduct.entitlementId
 					);
 					const required = isRequired(bundleProduct);
-
-					let unavailableReason = '';
-
-					if (!bundleProduct.licensable) {
-						unavailableReason = translate(
-							'no-license-is-available-for-this-product'
-						);
-					}
-					else if (!available) {
-						unavailableReason = translate(
-							'no-key-activations-are-available-for-this-product'
-						);
-					}
+					const unavailableReason =
+						getUnavailableReason(bundleProduct);
 
 					return (
 						<ClayTooltipProvider key={bundleProduct.entitlementId}>
@@ -97,7 +122,7 @@ export default function AddOnStep({
 								title={unavailableReason || undefined}
 							>
 								<ClayCheckbox
-									checked={checked && !unavailableReason}
+									checked={checked}
 									disabled={
 										Boolean(unavailableReason) || required
 									}
