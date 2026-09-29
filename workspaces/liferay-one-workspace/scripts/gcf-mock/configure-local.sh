@@ -8,7 +8,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 # The mock is a client extension, so the normal workspace flow builds and
 # deploys it. Two things still have to be arranged locally.
 #
-# The two overrides that redirect the DataOps calls at the mock go in
+# The overrides that redirect the DataOps calls at the mock go in
 # .env.local. That is the channel the one-deploy skill documents: it is read
 # after build/local.env, so it wins. docker-compose.yaml lists it as a second
 # env_file, and the LEC staging appends it onto the staged <name>.env, so it
@@ -136,14 +136,14 @@ function _configure_env {
 
 	local kept
 
-	kept=$(grep --invert-match --no-messages --regexp="^GCE_METADATA_HOST=" --regexp="^LIFERAY_ONE_GCF_BASE_URL=" "${path}")
+	kept=$(grep --invert-match --no-messages --regexp="^GCE_METADATA_HOST=" --regexp="^LIFERAY_ONE_GCF_BASE_URL=" --regexp="^LIFERAY_ONE_LDP_BASE_URL=" "${path}")
 
 	if [ "${remove}" == "false" ]
 	then
-		kept=$(printf '%s\nGCE_METADATA_HOST=%s:80\nLIFERAY_ONE_GCF_BASE_URL=http://%s' "${kept}" "${host}" "${host}")
+		kept=$(printf '%s\nGCE_METADATA_HOST=%s:80\nLIFERAY_ONE_GCF_BASE_URL=http://%s\nLIFERAY_ONE_LDP_BASE_URL=http://%s/ldp_metrics_api' "${kept}" "${host}" "${host}" "${host}")
 	fi
 
-	# Drop a file that held nothing but these two overrides, rather than leaving
+	# Drop a file that held nothing but these overrides, rather than leaving
 	# an empty one behind.
 
 	if [ -z "$(echo "${kept}" | tr --delete '[:space:]')" ]
@@ -162,12 +162,12 @@ function _configure_env {
 
 	if [ "${remove}" == "true" ]
 	then
-		echo "Removed GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL from ${path}"
+		echo "Removed GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL, LIFERAY_ONE_LDP_BASE_URL from ${path}"
 
 		return 0
 	fi
 
-	echo "Set GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL to ${host} in ${path}"
+	echo "Set GCE_METADATA_HOST, LIFERAY_ONE_GCF_BASE_URL, LIFERAY_ONE_LDP_BASE_URL to ${host} in ${path}"
 }
 
 main "${@}"

@@ -86,6 +86,10 @@ public class GoogleCloudFunctionServiceTest {
 
 		ReflectionTestUtils.setField(
 			_googleCloudFunctionService, "_idTokenProvider", _idTokenProvider);
+
+		ReflectionTestUtils.setField(
+			_googleCloudFunctionService, "_ldpBaseURL",
+			"http://localhost:" + inetSocketAddress.getPort());
 	}
 
 	@AfterEach
@@ -106,7 +110,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		Assertions.assertTrue(
 			requestURI.startsWith(
-				"/ldp_metrics_api/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
+				"/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
 					"/ldp/usage/event-history"));
 		Assertions.assertTrue(requestURI.contains("endDate=2026-08-31"));
 		Assertions.assertTrue(requestURI.contains("granularity=month"));
@@ -126,7 +130,7 @@ public class GoogleCloudFunctionServiceTest {
 
 		Assertions.assertTrue(
 			requestURI.startsWith(
-				"/ldp_metrics_api/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
+				"/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
 					"/ldp/usage/event-summary"));
 		Assertions.assertTrue(requestURI.contains("endDate=2026-08-31"));
 		Assertions.assertTrue(requestURI.contains("startDate=2026-06-01"));
@@ -141,8 +145,7 @@ public class GoogleCloudFunctionServiceTest {
 			_googleCloudFunctionService.fetchLDPProjectUsage(
 				_SALESFORCE_PROJECT_ID));
 		Assertions.assertEquals(
-			"/ldp_metrics_api/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
-				"/ldp/usage",
+			"/api/v1/projects/" + _SALESFORCE_PROJECT_ID + "/ldp/usage",
 			_requestURI.get());
 	}
 
