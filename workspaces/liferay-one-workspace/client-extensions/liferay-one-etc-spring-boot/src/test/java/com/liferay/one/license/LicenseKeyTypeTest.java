@@ -5,16 +5,24 @@
 
 package com.liferay.one.license;
 
-import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+
+import java.io.InputStream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -26,21 +34,18 @@ public class LicenseKeyTypeTest {
 	public void setUp() {
 		_licenseKeyTypeService = new LicenseKeyTypeService();
 
-		_setKeys(
-			"_cloudNativeKeys",
-			Arrays.asList("production", "non-production", "uat"));
-		_setKeys(
-			"_dxpKeys",
-			Arrays.asList(
-				"production", "non-production", "developer",
-				"developer-cluster", "backup", "oem", "enterprise", "free"));
-		_setKeys(
-			"_portalKeys",
-			Arrays.asList(
-				"production", "non-production", "developer",
-				"developer-cluster", "backup", "oem", "enterprise"));
-
-		ReflectionTestUtils.invokeMethod(_licenseKeyTypeService, "init");
+		_setTypes(
+			HashMapBuilder.put(
+				"PRDCT-CLOUD-NATIVE", "production,non-production,uat"
+			).put(
+				"PRDCT-DXP",
+				"production,non-production,developer,developer-cluster," +
+					"backup,oem,enterprise,free"
+			).put(
+				"PRDCT-PORTAL",
+				"production,non-production,developer,developer-cluster," +
+					"backup,oem,enterprise"
+			).build());
 	}
 
 	@Test
@@ -75,9 +80,7 @@ public class LicenseKeyTypeTest {
 	public void testGetLicenseKeyTypesForCloudNative() {
 		Assertions.assertEquals(
 			Arrays.asList("production", "non-production", "uat"),
-			_toKeys(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE));
+			_toKeys("PRDCT-CLOUD-NATIVE"));
 	}
 
 	@Test
@@ -86,9 +89,82 @@ public class LicenseKeyTypeTest {
 			Arrays.asList(
 				"production", "non-production", "developer",
 				"developer-cluster", "backup", "oem", "enterprise", "free"),
-			_toKeys(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP));
+			_toKeys("PRDCT-DXP"));
+	}
+
+	@Test
+	public void testBindsTypesFromConfiguration() throws Exception {
+
+		// The map is keyed by product external reference code, which carries
+		// characters Spring relaxes elsewhere, so bind it the way the running
+		// application does rather than trusting the setter alone.
+
+		Properties properties = new Properties();
+
+		try (InputStream inputStream =
+				LicenseKeyTypeTest.class.getResourceAsStream(
+					"/application-default.properties")) {
+
+			properties.load(inputStream);
+		}
+
+		Map<String, Object> source = new HashMap<>();
+
+		for (String name : properties.stringPropertyNames()) {
+			if (name.startsWith("liferay.one.license.key.types")) {
+				source.put(
+					name,
+					properties.getProperty(
+						name
+					).replaceAll(
+						"\\$\\{[^:]+:(.*)\\}", "$1"
+					));
+			}
+		}
+
+		Assertions.assertFalse(source.isEmpty());
+
+		LicenseKeyTypeService licenseKeyTypeService =
+			new LicenseKeyTypeService();
+
+		Binder binder = new Binder(new MapConfigurationPropertySource(source));
+
+		binder.bind(
+			"liferay.one.license.key",
+			Bindable.ofInstance(licenseKeyTypeService));
+
+		ReflectionTestUtils.invokeMethod(licenseKeyTypeService, "init");
+
+		Map<String, String> types = licenseKeyTypeService.getTypes();
+
+		Assertions.assertTrue(types.containsKey("PRDCT-CLOUD-NATIVE"));
+		Assertions.assertTrue(types.containsKey("PRDCT-PAAS"));
+
+		List<String> keys = new ArrayList<>();
+
+		for (LicenseKeyType licenseKeyType :
+				licenseKeyTypeService.getLicenseKeyTypes(
+					"PRDCT-CLOUD-NATIVE")) {
+
+			keys.add(licenseKeyType.getKey());
+		}
+
+		Assertions.assertTrue(keys.contains("developer"));
+	}
+
+	@Test
+	public void testGetLicenseKeyTypesForProductAddedByConfiguration() {
+
+		// A product is offered by naming it in configuration, so nothing in
+		// code has to change to add one.
+
+		_setTypes(
+			HashMapBuilder.put(
+				"PRDCT-PAAS", "developer"
+			).build());
+
+		Assertions.assertEquals(
+			Arrays.asList("developer"), _toKeys("PRDCT-PAAS"));
 	}
 
 	@Test
@@ -99,29 +175,25 @@ public class LicenseKeyTypeTest {
 
 	@Test
 	public void testInitIgnoresUnknownKey() {
-		_setKeys(
-			"_dxpKeys", Arrays.asList("production", "bogus", "", "backup"));
-
-		ReflectionTestUtils.invokeMethod(_licenseKeyTypeService, "init");
+		_setTypes(
+			HashMapBuilder.put(
+				"PRDCT-DXP", "production,bogus,,backup"
+			).build());
 
 		Assertions.assertEquals(
-			Arrays.asList("production", "backup"),
-			_toKeys(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP));
+			Arrays.asList("production", "backup"), _toKeys("PRDCT-DXP"));
 	}
 
 	@Test
 	public void testInitPreservesConfiguredOrder() {
-		_setKeys("_dxpKeys", Arrays.asList("free", "backup", "production"));
-
-		ReflectionTestUtils.invokeMethod(_licenseKeyTypeService, "init");
+		_setTypes(
+			HashMapBuilder.put(
+				"PRDCT-DXP", "free,backup,production"
+			).build());
 
 		Assertions.assertEquals(
 			Arrays.asList("free", "backup", "production"),
-			_toKeys(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP));
+			_toKeys("PRDCT-DXP"));
 	}
 
 	@Test
@@ -189,8 +261,10 @@ public class LicenseKeyTypeTest {
 				_toLicenseEntry("Cloud Native UAT", "production")));
 	}
 
-	private void _setKeys(String fieldName, List<String> keys) {
-		ReflectionTestUtils.setField(_licenseKeyTypeService, fieldName, keys);
+	private void _setTypes(Map<String, String> types) {
+		_licenseKeyTypeService.setTypes(types);
+
+		ReflectionTestUtils.invokeMethod(_licenseKeyTypeService, "init");
 	}
 
 	private List<String> _toKeys(String externalReferenceCode) {
