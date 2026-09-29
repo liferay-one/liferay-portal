@@ -20,10 +20,7 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.ListUtil;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -79,7 +76,7 @@ public class OrganizationSynchronizer {
 			});
 	}
 
-	public void syncOrganization(Organization organization) throws Exception {
+	public void syncOrganization(Organization organization) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing organization " +
@@ -88,8 +85,11 @@ public class OrganizationSynchronizer {
 
 		Date startDate = new Date();
 
-		List<AccountBrief> accountBriefs = ListUtil.fromArray(
-			organization.getAccountBriefs());
+		OrganizationSyncModel organizationSyncModel =
+			_createOrganizationSyncModel(organization);
+
+		List<AccountBrief> accountBriefs =
+			organizationSyncModel.getAccountBriefs();
 
 		JiraAssetObject jiraAssetObject = _teamConverter.toAssetObject(
 			organization);
@@ -117,16 +117,12 @@ public class OrganizationSynchronizer {
 			TeamConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
 			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_externalLinkConverter,
-				_getExternalLinkProperties(organization),
+				organizationSyncModel.getExternalLinkProperties(),
 				Property::getExternalReferenceCode,
 				_externalLinkConverter::toAssetObject));
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_CONTACTS,
-			_jiraAssetService.fetchReferenceObjectIds(
-				_contactConverter,
-				_userAccountService.getOrganizationUserAccounts(
-					GetterUtil.getLong(organization.getId())),
-				UserAccount::getExternalReferenceCode));
+			_getContactObjectIds(organizationSyncModel));
 
 		_keyedLock.withLock(
 			organization.getExternalReferenceCode(),
@@ -135,9 +131,7 @@ public class OrganizationSynchronizer {
 		_syncOrganizationAssignments(organization, accountBriefs, startDate);
 	}
 
-	public void syncOrganizationUserAccounts(Organization organization)
-		throws Exception {
-
+	public void syncOrganizationUserAccounts(Organization organization) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing user accounts for organization " +
@@ -149,32 +143,28 @@ public class OrganizationSynchronizer {
 
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_CONTACTS,
-			_jiraAssetService.fetchReferenceObjectIds(
-				_contactConverter,
-				_userAccountService.getOrganizationUserAccounts(
-					GetterUtil.getLong(organization.getId())),
-				UserAccount::getExternalReferenceCode));
+			_getContactObjectIds(_createOrganizationSyncModel(organization)));
 
 		_keyedLock.withLock(
 			organization.getExternalReferenceCode(),
 			() -> _jiraAssetService.upsert(_teamConverter, jiraAssetObject));
 	}
 
-	private List<Property> _getExternalLinkProperties(Organization organization)
-		throws Exception {
+	private OrganizationSyncModel _createOrganizationSyncModel(
+		Organization organization) {
 
-		List<Property> externalLinkProperties = new ArrayList<>();
+		return new OrganizationSyncModel(
+			_externalLinkConverter, organization, _propertyService,
+			_userAccountService);
+	}
 
-		List<Property> properties = _propertyService.getOrganizationProperties(
-			GetterUtil.getLong(organization.getId()));
+	private List<String> _getContactObjectIds(
+		OrganizationSyncModel organizationSyncModel) {
 
-		for (Property property : properties) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				externalLinkProperties.add(property);
-			}
-		}
-
-		return externalLinkProperties;
+		return _jiraAssetService.fetchReferenceObjectIds(
+			_contactConverter,
+			organizationSyncModel.getOrganizationUserAccounts(),
+			UserAccount::getExternalReferenceCode);
 	}
 
 	private void _syncOrganizationAssignments(
