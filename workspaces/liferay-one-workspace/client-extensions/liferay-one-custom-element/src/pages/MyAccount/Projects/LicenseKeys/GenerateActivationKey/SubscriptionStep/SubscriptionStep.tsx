@@ -19,10 +19,18 @@ import {formatDate} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
+import VersionField from '../components/VersionField/VersionField';
 import {GenerateActivationKeyForm} from '../types';
-import {isDeveloperKeyType} from '../utils';
+import {
+	COMPLIMENTARY_DURATION_DAYS,
+	FREE_KEY_TYPE,
+	isCloudNativeProduct,
+	isComplimentaryKeyType,
+	isDeveloperKeyType,
+} from '../utils';
 
 type SubscriptionStepProps = {
+	contractTermHelp?: Word;
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	generateForm: GenerateForm;
 	onClickCancel: () => void;
@@ -30,10 +38,11 @@ type SubscriptionStepProps = {
 	onClickDownload: () => void;
 	renewing?: boolean;
 	submitting: boolean;
-	subscriptionHelp?: Word;
+	versions: string[];
 };
 
 export default function SubscriptionStep({
+	contractTermHelp,
 	form,
 	generateForm,
 	onClickCancel,
@@ -41,7 +50,7 @@ export default function SubscriptionStep({
 	onClickDownload,
 	renewing,
 	submitting,
-	subscriptionHelp,
+	versions,
 }: SubscriptionStepProps) {
 	const {register, setValue, watch} = form;
 
@@ -60,17 +69,23 @@ export default function SubscriptionStep({
 		[generateForm.products, productExternalReferenceCode]
 	);
 
+	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+	const complimentary = isComplimentaryKeyType(keyType);
 	const developer = isDeveloperKeyType(keyType);
+	const free = keyType === FREE_KEY_TYPE;
 
-	const versions = useMemo(() => {
-		if (developer) {
-			return product?.developerVersions ?? [];
-		}
-
-		return product?.versions ?? [];
-	}, [developer, product?.developerVersions, product?.versions]);
+	const requiresContractTerm =
+		!cloudNative && !complimentary && !developer && !free;
 
 	const keyTypes = useMemo(() => product?.keyTypes ?? [], [product]);
+
+	const subscriptions = useMemo(() => {
+		const selectedKeyType = keyTypes.find(
+			(current) => current.key === keyType
+		);
+
+		return selectedKeyType?.subscriptions ?? [];
+	}, [keyType, keyTypes]);
 
 	useEffect(() => {
 		const [firstKeyType] = keyTypes;
@@ -78,25 +93,43 @@ export default function SubscriptionStep({
 		if (
 			(!renewing || !keyType) &&
 			firstKeyType &&
-			!keyTypes.some((current) => current.label === keyType)
+			!keyTypes.some((current) => current.key === keyType)
 		) {
-			setValue('keyType', firstKeyType.label);
+			setValue('keyType', firstKeyType.key);
 		}
 	}, [keyType, keyTypes, renewing, setValue]);
 
 	useEffect(() => {
-		const [firstVersion] = versions;
-
-		if (
-			(!renewing || !version) &&
-			firstVersion &&
-			!versions.includes(version)
-		) {
-			setValue('version', firstVersion);
+		if (renewing || requiresContractTerm) {
+			return;
 		}
-	}, [renewing, setValue, version, versions]);
 
-	const subscriptions = product?.subscriptions ?? [];
+		const selectedKeyType = keyTypes.find(
+			(current) => current.key === keyType
+		);
+
+		if (selectedKeyType) {
+			setValue(
+				'subscriptionEntitlementId',
+				selectedKeyType.entitlementId
+			);
+		}
+	}, [keyType, keyTypes, renewing, requiresContractTerm, setValue]);
+
+	useEffect(() => {
+		if (renewing || !subscriptionEntitlementId) {
+			return;
+		}
+
+		const entitled = subscriptions.some(
+			(subscription) =>
+				subscription.entitlementId === subscriptionEntitlementId
+		);
+
+		if (!entitled) {
+			setValue('subscriptionEntitlementId', 0);
+		}
+	}, [renewing, setValue, subscriptionEntitlementId, subscriptions]);
 
 	const selectedSubscription = subscriptions.find(
 		(subscription) =>
@@ -155,8 +188,8 @@ export default function SubscriptionStep({
 	const canContinue = Boolean(
 		productExternalReferenceCode &&
 			keyType &&
-			version &&
-			(developer || subscriptionEntitlementId) &&
+			(!developer || version) &&
+			(!requiresContractTerm || subscriptionEntitlementId) &&
 			!noActivationsAvailable
 	);
 
@@ -191,7 +224,7 @@ export default function SubscriptionStep({
 								{generateForm.products.map((current) => (
 									<ClaySelect.Option
 										key={current.externalReferenceCode}
-										label={current.name}
+										label={current.label}
 										value={current.externalReferenceCode}
 									/>
 								))}
@@ -223,15 +256,17 @@ export default function SubscriptionStep({
 							>
 								{renewing && keyType ? (
 									<ClaySelect.Option
-										label={keyType}
+										label={translate(keyType as Word)}
 										value={keyType}
 									/>
 								) : (
 									keyTypes.map((current) => (
 										<ClaySelect.Option
-											key={current.label}
-											label={current.label}
-											value={current.label}
+											key={current.key}
+											label={translate(
+												current.key as Word
+											)}
+											value={current.key}
 										/>
 									))
 								)}
@@ -241,50 +276,48 @@ export default function SubscriptionStep({
 				</div>
 			</div>
 
-			<div className="form-group">
-				<label className="ml-0" htmlFor="generateKeyVersion">
-					{translate('version')}
-				</label>
+			{developer && (
+				<VersionField
+					form={form}
+					renewing={renewing}
+					versions={versions}
+				/>
+			)}
 
-				<SelectField
-					id="generateKeyVersion"
-					single={
-						(renewing && Boolean(version)) || versions.length <= 1
-					}
+			{complimentary && (
+				<ClayAlert
+					className="generate-activation-key-subscription-alert"
+					displayType="warning"
+					role={null}
+					spritemap={getIconSpriteMap()}
+					symbol="warning-full"
+					title={translate('complimentary')}
 				>
-					<ClaySelect
-						disabled={
-							(renewing && Boolean(version)) ||
-							versions.length <= 1
-						}
-						id="generateKeyVersion"
-						{...register('version')}
-					>
-						{renewing && version ? (
-							<ClaySelect.Option
-								label={version}
-								value={version}
-							/>
-						) : (
-							versions.map((current) => (
-								<ClaySelect.Option
-									key={current}
-									label={current}
-									value={current}
-								/>
-							))
-						)}
-					</ClaySelect>
-				</SelectField>
-			</div>
+					<ul className="mb-0 pl-4">
+						<li>{translate('this-key-can-be-generated-once')}</li>
 
-			{!developer && (
+						<li>
+							{sub('this-key-expires-after-x-days', [
+								String(COMPLIMENTARY_DURATION_DAYS),
+							])}
+						</li>
+
+						<li>
+							{translate(
+								'this-key-is-not-tied-to-a-subscription-and-is-intended-for-temporary-access-only'
+							)}
+						</li>
+					</ul>
+				</ClayAlert>
+			)}
+
+			{requiresContractTerm && (
 				<div className="form-group">
-					<label className="ml-0">{translate('subscription')}</label>
+					<label className="ml-0">{translate('contract-term')}</label>
 
-					{subscriptionHelp ? (
+					{contractTermHelp ? (
 						<p className="generate-activation-key-subscription-help">
-							{translate(subscriptionHelp)}
+							{translate(contractTermHelp)}
 						</p>
 					) : null}
 

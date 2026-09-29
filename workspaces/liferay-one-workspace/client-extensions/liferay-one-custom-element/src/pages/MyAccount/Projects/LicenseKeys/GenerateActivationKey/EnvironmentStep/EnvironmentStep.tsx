@@ -3,38 +3,54 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayAlert from '@clayui/alert';
 import {ClayCheckbox} from '@clayui/form';
 import {UseFormReturn, useFieldArray} from 'react-hook-form';
 import {Input} from '~/components/Input/Input';
-import {sub, translate} from '~/i18n';
-import {getIconSpriteMap} from '~/services/liferay/liferay';
+import RadioCard from '~/components/RadioCard/RadioCard';
+import {Word, translate} from '~/i18n';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import ServerFieldGroup from '../components/ServerFieldGroup/ServerFieldGroup';
-import {GenerateActivationKeyForm} from '../types';
+import VersionField from '../components/VersionField/VersionField';
 import {
+	GenerateActivationKeyForm,
+	GenerateActivationKeyServerField,
+} from '../types';
+import {
+	SERVER_FIELDS,
 	buildEmptyServer,
 	getGenerateButtonLabel,
 	hasServerInfo,
 } from '../utils';
 
+const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
+	hostName: 'host-name',
+	ipAddresses: 'ip-addresses',
+	macAddresses: 'mac-addresses',
+};
+
 type EnvironmentStepProps = {
 	form: UseFormReturn<GenerateActivationKeyForm>;
+	generated: boolean;
 	onClickBack: () => void;
 	onClickCancel: () => void;
+	onClickDone: () => void;
 	onClickGenerate: () => void;
 	renewing: boolean;
 	submitting: boolean;
+	versions: string[];
 };
 
 export default function EnvironmentStep({
 	form,
+	generated,
 	onClickBack,
 	onClickCancel,
+	onClickDone,
 	onClickGenerate,
 	renewing,
 	submitting,
+	versions,
 }: EnvironmentStepProps) {
 	const {
 		control,
@@ -49,14 +65,28 @@ export default function EnvironmentStep({
 	const environmentName = watch('environmentName');
 	const notify = watch('notify');
 	const servers = watch('servers');
+	const serverField = watch('serverField');
+	const version = watch('version');
 
 	const canGenerate = Boolean(
-		environmentName.trim() && hasServerInfo(servers)
+		environmentName.trim() && version && hasServerInfo(servers, serverField)
 	);
+
+	function onChangeServerField(value: GenerateActivationKeyServerField) {
+		setValue('serverField', value);
+
+		servers.forEach((server, index) => {
+			SERVER_FIELDS.forEach((current) => {
+				if (current !== value) {
+					setValue(`servers.${index}.${current}`, '');
+				}
+			});
+		});
+	}
 
 	return (
 		<>
-			<h2 className="h4">{translate('environment-details')}</h2>
+			<VersionField form={form} renewing={renewing} versions={versions} />
 
 			<Input
 				{...register('environmentName')}
@@ -82,21 +112,19 @@ export default function EnvironmentStep({
 				)}
 			/>
 
-			<h2 className="h4 mt-4">
-				{translate('activation-key-server-details')}
-			</h2>
-
-			<ClayAlert
-				className="generate-activation-key-server-alert mb-4"
-				displayType="info"
-				role={null}
-				spritemap={getIconSpriteMap()}
-				symbol="info-circle"
-			>
-				{translate(
-					'one-host-name-ip-address-or-mac-address-is-required'
-				)}
-			</ClayAlert>
+			<div className="mb-4 mt-4 row">
+				{SERVER_FIELDS.map((current) => (
+					<div className="col-md-4" key={current}>
+						<RadioCard
+							className="generate-activation-key-server-field"
+							disabled={renewing}
+							onChange={() => onChangeServerField(current)}
+							selected={serverField === current}
+							title={translate(SERVER_FIELD_LABELS[current])}
+						/>
+					</div>
+				))}
+			</div>
 
 			{fields.map((field, index) => (
 				<ServerFieldGroup
@@ -114,6 +142,7 @@ export default function EnvironmentStep({
 							: undefined
 					}
 					register={register}
+					serverField={serverField}
 				/>
 			))}
 
@@ -127,20 +156,19 @@ export default function EnvironmentStep({
 
 			<WizardFooter
 				backButtonProps={{
-					disabled: submitting,
+					disabled: generated || submitting,
 					onClick: onClickBack,
 				}}
 				cancelButtonProps={{
-					disabled: submitting,
+					disabled: generated || submitting,
 					onClick: onClickCancel,
 				}}
 				continueButtonProps={{
-					children: sub(
-						getGenerateButtonLabel(renewing, fields.length),
-						[String(fields.length)]
-					),
+					children: generated
+						? translate('done')
+						: translate(getGenerateButtonLabel(renewing)),
 					disabled: !canGenerate || submitting,
-					onClick: onClickGenerate,
+					onClick: generated ? onClickDone : onClickGenerate,
 				}}
 			/>
 		</>
