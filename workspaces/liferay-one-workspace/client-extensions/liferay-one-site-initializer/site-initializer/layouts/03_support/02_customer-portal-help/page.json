@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "One Liferay Help",
 	"name_i18n": {
-		"en_US": "One Liferay Help"
+		"en_US": "One Liferay Help",
+		"es_ES": "Ayuda de One Liferay",
+		"ja_JP": "One Liferayヘルプ",
+		"pt_BR": "Ajuda do One Liferay"
 	},
 	"private": false,
 	"system": false,

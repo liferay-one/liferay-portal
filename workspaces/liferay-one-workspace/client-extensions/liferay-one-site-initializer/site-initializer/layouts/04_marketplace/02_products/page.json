@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Products",
 	"name_i18n": {
-		"en_US": "Products"
+		"en_US": "Products",
+		"es_ES": "Productos",
+		"ja_JP": "製品",
+		"pt_BR": "Produtos"
 	},
 	"private": false,
 	"system": false,

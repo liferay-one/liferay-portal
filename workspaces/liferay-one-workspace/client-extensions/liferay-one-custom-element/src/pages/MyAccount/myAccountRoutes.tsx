@@ -5,6 +5,7 @@
 
 import {lazy} from 'react';
 import {Navigate} from 'react-router-dom';
+import i18n from '~/i18n';
 import {AppRoute} from '~/utils/routeUtils';
 
 import Applications from './Projects/Applications/Applications';
@@ -46,7 +47,7 @@ export const projectDetailRoutes: AppRoute[] = [
 			},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
-		nav: {icon: 'products', label: 'Products'},
+		nav: {icon: 'products', label: i18n.translate('products')},
 		path: 'products',
 	},
 	{
@@ -62,7 +63,7 @@ export const projectDetailRoutes: AppRoute[] = [
 			},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
-		nav: {icon: 'applications', label: 'Applications'},
+		nav: {icon: 'applications', label: i18n.translate('applications')},
 		path: 'applications',
 	},
 	{
@@ -72,7 +73,10 @@ export const projectDetailRoutes: AppRoute[] = [
 			{element: <LicenseKeyDetails />, path: ':licenseKeyERC'},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
-		nav: {icon: 'key-horizontal', label: 'Activation'},
+		nav: {
+			icon: 'key-horizontal',
+			label: i18n.translate('activation-keys'),
+		},
 		path: 'activation-keys',
 	},
 	{element: <Navigate replace to="products" />, path: '*'},

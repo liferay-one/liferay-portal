@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Home",
 	"name_i18n": {
-		"en_US": "Home"
+		"en_US": "Home",
+		"es_ES": "Inicio",
+		"ja_JP": "ホーム",
+		"pt_BR": "Início"
 	},
 	"private": false,
 	"system": false,

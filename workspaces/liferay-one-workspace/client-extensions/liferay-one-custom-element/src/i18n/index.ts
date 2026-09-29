@@ -21,29 +21,44 @@ export type Word = keyof typeof en_US;
 
 export function translate(
 	word: Word,
-	languageId = Liferay.ThemeDisplay.getDefaultLanguageId()
+	languageId = (typeof Liferay !== 'undefined' &&
+		(Liferay.ThemeDisplay?.getLanguageId?.() ||
+			Liferay.ThemeDisplay?.getDefaultLanguageId?.())) ||
+		(typeof document !== 'undefined' && document.documentElement.lang) ||
+		'en_US'
 ): string {
+	const normalizedLanguageId =
+		{
+			en: 'en_US',
+			es: 'es_ES',
+			ja: 'ja_JP',
+			pt: 'pt_BR',
+		}[languageId] ||
+		languageId?.replace('-', '_') ||
+		'en_US';
+
 	const languageProperties = (
 		languages as unknown as Record<string, Partial<typeof en_US>>
-	)[languageId];
+	)[normalizedLanguageId];
 
 	return languageProperties?.[word] || en_US[word] || word;
 }
 
 export function sub(
 	word: Word,
-	words: Word[] | Word | string | string[]
+	words: Word[] | Word | string | string[],
+	languageId?: string
 ): string {
 	if (!Array.isArray(words)) {
 		words = [words];
 	}
 
-	let translatedWord = translate(word);
+	let translatedWord = translate(word, languageId);
 
 	words.forEach((value, index) => {
-		const translatedKey = translate(value as Word);
+		const translatedKey = translate(value as Word, languageId);
 		const key = `{${index}}`;
-		translatedWord = translatedWord.replace(key, translatedKey);
+		translatedWord = translatedWord.replaceAll(key, translatedKey);
 	});
 
 	return translatedWord;

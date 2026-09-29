@@ -212,7 +212,10 @@ const AIHubOrderSummary = () => {
 				<BillingAddress />
 			)}
 
-			<Section className="ai-hub-summary" label="Payment Method">
+			<Section
+				className="ai-hub-summary"
+				label={i18n.translate('payment-method')}
+			>
 				<div className="ai-hub-alert-card">
 					<ClayIcon
 						className="mr-3"
@@ -247,7 +250,10 @@ const AIHubOrderSummary = () => {
 				</div>
 			</Section>
 
-			<Section className="ai-hub-summary" label="Order Summary">
+			<Section
+				className="ai-hub-summary"
+				label={i18n.translate('order-summary')}
+			>
 				<div className="d-flex mx-5">
 					<div className="col-1 d-flex justify-content-end m-0 p-0 text-nowrap">
 						{i18n.translate('net-price')}:

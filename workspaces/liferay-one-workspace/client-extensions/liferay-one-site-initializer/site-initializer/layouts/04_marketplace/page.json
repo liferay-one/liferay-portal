@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Marketplace",
 	"name_i18n": {
-		"en_US": "Marketplace"
+		"en_US": "Marketplace",
+		"es_ES": "Marketplace",
+		"ja_JP": "Marketplace",
+		"pt_BR": "Marketplace"
 	},
 	"private": false,
 	"system": false,

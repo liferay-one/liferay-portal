@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "Large File Uploader",
 	"name_i18n": {
-		"en_US": "Large File Uploader"
+		"en_US": "Large File Uploader",
+		"es_ES": "Cargador de Archivos Grandes",
+		"ja_JP": "大容量ファイルアップローダー",
+		"pt_BR": "Carregador de Arquivos Grandes"
 	},
 	"permissions": [
 		{

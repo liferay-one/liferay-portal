@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "Next Steps",
 	"name_i18n": {
-		"en_US": "Next Steps"
+		"en_US": "Next Steps",
+		"es_ES": "Próximos Pasos",
+		"ja_JP": "次のステップ",
+		"pt_BR": "Próximos Passos"
 	},
 	"permissions": [
 		{

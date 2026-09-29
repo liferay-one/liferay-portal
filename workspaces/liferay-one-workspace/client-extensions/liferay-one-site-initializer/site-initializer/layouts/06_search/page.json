@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "Search",
 	"name_i18n": {
-		"en_US": "Search"
+		"en_US": "Search",
+		"es_ES": "Buscar",
+		"ja_JP": "検索",
+		"pt_BR": "Pesquisar"
 	},
 	"private": false,
 	"system": false,

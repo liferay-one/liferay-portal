@@ -235,7 +235,7 @@ const NewTrialModal: React.FC<NewTrialModalProps> = ({onClose, revalidate}) => {
 					disabled={!isValid}
 					onClick={handleSubmit(onSubmit)}
 				>
-					Create Trial
+					{i18n.translate('create-trial')}
 				</ClayButton>
 			</div>
 		</div>

@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "My Account",
 	"name_i18n": {
-		"en_US": "My Account"
+		"en_US": "My Account",
+		"es_ES": "Mi Cuenta",
+		"ja_JP": "マイアカウント",
+		"pt_BR": "Minha Conta"
 	},
 	"permissions": [
 		{

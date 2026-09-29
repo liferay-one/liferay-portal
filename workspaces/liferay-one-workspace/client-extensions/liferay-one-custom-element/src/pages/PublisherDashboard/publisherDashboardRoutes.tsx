@@ -8,6 +8,7 @@ import {Navigate, Outlet} from 'react-router-dom';
 import NewAppContextProvider from '~/context/NewAppContextProvider';
 import SolutionContextProvider from '~/context/SolutionContextProvider';
 import usePublisherCatalog from '~/hooks/usePublisherCatalog';
+import i18n from '~/i18n';
 import {AppRoute} from '~/utils/routeUtils';
 
 import {PublishMode} from './pages/NewAppFlow/constants';
@@ -119,12 +120,12 @@ export const publisherDashboardRoutes: AppRoute[] = [
 				path: ':productId',
 			},
 		],
-		nav: {icon: 'catalog', label: 'Published Apps'},
+		nav: {icon: 'catalog', label: i18n.translate('published-apps')},
 		path: 'published-apps',
 	},
 	{
 		element: <PublishedSolutions />,
-		nav: {icon: 'list', label: 'Published Solutions'},
+		nav: {icon: 'list', label: i18n.translate('published-solutions')},
 		path: 'published-solutions',
 	},
 	{
@@ -133,7 +134,7 @@ export const publisherDashboardRoutes: AppRoute[] = [
 			{element: <PublisherProfileEdit />, path: 'edit'},
 			{element: <Navigate replace to="." />, path: '*'},
 		],
-		nav: {icon: 'user', label: 'Publisher Profile'},
+		nav: {icon: 'user', label: i18n.translate('publisher-profile')},
 		path: 'publisher-profile',
 	},
 	{
