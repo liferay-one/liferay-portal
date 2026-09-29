@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * @author Drew Brokke
  */
@@ -51,60 +54,83 @@ public class UserAccountSyncModel {
 		return _accountBriefs;
 	}
 
-	public List<String> getAccountExternalReferenceCodes() throws Exception {
+	public List<String> getAccountExternalReferenceCodes() {
 		if (_accountExternalReferenceCodes != null) {
 			return _accountExternalReferenceCodes;
 		}
 
-		List<String> accountExternalReferenceCodes = new ArrayList<>();
+		try {
+			List<String> accountExternalReferenceCodes = new ArrayList<>();
 
-		for (AccountBrief accountBrief : getAccountBriefs()) {
-			accountExternalReferenceCodes.add(
-				accountBrief.getExternalReferenceCode());
+			for (AccountBrief accountBrief : getAccountBriefs()) {
+				accountExternalReferenceCodes.add(
+					accountBrief.getExternalReferenceCode());
+			}
+
+			accountExternalReferenceCodes.addAll(
+				_getProjectExternalReferenceCodes());
+
+			_accountExternalReferenceCodes = accountExternalReferenceCodes;
 		}
-
-		accountExternalReferenceCodes.addAll(
-			_getProjectExternalReferenceCodes());
-
-		_accountExternalReferenceCodes = accountExternalReferenceCodes;
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get accounts for user account " +
+					getExternalReferenceCode(),
+				exception);
+		}
 
 		return _accountExternalReferenceCodes;
 	}
 
-	public List<EntitlementDefinition> getEntitlementDefinitions()
-		throws Exception {
-
+	public List<EntitlementDefinition> getEntitlementDefinitions() {
 		if (_entitlementDefinitions != null) {
 			return _entitlementDefinitions;
 		}
 
-		List<EntitlementDefinition> entitlementDefinitions = new ArrayList<>();
+		try {
+			List<EntitlementDefinition> entitlementDefinitions =
+				new ArrayList<>();
 
-		for (AccountBrief accountBrief : getAccountBriefs()) {
-			entitlementDefinitions.addAll(
-				_entitlementService.getActiveEntitlementDefinitions(
-					accountBrief.getId()));
+			for (AccountBrief accountBrief : getAccountBriefs()) {
+				entitlementDefinitions.addAll(
+					_entitlementService.getActiveEntitlementDefinitions(
+						accountBrief.getId()));
+			}
+
+			_entitlementDefinitions = entitlementDefinitions;
 		}
-
-		_entitlementDefinitions = entitlementDefinitions;
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get entitlements for user account " +
+					getExternalReferenceCode(),
+				exception);
+		}
 
 		return _entitlementDefinitions;
 	}
 
-	public List<Property> getExternalLinkProperties() throws Exception {
+	public List<Property> getExternalLinkProperties() {
 		if (_externalLinkProperties != null) {
 			return _externalLinkProperties;
 		}
 
-		List<Property> externalLinkProperties = new ArrayList<>();
+		try {
+			List<Property> externalLinkProperties = new ArrayList<>();
 
-		for (Property property : _getUserAccountProperties()) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				externalLinkProperties.add(property);
+			for (Property property : _getUserAccountProperties()) {
+				if (_externalLinkConverter.isExternalLinkProperty(property)) {
+					externalLinkProperties.add(property);
+				}
 			}
-		}
 
-		_externalLinkProperties = externalLinkProperties;
+			_externalLinkProperties = externalLinkProperties;
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get external links for user account " +
+					getExternalReferenceCode(),
+				exception);
+		}
 
 		return _externalLinkProperties;
 	}
@@ -201,6 +227,9 @@ public class UserAccountSyncModel {
 
 		return _userAccountProperties;
 	}
+
+	private static final Log _log = LogFactory.getLog(
+		UserAccountSyncModel.class);
 
 	private List<AccountBrief> _accountBriefs;
 	private List<String> _accountExternalReferenceCodes;

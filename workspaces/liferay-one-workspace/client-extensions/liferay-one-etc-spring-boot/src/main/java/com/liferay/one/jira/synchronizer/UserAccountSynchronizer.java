@@ -84,22 +84,18 @@ public class UserAccountSynchronizer {
 			});
 	}
 
-	public void syncUserAccount(UserAccount userAccount) throws Exception {
+	public void syncUserAccount(UserAccount userAccount) {
 		syncUserAccount(userAccount, null);
 	}
 
-	public void syncUserAccount(UserAccount userAccount, Date startDate)
-		throws Exception {
-
+	public void syncUserAccount(UserAccount userAccount, Date startDate) {
 		_keyedLock.withLock(
 			userAccount.getExternalReferenceCode(),
 			() -> _syncUserAccount(
 				_createUserAccountSyncModel(userAccount), startDate));
 	}
 
-	public void syncUserAccountAccounts(UserAccount userAccount)
-		throws Exception {
-
+	public void syncUserAccountAccounts(UserAccount userAccount) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing accounts for user account " +
@@ -178,8 +174,7 @@ public class UserAccountSynchronizer {
 	}
 
 	private List<String> _getAccountObjectIds(
-			UserAccountSyncModel userAccountSyncModel)
-		throws Exception {
+		UserAccountSyncModel userAccountSyncModel) {
 
 		return _jiraAssetService.fetchReferenceObjectIds(
 			_accountConverter,
@@ -250,8 +245,7 @@ public class UserAccountSynchronizer {
 	}
 
 	private void _syncUserAccount(
-			UserAccountSyncModel userAccountSyncModel, Date startDate)
-		throws Exception {
+		UserAccountSyncModel userAccountSyncModel, Date startDate) {
 
 		UserAccount userAccount = userAccountSyncModel.getUserAccount();
 
