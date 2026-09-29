@@ -438,10 +438,10 @@ public class LDPEventUsageReportService {
 	private ContractService _contractService;
 
 	@Autowired
-	private EntitlementService _entitlementService;
+	private DataOpsUsageService _dataOpsUsageService;
 
 	@Autowired
-	private DataOpsUsageService _dataOpsUsageService;
+	private EntitlementService _entitlementService;
 
 	@Autowired
 	private ProjectService _projectService;

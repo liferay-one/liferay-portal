@@ -87,9 +87,11 @@ public class DataOpsUsageServiceTest {
 		ReflectionTestUtils.setField(
 			_dataOpsUsageService, "_idTokenProvider", _idTokenProvider);
 
+		_ldpBaseURL =
+			"http://localhost:" + inetSocketAddress.getPort() + _LDP_ROOT_PATH;
+
 		ReflectionTestUtils.setField(
-			_dataOpsUsageService, "_ldpBaseURL",
-			"http://localhost:" + inetSocketAddress.getPort());
+			_dataOpsUsageService, "_ldpBaseURL", _ldpBaseURL);
 	}
 
 	@AfterEach
@@ -110,8 +112,9 @@ public class DataOpsUsageServiceTest {
 
 		Assertions.assertTrue(
 			requestURI.startsWith(
-				"/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
-					"/ldp/usage/event-history"));
+				StringBundler.concat(
+					_LDP_ROOT_PATH, "/api/v1/projects/", _SALESFORCE_PROJECT_ID,
+					"/ldp/usage/event-history")));
 		Assertions.assertTrue(requestURI.contains("endDate=2026-08-31"));
 		Assertions.assertTrue(requestURI.contains("granularity=month"));
 		Assertions.assertTrue(requestURI.contains("startDate=2026-06-01"));
@@ -130,8 +133,9 @@ public class DataOpsUsageServiceTest {
 
 		Assertions.assertTrue(
 			requestURI.startsWith(
-				"/api/v1/projects/" + _SALESFORCE_PROJECT_ID +
-					"/ldp/usage/event-summary"));
+				StringBundler.concat(
+					_LDP_ROOT_PATH, "/api/v1/projects/", _SALESFORCE_PROJECT_ID,
+					"/ldp/usage/event-summary")));
 		Assertions.assertTrue(requestURI.contains("endDate=2026-08-31"));
 		Assertions.assertTrue(requestURI.contains("startDate=2026-06-01"));
 	}
@@ -144,7 +148,9 @@ public class DataOpsUsageServiceTest {
 			_USAGE_RESPONSE,
 			_dataOpsUsageService.fetchLDPProjectUsage(_SALESFORCE_PROJECT_ID));
 		Assertions.assertEquals(
-			"/api/v1/projects/" + _SALESFORCE_PROJECT_ID + "/ldp/usage",
+			StringBundler.concat(
+				_LDP_ROOT_PATH, "/api/v1/projects/", _SALESFORCE_PROJECT_ID,
+				"/ldp/usage"),
 			_requestURI.get());
 	}
 
@@ -156,10 +162,15 @@ public class DataOpsUsageServiceTest {
 
 		_dataOpsUsageService.fetchLDPProjectUsage(_SALESFORCE_PROJECT_ID);
 
+		String authorization = _requestAuthorization.get();
+
+		Assertions.assertTrue(authorization.startsWith("Bearer eyJ"));
+
 		Assertions.assertTrue(
-			_requestAuthorization.get(
-			).startsWith(
-				"Bearer eyJ"
+			_decodeIdTokenPayload(
+				authorization
+			).contains(
+				"\"aud\": \"" + _ldpBaseURL + "\""
 			));
 	}
 
@@ -229,6 +240,18 @@ public class DataOpsUsageServiceTest {
 				_dataOpsUsageService, "_getIdTokenProvider"));
 	}
 
+	private String _decodeIdTokenPayload(String authorization) {
+		String token = authorization.substring(7);
+
+		int begin = token.indexOf('.') + 1;
+
+		Base64.Decoder decoder = Base64.getUrlDecoder();
+
+		return new String(
+			decoder.decode(token.substring(begin, token.indexOf('.', begin))),
+			StandardCharsets.UTF_8);
+	}
+
 	private String _createIdTokenValue(String audience) {
 		Base64.Encoder encoder = Base64.getUrlEncoder(
 		).withoutPadding();
@@ -287,6 +310,8 @@ public class DataOpsUsageServiceTest {
 	private static final String _EVENT_SUMMARY_RESPONSE =
 		"{\"eventSummary\": [{\"eventsCount\": 13000}]}";
 
+	private static final String _LDP_ROOT_PATH = "/ldp-root";
+
 	private static final String _SALESFORCE_PROJECT_ID = "a0B0g00000eABCD123";
 
 	private static final String _USAGE_RESPONSE =
@@ -297,6 +322,7 @@ public class DataOpsUsageServiceTest {
 	private IOException _idTokenException;
 	private final IdTokenProvider _idTokenProvider = Mockito.mock(
 		IdTokenProvider.class);
+	private String _ldpBaseURL;
 	private final AtomicReference<String> _requestAuthorization =
 		new AtomicReference<>();
 	private final AtomicReference<String> _requestURI = new AtomicReference<>();
