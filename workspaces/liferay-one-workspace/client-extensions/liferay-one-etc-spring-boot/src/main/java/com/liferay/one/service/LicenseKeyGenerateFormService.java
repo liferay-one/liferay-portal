@@ -174,15 +174,25 @@ public class LicenseKeyGenerateFormService {
 		JSONArray versionsJSONArray = _toVersionsJSONArray(productVersions);
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
+			boolean hasLicenseEntries = _hasLicenseEntries(
+				entitledProduct.getLicenseEntryFamily(), productVersions);
+
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, entitledProduct.getExternalReferenceCode(),
-				entitledProduct.getLicenseEntryFamily(), licenseKeyCounts,
-				licenseKeyTypeEntitlements, productVersions);
+				hasLicenseEntries, entitledProduct.getLicenseEntryFamily(),
+				licenseKeyCounts, licenseKeyTypeEntitlements, productVersions);
+
+			// An add-on names no license entry family the license table
+			// carries, so it holds no key type of its own and rides the
+			// leading product's license entry. Only a product that does carry
+			// one, and offers the project no key type over it, is genuinely
+			// unlicensable.
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
 					_toBundleProductJSONObject(
-						entitledProduct, keyTypesJSONArray.length() > 0,
+						entitledProduct,
+						(keyTypesJSONArray.length() > 0) || !hasLicenseEntries,
 						licenseKeyCounts));
 			}
 
@@ -345,8 +355,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getKeyTypesJSONArray(
-		boolean admin, String externalReferenceCode, String licenseEntryFamily,
-		Map<Long, Integer> licenseKeyCounts,
+		boolean admin, String externalReferenceCode, boolean hasLicenseEntries,
+		String licenseEntryFamily, Map<Long, Integer> licenseKeyCounts,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions) {
 
@@ -358,9 +368,6 @@ public class LicenseKeyGenerateFormService {
 		if (entitlements == null) {
 			return jsonArray;
 		}
-
-		boolean hasLicenseEntries = _hasLicenseEntries(
-			licenseEntryFamily, productVersions);
 
 		for (LicenseKeyType licenseKeyType :
 				_licenseKeyTypeService.getLicenseKeyTypes(

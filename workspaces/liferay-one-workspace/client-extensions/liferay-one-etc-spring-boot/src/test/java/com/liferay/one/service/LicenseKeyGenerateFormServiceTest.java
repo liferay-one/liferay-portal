@@ -63,7 +63,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			"PRDCT-DXP", "DXP",
+			"PRDCT-DXP", false, "DXP",
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
