@@ -95,6 +95,8 @@ export function useHasLicenseKeyPermission(
 	return useProjectAdminPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
+				userAccountModel?.isAdmin ||
+				userAccountModel?.isLiferayStaff ||
 				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER)
 		),
 		projectExternalReferenceCode

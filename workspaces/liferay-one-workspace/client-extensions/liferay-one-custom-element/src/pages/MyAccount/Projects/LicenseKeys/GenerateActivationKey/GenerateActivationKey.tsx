@@ -312,7 +312,8 @@ export default function GenerateActivationKey() {
 
 			await Cloud.downloadOfflineActivationBundle(
 				values.version,
-				environment.id
+				environment.id,
+				values.offlineSubscriptionIds
 			);
 
 			navigate('..');
@@ -374,6 +375,8 @@ export default function GenerateActivationKey() {
 				environmentName: values.environmentName,
 				keyType: values.keyType,
 				projectExternalReferenceCode: projectId,
+				renewedActivationKeyExternalReferenceCode:
+					renewExternalReferenceCode ?? undefined,
 				servers: values.servers,
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
 				version: values.version,
@@ -456,7 +459,7 @@ export default function GenerateActivationKey() {
 		'activation-codes':
 			'please-copy-and-paste-the-activation-code-for-the-environment-type-you-would-like-to-activate-into-your-server',
 		'add-ons':
-			'select-the-add-ons-you-would-like-to-include-in-the-activation-keys',
+			'select-the-add-ons-you-would-like-to-include-in-the-activation-key',
 		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
@@ -485,8 +488,8 @@ export default function GenerateActivationKey() {
 				title={translate(
 					titles[step] ??
 						(renewing
-							? 'renew-activation-keys'
-							: 'generate-activation-keys')
+							? 'renew-activation-key'
+							: 'generate-activation-key')
 				)}
 			>
 				<ProductPurchase.Body>
