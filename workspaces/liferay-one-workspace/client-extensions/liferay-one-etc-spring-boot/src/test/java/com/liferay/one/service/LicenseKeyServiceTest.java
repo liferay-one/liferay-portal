@@ -69,8 +69,11 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsSkipsComplimentaryKeys()
+	public void testGetActiveLicenseKeyCountsCountsComplimentaryKeys()
 		throws Exception {
+
+		// A complimentary key spends the single activation its entitlement
+		// grants, so it has to be counted like any other.
 
 		Mockito.doReturn(
 			Arrays.asList(
@@ -85,7 +88,28 @@ public class LicenseKeyServiceTest {
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
 
-		Assertions.assertEquals(1, counts.get(10L));
+		Assertions.assertEquals(2, counts.get(10L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsSkipsDeactivatedComplimentaryKeys()
+		throws Exception {
+
+		// Deactivating is what hands the grant back, so another can be
+		// generated. An expired key is still active and still counts.
+
+		Mockito.doReturn(
+			Arrays.asList(_createLicenseKey(1L, false, true, 10L, 1L))
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertNull(counts.get(10L));
 	}
 
 	@Test

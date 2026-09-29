@@ -12,6 +12,19 @@
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_NO_PROJECT",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
 			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_NO_PROJECT_DXP_COMPLIMENTARY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay DXP Complimentary",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-022",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_PROJECT_DXP",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_NO_PROJECT",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_COMPLIMENTARY",
+			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
 	"order": {

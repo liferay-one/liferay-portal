@@ -11,6 +11,7 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.ActivationKeyService;
@@ -215,37 +216,26 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
-	public void testPatchActivationKeysActiveRejectsComplimentary()
+	public void testPatchActivationKeysActiveComplimentaryNeedsAnAdmin()
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
 
-		ActivationKey activationKey = Mockito.mock(ActivationKey.class);
+		_stubComplimentaryActivationKey();
 
-		Mockito.when(
-			activationKey.getProjectExternalReferenceCode()
-		).thenReturn(
-			_PROJECT_ERC
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
 		);
 
-		Mockito.when(
-			activationKey.isComplimentary()
-		).thenReturn(
-			true
-		);
-
-		Mockito.when(
-			_activationKeyService.getActivationKey(null, 77L)
-		).thenReturn(
-			activationKey
-		);
-
-		// Deactivating would hand the activation back to the quota and let a
-		// second complimentary key be generated.
+		// A customer cannot hand a complimentary activation back to the quota.
 
 		Assertions.assertThrows(
-			LicenseKeyEntitlementException.class,
+			PrincipalException.class,
 			() -> activationKeysRestController.patchActivationKeysActive(
 				null, 77L, "{\"active\": false}"));
 
@@ -253,6 +243,44 @@ public class ActivationKeysRestControllerTest {
 			_activationKeyService, Mockito.never()
 		).updateActivationKeyActive(
 			Mockito.anyLong(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
+	public void testPatchActivationKeysActiveComplimentaryNotReactivated()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubComplimentaryActivationKey();
+
+		// Reactivating would hand back a grant that has since been spent.
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> activationKeysRestController.patchActivationKeysActive(
+				null, 77L, "{\"active\": true}"));
+	}
+
+	@Test
+	public void testPatchActivationKeysActiveComplimentaryRetiredByAnAdmin()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubComplimentaryActivationKey();
+
+		// Retiring it is what frees the grant for another.
+
+		activationKeysRestController.patchActivationKeysActive(
+			null, 77L, "{\"active\": false}");
+
+		Mockito.verify(
+			_activationKeyService, Mockito.times(1)
+		).updateActivationKeyActive(
+			77L, false
 		);
 	}
 
@@ -351,6 +379,28 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertEquals("7.4", generateRequest.getVersion());
 	}
 
+	private void _stubComplimentaryActivationKey() throws Exception {
+		ActivationKey activationKey = Mockito.mock(ActivationKey.class);
+
+		Mockito.when(
+			activationKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Mockito.when(
+			activationKey.isComplimentary()
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_activationKeyService.getActivationKey(null, 77L)
+		).thenReturn(
+			activationKey
+		);
+	}
+
 	private ActivationKeysRestController _createController() throws Exception {
 		ActivationKeysRestController activationKeysRestController =
 			new ActivationKeysRestController();
@@ -375,6 +425,9 @@ public class ActivationKeysRestControllerTest {
 		ReflectionTestUtils.setField(
 			activationKeysRestController, "_activationKeyService",
 			_activationKeyService);
+
+		ReflectionTestUtils.setField(
+			activationKeysRestController, "_adminPermission", _adminPermission);
 
 		ReflectionTestUtils.setField(
 			activationKeysRestController, "_environmentActivationPermission",
@@ -474,6 +527,8 @@ public class ActivationKeysRestControllerTest {
 
 	private final ActivationKeyService _activationKeyService = Mockito.mock(
 		ActivationKeyService.class);
+	private final AdminPermission _adminPermission = Mockito.mock(
+		AdminPermission.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);
