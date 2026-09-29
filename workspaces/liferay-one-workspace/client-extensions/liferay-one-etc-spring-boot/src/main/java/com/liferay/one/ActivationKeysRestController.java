@@ -14,6 +14,7 @@ import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.ActivationKeyService;
@@ -190,16 +191,27 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				jwt, projectExternalReferenceCode);
 		}
 
-		if (activationKey.isComplimentary()) {
-			throw new LicenseKeyEntitlementException(
-				"A complimentary activation key cannot be activated or " +
-					"deactivated");
-		}
-
 		JSONObject jsonObject = new JSONObject(json);
 
+		boolean active = getRequiredBoolean(jsonObject, "active");
+
+		if (activationKey.isComplimentary()) {
+
+			// A complimentary key is granted once and the customer cannot hand
+			// it back, so only an administrator retires it, and retiring it is
+			// what frees the grant for another. Reactivating would hand back a
+			// grant that has since been spent.
+
+			_adminPermission.check(jwt);
+
+			if (active) {
+				throw new LicenseKeyEntitlementException(
+					"A complimentary activation key cannot be reactivated");
+			}
+		}
+
 		_activationKeyService.updateActivationKeyActive(
-			activationKeyId, getRequiredBoolean(jsonObject, "active"));
+			activationKeyId, active);
 	}
 
 	@PostMapping("/generate")
@@ -293,6 +305,11 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		_licenseKeyPermission.check(
 			activationKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
 
+		if (activationKey.isComplimentary()) {
+			throw new LicenseKeyEntitlementException(
+				"A complimentary activation key cannot be renewed");
+		}
+
 		if ((project == null) ||
 			!Objects.equals(
 				project.getExternalReferenceCode(),
@@ -372,6 +389,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;
+
+	@Autowired
+	private AdminPermission _adminPermission;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;
