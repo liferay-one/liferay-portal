@@ -16,6 +16,34 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PARTNER_CMP_DEVELOPER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay Customer Management Platform Developer",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-016",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_CMP",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PARTNER",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CMP_DEVELOPER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-016",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PARTNER_DSR_DEVELOPER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Digital Sales Room Developer",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-016",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_DSR",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PARTNER",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DSR_DEVELOPER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-016",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PARTNER_DXP",
 			"grantType": "fixed",
 			"maxQuantity": 1,
@@ -89,6 +117,32 @@
 				"name": "Basic Reseller Partnership",
 				"quantity": 1,
 				"skuExternalReferenceCode": "PRDCT-PARTNERSHIP-BASIC-RESELLER",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_CMP",
+				"name": "Liferay Customer Management Platform",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-CMP",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_DSR",
+				"name": "Digital Sales Room",
+				"quantity": 1,
+				"skuExternalReferenceCode": "PRDCT-DSR",
 				"unitPrice": 0
 			},
 			{

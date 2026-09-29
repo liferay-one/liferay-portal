@@ -230,6 +230,18 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Liferay Customer Management Platform Developer",
+			"externalReferenceCode": "C_ENT_DEF_CMP_DEVELOPER",
+			"grantType": "fixed",
+			"licenseKeyType": "developer",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-CMP",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Commerce",
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE",
 			"grantType": "fixed",
@@ -360,6 +372,18 @@
 			"displayName": "Digital Sales Room",
 			"externalReferenceCode": "C_ENT_DEF_DSR",
 			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-DSR",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Digital Sales Room Developer",
+			"externalReferenceCode": "C_ENT_DEF_DSR_DEVELOPER",
+			"grantType": "fixed",
+			"licenseKeyType": "developer",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"skuExternalReferenceCode": "PRDCT-DSR",
