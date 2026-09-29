@@ -29,6 +29,7 @@ public class EntitlementDefinition {
 		_entitlementDefinitionId = jsonObject.getLong("id");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_grantType = jsonObject.optString("grantType");
+		_licenseKeyDurationDays = jsonObject.optInt("licenseKeyDurationDays");
 		_licenseKeyType = jsonObject.optString("licenseKeyType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
@@ -59,6 +60,10 @@ public class EntitlementDefinition {
 
 	public String getGrantType() {
 		return _grantType;
+	}
+
+	public int getLicenseKeyDurationDays() {
+		return _licenseKeyDurationDays;
 	}
 
 	public String getLicenseKeyType() {
@@ -132,6 +137,7 @@ public class EntitlementDefinition {
 	private final long _entitlementDefinitionId;
 	private final String _externalReferenceCode;
 	private final String _grantType;
+	private final int _licenseKeyDurationDays;
 	private final String _licenseKeyType;
 	private final Double _maxQuantity;
 	private final String _name;

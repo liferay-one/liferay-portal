@@ -108,7 +108,10 @@ public class LicenseKeyGenerationService {
 					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION));
 		}
 
-		if (!_isEntitledProduct(productName, project)) {
+		Entitlement entitlement = _fetchEntitledProductEntitlement(
+			productName, project);
+
+		if (entitlement == null) {
 			throw new LicenseKeyEntitlementException(
 				StringBundler.concat(
 					"The project is not entitled to ", productName,
@@ -121,7 +124,11 @@ public class LicenseKeyGenerationService {
 
 		Date startDate = calendar.getTime();
 
-		calendar.add(Calendar.MONTH, _DEVELOPER_DURATION_MONTHS);
+		calendar.add(
+			Calendar.DATE,
+			_getDurationDays(
+				entitlement,
+				LicenseKeyGenerationConstants.DEVELOPER_DURATION_DAYS));
 
 		Date expirationDate = calendar.getTime();
 
@@ -429,7 +436,9 @@ public class LicenseKeyGenerationService {
 
 			calendar.add(
 				Calendar.DATE,
-				LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS);
+				_getDurationDays(
+					subscriptionEntitlement,
+					LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS));
 
 			expirationDate = calendar.getTime();
 
@@ -558,6 +567,29 @@ public class LicenseKeyGenerationService {
 		return activationKey;
 	}
 
+	private int _getDurationDays(Entitlement entitlement, int defaultDays) {
+
+		// A key that runs for a fixed term from now takes that term from the
+		// entitlement definition that grants it, so changing it is a data
+		// change. The constant is only what an unset definition falls back to.
+
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return defaultDays;
+		}
+
+		int licenseKeyDurationDays =
+			entitlementDefinition.getLicenseKeyDurationDays();
+
+		if (licenseKeyDurationDays <= 0) {
+			return defaultDays;
+		}
+
+		return licenseKeyDurationDays;
+	}
+
 	private String _getDeveloperLabel(String keyType) {
 		if (Objects.equals(keyType, LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
 			return "Developer Cluster";
@@ -651,7 +683,8 @@ public class LicenseKeyGenerationService {
 		return licensedProducts;
 	}
 
-	private boolean _isEntitledProduct(String productName, Project project)
+	private Entitlement _fetchEntitledProductEntitlement(
+			String productName, Project project)
 		throws Exception {
 
 		for (Entitlement entitlement :
@@ -669,11 +702,11 @@ public class LicenseKeyGenerationService {
 				Objects.equals(
 					productName, CommerceProductUtil.getName(product))) {
 
-				return true;
+				return entitlement;
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	private List<Entitlement> _toBundleEntitlements(
@@ -753,8 +786,6 @@ public class LicenseKeyGenerationService {
 			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
 			StringPool.BLANK, startDate, expirationDate);
 	}
-
-	private static final int _DEVELOPER_DURATION_MONTHS = 12;
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerationService.class);
