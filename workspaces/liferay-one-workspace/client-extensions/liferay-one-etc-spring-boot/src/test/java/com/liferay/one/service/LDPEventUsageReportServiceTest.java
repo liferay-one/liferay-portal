@@ -516,10 +516,10 @@ public class LDPEventUsageReportServiceTest {
 
 	private final ContractService _contractService = Mockito.mock(
 		ContractService.class);
-	private final EntitlementService _entitlementService = Mockito.mock(
-		EntitlementService.class);
 	private final DataOpsUsageService _dataOpsUsageService = Mockito.mock(
 		DataOpsUsageService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private LDPEventUsageReportService _ldpEventUsageReportService;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);

@@ -6,9 +6,9 @@ credentials and without a deployed Cloud Function.
 
 ## Why This Is Needed
 
-`GoogleCloudFunctionService` authenticates before it makes a request. `_getIdTokenProvider`
+`DataOpsUsageService` authenticates before it makes a request. `_getIdTokenProvider`
 calls `(IdTokenProvider)GoogleCredentials.getApplicationDefault()`, so with no application
-default credentials present it throws `GoogleCloudFunctionUnavailableException`,
+default credentials present it throws `DataOpsUnavailableException`,
 `ProjectRestController` logs "Unable to reach the DataOps usage API" and returns null, and
 the request never leaves the pod. Stubbing HTTP alone therefore changes nothing.
 
