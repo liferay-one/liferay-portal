@@ -40,10 +40,24 @@ public class OrganizationSynchronizerTest {
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
 
-		PropertyService propertyService = Mockito.mock(PropertyService.class);
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any())
+		).thenReturn(
+			null
+		);
 
 		Mockito.when(
-			propertyService.getOrganizationProperties(Mockito.anyLong())
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any(), Mockito.any())
+		).thenReturn(
+			null
+		);
+
+		_propertyService = Mockito.mock(PropertyService.class);
+
+		Mockito.when(
+			_propertyService.getOrganizationProperties(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -58,11 +72,10 @@ public class OrganizationSynchronizerTest {
 			_jiraAssetObject
 		);
 
-		UserAccountService userAccountService = Mockito.mock(
-			UserAccountService.class);
+		_userAccountService = Mockito.mock(UserAccountService.class);
 
 		Mockito.when(
-			userAccountService.getOrganizationUserAccounts(Mockito.anyLong())
+			_userAccountService.getOrganizationUserAccounts(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -93,7 +106,7 @@ public class OrganizationSynchronizerTest {
 			"_organizationUserAccountRoleSynchronizer",
 			_organizationUserAccountRoleSynchronizer);
 		ReflectionTestUtils.setField(
-			_organizationSynchronizer, "_propertyService", propertyService);
+			_organizationSynchronizer, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_organizationSynchronizer, "_teamConverter", teamConverter);
 		ReflectionTestUtils.setField(
@@ -101,7 +114,7 @@ public class OrganizationSynchronizerTest {
 			Mockito.mock(TeamRoleSynchronizer.class));
 		ReflectionTestUtils.setField(
 			_organizationSynchronizer, "_userAccountService",
-			userAccountService);
+			_userAccountService);
 	}
 
 	@Test
@@ -223,15 +236,37 @@ public class OrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncOrganizationSkipsContactsWhenUserAccountFails()
+		throws Exception {
+
+		Mockito.when(
+			_userAccountService.getOrganizationUserAccounts(Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(TeamConstants.ATTRIBUTE_NAME_CONTACTS);
+	}
+
+	@Test
+	public void testSyncOrganizationSkipsExternalLinksWhenPropertyFails()
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getOrganizationProperties(Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(TeamConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS);
+	}
+
+	@Test
 	public void testSyncOrganizationUserAccountsUpsertsUserAccountReferences()
 		throws Exception {
 
-		Organization organization = new Organization();
-
-		organization.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
-		organization.setId("1");
-
-		_organizationSynchronizer.syncOrganizationUserAccounts(organization);
+		_organizationSynchronizer.syncOrganizationUserAccounts(
+			_createOrganization());
 
 		Mockito.verify(
 			_jiraAssetObject
@@ -246,6 +281,43 @@ public class OrganizationSynchronizerTest {
 		);
 	}
 
+	private void _assertSkipsAttribute(String attributeName) {
+		_organizationSynchronizer.syncOrganization(_createOrganization());
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(TeamConstants.ATTRIBUTE_NAME_TEAM_ROLES), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+	}
+
+	private Organization _createOrganization() {
+		Organization organization = new Organization();
+
+		organization.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		organization.setId("1");
+
+		return organization;
+	}
+
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
@@ -255,5 +327,7 @@ public class OrganizationSynchronizerTest {
 	private OrganizationSynchronizer _organizationSynchronizer;
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
+	private PropertyService _propertyService;
+	private UserAccountService _userAccountService;
 
 }
