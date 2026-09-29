@@ -89,8 +89,12 @@ public class CommerceProductService extends OneBaseService {
 		return product;
 	}
 
-	public Map<String, String> getSpecificationValues(long id)
+	public Map<String, String> getSpecificationValues(long productId)
 		throws Exception {
+
+		// A product's nested productSpecifications are capped at the default
+		// page size, which silently drops specifications from a product that
+		// carries more than twenty. Query them directly instead.
 
 		ProductSpecificationResource productSpecificationResource =
 			ProductSpecificationResource.builder(
@@ -102,18 +106,16 @@ public class CommerceProductService extends OneBaseService {
 
 		Page<ProductSpecification> page =
 			productSpecificationResource.getProductIdProductSpecificationsPage(
-				id, Pagination.of(1, _PAGE_SIZE));
+				productId, Pagination.of(1, _PAGE_SIZE));
 
 		Map<String, String> specificationValues = new HashMap<>();
 
 		for (ProductSpecification productSpecification : page.getItems()) {
-			Map<String, String> value =
-				(Map<String, String>)productSpecification.getValue();
+			String value = _getValue(productSpecification.getValue());
 
 			if (value != null) {
 				specificationValues.put(
-					productSpecification.getSpecificationKey(),
-					value.get("en_US"));
+					productSpecification.getSpecificationKey(), value);
 			}
 		}
 
@@ -195,6 +197,28 @@ public class CommerceProductService extends OneBaseService {
 		}
 	}
 
+	private String _getValue(Object value) {
+		if (!(value instanceof Map)) {
+			return null;
+		}
+
+		Map<String, String> valueMap = (Map<String, String>)value;
+
+		String localizedValue = valueMap.get(_LANGUAGE_ID_DEFAULT);
+
+		if (localizedValue != null) {
+			return localizedValue;
+		}
+
+		for (String otherValue : valueMap.values()) {
+			if (otherValue != null) {
+				return otherValue;
+			}
+		}
+
+		return null;
+	}
+
 	private boolean _hasPublishedSku(long productId) throws Exception {
 		for (Sku sku : _commerceSkuService.getSkus(productId)) {
 			if (Boolean.TRUE.equals(sku.getPublished())) {
@@ -234,6 +258,8 @@ public class CommerceProductService extends OneBaseService {
 	}
 
 	private static final int _PAGE_SIZE = 200;
+
+	private static final String _LANGUAGE_ID_DEFAULT = "en_US";
 
 	private static final Log _log = LogFactory.getLog(
 		CommerceProductService.class);

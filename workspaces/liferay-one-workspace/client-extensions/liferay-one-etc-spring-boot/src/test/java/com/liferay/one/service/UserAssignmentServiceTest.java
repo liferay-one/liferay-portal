@@ -671,7 +671,7 @@ public class UserAssignmentServiceTest {
 
 		inOrder.verify(
 			_subscriptionEntryService
-		).deleteAccountLicenseKeySubscriptionEntries(
+		).deleteAccountActivationKeySubscriptionEntries(
 			_ACCOUNT_ID, _USER_ID
 		);
 

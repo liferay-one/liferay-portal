@@ -10,25 +10,39 @@ package com.liferay.one.constants;
  */
 public class LicenseKeyGenerationConstants {
 
+	public static final int COMPLIMENTARY_DURATION_DAYS = 30;
+
 	public static final int DEVELOPER_MAJOR_VERSION_COUNT = 2;
+
+	public static final String[] DOWNLOADABLE_KEY_TYPES = {
+		"developer", "developer-cluster"
+	};
 
 	public static final String ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION =
 		"licenseGeneration";
 
-	public static final String[] KEY_TYPE_NAME_SUFFIXES = {
-		"Backup", "Development", "Flex", "Non-Production"
-	};
+	public static final String KEY_TYPE_COMPLIMENTARY = "complimentary";
+
+	public static final String KEY_TYPE_PRODUCTION = "production";
 
 	public static final String[] LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = {
-		"PRDCT-CLOUD-NATIVE", "PRDCT-DXP", "PRDCT-PORTAL"
+		LicenseKeyGenerationConstants.
+			PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
+		LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
+		LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL
 	};
 
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
 
-	public static final String PRODUCT_GROUP_DXP = "dxp";
+	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE =
+		"PRDCT-CLOUD-NATIVE";
 
-	public static final String[] UNSUPPORTED_LICENSE_ENTRY_TYPES = {
-		"free", "virtual-cluster"
-	};
+	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_DXP =
+		"PRDCT-DXP";
+
+	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL =
+		"PRDCT-PORTAL";
+
+	public static final String PRODUCT_GROUP_DXP = "dxp";
 
 }
