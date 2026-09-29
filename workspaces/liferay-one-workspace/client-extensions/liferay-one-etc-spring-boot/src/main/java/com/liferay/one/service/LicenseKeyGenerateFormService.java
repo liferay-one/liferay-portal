@@ -10,6 +10,9 @@ import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseEntryService;
+import com.liferay.one.license.LicenseKeyType;
+import com.liferay.one.license.LicenseKeyTypeService;
+import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ProductVersion;
@@ -25,6 +28,9 @@ import com.liferay.portal.kernel.util.Validator;
 import java.time.Instant;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +68,10 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		for (String part : productVersion.split(StringPool.SPACE)) {
+			if (part.isEmpty()) {
+				continue;
+			}
+
 			char c = part.charAt(0);
 
 			if ((c >= CharPool.NUMBER_0) && (c <= CharPool.NUMBER_9)) {
@@ -73,20 +83,24 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public LicenseEntry fetchLicenseEntry(
-		String keyTypeLabel, String licenseEntryFamily, String version) {
+		String keyTypeKey, String licenseEntryFamily, String version) {
 
-		String suffix = _getKeyTypeNameSuffix(keyTypeLabel);
-
-		if (Validator.isNull(suffix)) {
+		if (Validator.isNull(keyTypeKey)) {
 			return null;
 		}
+
+		LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
+			toLicenseEntryKeyType(keyTypeKey));
 
 		for (LicenseEntry licenseEntry :
 				_getLicenseEntries(licenseEntryFamily, version)) {
 
-			String name = licenseEntry.getName();
-
-			if (name.endsWith(suffix)) {
+			if (licenseKeyType == null) {
+				if (Objects.equals(keyTypeKey, licenseEntry.getName())) {
+					return licenseEntry;
+				}
+			}
+			else if (licenseKeyType.matches(licenseEntry)) {
 				return licenseEntry;
 			}
 		}
@@ -123,18 +137,33 @@ public class LicenseKeyGenerateFormService {
 		return _commerceProductService.fetchProduct(productId);
 	}
 
-	public JSONObject getGenerateForm(String projectExternalReferenceCode)
+	public JSONObject getGenerateForm(
+			String projectExternalReferenceCode,
+			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
 				projectExternalReferenceCode);
 
-		List<EntitledProduct> entitledProducts = _getEntitledProducts(
+		Map<Long, ResolvedProduct> resolvedProducts = _getResolvedProducts(
 			entitlements);
+
+		List<EntitledProduct> entitledProducts = _getEntitledProducts(
+			entitlements, resolvedProducts);
+
+		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+			_getLicenseKeyTypeEntitlements(entitlements, resolvedProducts);
+
+		// A renewal reuses the activations the renewed key holds, so those are
+		// discounted here exactly as they are when the key is generated.
+		// Otherwise a key type that is fully spent would drop out of the form
+		// and leave the renewal with nothing to select.
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
+				_getRenewedActivationKeyIds(
+					renewedActivationKeyExternalReferenceCode),
 				projectExternalReferenceCode);
 
 		List<ProductVersion> productVersions = _getProductVersions();
@@ -147,7 +176,9 @@ public class LicenseKeyGenerateFormService {
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				entitledProduct.getLicenseEntryFamily(), productVersions);
+				entitledProduct.getExternalReferenceCode(),
+				entitledProduct.getLicenseEntryFamily(), licenseKeyCounts,
+				licenseKeyTypeEntitlements, productVersions);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -176,11 +207,9 @@ public class LicenseKeyGenerateFormService {
 				).put(
 					"keyTypes", keyTypesJSONArray
 				).put(
-					"name", entitledProduct.getName()
+					"label", entitledProduct.getLicenseEntryFamily()
 				).put(
-					"subscriptions",
-					_getSubscriptionsJSONArray(
-						entitledProduct.getEntitlement(), licenseKeyCounts)
+					"name", entitledProduct.getName()
 				).put(
 					"versions", versionsJSONArray
 				));
@@ -203,9 +232,76 @@ public class LicenseKeyGenerateFormService {
 			ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
 	}
 
-	private boolean _generatesActivationKey(
-			Map<String, String> specificationValues)
+	public String toLicenseEntryKeyType(String keyTypeKey) {
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+				keyTypeKey)) {
+
+			return LicenseKeyGenerationConstants.KEY_TYPE_PRODUCTION;
+		}
+
+		return keyTypeKey;
+	}
+
+	public boolean grantsLicense(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return false;
+		}
+
+		return Objects.equals(
+			LicenseKeyGenerationConstants.
+				ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION,
+			entitlementDefinition.getName());
+	}
+
+	private List<Long> _getRenewedActivationKeyIds(
+			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
+
+		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
+			return Collections.emptyList();
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			renewedActivationKeyExternalReferenceCode);
+
+		if (activationKey == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(activationKey.getActivationKeyId());
+	}
+
+	private LicenseEntry _fetchLicenseEntry(
+		String licenseEntryFamily, LicenseKeyType licenseKeyType,
+		List<ProductVersion> productVersions) {
+
+		licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
+			toLicenseEntryKeyType(licenseKeyType.getKey()));
+
+		if (licenseKeyType == null) {
+			return null;
+		}
+
+		for (ProductVersion productVersion : productVersions) {
+			for (LicenseEntry licenseEntry :
+					_getLicenseEntries(
+						licenseEntryFamily, productVersion.getVersion())) {
+
+				if (licenseKeyType.matches(licenseEntry)) {
+					return licenseEntry;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private boolean _generatesActivationKey(
+		Map<String, String> specificationValues) {
 
 		return GetterUtil.getBoolean(
 			specificationValues.get(
@@ -213,23 +309,22 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private List<EntitledProduct> _getEntitledProducts(
-			List<Entitlement> entitlements)
-		throws Exception {
+		List<Entitlement> entitlements,
+		Map<Long, ResolvedProduct> resolvedProducts) {
 
 		List<EntitledProduct> entitledProducts = new ArrayList<>();
 
 		Set<String> externalReferenceCodes = new LinkedHashSet<>();
 
-		for (Entitlement entitlement : entitlements) {
-			if (!_grantsLicense(entitlement)) {
+		for (Entitlement entitlement : _orderByLicenseKeyType(entitlements)) {
+			ResolvedProduct resolvedProduct = resolvedProducts.get(
+				entitlement.getEntitlementId());
+
+			if (resolvedProduct == null) {
 				continue;
 			}
 
-			Product product = fetchProduct(entitlement);
-
-			if (product == null) {
-				continue;
-			}
+			Product product = resolvedProduct._getProduct();
 
 			String externalReferenceCode = product.getExternalReferenceCode();
 
@@ -238,8 +333,7 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			Map<String, String> specificationValues =
-				_commerceProductService.getSpecificationValues(
-					product.getProductId());
+				resolvedProduct._getSpecificationValues();
 
 			entitledProducts.add(
 				new EntitledProduct(
@@ -253,48 +347,67 @@ public class LicenseKeyGenerateFormService {
 		return entitledProducts;
 	}
 
-	private String _getKeyTypeNameSuffix(String keyTypeLabel) {
-		if (Validator.isNull(keyTypeLabel)) {
-			return null;
-		}
-
-		for (String suffix :
-				LicenseKeyGenerationConstants.KEY_TYPE_NAME_SUFFIXES) {
-
-			if (keyTypeLabel.endsWith(suffix)) {
-				return suffix;
-			}
-		}
-
-		return null;
-	}
-
 	private JSONArray _getKeyTypesJSONArray(
-		String licenseEntryFamily, List<ProductVersion> productVersions) {
+		String externalReferenceCode, String licenseEntryFamily,
+		Map<Long, Integer> licenseKeyCounts,
+		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
+		List<ProductVersion> productVersions) {
 
 		JSONArray jsonArray = new JSONArray();
 
-		Set<String> names = new LinkedHashSet<>();
+		Map<String, Entitlement> entitlements = licenseKeyTypeEntitlements.get(
+			licenseEntryFamily);
 
-		for (ProductVersion productVersion : productVersions) {
-			for (LicenseEntry licenseEntry :
-					_getLicenseEntries(
-						licenseEntryFamily, productVersion.getVersion())) {
+		if (entitlements == null) {
+			return jsonArray;
+		}
 
-				if (!names.add(licenseEntry.getName())) {
-					continue;
-				}
+		boolean hasLicenseEntries = _hasLicenseEntries(
+			licenseEntryFamily, productVersions);
 
-				jsonArray.put(
-					new JSONObject(
-					).put(
-						"label", licenseEntry.getName()
-					).put(
-						"licenseEntryType", licenseEntry.getType()
-					).put(
-						"productKey", licenseEntry.getProductKey()
-					));
+		for (LicenseKeyType licenseKeyType :
+				_licenseKeyTypeService.getLicenseKeyTypes(
+					externalReferenceCode)) {
+
+			Entitlement entitlement = entitlements.get(licenseKeyType.getKey());
+
+			if (entitlement == null) {
+				continue;
 			}
+
+			LicenseEntry licenseEntry = _fetchLicenseEntry(
+				licenseEntryFamily, licenseKeyType, productVersions);
+
+			if ((licenseEntry == null) && hasLicenseEntries &&
+				licenseKeyType.isLicenseEntryBacked()) {
+
+				continue;
+			}
+
+			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
+				entitlement, licenseKeyCounts);
+
+			if (!_hasAvailableCount(subscriptionsJSONArray)) {
+				continue;
+			}
+
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"entitlementId", entitlement.getEntitlementId()
+				).put(
+					"key", licenseKeyType.getKey()
+				).put(
+					"licenseEntryType",
+					(licenseEntry == null) ? StringPool.BLANK :
+						licenseEntry.getType()
+				).put(
+					"productKey",
+					(licenseEntry == null) ? StringPool.BLANK :
+						licenseEntry.getProductKey()
+				).put(
+					"subscriptions", subscriptionsJSONArray
+				));
 		}
 
 		return jsonArray;
@@ -313,12 +426,7 @@ public class LicenseKeyGenerateFormService {
 				_licenseEntryService.getLicenseEntriesByNameVersion(
 					licenseEntryFamily + "%", toComparableVersion(version))) {
 
-			if (ArrayUtil.contains(
-					LicenseKeyGenerationConstants.
-						UNSUPPORTED_LICENSE_ENTRY_TYPES,
-					licenseEntry.getType()) ||
-				!_isOfferedKeyType(licenseEntry.getName())) {
-
+			if (LicenseKeyType.fetchLicenseKeyType(licenseEntry) == null) {
 				continue;
 			}
 
@@ -328,16 +436,107 @@ public class LicenseKeyGenerateFormService {
 		return licenseEntries;
 	}
 
-	private List<ProductVersion> _getProductVersions() {
-		try {
-			return _productVersionService.getProductVersions(
-				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true);
-		}
-		catch (Exception exception) {
-			_log.error("Unable to get the product versions", exception);
+	private String _getLicenseKeyType(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
 
-			return new ArrayList<>();
+		if (entitlementDefinition == null) {
+			return StringPool.BLANK;
 		}
+
+		return entitlementDefinition.getLicenseKeyType();
+	}
+
+	private Map<String, Map<String, Entitlement>>
+		_getLicenseKeyTypeEntitlements(
+			List<Entitlement> entitlements,
+			Map<Long, ResolvedProduct> resolvedProducts) {
+
+		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+			new HashMap<>();
+
+		for (Entitlement entitlement : entitlements) {
+			ResolvedProduct resolvedProduct = resolvedProducts.get(
+				entitlement.getEntitlementId());
+
+			if (resolvedProduct == null) {
+				continue;
+			}
+
+			String licenseKeyType = _getLicenseKeyType(entitlement);
+
+			if (Validator.isNull(licenseKeyType)) {
+				continue;
+			}
+
+			String licenseEntryFamily =
+				resolvedProduct._getLicenseEntryFamily();
+
+			if (Validator.isNull(licenseEntryFamily)) {
+				continue;
+			}
+
+			Map<String, Entitlement> entitlementsMap =
+				licenseKeyTypeEntitlements.computeIfAbsent(
+					licenseEntryFamily, key -> new HashMap<>());
+
+			entitlementsMap.putIfAbsent(licenseKeyType, entitlement);
+		}
+
+		return licenseKeyTypeEntitlements;
+	}
+
+	private List<ProductVersion> _getProductVersions() throws Exception {
+		return _productVersionService.getProductVersions(
+			LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true);
+	}
+
+	private Map<Long, ResolvedProduct> _getResolvedProducts(
+			List<Entitlement> entitlements)
+		throws Exception {
+
+		Map<Long, ResolvedProduct> resolvedProducts = new HashMap<>();
+		Map<String, ResolvedProduct> skuResolvedProducts = new HashMap<>();
+		Set<String> skuExternalReferenceCodes = new HashSet<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (!grantsLicense(entitlement)) {
+				continue;
+			}
+
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			String skuExternalReferenceCode =
+				entitlementDefinition.getSkuExternalReferenceCode();
+
+			ResolvedProduct resolvedProduct = null;
+
+			if (skuExternalReferenceCodes.add(skuExternalReferenceCode)) {
+				Product product = fetchProduct(entitlement);
+
+				if (product != null) {
+					resolvedProduct = new ResolvedProduct(
+						product,
+						_commerceProductService.getSpecificationValues(
+							product.getProductId()));
+
+					skuResolvedProducts.put(
+						skuExternalReferenceCode, resolvedProduct);
+				}
+			}
+			else {
+				resolvedProduct = skuResolvedProducts.get(
+					skuExternalReferenceCode);
+			}
+
+			if (resolvedProduct != null) {
+				resolvedProducts.put(
+					entitlement.getEntitlementId(), resolvedProduct);
+			}
+		}
+
+		return resolvedProducts;
 	}
 
 	private JSONArray _getSubscriptionsJSONArray(
@@ -371,25 +570,26 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private boolean _grantsLicense(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
+	private boolean _hasAvailableCount(JSONArray subscriptionsJSONArray) {
+		for (int i = 0; i < subscriptionsJSONArray.length(); i++) {
+			JSONObject jsonObject = subscriptionsJSONArray.getJSONObject(i);
 
-		if (entitlementDefinition == null) {
-			return false;
+			if (jsonObject.optInt("availableCount") > 0) {
+				return true;
+			}
 		}
 
-		return Objects.equals(
-			LicenseKeyGenerationConstants.
-				ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION,
-			entitlementDefinition.getName());
+		return false;
 	}
 
-	private boolean _isOfferedKeyType(String name) {
-		for (String suffix :
-				LicenseKeyGenerationConstants.KEY_TYPE_NAME_SUFFIXES) {
+	private boolean _hasLicenseEntries(
+		String licenseEntryFamily, List<ProductVersion> productVersions) {
 
-			if (name.endsWith(suffix)) {
+		for (ProductVersion productVersion : productVersions) {
+			List<LicenseEntry> licenseEntries = _getLicenseEntries(
+				licenseEntryFamily, productVersion.getVersion());
+
+			if (!licenseEntries.isEmpty()) {
 				return true;
 			}
 		}
@@ -402,6 +602,26 @@ public class LicenseKeyGenerateFormService {
 			LicenseKeyGenerationConstants.
 				LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES,
 			entitledProduct.getExternalReferenceCode());
+	}
+
+	private List<Entitlement> _orderByLicenseKeyType(
+		List<Entitlement> entitlements) {
+
+		List<Entitlement> orderedEntitlements = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (Validator.isNull(_getLicenseKeyType(entitlement))) {
+				orderedEntitlements.add(entitlement);
+			}
+		}
+
+		for (Entitlement entitlement : entitlements) {
+			if (Validator.isNotNull(_getLicenseKeyType(entitlement))) {
+				orderedEntitlements.add(entitlement);
+			}
+		}
+
+		return orderedEntitlements;
 	}
 
 	private JSONObject _toBundleProductJSONObject(
@@ -423,6 +643,8 @@ public class LicenseKeyGenerateFormService {
 			"externalReferenceCode", entitledProduct.getExternalReferenceCode()
 		).put(
 			"licensable", licensable
+		).put(
+			"licenseEntryFamily", entitledProduct.getLicenseEntryFamily()
 		).put(
 			"name", entitledProduct.getName()
 		);
@@ -490,6 +712,9 @@ public class LicenseKeyGenerateFormService {
 		LicenseKeyGenerateFormService.class);
 
 	@Autowired
+	private ActivationKeyService _activationKeyService;
+
+	@Autowired
 	private CommerceProductService _commerceProductService;
 
 	@Autowired
@@ -503,6 +728,9 @@ public class LicenseKeyGenerateFormService {
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
+
+	@Autowired
+	private LicenseKeyTypeService _licenseKeyTypeService;
 
 	@Autowired
 	private ProductVersionService _productVersionService;
@@ -549,6 +777,33 @@ public class LicenseKeyGenerateFormService {
 		private final boolean _generatesActivationKey;
 		private final String _licenseEntryFamily;
 		private final String _name;
+
+	}
+
+	private static class ResolvedProduct {
+
+		private ResolvedProduct(
+			Product product, Map<String, String> specificationValues) {
+
+			_product = product;
+			_specificationValues = specificationValues;
+		}
+
+		private String _getLicenseEntryFamily() {
+			return _specificationValues.get(
+				ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
+		}
+
+		private Product _getProduct() {
+			return _product;
+		}
+
+		private Map<String, String> _getSpecificationValues() {
+			return _specificationValues;
+		}
+
+		private final Product _product;
+		private final Map<String, String> _specificationValues;
 
 	}
 

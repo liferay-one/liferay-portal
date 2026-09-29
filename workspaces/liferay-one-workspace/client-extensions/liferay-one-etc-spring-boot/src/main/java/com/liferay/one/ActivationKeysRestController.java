@@ -7,6 +7,7 @@ package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
+import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.ActivationKey;
@@ -20,11 +21,13 @@ import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -110,18 +113,28 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	public ResponseEntity<String> getActivationKeysGenerateForm(
 			@AuthenticationPrincipal Jwt jwt,
 			@RequestParam("projectExternalReferenceCode") String
-				projectExternalReferenceCode)
+				projectExternalReferenceCode,
+			@RequestParam(
+				name = "renewedActivationKeyExternalReferenceCode",
+				required = false
+			)
+			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
-		_environmentActivationPermission.checkLicenseKeyActivation(
-			jwt, projectExternalReferenceCode);
+		Project project =
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				jwt, projectExternalReferenceCode);
+
+		_checkRenewedActivationKey(
+			jwt, project, renewedActivationKeyExternalReferenceCode);
 
 		return ResponseEntity.ok(
 		).contentType(
 			MediaType.APPLICATION_JSON
 		).body(
 			_licenseKeyGenerateFormService.getGenerateForm(
-				projectExternalReferenceCode
+				projectExternalReferenceCode,
+				renewedActivationKeyExternalReferenceCode
 			).toString()
 		);
 	}
@@ -131,6 +144,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			@AuthenticationPrincipal Jwt jwt,
 			@RequestParam("activationKeyId") long activationKeyId)
 		throws Exception {
+
+		_getActivationKey(jwt, activationKeyId);
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
@@ -167,14 +182,20 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				activationKey.getAccountEntryId(), ActionKeys.UPDATE, jwt);
 		}
 		else {
-			_environmentActivationPermission.check(
+			_environmentActivationPermission.checkLicenseKeyActivation(
 				jwt, projectExternalReferenceCode);
+		}
+
+		if (activationKey.isComplimentary()) {
+			throw new LicenseKeyEntitlementException(
+				"A complimentary activation key cannot be activated or " +
+					"deactivated");
 		}
 
 		JSONObject jsonObject = new JSONObject(json);
 
 		_activationKeyService.updateActivationKeyActive(
-			jsonObject.optBoolean("active"), activationKeyId);
+			activationKeyId, jsonObject.optBoolean("active"));
 	}
 
 	@PostMapping("/generate")
@@ -242,6 +263,46 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _checkRenewedActivationKey(
+			Jwt jwt, Project project,
+			String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
+		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
+			return;
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			renewedActivationKeyExternalReferenceCode);
+
+		if (activationKey == null) {
+			return;
+		}
+
+		_licenseKeyPermission.check(
+			activationKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
+
+		if ((project == null) ||
+			!Objects.equals(
+				project.getExternalReferenceCode(),
+				activationKey.getProjectExternalReferenceCode())) {
+
+			throw new PrincipalException();
+		}
+	}
+
+	private ActivationKey _getActivationKey(Jwt jwt, long activationKeyId)
+		throws Exception {
+
+		ActivationKey activationKey = _activationKeyService.getActivationKey(
+			jwt, activationKeyId);
+
+		_licenseKeyPermission.check(
+			activationKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
+
+		return activationKey;
+	}
+
 	private List<LicenseKey> _getActiveLicenseKeys(long activationKeyId)
 		throws Exception {
 
@@ -259,18 +320,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 
 		return licenseKeys;
-	}
-
-	private ActivationKey _getActivationKey(Jwt jwt, long activationKeyId)
-		throws Exception {
-
-		ActivationKey activationKey = _activationKeyService.getActivationKey(
-			jwt, activationKeyId);
-
-		_licenseKeyPermission.check(
-			activationKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
-
-		return activationKey;
 	}
 
 	private List<Long> _toLongs(JSONArray jsonArray) {

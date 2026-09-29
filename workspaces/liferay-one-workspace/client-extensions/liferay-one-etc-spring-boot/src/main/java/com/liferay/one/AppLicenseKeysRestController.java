@@ -126,16 +126,16 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		return _licenseKeyService.addLicenseKey(
 			entitlement.getAccountEntryId(), StringPool.BLANK, 0, true,
-			StringPool.BLANK, StringPool.BLANK, false, description,
-			StringPool.BLANK, 0, entitlementId,
+			StringPool.BLANK, null, false, description, StringPool.BLANK, 0,
+			entitlementId,
 			Date.from(Instant.parse(jsonObject.getString("expirationDate"))),
 			jsonObject.optString("hostName"),
 			jsonObject.optString("ipAddresses"), null, StringPool.BLANK,
 			jsonObject.optString("licenseType"), _LICENSE_VERSION,
 			jsonObject.optString("macAddresses"), 0, 0L, 0, 0, 0L, productName,
 			jsonObject.optString("orderId"), owner, productExternalId,
-			productName, jsonObject.optString("productVersion"),
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			productName, jsonObject.optString("productVersion"), null,
+			StringPool.BLANK, StringPool.BLANK,
 			Date.from(Instant.parse(jsonObject.getString("startDate"))));
 	}
 

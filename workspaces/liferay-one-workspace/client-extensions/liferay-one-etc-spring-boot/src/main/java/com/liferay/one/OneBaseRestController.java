@@ -103,9 +103,9 @@ public abstract class OneBaseRestController extends BaseRestController {
 	public ResponseEntity<?> handleException(
 		LicenseKeyEntitlementException licenseKeyEntitlementException) {
 
-		_log.error(
-			"The project is not entitled to the activation key",
-			licenseKeyEntitlementException);
+		if (_log.isWarnEnabled()) {
+			_log.warn(licenseKeyEntitlementException);
+		}
 
 		return _toResponseEntity(
 			HttpStatus.CONFLICT, licenseKeyEntitlementException.getMessage());

@@ -29,6 +29,7 @@ public class EntitlementDefinition {
 		_entitlementDefinitionId = jsonObject.getLong("id");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_grantType = jsonObject.optString("grantType");
+		_licenseKeyType = jsonObject.optString("licenseKeyType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
 		_overagePricing = OveragePricing.of(jsonObject);
@@ -58,6 +59,10 @@ public class EntitlementDefinition {
 
 	public String getGrantType() {
 		return _grantType;
+	}
+
+	public String getLicenseKeyType() {
+		return _licenseKeyType;
 	}
 
 	public Double getMaxQuantity() {
@@ -127,6 +132,7 @@ public class EntitlementDefinition {
 	private final long _entitlementDefinitionId;
 	private final String _externalReferenceCode;
 	private final String _grantType;
+	private final String _licenseKeyType;
 	private final Double _maxQuantity;
 	private final String _name;
 	private final OveragePricing _overagePricing;
