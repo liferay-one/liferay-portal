@@ -3,7 +3,10 @@
 	"hidden": false,
 	"name": "Publisher Dashboard",
 	"name_i18n": {
-		"en_US": "Publisher Dashboard"
+		"en_US": "Publisher Dashboard",
+		"es_ES": "Panel del Publicador",
+		"ja_JP": "パブリッシャーダッシュボード",
+		"pt_BR": "Painel do Publicador"
 	},
 	"permissions": [
 		{

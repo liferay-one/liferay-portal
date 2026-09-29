@@ -57,7 +57,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Products Catalog"
+																"en_US": "Products Catalog",
+																"es_ES": "Catálogo de productos",
+																"ja_JP": "製品カタログ",
+																"pt_BR": "Catálogo de produtos"
 															}
 														}
 													}
@@ -67,7 +70,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Marketplace"
+																"en_US": "Marketplace",
+																"es_ES": "Marketplace",
+																"ja_JP": "Marketplace",
+																"pt_BR": "Marketplace"
 															}
 														}
 													}
@@ -77,7 +83,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Welcome to the Liferay Products Marketplace! In this initial release, you'll find foundational tools to help you create, manage, and optimize tailored digital experiences—including the Liferay DXP Free Tier, our Content Marketing Platform, and the AI Hub. We are just getting started, so check back often as more innovative products will be added soon."
+																"en_US": "Welcome to the Liferay Products Marketplace! In this initial release, you'll find foundational tools to help you create, manage, and optimize tailored digital experiences—including the Liferay DXP Free Tier, our Content Marketing Platform, and the AI Hub. We are just getting started, so check back often as more innovative products will be added soon.",
+																"es_ES": "¡Te damos la bienvenida al Marketplace de productos de Liferay! En esta versión inicial encontrarás herramientas fundamentales para crear, gestionar y optimizar experiencias digitales personalizadas, como Liferay DXP Free Tier, nuestra plataforma de Content Marketing y el AI Hub. Esto es solo el principio: vuelve a menudo para descubrir nuevos e innovadores productos.",
+																"ja_JP": "Liferay製品マーケットプレイスへようこそ！この初期リリースでは、Liferay DXP Free Tier、コンテンツマーケティングプラットフォーム、AI Hubなど、カスタマイズされたデジタル体験の作成、管理、最適化を支援する基本ツールをご用意しています。今後もさらに革新的な製品が追加されますので、ぜひ定期的にご確認ください。",
+																"pt_BR": "Boas-vindas ao Marketplace de produtos da Liferay! Nesta versão inicial, você encontrará ferramentas fundamentais para criar, gerenciar e otimizar experiências digitais personalizadas — incluindo o Liferay DXP Free Tier, nossa plataforma de Content Marketing e o AI Hub. Isso é apenas o começo: volte sempre para conferir mais produtos inovadores em breve."
 															}
 														}
 													}
@@ -87,7 +96,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Products Catalog"
+																"en_US": "Products Catalog",
+																"es_ES": "Catálogo de productos",
+																"ja_JP": "製品カタログ",
+																"pt_BR": "Catálogo de produtos"
 															}
 														}
 													}

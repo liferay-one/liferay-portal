@@ -5,7 +5,10 @@
 	"hidden": false,
 	"name": "Applications",
 	"name_i18n": {
-		"en_US": "Applications"
+		"en_US": "Applications",
+		"es_ES": "Aplicaciones",
+		"ja_JP": "アプリケーション",
+		"pt_BR": "Aplicativos"
 	},
 	"private": false,
 	"system": false,
