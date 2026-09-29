@@ -557,18 +557,6 @@
 		},
 		{
 			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "PaaS Developer",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_DEVELOPER",
-			"grantType": "fixed",
-			"licenseKeyType": "developer",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-PAAS",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
 			"defaultQuantity": 2,
 			"displayName": "Extensions RAM",
 			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM",
