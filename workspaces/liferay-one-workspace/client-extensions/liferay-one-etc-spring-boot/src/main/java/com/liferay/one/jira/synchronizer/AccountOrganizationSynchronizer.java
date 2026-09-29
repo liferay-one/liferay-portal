@@ -5,6 +5,8 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.one.jira.constants.AccountTeamRoleAssignmentConstants;
 import com.liferay.one.jira.constants.TeamRoleConstants;
 import com.liferay.one.jira.converter.AccountConverter;
@@ -12,11 +14,14 @@ import com.liferay.one.jira.converter.AccountTeamRoleAssignmentConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.service.AccountService;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -133,6 +138,21 @@ public class AccountOrganizationSynchronizer {
 			}
 
 			try {
+				if (_isOrganizationAssigned(
+						organizationExternalKey, accountExternalKey)) {
+
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Skipping stale organization ",
+								organizationExternalKey, " on account ",
+								accountExternalKey,
+								" because it is still assigned"));
+					}
+
+					continue;
+				}
+
 				_keyedLock.withLock(
 					accountExternalKey,
 					() -> _syncAssignment(
@@ -151,6 +171,30 @@ public class AccountOrganizationSynchronizer {
 					exception);
 			}
 		}
+	}
+
+	private boolean _isOrganizationAssigned(
+			String organizationExternalKey, String accountExternalKey)
+		throws Exception {
+
+		Account account = _accountService.fetchAccountByExternalReferenceCode(
+			accountExternalKey);
+
+		if (account == null) {
+			return false;
+		}
+
+		Set<String> assignedOrganizationExternalKeys = new LinkedHashSet<>();
+
+		for (Organization organization :
+				_organizationService.getAccountOrganizations(account.getId())) {
+
+			assignedOrganizationExternalKeys.add(
+				organization.getExternalReferenceCode());
+		}
+
+		return FindUtil.containsIgnoreCase(
+			assignedOrganizationExternalKeys, organizationExternalKey);
 	}
 
 	private void _syncAssignment(
@@ -198,6 +242,9 @@ public class AccountOrganizationSynchronizer {
 	private AccountConverter _accountConverter;
 
 	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
 	private AccountTeamRoleAssignmentConverter
 		_accountTeamRoleAssignmentConverter;
 
@@ -206,6 +253,9 @@ public class AccountOrganizationSynchronizer {
 
 	@Autowired
 	private KeyedLock _keyedLock;
+
+	@Autowired
+	private OrganizationService _organizationService;
 
 	@Autowired
 	private TeamConverter _teamConverter;
