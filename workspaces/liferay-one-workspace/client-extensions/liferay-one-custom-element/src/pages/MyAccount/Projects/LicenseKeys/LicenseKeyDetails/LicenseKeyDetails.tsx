@@ -17,19 +17,19 @@ import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
-import {translate} from '~/i18n';
+import {Word, translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
 import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
-import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
 import useActivationKeyActions from '../hooks/useActivationKeyActions';
 import useActivationKeySubscription from '../hooks/useActivationKeySubscription';
+import LicenseKeyList from './LicenseKeyList/LicenseKeyList';
 
 export default function LicenseKeyDetails() {
 	const {licenseKeyERC = ''} = useParams();
@@ -87,39 +87,6 @@ type LicenseKeyDetailsContentProps = {
 	onRenew: () => void;
 };
 
-function getProducts(licenseKeys: ActivationKeyLicenseKey[]) {
-	const products = new Map<string, ActivationKeyLicenseKey>();
-
-	for (const licenseKey of licenseKeys) {
-		const key =
-			licenseKey.productExternalReferenceCode || licenseKey.productName;
-
-		if (key && !products.has(key)) {
-			products.set(key, licenseKey);
-		}
-	}
-
-	return [...products.entries()];
-}
-
-function getServers(licenseKeys: ActivationKeyLicenseKey[]) {
-	const servers = new Map<string, ActivationKeyLicenseKey>();
-
-	for (const licenseKey of licenseKeys) {
-		const key = [
-			licenseKey.hostName,
-			licenseKey.ipAddresses,
-			licenseKey.macAddresses,
-		].join('|');
-
-		if (!servers.has(key)) {
-			servers.set(key, licenseKey);
-		}
-	}
-
-	return [...servers.entries()];
-}
-
 function LicenseKeyDetailsContent({
 	activationKey,
 	admin,
@@ -134,60 +101,16 @@ function LicenseKeyDetailsContent({
 		activationKey.activationKeyId
 	);
 
-	const products = getProducts(licenseKeys);
-	const servers = getServers(licenseKeys);
-
-	const [, firstLicenseKey] = servers[0] ?? [];
-
 	const detailsRows: DetailsRow[] = [
-		{label: translate('environment-name'), value: activationKey.name},
 		{
-			label: translate('description'),
-			value: activationKey.description || '-',
-		},
-		{
-			label: translate('key-type'),
-			value: activationKey.licenseType
-				? translate(getKeyType(activationKey.licenseType))
+			label: translate('type'),
+			value: activationKey.type
+				? translate(activationKey.type as Word)
 				: '-',
-		},
-		{
-			label: translate('host-name'),
-			value: servers.length ? (
-				<span className="d-flex flex-column">
-					{servers.map(([key, server]) => (
-						<span key={key}>{server.hostName || '-'}</span>
-					))}
-				</span>
-			) : (
-				'-'
-			),
-		},
-		{
-			label: translate('cluster-size'),
-			value: firstLicenseKey?.clusterSize || '-',
-		},
-		{
-			label: translate('version'),
-			value: activationKey.productVersion || '-',
-		},
-		{
-			label: translate('instance-size'),
-			value: firstLicenseKey?.sizing || '-',
-		},
-		{
-			label: translate('environment-type'),
-			value: translate(activationKey.environmentType),
-		},
-		{
-			label: translate('subscription-type'),
-			value: translate(
-				activationKey.complimentary ? 'complimentary' : 'subscription'
-			),
 		},
 		{label: translate('start-date'), value: activationKey.startDate || '-'},
 		{
-			label: translate('expiration-date'),
+			label: translate('end-date'),
 			value: isPermanentKey(
 				activationKey.expirationDateValue,
 				activationKey.startDateValue
@@ -213,23 +136,6 @@ function LicenseKeyDetailsContent({
 			),
 		},
 	];
-
-	if (products.length) {
-		detailsRows.push({
-			label: translate('products'),
-			value: (
-				<span className="d-flex flex-column">
-					{products.map(([key, product]) => (
-						<span key={key}>
-							{product.sizing
-								? `${product.productName} (${product.sizing})`
-								: product.productName}
-						</span>
-					))}
-				</span>
-			),
-		});
-	}
 
 	return (
 		<>
@@ -287,6 +193,8 @@ function LicenseKeyDetailsContent({
 				rows={detailsRows}
 				title="activation-key-details"
 			/>
+
+			<LicenseKeyList licenseKeys={licenseKeys} />
 
 			<div className="detailed-card-container mt-3">
 				<div

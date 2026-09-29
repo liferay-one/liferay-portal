@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
@@ -321,6 +322,54 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyBundlesAnAddOnWithoutALicenseEntry()
+		throws Exception {
+
+		// An add-on names no license entry family the license table carries,
+		// so the key it rides is the leading product's. Failing it here would
+		// leave every bundle the form offers impossible to generate.
+
+		Entitlement leadingEntitlement = _toEntitlement(1L, 5.0, "PRDCT-DXP");
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(leadingEntitlement, addOnEntitlement);
+
+		_stubBundledProducts(addOnEntitlement, leadingEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L, 2L), 1L));
+
+		ArgumentCaptor<String> licenseEntryNameArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String> productNameArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
+
+		Mockito.verify(
+			_licenseKeyGenerator, Mockito.times(2)
+		).generateKey(
+			Mockito.any(), licenseEntryNameArgumentCaptor.capture(),
+			Mockito.any(), Mockito.anyInt(),
+			productNameArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP Backup", "DXP Backup"),
+			licenseEntryNameArgumentCaptor.getAllValues());
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP", "Digital Sales Room"),
+			productNameArgumentCaptor.getAllValues());
+	}
+
+	@Test
 	public void testGenerateActivationKeyChargesTheSelectedKeyType()
 		throws Exception {
 
@@ -551,10 +600,9 @@ public class LicenseKeyGenerationServiceTest {
 		Mockito.verify(
 			_activationKeyService
 		).addActivationKey(
-			Mockito.anyLong(), Mockito.eq(true), Mockito.eq(true),
-			Mockito.any(), expirationDateArgumentCaptor.capture(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), startDateArgumentCaptor.capture()
+			Mockito.anyLong(), Mockito.eq(true),
+			expirationDateArgumentCaptor.capture(), Mockito.any(),
+			startDateArgumentCaptor.capture(), Mockito.eq("complimentary")
 		);
 
 		Date expirationDate = expirationDateArgumentCaptor.getValue();
@@ -690,9 +738,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_activationKeyService.addActivationKey(
-				Mockito.anyLong(), Mockito.anyBoolean(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.anyLong(), Mockito.anyBoolean(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			activationKey
 		);
@@ -716,6 +763,65 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
+		);
+	}
+
+	private void _stubBundledProducts(
+			Entitlement addOnEntitlement, Entitlement leadingEntitlement)
+		throws Exception {
+
+		Map<Long, Product> products = HashMapBuilder.put(
+			addOnEntitlement.getEntitlementId(),
+			_toProduct("Digital Sales Room", "PRDCT-DSR")
+		).put(
+			leadingEntitlement.getEntitlementId(),
+			_toProduct("DXP", "PRDCT-DXP")
+		).build();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				Entitlement entitlement = invocation.getArgument(0);
+
+				return products.get(entitlement.getEntitlementId());
+			}
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getLicenseEntryFamily(Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				Product product = invocation.getArgument(0);
+
+				if (Objects.equals(
+						product.getExternalReferenceCode(), "PRDCT-DSR")) {
+
+					return "DSR";
+				}
+
+				return "DXP";
+			}
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.grantsLicense(Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				Mockito.any(), Mockito.any(), Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				if (!Objects.equals(invocation.getArgument(1), "DXP")) {
+					return null;
+				}
+
+				return new LicenseEntry(
+					"portal", "DXP Backup", "production", "7.4", "7.4");
+			}
 		);
 	}
 
@@ -816,6 +922,18 @@ public class LicenseKeyGenerationServiceTest {
 		}
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Product _toProduct(String name, String externalReferenceCode) {
+		Product product = new Product();
+
+		product.setExternalReferenceCode(externalReferenceCode);
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", name
+			).build());
+
+		return product;
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(

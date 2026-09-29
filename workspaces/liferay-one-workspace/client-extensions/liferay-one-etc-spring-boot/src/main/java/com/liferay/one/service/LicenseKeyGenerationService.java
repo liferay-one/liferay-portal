@@ -269,17 +269,14 @@ public class LicenseKeyGenerationService {
 	}
 
 	private ActivationKey _addActivationKey(
-			boolean complimentary, String description, Date expirationDate,
-			GenerateRequest generateRequest, LicenseEntry leadingLicenseEntry,
+			Date expirationDate, GenerateRequest generateRequest,
 			Project project, Date startDate)
 		throws Exception {
 
 		return _activationKeyService.addActivationKey(
-			project.getAccountId(), true, complimentary, description,
-			expirationDate, generateRequest.getKeyType(),
-			leadingLicenseEntry.getType(), generateRequest.getEnvironmentName(),
-			generateRequest.getVersion(), project.getExternalReferenceCode(),
-			startDate);
+			project.getAccountId(), true, expirationDate,
+			project.getExternalReferenceCode(), startDate,
+			generateRequest.getKeyType());
 	}
 
 	private LicenseKey _addLicenseKey(
@@ -453,13 +450,7 @@ public class LicenseKeyGenerationService {
 		_checkQuota(bundleEntitlements, generateRequest, project);
 
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
-			bundleEntitlements, generateRequest);
-
-		Entitlement leadingEntitlement = _getLeadingEntitlement(
-			bundleEntitlements, generateRequest);
-
-		LicensedProduct leadingLicensedProduct = licensedProducts.get(
-			leadingEntitlement.getEntitlementId());
+			bundleEntitlements, generateRequest, subscriptionEntitlement);
 
 		String description = generateRequest.getDescription();
 
@@ -468,8 +459,7 @@ public class LicenseKeyGenerationService {
 		}
 
 		ActivationKey activationKey = _addActivationKey(
-			complimentary, description, expirationDate, generateRequest,
-			leadingLicensedProduct._getLicenseEntry(), project, startDate);
+			expirationDate, generateRequest, project, startDate);
 
 		try {
 			for (GenerateRequest.Server server : generateRequest.getServers()) {
@@ -598,19 +588,6 @@ public class LicenseKeyGenerationService {
 		return "Developer";
 	}
 
-	private Entitlement _getLeadingEntitlement(
-		List<Entitlement> bundleEntitlements, GenerateRequest generateRequest) {
-
-		Entitlement entitlement = _findEntitlement(
-			generateRequest.getSubscriptionEntitlementId(), bundleEntitlements);
-
-		if (entitlement != null) {
-			return entitlement;
-		}
-
-		return bundleEntitlements.get(0);
-	}
-
 	private List<Long> _getRenewedActivationKeyIds(
 			GenerateRequest generateRequest)
 		throws Exception {
@@ -638,10 +615,14 @@ public class LicenseKeyGenerationService {
 
 	private Map<Long, LicensedProduct> _getLicensedProducts(
 			List<Entitlement> bundleEntitlements,
-			GenerateRequest generateRequest)
+			GenerateRequest generateRequest,
+			Entitlement subscriptionEntitlement)
 		throws Exception {
 
 		Map<Long, LicensedProduct> licensedProducts = new HashMap<>();
+
+		LicenseEntry leadingLicenseEntry = _fetchLicenseEntry(
+			generateRequest, subscriptionEntitlement);
 
 		for (Entitlement entitlement : bundleEntitlements) {
 			Product product = _licenseKeyGenerateFormService.fetchProduct(
@@ -657,12 +638,17 @@ public class LicenseKeyGenerationService {
 
 			String productName = CommerceProductUtil.getName(product);
 
-			LicenseEntry licenseEntry =
-				_licenseKeyGenerateFormService.fetchLicenseEntry(
-					generateRequest.getKeyType(),
-					_licenseKeyGenerateFormService.getLicenseEntryFamily(
-						product),
-					generateRequest.getVersion());
+			// An add-on names no license entry family the license table
+			// carries, so the key it rides is the leading product's. The bundle
+			// is one key over one term, and the add-on contributes the product
+			// it names rather than a license of its own.
+
+			LicenseEntry licenseEntry = _fetchLicenseEntry(
+				generateRequest, entitlement);
+
+			if (licenseEntry == null) {
+				licenseEntry = leadingLicenseEntry;
+			}
 
 			if (licenseEntry == null) {
 				throw new LicenseKeyEntitlementException(
@@ -681,6 +667,23 @@ public class LicenseKeyGenerationService {
 		}
 
 		return licensedProducts;
+	}
+
+	private LicenseEntry _fetchLicenseEntry(
+			GenerateRequest generateRequest, Entitlement entitlement)
+		throws Exception {
+
+		Product product = _licenseKeyGenerateFormService.fetchProduct(
+			entitlement);
+
+		if (product == null) {
+			return null;
+		}
+
+		return _licenseKeyGenerateFormService.fetchLicenseEntry(
+			generateRequest.getKeyType(),
+			_licenseKeyGenerateFormService.getLicenseEntryFamily(product),
+			generateRequest.getVersion());
 	}
 
 	private Entitlement _fetchEntitledProductEntitlement(

@@ -6,10 +6,13 @@
 .generate-activation-key {
 	font-family: var(--font-family-sans-serif, 'Source Sans 3', sans-serif);
 
-	& .border,
+	& .border {
+		border: 1px solid var(--color-neutral-2) !important;
+	}
+
 	& .border-bottom,
 	& hr {
-		border-color: var(--color-neutral-2);
+		border-color: var(--color-neutral-2) !important;
 	}
 
 	& .btn-unstyled {
@@ -85,8 +88,18 @@
 	}
 
 	& .generate-activation-key-add-on-required {
+		& .custom-control-input:disabled ~ .custom-control-label::before {
+			background-color: #004ad7;
+			border-color: #004ad7;
+			opacity: 1;
+		}
+
+		& .custom-control-input:disabled ~ .custom-control-label::after {
+			opacity: 1;
+		}
+
 		& .custom-control-label-text {
-			color: rgb(0 74 215 / 50%);
+			color: #004ad7;
 		}
 	}
 

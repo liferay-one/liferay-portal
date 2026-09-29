@@ -70,7 +70,7 @@ export function useRenewSource(
 					getLeadingProductRank(b.productExternalReferenceCode)
 			);
 
-		const keyType = activationKey.keyType;
+		const keyType = activationKey.type;
 		let productExternalReferenceCode = '';
 		let subscriptionEntitlementId = 0;
 
@@ -103,15 +103,17 @@ export function useRenewSource(
 			}
 		}
 
+		const [leadingLicenseKey] = orderedLicenseKeys;
+
 		return {
 			bundleEntitlementIds: [...entitlementIds],
-			description: activationKey.description,
-			environmentName: activationKey.name,
+			description: leadingLicenseKey?.description ?? '',
+			environmentName: leadingLicenseKey?.name ?? '',
 			keyType,
 			productExternalReferenceCode,
 			servers: [...servers.values()],
 			subscriptionEntitlementId,
-			version: activationKey.productVersion,
+			version: leadingLicenseKey?.productVersion ?? '',
 		};
 	}, [activationKey, generateForm, licenseKeys]);
 

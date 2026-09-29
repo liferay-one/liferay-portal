@@ -49,7 +49,8 @@
 			],
 			"objectRelationships": [
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "name"
 		},
 		{
 			"externalReferenceCode": "L_COMMERCE_ORDER_ITEM",

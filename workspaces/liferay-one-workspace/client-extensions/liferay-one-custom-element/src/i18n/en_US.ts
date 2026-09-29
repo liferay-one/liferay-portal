@@ -818,6 +818,9 @@ export default {
 	'leave-a-comment': 'Leave a Comment',
 	'legal-liferay': 'Legal | Liferay',
 	'license': 'License',
+	'license-key': 'License Key',
+	'license-keys': 'License Keys',
+	'license-name': 'License Name',
 	'license-price': 'License Price',
 	'license-prices': 'License Prices',
 	'license-selection': 'License Selection',
@@ -1107,6 +1110,7 @@ export default {
 	'other-event': 'Other Event',
 	'overall-experience': 'Overall Experience',
 	'overdue': 'Overdue',
+	'owner': 'Owner',
 	'owner-email': 'Owner Email',
 	'paas-users': 'PaaS Users',
 	'package': 'Package',
@@ -1207,6 +1211,7 @@ export default {
 	'product': 'Product',
 	'product-details': 'Product Details',
 	'product-environment': 'Product Environment',
+	'product-name': 'Product Name',
 	'product-type-client-extension-description':
 		'Modular, decoupled components that allow developers to customize and extend Liferay DXP’s functionality without altering its core code. They interact with Liferay via headless APIs, providing flexibility and maintainability.',
 	'product-type-cloud-description':
@@ -1430,10 +1435,10 @@ export default {
 	'select-project': 'Select Project',
 	'select-purpose': 'Select Purpose',
 	'select-tags': 'Select Tags',
-	'select-the-add-ons-you-would-like-to-include-in-the-activation-key':
-		'Select the add-ons you would like to include in the activation key.',
 	'select-the-areas-of-liferay-your-app-extends-such-as-analytics-content-management-or-commerce-areas-help-customers-browsing-the-marketplace-by-capability-find-your-app':
 		'Select the areas of Liferay your app extends, such as analytics, content management, or commerce. Areas help customers browsing the Marketplace by capability find your app.',
+	'select-the-items-you-would-like-to-include-in-the-activation-key':
+		'Select the items you would like to include in the activation key.',
 	'select-the-license-type-and-the-number-of-licenses-you-want-to-purchase':
 		'Select the license type and the number of licenses you want to purchase.',
 	'select-the-offering-of-liferay-your-app-is-compatible-with-the-compatibility-selections-will-determine-on-what-platforms-your-app-is-tested':
