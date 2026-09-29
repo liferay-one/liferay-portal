@@ -135,15 +135,13 @@ public class AccountSyncModel {
 	}
 
 	public List<Property> getExternalLinkProperties() throws Exception {
-		if (_externalLinkProperties != null) {
-			return _externalLinkProperties;
-		}
+		if (_externalLinkProperties == null) {
+			_externalLinkProperties = new ArrayList<>();
 
-		_externalLinkProperties = new ArrayList<>();
-
-		for (Property property : _getAccountProperties()) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				_externalLinkProperties.add(property);
+			for (Property property : _getAccountProperties()) {
+				if (_externalLinkConverter.isExternalLinkProperty(property)) {
+					_externalLinkProperties.add(property);
+				}
 			}
 		}
 
@@ -178,43 +176,41 @@ public class AccountSyncModel {
 			getRoleExternalKeysByUserAccountExternalKey()
 		throws Exception {
 
-		if (_roleExternalKeysByUserAccountExternalKey != null) {
-			return _roleExternalKeysByUserAccountExternalKey;
+		if (_roleExternalKeysByUserAccountExternalKey == null) {
+			Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+				new LinkedHashMap<>();
+
+			for (UserAccount accountUserAccount : getAccountUserAccounts()) {
+				AccountBrief accountBrief = FindUtil.findFirst(
+					accountUserAccount.getAccountBriefs(),
+					accountBrief1 -> Objects.equals(
+						getExternalReferenceCode(),
+						accountBrief1.getExternalReferenceCode()));
+
+				if (accountBrief == null) {
+					continue;
+				}
+
+				RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
+
+				if (roleBriefs == null) {
+					continue;
+				}
+
+				Set<String> roleExternalKeys = new LinkedHashSet<>();
+
+				for (RoleBrief roleBrief : roleBriefs) {
+					roleExternalKeys.add(roleBrief.getExternalReferenceCode());
+				}
+
+				roleExternalKeysByUserAccountExternalKey.put(
+					accountUserAccount.getExternalReferenceCode(),
+					roleExternalKeys);
+			}
+
+			_roleExternalKeysByUserAccountExternalKey =
+				roleExternalKeysByUserAccountExternalKey;
 		}
-
-		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
-			new LinkedHashMap<>();
-
-		for (UserAccount accountUserAccount : getAccountUserAccounts()) {
-			AccountBrief accountBrief = FindUtil.findFirst(
-				accountUserAccount.getAccountBriefs(),
-				accountBrief1 -> Objects.equals(
-					getExternalReferenceCode(),
-					accountBrief1.getExternalReferenceCode()));
-
-			if (accountBrief == null) {
-				continue;
-			}
-
-			RoleBrief[] roleBriefs = accountBrief.getRoleBriefs();
-
-			if (roleBriefs == null) {
-				continue;
-			}
-
-			Set<String> roleExternalKeys = new LinkedHashSet<>();
-
-			for (RoleBrief roleBrief : roleBriefs) {
-				roleExternalKeys.add(roleBrief.getExternalReferenceCode());
-			}
-
-			roleExternalKeysByUserAccountExternalKey.put(
-				accountUserAccount.getExternalReferenceCode(),
-				roleExternalKeys);
-		}
-
-		_roleExternalKeysByUserAccountExternalKey =
-			roleExternalKeysByUserAccountExternalKey;
 
 		return _roleExternalKeysByUserAccountExternalKey;
 	}
@@ -266,37 +262,36 @@ public class AccountSyncModel {
 	}
 
 	private UserAccountBucket _getUserAccountBucket() throws Exception {
-		if (_userAccountBucket != null) {
-			return _userAccountBucket;
-		}
+		if (_userAccountBucket == null) {
+			_userAccountBucket = new UserAccountBucket();
 
-		_userAccountBucket = new UserAccountBucket();
+			for (UserAccount accountUserAccount : getAccountUserAccounts()) {
+				AccountBrief accountBrief = FindUtil.findFirst(
+					accountUserAccount.getAccountBriefs(),
+					accountBrief1 -> Objects.equals(
+						_account.getExternalReferenceCode(),
+						accountBrief1.getExternalReferenceCode()));
 
-		for (UserAccount accountUserAccount : getAccountUserAccounts()) {
-			AccountBrief accountBrief = FindUtil.findFirst(
-				accountUserAccount.getAccountBriefs(),
-				accountBrief1 -> Objects.equals(
-					_account.getExternalReferenceCode(),
-					accountBrief1.getExternalReferenceCode()));
+				if (accountBrief == null) {
+					_log.error(
+						"accountBrief is null for user account = " +
+							accountUserAccount);
 
-			if (accountBrief == null) {
-				_log.error(
-					"accountBrief is null for user account = " +
+					continue;
+				}
+
+				RoleBrief roleBrief = FindUtil.findFirst(
+					accountBrief.getRoleBriefs(),
+					roleBrief1 -> _employeeRoleNames.contains(
+						roleBrief1.getName()));
+
+				if (roleBrief != null) {
+					_userAccountBucket.addWorkerUserAccount(accountUserAccount);
+				}
+				else {
+					_userAccountBucket.addCustomerUserAccount(
 						accountUserAccount);
-
-				continue;
-			}
-
-			RoleBrief roleBrief = FindUtil.findFirst(
-				accountBrief.getRoleBriefs(),
-				roleBrief1 -> _employeeRoleNames.contains(
-					roleBrief1.getName()));
-
-			if (roleBrief != null) {
-				_userAccountBucket.addWorkerUserAccount(accountUserAccount);
-			}
-			else {
-				_userAccountBucket.addCustomerUserAccount(accountUserAccount);
+				}
 			}
 		}
 
