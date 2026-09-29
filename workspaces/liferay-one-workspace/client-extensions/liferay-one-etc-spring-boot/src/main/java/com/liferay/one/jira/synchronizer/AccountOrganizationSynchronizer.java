@@ -57,10 +57,32 @@ public class AccountOrganizationSynchronizer {
 			String organizationExternalKey, String accountExternalKey)
 		throws Exception {
 
+		syncAssignOrganization(
+			organizationExternalKey, accountExternalKey, null);
+	}
+
+	public void syncAssignOrganization(
+			String organizationExternalKey, String accountExternalKey,
+			Date startDate)
+		throws Exception {
+
+		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate = null;
+
+		if (startDate != null) {
+			biPredicate = (existingJiraAssetObject, newJiraAssetObject) ->
+				_jiraAssetService.isUpdatedSince(
+					_accountTeamRoleAssignmentConverter, startDate,
+					existingJiraAssetObject);
+		}
+
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate = biPredicate;
+
 		_keyedLock.withLock(
 			accountExternalKey,
 			() -> _syncAssignment(
-				organizationExternalKey, accountExternalKey, false, null));
+				organizationExternalKey, accountExternalKey, false,
+				shouldSkipUpdateBiPredicate));
 	}
 
 	public void syncOrganizations(
@@ -69,14 +91,8 @@ public class AccountOrganizationSynchronizer {
 
 		for (String organizationExternalKey : organizationExternalKeys) {
 			try {
-				_keyedLock.withLock(
-					accountExternalKey,
-					() -> _syncAssignment(
-						organizationExternalKey, accountExternalKey, false,
-						(existingJiraAssetObject, newJiraAssetObject) ->
-							_jiraAssetService.isUpdatedSince(
-								_accountTeamRoleAssignmentConverter, startDate,
-								existingJiraAssetObject)));
+				syncAssignOrganization(
+					organizationExternalKey, accountExternalKey, startDate);
 			}
 			catch (Exception exception) {
 				_log.error(
