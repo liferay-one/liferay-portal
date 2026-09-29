@@ -702,10 +702,10 @@ public class ProjectRestController extends OneBaseRestController {
 	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
-	private EntitlementService _entitlementService;
+	private DataOpsUsageService _dataOpsUsageService;
 
 	@Autowired
-	private DataOpsUsageService _dataOpsUsageService;
+	private EntitlementService _entitlementService;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;

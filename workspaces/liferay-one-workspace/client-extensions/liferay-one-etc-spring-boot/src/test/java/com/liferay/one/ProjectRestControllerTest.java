@@ -1633,10 +1633,10 @@ public class ProjectRestControllerTest {
 		CommerceProductService.class);
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
 		CommerceSkuService.class);
-	private final EntitlementService _entitlementService = Mockito.mock(
-		EntitlementService.class);
 	private final DataOpsUsageService _dataOpsUsageService = Mockito.mock(
 		DataOpsUsageService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private final ProjectPermission _projectPermission = Mockito.mock(
