@@ -53,16 +53,34 @@ public class UserAccountSynchronizerTest {
 		_accountUserAccountRoleSynchronizer = Mockito.mock(
 			AccountUserAccountRoleSynchronizer.class);
 		_contactConverter = Mockito.mock(ContactConverter.class);
+
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any())
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any(), Mockito.any())
+		).thenReturn(
+			null
+		);
+
 		_organizationUserAccountRoleSynchronizer = Mockito.mock(
 			OrganizationUserAccountRoleSynchronizer.class);
 		_projectMembershipService = Mockito.mock(
 			ProjectMembershipService.class);
 
-		PropertyService propertyService = Mockito.mock(PropertyService.class);
+		_entitlementService = Mockito.mock(EntitlementService.class);
+
+		_propertyService = Mockito.mock(PropertyService.class);
 
 		Mockito.when(
-			propertyService.getUserAccountProperties(Mockito.anyLong())
+			_propertyService.getUserAccountProperties(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -90,7 +108,7 @@ public class UserAccountSynchronizerTest {
 			Mockito.mock(EntitlementConverter.class));
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_entitlementService",
-			Mockito.mock(EntitlementService.class));
+			_entitlementService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_externalLinkConverter",
 			Mockito.mock(ExternalLinkConverter.class));
@@ -109,7 +127,7 @@ public class UserAccountSynchronizerTest {
 			_userAccountSynchronizer, "_projectMembershipService",
 			_projectMembershipService);
 		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_propertyService", propertyService);
+			_userAccountSynchronizer, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_teamConverter",
 			Mockito.mock(TeamConverter.class));
@@ -294,12 +312,81 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUserAccountSkipsAccountWhenProjectMembershipFails()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.getProjectMembershipsByUserId(
+				Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_ACCOUNT);
+	}
+
+	@Test
+	public void testSyncUserAccountSkipsEntitlementsWhenEntitlementFails()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlementDefinitions(
+				Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_ENTITLEMENTS);
+	}
+
+	@Test
+	public void testSyncUserAccountSkipsExternalLinksWhenPropertyFails()
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getUserAccountProperties(Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS);
+	}
+
+	@Test
 	public void testSyncUserAccountUpsertsProjectReferences() throws Exception {
 		_whenProjectMembership();
 
 		_userAccountSynchronizer.syncUserAccount(_createUserAccount());
 
 		_verifyFetchesAccountAndProjectReferences();
+	}
+
+	private void _assertSkipsAttribute(String attributeName) throws Exception {
+		_userAccountSynchronizer.syncUserAccount(_createUserAccount());
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(ContactConstants.ATTRIBUTE_NAME_TEAMS), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
 	}
 
 	private void _assertUpsertsAttribute(
@@ -404,11 +491,13 @@ public class UserAccountSynchronizerTest {
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
 	private ContactConverter _contactConverter;
+	private EntitlementService _entitlementService;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
 	private ProjectMembershipService _projectMembershipService;
+	private PropertyService _propertyService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }
