@@ -22,6 +22,28 @@
 			]
 		},
 		{
+			"externalReferenceCode": "PRDCT-CMP",
+			"productSpecifications": [
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "CMP"
+					}
+				}
+			]
+		},
+		{
+			"externalReferenceCode": "PRDCT-DSR",
+			"productSpecifications": [
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "DSR"
+					}
+				}
+			]
+		},
+		{
 			"externalReferenceCode": "PRDCT-DXP",
 			"productSpecifications": [
 				{

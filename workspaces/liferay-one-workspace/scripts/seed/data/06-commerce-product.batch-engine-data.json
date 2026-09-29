@@ -950,6 +950,12 @@
 					"value": {
 						"en_US": "true"
 					}
+				},
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "CMP"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -1880,6 +1886,12 @@
 					"specificationKey": "cloud-enabled",
 					"value": {
 						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "DSR"
 					}
 				}
 			],
