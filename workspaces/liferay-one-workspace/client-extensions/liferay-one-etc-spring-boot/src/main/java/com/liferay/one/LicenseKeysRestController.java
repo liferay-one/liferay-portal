@@ -103,6 +103,8 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	@GetMapping("/developer-download")
 	public ResponseEntity<String> getLicenseKeysDeveloperDownload(
 			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam(defaultValue = "developer", name = "keyType") String
+				keyType,
 			@RequestParam("productName") String productName,
 			@RequestParam("projectExternalReferenceCode") String
 				projectExternalReferenceCode,
@@ -119,10 +121,10 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		String licenseXML =
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
-				project, productName, version);
+				keyType, productName, project, version);
 
 		String fileName = _licenseKeyExporter.getFileName(
-			productName, version, "developer");
+			productName, version, keyType);
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -251,6 +253,12 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			@AuthenticationPrincipal Jwt jwt,
 			@RequestParam("licenseKeyId") long licenseKeyId)
 		throws Exception {
+
+		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
+			jwt, licenseKeyId);
+
+		_licenseKeyPermission.check(
+			licenseKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
 
 		UserAccount userAccount = getMyUserAccount(jwt);
 
