@@ -62,8 +62,8 @@ public class OrganizationService extends OneBaseService {
 	}
 
 	public Organization getOrganization(long organizationId) throws Exception {
-		OrganizationResource organizationResource =
-			_buildOrganizationResource();
+		OrganizationResource organizationResource = _buildOrganizationResource(
+			"nestedFields", "accountBriefs");
 
 		return organizationResource.getOrganization(
 			String.valueOf(organizationId));
@@ -80,12 +80,16 @@ public class OrganizationService extends OneBaseService {
 			String.valueOf(organizationId), emailAddress);
 	}
 
-	private OrganizationResource _buildOrganizationResource() {
+	private OrganizationResource _buildOrganizationResource(
+		String... parameters) {
+
 		return OrganizationResource.builder(
 		).endpoint(
 			getDXPEndpointAddress(), lxcDXPServerProtocol
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			parameters
 		).build();
 	}
 
