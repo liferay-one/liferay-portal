@@ -489,6 +489,18 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay DXP Virtual Cluster",
+			"externalReferenceCode": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER",
+			"grantType": "fixed",
+			"licenseKeyType": "virtual-cluster",
+			"maxQuantity": 5,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-DXP",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Enterprise Search",
 			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH",
@@ -815,6 +827,18 @@
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_PRODUCTION",
 			"grantType": "fixed",
 			"licenseKeyType": "production",
+			"maxQuantity": 5,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-PORTAL",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Virtual Cluster",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
+			"grantType": "fixed",
+			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
 			"skuExternalReferenceCode": "PRDCT-PORTAL",
