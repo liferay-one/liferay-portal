@@ -67,20 +67,22 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 	},
 	{
 		description: () =>
-			'Use one of the following methods to provide your app builds.',
-		label: 'Build',
+			i18n.translate(
+				'use-one-of-the-following-methods-to-provide-your-app-builds'
+			),
+		label: i18n.translate('build'),
 		modes: [PublishMode.CREATE, PublishMode.NEW_VERSION],
 		parseSchema: (context: NewAppInitialState) =>
 			zodSchema.appPublishing.build.safeParse(context.build),
 		path: 'build',
 		saveAsDraftRequired: true,
-		title: () => 'Provide app build',
+		title: () => i18n.translate('provide-app-build'),
 		visible: () => true,
 	},
 	{
 		description: () =>
 			'Design the storefront for your app. This will set the information displayed on the app page in the Marketplace.',
-		label: 'Storefront',
+		label: i18n.translate('storefront'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: NewAppInitialState) =>
 			zodSchema.appPublishing.storefront.safeParse(context.storefront),
@@ -92,20 +94,22 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 	},
 	{
 		description: () =>
-			`Define version information for your app. This will inform users about this version's updates on the storefront.`,
-		label: 'Version',
+			i18n.translate(
+				'define-version-information-for-your-app-this-will-inform-users-about-this-versions-updates-on-the-storefront'
+			),
+		label: i18n.translate('version'),
 		modes: [PublishMode.CREATE, PublishMode.NEW_VERSION],
 		parseSchema: (context: NewAppInitialState) =>
 			zodSchema.appPublishing.version.safeParse(context.version),
 		path: 'version',
 		saveAsDraftRequired: false,
-		title: () => 'Provide version details',
+		title: () => i18n.translate('provide-version-details'),
 		visible: () => true,
 	},
 	{
 		description: () =>
 			'Select one of the pricing models for your app. This will define how much users will pay. To enable paid apps, you must be a business and enter payment information in your Marketplace account profile.',
-		label: 'Pricing',
+		label: i18n.translate('pricing'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		path: 'pricing',
 		saveAsDraftRequired: false,
@@ -116,7 +120,7 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 	{
 		description: () =>
 			`Define the licensing approach for your app. This will impact users' licensing renewal experience.`,
-		label: 'Licensing',
+		label: i18n.translate('licensing'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		path: 'licensing',
 		saveAsDraftRequired: false,
@@ -128,7 +132,7 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 		description: () =>
 			`Define the licensing approach for your app. This will impact users' licensing renewal experience.`,
 		hide: true,
-		label: 'Licensing',
+		label: i18n.translate('licensing'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		path: 'licensing-prices',
 		saveAsDraftRequired: false,
@@ -140,7 +144,7 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 	{
 		description: () =>
 			`Inform the support and help references. This will impact how users will experience this app's customer support and learning.`,
-		label: 'Support',
+		label: i18n.translate('support'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT],
 		parseSchema: (context: NewAppInitialState) => {
 			const schema =
@@ -158,12 +162,14 @@ export const APP_FLOW_ITEMS: AppFlowItem[] = [
 	},
 	{
 		description: () =>
-			'Please, review before submitting. Once sent, you will not be able to edit any information until this submission is completely reviewed by Liferay.',
-		label: 'Submit',
+			i18n.translate(
+				'please-review-before-submitting-once-sent-you-will-not-be-able-to-edit-any-information-until-this-submission-is-completely-reviewed-by-liferay'
+			),
+		label: i18n.translate('submit'),
 		modes: [PublishMode.CREATE, PublishMode.EDIT, PublishMode.NEW_VERSION],
 		path: 'submit',
 		saveAsDraftRequired: false,
-		title: () => 'Review and submit app',
+		title: () => i18n.translate('review-and-submit-app'),
 		visible: () => true,
 	},
 ];

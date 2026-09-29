@@ -3,7 +3,10 @@
 	"hidden": true,
 	"name": "Product Purchase",
 	"name_i18n": {
-		"en_US": "Product Purchase"
+		"en_US": "Product Purchase",
+		"es_ES": "Compra de Productos",
+		"ja_JP": "製品の購入",
+		"pt_BR": "Compra de Produtos"
 	},
 	"permissions": [
 		{

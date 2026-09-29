@@ -6,6 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {Link} from 'react-router-dom';
+import i18n, {Word, languages} from '~/i18n';
 
 import '~/components/SideNav/SideNav.css';
 
@@ -58,6 +59,17 @@ const AppPublishSidebar: React.FC<AppPublishSidebar> = ({
 						'side-nav-link-complete': checked,
 					});
 
+					const labelKey = (
+						label in languages.en_US
+							? label
+							: label
+									?.toLowerCase()
+									.replace(/[^a-z0-9]+/g, '-')
+									.replace(/^-|-$/g, '')
+					) as Word;
+
+					const displayLabel = i18n.translate(labelKey) || label;
+
 					const content = (
 						<>
 							<ClayIcon
@@ -68,7 +80,9 @@ const AppPublishSidebar: React.FC<AppPublishSidebar> = ({
 								symbol={getIcon({checked, selected})}
 							/>
 
-							<span className="side-nav-label">{label}</span>
+							<span className="side-nav-label">
+								{displayLabel}
+							</span>
 						</>
 					);
 

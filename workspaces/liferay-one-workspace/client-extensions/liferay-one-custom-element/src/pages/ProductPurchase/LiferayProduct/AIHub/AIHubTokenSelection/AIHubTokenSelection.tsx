@@ -255,7 +255,9 @@ const AIHubTokenSelection = () => {
 						showImage
 					/>
 				) : (
-					<p className="font-weight-bold my-5">No tokens available</p>
+					<p className="font-weight-bold my-5">
+						{i18n.translate('no-tokens-available')}
+					</p>
 				)}
 
 				<ClayIcon
