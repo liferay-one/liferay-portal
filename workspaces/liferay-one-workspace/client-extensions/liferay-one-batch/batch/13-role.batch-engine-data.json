@@ -254,19 +254,6 @@
 			"externalReferenceCode": "L_SITE_CONTENT_REVIEWER",
 			"name": "Site Content Reviewer",
 			"roleType": "site"
-		},
-		{
-			"externalReferenceCode": "L_USER",
-			"name": "User",
-			"rolePermissions": [
-				{
-					"actionIds": ["CREATE_TOKEN"],
-					"primaryKey": "0",
-					"resourceName": "com.liferay.oauth2.provider.model.OAuth2Application",
-					"scope": 1
-				}
-			],
-			"roleType": "regular"
 		}
 	]
 }
