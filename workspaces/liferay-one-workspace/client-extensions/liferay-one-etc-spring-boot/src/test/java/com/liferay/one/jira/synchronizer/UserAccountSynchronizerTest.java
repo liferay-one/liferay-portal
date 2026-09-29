@@ -249,27 +249,10 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountAssignsContactRolesSinceStartDate()
+	public void testSyncUserAccountAssignsRolesSinceStartDate()
 		throws Exception {
 
-		RoleBrief roleBrief = new RoleBrief();
-
-		roleBrief.setExternalReferenceCode("role-erc");
-
-		AccountBrief accountBrief = _createAccountBrief();
-
-		accountBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
-
-		OrganizationBrief organizationBrief = new OrganizationBrief();
-
-		organizationBrief.setExternalReferenceCode("organization-erc");
-		organizationBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
-
-		UserAccount userAccount = _createUserAccount();
-
-		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
-		userAccount.setOrganizationBriefs(
-			new OrganizationBrief[] {organizationBrief});
+		UserAccount userAccount = _createUserAccountWithRoles();
 
 		Date startDate = new Date();
 
@@ -286,6 +269,27 @@ public class UserAccountSynchronizerTest {
 			_organizationUserAccountRoleSynchronizer
 		).syncAssignRole(
 			"role-erc", _EXTERNAL_REFERENCE_CODE, "organization-erc", startDate
+		);
+	}
+
+	@Test
+	public void testSyncUserAccountAssignsRolesUnconditionally()
+		throws Exception {
+
+		_userAccountSynchronizer.syncUserAccount(_createUserAccountWithRoles());
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncAssignRole(
+			Mockito.eq("role-erc"), Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE), Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_organizationUserAccountRoleSynchronizer
+		).syncAssignRole(
+			Mockito.eq("role-erc"), Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq("organization-erc"), Mockito.isNull()
 		);
 	}
 
@@ -333,6 +337,29 @@ public class UserAccountSynchronizerTest {
 			new AccountBrief[] {_createAccountBrief()});
 		userAccount.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
 		userAccount.setId(1L);
+
+		return userAccount;
+	}
+
+	private UserAccount _createUserAccountWithRoles() {
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setExternalReferenceCode("role-erc");
+
+		AccountBrief accountBrief = _createAccountBrief();
+
+		accountBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		OrganizationBrief organizationBrief = new OrganizationBrief();
+
+		organizationBrief.setExternalReferenceCode("organization-erc");
+		organizationBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		UserAccount userAccount = _createUserAccount();
+
+		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
+		userAccount.setOrganizationBriefs(
+			new OrganizationBrief[] {organizationBrief});
 
 		return userAccount;
 	}
