@@ -164,7 +164,7 @@ public class DataOpsUsageServiceTest {
 
 		String authorization = _requestAuthorization.get();
 
-		Assertions.assertTrue(authorization.startsWith("Bearer eyJ"));
+		Assertions.assertTrue(authorization.startsWith(_BEARER_PREFIX + "eyJ"));
 
 		Assertions.assertTrue(
 			_decodeIdTokenPayload(
@@ -241,7 +241,7 @@ public class DataOpsUsageServiceTest {
 	}
 
 	private String _decodeIdTokenPayload(String authorization) {
-		String token = authorization.substring(7);
+		String token = authorization.substring(_BEARER_PREFIX.length());
 
 		int begin = token.indexOf('.') + 1;
 
@@ -303,6 +303,8 @@ public class DataOpsUsageServiceTest {
 
 	private static final String _AUDIENCE_CUSTOMER =
 		"https://example.com/customer_usage_api";
+
+	private static final String _BEARER_PREFIX = "Bearer ";
 
 	private static final String _EVENT_HISTORY_RESPONSE =
 		"{\"eventHistory\": [{\"date\": \"2026-06-01\"}]}";

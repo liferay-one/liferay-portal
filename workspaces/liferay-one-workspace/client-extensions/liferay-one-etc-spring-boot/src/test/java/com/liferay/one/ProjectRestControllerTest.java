@@ -73,10 +73,10 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_commerceSkuService", _commerceSkuService);
 		ReflectionTestUtils.setField(
-			_projectRestController, "_entitlementService", _entitlementService);
-		ReflectionTestUtils.setField(
 			_projectRestController, "_dataOpsUsageService",
 			_dataOpsUsageService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectMembershipService",
 			_projectMembershipService);
