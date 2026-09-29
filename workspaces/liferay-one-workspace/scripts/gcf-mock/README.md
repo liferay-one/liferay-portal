@@ -39,12 +39,18 @@ and deploys it. Its `Dockerfile` runs `mock/generate-fixtures.sh` during the bui
 result, so the served responses are generated at image build time and never committed. The
 Caddy image already carries bash, so no extra build stage is needed.
 
-Redirecting the DataOps calls at it takes two overrides:
+Redirecting the DataOps calls at it takes three overrides:
 
 ```
 GCE_METADATA_HOST=<mock host>:80
 LIFERAY_ONE_GCF_BASE_URL=http://<mock host>
+LIFERAY_ONE_LDP_BASE_URL=http://<mock host>/ldp_metrics_api
 ```
+
+The LDP base URL carries the `/ldp_metrics_api` segment because the mock keeps serving the
+LDP routes under it, the way a Cloud Function lays them out. In a deployed environment the
+value is whatever root that service actually has, which is the point of it being configured
+separately from the Cloud Function base.
 
 `configure-local.sh` writes them to the gitignored root `.env.local`, which is the channel
 the `one-deploy` skill documents: it is read after `build/local.env`, so it wins. It resolves
