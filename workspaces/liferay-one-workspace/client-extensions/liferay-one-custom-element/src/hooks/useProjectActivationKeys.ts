@@ -20,7 +20,6 @@ export type ProjectActivationKey = {
 	badge?: Word;
 	complimentary: boolean;
 	description: string;
-	domain: string;
 	environmentType: Word;
 	expirationDate: string;
 	expirationDateValue: string;
@@ -40,7 +39,6 @@ type ActivationKeyNode = {
 	customExpirationDate?: string;
 	dateCreated?: string;
 	description?: string;
-	domains?: string;
 	externalReferenceCode: string;
 	id?: number;
 	keyType?: string;
@@ -166,7 +164,6 @@ export function useProjectActivationKeys() {
 			badge: getBadge(node),
 			complimentary: node.complimentary ?? false,
 			description: node.description ?? '',
-			domain: node.domains ?? '',
 			environmentType: getEnvironmentType(node.keyType),
 			expirationDate: formatDate(node.customExpirationDate),
 			expirationDateValue: getDateValue(node.customExpirationDate),

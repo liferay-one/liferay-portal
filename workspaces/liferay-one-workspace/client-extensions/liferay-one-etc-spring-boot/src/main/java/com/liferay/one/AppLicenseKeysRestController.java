@@ -126,8 +126,8 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		return _licenseKeyService.addLicenseKey(
 			entitlement.getAccountEntryId(), StringPool.BLANK, 0, true,
-			StringPool.BLANK, null, false, description, StringPool.BLANK, 0,
-			entitlementId,
+			StringPool.BLANK, null, false, null, description, StringPool.BLANK,
+			0, entitlementId,
 			Date.from(Instant.parse(jsonObject.getString("expirationDate"))),
 			jsonObject.optString("hostName"),
 			jsonObject.optString("ipAddresses"), null, StringPool.BLANK,
@@ -136,7 +136,8 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 			jsonObject.optString("orderId"), owner, productExternalId,
 			productName, jsonObject.optString("productVersion"), null,
 			StringPool.BLANK, StringPool.BLANK,
-			Date.from(Instant.parse(jsonObject.getString("startDate"))));
+			Date.from(Instant.parse(jsonObject.getString("startDate"))), null,
+			null);
 	}
 
 	@PutMapping("/activate")
