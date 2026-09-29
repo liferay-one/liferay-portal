@@ -72,7 +72,8 @@ export type AccountRoleType =
 export type RegularRoleType =
 	| 'Administrator'
 	| 'Finance Administrator'
-	| 'Liferay Staff';
+	| 'Liferay Staff'
+	| 'Provisioning Administrator';
 
 export type RoleBrief = {
 	id: number;

@@ -11,9 +11,11 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -29,6 +31,21 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "liferay.one.license.key")
 public class LicenseKeyTypeService {
+
+	public String getAdminTypes() {
+		return _adminTypes;
+	}
+
+	public boolean isAdminType(LicenseKeyType licenseKeyType) {
+		return _adminLicenseKeyTypes.contains(licenseKeyType);
+	}
+
+	// Some key types are ours to issue rather than a customer's to ask for, so
+	// they are offered only to an administrator.
+
+	public void setAdminTypes(String adminTypes) {
+		_adminTypes = adminTypes;
+	}
 
 	public List<LicenseKeyType> getLicenseKeyTypes(
 		String externalReferenceCode) {
@@ -61,6 +78,9 @@ public class LicenseKeyTypeService {
 		}
 
 		_licenseKeyTypes = Collections.unmodifiableMap(licenseKeyTypes);
+
+		_adminLicenseKeyTypes = Collections.unmodifiableSet(
+			new HashSet<>(_toLicenseKeyTypes(_adminTypes)));
 	}
 
 	private List<LicenseKeyType> _toLicenseKeyTypes(String keys) {
@@ -95,6 +115,9 @@ public class LicenseKeyTypeService {
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyTypeService.class);
 
+	private volatile Set<LicenseKeyType> _adminLicenseKeyTypes =
+		Collections.emptySet();
+	private String _adminTypes = StringPool.BLANK;
 	private volatile Map<String, List<LicenseKeyType>> _licenseKeyTypes =
 		Collections.emptyMap();
 	private Map<String, String> _types = new HashMap<>();

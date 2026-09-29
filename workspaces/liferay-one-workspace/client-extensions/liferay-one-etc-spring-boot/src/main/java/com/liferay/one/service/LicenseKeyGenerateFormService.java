@@ -137,7 +137,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public JSONObject getGenerateForm(
-			String projectExternalReferenceCode,
+			boolean admin, String projectExternalReferenceCode,
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
@@ -175,7 +175,7 @@ public class LicenseKeyGenerateFormService {
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				entitledProduct.getExternalReferenceCode(),
+				admin, entitledProduct.getExternalReferenceCode(),
 				entitledProduct.getLicenseEntryFamily(), licenseKeyCounts,
 				licenseKeyTypeEntitlements, productVersions);
 
@@ -345,7 +345,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getKeyTypesJSONArray(
-		String externalReferenceCode, String licenseEntryFamily,
+		boolean admin, String externalReferenceCode, String licenseEntryFamily,
 		Map<Long, Integer> licenseKeyCounts,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions) {
@@ -365,6 +365,10 @@ public class LicenseKeyGenerateFormService {
 		for (LicenseKeyType licenseKeyType :
 				_licenseKeyTypeService.getLicenseKeyTypes(
 					externalReferenceCode)) {
+
+			if (!admin && _licenseKeyTypeService.isAdminType(licenseKeyType)) {
+				continue;
+			}
 
 			Entitlement entitlement = entitlements.get(licenseKeyType.getKey());
 

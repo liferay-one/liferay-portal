@@ -8,6 +8,8 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.license.LicenseKeyType;
+import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
@@ -109,7 +111,8 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(_PROJECT_ERC, null)
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, _PROJECT_ERC, null)
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -211,6 +214,45 @@ public class ActivationKeysRestControllerTest {
 			PrincipalException.class,
 			() -> activationKeysRestController.postActivationKeysGenerate(
 				null, _toGenerateJSON()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateAdminKeyTypeNeedsAnAdmin()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		Mockito.when(
+			_licenseKeyTypeService.isAdminType(LicenseKeyType.VIRTUAL_CLUSTER)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		// A virtual cluster key is ours to issue, so it is filtered out of the
+		// form and refused to anyone who asks for it directly.
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null, _toGenerateJSON("virtual-cluster")));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
@@ -430,6 +472,10 @@ public class ActivationKeysRestControllerTest {
 			activationKeysRestController, "_adminPermission", _adminPermission);
 
 		ReflectionTestUtils.setField(
+			activationKeysRestController, "_licenseKeyTypeService",
+			_licenseKeyTypeService);
+
+		ReflectionTestUtils.setField(
 			activationKeysRestController, "_environmentActivationPermission",
 			_environmentActivationPermission);
 
@@ -485,13 +531,17 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	private String _toGenerateJSON() {
+		return _toGenerateJSON("DXP Backup");
+	}
+
+	private String _toGenerateJSON(String keyType) {
 		return new JSONObject(
 		).put(
 			"bundleEntitlementIds", new JSONArray(Arrays.asList(101L, 102L))
 		).put(
 			"environmentName", "Desjardins Insurance"
 		).put(
-			"keyType", "DXP Backup"
+			"keyType", keyType
 		).put(
 			"projectExternalReferenceCode", _PROJECT_ERC
 		).put(
@@ -529,6 +579,8 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeyService.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
+	private final LicenseKeyTypeService _licenseKeyTypeService = Mockito.mock(
+		LicenseKeyTypeService.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);

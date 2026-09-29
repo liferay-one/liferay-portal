@@ -22,12 +22,12 @@ import org.springframework.stereotype.Component;
 public class AdminPermission {
 
 	public void check(Jwt jwt) throws Exception {
-		if (!_contains(jwt)) {
+		if (!contains(jwt)) {
 			throw new PrincipalException();
 		}
 	}
 
-	private boolean _contains(Jwt jwt) throws Exception {
+	public boolean contains(Jwt jwt) throws Exception {
 		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
