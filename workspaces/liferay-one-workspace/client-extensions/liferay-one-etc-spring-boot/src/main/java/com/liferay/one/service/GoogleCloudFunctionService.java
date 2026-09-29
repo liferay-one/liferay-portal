@@ -76,14 +76,11 @@ public class GoogleCloudFunctionService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_gcfBaseURL + _FUNCTION_PATH_LDP_METRICS_API,
-			"project " + salesforceProjectId,
+			_ldpBaseURL, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
-				_gcfBaseURL
+				_ldpBaseURL
 			).path(
-				_FUNCTION_PATH_LDP_METRICS_API +
-					"/api/v1/projects/{salesforceProjectId}/ldp/usage" +
-						"/event-history"
+				"/api/v1/projects/{salesforceProjectId}/ldp/usage/event-history"
 			).queryParam(
 				"endDate", endDate
 			).queryParam(
@@ -101,14 +98,11 @@ public class GoogleCloudFunctionService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_gcfBaseURL + _FUNCTION_PATH_LDP_METRICS_API,
-			"project " + salesforceProjectId,
+			_ldpBaseURL, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
-				_gcfBaseURL
+				_ldpBaseURL
 			).path(
-				_FUNCTION_PATH_LDP_METRICS_API +
-					"/api/v1/projects/{salesforceProjectId}/ldp/usage" +
-						"/event-summary"
+				"/api/v1/projects/{salesforceProjectId}/ldp/usage/event-summary"
 			).queryParam(
 				"endDate", endDate
 			).queryParam(
@@ -123,13 +117,11 @@ public class GoogleCloudFunctionService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_gcfBaseURL + _FUNCTION_PATH_LDP_METRICS_API,
-			"project " + salesforceProjectId,
+			_ldpBaseURL, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
-				_gcfBaseURL
+				_ldpBaseURL
 			).path(
-				_FUNCTION_PATH_LDP_METRICS_API +
-					"/api/v1/projects/{salesforceProjectId}/ldp/usage"
+				"/api/v1/projects/{salesforceProjectId}/ldp/usage"
 			).buildAndExpand(
 				salesforceProjectId
 			).toUri());
@@ -220,9 +212,6 @@ public class GoogleCloudFunctionService extends BaseService {
 	private static final String _FUNCTION_PATH_CUSTOMER_USAGE_API =
 		"/customer_usage_api";
 
-	private static final String _FUNCTION_PATH_LDP_METRICS_API =
-		"/ldp_metrics_api";
-
 	private static final Log _log = LogFactory.getLog(
 		GoogleCloudFunctionService.class);
 
@@ -232,5 +221,8 @@ public class GoogleCloudFunctionService extends BaseService {
 	private final Map<String, IdTokenCredentials> _idTokenCredentials =
 		new ConcurrentHashMap<>();
 	private volatile IdTokenProvider _idTokenProvider;
+
+	@Value("${liferay.one.ldp.base.url}")
+	private String _ldpBaseURL;
 
 }
