@@ -33,7 +33,6 @@ import './LicenseKeys.css';
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
 	return (
 		row.name.toLowerCase().includes(search) ||
-		row.domain.toLowerCase().includes(search) ||
 		row.description.toLowerCase().includes(search)
 	);
 }
@@ -193,14 +192,8 @@ export default function LicenseKeys() {
 			heading: 'environment-name',
 			key: 'environment-name',
 			render: (row) => (
-				<span className="d-flex flex-column">
-					<span className="license-keys-environment-name">
-						{row.name}
-					</span>
-
-					<span className="list-card-subtext">
-						{row.domain || '-'}
-					</span>
+				<span className="license-keys-environment-name">
+					{row.name}
 				</span>
 			),
 			width: '25%',

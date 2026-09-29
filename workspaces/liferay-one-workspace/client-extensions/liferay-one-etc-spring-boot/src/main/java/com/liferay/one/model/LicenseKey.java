@@ -34,6 +34,7 @@ public class LicenseKey {
 		_commerceProductExternalReferenceCode = jsonObject.optString(
 			"r_commerceProductToLicenseKey_CProductERC");
 		_complimentary = jsonObject.optBoolean("complimentary");
+		_dataCenterLocation = jsonObject.optString("dataCenterLocation");
 		_customExpirationDateInstant = _toInstant(
 			jsonObject.optString("customExpirationDate"));
 		_description = jsonObject.optString("description");
@@ -64,6 +65,8 @@ public class LicenseKey {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToLicenseKey_c_projectERC");
 		_serverId = jsonObject.optString("serverId");
+		_workspaceName = jsonObject.optString("workspaceName");
+		_workspaceOwnerEmail = jsonObject.optString("workspaceOwnerEmail");
 		_sizing = jsonObject.optString("sizing");
 		_startDateInstant = _toInstant(jsonObject.optString("startDate"));
 	}
@@ -94,6 +97,10 @@ public class LicenseKey {
 
 	public Instant getCustomExpirationDateInstant() {
 		return _customExpirationDateInstant;
+	}
+
+	public String getDataCenterLocation() {
+		return _dataCenterLocation;
 	}
 
 	public String getDescription() {
@@ -201,6 +208,14 @@ public class LicenseKey {
 		return _serverId;
 	}
 
+	public String getWorkspaceName() {
+		return _workspaceName;
+	}
+
+	public String getWorkspaceOwnerEmail() {
+		return _workspaceOwnerEmail;
+	}
+
 	public String getSizing() {
 		return _sizing;
 	}
@@ -244,6 +259,7 @@ public class LicenseKey {
 	private final String _commerceProductExternalReferenceCode;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
+	private final String _dataCenterLocation;
 	private final String _description;
 	private final String _domains;
 	private final long _entitlementDefinitionId;
@@ -270,6 +286,8 @@ public class LicenseKey {
 	private final String _productVersionLabel;
 	private final String _projectExternalReferenceCode;
 	private final String _serverId;
+	private final String _workspaceName;
+	private final String _workspaceOwnerEmail;
 	private final String _sizing;
 	private final Instant _startDateInstant;
 

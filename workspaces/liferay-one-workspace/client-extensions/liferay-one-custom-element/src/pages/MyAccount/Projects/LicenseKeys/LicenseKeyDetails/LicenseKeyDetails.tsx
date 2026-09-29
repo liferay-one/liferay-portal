@@ -180,7 +180,6 @@ function LicenseKeyDetailsContent({
 				activationKey.complimentary ? 'complimentary' : 'subscription'
 			),
 		},
-		{label: translate('domains'), value: activationKey.domain || '-'},
 		{label: translate('start-date'), value: activationKey.startDate || '-'},
 		{
 			label: translate('expiration-date'),
