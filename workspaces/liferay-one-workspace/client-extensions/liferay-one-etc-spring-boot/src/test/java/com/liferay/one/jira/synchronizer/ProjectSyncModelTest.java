@@ -71,6 +71,12 @@ public class ProjectSyncModelTest {
 		);
 
 		_assertUserAccountsAreNull();
+
+		Mockito.verify(
+			_projectMembershipService
+		).getProjectMemberships(
+			_PROJECT_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	@Test
@@ -84,6 +90,12 @@ public class ProjectSyncModelTest {
 		);
 
 		_assertUserAccountsAreNull();
+
+		Mockito.verify(
+			_userAccountService
+		).getUserAccounts(
+			Mockito.anyCollection()
+		);
 	}
 
 	@Test
