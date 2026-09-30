@@ -57,7 +57,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Solutions Catalog"
+																"en_US": "Solutions Catalog",
+																"es_ES": "Catálogo de soluciones",
+																"ja_JP": "ソリューションカタログ",
+																"pt_BR": "Catálogo de soluções"
 															}
 														}
 													}
@@ -67,7 +70,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Marketplace"
+																"en_US": "Marketplace",
+																"es_ES": "Marketplace",
+																"ja_JP": "Marketplace",
+																"pt_BR": "Marketplace"
 															}
 														}
 													}
@@ -77,7 +83,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Business solutions from our partner ecosystem — reducing your time to market, increasing productivity and offering you endless possibilities on Liferay’s portfolio"
+																"en_US": "Business solutions from our partner ecosystem — reducing your time to market, increasing productivity and offering you endless possibilities on Liferay’s portfolio",
+																"es_ES": "Soluciones empresariales de nuestro ecosistema de socios: acorta los tiempos de lanzamiento, aumenta la productividad y disfruta de infinitas posibilidades en el catálogo de Liferay.",
+																"ja_JP": "パートナーエコシステムが提供するビジネスソリューション：市場投入までの時間を短縮し、生産性を向上させ、Liferayのポートフォリオで無限の可能性を提供します。",
+																"pt_BR": "Soluções de negócios do ecossistema de parceiros — reduzindo seu tempo de lançamento no mercado, aumentando a produtividade e oferecendo infinitas possibilidades no portfólio da Liferay."
 															}
 														}
 													}
@@ -87,7 +96,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Solutions Catalog"
+																"en_US": "Solutions Catalog",
+																"es_ES": "Catálogo de soluciones",
+																"ja_JP": "ソリューションカタログ",
+																"pt_BR": "Catálogo de soluções"
 															}
 														}
 													}

@@ -223,10 +223,11 @@ export default {
 	'back': 'Voltar',
 	'back-to-apps': 'Voltar para Aplicativos',
 	'back-to-business-events': 'Voltar para Eventos de Negócios',
-	'back-to-last-transaction': 'Voltar para a última transação',
+	'back-to-finance-orders': 'Voltar para pedidos financeiros',
 	'back-to-my-apps': 'Voltar para Meus Aplicativos',
 	'back-to-my-products': 'Voltar para Meus Produtos',
 	'back-to-my-solutions': 'Voltar para Minhas Soluções',
+	'back-to-payments': 'Voltar para pagamentos',
 	'back-to-project': 'Voltar para o Projeto',
 	'back-to-solutions': 'Voltar para Soluções',
 	'back-to-the-list': 'Voltar à lista',
@@ -345,6 +346,7 @@ export default {
 	'confirm-uninstall': 'Confirmar e desinstalar',
 	'confirm-uninstall-terms': 'Confirmar termos de desinstalação',
 	'congratulations': 'Parabéns',
+	'connect': 'Conectar',
 	'connect-anyway': 'Conectar mesmo assim',
 	'connect-your-liferay-data-platform': 'Conecte sua Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Conecte seu Liferay DSR',
@@ -983,7 +985,6 @@ export default {
 	'next': 'Avançar',
 	'no': 'Não',
 	'no-account-members-were-found': 'Nenhum membro da conta foi encontrado.',
-	'no-accounts-available': 'Nenhuma conta disponível',
 	'no-activation-keys-yet': 'Ainda não há chaves de ativação',
 	'no-applications-yet': 'Ainda não há aplicativos',
 	'no-apps-yet': 'Ainda não há aplicativos',
@@ -1059,6 +1060,8 @@ export default {
 	'one-time-purchases': 'Compras pontuais',
 	'online-payments-with-paypal': 'Pagamentos online com PayPal',
 	'online-payments-with-x': 'Pagamentos online com {0}',
+	'only-continue-if-you-started-this-connection-from-that-liferay-dxp':
+		'Continue apenas se você tiver iniciado esta conexão a partir desse Liferay DXP.',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'Apenas arquivos GIF, JPG, JPEG e PNG são permitidos. O tamanho máximo do arquivo é de 5 MB.',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':
@@ -1491,6 +1494,8 @@ export default {
 	'street-address': 'Endereço',
 	'submit': 'Enviar',
 	'submit-solution': 'Enviar solução',
+	'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed':
+		'Envie sua solicitação para começar a usar o AI Hub. Após o envio, você receberá um e-mail do DocuSign com um formulário de pedido para ser assinado.',
 	'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome':
 		'Envie sua solicitação para participar do programa beta. Todos os envios serão revisados e você receberá um e-mail com o resultado.',
 	'subscription': 'Assinatura',
@@ -1611,8 +1616,11 @@ export default {
 	'theme': 'Tema',
 	'there-are-currently-no-open-tickets-under-this-project':
 		'Atualmente, não há tickets abertos neste projeto.',
+	'there-are-no-accounts-available-for': 'Não há contas disponíveis para',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'Ocorreu um erro inesperado ao tentar desativar a chave. Tente novamente em alguns instantes.',
+	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
+		'Esta conta não tem um endereço de faturamento padrão, portanto, um DXP conectado não pode instalar produtos para ela.',
 	'this-action-cannot-be-undone': 'Esta operação não pode ser desfeita.',
 	'this-app-is-already-installed-in-this-environment':
 		'Este aplicativo já está instalado neste ambiente.',
@@ -1636,6 +1644,8 @@ export default {
 		'Esta é a primeira versão do aplicativo a ser publicada.',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'Esta chave está expirada e não pode ser baixada.',
+	'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account':
+		'Este Liferay DXP está solicitando acesso à sua conta do Liferay One.',
 	'this-may-restrict-the-functionality-available-to-you':
 		'Isso pode restringir a funcionalidade disponível para você.',
 	'this-order-must-be-completed-before-downloading-this-app.':
@@ -1939,6 +1949,8 @@ export default {
 		'Você precisa ter o papel de Administrador ou Solicitante neste projeto para enviar um arquivo.',
 	'you-need-administrator-role-on-this-project-to-submit-this-form':
 		'Você precisa ter o papel de Administrador neste projeto para enviar este formulário.',
+	'you-need-to-create-a-new-personal-or-business-account-or-join-an-already-existing-business-account-to-proceed':
+		'Você precisa criar uma nova conta pessoal ou empresarial ou ingressar em uma conta empresarial já existente para continuar.',
 	'you-will-receive-an-invoice-via-email-with-all-the-details-needed-to-complete-your-payment-after-you-complete-the-payment-you-can-activate-your-license-from-the-customer-dashboard':
 		'Você receberá uma fatura por e-mail com todos os detalhes necessários para concluir o pagamento. Após concluir o pagamento, você poderá ativar sua licença no painel do cliente.',
 	'you-will-receive-an-invoice-via-email-with-the-instructions-to-complete-your-bank-transfer-payment':

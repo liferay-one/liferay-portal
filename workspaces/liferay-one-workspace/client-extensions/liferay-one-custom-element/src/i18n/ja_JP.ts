@@ -222,10 +222,11 @@ export default {
 	'back': '戻る',
 	'back-to-apps': 'アプリ一覧に戻る',
 	'back-to-business-events': 'ビジネスイベントに戻る',
-	'back-to-last-transaction': '最後の取引に戻る',
+	'back-to-finance-orders': '財務注文に戻る',
 	'back-to-my-apps': 'マイアプリに戻る',
 	'back-to-my-products': 'マイプロダクトに戻る',
 	'back-to-my-solutions': 'マイソリューションに戻る',
+	'back-to-payments': '支払いに戻る',
 	'back-to-project': 'プロジェクトに戻る',
 	'back-to-solutions': 'ソリューション一覧に戻る',
 	'back-to-the-list': 'リストに戻る',
@@ -343,6 +344,7 @@ export default {
 	'confirm-uninstall': '確認してアンインストール',
 	'confirm-uninstall-terms': 'アンインストール規約を確認',
 	'congratulations': 'おめでとうございます',
+	'connect': '接続',
 	'connect-anyway': '接続を続行',
 	'connect-your-liferay-data-platform': 'Liferay Data Platform を接続',
 	'connect-your-liferay-dsr': 'Liferay DSRを接続',
@@ -968,7 +970,6 @@ export default {
 	'no': 'いいえ',
 	'no-account-members-were-found':
 		'アカウントメンバーが見つかりませんでした。',
-	'no-accounts-available': '利用可能なアカウントはありません',
 	'no-activation-keys-yet': 'アクティベーションキーはまだありません',
 	'no-applications-yet': 'アプリケーションはまだありません',
 	'no-apps-yet': 'アプリはまだありません',
@@ -1044,6 +1045,8 @@ export default {
 	'one-time-purchases': '1回限りの購入',
 	'online-payments-with-paypal': 'PayPalによるオンライン決済',
 	'online-payments-with-x': '{0}によるオンライン決済',
+	'only-continue-if-you-started-this-connection-from-that-liferay-dxp':
+		'この接続をそのLiferay DXPから開始した場合にのみ続行してください。',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'GIF、JPG、JPEG、PNGのみ許可されます。最大ファイルサイズは5MBです。',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':
@@ -1474,6 +1477,8 @@ export default {
 	'street-address': '住所 (町名、番地など)',
 	'submit': '送信',
 	'submit-solution': 'ソリューションを送信',
+	'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed':
+		'AI Hubの利用を開始するためのリクエストを送信してください。送信後、署名用の注文書が記載されたDocuSignのメールが届きます。',
 	'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome':
 		'ベータプログラムへの参加リクエストを送信してください。すべての申請が審査され、結果がメールで届きます。',
 	'subscription': 'サブスクリプション',
@@ -1596,8 +1601,11 @@ export default {
 	'theme': 'テーマ',
 	'there-are-currently-no-open-tickets-under-this-project':
 		'現在、このプロジェクトで未解決のチケットはありません。',
+	'there-are-no-accounts-available-for': '利用可能なアカウントはありません：',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'キーの無効化を試みている最中に予期しないエラーが発生しました。しばらくしてからもう一度お試しください。',
+	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
+		'このアカウントにはデフォルトの請求先住所が設定されていないため、接続されたDXPに製品をインストールすることはできません。',
 	'this-action-cannot-be-undone': 'この操作は元に戻せません。',
 	'this-app-is-already-installed-in-this-environment':
 		'このアプリは既にこの環境にインストールされています。',
@@ -1621,6 +1629,8 @@ export default {
 		'これは公開されるアプリの最初のバージョンです。',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'このキーは期限切れのためダウンロードできません。',
+	'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account':
+		'このLiferay DXPは、お客様のLiferay Oneアカウントへのアクセスを要求しています。',
 	'this-may-restrict-the-functionality-available-to-you':
 		'これにより、利用可能な機能が制限される場合があります。',
 	'this-order-must-be-completed-before-downloading-this-app.':
@@ -1922,6 +1932,8 @@ export default {
 		'ファイルをアップロードするには、このプロジェクトの管理者または要求者のロールが必要です。',
 	'you-need-administrator-role-on-this-project-to-submit-this-form':
 		'このフォームを送信するには、このプロジェクトの管理者ロールが必要です。',
+	'you-need-to-create-a-new-personal-or-business-account-or-join-an-already-existing-business-account-to-proceed':
+		'続行するには、新しい個人アカウントまたはビジネスアカウントを作成するか、既存のビジネスアカウントに参加する必要があります。',
 	'you-will-receive-an-invoice-via-email-with-all-the-details-needed-to-complete-your-payment-after-you-complete-the-payment-you-can-activate-your-license-from-the-customer-dashboard':
 		'支払いを完了するために必要なすべての詳細が記載された請求書がメールで届きます。支払いが完了したら、カスタマーダッシュボードからライセンスをアクティベートできます。',
 	'you-will-receive-an-invoice-via-email-with-the-instructions-to-complete-your-bank-transfer-payment':

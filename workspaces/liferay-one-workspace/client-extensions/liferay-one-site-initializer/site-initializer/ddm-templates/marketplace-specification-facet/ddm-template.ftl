@@ -1,6 +1,93 @@
+<#function langKey label>
+	<#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r") />
+</#function>
+
+<#function getFacetTitle paramName>
+	<#local key = langKey(paramName) />
+	<#if locale?starts_with("ja")>
+		<#switch key>
+			<#case "dxp-versions"><#return "DXPバージョン" />
+			<#case "availability"><#return "可用性" />
+			<#case "app-category"><#return "アプリカテゴリ" />
+			<#case "category"><#return "カテゴリ" />
+			<#case "deployment-method"><#return "デプロイ方法" />
+			<#case "type"><#return "タイプ" />
+			<#case "liferay-products-categories"><#return "Liferay製品カテゴリ" />
+			<#case "liferay-version"><#return "Liferayバージョン" />
+			<#case "our-selection"><#return "おすすめ" />
+			<#case "price-model"><#return "価格モデル" />
+			<#case "tag"><#return "タグ" />
+			<#default><#return languageUtil.get(locale, key, paramName?replace("-", " ")?cap_first) />
+		</#switch>
+	<#elseif locale?starts_with("es")>
+		<#switch key>
+			<#case "dxp-versions"><#return "Versiones de DXP" />
+			<#case "availability"><#return "Disponibilidad" />
+			<#case "app-category"><#return "Categoría de aplicación" />
+			<#case "category"><#return "Categoría" />
+			<#case "deployment-method"><#return "Método de implementación" />
+			<#case "type"><#return "Tipo" />
+			<#case "liferay-products-categories"><#return "Categorías de productos de Liferay" />
+			<#case "liferay-version"><#return "Versión de Liferay" />
+			<#case "our-selection"><#return "Nuestra selección" />
+			<#case "price-model"><#return "Modelo de precios" />
+			<#case "tag"><#return "Etiqueta" />
+			<#default><#return languageUtil.get(locale, key, paramName?replace("-", " ")?cap_first) />
+		</#switch>
+	<#elseif locale?starts_with("pt")>
+		<#switch key>
+			<#case "dxp-versions"><#return "Versões do DXP" />
+			<#case "availability"><#return "Disponibilidade" />
+			<#case "app-category"><#return "Categoria do aplicativo" />
+			<#case "category"><#return "Categoria" />
+			<#case "deployment-method"><#return "Método de implantação" />
+			<#case "type"><#return "Tipo" />
+			<#case "liferay-products-categories"><#return "Categorias de produtos Liferay" />
+			<#case "liferay-version"><#return "Versão do Liferay" />
+			<#case "our-selection"><#return "Nossa seleção" />
+			<#case "price-model"><#return "Modelo de preço" />
+			<#case "tag"><#return "Tag" />
+			<#default><#return languageUtil.get(locale, key, paramName?replace("-", " ")?cap_first) />
+		</#switch>
+	<#else>
+		<#return languageUtil.get(locale, key, paramName?replace("-", " ")?cap_first) />
+	</#if>
+</#function>
+
+<#function getFacetTermName displayName>
+	<#local lowerName = displayName?lower_case />
+	<#if locale?starts_with("ja")>
+		<#switch lowerName>
+			<#case "free"><#return "無料" />
+			<#case "paid"><#return "有料" />
+			<#case "true"><#return "おすすめ" />
+			<#case "dxp"><#return "DXP" />
+			<#default><#return languageUtil.get(locale, langKey(displayName), displayName?capitalize) />
+		</#switch>
+	<#elseif locale?starts_with("es")>
+		<#switch lowerName>
+			<#case "free"><#return "Gratis" />
+			<#case "paid"><#return "De pago" />
+			<#case "true"><#return "Seleccionado" />
+			<#case "dxp"><#return "DXP" />
+			<#default><#return languageUtil.get(locale, langKey(displayName), displayName?capitalize) />
+		</#switch>
+	<#elseif locale?starts_with("pt")>
+		<#switch lowerName>
+			<#case "free"><#return "Gratuito" />
+			<#case "paid"><#return "Pago" />
+			<#case "true"><#return "Selecionado" />
+			<#case "dxp"><#return "DXP" />
+			<#default><#return languageUtil.get(locale, langKey(displayName), displayName?capitalize) />
+		</#switch>
+	<#else>
+		<#if lowerName == 'dxp'><#return "DXP" /><#else><#return displayName?capitalize /></#if>
+	</#if>
+</#function>
+
 <#assign
 	filteredCount = 0
-	title = cpSpecificationOptionsSearchFacetDisplayContext.getParameterName()?replace("-", " ")?cap_first
+	title = getFacetTitle(cpSpecificationOptionsSearchFacetDisplayContext.getParameterName())
 />
 
 <#list entries?sort_by("displayName") as entry>
@@ -64,11 +151,7 @@
 										<span class="custom-control-label-text">
 											<#assign displayName = entry.getDisplayName()?replace("-", " ") />
 
-											<#if displayName == 'dxp'>
-												DXP
-											<#else>
-												${htmlUtil.escape(displayName)?capitalize}
-											</#if>
+											${htmlUtil.escape(getFacetTermName(displayName))}
 
 											<span class="facet-frequency">(${entry.getFrequency()})</span>
 										</span>

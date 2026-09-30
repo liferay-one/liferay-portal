@@ -73,23 +73,19 @@ const ManageUserRolesModal = ({
 				formData.roles.map((role) => role.value)
 			);
 
-			await Accounts.putUserAccountsAccountRoles(
-				accountERC,
-				user.id,
-				[
-					...ssaAccount.roleBriefs
-						.filter(
-							(roleBrief) =>
-								!ssaRoles.some(
-									(ssaRole) => ssaRole.key === roleBrief.name
-								)
-						)
-						.map((roleBrief) => roleBrief.id),
-					...roles
-						.filter((role) => newRolesSet.has(role.name))
-						.map((role) => role.id),
-				]
-			);
+			await Accounts.putUserAccountsAccountRoles(accountERC, user.id, [
+				...ssaAccount.roleBriefs
+					.filter(
+						(roleBrief) =>
+							!ssaRoles.some(
+								(ssaRole) => ssaRole.key === roleBrief.name
+							)
+					)
+					.map((roleBrief) => roleBrief.id),
+				...roles
+					.filter((role) => newRolesSet.has(role.name))
+					.map((role) => role.id),
+			]);
 
 			const updatedRoleBriefs = roles.filter((role) =>
 				newRolesSet.has(role.name)

@@ -57,7 +57,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Applications Catalog"
+																"en_US": "Applications Catalog",
+																"es_ES": "Catálogo de aplicaciones",
+																"ja_JP": "アプリケーションカタログ",
+																"pt_BR": "Catálogo de aplicativos"
 															}
 														}
 													}
@@ -67,7 +70,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Marketplace"
+																"en_US": "Marketplace",
+																"es_ES": "Marketplace",
+																"ja_JP": "Marketplace",
+																"pt_BR": "Marketplace"
 															}
 														}
 													}
@@ -77,7 +83,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Expand Liferay's portfolio through apps from our partner and developer ecosystems to enhance your digital transformation."
+																"en_US": "Expand Liferay's portfolio through apps from our partner and developer ecosystems to enhance your digital transformation.",
+																"es_ES": "Amplía el catálogo de Liferay con aplicaciones de nuestros socios y ecosistemas de desarrolladores para impulsar tu transformación digital.",
+																"ja_JP": "パートナーや開発者エコシステムが提供するアプリでLiferayのポートフォリオを拡張し、デジタルトランスフォーメーションを推進します。",
+																"pt_BR": "Expanda o portfólio da Liferay com aplicativos de nossos parceiros e desenvolvedores para acelerar sua transformação digital."
 															}
 														}
 													}
@@ -87,7 +96,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Applications Catalog"
+																"en_US": "Applications Catalog",
+																"es_ES": "Catálogo de aplicaciones",
+																"ja_JP": "アプリケーションカタログ",
+																"pt_BR": "Catálogo de aplicativos"
 															}
 														}
 													}
