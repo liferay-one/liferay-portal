@@ -9,19 +9,11 @@ const AI_HUB_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-AI-HUB';
 
 const available = configuration.available;
 const buttonLink = configuration.buttonLink;
+const productId = configuration.productId;
 const purchasable = configuration.purchasable;
-const skuExternalReferenceCode = configuration.skuExternalReferenceCode;
+const skuId = configuration.skuId;
 
-// The card sells a SKU of the product the display page renders, so the product
-// comes from the element the page definition maps onto it and the SKU from an
-// external reference code. Neither survives as a numeric identifier: those are
-// assigned per environment, so a page carrying them points at whichever product
-// happens to hold that identifier elsewhere.
-
-const productId = fragmentElement
-	.querySelector('.product-id')
-	.innerText.replace(/[\n\r]+|[\s]{2,}/g, ' ')
-	.trim();
+const buttonElement = fragmentElement.querySelector('[data-tier-card-button]');
 
 function getSiteURL() {
 	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
@@ -64,7 +56,11 @@ async function hasAIHubOrder(accountId) {
 	}
 }
 
-if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
+if (available && !purchasable && buttonLink && buttonElement) {
+	buttonElement.href = buttonLink;
+}
+
+if (productId && skuId) {
 	(async () => {
 		try {
 			const channelId = Liferay.CommerceContext?.commerceChannelId;
@@ -80,27 +76,18 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 			const product = await response.json();
 
 			const sku = product.skus?.find(
-				(item) =>
-					item.externalReferenceCode === skuExternalReferenceCode
+				(item) => String(item.id) === String(skuId)
 			);
 
 			if (!sku) {
 				throw new Error(
-					`Unable to find the SKU ${skuExternalReferenceCode} in the product ID ${productId}`
+					`Unable to find the SKU ID ${skuId} in the product ID ${productId}`
 				);
 			}
 
 			const priceElement = fragmentElement.querySelector(
 				'[data-tier-card-price]'
 			);
-
-			const buttonElement = fragmentElement.querySelector(
-				'[data-tier-card-button]'
-			);
-
-			if (!buttonElement) {
-				return;
-			}
 
 			if (priceElement) {
 				const formattedPrice =
@@ -112,6 +99,10 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 				else {
 					console.warn('Unable to read the SKU price', sku);
 				}
+			}
+
+			if (!buttonElement || !available || !purchasable) {
+				return;
 			}
 
 			buttonElement.classList.remove('product-requirements-modal');
@@ -134,26 +125,17 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 				return;
 			}
 
-			if (!available) {
-				return;
-			}
+			buttonElement.classList.add('product-requirements-modal');
 
-			if (purchasable) {
-				buttonElement.classList.add('product-requirements-modal');
+			buttonElement.href = '#';
 
-				buttonElement.href = '#';
-
-				buttonElement.dataset.destinationUrl =
-					`${getSiteURL()}/product-purchase` +
-					`?productId=${productId}` +
-					`&skuRef=${sku.externalReferenceCode}`;
-			}
-			else if (buttonLink) {
-				buttonElement.href = buttonLink;
-			}
+			buttonElement.dataset.destinationUrl =
+				getSiteURL() +
+				(buttonLink || `/product-purchase?productId=${productId}`) +
+				`&skuRef=${sku.externalReferenceCode}`;
 		}
 		catch (error) {
-			console.error(error);
+			console.error('Unable to load the tier card', error);
 		}
 	})();
 }
