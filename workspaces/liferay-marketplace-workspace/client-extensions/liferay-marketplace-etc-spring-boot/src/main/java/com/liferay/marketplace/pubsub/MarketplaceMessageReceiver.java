@@ -161,8 +161,7 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		return new OrderItem() {
 			{
 				setOptions(() -> _getOptions(catalogSku));
-				setQuantity(
-					() -> new BigDecimal(productPurchase.getQuantity()));
+				setQuantity(() -> _getOrderItemQuantity(productPurchase));
 				setSkuExternalReferenceCode(productPurchase::getProductKey);
 			}
 		};
@@ -289,6 +288,19 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		}
 
 		return null;
+	}
+
+	private BigDecimal _getOrderItemQuantity(ProductPurchase productPurchase) {
+		Product product = productPurchase.getProduct();
+
+		if (Objects.equals(
+				_getOrderTypeExternalReferenceCode(product.getName()),
+				"AI_HUB_TOKEN")) {
+
+			return BigDecimal.ONE;
+		}
+
+		return new BigDecimal(productPurchase.getQuantity());
 	}
 
 	private String _getOrderTypeExternalReferenceCode(String productName) {

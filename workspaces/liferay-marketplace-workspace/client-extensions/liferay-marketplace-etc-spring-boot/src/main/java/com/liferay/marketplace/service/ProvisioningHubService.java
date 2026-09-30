@@ -46,6 +46,16 @@ public class ProvisioningHubService extends BaseService {
 			ProductPurchase productPurchase)
 		throws Exception {
 
+		Product product = productPurchase.getProduct();
+
+		String productName = product.getName();
+
+		if (productName.contains("LR Tokens")) {
+			_creditAIHubTokens(order, productPurchase);
+
+			return;
+		}
+
 		String orderTypeExternalReferenceCode =
 			order.getOrderTypeExternalReferenceCode();
 
@@ -67,10 +77,6 @@ public class ProvisioningHubService extends BaseService {
 			return;
 		}
 
-		Product product = productPurchase.getProduct();
-
-		String productName = product.getName();
-
 		if (productName.startsWith("AI Hub")) {
 			_provisionAiHUB(koroneikiAccount, order, productPurchase);
 
@@ -82,6 +88,95 @@ public class ProvisioningHubService extends BaseService {
 				productName, "Liferay Data Platform (Private Beta)")) {
 
 			_provisionLDP(koroneikiAccount, order);
+		}
+	}
+
+	private void _creditAIHubTokens(
+			Order order, ProductPurchase productPurchase)
+		throws Exception {
+
+		JSONObject orderMetadataJSONObject =
+			MarketplaceUtil.getOrderMetadataJSONObject(order);
+
+		JSONArray productPurchaseKeysJSONArray =
+			orderMetadataJSONObject.optJSONArray(
+				_AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS);
+
+		if (productPurchaseKeysJSONArray == null) {
+			productPurchaseKeysJSONArray = new JSONArray();
+		}
+
+		for (int i = 0; i < productPurchaseKeysJSONArray.length(); i++) {
+			if (Objects.equals(
+					productPurchaseKeysJSONArray.getString(i),
+					productPurchase.getKey())) {
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Skipping AI Hub tokens for product purchase ",
+							productPurchase.getKey(),
+							" because they were already credited to order ",
+							order.getId()));
+				}
+
+				return;
+			}
+		}
+
+		String aiHubApplicationExternalReferenceCode =
+			"AI-HUB-" + order.getAccountExternalReferenceCode();
+
+		JSONObject aiHubApplicationJSONObject = null;
+
+		try {
+			aiHubApplicationJSONObject =
+				_marketplaceService.getAIHubApplicationJSONObject(
+					aiHubApplicationExternalReferenceCode);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		if ((aiHubApplicationJSONObject == null) ||
+			!aiHubApplicationJSONObject.has("accountEntryId")) {
+
+			throw new Exception(
+				StringBundler.concat(
+					"Unable to credit AI Hub tokens for product purchase ",
+					productPurchase.getKey(), ", AI Hub application ",
+					aiHubApplicationExternalReferenceCode, " was not found"));
+		}
+
+		_aiHubService.purchaseQuotaPrepaidBlock(
+			aiHubApplicationJSONObject.getInt("accountEntryId"),
+			new JSONObject(
+			).put(
+				"size", _AI_HUB_ENTERPRISE_TOKENS_SIZE
+			).put(
+				"transactionId", order.getId()
+			));
+
+		_marketplaceService.updateOrderCustomFields(
+			HashMapBuilder.put(
+				"order-metadata",
+				orderMetadataJSONObject.put(
+					_AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS,
+					productPurchaseKeysJSONArray.put(productPurchase.getKey())
+				).toString()
+			).build(),
+			order.getId());
+
+		if (Objects.equals(
+				order.getOrderTypeExternalReferenceCode(), "AI_HUB_TOKEN") &&
+			!Objects.equals(
+				order.getOrderStatus(),
+				MarketplaceConstants.ORDER_STATUS_COMPLETED)) {
+
+			_marketplaceService.completeOrder(
+				order.getId(), order.getPaymentStatus());
 		}
 	}
 
@@ -551,6 +646,11 @@ public class ProvisioningHubService extends BaseService {
 			).build(),
 			order.getId());
 	}
+
+	private static final long _AI_HUB_ENTERPRISE_TOKENS_SIZE = 200000;
+
+	private static final String _AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS =
+		"aiHubTokenProductPurchaseKeys";
 
 	private static final String _LDP_PROVISIONING_ATTEMPTS =
 		"ldpProvisioningAttempts";
