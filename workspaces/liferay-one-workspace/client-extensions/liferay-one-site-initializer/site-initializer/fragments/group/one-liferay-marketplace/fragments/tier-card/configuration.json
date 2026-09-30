@@ -33,14 +33,19 @@
 					"type": "checkbox"
 				},
 				{
+					"label": "Product ID",
+					"name": "productId",
+					"type": "text"
+				},
+				{
 					"defaultValue": true,
 					"label": "Purchasable",
 					"name": "purchasable",
 					"type": "checkbox"
 				},
 				{
-					"label": "SKU External Reference Code",
-					"name": "skuExternalReferenceCode",
+					"label": "SKU ID",
+					"name": "skuId",
 					"type": "text"
 				}
 			],
