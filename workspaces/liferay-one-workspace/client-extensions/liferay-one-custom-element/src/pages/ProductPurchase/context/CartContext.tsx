@@ -55,23 +55,36 @@ export function CartProvider({children}: {children: React.ReactNode}) {
 	const [state, dispatch] = useReducer(cartReducer, initialState);
 
 	const cartIdRef = useRef<number>(0);
+	const cartItemsUpdateRef = useRef<Promise<void>>(Promise.resolve());
+	const cartVersionRef = useRef<number>(0);
 
 	const reset = useCallback(() => {
 		cartIdRef.current = 0;
+		cartVersionRef.current++;
 		dispatch({type: 'reset'});
 	}, []);
 
 	const setCart = useCallback((cart: Cart) => {
 		cartIdRef.current = cart.id;
+		cartVersionRef.current++;
 		dispatch({cart, type: 'setCart'});
 	}, []);
 
 	const setCartItems = useCallback((cartItems: CartItem[]) => {
 		dispatch({cartItems, type: 'setCartItems'});
 
-		HeadlessCommerceDeliveryCart.updateCart(cartIdRef.current, {cartItems})
-			.then((cart) => dispatch({cart, type: 'setCart'}))
-			.catch((error) => console.error('Unable to update cart', error));
+		const cartId = cartIdRef.current;
+		const cartVersion = cartVersionRef.current;
+
+		cartItemsUpdateRef.current = cartItemsUpdateRef.current.then(() =>
+			HeadlessCommerceDeliveryCart.updateCart(cartId, {cartItems})
+				.then((cart) => {
+					if (cartVersion === cartVersionRef.current) {
+						dispatch({cart, type: 'setCart'});
+					}
+				})
+				.catch((error) => console.error('Unable to update cart', error))
+		);
 	}, []);
 
 	const value = useMemo<CartContextValue>(

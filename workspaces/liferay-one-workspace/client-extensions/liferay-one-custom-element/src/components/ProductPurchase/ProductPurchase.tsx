@@ -252,13 +252,16 @@ const ProductPurchasePrice: React.FC<ProductPurchasePriceProps> = ({
 	...priceProps
 }) => (
 	<div className="align-items-end d-flex flex-column price-text">
-		<strong className="mr-1 price-text-label">
+		<strong className="mr-1 price-text-label text-nowrap">
 			{i18n.translate('price')}
 		</strong>
 
 		<div
 			{...priceProps}
-			className={classNames('price-text-value', priceProps.className)}
+			className={classNames(
+				'price-text-value text-nowrap',
+				priceProps.className
+			)}
 			style={priceProps.style}
 		>
 			{price}
