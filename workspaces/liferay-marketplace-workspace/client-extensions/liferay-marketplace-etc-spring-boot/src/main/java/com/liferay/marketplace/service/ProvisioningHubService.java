@@ -17,6 +17,7 @@ import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Product;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.ProductPurchase;
 import com.liferay.osb.koroneiki.phloem.rest.client.pagination.Page;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -180,18 +181,16 @@ public class ProvisioningHubService extends BaseService {
 		}
 	}
 
-	private Contact _getContact(String key) throws Exception {
+	private Contact _getContact(String key, String... contactRoleNames)
+		throws Exception {
+
 		Page<Contact> contactsPage = _koroneikiService.getContactsPage(
 			key, null);
 
 		for (Contact contact : contactsPage.getItems()) {
 			for (ContactRole contactRole : contact.getContactRoles()) {
-				if (Objects.equals(
-						contactRole.getName(), "AI Hub Administrator") ||
-					Objects.equals(
-						contactRole.getName(), "DSR Administrator") ||
-					Objects.equals(
-						contactRole.getName(), "LDP Administrator")) {
+				if (ArrayUtil.contains(
+						contactRoleNames, contactRole.getName())) {
 
 					return contact;
 				}
@@ -205,7 +204,9 @@ public class ProvisioningHubService extends BaseService {
 			String accountKey, String defaultEmailAddress)
 		throws Exception {
 
-		Contact contact = _getContact(accountKey);
+		Contact contact = _getContact(
+			accountKey, _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR,
+			"DSR Administrator", "LDP Administrator");
 
 		if (contact == null) {
 			return defaultEmailAddress;
@@ -355,7 +356,8 @@ public class ProvisioningHubService extends BaseService {
 			ProductPurchase productPurchase)
 		throws Exception {
 
-		Contact contact = _getContact(koroneikiAccount.getKey());
+		Contact contact = _getContact(
+			koroneikiAccount.getKey(), _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR);
 
 		if (contact == null) {
 			if (_log.isInfoEnabled()) {
@@ -571,7 +573,8 @@ public class ProvisioningHubService extends BaseService {
 	private void _provisionSEOStudio(Account koroneikiAccount, Order order)
 		throws Exception {
 
-		Contact contact = _getContact(koroneikiAccount.getKey());
+		Contact contact = _getContact(
+			koroneikiAccount.getKey(), _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR);
 
 		if (contact == null) {
 			if (_log.isInfoEnabled()) {
@@ -651,6 +654,9 @@ public class ProvisioningHubService extends BaseService {
 
 	private static final String _AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS =
 		"aiHubTokenProductPurchaseKeys";
+
+	private static final String _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR =
+		"AI Hub Administrator";
 
 	private static final String _LDP_PROVISIONING_ATTEMPTS =
 		"ldpProvisioningAttempts";
