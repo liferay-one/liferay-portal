@@ -3257,11 +3257,12 @@
 																									"fragmentConfig": {
 																										"available": true,
 																										"badgeText": "Coming Soon",
-																										"buttonLink": "",
+																										"buttonLink": "/product-purchase?productId=PRODUCTID",
 																										"buttonText": "Purchase",
 																										"customPrice": false,
+																										"productId": "",
 																										"purchasable": true,
-																										"skuExternalReferenceCode": "PRDCT-AI-HUB-ACTIVATE"
+																										"skuId": ""
 																									},
 																									"fragmentFields": [
 																										{
@@ -3378,11 +3379,12 @@
 																									"fragmentConfig": {
 																										"available": false,
 																										"badgeText": "Coming Soon",
-																										"buttonLink": "",
+																										"buttonLink": "/product-purchase?productId=PRODUCTID",
 																										"buttonText": "Coming Soon",
 																										"customPrice": false,
+																										"productId": "",
 																										"purchasable": false,
-																										"skuExternalReferenceCode": "PRDCT-AI-HUB-STUDIO"
+																										"skuId": ""
 																									},
 																									"fragmentFields": [
 																										{
@@ -3507,8 +3509,9 @@
 																										"buttonLink": "https://www.liferay.com/contact-sales",
 																										"buttonText": "Contact sales",
 																										"customPrice": true,
+																										"productId": "",
 																										"purchasable": false,
-																										"skuExternalReferenceCode": ""
+																										"skuId": ""
 																									},
 																									"fragmentFields": [
 																										{
