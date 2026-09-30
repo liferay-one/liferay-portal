@@ -34,7 +34,6 @@ import com.liferay.marketplace.service.KoroneikiService;
 import com.liferay.marketplace.service.MarketplaceService;
 import com.liferay.marketplace.service.ProvisioningHubService;
 import com.liferay.marketplace.util.MarketplaceUtil;
-import com.liferay.marketplace.util.SkuUtil;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Contact;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Product;
 import com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.ProductPurchase;
@@ -159,14 +158,12 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 	private OrderItem _createOrderItem(
 		ProductPurchase productPurchase, Sku catalogSku) {
 
-		String productKey = _getProductKey(catalogSku, productPurchase);
-
 		return new OrderItem() {
 			{
 				setOptions(() -> _getOptions(catalogSku));
 				setQuantity(
 					() -> new BigDecimal(productPurchase.getQuantity()));
-				setSkuExternalReferenceCode(() -> productKey);
+				setSkuExternalReferenceCode(productPurchase::getProductKey);
 			}
 		};
 	}
@@ -358,18 +355,6 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 				return postalAddress;
 			},
 			PostalAddress.class);
-	}
-
-	private String _getProductKey(
-		Sku catalogSku, ProductPurchase productPurchase) {
-
-		String salesforceProductId = SkuUtil.getSalesforceProductId(catalogSku);
-
-		if (Validator.isNotNull(salesforceProductId)) {
-			return salesforceProductId;
-		}
-
-		return productPurchase.getProductKey();
 	}
 
 	private Sku _getSku(String skuExternalReferenceCode) throws Exception {
