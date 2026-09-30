@@ -96,20 +96,34 @@ public class ProvisioningHubService extends BaseService {
 			Order order, ProductPurchase productPurchase)
 		throws Exception {
 
+		Integer size = productPurchase.getQuantity();
+
+		if ((size == null) || (size <= 0)) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to credit AI Hub tokens for product purchase ",
+					productPurchase.getKey(), " because its quantity ", size,
+					" is not a positive number of tokens"));
+
+			return;
+		}
+
 		JSONObject orderMetadataJSONObject =
 			MarketplaceUtil.getOrderMetadataJSONObject(order);
 
-		JSONArray productPurchaseKeysJSONArray =
-			orderMetadataJSONObject.optJSONArray(
-				_AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS);
+		JSONArray aiHubTokenCreditsJSONArray =
+			orderMetadataJSONObject.optJSONArray(_AI_HUB_TOKEN_CREDITS);
 
-		if (productPurchaseKeysJSONArray == null) {
-			productPurchaseKeysJSONArray = new JSONArray();
+		if (aiHubTokenCreditsJSONArray == null) {
+			aiHubTokenCreditsJSONArray = new JSONArray();
 		}
 
-		for (int i = 0; i < productPurchaseKeysJSONArray.length(); i++) {
+		for (int i = 0; i < aiHubTokenCreditsJSONArray.length(); i++) {
+			JSONObject aiHubTokenCreditJSONObject =
+				aiHubTokenCreditsJSONArray.getJSONObject(i);
+
 			if (Objects.equals(
-					productPurchaseKeysJSONArray.getString(i),
+					aiHubTokenCreditJSONObject.getString("productPurchaseKey"),
 					productPurchase.getKey())) {
 
 				if (_log.isInfoEnabled()) {
@@ -155,7 +169,7 @@ public class ProvisioningHubService extends BaseService {
 			aiHubApplicationJSONObject.getInt("accountEntryId"),
 			new JSONObject(
 			).put(
-				"size", _AI_HUB_ENTERPRISE_TOKENS_SIZE
+				"size", size
 			).put(
 				"transactionId", order.getId()
 			));
@@ -164,8 +178,14 @@ public class ProvisioningHubService extends BaseService {
 			HashMapBuilder.put(
 				"order-metadata",
 				orderMetadataJSONObject.put(
-					_AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS,
-					productPurchaseKeysJSONArray.put(productPurchase.getKey())
+					_AI_HUB_TOKEN_CREDITS,
+					aiHubTokenCreditsJSONArray.put(
+						new JSONObject(
+						).put(
+							"productPurchaseKey", productPurchase.getKey()
+						).put(
+							"size", size
+						))
 				).toString()
 			).build(),
 			order.getId());
@@ -650,10 +670,7 @@ public class ProvisioningHubService extends BaseService {
 			order.getId());
 	}
 
-	private static final long _AI_HUB_ENTERPRISE_TOKENS_SIZE = 200000;
-
-	private static final String _AI_HUB_TOKEN_PRODUCT_PURCHASE_KEYS =
-		"aiHubTokenProductPurchaseKeys";
+	private static final String _AI_HUB_TOKEN_CREDITS = "aiHubTokenCredits";
 
 	private static final String _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR =
 		"AI Hub Administrator";
