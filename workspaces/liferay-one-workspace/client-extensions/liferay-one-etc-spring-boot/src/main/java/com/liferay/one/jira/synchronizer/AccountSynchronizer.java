@@ -120,7 +120,7 @@ public class AccountSynchronizer {
 		List<UserAccount> userAccountsToSync = new ArrayList<>();
 
 		_addUserAccounts(
-			userAccountsToSync, accountSyncModel.getAccountUserAccounts());
+			accountSyncModel.getAccountUserAccounts(), userAccountsToSync);
 
 		List<Project> projects = accountSyncModel.getProjects();
 
@@ -133,11 +133,11 @@ public class AccountSynchronizer {
 					_syncProject(projectSyncModel, startDate);
 
 					_addUserAccounts(
-						userAccountsToSync,
-						projectSyncModel.getCustomerUserAccounts());
+						projectSyncModel.getCustomerUserAccounts(),
+						userAccountsToSync);
 					_addUserAccounts(
-						userAccountsToSync,
-						projectSyncModel.getWorkerUserAccounts());
+						projectSyncModel.getWorkerUserAccounts(),
+						userAccountsToSync);
 				}
 				catch (Exception exception) {
 					_log.error(
@@ -194,9 +194,9 @@ public class AccountSynchronizer {
 		List<UserAccount> userAccounts = new ArrayList<>();
 
 		_addUserAccounts(
-			userAccounts, projectSyncModel.getCustomerUserAccounts());
+			projectSyncModel.getCustomerUserAccounts(), userAccounts);
 		_addUserAccounts(
-			userAccounts, projectSyncModel.getWorkerUserAccounts());
+			projectSyncModel.getWorkerUserAccounts(), userAccounts);
 
 		_syncUserAccounts(userAccounts, startDate);
 	}
@@ -230,7 +230,7 @@ public class AccountSynchronizer {
 	}
 
 	private void _addUserAccounts(
-		List<UserAccount> userAccountsToSync, List<UserAccount> userAccounts) {
+		List<UserAccount> userAccounts, List<UserAccount> userAccountsToSync) {
 
 		if (userAccounts != null) {
 			userAccountsToSync.addAll(userAccounts);
