@@ -18,6 +18,7 @@ liferay-customer-custom-element:
         article-notified-when-my-activation-key-is-about-to-expire-url: https://support.liferay.com/w/how-do-i-receive-notifications-when-my-activation-keys-are-about-to-expire
         article-what-is-my-instance-sizing-value-url: https://support.liferay.com/w/activation-keys-faq-for-liferay-dxp-and-liferay-commerce#h_01H3YAFQ7B5H1ZHCXZX7E64SJ1
         create-ticket-url: https://liferay.atlassian.net/servicedesk/customer/portals
+        feature-flags: LRSD-12003
         import-date: 2022/11/17
         jira-fls-portal-url: https://liferay.atlassian.net/servicedesk/customer/portal/204
         jira-fls-project: LRFLS
