@@ -335,7 +335,7 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_accountOrganizationSynchronizer, Mockito.never()
-		).syncUnassignStaleOrganizations(
+		).syncOrganizations(
 			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
