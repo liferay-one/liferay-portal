@@ -536,6 +536,52 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncProjectSkipsContactsWhenProjectMembershipFails()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_accountSynchronizer.syncProject(_createProject());
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS),
+			Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS),
+			Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer, Mockito.never()
+		).syncRoles(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+	}
+
+	@Test
 	public void testSyncProjectSyncsProjectRoles() throws Exception {
 		Project project = _mockProjectMemberships();
 
@@ -595,6 +641,21 @@ public class AccountSynchronizerTest {
 		return account;
 	}
 
+	private Project _createProject() {
+		return new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"name", "Test Project"
+			).put(
+				"r_accountEntryToProject_accountEntryERC",
+				_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryId", 1L
+			));
+	}
+
 	private ProjectMembership _createProjectMembership(
 		String roleExternalReferenceCode) {
 
@@ -642,18 +703,7 @@ public class AccountSynchronizerTest {
 			Collections.singletonList(userAccount)
 		);
 
-		return new Project(
-			new JSONObject(
-			).put(
-				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
-			).put(
-				"name", "Test Project"
-			).put(
-				"r_accountEntryToProject_accountEntryERC",
-				_EXTERNAL_REFERENCE_CODE
-			).put(
-				"r_accountEntryToProject_accountEntryId", 1L
-			));
+		return _createProject();
 	}
 
 	private static final String _EXTERNAL_REFERENCE_CODE =
