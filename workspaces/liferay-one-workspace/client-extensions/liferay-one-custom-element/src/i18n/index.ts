@@ -64,9 +64,31 @@ export function sub(
 	return translatedWord;
 }
 
+export function translateLabel(label?: string, languageId?: string): string {
+	if (!label) {
+		return '';
+	}
+
+	if (label in en_US) {
+		return translate(label as Word, languageId);
+	}
+
+	const normalizedKey = label
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-|-$/g, '') as Word;
+
+	if (normalizedKey in en_US) {
+		return translate(normalizedKey, languageId);
+	}
+
+	return label;
+}
+
 const i18n = {
 	sub,
 	translate,
+	translateLabel,
 };
 
 export default i18n;
