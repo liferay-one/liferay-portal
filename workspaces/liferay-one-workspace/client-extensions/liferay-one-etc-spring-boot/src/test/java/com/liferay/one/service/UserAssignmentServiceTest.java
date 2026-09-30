@@ -354,6 +354,72 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testAssignCloudNativeOktaApplicationAssignsCloudNativeContacts()
+		throws Exception {
+
+		_addAccountBrief(RoleConstants.NAME_CLOUD_NATIVE_CONTACT);
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_userAccount,
+				_createUserAccount(
+					"Account Member", _OTHER_EMAIL_ADDRESS, _OTHER_USER_ID))
+		);
+
+		_userAssignmentService.assignCloudNativeOktaApplication(
+			_account, _OKTA_APPLICATION_ID);
+
+		Mockito.verify(
+			_oktaService
+		).assignUserToApplication(
+			_OKTA_APPLICATION_ID, _EMAIL_ADDRESS
+		);
+
+		Mockito.verify(
+			_oktaService, Mockito.never()
+		).assignUserToApplication(
+			_OKTA_APPLICATION_ID, _OTHER_EMAIL_ADDRESS
+		);
+	}
+
+	@Test
+	public void testAssignCloudNativeOktaApplicationSwallowsOktaFailure()
+		throws Exception {
+
+		_addAccountBrief(RoleConstants.NAME_CLOUD_NATIVE_CONTACT);
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_userAccount,
+				_createUserAccount(
+					RoleConstants.NAME_CLOUD_NATIVE_CONTACT,
+					_OTHER_EMAIL_ADDRESS, _OTHER_USER_ID))
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to reach Okta")
+		).when(
+			_oktaService
+		).assignUserToApplication(
+			_OKTA_APPLICATION_ID, _EMAIL_ADDRESS
+		);
+
+		Assertions.assertDoesNotThrow(
+			() -> _userAssignmentService.assignCloudNativeOktaApplication(
+				_account, _OKTA_APPLICATION_ID));
+
+		Mockito.verify(
+			_oktaService
+		).assignUserToApplication(
+			_OKTA_APPLICATION_ID, _OTHER_EMAIL_ADDRESS
+		);
+	}
+
+	@Test
 	public void testAssignOrganizationAddsMemberAndSyncsToJSM()
 		throws Exception {
 
@@ -941,6 +1007,31 @@ public class UserAssignmentServiceTest {
 			));
 	}
 
+	private UserAccount _createUserAccount(
+		String accountRoleName, String emailAddress, long userId) {
+
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setExternalReferenceCode(
+			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE);
+		roleBrief.setId(_ACCOUNT_ROLE_ID);
+		roleBrief.setName(accountRoleName);
+
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setExternalReferenceCode(_ACCOUNT_EXTERNAL_REFERENCE_CODE);
+		accountBrief.setId(_ACCOUNT_ID);
+		accountBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
+		userAccount.setEmailAddress(emailAddress);
+		userAccount.setId(userId);
+
+		return userAccount;
+	}
+
 	private void _mockOrganizationRole() throws Exception {
 		Role role = new Role();
 
@@ -978,7 +1069,11 @@ public class UserAssignmentServiceTest {
 
 	private static final long _ORGANIZATION_ROLE_ID = 55555;
 
+	private static final String _OTHER_EMAIL_ADDRESS = "john@example.com";
+
 	private static final long _OTHER_ORGANIZATION_ID = 44445;
+
+	private static final long _OTHER_USER_ID = 22223;
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 

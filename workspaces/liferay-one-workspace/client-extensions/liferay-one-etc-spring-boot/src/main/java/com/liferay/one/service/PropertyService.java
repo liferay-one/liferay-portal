@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.one.model.Property;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
 
@@ -43,6 +44,24 @@ public class PropertyService extends OneBaseService {
 			).toUri());
 
 		return new Property(new JSONObject(response));
+	}
+
+	public void deleteAccountProperties(long accountId, String name)
+		throws Exception {
+
+		for (Property property : getAccountPropertiesByName(accountId, name)) {
+			deleteProperty(property.getPropertyId());
+		}
+	}
+
+	public void deleteProperty(long propertyId) throws Exception {
+		delete(
+			getAuthorization(), StringPool.BLANK,
+			UriComponentsBuilder.fromPath(
+				"/o/c/properties/{propertyId}"
+			).buildAndExpand(
+				propertyId
+			).toUri());
 	}
 
 	public List<Property> getAccountProperties(long accountId)

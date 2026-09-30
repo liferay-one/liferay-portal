@@ -161,6 +161,35 @@ public class ProvisioningSubdomainServiceTest {
 	}
 
 	@Test
+	public void testProvisionSubdomainReusesSubdomainWithoutOktaApplication()
+		throws Exception {
+
+		_mockPropertyValue(
+			PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN, _EXISTING_SUBDOMAIN);
+
+		_provisioningSubdomainService.provisionSubdomain(
+			_account, List.of(_createPaasExperienceLineItem()));
+
+		Mockito.verify(
+			_propertyService, Mockito.never()
+		).addProperty(
+			Mockito.anyLong(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_propertyService, Mockito.never()
+		).getProperties(
+			Mockito.anyString()
+		);
+
+		Mockito.verify(
+			_oktaService
+		).createApplication(
+			_ACCOUNT_ERC, _EXISTING_SUBDOMAIN
+		);
+	}
+
+	@Test
 	public void testProvisionSubdomainSkipsWhenNoPaasExperienceLine()
 		throws Exception {
 
@@ -178,15 +207,13 @@ public class ProvisioningSubdomainServiceTest {
 	}
 
 	@Test
-	public void testProvisionSubdomainSkipsWhenSubdomainAlreadyExists()
+	public void testProvisionSubdomainSkipsWhenOktaApplicationAlreadyExists()
 		throws Exception {
 
-		Mockito.when(
-			_propertyService.getPropertyValue(
-				_ACCOUNT_ID, PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN)
-		).thenReturn(
-			"existing-subdomain"
-		);
+		_mockPropertyValue(
+			PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN, _EXISTING_SUBDOMAIN);
+		_mockPropertyValue(
+			PropertyConstants.NAME_OKTA_APPLICATION, "existing-app-id");
 
 		_provisioningSubdomainService.provisionSubdomain(
 			_account, List.of(_createPaasExperienceLineItem()));
@@ -270,9 +297,21 @@ public class ProvisioningSubdomainServiceTest {
 				"Subscription", 1, null));
 	}
 
+	private void _mockPropertyValue(String name, String value)
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getPropertyValue(_ACCOUNT_ID, name)
+		).thenReturn(
+			value
+		);
+	}
+
 	private static final String _ACCOUNT_ERC = "ACCOUNT-1";
 
 	private static final long _ACCOUNT_ID = 1000L;
+
+	private static final String _EXISTING_SUBDOMAIN = "existing-subdomain";
 
 	private Account _account;
 	private OktaService _oktaService;

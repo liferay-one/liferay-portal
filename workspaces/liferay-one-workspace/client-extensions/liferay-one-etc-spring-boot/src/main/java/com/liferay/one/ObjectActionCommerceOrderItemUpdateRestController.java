@@ -77,6 +77,9 @@ public class ObjectActionCommerceOrderItemUpdateRestController
 
 		if (Validator.isNotNull(oktaApplicationId)) {
 			_oktaService.deleteApplication(oktaApplicationId);
+
+			_propertyService.deleteAccountProperties(
+				order.getAccountId(), PropertyConstants.NAME_OKTA_APPLICATION);
 		}
 	}
 

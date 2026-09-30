@@ -53,29 +53,36 @@ public class ProvisioningSubdomainService {
 			return;
 		}
 
-		String existingSubdomain = _propertyService.getPropertyValue(
+		String subdomain = _propertyService.getPropertyValue(
 			account.getId(), PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN);
 
-		if (Validator.isNotNull(existingSubdomain)) {
-			return;
+		if (Validator.isNotNull(subdomain)) {
+			String oktaApplicationId = _propertyService.getPropertyValue(
+				account.getId(), PropertyConstants.NAME_OKTA_APPLICATION);
+
+			if (Validator.isNotNull(oktaApplicationId)) {
+				return;
+			}
 		}
+		else {
+			subdomain = _generateUniqueSubdomain();
 
-		String subdomain = _generateUniqueSubdomain();
+			if (subdomain == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to generate a unique cloud native ",
+							"subdomain after ", _SUBDOMAIN_MAX_ATTEMPTS,
+							" attempts"));
+				}
 
-		if (subdomain == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Unable to generate a unique cloud native subdomain ",
-						"after ", _SUBDOMAIN_MAX_ATTEMPTS, " attempts"));
+				return;
 			}
 
-			return;
+			_propertyService.addProperty(
+				account.getId(), PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN,
+				subdomain);
 		}
-
-		_propertyService.addProperty(
-			account.getId(), PropertyConstants.NAME_CLOUD_NATIVE_SUBDOMAIN,
-			subdomain);
 
 		try {
 			_oktaService.createApplication(

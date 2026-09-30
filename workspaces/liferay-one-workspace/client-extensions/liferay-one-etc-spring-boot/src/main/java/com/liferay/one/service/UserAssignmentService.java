@@ -99,6 +99,37 @@ public class UserAssignmentService {
 			account, accountRole.getName(), true, userAccount);
 	}
 
+	public void assignCloudNativeOktaApplication(
+			Account account, String oktaApplicationId)
+		throws Exception {
+
+		for (UserAccount userAccount :
+				_userAccountService.getAccountUserAccounts(account.getId())) {
+
+			Set<String> accountRoleNames = UserAccountUtil.getAccountRoleNames(
+				userAccount, account.getId());
+
+			if (!accountRoleNames.contains(
+					RoleConstants.NAME_CLOUD_NATIVE_CONTACT)) {
+
+				continue;
+			}
+
+			try {
+				_oktaService.assignUserToApplication(
+					oktaApplicationId, userAccount.getEmailAddress());
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to assign user ", userAccount.getId(),
+						" to Cloud Native Okta application ",
+						oktaApplicationId),
+					exception);
+			}
+		}
+	}
+
 	public void assignOrganization(long organizationId, long userId)
 		throws Exception {
 

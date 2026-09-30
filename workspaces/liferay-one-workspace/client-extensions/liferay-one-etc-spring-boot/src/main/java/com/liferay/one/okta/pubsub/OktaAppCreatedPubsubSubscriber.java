@@ -12,7 +12,10 @@ import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UserAssignmentService;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.util.Objects;
 
 import org.json.JSONObject;
 
@@ -59,12 +62,16 @@ public class OktaAppCreatedPubsubSubscriber extends BasePubsubSubscriber {
 		String oktaApplicationId = _propertyService.getPropertyValue(
 			account.getId(), PropertyConstants.NAME_OKTA_APPLICATION);
 
-		if (Validator.isNotNull(oktaApplicationId)) {
+		if (Validator.isNull(oktaApplicationId)) {
+			_propertyService.addProperty(
+				account.getId(), PropertyConstants.NAME_OKTA_APPLICATION,
+				appId);
+		}
+		else if (!Objects.equals(oktaApplicationId, appId)) {
 			return;
 		}
 
-		_propertyService.addProperty(
-			account.getId(), PropertyConstants.NAME_OKTA_APPLICATION, appId);
+		_userAssignmentService.assignCloudNativeOktaApplication(account, appId);
 	}
 
 	@Override
@@ -96,5 +103,8 @@ public class OktaAppCreatedPubsubSubscriber extends BasePubsubSubscriber {
 
 	@Value("${liferay.one.okta.app.created.pubsub.subscriber.topic}")
 	private String _topic;
+
+	@Autowired
+	private UserAssignmentService _userAssignmentService;
 
 }

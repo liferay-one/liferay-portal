@@ -11,6 +11,7 @@ import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.UserAssignmentService;
 
 import java.util.Collections;
 
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -36,15 +38,16 @@ public class OktaAppCreatedPubsubSubscriberTest {
 
 		_accountService = Mockito.mock(AccountService.class);
 		_propertyService = Mockito.mock(PropertyService.class);
+		_userAssignmentService = Mockito.mock(UserAssignmentService.class);
 
-		Account account = new Account();
+		_account = new Account();
 
-		account.setId(_ACCOUNT_ID);
+		_account.setId(_ACCOUNT_ID);
 
 		Mockito.when(
 			_accountService.fetchAccountByExternalReferenceCode(_ACCOUNT_KEY)
 		).thenReturn(
-			account
+			_account
 		);
 
 		ReflectionTestUtils.setField(
@@ -55,6 +58,8 @@ public class OktaAppCreatedPubsubSubscriberTest {
 		ReflectionTestUtils.setField(
 			_subscriber, "_subscription", "test-subscription");
 		ReflectionTestUtils.setField(_subscriber, "_topic", "test-topic");
+		ReflectionTestUtils.setField(
+			_subscriber, "_userAssignmentService", _userAssignmentService);
 	}
 
 	@Test
@@ -65,6 +70,54 @@ public class OktaAppCreatedPubsubSubscriberTest {
 			_propertyService
 		).addProperty(
 			_ACCOUNT_ID, PropertyConstants.NAME_OKTA_APPLICATION, _APP_ID
+		);
+	}
+
+	@Test
+	public void testReceiveAssignsCloudNativeContactsAfterAddingProperty()
+		throws Exception {
+
+		_receiveMessage(_ACCOUNT_KEY, _APP_ID);
+
+		InOrder inOrder = Mockito.inOrder(
+			_propertyService, _userAssignmentService);
+
+		inOrder.verify(
+			_propertyService
+		).addProperty(
+			_ACCOUNT_ID, PropertyConstants.NAME_OKTA_APPLICATION, _APP_ID
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignCloudNativeOktaApplication(
+			_account, _APP_ID
+		);
+	}
+
+	@Test
+	public void testReceiveReassignsCloudNativeContactsOnRedelivery()
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getPropertyValue(
+				_ACCOUNT_ID, PropertyConstants.NAME_OKTA_APPLICATION)
+		).thenReturn(
+			_APP_ID
+		);
+
+		_receiveMessage(_ACCOUNT_KEY, _APP_ID);
+
+		Mockito.verify(
+			_propertyService, Mockito.never()
+		).addProperty(
+			Mockito.anyLong(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignCloudNativeOktaApplication(
+			_account, _APP_ID
 		);
 	}
 
@@ -84,6 +137,8 @@ public class OktaAppCreatedPubsubSubscriberTest {
 		).addProperty(
 			Mockito.anyLong(), Mockito.any(), Mockito.any()
 		);
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -163,8 +218,10 @@ public class OktaAppCreatedPubsubSubscriberTest {
 
 	private static final String _APP_ID = "APP-1";
 
+	private Account _account;
 	private AccountService _accountService;
 	private PropertyService _propertyService;
 	private OktaAppCreatedPubsubSubscriber _subscriber;
+	private UserAssignmentService _userAssignmentService;
 
 }
