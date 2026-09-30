@@ -124,7 +124,9 @@ const EditPermissionsModal = ({
 						selectedRoleNameSet.has(accountRole.name) ||
 						selectedRoleNameSet.has(accountRole.displayName) ||
 						(memberRoleNameSet.has(accountRole.name) &&
-							!MANAGEABLE_ACCOUNT_ROLES.includes(accountRole.name))
+							!MANAGEABLE_ACCOUNT_ROLES.includes(
+								accountRole.name
+							))
 				)
 				.map(({id}) => id);
 

@@ -33,6 +33,31 @@
 	<#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r") />
 </#function>
 
+<#function getPriceModelLabel value>
+	<#local lowerVal = value?lower_case />
+	<#if locale?starts_with("ja")>
+		<#switch lowerVal>
+			<#case "free"><#return "無料" />
+			<#case "paid"><#return "有料" />
+			<#default><#return value?cap_first />
+		</#switch>
+	<#elseif locale?starts_with("es")>
+		<#switch lowerVal>
+			<#case "free"><#return "Gratis" />
+			<#case "paid"><#return "De pago" />
+			<#default><#return value?cap_first />
+		</#switch>
+	<#elseif locale?starts_with("pt")>
+		<#switch lowerVal>
+			<#case "free"><#return "Gratuito" />
+			<#case "paid"><#return "Pago" />
+			<#default><#return value?cap_first />
+		</#switch>
+	<#else>
+		<#return value?cap_first />
+	</#if>
+</#function>
+
 <div class="card-grid">
 	<div class="cards-container">
 		<#if entries?has_content>
@@ -95,7 +120,7 @@
 
 						<#if priceModel?has_content>
 							<span class="card-price mt-2">
-								${priceModel?cap_first}
+								${getPriceModelLabel(priceModel)}
 							</span>
 						</#if>
 
