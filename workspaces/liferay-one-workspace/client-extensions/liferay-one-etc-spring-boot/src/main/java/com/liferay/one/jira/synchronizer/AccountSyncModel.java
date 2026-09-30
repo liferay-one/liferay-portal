@@ -75,73 +75,131 @@ public class AccountSyncModel {
 		return _account;
 	}
 
-	public List<Organization> getAccountOrganizations() throws Exception {
+	public List<Organization> getAccountOrganizations() {
 		if (_accountOrganizations == null) {
-			_accountOrganizations =
-				_organizationService.getAccountOrganizations(_account.getId());
+			try {
+				_accountOrganizations =
+					_organizationService.getAccountOrganizations(
+						_account.getId());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get organizations for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _accountOrganizations;
 	}
 
-	public Map<String, Role> getAccountRolesByExternalReferenceCode()
-		throws Exception {
-
+	public Map<String, Role> getAccountRolesByExternalReferenceCode() {
 		if (_accountRolesByExternalReferenceCode == null) {
-			_accountRolesByExternalReferenceCode = new LinkedHashMap<>();
+			try {
+				Map<String, Role> accountRolesByExternalReferenceCode =
+					new LinkedHashMap<>();
 
-			for (Role role : _roleService.getAccountRoles()) {
-				_accountRolesByExternalReferenceCode.put(
-					role.getExternalReferenceCode(), role);
+				for (Role role : _roleService.getAccountRoles()) {
+					accountRolesByExternalReferenceCode.put(
+						role.getExternalReferenceCode(), role);
+				}
+
+				_accountRolesByExternalReferenceCode =
+					accountRolesByExternalReferenceCode;
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get account roles for account " +
+						getExternalReferenceCode(),
+					exception);
 			}
 		}
 
 		return _accountRolesByExternalReferenceCode;
 	}
 
-	public List<UserAccount> getAccountUserAccounts() throws Exception {
+	public List<UserAccount> getAccountUserAccounts() {
 		if (_accountUserAccounts == null) {
-			_accountUserAccounts = _userAccountService.getAccountUserAccounts(
-				_account.getId());
+			try {
+				_accountUserAccounts =
+					_userAccountService.getAccountUserAccounts(
+						_account.getId());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get user accounts for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _accountUserAccounts;
 	}
 
-	public List<EntitlementDefinition> getActiveEntitlementDefinitions()
-		throws Exception {
-
+	public List<EntitlementDefinition> getActiveEntitlementDefinitions() {
 		if (_activeEntitlementDefinitions == null) {
-			_activeEntitlementDefinitions =
-				_entitlementService.getActiveEntitlementDefinitions(
-					_account.getId());
+			try {
+				_activeEntitlementDefinitions =
+					_entitlementService.getActiveEntitlementDefinitions(
+						_account.getId());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get entitlements for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _activeEntitlementDefinitions;
 	}
 
-	public String getBusinessEventsFieldValue() throws Exception {
+	public String getBusinessEventsFieldValue() {
 		if (_businessEventsFieldValue == null) {
-			_businessEventsFieldValue = _toBusinessEventsFieldValue();
+			try {
+				_businessEventsFieldValue = _toBusinessEventsFieldValue();
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get business events for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _businessEventsFieldValue;
 	}
 
-	public List<UserAccount> getCustomerUserAccounts() throws Exception {
+	public List<UserAccount> getCustomerUserAccounts() {
 		UserAccountBucket userAccountBucket = _getUserAccountBucket();
+
+		if (userAccountBucket == null) {
+			return null;
+		}
 
 		return userAccountBucket.getCustomerUserAccounts();
 	}
 
-	public List<Property> getExternalLinkProperties() throws Exception {
+	public List<Property> getExternalLinkProperties() {
 		if (_externalLinkProperties == null) {
-			_externalLinkProperties = new ArrayList<>();
+			try {
+				List<Property> externalLinkProperties = new ArrayList<>();
 
-			for (Property property : _getAccountProperties()) {
-				if (_externalLinkConverter.isExternalLinkProperty(property)) {
-					_externalLinkProperties.add(property);
+				for (Property property : _getAccountProperties()) {
+					if (_externalLinkConverter.isExternalLinkProperty(
+							property)) {
+
+						externalLinkProperties.add(property);
+					}
 				}
+
+				_externalLinkProperties = externalLinkProperties;
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get external links for account " +
+						getExternalReferenceCode(),
+					exception);
 			}
 		}
 
@@ -164,23 +222,36 @@ public class AccountSyncModel {
 			accountContactInformation.getPostalAddresses());
 	}
 
-	public List<Project> getProjects() throws Exception {
+	public List<Project> getProjects() {
 		if (_projects == null) {
-			_projects = _projectService.getProjects(_account.getId());
+			try {
+				_projects = _projectService.getProjects(_account.getId());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get projects for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _projects;
 	}
 
 	public Map<String, Set<String>>
-			getRoleExternalKeysByUserAccountExternalKey()
-		throws Exception {
+		getRoleExternalKeysByUserAccountExternalKey() {
 
 		if (_roleExternalKeysByUserAccountExternalKey == null) {
+			List<UserAccount> accountUserAccounts = getAccountUserAccounts();
+
+			if (accountUserAccounts == null) {
+				return null;
+			}
+
 			Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
 				new LinkedHashMap<>();
 
-			for (UserAccount accountUserAccount : getAccountUserAccounts()) {
+			for (UserAccount accountUserAccount : accountUserAccounts) {
 				AccountBrief accountBrief = FindUtil.findFirst(
 					accountUserAccount.getAccountBriefs(),
 					accountBrief1 -> Objects.equals(
@@ -215,20 +286,32 @@ public class AccountSyncModel {
 		return _roleExternalKeysByUserAccountExternalKey;
 	}
 
-	public String getSupportLanguage() throws Exception {
+	public String getSupportLanguage() {
 		AccountSupportInfo accountSupportInfo = _getAccountSupportInfo();
+
+		if (accountSupportInfo == null) {
+			return null;
+		}
 
 		return GetterUtil.getString(accountSupportInfo.getSupportLanguage());
 	}
 
-	public String getSupportRegion() throws Exception {
+	public String getSupportRegion() {
 		AccountSupportInfo accountSupportInfo = _getAccountSupportInfo();
+
+		if (accountSupportInfo == null) {
+			return null;
+		}
 
 		return GetterUtil.getString(accountSupportInfo.getSupportRegion());
 	}
 
-	public List<UserAccount> getWorkerUserAccounts() throws Exception {
+	public List<UserAccount> getWorkerUserAccounts() {
 		UserAccountBucket userAccountBucket = _getUserAccountBucket();
+
+		if (userAccountBucket == null) {
+			return null;
+		}
 
 		return userAccountBucket.getWorkerUserAccounts();
 	}
@@ -252,20 +335,36 @@ public class AccountSyncModel {
 		return _accountProperties;
 	}
 
-	private AccountSupportInfo _getAccountSupportInfo() throws Exception {
+	private AccountSupportInfo _getAccountSupportInfo() {
 		if (_accountSupportInfo == null) {
-			_accountSupportInfo = _commerceOrderService.getAccountSupportInfo(
-				_account.getId(), _account.getDefaultBillingAddressId());
+			try {
+				_accountSupportInfo =
+					_commerceOrderService.getAccountSupportInfo(
+						_account.getId(),
+						_account.getDefaultBillingAddressId());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get support info for account " +
+						getExternalReferenceCode(),
+					exception);
+			}
 		}
 
 		return _accountSupportInfo;
 	}
 
-	private UserAccountBucket _getUserAccountBucket() throws Exception {
+	private UserAccountBucket _getUserAccountBucket() {
 		if (_userAccountBucket == null) {
-			_userAccountBucket = new UserAccountBucket();
+			List<UserAccount> accountUserAccounts = getAccountUserAccounts();
 
-			for (UserAccount accountUserAccount : getAccountUserAccounts()) {
+			if (accountUserAccounts == null) {
+				return null;
+			}
+
+			UserAccountBucket userAccountBucket = new UserAccountBucket();
+
+			for (UserAccount accountUserAccount : accountUserAccounts) {
 				AccountBrief accountBrief = FindUtil.findFirst(
 					accountUserAccount.getAccountBriefs(),
 					accountBrief1 -> Objects.equals(
@@ -286,13 +385,15 @@ public class AccountSyncModel {
 						roleBrief1.getName()));
 
 				if (roleBrief != null) {
-					_userAccountBucket.addWorkerUserAccount(accountUserAccount);
+					userAccountBucket.addWorkerUserAccount(accountUserAccount);
 				}
 				else {
-					_userAccountBucket.addCustomerUserAccount(
+					userAccountBucket.addCustomerUserAccount(
 						accountUserAccount);
 				}
 			}
+
+			_userAccountBucket = userAccountBucket;
 		}
 
 		return _userAccountBucket;

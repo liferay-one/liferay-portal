@@ -32,7 +32,6 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
-import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -41,7 +40,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -94,7 +95,7 @@ public class AccountSynchronizer {
 			});
 	}
 
-	public void syncAccount(Account account) throws Exception {
+	public void syncAccount(Account account) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing account " + account.getExternalReferenceCode() +
@@ -110,39 +111,47 @@ public class AccountSynchronizer {
 			jiraAssetObject -> _setAttributeValues(
 				accountSyncModel, jiraAssetObject));
 
-		_accountUserAccountRoleSynchronizer.syncRoles(
+		_syncRoles(
 			accountSyncModel.getExternalReferenceCode(),
 			accountSyncModel.getRoleExternalKeysByUserAccountExternalKey(),
 			startDate);
 		_syncAccountOrganizationAssignments(accountSyncModel, startDate);
 
-		List<UserAccount> userAccountsToSync = new ArrayList<>(
-			accountSyncModel.getAccountUserAccounts());
+		List<UserAccount> userAccountsToSync = new ArrayList<>();
 
-		for (Project project : accountSyncModel.getProjects()) {
-			try {
-				ProjectSyncModel projectSyncModel = _createProjectSyncModel(
-					accountSyncModel, project);
+		_addUserAccounts(
+			userAccountsToSync, accountSyncModel.getAccountUserAccounts());
 
-				_syncProject(projectSyncModel, startDate);
+		List<Project> projects = accountSyncModel.getProjects();
 
-				userAccountsToSync.addAll(
-					projectSyncModel.getCustomerUserAccounts());
-				userAccountsToSync.addAll(
-					projectSyncModel.getWorkerUserAccounts());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to sync project " +
-						project.getExternalReferenceCode(),
-					exception);
+		if (projects != null) {
+			for (Project project : projects) {
+				try {
+					ProjectSyncModel projectSyncModel = _createProjectSyncModel(
+						accountSyncModel, project);
+
+					_syncProject(projectSyncModel, startDate);
+
+					_addUserAccounts(
+						userAccountsToSync,
+						projectSyncModel.getCustomerUserAccounts());
+					_addUserAccounts(
+						userAccountsToSync,
+						projectSyncModel.getWorkerUserAccounts());
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to sync project " +
+							project.getExternalReferenceCode(),
+						exception);
+				}
 			}
 		}
 
 		_syncUserAccounts(userAccountsToSync, startDate);
 	}
 
-	public void syncAccountUserAccounts(Account account) throws Exception {
+	public void syncAccountUserAccounts(Account account) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing user accounts for account " +
@@ -182,10 +191,12 @@ public class AccountSynchronizer {
 
 		_syncProject(projectSyncModel, startDate);
 
-		List<UserAccount> userAccounts = new ArrayList<>(
-			projectSyncModel.getCustomerUserAccounts());
+		List<UserAccount> userAccounts = new ArrayList<>();
 
-		userAccounts.addAll(projectSyncModel.getWorkerUserAccounts());
+		_addUserAccounts(
+			userAccounts, projectSyncModel.getCustomerUserAccounts());
+		_addUserAccounts(
+			userAccounts, projectSyncModel.getWorkerUserAccounts());
 
 		_syncUserAccounts(userAccounts, startDate);
 	}
@@ -218,6 +229,14 @@ public class AccountSynchronizer {
 			});
 	}
 
+	private void _addUserAccounts(
+		List<UserAccount> userAccountsToSync, List<UserAccount> userAccounts) {
+
+		if (userAccounts != null) {
+			userAccountsToSync.addAll(userAccounts);
+		}
+	}
+
 	private AccountSyncModel _createAccountSyncModel(Account account) {
 		return new AccountSyncModel(
 			account, _commerceOrderService, _entitlementService,
@@ -248,8 +267,7 @@ public class AccountSynchronizer {
 	}
 
 	private void _setAttributeValues(
-			AccountSyncModel accountSyncModel, JiraAssetObject jiraAssetObject)
-		throws Exception {
+		AccountSyncModel accountSyncModel, JiraAssetObject jiraAssetObject) {
 
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_ASSIGNED_TEAMS,
@@ -292,8 +310,7 @@ public class AccountSynchronizer {
 	}
 
 	private void _setAttributeValues(
-			JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel)
-		throws Exception {
+		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
 
 		_setAttributeValues(
 			projectSyncModel.getAccountSyncModel(), jiraAssetObject);
@@ -311,14 +328,13 @@ public class AccountSynchronizer {
 	}
 
 	private void _syncAccountAsset(
-			Account account, String externalKey, String name,
-			UnsafeConsumer<JiraAssetObject, Exception> unsafeConsumer)
-		throws Exception {
+		Account account, String externalKey, String name,
+		Consumer<JiraAssetObject> consumer) {
 
 		JiraAssetObject assetObject = _accountConverter.toAssetObject(
 			account, externalKey, name);
 
-		unsafeConsumer.accept(assetObject);
+		consumer.accept(assetObject);
 
 		_keyedLock.withLock(
 			externalKey,
@@ -326,14 +342,18 @@ public class AccountSynchronizer {
 	}
 
 	private void _syncAccountOrganizationAssignments(
-			AccountSyncModel accountSyncModel, Date startDate)
-		throws Exception {
+		AccountSyncModel accountSyncModel, Date startDate) {
+
+		List<Organization> accountOrganizations =
+			accountSyncModel.getAccountOrganizations();
+
+		if (accountOrganizations == null) {
+			return;
+		}
 
 		Set<String> organizationExternalKeys = new LinkedHashSet<>();
 
-		for (Organization organization :
-				accountSyncModel.getAccountOrganizations()) {
-
+		for (Organization organization : accountOrganizations) {
 			organizationExternalKeys.add(
 				organization.getExternalReferenceCode());
 		}
@@ -343,8 +363,8 @@ public class AccountSynchronizer {
 			organizationExternalKeys, startDate);
 	}
 
-	private void _syncProject(ProjectSyncModel projectSyncModel, Date startDate)
-		throws Exception {
+	private void _syncProject(
+		ProjectSyncModel projectSyncModel, Date startDate) {
 
 		AccountSyncModel accountSyncModel =
 			projectSyncModel.getAccountSyncModel();
@@ -356,9 +376,23 @@ public class AccountSynchronizer {
 			jiraAssetObject -> _setAttributeValues(
 				jiraAssetObject, projectSyncModel));
 
-		_accountUserAccountRoleSynchronizer.syncRoles(
+		_syncRoles(
 			project.getExternalReferenceCode(),
 			projectSyncModel.getRoleExternalKeysByUserAccountExternalKey(),
+			startDate);
+	}
+
+	private void _syncRoles(
+		String accountExternalKey,
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey,
+		Date startDate) {
+
+		if (roleExternalKeysByUserAccountExternalKey == null) {
+			return;
+		}
+
+		_accountUserAccountRoleSynchronizer.syncRoles(
+			accountExternalKey, roleExternalKeysByUserAccountExternalKey,
 			startDate);
 	}
 
