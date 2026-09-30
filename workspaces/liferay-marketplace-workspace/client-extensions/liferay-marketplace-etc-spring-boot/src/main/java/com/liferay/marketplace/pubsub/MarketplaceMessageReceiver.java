@@ -27,6 +27,7 @@ import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.headless.commerce.admin.channel.client.resource.v1_0.ChannelResource;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.marketplace.constants.MarketplaceConstants;
@@ -520,24 +521,44 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 			OrderResource orderResource =
 				_marketplaceService.getOrderResource();
 
-			order = orderResource.postOrder(
-				new Order() {
-					{
-						setAccountExternalReferenceCode(() -> accountKey);
-						setChannelId(() -> _getChannelId());
-						setCurrencyCode(() -> "USD");
-						setExternalReferenceCode(() -> opportunityId);
-						setOrderItems(
-							() -> new OrderItem[] {
-								_createOrderItem(productPurchase, sku)
-							});
-						setOrderTypeExternalReferenceCode(
-							() -> _getOrderTypeExternalReferenceCode(
-								product.getName()));
-						setPaymentStatus(
-							() -> _getPaymentStatus(product.getName()));
-					}
-				});
+			try {
+				order = orderResource.postOrder(
+					new Order() {
+						{
+							setAccountExternalReferenceCode(() -> accountKey);
+							setChannelId(() -> _getChannelId());
+							setCurrencyCode(() -> "USD");
+							setExternalReferenceCode(() -> opportunityId);
+							setOrderItems(
+								() -> new OrderItem[] {
+									_createOrderItem(productPurchase, sku)
+								});
+							setOrderTypeExternalReferenceCode(
+								() -> _getOrderTypeExternalReferenceCode(
+									product.getName()));
+							setPaymentStatus(
+								() -> _getPaymentStatus(product.getName()));
+						}
+					});
+			}
+			catch (Problem.ProblemException problemException) {
+				order = _getOrder(opportunityId);
+
+				if (order == null) {
+					throw problemException;
+				}
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Order ", opportunityId,
+							" was created by another product purchase of the ",
+							"same opportunity, adding product purchase ",
+							productPurchase.getKey(), " to it"));
+				}
+
+				_addMissingOrderItem(order, productPurchase);
+			}
 		}
 		else {
 			_addMissingOrderItem(order, productPurchase);
