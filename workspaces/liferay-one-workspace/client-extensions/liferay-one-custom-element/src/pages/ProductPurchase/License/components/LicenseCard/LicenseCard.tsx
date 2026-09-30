@@ -70,6 +70,7 @@ const LicenseCard = ({sku}: LicenseCardProps) => {
 				<div className="align-items-center border d-flex justify-content-between p-1 product-purchase-license-card-stepper rounded-pill">
 					<ClayButtonWithIcon
 						aria-label={i18n.translate('remove')}
+						className="product-purchase-license-card-stepper-button"
 						disabled={quantity === MIN_QUANTITY}
 						displayType="primary"
 						onClick={() => removeFromCart(sku.id)}
@@ -77,10 +78,13 @@ const LicenseCard = ({sku}: LicenseCardProps) => {
 						symbol="hr"
 					/>
 
-					<span className="px-3">{quantity}</span>
+					<span className="d-flex justify-content-center product-purchase-license-card-stepper-count">
+						{quantity}
+					</span>
 
 					<ClayButtonWithIcon
 						aria-label={i18n.translate('add')}
+						className="product-purchase-license-card-stepper-button"
 						disabled={quantity === MAX_QUANTITY}
 						displayType="primary"
 						onClick={() =>
