@@ -137,6 +137,13 @@ public class AccountSyncModelTest {
 		_whenCommerceOrderFails();
 
 		Assertions.assertNull(_accountSyncModel.getSupportLanguage());
+		Assertions.assertNull(_accountSyncModel.getSupportRegion());
+
+		Mockito.verify(
+			_commerceOrderService
+		).getAccountSupportInfo(
+			Mockito.anyLong(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -159,6 +166,12 @@ public class AccountSyncModelTest {
 		Assertions.assertNull(
 			_accountSyncModel.getRoleExternalKeysByUserAccountExternalKey());
 		Assertions.assertNull(_accountSyncModel.getWorkerUserAccounts());
+
+		Mockito.verify(
+			_userAccountService
+		).getAccountUserAccounts(
+			Mockito.anyLong()
+		);
 	}
 
 	private void _whenCommerceOrderFails() throws Exception {

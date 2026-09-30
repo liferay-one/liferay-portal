@@ -13,6 +13,7 @@ import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.MemoizedValue;
 import com.liferay.one.util.role.EmployeeRoles;
 
 import java.util.ArrayList;
@@ -37,10 +38,28 @@ public class ProjectSyncModel {
 		UserAccountService userAccountService) {
 
 		_accountSyncModel = accountSyncModel;
-		_entitlementService = entitlementService;
 		_project = project;
-		_projectMembershipService = projectMembershipService;
 		_userAccountService = userAccountService;
+
+		String externalReferenceCode = project.getExternalReferenceCode();
+
+		_activeEntitlementDefinitions = new MemoizedValue<>(
+			"entitlements for project " + externalReferenceCode, _log,
+			() -> entitlementService.getActiveEntitlementDefinitions(
+				externalReferenceCode));
+		_projectMembers = new MemoizedValue<>(
+			"project members for project " + externalReferenceCode, _log,
+			this::_toProjectMembers);
+		_projectMemberships = new MemoizedValue<>(
+			"project memberships for project " + externalReferenceCode, _log,
+			() -> projectMembershipService.getProjectMemberships(
+				externalReferenceCode));
+		_roleExternalKeysByUserAccountExternalKey = new MemoizedValue<>(
+			"role external keys for project " + externalReferenceCode, _log,
+			this::_toRoleExternalKeysByUserAccountExternalKey);
+		_userAccountBucket = new MemoizedValue<>(
+			"user account bucket for project " + externalReferenceCode, _log,
+			this::_toUserAccountBucket);
 	}
 
 	public AccountSyncModel getAccountSyncModel() {
@@ -48,25 +67,11 @@ public class ProjectSyncModel {
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions() {
-		if (_activeEntitlementDefinitions == null) {
-			try {
-				_activeEntitlementDefinitions =
-					_entitlementService.getActiveEntitlementDefinitions(
-						_project.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get entitlements for project " +
-						_project.getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		return _activeEntitlementDefinitions;
+		return _activeEntitlementDefinitions.get();
 	}
 
 	public List<UserAccount> getCustomerUserAccounts() {
-		UserAccountBucket userAccountBucket = _getUserAccountBucket();
+		UserAccountBucket userAccountBucket = _userAccountBucket.get();
 
 		if (userAccountBucket == null) {
 			return null;
@@ -80,116 +85,21 @@ public class ProjectSyncModel {
 	}
 
 	public List<ProjectMember> getProjectMembers() {
-		if (_projectMembers == null) {
-			List<ProjectMembership> projectMemberships =
-				getProjectMemberships();
-
-			if (projectMemberships == null) {
-				return null;
-			}
-
-			try {
-				List<Long> userIds = new ArrayList<>();
-
-				for (ProjectMembership projectMembership : projectMemberships) {
-					userIds.add(projectMembership.getUserId());
-				}
-
-				Map<Long, UserAccount> userAccountsByUserId =
-					new LinkedHashMap<>();
-
-				for (UserAccount userAccount :
-						_userAccountService.getUserAccounts(userIds)) {
-
-					userAccountsByUserId.put(userAccount.getId(), userAccount);
-				}
-
-				List<ProjectMember> projectMembers = new ArrayList<>();
-
-				for (ProjectMembership projectMembership : projectMemberships) {
-					UserAccount userAccount = userAccountsByUserId.get(
-						projectMembership.getUserId());
-
-					if (userAccount == null) {
-						_log.error(
-							"Unable to get user account for user " +
-								projectMembership.getUserId());
-
-						continue;
-					}
-
-					projectMembers.add(
-						new ProjectMember(projectMembership, userAccount));
-				}
-
-				_projectMembers = projectMembers;
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get project members for project " +
-						_project.getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		return _projectMembers;
+		return _projectMembers.get();
 	}
 
 	public List<ProjectMembership> getProjectMemberships() {
-		if (_projectMemberships == null) {
-			try {
-				_projectMemberships =
-					_projectMembershipService.getProjectMemberships(
-						_project.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get project memberships for project " +
-						_project.getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		return _projectMemberships;
+		return _projectMemberships.get();
 	}
 
 	public Map<String, Set<String>>
 		getRoleExternalKeysByUserAccountExternalKey() {
 
-		if (_roleExternalKeysByUserAccountExternalKey == null) {
-			List<ProjectMember> projectMembers = getProjectMembers();
-
-			if (projectMembers == null) {
-				return null;
-			}
-
-			Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
-				new LinkedHashMap<>();
-
-			for (ProjectMember projectMember : projectMembers) {
-				ProjectMembership projectMembership =
-					projectMember.getProjectMembership();
-
-				UserAccount userAccount = projectMember.getUserAccount();
-
-				Set<String> roleExternalKeys =
-					roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
-						userAccount.getExternalReferenceCode(),
-						userAccountExternalKey -> new LinkedHashSet<>());
-
-				roleExternalKeys.add(
-					projectMembership.getRoleExternalReferenceCode());
-			}
-
-			_roleExternalKeysByUserAccountExternalKey =
-				roleExternalKeysByUserAccountExternalKey;
-		}
-
-		return _roleExternalKeysByUserAccountExternalKey;
+		return _roleExternalKeysByUserAccountExternalKey.get();
 	}
 
 	public List<UserAccount> getWorkerUserAccounts() {
-		UserAccountBucket userAccountBucket = _getUserAccountBucket();
+		UserAccountBucket userAccountBucket = _userAccountBucket.get();
 
 		if (userAccountBucket == null) {
 			return null;
@@ -198,56 +108,122 @@ public class ProjectSyncModel {
 		return userAccountBucket.getWorkerUserAccounts();
 	}
 
-	private UserAccountBucket _getUserAccountBucket() {
-		if (_userAccountBucket == null) {
-			Map<String, Role> accountRolesByExternalReferenceCode =
-				_accountSyncModel.getAccountRolesByExternalReferenceCode();
-			List<ProjectMember> projectMembers = getProjectMembers();
+	private List<ProjectMember> _toProjectMembers() throws Exception {
+		List<ProjectMembership> projectMemberships = _projectMemberships.get();
 
-			if ((accountRolesByExternalReferenceCode == null) ||
-				(projectMembers == null)) {
-
-				return null;
-			}
-
-			UserAccountBucket userAccountBucket = new UserAccountBucket();
-
-			for (ProjectMember projectMember : projectMembers) {
-				ProjectMembership projectMembership =
-					projectMember.getProjectMembership();
-				UserAccount userAccount = projectMember.getUserAccount();
-
-				Role role = accountRolesByExternalReferenceCode.get(
-					projectMembership.getRoleExternalReferenceCode());
-
-				if ((role != null) &&
-					_employeeRoleNames.contains(role.getName())) {
-
-					userAccountBucket.addWorkerUserAccount(userAccount);
-				}
-				else {
-					userAccountBucket.addCustomerUserAccount(userAccount);
-				}
-			}
-
-			_userAccountBucket = userAccountBucket;
+		if (projectMemberships == null) {
+			return null;
 		}
 
-		return _userAccountBucket;
+		List<Long> userIds = new ArrayList<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			userIds.add(projectMembership.getUserId());
+		}
+
+		Map<Long, UserAccount> userAccountsByUserId = new LinkedHashMap<>();
+
+		for (UserAccount userAccount :
+				_userAccountService.getUserAccounts(userIds)) {
+
+			userAccountsByUserId.put(userAccount.getId(), userAccount);
+		}
+
+		List<ProjectMember> projectMembers = new ArrayList<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			UserAccount userAccount = userAccountsByUserId.get(
+				projectMembership.getUserId());
+
+			if (userAccount == null) {
+				_log.error(
+					"Unable to get user account for user " +
+						projectMembership.getUserId());
+
+				continue;
+			}
+
+			projectMembers.add(
+				new ProjectMember(projectMembership, userAccount));
+		}
+
+		return projectMembers;
+	}
+
+	private Map<String, Set<String>>
+		_toRoleExternalKeysByUserAccountExternalKey() {
+
+		List<ProjectMember> projectMembers = _projectMembers.get();
+
+		if (projectMembers == null) {
+			return null;
+		}
+
+		Map<String, Set<String>> roleExternalKeysByUserAccountExternalKey =
+			new LinkedHashMap<>();
+
+		for (ProjectMember projectMember : projectMembers) {
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+
+			UserAccount userAccount = projectMember.getUserAccount();
+
+			Set<String> roleExternalKeys =
+				roleExternalKeysByUserAccountExternalKey.computeIfAbsent(
+					userAccount.getExternalReferenceCode(),
+					userAccountExternalKey -> new LinkedHashSet<>());
+
+			roleExternalKeys.add(
+				projectMembership.getRoleExternalReferenceCode());
+		}
+
+		return roleExternalKeysByUserAccountExternalKey;
+	}
+
+	private UserAccountBucket _toUserAccountBucket() {
+		Map<String, Role> accountRolesByExternalReferenceCode =
+			_accountSyncModel.getAccountRolesByExternalReferenceCode();
+		List<ProjectMember> projectMembers = _projectMembers.get();
+
+		if ((accountRolesByExternalReferenceCode == null) ||
+			(projectMembers == null)) {
+
+			return null;
+		}
+
+		UserAccountBucket userAccountBucket = new UserAccountBucket();
+
+		for (ProjectMember projectMember : projectMembers) {
+			ProjectMembership projectMembership =
+				projectMember.getProjectMembership();
+			UserAccount userAccount = projectMember.getUserAccount();
+
+			Role role = accountRolesByExternalReferenceCode.get(
+				projectMembership.getRoleExternalReferenceCode());
+
+			if ((role != null) && _employeeRoleNames.contains(role.getName())) {
+				userAccountBucket.addWorkerUserAccount(userAccount);
+			}
+			else {
+				userAccountBucket.addCustomerUserAccount(userAccount);
+			}
+		}
+
+		return userAccountBucket;
 	}
 
 	private static final Log _log = LogFactory.getLog(ProjectSyncModel.class);
 
 	private final AccountSyncModel _accountSyncModel;
-	private List<EntitlementDefinition> _activeEntitlementDefinitions;
+	private final MemoizedValue<List<EntitlementDefinition>>
+		_activeEntitlementDefinitions;
 	private final List<String> _employeeRoleNames = EmployeeRoles.getNames();
-	private final EntitlementService _entitlementService;
 	private final Project _project;
-	private List<ProjectMember> _projectMembers;
-	private List<ProjectMembership> _projectMemberships;
-	private final ProjectMembershipService _projectMembershipService;
-	private Map<String, Set<String>> _roleExternalKeysByUserAccountExternalKey;
-	private UserAccountBucket _userAccountBucket;
+	private final MemoizedValue<List<ProjectMember>> _projectMembers;
+	private final MemoizedValue<List<ProjectMembership>> _projectMemberships;
+	private final MemoizedValue<Map<String, Set<String>>>
+		_roleExternalKeysByUserAccountExternalKey;
+	private final MemoizedValue<UserAccountBucket> _userAccountBucket;
 	private final UserAccountService _userAccountService;
 
 }

@@ -12,6 +12,7 @@ import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.model.Property;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.MemoizedValue;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 
@@ -34,45 +35,25 @@ public class OrganizationSyncModel {
 		_externalLinkConverter = externalLinkConverter;
 		_organization = organization;
 		_propertyService = propertyService;
-		_userAccountService = userAccountService;
+
+		_accountBriefs = ListUtil.fromArray(organization.getAccountBriefs());
+
+		String externalReferenceCode = getExternalReferenceCode();
+
+		_externalLinkProperties = new MemoizedValue<>(
+			"external links for organization " + externalReferenceCode, _log,
+			this::_toExternalLinkProperties);
+		_organizationUserAccounts = new MemoizedValue<>(
+			"user accounts for organization " + externalReferenceCode, _log,
+			() -> userAccountService.getOrganizationUserAccounts(_getId()));
 	}
 
 	public List<AccountBrief> getAccountBriefs() {
-		if (_accountBriefs == null) {
-			_accountBriefs = ListUtil.fromArray(
-				_organization.getAccountBriefs());
-		}
-
 		return _accountBriefs;
 	}
 
 	public List<Property> getExternalLinkProperties() {
-		if (_externalLinkProperties == null) {
-			try {
-				List<Property> externalLinkProperties = new ArrayList<>();
-
-				List<Property> properties =
-					_propertyService.getOrganizationProperties(_getId());
-
-				for (Property property : properties) {
-					if (_externalLinkConverter.isExternalLinkProperty(
-							property)) {
-
-						externalLinkProperties.add(property);
-					}
-				}
-
-				_externalLinkProperties = externalLinkProperties;
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get external links for organization " +
-						getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		return _externalLinkProperties;
+		return _externalLinkProperties.get();
 	}
 
 	public String getExternalReferenceCode() {
@@ -84,35 +65,36 @@ public class OrganizationSyncModel {
 	}
 
 	public List<UserAccount> getOrganizationUserAccounts() {
-		if (_organizationUserAccounts == null) {
-			try {
-				_organizationUserAccounts =
-					_userAccountService.getOrganizationUserAccounts(_getId());
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get user accounts for organization " +
-						getExternalReferenceCode(),
-					exception);
-			}
-		}
-
-		return _organizationUserAccounts;
+		return _organizationUserAccounts.get();
 	}
 
 	private long _getId() {
 		return GetterUtil.getLong(_organization.getId());
 	}
 
+	private List<Property> _toExternalLinkProperties() throws Exception {
+		List<Property> externalLinkProperties = new ArrayList<>();
+
+		List<Property> properties = _propertyService.getOrganizationProperties(
+			_getId());
+
+		for (Property property : properties) {
+			if (_externalLinkConverter.isExternalLinkProperty(property)) {
+				externalLinkProperties.add(property);
+			}
+		}
+
+		return externalLinkProperties;
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		OrganizationSyncModel.class);
 
-	private List<AccountBrief> _accountBriefs;
+	private final List<AccountBrief> _accountBriefs;
 	private final ExternalLinkConverter _externalLinkConverter;
-	private List<Property> _externalLinkProperties;
+	private final MemoizedValue<List<Property>> _externalLinkProperties;
 	private final Organization _organization;
-	private List<UserAccount> _organizationUserAccounts;
+	private final MemoizedValue<List<UserAccount>> _organizationUserAccounts;
 	private final PropertyService _propertyService;
-	private final UserAccountService _userAccountService;
 
 }
