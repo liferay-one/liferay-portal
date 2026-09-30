@@ -62,6 +62,13 @@ public class AccountSynchronizerTest {
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
 
+		Mockito.when(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any(), Mockito.any())
+		).thenReturn(
+			null
+		);
+
 		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
 
 		AccountConverter accountConverter = Mockito.mock(
@@ -112,10 +119,10 @@ public class AccountSynchronizerTest {
 			Collections.emptyList()
 		);
 
-		PropertyService propertyService = Mockito.mock(PropertyService.class);
+		_propertyService = Mockito.mock(PropertyService.class);
 
 		Mockito.when(
-			propertyService.getAccountProperties(Mockito.anyLong())
+			_propertyService.getAccountProperties(Mockito.anyLong())
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -131,6 +138,7 @@ public class AccountSynchronizerTest {
 		_userAccountSynchronizer = Mockito.mock(UserAccountSynchronizer.class);
 
 		_accountService = Mockito.mock(AccountService.class);
+		_entitlementService = Mockito.mock(EntitlementService.class);
 
 		_accountOrganizationSynchronizer = Mockito.mock(
 			AccountOrganizationSynchronizer.class);
@@ -157,8 +165,7 @@ public class AccountSynchronizerTest {
 			_accountSynchronizer, "_entitlementConverter",
 			Mockito.mock(EntitlementConverter.class));
 		ReflectionTestUtils.setField(
-			_accountSynchronizer, "_entitlementService",
-			Mockito.mock(EntitlementService.class));
+			_accountSynchronizer, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_externalLinkConverter",
 			Mockito.mock(ExternalLinkConverter.class));
@@ -180,7 +187,7 @@ public class AccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
-			_accountSynchronizer, "_propertyService", propertyService);
+			_accountSynchronizer, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_accountSynchronizer, "_roleService",
 			Mockito.mock(RoleService.class));
@@ -288,56 +295,68 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncAccountSyncsAccountUserAccounts() throws Exception {
-		UserAccount failingUserAccount = new UserAccount();
+	public void testSyncAccountSkipsEntitlementsWhenEntitlementFails()
+		throws Exception {
 
-		failingUserAccount.setExternalReferenceCode("failing-user-account-erc");
+		Mockito.when(
+			_entitlementService.getActiveEntitlementDefinitions(
+				Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
 
-		UserAccount userAccount = new UserAccount();
+		_assertSkipsAttribute(AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS);
+	}
 
-		userAccount.setExternalReferenceCode("user-account-erc");
+	@Test
+	public void testSyncAccountSkipsExternalLinksWhenPropertyFails()
+		throws Exception {
+
+		Mockito.when(
+			_propertyService.getAccountProperties(Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(AccountConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS);
+	}
+
+	@Test
+	public void testSyncAccountSkipsOrganizationsWhenOrganizationFails()
+		throws Exception {
+
+		Mockito.when(
+			_organizationService.getAccountOrganizations(Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(AccountConstants.ATTRIBUTE_NAME_ASSIGNED_TEAMS);
+
+		Mockito.verify(
+			_accountOrganizationSynchronizer, Mockito.never()
+		).syncUnassignStaleOrganizations(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncAccountSkipsRolesWhenUserAccountFails()
+		throws Exception {
 
 		Mockito.when(
 			_userAccountService.getAccountUserAccounts(Mockito.anyLong())
-		).thenReturn(
-			Arrays.asList(failingUserAccount, userAccount)
+		).thenThrow(
+			new RuntimeException()
 		);
 
-		Mockito.doThrow(
-			new RuntimeException("Unable to sync user account")
-		).when(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
-		);
+		_assertSkipsAttribute(
+			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS);
 
-		Account account = new Account();
-
-		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
-		account.setId(1L);
-		account.setName("Test Account");
-
-		_accountSynchronizer.syncAccount(account);
-
-		InOrder inOrder = Mockito.inOrder(
-			_jiraAssetService, _userAccountSynchronizer);
-
-		inOrder.verify(
-			_jiraAssetService
-		).upsert(
-			Mockito.any(), Mockito.any()
-		);
-
-		inOrder.verify(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
-		);
-
-		inOrder.verify(
-			_userAccountSynchronizer
-		).syncUserAccount(
-			Mockito.eq(userAccount), Mockito.any(Date.class)
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer, Mockito.never()
+		).syncRoles(
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -402,6 +421,88 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAccountSyncsAccountUserAccounts() throws Exception {
+		UserAccount failingUserAccount = new UserAccount();
+
+		failingUserAccount.setExternalReferenceCode("failing-user-account-erc");
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setExternalReferenceCode("user-account-erc");
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(Mockito.anyLong())
+		).thenReturn(
+			Arrays.asList(failingUserAccount, userAccount)
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to sync user account")
+		).when(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
+		);
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_EXTERNAL_REFERENCE_CODE);
+		account.setId(1L);
+		account.setName("Test Account");
+
+		_accountSynchronizer.syncAccount(account);
+
+		InOrder inOrder = Mockito.inOrder(
+			_jiraAssetService, _userAccountSynchronizer);
+
+		inOrder.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.any()
+		);
+
+		inOrder.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			Mockito.eq(failingUserAccount), Mockito.any(Date.class)
+		);
+
+		inOrder.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			Mockito.eq(userAccount), Mockito.any(Date.class)
+		);
+	}
+
+	@Test
+	public void testSyncAccountSyncsProjectRoles() throws Exception {
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(project)
+		);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncRoles(
+			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(Collections.emptyMap()), Mockito.any(Date.class)
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncRoles(
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
+			Mockito.any(Date.class)
+		);
+	}
+
+	@Test
 	public void testSyncAccountUserAccountsUpsertsUserAccountReferences()
 		throws Exception {
 
@@ -435,34 +536,6 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncAccountSyncsProjectRoles() throws Exception {
-		Project project = _mockProjectMemberships();
-
-		Mockito.when(
-			_projectService.getProjects(Mockito.anyLong())
-		).thenReturn(
-			Collections.singletonList(project)
-		);
-
-		_accountSynchronizer.syncAccount(_createAccount());
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncRoles(
-			Mockito.eq(_EXTERNAL_REFERENCE_CODE),
-			Mockito.eq(Collections.emptyMap()), Mockito.any(Date.class)
-		);
-
-		Mockito.verify(
-			_accountUserAccountRoleSynchronizer
-		).syncRoles(
-			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
-			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
-			Mockito.any(Date.class)
-		);
-	}
-
-	@Test
 	public void testSyncProjectSyncsProjectRoles() throws Exception {
 		Project project = _mockProjectMemberships();
 
@@ -480,6 +553,35 @@ public class AccountSynchronizerTest {
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
 			Mockito.any(Date.class)
+		);
+	}
+
+	private void _assertSkipsAttribute(String attributeName) {
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.isNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(attributeName), Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_LANGUAGE),
+			Mockito.notNull()
+		);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
 		);
 	}
 
@@ -565,11 +667,13 @@ public class AccountSynchronizerTest {
 	private AccountSynchronizer _accountSynchronizer;
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
+	private EntitlementService _entitlementService;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private OrganizationService _organizationService;
 	private ProjectMembershipService _projectMembershipService;
 	private ProjectService _projectService;
+	private PropertyService _propertyService;
 	private UserAccountService _userAccountService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
