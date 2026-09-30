@@ -108,7 +108,7 @@ public class AccountSynchronizer {
 
 		_syncAccountAsset(
 			account, account.getExternalReferenceCode(), account.getName(),
-			jiraAssetObject -> _setAttributeValues(
+			jiraAssetObject -> _setAccountAttributeValues(
 				accountSyncModel, jiraAssetObject));
 
 		_syncRoles(
@@ -266,7 +266,42 @@ public class AccountSynchronizer {
 		return _accountService.getAccount(accountExternalReferenceCode);
 	}
 
-	private void _setAttributeValues(
+	private void _setAccountAttributeValues(
+		AccountSyncModel accountSyncModel, JiraAssetObject jiraAssetObject) {
+
+		_setSharedAttributeValues(accountSyncModel, jiraAssetObject);
+
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
+			_toContactObjectIds(accountSyncModel.getCustomerUserAccounts()));
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
+			_toEntitlementObjectIds(
+				accountSyncModel.getActiveEntitlementDefinitions()));
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
+			_toContactObjectIds(accountSyncModel.getWorkerUserAccounts()));
+	}
+
+	private void _setProjectAttributeValues(
+		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
+
+		_setSharedAttributeValues(
+			projectSyncModel.getAccountSyncModel(), jiraAssetObject);
+
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
+			_toContactObjectIds(projectSyncModel.getCustomerUserAccounts()));
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
+			_toEntitlementObjectIds(
+				projectSyncModel.getActiveEntitlementDefinitions()));
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
+			_toContactObjectIds(projectSyncModel.getWorkerUserAccounts()));
+	}
+
+	private void _setSharedAttributeValues(
 		AccountSyncModel accountSyncModel, JiraAssetObject jiraAssetObject) {
 
 		jiraAssetObject.setAttributeValue(
@@ -278,13 +313,6 @@ public class AccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_BUSINESS_EVENTS,
 			accountSyncModel.getBusinessEventsFieldValue());
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
-			_toContactObjectIds(accountSyncModel.getCustomerUserAccounts()));
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
-			_toEntitlementObjectIds(
-				accountSyncModel.getActiveEntitlementDefinitions()));
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
 			_jiraAssetService.getOrCreateReferenceObjectIds(
@@ -304,27 +332,6 @@ public class AccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_SUPPORT_REGION,
 			accountSyncModel.getSupportRegion());
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
-			_toContactObjectIds(accountSyncModel.getWorkerUserAccounts()));
-	}
-
-	private void _setAttributeValues(
-		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
-
-		_setAttributeValues(
-			projectSyncModel.getAccountSyncModel(), jiraAssetObject);
-
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
-			_toContactObjectIds(projectSyncModel.getCustomerUserAccounts()));
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
-			_toEntitlementObjectIds(
-				projectSyncModel.getActiveEntitlementDefinitions()));
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
-			_toContactObjectIds(projectSyncModel.getWorkerUserAccounts()));
 	}
 
 	private void _syncAccountAsset(
@@ -373,7 +380,7 @@ public class AccountSynchronizer {
 		_syncAccountAsset(
 			accountSyncModel.getAccount(), project.getExternalReferenceCode(),
 			project.getName(),
-			jiraAssetObject -> _setAttributeValues(
+			jiraAssetObject -> _setProjectAttributeValues(
 				jiraAssetObject, projectSyncModel));
 
 		_syncRoles(
