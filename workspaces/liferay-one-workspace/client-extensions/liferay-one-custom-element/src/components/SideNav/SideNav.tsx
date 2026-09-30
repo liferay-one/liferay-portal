@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import {CSSProperties, ReactNode} from 'react';
 import {NavLink} from 'react-router-dom';
 import CustomIcon from '~/components/CustomIcon/CustomIcon';
-import i18n, {Word, languages} from '~/i18n';
+import i18n from '~/i18n';
 
 import './SideNav.css';
 
@@ -27,17 +27,7 @@ type SideNavItemProps = {
 function SideNavItem({depth, item}: SideNavItemProps) {
 	const hasChildren = Boolean(item.children && item.children.length);
 	const icon = item.icon;
-
-	const labelKey = (
-		item.label in languages.en_US
-			? item.label
-			: item.label
-					?.toLowerCase()
-					.replace(/[^a-z0-9]+/g, '-')
-					.replace(/^-|-$/g, '')
-	) as Word;
-
-	const label = i18n.translate(labelKey) || item.label;
+	const label = i18n.translateLabel(item.label);
 
 	return (
 		<li className="side-nav-item">
@@ -84,18 +74,7 @@ export default function SideNav({
 	items,
 	title,
 }: SideNavProps) {
-	const titleKey =
-		title &&
-		(title in languages.en_US
-			? title
-			: title
-					.toLowerCase()
-					.replace(/[^a-z0-9]+/g, '-')
-					.replace(/^-|-$/g, ''));
-
-	const displayTitle = titleKey
-		? i18n.translate(titleKey as Word) || title
-		: title;
+	const displayTitle = i18n.translateLabel(title);
 
 	return (
 		<nav className="side-nav">
