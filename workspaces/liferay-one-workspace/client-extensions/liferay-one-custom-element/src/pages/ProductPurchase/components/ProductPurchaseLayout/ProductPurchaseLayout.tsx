@@ -379,7 +379,7 @@ const ProductPurchaseLayout = ({
 				)}
 			</ProductPurchaseHeader>
 
-			<div className="bg-white border d-flex flex-column mt-4 p-5 rounded">
+			<div className="bg-white border d-flex flex-column mt-4 p-4 pt-5 rounded">
 				<ProductPurchaseSteps className="mb-4" steps={steps} />
 
 				<Outlet context={context} />

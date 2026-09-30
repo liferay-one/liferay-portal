@@ -181,11 +181,11 @@ const AIHubOrderSummary = () => {
 		<ProductPurchase.Shell
 			className="ai-hub-order-summary product-purchase-summary select-payment-step"
 			subtitle={
-				<small className="text-black-50">
+				<div className="mb-3 mt-4 small text-black-50">
 					{i18n.translate(
 						'please-review-the-order-summary-below-and-flag-the-checkbox-to-complete-your-purchase'
 					)}
-				</small>
+				</div>
 			}
 			title={i18n.translate('summary')}
 		>
@@ -305,7 +305,7 @@ const AIHubOrderSummary = () => {
 				/>
 
 				<label
-					className="font-weight-normal px-1"
+					className="font-weight-normal px-1 small"
 					htmlFor="terms-and-conditions"
 				>
 					I signify my assent to and acceptance of this agreement and
@@ -316,7 +316,7 @@ const AIHubOrderSummary = () => {
 				</label>
 			</div>
 
-			<div className="d-flex flex-row text-justify">
+			<div className="d-flex flex-row my-3 text-justify">
 				<ClayCheckbox
 					checked={userAgreement}
 					id="user-agreement"
@@ -327,7 +327,7 @@ const AIHubOrderSummary = () => {
 				/>
 
 				<label
-					className="font-weight-normal px-1"
+					className="font-weight-normal px-1 small"
 					htmlFor="user-agreement"
 				>
 					<span>
