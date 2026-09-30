@@ -39,6 +39,8 @@ import javax.annotation.PreDestroy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -111,6 +113,23 @@ public class MarketplaceTopicSubscriber {
 		}
 	}
 
+	public void processMessage(JSONObject jsonObject, String topicName)
+		throws Exception {
+
+		MarketplaceMessageReceiver marketplaceMessageReceiver =
+			_createMarketplaceMessageReceiver(topicName);
+
+		marketplaceMessageReceiver.processMessage(jsonObject);
+	}
+
+	private MarketplaceMessageReceiver _createMarketplaceMessageReceiver(
+		String topicName) {
+
+		return new MarketplaceMessageReceiver(
+			_koroneikiService, _marketplaceChannelERC, _marketplaceService,
+			_productKeys, _provisioningHubService, topicName);
+	}
+
 	private void _subscribe(
 		CredentialsProvider credentialsProvider, String topicName) {
 
@@ -154,10 +173,7 @@ public class MarketplaceTopicSubscriber {
 		}
 
 		Subscriber subscriber = Subscriber.newBuilder(
-			subscriptionName,
-			new MarketplaceMessageReceiver(
-				_koroneikiService, _marketplaceChannelERC, _marketplaceService,
-				_productKeys, _provisioningHubService, topicName)
+			subscriptionName, _createMarketplaceMessageReceiver(topicName)
 		).setCredentialsProvider(
 			credentialsProvider
 		).build();

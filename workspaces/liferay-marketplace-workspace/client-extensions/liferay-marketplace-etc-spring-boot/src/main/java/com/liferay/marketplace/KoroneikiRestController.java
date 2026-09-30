@@ -13,8 +13,10 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResou
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
+import com.liferay.marketplace.constants.MarketplaceConstants;
 import com.liferay.marketplace.permission.AccountMemberPermission;
 import com.liferay.marketplace.permission.DefaultServiceAccountPermission;
+import com.liferay.marketplace.pubsub.MarketplaceTopicSubscriber;
 import com.liferay.marketplace.service.KoroneikiService;
 import com.liferay.marketplace.service.MarketplaceService;
 import com.liferay.marketplace.util.MarketplaceUtil;
@@ -37,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +53,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -314,6 +318,48 @@ public class KoroneikiRestController extends BaseRestController {
 		}
 	}
 
+	@PostMapping("product-purchases/replay")
+	public void postProductPurchaseReplay(
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
+		throws Exception {
+
+		_defaultServiceAccountPermission.check(jwt);
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		ProductPurchase productPurchase = ProductPurchase.toDTO(
+			jsonObject.getJSONObject(
+				"productPurchase"
+			).toString());
+
+		ProductPurchase koroneikiProductPurchase =
+			_koroneikiService.getProductPurchase(productPurchase.getKey());
+
+		if (!Objects.equals(
+				productPurchase.getAccountKey(),
+				koroneikiProductPurchase.getAccountKey()) ||
+			!Objects.equals(
+				productPurchase.getProductKey(),
+				koroneikiProductPurchase.getProductKey()) ||
+			!Objects.equals(
+				productPurchase.getQuantity(),
+				koroneikiProductPurchase.getQuantity())) {
+
+			throw new IllegalArgumentException(
+				"Product purchase " + productPurchase.getKey() +
+					" does not match Koroneiki");
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Replaying product purchase " + productPurchase.getKey());
+		}
+
+		_marketplaceTopicSubscriber.processMessage(
+			jsonObject,
+			MarketplaceConstants.
+				PUBSUB_TOPIC_NAME_KORONEIKI_PRODUCT_PURCHASE_CREATE);
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		KoroneikiRestController.class);
 
@@ -328,5 +374,8 @@ public class KoroneikiRestController extends BaseRestController {
 
 	@Autowired
 	private MarketplaceService _marketplaceService;
+
+	@Autowired
+	private MarketplaceTopicSubscriber _marketplaceTopicSubscriber;
 
 }

@@ -72,6 +72,40 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		_topicName = topicName;
 	}
 
+	public void processMessage(JSONObject jsonObject) throws Exception {
+		if (Objects.equals(
+				_topicName,
+				MarketplaceConstants.
+					PUBSUB_TOPIC_NAME_KORONEIKI_ACCOUNT_CREATE) ||
+			Objects.equals(
+				_topicName,
+				MarketplaceConstants.
+					PUBSUB_TOPIC_NAME_KORONEIKI_ACCOUNT_UPDATE)) {
+
+			com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Account
+				koroneikiAccount =
+					com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.
+						Account.toDTO(
+							jsonObject.getJSONObject(
+								"account"
+							).toString());
+
+			_processKoroneikiAccount(koroneikiAccount);
+		}
+		else if (Objects.equals(
+					_topicName,
+					MarketplaceConstants.
+						PUBSUB_TOPIC_NAME_KORONEIKI_PRODUCT_PURCHASE_CREATE)) {
+
+			ProductPurchase productPurchase = ProductPurchase.toDTO(
+				jsonObject.getJSONObject(
+					"productPurchase"
+				).toString());
+
+			_processKoroneikiProductPurchaseCreate(productPurchase);
+		}
+	}
+
 	@Override
 	public void receiveMessage(
 		PubsubMessage pubsubMessage, AckReplyConsumer ackReplyConsumer) {
@@ -81,37 +115,7 @@ public class MarketplaceMessageReceiver implements MessageReceiver {
 		JSONObject jsonObject = new JSONObject(byteString.toStringUtf8());
 
 		try {
-			if (Objects.equals(
-					_topicName,
-					MarketplaceConstants.
-						PUBSUB_TOPIC_NAME_KORONEIKI_ACCOUNT_CREATE) ||
-				Objects.equals(
-					_topicName,
-					MarketplaceConstants.
-						PUBSUB_TOPIC_NAME_KORONEIKI_ACCOUNT_UPDATE)) {
-
-				com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.Account
-					koroneikiAccount =
-						com.liferay.osb.koroneiki.phloem.rest.client.dto.v1_0.
-							Account.toDTO(
-								jsonObject.getJSONObject(
-									"account"
-								).toString());
-
-				_processKoroneikiAccount(koroneikiAccount);
-			}
-			else if (Objects.equals(
-						_topicName,
-						MarketplaceConstants.
-							PUBSUB_TOPIC_NAME_KORONEIKI_PRODUCT_PURCHASE_CREATE)) {
-
-				ProductPurchase productPurchase = ProductPurchase.toDTO(
-					jsonObject.getJSONObject(
-						"productPurchase"
-					).toString());
-
-				_processKoroneikiProductPurchaseCreate(productPurchase);
-			}
+			processMessage(jsonObject);
 
 			ackReplyConsumer.ack();
 		}
