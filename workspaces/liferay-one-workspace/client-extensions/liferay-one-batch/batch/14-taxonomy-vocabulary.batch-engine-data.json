@@ -20,7 +20,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_CATEGORY",
 			"name": "marketplace-app-category",
@@ -35,7 +38,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_APP_TAGS",
 			"name": "marketplace-app-tags",
@@ -50,7 +56,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_AVAILABILITY",
 			"name": "marketplace-availability",
@@ -65,7 +74,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_CATEGORY",
 			"name": "marketplace-category",
@@ -80,7 +92,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_PLATFORM_OFFERING",
 			"name": "marketplace-liferay-platform-offering",
@@ -95,7 +110,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_LIFERAY_VERSION",
 			"name": "marketplace-liferay-version",
@@ -110,7 +128,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_LISTING",
 			"name": "marketplace-listing",
@@ -125,7 +146,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE",
 			"name": "marketplace-product-type",
@@ -140,7 +164,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_CATEGORY",
 			"name": "marketplace-solution-category",
@@ -155,7 +182,10 @@
 				}
 			],
 			"availableLanguages": [
-				"en-US"
+				"en-US",
+				"es-ES",
+				"ja-JP",
+				"pt-BR"
 			],
 			"externalReferenceCode": "MARKETPLACE_SOLUTION_TAGS",
 			"name": "marketplace-solution-tags",

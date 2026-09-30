@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import { Liferay } from '~/services/liferay/liferay';
+import {Liferay} from '~/services/liferay/liferay';
 
 export default {
 	'1-data-source': '1 Data Source',
@@ -1085,9 +1085,9 @@ export default {
 		'One or more add-ons are not available for the selected DXP version.',
 	'one-time-purchases': 'One-Time Purchases',
 	'online-payments-with-paypal': 'Online payments with PayPal',
+	'online-payments-with-x': 'Online payments with {0}',
 	'only-continue-if-you-started-this-connection-from-that-liferay-dxp':
 		'Only continue if you started this connection from that Liferay DXP.',
-	'online-payments-with-x': 'Online payments with {0}',
 	'only-gif-jpg-jpeg-png-are-allowed-max-file-size-is-5mb':
 		'Only GIF, JPG, JPEG, and PNG are allowed. Max file size is 5MB.',
 	'only-jar-war-files-are-allowed-max-file-size-is-500mb':

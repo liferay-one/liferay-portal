@@ -133,7 +133,10 @@ const useManageUserActions = () => {
 											await Accounts.putUserAccountsAccountRoles(
 												properties.ssaAccountExternalReferenceCode,
 												userAccount.id,
-												(ssaAccountBrief?.roleBriefs ?? [])
+												(
+													ssaAccountBrief?.roleBriefs ??
+													[]
+												)
 													.filter(
 														(roleBrief) =>
 															!ssaRolesValues.some(

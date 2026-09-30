@@ -22,11 +22,49 @@
 /]
 [/#function]
 
+[#assign displaySectionTitle = configuration.sectionTitle /]
+[#assign displaySectionDescription = configuration.sectionDescription /]
+
+[#if locale?starts_with("ja")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "新着情報" /]
+		[#assign displaySectionDescription = "Marketplaceエコシステムを成長させる最新の機能と拡張機能。" /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "ハイライト" /]
+		[#assign displaySectionDescription = "Liferayを最大限に活用できるよう厳選されたアプリと拡張機能。" /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "最も人気" /]
+		[#assign displaySectionDescription = "世界中の企業がデジタル体験を強化するために選んだ最も人気のあるアプリ。" /]
+	[/#if]
+[#elseif locale?starts_with("es")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "Novedades" /]
+		[#assign displaySectionDescription = "Las últimas funciones y extensiones que hacen crecer el ecosistema de Marketplace." /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "Destacados" /]
+		[#assign displaySectionDescription = "Estas aplicaciones y extensiones seleccionadas están diseñadas para ayudarte a aprovechar Liferay al máximo." /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "Más populares" /]
+		[#assign displaySectionDescription = "Explora las aplicaciones más populares elegidas por empresas de todo el mundo para potenciar sus experiencias digitales." /]
+	[/#if]
+[#elseif locale?starts_with("pt")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "Novidades" /]
+		[#assign displaySectionDescription = "Os recursos e extensões mais recentes que expandem o ecossistema do Marketplace." /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "Destaques" /]
+		[#assign displaySectionDescription = "Esses aplicativos e extensões selecionados foram escolhidos para ajudar você a aproveitar ao máximo o Liferay." /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "Mais populares" /]
+		[#assign displaySectionDescription = "Explore os aplicativos mais populares escolhidos por empresas em todo o mundo para impulsionar suas experiências digitais." /]
+	[/#if]
+[/#if]
+
 <div class="home-apps-display">
 	<div class="section-container">
 		<div id="section-header">
 			<div class="d-flex flex-row justify-content-between w-100">
-				<h1 class="mb-1">${configuration.sectionTitle}</h1>
+				<h1 class="mb-1">${displaySectionTitle}</h1>
 
 			<a class="btn btn-link" href="/marketplace/applications?our-selection=${configuration.specificationFilterValue}" target="_self">
 					<span class="language-caret-icon">
@@ -37,7 +75,7 @@
 				</a>
 			</div>
 
-			<p class="lo-section-subtitle mb-5">${configuration.sectionDescription}</p>
+			<p class="lo-section-subtitle mb-5">${displaySectionDescription}</p>
 		</div>
 
 		[#if configuration.specificationFilterValue?has_content && channelId?has_content]

@@ -1,8 +1,65 @@
 [#assign appCategories = configuration.appCategories?eval_json]
+[#assign displaySectionTitle = configuration.sectionTitle]
+
+[#if locale?starts_with("ja")]
+	[#if configuration.sectionTitle == "Explore Apps by Category"]
+		[#assign displaySectionTitle = "カテゴリ別にアプリを探索" /]
+	[/#if]
+[#elseif locale?starts_with("es")]
+	[#if configuration.sectionTitle == "Explore Apps by Category"]
+		[#assign displaySectionTitle = "Explorar aplicaciones por categoría" /]
+	[/#if]
+[#elseif locale?starts_with("pt")]
+	[#if configuration.sectionTitle == "Explore Apps by Category"]
+		[#assign displaySectionTitle = "Explorar aplicativos por categoria" /]
+	[/#if]
+[/#if]
+
+[#function getCategoryName name]
+	[#if locale?starts_with("ja")]
+		[#switch name]
+			[#case "Batch"][#return "バッチ" /]
+			[#case "Checkout"][#return "チェックアウト" /]
+			[#case "Fragment"][#return "フラグメント" /]
+			[#case "Object Action"][#return "オブジェクトアクション" /]
+			[#case "Payment Method"][#return "支払い方法" /]
+			[#case "Site Initializer"][#return "サイトイニシャライザー" /]
+			[#case "Theme"][#return "テーマ" /]
+			[#case "Workflow Action"][#return "ワークフローアクション" /]
+			[#default][#return name /]
+		[/#switch]
+	[#elseif locale?starts_with("es")]
+		[#switch name]
+			[#case "Batch"][#return "Batch" /]
+			[#case "Checkout"][#return "Checkout" /]
+			[#case "Fragment"][#return "Fragmento" /]
+			[#case "Object Action"][#return "Acción de objeto" /]
+			[#case "Payment Method"][#return "Método de pago" /]
+			[#case "Site Initializer"][#return "Inicializador de sitio" /]
+			[#case "Theme"][#return "Tema" /]
+			[#case "Workflow Action"][#return "Acción de flujo de trabajo" /]
+			[#default][#return name /]
+		[/#switch]
+	[#elseif locale?starts_with("pt")]
+		[#switch name]
+			[#case "Batch"][#return "Batch" /]
+			[#case "Checkout"][#return "Checkout" /]
+			[#case "Fragment"][#return "Fragmento" /]
+			[#case "Object Action"][#return "Ação de objeto" /]
+			[#case "Payment Method"][#return "Método de pagamento" /]
+			[#case "Site Initializer"][#return "Inicializador de site" /]
+			[#case "Theme"][#return "Tema" /]
+			[#case "Workflow Action"][#return "Ação de fluxo de trabalho" /]
+			[#default][#return name /]
+		[/#switch]
+	[#else]
+		[#return name /]
+	[/#if]
+[/#function]
 
 <div class="d-flex flex-column marketplace-categories">
 	<div class="font-weight-semi-bold marketplace-categories-title text-uppercase">
-		${configuration.sectionTitle}
+		${displaySectionTitle}
 	</div>
 
 	[#if appCategories?has_content]
@@ -12,7 +69,7 @@
 					<span class="align-items-center d-inline-flex justify-content-center marketplace-category-icon" style="--category-color:${category.color};">
 						[@clay["icon"] symbol="${category.icon}" /]
 					</span>
-					<span class="font-weight-semi-bold marketplace-category-name">${category.name}</span>
+					<span class="font-weight-semi-bold marketplace-category-name">${getCategoryName(category.name)}</span>
 				</a>
 			[/#list]
 		</div>
