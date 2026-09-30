@@ -19,7 +19,11 @@ import ProductPurchaseLDP, {
 	LDPSettings,
 } from '~/services/commerce/ProductPurchaseLDP';
 import {Liferay} from '~/services/liferay/liferay';
-import {formatProductPrice, getCurrencyForCountry} from '~/utils/currencyUtils';
+import {
+	formatCurrency,
+	formatProductPrice,
+	getCurrencyForCountry,
+} from '~/utils/currencyUtils';
 import {
 	getAiHubTierSKU,
 	getLicenseTagText,
@@ -168,14 +172,29 @@ const ProductPurchaseLayout = ({
 		activeCurrencyCode
 	);
 
+	const {pathname} = useLocation();
+
+	const licenseStepIndex = stepItems.findIndex(
+		(stepItem) => stepItem.key === '/license'
+	);
+
+	const isCartPriceStep =
+		licenseStepIndex !== -1 &&
+		stepItems.findIndex((stepItem) => stepItem.key === pathname) >=
+			licenseStepIndex;
+
+	const cartPrice =
+		productPurchaseCart.cart?.summary?.totalFormatted ||
+		formatCurrency(0, Liferay.CommerceContext.currency.currencyCode);
+
 	const priceLabel = isFreeApp
 		? i18n.translate('free')
-		: formattedSkuPrice ||
+		: (isCartPriceStep && cartPrice) ||
+			formattedSkuPrice ||
 			aiHubTierSKU?.price?.priceFormatted ||
 			productPurchaseCart.cart?.summary?.totalFormatted ||
 			i18n.translate('free');
 
-	const {pathname} = useLocation();
 	const navigate = useNavigate();
 
 	const [form, setForm] = useState<Record<string, unknown>>({});
@@ -333,12 +352,12 @@ const ProductPurchaseLayout = ({
 				product={product}
 				rightNode={
 					<div className="text-right">
-						<small className="d-block text-muted">
+						<small className="d-block text-muted text-nowrap">
 							{i18n.translate('price')}
 						</small>
 
 						<div className="d-flex flex-column">
-							<span className="font-weight-semi-bold">
+							<span className="font-weight-semi-bold text-nowrap">
 								{priceLabel}
 							</span>
 
