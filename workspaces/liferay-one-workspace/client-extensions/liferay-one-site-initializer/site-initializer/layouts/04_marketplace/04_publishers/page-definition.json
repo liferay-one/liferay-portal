@@ -57,7 +57,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Publishers"
+																"en_US": "Publishers",
+																"es_ES": "Publicadores",
+																"ja_JP": "パブリッシャー",
+																"pt_BR": "Publicadores"
 															}
 														}
 													}
@@ -67,7 +70,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Marketplace"
+																"en_US": "Marketplace",
+																"es_ES": "Marketplace",
+																"ja_JP": "Marketplace",
+																"pt_BR": "Marketplace"
 															}
 														}
 													}
@@ -77,7 +83,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Engineers and bold extenders keeping the Liferay ecosystem thriving."
+																"en_US": "Engineers and bold extenders keeping the Liferay ecosystem thriving.",
+																"es_ES": "Ingenieros y desarrolladores audaces que mantienen el ecosistema de Liferay en constante crecimiento.",
+																"ja_JP": "エンジニアや大胆な拡張者がLiferayエコシステムを成長させ続けています。",
+																"pt_BR": "Engenheiros e desenvolvedores ousados mantendo o ecossistema Liferay em constante crescimento."
 															}
 														}
 													}
@@ -87,7 +96,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Publishers"
+																"en_US": "Publishers",
+																"es_ES": "Publicadores",
+																"ja_JP": "パブリッシャー",
+																"pt_BR": "Publicadores"
 															}
 														}
 													}
