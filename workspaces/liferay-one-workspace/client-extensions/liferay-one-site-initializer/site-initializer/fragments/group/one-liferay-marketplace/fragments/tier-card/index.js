@@ -13,8 +13,6 @@ const productId = configuration.productId;
 const purchasable = configuration.purchasable;
 const skuId = configuration.skuId;
 
-const buttonElement = fragmentElement.querySelector('[data-tier-card-button]');
-
 function getSiteURL() {
 	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
 
@@ -55,6 +53,8 @@ async function hasAIHubOrder(accountId) {
 		return false;
 	}
 }
+
+const buttonElement = fragmentElement.querySelector('[data-tier-card-button]');
 
 if (available && !purchasable && buttonLink && buttonElement) {
 	buttonElement.href = buttonLink;

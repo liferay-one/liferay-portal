@@ -135,7 +135,7 @@ function _configure_tier_card {
 
 	if [[ -z ${fragment_entry_link_external_reference_codes} ]]
 	then
-		echo "Unable to find the tier card ${page_element_id} in ${template_name}." >&2
+		echo "Unable to find the tier card ID ${page_element_id} in ${template_name}." >&2
 
 		return 1
 	fi
@@ -161,10 +161,10 @@ function _configure_tier_card {
 
 	if ((failed == 0)) && ((updated == 1))
 	then
-		echo "Configured the tier card ${page_element_id} of ${template_name} with SKU ${sku_external_reference_code}."
+		echo "Configured the tier card ID ${page_element_id} of ${template_name} with SKU ${sku_external_reference_code}."
 	elif ((failed == 0))
 	then
-		echo "The tier card ${page_element_id} of ${template_name} already sells SKU ${sku_external_reference_code}."
+		echo "The tier card ID ${page_element_id} of ${template_name} already sells SKU ${sku_external_reference_code}."
 	fi
 
 	return ${failed}
