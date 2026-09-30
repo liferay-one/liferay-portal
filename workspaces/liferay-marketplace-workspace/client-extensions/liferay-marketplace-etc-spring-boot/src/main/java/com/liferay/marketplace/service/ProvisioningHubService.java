@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URL;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -204,20 +206,13 @@ public class ProvisioningHubService extends BaseService {
 	private Contact _getContact(String key, String... contactRoleNames)
 		throws Exception {
 
-		Page<Contact> contactsPage = _koroneikiService.getContactsPage(
-			key, null);
+		List<Contact> contacts = _getContacts(key, contactRoleNames);
 
-		for (Contact contact : contactsPage.getItems()) {
-			for (ContactRole contactRole : contact.getContactRoles()) {
-				if (ArrayUtil.contains(
-						contactRoleNames, contactRole.getName())) {
-
-					return contact;
-				}
-			}
+		if (contacts.isEmpty()) {
+			return null;
 		}
 
-		return null;
+		return contacts.get(0);
 	}
 
 	private String _getContactEmailAddress(
@@ -233,6 +228,29 @@ public class ProvisioningHubService extends BaseService {
 		}
 
 		return contact.getEmailAddress();
+	}
+
+	private List<Contact> _getContacts(String key, String... contactRoleNames)
+		throws Exception {
+
+		List<Contact> contacts = new ArrayList<>();
+
+		Page<Contact> contactsPage = _koroneikiService.getContactsPage(
+			key, null);
+
+		for (Contact contact : contactsPage.getItems()) {
+			for (ContactRole contactRole : contact.getContactRoles()) {
+				if (ArrayUtil.contains(
+						contactRoleNames, contactRole.getName())) {
+
+					contacts.add(contact);
+
+					break;
+				}
+			}
+		}
+
+		return contacts;
 	}
 
 	private JSONObject _getDSRAnalyticsProjectJSONObject(
@@ -371,15 +389,33 @@ public class ProvisioningHubService extends BaseService {
 		return "activate";
 	}
 
+	private JSONArray _getUserAccountsJSONArray(List<Contact> contacts) {
+		JSONArray jsonArray = new JSONArray();
+
+		for (Contact contact : contacts) {
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"emailAddress", contact.getEmailAddress()
+				).put(
+					"firstName", contact.getFirstName()
+				).put(
+					"lastName", contact.getLastName()
+				));
+		}
+
+		return jsonArray;
+	}
+
 	private void _provisionAiHUB(
 			Account koroneikiAccount, Order order,
 			ProductPurchase productPurchase)
 		throws Exception {
 
-		Contact contact = _getContact(
+		List<Contact> contacts = _getContacts(
 			koroneikiAccount.getKey(), _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR);
 
-		if (contact == null) {
+		if (contacts.isEmpty()) {
 			if (_log.isInfoEnabled()) {
 				_log.info("Missing AI Hub Contact " + koroneikiAccount);
 			}
@@ -401,18 +437,7 @@ public class ProvisioningHubService extends BaseService {
 			).put(
 				"tier", _getTier(productPurchase.getProduct())
 			).put(
-				"userAccounts",
-				new JSONArray(
-				).put(
-					new JSONObject(
-					).put(
-						"emailAddress", contact.getEmailAddress()
-					).put(
-						"firstName", contact.getFirstName()
-					).put(
-						"lastName", contact.getLastName()
-					)
-				)
+				"userAccounts", _getUserAccountsJSONArray(contacts)
 			));
 
 		if (aiHubJSONObject == null) {
@@ -430,7 +455,10 @@ public class ProvisioningHubService extends BaseService {
 			).put(
 				"accountName", properties.get("aiHubAccountName")
 			).put(
-				"administratorEmailAddress", contact.getEmailAddress()
+				"administratorEmailAddress",
+				contacts.get(
+					0
+				).getEmailAddress()
 			).put(
 				"r_accountToAIHubApplication_accountEntryERC",
 				account.getExternalReferenceCode()
@@ -593,10 +621,10 @@ public class ProvisioningHubService extends BaseService {
 	private void _provisionSEOStudio(Account koroneikiAccount, Order order)
 		throws Exception {
 
-		Contact contact = _getContact(
+		List<Contact> contacts = _getContacts(
 			koroneikiAccount.getKey(), _CONTACT_ROLE_NAME_AI_HUB_ADMINISTRATOR);
 
-		if (contact == null) {
+		if (contacts.isEmpty()) {
 			if (_log.isInfoEnabled()) {
 				_log.info("Missing AI Hub Contact " + koroneikiAccount);
 			}
@@ -624,18 +652,7 @@ public class ProvisioningHubService extends BaseService {
 			).put(
 				"tier", properties.get("aiHubTier")
 			).put(
-				"userAccounts",
-				new JSONArray(
-				).put(
-					new JSONObject(
-					).put(
-						"emailAddress", contact.getEmailAddress()
-					).put(
-						"firstName", contact.getFirstName()
-					).put(
-						"lastName", contact.getLastName()
-					)
-				)
+				"userAccounts", _getUserAccountsJSONArray(contacts)
 			));
 
 		if (aiHubJSONObject == null) {
