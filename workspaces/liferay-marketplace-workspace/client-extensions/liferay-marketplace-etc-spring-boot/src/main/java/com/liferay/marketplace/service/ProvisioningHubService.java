@@ -343,11 +343,11 @@ public class ProvisioningHubService extends BaseService {
 			if (Validator.isNotNull(productName) &&
 				productName.contains("Studio")) {
 
-				return "Studio";
+				return "studio";
 			}
 		}
 
-		return "Activate";
+		return "activate";
 	}
 
 	private void _provisionAiHUB(
