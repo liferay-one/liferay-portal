@@ -40,6 +40,7 @@ function main {
 	_run "Assigning users to their accounts." ./seed/assign_account_users.sh
 	_run "Linking supplier accounts to commerce catalogs." ./seed/link_commerce_catalogs.sh
 	_run "Linking products to their display page templates." ./seed/link_product_display_pages.sh
+	_run "Configuring the tier cards with their product and SKU IDs." ./seed/configure_tier_cards.sh
 	_run "Creating publisher details." ./seed/create_publisher_details.sh
 	_run "Populating orders, order items, and entitlements." ./seed/populate_orders.sh
 	_run "Populating overage usage reports and orders." ./seed/populate_overages.sh
