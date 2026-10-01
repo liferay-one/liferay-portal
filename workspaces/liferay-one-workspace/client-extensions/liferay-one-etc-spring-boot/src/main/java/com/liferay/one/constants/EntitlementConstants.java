@@ -37,6 +37,8 @@ public class EntitlementConstants {
 
 	public static final String NAME_APV = "apv";
 
+	public static final String NAME_CLOUD_NATIVE = "cloud-native";
+
 	public static final String NAME_CONNECTORS = "connectors";
 
 	public static final String NAME_DATABASE = "database";
@@ -85,6 +87,9 @@ public class EntitlementConstants {
 
 	public static final String NAME_MALU = "malu";
 
+	public static final String NAME_NONPRODUCTION_ENVIRONMENTS =
+		"non-production-environments";
+
 	public static final String NAME_PARTNER = "Partner";
 
 	public static final String NAME_PLATINUM_SUPPORT = "Platinum Support";
@@ -94,6 +99,9 @@ public class EntitlementConstants {
 
 	public static final String NAME_PREMIUM_SUBSCRIPTION =
 		"Premium Subscription";
+
+	public static final String NAME_PRODUCTION_ENVIRONMENTS =
+		"production-environments";
 
 	public static final String NAME_RAM = "ram";
 
@@ -114,6 +122,8 @@ public class EntitlementConstants {
 
 	public static final String NAME_TRAFFIC_NETWORKING = "traffic-networking";
 
+	public static final String NAME_UAT_ENVIRONMENTS = "uat-environments";
+
 	public static final String NAME_UP_TO_3_PRODUCTION_PODS =
 		"Up to 3 Production Pods";
 
@@ -132,7 +142,7 @@ public class EntitlementConstants {
 	public static final String NAME_VCPU = "vcpu";
 
 	public static final String[] NAMES_CLOUD_NATIVE = {
-		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
+		NAME_CLOUD_NATIVE, NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
 		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
 		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
 		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE
@@ -157,5 +167,16 @@ public class EntitlementConstants {
 	public static final String STATE_EXPIRED = "Expired";
 
 	public static final String STATE_UNACTIVATED = "Unactivated";
+
+	public static final String TERMINATION_STATUS_ACTIVE = "active";
+
+	public static final String TERMINATION_STATUS_SUSPENDED = "suspended";
+
+	public static final String TERMINATION_STATUS_TERMINATED = "terminated";
+
+	public static final String[] TERMINATION_STATUSES = {
+		TERMINATION_STATUS_ACTIVE, TERMINATION_STATUS_SUSPENDED,
+		TERMINATION_STATUS_TERMINATED
+	};
 
 }
