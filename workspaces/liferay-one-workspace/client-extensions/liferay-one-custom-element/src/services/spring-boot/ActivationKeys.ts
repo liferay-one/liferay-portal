@@ -72,8 +72,10 @@ export type GenerateActivationKeyRequest = {
 	environmentName: string;
 	keyType: string;
 	projectExternalReferenceCode: string;
+	purpose?: string;
 	renewedActivationKeyExternalReferenceCode?: string;
 	servers: GenerateServer[];
+	startDate?: string;
 	subscriptionEntitlementId: number;
 	version: string;
 	workspaceName?: string;

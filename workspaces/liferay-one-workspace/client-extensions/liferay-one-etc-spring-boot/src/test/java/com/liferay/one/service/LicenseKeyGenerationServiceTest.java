@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -262,8 +263,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Arrays.asList(1L, 2L), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), null,
-				_toServers(1), 1L, "DXP 7.4", "Workspace One",
+				"Environment", "complimentary", _toProject(), null, null,
+				_toServers(1), null, 1L, "DXP 7.4", "Workspace One",
 				"owner@example.com"));
 
 		Mockito.verify(
@@ -368,8 +369,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.singletonList(1L), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), null,
-				_toServers(1), 1L, "DXP 7.4", "Workspace One",
+				"Environment", "complimentary", _toProject(), null, null,
+				_toServers(1), null, 1L, "DXP 7.4", "Workspace One",
 				"owner@example.com"));
 
 		ArgumentCaptor<Date> expirationDateArgumentCaptor =
@@ -424,6 +425,28 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAnExpiredTerm()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		LicenseKeyDateException licenseKeyDateException =
+			Assertions.assertThrows(
+				LicenseKeyDateException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(
+						null, 1, _toDateDaysAgo(40))));
+
+		Assertions.assertEquals(
+			"Invalid start date or expiration date",
+			licenseKeyDateException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryRejectsASecondServer()
 		throws Exception {
 
@@ -444,6 +467,67 @@ public class LicenseKeyGenerationServiceTest {
 			));
 
 		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryStoresThePurpose()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest("Load testing", 1, null));
+
+		Assertions.assertEquals(
+			Collections.singletonList("{\"purpose\":\"Load testing\"}"),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 4));
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryUsesTheRequestedStartDate()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Date requestedStartDate = _toDateDaysAgo(10);
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(null, 1, requestedStartDate));
+
+		ArgumentCaptor<Date> expirationDateArgumentCaptor =
+			ArgumentCaptor.forClass(Date.class);
+		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
+			Date.class);
+
+		Mockito.verify(
+			_activationKeyService
+		).addActivationKey(
+			Mockito.anyLong(), Mockito.eq(true),
+			expirationDateArgumentCaptor.capture(), Mockito.any(),
+			startDateArgumentCaptor.capture(), Mockito.eq("complimentary")
+		);
+
+		Date expirationDate = expirationDateArgumentCaptor.getValue();
+
+		Date startDate = startDateArgumentCaptor.getValue();
+
+		Assertions.assertEquals(requestedStartDate, startDate);
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(
+				LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS),
+			expirationDate.getTime() - startDate.getTime());
 	}
 
 	@Test
@@ -499,8 +583,8 @@ public class LicenseKeyGenerationServiceTest {
 					new LicenseKeyGenerationService.GenerateRequest(
 						Collections.singletonList(1L), "us-east-1",
 						"Description", "Environment", "complimentary",
-						_toProject(), null, _toServers(1), 1L, "DXP 7.4",
-						"Workspace One", "owner@example.com")));
+						_toProject(), null, null, _toServers(1), null, 1L,
+						"DXP 7.4", "Workspace One", "owner@example.com")));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -591,8 +675,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.emptyList(), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), null,
-				_toServers(1), 1L, "DXP 7.4", "Workspace One",
+				"Environment", "complimentary", _toProject(), null, null,
+				_toServers(1), null, 1L, "DXP 7.4", "Workspace One",
 				"owner@example.com"));
 
 		Mockito.verify(
@@ -610,6 +694,42 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGenerateActivationKeyIgnoresPurposeAndStartDateOfOtherKeyTypes()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Collections.singletonList(1L), "us-east-1", "Description",
+				"Environment", "DXP Backup", _toProject(), "Load testing", null,
+				_toServers(1), _toDateDaysAgo(10), 1L, "DXP 7.4",
+				"Workspace One", "owner@example.com"));
+
+		Assertions.assertEquals(
+			Collections.singletonList(null),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 4));
+
+		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
+			Date.class);
+
+		Mockito.verify(
+			_activationKeyService
+		).addActivationKey(
+			Mockito.anyLong(), Mockito.eq(true), Mockito.any(), Mockito.any(),
+			startDateArgumentCaptor.capture(), Mockito.eq("DXP Backup")
+		);
+
+		Assertions.assertNull(startDateArgumentCaptor.getValue());
 	}
 
 	@Test
@@ -641,8 +761,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.singletonList(1L), "us-east-1", "Description",
-				"Environment", "DXP Backup", _toProject(), "ACTVK-9",
-				_toServers(1), 1L, "DXP 7.4", "Workspace One",
+				"Environment", "DXP Backup", _toProject(), null, "ACTVK-9",
+				_toServers(1), null, 1L, "DXP 7.4", "Workspace One",
 				"owner@example.com"));
 
 		Mockito.verify(
@@ -683,8 +803,8 @@ public class LicenseKeyGenerationServiceTest {
 					new LicenseKeyGenerationService.GenerateRequest(
 						Collections.singletonList(1L), "us-east-1",
 						"Description", "Environment", "DXP Backup",
-						_toProject(), "ACTVK-9", _toServers(1), 1L, "DXP 7.4",
-						"Workspace One", "owner@example.com")));
+						_toProject(), null, "ACTVK-9", _toServers(1), null, 1L,
+						"DXP 7.4", "Workspace One", "owner@example.com")));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1056,10 +1176,24 @@ public class LicenseKeyGenerationServiceTest {
 	private LicenseKeyGenerationService.GenerateRequest
 		_toComplimentaryGenerateRequest(int serverCount) {
 
+		return _toComplimentaryGenerateRequest(null, serverCount, null);
+	}
+
+	private LicenseKeyGenerationService.GenerateRequest
+		_toComplimentaryGenerateRequest(
+			String purpose, int serverCount, Date startDate) {
+
 		return new LicenseKeyGenerationService.GenerateRequest(
 			Collections.emptyList(), "us-east-1", "Description", "Environment",
-			"complimentary", _toProject(), null, _toServers(serverCount), 1L,
-			"DXP 7.4", "Workspace One", "owner@example.com");
+			"complimentary", _toProject(), purpose, null,
+			_toServers(serverCount), startDate, 1L, "DXP 7.4", "Workspace One",
+			"owner@example.com");
+	}
+
+	private Date _toDateDaysAgo(int days) {
+		return new Date(
+			(System.currentTimeMillis() / 1000 * 1000) -
+				TimeUnit.DAYS.toMillis(days));
 	}
 
 	private Entitlement _toEntitlement(long entitlementId, Double maxQuantity) {
@@ -1126,8 +1260,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			bundleEntitlementIds, "us-east-1", "Description", "Environment",
-			"DXP Backup", _toProject(), null, _toServers(serverCount),
-			subscriptionEntitlementId, "DXP 7.4", "Workspace One",
+			"DXP Backup", _toProject(), null, null, _toServers(serverCount),
+			null, subscriptionEntitlementId, "DXP 7.4", "Workspace One",
 			"owner@example.com");
 	}
 

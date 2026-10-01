@@ -27,6 +27,7 @@ interface IProps {
 	placeholder?: string;
 	required?: boolean;
 	value?: string;
+	withoutIndentation?: boolean;
 	years?: IYears;
 	yearsCheck?: boolean;
 }
@@ -45,6 +46,7 @@ const DatePicker: React.FC<IProps> = ({
 	placeholder,
 	required,
 	value = '',
+	withoutIndentation,
 	years,
 	yearsCheck,
 }) => {
@@ -63,7 +65,7 @@ const DatePicker: React.FC<IProps> = ({
 				groupStyle
 			)}
 		>
-			<label>
+			<label className={withoutIndentation ? 'ml-0' : undefined}>
 				{label}
 
 				{required && (
@@ -91,7 +93,13 @@ const DatePicker: React.FC<IProps> = ({
 			)}
 
 			{helper && (
-				<div className="ml-3 pl-3 text-neutral-6 text-paragraph-sm">
+				<div
+					className={classNames(
+						'text-neutral-6',
+						'text-paragraph-sm',
+						!withoutIndentation && 'ml-3 pl-3'
+					)}
+				>
 					{helper}
 				</div>
 			)}

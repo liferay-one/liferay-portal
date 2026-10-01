@@ -290,6 +290,8 @@ export default {
 	'choose-currency': 'Choose Currency',
 	'choose-one-of-the-following-content-blocks':
 		'Choose one of the following content blocks',
+	'choose-the-date-you-would-like-this-option-to-start':
+		'Choose the date you would like this option to start.',
 	'choose-the-marketplace-category-that-most-accurately-describes-what-your-app-does-users-looking-for-specific-types-of-apps-will-often-browse-categories-by-searching-for-a-specific-category-name-on-the-main-marketplace-home-page-having-your-app-listed-under-the-appropriate-category-will-help-them-find-it':
 		'Choose the Marketplace category that most accurately describes what your app does. Users looking for specific types of apps will often browse categories by searching for a specific category name on the main Marketplace home page. Having your app listed under the appropriate category will help them find it.',
 	'choose-the-marketplace-category-that-most-accurately-describes-what-your-solution-does-users-looking-for-specific-types-of-solutions-will-often-browse-categories-by-searching-for-a-specific-category-name-on-the-main-marketplace-home-page-having-your-solution-listed-under-the-appropriate-category-will-help-them-find-it':
@@ -348,6 +350,7 @@ export default {
 	'confirm-deletion': 'Confirm Deletion',
 	'confirm-uninstall': 'Confirm & Uninstall',
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
+	'confirmation-terms': 'Confirmation Terms',
 	'congratulations': 'Congratulations',
 	'connect': 'Connect',
 	'connect-anyway': 'Connect Anyway',
@@ -552,6 +555,7 @@ export default {
 	'enter-the-name-and-a-brief-description-of-the-app-you-would-like-to-submit':
 		'Enter the name and a brief description of the app you would like to submit.',
 	'enter-the-number-of-cpus': 'Enter the number of CPUs',
+	'enter-the-purpose': 'Enter the purpose',
 	'enter-the-required-cpus-0-is-valid':
 		'Enter the required CPUs (0 is valid)',
 	'enter-the-required-ram': 'Enter the required RAM',
@@ -1126,6 +1130,7 @@ export default {
 	'osaka-japan': 'Osaka, Japan',
 	'other': 'Other',
 	'other-event': 'Other Event',
+	'other-please-specify': 'Other, please specify',
 	'overall-experience': 'Overall Experience',
 	'overdue': 'Overdue',
 	'owner': 'Owner',
@@ -1322,6 +1327,7 @@ export default {
 	'purchased-by': 'Purchased by',
 	'purchasing': 'Purchasing',
 	'purpose': 'Purpose',
+	'purpose-of-complimentary-key': 'Purpose of Complimentary Key',
 	'qty': 'Qty',
 	'quantity': 'Quantity',
 	'quarter': 'Quarter',
@@ -1653,6 +1659,8 @@ export default {
 	'the-order-must-be-completed-before-licensing-this-app.':
 		'The order must be completed before licensing this app.',
 	'the-published-version-is-x': 'The published version is {0}.',
+	'the-requested-activation-key-exceeds-the-purchased-subscriptions-for-this-liferay-project-in-case-of-unauthorized-use-liferay-can-request-financial-compensation-for-breach-of-use':
+		'The requested activation key exceeds the purchased subscriptions for this Liferay project. In case of unauthorized use, Liferay can request financial compensation for breach of use. For more information, please reach out to your Liferay contact or sales@liferay.com.',
 	'the-requested-activation-key-is-not-yet-available':
 		'The requested activation key is not yet available.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
@@ -1661,6 +1669,8 @@ export default {
 		'The start and end dates must be different.',
 	'the-start-date-must-be-earlier-than-the-end-date':
 		'The start date must be earlier than the end date.',
+	'the-start-date-must-be-less-than-30-days-ago':
+		'The start date must be less than 30 days ago.',
 	'the-workspace-url-must-not-have-spaces':
 		'The workspace URL must not have spaces.',
 	'the-workspace-url-should-start-with-/':
@@ -1979,6 +1989,8 @@ export default {
 		'You can upload one or many ZIP files. Max total size is 500MB.',
 	'you-can-use-this-option-to-generate-activation-keys-with-a-selected-contract-term':
 		'You can use this option to generate Activation Keys with a selected contract term.',
+	'you-can-use-this-option-to-generate-complimentary-activation-keys-with-a-duration-of-30-days':
+		'You can use this option to generate Complimentary Activation Keys with a duration of 30 days.',
 	'you-can-view-your-app-in-cloud-console-or-go-back-to-my-apps':
 		'You can view your app in Cloud Console or go back to My Apps.',
 	'you-cannot-upload-more-than-x-files':
@@ -2042,6 +2054,7 @@ export default {
 		'Your trial is provisioned by Liferay.',
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
+	'yyyy-mm-dd': 'YYYY-MM-DD',
 	'zip-area-code': 'Zip/Area Code',
 	'zip-code': 'Zip Code',
 	'zip-files-must-be-in-universal-file-format-archive-luffa-the-specially-structured-zip-encoded-archive-used-to-package-client-extension-project-outputs-this-format-must-support-the-following-use-cases-deliver-batch-engine-data-files-compatible-with-all-deployment-targets-deliver-dxp-configuration-resource-compatible-with-all-deployment-targets-deliver-static-resources-compatible-with-all-deployment-targets-deliver-the-infrastructure-metadata-necessary-to-deploy-to-lxc-sm-for-more-information-see':
