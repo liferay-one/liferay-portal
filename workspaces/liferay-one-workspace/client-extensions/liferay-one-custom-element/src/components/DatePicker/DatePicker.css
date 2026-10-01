@@ -6,3 +6,7 @@
 		}
 	}
 }
+
+.dropdown-menu.date-picker-dropdown-menu {
+	max-width: 370px !important;
+}

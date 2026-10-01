@@ -1,0 +1,29 @@
+[
+	{
+		"externalReferenceCode": "LT_PURPOSE_OF_COMPLIMENTARY_KEY_INSTANCE_SIZING_INCREASE",
+		"key": "instanceSizingIncrease",
+		"name": "Instance sizing increase",
+		"name_i18n": {
+			"en-US": "Instance sizing increase"
+		},
+		"type": "string"
+	},
+	{
+		"externalReferenceCode": "LT_PURPOSE_OF_COMPLIMENTARY_KEY_LOAD_TESTING",
+		"key": "loadTesting",
+		"name": "Load testing",
+		"name_i18n": {
+			"en-US": "Load testing"
+		},
+		"type": "string"
+	},
+	{
+		"externalReferenceCode": "LT_PURPOSE_OF_COMPLIMENTARY_KEY_UPGRADE_TESTING",
+		"key": "upgradeTesting",
+		"name": "Upgrade testing",
+		"name_i18n": {
+			"en-US": "Upgrade testing"
+		},
+		"type": "string"
+	}
+]
