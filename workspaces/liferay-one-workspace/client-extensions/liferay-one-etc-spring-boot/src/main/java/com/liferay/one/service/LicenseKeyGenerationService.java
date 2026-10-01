@@ -10,6 +10,7 @@ import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
+import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
@@ -353,15 +354,52 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
-	private void _checkComplimentaryEntitlement(Entitlement entitlement)
+	private void _checkComplimentaryEntitlement(
+			boolean complimentary, Entitlement entitlement)
 		throws Exception {
 
-		if (!Objects.equals(
-				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
-				LicenseKeyGenerateFormService.getLicenseKeyType(entitlement))) {
+		boolean complimentaryGrant = Objects.equals(
+			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+			LicenseKeyGenerateFormService.getLicenseKeyType(entitlement));
 
+		if (complimentary && !complimentaryGrant) {
 			throw new LicenseKeyEntitlementException(
 				"The selected entitlement does not grant a complimentary key");
+		}
+
+		if (!complimentary && complimentaryGrant) {
+			throw new LicenseKeyEntitlementException(
+				"The selected entitlement grants only complimentary keys");
+		}
+	}
+
+	private void _checkComplimentaryRequest(GenerateRequest generateRequest)
+		throws Exception {
+
+		List<GenerateRequest.Server> servers = generateRequest.getServers();
+
+		if (servers.size() != 1) {
+			throw new LicenseKeyEntitlementException(
+				"A complimentary key covers exactly one server");
+		}
+
+		String purpose = generateRequest.getPurpose();
+
+		if (Validator.isNull(purpose)) {
+			throw new LicenseKeyValidationException(
+				"A complimentary key requires a purpose");
+		}
+
+		if (purpose.length() >
+				LicenseKeyGenerationConstants.
+					COMPLIMENTARY_PURPOSE_MAX_LENGTH) {
+
+			throw new LicenseKeyValidationException(
+				StringBundler.concat(
+					"The purpose exceeds ",
+					LicenseKeyGenerationConstants.
+						COMPLIMENTARY_PURPOSE_MAX_LENGTH,
+					" characters"));
 		}
 	}
 
@@ -525,7 +563,8 @@ public class LicenseKeyGenerationService {
 
 		if (complimentary) {
 			_checkComplimentary(project);
-			_checkComplimentaryEntitlement(subscriptionEntitlement);
+			_checkComplimentaryEntitlement(true, subscriptionEntitlement);
+			_checkComplimentaryRequest(generateRequest);
 
 			Calendar calendar = Calendar.getInstance(
 				TimeZone.getTimeZone("UTC"));
@@ -557,6 +596,10 @@ public class LicenseKeyGenerationService {
 		else {
 			bundleEntitlements = _toBundleEntitlements(
 				bundleEntitlements, subscriptionEntitlement);
+
+			for (Entitlement entitlement : bundleEntitlements) {
+				_checkComplimentaryEntitlement(false, entitlement);
+			}
 		}
 
 		_checkQuota(bundleEntitlements, generateRequest, project);
@@ -602,9 +645,7 @@ public class LicenseKeyGenerationService {
 	}
 
 	private String _getAdditionalInfo(GenerateRequest generateRequest) {
-		if (!_isComplimentary(generateRequest) ||
-			Validator.isNull(generateRequest.getPurpose())) {
-
+		if (!_isComplimentary(generateRequest)) {
 			return null;
 		}
 
