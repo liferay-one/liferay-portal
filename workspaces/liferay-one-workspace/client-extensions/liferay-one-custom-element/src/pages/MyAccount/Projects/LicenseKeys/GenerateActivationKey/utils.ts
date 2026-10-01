@@ -18,6 +18,14 @@ import type {
 
 const DEVELOPER_KEY_TYPES = ['developer', 'developer-cluster'];
 
+export const ACTIVATION_STATUS_ACTIVE = 'active';
+
+export const CLOUD_NATIVE_ENVIRONMENT_TYPES = [
+	'production',
+	'uat',
+	'non-production',
+];
+
 export const CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE =
 	'PRDCT-CLOUD-NATIVE';
 
@@ -135,4 +143,21 @@ export function hasAvailableKeyType(product: GenerateFormProduct): boolean {
 
 export function isGeneratable(generateForm?: GenerateForm): boolean {
 	return Boolean(generateForm?.products.some(hasAvailableKeyType));
+}
+
+export function getEnvironmentTypeRank(type: string): number {
+	const index = CLOUD_NATIVE_ENVIRONMENT_TYPES.indexOf(type);
+
+	return index === -1 ? CLOUD_NATIVE_ENVIRONMENT_TYPES.length : index;
+}
+
+export function findMatchingVersion(
+	requestedVersion: string,
+	versions: string[]
+): string | undefined {
+	if (!requestedVersion) {
+		return undefined;
+	}
+
+	return versions.find((version) => version === requestedVersion);
 }

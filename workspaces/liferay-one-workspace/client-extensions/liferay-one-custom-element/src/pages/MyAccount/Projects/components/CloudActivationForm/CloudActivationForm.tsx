@@ -18,6 +18,7 @@ import FetcherError from '~/services/fetcher/FetcherError';
 import Cloud from '~/services/spring-boot/Cloud';
 
 import useHasDisasterRecoveryEntitlement from '../../hooks/useHasDisasterRecoveryEntitlement';
+import {ACTIVATION_FORM_ERROR_MESSAGE_KEYS} from '../../utils/cloudActivationErrorConstants';
 import {
 	CloudActivationAdminFieldName,
 	CloudActivationField,
@@ -25,6 +26,7 @@ import {
 	getCloudActivationAdminFields,
 	getCloudActivationFields,
 } from '../../utils/cloudActivationFieldsUtils';
+import toErrorMessageKey from '../../utils/toErrorMessageKey';
 
 type FormAdmin = {
 	emailAddress: string;
@@ -72,11 +74,6 @@ const SCHEMA_BY_PROFILE = {
 	'analytics-cloud': projectSchemas.cloudActivationAnalyticsCloud,
 	'paas': projectSchemas.cloudActivationPaaS,
 	'saas': projectSchemas.cloudActivationSaaS,
-};
-
-const SUBMIT_ERROR_MESSAGE_KEYS: Record<number, Word> = {
-	403: 'you-need-administrator-role-on-this-project-to-submit-this-form',
-	422: 'this-project-does-not-have-an-active-subscription-for-this-product-contact-your-liferay-sales-representative',
 };
 
 function getSchema(
@@ -175,17 +172,6 @@ function toFields(
 		projectId: values.projectId,
 		region: values.region,
 	};
-}
-
-function toErrorMessageKey(error: unknown): Word {
-	if (error instanceof FetcherError && error.status) {
-		return (
-			SUBMIT_ERROR_MESSAGE_KEYS[error.status] ??
-			'an-unexpected-error-occurred'
-		);
-	}
-
-	return 'an-unexpected-error-occurred';
 }
 
 type CloudActivationFormProps = {
@@ -371,7 +357,12 @@ export default function CloudActivationForm({
 				return;
 			}
 
-			setError('root', {message: toErrorMessageKey(error)});
+			setError('root', {
+				message: toErrorMessageKey(
+					error,
+					ACTIVATION_FORM_ERROR_MESSAGE_KEYS
+				),
+			});
 		}
 	};
 

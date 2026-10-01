@@ -8,6 +8,7 @@ import {useConfirmationModal} from '~/hooks/useConfirmationModal';
 import {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 import {translate} from '~/i18n';
 import ActivationKeysService from '~/services/spring-boot/ActivationKeys';
+import LicenseKeysService from '~/services/spring-boot/LicenseKeys';
 
 type UseActivationKeyActionsProps = {
 	generatePath: string;
@@ -26,9 +27,17 @@ export function useActivationKeyActions({
 			body: translate('deactivate-activation-key-confirmation'),
 			header: translate('deactivate-activation-key'),
 			onConfirm: async () => {
-				await ActivationKeysService.deactivateActivationKey(
-					row.activationKeyId
-				);
+				if (row.unaggregated) {
+					await LicenseKeysService.updateLicenseKeyActive(
+						false,
+						row.licenseKeyId ?? ''
+					);
+				}
+				else {
+					await ActivationKeysService.deactivateActivationKey(
+						row.activationKeyId
+					);
+				}
 
 				await revalidate();
 			},
@@ -37,6 +46,15 @@ export function useActivationKeyActions({
 	}
 
 	async function handleDownload(row: ProjectActivationKey) {
+		if (row.unaggregated) {
+			await LicenseKeysService.downloadLicenseKey(
+				row.licenseKeyId ?? '',
+				`${row.name}.xml`
+			);
+
+			return;
+		}
+
 		await ActivationKeysService.downloadActivationKey(
 			row.activationKeyId,
 			`${row.name}.xml`
@@ -48,9 +66,17 @@ export function useActivationKeyActions({
 			body: translate('reactivate-activation-key-confirmation'),
 			header: translate('reactivate-activation-key'),
 			onConfirm: async () => {
-				await ActivationKeysService.reactivateActivationKey(
-					row.activationKeyId
-				);
+				if (row.unaggregated) {
+					await LicenseKeysService.updateLicenseKeyActive(
+						true,
+						row.licenseKeyId ?? ''
+					);
+				}
+				else {
+					await ActivationKeysService.reactivateActivationKey(
+						row.activationKeyId
+					);
+				}
 
 				await revalidate();
 			},

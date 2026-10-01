@@ -32,6 +32,14 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		return this.post('/type-free', {domains, orderId, owner});
 	}
 
+	async downloadLicenseKey(licenseKeyId: string, name: string) {
+		const response = await this.get<Response>(`/${licenseKeyId}/download`, {
+			earlyReturn: true,
+		});
+
+		await downloadFile(name, response);
+	}
+
 	async downloadDeveloperKey({
 		keyType,
 		name,
@@ -58,6 +66,13 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		);
 
 		await downloadFile(name, response);
+	}
+
+	async updateLicenseKeyActive(
+		active: boolean,
+		licenseKeyId: string
+	): Promise<void> {
+		await this.patch(`/${licenseKeyId}/active`, {active});
 	}
 
 	async licenseKeyTypeFreeDomainsCheck({

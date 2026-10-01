@@ -21,6 +21,7 @@ export type ActivationKeyLicenseKey = {
 	domains: string;
 	entitlementId: number;
 	expirationDate: string;
+	externalReferenceCode: string;
 	hostName: string;
 	ipAddresses: string;
 	licenseKeyId: string;
@@ -44,9 +45,11 @@ export type LicenseKeyNode = {
 	complimentary?: boolean;
 	customExpirationDate?: string;
 	dataCenterLocation?: string;
+	dateCreated?: string;
 	description?: string;
 	domains?: string;
 	entitlementId?: number;
+	externalReferenceCode?: string;
 	hostName?: string;
 	id?: number;
 	ipAddresses?: string;
@@ -88,6 +91,7 @@ export function toActivationKeyLicenseKey(
 		domains: node.domains ?? '',
 		entitlementId: node.entitlementId ?? 0,
 		expirationDate: node.customExpirationDate ?? '',
+		externalReferenceCode: node.externalReferenceCode ?? '',
 		hostName: node.hostName ?? '',
 		ipAddresses: node.ipAddresses ?? '',
 		licenseKeyId: node.id ? String(node.id) : '',
@@ -105,6 +109,24 @@ export function toActivationKeyLicenseKey(
 		startDate: node.startDate ?? '',
 		workspaceName: node.workspaceName ?? '',
 		workspaceOwnerEmail: node.workspaceOwnerEmail ?? '',
+	};
+}
+
+export function useUnaggregatedLicenseKey(externalReferenceCode?: string) {
+	const {
+		data,
+		error,
+		isLoading: loading,
+	} = useFetch<LicenseKeyNode>(
+		externalReferenceCode
+			? `/o/c/licensekeys/by-external-reference-code/${externalReferenceCode}`
+			: null
+	);
+
+	return {
+		error,
+		licenseKey: data ? toActivationKeyLicenseKey(data) : undefined,
+		loading,
 	};
 }
 

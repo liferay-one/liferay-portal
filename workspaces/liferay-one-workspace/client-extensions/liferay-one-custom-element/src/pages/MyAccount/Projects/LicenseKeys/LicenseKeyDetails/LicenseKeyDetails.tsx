@@ -12,6 +12,7 @@ import {useProject} from '~/context/ProjectContext';
 import {
 	ActivationKeyLicenseKey,
 	useActivationKeyLicenseKeys,
+	useUnaggregatedLicenseKey,
 } from '~/hooks/useActivationKeyLicenseKeys';
 import {
 	ProjectActivationKey,
@@ -47,7 +48,11 @@ export default function LicenseKeyDetails() {
 	);
 
 	const {licenseKeys} = useActivationKeyLicenseKeys(
-		activationKey?.activationKeyId
+		activationKey?.unaggregated ? undefined : activationKey?.activationKeyId
+	);
+
+	const {licenseKey: unaggregatedLicenseKey} = useUnaggregatedLicenseKey(
+		activationKey?.unaggregated ? licenseKeyERC : undefined
 	);
 
 	return (
@@ -61,7 +66,11 @@ export default function LicenseKeyDetails() {
 					activationKey={activationKey}
 					admin={admin}
 					hasActivationPermission={hasActivationPermission}
-					licenseKeys={licenseKeys}
+					licenseKeys={
+						unaggregatedLicenseKey
+							? [unaggregatedLicenseKey]
+							: licenseKeys
+					}
 					onDeactivate={() => handleDeactivate(activationKey)}
 					onDownload={() => handleDownload(activationKey)}
 					onReactivate={() => handleReactivate(activationKey)}
@@ -97,10 +106,6 @@ function LicenseKeyDetailsContent({
 	onReactivate,
 	onRenew,
 }: LicenseKeyDetailsContentProps) {
-	const {subscribed, toggleSubscription} = useActivationKeySubscription(
-		activationKey.activationKeyId
-	);
-
 	const detailsRows: DetailsRow[] = [
 		{
 			label: translate('type'),
@@ -191,42 +196,65 @@ function LicenseKeyDetailsContent({
 				icon="key-horizontal"
 				iconPosition="right"
 				rows={detailsRows}
-				title="activation-key-details"
+				title={
+					activationKey.unaggregated
+						? 'license-key-details'
+						: 'activation-key-details'
+				}
 			/>
 
 			<LicenseKeyList licenseKeys={licenseKeys} />
 
-			<div className="detailed-card-container mt-3">
-				<div
-					className="align-items-center d-flex"
-					style={{gap: 'var(--spacer-2)'}}
-				>
-					<ClayToggle
-						aria-label={translate('expiration-notifications')}
-						containerProps={{
-							className: 'flex-shrink-0 mb-0',
-							style: {width: 'fit-content'},
-						}}
-						onToggle={toggleSubscription}
-						toggled={subscribed}
-					/>
-
-					<span
-						style={{
-							color: 'var(--color-neutral-10)',
-							fontWeight: 600,
-						}}
-					>
-						{translate('expiration-notifications')}
-					</span>
-				</div>
-
-				<p className="mb-0 mt-3 text-neutral-7">
-					{translate(
-						'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time'
-					)}
-				</p>
-			</div>
+			{!activationKey.unaggregated && (
+				<ExpirationNotifications
+					activationKeyId={activationKey.activationKeyId}
+				/>
+			)}
 		</>
+	);
+}
+
+type ExpirationNotificationsProps = {
+	activationKeyId: string;
+};
+
+function ExpirationNotifications({
+	activationKeyId,
+}: ExpirationNotificationsProps) {
+	const {subscribed, toggleSubscription} =
+		useActivationKeySubscription(activationKeyId);
+
+	return (
+		<div className="detailed-card-container mt-3">
+			<div
+				className="align-items-center d-flex"
+				style={{gap: 'var(--spacer-2)'}}
+			>
+				<ClayToggle
+					aria-label={translate('expiration-notifications')}
+					containerProps={{
+						className: 'flex-shrink-0 mb-0',
+						style: {width: 'fit-content'},
+					}}
+					onToggle={toggleSubscription}
+					toggled={subscribed}
+				/>
+
+				<span
+					style={{
+						color: 'var(--color-neutral-10)',
+						fontWeight: 600,
+					}}
+				>
+					{translate('expiration-notifications')}
+				</span>
+			</div>
+
+			<p className="mb-0 mt-3 text-neutral-7">
+				{translate(
+					'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time'
+				)}
+			</p>
+		</div>
 	);
 }

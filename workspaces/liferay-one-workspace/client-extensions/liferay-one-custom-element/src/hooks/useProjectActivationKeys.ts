@@ -27,19 +27,24 @@ export type ProjectActivationKey = {
 	activationKeyId: string;
 	active: boolean;
 	badge?: Word;
+	cloudNative?: boolean;
 	complimentary: boolean;
 	description: string;
+	environmentId?: string;
 	environmentType: Word;
 	expirationDate: string;
 	expirationDateValue: string;
 	id: string;
+	licenseKeyId?: string;
 	name: string;
+	offlineActivated?: boolean;
 	productName: string;
 	productVersion: string;
 	startDate: string;
 	startDateValue: string;
 	status: Word;
 	type: string;
+	unaggregated?: boolean;
 };
 
 type ActivationKeyNode = {
@@ -148,6 +153,45 @@ function getDateValue(value?: string): string {
 	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
 }
 
+function toUnaggregatedActivationKey(
+	node: LicenseKeyNode
+): ProjectActivationKey {
+	const activationKeyNode: ActivationKeyNode = {
+		active: node.active,
+		dateCreated: node.dateCreated,
+		endDate: node.customExpirationDate,
+		externalReferenceCode: node.externalReferenceCode ?? '',
+		startDate: node.startDate,
+		type: node.licenseType,
+	};
+
+	return {
+		activationKeyId: '',
+		active: node.active,
+		badge: getBadge(activationKeyNode),
+		complimentary: node.complimentary ?? false,
+		description: node.description ?? '',
+		environmentType: getEnvironmentType(node.licenseType),
+		expirationDate: formatDate(node.customExpirationDate),
+		expirationDateValue: getDateValue(node.customExpirationDate),
+		id: activationKeyNode.externalReferenceCode,
+		licenseKeyId: node.id ? String(node.id) : '',
+		name: node.name ?? '',
+		productName:
+			getLeadingProductLabel(
+				node.r_commerceProductToLicenseKey_CProductERC ?? ''
+			) ||
+			node.productName ||
+			'',
+		productVersion: node.productVersion ?? '',
+		startDate: formatDate(node.startDate),
+		startDateValue: getDateValue(node.startDate),
+		status: getStatus(activationKeyNode),
+		type: node.licenseType ?? '',
+		unaggregated: true,
+	};
+}
+
 export function useProjectActivationKeys() {
 	const {projectId} = useProject();
 
@@ -202,10 +246,18 @@ export function useProjectActivationKeys() {
 		ActivationKeyLicenseKey[]
 	>();
 
+	const unaggregatedActivationKeys: ProjectActivationKey[] = [];
+
 	for (const node of licenseKeyData?.items ?? []) {
 		const licenseKey = toActivationKeyLicenseKey(node);
 
 		if (!licenseKey.activationKeyId) {
+			if (licenseKey.externalReferenceCode) {
+				unaggregatedActivationKeys.push(
+					toUnaggregatedActivationKey(node)
+				);
+			}
+
 			continue;
 		}
 
@@ -250,7 +302,7 @@ export function useProjectActivationKeys() {
 	);
 
 	return {
-		activationKeys,
+		activationKeys: [...activationKeys, ...unaggregatedActivationKeys],
 		error,
 		loading: loading || loadingLicenseKeys,
 		revalidate,

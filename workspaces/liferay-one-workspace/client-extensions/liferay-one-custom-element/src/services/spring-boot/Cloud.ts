@@ -8,6 +8,57 @@ import {downloadFile} from '~/utils/downloadFileUtils';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
+export type CloudActivatedEnvironment = {
+	environmentId: string;
+};
+
+export type CloudEnvironmentActivationCode = {
+	activationCode: string;
+	activationStatus: string;
+	environmentId: string;
+	environmentName: string;
+};
+
+export type CloudEnvironmentActivationCodeType = {
+	activationCodes: CloudEnvironmentActivationCode[];
+	availableCount: number;
+	maxClusterNodes: number;
+	totalCount: number;
+	type: string;
+	unlimited: boolean;
+	usedCount: number;
+};
+
+export type CloudEnvironmentActivationCodes = {
+	environmentTypes: CloudEnvironmentActivationCodeType[];
+};
+
+export type CloudGeneratedActivationCode = CloudEnvironmentActivationCode & {
+	type: string;
+};
+
+export type CloudEnvironmentSubscription = {
+	entitlementId: number;
+	name: string;
+	productExternalReferenceCode: string;
+};
+
+export type CloudEnvironmentSubscriptions = {
+	subscriptions: CloudEnvironmentSubscription[];
+};
+
+export type CloudOfflineEnvironment = {
+	bundledEntitlementIds: number[];
+	environmentId: string;
+	environmentName: string;
+	requestedVersion: string;
+	type: string;
+};
+
+export type CloudOfflineEnvironments = {
+	environments: CloudOfflineEnvironment[];
+};
+
 class CloudOAuth2 extends OneSpringBootOAuth2 {
 	async downloadOfflineActivationBundle(
 		dxpVersion: string,
@@ -30,12 +81,33 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
+	async getEnvironmentsEntitlements(environmentId: string) {
+		return this.get<CloudEnvironmentSubscriptions>(
+			`/environments/${environmentId}/entitlements`
+		);
+	}
+
 	async getProjectsEntitlementsDisasterRecovery(
 		projectExternalReferenceCode: string
 	) {
 		return this.get<{hasDisasterRecoveryEntitlement: boolean}>(
 			`/projects/${projectExternalReferenceCode}/entitlements` +
 				'/disaster-recovery'
+		);
+	}
+
+	async getProjectsEnvironmentsActivationCodes(
+		projectExternalReferenceCode: string
+	) {
+		return this.get<CloudEnvironmentActivationCodes>(
+			`/projects/${projectExternalReferenceCode}/environments` +
+				'/activation-codes'
+		);
+	}
+
+	async getProjectsEnvironmentsOffline(projectExternalReferenceCode: string) {
+		return this.get<CloudOfflineEnvironments>(
+			`/projects/${projectExternalReferenceCode}/environments/offline`
 		);
 	}
 
@@ -49,6 +121,11 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		if (!response.ok) {
 			throw this.toFetcherError(response);
 		}
+
+		const {environmentId} =
+			(await response.json()) as CloudActivatedEnvironment;
+
+		return environmentId;
 	}
 
 	async postEnvironmentsActivationRequest(
@@ -65,6 +142,24 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		if (!response.ok) {
 			throw this.toFetcherError(response);
 		}
+	}
+
+	async postProjectsEnvironmentsActivationCodes(
+		projectExternalReferenceCode: string,
+		type: string
+	) {
+		const response = await this.post<Response>(
+			`/projects/${projectExternalReferenceCode}/environments` +
+				'/activation-codes',
+			{type},
+			{earlyReturn: true}
+		);
+
+		if (!response.ok) {
+			throw this.toFetcherError(response);
+		}
+
+		return (await response.json()) as CloudGeneratedActivationCode;
 	}
 
 	private toFetcherError(response: Response) {

@@ -10,7 +10,13 @@ import {Navigate, useNavigate, useSearchParams} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import {useProject} from '~/context/ProjectContext';
+import useDXPProductVersions from '~/hooks/useDXPProductVersions';
 import {Word, translate} from '~/i18n';
+import {
+	ACTIVATION_ERROR_MESSAGE_KEYS,
+	BUNDLE_ERROR_MESSAGE_KEYS,
+} from '~/pages/MyAccount/Projects/utils/cloudActivationErrorConstants';
+import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
@@ -23,18 +29,22 @@ import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
 import DSRStep from './DSRStep/DSRStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
-import NonProductionEnvironmentsStep from './NonProductionEnvironmentsStep/NonProductionEnvironmentsStep';
 import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
 import OfflineTokenStep from './OfflineTokenStep/OfflineTokenStep';
 import SubscriptionStep from './SubscriptionStep/SubscriptionStep';
-import useCloudNativeEnvironments from './hooks/useCloudNativeEnvironments';
+import useCloudNativeOfflineEnvironments from './hooks/useCloudNativeOfflineEnvironments';
 import useGenerateActivationKeyForm from './hooks/useGenerateActivationKeyForm';
 import useHasWorkspace from './hooks/useHasWorkspace';
 import useRenewSource from './hooks/useRenewSource';
-import {GenerateActivationKeyForm, GenerateActivationKeyStep} from './types';
 import {
-	NON_PRODUCTION_KEY_TYPE,
+	GenerateActivationKeyForm,
+	GenerateActivationKeyOfflineEnvironment,
+	GenerateActivationKeyStep,
+} from './types';
+import {
+	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
 	buildEmptyServer,
+	findMatchingVersion,
 	getBundleProducts,
 	hasAvailableKeyType,
 	isCloudNativeProduct,
@@ -46,6 +56,8 @@ import {
 import './GenerateActivationKey.css';
 
 const DSR_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-ADDON-DISASTER-RECOVERY';
+
+const GENERATE_ACTIVATION_KEY_WIDTH = 860;
 
 export default function GenerateActivationKey() {
 	const {projectId} = useProject();
@@ -61,8 +73,6 @@ export default function GenerateActivationKey() {
 	const {hasActivationPermission, loading: permissionLoading} =
 		useHasLicenseKeyPermission(projectId);
 	const {hasWorkspace} = useHasWorkspace(projectId);
-	const {environments: cloudNativeEnvironments} =
-		useCloudNativeEnvironments(projectId);
 	const {loading: renewLoading, renewSource} = useRenewSource(
 		renewExternalReferenceCode,
 		generateForm
@@ -84,6 +94,9 @@ export default function GenerateActivationKey() {
 			environmentName: '',
 			keyType: '',
 			notify: true,
+			offlineActivated: false,
+			offlineEnvironment: null,
+			offlineModifying: false,
 			offlineSubscriptionIds: [],
 			productExternalReferenceCode: '',
 			serverField: 'hostName',
@@ -105,6 +118,19 @@ export default function GenerateActivationKey() {
 	const version = watch('version');
 
 	const preselectedExternalReferenceCode = searchParams.get('new');
+
+	const modifyEnvironmentId = searchParams.get('modify');
+
+	const {environments: offlineEnvironments} =
+		useCloudNativeOfflineEnvironments(modifyEnvironmentId ? projectId : '');
+
+	const modifyEnvironment = useMemo(
+		() =>
+			offlineEnvironments.find(
+				(current) => current.environmentId === modifyEnvironmentId
+			),
+		[modifyEnvironmentId, offlineEnvironments]
+	);
 
 	useEffect(() => {
 		if (!generateForm || !renewing || bundleEntitlementIds.length) {
@@ -232,7 +258,15 @@ export default function GenerateActivationKey() {
 
 	const needsDSRStep = includesDSR && !hasWorkspace;
 
+	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+
+	const {productVersions} = useDXPProductVersions(cloudNative);
+
 	const versions = useMemo(() => {
+		if (cloudNative) {
+			return productVersions;
+		}
+
 		const product = generateForm?.products.find(
 			(current) =>
 				current.externalReferenceCode === productExternalReferenceCode
@@ -247,7 +281,38 @@ export default function GenerateActivationKey() {
 		}
 
 		return product.versions;
-	}, [generateForm, keyType, productExternalReferenceCode]);
+	}, [
+		cloudNative,
+		generateForm,
+		keyType,
+		productExternalReferenceCode,
+		productVersions,
+	]);
+
+	useEffect(() => {
+		if (!modifyEnvironment || getValues('offlineModifying')) {
+			return;
+		}
+
+		setValue('keyType', modifyEnvironment.type);
+		setValue('offlineActivated', false);
+		setValue('offlineEnvironment', {
+			activationCode: '',
+			bundledEntitlementIds:
+				modifyEnvironment.bundledEntitlementIds ?? [],
+			environmentId: modifyEnvironment.environmentId,
+			environmentName: modifyEnvironment.environmentName,
+			requestedVersion: modifyEnvironment.requestedVersion,
+			type: modifyEnvironment.type,
+		});
+		setValue('offlineModifying', true);
+		setValue(
+			'productExternalReferenceCode',
+			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+		);
+
+		setStep('offline-package');
+	}, [getValues, modifyEnvironment, setValue]);
 
 	useEffect(() => {
 		const [firstVersion] = versions;
@@ -261,7 +326,20 @@ export default function GenerateActivationKey() {
 		}
 	}, [renewing, setValue, version, versions]);
 
-	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+	useEffect(() => {
+		if (!modifyEnvironment) {
+			return;
+		}
+
+		const matchingVersion = findMatchingVersion(
+			modifyEnvironment.requestedVersion,
+			versions
+		);
+
+		if (matchingVersion) {
+			setValue('version', matchingVersion);
+		}
+	}, [modifyEnvironment, setValue, versions]);
 
 	function onClickCancel() {
 		navigate('..');
@@ -280,21 +358,15 @@ export default function GenerateActivationKey() {
 			return;
 		}
 
-		goTo(
-			keyType === NON_PRODUCTION_KEY_TYPE
-				? 'non-production-environments'
-				: 'activation-codes'
-		);
+		goTo('activation-codes');
 	}
 
 	async function onClickDownloadPackage() {
 		const values = getValues();
 
-		const environment = cloudNativeEnvironments.find(
-			(current) => current.type === values.keyType
-		);
+		const {offlineEnvironment} = values;
 
-		if (!environment) {
+		if (!offlineEnvironment) {
 			setSubmitError(
 				translate(
 					'no-cloud-native-environments-are-available-for-this-project'
@@ -308,25 +380,69 @@ export default function GenerateActivationKey() {
 		setSubmitting(true);
 
 		try {
-			await Cloud.offlineActivation(
-				environment.activationCode,
-				values.activationToken.trim()
-			);
+			let {environmentId} = offlineEnvironment;
 
-			await Cloud.downloadOfflineActivationBundle(
-				values.version,
-				environment.id,
-				values.offlineSubscriptionIds
-			);
+			if (!values.offlineModifying && !values.offlineActivated) {
+				try {
+					environmentId = await Cloud.offlineActivation(
+						offlineEnvironment.activationCode,
+						values.activationToken.trim()
+					);
+
+					setValue('offlineActivated', true);
+					setValue('offlineEnvironment', {
+						...offlineEnvironment,
+						environmentId,
+					});
+				}
+				catch (error) {
+					setSubmitError(
+						translate(
+							toErrorMessageKey(
+								error,
+								ACTIVATION_ERROR_MESSAGE_KEYS
+							)
+						)
+					);
+
+					return;
+				}
+			}
+
+			try {
+				await Cloud.downloadOfflineActivationBundle(
+					values.version,
+					environmentId,
+					values.offlineSubscriptionIds
+				);
+			}
+			catch (error) {
+				setSubmitError(
+					translate(
+						toErrorMessageKey(error, BUNDLE_ERROR_MESSAGE_KEYS)
+					)
+				);
+
+				return;
+			}
 
 			navigate('..');
-		}
-		catch (error) {
-			setSubmitError(_toSubmitError(error));
 		}
 		finally {
 			setSubmitting(false);
 		}
+	}
+
+	function onClickOfflineActivation(
+		offlineEnvironment: GenerateActivationKeyOfflineEnvironment
+	) {
+		setSubmitError('');
+
+		setValue('offlineActivated', false);
+		setValue('offlineEnvironment', offlineEnvironment);
+		setValue('offlineModifying', false);
+
+		goTo('offline-token');
 	}
 
 	function goTo(nextStep: GenerateActivationKeyStep) {
@@ -466,25 +582,22 @@ export default function GenerateActivationKey() {
 		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
-		'non-production-environments':
-			'modify-your-existing-non-production-environment-or-activate-a-new-non-production-environment',
 		'offline-package':
-			'select-the-product-and-key-type-you-would-like-to-generate',
+			'select-the-items-you-would-like-to-include-in-the-offline-activation-package',
 		'offline-token':
-			'select-the-product-and-key-type-you-would-like-to-generate',
+			'paste-the-signed-activation-token-generated-by-your-cloud-native-environment',
 		'subscription':
 			'select-the-product-and-key-type-you-would-like-to-generate',
 	};
 
 	const titles: Partial<Record<GenerateActivationKeyStep, Word>> = {
 		'activation-codes': 'activation-codes',
-		'non-production-environments': 'non-production-environments',
 		'offline-package': 'download-offline-activation-package',
 		'offline-token': 'download-offline-activation-package',
 	};
 
 	return (
-		<ProductPurchase>
+		<ProductPurchase width={GENERATE_ACTIVATION_KEY_WIDTH}>
 			<ProductPurchase.Shell
 				className="generate-activation-key"
 				subtitle={translate(subtitles[step])}
@@ -495,7 +608,7 @@ export default function GenerateActivationKey() {
 							: 'generate-activation-key')
 				)}
 			>
-				<ProductPurchase.Body>
+				<ProductPurchase.Body className="generate-activation-key-body">
 					{submitError && (
 						<ClayAlert
 							className="mb-3"
@@ -535,31 +648,18 @@ export default function GenerateActivationKey() {
 
 					{step === 'activation-codes' && (
 						<ActivationCodesStep
+							keyType={keyType}
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
 							onClickFinish={() => navigate('..')}
-							onClickOffline={() => goTo('offline-token')}
-						/>
-					)}
-
-					{step === 'non-production-environments' && (
-						<NonProductionEnvironmentsStep
-							onClickActivate={() => goTo('offline-token')}
-							onClickBack={() => goTo('subscription')}
-							onClickCancel={onClickCancel}
+							onClickOffline={onClickOfflineActivation}
 						/>
 					)}
 
 					{step === 'offline-token' && (
 						<OfflineTokenStep
 							form={form}
-							onClickBack={() =>
-								goTo(
-									keyType === NON_PRODUCTION_KEY_TYPE
-										? 'non-production-environments'
-										: 'activation-codes'
-								)
-							}
+							onClickBack={() => goTo('activation-codes')}
 							onClickCancel={onClickCancel}
 							onClickContinue={() => goTo('offline-package')}
 						/>
@@ -567,12 +667,16 @@ export default function GenerateActivationKey() {
 
 					{step === 'offline-package' && (
 						<OfflinePackageStep
-							bundleProducts={generateForm.bundleProducts}
 							form={form}
-							onClickBack={() => goTo('offline-token')}
+							onClickBack={() =>
+								getValues('offlineModifying')
+									? navigate('..')
+									: goTo('offline-token')
+							}
 							onClickCancel={onClickCancel}
 							onClickDownload={onClickDownloadPackage}
 							submitting={submitting}
+							versions={versions}
 						/>
 					)}
 

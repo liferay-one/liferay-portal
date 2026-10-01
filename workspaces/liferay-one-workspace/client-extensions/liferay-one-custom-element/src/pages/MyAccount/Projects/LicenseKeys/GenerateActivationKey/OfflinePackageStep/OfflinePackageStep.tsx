@@ -3,44 +3,82 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import {ClayCheckbox} from '@clayui/form';
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import Button from '~/components/Button/Button';
+import Loading from '~/components/Loading/Loading';
 import {translate} from '~/i18n';
-import {GenerateFormBundleProduct} from '~/services/spring-boot/ActivationKeys';
+import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
+import SelectionButtons from '../components/SelectionButtons/SelectionButtons';
+import VersionField from '../components/VersionField/VersionField';
+import useEnvironmentSubscriptions from '../hooks/useEnvironmentSubscriptions';
 import {GenerateActivationKeyForm} from '../types';
 
 const COLLAPSED_COUNT = 6;
 
 type OfflinePackageStepProps = {
-	bundleProducts: GenerateFormBundleProduct[];
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	onClickBack: () => void;
 	onClickCancel: () => void;
 	onClickDownload: () => void;
 	submitting: boolean;
+	versions: string[];
 };
 
 export default function OfflinePackageStep({
-	bundleProducts,
 	form,
 	onClickBack,
 	onClickCancel,
 	onClickDownload,
 	submitting,
+	versions,
 }: OfflinePackageStepProps) {
 	const {setValue, watch} = form;
 
 	const [expanded, setExpanded] = useState(false);
 
+	const offlineEnvironment = watch('offlineEnvironment');
+	const offlineModifying = watch('offlineModifying');
 	const offlineSubscriptionIds = watch('offlineSubscriptionIds');
 
-	const visibleBundleProducts = expanded
-		? bundleProducts
-		: bundleProducts.slice(0, COLLAPSED_COUNT);
+	const {error, loading, subscriptions} = useEnvironmentSubscriptions(
+		offlineEnvironment?.environmentId
+	);
+
+	const bundledEntitlementIds = offlineEnvironment?.bundledEntitlementIds;
+
+	useEffect(() => {
+		if (loading) {
+			return;
+		}
+
+		const entitlementIds = subscriptions.map(
+			(subscription) => subscription.entitlementId
+		);
+
+		setValue(
+			'offlineSubscriptionIds',
+			offlineModifying && bundledEntitlementIds?.length
+				? entitlementIds.filter((entitlementId) =>
+						bundledEntitlementIds.includes(entitlementId)
+					)
+				: entitlementIds
+		);
+	}, [
+		bundledEntitlementIds,
+		loading,
+		offlineModifying,
+		setValue,
+		subscriptions,
+	]);
+
+	const visibleSubscriptions = expanded
+		? subscriptions
+		: subscriptions.slice(0, COLLAPSED_COUNT);
 
 	function toggle(entitlementId: number) {
 		setValue(
@@ -53,50 +91,81 @@ export default function OfflinePackageStep({
 		);
 	}
 
+	if (loading) {
+		return <Loading />;
+	}
+
+	if (error) {
+		return (
+			<>
+				<ClayAlert
+					className="mb-3"
+					displayType="danger"
+					spritemap={getIconSpriteMap()}
+					title={translate('error')}
+				>
+					{translate('an-unexpected-error-occurred')}
+				</ClayAlert>
+
+				<WizardFooter
+					backButtonProps={{onClick: onClickBack}}
+					cancelButtonProps={{onClick: onClickCancel}}
+					continueButtonProps={{
+						children: translate('download-package'),
+						disabled: true,
+						onClick: onClickDownload,
+					}}
+				/>
+			</>
+		);
+	}
+
 	return (
 		<>
-			<div className="align-items-center d-flex mb-3">
-				<label className="mb-0 mr-3">
-					{translate('subscriptions-to-activate')}
-				</label>
+			<VersionField form={form} versions={versions} />
 
-				<Button
-					className="mr-2"
-					displayType="unstyled"
-					onClick={() =>
-						setValue(
-							'offlineSubscriptionIds',
-							bundleProducts.map(
-								(bundleProduct) => bundleProduct.entitlementId
-							)
+			<SelectionButtons
+				onClickDeselectAll={() =>
+					setValue('offlineSubscriptionIds', [])
+				}
+				onClickSelectAll={() =>
+					setValue(
+						'offlineSubscriptionIds',
+						subscriptions.map(
+							(subscription) => subscription.entitlementId
 						)
-					}
-				>
-					{translate('select-all')}
-				</Button>
+					)
+				}
+			/>
 
-				<Button
-					displayType="unstyled"
-					onClick={() => setValue('offlineSubscriptionIds', [])}
-				>
-					{translate('deselect-all')}
-				</Button>
-			</div>
+			{subscriptions.length ? (
+				<div className="generate-activation-key-subscriptions">
+					{visibleSubscriptions.map((subscription) => (
+						<div
+							className="generate-activation-key-subscription"
+							key={subscription.entitlementId}
+						>
+							<ClayCheckbox
+								checked={offlineSubscriptionIds.includes(
+									subscription.entitlementId
+								)}
+								label={subscription.name}
+								onChange={() =>
+									toggle(subscription.entitlementId)
+								}
+							/>
+						</div>
+					))}
+				</div>
+			) : (
+				<p className="text-neutral-7">
+					{translate(
+						'there-are-no-subscriptions-entitled-to-this-environment'
+					)}
+				</p>
+			)}
 
-			<div className="generate-activation-key-subscriptions">
-				{visibleBundleProducts.map((bundleProduct) => (
-					<ClayCheckbox
-						checked={offlineSubscriptionIds.includes(
-							bundleProduct.entitlementId
-						)}
-						key={bundleProduct.entitlementId}
-						label={bundleProduct.name}
-						onChange={() => toggle(bundleProduct.entitlementId)}
-					/>
-				))}
-			</div>
-
-			{bundleProducts.length > COLLAPSED_COUNT && (
+			{subscriptions.length > COLLAPSED_COUNT && (
 				<Button
 					displayType="unstyled"
 					onClick={() => setExpanded(!expanded)}
