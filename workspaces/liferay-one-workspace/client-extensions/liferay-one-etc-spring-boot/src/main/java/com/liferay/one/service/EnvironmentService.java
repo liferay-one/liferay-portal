@@ -8,11 +8,13 @@ package com.liferay.one.service;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.model.Environment;
+import com.liferay.one.util.ActivationCodeUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -103,6 +105,21 @@ public class EnvironmentService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode), "')"));
 	}
 
+	public Environment fetchCloudNativeEnvironment(
+			String activationStatus, String projectExternalReferenceCode,
+			String type)
+		throws Exception {
+
+		return fetchEnvironment(
+			StringBundler.concat(
+				"(activationStatus eq '", escapeODataString(activationStatus),
+				"') and (offering eq '",
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE,
+				"') and (r_projectToEnvironment_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode),
+				"') and (type eq '", escapeODataString(type), "')"));
+	}
+
 	public Environment fetchEnvironment(String filterString) throws Exception {
 		String response = get(
 			getAuthorization(),
@@ -146,10 +163,68 @@ public class EnvironmentService extends OneBaseService {
 			externalReferenceCode, jwt);
 	}
 
+	public Environment fetchOrAddCloudNativeEnvironment(
+			long accountEntryId, String contractExternalReferenceCode,
+			String projectExternalReferenceCode, String type)
+		throws Exception {
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			throw new IllegalArgumentException(
+				"The project external reference code is required");
+		}
+
+		return _keyedLock.withLock(
+			StringBundler.concat(
+				projectExternalReferenceCode, StringPool.POUND,
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE, StringPool.POUND,
+				type),
+			() -> {
+				Environment environment = fetchCloudNativeEnvironment(
+					EnvironmentConstants.ACTIVATION_STATUS_PENDING,
+					projectExternalReferenceCode, type);
+
+				if (environment != null) {
+					return environment;
+				}
+
+				return addCloudNativeEnvironment(
+					accountEntryId, ActivationCodeUtil.generate(),
+					contractExternalReferenceCode, projectExternalReferenceCode,
+					type);
+			});
+	}
+
+	public List<Environment> getCloudNativeEnvironments(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getEnvironments(
+			StringBundler.concat(
+				"(offering eq '", EnvironmentConstants.OFFERING_CLOUD_NATIVE,
+				"') and (r_projectToEnvironment_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode), "')"));
+	}
+
 	public List<Environment> getEnvironments(String filterString)
 		throws Exception {
 
 		return getAllItems("/o/c/environments", filterString, Environment::new);
+	}
+
+	public List<Environment> getOfflineCloudNativeEnvironments(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getEnvironments(
+			StringBundler.concat(
+				"(activationMode eq '",
+				EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
+				"') and (activationStatus eq '",
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+				"') and (offering eq '",
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE,
+				"') and (r_projectToEnvironment_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode), "')"));
 	}
 
 	public void updateEnvironmentActivation(
@@ -171,6 +246,22 @@ public class EnvironmentService extends OneBaseService {
 				"name", name
 			).put(
 				"publicKey", publicKey
+			));
+	}
+
+	public void updateEnvironmentOfflineBundle(
+			Collection<Long> bundledEntitlementIds, long id,
+			String requestedVersion)
+		throws Exception {
+
+		_patchEnvironment(
+			id,
+			new JSONObject(
+			).put(
+				"bundledEntitlementIds",
+				String.valueOf(new JSONArray(bundledEntitlementIds))
+			).put(
+				"requestedVersion", requestedVersion
 			));
 	}
 

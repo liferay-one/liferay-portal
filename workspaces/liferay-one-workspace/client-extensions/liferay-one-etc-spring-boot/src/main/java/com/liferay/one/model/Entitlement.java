@@ -5,6 +5,7 @@
 
 package com.liferay.one.model;
 
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
@@ -33,6 +34,7 @@ public class Entitlement {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToEntitlement_c_projectERC");
 		_quantity = jsonObject.optDoubleObject("quantity", null);
+		_terminationStatus = jsonObject.optString("terminationStatus");
 
 		JSONObject entitlementDefinitionJSONObject = jsonObject.optJSONObject(
 			"entitlementDefinitionToEntitlement");
@@ -120,6 +122,14 @@ public class Entitlement {
 		return _startDateInstant;
 	}
 
+	public String getTerminationStatus() {
+		if (Validator.isNull(_terminationStatus)) {
+			return EntitlementConstants.TERMINATION_STATUS_ACTIVE;
+		}
+
+		return _terminationStatus;
+	}
+
 	public boolean isExpired() {
 		if (_endDateInstant == null) {
 			return false;
@@ -142,5 +152,6 @@ public class Entitlement {
 	private final String _projectExternalReferenceCode;
 	private final Double _quantity;
 	private final Instant _startDateInstant;
+	private final String _terminationStatus;
 
 }

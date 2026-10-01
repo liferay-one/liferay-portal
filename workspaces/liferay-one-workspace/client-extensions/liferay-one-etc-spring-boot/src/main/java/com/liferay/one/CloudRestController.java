@@ -20,14 +20,17 @@ import com.liferay.one.exception.DisasterRecoveryEntitlementException;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.exception.EnvironmentAlreadyActivatedException;
 import com.liferay.one.exception.EnvironmentProfileEntitlementException;
+import com.liferay.one.exception.EnvironmentTypeEntitlementException;
 import com.liferay.one.exception.InvalidEnvironmentAdminsException;
 import com.liferay.one.exception.NoSuchActivationCodeException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Environment;
+import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.model.Project;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.service.AccountService;
@@ -35,9 +38,12 @@ import com.liferay.one.service.CloudActivationRequestService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -69,8 +75,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipEntry;
@@ -109,6 +117,54 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @RestController
 public class CloudRestController extends OneBaseRestController {
 
+	@GetMapping("/environments/{environmentId}/entitlements")
+	public ResponseEntity<String> getEnvironmentsEntitlements(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String environmentId)
+		throws Exception {
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentId, jwt);
+
+		if (environment == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		_checkEnvironmentActivationPermission(environment, jwt);
+
+		JSONArray jsonArray = new JSONArray();
+
+		// The offline activation bundle is built from the same entitled
+		// products. A subscription listed here is still dropped from the
+		// package when no release of it matches the requested DXP version.
+
+		for (EntitledProduct entitledProduct :
+				_getEntitledProducts(_getActiveEntitlements(environment))) {
+
+			Entitlement entitlement = entitledProduct.getEntitlement();
+			Product product = entitledProduct.getProduct();
+
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"entitlementId", entitlement.getEntitlementId()
+				).put(
+					"name", CommerceProductUtil.getName(product)
+				).put(
+					"productExternalReferenceCode",
+					product.getExternalReferenceCode()
+				));
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"subscriptions", jsonArray
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
 	@GetMapping(
 		"/projects/{projectExternalReferenceCode}/entitlements/disaster-recovery"
 	)
@@ -130,6 +186,104 @@ public class CloudRestController extends OneBaseRestController {
 			_entitlementService.hasActiveEntitlement(
 				projectExternalReferenceCode,
 				EntitlementConstants.NAME_DISASTER_RECOVERY)
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
+	@GetMapping(
+		"/projects/{projectExternalReferenceCode}/environments/activation-codes"
+	)
+	public ResponseEntity<String> getProjectsEnvironmentsActivationCodes(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String projectExternalReferenceCode)
+		throws Exception {
+
+		Project project = _environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException();
+		}
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (EnvironmentQuota environmentQuota :
+				_environmentQuotaService.getEnvironmentQuotas(
+					projectExternalReferenceCode)) {
+
+			JSONArray activationCodesJSONArray = new JSONArray();
+
+			for (Environment environment : environmentQuota.getEnvironments()) {
+				activationCodesJSONArray.put(
+					_toActivationCodeJSONObject(environment));
+			}
+
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"activationCodes", activationCodesJSONArray
+				).put(
+					"availableCount", environmentQuota.getAvailableCount()
+				).put(
+					"maxClusterNodes", environmentQuota.getMaxClusterNodes()
+				).put(
+					"totalCount", environmentQuota.getTotalCount()
+				).put(
+					"type", environmentQuota.getType()
+				).put(
+					"unlimited", environmentQuota.isUnlimited()
+				).put(
+					"usedCount", environmentQuota.getUsedCount()
+				));
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"environmentTypes", jsonArray
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
+	@GetMapping("/projects/{projectExternalReferenceCode}/environments/offline")
+	public ResponseEntity<String> getProjectsEnvironmentsOffline(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String projectExternalReferenceCode)
+		throws Exception {
+
+		Project project = _environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException();
+		}
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (Environment environment :
+				_environmentService.getOfflineCloudNativeEnvironments(
+					projectExternalReferenceCode)) {
+
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"bundledEntitlementIds",
+					new JSONArray(environment.getBundledEntitlementIds())
+				).put(
+					"environmentId", environment.getExternalReferenceCode()
+				).put(
+					"environmentName", environment.getName()
+				).put(
+					"requestedVersion", environment.getRequestedVersion()
+				).put(
+					"type", environment.getType()
+				));
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"environments", jsonArray
 		);
 
 		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
@@ -211,6 +365,18 @@ public class CloudRestController extends OneBaseRestController {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(environmentProfileEntitlementException);
+		}
+
+		return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
+	}
+
+	@ExceptionHandler(EnvironmentTypeEntitlementException.class)
+	public ResponseEntity<?> handleException(
+		EnvironmentTypeEntitlementException
+			environmentTypeEntitlementException) {
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(environmentTypeEntitlementException);
 		}
 
 		return new ResponseEntity<>(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -326,7 +492,7 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	@PostMapping("/environments/offline-activation")
-	public ResponseEntity<Void> postEnvironmentsOfflineActivation(
+	public ResponseEntity<String> postEnvironmentsOfflineActivation(
 			@RequestBody String json)
 		throws Exception {
 
@@ -388,7 +554,13 @@ public class CloudRestController extends OneBaseRestController {
 					" for activation code ", activationCode));
 		}
 
-		return new ResponseEntity<>(HttpStatus.OK);
+		JSONObject responseJSONObject = new JSONObject(
+		).put(
+			"environmentId", environmentId
+		);
+
+		return new ResponseEntity<>(
+			responseJSONObject.toString(), HttpStatus.OK);
 	}
 
 	@PostMapping("/environments/{environmentId}/offline-activation-bundle")
@@ -414,9 +586,24 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
+		Set<Long> entitlementIds = _toLongs(
+			jsonObject.optJSONArray("entitlementIds"));
+
+		Set<Long> bundledEntitlementIds = _getBundledEntitlementIds(
+			entitlementIds, environment);
+
 		Path path = _createOfflineActivationBundle(
-			dxpVersion, _toLongs(jsonObject.optJSONArray("entitlementIds")),
-			environment);
+			dxpVersion, entitlementIds, environment);
+
+		try {
+			_environmentService.updateEnvironmentOfflineBundle(
+				bundledEntitlementIds, environment.getId(), dxpVersion);
+		}
+		catch (Exception exception) {
+			Files.deleteIfExists(path);
+
+			throw exception;
+		}
 
 		HttpHeaders httpHeaders = new HttpHeaders();
 
@@ -504,6 +691,68 @@ public class CloudRestController extends OneBaseRestController {
 			httpHeaders, HttpStatus.OK);
 	}
 
+	@PostMapping(
+		"/projects/{projectExternalReferenceCode}/environments/activation-codes"
+	)
+	public ResponseEntity<String> postProjectsEnvironmentsActivationCodes(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String projectExternalReferenceCode,
+			@RequestBody String json)
+		throws Exception {
+
+		Project project = _environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException();
+		}
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		String type = jsonObject.optString("type");
+
+		if (!ArrayUtil.contains(EnvironmentConstants.TYPES, type)) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"The environment type is not recognized");
+		}
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getEnvironmentQuota(
+				projectExternalReferenceCode, type);
+
+		Environment environment = environmentQuota.fetchPendingEnvironment();
+
+		if (environment == null) {
+			if (!environmentQuota.isAvailable()) {
+				throw new EnvironmentTypeEntitlementException(
+					projectExternalReferenceCode, type);
+			}
+
+			environment = _environmentService.fetchOrAddCloudNativeEnvironment(
+				project.getAccountId(),
+				_getContractExternalReferenceCode(
+					environmentQuota.getContractId()),
+				projectExternalReferenceCode, type);
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Generated a ", type,
+						" cloud native activation code for project ",
+						projectExternalReferenceCode));
+			}
+		}
+
+		JSONObject activationCodeJSONObject = _toActivationCodeJSONObject(
+			environment);
+
+		activationCodeJSONObject.put("type", environment.getType());
+
+		return new ResponseEntity<>(
+			activationCodeJSONObject.toString(), HttpStatus.OK);
+	}
+
 	private void _activateEnvironment(
 			String activationCode, String activationMode, String environmentId,
 			String environmentName, String publicKey)
@@ -536,6 +785,21 @@ public class CloudRestController extends OneBaseRestController {
 		_environmentService.updateEnvironmentActivation(
 			activationMode, environmentId, environment.getId(), environmentName,
 			publicKey);
+	}
+
+	private void _checkEnvironmentActivationPermission(
+			Environment environment, Jwt jwt)
+		throws Exception {
+
+		String projectExternalReferenceCode =
+			environment.getProjectExternalReferenceCode();
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			throw new PrincipalException();
+		}
+
+		_environmentActivationPermission.check(
+			jwt, projectExternalReferenceCode);
 	}
 
 	private long _checkEnvironmentProfileEntitlement(
@@ -684,6 +948,24 @@ public class CloudRestController extends OneBaseRestController {
 		return product;
 	}
 
+	private List<Entitlement> _filterByEntitlementId(
+		List<Entitlement> entitlements, Set<Long> entitlementIds) {
+
+		if (entitlementIds.isEmpty()) {
+			return entitlements;
+		}
+
+		List<Entitlement> filteredEntitlements = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (entitlementIds.contains(entitlement.getEntitlementId())) {
+				filteredEntitlements.add(entitlement);
+			}
+		}
+
+		return filteredEntitlements;
+	}
+
 	private String _generateAppLicenseXML(
 			Date expirationDate, String owner, String productId,
 			String productName, Date startDate)
@@ -750,13 +1032,23 @@ public class CloudRestController extends OneBaseRestController {
 		return account.getName();
 	}
 
+	private List<Entitlement> _getActiveEntitlements(Environment environment)
+		throws Exception {
+
+		return _entitlementService.getActiveEntitlements(
+			environment.getAccountEntryId());
+	}
+
 	private JSONArray _getAddOnsJSONArray(
-			List<Product> products, String dxpPatchProductVersion)
+			String dxpPatchProductVersion,
+			List<EntitledProduct> entitledProducts)
 		throws Exception {
 
 		JSONArray jsonArray = new JSONArray();
 
-		for (Product product : products) {
+		for (EntitledProduct entitledProduct : entitledProducts) {
+			Product product = entitledProduct.getProduct();
+
 			ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
 				_commerceProductVirtualSettingsService.
 					fetchProductVirtualSettingsFileEntry(
@@ -769,6 +1061,8 @@ public class CloudRestController extends OneBaseRestController {
 
 				continue;
 			}
+
+			Entitlement entitlement = entitledProduct.getEntitlement();
 
 			jsonArray.put(
 				new JSONObject(
@@ -790,6 +1084,8 @@ public class CloudRestController extends OneBaseRestController {
 					"sha256Checksum",
 					_commerceProductVirtualSettingsService.getSHA256Checksum(
 						productVirtualSettingsFileEntry.getSrc())
+				).put(
+					"terminationStatus", entitlement.getTerminationStatus()
 				).put(
 					"version", productVirtualSettingsFileEntry.getVersion()
 				).put(
@@ -832,51 +1128,39 @@ public class CloudRestController extends OneBaseRestController {
 		return encoder.encodeToString(licenseXML.getBytes());
 	}
 
-	private List<Entitlement> _filterByEntitlementId(
-		List<Entitlement> entitlements, Set<Long> entitlementIds) {
-
-		if (entitlementIds.isEmpty()) {
-			return entitlements;
-		}
-
-		List<Entitlement> filteredEntitlements = new ArrayList<>();
-
-		for (Entitlement entitlement : entitlements) {
-			if (entitlementIds.contains(entitlement.getEntitlementId())) {
-				filteredEntitlements.add(entitlement);
-			}
-		}
-
-		return filteredEntitlements;
-	}
-
-	private Set<Long> _toLongs(JSONArray jsonArray) {
-		Set<Long> longs = new LinkedHashSet<>();
-
-		if (jsonArray == null) {
-			return longs;
-		}
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			longs.add(jsonArray.getLong(i));
-		}
-
-		return longs;
-	}
-
-	private List<Product> _getCloudEnabledProducts(
-			List<Entitlement> entitlements)
+	private Set<Long> _getBundledEntitlementIds(
+			Set<Long> entitlementIds, Environment environment)
 		throws Exception {
 
-		List<Product> products = new ArrayList<>();
+		Set<Long> bundledEntitlementIds = new LinkedHashSet<>();
 
-		for (Product product : _getProducts(entitlements)) {
-			if (_isCloudEnabled(product)) {
-				products.add(product);
-			}
+		for (EntitledProduct entitledProduct :
+				_getEntitledProducts(
+					_filterByEntitlementId(
+						_getActiveEntitlements(environment), entitlementIds))) {
+
+			Entitlement entitlement = entitledProduct.getEntitlement();
+
+			bundledEntitlementIds.add(entitlement.getEntitlementId());
 		}
 
-		return products;
+		return bundledEntitlementIds;
+	}
+
+	private String _getContractExternalReferenceCode(long contractId)
+		throws Exception {
+
+		if (contractId <= 0) {
+			return null;
+		}
+
+		Contract contract = _contractService.fetchContract(contractId);
+
+		if (contract == null) {
+			return null;
+		}
+
+		return contract.getExternalReferenceCode();
 	}
 
 	private String _getDXPVersion(String body) throws Exception {
@@ -885,6 +1169,43 @@ public class CloudRestController extends OneBaseRestController {
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
 		return jwtClaimsSet.getStringClaim("dxpVersion");
+	}
+
+	private List<EntitledProduct> _getEntitledProducts(
+			List<Entitlement> entitlements)
+		throws Exception {
+
+		Map<String, EntitledProduct> entitledProducts = new LinkedHashMap<>();
+
+		for (Entitlement entitlement : entitlements) {
+			Product product = _fetchProduct(entitlement);
+
+			if ((product == null) || !_isCloudEnabled(product)) {
+				continue;
+			}
+
+			String externalReferenceCode = product.getExternalReferenceCode();
+
+			EntitledProduct entitledProduct = entitledProducts.get(
+				externalReferenceCode);
+
+			// A product entitled more than once reports the entitlement that
+			// is furthest from termination, so the manifest never calls a
+			// subscription terminated while the customer still holds it.
+
+			if ((entitledProduct != null) &&
+				(_getTerminationStatusRank(entitledProduct.getEntitlement()) <=
+					_getTerminationStatusRank(entitlement))) {
+
+				continue;
+			}
+
+			entitledProducts.put(
+				externalReferenceCode,
+				new EntitledProduct(entitlement, product));
+		}
+
+		return new ArrayList<>(entitledProducts.values());
 	}
 
 	private Environment _getEnvironment(String body, String environmentId)
@@ -933,9 +1254,7 @@ public class CloudRestController extends OneBaseRestController {
 			Environment environment)
 		throws Exception {
 
-		List<Entitlement> entitlements =
-			_entitlementService.getActiveEntitlements(
-				environment.getAccountEntryId());
+		List<Entitlement> entitlements = _getActiveEntitlements(environment);
 
 		Entitlement cloudNativeEntitlement = null;
 
@@ -961,7 +1280,7 @@ public class CloudRestController extends OneBaseRestController {
 		Date startDate = _toDate(
 			cloudNativeEntitlement.getStartDateInstant(), new Date());
 
-		int maxClusterNodes = _getMaxClusterNodes(
+		int maxClusterNodes = ClusterNodesUtil.getMaxClusterNodes(
 			entitlements, environment.getType());
 
 		// The caller chooses which subscriptions the package covers. The rest
@@ -970,9 +1289,9 @@ public class CloudRestController extends OneBaseRestController {
 		// add-ons that were picked.
 
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
-			_getCloudEnabledProducts(
-				_filterByEntitlementId(entitlements, entitlementIds)),
-			ProductVersion.extractQuarterlyPatchRelease(dxpVersion));
+			ProductVersion.extractQuarterlyPatchRelease(dxpVersion),
+			_getEntitledProducts(
+				_filterByEntitlementId(entitlements, entitlementIds)));
 
 		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
 
@@ -986,6 +1305,9 @@ public class CloudRestController extends OneBaseRestController {
 		).put(
 			"add-ons", addOnsJSONArray
 		).put(
+			"dxpTerminationStatus",
+			cloudNativeEntitlement.getTerminationStatus()
+		).put(
 			"licenseXML",
 			_getAggregateLicenseXML(
 				addOnsJSONArray, _getAccountName(environment),
@@ -997,39 +1319,6 @@ public class CloudRestController extends OneBaseRestController {
 		);
 	}
 
-	private int _getMaxClusterNodes(
-		List<Entitlement> entitlements, String type) {
-
-		int maxClusterNodes = 1;
-
-		if (!_hasProductionSizing(type)) {
-			return maxClusterNodes;
-		}
-
-		for (Entitlement entitlement : entitlements) {
-			if (!ArrayUtil.contains(
-					EntitlementConstants.NAMES_PRODUCTION_PODS,
-					entitlement.getName())) {
-
-				continue;
-			}
-
-			Double quantity = entitlement.getQuantity();
-
-			if (quantity == null) {
-				continue;
-			}
-
-			int curMaxClusterNodes = quantity.intValue();
-
-			if (curMaxClusterNodes > maxClusterNodes) {
-				maxClusterNodes = curMaxClusterNodes;
-			}
-		}
-
-		return maxClusterNodes;
-	}
-
 	private MediaType _getMediaType(List<String> contentTypes) {
 		if (contentTypes.isEmpty()) {
 			return MediaType.APPLICATION_OCTET_STREAM;
@@ -1038,20 +1327,19 @@ public class CloudRestController extends OneBaseRestController {
 		return MediaType.parseMediaType(contentTypes.get(0));
 	}
 
-	private List<Product> _getProducts(List<Entitlement> entitlements)
-		throws Exception {
+	private int _getTerminationStatusRank(Entitlement entitlement) {
+		String terminationStatus = entitlement.getTerminationStatus();
 
-		List<Product> products = new ArrayList<>();
+		String[] terminationStatuses =
+			EntitlementConstants.TERMINATION_STATUSES;
 
-		for (Entitlement entitlement : entitlements) {
-			Product product = _fetchProduct(entitlement);
-
-			if (product != null) {
-				products.add(product);
+		for (int i = 0; i < terminationStatuses.length; i++) {
+			if (Objects.equals(terminationStatuses[i], terminationStatus)) {
+				return i;
 			}
 		}
 
-		return products;
+		return terminationStatuses.length;
 	}
 
 	private boolean _hasAddOn(Product product, String body) throws Exception {
@@ -1063,10 +1351,8 @@ public class CloudRestController extends OneBaseRestController {
 			body, jwtClaimsSet.getStringClaim("environmentID"));
 
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
-			_getCloudEnabledProducts(
-				_entitlementService.getActiveEntitlements(
-					environment.getAccountEntryId())),
-			StringPool.BLANK);
+			StringPool.BLANK,
+			_getEntitledProducts(_getActiveEntitlements(environment)));
 
 		for (int i = 0; i < addOnsJSONArray.length(); i++) {
 			JSONObject addOnJSONObject = addOnsJSONArray.getJSONObject(i);
@@ -1090,21 +1376,24 @@ public class CloudRestController extends OneBaseRestController {
 		return false;
 	}
 
-	private boolean _hasProductionSizing(String type) {
-		if (Objects.equals(type, EnvironmentConstants.TYPE_PRODUCTION) ||
-			Objects.equals(type, EnvironmentConstants.TYPE_UAT)) {
-
-			return true;
-		}
-
-		return false;
-	}
-
 	private boolean _isCloudEnabled(Product product) {
 		return GetterUtil.getBoolean(
 			CommerceProductUtil.getSpecificationValue(
 				product,
 				CommerceProductConstants.SPECIFICATION_KEY_CLOUD_ENABLED));
+	}
+
+	private JSONObject _toActivationCodeJSONObject(Environment environment) {
+		return new JSONObject(
+		).put(
+			"activationCode", environment.getActivationCode()
+		).put(
+			"activationStatus", environment.getActivationStatus()
+		).put(
+			"environmentId", environment.getExternalReferenceCode()
+		).put(
+			"environmentName", environment.getName()
+		);
 	}
 
 	private Date _toDate(Instant instant, Date defaultDate) {
@@ -1113,6 +1402,20 @@ public class CloudRestController extends OneBaseRestController {
 		}
 
 		return Date.from(instant);
+	}
+
+	private Set<Long> _toLongs(JSONArray jsonArray) {
+		Set<Long> longs = new LinkedHashSet<>();
+
+		if (jsonArray == null) {
+			return longs;
+		}
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			longs.add(jsonArray.getLong(i));
+		}
+
+		return longs;
 	}
 
 	private void _writeAddOn(
@@ -1182,10 +1485,16 @@ public class CloudRestController extends OneBaseRestController {
 	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
+	private ContractService _contractService;
+
+	@Autowired
 	private EntitlementService _entitlementService;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;
+
+	@Autowired
+	private EnvironmentQuotaService _environmentQuotaService;
 
 	@Autowired
 	private EnvironmentService _environmentService;
@@ -1195,5 +1504,25 @@ public class CloudRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;
+
+	private static class EntitledProduct {
+
+		public EntitledProduct(Entitlement entitlement, Product product) {
+			_entitlement = entitlement;
+			_product = product;
+		}
+
+		public Entitlement getEntitlement() {
+			return _entitlement;
+		}
+
+		public Product getProduct() {
+			return _product;
+		}
+
+		private final Entitlement _entitlement;
+		private final Product _product;
+
+	}
 
 }
