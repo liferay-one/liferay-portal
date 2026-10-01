@@ -16,7 +16,11 @@ import {parseUTCDateString, toUTCDateString} from '~/utils/dateUtils';
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
 import {GenerateActivationKeyForm} from '../types';
-import {COMPLIMENTARY_PURPOSE_OTHER, getComplimentaryPurpose} from '../utils';
+import {
+	COMPLIMENTARY_PURPOSE_MAX_LENGTH,
+	COMPLIMENTARY_PURPOSE_OTHER,
+	getComplimentaryPurpose,
+} from '../utils';
 
 const NAVIGATION_YEARS_RANGE = 2;
 const START_DATE_DAYS_LIMIT = 29;
@@ -149,6 +153,7 @@ export default function ComplimentaryStep({
 				<Input
 					{...register('purposeDescription')}
 					component="textarea"
+					maxLength={COMPLIMENTARY_PURPOSE_MAX_LENGTH}
 					placeholder={translate('enter-the-purpose')}
 				/>
 			)}
