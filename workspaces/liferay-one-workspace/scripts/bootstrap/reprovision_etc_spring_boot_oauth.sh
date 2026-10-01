@@ -37,10 +37,26 @@ source ../_common.sh
 # docker compose up --detach is a no-op when the image is unchanged, so restart
 # the sidecar explicitly here to force it to re-read the routes.
 #
+# The sidecar also derives its CORS allow list from the same route files, from
+# com.liferay.lxc.dxp.domains, and the portal stamps its own listening port onto
+# every virtual host it writes there: one.localhost:8080, not one.localhost. The
+# compose file publishes the portal on both 80 and 8080, so the site answers at
+# http://one.localhost, and that origin does not match the ported entry. Every
+# browser call to the sidecar then fails its preflight with "Invalid CORS
+# request", which surfaces as a page that renders but silently loses whatever the
+# sidecar feeds it -- the activation keys screen keeps its table and drops the
+# New Key button, because the button is gated on a generate-form response that
+# never arrives. Add the unported form of each domain alongside the ported one so
+# the site works at its domain root as well as on the explicit port.
+#
 # Run this after set_virtual_hosts.sh from every orchestrator that binds a
 # virtual host: bootstrap.sh, instance_reset.sh, and site_reset.sh.
 
 CONTAINER_NAME="liferay"
+
+DXP_DOMAINS_FILE="/opt/liferay/routes/default/dxp/com.liferay.lxc.dxp.domains"
+
+DXP_DOMAINS_FILE_ATTEMPTS=12
 
 SIDECAR_SERVICE="liferay-one-etc-spring-boot"
 
@@ -71,6 +87,8 @@ function main {
 	echo "Waiting for the routes to settle."
 
 	sleep 15
+
+	_allow_unported_origins "${container_id}"
 
 	echo "Restarting the Spring Boot client extension container."
 
@@ -115,6 +133,43 @@ function main {
 	done
 
 	echo " The Spring Boot client extension is ready."
+}
+
+function _allow_unported_origins {
+	local container_id="${1}"
+
+	echo "Allowing the unported form of each virtual host as a CORS origin."
+
+	# The portal rewrites this file whenever the configuration factories run, so
+	# this has to happen after the deploy above and before the sidecar restart
+	# that re-reads it. Rewriting is idempotent: a domain already present, and a
+	# domain that carries no port, are both left alone.
+
+	local attempt=0
+
+	while [ "${attempt}" -lt "${DXP_DOMAINS_FILE_ATTEMPTS}" ]
+	do
+		if docker exec "${container_id}" test -f "${DXP_DOMAINS_FILE}"
+		then
+			docker exec "${container_id}" sh -c "
+				domains=\$(awk '{ print } { sub(/:[0-9]+\$/, \"\"); print }' ${DXP_DOMAINS_FILE} | awk 'NF && !seen[\$0]++')
+
+				printf '%s\\n' \"\${domains}\" > ${DXP_DOMAINS_FILE}
+			"
+
+			return 0
+		fi
+
+		attempt=$((attempt + 1))
+
+		sleep 5
+	done
+
+	# The CORS allow list is a convenience for browsing the site at its domain
+	# root. Losing it costs the unported origin, not the provisioning run, so
+	# warn and carry on rather than failing every orchestrator that calls this.
+
+	echo "Unable to find the DXP domains route file. The unported origins were not allowed." >&2
 }
 
 main "${@}"
