@@ -44,4 +44,8 @@ public class EnvironmentConstants {
 
 	public static final String TYPE_UAT = "uat";
 
+	public static final String[] TYPES = {
+		TYPE_NONPRODUCTION, TYPE_PRODUCTION, TYPE_UAT
+	};
+
 }

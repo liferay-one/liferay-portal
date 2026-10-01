@@ -9,6 +9,15 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -22,6 +31,8 @@ public class Environment {
 		_activationCode = jsonObject.optString("activationCode");
 		_activationMode = jsonObject.optString("activationMode");
 		_activationStatus = jsonObject.optString("activationStatus");
+		_bundledEntitlementIds = _toLongs(
+			jsonObject.optString("bundledEntitlementIds"));
 		_contractId = jsonObject.optLong(
 			"r_contractToEnvironment_c_contractId");
 		_currentEntitlementHash = jsonObject.optString(
@@ -34,6 +45,7 @@ public class Environment {
 			"r_projectToEnvironment_c_projectERC");
 		_publicKey = jsonObject.optString("publicKey");
 		_region = jsonObject.optString("region");
+		_requestedVersion = jsonObject.optString("requestedVersion");
 		_type = jsonObject.optString("type");
 
 		String lastHeartbeatAt = jsonObject.optString("lastHeartbeatAt");
@@ -60,6 +72,10 @@ public class Environment {
 
 	public String getActivationStatus() {
 		return _activationStatus;
+	}
+
+	public List<Long> getBundledEntitlementIds() {
+		return _bundledEntitlementIds;
 	}
 
 	public long getContractId() {
@@ -102,14 +118,51 @@ public class Environment {
 		return _region;
 	}
 
+	public String getRequestedVersion() {
+		return _requestedVersion;
+	}
+
 	public String getType() {
 		return _type;
 	}
+
+	private List<Long> _toLongs(String json) {
+		if (Validator.isNull(json)) {
+			return Collections.emptyList();
+		}
+
+		// An unreadable value leaves the environment without a bundle rather
+		// than failing every endpoint that lists environments for its project.
+
+		try {
+			JSONArray jsonArray = new JSONArray(json);
+
+			List<Long> longs = new ArrayList<>(jsonArray.length());
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				longs.add(jsonArray.getLong(i));
+			}
+
+			return longs;
+		}
+		catch (JSONException jsonException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to read the bundled entitlement IDs",
+					jsonException);
+			}
+
+			return Collections.emptyList();
+		}
+	}
+
+	private static final Log _log = LogFactory.getLog(Environment.class);
 
 	private final long _accountEntryId;
 	private final String _activationCode;
 	private final String _activationMode;
 	private final String _activationStatus;
+	private final List<Long> _bundledEntitlementIds;
 	private final long _contractId;
 	private final String _currentEntitlementHash;
 	private final String _externalReferenceCode;
@@ -120,6 +173,7 @@ public class Environment {
 	private final String _projectExternalReferenceCode;
 	private final String _publicKey;
 	private final String _region;
+	private final String _requestedVersion;
 	private final String _type;
 
 }
