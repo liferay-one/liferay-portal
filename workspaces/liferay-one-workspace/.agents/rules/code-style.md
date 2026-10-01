@@ -134,3 +134,31 @@ AccountResource accountResource = AccountResource.builder()...build();
 Account account = new Account();
 account.setName(...);
 ```
+
+## Null Means Unknown in Partial Updates
+
+A JSM sync, or any code that assembles several values from separate sources and then writes them in one upsert, must not let one failed source abort or corrupt the others. The contract is: a value that could not be fetched is `null`, `null` means unknown, and unknown is never written.
+
+- **The owning model catches, logs, and returns `null`.** Service-backed getters on a `*SyncModel` do not throw. The synchronizer stays free of try/catch around attribute assembly and drops `throws Exception`.
+- **Never flatten unknown to empty.** An empty list or map is a real value that deletes every existing reference in JSM. `JiraAssetObject.setAttributeValue` ignores `null`, so leaving the attribute unset keeps the previous value.
+- **Control flow skips on `null`.** A stale-assignment sweep (`syncRoles`, `syncOrganizations`) given an empty set unassigns everything, so its input is checked for `null` before it runs. A loop over a nullable list is guarded, not defaulted.
+- **Layered attributes do not backfill.** When a project asset sets the same attribute as its account, set it only from the project's value. Setting the account's first and relying on the project's to override lets a `null` project value leave the account's in place.
+- **Memoize the outcome, not the value.** A memo field that stays `null` after a failure cannot tell "failed" from "not fetched yet", so every consumer in the same sync retries the dead service and logs again. Use `MemoizedValue` (`com.liferay.one.util.MemoizedValue`), which evaluates once and returns `null` thereafter.
+- **A getter that depends on another getter returns `null` when its input is `null`**, without logging a second time. Sibling getters in one model share one control-flow shape.
+
+```java
+// Wrong — unknown becomes empty, and JSM deletes every reference
+List<String> accountERCs = Collections.emptyList();
+
+try {
+	accountERCs = _getAccountERCs();
+}
+catch (Exception exception) {
+	_log.error("Unable to get accounts", exception);
+}
+
+// Correct — the model owns it; null leaves the attribute untouched
+_accountExternalReferenceCodes = new MemoizedValue<>(
+	"accounts for user account " + externalReferenceCode, _log,
+	this::_toAccountExternalReferenceCodes);
+```
