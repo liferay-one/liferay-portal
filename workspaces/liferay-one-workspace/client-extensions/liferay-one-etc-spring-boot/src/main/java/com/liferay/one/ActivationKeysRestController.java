@@ -132,6 +132,10 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			_environmentActivationPermission.checkLicenseKeyActivation(
 				jwt, projectExternalReferenceCode);
 
+		if (project == null) {
+			throw new ProjectNotFoundException(projectExternalReferenceCode);
+		}
+
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
 
@@ -140,7 +144,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			MediaType.APPLICATION_JSON
 		).body(
 			_licenseKeyGenerateFormService.getGenerateForm(
-				_adminPermission.contains(jwt), projectExternalReferenceCode,
+				_adminPermission.contains(jwt), project,
 				renewedActivationKeyExternalReferenceCode
 			).toString()
 		);
@@ -153,15 +157,20 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				projectExternalReferenceCode)
 		throws Exception {
 
-		_environmentActivationPermission.checkLicenseKeyActivation(
-			jwt, projectExternalReferenceCode);
+		Project project =
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				jwt, projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException(projectExternalReferenceCode);
+		}
 
 		return ResponseEntity.ok(
 		).contentType(
 			MediaType.APPLICATION_JSON
 		).body(
 			_licenseKeyGenerateFormService.getSummary(
-				_adminPermission.contains(jwt), projectExternalReferenceCode
+				_adminPermission.contains(jwt), project
 			).toString()
 		);
 	}
@@ -218,12 +227,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		boolean active = getRequiredBoolean(jsonObject, "active");
 
 		if (activationKey.isComplimentary()) {
-
-			// A complimentary key is granted once and the customer cannot hand
-			// it back, so only an administrator retires it, and retiring it is
-			// what frees the grant for another. Reactivating would hand back a
-			// grant that has since been spent.
-
 			_adminPermission.check(jwt);
 
 			if (active) {
@@ -311,10 +314,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private void _checkKeyType(String keyType, Jwt jwt) throws Exception {
-
-		// A key type reserved for administrators is filtered out of the
-		// generate form, so a request naming one did not come from the form.
-
 		LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
 			keyType);
 
