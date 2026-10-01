@@ -353,6 +353,18 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
+	private void _checkComplimentaryEntitlement(Entitlement entitlement)
+		throws Exception {
+
+		if (!Objects.equals(
+				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+				LicenseKeyGenerateFormService.getLicenseKeyType(entitlement))) {
+
+			throw new LicenseKeyEntitlementException(
+				"The selected entitlement does not grant a complimentary key");
+		}
+	}
+
 	private void _checkQuota(
 			List<Entitlement> bundleEntitlements,
 			GenerateRequest generateRequest, Project project)
@@ -513,6 +525,7 @@ public class LicenseKeyGenerationService {
 
 		if (complimentary) {
 			_checkComplimentary(project);
+			_checkComplimentaryEntitlement(subscriptionEntitlement);
 
 			Calendar calendar = Calendar.getInstance(
 				TimeZone.getTimeZone("UTC"));

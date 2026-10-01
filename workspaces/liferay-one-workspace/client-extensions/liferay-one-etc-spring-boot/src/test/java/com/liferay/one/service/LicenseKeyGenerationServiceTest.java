@@ -254,7 +254,8 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryBundlesNothingElse()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0), _toEntitlement(2L, 5.0));
+		_stubEntitlements(
+			_toComplimentaryEntitlement(1L, 1.0), _toEntitlement(2L, 5.0));
 
 		_stubLicensedProducts();
 
@@ -335,7 +336,7 @@ public class LicenseKeyGenerationServiceTest {
 			}
 		);
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -358,7 +359,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryIsFlaggedAndTimeBoxed()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -402,7 +403,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryIsSizing4()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -428,7 +429,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryRejectsAnExpiredTerm()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -447,10 +448,31 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAProductionEntitlement()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlementOfKeyType(1L, 5.0, "production"));
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(1)));
+
+		Assertions.assertEquals(
+			"The selected entitlement does not grant a complimentary key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryRejectsASecondServer()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -473,7 +495,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryStoresThePurpose()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -493,7 +515,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryUsesTheRequestedStartDate()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -563,7 +585,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryWithoutActivationsLeft()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -664,7 +686,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyFlagsComplimentaryLicenseKeys()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0));
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
 
 		_stubLicensedProducts();
 
@@ -1173,6 +1195,13 @@ public class LicenseKeyGenerationServiceTest {
 		);
 	}
 
+	private Entitlement _toComplimentaryEntitlement(
+		long entitlementId, Double maxQuantity) {
+
+		return _toEntitlementOfKeyType(
+			entitlementId, maxQuantity, "complimentary");
+	}
+
 	private LicenseKeyGenerationService.GenerateRequest
 		_toComplimentaryGenerateRequest(int serverCount) {
 
@@ -1233,6 +1262,31 @@ public class LicenseKeyGenerationServiceTest {
 				"licenseKeyDurationDays", licenseKeyDurationDays
 			).put(
 				"skuExternalReferenceCode", skuExternalReferenceCode
+			)
+		).put(
+			"id", entitlementId
+		).put(
+			"name", "Entitlement " + entitlementId
+		);
+
+		if (maxQuantity != null) {
+			jsonObject.put("maxQuantity", maxQuantity);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _toEntitlementOfKeyType(
+		long entitlementId, Double maxQuantity, String licenseKeyType) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"entitlementDefinitionToEntitlement",
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"licenseKeyType", licenseKeyType
 			)
 		).put(
 			"id", entitlementId

@@ -53,6 +53,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class LicenseKeyGenerateFormService {
 
+	public static String getLicenseKeyType(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return StringPool.BLANK;
+		}
+
+		return entitlementDefinition.getLicenseKeyType();
+	}
+
 	public static int getTotalCount(Entitlement entitlement) {
 		Double maxQuantity = entitlement.getMaxQuantity();
 
@@ -524,17 +535,6 @@ public class LicenseKeyGenerateFormService {
 		return licenseEntries;
 	}
 
-	private String _getLicenseKeyType(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return StringPool.BLANK;
-		}
-
-		return entitlementDefinition.getLicenseKeyType();
-	}
-
 	private Map<String, Map<String, Entitlement>>
 		_getLicenseKeyTypeEntitlements(
 			List<Entitlement> entitlements,
@@ -551,7 +551,7 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			String licenseKeyType = _getLicenseKeyType(entitlement);
+			String licenseKeyType = getLicenseKeyType(entitlement);
 
 			if (Validator.isNull(licenseKeyType)) {
 				continue;
@@ -729,13 +729,13 @@ public class LicenseKeyGenerateFormService {
 		List<Entitlement> orderedEntitlements = new ArrayList<>();
 
 		for (Entitlement entitlement : entitlements) {
-			if (Validator.isNull(_getLicenseKeyType(entitlement))) {
+			if (Validator.isNull(getLicenseKeyType(entitlement))) {
 				orderedEntitlements.add(entitlement);
 			}
 		}
 
 		for (Entitlement entitlement : entitlements) {
-			if (Validator.isNotNull(_getLicenseKeyType(entitlement))) {
+			if (Validator.isNotNull(getLicenseKeyType(entitlement))) {
 				orderedEntitlements.add(entitlement);
 			}
 		}
