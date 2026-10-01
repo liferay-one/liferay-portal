@@ -4,13 +4,14 @@
  */
 
 import {differenceInDays, format} from 'date-fns';
+import {useMemo} from 'react';
 import {useProject} from '~/context/ProjectContext';
 import {
 	ActivationKeyLicenseKey,
 	LicenseKeyNode,
 	toActivationKeyLicenseKey,
 } from '~/hooks/useActivationKeyLicenseKeys';
-import {useFetch} from '~/hooks/useFetch';
+import {useObjectItems} from '~/hooks/useObjectItems';
 import {Word} from '~/i18n';
 import {
 	getLeadingProductLabel,
@@ -20,8 +21,6 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
 import escapeODataString from '~/utils/escapeODataString';
-
-import type {APIResponse} from '~/types/api';
 
 export type ProjectActivationKey = {
 	activationKeyId: string;
@@ -57,7 +56,8 @@ type ActivationKeyNode = {
 	type?: string;
 };
 
-const ACTIVATION_KEY_PAGE_SIZE = 200;
+const ACTIVATION_KEY_FIELDS =
+	'active,dateCreated,endDate,externalReferenceCode,id,startDate,type';
 
 const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
@@ -71,7 +71,22 @@ const NON_PRODUCTION_KEY_TYPES = [
 	'uat',
 ];
 
-const PROJECT_LICENSE_KEY_PAGE_SIZE = 1000;
+const PROJECT_LICENSE_KEY_FIELDS = [
+	'active',
+	'complimentary',
+	'customExpirationDate',
+	'dateCreated',
+	'description',
+	'externalReferenceCode',
+	'id',
+	'licenseType',
+	'name',
+	'productName',
+	'productVersion',
+	'r_activationKeyToLicenseKey_c_activationKeyId',
+	'r_commerceProductToLicenseKey_CProductERC',
+	'startDate',
+].join(',');
 
 const RENEWAL_WINDOW_DAYS = 90;
 
@@ -211,69 +226,67 @@ export function useProjectActivationKeys() {
 			: SearchBuilder.eq(accountField, String(accountId));
 
 	const {
-		data,
 		error,
-		isLoading: loading,
+		items: activationKeyNodes,
+		loading,
 		revalidate,
-	} = useFetch<APIResponse<ActivationKeyNode>>(
+	} = useObjectItems<ActivationKeyNode>(
 		enabled ? '/o/c/activationkeys' : null,
 		{
-			params: {
-				filter: scope(
-					'r_projectToActivationKey_c_projectERC',
-					'r_accountEntryToActivationKey_accountEntryId'
-				),
-				pageSize: ACTIVATION_KEY_PAGE_SIZE,
-				sort: 'startDate:desc',
-			},
+			fields: ACTIVATION_KEY_FIELDS,
+			filter: scope(
+				'r_projectToActivationKey_c_projectERC',
+				'r_accountEntryToActivationKey_accountEntryId'
+			),
+			sort: 'startDate:desc',
 		}
 	);
 
-	const {data: licenseKeyData, isLoading: loadingLicenseKeys} = useFetch<
-		APIResponse<LicenseKeyNode>
-	>(enabled ? '/o/c/licensekeys' : null, {
-		params: {
+	const {items: licenseKeyNodes, loading: loadingLicenseKeys} =
+		useObjectItems<LicenseKeyNode>(enabled ? '/o/c/licensekeys' : null, {
+			fields: PROJECT_LICENSE_KEY_FIELDS,
 			filter: scope(
 				'r_projectToLicenseKey_c_projectERC',
 				'r_accountEntryToLicenseKey_accountEntryId'
 			),
-			pageSize: PROJECT_LICENSE_KEY_PAGE_SIZE,
-		},
-	});
+		});
 
-	const licenseKeysByActivationKeyId = new Map<
-		number,
-		ActivationKeyLicenseKey[]
-	>();
+	const activationKeys = useMemo(() => {
+		const licenseKeysByActivationKeyId = new Map<
+			number,
+			ActivationKeyLicenseKey[]
+		>();
 
-	const unaggregatedActivationKeys: ProjectActivationKey[] = [];
+		const unaggregatedActivationKeys: ProjectActivationKey[] = [];
 
-	for (const node of licenseKeyData?.items ?? []) {
-		const licenseKey = toActivationKeyLicenseKey(node);
+		for (const node of licenseKeyNodes ?? []) {
+			const licenseKey = toActivationKeyLicenseKey(node);
 
-		if (!licenseKey.activationKeyId) {
-			if (licenseKey.externalReferenceCode) {
-				unaggregatedActivationKeys.push(
-					toUnaggregatedActivationKey(node)
-				);
+			if (!licenseKey.activationKeyId) {
+				if (licenseKey.externalReferenceCode) {
+					unaggregatedActivationKeys.push(
+						toUnaggregatedActivationKey(node)
+					);
+				}
+
+				continue;
 			}
 
-			continue;
+			const activationKeyLicenseKeys =
+				licenseKeysByActivationKeyId.get(licenseKey.activationKeyId) ??
+				[];
+
+			activationKeyLicenseKeys.push(licenseKey);
+
+			licenseKeysByActivationKeyId.set(
+				licenseKey.activationKeyId,
+				activationKeyLicenseKeys
+			);
 		}
 
-		const activationKeyLicenseKeys =
-			licenseKeysByActivationKeyId.get(licenseKey.activationKeyId) ?? [];
-
-		activationKeyLicenseKeys.push(licenseKey);
-
-		licenseKeysByActivationKeyId.set(
-			licenseKey.activationKeyId,
-			activationKeyLicenseKeys
-		);
-	}
-
-	const activationKeys: ProjectActivationKey[] = (data?.items ?? []).map(
-		(node) => {
+		const aggregatedActivationKeys: ProjectActivationKey[] = (
+			activationKeyNodes ?? []
+		).map((node) => {
 			const activationKeyLicenseKeys = node.id
 				? licenseKeysByActivationKeyId.get(node.id) ?? []
 				: [];
@@ -298,11 +311,13 @@ export function useProjectActivationKeys() {
 				status: getStatus(node),
 				type: node.type ?? '',
 			};
-		}
-	);
+		});
+
+		return [...aggregatedActivationKeys, ...unaggregatedActivationKeys];
+	}, [activationKeyNodes, licenseKeyNodes]);
 
 	return {
-		activationKeys: [...activationKeys, ...unaggregatedActivationKeys],
+		activationKeys,
 		error,
 		loading: loading || loadingLicenseKeys,
 		revalidate,

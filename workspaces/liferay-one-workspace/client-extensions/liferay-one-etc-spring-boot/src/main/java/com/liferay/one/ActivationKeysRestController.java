@@ -146,6 +146,26 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		);
 	}
 
+	@GetMapping("/summary")
+	public ResponseEntity<String> getActivationKeysSummary(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("projectExternalReferenceCode") String
+				projectExternalReferenceCode)
+		throws Exception {
+
+		_environmentActivationPermission.checkLicenseKeyActivation(
+			jwt, projectExternalReferenceCode);
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			_licenseKeyGenerateFormService.getSummary(
+				_adminPermission.contains(jwt), projectExternalReferenceCode
+			).toString()
+		);
+	}
+
 	@GetMapping("/subscriptions")
 	public ResponseEntity<String> getSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
