@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.LicenseVersion;
+import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -44,6 +45,8 @@ import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -149,9 +152,11 @@ public class LicenseKeyGenerationService {
 		public GenerateRequest(
 			List<Long> bundleEntitlementIds, String dataCenterLocation,
 			String description, String environmentName, String keyType,
-			Project project, String renewedActivationKeyExternalReferenceCode,
-			List<Server> servers, long subscriptionEntitlementId,
-			String version, String workspaceName, String workspaceOwnerEmail) {
+			Project project, String purpose,
+			String renewedActivationKeyExternalReferenceCode,
+			List<Server> servers, Date startDate,
+			long subscriptionEntitlementId, String version,
+			String workspaceName, String workspaceOwnerEmail) {
 
 			_bundleEntitlementIds = bundleEntitlementIds;
 			_dataCenterLocation = dataCenterLocation;
@@ -159,9 +164,11 @@ public class LicenseKeyGenerationService {
 			_environmentName = environmentName;
 			_keyType = keyType;
 			_project = project;
+			_purpose = purpose;
 			_renewedActivationKeyExternalReferenceCode =
 				renewedActivationKeyExternalReferenceCode;
 			_servers = servers;
+			_startDate = startDate;
 			_subscriptionEntitlementId = subscriptionEntitlementId;
 			_version = version;
 			_workspaceName = workspaceName;
@@ -192,12 +199,20 @@ public class LicenseKeyGenerationService {
 			return _project;
 		}
 
+		public String getPurpose() {
+			return _purpose;
+		}
+
 		public String getRenewedActivationKeyExternalReferenceCode() {
 			return _renewedActivationKeyExternalReferenceCode;
 		}
 
 		public List<Server> getServers() {
 			return _servers;
+		}
+
+		public Date getStartDate() {
+			return _startDate;
 		}
 
 		public long getSubscriptionEntitlementId() {
@@ -250,8 +265,10 @@ public class LicenseKeyGenerationService {
 		private final String _environmentName;
 		private final String _keyType;
 		private final Project _project;
+		private final String _purpose;
 		private final String _renewedActivationKeyExternalReferenceCode;
 		private final List<Server> _servers;
+		private final Date _startDate;
 		private final long _subscriptionEntitlementId;
 		private final String _version;
 		private final String _workspaceName;
@@ -293,7 +310,8 @@ public class LicenseKeyGenerationService {
 
 		return _licenseKeyService.addLicenseKey(
 			project.getAccountId(), project.getName(),
-			activationKey.getActivationKeyId(), true, null,
+			activationKey.getActivationKeyId(), true,
+			_getAdditionalInfo(generateRequest),
 			licensedProduct._getExternalReferenceCode(), complimentary,
 			generateRequest.getDataCenterLocation(), description,
 			StringPool.BLANK, entitlementDefinitionId,
@@ -499,6 +517,10 @@ public class LicenseKeyGenerationService {
 			Calendar calendar = Calendar.getInstance(
 				TimeZone.getTimeZone("UTC"));
 
+			if (generateRequest.getStartDate() != null) {
+				calendar.setTime(generateRequest.getStartDate());
+			}
+
 			calendar.set(Calendar.MILLISECOND, 0);
 
 			startDate = calendar.getTime();
@@ -510,6 +532,11 @@ public class LicenseKeyGenerationService {
 					LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS));
 
 			expirationDate = calendar.getTime();
+
+			if (!expirationDate.after(new Date())) {
+				throw new LicenseKeyDateException(
+					"Invalid start date or expiration date");
+			}
 
 			bundleEntitlements = Collections.singletonList(
 				subscriptionEntitlement);
@@ -559,6 +586,19 @@ public class LicenseKeyGenerationService {
 		}
 
 		return activationKey;
+	}
+
+	private String _getAdditionalInfo(GenerateRequest generateRequest) {
+		if (!_isComplimentary(generateRequest) ||
+			Validator.isNull(generateRequest.getPurpose())) {
+
+			return null;
+		}
+
+		return new JSONObject(
+		).put(
+			"purpose", generateRequest.getPurpose()
+		).toString();
 	}
 
 	private List<Entitlement> _getBundleEntitlements(

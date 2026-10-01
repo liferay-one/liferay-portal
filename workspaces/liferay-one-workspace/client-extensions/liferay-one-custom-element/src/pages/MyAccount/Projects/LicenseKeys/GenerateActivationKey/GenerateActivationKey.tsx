@@ -4,6 +4,7 @@
  */
 
 import ClayAlert from '@clayui/alert';
+import {format} from 'date-fns';
 import {useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {Navigate, useNavigate, useSearchParams} from 'react-router-dom';
@@ -23,10 +24,12 @@ import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import Cloud from '~/services/spring-boot/Cloud';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import {scrollToTop} from '~/utils/browserUtils';
+import {toISODate} from '~/utils/dateUtils';
 
 import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
 import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
+import ComplimentaryStep from './ComplimentaryStep/ComplimentaryStep';
 import DSRStep from './DSRStep/DSRStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
 import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
@@ -46,6 +49,7 @@ import {
 	buildEmptyServer,
 	findMatchingVersion,
 	getBundleProducts,
+	getComplimentaryPurpose,
 	hasAvailableKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
@@ -99,8 +103,11 @@ export default function GenerateActivationKey() {
 			offlineModifying: false,
 			offlineSubscriptionIds: [],
 			productExternalReferenceCode: '',
+			purpose: '',
+			purposeDescription: '',
 			serverField: 'hostName',
 			servers: [buildEmptyServer()],
+			startDate: format(new Date(), 'yyyy-MM-dd'),
 			subscriptionEntitlementId: 0,
 			version: '',
 			workspaceName: '',
@@ -343,7 +350,7 @@ export default function GenerateActivationKey() {
 
 	function onClickContinueSubscription() {
 		if (complimentary) {
-			goTo('environment');
+			goTo('complimentary');
 
 			return;
 		}
@@ -482,6 +489,9 @@ export default function GenerateActivationKey() {
 
 		let activationKeyId;
 
+		const startsToday =
+			values.startDate === format(new Date(), 'yyyy-MM-dd');
+
 		try {
 			({activationKeyId} = await ActivationKeys.generateActivationKey({
 				bundleEntitlementIds: values.bundleEntitlementIds,
@@ -490,9 +500,19 @@ export default function GenerateActivationKey() {
 				environmentName: values.environmentName,
 				keyType: values.keyType,
 				projectExternalReferenceCode: projectId,
+				purpose: complimentary
+					? getComplimentaryPurpose(
+							values.purpose,
+							values.purposeDescription
+						)
+					: undefined,
 				renewedActivationKeyExternalReferenceCode:
 					renewExternalReferenceCode ?? undefined,
 				servers: values.servers,
+				startDate:
+					complimentary && !startsToday
+						? toISODate(values.startDate)
+						: undefined,
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
 				version: values.version,
 				workspaceName: values.workspaceName || undefined,
@@ -575,6 +595,8 @@ export default function GenerateActivationKey() {
 			'please-copy-and-paste-the-activation-code-for-the-environment-type-you-would-like-to-activate-into-your-server',
 		'add-ons':
 			'select-the-items-you-would-like-to-include-in-the-activation-key',
+		'complimentary':
+			'select-the-subscription-and-key-type-you-would-like-to-generate',
 		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
@@ -642,6 +664,15 @@ export default function GenerateActivationKey() {
 						/>
 					)}
 
+					{step === 'complimentary' && (
+						<ComplimentaryStep
+							form={form}
+							onClickBack={() => goTo('subscription')}
+							onClickCancel={onClickCancel}
+							onClickContinue={() => goTo('environment')}
+						/>
+					)}
+
 					{step === 'activation-codes' && (
 						<ActivationCodesStep
 							keyType={keyType}
@@ -692,7 +723,7 @@ export default function GenerateActivationKey() {
 							onClickBack={() =>
 								goTo(
 									complimentary
-										? 'subscription'
+										? 'complimentary'
 										: needsDSRStep
 											? 'dsr'
 											: 'add-ons'

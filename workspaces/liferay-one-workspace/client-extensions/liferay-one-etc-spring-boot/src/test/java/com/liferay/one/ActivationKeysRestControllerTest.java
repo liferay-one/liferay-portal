@@ -25,8 +25,11 @@ import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
+import java.time.Instant;
+
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,6 +43,7 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * @author Pedro Oliveira
@@ -503,13 +507,51 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertEquals(
 			"Desjardins Insurance", generateRequest.getEnvironmentName());
 		Assertions.assertEquals("DXP Backup", generateRequest.getKeyType());
+		Assertions.assertEquals("Load testing", generateRequest.getPurpose());
 		Assertions.assertEquals(
 			2,
 			generateRequest.getServers(
 			).size());
 		Assertions.assertEquals(
+			Date.from(Instant.parse("2026-09-20T15:00:00.000Z")),
+			generateRequest.getStartDate());
+		Assertions.assertEquals(
 			101L, generateRequest.getSubscriptionEntitlementId());
 		Assertions.assertEquals("7.4", generateRequest.getVersion());
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateRejectsAnInvalidStartDate()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		String json = new JSONObject(
+			_toGenerateJSON()
+		).put(
+			"startDate", "not-a-date"
+		).toString();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> activationKeysRestController.postActivationKeysGenerate(
+					null, json));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertEquals(
+			"Invalid \"startDate\"", responseStatusException.getReason());
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
 
 	private ActivationKeysRestController _createController() throws Exception {
@@ -636,6 +678,8 @@ public class ActivationKeysRestControllerTest {
 		).put(
 			"projectExternalReferenceCode", _PROJECT_ERC
 		).put(
+			"purpose", "Load testing"
+		).put(
 			"servers",
 			new JSONArray(
 			).put(
@@ -653,6 +697,8 @@ public class ActivationKeysRestControllerTest {
 					"ipAddresses", "10.2.16.124"
 				)
 			)
+		).put(
+			"startDate", "2026-09-20T15:00:00.000Z"
 		).put(
 			"subscriptionEntitlementId", 101L
 		).put(
