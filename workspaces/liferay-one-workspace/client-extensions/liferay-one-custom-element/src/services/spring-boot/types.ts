@@ -150,7 +150,6 @@ export type PostalAddress = {
 };
 
 export type AccountProperties = {
-	allowComplimentary: string;
 	allowPermanentLicenses: string;
 	allowSelfProvisioning: string;
 };
