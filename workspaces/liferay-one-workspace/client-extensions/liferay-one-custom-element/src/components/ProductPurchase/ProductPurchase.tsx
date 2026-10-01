@@ -409,6 +409,7 @@ const CircleSteps: React.FC<CircleStepsProps> = ({className, steps}) => {
 
 type ProductPurchaseProps = {
 	children: ReactNode;
+	width?: number;
 } & React.HTMLAttributes<HTMLDivElement>;
 
 type ProductPurchaseChildrens = {
@@ -424,11 +425,16 @@ type ProductPurchaseChildrens = {
 };
 
 const ProductPurchase: React.FC<ProductPurchaseProps> &
-	ProductPurchaseChildrens = ({children, className, ...props}) => (
+	ProductPurchaseChildrens = ({
+	children,
+	className,
+	width = 600,
+	...props
+}) => (
 	<div
 		{...props}
 		className={classNames('container', className)}
-		style={{width: 600}}
+		style={{width}}
 	>
 		{children}
 	</div>
