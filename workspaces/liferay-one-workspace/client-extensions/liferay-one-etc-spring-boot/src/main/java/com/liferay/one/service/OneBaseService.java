@@ -72,7 +72,7 @@ public abstract class OneBaseService extends BaseService {
 			String path, String filterString, Function<JSONObject, T> function)
 		throws Exception {
 
-		return _getAllItems(path, filterString, function, null, null);
+		return _getAllItems(path, null, filterString, function, null, null);
 	}
 
 	protected <T> List<T> getAllItems(
@@ -80,7 +80,7 @@ public abstract class OneBaseService extends BaseService {
 			Jwt jwt)
 		throws Exception {
 
-		return _getAllItems(path, filterString, function, jwt, null);
+		return _getAllItems(path, null, filterString, function, jwt, null);
 	}
 
 	protected <T> List<T> getAllItems(
@@ -88,7 +88,22 @@ public abstract class OneBaseService extends BaseService {
 			String nestedFields)
 		throws Exception {
 
-		return _getAllItems(path, filterString, function, null, nestedFields);
+		return _getAllItems(
+			path, null, filterString, function, null, nestedFields);
+	}
+
+	/**
+	 * Returns every item with only the given fields serialized. A projection
+	 * keeps a page small when the caller reads a handful of fields off an
+	 * object that carries dozens, since the portal otherwise writes every
+	 * field plus the action and permission envelopes.
+	 */
+	protected <T> List<T> getAllProjectedItems(
+			String path, String fields, String filterString,
+			Function<JSONObject, T> function)
+		throws Exception {
+
+		return _getAllItems(path, fields, filterString, function, null, null);
 	}
 
 	protected String getAuthorization() {
@@ -142,8 +157,8 @@ public abstract class OneBaseService extends BaseService {
 	}
 
 	private <T> List<T> _getAllItems(
-			String path, String filterString, Function<JSONObject, T> function,
-			Jwt jwt, String nestedFields)
+			String path, String fields, String filterString,
+			Function<JSONObject, T> function, Jwt jwt, String nestedFields)
 		throws Exception {
 
 		List<T> items = new ArrayList<>();
@@ -161,6 +176,12 @@ public abstract class OneBaseService extends BaseService {
 				);
 
 			Map<String, Object> uriVariables = new HashMap<>();
+
+			if (fields != null) {
+				uriComponentsBuilder.queryParam("fields", "{fields}");
+
+				uriVariables.put("fields", fields);
+			}
 
 			if (filterString != null) {
 				uriComponentsBuilder.queryParam("filter", "{filter}");

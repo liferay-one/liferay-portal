@@ -230,6 +230,29 @@ public class LicenseKeyGenerateFormService {
 		);
 	}
 
+	/**
+	 * Returns only what the activation key list reads off the generate form:
+	 * whether anything is left to generate, and the Cloud Native subscription
+	 * dates each environment row is stamped with. The list has no use for the
+	 * products, bundle products, versions and license entry types the form
+	 * also carries.
+	 */
+	public JSONObject getSummary(
+			boolean admin, String projectExternalReferenceCode)
+		throws Exception {
+
+		JSONObject generateFormJSONObject = getGenerateForm(
+			admin, projectExternalReferenceCode, null);
+
+		return new JSONObject(
+		).put(
+			"cloudNativeKeyTypes",
+			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
+		).put(
+			"generatable", _isGeneratable(generateFormJSONObject)
+		);
+	}
+
 	public String getLicenseEntryFamily(Product product) throws Exception {
 		Map<String, String> specificationValues =
 			_commerceProductService.getSpecificationValues(
@@ -313,6 +336,57 @@ public class LicenseKeyGenerateFormService {
 		return GetterUtil.getBoolean(
 			specificationValues.get(
 				ProductSpecificationConstants.KEY_GENERATES_ACTIVATION_KEY));
+	}
+
+	private JSONArray _getCloudNativeKeyTypesJSONArray(
+		JSONObject generateFormJSONObject) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		JSONArray productsJSONArray = generateFormJSONObject.getJSONArray(
+			"products");
+
+		for (int i = 0; i < productsJSONArray.length(); i++) {
+			JSONObject productJSONObject = productsJSONArray.getJSONObject(i);
+
+			if (!Objects.equals(
+					LicenseKeyGenerationConstants.
+						PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
+					productJSONObject.optString("externalReferenceCode"))) {
+
+				continue;
+			}
+
+			JSONArray keyTypesJSONArray = productJSONObject.getJSONArray(
+				"keyTypes");
+
+			for (int j = 0; j < keyTypesJSONArray.length(); j++) {
+				JSONObject keyTypeJSONObject = keyTypesJSONArray.getJSONObject(
+					j);
+
+				JSONArray subscriptionsJSONArray =
+					keyTypeJSONObject.getJSONArray("subscriptions");
+
+				if (subscriptionsJSONArray.length() == 0) {
+					continue;
+				}
+
+				JSONObject subscriptionJSONObject =
+					subscriptionsJSONArray.getJSONObject(0);
+
+				jsonArray.put(
+					new JSONObject(
+					).put(
+						"endDate", subscriptionJSONObject.opt("endDate")
+					).put(
+						"key", keyTypeJSONObject.optString("key")
+					).put(
+						"startDate", subscriptionJSONObject.opt("startDate")
+					));
+			}
+		}
+
+		return jsonArray;
 	}
 
 	private List<EntitledProduct> _getEntitledProducts(
@@ -588,6 +662,37 @@ public class LicenseKeyGenerateFormService {
 
 			if (!licenseEntries.isEmpty()) {
 				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isGeneratable(JSONObject generateFormJSONObject) {
+		JSONArray productsJSONArray = generateFormJSONObject.getJSONArray(
+			"products");
+
+		for (int i = 0; i < productsJSONArray.length(); i++) {
+			JSONObject productJSONObject = productsJSONArray.getJSONObject(i);
+
+			JSONArray keyTypesJSONArray = productJSONObject.getJSONArray(
+				"keyTypes");
+
+			for (int j = 0; j < keyTypesJSONArray.length(); j++) {
+				JSONObject keyTypeJSONObject = keyTypesJSONArray.getJSONObject(
+					j);
+
+				JSONArray subscriptionsJSONArray =
+					keyTypeJSONObject.getJSONArray("subscriptions");
+
+				for (int k = 0; k < subscriptionsJSONArray.length(); k++) {
+					JSONObject subscriptionJSONObject =
+						subscriptionsJSONArray.getJSONObject(k);
+
+					if (subscriptionJSONObject.optInt("availableCount") > 0) {
+						return true;
+					}
+				}
 			}
 		}
 

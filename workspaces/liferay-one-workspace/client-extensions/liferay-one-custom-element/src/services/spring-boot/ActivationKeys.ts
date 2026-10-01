@@ -48,6 +48,17 @@ export type GenerateForm = {
 	products: GenerateFormProduct[];
 };
 
+export type ActivationKeySummaryKeyType = {
+	endDate?: string;
+	key: string;
+	startDate?: string;
+};
+
+export type ActivationKeySummary = {
+	cloudNativeKeyTypes: ActivationKeySummaryKeyType[];
+	generatable: boolean;
+};
+
 export type GenerateServer = {
 	hostName: string;
 	ipAddresses: string;
@@ -110,6 +121,16 @@ class ActivationKeysOAuth2 extends OneSpringBootOAuth2 {
 		}
 
 		return this.get<GenerateForm>(`/generate-form?${searchParams}`);
+	}
+
+	getSummary(
+		projectExternalReferenceCode: string
+	): Promise<ActivationKeySummary> {
+		const searchParams = new URLSearchParams({
+			projectExternalReferenceCode,
+		});
+
+		return this.get<ActivationKeySummary>(`/summary?${searchParams}`);
 	}
 
 	async getSubscription(activationKeyId: string): Promise<boolean> {

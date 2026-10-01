@@ -17,6 +17,7 @@ import java.net.URI;
 
 import java.time.Duration;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,6 +32,8 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -124,15 +127,20 @@ public class ProductVersionService extends OneBaseService {
 				ProductVersionConstants.LEVEL_MAJOR, "')"));
 	}
 
+	@Cacheable("productVersionsByProductGroup")
 	public List<ProductVersion> getProductVersions(
 			String productGroup, boolean supported)
 		throws Exception {
 
-		return _getProductVersions(
-			StringBundler.concat(
-				"(productGroup eq '", productGroup, "') and (supported eq ",
-				supported, ") and (versionLevel eq '",
-				ProductVersionConstants.LEVEL_MAJOR, "')"));
+		// The list is shared by every caller that hits the cache, so it is
+		// handed out read only.
+
+		return Collections.unmodifiableList(
+			_getProductVersions(
+				StringBundler.concat(
+					"(productGroup eq '", productGroup, "') and (supported eq ",
+					supported, ") and (versionLevel eq '",
+					ProductVersionConstants.LEVEL_MAJOR, "')")));
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -147,6 +155,7 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
+	@CacheEvict(allEntries = true, cacheNames = "productVersionsByProductGroup")
 	@Scheduled(cron = "${liferay.one.product.version.sync.cron}")
 	public void syncProductVersions() throws Exception {
 		if (_log.isInfoEnabled()) {

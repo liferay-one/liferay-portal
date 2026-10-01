@@ -158,6 +158,60 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetActivationKeysSummary() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getSummary(false, _PROJECT_ERC)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"cloudNativeKeyTypes", new JSONArray()
+			).put(
+				"generatable", true
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysSummary(
+				null, _PROJECT_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+		Assertions.assertEquals(
+			0,
+			jsonObject.getJSONArray(
+				"cloudNativeKeyTypes"
+			).length());
+	}
+
+	@Test
+	public void testGetActivationKeysSummaryChecksPermission()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.getActivationKeysSummary(
+				null, _PROJECT_ERC));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
 	public void testPostActivationKeysGenerate() throws Exception {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();

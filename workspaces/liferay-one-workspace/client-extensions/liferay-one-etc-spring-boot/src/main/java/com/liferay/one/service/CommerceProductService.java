@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommerceProductService extends OneBaseService {
 
+	@CacheEvict(
+		allEntries = true,
+		cacheNames = {"product", "productName", "productSpecificationValues"}
+	)
 	public void deactivateProduct(String salesforceProductId) throws Exception {
 		Sku sku = _updateSku(false, salesforceProductId);
 
@@ -57,6 +62,7 @@ public class CommerceProductService extends OneBaseService {
 		productResource.patchProduct(sku.getProductId(), product);
 	}
 
+	@Cacheable("product")
 	public Product fetchProduct(long id) throws Exception {
 		return _fetchProduct(id);
 	}
@@ -89,6 +95,7 @@ public class CommerceProductService extends OneBaseService {
 		return product;
 	}
 
+	@Cacheable("productSpecificationValues")
 	public Map<String, String> getSpecificationValues(long productId)
 		throws Exception {
 
@@ -119,9 +126,16 @@ public class CommerceProductService extends OneBaseService {
 			}
 		}
 
-		return specificationValues;
+		// The map is shared by every caller that hits the cache, so it is
+		// handed out read only.
+
+		return Collections.unmodifiableMap(specificationValues);
 	}
 
+	@CacheEvict(
+		allEntries = true,
+		cacheNames = {"product", "productName", "productSpecificationValues"}
+	)
 	public void updateProduct(
 			String description, String name, String salesforceProductId)
 		throws Exception {

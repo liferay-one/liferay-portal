@@ -46,6 +46,19 @@ public class LicenseKeyServiceTest {
 			Mockito.eq("/o/c/licensekeys"), _filterCaptor.capture(),
 			Mockito.any()
 		);
+
+		_fieldsCaptor = ArgumentCaptor.forClass(String.class);
+
+		_projectedFilterCaptor = ArgumentCaptor.forClass(String.class);
+
+		Mockito.doReturn(
+			Collections.<LicenseKey>emptyList()
+		).when(
+			_licenseKeyService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), _fieldsCaptor.capture(),
+			_projectedFilterCaptor.capture(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -57,8 +70,9 @@ public class LicenseKeyServiceTest {
 				_createLicenseKey(3L, true, false, 20L, 3L))
 		).when(
 			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		Map<Long, Integer> counts =
@@ -81,8 +95,9 @@ public class LicenseKeyServiceTest {
 				_createLicenseKey(2L, true, false, 10L, 2L))
 		).when(
 			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		Map<Long, Integer> counts =
@@ -102,8 +117,9 @@ public class LicenseKeyServiceTest {
 			Arrays.asList(_createLicenseKey(1L, false, true, 10L, 1L))
 		).when(
 			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		Map<Long, Integer> counts =
@@ -122,14 +138,35 @@ public class LicenseKeyServiceTest {
 				_createLicenseKey(2L, true, false, 10L, 2L))
 		).when(
 			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any()
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
 
 		Assertions.assertEquals(1, counts.get(10L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsProjectsOnlyTalliedFields()
+		throws Exception {
+
+		// The tally reads four fields off a license key. Projecting them keeps
+		// a project holding thousands of keys from serializing every field and
+		// action envelope on each one.
+
+		_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(
+			"active,entitlementId,id," +
+				"r_activationKeyToLicenseKey_c_activationKeyId",
+			_fieldsCaptor.getValue());
+		Assertions.assertEquals(
+			"(active eq true) and (r_projectToLicenseKey_c_projectERC eq " +
+				"'PRJCT-1')",
+			_projectedFilterCaptor.getValue());
 	}
 
 	@Test
@@ -343,7 +380,9 @@ public class LicenseKeyServiceTest {
 			));
 	}
 
+	private ArgumentCaptor<String> _fieldsCaptor;
 	private ArgumentCaptor<String> _filterCaptor;
+	private ArgumentCaptor<String> _projectedFilterCaptor;
 	private LicenseKeyService _licenseKeyService;
 
 }
