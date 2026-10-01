@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useMemo} from 'react';
 import {useFetch} from '~/hooks/useFetch';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -85,36 +86,38 @@ export function useProjectEnvironments() {
 		}
 	);
 
-	const environments: ProjectEnvironment[] = (data?.items ?? []).map(
-		(node) => ({
-			activationCode: node.activationCode ?? '',
-			activationMode: node.activationMode ?? '',
-			adminEmailAddress: node.adminEmailAddress ?? '',
-			adminFirstName: node.adminFirstName ?? '',
-			adminLastName: node.adminLastName ?? '',
-			aiHubURL: node.aiHubURL ?? '',
-			allowedEmailDomains: node.allowedEmailDomains ?? '',
-			currentEntitlementHash: node.currentEntitlementHash ?? '',
-			disasterRecoveryRegion: node.disasterRecoveryRegion ?? '',
-			domains: node.domains ?? '',
-			externalReferenceCode: node.externalReferenceCode,
-			friendlyURL: node.friendlyURL ?? '',
-			githubUsername: node.githubUsername ?? '',
-			hostName: node.hostName ?? '',
-			id: String(node.id),
-			name: node.name ?? '',
-			offering: node.offering ?? '',
-			ownerEmailAddress: node.ownerEmailAddress ?? '',
-			projectExternalReferenceCode:
-				node.r_projectToEnvironment_c_projectERC ?? '',
-			projectId: node.projectId ?? '',
-			region: node.region ?? '',
-			status: node.activationStatus ?? '',
-			timeZone: node.timeZone ?? '',
-			tokenMonthlyAllowance: node.tokenMonthlyAllowance ?? '',
-			type: node.type ?? '',
-			workspaceName: node.workspaceName ?? '',
-		})
+	const environments: ProjectEnvironment[] = useMemo(
+		() =>
+			(data?.items ?? []).map((node) => ({
+				activationCode: node.activationCode ?? '',
+				activationMode: node.activationMode ?? '',
+				adminEmailAddress: node.adminEmailAddress ?? '',
+				adminFirstName: node.adminFirstName ?? '',
+				adminLastName: node.adminLastName ?? '',
+				aiHubURL: node.aiHubURL ?? '',
+				allowedEmailDomains: node.allowedEmailDomains ?? '',
+				currentEntitlementHash: node.currentEntitlementHash ?? '',
+				disasterRecoveryRegion: node.disasterRecoveryRegion ?? '',
+				domains: node.domains ?? '',
+				externalReferenceCode: node.externalReferenceCode,
+				friendlyURL: node.friendlyURL ?? '',
+				githubUsername: node.githubUsername ?? '',
+				hostName: node.hostName ?? '',
+				id: String(node.id),
+				name: node.name ?? '',
+				offering: node.offering ?? '',
+				ownerEmailAddress: node.ownerEmailAddress ?? '',
+				projectExternalReferenceCode:
+					node.r_projectToEnvironment_c_projectERC ?? '',
+				projectId: node.projectId ?? '',
+				region: node.region ?? '',
+				status: node.activationStatus ?? '',
+				timeZone: node.timeZone ?? '',
+				tokenMonthlyAllowance: node.tokenMonthlyAllowance ?? '',
+				type: node.type ?? '',
+				workspaceName: node.workspaceName ?? '',
+			})),
+		[data]
 	);
 
 	return {environments, error, loading, mutate};

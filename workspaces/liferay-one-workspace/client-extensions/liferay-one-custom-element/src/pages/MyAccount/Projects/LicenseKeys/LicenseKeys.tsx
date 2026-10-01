@@ -28,22 +28,18 @@ import FilterableListCard, {
 } from '../components/FilterableListCard/FilterableListCard';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
-import {useGenerateActivationKeyForm} from './GenerateActivationKey/hooks/useGenerateActivationKeyForm';
 import {
 	ACTIVATION_STATUS_ACTIVE,
 	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
 	getLeadingProductLabel,
-	isGeneratable,
 } from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
+import {useActivationKeySummary} from './hooks/useActivationKeySummary';
 
 import './LicenseKeys.css';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
-import type {
-	GenerateForm,
-	GenerateFormSubscription,
-} from '~/services/spring-boot/ActivationKeys';
+import type {ActivationKeySummaryKeyType} from '~/services/spring-boot/ActivationKeys';
 
 const ACTIVATION_MODE_OFFLINE = 'offline';
 
@@ -51,21 +47,14 @@ const CLOUD_NATIVE_OFFERING = 'Cloud Native';
 
 const PRODUCTION_ENVIRONMENT_TYPE = 'production';
 
-function getCloudNativeSubscription(
-	generateForm?: GenerateForm,
+function getCloudNativeKeyType(
+	cloudNativeKeyTypes: ActivationKeySummaryKeyType[],
 	type?: string
-): GenerateFormSubscription | undefined {
-	const product = generateForm?.products.find(
-		(current) =>
-			current.externalReferenceCode ===
-			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+): ActivationKeySummaryKeyType | undefined {
+	return (
+		cloudNativeKeyTypes.find((current) => current.key === type) ??
+		cloudNativeKeyTypes[0]
 	);
-
-	const keyType =
-		product?.keyTypes.find((current) => current.key === type) ??
-		product?.keyTypes[0];
-
-	return keyType?.subscriptions[0];
 }
 
 function toActivationKeyDate(value?: string): string {
@@ -78,10 +67,10 @@ function toActivationKeyDateValue(value?: string): string {
 
 function toCloudNativeActivationKey(
 	environment: ProjectEnvironment,
-	generateForm?: GenerateForm
+	cloudNativeKeyTypes: ActivationKeySummaryKeyType[]
 ): ProjectActivationKey {
-	const subscription = getCloudNativeSubscription(
-		generateForm,
+	const keyType = getCloudNativeKeyType(
+		cloudNativeKeyTypes,
 		environment.type
 	);
 
@@ -96,8 +85,8 @@ function toCloudNativeActivationKey(
 			environment.type === PRODUCTION_ENVIRONMENT_TYPE
 				? 'production'
 				: 'non-production',
-		expirationDate: toActivationKeyDate(subscription?.endDate),
-		expirationDateValue: toActivationKeyDateValue(subscription?.endDate),
+		expirationDate: toActivationKeyDate(keyType?.endDate),
+		expirationDateValue: toActivationKeyDateValue(keyType?.endDate),
 		id: environment.externalReferenceCode,
 		name: environment.name,
 		offlineActivated:
@@ -106,8 +95,8 @@ function toCloudNativeActivationKey(
 			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
 		),
 		productVersion: '',
-		startDate: toActivationKeyDate(subscription?.startDate),
-		startDateValue: toActivationKeyDateValue(subscription?.startDate),
+		startDate: toActivationKeyDate(keyType?.startDate),
+		startDateValue: toActivationKeyDateValue(keyType?.startDate),
 		status: 'active',
 		type: environment.type,
 	};
@@ -304,7 +293,15 @@ export default function LicenseKeys() {
 		useProjectEnvironments();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
-	const {generateForm} = useGenerateActivationKeyForm(projectId);
+	const {summary} = useActivationKeySummary(
+		projectId,
+		hasActivationPermission
+	);
+
+	const cloudNativeKeyTypes = useMemo(
+		() => summary?.cloudNativeKeyTypes ?? [],
+		[summary]
+	);
 
 	const rows = useMemo(
 		() => [
@@ -316,10 +313,10 @@ export default function LicenseKeys() {
 						environment.status === ACTIVATION_STATUS_ACTIVE
 				)
 				.map((environment) =>
-					toCloudNativeActivationKey(environment, generateForm)
+					toCloudNativeActivationKey(environment, cloudNativeKeyTypes)
 				),
 		],
-		[activationKeys, environments, generateForm, projectId]
+		[activationKeys, cloudNativeKeyTypes, environments, projectId]
 	);
 
 	const {
@@ -446,70 +443,81 @@ export default function LicenseKeys() {
 		},
 	];
 
-	const filters: ListFilter<ProjectActivationKey>[] = [
-		{
-			key: 'product',
-			label: 'product',
-			matches: (row, values) => values.includes(row.productName),
-			options: toOptions(rows.map((row) => row.productName)),
-		},
-		{
-			key: 'type',
-			label: 'type',
-			matches: (row, values) => values.includes(row.type),
-			options: toOptions(
-				rows.map((row) => row.type),
-				(value) => translate(value as Word)
-			),
-		},
-		{
-			key: 'environmentType',
-			label: 'environment-type',
-			matches: (row, values) =>
-				values.includes(row.environmentType) ||
-				values.includes(getSubscriptionType(row)),
-			options: [
-				...toOptions(
-					rows.map((row) => row.environmentType),
+	const filters: ListFilter<ProjectActivationKey>[] = useMemo(
+		() => [
+			{
+				key: 'product',
+				label: 'product',
+				matches: (row, values) => values.includes(row.productName),
+				options: toOptions(rows.map((row) => row.productName)),
+			},
+			{
+				key: 'type',
+				label: 'type',
+				matches: (row, values) => values.includes(row.type),
+				options: toOptions(
+					rows.map((row) => row.type),
 					(value) => translate(value as Word)
 				),
-				...toOptions(rows.map(getSubscriptionType), (value) =>
-					translate(value as Word)
+			},
+			{
+				key: 'environmentType',
+				label: 'environment-type',
+				matches: (row, values) =>
+					values.includes(row.environmentType) ||
+					values.includes(getSubscriptionType(row)),
+				options: [
+					...toOptions(
+						rows.map((row) => row.environmentType),
+						(value) => translate(value as Word)
+					),
+					...toOptions(rows.map(getSubscriptionType), (value) =>
+						translate(value as Word)
+					),
+				],
+			},
+			{
+				formatValue: formatDateBound,
+				key: 'startDate',
+				label: 'start-date',
+				matches: (row, values) =>
+					matchesDateBound(row.startDateValue, values),
+				variant: 'date-range',
+			},
+			{
+				formatValue: formatDateBound,
+				key: 'expirationDate',
+				label: 'expiration-date',
+				matches: (row, values) =>
+					matchesDateBound(row.expirationDateValue, values),
+				variant: 'date-range',
+			},
+			{
+				key: 'status',
+				label: 'status',
+				matches: (row, values) => values.includes(row.status),
+				options: toOptions(
+					rows.map((row) => row.status),
+					(value) => translate(value as Word)
 				),
-			],
-		},
-		{
-			formatValue: formatDateBound,
-			key: 'startDate',
-			label: 'start-date',
-			matches: (row, values) =>
-				matchesDateBound(row.startDateValue, values),
-			variant: 'date-range',
-		},
-		{
-			formatValue: formatDateBound,
-			key: 'expirationDate',
-			label: 'expiration-date',
-			matches: (row, values) =>
-				matchesDateBound(row.expirationDateValue, values),
-			variant: 'date-range',
-		},
-		{
-			key: 'status',
-			label: 'status',
-			matches: (row, values) => values.includes(row.status),
-			options: toOptions(
-				rows.map((row) => row.status),
-				(value) => translate(value as Word)
+			},
+			{
+				key: 'productVersion',
+				label: 'product-version',
+				matches: (row, values) => values.includes(row.productVersion),
+				options: toOptions(rows.map((row) => row.productVersion)),
+			},
+		],
+		[rows]
+	);
+
+	const visibleFilters = useMemo(
+		() =>
+			filters.filter(
+				(filter) => filter.variant || filter.options?.length
 			),
-		},
-		{
-			key: 'productVersion',
-			label: 'product-version',
-			matches: (row, values) => values.includes(row.productVersion),
-			options: toOptions(rows.map((row) => row.productVersion)),
-		},
-	];
+		[filters]
+	);
 
 	return (
 		<Page
@@ -520,7 +528,7 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					hasActivationPermission && isGeneratable(generateForm) ? (
+					hasActivationPermission && summary?.generatable ? (
 						<Button
 							displayType="primary"
 							onClick={() => handleNewKey()}
@@ -532,9 +540,7 @@ export default function LicenseKeys() {
 				className="license-keys"
 				columns={columns}
 				emptyLabel="no-activation-keys"
-				filters={filters.filter(
-					(filter) => filter.variant || filter.options?.length
-				)}
+				filters={visibleFilters}
 				items={rows}
 				loading={loading || loadingEnvironments}
 				matchesSearch={matchesSearch}

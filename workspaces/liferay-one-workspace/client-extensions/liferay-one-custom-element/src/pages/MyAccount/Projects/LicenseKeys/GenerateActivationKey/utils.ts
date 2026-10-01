@@ -141,10 +141,6 @@ export function hasAvailableKeyType(product: GenerateFormProduct): boolean {
 	return product.keyTypes.some(hasAvailableActivations);
 }
 
-export function isGeneratable(generateForm?: GenerateForm): boolean {
-	return Boolean(generateForm?.products.some(hasAvailableKeyType));
-}
-
 export function getEnvironmentTypeRank(type: string): number {
 	const index = CLOUD_NATIVE_ENVIRONMENT_TYPES.indexOf(type);
 
