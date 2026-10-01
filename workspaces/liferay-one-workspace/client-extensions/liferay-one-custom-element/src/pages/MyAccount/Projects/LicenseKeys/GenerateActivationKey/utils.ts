@@ -33,6 +33,8 @@ export const COMPLIMENTARY_DURATION_DAYS = 30;
 
 export const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
+export const COMPLIMENTARY_PURPOSE_OTHER = 'other';
+
 export const FREE_KEY_TYPE = 'free';
 
 export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
@@ -80,6 +82,15 @@ export function getBundleProducts(
 				bundleProduct.externalReferenceCode
 			)
 	);
+}
+
+export function getComplimentaryPurpose(
+	purpose: string,
+	purposeDescription: string
+): string {
+	return purpose === COMPLIMENTARY_PURPOSE_OTHER
+		? purposeDescription.trim()
+		: purpose;
 }
 
 export function getGenerateButtonLabel(renewing: boolean): Word {

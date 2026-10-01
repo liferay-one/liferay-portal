@@ -36,8 +36,11 @@ export type GenerateActivationKeyForm = {
 	offlineModifying: boolean;
 	offlineSubscriptionIds: number[];
 	productExternalReferenceCode: string;
+	purpose: string;
+	purposeDescription: string;
 	serverField: GenerateActivationKeyServerField;
 	servers: GenerateActivationKeyServer[];
+	startDate: string;
 	subscriptionEntitlementId: number;
 	version: string;
 	workspaceName: string;
@@ -47,6 +50,7 @@ export type GenerateActivationKeyForm = {
 export type GenerateActivationKeyStep =
 	| 'activation-codes'
 	| 'add-ons'
+	| 'complimentary'
 	| 'dsr'
 	| 'environment'
 	| 'offline-package'
