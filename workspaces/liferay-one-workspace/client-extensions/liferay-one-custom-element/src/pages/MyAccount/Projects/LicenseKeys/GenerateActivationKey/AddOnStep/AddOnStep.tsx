@@ -15,6 +15,7 @@ import {
 } from '~/services/spring-boot/ActivationKeys';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
+import SelectionButtons from '../components/SelectionButtons/SelectionButtons';
 import {GenerateActivationKeyForm} from '../types';
 import {getBundleProducts} from '../utils';
 
@@ -82,6 +83,21 @@ export default function AddOnStep({
 		);
 	}
 
+	const selectableEntitlementIds = bundleProducts
+		.filter(
+			(bundleProduct) =>
+				!unavailableEntitlementIds.includes(bundleProduct.entitlementId)
+		)
+		.map((bundleProduct) => bundleProduct.entitlementId);
+
+	const requiredEntitlementIds = bundleProducts
+		.filter(
+			(bundleProduct) =>
+				isRequired(bundleProduct) &&
+				!unavailableEntitlementIds.includes(bundleProduct.entitlementId)
+		)
+		.map((bundleProduct) => bundleProduct.entitlementId);
+
 	function toggle(entitlementId: number) {
 		setValue(
 			'bundleEntitlementIds',
@@ -95,6 +111,15 @@ export default function AddOnStep({
 
 	return (
 		<>
+			<SelectionButtons
+				onClickDeselectAll={() =>
+					setValue('bundleEntitlementIds', requiredEntitlementIds)
+				}
+				onClickSelectAll={() =>
+					setValue('bundleEntitlementIds', selectableEntitlementIds)
+				}
+			/>
+
 			<div className="generate-activation-key-add-ons">
 				{bundleProducts.map((bundleProduct) => {
 					const checked = bundleEntitlementIds.includes(

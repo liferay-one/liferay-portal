@@ -7,6 +7,9 @@
 	font-size: 14px;
 }
 
-.license-keys-environment-name {
-	font-weight: 700;
+.license-keys-environment-id,
+.license-keys-type-kind {
+	color: var(--color-neutral-7);
+	font-size: 13px;
+	font-weight: 400;
 }

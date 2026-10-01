@@ -6,7 +6,7 @@
 import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {format} from 'date-fns';
-import {MouseEvent, useEffect, useRef} from 'react';
+import {MouseEvent, useEffect, useMemo, useRef} from 'react';
 import {useNavigate, useSearchParams} from 'react-router-dom';
 import Button from '~/components/Button/Button';
 import Page from '~/components/Page/Page';
@@ -15,7 +15,9 @@ import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
+import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import i18n, {Word, translate} from '~/i18n';
+import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
@@ -27,10 +29,101 @@ import FilterableListCard, {
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
 import {useGenerateActivationKeyForm} from './GenerateActivationKey/hooks/useGenerateActivationKeyForm';
-import {isGeneratable} from './GenerateActivationKey/utils';
+import {
+	ACTIVATION_STATUS_ACTIVE,
+	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
+	getLeadingProductLabel,
+	isGeneratable,
+} from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
 
 import './LicenseKeys.css';
+
+import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
+import type {
+	GenerateForm,
+	GenerateFormSubscription,
+} from '~/services/spring-boot/ActivationKeys';
+
+const ACTIVATION_MODE_OFFLINE = 'offline';
+
+const CLOUD_NATIVE_OFFERING = 'Cloud Native';
+
+const PRODUCTION_ENVIRONMENT_TYPE = 'production';
+
+function getCloudNativeSubscription(
+	generateForm?: GenerateForm,
+	type?: string
+): GenerateFormSubscription | undefined {
+	const product = generateForm?.products.find(
+		(current) =>
+			current.externalReferenceCode ===
+			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+	);
+
+	const keyType =
+		product?.keyTypes.find((current) => current.key === type) ??
+		product?.keyTypes[0];
+
+	return keyType?.subscriptions[0];
+}
+
+function toActivationKeyDate(value?: string): string {
+	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+}
+
+function toActivationKeyDateValue(value?: string): string {
+	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
+}
+
+function toCloudNativeActivationKey(
+	environment: ProjectEnvironment,
+	generateForm?: GenerateForm
+): ProjectActivationKey {
+	const subscription = getCloudNativeSubscription(
+		generateForm,
+		environment.type
+	);
+
+	return {
+		activationKeyId: '',
+		active: true,
+		cloudNative: true,
+		complimentary: false,
+		description: '',
+		environmentId: environment.externalReferenceCode,
+		environmentType:
+			environment.type === PRODUCTION_ENVIRONMENT_TYPE
+				? 'production'
+				: 'non-production',
+		expirationDate: toActivationKeyDate(subscription?.endDate),
+		expirationDateValue: toActivationKeyDateValue(subscription?.endDate),
+		id: environment.externalReferenceCode,
+		name: environment.name,
+		offlineActivated:
+			environment.activationMode === ACTIVATION_MODE_OFFLINE,
+		productName: getLeadingProductLabel(
+			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+		),
+		productVersion: '',
+		startDate: toActivationKeyDate(subscription?.startDate),
+		startDateValue: toActivationKeyDateValue(subscription?.startDate),
+		status: 'active',
+		type: environment.type,
+	};
+}
+
+function getRowKind(row: ProjectActivationKey): Word {
+	if (row.cloudNative) {
+		return row.offlineActivated ? 'offline' : 'online';
+	}
+
+	if (row.unaggregated) {
+		return 'license';
+	}
+
+	return 'aggregate';
+}
 
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
 	return (
@@ -169,15 +262,65 @@ function KebabActions({
 	);
 }
 
+type CloudNativeKebabActionsProps = {
+	onModify: () => void;
+};
+
+function CloudNativeKebabActions({onModify}: CloudNativeKebabActionsProps) {
+	return (
+		<ClayDropDown
+			trigger={
+				<Button
+					borderless
+					className="text-neutral-7"
+					displayType="unstyled"
+					onClick={(event) => event.stopPropagation()}
+					prependIcon="ellipsis-v"
+				/>
+			}
+		>
+			<ClayDropDown.ItemList>
+				<ClayDropDown.Item
+					onClick={(event) => {
+						event.stopPropagation();
+
+						onModify();
+					}}
+				>
+					{translate('modify')}
+				</ClayDropDown.Item>
+			</ClayDropDown.ItemList>
+		</ClayDropDown>
+	);
+}
+
 export default function LicenseKeys() {
 	const {projectId} = useProject();
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
+	const {environments, loading: loadingEnvironments} =
+		useProjectEnvironments();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
 	const {generateForm} = useGenerateActivationKeyForm(projectId);
+
+	const rows = useMemo(
+		() => [
+			...activationKeys,
+			...filterEnvironmentsByProject(projectId, environments)
+				.filter(
+					(environment) =>
+						environment.offering === CLOUD_NATIVE_OFFERING &&
+						environment.status === ACTIVATION_STATUS_ACTIVE
+				)
+				.map((environment) =>
+					toCloudNativeActivationKey(environment, generateForm)
+				),
+		],
+		[activationKeys, environments, generateForm, projectId]
+	);
 
 	const {
 		handleDeactivate,
@@ -214,7 +357,13 @@ export default function LicenseKeys() {
 			heading: 'type',
 			key: 'type',
 			render: (row) => (
-				<span>{row.type ? translate(row.type as Word) : '-'}</span>
+				<span className="d-flex flex-column">
+					<span>{row.type ? translate(row.type as Word) : '-'}</span>
+
+					<span className="license-keys-type-kind">
+						{translate(getRowKind(row))}
+					</span>
+				</span>
 			),
 			width: '25%',
 		},
@@ -222,8 +371,14 @@ export default function LicenseKeys() {
 			heading: 'environment-name',
 			key: 'environment-name',
 			render: (row) => (
-				<span className="license-keys-environment-name">
-					{row.name}
+				<span className="d-flex flex-column">
+					<span>{row.name || '-'}</span>
+
+					{!!row.environmentId && (
+						<span className="license-keys-environment-id">
+							{row.environmentId}
+						</span>
+					)}
 				</span>
 			),
 			width: '25%',
@@ -245,24 +400,48 @@ export default function LicenseKeys() {
 						/>
 					</ClayTooltipProvider>
 
-					<span>{`${row.startDate} - ${row.expirationDate}`}</span>
+					<span>
+						{row.startDate && row.expirationDate
+							? `${row.startDate} - ${row.expirationDate}`
+							: '-'}
+					</span>
 				</span>
 			),
 		},
 		{
 			key: 'action',
-			render: (row) => (
-				<KebabActions
-					admin={admin}
-					hasActivationPermission={hasActivationPermission}
-					onDeactivate={() => handleDeactivate(row)}
-					onDownload={() => handleDownload(row)}
-					onReactivate={() => handleReactivate(row)}
-					onRenew={() => handleRenew(row)}
-					onView={() => navigate(row.id)}
-					row={row}
-				/>
-			),
+			render: (row) => {
+				if (row.cloudNative) {
+					if (!row.offlineActivated) {
+						return null;
+					}
+
+					return (
+						<CloudNativeKebabActions
+							onModify={() =>
+								navigate(
+									`generate?modify=${encodeURIComponent(
+										row.environmentId ?? ''
+									)}`
+								)
+							}
+						/>
+					);
+				}
+
+				return (
+					<KebabActions
+						admin={admin}
+						hasActivationPermission={hasActivationPermission}
+						onDeactivate={() => handleDeactivate(row)}
+						onDownload={() => handleDownload(row)}
+						onReactivate={() => handleReactivate(row)}
+						onRenew={() => handleRenew(row)}
+						onView={() => navigate(row.id)}
+						row={row}
+					/>
+				);
+			},
 			width: '1%',
 		},
 	];
@@ -272,14 +451,14 @@ export default function LicenseKeys() {
 			key: 'product',
 			label: 'product',
 			matches: (row, values) => values.includes(row.productName),
-			options: toOptions(activationKeys.map((row) => row.productName)),
+			options: toOptions(rows.map((row) => row.productName)),
 		},
 		{
 			key: 'type',
 			label: 'type',
 			matches: (row, values) => values.includes(row.type),
 			options: toOptions(
-				activationKeys.map((row) => row.type),
+				rows.map((row) => row.type),
 				(value) => translate(value as Word)
 			),
 		},
@@ -291,10 +470,10 @@ export default function LicenseKeys() {
 				values.includes(getSubscriptionType(row)),
 			options: [
 				...toOptions(
-					activationKeys.map((row) => row.environmentType),
+					rows.map((row) => row.environmentType),
 					(value) => translate(value as Word)
 				),
-				...toOptions(activationKeys.map(getSubscriptionType), (value) =>
+				...toOptions(rows.map(getSubscriptionType), (value) =>
 					translate(value as Word)
 				),
 			],
@@ -320,7 +499,7 @@ export default function LicenseKeys() {
 			label: 'status',
 			matches: (row, values) => values.includes(row.status),
 			options: toOptions(
-				activationKeys.map((row) => row.status),
+				rows.map((row) => row.status),
 				(value) => translate(value as Word)
 			),
 		},
@@ -328,7 +507,7 @@ export default function LicenseKeys() {
 			key: 'productVersion',
 			label: 'product-version',
 			matches: (row, values) => values.includes(row.productVersion),
-			options: toOptions(activationKeys.map((row) => row.productVersion)),
+			options: toOptions(rows.map((row) => row.productVersion)),
 		},
 	];
 
@@ -356,10 +535,9 @@ export default function LicenseKeys() {
 				filters={filters.filter(
 					(filter) => filter.variant || filter.options?.length
 				)}
-				items={activationKeys}
-				loading={loading}
+				items={rows}
+				loading={loading || loadingEnvironments}
 				matchesSearch={matchesSearch}
-				onItemClick={(row) => navigate(row.id)}
 				rowKey={(row) => row.id}
 			/>
 		</Page>
