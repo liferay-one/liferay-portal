@@ -34,6 +34,8 @@ export const COMPLIMENTARY_DURATION_DAYS = 30;
 
 export const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
+export const COMPLIMENTARY_PURPOSE_MAX_LENGTH = 255;
+
 export const COMPLIMENTARY_PURPOSE_OTHER = 'other';
 
 export const FREE_KEY_TYPE = 'free';
