@@ -97,6 +97,7 @@
 			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_CLOUD_NATIVE_OFFLINE",
 			"r_projectToEnvironment_c_projectERC": "PRJCT-032",
 			"region": "europe-west1",
+			"requestedVersion": "DXP 2025.Q3.1",
 			"type": "production"
 		},
 		{
@@ -215,6 +216,47 @@
 			"region": "us-east1",
 			"timeZone": "UTC-05:00",
 			"workspaceName": "enterprise-ldp"
+		},
+		{
+			"activationCode": "3f7b1d9e5a2c4608b4e6d8f0a2c41357",
+			"activationMode": "offline",
+			"activationStatus": "active",
+			"externalReferenceCode": "ENV-OMNI-CNE-NONPROD",
+			"name": "omni-nonprod-01",
+			"offering": "Cloud Native",
+			"publicKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkxpe7JIPHiDs5itx47VV\nIuGeP14LaLd81HD+stlcVxq48xETnVGTi5V99BtyzziN3tkHuFyOMONLzIVIdUOx\n7jeknqqv4EGqqktE6eTLrBA1kHvnODaQ3krT+XbBMSMkJDsOIlQxZ/TllJ7m55g8\nW7FDsE0Q9te27qCliGVJm6e4TCWrOJorUQn4/2tJy4cLvosd+ac+mDx/dr4MSb2F\nWprdXeYvt5B4XwAP+JtMs5AN3h0zxDrEHiUoQKq/d2rtthlXZUuHHvHGCuvH962u\n+ezbXXttW18ILPktD30nU/OPxDnSF2702HhNw3gtd79k2pt72YmB/mgqrs0PMk8t\nRQIDAQAB\n-----END PUBLIC KEY-----",
+			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-001",
+			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_OMNI",
+			"r_projectToEnvironment_c_projectERC": "PRJCT-001",
+			"region": "us-central1",
+			"requestedVersion": "DXP 2025.Q3.1",
+			"type": "non-production"
+		},
+		{
+			"activationCode": "8c2e4a6b0d1f39574e8a0c2b4d6f8103",
+			"activationMode": "online",
+			"activationStatus": "active",
+			"externalReferenceCode": "ENV-OMNI-CNE-PROD",
+			"name": "omni-prod-01",
+			"offering": "Cloud Native",
+			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-001",
+			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_OMNI",
+			"r_projectToEnvironment_c_projectERC": "PRJCT-001",
+			"region": "us-central1",
+			"type": "production"
+		},
+		{
+			"activationCode": "5d9f1b3c7e0a24685c9e1a3f5b7d9024",
+			"activationMode": "online",
+			"activationStatus": "active",
+			"externalReferenceCode": "ENV-OMNI-CNE-UAT",
+			"name": "omni-uat-01",
+			"offering": "Cloud Native",
+			"r_accountEntryToEnvironment_accountEntryERC": "ACCNT-001",
+			"r_contractToEnvironment_c_contractERC": "C_CONTRACT_OMNI",
+			"r_projectToEnvironment_c_projectERC": "PRJCT-001",
+			"region": "us-central1",
+			"type": "uat"
 		},
 		{
 			"activationStatus": "pending",
