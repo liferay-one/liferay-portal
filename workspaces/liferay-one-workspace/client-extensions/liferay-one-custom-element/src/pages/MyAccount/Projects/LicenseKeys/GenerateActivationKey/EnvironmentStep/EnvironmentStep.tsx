@@ -57,6 +57,7 @@ export default function EnvironmentStep({
 		formState: {errors},
 		register,
 		setValue,
+		trigger,
 		watch,
 	} = form;
 
@@ -71,6 +72,14 @@ export default function EnvironmentStep({
 	const canGenerate = Boolean(
 		environmentName.trim() && version && hasServerInfo(servers, serverField)
 	);
+
+	async function onClickValidateAndGenerate() {
+		if (!(await trigger('servers'))) {
+			return;
+		}
+
+		onClickGenerate();
+	}
 
 	function onChangeServerField(value: GenerateActivationKeyServerField) {
 		setValue('serverField', value);
@@ -129,6 +138,9 @@ export default function EnvironmentStep({
 			{fields.map((field, index) => (
 				<ServerFieldGroup
 					disabled={renewing}
+					errorMessage={
+						errors.servers?.[index]?.[serverField]?.message
+					}
 					index={index}
 					key={field.id}
 					onClickAdd={
@@ -168,7 +180,9 @@ export default function EnvironmentStep({
 						? translate('done')
 						: translate(getGenerateButtonLabel(renewing)),
 					disabled: !canGenerate || submitting,
-					onClick: generated ? onClickDone : onClickGenerate,
+					onClick: generated
+						? onClickDone
+						: onClickValidateAndGenerate,
 				}}
 			/>
 		</>
