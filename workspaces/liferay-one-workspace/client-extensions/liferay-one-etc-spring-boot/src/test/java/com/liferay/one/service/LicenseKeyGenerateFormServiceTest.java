@@ -29,6 +29,121 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class LicenseKeyGenerateFormServiceTest {
 
 	@Test
+	public void testGetCloudNativeKeyTypesKeepsOnlyCloudNative() {
+
+		// The activation key list stamps a Cloud Native environment row with
+		// the dates of the key type matching its environment type, so the
+		// summary carries one entry per Cloud Native key type and nothing from
+		// any other product.
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(),
+			"_getCloudNativeKeyTypesJSONArray",
+			_toGenerateFormJSONObject(
+				_toProductJSONObject(
+					"PRDCT-CLOUD-NATIVE",
+					_toKeyTypeJSONObject(
+						"production", 1, "2026-12-31T00:00:00Z",
+						"2026-01-01T00:00:00Z"),
+					_toKeyTypeJSONObject(
+						"uat", 1, "2026-06-30T00:00:00Z",
+						"2026-02-01T00:00:00Z")),
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject(
+						"production", 1, "2027-12-31T00:00:00Z",
+						"2027-01-01T00:00:00Z"))));
+
+		Assertions.assertEquals(2, jsonArray.length());
+
+		JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals("production", jsonObject.getString("key"));
+		Assertions.assertEquals(
+			"2026-01-01T00:00:00Z", jsonObject.getString("startDate"));
+		Assertions.assertEquals(
+			"2026-12-31T00:00:00Z", jsonObject.getString("endDate"));
+
+		Assertions.assertEquals(
+			"uat",
+			jsonArray.getJSONObject(
+				1
+			).getString(
+				"key"
+			));
+	}
+
+	@Test
+	public void testIsGeneratableWithAnAvailableSubscription() {
+		Assertions.assertTrue(
+			_isGeneratable(
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null),
+					_toKeyTypeJSONObject("developer", 2, null, null))));
+	}
+
+	@Test
+	public void testIsGeneratableWithEverySubscriptionSpent() {
+
+		// A spent key type stays in the form so the wizard can grey it out,
+		// which is exactly why the list cannot take a non empty form as a sign
+		// that anything is left to generate.
+
+		Assertions.assertFalse(
+			_isGeneratable(
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null))));
+	}
+
+	@Test
+	public void testIsGeneratableWithoutProducts() {
+		Assertions.assertFalse(_isGeneratable());
+	}
+
+	@Test
+	public void testGetSummaryCarriesOnlyWhatTheListReads() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			Mockito.spy(new LicenseKeyGenerateFormService());
+
+		Mockito.doReturn(
+			_toGenerateFormJSONObject(
+				_toProductJSONObject(
+					"PRDCT-CLOUD-NATIVE",
+					_toKeyTypeJSONObject(
+						"production", 3, "2026-12-31T00:00:00Z",
+						"2026-01-01T00:00:00Z")),
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null)))
+		).when(
+			licenseKeyGenerateFormService
+		).getGenerateForm(
+			false, "PRJCT-1", null
+		);
+
+		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
+			false, "PRJCT-1");
+
+		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+
+		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
+
+		Assertions.assertEquals(1, jsonArray.length());
+		Assertions.assertEquals(
+			"production",
+			jsonArray.getJSONObject(
+				0
+			).getString(
+				"key"
+			));
+
+		Assertions.assertFalse(jsonObject.has("products"));
+		Assertions.assertFalse(jsonObject.has("bundleProducts"));
+	}
+
+	@Test
 	public void testGetKeyTypesKeepsASpentKeyType() {
 
 		// A key type with nothing left stays in the form, carrying its count,
@@ -136,6 +251,14 @@ public class LicenseKeyGenerateFormServiceTest {
 			LicenseKeyGenerateFormService.toComparableVersion("DXP 7.4"));
 	}
 
+	private boolean _isGeneratable(JSONObject... productJSONObjects) {
+		Boolean generatable = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(), "_isGeneratable",
+			_toGenerateFormJSONObject(productJSONObjects));
+
+		return Boolean.TRUE.equals(generatable);
+	}
+
 	private Entitlement _toEntitlement(Double maxQuantity) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -147,6 +270,60 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return new Entitlement(jsonObject);
+	}
+
+	private JSONObject _toGenerateFormJSONObject(
+		JSONObject... productJSONObjects) {
+
+		JSONArray productsJSONArray = new JSONArray();
+
+		for (JSONObject productJSONObject : productJSONObjects) {
+			productsJSONArray.put(productJSONObject);
+		}
+
+		return new JSONObject(
+		).put(
+			"products", productsJSONArray
+		);
+	}
+
+	private JSONObject _toKeyTypeJSONObject(
+		String key, int availableCount, String endDate, String startDate) {
+
+		return new JSONObject(
+		).put(
+			"key", key
+		).put(
+			"subscriptions",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"availableCount", availableCount
+				).put(
+					"endDate", endDate
+				).put(
+					"startDate", startDate
+				)
+			)
+		);
+	}
+
+	private JSONObject _toProductJSONObject(
+		String externalReferenceCode, JSONObject... keyTypeJSONObjects) {
+
+		JSONArray keyTypesJSONArray = new JSONArray();
+
+		for (JSONObject keyTypeJSONObject : keyTypeJSONObjects) {
+			keyTypesJSONArray.put(keyTypeJSONObject);
+		}
+
+		return new JSONObject(
+		).put(
+			"externalReferenceCode", externalReferenceCode
+		).put(
+			"keyTypes", keyTypesJSONArray
+		);
 	}
 
 }

@@ -277,15 +277,25 @@ public class LicenseKeyService extends OneBaseService {
 
 		Map<Long, Integer> counts = new HashMap<>();
 
+		// A complimentary key counts against the entitlement that granted it,
+		// which allows one. It keeps counting once it expires, since expiring
+		// does not hand the grant back, and stops only when the key is
+		// deactivated. Inactive keys are dropped by the query and again by the
+		// loop, so the tally stays right whatever the query returns. Only the
+		// fields the tally reads are projected, since a project can hold
+		// thousands of keys and each one otherwise serializes thirty five
+		// fields plus its action envelope.
+
 		for (LicenseKey licenseKey :
-				_getLicenseKeysByProject(projectExternalReferenceCode)) {
+				getAllProjectedItems(
+					"/o/c/licensekeys", _FIELDS_ACTIVE_LICENSE_KEY_COUNT,
+					StringBundler.concat(
+						"(active eq true) and ",
+						"(r_projectToLicenseKey_c_projectERC eq '",
+						escapeODataString(projectExternalReferenceCode), "')"),
+					LicenseKey::new)) {
 
 			long entitlementId = licenseKey.getEntitlementId();
-
-			// A complimentary key counts against the entitlement that granted
-			// it, which allows one. It keeps counting once it expires, since
-			// expiring does not hand the grant back, and stops only when the
-			// key is deactivated.
 
 			if ((entitlementId <= 0) || !licenseKey.isActive() ||
 				excludedActivationKeyIds.contains(
@@ -754,16 +764,6 @@ public class LicenseKeyService extends OneBaseService {
 		return jsonObject.optInt("totalCount");
 	}
 
-	private List<LicenseKey> _getLicenseKeysByProject(
-			String projectExternalReferenceCode)
-		throws Exception {
-
-		return getLicenseKeys(
-			StringBundler.concat(
-				"r_projectToLicenseKey_c_projectERC eq '",
-				escapeODataString(projectExternalReferenceCode), "'"));
-	}
-
 	private String _toIdFilterString(long[] licenseKeyIds) {
 		StringBundler sb = new StringBundler(licenseKeyIds.length * 4);
 
@@ -792,6 +792,9 @@ public class LicenseKeyService extends OneBaseService {
 
 		return dateFormat.format(date);
 	}
+
+	private static final String _FIELDS_ACTIVE_LICENSE_KEY_COUNT =
+		"active,entitlementId,id,r_activationKeyToLicenseKey_c_activationKeyId";
 
 	private static final int _FREE_TIER_DURATION_MONTHS = 12;
 
