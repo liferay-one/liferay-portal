@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import DropDown from '@clayui/drop-down';
-import ClayForm, {ClayCheckbox} from '@clayui/form';
+import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {UseFormReturn} from 'react-hook-form';
 import {useNavigate} from 'react-router-dom';
@@ -181,29 +181,45 @@ const RequestAccountForm: React.FC<RequestAccountFormProps> = ({
 
 						{listTypeEntries.map((listTypeEntry, index) => (
 							<div
-								className="align-items-center d-flex w-25"
+								className="custom-checkbox custom-control custom-control-outside"
 								key={index}
 							>
-								<ClayCheckbox
-									aria-label={listTypeEntry.name}
-									checked={publisherType.includes(
-										listTypeEntry.key
-									)}
-									label={listTypeEntry.name}
-									value={listTypeEntry.key}
-									{...form.register('publisherType')}
-								/>
-
-								{PUBLISHER_TYPE_TOOLTIPS[listTypeEntry.key] && (
-									<Tooltip
-										showTooltipBackground={false}
-										tooltip={
-											PUBLISHER_TYPE_TOOLTIPS[
-												listTypeEntry.key
-											]
-										}
+								<label>
+									<input
+										aria-label={listTypeEntry.name}
+										checked={publisherType.includes(
+											listTypeEntry.key
+										)}
+										className="custom-control-input"
+										type="checkbox"
+										value={listTypeEntry.key}
+										{...form.register('publisherType')}
 									/>
-								)}
+
+									<span className="custom-control-label">
+										<span className="custom-control-label-text">
+											<div className="d-flex justify-content-between w-25">
+												{listTypeEntry.name}
+
+												{PUBLISHER_TYPE_TOOLTIPS[
+													listTypeEntry.key
+												] && (
+													<Tooltip
+														showTooltipBackground={
+															false
+														}
+														tooltip={
+															PUBLISHER_TYPE_TOOLTIPS[
+																listTypeEntry
+																	.key
+															]
+														}
+													/>
+												)}
+											</div>
+										</span>
+									</span>
+								</label>
 							</div>
 						))}
 					</ClayForm.Group>
