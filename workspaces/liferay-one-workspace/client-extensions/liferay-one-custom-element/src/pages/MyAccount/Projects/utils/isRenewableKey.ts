@@ -12,6 +12,7 @@ export function isRenewableKey(
 	admin = false
 ): boolean {
 	return (
+		!activationKey.unaggregated &&
 		(admin || activationKey.type !== 'virtual-cluster') &&
 		!isPermanentKey(
 			activationKey.expirationDateValue,

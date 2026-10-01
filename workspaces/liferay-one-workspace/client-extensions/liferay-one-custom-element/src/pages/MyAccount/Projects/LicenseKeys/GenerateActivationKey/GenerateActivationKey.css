@@ -6,8 +6,13 @@
 .generate-activation-key {
 	font-family: var(--font-family-sans-serif, 'Source Sans 3', sans-serif);
 
-	& .border {
+	& .border:not(.generate-activation-key-body) {
 		border: 1px solid var(--color-neutral-2) !important;
+	}
+
+	& .generate-activation-key-body {
+		border: 0 !important;
+		padding: 0 !important;
 	}
 
 	& .border-bottom,
@@ -31,13 +36,8 @@
 		font-weight: 600;
 	}
 
-	& .generate-activation-key-add-ons {
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
-
-	& .generate-activation-key-add-on {
+	& .generate-activation-key-add-on,
+	& .generate-activation-key-subscription {
 		align-items: center;
 		background-color: #fff;
 		border: 1px solid #c9c9ce;
@@ -116,6 +116,27 @@
 		& .custom-control-label-text {
 			color: var(--color-neutral-5);
 		}
+	}
+
+	& .generate-activation-key-environments {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		margin-bottom: 24px;
+
+		& h2 {
+			color: #51525c;
+			font-size: 18px;
+			font-weight: 700;
+			margin-bottom: 0;
+		}
+	}
+
+	& .generate-activation-key-offline-note {
+		color: var(--color-neutral-7);
+		font-size: 13px;
+		font-weight: 400;
+		margin-bottom: 8px;
 	}
 
 	& .generate-activation-key-server-alert .autofit-col {
@@ -252,6 +273,44 @@
 		color: #555660;
 		font-size: 13px;
 		font-weight: 400;
+	}
+
+	& .generate-activation-key-add-ons,
+	& .generate-activation-key-subscriptions {
+		display: grid;
+		gap: 16px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		margin-bottom: 16px;
+	}
+
+	& .generate-activation-key-table {
+		margin-bottom: 0;
+
+		& td {
+			border-color: var(--color-neutral-2);
+			color: #272833;
+			font-size: 14px;
+			font-weight: 400;
+			vertical-align: middle;
+		}
+
+		& th {
+			border-color: var(--color-neutral-2);
+			color: #51525c;
+			font-size: 13px;
+			font-weight: 600;
+			vertical-align: middle;
+		}
+	}
+
+	& .generate-activation-key-table-row-used td {
+		color: var(--color-neutral-5);
+	}
+
+	& .generate-activation-key-table-used-label {
+		color: var(--color-neutral-5);
+		font-size: 13px;
+		font-weight: 600;
 	}
 
 	& .radio-card.radio-disabled {

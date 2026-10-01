@@ -3,6 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+export type GenerateActivationKeyOfflineEnvironment = {
+	activationCode: string;
+	bundledEntitlementIds: number[];
+	environmentId: string;
+	environmentName: string;
+	requestedVersion: string;
+	type: string;
+};
+
 export type GenerateActivationKeyServer = {
 	hostName: string;
 	ipAddresses: string;
@@ -22,6 +31,9 @@ export type GenerateActivationKeyForm = {
 	environmentName: string;
 	keyType: string;
 	notify: boolean;
+	offlineActivated: boolean;
+	offlineEnvironment: GenerateActivationKeyOfflineEnvironment | null;
+	offlineModifying: boolean;
 	offlineSubscriptionIds: number[];
 	productExternalReferenceCode: string;
 	serverField: GenerateActivationKeyServerField;
@@ -37,7 +49,6 @@ export type GenerateActivationKeyStep =
 	| 'add-ons'
 	| 'dsr'
 	| 'environment'
-	| 'non-production-environments'
 	| 'offline-package'
 	| 'offline-token'
 	| 'subscription';

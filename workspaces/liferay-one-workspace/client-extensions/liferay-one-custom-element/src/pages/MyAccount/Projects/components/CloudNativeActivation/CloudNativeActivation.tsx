@@ -15,8 +15,12 @@ import {Tooltip} from '~/components/Tooltip/Tooltip';
 import {useProject} from '~/context/ProjectContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {Word, sub, translate} from '~/i18n';
+import {
+	ACTIVATION_ERROR_MESSAGE_KEYS,
+	BUNDLE_ERROR_MESSAGE_KEYS,
+} from '~/pages/MyAccount/Projects/utils/cloudActivationErrorConstants';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
-import FetcherError from '~/services/fetcher/FetcherError';
+import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
 import {Liferay} from '~/services/liferay/liferay';
 import Cloud from '~/services/spring-boot/Cloud';
 
@@ -25,30 +29,9 @@ import OfflineActivationModal from '../OfflineActivationModal/OfflineActivationM
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 
-const ACTIVATION_ERROR_MESSAGE_KEYS: Record<number, Word> = {
-	400: 'the-activation-token-is-not-valid',
-	404: 'the-activation-code-was-not-found',
-	409: 'this-environment-has-already-been-activated',
-};
-
 const ACTIVATION_MODE_OFFLINE = 'offline';
 
 const ACTIVATION_STATUS_ACTIVE = 'active';
-
-const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
-	422: 'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
-};
-
-function toErrorMessageKey(
-	error: unknown,
-	errorMessageKeys: Record<number, Word>
-): Word {
-	if (error instanceof FetcherError && error.status) {
-		return errorMessageKeys[error.status] ?? 'an-unexpected-error-occurred';
-	}
-
-	return 'an-unexpected-error-occurred';
-}
 
 export default function CloudNativeActivation() {
 	const {projectId} = useProject();
