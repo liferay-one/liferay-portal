@@ -12,9 +12,11 @@ import {
 	GenerateActivationKeyForm,
 	GenerateActivationKeyServerField,
 } from '../../types';
+import {validateIPAddresses, validateMACAddresses} from '../../utils';
 
 type ServerFieldGroupProps = {
 	disabled?: boolean;
+	errorMessage?: string;
 	index: number;
 	onClickAdd?: () => void;
 	onClickRemove?: () => void;
@@ -24,6 +26,7 @@ type ServerFieldGroupProps = {
 
 export default function ServerFieldGroup({
 	disabled,
+	errorMessage,
 	index,
 	onClickAdd,
 	onClickRemove,
@@ -42,9 +45,12 @@ export default function ServerFieldGroup({
 
 			{serverField === 'ipAddresses' && (
 				<Input
-					{...register(`servers.${index}.ipAddresses`)}
+					{...register(`servers.${index}.ipAddresses`, {
+						validate: validateIPAddresses,
+					})}
 					component="textarea"
 					disabled={disabled}
+					errorMessage={errorMessage}
 					helpMessage={translate(
 						'add-one-ip-address-per-line-ipv-six-addresses-are-not-supported'
 					)}
@@ -55,9 +61,12 @@ export default function ServerFieldGroup({
 
 			{serverField === 'macAddresses' && (
 				<Input
-					{...register(`servers.${index}.macAddresses`)}
+					{...register(`servers.${index}.macAddresses`, {
+						validate: validateMACAddresses,
+					})}
 					component="textarea"
 					disabled={disabled}
+					errorMessage={errorMessage}
 					helpMessage={translate('add-one-mac-address-per-line')}
 					label={translate('mac-addresses')}
 					placeholder={'XX-XX-XX-XX-XX-XX\nXX-XX-XX-XX-XX-XX'}

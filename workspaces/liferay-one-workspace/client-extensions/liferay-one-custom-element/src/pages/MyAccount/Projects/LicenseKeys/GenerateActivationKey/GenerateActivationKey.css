@@ -303,16 +303,6 @@
 		}
 	}
 
-	& .generate-activation-key-table-row-used td {
-		color: var(--color-neutral-5);
-	}
-
-	& .generate-activation-key-table-used-label {
-		color: var(--color-neutral-5);
-		font-size: 13px;
-		font-weight: 600;
-	}
-
 	& .radio-card.radio-disabled {
 		& .generate-activation-key-subscription-size,
 		& .generate-activation-key-subscription-title {

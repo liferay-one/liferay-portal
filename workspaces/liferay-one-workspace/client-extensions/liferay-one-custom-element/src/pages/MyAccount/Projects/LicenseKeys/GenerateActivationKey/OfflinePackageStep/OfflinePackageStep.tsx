@@ -124,39 +124,41 @@ export default function OfflinePackageStep({
 		<>
 			<VersionField form={form} versions={versions} />
 
-			<SelectionButtons
-				onClickDeselectAll={() =>
-					setValue('offlineSubscriptionIds', [])
-				}
-				onClickSelectAll={() =>
-					setValue(
-						'offlineSubscriptionIds',
-						subscriptions.map(
-							(subscription) => subscription.entitlementId
-						)
-					)
-				}
-			/>
-
 			{subscriptions.length ? (
-				<div className="generate-activation-key-subscriptions">
-					{visibleSubscriptions.map((subscription) => (
-						<div
-							className="generate-activation-key-subscription"
-							key={subscription.entitlementId}
-						>
-							<ClayCheckbox
-								checked={offlineSubscriptionIds.includes(
-									subscription.entitlementId
-								)}
-								label={subscription.name}
-								onChange={() =>
-									toggle(subscription.entitlementId)
-								}
-							/>
-						</div>
-					))}
-				</div>
+				<>
+					<SelectionButtons
+						onClickDeselectAll={() =>
+							setValue('offlineSubscriptionIds', [])
+						}
+						onClickSelectAll={() =>
+							setValue(
+								'offlineSubscriptionIds',
+								subscriptions.map(
+									(subscription) => subscription.entitlementId
+								)
+							)
+						}
+					/>
+
+					<div className="generate-activation-key-subscriptions">
+						{visibleSubscriptions.map((subscription) => (
+							<div
+								className="generate-activation-key-subscription"
+								key={subscription.entitlementId}
+							>
+								<ClayCheckbox
+									checked={offlineSubscriptionIds.includes(
+										subscription.entitlementId
+									)}
+									label={subscription.name}
+									onChange={() =>
+										toggle(subscription.entitlementId)
+									}
+								/>
+							</div>
+						))}
+					</div>
+				</>
 			) : (
 				<p className="text-neutral-7">
 					{translate(
