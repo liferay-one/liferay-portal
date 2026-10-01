@@ -16,6 +16,8 @@ import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ProductVersion;
+import com.liferay.one.model.Project;
+import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
@@ -137,9 +139,12 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public JSONObject getGenerateForm(
-			boolean admin, String projectExternalReferenceCode,
+			boolean admin, Project project,
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
+
+		String projectExternalReferenceCode =
+			project.getExternalReferenceCode();
 
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
@@ -154,11 +159,6 @@ public class LicenseKeyGenerateFormService {
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
 			_getLicenseKeyTypeEntitlements(entitlements, resolvedProducts);
 
-		// A renewal reuses the activations the renewed key holds, so those are
-		// discounted here exactly as they are when the key is generated.
-		// Otherwise a key type that is fully spent would drop out of the form
-		// and leave the renewal with nothing to select.
-
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
 				_getRenewedActivationKeyIds(
@@ -166,6 +166,22 @@ public class LicenseKeyGenerateFormService {
 				projectExternalReferenceCode);
 
 		List<ProductVersion> productVersions = _getProductVersions();
+
+		boolean allowComplimentary = isAllowComplimentary(
+			project.getAccountId());
+
+		boolean hasComplimentaryActivationKey = false;
+
+		if (allowComplimentary) {
+			int complimentaryActivationKeysCount =
+				_activationKeyService.getActivationKeysCount(
+					true, projectExternalReferenceCode,
+					LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
+
+			if (complimentaryActivationKeysCount > 0) {
+				hasComplimentaryActivationKey = true;
+			}
+		}
 
 		JSONArray bundleProductsJSONArray = new JSONArray();
 		JSONArray productsJSONArray = new JSONArray();
@@ -178,15 +194,11 @@ public class LicenseKeyGenerateFormService {
 				entitledProduct.getLicenseEntryFamily(), productVersions);
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				admin, entitledProduct.getExternalReferenceCode(),
-				hasLicenseEntries, entitledProduct.getLicenseEntryFamily(),
-				licenseKeyCounts, licenseKeyTypeEntitlements, productVersions);
-
-			// An add-on names no license entry family the license table
-			// carries, so it holds no key type of its own and rides the
-			// leading product's license entry. Only a product that does carry
-			// one, and offers the project no key type over it, is genuinely
-			// unlicensable.
+				admin, allowComplimentary,
+				entitledProduct.getExternalReferenceCode(),
+				hasComplimentaryActivationKey, hasLicenseEntries,
+				entitledProduct.getLicenseEntryFamily(), licenseKeyCounts,
+				licenseKeyTypeEntitlements, productVersions);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -237,12 +249,11 @@ public class LicenseKeyGenerateFormService {
 	 * products, bundle products, versions and license entry types the form
 	 * also carries.
 	 */
-	public JSONObject getSummary(
-			boolean admin, String projectExternalReferenceCode)
+	public JSONObject getSummary(boolean admin, Project project)
 		throws Exception {
 
 		JSONObject generateFormJSONObject = getGenerateForm(
-			admin, projectExternalReferenceCode, null);
+			admin, project, null);
 
 		return new JSONObject(
 		).put(
@@ -262,17 +273,6 @@ public class LicenseKeyGenerateFormService {
 			ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
 	}
 
-	public String toLicenseEntryKeyType(String keyTypeKey) {
-		if (Objects.equals(
-				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
-				keyTypeKey)) {
-
-			return LicenseKeyGenerationConstants.KEY_TYPE_PRODUCTION;
-		}
-
-		return keyTypeKey;
-	}
-
 	public boolean grantsLicense(Entitlement entitlement) {
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
@@ -287,22 +287,20 @@ public class LicenseKeyGenerateFormService {
 			entitlementDefinition.getName());
 	}
 
-	private List<Long> _getRenewedActivationKeyIds(
-			String renewedActivationKeyExternalReferenceCode)
-		throws Exception {
+	public boolean isAllowComplimentary(long accountId) throws Exception {
+		return AccountUtil.getCustomFieldBoolean(
+			_accountService.getAccount(accountId), "allowComplimentary", false);
+	}
 
-		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
-			return Collections.emptyList();
+	public String toLicenseEntryKeyType(String keyTypeKey) {
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+				keyTypeKey)) {
+
+			return LicenseKeyGenerationConstants.KEY_TYPE_PRODUCTION;
 		}
 
-		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
-			renewedActivationKeyExternalReferenceCode);
-
-		if (activationKey == null) {
-			return Collections.emptyList();
-		}
-
-		return Collections.singletonList(activationKey.getActivationKeyId());
+		return keyTypeKey;
 	}
 
 	private LicenseEntry _fetchLicenseEntry(
@@ -429,7 +427,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getKeyTypesJSONArray(
-		boolean admin, String externalReferenceCode, boolean hasLicenseEntries,
+		boolean admin, boolean allowComplimentary, String externalReferenceCode,
+		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
 		String licenseEntryFamily, Map<Long, Integer> licenseKeyCounts,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions) {
@@ -451,6 +450,16 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
+			boolean complimentary = false;
+
+			if (licenseKeyType == LicenseKeyType.COMPLIMENTARY) {
+				complimentary = true;
+			}
+
+			if (complimentary && !allowComplimentary) {
+				continue;
+			}
+
 			Entitlement entitlement = entitlements.get(licenseKeyType.getKey());
 
 			if (entitlement == null) {
@@ -466,13 +475,9 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			// A key type whose activations are spent stays in the form so the
-			// wizard can show it greyed out against its count. Dropping it
-			// leaves a product the customer owns looking as though it was
-			// never bought.
-
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
-				entitlement, licenseKeyCounts);
+				entitlement, licenseKeyCounts,
+				complimentary && hasComplimentaryActivationKey);
 
 			jsonArray.put(
 				new JSONObject(
@@ -574,6 +579,24 @@ public class LicenseKeyGenerateFormService {
 			LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true);
 	}
 
+	private List<Long> _getRenewedActivationKeyIds(
+			String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
+		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
+			return Collections.emptyList();
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			renewedActivationKeyExternalReferenceCode);
+
+		if (activationKey == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(activationKey.getActivationKeyId());
+	}
+
 	private Map<Long, ResolvedProduct> _getResolvedProducts(
 			List<Entitlement> entitlements)
 		throws Exception {
@@ -623,7 +646,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getSubscriptionsJSONArray(
-		Entitlement entitlement, Map<Long, Integer> licenseKeyCounts) {
+		Entitlement entitlement, Map<Long, Integer> licenseKeyCounts,
+		boolean spent) {
 
 		JSONArray jsonArray = new JSONArray();
 
@@ -632,7 +656,7 @@ public class LicenseKeyGenerateFormService {
 		int usedCount = licenseKeyCounts.getOrDefault(
 			entitlement.getEntitlementId(), 0);
 
-		int availableCount = Math.max(0, totalCount - usedCount);
+		int availableCount = spent ? 0 : Math.max(0, totalCount - usedCount);
 
 		jsonArray.put(
 			new JSONObject(
@@ -805,6 +829,9 @@ public class LicenseKeyGenerateFormService {
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerateFormService.class);
+
+	@Autowired
+	private AccountService _accountService;
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;
