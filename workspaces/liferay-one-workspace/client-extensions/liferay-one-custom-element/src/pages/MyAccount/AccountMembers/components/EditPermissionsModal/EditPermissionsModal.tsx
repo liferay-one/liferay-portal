@@ -10,11 +10,11 @@ import {useState} from 'react';
 import {useMeasuredWidth} from '~/hooks/useMeasuredWidth';
 import i18n, {translate} from '~/i18n';
 import {
+	MANAGEABLE_ACCOUNT_ROLES,
 	getMembershipRoleNames,
 	hasAdministratorRole,
 	isAdministratorRole,
 	isPartnerRole,
-	MANAGEABLE_ACCOUNT_ROLES,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
