@@ -28,7 +28,10 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -273,8 +276,10 @@ public class ActivationKeysRestController extends OneBaseRestController {
 					jsonObject.optString("description"),
 					jsonObject.optString("environmentName"),
 					jsonObject.optString("keyType"), project,
+					jsonObject.optString("purpose", null),
 					renewedActivationKeyExternalReferenceCode,
 					_toServers(jsonObject.optJSONArray("servers")),
+					_toDate(jsonObject, "startDate"),
 					jsonObject.optLong("subscriptionEntitlementId"),
 					jsonObject.optString("version"),
 					jsonObject.optString("workspaceName"),
@@ -386,6 +391,20 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 
 		return licenseKeys;
+	}
+
+	private Date _toDate(JSONObject jsonObject, String key) {
+		if (jsonObject.isNull(key)) {
+			return null;
+		}
+
+		try {
+			return Date.from(Instant.parse(jsonObject.getString(key)));
+		}
+		catch (Exception exception) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Invalid \"" + key + "\"", exception);
+		}
 	}
 
 	private List<Long> _toLongs(JSONArray jsonArray) {
