@@ -57,9 +57,6 @@ public class LicenseKeyGenerationService {
 	public ActivationKey generateActivationKey(GenerateRequest generateRequest)
 		throws Exception {
 
-		// A complimentary key bundles only the entitlement that granted it,
-		// which the caller never selects, so it carries no bundle of its own.
-
 		if (!_isComplimentary(generateRequest) &&
 			ListUtil.isEmpty(generateRequest.getBundleEntitlementIds())) {
 
@@ -73,12 +70,6 @@ public class LicenseKeyGenerationService {
 		}
 
 		Project project = generateRequest.getProject();
-
-		// The quota is read and then spent, so the whole sequence is
-		// serialized per project. Two concurrent requests would otherwise both
-		// pass a check neither one had yet consumed. The lock is held in this
-		// JVM, so it serializes one replica: running more than one instance
-		// needs the check moved behind something both of them see.
 
 		return _keyedLock.withLock(
 			project.getExternalReferenceCode(),
@@ -319,8 +310,29 @@ public class LicenseKeyGenerationService {
 			generateRequest.getEnvironmentName(),
 			LicenseConstants.PRODUCT_ID_PORTAL, productName, version,
 			project.getExternalReferenceCode(), StringPool.BLANK,
-			_SIZING_DEFAULT, startDate, generateRequest.getWorkspaceName(),
+			_getSizing(generateRequest), startDate,
+			generateRequest.getWorkspaceName(),
 			generateRequest.getWorkspaceOwnerEmail());
+	}
+
+	private void _checkComplimentary(Project project) throws Exception {
+		if (!_licenseKeyGenerateFormService.isAllowComplimentary(
+				project.getAccountId())) {
+
+			throw new LicenseKeyEntitlementException(
+				"The account is not allowed to generate a complimentary key");
+		}
+
+		int complimentaryActivationKeysCount =
+			_activationKeyService.getActivationKeysCount(
+				true, project.getExternalReferenceCode(),
+				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
+
+		if (complimentaryActivationKeysCount > 0) {
+			throw new LicenseKeyEntitlementException(
+				"The project already has a complimentary key that has not " +
+					"been deactivated");
+		}
 	}
 
 	private void _checkQuota(
@@ -331,11 +343,6 @@ public class LicenseKeyGenerationService {
 		List<GenerateRequest.Server> servers = generateRequest.getServers();
 
 		int requestedCount = servers.size();
-
-		// A renewal gives back the activations the key being renewed holds, so
-		// they are discounted here exactly as the generate form discounts them.
-		// Without this the form offers a slot the check then refuses, which is
-		// the normal state for a key at its limit.
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -375,10 +382,78 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
-	private boolean _isComplimentary(GenerateRequest generateRequest) {
-		return Objects.equals(
-			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
-			generateRequest.getKeyType());
+	private Entitlement _fetchEntitledProductEntitlement(
+			String productName, Project project)
+		throws Exception {
+
+		for (Entitlement entitlement :
+				_entitlementService.getActiveEntitlements(
+					project.getExternalReferenceCode())) {
+
+			if (!_licenseKeyGenerateFormService.grantsLicense(entitlement)) {
+				continue;
+			}
+
+			Product product = _licenseKeyGenerateFormService.fetchProduct(
+				entitlement);
+
+			if ((product != null) &&
+				Objects.equals(
+					productName, CommerceProductUtil.getName(product))) {
+
+				return entitlement;
+			}
+		}
+
+		return null;
+	}
+
+	private LicenseEntry _fetchLicenseEntry(
+			GenerateRequest generateRequest, Entitlement entitlement)
+		throws Exception {
+
+		Product product = _licenseKeyGenerateFormService.fetchProduct(
+			entitlement);
+
+		if (product == null) {
+			return null;
+		}
+
+		return _licenseKeyGenerateFormService.fetchLicenseEntry(
+			generateRequest.getKeyType(),
+			_licenseKeyGenerateFormService.getLicenseEntryFamily(product),
+			generateRequest.getVersion());
+	}
+
+	private ActivationKey _fetchRenewedActivationKey(
+			GenerateRequest generateRequest)
+		throws Exception {
+
+		String externalReferenceCode =
+			generateRequest.getRenewedActivationKeyExternalReferenceCode();
+
+		if (Validator.isNull(externalReferenceCode)) {
+			return null;
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			externalReferenceCode);
+
+		if (activationKey == null) {
+			return null;
+		}
+
+		Project project = generateRequest.getProject();
+
+		if (!Objects.equals(
+				project.getExternalReferenceCode(),
+				activationKey.getProjectExternalReferenceCode())) {
+
+			throw new LicenseKeyEntitlementException(
+				"The activation key being renewed belongs to another project");
+		}
+
+		return activationKey;
 	}
 
 	private Entitlement _findEntitlement(
@@ -419,10 +494,7 @@ public class LicenseKeyGenerationService {
 			generateRequest.getBundleEntitlementIds(), entitlements);
 
 		if (complimentary) {
-
-			// A complimentary key is granted outside any subscription term, so
-			// it runs for a fixed duration from now and bundles nothing beyond
-			// the entitlement that granted it.
+			_checkComplimentary(project);
 
 			Calendar calendar = Calendar.getInstance(
 				TimeZone.getTimeZone("UTC"));
@@ -472,10 +544,6 @@ public class LicenseKeyGenerationService {
 				}
 			}
 
-			// The renewed key hands its activations to the key that replaces
-			// it. Retiring it here is what makes the discount above sound:
-			// leaving it active would let both keys hold the same activations.
-
 			ActivationKey renewedActivationKey = _fetchRenewedActivationKey(
 				generateRequest);
 
@@ -485,11 +553,6 @@ public class LicenseKeyGenerationService {
 			}
 		}
 		catch (Exception exception) {
-
-			// A partially created activation key would keep consuming the
-			// quota its license keys never earned, so retire it before the
-			// caller sees the failure.
-
 			_deactivateActivationKey(activationKey);
 
 			throw exception;
@@ -523,46 +586,15 @@ public class LicenseKeyGenerationService {
 		return bundleEntitlements;
 	}
 
-	private ActivationKey _fetchRenewedActivationKey(
-			GenerateRequest generateRequest)
-		throws Exception {
-
-		String externalReferenceCode =
-			generateRequest.getRenewedActivationKeyExternalReferenceCode();
-
-		if (Validator.isNull(externalReferenceCode)) {
-			return null;
+	private String _getDeveloperLabel(String keyType) {
+		if (Objects.equals(keyType, LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
+			return "Developer Cluster";
 		}
 
-		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
-			externalReferenceCode);
-
-		if (activationKey == null) {
-			return null;
-		}
-
-		Project project = generateRequest.getProject();
-
-		// A renewal only discounts a key the project already owns. Anything
-		// else would let a caller spend another project's activations.
-
-		if (!Objects.equals(
-				project.getExternalReferenceCode(),
-				activationKey.getProjectExternalReferenceCode())) {
-
-			throw new LicenseKeyEntitlementException(
-				"The activation key being renewed belongs to another project");
-		}
-
-		return activationKey;
+		return "Developer";
 	}
 
 	private int _getDurationDays(Entitlement entitlement, int defaultDays) {
-
-		// A key that runs for a fixed term from now takes that term from the
-		// entitlement definition that grants it, so changing it is a data
-		// change. The constant is only what an unset definition falls back to.
-
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
 
@@ -578,39 +610,6 @@ public class LicenseKeyGenerationService {
 		}
 
 		return licenseKeyDurationDays;
-	}
-
-	private String _getDeveloperLabel(String keyType) {
-		if (Objects.equals(keyType, LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
-			return "Developer Cluster";
-		}
-
-		return "Developer";
-	}
-
-	private List<Long> _getRenewedActivationKeyIds(
-			GenerateRequest generateRequest)
-		throws Exception {
-
-		ActivationKey activationKey = _fetchRenewedActivationKey(
-			generateRequest);
-
-		if (activationKey == null) {
-			return Collections.emptyList();
-		}
-
-		return Collections.singletonList(activationKey.getActivationKeyId());
-	}
-
-	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return null;
-		}
-
-		return entitlementDefinition.getSkuExternalReferenceCode();
 	}
 
 	private Map<Long, LicensedProduct> _getLicensedProducts(
@@ -638,11 +637,6 @@ public class LicenseKeyGenerationService {
 
 			String productName = CommerceProductUtil.getName(product);
 
-			// An add-on names no license entry family the license table
-			// carries, so the key it rides is the leading product's. The bundle
-			// is one key over one term, and the add-on contributes the product
-			// it names rather than a license of its own.
-
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
 				generateRequest, entitlement);
 
@@ -669,58 +663,48 @@ public class LicenseKeyGenerationService {
 		return licensedProducts;
 	}
 
-	private LicenseEntry _fetchLicenseEntry(
-			GenerateRequest generateRequest, Entitlement entitlement)
+	private List<Long> _getRenewedActivationKeyIds(
+			GenerateRequest generateRequest)
 		throws Exception {
 
-		Product product = _licenseKeyGenerateFormService.fetchProduct(
-			entitlement);
+		ActivationKey activationKey = _fetchRenewedActivationKey(
+			generateRequest);
 
-		if (product == null) {
+		if (activationKey == null) {
+			return Collections.emptyList();
+		}
+
+		return Collections.singletonList(activationKey.getActivationKeyId());
+	}
+
+	private String _getSizing(GenerateRequest generateRequest) {
+		if (_isComplimentary(generateRequest)) {
+			return _SIZING_COMPLIMENTARY;
+		}
+
+		return _SIZING_DEFAULT;
+	}
+
+	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
 			return null;
 		}
 
-		return _licenseKeyGenerateFormService.fetchLicenseEntry(
-			generateRequest.getKeyType(),
-			_licenseKeyGenerateFormService.getLicenseEntryFamily(product),
-			generateRequest.getVersion());
+		return entitlementDefinition.getSkuExternalReferenceCode();
 	}
 
-	private Entitlement _fetchEntitledProductEntitlement(
-			String productName, Project project)
-		throws Exception {
-
-		for (Entitlement entitlement :
-				_entitlementService.getActiveEntitlements(
-					project.getExternalReferenceCode())) {
-
-			if (!_licenseKeyGenerateFormService.grantsLicense(entitlement)) {
-				continue;
-			}
-
-			Product product = _licenseKeyGenerateFormService.fetchProduct(
-				entitlement);
-
-			if ((product != null) &&
-				Objects.equals(
-					productName, CommerceProductUtil.getName(product))) {
-
-				return entitlement;
-			}
-		}
-
-		return null;
+	private boolean _isComplimentary(GenerateRequest generateRequest) {
+		return Objects.equals(
+			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+			generateRequest.getKeyType());
 	}
 
 	private List<Entitlement> _toBundleEntitlements(
 		List<Entitlement> bundleEntitlements,
 		Entitlement subscriptionEntitlement) {
-
-		// The leading product enters the bundle as the entitlement backing the
-		// product itself, but the caller was gated on the entitlement for the
-		// key type they picked, which is a second entitlement over the same
-		// SKU. Spend the one they were gated on, so the count the form showed
-		// is the count that moves.
 
 		List<Entitlement> entitlements = new ArrayList<>();
 
@@ -773,27 +757,30 @@ public class LicenseKeyGenerationService {
 			productName, generateRequest.getVersion());
 		String macAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getMacAddresses());
+		String sizing = _getSizing(generateRequest);
 		String version = generateRequest.getVersion();
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, 0, 0, 0, 0, _SIZING_DEFAULT,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			version, environmentName, 0, 0, 0, 0, 0, sizing, description,
+			StringPool.BLANK, hostName, ipAddresses, macAddresses,
 			StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, 0, 0, 0, 0, _SIZING_DEFAULT,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			version, environmentName, 0, 0, 0, 0, 0, sizing, description,
+			StringPool.BLANK, hostName, ipAddresses, macAddresses,
 			StringPool.BLANK, startDate, expirationDate);
 	}
 
-	private static final Log _log = LogFactory.getLog(
-		LicenseKeyGenerationService.class);
+	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";
 
 	private static final String _SIZING_DEFAULT = "Sizing 1";
+
+	private static final Log _log = LogFactory.getLog(
+		LicenseKeyGenerationService.class);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

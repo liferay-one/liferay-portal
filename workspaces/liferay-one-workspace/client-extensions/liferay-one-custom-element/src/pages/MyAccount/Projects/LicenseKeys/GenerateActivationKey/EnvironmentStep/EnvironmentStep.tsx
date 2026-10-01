@@ -21,6 +21,7 @@ import {
 	buildEmptyServer,
 	getGenerateButtonLabel,
 	hasServerInfo,
+	isComplimentaryKeyType,
 } from '../utils';
 
 const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
@@ -64,13 +65,19 @@ export default function EnvironmentStep({
 	const {append, fields, remove} = useFieldArray({control, name: 'servers'});
 
 	const environmentName = watch('environmentName');
+	const keyType = watch('keyType');
 	const notify = watch('notify');
 	const servers = watch('servers');
 	const serverField = watch('serverField');
 	const version = watch('version');
 
+	const complimentary = isComplimentaryKeyType(keyType);
+
 	const canGenerate = Boolean(
-		environmentName.trim() && version && hasServerInfo(servers, serverField)
+		environmentName.trim() &&
+			version &&
+			hasServerInfo(servers, serverField) &&
+			!(complimentary && servers.length > 1)
 	);
 
 	async function onClickValidateAndGenerate() {
@@ -144,7 +151,9 @@ export default function EnvironmentStep({
 					index={index}
 					key={field.id}
 					onClickAdd={
-						!renewing && index === fields.length - 1
+						!renewing &&
+						!complimentary &&
+						index === fields.length - 1
 							? () => append(buildEmptyServer())
 							: undefined
 					}
