@@ -1479,7 +1479,7 @@ export default {
 	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
 		'Select the project and ticket you want to attach a file to.',
 	'select-the-subscription-and-key-type-you-would-like-to-generate':
-		'Select the subscription and key type you would like to generate',
+		'Select the subscription and key type you would like to generate.',
 	'select-the-versions-of-liferay-that-your-app-is-compatible-with':
 		'Select the versions of Liferay that your app is compatible with.',
 	'select-your-desired-publisher-type': 'Select your desired publisher type',
