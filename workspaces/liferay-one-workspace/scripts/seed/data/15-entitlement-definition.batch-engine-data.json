@@ -171,6 +171,38 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": null,
+			"displayName": "Non-Production Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION",
+			"grantType": "unlimited",
+			"name": "non-production-environments",
+			"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Production Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_PRODUCTION",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "production-environments",
+			"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "UAT Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "uat-environments",
+			"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+			"unit": "count"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 5,
 			"displayName": "Cloud Native Non-Production",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION",

@@ -72,6 +72,46 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_CLOUD_NATIVE_ENV_NONPRODUCTION",
+			"grantType": "unlimited",
+			"name": "non-production-environments",
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_CLOUD_NATIVE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_CLOUD_NATIVE_ENV_PRODUCTION",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "production-environments",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_CLOUD_NATIVE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_PRODUCTION",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_CLOUD_NATIVE_ENV_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "uat-environments",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_CLOUD_NATIVE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_UAT",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_CLOUD_NATIVE_NON_PRODUCTION",
 			"grantType": "fixed",
 			"maxQuantity": 5,
@@ -531,6 +571,16 @@
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_PLAN",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"licenseKeys": [
+		{
+			"externalReferenceCode": "C_LICENSE_KEY_OMNI_STANDALONE_1",
+			"r_entitlementToLicenseKey_c_entitlementERC": "C_ENT_OMNI_DXP_PRODUCTION"
+		},
+		{
+			"externalReferenceCode": "C_LICENSE_KEY_OMNI_STANDALONE_2",
+			"r_entitlementToLicenseKey_c_entitlementERC": "C_ENT_OMNI_DXP_NON_PRODUCTION"
 		}
 	],
 	"order": {
