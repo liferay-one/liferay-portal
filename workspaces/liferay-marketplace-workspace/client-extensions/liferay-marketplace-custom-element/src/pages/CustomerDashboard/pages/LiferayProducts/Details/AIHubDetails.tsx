@@ -39,6 +39,39 @@ const activationKeyAlertStatuses = {
 	},
 };
 
+type TokenPurchase = PlacedOrder & {aiHubTokens?: number};
+
+const tokenPurchasesFilter = SearchBuilder.in(
+	'orderTypeExternalReferenceCode',
+	[OrderTypes.AI_HUB, OrderTypes.AI_HUB_TOKEN]
+);
+
+const getTokenPurchases = (placedOrders: PlacedOrder[]): TokenPurchase[] =>
+	placedOrders.flatMap((placedOrder) => {
+		const aiHubTokenCredits = safeJSONParse<{
+			aiHubTokenCredits?: {size: number}[];
+		}>(
+			placedOrder.customFields?.[OrderCustomFields.ORDER_METADATA],
+			{}
+		).aiHubTokenCredits;
+
+		if (aiHubTokenCredits?.length) {
+			return aiHubTokenCredits.map(({size}) => ({
+				...placedOrder,
+				aiHubTokens: size,
+			}));
+		}
+
+		if (
+			placedOrder.orderTypeExternalReferenceCode ===
+			OrderTypes.AI_HUB_TOKEN
+		) {
+			return [placedOrder];
+		}
+
+		return [];
+	});
+
 const AIHubDetails = () => {
 	const {placedOrder, selectedAccount} = useOutletContext<{
 		placedOrder: PlacedOrder;
@@ -62,10 +95,7 @@ const AIHubDetails = () => {
 		`o/headless-commerce-delivery-order/v1.0/channels/${Liferay.CommerceContext.commerceChannelId}/accounts/${Liferay.CommerceContext.account?.accountId}/placed-orders`,
 		{
 			params: {
-				filter: SearchBuilder.eq(
-					'orderTypeExternalReferenceCode',
-					OrderTypes.AI_HUB_TOKEN
-				),
+				filter: tokenPurchasesFilter,
 				nestedFields: 'placedOrderItems',
 				pageSize: 100,
 			},
@@ -186,14 +216,14 @@ const AIHubDetails = () => {
 				/>
 			</DetailedCard>
 
-			{!!tokenOrdersData?.items.length && (
+			{!!getTokenPurchases(tokenOrdersData?.items ?? []).length && (
 				<DetailedCard
 					cardIconAltText="Profile Icon"
 					cardTitle={i18n.translate('token-past-purchases')}
 					className="mt-4 pb-0 tokens-card"
 					clayIcon="coin"
 				>
-					<ListView<PlacedOrder>
+					<ListView<TokenPurchase>
 						emptyStateProps={{
 							className:
 								'border px-4 py-6 d-flex align-items-center flex-column justify-content-center',
@@ -204,7 +234,21 @@ const AIHubDetails = () => {
 							pageSize: 5,
 							paginationDeltaOptions: [5, 10, 20],
 						}}
-						resource={`o/headless-commerce-delivery-order/v1.0/channels/${Liferay.CommerceContext.commerceChannelId}/accounts/${Liferay.CommerceContext.account?.accountId}/placed-orders?filter=${SearchBuilder.eq('orderTypeExternalReferenceCode', OrderTypes.AI_HUB_TOKEN)}&nestedFields=placedOrderItems&sort=createDate:desc`}
+						resource={`o/headless-commerce-delivery-order/v1.0/channels/${Liferay.CommerceContext.commerceChannelId}/accounts/${Liferay.CommerceContext.account?.accountId}/placed-orders?filter=${tokenPurchasesFilter}&nestedFields=placedOrderItems&sort=createDate:desc`}
+						transformData={(response) => {
+							const items = response.items ?? [];
+
+							const tokenPurchases = getTokenPurchases(items);
+
+							return {
+								...response,
+								items: tokenPurchases,
+								totalCount:
+									(response.totalCount ?? 0) +
+									tokenPurchases.length -
+									items.length,
+							};
+						}}
 						tableProps={{
 							columns: [
 								{
@@ -228,7 +272,16 @@ const AIHubDetails = () => {
 								{
 									id: 'placedOrderItems',
 									name: i18n.translate('tokens'),
-									render: (placedOrderItems) => {
+									render: (
+										placedOrderItems,
+										{aiHubTokens}
+									) => {
+										if (aiHubTokens) {
+											return Intl.NumberFormat().format(
+												aiHubTokens
+											);
+										}
+
 										const item = placedOrderItems?.[0];
 
 										if (!item) {
@@ -256,8 +309,10 @@ const AIHubDetails = () => {
 								{
 									id: 'summary',
 									name: i18n.translate('amount'),
-									render: (summary) =>
-										summary?.totalFormatted || '',
+									render: (summary, {aiHubTokens}) =>
+										aiHubTokens
+											? '-'
+											: summary?.totalFormatted || '',
 								},
 								{
 									id: 'orderStatusInfo',
