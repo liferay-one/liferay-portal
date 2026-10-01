@@ -5,6 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.Entitlement;
@@ -30,11 +33,6 @@ public class LicenseKeyGenerateFormServiceTest {
 
 	@Test
 	public void testGetKeyTypesKeepsASpentKeyType() {
-
-		// A key type with nothing left stays in the form, carrying its count,
-		// so the wizard can grey it out. Dropping it makes a product the
-		// customer owns look as though it was never bought.
-
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
 
@@ -62,8 +60,8 @@ public class LicenseKeyGenerateFormServiceTest {
 			).build();
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			"PRDCT-DXP", false, "DXP",
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			"PRDCT-DXP", false, false, "DXP",
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
@@ -87,6 +85,53 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesOffersComplimentaryWhenTheProjectHasNone() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, false);
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject subscriptionJSONObject = jsonArray.getJSONObject(
+			0
+		).getJSONArray(
+			"subscriptions"
+		).getJSONObject(
+			0
+		);
+
+		Assertions.assertEquals(
+			1, subscriptionJSONObject.getInt("availableCount"));
+		Assertions.assertEquals(1, subscriptionJSONObject.getInt("totalCount"));
+	}
+
+	@Test
+	public void testGetKeyTypesSkipsComplimentaryWhenNotAllowed() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(false, false);
+
+		Assertions.assertEquals(0, jsonArray.length());
+	}
+
+	@Test
+	public void testGetKeyTypesSpendsComplimentaryWhileTheProjectHasOne() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, true);
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals("complimentary", jsonObject.getString("key"));
+
+		JSONObject subscriptionJSONObject = jsonObject.getJSONArray(
+			"subscriptions"
+		).getJSONObject(
+			0
+		);
+
+		Assertions.assertEquals(
+			0, subscriptionJSONObject.getInt("availableCount"));
+		Assertions.assertEquals(1, subscriptionJSONObject.getInt("totalCount"));
+	}
+
+	@Test
 	public void testGetTotalCountRoundsDown() {
 		Assertions.assertEquals(
 			3,
@@ -98,6 +143,41 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			0,
 			LicenseKeyGenerateFormService.getTotalCount(_toEntitlement(null)));
+	}
+
+	@Test
+	public void testIsAllowComplimentary() throws Exception {
+		AccountService accountService = Mockito.mock(AccountService.class);
+
+		Account allowedAccount = new Account();
+
+		allowedAccount.setCustomFields(
+			() -> new CustomField[] {
+				_toCustomField("allowComplimentary", true)
+			});
+
+		Mockito.when(
+			accountService.getAccount(1L)
+		).thenReturn(
+			allowedAccount
+		);
+
+		Mockito.when(
+			accountService.getAccount(2L)
+		).thenReturn(
+			new Account()
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_accountService", accountService);
+
+		Assertions.assertTrue(
+			licenseKeyGenerateFormService.isAllowComplimentary(1L));
+		Assertions.assertFalse(
+			licenseKeyGenerateFormService.isAllowComplimentary(2L));
 	}
 
 	@Test
@@ -134,6 +214,52 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			"7.4",
 			LicenseKeyGenerateFormService.toComparableVersion("DXP 7.4"));
+	}
+
+	private JSONArray _getComplimentaryKeyTypesJSONArray(
+		boolean allowComplimentary, boolean hasComplimentaryActivationKey) {
+
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes("PRDCT-DXP")
+		).thenReturn(
+			Collections.singletonList(LicenseKeyType.COMPLIMENTARY)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		return ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
+			allowComplimentary, "PRDCT-DXP", hasComplimentaryActivationKey,
+			false, "DXP", Collections.emptyMap(),
+			HashMapBuilder.<String, Map<String, Entitlement>>put(
+				"DXP",
+				(Map<String, Entitlement>)HashMapBuilder.put(
+					"complimentary", _toEntitlement(1.0)
+				).build()
+			).build(),
+			Collections.emptyList());
+	}
+
+	private CustomField _toCustomField(String name, Object data) {
+		CustomField customField = new CustomField();
+
+		customField.setName(() -> name);
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(() -> data);
+
+		customField.setCustomValue(() -> customValue);
+
+		return customField;
 	}
 
 	private Entitlement _toEntitlement(Double maxQuantity) {
