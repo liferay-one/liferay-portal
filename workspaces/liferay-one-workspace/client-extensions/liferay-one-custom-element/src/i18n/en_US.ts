@@ -538,6 +538,10 @@ export default {
 		'Enable notifications through email when this Activation Key is about to expire 30 days before, 15 days before, and on the day of expiration. You can unsubscribe at any time.',
 	'end-date': 'End Date',
 	'end-user-license-agreement': 'End User License Agreement',
+	'enter-a-valid-ip-address-on-each-line':
+		'Enter a valid IP address on each line.',
+	'enter-a-valid-mac-address-on-each-line':
+		'Enter a valid MAC address on each line.',
 	'enter-administration-email-address': 'Enter administration email address',
 	'enter-app-description': 'Enter app description',
 	'enter-domain-here': 'Enter domain here',
@@ -1347,6 +1351,8 @@ export default {
 	'remove-member': 'Remove Member',
 	'remove-project-admin': 'Remove Project Admin',
 	'remove-server': 'Remove Server',
+	'remove-the-duplicate-ip-addresses': 'Remove the duplicate IP addresses.',
+	'remove-the-duplicate-mac-addresses': 'Remove the duplicate MAC addresses.',
 	'remove-this-member': 'Remove This Member',
 	'remove-user': 'Remove User',
 	'renew': 'Renew',

@@ -45,8 +45,6 @@ const ACTIVATION_MODE_OFFLINE = 'offline';
 
 const CLOUD_NATIVE_OFFERING = 'Cloud Native';
 
-const PRODUCTION_ENVIRONMENT_TYPE = 'production';
-
 function getCloudNativeKeyType(
 	cloudNativeKeyTypes: ActivationKeySummaryKeyType[],
 	type?: string
@@ -81,10 +79,6 @@ function toCloudNativeActivationKey(
 		complimentary: false,
 		description: '',
 		environmentId: environment.externalReferenceCode,
-		environmentType:
-			environment.type === PRODUCTION_ENVIRONMENT_TYPE
-				? 'production'
-				: 'non-production',
 		expirationDate: toActivationKeyDate(keyType?.endDate),
 		expirationDateValue: toActivationKeyDateValue(keyType?.endDate),
 		id: environment.externalReferenceCode,
@@ -130,10 +124,6 @@ function formatDateBound(value: string): string {
 		new Date(date),
 		'MMM d, yyyy'
 	)}`;
-}
-
-function getSubscriptionType(row: ProjectActivationKey): Word {
-	return row.complimentary ? 'complimentary' : 'subscription';
 }
 
 function matchesDateBound(dateValue: string, values: string[]): boolean {
@@ -459,22 +449,6 @@ export default function LicenseKeys() {
 					rows.map((row) => row.type),
 					(value) => translate(value as Word)
 				),
-			},
-			{
-				key: 'environmentType',
-				label: 'environment-type',
-				matches: (row, values) =>
-					values.includes(row.environmentType) ||
-					values.includes(getSubscriptionType(row)),
-				options: [
-					...toOptions(
-						rows.map((row) => row.environmentType),
-						(value) => translate(value as Word)
-					),
-					...toOptions(rows.map(getSubscriptionType), (value) =>
-						translate(value as Word)
-					),
-				],
 			},
 			{
 				formatValue: formatDateBound,

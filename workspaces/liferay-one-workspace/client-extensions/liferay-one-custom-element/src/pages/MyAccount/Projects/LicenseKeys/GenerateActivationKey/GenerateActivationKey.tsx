@@ -263,24 +263,20 @@ export default function GenerateActivationKey() {
 	const {productVersions} = useDXPProductVersions(cloudNative);
 
 	const versions = useMemo(() => {
-		if (cloudNative) {
-			return productVersions;
-		}
-
 		const product = generateForm?.products.find(
 			(current) =>
 				current.externalReferenceCode === productExternalReferenceCode
 		);
 
-		if (!product) {
-			return [];
-		}
-
 		if (isDeveloperKeyType(keyType)) {
-			return product.developerVersions;
+			return product?.developerVersions ?? [];
 		}
 
-		return product.versions;
+		if (cloudNative) {
+			return productVersions;
+		}
+
+		return product?.versions ?? [];
 	}, [
 		cloudNative,
 		generateForm,
