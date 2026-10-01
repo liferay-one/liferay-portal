@@ -35,17 +35,6 @@ body nav.public-sites-navigation {
 	}
 }
 
-/*
- * Critical, above-the-fold navigation layout. Mirrored from the "header"
- * fragment's index.css so it ships in this render-blocking global CSS and the
- * nav lands in its final position and shape on the first paint, instead of
- * briefly rendering as an unstyled list of links (FOUC). Keep this block in
- * sync with index.css; the rules must stay in index.css too, since the
- * fragment renders standalone in edit mode (position: static). Fallback values
- * mirror the "liferay-one" style book in case the token variables resolve
- * after first paint.
- */
-
 .public-sites-navigation-padding {
 	padding-top: 7rem;
 }
@@ -119,6 +108,16 @@ nav.public-sites-navigation .nav-items-wrapper {
 
 html body:not(.has-edit-mode-menu) .content #main-content.layout-content {
 	margin-top: 3.5rem;
+}
+
+body.page-maximized #main-content.columns-max {
+	margin-left: auto;
+	margin-right: auto;
+	max-width: calc(
+		var(--content-max-width, 1280px) + 2 * var(--content-gutter, 1.5rem)
+	);
+	padding-left: var(--content-gutter, 1.5rem);
+	padding-right: var(--content-gutter, 1.5rem);
 }
 
 .account-selector-compact {
