@@ -98,6 +98,7 @@ const AIHubDetails = () => {
 				filter: tokenPurchasesFilter,
 				nestedFields: 'placedOrderItems',
 				pageSize: 100,
+				restrictFields: 'placedOrderItems.price',
 			},
 		}
 	);
@@ -234,7 +235,7 @@ const AIHubDetails = () => {
 							pageSize: 5,
 							paginationDeltaOptions: [5, 10, 20],
 						}}
-						resource={`o/headless-commerce-delivery-order/v1.0/channels/${Liferay.CommerceContext.commerceChannelId}/accounts/${Liferay.CommerceContext.account?.accountId}/placed-orders?filter=${tokenPurchasesFilter}&nestedFields=placedOrderItems&sort=createDate:desc`}
+						resource={`o/headless-commerce-delivery-order/v1.0/channels/${Liferay.CommerceContext.commerceChannelId}/accounts/${Liferay.CommerceContext.account?.accountId}/placed-orders?filter=${tokenPurchasesFilter}&nestedFields=placedOrderItems&restrictFields=placedOrderItems.price&sort=createDate:desc`}
 						transformData={(response) => {
 							const items = response.items ?? [];
 
