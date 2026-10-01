@@ -6,7 +6,6 @@
 import ClayAlert from '@clayui/alert';
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayTable from '@clayui/table';
-import classNames from 'classnames';
 import {useEffect, useRef, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
@@ -199,13 +198,7 @@ export default function ActivationCodesStep({
 					</ClayTable.Head>
 
 					<ClayTable.Body>
-						<ClayTable.Row
-							className={classNames({
-								'generate-activation-key-table-row-used':
-									activationCode.activationStatus ===
-									ACTIVATION_STATUS_ACTIVE,
-							})}
-						>
+						<ClayTable.Row>
 							<ClayTable.Cell>
 								{translate(keyType as Word)}
 							</ClayTable.Cell>

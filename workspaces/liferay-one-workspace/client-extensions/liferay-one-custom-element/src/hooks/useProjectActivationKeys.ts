@@ -30,7 +30,6 @@ export type ProjectActivationKey = {
 	complimentary: boolean;
 	description: string;
 	environmentId?: string;
-	environmentType: Word;
 	expirationDate: string;
 	expirationDateValue: string;
 	id: string;
@@ -62,14 +61,6 @@ const ACTIVATION_KEY_FIELDS =
 const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
 const NEW_KEY_WINDOW_DAYS = 15;
-
-const NON_PRODUCTION_KEY_TYPES = [
-	'developer',
-	'developer-cluster',
-	'free',
-	'non-production',
-	'uat',
-];
 
 const PROJECT_LICENSE_KEY_FIELDS = [
 	'active',
@@ -116,14 +107,6 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 	}
 
 	return undefined;
-}
-
-function getEnvironmentType(type?: string): Word {
-	if (type && NON_PRODUCTION_KEY_TYPES.includes(type)) {
-		return 'non-production';
-	}
-
-	return 'production';
 }
 
 function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
@@ -186,7 +169,6 @@ function toUnaggregatedActivationKey(
 		badge: getBadge(activationKeyNode),
 		complimentary: node.complimentary ?? false,
 		description: node.description ?? '',
-		environmentType: getEnvironmentType(node.licenseType),
 		expirationDate: formatDate(node.customExpirationDate),
 		expirationDateValue: getDateValue(node.customExpirationDate),
 		id: activationKeyNode.externalReferenceCode,
@@ -299,7 +281,6 @@ export function useProjectActivationKeys() {
 				badge: getBadge(node),
 				complimentary: node.type === COMPLIMENTARY_KEY_TYPE,
 				description: licenseKey?.description ?? '',
-				environmentType: getEnvironmentType(node.type),
 				expirationDate: formatDate(node.endDate),
 				expirationDateValue: getDateValue(node.endDate),
 				id: node.externalReferenceCode,

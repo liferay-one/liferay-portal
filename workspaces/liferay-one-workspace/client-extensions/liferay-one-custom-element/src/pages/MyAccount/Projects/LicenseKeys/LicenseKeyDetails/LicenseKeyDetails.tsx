@@ -57,7 +57,7 @@ export default function LicenseKeyDetails() {
 
 	return (
 		<div className="w-100">
-			<BackLink path="..">{translate('activation-keys')}</BackLink>
+			<BackLink path="..">{translate('activation')}</BackLink>
 
 			{loading ? (
 				<Loading.Page />
