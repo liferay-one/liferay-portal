@@ -1,3 +1,10 @@
+---
+
+paths:
+  - "**/liferay-one-custom-element/**"
+
+---
+
 # Page Folder Structure
 
 Every sub-page component inside a section under `src/pages/` must live in its own named subfolder, not directly in the section root.

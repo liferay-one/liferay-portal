@@ -1,3 +1,11 @@
+---
+
+paths:
+  - "**/liferay-one-custom-element/**"
+  - "**/liferay-one-etc-spring-boot/**"
+
+---
+
 # Data Access
 
 Nearly every read in this workspace is a network call — a headless API request from `liferay-one-custom-element`, or a Liferay/Salesforce/Jira call from `liferay-one-etc-spring-boot`. The cost of a sloppy read is not a few wasted cycles; it is a page that takes eight seconds, or a synchronizer that issues four thousand requests where forty would do.
@@ -41,7 +49,7 @@ Per stack:
 
 Indexing `[0]` is fine on a collection you already had to fetch in full — `postalAddresses.items.find((address) => address.primary) ?? postalAddresses.items[0]` picks a fallback out of an account's addresses, which is not a query at all. The rule targets fetching a page *in order to* take one element.
 
-## No Service Call Inside A Loop
+## No Service Call Inside a Loop
 
 A loop that calls a service per item is the most common performance defect here. It turns one round trip into N, and N is usually a page size someone will raise later.
 
