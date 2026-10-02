@@ -45,7 +45,7 @@ public class DataOpsUsageService extends BaseService {
 
 		return _handleRequest(
 			_gcfBaseURL + _FUNCTION_PATH_COMPOSABLE_USAGE_API,
-			"account " + accountKey,
+			_composableServiceAccount, "account " + accountKey,
 			UriComponentsBuilder.fromUriString(
 				_gcfBaseURL
 			).path(
@@ -62,7 +62,7 @@ public class DataOpsUsageService extends BaseService {
 
 		return _handleRequest(
 			_gcfBaseURL + _FUNCTION_PATH_CUSTOMER_USAGE_API,
-			"account " + accountKey,
+			_customerServiceAccount, "account " + accountKey,
 			UriComponentsBuilder.fromUriString(
 				_gcfBaseURL
 			).path(
@@ -80,7 +80,7 @@ public class DataOpsUsageService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_ldpBaseURL, "project " + salesforceProjectId,
+			_ldpBaseURL, _ldpServiceAccount, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
 				_ldpBaseURL
 			).path(
@@ -102,7 +102,7 @@ public class DataOpsUsageService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_ldpBaseURL, "project " + salesforceProjectId,
+			_ldpBaseURL, _ldpServiceAccount, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
 				_ldpBaseURL
 			).path(
@@ -121,7 +121,7 @@ public class DataOpsUsageService extends BaseService {
 		throws Exception {
 
 		return _handleRequest(
-			_ldpBaseURL, "project " + salesforceProjectId,
+			_ldpBaseURL, _ldpServiceAccount, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
 				_ldpBaseURL
 			).path(
@@ -131,9 +131,11 @@ public class DataOpsUsageService extends BaseService {
 			).toUri());
 	}
 
-	private String _getAuthorization(String audience) throws Exception {
+	private String _getAuthorization(String audience, String serviceAccount)
+		throws Exception {
+
 		IdTokenCredentials idTokenCredentials = _getIdTokenCredentials(
-			audience);
+			audience, serviceAccount);
 
 		idTokenCredentials.refreshIfExpired();
 
@@ -147,10 +149,11 @@ public class DataOpsUsageService extends BaseService {
 		return "Bearer " + accessToken.getTokenValue();
 	}
 
-	private IdTokenCredentials _getIdTokenCredentials(String audience)
+	private IdTokenCredentials _getIdTokenCredentials(
+			String audience, String serviceAccount)
 		throws Exception {
 
-		IdTokenProvider idTokenProvider = _getIdTokenProvider();
+		IdTokenProvider idTokenProvider = _getIdTokenProvider(serviceAccount);
 
 		return _idTokenCredentials.computeIfAbsent(
 			audience,
@@ -162,24 +165,41 @@ public class DataOpsUsageService extends BaseService {
 			).build());
 	}
 
-	private IdTokenProvider _getIdTokenProvider() throws Exception {
-		if (_idTokenProvider != null) {
-			return _idTokenProvider;
+	private GoogleCredentials _getGoogleCredentials() throws Exception {
+		GoogleCredentials googleCredentials = _googleCredentials;
+
+		if (googleCredentials == null) {
+			googleCredentials = GoogleCredentials.getApplicationDefault();
+
+			_googleCredentials = googleCredentials;
 		}
 
-		_idTokenProvider = _toIdTokenProvider(
-			GoogleCredentials.getApplicationDefault());
-
-		return _idTokenProvider;
+		return googleCredentials;
 	}
 
-	private String _handleRequest(String audience, String subject, URI uri)
+	private IdTokenProvider _getIdTokenProvider(String serviceAccount)
+		throws Exception {
+
+		GoogleCredentials googleCredentials = _getGoogleCredentials();
+
+		if (Validator.isNull(serviceAccount)) {
+			return (IdTokenProvider)googleCredentials;
+		}
+
+		return _idTokenProviders.computeIfAbsent(
+			serviceAccount,
+			account -> ImpersonatedCredentials.create(
+				googleCredentials, account, null, _scopes, 3600));
+	}
+
+	private String _handleRequest(
+			String audience, String serviceAccount, String subject, URI uri)
 		throws Exception {
 
 		String authorization = null;
 
 		try {
-			authorization = _getAuthorization(audience);
+			authorization = _getAuthorization(audience, serviceAccount);
 		}
 		catch (Exception exception) {
 			throw new DataOpsUnavailableException(
@@ -210,17 +230,6 @@ public class DataOpsUsageService extends BaseService {
 		}
 	}
 
-	private IdTokenProvider _toIdTokenProvider(
-		GoogleCredentials googleCredentials) {
-
-		if (Validator.isNull(_serviceAccount)) {
-			return (IdTokenProvider)googleCredentials;
-		}
-
-		return ImpersonatedCredentials.create(
-			googleCredentials, _serviceAccount, null, _scopes, 3600);
-	}
-
 	private static final String _FUNCTION_PATH_COMPOSABLE_USAGE_API =
 		"/composable_usage_api";
 
@@ -233,17 +242,25 @@ public class DataOpsUsageService extends BaseService {
 	private static final List<String> _scopes = Collections.singletonList(
 		"https://www.googleapis.com/auth/cloud-platform");
 
+	@Value("${liferay.one.gcf.composable.service.account:}")
+	private String _composableServiceAccount;
+
+	@Value("${liferay.one.gcf.customer.service.account:}")
+	private String _customerServiceAccount;
+
 	@Value("${liferay.one.gcf.base.url}")
 	private String _gcfBaseURL;
 
+	private volatile GoogleCredentials _googleCredentials;
 	private final Map<String, IdTokenCredentials> _idTokenCredentials =
 		new ConcurrentHashMap<>();
-	private volatile IdTokenProvider _idTokenProvider;
+	private final Map<String, IdTokenProvider> _idTokenProviders =
+		new ConcurrentHashMap<>();
 
 	@Value("${liferay.one.ldp.base.url}")
 	private String _ldpBaseURL;
 
-	@Value("${liferay.one.dataops.service.account:}")
-	private String _serviceAccount;
+	@Value("${liferay.one.ldp.service.account:}")
+	private String _ldpServiceAccount;
 
 }
