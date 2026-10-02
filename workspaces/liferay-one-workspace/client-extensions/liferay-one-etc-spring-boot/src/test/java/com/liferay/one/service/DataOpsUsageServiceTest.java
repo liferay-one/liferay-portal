@@ -5,9 +5,11 @@
 
 package com.liferay.one.service;
 
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.IdToken;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
+import com.google.auth.oauth2.ImpersonatedCredentials;
 
 import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.petra.string.StringBundler;
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.MockSettings;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -240,6 +243,41 @@ public class DataOpsUsageServiceTest {
 				_dataOpsUsageService, "_getIdTokenProvider"));
 	}
 
+	@Test
+	public void testToIdTokenProviderImpersonatesTheConfiguredAccount() {
+		ReflectionTestUtils.setField(
+			_dataOpsUsageService, "_serviceAccount", _SERVICE_ACCOUNT);
+
+		IdTokenProvider idTokenProvider = ReflectionTestUtils.invokeMethod(
+			_dataOpsUsageService, "_toIdTokenProvider",
+			Mockito.mock(GoogleCredentials.class));
+
+		Assertions.assertInstanceOf(
+			ImpersonatedCredentials.class, idTokenProvider);
+
+		ImpersonatedCredentials impersonatedCredentials =
+			(ImpersonatedCredentials)idTokenProvider;
+
+		Assertions.assertEquals(
+			_SERVICE_ACCOUNT, impersonatedCredentials.getAccount());
+	}
+
+	@Test
+	public void testToIdTokenProviderUsesApplicationDefaultCredentials() {
+		MockSettings mockSettings = Mockito.withSettings(
+		).extraInterfaces(
+			IdTokenProvider.class
+		);
+
+		GoogleCredentials googleCredentials = Mockito.mock(
+			GoogleCredentials.class, mockSettings);
+
+		Assertions.assertSame(
+			googleCredentials,
+			ReflectionTestUtils.invokeMethod(
+				_dataOpsUsageService, "_toIdTokenProvider", googleCredentials));
+	}
+
 	private String _decodeIdTokenPayload(String authorization) {
 		String token = authorization.substring(_BEARER_PREFIX.length());
 
@@ -315,6 +353,9 @@ public class DataOpsUsageServiceTest {
 	private static final String _LDP_ROOT_PATH = "/ldp-root";
 
 	private static final String _SALESFORCE_PROJECT_ID = "a0B0g00000eABCD123";
+
+	private static final String _SERVICE_ACCOUNT =
+		"dataops-invoker@liferay-dw-infra.iam.gserviceaccount.com";
 
 	private static final String _USAGE_RESPONSE =
 		"{\"apiRequestsCount\": 45000}";
