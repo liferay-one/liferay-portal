@@ -5,13 +5,13 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 source _common.sh
 
 function main {
-	local reset=false
+	local reset="false"
 
 	for arg in "${@}"
 	do
-		if [[ ${arg} == --reset ]]
+		if [ "${arg}" == "--reset" ]
 		then
-			reset=true
+			reset="true"
 		fi
 	done
 
@@ -38,11 +38,10 @@ function main {
 	if [ "${reset}" == "true" ]
 	then
 		echo "Tearing down containers and volumes."
-
-		docker_compose down --volumes
+		docker compose --file docker-compose.yaml down --volumes
 	fi
 
-	./bootstrap/build.sh
+	./gradlew clean
 
 	./scripts/bootstrap/extract_hotfix.sh
 	./scripts/bootstrap/extract_license.sh
