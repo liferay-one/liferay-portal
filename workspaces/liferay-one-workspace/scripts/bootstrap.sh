@@ -73,6 +73,9 @@ function main {
 	echo "Setting virtual hosts."
 	./scripts/bootstrap/set_virtual_hosts.sh
 
+	echo "Setting redirect entries."
+	./scripts/bootstrap/set_redirect_entries.sh
+
 	echo "Setting payment methods."
 	./scripts/bootstrap/set_payment_methods.sh
 
