@@ -168,6 +168,19 @@
 		},
 		{
 			"description": {
+				"en_US": "This is who last published the product."
+			},
+			"facetable": false,
+			"key": "last-updated-by",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Last Updated By"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the latest version for the app or solution."
 			},
 			"facetable": false,
@@ -373,18 +386,6 @@
 			"title": {
 				"en_US": "Product Notes"
 			}
-		},
-		{
-			"description": {
-				"en_US": "Designates the product's classification from Salesforce (Add-on, Primary, Regular)."
-			},
-			"facetable": true,
-			"key": "product-type",
-			"priority": 0,
-			"title": {
-				"en_US": "Product Type"
-			},
-			"visible": true
 		},
 		{
 			"description": {

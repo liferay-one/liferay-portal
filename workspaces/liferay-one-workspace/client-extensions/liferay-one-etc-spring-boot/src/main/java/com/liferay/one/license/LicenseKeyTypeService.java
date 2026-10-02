@@ -10,11 +10,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +33,14 @@ public class LicenseKeyTypeService {
 		return _adminTypes;
 	}
 
+	public List<LicenseKeyType> getLicenseKeyTypes() {
+		return _licenseKeyTypes;
+	}
+
+	public String getTypes() {
+		return _types;
+	}
+
 	public boolean isAdminType(LicenseKeyType licenseKeyType) {
 		return _adminLicenseKeyTypes.contains(licenseKeyType);
 	}
@@ -47,37 +52,13 @@ public class LicenseKeyTypeService {
 		_adminTypes = adminTypes;
 	}
 
-	public List<LicenseKeyType> getLicenseKeyTypes(
-		String externalReferenceCode) {
-
-		return _licenseKeyTypes.getOrDefault(
-			externalReferenceCode, Collections.emptyList());
-	}
-
-	public Map<String, String> getTypes() {
-		return _types;
-	}
-
-	// A product offers the key types configured against its external reference
-	// code, so a product is added by configuration rather than by code. Holding
-	// no key types is what makes a product an add-on rather than one that can
-	// lead an activation key.
-
-	public void setTypes(Map<String, String> types) {
+	public void setTypes(String types) {
 		_types = types;
 	}
 
 	@PostConstruct
 	protected void init() {
-		Map<String, List<LicenseKeyType>> licenseKeyTypes =
-			new LinkedHashMap<>();
-
-		for (Map.Entry<String, String> entry : _types.entrySet()) {
-			licenseKeyTypes.put(
-				entry.getKey(), _toLicenseKeyTypes(entry.getValue()));
-		}
-
-		_licenseKeyTypes = Collections.unmodifiableMap(licenseKeyTypes);
+		_licenseKeyTypes = _toLicenseKeyTypes(_types);
 
 		_adminLicenseKeyTypes = Collections.unmodifiableSet(
 			new HashSet<>(_toLicenseKeyTypes(_adminTypes)));
@@ -118,8 +99,8 @@ public class LicenseKeyTypeService {
 	private volatile Set<LicenseKeyType> _adminLicenseKeyTypes =
 		Collections.emptySet();
 	private String _adminTypes = StringPool.BLANK;
-	private volatile Map<String, List<LicenseKeyType>> _licenseKeyTypes =
-		Collections.emptyMap();
-	private Map<String, String> _types = new HashMap<>();
+	private volatile List<LicenseKeyType> _licenseKeyTypes =
+		Collections.emptyList();
+	private String _types = StringPool.BLANK;
 
 }

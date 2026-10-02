@@ -39,6 +39,7 @@ export const ProductLicense = {
 	BASE: 'base-license-usage-type',
 	CLOUD: 'cloud-license-usage-type',
 	CMP: 'cmp-license-usage-type',
+	DSR: 'dsr-license-usage-type',
 	DXP: 'dxp-license-usage-type',
 } as const;
 
