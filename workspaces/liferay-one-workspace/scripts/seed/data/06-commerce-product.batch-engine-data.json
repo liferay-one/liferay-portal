@@ -406,12 +406,6 @@
 					"value": {
 						"en_US": "ai-hub"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -647,12 +641,6 @@
 					"value": {
 						"en_US": "Analytics Cloud (Subscription)"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -819,12 +807,6 @@
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Software (Subscription)"
-					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "Cloud Native"
 					}
 				}
 			],
@@ -1327,18 +1309,6 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/content-marketing-platform"
 					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "CMP"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -1602,12 +1572,6 @@
 					"value": {
 						"en_US": "https://learn.liferay.com/liferay-data-platform"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -1840,18 +1804,6 @@
 				},
 				{
 					"specificationKey": "cloud-enabled",
-					"value": {
-						"en_US": "true"
-					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "DSR"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
 					"value": {
 						"en_US": "true"
 					}
@@ -2210,18 +2162,6 @@
 					"specificationKey": "project-learn-url",
 					"value": {
 						"en_US": "https://learn.liferay.com/w/dxp/getting-started/liferay-dxp-free-tier"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "DXP"
 					}
 				}
 			],
@@ -3284,18 +3224,6 @@
 					"specificationKey": "product-family",
 					"value": {
 						"en_US": "Portal (License)"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "Portal"
 					}
 				}
 			],
@@ -4443,12 +4371,6 @@
 					"value": {
 						"en_US": "client-extension"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -4746,12 +4668,6 @@
 					"specificationKey": "solution-header-title",
 					"value": {
 						"en_US": "Test Supplier CRM Accelerator"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
 					}
 				}
 			],
@@ -5066,12 +4982,6 @@
 					"value": {
 						"en_US": "Test Supplier Partner Portal"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -5289,12 +5199,6 @@
 					"value": {
 						"en_US": "client-extension"
 					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
 				}
 			],
 			"productType": "virtual",
@@ -5405,12 +5309,6 @@
 					"specificationKey": "type",
 					"value": {
 						"en_US": "low-code-configuration"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
 					}
 				}
 			],

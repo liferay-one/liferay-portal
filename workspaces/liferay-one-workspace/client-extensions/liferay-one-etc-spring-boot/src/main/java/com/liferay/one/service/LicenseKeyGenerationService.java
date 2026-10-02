@@ -477,19 +477,11 @@ public class LicenseKeyGenerationService {
 	}
 
 	private LicenseEntry _fetchLicenseEntry(
-			GenerateRequest generateRequest, Entitlement entitlement)
-		throws Exception {
-
-		Product product = _licenseKeyGenerateFormService.fetchProduct(
-			entitlement);
-
-		if (product == null) {
-			return null;
-		}
+		GenerateRequest generateRequest, Entitlement entitlement) {
 
 		return _licenseKeyGenerateFormService.fetchLicenseEntry(
 			generateRequest.getKeyType(),
-			_licenseKeyGenerateFormService.getLicenseEntryFamily(product),
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			generateRequest.getVersion());
 	}
 
