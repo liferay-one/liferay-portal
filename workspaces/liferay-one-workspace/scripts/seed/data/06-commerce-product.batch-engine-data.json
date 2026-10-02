@@ -896,107 +896,6 @@
 				}
 			],
 			"description": {
-				"en_US": "Liferay Customer Management Platform subscription for testing the activation status card."
-			},
-			"externalReferenceCode": "PRDCT-CMP",
-			"name": {
-				"en_US": "Liferay Customer Management Platform"
-			},
-			"productSpecifications": [
-				{
-					"specificationKey": "publisher-name",
-					"value": {
-						"en_US": "Liferay, Inc."
-					}
-				},
-				{
-					"specificationKey": "price-model",
-					"value": {
-						"en_US": "Paid"
-					}
-				},
-				{
-					"specificationKey": "liferay-products-categories",
-					"value": {
-						"en_US": "Platform"
-					}
-				},
-				{
-					"specificationKey": "type",
-					"value": {
-						"en_US": "cloud"
-					}
-				},
-				{
-					"specificationKey": "project-activation-profile",
-					"value": {
-						"en_US": "status"
-					}
-				},
-				{
-					"specificationKey": "project-details-profile",
-					"value": {
-						"en_US": "saas"
-					}
-				},
-				{
-					"specificationKey": "project-environment-profile",
-					"value": {
-						"en_US": "saas"
-					}
-				},
-				{
-					"specificationKey": "project-item-type",
-					"value": {
-						"en_US": "product"
-					}
-				},
-				{
-					"specificationKey": "product-family",
-					"value": {
-						"en_US": "Liferay Customer Management Platform (Subscription)"
-					}
-				},
-				{
-					"specificationKey": "cloud-enabled",
-					"value": {
-						"en_US": "true"
-					}
-				},
-				{
-					"specificationKey": "license-entry-family",
-					"value": {
-						"en_US": "CMP"
-					}
-				},
-				{
-					"specificationKey": "generates-activation-key",
-					"value": {
-						"en_US": "true"
-					}
-				}
-			],
-			"productType": "virtual",
-			"skus": [
-				{
-					"externalReferenceCode": "PRDCT-CMP",
-					"neverExpire": true,
-					"price": 0,
-					"published": true,
-					"purchasable": true,
-					"sku": "PRDCT-CMP"
-				}
-			]
-		},
-		{
-			"active": true,
-			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
-			"categories": [
-				{
-					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
-				}
-			],
-			"description": {
 				"en_US": "TODO"
 			},
 			"externalReferenceCode": "PRDCT-COMMERCE",
@@ -1430,6 +1329,12 @@
 					}
 				},
 				{
+					"specificationKey": "license-entry-family",
+					"value": {
+						"en_US": "CMP"
+					}
+				},
+				{
 					"specificationKey": "generates-activation-key",
 					"value": {
 						"en_US": "true"
@@ -1791,6 +1696,27 @@
 				"displayAvailability": true,
 				"displayStockQuantity": true
 			},
+			"productOptions": [
+				{
+					"fieldType": "radio",
+					"key": "dsr-license-usage-type",
+					"name": {
+						"en_US": "DSR License Usage Type"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_DSR_LICENSE_USAGE",
+					"productOptionValues": [
+						{
+							"key": "developer",
+							"name": {
+								"en_US": "Developer"
+							},
+							"priority": 0
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
 			"productSpecifications": [
 				{
 					"specificationKey": "app-documentation-url",
@@ -1947,6 +1873,20 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-DSR"
+				},
+				{
+					"externalReferenceCode": "PRDCT-DSR-DEVELOPER",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-DSR-DEVELOPER",
+					"skuOptions": [
+						{
+							"key": "dsr-license-usage-type",
+							"value": "developer"
+						}
+					]
 				}
 			]
 		},
@@ -4809,12 +4749,6 @@
 					}
 				},
 				{
-					"specificationKey": "solution-type",
-					"value": {
-						"en_US": "Experience Management"
-					}
-				},
-				{
 					"specificationKey": "generates-activation-key",
 					"value": {
 						"en_US": "true"
@@ -5131,12 +5065,6 @@
 					"specificationKey": "solution-header-title",
 					"value": {
 						"en_US": "Test Supplier Partner Portal"
-					}
-				},
-				{
-					"specificationKey": "solution-type",
-					"value": {
-						"en_US": "Experience Management"
 					}
 				},
 				{
@@ -5573,7 +5501,7 @@
 					}
 				},
 				{
-					"specificationKey": "product-type",
+					"specificationKey": "type",
 					"value": {
 						"en_US": "ssa-saas"
 					}
@@ -5635,7 +5563,7 @@
 				{
 					"specificationKey": "solution-type",
 					"value": {
-						"en_US": "Experience Management"
+						"en_US": "pre-built-trial"
 					}
 				}
 			],

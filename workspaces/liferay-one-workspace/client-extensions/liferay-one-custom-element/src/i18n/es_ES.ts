@@ -500,6 +500,7 @@ export default {
 		'Descarga el archivo de clave de activación a continuación y cárgalo en el portal correspondiente dentro de tu entorno DXP para comenzar.',
 	'draft': 'Borrador',
 	'drag-and-drop-to-upload-or': 'Arrastra para subir o',
+	'dsr-license-usage-type': 'Tipo de uso de licencia DSR',
 	'duration-days': 'Duración (días)',
 	'duration-of-the-extension': 'Duración de la extensión',
 	'dxp-app': 'Aplicación DXP',

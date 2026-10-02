@@ -8,13 +8,19 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Project;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -78,75 +84,72 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testIsGeneratableWithAnAvailableSubscription() {
-		Assertions.assertTrue(
-			_isGeneratable(
-				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null),
-					_toKeyTypeJSONObject("developer", 2, null, null))));
-	}
-
-	@Test
-	public void testIsGeneratableWithEverySubscriptionSpent() {
-
-		// A spent key type stays in the form so the wizard can grey it out,
-		// which is exactly why the list cannot take a non empty form as a sign
-		// that anything is left to generate.
-
-		Assertions.assertFalse(
-			_isGeneratable(
-				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null))));
-	}
-
-	@Test
-	public void testIsGeneratableWithoutProducts() {
-		Assertions.assertFalse(_isGeneratable());
-	}
-
-	@Test
-	public void testGetSummaryCarriesOnlyWhatTheListReads() throws Exception {
+	public void testGetEntitledProductsReadsEverySoldSku() throws Exception {
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			Mockito.spy(new LicenseKeyGenerateFormService());
+			new LicenseKeyGenerateFormService();
 
-		Project project = Mockito.mock(Project.class);
+		CommerceProductService commerceProductService = Mockito.mock(
+			CommerceProductService.class);
 
-		Mockito.doReturn(
-			_toGenerateFormJSONObject(
-				_toProductJSONObject(
-					"PRDCT-CLOUD-NATIVE",
-					_toKeyTypeJSONObject(
-						"production", 3, "2026-12-31T00:00:00Z",
-						"2026-01-01T00:00:00Z")),
-				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null)))
-		).when(
-			licenseKeyGenerateFormService
-		).getGenerateForm(
-			false, project, null
+		Product product = new Product();
+
+		product.setExternalReferenceCode("PRDCT-CONTENT-MARKETING");
+		product.setProductId(1L);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(1L)
+		).thenReturn(
+			product
 		);
 
-		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
-			false, project);
+		Mockito.when(
+			commerceProductService.getSpecificationValues(1L)
+		).thenReturn(
+			Collections.emptyMap()
+		);
 
-		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+		CommerceSkuService commerceSkuService = Mockito.mock(
+			CommerceSkuService.class);
 
-		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
+		Mockito.when(
+			commerceSkuService.fetchSku("PRDCT-CONTENT-MARKETING")
+		).thenReturn(
+			_toSku(1L, null)
+		);
 
-		Assertions.assertEquals(1, jsonArray.length());
-		Assertions.assertEquals(
-			"production",
-			jsonArray.getJSONObject(
-				0
-			).getString(
-				"key"
-			));
+		Mockito.when(
+			commerceSkuService.fetchSku("PRDCT-CONTENT-MARKETING-DEVELOPER")
+		).thenReturn(
+			_toSku(1L, "cmp-license-usage-type")
+		);
 
-		Assertions.assertFalse(jsonObject.has("products"));
-		Assertions.assertFalse(jsonObject.has("bundleProducts"));
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceProductService",
+			commerceProductService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceSkuService",
+			commerceSkuService);
+
+		List<Entitlement> entitlements = Arrays.asList(
+			_toLicenseGenerationEntitlement(
+				1L, null, "PRDCT-CONTENT-MARKETING"),
+			_toLicenseGenerationEntitlement(
+				2L, "developer", "PRDCT-CONTENT-MARKETING-DEVELOPER"));
+
+		Map<Long, Object> resolvedProducts = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getResolvedProducts",
+			entitlements);
+
+		List<Object> entitledProducts = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getEntitledProducts", entitlements,
+			resolvedProducts);
+
+		Assertions.assertEquals(1, entitledProducts.size());
+
+		boolean generatesActivationKey = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "isGeneratesActivationKey");
+
+		Assertions.assertTrue(generatesActivationKey);
 	}
 
 	@Test
@@ -155,7 +158,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			LicenseKeyTypeService.class);
 
 		Mockito.when(
-			licenseKeyTypeService.getLicenseKeyTypes("PRDCT-DXP")
+			licenseKeyTypeService.getLicenseKeyTypes()
 		).thenReturn(
 			Collections.singletonList(LicenseKeyType.PRODUCTION)
 		);
@@ -179,7 +182,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			"PRDCT-DXP", false, false, "DXP",
+			false, false, "DXP",
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
@@ -250,6 +253,49 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetSummaryCarriesOnlyWhatTheListReads() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			Mockito.spy(new LicenseKeyGenerateFormService());
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.doReturn(
+			_toGenerateFormJSONObject(
+				_toProductJSONObject(
+					"PRDCT-CLOUD-NATIVE",
+					_toKeyTypeJSONObject(
+						"production", 3, "2026-12-31T00:00:00Z",
+						"2026-01-01T00:00:00Z")),
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null)))
+		).when(
+			licenseKeyGenerateFormService
+		).getGenerateForm(
+			false, project, null
+		);
+
+		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
+			false, project);
+
+		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+
+		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
+
+		Assertions.assertEquals(1, jsonArray.length());
+		Assertions.assertEquals(
+			"production",
+			jsonArray.getJSONObject(
+				0
+			).getString(
+				"key"
+			));
+
+		Assertions.assertFalse(jsonObject.has("products"));
+		Assertions.assertFalse(jsonObject.has("bundleProducts"));
+	}
+
+	@Test
 	public void testGetTotalCountRoundsDown() {
 		Assertions.assertEquals(
 			3,
@@ -299,6 +345,30 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testIsGeneratableWithAnAvailableSubscription() {
+		Assertions.assertTrue(
+			_isGeneratable(
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null),
+					_toKeyTypeJSONObject("developer", 2, null, null))));
+	}
+
+	@Test
+	public void testIsGeneratableWithEverySubscriptionSpent() {
+		Assertions.assertFalse(
+			_isGeneratable(
+				_toProductJSONObject(
+					"PRDCT-DXP",
+					_toKeyTypeJSONObject("production", 0, null, null))));
+	}
+
+	@Test
+	public void testIsGeneratableWithoutProducts() {
+		Assertions.assertFalse(_isGeneratable());
+	}
+
+	@Test
 	public void testToComparableVersionWithBlankProductVersion() {
 		Assertions.assertEquals(
 			"", LicenseKeyGenerateFormService.toComparableVersion(null));
@@ -341,7 +411,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			LicenseKeyTypeService.class);
 
 		Mockito.when(
-			licenseKeyTypeService.getLicenseKeyTypes("PRDCT-DXP")
+			licenseKeyTypeService.getLicenseKeyTypes()
 		).thenReturn(
 			Collections.singletonList(LicenseKeyType.COMPLIMENTARY)
 		);
@@ -355,8 +425,8 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			allowComplimentary, "PRDCT-DXP", hasComplimentaryActivationKey,
-			false, "DXP", Collections.emptyMap(),
+			allowComplimentary, hasComplimentaryActivationKey, false, "DXP",
+			Collections.emptyMap(),
 			HashMapBuilder.<String, Map<String, Entitlement>>put(
 				"DXP",
 				(Map<String, Entitlement>)HashMapBuilder.put(
@@ -438,6 +508,31 @@ public class LicenseKeyGenerateFormServiceTest {
 		);
 	}
 
+	private Entitlement _toLicenseGenerationEntitlement(
+		long entitlementId, String licenseKeyType,
+		String skuExternalReferenceCode) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", entitlementId
+				).put(
+					"licenseKeyType", licenseKeyType
+				).put(
+					"name",
+					LicenseKeyGenerationConstants.
+						ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION
+				).put(
+					"skuExternalReferenceCode", skuExternalReferenceCode
+				)
+			).put(
+				"id", entitlementId
+			));
+	}
+
 	private JSONObject _toProductJSONObject(
 		String externalReferenceCode, JSONObject... keyTypeJSONObjects) {
 
@@ -453,6 +548,23 @@ public class LicenseKeyGenerateFormServiceTest {
 		).put(
 			"keyTypes", keyTypesJSONArray
 		);
+	}
+
+	private Sku _toSku(Long productId, String skuOptionKey) {
+		Sku sku = new Sku();
+
+		sku.setProductId(productId);
+
+		if (skuOptionKey != null) {
+			SkuOption skuOption = new SkuOption();
+
+			skuOption.setKey(skuOptionKey);
+			skuOption.setValue("developer");
+
+			sku.setSkuOptions(new SkuOption[] {skuOption});
+		}
+
+		return sku;
 	}
 
 }

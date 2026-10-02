@@ -14,6 +14,7 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResou
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -37,6 +38,7 @@ public class CommerceSkuService extends OneBaseService {
 		return sku.getProductId();
 	}
 
+	@Cacheable("sku")
 	public Sku fetchSku(String externalReferenceCode) throws Exception {
 		SkuResource skuResource = _buildSkuResource();
 
@@ -64,6 +66,7 @@ public class CommerceSkuService extends OneBaseService {
 		return new ArrayList<>(skusPage.getItems());
 	}
 
+	@CacheEvict(allEntries = true, cacheNames = {"sku", "skuProductId"})
 	public Sku patchSku(String externalReferenceCode, Sku sku)
 		throws Exception {
 
