@@ -11,6 +11,7 @@ import com.liferay.customer.model.BusinessEvent;
 import com.liferay.customer.model.BusinessEventVersion;
 import com.liferay.customer.model.JiraSupportIssue;
 import com.liferay.customer.permission.BusinessEventPermission;
+import com.liferay.customer.permission.SecurityVulnerabilityPermission;
 import com.liferay.customer.service.JiraService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -256,6 +257,8 @@ public class JiraRestController extends BaseRestController {
 				throw new PrincipalException();
 			}
 
+			_securityVulnerabilityPermission.check(jwt);
+
 			JSONObject jsonObject = _jiraService.getIssueJSONObject(issueKey);
 
 			if (_hasIssuePermission(jwt, jsonObject)) {
@@ -265,6 +268,13 @@ public class JiraRestController extends BaseRestController {
 
 			return new ResponseEntity<>(
 				"No issue found with key " + issueKey, HttpStatus.NOT_FOUND);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
@@ -290,16 +300,50 @@ public class JiraRestController extends BaseRestController {
 		}
 	}
 
+	@GetMapping("/security-vulnerabilities/access-check")
+	public ResponseEntity<String> getSecurityVulnerabilitiesAccessCheck(
+		@AuthenticationPrincipal Jwt jwt) {
+
+		try {
+			_securityVulnerabilityPermission.check(jwt);
+
+			return new ResponseEntity<>(HttpStatus.OK);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+
+			return new ResponseEntity<>(
+				exception.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
 	@GetMapping("/security-vulnerabilities/affected-versions")
-	public ResponseEntity<String> getSecurityVulnerabilitiesAffectedVersions()
+	public ResponseEntity<String> getSecurityVulnerabilitiesAffectedVersions(
+			@AuthenticationPrincipal Jwt jwt)
 		throws Exception {
 
 		try {
+			_securityVulnerabilityPermission.check(jwt);
+
 			JSONArray affectedVersionsJSONArray =
 				_jiraService.getAffectedVersionsJSONArray();
 
 			return new ResponseEntity<>(
 				affectedVersionsJSONArray.toString(), HttpStatus.OK);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
@@ -330,6 +374,8 @@ public class JiraRestController extends BaseRestController {
 		throws Exception {
 
 		try {
+			_securityVulnerabilityPermission.check(jwt);
+
 			List<JSONObject> jsonObjects = _jiraService.search(
 				filterAffectedVersions, filterCategories, filterClassifications,
 				filterFixVersions, filterSeverities, keywords, sortOrder,
@@ -338,6 +384,13 @@ public class JiraRestController extends BaseRestController {
 			JSONObject jsonObject = _toJSONObject(jsonObjects, page, pageSize);
 
 			return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+		}
+		catch (PrincipalException principalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(principalException);
+			}
+
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 		catch (Exception exception) {
 			_log.error(exception, exception);
@@ -555,5 +608,8 @@ public class JiraRestController extends BaseRestController {
 
 	@Autowired
 	private JiraService _jiraService;
+
+	@Autowired
+	private SecurityVulnerabilityPermission _securityVulnerabilityPermission;
 
 }
