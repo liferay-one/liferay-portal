@@ -143,57 +143,72 @@ Finance/A/R-set hard hold; overrides spend limits.
 | `description` | string | |
 | `isPrimary` | boolean | Default `false` |
 | `licenseKeyProductVersion` | string | Version string in generated keys, e.g. `dxp-7.4`; null for non-key products |
-| `productFamily` | picklist | DXP · Portal · SaaS · PaaS · Commerce · Analytics · EnterpriseSearch · AIHub · CMP · DataPlatform · DSR · Partner · Support · Training · Other. Normalized from SFDC `Product2.Family` (LXC → SaaS, DXP Cloud → PaaS, Commerce/Commerce Cloud → Commerce, Enterprise Search + Cloud → EnterpriseSearch). CMP is the Content Marketing Platform; Data Platform and Digital Sales Room (DSR) are their own families. Seeded as a `family` product specification. |
+| `productFamily` | picklist | DXP · Portal · SaaS · PaaS · Commerce · Analytics · EnterpriseSearch · AIHub · CMP · DataPlatform · DSR · Partner · Support · Training · Other. Normalized from SFDC `Product2.Family` (LXC → SaaS, DXP Cloud → PaaS, Commerce/Commerce Cloud → Commerce, Enterprise Search + Cloud → EnterpriseSearch). CMP is the Content Marketing Platform; Data Platform and Digital Sales Room (DSR) are their own families. Seeded as a `product-family` product specification. |
 | `metricCoverage` | string | Rules from SFDC Product Catalog |
 
-**CPSpecificationOption values (Marketplace app metadata)**
+**CPSpecificationOption values (product specifications)**
 
-| Specification |
-|---|
-| `App API Reference URL` |
-| `App Beta` |
-| `App Documentation URL` |
-| `App Entry` |
-| `App Entry UUID` |
-| `App Installation Guide URL` |
-| `App Settings` |
-| `App Usage Terms URL` |
-| `Current Requirements` |
-| `Developer Name` |
-| `Downloadable Cloud App` |
-| `Latest Version` |
-| `License Term` |
-| `License Type` |
-| `Liferay Product Capabilities` |
-| `Liferay Product Categories` |
-| `Liferay Version` |
-| `Lifetime License` |
-| `Number of CPUs` |
-| `Our Selection` |
-| `Past Versions Work With` |
-| `Price Model` |
-| `Product Downloads` |
-| `Product Notes` |
-| `Publisher Name` |
-| `Publisher Web site URL` |
-| `Ram in GB` |
-| `Solution Company Description` |
-| `Solution Company Email` |
-| `Solution Company Phone` |
-| `Solution Company Website` |
-| `Solution Contact Email` |
-| `Solution Details Blocks` |
-| `Solution Header Description` |
-| `Solution Header Title` |
-| `Solution Header Video Description` |
-| `Solution Header Video URL` |
-| `Solution Type` |
-| `Source Code URL` |
-| `Support Email` |
-| `Support Email Address` |
-| `Support Phone` |
-| `Support URL` |
-| `Type` |
+Defined in `client-extensions/liferay-one-batch/batch/10-commerce-specification.batch-engine-data.json`, which is the source of truth for every key below.
+
+| Key | Title | Option category |
+|---|---|---|
+| `app-api-reference-url` | App API Reference URL | APP_SUPPORT_AND_HELP |
+| `app-documentation-url` | App Documentation URL | APP_SUPPORT_AND_HELP |
+| `app-entry-uuid` | App Entry UUID | PRODUCT_METADATA |
+| `app-installation-guide-url` | App Installation Guide URL | APP_SUPPORT_AND_HELP |
+| `app-storefront-video-description` | App Storefront Video Description | PRODUCT_METADATA |
+| `app-storefront-video-url` | App Storefront Video URL | PRODUCT_METADATA |
+| `app-usage-terms-url` | App Usage Terms URL | APP_SUPPORT_AND_HELP |
+| `cloud-enabled` | Cloud Enabled | PRODUCT_METADATA |
+| `cpu` | CPU | RESOURCE_REQUIREMENTS |
+| `current-requirements` | Current Requirements | PRODUCT_METADATA |
+| `developer-name` | Developer Name | PRODUCT_METADATA |
+| `generates-activation-key` | Generates Activation Key | PRODUCT_METADATA |
+| `last-updated-by` | Last Updated By | PRODUCT_METADATA |
+| `latest-version` | Latest Version | PRICING_LICENSING_TERMS |
+| `license-entry-family` | License Entry Family | PRODUCT_METADATA |
+| `license-term` | License Term | PRICING_LICENSING_TERMS |
+| `license-type` | License Type | PRICING_LICENSING_TERMS |
+| `liferay-products-capabilities` | Liferay Products Capabilities | PRODUCT_METADATA |
+| `liferay-products-categories` | Liferay Products Categories | PRODUCT_METADATA |
+| `liferay-version` | Liferay Version | PRODUCT_METADATA |
+| `lifetime-license` | Lifetime License | PRICING_LICENSING_TERMS |
+| `number-of-cpus` | Number of CPUs | RESOURCE_REQUIREMENTS |
+| `our-selection` | Our Selection | PRODUCT_METADATA |
+| `partner-product` | Partner Product | PRODUCT_METADATA |
+| `past-versions-work-with` | Past Versions Work With | PRODUCT_METADATA |
+| `price-model` | Price Model | PRICING_LICENSING_TERMS |
+| `product-downloads` | Product Downloads | PRODUCT_METADATA |
+| `product-family` | Product Family | PRODUCT_METADATA |
+| `product-notes` | Product Notes | PRODUCT_METADATA |
+| `project-activation-profile` | Project Activation Profile | PRODUCT_METADATA |
+| `project-contacts-role-ercs` | Project Contacts Role ERCs | PRODUCT_METADATA |
+| `project-details-profile` | Project Details Profile | PRODUCT_METADATA |
+| `project-download-profile` | Project Download Profile | PRODUCT_METADATA |
+| `project-environment-profile` | Project Environment Profile | PRODUCT_METADATA |
+| `project-item-type` | Project Item Type | PRODUCT_METADATA |
+| `project-learn-url` | Project Learn URL | PRODUCT_METADATA |
+| `project-utilization-profile` | Project Utilization Profile | PRODUCT_METADATA |
+| `publisher-name` | Publisher Name | PRODUCT_METADATA |
+| `publisher-web-site-url` | Publisher Web Site URL | APP_SUPPORT_AND_HELP |
+| `ram` | RAM | RESOURCE_REQUIREMENTS |
+| `ram-in-gb` | RAM in GB | RESOURCE_REQUIREMENTS |
+| `solution-company-description` | Solution Company Description | SOLUTION_METADATA |
+| `solution-company-email` | Solution Company Email | SOLUTION_METADATA |
+| `solution-company-phone` | Solution Company Phone | SOLUTION_METADATA |
+| `solution-company-website` | Solution Company Website | SOLUTION_METADATA |
+| `solution-contact-email` | Solution Contact Email | SOLUTION_METADATA |
+| `solution-details-blocks` | Solution Details Blocks | SOLUTION_METADATA |
+| `solution-header-description` | Solution Header Description | SOLUTION_METADATA |
+| `solution-header-title` | Solution Header Title | SOLUTION_METADATA |
+| `solution-header-video-description` | Solution Header Video Description | SOLUTION_METADATA |
+| `solution-header-video-url` | Solution Header Video URL | SOLUTION_METADATA |
+| `solution-type` | Solution Type | SOLUTION_METADATA |
+| `source-code-url` | Source Code URL | APP_SUPPORT_AND_HELP |
+| `support-email-address` | Support Email Address | APP_SUPPORT_AND_HELP |
+| `support-phone` | Support Phone | APP_SUPPORT_AND_HELP |
+| `support-url` | Support URL | APP_SUPPORT_AND_HELP |
+| `type` | Type | PRODUCT_METADATA |
 
 **Categories**
 
@@ -226,6 +241,20 @@ The sellable unit. A product has one or more SKUs; each SKU maps one to one to a
 | `skuOptions` | list | Plan, sizing, and license options that distinguish SKUs of one product |
 
 Liferay Commerce has no system object definition for CPInstance, so custom objects cannot hold an object relationship to a SKU. They store `skuExternalReferenceCode` as a text field instead.
+
+**Options (SKU-contributing)**
+
+Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU carrying an option whose key ends in `-license-usage-type` is licensable: `CommerceSkuUtil.hasLicenseUsageTypeOption` and the frontend's `LICENSE_USAGE_TYPE_SKU_OPTION_KEYS` both key off that suffix.
+
+| Key | ERC | Values |
+|---|---|---|
+| `ai-hub-license-usage-type` | `LO_OPTION_AI_HUB_LICENSE_USAGE` | `1000000-lr-tokens` · `10000000-lr-tokens` · `5000000-lr-tokens` · `activate` · `studio` |
+| `base-license-usage-type` | `LO_OPTION_BASE_LICENSE_USAGE` | `developer` · `standard` |
+| `cloud-license-usage-type` | `LO_OPTION_CLOUD_LICENSE_USAGE` | `standard` · `trial` |
+| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `trial` |
+| `consumption-role` | `LO_OPTION_CONSUMPTION_ROLE` | `add-on` · `allotment` · `overage` |
+| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` |
+| `dxp-license-usage-type` | `LO_OPTION_DXP_LICENSE_USAGE` | `developer` · `standard` · `trial` |
 
 ---
 

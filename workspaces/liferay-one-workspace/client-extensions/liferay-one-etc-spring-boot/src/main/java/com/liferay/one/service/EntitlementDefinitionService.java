@@ -7,12 +7,11 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
-import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.one.constants.ProductSpecificationConstants;
-import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.one.util.CommerceSkuUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -75,7 +74,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 		}
 
 		for (Sku sku : _commerceSkuService.getSkus(cProductId)) {
-			if (!_hasLicenseUsageTypeOption(sku)) {
+			if (!CommerceSkuUtil.hasLicenseUsageTypeOption(sku)) {
 				continue;
 			}
 
@@ -255,27 +254,6 @@ public class EntitlementDefinitionService extends OneBaseService {
 					exception);
 			}
 		}
-	}
-
-	private boolean _hasLicenseUsageTypeOption(Sku sku) {
-		SkuOption[] skuOptions = sku.getSkuOptions();
-
-		if (skuOptions == null) {
-			return false;
-		}
-
-		for (SkuOption skuOption : skuOptions) {
-			String key = skuOption.getKey();
-
-			if ((key != null) &&
-				key.endsWith(
-					SkuOptionConstants.KEY_SUFFIX_LICENSE_USAGE_TYPE)) {
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private boolean _isPaidApp(Product product) {

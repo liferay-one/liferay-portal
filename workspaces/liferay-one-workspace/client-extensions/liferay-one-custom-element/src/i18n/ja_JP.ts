@@ -493,6 +493,7 @@ export default {
 		'以下からアクティベーションキーファイルをダウンロードし、DXP環境内の専用ポータルにアップロードして開始してください。',
 	'draft': '下書き',
 	'drag-and-drop-to-upload-or': 'ファイルをアップロードする、または',
+	'dsr-license-usage-type': 'DSRライセンス使用タイプ',
 	'duration-days': '期間（日数）',
 	'duration-of-the-extension': '延長期間',
 	'dxp-app': 'DXPアプリ',
