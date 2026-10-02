@@ -256,23 +256,14 @@ export type ProductLicenseTier =
 	| 'standard'
 	| 'trial';
 
-export type ProductLicenseType = 'Perpetual' | 'Subscription';
+export type ProductLicenseType = 'Monthly' | 'Perpetual' | 'Subscription';
 
 export type ProductOfferingTypes =
 	| 'Liferay PaaS'
 	| 'Liferay SaaS'
 	| 'Liferay Self-Hosted';
 
-export type ProductPriceModel = 'Free' | 'Paid';
-
-export type ProductSupportSpecificationKey =
-	| 'appdocumentationurl'
-	| 'appinstallationguideurl'
-	| 'appusagetermsurl'
-	| 'publisherwebsiteurl'
-	| 'supportemailaddress'
-	| 'supportphone'
-	| 'supporturl';
+export type ProductPriceModel = 'Bundled' | 'Free' | 'Paid';
 
 export type ProductTags =
 	| 'app-icon'
@@ -282,12 +273,15 @@ export type ProductTags =
 
 export type ProductType =
 	| 'ai-hub'
+	| 'analytics-cloud'
 	| 'client-extension'
 	| 'cloud'
+	| 'commerce'
 	| 'composite-app'
 	| 'dxp'
 	| 'low-code-configuration'
 	| 'other'
+	| 'search'
 	| 'ssa-saas';
 
 export type ProductTypeVocabulary = 'app' | 'liferay-product' | 'solution';
@@ -315,9 +309,11 @@ export type SkuOptions =
 
 export type SolutionTypes =
 	| 'ai-hub'
+	| 'ai-hub-open-beta'
 	| 'analytics'
 	| 'cmp'
 	| 'dsr'
 	| 'dxp'
 	| 'liferay-data-platform'
-	| 'pre-built-trial';
+	| 'pre-built-trial'
+	| 'seo-studio';

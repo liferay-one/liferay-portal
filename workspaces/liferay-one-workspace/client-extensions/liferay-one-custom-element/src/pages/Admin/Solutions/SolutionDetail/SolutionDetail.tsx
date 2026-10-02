@@ -19,6 +19,7 @@ import {
 	ProductWorkflowDisplayType,
 	ProductWorkflowStatusCode,
 	ProductWorkflowStatusLabel,
+	getAdminProductSpecificationValue,
 } from '~/utils/productUtils';
 
 import {SolutionImage, parseSolutionDetail} from './parseSolutionDetail';
@@ -134,10 +135,10 @@ function SolutionDetailContent({product}: {product: Product}) {
 
 	const solution = parseSolutionDetail(product);
 
-	const version = (product.productSpecifications ?? []).find(
-		({specificationKey}) =>
-			specificationKey === ProductSpecificationKey.APP_VERSION
-	)?.value?.en_US;
+	const version = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_VERSION,
+		product.productSpecifications
+	);
 
 	return (
 		<div className="w-100">

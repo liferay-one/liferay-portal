@@ -5,7 +5,7 @@
 
 import useSWR, {SWRConfiguration} from 'swr';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {DeliveryProductModel} from '~/models/DeliveryProductModel';
+import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
@@ -43,6 +43,7 @@ const useGetProductByOrderId = (
 						'images.accountId': '-1',
 						'nestedFields':
 							'attachments,categories,images,productSpecifications',
+						'productSpecifications.pageSize': '-1',
 						'skus.accountId': '-1',
 					})
 				);
@@ -59,7 +60,7 @@ const useGetProductByOrderId = (
 				orderModel: new DeliveryOrderModel(placedOrder),
 				placedOrder,
 				product,
-				productModel: new DeliveryProductModel(product),
+				productModel: new MarketplaceDeliveryProduct(product),
 			};
 		},
 		swrOptions

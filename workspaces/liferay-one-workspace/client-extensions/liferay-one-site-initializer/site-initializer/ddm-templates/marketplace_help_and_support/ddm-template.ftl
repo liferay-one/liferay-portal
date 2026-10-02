@@ -74,9 +74,9 @@
 <#if product.productSpecifications?has_content>
 	<#assign
 		productSpecifications = product.productSpecifications
-		publisherUrlFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "publisherwebsiteurl"))
-		supportEmailFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "supportemailaddress"))
-		supportPhoneFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "supportphone"))
+		publisherUrlFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "publisher-web-site-url"))
+		supportEmailFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "support-email-address"))
+		supportPhoneFiltered = productSpecifications?filter(specification -> stringUtil.equals(specification.specificationKey, "support-phone"))
 	/>
 
 	<#if supportEmailFiltered?has_content>

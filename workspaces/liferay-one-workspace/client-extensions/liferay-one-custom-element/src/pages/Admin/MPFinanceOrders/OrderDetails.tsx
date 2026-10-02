@@ -21,7 +21,10 @@ import {
 	OrderCustomFields,
 	PaymentStatus as PaymentStatusCode,
 } from '~/utils/orderUtils';
-import {ProductSpecificationKey} from '~/utils/productUtils';
+import {
+	ProductSpecificationKey,
+	getAdminProductSpecificationValue,
+} from '~/utils/productUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {BillingAddress} from '~/types/orders';
@@ -275,11 +278,10 @@ const OrderDetails = () => {
 							key: 'id',
 							render: () =>
 								textWrapper(
-									product?.productSpecifications?.find(
-										(specification) =>
-											specification.specificationKey ===
-											ProductSpecificationKey.APP_DEVELOPER_NAME
-									)?.value.en_US || ''
+									getAdminProductSpecificationValue(
+										ProductSpecificationKey.APP_DEVELOPER_NAME,
+										product?.productSpecifications
+									) || ''
 								),
 							title: i18n.translate('publisher'),
 						},

@@ -4,12 +4,12 @@
  */
 
 import {ReactNode, lazy} from 'react';
-import {getSpecificationValue} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
 import {
 	ProductTypeVocabulary,
 	ProductVocabulary,
 	getProductCategoriesByVocabularyName,
+	getProductSpecificationValue,
 } from '~/utils/productUtils';
 import {AppRoute} from '~/utils/routeUtils';
 
@@ -106,7 +106,10 @@ export function getProductPurchaseSteps({
 			];
 		}
 
-		const solutionType = getSpecificationValue(product, 'solution-type');
+		const solutionType = getProductSpecificationValue(
+			'solution-type',
+			product
+		);
 
 		if (solutionType === 'ai-hub') {
 			return [
