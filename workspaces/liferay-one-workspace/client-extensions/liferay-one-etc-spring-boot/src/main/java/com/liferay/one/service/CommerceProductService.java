@@ -6,20 +6,14 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
-import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
-import com.liferay.headless.commerce.admin.catalog.client.pagination.Page;
-import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
-import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductSpecificationResource;
 import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.util.CommerceProductUtil;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,10 +30,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommerceProductService extends OneBaseService {
 
-	@CacheEvict(
-		allEntries = true,
-		cacheNames = {"product", "productName", "productSpecificationValues"}
-	)
+	@CacheEvict(allEntries = true, cacheNames = {"product", "productName"})
 	public void deactivateProduct(String salesforceProductId) throws Exception {
 		Sku sku = _updateSku(false, salesforceProductId);
 
@@ -95,47 +86,7 @@ public class CommerceProductService extends OneBaseService {
 		return product;
 	}
 
-	@Cacheable("productSpecificationValues")
-	public Map<String, String> getSpecificationValues(long productId)
-		throws Exception {
-
-		// A product's nested productSpecifications are capped at the default
-		// page size, which silently drops specifications from a product that
-		// carries more than twenty. Query them directly instead.
-
-		ProductSpecificationResource productSpecificationResource =
-			ProductSpecificationResource.builder(
-			).endpoint(
-				getDXPEndpointAddress(), lxcDXPServerProtocol
-			).header(
-				HttpHeaders.AUTHORIZATION, getAuthorization()
-			).build();
-
-		Page<ProductSpecification> page =
-			productSpecificationResource.getProductIdProductSpecificationsPage(
-				productId, Pagination.of(1, _PAGE_SIZE));
-
-		Map<String, String> specificationValues = new HashMap<>();
-
-		for (ProductSpecification productSpecification : page.getItems()) {
-			String value = _getValue(productSpecification.getValue());
-
-			if (value != null) {
-				specificationValues.put(
-					productSpecification.getSpecificationKey(), value);
-			}
-		}
-
-		// The map is shared by every caller that hits the cache, so it is
-		// handed out read only.
-
-		return Collections.unmodifiableMap(specificationValues);
-	}
-
-	@CacheEvict(
-		allEntries = true,
-		cacheNames = {"product", "productName", "productSpecificationValues"}
-	)
+	@CacheEvict(allEntries = true, cacheNames = {"product", "productName"})
 	public void updateProduct(
 			String description, String name, String salesforceProductId)
 		throws Exception {
@@ -211,28 +162,6 @@ public class CommerceProductService extends OneBaseService {
 		}
 	}
 
-	private String _getValue(Object value) {
-		if (!(value instanceof Map)) {
-			return null;
-		}
-
-		Map<String, String> valueMap = (Map<String, String>)value;
-
-		String localizedValue = valueMap.get(_LANGUAGE_ID_DEFAULT);
-
-		if (localizedValue != null) {
-			return localizedValue;
-		}
-
-		for (String otherValue : valueMap.values()) {
-			if (otherValue != null) {
-				return otherValue;
-			}
-		}
-
-		return null;
-	}
-
 	private boolean _hasPublishedSku(long productId) throws Exception {
 		for (Sku sku : _commerceSkuService.getSkus(productId)) {
 			if (Boolean.TRUE.equals(sku.getPublished())) {
@@ -270,10 +199,6 @@ public class CommerceProductService extends OneBaseService {
 
 		return _commerceSkuService.patchSku(salesforceProductId, sku);
 	}
-
-	private static final int _PAGE_SIZE = 200;
-
-	private static final String _LANGUAGE_ID_DEFAULT = "en_US";
 
 	private static final Log _log = LogFactory.getLog(
 		CommerceProductService.class);

@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
-import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
@@ -25,7 +24,6 @@ import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
@@ -54,6 +52,17 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class LicenseKeyGenerateFormService {
+
+	public static String getLicenseKeyFamily(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return StringPool.BLANK;
+		}
+
+		return entitlementDefinition.getLicenseKeyFamily();
+	}
 
 	public static String getLicenseKeyType(Entitlement entitlement) {
 		EntitlementDefinition entitlementDefinition =
@@ -97,7 +106,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public LicenseEntry fetchLicenseEntry(
-		String keyTypeKey, String licenseEntryFamily, String version) {
+		String keyTypeKey, String licenseKeyFamily, String version) {
 
 		if (Validator.isNull(keyTypeKey)) {
 			return null;
@@ -107,7 +116,7 @@ public class LicenseKeyGenerateFormService {
 			toLicenseEntryKeyType(keyTypeKey));
 
 		for (LicenseEntry licenseEntry :
-				_getLicenseEntries(licenseEntryFamily, version)) {
+				_getLicenseEntries(licenseKeyFamily, version)) {
 
 			if (licenseKeyType == null) {
 				if (Objects.equals(keyTypeKey, licenseEntry.getName())) {
@@ -191,12 +200,13 @@ public class LicenseKeyGenerateFormService {
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
 			boolean hasLicenseEntries = _hasLicenseEntries(
-				entitledProduct.getLicenseEntryFamily(), productVersions);
+				entitledProduct.getLicenseKeyFamily(), productVersions);
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, hasComplimentaryActivationKey,
-				hasLicenseEntries, entitledProduct.getLicenseEntryFamily(),
-				licenseKeyCounts, licenseKeyTypeEntitlements, productVersions);
+				hasLicenseEntries, licenseKeyCounts,
+				entitledProduct.getLicenseKeyFamily(),
+				licenseKeyTypeEntitlements, productVersions);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -224,7 +234,7 @@ public class LicenseKeyGenerateFormService {
 				).put(
 					"keyTypes", keyTypesJSONArray
 				).put(
-					"label", entitledProduct.getLicenseEntryFamily()
+					"label", entitledProduct.getLicenseKeyFamily()
 				).put(
 					"name", entitledProduct.getName()
 				).put(
@@ -238,15 +248,6 @@ public class LicenseKeyGenerateFormService {
 		).put(
 			"products", productsJSONArray
 		);
-	}
-
-	public String getLicenseEntryFamily(Product product) throws Exception {
-		Map<String, String> specificationValues =
-			_commerceProductService.getSpecificationValues(
-				product.getProductId());
-
-		return specificationValues.get(
-			ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
 	}
 
 	/**
@@ -302,7 +303,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private LicenseEntry _fetchLicenseEntry(
-		String licenseEntryFamily, LicenseKeyType licenseKeyType,
+		String licenseKeyFamily, LicenseKeyType licenseKeyType,
 		List<ProductVersion> productVersions) {
 
 		licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
@@ -315,7 +316,7 @@ public class LicenseKeyGenerateFormService {
 		for (ProductVersion productVersion : productVersions) {
 			for (LicenseEntry licenseEntry :
 					_getLicenseEntries(
-						licenseEntryFamily, productVersion.getVersion())) {
+						licenseKeyFamily, productVersion.getVersion())) {
 
 				if (licenseKeyType.matches(licenseEntry)) {
 					return licenseEntry;
@@ -347,19 +348,23 @@ public class LicenseKeyGenerateFormService {
 		return _commerceProductService.fetchProduct(productId);
 	}
 
-	private boolean _generatesActivationKey(ResolvedProduct resolvedProduct) {
+	private boolean _generatesActivationKey(
+		Entitlement entitlement, ResolvedProduct resolvedProduct) {
+
 		if (CommerceSkuUtil.hasLicenseUsageTypeOption(
 				resolvedProduct._getSku())) {
 
 			return true;
 		}
 
-		Map<String, String> specificationValues =
-			resolvedProduct._getSpecificationValues();
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
 
-		return GetterUtil.getBoolean(
-			specificationValues.get(
-				ProductSpecificationConstants.KEY_GENERATES_ACTIVATION_KEY));
+		if (entitlementDefinition == null) {
+			return false;
+		}
+
+		return entitlementDefinition.isGeneratesActivationKey();
 	}
 
 	private JSONArray _getCloudNativeKeyTypesJSONArray(
@@ -421,7 +426,8 @@ public class LicenseKeyGenerateFormService {
 
 		Set<String> externalReferenceCodes = new LinkedHashSet<>();
 		Set<String> generatesActivationKeyExternalReferenceCodes =
-			_getGeneratesActivationKeyExternalReferenceCodes(resolvedProducts);
+			_getGeneratesActivationKeyExternalReferenceCodes(
+				entitlements, resolvedProducts);
 
 		for (Entitlement entitlement : _orderByLicenseKeyType(entitlements)) {
 			ResolvedProduct resolvedProduct = resolvedProducts.get(
@@ -444,7 +450,7 @@ public class LicenseKeyGenerateFormService {
 					entitlement, externalReferenceCode,
 					generatesActivationKeyExternalReferenceCodes.contains(
 						externalReferenceCode),
-					resolvedProduct._getLicenseEntryFamily(),
+					getLicenseKeyFamily(entitlement),
 					CommerceProductUtil.getName(product)));
 		}
 
@@ -452,12 +458,18 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private Set<String> _getGeneratesActivationKeyExternalReferenceCodes(
+		List<Entitlement> entitlements,
 		Map<Long, ResolvedProduct> resolvedProducts) {
 
 		Set<String> externalReferenceCodes = new HashSet<>();
 
-		for (ResolvedProduct resolvedProduct : resolvedProducts.values()) {
-			if (!_generatesActivationKey(resolvedProduct)) {
+		for (Entitlement entitlement : entitlements) {
+			ResolvedProduct resolvedProduct = resolvedProducts.get(
+				entitlement.getEntitlementId());
+
+			if ((resolvedProduct == null) ||
+				!_generatesActivationKey(entitlement, resolvedProduct)) {
+
 				continue;
 			}
 
@@ -472,14 +484,14 @@ public class LicenseKeyGenerateFormService {
 	private JSONArray _getKeyTypesJSONArray(
 		boolean admin, boolean allowComplimentary,
 		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
-		String licenseEntryFamily, Map<Long, Integer> licenseKeyCounts,
+		Map<Long, Integer> licenseKeyCounts, String licenseKeyFamily,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions) {
 
 		JSONArray jsonArray = new JSONArray();
 
 		Map<String, Entitlement> entitlements = licenseKeyTypeEntitlements.get(
-			licenseEntryFamily);
+			licenseKeyFamily);
 
 		if (entitlements == null) {
 			return jsonArray;
@@ -509,7 +521,7 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
-				licenseEntryFamily, licenseKeyType, productVersions);
+				licenseKeyFamily, licenseKeyType, productVersions);
 
 			if ((licenseEntry == null) && hasLicenseEntries &&
 				licenseKeyType.isLicenseEntryBacked()) {
@@ -544,9 +556,9 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private List<LicenseEntry> _getLicenseEntries(
-		String licenseEntryFamily, String version) {
+		String licenseKeyFamily, String version) {
 
-		if (Validator.isNull(licenseEntryFamily)) {
+		if (Validator.isNull(licenseKeyFamily)) {
 			return new ArrayList<>();
 		}
 
@@ -554,7 +566,7 @@ public class LicenseKeyGenerateFormService {
 
 		for (LicenseEntry licenseEntry :
 				_licenseEntryService.getLicenseEntriesByNameVersion(
-					licenseEntryFamily + "%", toComparableVersion(version))) {
+					licenseKeyFamily + "%", toComparableVersion(version))) {
 
 			if (LicenseKeyType.fetchLicenseKeyType(licenseEntry) == null) {
 				continue;
@@ -588,16 +600,15 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			String licenseEntryFamily =
-				resolvedProduct._getLicenseEntryFamily();
+			String licenseKeyFamily = getLicenseKeyFamily(entitlement);
 
-			if (Validator.isNull(licenseEntryFamily)) {
+			if (Validator.isNull(licenseKeyFamily)) {
 				continue;
 			}
 
 			Map<String, Entitlement> entitlementsMap =
 				licenseKeyTypeEntitlements.computeIfAbsent(
-					licenseEntryFamily, key -> new HashMap<>());
+					licenseKeyFamily, key -> new HashMap<>());
 
 			entitlementsMap.putIfAbsent(licenseKeyType, entitlement);
 		}
@@ -657,10 +668,7 @@ public class LicenseKeyGenerateFormService {
 					entitlement, sku, skuExternalReferenceCode);
 
 				if (product != null) {
-					resolvedProduct = new ResolvedProduct(
-						product, sku,
-						_commerceProductService.getSpecificationValues(
-							product.getProductId()));
+					resolvedProduct = new ResolvedProduct(product, sku);
 
 					skuResolvedProducts.put(
 						skuExternalReferenceCode, resolvedProduct);
@@ -713,11 +721,11 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private boolean _hasLicenseEntries(
-		String licenseEntryFamily, List<ProductVersion> productVersions) {
+		String licenseKeyFamily, List<ProductVersion> productVersions) {
 
 		for (ProductVersion productVersion : productVersions) {
 			List<LicenseEntry> licenseEntries = _getLicenseEntries(
-				licenseEntryFamily, productVersion.getVersion());
+				licenseKeyFamily, productVersion.getVersion());
 
 			if (!licenseEntries.isEmpty()) {
 				return true;
@@ -798,7 +806,7 @@ public class LicenseKeyGenerateFormService {
 		).put(
 			"licensable", licensable
 		).put(
-			"licenseEntryFamily", entitledProduct.getLicenseEntryFamily()
+			"licenseKeyFamily", entitledProduct.getLicenseKeyFamily()
 		).put(
 			"name", entitledProduct.getName()
 		);
@@ -899,13 +907,13 @@ public class LicenseKeyGenerateFormService {
 
 		public EntitledProduct(
 			Entitlement entitlement, String externalReferenceCode,
-			boolean generatesActivationKey, String licenseEntryFamily,
+			boolean generatesActivationKey, String licenseKeyFamily,
 			String name) {
 
 			_entitlement = entitlement;
 			_externalReferenceCode = externalReferenceCode;
 			_generatesActivationKey = generatesActivationKey;
-			_licenseEntryFamily = licenseEntryFamily;
+			_licenseKeyFamily = licenseKeyFamily;
 			_name = name;
 		}
 
@@ -917,8 +925,8 @@ public class LicenseKeyGenerateFormService {
 			return _externalReferenceCode;
 		}
 
-		public String getLicenseEntryFamily() {
-			return _licenseEntryFamily;
+		public String getLicenseKeyFamily() {
+			return _licenseKeyFamily;
 		}
 
 		public String getName() {
@@ -932,24 +940,16 @@ public class LicenseKeyGenerateFormService {
 		private final Entitlement _entitlement;
 		private final String _externalReferenceCode;
 		private final boolean _generatesActivationKey;
-		private final String _licenseEntryFamily;
+		private final String _licenseKeyFamily;
 		private final String _name;
 
 	}
 
 	private static class ResolvedProduct {
 
-		private ResolvedProduct(
-			Product product, Sku sku, Map<String, String> specificationValues) {
-
+		private ResolvedProduct(Product product, Sku sku) {
 			_product = product;
 			_sku = sku;
-			_specificationValues = specificationValues;
-		}
-
-		private String _getLicenseEntryFamily() {
-			return _specificationValues.get(
-				ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
 		}
 
 		private Product _getProduct() {
@@ -960,13 +960,8 @@ public class LicenseKeyGenerateFormService {
 			return _sku;
 		}
 
-		private Map<String, String> _getSpecificationValues() {
-			return _specificationValues;
-		}
-
 		private final Product _product;
 		private final Sku _sku;
-		private final Map<String, String> _specificationValues;
 
 	}
 

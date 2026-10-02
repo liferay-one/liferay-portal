@@ -2654,6 +2654,25 @@
 					"type": "String"
 				},
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": "false",
+					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_GENERATES_ACTIVATION_KEY",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Generates Activation Key"
+					},
+					"name": "generatesActivationKey",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_GRANT_TYPE",
@@ -2686,6 +2705,24 @@
 					"state": false,
 					"system": false,
 					"type": "Integer"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_FAMILY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Family"
+					},
+					"name": "licenseKeyFamily",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				},
 				{
 					"DBType": "String",
