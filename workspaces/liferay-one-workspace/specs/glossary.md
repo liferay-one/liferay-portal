@@ -58,8 +58,8 @@ Use one term for one thing. Do not call a project a workspace, or an entitlement
 
 ## Trials, Provisioning, and Usage
 
-- **Add on bucket**: a fixed number of extra events that a customer buys on top of the base allotment. Area: `usage-and-utilization.md`.
-- **Allotment**: the number of Liferay Data Platform events that a project may use in one month. Area: `usage-and-utilization.md`.
+- **Add on bucket**: a fixed quantity of a metric that a customer buys on top of the base allotment. Area: `usage-and-utilization.md`.
+- **Allotment**: the quantity of a metric that a project may use in one month. Area: `usage-and-utilization.md`.
 - **Analytics Cloud workspace**: the workspace that a Liferay Data Platform order or a Digital Sales Room order uses. An account has one, keyed by the external reference code of the account. Area: `trials-and-provisioning.md`.
 - **Console project**: a project in Liferay Cloud Console that holds the environments where an app runs. A Console project is not a Liferay One project. Area: `trials-and-provisioning.md`.
 - **Deployment**: one install of a cloud app into one Console project. Area: `trials-and-provisioning.md`.

@@ -67,7 +67,7 @@ Terms used in this file:
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
 | REQ-ENTITLEMENTS-040 | The name of an entitlement is a matching key that the system copies from its definition. The system does not change or normalize it. | P0 | — | `SVC-ENTITLEMENTSERVICE` |
-| REQ-ENTITLEMENTS-041 | Usage capacity matches entitlement names as machine keys, for example `apv`, `malu`, `sites`, `ram`, `vcpu`, `storage`, `api-requests`, and `events`. An entitlement with another spelling adds nothing to the capacity of a project. | P0 | — | `CLS-SAASUSAGESTRATEGY`, `CLS-EXPERIENCEUSAGESTRATEGY`, `CLS-LDPUSAGESTRATEGY`, `CLS-LDPEVENTALLOTMENT`, `CLS-ENTITLEMENTUTIL` |
+| REQ-ENTITLEMENTS-041 | Usage capacity matches entitlement names as machine keys, for example `apv`, `malu`, `sites`, `ram`, `vcpu`, `storage`, `api-requests`, and `events`. An entitlement with another spelling adds nothing to the capacity of a project. | P0 | — | `CLS-SAASUSAGESTRATEGY`, `CLS-EXPERIENCEUSAGESTRATEGY`, `CLS-LDPUSAGESTRATEGY`, `CLS-ENTITLEMENTUTIL` |
 | REQ-ENTITLEMENTS-042 | Cloud and support checks match entitlement names as display labels, for example "Up to 5 Production Pods", "Liferay Cloud Native - Standard Operations Bundle", and "Gold Support". An entitlement with a machine key does not satisfy these checks. | P0 | — | `CLS-CLUSTERNODESUTIL`, `SVC-PROVISIONINGEMAILSERVICE`, `REST-POST-CLOUD-ENVIRONMENTS-ENVIRONMENTID-MANIFEST` |
 
 ## Project Attribution

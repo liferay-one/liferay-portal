@@ -10,7 +10,7 @@ import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
-import com.liferay.one.service.LDPEventUsageReportService;
+import com.liferay.one.usage.UsageReportGenerator;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -168,126 +168,6 @@ public class AdminRestControllerTest {
 	}
 
 	@Test
-	public void testPostLDPEventUsageReportsGenerateChecksAdminPermission()
-		throws Exception {
-
-		AdminRestController adminRestController = _createController();
-
-		_denyAdminPermission();
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> adminRestController.postLDPEventUsageReportsGenerate(
-				null, "2026-08"));
-
-		Mockito.verifyNoInteractions(_ldpEventUsageReportService);
-	}
-
-	@Test
-	public void testPostLDPEventUsageReportsGenerateDefaultsToThePreviousMonth()
-		throws Exception {
-
-		AdminRestController adminRestController = _createController();
-
-		YearMonth beforeYearMonth = _getPreviousYearMonth();
-
-		ResponseEntity<String> responseEntity =
-			adminRestController.postLDPEventUsageReportsGenerate(null, null);
-
-		YearMonth afterYearMonth = _getPreviousYearMonth();
-
-		ArgumentCaptor<YearMonth> argumentCaptor = ArgumentCaptor.forClass(
-			YearMonth.class);
-
-		Mockito.verify(
-			_ldpEventUsageReportService
-		).generateUsageReports(
-			argumentCaptor.capture()
-		);
-
-		YearMonth yearMonth = argumentCaptor.getValue();
-
-		Assertions.assertTrue(
-			List.of(
-				beforeYearMonth, afterYearMonth
-			).contains(
-				yearMonth
-			));
-
-		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-
-		Assertions.assertEquals(
-			yearMonth.toString(), jsonObject.getString("yearMonth"));
-	}
-
-	@Test
-	public void testPostLDPEventUsageReportsGenerateGeneratesTheGivenMonth()
-		throws Exception {
-
-		AdminRestController adminRestController = _createController();
-
-		ResponseEntity<String> responseEntity =
-			adminRestController.postLDPEventUsageReportsGenerate(
-				null, "2026-08");
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		Mockito.verify(
-			_ldpEventUsageReportService
-		).generateUsageReports(
-			YearMonth.of(2026, 8)
-		);
-
-		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-
-		Assertions.assertEquals("2026-08", jsonObject.getString("yearMonth"));
-	}
-
-	@Test
-	public void testPostLDPEventUsageReportsGenerateRejectsAMalformedMonth()
-		throws Exception {
-
-		AdminRestController adminRestController = _createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> adminRestController.postLDPEventUsageReportsGenerate(
-					null, "08-2026"));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_ldpEventUsageReportService);
-	}
-
-	@Test
-	public void testPostLDPEventUsageReportsGenerateRejectsAnInvalidParameter()
-		throws Exception {
-
-		AdminRestController adminRestController = _createController();
-
-		Mockito.doThrow(
-			new InvalidUsageParameterException("Month is in the future")
-		).when(
-			_ldpEventUsageReportService
-		).generateUsageReports(
-			YearMonth.of(2099, 1)
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> adminRestController.postLDPEventUsageReportsGenerate(
-					null, "2099-01"));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-		Assertions.assertEquals(
-			"Month is in the future", responseStatusException.getReason());
-	}
-
-	@Test
 	public void testPostParsesValueContainingEquals() throws Exception {
 		BasePubsubSubscriber basePubsubSubscriber = _createSubscriber(
 			"test-topic");
@@ -427,6 +307,125 @@ public class AdminRestControllerTest {
 		);
 	}
 
+	@Test
+	public void testPostUsageReportsGenerateChecksAdminPermission()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> adminRestController.postUsageReportsGenerate(
+				null, "2026-08"));
+
+		Mockito.verifyNoInteractions(_usageReportGenerator);
+	}
+
+	@Test
+	public void testPostUsageReportsGenerateDefaultsToThePreviousMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		YearMonth beforeYearMonth = _getPreviousYearMonth();
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.postUsageReportsGenerate(null, null);
+
+		YearMonth afterYearMonth = _getPreviousYearMonth();
+
+		ArgumentCaptor<YearMonth> argumentCaptor = ArgumentCaptor.forClass(
+			YearMonth.class);
+
+		Mockito.verify(
+			_usageReportGenerator
+		).generateUsageReports(
+			argumentCaptor.capture()
+		);
+
+		YearMonth yearMonth = argumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			List.of(
+				beforeYearMonth, afterYearMonth
+			).contains(
+				yearMonth
+			));
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			yearMonth.toString(), jsonObject.getString("yearMonth"));
+	}
+
+	@Test
+	public void testPostUsageReportsGenerateGeneratesTheGivenMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.postUsageReportsGenerate(null, "2026-08");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_usageReportGenerator
+		).generateUsageReports(
+			YearMonth.of(2026, 8)
+		);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals("2026-08", jsonObject.getString("yearMonth"));
+	}
+
+	@Test
+	public void testPostUsageReportsGenerateRejectsAMalformedMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> adminRestController.postUsageReportsGenerate(
+					null, "08-2026"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_usageReportGenerator);
+	}
+
+	@Test
+	public void testPostUsageReportsGenerateRejectsAnInvalidParameter()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		Mockito.doThrow(
+			new InvalidUsageParameterException("Month is in the future")
+		).when(
+			_usageReportGenerator
+		).generateUsageReports(
+			YearMonth.of(2099, 1)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> adminRestController.postUsageReportsGenerate(
+					null, "2099-01"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertEquals(
+			"Month is in the future", responseStatusException.getReason());
+	}
+
 	private AdminRestController _createController(
 		BasePubsubSubscriber... basePubsubSubscribers) {
 
@@ -438,8 +437,8 @@ public class AdminRestControllerTest {
 		ReflectionTestUtils.setField(
 			adminRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
-			adminRestController, "_ldpEventUsageReportService",
-			_ldpEventUsageReportService);
+			adminRestController, "_usageReportGenerator",
+			_usageReportGenerator);
 
 		return adminRestController;
 	}
@@ -477,7 +476,7 @@ public class AdminRestControllerTest {
 
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
-	private final LDPEventUsageReportService _ldpEventUsageReportService =
-		Mockito.mock(LDPEventUsageReportService.class);
+	private final UsageReportGenerator _usageReportGenerator = Mockito.mock(
+		UsageReportGenerator.class);
 
 }

@@ -415,6 +415,43 @@ public class EntitlementService extends OneBaseService {
 		return state;
 	}
 
+	/**
+	 * Returns the entitlements granted from any entitlement definition that
+	 * meters the usage definition and that overlap the given period.
+	 */
+	public List<Entitlement> getUsageDefinitionEntitlements(
+			Instant endInstant, Instant startInstant,
+			String usageDefinitionExternalReferenceCode)
+		throws Exception {
+
+		List<EntitlementDefinition> entitlementDefinitions =
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				StringBundler.concat(
+					"r_usageDefinitionToEntitlementDefinition_c_",
+					"usageDefinitionERC eq '",
+					escapeODataString(usageDefinitionExternalReferenceCode),
+					"'"));
+
+		if (entitlementDefinitions.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<String> statements = TransformUtil.transform(
+			entitlementDefinitions,
+			entitlementDefinition -> StringBundler.concat(
+				"r_entitlementDefinitionToEntitlement_c_",
+				"entitlementDefinitionERC eq '",
+				escapeODataString(
+					entitlementDefinition.getExternalReferenceCode()),
+				"'"));
+
+		return getEntitlements(
+			StringBundler.concat(
+				"(endDate eq null or endDate ge ", startInstant, ") and (",
+				StringUtil.merge(statements, " or "),
+				") and (startDate eq null or startDate lt ", endInstant, ")"));
+	}
+
 	public boolean hasActiveEntitlement(
 			String projectExternalReferenceCode, String... entitlementNames)
 		throws Exception {

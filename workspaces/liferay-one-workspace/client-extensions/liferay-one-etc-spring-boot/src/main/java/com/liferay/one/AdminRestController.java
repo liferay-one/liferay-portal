@@ -10,7 +10,7 @@ import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
-import com.liferay.one.service.LDPEventUsageReportService;
+import com.liferay.one.usage.UsageReportGenerator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -98,44 +98,6 @@ public class AdminRestController extends OneBaseRestController {
 		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
 	}
 
-	@PostMapping("/ldp/event-usage-reports/generate")
-	public ResponseEntity<String> postLDPEventUsageReportsGenerate(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam(required = false) String yearMonth)
-		throws Exception {
-
-		_adminPermission.check(jwt);
-
-		YearMonth reportYearMonth = null;
-
-		try {
-			reportYearMonth = _getYearMonth(yearMonth);
-		}
-		catch (DateTimeParseException dateTimeParseException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"Year month must use the format yyyy-MM: " + yearMonth,
-				dateTimeParseException);
-		}
-
-		try {
-			_ldpEventUsageReportService.generateUsageReports(reportYearMonth);
-		}
-		catch (InvalidUsageParameterException invalidUsageParameterException) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				invalidUsageParameterException.getMessage(),
-				invalidUsageParameterException);
-		}
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"yearMonth", String.valueOf(reportYearMonth)
-		);
-
-		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
-	}
-
 	@PostMapping("/pubsub/dispatch")
 	public ResponseEntity<Void> postPubsubDispatch(
 			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
@@ -187,6 +149,44 @@ public class AdminRestController extends OneBaseRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@PostMapping("/usage-reports/generate")
+	public ResponseEntity<String> postUsageReportsGenerate(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam(required = false) String yearMonth)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		YearMonth reportYearMonth = null;
+
+		try {
+			reportYearMonth = _getYearMonth(yearMonth);
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Year month must use the format yyyy-MM: " + yearMonth,
+				dateTimeParseException);
+		}
+
+		try {
+			_usageReportGenerator.generateUsageReports(reportYearMonth);
+		}
+		catch (InvalidUsageParameterException invalidUsageParameterException) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				invalidUsageParameterException.getMessage(),
+				invalidUsageParameterException);
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"yearMonth", String.valueOf(reportYearMonth)
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
 	private YearMonth _getYearMonth(String yearMonthString)
 		throws DateTimeParseException {
 
@@ -230,9 +230,9 @@ public class AdminRestController extends OneBaseRestController {
 		Collections.emptyList();
 
 	@Autowired
-	private LDPEventUsageReportService _ldpEventUsageReportService;
+	private TeamRoleSynchronizer _teamRoleSynchronizer;
 
 	@Autowired
-	private TeamRoleSynchronizer _teamRoleSynchronizer;
+	private UsageReportGenerator _usageReportGenerator;
 
 }

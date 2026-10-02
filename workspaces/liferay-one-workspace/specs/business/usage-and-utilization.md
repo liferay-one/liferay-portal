@@ -1,6 +1,6 @@
 # Usage and Utilization
 
-This area covers how the system measures what a project consumes against what its entitlements allow. It includes the usage dashboards of the Utilization tab, the proxy to the Liferay Data Platform metrics of the DataOps Metrics API, the monthly usage reports for Liferay Data Platform events, the usage of self hosted products and cloud projects, and the purchase of AI Hub tokens. Consumption metering and consumption billing are specified but not built. The rules that create entitlements and name them belong to the entitlements area.
+This area covers how the system measures what a project consumes against what its entitlements allow. It includes the usage dashboards of the Utilization tab, the proxy to the Liferay Data Platform metrics of the DataOps Metrics API, the monthly usage reports for metered products, the usage of self hosted products and cloud projects, and the purchase of AI Hub tokens. Consumption metering and consumption billing are specified but not built. The rules that create entitlements and name them belong to the entitlements area.
 
 The actors are a project member, the account members who can see license keys, the global administrator roles, the reviewer of usage reports, and the scheduled jobs of the system.
 
@@ -8,8 +8,10 @@ Terms used in this file:
 
 - **Usage dashboard**: the view of the Utilization tab that compares the consumption of one product with the limits that the entitlements of the project allow.
 - **DataOps**: the data warehouse service that reports consumption. The system calls it through Google Cloud functions.
-- **Allotment**: the number of Liferay Data Platform events that a project may use in one month.
-- **Add on bucket**: a fixed number of extra events that a customer buys on top of the base allotment. The usage definition of the metric sets the bucket size.
+- **Allotment**: the quantity of a metric that a project may use in one month.
+- **Add on bucket**: a fixed quantity of a metric that a customer buys on top of the base allotment. The usage definition of the metric sets the bucket size.
+- **Consumption role**: the `consumption-role` option of a SKU. It tells if the SKU grants the allotment, add on buckets, or overage buckets.
+- **Usage source**: the code that reads the consumption of one metric from one DataOps API. A usage definition names its usage source.
 - **Usage report**: the record of the consumption of one project for one month, with any overage that a reviewer must handle.
 - **Overage**: the consumption above the entitled quantity. The system bills it in whole buckets.
 
@@ -40,7 +42,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-USAGE-020 | A project member can read the event summary and the event history of a project for a date range. The dates use the format yyyy-MM-dd, and the start date is not after the end date. | P1 | LPD-107346 | `REST-GET-PROJECTS-EXTERNALREFERENCECODE-USAGE-EVENT-SUMMARY`, `REST-GET-PROJECTS-EXTERNALREFERENCECODE-USAGE-EVENT-HISTORY` |
 | REQ-USAGE-021 | A date range is 10 years or less. The event history groups events by day or by month, and a daily history covers 1 year or less. The system refuses any other request as a bad request. An unknown project answers not found. | P1 | LPD-107346 | `REST-GET-PROJECTS-EXTERNALREFERENCECODE-USAGE-EVENT-HISTORY`, `REST-GET-PROJECTS-EXTERNALREFERENCECODE-USAGE-EVENT-SUMMARY` |
-| REQ-USAGE-022 | The event allotment of a project is the quantity of its base events entitlements plus its add on buckets multiplied by the bucket size. Overage bucket entitlements do not add to the allotment. | P0 | LPD-99837 | `CLS-LDPEVENTALLOTMENT`, `CLS-LDPEVENTUSAGESTRATEGY`, `CLS-USAGEDEFINITION`, `CLS-ENTITLEMENTUTIL` |
+| REQ-USAGE-022 | The allotment of a project for a metric is the quantity of its allotment entitlements plus its add on buckets multiplied by the bucket size. The consumption role of the SKU of each entitlement sets its role. A SKU without a consumption role is an allotment. A SKU with an unknown consumption role adds nothing. Overage bucket entitlements do not add to the allotment. | P0 | LPD-99837, LPD-108014 | `CLS-USAGEALLOTMENT`, `SVC-COMMERCESKUSERVICE`, `CLS-LDPEVENTUSAGESTRATEGY`, `CLS-USAGEDEFINITION`, `CLS-ENTITLEMENTUTIL` |
 | REQ-USAGE-023 | The used events are the total of the event summary. When only a history is present, the system adds the events of all of its periods. | P1 | LPD-107346 | `CLS-LDPEVENTUSAGESTRATEGY`, `CLS-LDPEVENTSUMMARY` |
 | REQ-USAGE-024 | When DataOps has no event data, the answer still contains the allotment and marks the usage data as not available. | P1 | LPD-107346 | `CLS-LDPEVENTUSAGESTRATEGY`, `SVC-DATAOPSUSAGESERVICE` |
 | REQ-USAGE-025 | The events widget shows one UTC day or one UTC month. It names the number of add on buckets above the base allotment and the days until the contract renews. | P2 | — | `HOOK-MYACCOUNT-PROJECTS-USEPROJECTEVENTUSAGE`, `HOOK-MYACCOUNT-PROJECTS-USEPROJECTEVENTHISTORY` |
@@ -49,16 +51,26 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-USAGE-030 | At 02:00 UTC on the first day of each month, the system generates the Liferay Data Platform event usage reports for the previous month. | P0 | LPD-99837 | `CRON-SCHEDULEDGENERATEUSAGEREPORTS`, `SVC-LDPEVENTUSAGEREPORTSERVICE` |
+| REQ-USAGE-030 | At 02:00 UTC on the first day of each month, the system generates the usage reports for the previous month for each usage definition that names a usage source. | P0 | LPD-99837, LPD-108014 | `CRON-SCHEDULEDGENERATEUSAGEREPORTS`, `CLS-USAGEREPORTGENERATOR` |
 | REQ-USAGE-031 | An administrator can generate the reports for one month. Without a month, the system uses the previous month. The system refuses the current month, a future month, and a month that does not use the format yyyy-MM. | P0 | LPD-99837, LPD-107012 | `REST-POST-ADMIN-LDP-EVENT-USAGE-REPORTS-GENERATE`, `PERM-ADMINPERMISSION` |
-| REQ-USAGE-032 | A report covers each project with an events entitlement or an add on bucket entitlement that is active during any part of the month. An entitlement without a project is not in any report. | P0 | LPD-99837 | `SVC-LDPEVENTUSAGEREPORTSERVICE`, `SVC-ENTITLEMENTSERVICE` |
-| REQ-USAGE-033 | The system generates at most one report for each project and month. When the report already exists, the system does not change it. | P0 | LPD-99837 | `SVC-LDPEVENTUSAGEREPORTSERVICE`, `SVC-USAGEREPORTSERVICE`, `CRON-SCHEDULEDGENERATEUSAGEREPORTS` |
-| REQ-USAGE-034 | The system makes no report for a project with an unlimited allotment, a project without a usage definition, or a project without event data for the month. It makes no report when the project has add on buckets but the usage definition has no bucket size. | P0 | LPD-99837, LPD-107012 | `SVC-LDPEVENTUSAGEREPORTSERVICE`, `CLS-LDPEVENTALLOTMENT` |
-| REQ-USAGE-035 | A failure for one project does not stop the reports of the other projects. | P1 | LPD-99837 | `SVC-LDPEVENTUSAGEREPORTSERVICE` |
+| REQ-USAGE-032 | A report for a usage definition covers each project with an entitlement for that usage definition that is active during any part of the month. An entitlement counts toward a usage definition only through the link of its entitlement definition, not through its name. An entitlement without a project is not in any report. | P0 | LPD-99837, LPD-108014 | `CLS-USAGEREPORTGENERATOR`, `SVC-ENTITLEMENTSERVICE` |
+| REQ-USAGE-033 | The system generates at most one report for each project, usage definition, and month. When the report already exists, the system does not change it. | P0 | LPD-99837, LPD-108014 | `CLS-USAGEREPORTGENERATOR`, `SVC-USAGEREPORTSERVICE`, `CRON-SCHEDULEDGENERATEUSAGEREPORTS` |
+| REQ-USAGE-034 | The system makes no report for a project with an unlimited allotment or a project without usage data for the month. It makes no report when the project has add on buckets but the usage definition has no bucket size. | P0 | LPD-99837, LPD-107012, LPD-108014 | `CLS-USAGEREPORTGENERATOR`, `CLS-USAGEALLOTMENT` |
+| REQ-USAGE-035 | A failure for one project does not stop the reports of the other projects. | P1 | LPD-99837 | `CLS-USAGEREPORTGENERATOR` |
 | REQ-USAGE-036 | A report records the used quantity, the entitled quantity, and the overage. The overage is the used quantity minus the entitled quantity, and never less than zero. A report with overage is ready for review. A report without overage is complete. | P0 | LPD-99837 | `SVC-USAGEREPORTSERVICE`, `CLS-USAGEREPORT` |
 | REQ-USAGE-037 | The system bills overage in whole buckets. The bucket count is the overage divided by the bucket size, rounded up. The amount is the bucket count multiplied by the overage rate. | P0 | LPD-99837, LPD-107013 | `CLS-USAGEDEFINITION`, `CLS-OVERAGEPRICING`, `SVC-USAGEREPORTSERVICE` |
-| REQ-USAGE-038 | When the events entitlements of a project have no overage price or conflicting overage prices, the report still records the overage. It leaves the SKU, the bucket count, and the amount empty for the reviewer. | P0 | LPD-99837, LPD-107013 | `SVC-LDPEVENTUSAGEREPORTSERVICE`, `CLS-LDPEVENTALLOTMENT`, `CLS-OVERAGEPRICING` |
+| REQ-USAGE-038 | When the allotment entitlements of a project have no overage price or conflicting overage prices, the report still records the overage. It leaves the SKU, the bucket count, and the amount empty for the reviewer. | P0 | LPD-99837, LPD-107013 | `CLS-USAGEREPORTGENERATOR`, `CLS-USAGEALLOTMENT`, `CLS-OVERAGEPRICING` |
 | REQ-USAGE-039 | A report links to its project and its usage definition. It records the account and the contract of the project so that a later order needs no other lookup. | P1 | LPD-99837 | `SVC-USAGEREPORTSERVICE` |
+
+## Usage Sources
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-USAGE-090 | A usage definition names its usage source, the metric key that the source reads, and the unit of that metric. When the unit of the metric is not set, it is the unit of the usage definition. The system reads consumption only for a usage definition with a usage source and a metric key. | P0 | LPD-108014 | `CLS-USAGEDEFINITION`, `CLS-USAGEREPORTGENERATOR` |
+| REQ-USAGE-091 | When no usage source has the key that a usage definition names, the system makes no report for that usage definition and logs an error. | P1 | LPD-108014 | `CLS-USAGESOURCEREGISTRY`, `CLS-USAGEREPORTGENERATOR` |
+| REQ-USAGE-092 | The Liferay Data Platform event summary source reads the event summary of one project for the whole month and adds the metric of all data sources. When DataOps cannot be reached or has no data, the source gives no value. | P1 | LPD-108014 | `CLS-LDPEVENTSUMMARYUSAGESOURCE` |
+| REQ-USAGE-093 | The system converts the consumption and the entitled quantities to the unit of the usage definition. Byte units (bytes, GB, GiB, TB, and TiB) convert. Two units that are not byte units are the same unit. A byte unit with a unit that is not a byte unit is an error, and the system makes no report for that project. | P0 | LPD-108014 | `CLS-USAGEUNITUTIL`, `CLS-USAGEALLOTMENT`, `CLS-USAGEREPORTGENERATOR` |
+| REQ-USAGE-094 | A report records the product of the allotment SKU of the project. | P1 | LPD-108014 | `CLS-USAGEREPORTGENERATOR`, `SVC-USAGEREPORTSERVICE` |
 
 ## Self Hosted Product Usage
 

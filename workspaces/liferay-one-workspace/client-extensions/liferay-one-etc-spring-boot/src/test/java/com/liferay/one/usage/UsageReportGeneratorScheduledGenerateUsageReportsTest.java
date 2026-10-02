@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.service;
+package com.liferay.one.usage;
 
 import java.io.InputStream;
 
@@ -29,18 +29,17 @@ import org.springframework.scheduling.annotation.Scheduled;
  */
 @DisplayName(
 	"[CRON-SCHEDULEDGENERATEUSAGEREPORTS] " +
-		"LDPEventUsageReportService#scheduledGenerateUsageReports"
+		"UsageReportGenerator#scheduledGenerateUsageReports"
 )
-public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
+public class UsageReportGeneratorScheduledGenerateUsageReportsTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		_ldpEventUsageReportService = Mockito.spy(
-			new LDPEventUsageReportService());
+		_usageReportGenerator = Mockito.spy(new UsageReportGenerator());
 
 		Mockito.doNothing(
 		).when(
-			_ldpEventUsageReportService
+			_usageReportGenerator
 		).generateUsageReports(
 			ArgumentMatchers.any(YearMonth.class)
 		);
@@ -52,7 +51,7 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 
 		YearMonth beforeYearMonth = _getPreviousYearMonth();
 
-		_ldpEventUsageReportService.scheduledGenerateUsageReports();
+		_usageReportGenerator.scheduledGenerateUsageReports();
 
 		YearMonth afterYearMonth = _getPreviousYearMonth();
 
@@ -60,7 +59,7 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 			YearMonth.class);
 
 		Mockito.verify(
-			_ldpEventUsageReportService
+			_usageReportGenerator
 		).generateUsageReports(
 			argumentCaptor.capture()
 		);
@@ -77,20 +76,20 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 	public void testScheduledGenerateUsageReportsRunsAtTwoUTCOnTheFirstOfTheMonth()
 		throws Exception {
 
-		Scheduled scheduled = LDPEventUsageReportService.class.getMethod(
+		Scheduled scheduled = UsageReportGenerator.class.getMethod(
 			"scheduledGenerateUsageReports"
 		).getAnnotation(
 			Scheduled.class
 		);
 
 		Assertions.assertEquals(
-			"${liferay.one.ldp.event.usage.report.cron}", scheduled.cron());
+			"${liferay.one.usage.report.cron}", scheduled.cron());
 		Assertions.assertEquals("UTC", scheduled.zone());
 
 		Properties properties = new Properties();
 
 		try (InputStream inputStream =
-				LDPEventUsageReportService.class.getResourceAsStream(
+				UsageReportGenerator.class.getResourceAsStream(
 					"/application-default.properties")) {
 
 			properties.load(inputStream);
@@ -98,7 +97,7 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 
 		Assertions.assertEquals(
 			"0 0 2 1 * *",
-			properties.getProperty("liferay.one.ldp.event.usage.report.cron"));
+			properties.getProperty("liferay.one.usage.report.cron"));
 	}
 
 	@Test
@@ -108,13 +107,13 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 		Mockito.doThrow(
 			new IllegalStateException("Unable to generate")
 		).when(
-			_ldpEventUsageReportService
+			_usageReportGenerator
 		).generateUsageReports(
 			ArgumentMatchers.any(YearMonth.class)
 		);
 
 		Assertions.assertDoesNotThrow(
-			_ldpEventUsageReportService::scheduledGenerateUsageReports);
+			_usageReportGenerator::scheduledGenerateUsageReports);
 	}
 
 	private YearMonth _getPreviousYearMonth() {
@@ -125,6 +124,6 @@ public class LDPEventUsageReportServiceScheduledGenerateUsageReportsTest {
 		);
 	}
 
-	private LDPEventUsageReportService _ldpEventUsageReportService;
+	private UsageReportGenerator _usageReportGenerator;
 
 }

@@ -8,6 +8,8 @@ package com.liferay.one.service;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.List;
+
 import org.json.JSONObject;
 
 import org.springframework.stereotype.Component;
@@ -25,7 +27,7 @@ public class UsageDefinitionService extends OneBaseService {
 		String response = fetch(
 			getAuthorization(),
 			UriComponentsBuilder.fromPath(
-				"/o/c/usagedefinitions/by-external-reference-code" +
+				_BASE_PATH + "/by-external-reference-code" +
 					"/{externalReferenceCode}"
 			).buildAndExpand(
 				externalReferenceCode
@@ -37,5 +39,11 @@ public class UsageDefinitionService extends OneBaseService {
 
 		return new UsageDefinition(new JSONObject(response));
 	}
+
+	public List<UsageDefinition> getUsageDefinitions() throws Exception {
+		return getAllItems(_BASE_PATH, null, UsageDefinition::new);
+	}
+
+	private static final String _BASE_PATH = "/o/c/usagedefinitions";
 
 }
