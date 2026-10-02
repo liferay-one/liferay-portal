@@ -2,6 +2,15 @@
 
 These rules apply to all code in this workspace. Brian Chan enforces them during PR review — violations are rejected or corrected with a follow-up commit.
 
+Three of the sections below restate a canonical rule in `pr-reviewer/rules`. Read the numbered rule for the full statement and the rationale, and read the section here for what is specific to this workspace. Where the two disagree, the numbered rule wins.
+
+| Section | Canonical rule |
+| --- | --- |
+| Sort Everything | [202] Sort sortable sequences |
+| Log Message Conventions | [703] Log and exception message form |
+| String Concatenation in Java | [306] Prefer StringBundler |
+| User Facing Text | [701] Avoid hyphens in prose, [702] Title case or complete sentence for labels |
+
 ## Sort Everything
 
 Lists, arrays, and JSON entries must always be in sorted order. This applies to:
@@ -34,7 +43,7 @@ _log.info("GET business events for " + externalReferenceCode);
 _log.error("Unable to update business event " + id);
 ```
 
-## String Concatenation In Java
+## String Concatenation in Java
 
 Three or more `+` operators joining strings in one expression become `StringBundler.concat(...)`. Two pieces stay as they are.
 
@@ -56,7 +65,7 @@ _log.info("Deployed app for project " + projectId);
 
 This applies everywhere a string is built: log calls, exception messages, return values, assignments. It is a Java rule only — TypeScript uses template literals.
 
-## User-Facing Text
+## User Facing Text
 
 - Use "IDs" (not "Id", "id", "codes", or other terms) when referring to identifier values shown to users. This includes object field `label` values in batch definitions — write `"Catalog External ID"`, not `"Catalog External Id"`.
 - Semantic precision matters: "Email" and "Email Address" are different — don't add "Address" if the field is just an email
@@ -74,7 +83,7 @@ In FreeMarker templates (`.ftl`, `index.html`), group all `[#assign ... /]` stat
 
 → Both should be in one logical block, with `currentFriendlyURL` before `currentURL` since `currentURL` may depend on it.
 
-### Reset per-iteration state inside `[#list]`
+### Reset Per Iteration State Inside `[#list]`
 
 `[#assign]` variables are template-scoped, not iteration-scoped — a value assigned in one `[#list]` pass persists into the next. When a variable is assigned only inside a guard (`[#if x?has_content]`), a later iteration whose guard is false still reads the *previous* iteration's value, so the wrong data renders. Reset every such variable to a neutral default at the top of the loop body, before the guards.
 
@@ -101,7 +110,7 @@ In FreeMarker templates (`.ftl`, `index.html`), group all `[#assign ... /]` stat
 
 Never string-replace `https://` to `http://` on an image or document URL in shipped fragment markup (`src="${imageURL?replace('https://', 'http://')}"`). This is a local-dev bandaid: on any HTTPS environment (UAT/prod) it forces the asset to `http://`, which the browser blocks as mixed content, and the image silently fails to load. Serve the asset over the current scheme instead of rewriting the protocol.
 
-## Date Input Values Are Timezone-Naive
+## Date Input Values Are Timezone Naive
 
 Never feed a `yyyy-MM-dd` value from an `<input type="date">` straight into `new Date(...).toISOString()`. A bare date string is parsed as **UTC midnight**, so in any UTC-negative timezone (all of the Americas) `.toISOString()` and any later local-time display shift the day backward by one — the saved start/expiration date is off by one from what the user picked.
 

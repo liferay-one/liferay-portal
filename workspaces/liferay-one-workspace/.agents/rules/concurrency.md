@@ -1,3 +1,11 @@
+---
+
+paths:
+  - "**/liferay-one-custom-element/**"
+  - "**/liferay-one-etc-spring-boot/**"
+
+---
+
 # Concurrency
 
 Every Spring stereotype in `liferay-one-etc-spring-boot` is a singleton. One instance of each `@Component`, `@RestController`, and `@Configuration` class serves every HTTP request, every Salesforce Pub/Sub message, and every `@Scheduled` tick — concurrently. Instance fields on those classes are shared mutable state, not per-request scratch space.
@@ -8,7 +16,7 @@ This is the easiest defect class to write and the hardest to reproduce: it passe
 
 An `@Autowired` field is written once, by Spring, before the bean serves anything. Read it freely; never reassign it at runtime. A field that a request handler writes is not a dependency — it is state, and it needs one of the shapes below.
 
-## Three Sanctioned Shapes For Mutable State
+## Three Sanctioned Shapes for Mutable State
 
 Any field a method assigns after startup must use one of these. Anything else is a defect.
 
@@ -60,7 +68,7 @@ public String getFirstLineSupportTeamRoleObjectId() {
 
 `JiraSyncLock` (`com.liferay.one.jira.util.JiraSyncLock`) is the workspace's named-lock primitive — prefer it over a bare `synchronized` block whenever the thing being serialized has a natural key, since it lets unrelated keys proceed in parallel.
 
-## Check-Then-Act Is Not Atomic
+## Check Then Act Is Not Atomic
 
 Two statements that read then write a shared map leave a window between them.
 
@@ -76,7 +84,7 @@ _topics.computeIfAbsent(name, this::_createTopic);
 
 The same applies to counters (`AtomicLong`, not `long++`) and to any "if absent, create" against an external system, where the fix is a lock rather than a map method.
 
-## Non-Request Threads Reach The Same Fields
+## Nonrequest Threads Reach the Same Fields
 
 A field is not single-threaded just because only one REST endpoint writes it. In this client extension the following all run off the request thread and touch the same beans:
 
@@ -86,7 +94,7 @@ A field is not single-threaded just because only one REST endpoint writes it. In
 
 A warm-up that populates a cache at startup while the first request reads it is a real race — that is exactly why the cached ID fields above are `volatile`.
 
-## Date And Number Formatters Are Locals
+## Date and Number Formatters Are Locals
 
 `SimpleDateFormat`, `DateFormat`, and `NumberFormat` carry mutable parse state and are not thread-safe. Declare them inside the method that uses them, or use `java.time.format.DateTimeFormatter`, which is immutable and safe to hold in a `static final` field.
 
