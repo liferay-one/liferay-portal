@@ -496,6 +496,7 @@ export default {
 		'Baixe o arquivo de chave de ativação abaixo e faça o upload no portal dedicado do seu ambiente DXP para começar.',
 	'draft': 'Rascunhos',
 	'drag-and-drop-to-upload-or': 'Arraste e solte para fazer upload ou',
+	'dsr-license-usage-type': 'Tipo de uso de licença DSR',
 	'duration-days': 'Duração (dias)',
 	'duration-of-the-extension': 'Duração da extensão',
 	'dxp-app': 'Aplicativo DXP',

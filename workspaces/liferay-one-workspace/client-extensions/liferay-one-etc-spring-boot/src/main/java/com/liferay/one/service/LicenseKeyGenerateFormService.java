@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
@@ -19,6 +20,7 @@ import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.one.util.CommerceSkuUtil;
 import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
@@ -131,22 +133,9 @@ public class LicenseKeyGenerateFormService {
 		String skuExternalReferenceCode =
 			entitlementDefinition.getSkuExternalReferenceCode();
 
-		Long productId = _commerceSkuService.fetchProductId(
+		return _fetchProduct(
+			entitlement, _commerceSkuService.fetchSku(skuExternalReferenceCode),
 			skuExternalReferenceCode);
-
-		if (productId == null) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					StringBundler.concat(
-						"Unable to find a SKU with external reference code ",
-						skuExternalReferenceCode, " for entitlement ",
-						entitlement.getEntitlementId()));
-			}
-
-			return null;
-		}
-
-		return _commerceProductService.fetchProduct(productId);
 	}
 
 	public JSONObject getGenerateForm(
@@ -205,11 +194,9 @@ public class LicenseKeyGenerateFormService {
 				entitledProduct.getLicenseEntryFamily(), productVersions);
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				admin, allowComplimentary,
-				entitledProduct.getExternalReferenceCode(),
-				hasComplimentaryActivationKey, hasLicenseEntries,
-				entitledProduct.getLicenseEntryFamily(), licenseKeyCounts,
-				licenseKeyTypeEntitlements, productVersions);
+				admin, allowComplimentary, hasComplimentaryActivationKey,
+				hasLicenseEntries, entitledProduct.getLicenseEntryFamily(),
+				licenseKeyCounts, licenseKeyTypeEntitlements, productVersions);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -253,6 +240,15 @@ public class LicenseKeyGenerateFormService {
 		);
 	}
 
+	public String getLicenseEntryFamily(Product product) throws Exception {
+		Map<String, String> specificationValues =
+			_commerceProductService.getSpecificationValues(
+				product.getProductId());
+
+		return specificationValues.get(
+			ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
+	}
+
 	/**
 	 * Returns only what the activation key list reads off the generate form:
 	 * whether anything is left to generate, and the Cloud Native subscription
@@ -273,15 +269,6 @@ public class LicenseKeyGenerateFormService {
 		).put(
 			"generatable", _isGeneratable(generateFormJSONObject)
 		);
-	}
-
-	public String getLicenseEntryFamily(Product product) throws Exception {
-		Map<String, String> specificationValues =
-			_commerceProductService.getSpecificationValues(
-				product.getProductId());
-
-		return specificationValues.get(
-			ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY);
 	}
 
 	public boolean grantsLicense(Entitlement entitlement) {
@@ -339,8 +326,36 @@ public class LicenseKeyGenerateFormService {
 		return null;
 	}
 
-	private boolean _generatesActivationKey(
-		Map<String, String> specificationValues) {
+	private Product _fetchProduct(
+			Entitlement entitlement, Sku sku, String skuExternalReferenceCode)
+		throws Exception {
+
+		Long productId = (sku == null) ? null : sku.getProductId();
+
+		if (productId == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to find a SKU with external reference code ",
+						skuExternalReferenceCode, " for entitlement ",
+						entitlement.getEntitlementId()));
+			}
+
+			return null;
+		}
+
+		return _commerceProductService.fetchProduct(productId);
+	}
+
+	private boolean _generatesActivationKey(ResolvedProduct resolvedProduct) {
+		if (CommerceSkuUtil.hasLicenseUsageTypeOption(
+				resolvedProduct._getSku())) {
+
+			return true;
+		}
+
+		Map<String, String> specificationValues =
+			resolvedProduct._getSpecificationValues();
 
 		return GetterUtil.getBoolean(
 			specificationValues.get(
@@ -405,6 +420,8 @@ public class LicenseKeyGenerateFormService {
 		List<EntitledProduct> entitledProducts = new ArrayList<>();
 
 		Set<String> externalReferenceCodes = new LinkedHashSet<>();
+		Set<String> generatesActivationKeyExternalReferenceCodes =
+			_getGeneratesActivationKeyExternalReferenceCodes(resolvedProducts);
 
 		for (Entitlement entitlement : _orderByLicenseKeyType(entitlements)) {
 			ResolvedProduct resolvedProduct = resolvedProducts.get(
@@ -422,23 +439,38 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			Map<String, String> specificationValues =
-				resolvedProduct._getSpecificationValues();
-
 			entitledProducts.add(
 				new EntitledProduct(
 					entitlement, externalReferenceCode,
-					_generatesActivationKey(specificationValues),
-					specificationValues.get(
-						ProductSpecificationConstants.KEY_LICENSE_ENTRY_FAMILY),
+					generatesActivationKeyExternalReferenceCodes.contains(
+						externalReferenceCode),
+					resolvedProduct._getLicenseEntryFamily(),
 					CommerceProductUtil.getName(product)));
 		}
 
 		return entitledProducts;
 	}
 
+	private Set<String> _getGeneratesActivationKeyExternalReferenceCodes(
+		Map<Long, ResolvedProduct> resolvedProducts) {
+
+		Set<String> externalReferenceCodes = new HashSet<>();
+
+		for (ResolvedProduct resolvedProduct : resolvedProducts.values()) {
+			if (!_generatesActivationKey(resolvedProduct)) {
+				continue;
+			}
+
+			Product product = resolvedProduct._getProduct();
+
+			externalReferenceCodes.add(product.getExternalReferenceCode());
+		}
+
+		return externalReferenceCodes;
+	}
+
 	private JSONArray _getKeyTypesJSONArray(
-		boolean admin, boolean allowComplimentary, String externalReferenceCode,
+		boolean admin, boolean allowComplimentary,
 		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
 		String licenseEntryFamily, Map<Long, Integer> licenseKeyCounts,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
@@ -454,8 +486,7 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		for (LicenseKeyType licenseKeyType :
-				_licenseKeyTypeService.getLicenseKeyTypes(
-					externalReferenceCode)) {
+				_licenseKeyTypeService.getLicenseKeyTypes()) {
 
 			if (!admin && _licenseKeyTypeService.isAdminType(licenseKeyType)) {
 				continue;
@@ -619,11 +650,15 @@ public class LicenseKeyGenerateFormService {
 			ResolvedProduct resolvedProduct = null;
 
 			if (skuExternalReferenceCodes.add(skuExternalReferenceCode)) {
-				Product product = fetchProduct(entitlement);
+				Sku sku = _commerceSkuService.fetchSku(
+					skuExternalReferenceCode);
+
+				Product product = _fetchProduct(
+					entitlement, sku, skuExternalReferenceCode);
 
 				if (product != null) {
 					resolvedProduct = new ResolvedProduct(
-						product,
+						product, sku,
 						_commerceProductService.getSpecificationValues(
 							product.getProductId()));
 
@@ -905,9 +940,10 @@ public class LicenseKeyGenerateFormService {
 	private static class ResolvedProduct {
 
 		private ResolvedProduct(
-			Product product, Map<String, String> specificationValues) {
+			Product product, Sku sku, Map<String, String> specificationValues) {
 
 			_product = product;
+			_sku = sku;
 			_specificationValues = specificationValues;
 		}
 
@@ -920,11 +956,16 @@ public class LicenseKeyGenerateFormService {
 			return _product;
 		}
 
+		private Sku _getSku() {
+			return _sku;
+		}
+
 		private Map<String, String> _getSpecificationValues() {
 			return _specificationValues;
 		}
 
 		private final Product _product;
+		private final Sku _sku;
 		private final Map<String, String> _specificationValues;
 
 	}

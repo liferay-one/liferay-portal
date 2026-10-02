@@ -509,6 +509,7 @@ export default {
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
 	'drag-and-drop-to-upload-or': 'Drag and drop to upload or',
+	'dsr-license-usage-type': 'DSR License Usage Type',
 	'duration-days': 'Duration (days)',
 	'duration-of-the-extension': 'Duration of the Extension',
 	'dxp-app': 'DXP App',

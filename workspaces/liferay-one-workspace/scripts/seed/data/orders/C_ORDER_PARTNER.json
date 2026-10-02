@@ -19,12 +19,12 @@
 			"externalReferenceCode": "C_ENT_PARTNER_CMP_DEVELOPER",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Liferay Customer Management Platform Developer",
+			"name": "Content Marketing Platform Developer",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-016",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_CMP",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PARTNER",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CMP_DEVELOPER",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-016",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -141,9 +141,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_CMP",
-				"name": "Liferay Customer Management Platform",
+				"name": "Content Marketing Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CMP",
+				"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING-DEVELOPER",
 				"unitPrice": 0
 			},
 			{
@@ -156,7 +156,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_DSR",
 				"name": "Digital Sales Room",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DSR",
+				"skuExternalReferenceCode": "PRDCT-DSR-DEVELOPER",
 				"unitPrice": 0
 			},
 			{
