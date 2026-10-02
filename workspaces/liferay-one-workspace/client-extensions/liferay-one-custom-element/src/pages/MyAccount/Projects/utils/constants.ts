@@ -12,7 +12,7 @@ import type {ProjectTabKey} from '../types';
 export const LAST_PROJECT_STORAGE_KEY = 'liferay-one:last-project';
 
 export const PROJECT_SECTION_PATHS = [
-	'activation-keys',
+	'activation',
 	'applications',
 	'products',
 ];

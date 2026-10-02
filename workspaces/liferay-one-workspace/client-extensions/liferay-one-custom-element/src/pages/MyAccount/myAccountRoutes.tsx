@@ -74,7 +74,7 @@ export const projectDetailRoutes: AppRoute[] = [
 			{element: <Navigate replace to="." />, path: '*'},
 		],
 		nav: {icon: 'key-horizontal', label: i18n.translate('activation')},
-		path: 'activation-keys',
+		path: 'activation',
 	},
 	{element: <Navigate replace to="products" />, path: '*'},
 ];
