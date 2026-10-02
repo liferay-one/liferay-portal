@@ -117,6 +117,10 @@ export async function getProductVersions() {
 	return response.json();
 }
 
+export async function getSecurityVulnerabilityAccessCheck() {
+	return jiraFetch('/security-vulnerabilities/access-check');
+}
+
 export async function getSecurityVulnerabilityAffectedVersions(): Promise<
 	string[]
 > {
