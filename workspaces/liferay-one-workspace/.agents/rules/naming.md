@@ -1,3 +1,12 @@
+---
+
+paths:
+  - "**/liferay-one-custom-element/**"
+  - "**/liferay-one-etc-spring-boot/**"
+  - "**/liferay-one-global-css/**"
+
+---
+
 # Naming Conventions
 
 ## Brand Names
