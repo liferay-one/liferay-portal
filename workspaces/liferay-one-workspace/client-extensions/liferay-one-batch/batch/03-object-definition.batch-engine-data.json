@@ -8284,6 +8284,42 @@
 				},
 				{
 					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_REPORT_PRODUCT_EXTERNAL_REFERENCE_CODE",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Product External Reference Code"
+					},
+					"name": "productExternalReferenceCode",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_REPORT_PRODUCT_NAME",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Product Name"
+					},
+					"name": "productName",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
 					"businessType": "Picklist",
 					"defaultValue": "readyForReview",
 					"externalReferenceCode": "C_USAGE_REPORT_REVIEW_STATUS",
@@ -8481,6 +8517,13 @@
 							},
 							"objectFieldName": "generatedAt",
 							"priority": 8
+						},
+						{
+							"label": {
+								"en_US": "Product Name"
+							},
+							"objectFieldName": "productName",
+							"priority": 9
 						}
 					]
 				}

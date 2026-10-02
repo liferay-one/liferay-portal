@@ -39,13 +39,16 @@ public class UsageReportService extends OneBaseService {
 	/**
 	 * Adds a usage report for consumption beyond the entitled quantity.
 	 * The SKU, bucket count, and amount stay empty when no pricing data is
-	 * present.
+	 * present. The product is the one whose SKU granted the allotment the
+	 * report measures against, recorded so downstream consumers need not
+	 * derive it.
 	 */
 	public UsageReport addUsageReport(
 			double aggregateQuantity, String contractExternalReferenceCode,
 			Instant dateFromInstant, Instant dateToInstant,
 			double entitledQuantity, String externalReferenceCode,
-			OveragePricing overagePricing, Project project,
+			OveragePricing overagePricing, String productExternalReferenceCode,
+			String productName, Project project,
 			UsageDefinition usageDefinition)
 		throws Exception {
 
@@ -76,9 +79,9 @@ public class UsageReportService extends OneBaseService {
 			project.getAccountExternalReferenceCode(), aggregateQuantity,
 			contractExternalReferenceCode, dateFromInstant, dateToInstant,
 			entitledQuantity, externalReferenceCode, overageAmount,
-			overageQuantity, overageSkuQuantity, project.getProjectId(),
-			reviewStatus, skuExternalReferenceCode,
-			usageDefinition.getUsageDefinitionId());
+			overageQuantity, overageSkuQuantity, productExternalReferenceCode,
+			productName, project.getProjectId(), reviewStatus,
+			skuExternalReferenceCode, usageDefinition.getUsageDefinitionId());
 	}
 
 	public UsageReport fetchUsageReport(String externalReferenceCode)
@@ -100,9 +103,10 @@ public class UsageReportService extends OneBaseService {
 			String contractExternalReferenceCode, Instant dateFromInstant,
 			Instant dateToInstant, double entitledQuantity,
 			String externalReferenceCode, Double overageAmount,
-			double overageQuantity, Long overageSkuQuantity, long projectId,
-			String reviewStatus, String skuExternalReferenceCode,
-			long usageDefinitionId)
+			double overageQuantity, Long overageSkuQuantity,
+			String productExternalReferenceCode, String productName,
+			long projectId, String reviewStatus,
+			String skuExternalReferenceCode, long usageDefinitionId)
 		throws Exception {
 
 		JSONObject usageReportJSONObject = new JSONObject(
@@ -134,6 +138,10 @@ public class UsageReportService extends OneBaseService {
 			"overageQuantity", overageQuantity
 		).put(
 			"overageSkuQuantity", overageSkuQuantity
+		).put(
+			"productExternalReferenceCode", productExternalReferenceCode
+		).put(
+			"productName", productName
 		).put(
 			"r_projectToUsageReport_c_projectId", projectId
 		).put(

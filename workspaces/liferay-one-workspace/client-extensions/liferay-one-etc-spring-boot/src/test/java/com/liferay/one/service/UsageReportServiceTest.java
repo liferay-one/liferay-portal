@@ -37,8 +37,8 @@ public class UsageReportServiceTest {
 			Mockito.anyString(), Mockito.anyDouble(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.anyDouble(),
 			Mockito.anyString(), Mockito.any(), Mockito.anyDouble(),
-			Mockito.any(), Mockito.anyLong(), Mockito.anyString(),
-			Mockito.any(), Mockito.anyLong()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+			Mockito.anyString(), Mockito.any(), Mockito.anyLong()
 		);
 	}
 
@@ -54,7 +54,8 @@ public class UsageReportServiceTest {
 	public void testLeavesBillingEmptyWithoutOveragePricing() throws Exception {
 		_usageReportService.addUsageReport(
 			1400000, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
-			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null, _project,
+			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null,
+			_PRODUCT_EXTERNAL_REFERENCE_CODE, _PRODUCT_NAME, _project,
 			_usageDefinition);
 
 		Mockito.verify(
@@ -63,7 +64,7 @@ public class UsageReportServiceTest {
 			_ACCOUNT_EXTERNAL_REFERENCE_CODE, 1400000,
 			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
 			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null, 400000,
-			null, _PROJECT_ID,
+			null, _PRODUCT_EXTERNAL_REFERENCE_CODE, _PRODUCT_NAME, _PROJECT_ID,
 			UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW, null,
 			_USAGE_DEFINITION_ID
 		);
@@ -106,7 +107,8 @@ public class UsageReportServiceTest {
 		_usageReportService.addUsageReport(
 			aggregateQuantity, _CONTRACT_EXTERNAL_REFERENCE_CODE,
 			_DATE_FROM_INSTANT, _DATE_TO_INSTANT, 1000000,
-			_EXTERNAL_REFERENCE_CODE, _overagePricing, _project,
+			_EXTERNAL_REFERENCE_CODE, _overagePricing,
+			_PRODUCT_EXTERNAL_REFERENCE_CODE, _PRODUCT_NAME, _project,
 			_usageDefinition);
 	}
 
@@ -122,7 +124,8 @@ public class UsageReportServiceTest {
 			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
 			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE,
 			overageSkuQuantity * _OVERAGE_RATE, overageQuantity,
-			Long.valueOf(overageSkuQuantity), _PROJECT_ID, reviewStatus,
+			Long.valueOf(overageSkuQuantity), _PRODUCT_EXTERNAL_REFERENCE_CODE,
+			_PRODUCT_NAME, _PROJECT_ID, reviewStatus,
 			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
 		);
 	}
@@ -144,6 +147,11 @@ public class UsageReportServiceTest {
 	private static final double _OVERAGE_BUCKET_SIZE = 200000;
 
 	private static final double _OVERAGE_RATE = 20;
+
+	private static final String _PRODUCT_EXTERNAL_REFERENCE_CODE =
+		"PRDCT-DATA-PLATFORM";
+
+	private static final String _PRODUCT_NAME = "Liferay Data Platform";
 
 	private static final long _PROJECT_ID = 22;
 
