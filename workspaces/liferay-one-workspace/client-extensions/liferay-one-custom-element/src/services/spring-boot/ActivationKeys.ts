@@ -12,7 +12,7 @@ export type GenerateFormBundleProduct = {
 	entitlementId: number;
 	externalReferenceCode: string;
 	licensable: boolean;
-	licenseEntryFamily: string;
+	licenseKeyFamily: string;
 	name: string;
 };
 

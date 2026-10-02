@@ -142,15 +142,6 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
-			"productSpecificationValues",
-			Caffeine.newBuilder(
-			).expireAfterWrite(
-				Duration.ofHours(1)
-			).maximumSize(
-				1000
-			).build());
-
-		caffeineCacheManager.registerCustomCache(
 			"productVersionsByProductGroup",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
@@ -170,15 +161,6 @@ public class CacheConfiguration {
 
 		caffeineCacheManager.registerCustomCache(
 			"sku",
-			Caffeine.newBuilder(
-			).expireAfterWrite(
-				Duration.ofHours(1)
-			).maximumSize(
-				1000
-			).build());
-
-		caffeineCacheManager.registerCustomCache(
-			"skuProductId",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)
