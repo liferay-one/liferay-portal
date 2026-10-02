@@ -11,8 +11,6 @@ import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
 import {
-	getSpecificationValue,
-	getSpecificationValues,
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
 } from '~/hooks/useProjectCommerce';
@@ -43,6 +41,10 @@ import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
+import {
+	getProductSpecificationValue,
+	getProductSpecificationValues,
+} from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 import {removeHTMLTags} from '~/utils/stringUtils';
 
@@ -103,8 +105,10 @@ export default function ProjectItemDetails({
 	}
 
 	const iconCategory =
-		getSpecificationValues(product, 'liferay-products-categories')[0] ??
-		getSpecificationValue(product, 'price-model');
+		getProductSpecificationValues(
+			'liferay-products-categories',
+			product
+		)[0] ?? getProductSpecificationValue('price-model', product);
 
 	const orderInfo = getProductOrderInfo(placedOrders, product.name);
 	const virtualItems = getProductVirtualItems(placedOrders, product.name);
@@ -212,8 +216,10 @@ export default function ProjectItemDetails({
 					logoSrc={isAIHub ? aiHubIconUrl : undefined}
 					name={product.name}
 					publisher={
-						getSpecificationValue(product, 'publisher-name') ||
-						product.catalogName
+						getProductSpecificationValue(
+							'publisher-name',
+							product
+						) || product.catalogName
 					}
 					showByPrefix={itemType === 'product' && !isAIHub}
 					status={orderInfo.status || 'active'}

@@ -256,26 +256,6 @@ function toProductsBySkuExternalReferenceCode(
 	return productsBySkuExternalReferenceCode;
 }
 
-export function getSpecificationValue(
-	product: DeliveryProduct,
-	key: string
-): string {
-	return (
-		(product.productSpecifications ?? []).find(
-			(specification) => specification.specificationKey === key
-		)?.value ?? ''
-	);
-}
-
-export function getSpecificationValues(
-	product: DeliveryProduct,
-	key: string
-): string[] {
-	return (product.productSpecifications ?? [])
-		.filter((specification) => specification.specificationKey === key)
-		.map((specification) => specification.value);
-}
-
 export function channelProductsQuery(
 	channelId: number | string
 ): DataQuery<APIResponse<DeliveryProduct>> {

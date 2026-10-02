@@ -3,16 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {
-	getSpecificationValue,
-	useAccountProducts,
-} from '~/hooks/useProjectCommerce';
+import {useAccountProducts} from '~/hooks/useProjectCommerce';
 import {
 	MANAGEABLE_ACCOUNT_ROLES,
 	PARTNER_ACCOUNT_ROLES,
 	STANDARD_ACCOUNT_ROLES,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {useHasProject} from '~/pages/MyAccount/Projects/hooks/useHasProject';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 const PARTNER_PRODUCT_SPECIFICATION_KEY = 'partner-product';
 
@@ -30,9 +28,9 @@ export function useAccountType(): AccountType {
 
 	const isPartner = products.some(
 		(product) =>
-			getSpecificationValue(
-				product,
-				PARTNER_PRODUCT_SPECIFICATION_KEY
+			getProductSpecificationValue(
+				PARTNER_PRODUCT_SPECIFICATION_KEY,
+				product
 			) === 'true'
 	);
 

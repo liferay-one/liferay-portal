@@ -9,7 +9,7 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {DeliveryProductModel} from '~/models/DeliveryProductModel';
+import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import ExtensionStatus from '~/pages/Admin/SSADashboard/components/ExtensionStatus/ExtensionStatus';
 import TrialStatus from '~/pages/Admin/SSADashboard/components/TrialStatus/TrialStatus';
 import {useSSADashboardOutlet} from '~/pages/Admin/SSADashboard/hooks/useSSADashboardOutlet';
@@ -24,7 +24,7 @@ import type {PlacedOrder} from '~/types/orders';
 type TrialDetailsBodyProps = {
 	orderModel: DeliveryOrderModel;
 	placedOrder: PlacedOrder;
-	productModel: DeliveryProductModel;
+	productModel: MarketplaceDeliveryProduct;
 	projectId: string;
 };
 

@@ -55,16 +55,16 @@
 </#if>
 
 <#assign
-	appDocumentationURL = getSpecificationValue("appdocumentationurl")
-	appInstallationGuideURL = getSpecificationValue("appinstallationguideurl")
-	appUsageTerms = getSpecificationValue("appusagetermsurl")
+	appDocumentationURL = getSpecificationValue("app-documentation-url")
+	appInstallationGuideURL = getSpecificationValue("app-installation-guide-url")
+	appUsageTerms = getSpecificationValue("app-usage-terms-url")
 	cpuValue = getSpecificationValue("cpu")
 	developerName = getSpecificationValue("developer-name", catalogName)
-	publisherURL = (getSpecificationValue("publisherwebsiteurl")?trim?replace(" ", ""))!""
+	publisherURL = (getSpecificationValue("publisher-web-site-url")?trim?replace(" ", ""))!""
 	ramValue = getSpecificationValue("ram")
 	sourceCode = getSpecificationValue("source-code-url")
-	supportEmail = getSpecificationValue("supportemailaddress")
-	supportPhone = getSpecificationValue("supportphone")
+	supportEmail = getSpecificationValue("support-email-address")
+	supportPhone = getSpecificationValue("support-phone")
 	type = getSpecificationValue("type")?lower_case
 >
 <@section title = languageUtil.get(locale, "developer")>
