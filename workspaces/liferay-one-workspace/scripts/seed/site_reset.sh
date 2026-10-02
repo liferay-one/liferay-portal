@@ -58,6 +58,9 @@ function main {
 	echo "Setting virtual hosts."
 	./scripts/bootstrap/set_virtual_hosts.sh
 
+	echo "Setting redirect entries."
+	./scripts/bootstrap/set_redirect_entries.sh
+
 	echo "Re-provisioning etc-spring-boot OAuth redirect URIs."
 	./scripts/bootstrap/reprovision_etc_spring_boot_oauth.sh
 
