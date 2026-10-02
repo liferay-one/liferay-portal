@@ -16,6 +16,7 @@ public class SalesforceProduct2 {
 		_description = jsonObject.optString("Description");
 		_id = jsonObject.optString("Id");
 		_name = jsonObject.optString("Name");
+		_productGroup = jsonObject.optString("Product_Group__c");
 	}
 
 	public String getDescription() {
@@ -30,8 +31,13 @@ public class SalesforceProduct2 {
 		return _name;
 	}
 
+	public String getProductGroup() {
+		return _productGroup;
+	}
+
 	private final String _description;
 	private final String _id;
 	private final String _name;
+	private final String _productGroup;
 
 }
