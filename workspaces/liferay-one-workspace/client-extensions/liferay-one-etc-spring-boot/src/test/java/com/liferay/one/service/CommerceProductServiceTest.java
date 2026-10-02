@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
@@ -31,6 +32,9 @@ public class CommerceProductServiceTest {
 	public void setUp() {
 		_commerceProductService = Mockito.spy(new CommerceProductService());
 
+		ReflectionTestUtils.setField(
+			_commerceProductService, "_commerceCatalogService",
+			_commerceCatalogService);
 		ReflectionTestUtils.setField(
 			_commerceProductService, "_commerceSkuService",
 			_commerceSkuService);
@@ -113,9 +117,104 @@ public class CommerceProductServiceTest {
 	}
 
 	@Test
-	public void testUpdateProductIgnoresAbsentSku() throws Exception {
+	public void testUpdateProductAddsProductAndSkuForUnknownProductGroup()
+		throws Exception {
+
+		Product product = new Product();
+
+		product.setId(_PRODUCT_ID);
+
+		_setUpCatalog();
+
+		Mockito.when(
+			_productResource.postProduct(Mockito.any())
+		).thenReturn(
+			product
+		);
+
 		_commerceProductService.updateProduct(
-			"A description", "Widget", _SALESFORCE_PRODUCT_ID);
+			"A description", "Widget", _PRODUCT_GROUP, _SALESFORCE_PRODUCT_ID);
+
+		Product addedProduct = _captureAddedProduct();
+
+		Assertions.assertTrue(addedProduct.getActive());
+		Assertions.assertEquals(_CATALOG_ID, addedProduct.getCatalogId());
+		Assertions.assertEquals(
+			_PRODUCT_GROUP, addedProduct.getExternalReferenceCode());
+
+		Map<String, String> name = addedProduct.getName();
+
+		Assertions.assertEquals("Widget", name.get("en_US"));
+
+		Sku addedSku = _captureAddedSku();
+
+		Assertions.assertEquals(
+			_SALESFORCE_PRODUCT_ID, addedSku.getExternalReferenceCode());
+		Assertions.assertTrue(addedSku.getPublished());
+		Assertions.assertTrue(addedSku.getPurchasable());
+	}
+
+	@Test
+	public void testUpdateProductAddsSkuToKnownProductGroup() throws Exception {
+		Product product = new Product();
+
+		product.setId(_PRODUCT_ID);
+
+		Mockito.when(
+			_productResource.getProductByExternalReferenceCode(_PRODUCT_GROUP)
+		).thenReturn(
+			product
+		);
+
+		_setUpSkus(
+			_createSku(_SALESFORCE_PRODUCT_ID, true),
+			_createSku("PROD-2", true));
+
+		_commerceProductService.updateProduct(
+			"A description", "Widget", _PRODUCT_GROUP, _SALESFORCE_PRODUCT_ID);
+
+		Mockito.verify(
+			_productResource, Mockito.never()
+		).postProduct(
+			Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			_SALESFORCE_PRODUCT_ID,
+			_captureAddedSku().getExternalReferenceCode());
+
+		Product patchedProduct = _capturePatchedProduct();
+
+		Assertions.assertTrue(patchedProduct.getActive());
+		Assertions.assertNull(patchedProduct.getName());
+	}
+
+	@Test
+	public void testUpdateProductIgnoresAbsentSkuWithoutCatalog()
+		throws Exception {
+
+		_commerceProductService.updateProduct(
+			"A description", "Widget", _PRODUCT_GROUP, _SALESFORCE_PRODUCT_ID);
+
+		Mockito.verify(
+			_productResource, Mockito.never()
+		).postProduct(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceSkuService, Mockito.never()
+		).addSku(
+			Mockito.anyString(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testUpdateProductIgnoresAbsentSkuWithoutProductGroup()
+		throws Exception {
+
+		_commerceProductService.updateProduct(
+			"A description", "Widget", null, _SALESFORCE_PRODUCT_ID);
 
 		Mockito.verify(
 			_commerceSkuService, Mockito.never()
@@ -135,7 +234,7 @@ public class CommerceProductServiceTest {
 		_setUpSkus(sku, _createSku("PROD-2", true));
 
 		_commerceProductService.updateProduct(
-			"A description", "Widget", _SALESFORCE_PRODUCT_ID);
+			"A description", "Widget", _PRODUCT_GROUP, _SALESFORCE_PRODUCT_ID);
 
 		Assertions.assertTrue(_capturePatchedSku().getPublished());
 
@@ -155,7 +254,7 @@ public class CommerceProductServiceTest {
 		_setUpSkus(sku);
 
 		_commerceProductService.updateProduct(
-			"A description", "Widget", _SALESFORCE_PRODUCT_ID);
+			"A description", "Widget", _PRODUCT_GROUP, _SALESFORCE_PRODUCT_ID);
 
 		Assertions.assertTrue(_capturePatchedSku().getPublished());
 
@@ -170,6 +269,32 @@ public class CommerceProductServiceTest {
 		Map<String, String> name = product.getName();
 
 		Assertions.assertEquals("Widget", name.get("en_US"));
+	}
+
+	private Product _captureAddedProduct() throws Exception {
+		ArgumentCaptor<Product> productArgumentCaptor = ArgumentCaptor.forClass(
+			Product.class);
+
+		Mockito.verify(
+			_productResource
+		).postProduct(
+			productArgumentCaptor.capture()
+		);
+
+		return productArgumentCaptor.getValue();
+	}
+
+	private Sku _captureAddedSku() throws Exception {
+		ArgumentCaptor<Sku> skuArgumentCaptor = ArgumentCaptor.forClass(
+			Sku.class);
+
+		Mockito.verify(
+			_commerceSkuService
+		).addSku(
+			Mockito.eq(_PRODUCT_GROUP), skuArgumentCaptor.capture()
+		);
+
+		return skuArgumentCaptor.getValue();
 	}
 
 	private Product _capturePatchedProduct() throws Exception {
@@ -208,6 +333,18 @@ public class CommerceProductServiceTest {
 		return sku;
 	}
 
+	private void _setUpCatalog() throws Exception {
+		Catalog catalog = new Catalog();
+
+		catalog.setId(_CATALOG_ID);
+
+		Mockito.when(
+			_commerceCatalogService.fetchCatalog("LIFERAY_INC_CATALOG")
+		).thenReturn(
+			catalog
+		);
+	}
+
 	private Sku _setUpSku(String externalReferenceCode, boolean published)
 		throws Exception {
 
@@ -231,10 +368,16 @@ public class CommerceProductServiceTest {
 		);
 	}
 
+	private static final long _CATALOG_ID = 55;
+
+	private static final String _PRODUCT_GROUP = "PRDCT-AI-HUB";
+
 	private static final long _PRODUCT_ID = 77;
 
 	private static final String _SALESFORCE_PRODUCT_ID = "PROD-1";
 
+	private final CommerceCatalogService _commerceCatalogService = Mockito.mock(
+		CommerceCatalogService.class);
 	private CommerceProductService _commerceProductService;
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
 		CommerceSkuService.class);
