@@ -3,7 +3,7 @@
 		"className": "com.liferay.headless.commerce.admin.catalog.dto.v1_0.Option",
 		"parameters": {
 			"containsHeaders": "true",
-			"createStrategy": "INSERT",
+			"createStrategy": "UPSERT",
 			"onErrorFail": "false",
 			"taskItemDelegateName": "DEFAULT",
 			"updateStrategy": "PARTIAL_UPDATE"
@@ -205,6 +205,30 @@
 						"en_US": "Overage Bucket"
 					},
 					"priority": 2
+				}
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"description": {
+				"en_US": "Digital Sales Room can be licensed using this type."
+			},
+			"externalReferenceCode": "LO_OPTION_DSR_LICENSE_USAGE",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "dsr-license-usage-type",
+			"name": {
+				"en_US": "DSR License Usage Type"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "LO_OPTION_DSR_LICENSE_USAGE_DEVELOPER",
+					"key": "developer",
+					"name": {
+						"en_US": "Developer"
+					},
+					"priority": 0
 				}
 			],
 			"required": false,
