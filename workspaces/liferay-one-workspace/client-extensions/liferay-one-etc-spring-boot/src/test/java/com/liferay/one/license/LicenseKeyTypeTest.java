@@ -5,8 +5,6 @@
 
 package com.liferay.one.license;
 
-import com.liferay.portal.kernel.util.HashMapBuilder;
-
 import java.io.InputStream;
 
 import java.util.ArrayList;
@@ -35,70 +33,12 @@ public class LicenseKeyTypeTest {
 		_licenseKeyTypeService = new LicenseKeyTypeService();
 
 		_setTypes(
-			HashMapBuilder.put(
-				"PRDCT-CLOUD-NATIVE", "production,non-production,uat"
-			).put(
-				"PRDCT-DXP",
-				"production,non-production,developer,developer-cluster," +
-					"backup,oem,enterprise,free"
-			).put(
-				"PRDCT-PORTAL",
-				"production,non-production,developer,developer-cluster," +
-					"backup,oem,enterprise"
-			).build());
-	}
-
-	@Test
-	public void testFetchLicenseKeyTypeWithAdditionalJVMName() {
-		Assertions.assertNull(
-			LicenseKeyType.fetchLicenseKeyType(
-				_toLicenseEntry(
-					"Portal Production (Additional JVM)", "production")));
-	}
-
-	@Test
-	public void testFetchLicenseKeyTypeWithClusterName() {
-		Assertions.assertNull(
-			LicenseKeyType.fetchLicenseKeyType(
-				_toLicenseEntry("Portal Backup (Cluster)", "cluster")));
-	}
-
-	@Test
-	public void testFetchLicenseKeyTypeWithKey() {
-		Assertions.assertEquals(
-			LicenseKeyType.DEVELOPER_CLUSTER,
-			LicenseKeyType.fetchLicenseKeyType("developer-cluster"));
-	}
-
-	@Test
-	public void testFetchLicenseKeyTypeWithLegacyLabel() {
-		Assertions.assertNull(
-			LicenseKeyType.fetchLicenseKeyType("Developer Cluster"));
-	}
-
-	@Test
-	public void testGetLicenseKeyTypesForCloudNative() {
-		Assertions.assertEquals(
-			Arrays.asList("production", "non-production", "uat"),
-			_toKeys("PRDCT-CLOUD-NATIVE"));
-	}
-
-	@Test
-	public void testGetLicenseKeyTypesForDXP() {
-		Assertions.assertEquals(
-			Arrays.asList(
-				"production", "non-production", "developer",
-				"developer-cluster", "backup", "oem", "enterprise", "free"),
-			_toKeys("PRDCT-DXP"));
+			"production,non-production,uat,developer,developer-cluster," +
+				"backup,oem,enterprise,free");
 	}
 
 	@Test
 	public void testBindsTypesFromConfiguration() throws Exception {
-
-		// The map is keyed by product external reference code, which carries
-		// characters Spring relaxes elsewhere, so bind it the way the running
-		// application does rather than trusting the setter alone.
-
 		Properties properties = new Properties();
 
 		try (InputStream inputStream =
@@ -135,65 +75,64 @@ public class LicenseKeyTypeTest {
 
 		ReflectionTestUtils.invokeMethod(licenseKeyTypeService, "init");
 
-		Map<String, String> types = licenseKeyTypeService.getTypes();
+		String types = licenseKeyTypeService.getTypes();
 
-		Assertions.assertTrue(types.containsKey("PRDCT-CLOUD-NATIVE"));
-		Assertions.assertTrue(types.containsKey("PRDCT-PORTAL"));
+		Assertions.assertFalse(types.isEmpty());
 
 		List<String> keys = new ArrayList<>();
 
 		for (LicenseKeyType licenseKeyType :
-				licenseKeyTypeService.getLicenseKeyTypes(
-					"PRDCT-CLOUD-NATIVE")) {
+				licenseKeyTypeService.getLicenseKeyTypes()) {
 
 			keys.add(licenseKeyType.getKey());
 		}
 
 		Assertions.assertTrue(keys.contains("developer"));
+		Assertions.assertEquals("production", keys.get(0));
 	}
 
 	@Test
-	public void testGetLicenseKeyTypesForProductAddedByConfiguration() {
-
-		// A product is offered by naming it in configuration, so nothing in
-		// code has to change to add one.
-
-		_setTypes(
-			HashMapBuilder.put(
-				"PRDCT-NOT-SHIPPED", "developer"
-			).build());
-
-		Assertions.assertEquals(
-			Arrays.asList("developer"), _toKeys("PRDCT-NOT-SHIPPED"));
+	public void testFetchLicenseKeyTypeWithAdditionalJVMName() {
+		Assertions.assertNull(
+			LicenseKeyType.fetchLicenseKeyType(
+				_toLicenseEntry(
+					"Portal Production (Additional JVM)", "production")));
 	}
 
 	@Test
-	public void testGetLicenseKeyTypesForUnknownProduct() {
+	public void testFetchLicenseKeyTypeWithClusterName() {
+		Assertions.assertNull(
+			LicenseKeyType.fetchLicenseKeyType(
+				_toLicenseEntry("Portal Backup (Cluster)", "cluster")));
+	}
+
+	@Test
+	public void testFetchLicenseKeyTypeWithKey() {
 		Assertions.assertEquals(
-			new ArrayList<String>(), _toKeys("PRDCT-DOES-NOT-EXIST"));
+			LicenseKeyType.DEVELOPER_CLUSTER,
+			LicenseKeyType.fetchLicenseKeyType("developer-cluster"));
+	}
+
+	@Test
+	public void testFetchLicenseKeyTypeWithLegacyLabel() {
+		Assertions.assertNull(
+			LicenseKeyType.fetchLicenseKeyType("Developer Cluster"));
 	}
 
 	@Test
 	public void testInitIgnoresUnknownKey() {
-		_setTypes(
-			HashMapBuilder.put(
-				"PRDCT-DXP", "production,bogus,,backup"
-			).build());
+		_setTypes("production,bogus,,backup");
 
 		Assertions.assertEquals(
-			Arrays.asList("production", "backup"), _toKeys("PRDCT-DXP"));
+			Arrays.asList("production", "backup"), _toKeys());
 	}
 
 	@Test
 	public void testInitPreservesConfiguredOrder() {
-		_setTypes(
-			HashMapBuilder.put(
-				"PRDCT-DXP", "free,backup,production"
-			).build());
+		_setTypes("free,backup,production");
 
 		Assertions.assertEquals(
-			Arrays.asList("free", "backup", "production"),
-			_toKeys("PRDCT-DXP"));
+			Arrays.asList("free", "backup", "production"), _toKeys());
 	}
 
 	@Test
@@ -266,18 +205,17 @@ public class LicenseKeyTypeTest {
 				_toLicenseEntry("Cloud Native UAT", "production")));
 	}
 
-	private void _setTypes(Map<String, String> types) {
+	private void _setTypes(String types) {
 		_licenseKeyTypeService.setTypes(types);
 
 		ReflectionTestUtils.invokeMethod(_licenseKeyTypeService, "init");
 	}
 
-	private List<String> _toKeys(String externalReferenceCode) {
+	private List<String> _toKeys() {
 		List<String> keys = new ArrayList<>();
 
 		for (LicenseKeyType licenseKeyType :
-				_licenseKeyTypeService.getLicenseKeyTypes(
-					externalReferenceCode)) {
+				_licenseKeyTypeService.getLicenseKeyTypes()) {
 
 			keys.add(licenseKeyType.getKey());
 		}

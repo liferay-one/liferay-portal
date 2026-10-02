@@ -12,6 +12,7 @@ const LICENSE_USAGE_TYPE_SKU_OPTION_KEYS: readonly string[] = [
 	ProductLicense.BASE,
 	ProductLicense.CLOUD,
 	ProductLicense.CMP,
+	ProductLicense.DSR,
 	ProductLicense.DXP,
 ];
 
