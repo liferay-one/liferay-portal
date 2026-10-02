@@ -9,12 +9,16 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
+import com.google.auth.oauth2.ImpersonatedCredentials;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.exception.DataOpsUnavailableException;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -163,8 +167,8 @@ public class DataOpsUsageService extends BaseService {
 			return _idTokenProvider;
 		}
 
-		_idTokenProvider =
-			(IdTokenProvider)GoogleCredentials.getApplicationDefault();
+		_idTokenProvider = _toIdTokenProvider(
+			GoogleCredentials.getApplicationDefault());
 
 		return _idTokenProvider;
 	}
@@ -206,6 +210,17 @@ public class DataOpsUsageService extends BaseService {
 		}
 	}
 
+	private IdTokenProvider _toIdTokenProvider(
+		GoogleCredentials googleCredentials) {
+
+		if (Validator.isNull(_serviceAccount)) {
+			return (IdTokenProvider)googleCredentials;
+		}
+
+		return ImpersonatedCredentials.create(
+			googleCredentials, _serviceAccount, null, _scopes, 3600);
+	}
+
 	private static final String _FUNCTION_PATH_COMPOSABLE_USAGE_API =
 		"/composable_usage_api";
 
@@ -214,6 +229,9 @@ public class DataOpsUsageService extends BaseService {
 
 	private static final Log _log = LogFactory.getLog(
 		DataOpsUsageService.class);
+
+	private static final List<String> _scopes = Collections.singletonList(
+		"https://www.googleapis.com/auth/cloud-platform");
 
 	@Value("${liferay.one.gcf.base.url}")
 	private String _gcfBaseURL;
@@ -224,5 +242,8 @@ public class DataOpsUsageService extends BaseService {
 
 	@Value("${liferay.one.ldp.base.url}")
 	private String _ldpBaseURL;
+
+	@Value("${liferay.one.dataops.service.account:}")
+	private String _serviceAccount;
 
 }
