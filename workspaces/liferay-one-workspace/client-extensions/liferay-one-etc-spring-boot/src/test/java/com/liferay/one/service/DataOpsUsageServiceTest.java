@@ -13,6 +13,7 @@ import com.google.auth.oauth2.ImpersonatedCredentials;
 
 import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -35,7 +36,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.MockSettings;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -65,8 +65,10 @@ public class DataOpsUsageServiceTest {
 
 		_httpServer.start();
 
+		IdTokenProvider idTokenProvider = (IdTokenProvider)_googleCredentials;
+
 		Mockito.when(
-			_idTokenProvider.idTokenWithAudience(
+			idTokenProvider.idTokenWithAudience(
 				Mockito.anyString(), Mockito.any())
 		).thenAnswer(
 			invocation -> {
@@ -88,7 +90,7 @@ public class DataOpsUsageServiceTest {
 			"http://localhost:" + inetSocketAddress.getPort());
 
 		ReflectionTestUtils.setField(
-			_dataOpsUsageService, "_idTokenProvider", _idTokenProvider);
+			_dataOpsUsageService, "_googleCredentials", _googleCredentials);
 
 		_ldpBaseURL =
 			"http://localhost:" + inetSocketAddress.getPort() + _LDP_ROOT_PATH;
@@ -236,21 +238,9 @@ public class DataOpsUsageServiceTest {
 	}
 
 	@Test
-	public void testGetIdTokenProviderReusesResolvedProvider() {
-		Assertions.assertSame(
-			_idTokenProvider,
-			ReflectionTestUtils.invokeMethod(
-				_dataOpsUsageService, "_getIdTokenProvider"));
-	}
-
-	@Test
-	public void testToIdTokenProviderImpersonatesTheConfiguredAccount() {
-		ReflectionTestUtils.setField(
-			_dataOpsUsageService, "_serviceAccount", _SERVICE_ACCOUNT);
-
+	public void testGetIdTokenProviderImpersonatesTheConfiguredAccount() {
 		IdTokenProvider idTokenProvider = ReflectionTestUtils.invokeMethod(
-			_dataOpsUsageService, "_toIdTokenProvider",
-			Mockito.mock(GoogleCredentials.class));
+			_dataOpsUsageService, "_getIdTokenProvider", _SERVICE_ACCOUNT);
 
 		Assertions.assertInstanceOf(
 			ImpersonatedCredentials.class, idTokenProvider);
@@ -263,19 +253,20 @@ public class DataOpsUsageServiceTest {
 	}
 
 	@Test
-	public void testToIdTokenProviderUsesApplicationDefaultCredentials() {
-		MockSettings mockSettings = Mockito.withSettings(
-		).extraInterfaces(
-			IdTokenProvider.class
-		);
-
-		GoogleCredentials googleCredentials = Mockito.mock(
-			GoogleCredentials.class, mockSettings);
-
+	public void testGetIdTokenProviderReusesImpersonatedCredentials() {
 		Assertions.assertSame(
-			googleCredentials,
 			ReflectionTestUtils.invokeMethod(
-				_dataOpsUsageService, "_toIdTokenProvider", googleCredentials));
+				_dataOpsUsageService, "_getIdTokenProvider", _SERVICE_ACCOUNT),
+			ReflectionTestUtils.invokeMethod(
+				_dataOpsUsageService, "_getIdTokenProvider", _SERVICE_ACCOUNT));
+	}
+
+	@Test
+	public void testGetIdTokenProviderUsesApplicationDefaultCredentials() {
+		Assertions.assertSame(
+			_googleCredentials,
+			ReflectionTestUtils.invokeMethod(
+				_dataOpsUsageService, "_getIdTokenProvider", ""));
 	}
 
 	private String _decodeIdTokenPayload(String authorization) {
@@ -318,7 +309,8 @@ public class DataOpsUsageServiceTest {
 
 	private IdTokenCredentials _getIdTokenCredentials(String audience) {
 		return ReflectionTestUtils.invokeMethod(
-			_dataOpsUsageService, "_getIdTokenCredentials", audience);
+			_dataOpsUsageService, "_getIdTokenCredentials", audience,
+			StringPool.BLANK);
 	}
 
 	private void _respond(HttpExchange httpExchange) throws IOException {
@@ -361,10 +353,14 @@ public class DataOpsUsageServiceTest {
 		"{\"apiRequestsCount\": 45000}";
 
 	private DataOpsUsageService _dataOpsUsageService;
+	private final GoogleCredentials _googleCredentials = Mockito.mock(
+		GoogleCredentials.class,
+		Mockito.withSettings(
+		).extraInterfaces(
+			IdTokenProvider.class
+		));
 	private HttpServer _httpServer;
 	private IOException _idTokenException;
-	private final IdTokenProvider _idTokenProvider = Mockito.mock(
-		IdTokenProvider.class);
 	private String _ldpBaseURL;
 	private final AtomicReference<String> _requestAuthorization =
 		new AtomicReference<>();
