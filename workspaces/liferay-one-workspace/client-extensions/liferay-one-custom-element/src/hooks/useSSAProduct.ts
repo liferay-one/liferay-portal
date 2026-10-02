@@ -4,9 +4,11 @@
  */
 
 import useSWR from 'swr';
+import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 import SearchBuilder from '~/utils/SearchBuilder';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 const useSSAProduct = () => {
 	const commerceChannelId = Liferay.CommerceContext.commerceChannelId;
@@ -21,19 +23,29 @@ const useSSAProduct = () => {
 						'accountId': '-1',
 						'attachments.accountId': '-1',
 						'filter': new SearchBuilder()
-							.lambda('specificationValues', 'ssa-saas')
+							.lambda(
+								'specificationValues',
+								SolutionTypes.PRE_BUILT_TRIAL
+							)
 							.build(),
 						'images.accountId': '-1',
 						'nestedFields':
 							'attachments,categories,images,productSpecifications,skus',
-						'pageSize': '1',
+						'pageSize': '20',
+						'productSpecifications.pageSize': '-1',
 						'skus.accountId': '-1',
 						'skus.currencyCode':
 							Liferay.CommerceContext.currency.currencyCode,
 					})
 				);
 
-			return items?.[0];
+			return items?.find(
+				(item) =>
+					getProductSpecificationValue(
+						ProductSpecificationKey.SOLUTION_TYPE,
+						item
+					) === SolutionTypes.PRE_BUILT_TRIAL
+			);
 		}
 	);
 };

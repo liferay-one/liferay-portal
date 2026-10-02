@@ -23,6 +23,7 @@ import {
 	ProductSpecificationKey,
 	ProductTypeLabels,
 	ProductWorkflowStatusCode,
+	getAdminProductSpecificationValue,
 } from '~/utils/productUtils';
 
 import '../../PublisherDashboard.css';
@@ -70,15 +71,6 @@ export function buildCatalogCategoryFilter(
 		.build();
 }
 
-function specificationValue(
-	productSpecifications: ProductSpecification[],
-	key: ProductSpecificationKey
-) {
-	return productSpecifications?.find(
-		({specificationKey}) => specificationKey === key
-	)?.value?.en_US;
-}
-
 export function renderProductName(name: Product['name'], product: Product) {
 	return (
 		<div className="align-items-center d-flex">
@@ -101,9 +93,9 @@ export function renderProductName(name: Product['name'], product: Product) {
 }
 
 export function renderAppType(productSpecifications: ProductSpecification[]) {
-	const type = specificationValue(
-		productSpecifications,
-		ProductSpecificationKey.APP_TYPE
+	const type = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_TYPE,
+		productSpecifications
 	);
 
 	return (
@@ -117,9 +109,9 @@ export function renderLiferayVersion(
 	productSpecifications: ProductSpecification[]
 ) {
 	return (
-		specificationValue(
-			productSpecifications,
-			ProductSpecificationKey.LIFERAY_VERSION
+		getAdminProductSpecificationValue(
+			ProductSpecificationKey.LIFERAY_VERSION,
+			productSpecifications
 		) ?? '-'
 	);
 }
@@ -128,9 +120,9 @@ export function renderProductVersion(
 	productSpecifications: ProductSpecification[]
 ) {
 	return (
-		specificationValue(
-			productSpecifications,
-			ProductSpecificationKey.APP_VERSION
+		getAdminProductSpecificationValue(
+			ProductSpecificationKey.APP_VERSION,
+			productSpecifications
 		) ?? '-'
 	);
 }
@@ -177,9 +169,9 @@ function getAvailableFilterOptions(
 ) {
 	const appTypes = new Set(
 		products.map((product) =>
-			specificationValue(
-				product.productSpecifications,
-				ProductSpecificationKey.APP_TYPE
+			getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_TYPE,
+				product.productSpecifications
 			)
 		)
 	);

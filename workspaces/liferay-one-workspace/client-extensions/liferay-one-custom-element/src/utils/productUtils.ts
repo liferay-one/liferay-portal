@@ -6,6 +6,7 @@
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
 import {
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEYS,
 	ProductLicenseFriendlyName,
 	ProductLicenseType,
 	ProductSpecificationKey,
@@ -13,7 +14,6 @@ import {
 } from '~/enums/Product';
 import i18n from '~/i18n';
 
-import {getValueFromDeliverySpecifications} from './getValueFromDeliverySpecifications';
 import {getSiteURL} from './siteUtils';
 
 import type {
@@ -24,6 +24,7 @@ import type {
 	ProductImageFallbackCategories,
 	ProductLicense,
 	ProductOfferingTypes,
+	ProductSpecification,
 	ProductType,
 	SKU,
 	SkuOptions,
@@ -121,21 +122,36 @@ export function getProductPageURL(urls?: {[languageId: string]: string}) {
 	return slug ? `${getSiteURL()}/p/${slug}` : undefined;
 }
 
-export function getProductSpecification(
-	key: ProductSpecificationKey,
-	product: DeliveryProduct
-) {
+export function getProductSpecification(key: string, product: DeliveryProduct) {
 	return product?.productSpecifications?.find(
 		({specificationKey}) => specificationKey === key
 	);
 }
 
-export function getProductSpecificationValue<T = string>(
-	key: ProductSpecificationKey,
+export function getProductSpecificationValue(
+	key: string,
 	product: DeliveryProduct,
-	value?: T
+	value = ''
+): string {
+	return getProductSpecification(key, product)?.value || value;
+}
+
+export function getAdminProductSpecificationValue(
+	key: string,
+	productSpecifications: ProductSpecification[] | undefined
 ) {
-	return getProductSpecification(key, product)?.value || (value as T);
+	return productSpecifications?.find(
+		({specificationKey}) => specificationKey === key
+	)?.value?.en_US;
+}
+
+export function getProductSpecificationValues(
+	key: string,
+	product: DeliveryProduct
+): string[] {
+	return (product?.productSpecifications ?? [])
+		.filter(({specificationKey}) => specificationKey === key)
+		.map(({value}) => value);
 }
 
 export function isTrialSKU(sku: SKU) {
@@ -145,10 +161,8 @@ export function isTrialSKU(sku: SKU) {
 	return (
 		skuName.endsWith('ts') ||
 		skuName === 'trial' ||
-		['trial', 'yes'].some(
-			(optionValue) =>
-				skuOptions[0]?.value?.toLowerCase() ===
-				optionValue.toLowerCase()
+		skuOptions.some(({value}) =>
+			['trial', 'yes'].includes(value?.toLowerCase())
 		)
 	);
 }
@@ -176,12 +190,9 @@ export function getSkuByOptionValueKey(
 			purchasable &&
 			skuOptions?.find(
 				(skuOption) =>
-					[
-						'cloud-license-usage-type',
-						'cmp-license-usage-type',
-						'dxp-license-usage-type',
-					].includes(skuOption.skuOptionKey as ProductLicense) &&
-					skuOption.skuOptionValueKey === skuOptionValueKey
+					LICENSE_USAGE_TYPE_SKU_OPTION_KEYS.includes(
+						skuOption.skuOptionKey as ProductLicense
+					) && skuOption.skuOptionValueKey === skuOptionValueKey
 			)
 	);
 }
@@ -201,9 +212,9 @@ export function getProductType(product: DeliveryProduct) {
 export function getLicenseTagText(product: DeliveryProduct) {
 	return (
 		ProductLicenseFriendlyName[
-			getValueFromDeliverySpecifications(
-				product.productSpecifications,
-				ProductSpecificationKey.APP_LICENSING_TYPE
+			getProductSpecificationValue(
+				ProductSpecificationKey.APP_LICENSING_TYPE,
+				product
 			) as ProductLicenseType
 		] ?? ''
 	);
@@ -244,7 +255,7 @@ export function isLDPProduct(product: DeliveryProduct) {
 		getProductSpecificationValue(
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
-		) === 'liferay-data-platform'
+		) === SolutionTypes.LIFERAY_DATA_PLATFORM
 	);
 }
 
@@ -272,10 +283,8 @@ const AI_HUB_TIERS = ['activate', 'studio'];
 
 export function getAiHubTier(sku?: DeliverySKU) {
 	for (const {skuOptionValueKey} of sku?.skuOptions ?? []) {
-		const tier = skuOptionValueKey.replace(/^plan-/, '');
-
-		if (AI_HUB_TIERS.includes(tier)) {
-			return tier;
+		if (AI_HUB_TIERS.includes(skuOptionValueKey)) {
+			return skuOptionValueKey;
 		}
 	}
 

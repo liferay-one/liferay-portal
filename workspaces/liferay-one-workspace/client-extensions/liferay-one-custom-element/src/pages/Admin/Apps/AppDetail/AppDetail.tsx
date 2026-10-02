@@ -20,6 +20,7 @@ import {
 	ProductWorkflowDisplayType,
 	ProductWorkflowStatusCode,
 	ProductWorkflowStatusLabel,
+	getAdminProductSpecificationValue,
 	getProductCategoriesByVocabularyName,
 } from '~/utils/productUtils';
 
@@ -41,12 +42,6 @@ const PRODUCT_TYPE_DESCRIPTIONS: Record<string, Word> = {
 	'low-code-configuration': 'product-type-low-code-configuration-description',
 	'other': 'product-type-other-description',
 };
-
-function getSpecificationValue(product: Product, key: string) {
-	return (product.productSpecifications ?? []).find(
-		({specificationKey}) => specificationKey === key
-	)?.value?.en_US;
-}
 
 type SupportItem = {
 	symbol: string;
@@ -99,19 +94,19 @@ function TagsSection({labels, title}: TagsSectionProps) {
 function AppDetailContent({product}: {product: Product}) {
 	const code = product.workflowStatusInfo?.code;
 
-	const appType = getSpecificationValue(
-		product,
-		ProductSpecificationKey.APP_TYPE
+	const appType = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_TYPE,
+		product.productSpecifications
 	);
 
-	const appVersion = getSpecificationValue(
-		product,
-		ProductSpecificationKey.APP_VERSION
+	const appVersion = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_VERSION,
+		product.productSpecifications
 	);
 
-	const priceModel = getSpecificationValue(
-		product,
-		ProductSpecificationKey.APP_PRICING_MODEL
+	const priceModel = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_PRICING_MODEL,
+		product.productSpecifications
 	)?.toLowerCase();
 
 	const areas = getProductCategoriesByVocabularyName(
@@ -133,73 +128,73 @@ function AppDetailContent({product}: {product: Product}) {
 		(image) => !image.tags?.includes(APP_ICON_TAG)
 	);
 
-	const videoDescription = getSpecificationValue(
-		product,
-		ProductSpecificationKey.APP_STOREFRONT_VIDEO_DESCRIPTION
+	const videoDescription = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_STOREFRONT_VIDEO_DESCRIPTION,
+		product.productSpecifications
 	);
 
-	const videoURL = getSpecificationValue(
-		product,
-		ProductSpecificationKey.APP_STOREFRONT_VIDEO_URL
+	const videoURL = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_STOREFRONT_VIDEO_URL,
+		product.productSpecifications
 	);
 
 	const supportItems: SupportItem[] = [
 		{
 			symbol: 'link',
 			title: i18n.translate('support-url'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_URL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_URL,
+				product.productSpecifications
 			),
 		},
 		{
 			symbol: 'globe',
 			title: i18n.translate('publisher-website-url'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_PUBLISHER_WEBSITE_URL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_PUBLISHER_WEBSITE_URL,
+				product.productSpecifications
 			),
 		},
 		{
 			symbol: 'envelope-open',
 			title: i18n.translate('support-email-address'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_EMAIL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_EMAIL,
+				product.productSpecifications
 			),
 			urlPrefix: 'mailto',
 		},
 		{
 			symbol: 'phone',
 			title: i18n.translate('support-phone-number'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_PHONE
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_PHONE,
+				product.productSpecifications
 			),
 			urlPrefix: 'tel',
 		},
 		{
 			symbol: 'info-book',
 			title: i18n.translate('app-usage-terms-url'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_USAGE_TERMS_URL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_USAGE_TERMS_URL,
+				product.productSpecifications
 			),
 		},
 		{
 			symbol: 'order-form-tag',
 			title: i18n.translate('app-documentation-url'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_DOCUMENTATION_URL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_DOCUMENTATION_URL,
+				product.productSpecifications
 			),
 		},
 		{
 			symbol: 'sites',
 			title: i18n.translate('app-installation-guide-url'),
-			url: getSpecificationValue(
-				product,
-				ProductSpecificationKey.APP_SUPPORT_INSTALLATION_GUIDE_URL
+			url: getAdminProductSpecificationValue(
+				ProductSpecificationKey.APP_SUPPORT_INSTALLATION_GUIDE_URL,
+				product.productSpecifications
 			),
 		},
 	];

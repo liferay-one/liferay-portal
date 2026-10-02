@@ -81,6 +81,7 @@ export type ProductOfferingTypes =
 	(typeof ProductOfferingTypes)[keyof typeof ProductOfferingTypes];
 
 export const ProductPriceModel = {
+	BUNDLED: 'Bundled',
 	FREE: 'Free',
 	PAID: 'Paid',
 } as const;
@@ -89,29 +90,25 @@ export type ProductPriceModel =
 	(typeof ProductPriceModel)[keyof typeof ProductPriceModel];
 
 export const ProductSpecificationKey = {
-	APP_BETA: 'app-beta',
 	APP_BUILD_NUMBER_OF_CPUS: 'cpu',
 	APP_BUILD_RAM_IN_GBS: 'ram',
-	APP_DEFAULT_SKU_REF: 'default-sku-ref',
 	APP_DEVELOPER_NAME: 'developer-name',
 	APP_ENTRY_UUID: 'app-entry-uuid',
 	APP_LICENSING_TYPE: 'license-type',
 	APP_PRICING_MODEL: 'price-model',
-	APP_SETTINGS: 'app-settings',
 	APP_STOREFRONT_VIDEO_DESCRIPTION: 'app-storefront-video-description',
 	APP_STOREFRONT_VIDEO_URL: 'app-storefront-video-url',
-	APP_SUPPORT_DOCUMENTATION_URL: 'appdocumentationurl',
-	APP_SUPPORT_EMAIL: 'supportemailaddress',
-	APP_SUPPORT_INSTALLATION_GUIDE_URL: 'appinstallationguideurl',
-	APP_SUPPORT_PHONE: 'supportphone',
-	APP_SUPPORT_PUBLISHER_WEBSITE_URL: 'publisherwebsiteurl',
-	APP_SUPPORT_URL: 'supporturl',
-	APP_SUPPORT_USAGE_TERMS_URL: 'appusagetermsurl',
+	APP_SUPPORT_DOCUMENTATION_URL: 'app-documentation-url',
+	APP_SUPPORT_EMAIL: 'support-email-address',
+	APP_SUPPORT_INSTALLATION_GUIDE_URL: 'app-installation-guide-url',
+	APP_SUPPORT_PHONE: 'support-phone',
+	APP_SUPPORT_PUBLISHER_WEBSITE_URL: 'publisher-web-site-url',
+	APP_SUPPORT_URL: 'support-url',
+	APP_SUPPORT_USAGE_TERMS_URL: 'app-usage-terms-url',
 	APP_TYPE: 'type',
 	APP_VERSION: 'latest-version',
 	APP_VERSION_NOTES: 'product-notes',
 	LAST_UPDATED_BY: 'last-updated-by',
-	LIFERAY_PRODUCT_TYPE: 'liferay-product-type',
 	LIFERAY_VERSION: 'liferay-version',
 	SOLUTION_COMPANY_DESCRIPTION: 'solution-company-description',
 	SOLUTION_COMPANY_EMAIL: 'solution-company-email',
@@ -129,19 +126,6 @@ export const ProductSpecificationKey = {
 export type ProductSpecificationKey =
 	(typeof ProductSpecificationKey)[keyof typeof ProductSpecificationKey];
 
-export const ProductSupportSpecificationKey = {
-	APP_DOCUMENTATION_URL: 'appdocumentationurl',
-	APP_INSTALLATION_GUIDE_URL: 'appinstallationguideurl',
-	APP_USAGE_TERMS_URL: 'appusagetermsurl',
-	PUBLISHER_WEBSITE_URL: 'publisherwebsiteurl',
-	SUPPORT_EMAIL: 'supportemailaddress',
-	SUPPORT_PHONE: 'supportphone',
-	SUPPORT_URL: 'supporturl',
-} as const;
-
-export type ProductSupportSpecificationKey =
-	(typeof ProductSupportSpecificationKey)[keyof typeof ProductSupportSpecificationKey];
-
 export const ProductTags = {
 	APP_ICON: 'app-icon',
 	SOLUTION_DETAILS: 'solution-details',
@@ -153,12 +137,15 @@ export type ProductTags = (typeof ProductTags)[keyof typeof ProductTags];
 
 export const ProductType = {
 	AI_HUB: 'ai-hub',
+	ANALYTICS_CLOUD: 'analytics-cloud',
 	CLIENT_EXTENSION: 'client-extension',
 	CLOUD: 'cloud',
+	COMMERCE: 'commerce',
 	COMPOSITE_APP: 'composite-app',
 	DXP: 'dxp',
 	LOW_CODE_CONFIGURATION: 'low-code-configuration',
 	OTHER: 'other',
+	SEARCH: 'search',
 	SSA_SAAS: 'ssa-saas',
 } as const;
 
@@ -250,6 +237,9 @@ export const EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES: readonly Prod
 		ProductExternalReferenceCode.SAAS_EXPERIENCE,
 	];
 
+export const LICENSE_USAGE_TYPE_SKU_OPTION_KEYS: readonly ProductLicense[] =
+	Object.values(ProductLicense);
+
 const offeringTypes = {
 	'client-extension': ALL_OFFERINGS,
 	'cloud': [ProductOfferingTypes.LIFERAY_SAAS],
@@ -264,12 +254,15 @@ const offeringTypes = {
 
 export const ProductTypeLabels = {
 	[ProductType.AI_HUB]: 'AI Hub',
+	[ProductType.ANALYTICS_CLOUD]: 'Analytics Cloud',
 	[ProductType.CLIENT_EXTENSION]: 'Client Extension',
 	[ProductType.CLOUD]: 'Cloud',
+	[ProductType.COMMERCE]: 'Commerce',
 	[ProductType.COMPOSITE_APP]: 'Composite App',
 	[ProductType.DXP]: 'DXP',
 	[ProductType.LOW_CODE_CONFIGURATION]: 'Low-Code Configuration',
 	[ProductType.OTHER]: 'Other',
+	[ProductType.SEARCH]: 'Enterprise Search',
 	[ProductType.SSA_SAAS]: 'SSA SaaS',
 } as const;
 
@@ -290,8 +283,10 @@ export const ProductTypeLicenseOptions: Record<
 	ProductLicenseTier[]
 > = {
 	[ProductType.AI_HUB]: [ProductLicenseTier.STANDARD],
+	[ProductType.ANALYTICS_CLOUD]: [ProductLicenseTier.STANDARD],
 	[ProductType.CLIENT_EXTENSION]: [ProductLicenseTier.STANDARD],
 	[ProductType.CLOUD]: [ProductLicenseTier.STANDARD],
+	[ProductType.COMMERCE]: [ProductLicenseTier.STANDARD],
 	[ProductType.COMPOSITE_APP]: [ProductLicenseTier.STANDARD],
 	[ProductType.DXP]: [
 		ProductLicenseTier.STANDARD,
@@ -300,6 +295,7 @@ export const ProductTypeLicenseOptions: Record<
 	],
 	[ProductType.LOW_CODE_CONFIGURATION]: [ProductLicenseTier.STANDARD],
 	[ProductType.OTHER]: [ProductLicenseTier.STANDARD],
+	[ProductType.SEARCH]: [ProductLicenseTier.STANDARD],
 	[ProductType.SSA_SAAS]: [ProductLicenseTier.STANDARD],
 };
 
