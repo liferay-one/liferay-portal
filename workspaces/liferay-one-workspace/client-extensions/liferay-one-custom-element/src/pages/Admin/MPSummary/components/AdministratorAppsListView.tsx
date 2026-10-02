@@ -14,6 +14,7 @@ import {
 	ProductTypeLabels,
 	ProductWorkflowDisplayType,
 	ProductWorkflowStatusLabel,
+	getAdminProductSpecificationValue,
 } from '~/utils/productUtils';
 
 import type {Product} from '~/types/product';
@@ -88,11 +89,10 @@ const AdministratorAppsListView: React.FC<AdministratorAppsListViewProps> = ({
 					id: 'productSpecifications',
 					name: i18n.translate('app-type'),
 					render: (productSpecifications) => {
-						const productType = productSpecifications.find(
-							({specificationKey}) =>
-								specificationKey ===
-								ProductSpecificationKey.APP_TYPE
-						)?.value?.en_US;
+						const productType = getAdminProductSpecificationValue(
+							ProductSpecificationKey.APP_TYPE,
+							productSpecifications
+						);
 
 						const label =
 							ProductTypeLabels[

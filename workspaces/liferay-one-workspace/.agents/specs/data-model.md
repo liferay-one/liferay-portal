@@ -163,10 +163,8 @@ Defined in `client-extensions/liferay-one-batch/batch/10-commerce-specification.
 | `cpu` | CPU | RESOURCE_REQUIREMENTS |
 | `current-requirements` | Current Requirements | PRODUCT_METADATA |
 | `developer-name` | Developer Name | PRODUCT_METADATA |
-| `generates-activation-key` | Generates Activation Key | PRODUCT_METADATA |
 | `last-updated-by` | Last Updated By | PRODUCT_METADATA |
 | `latest-version` | Latest Version | PRICING_LICENSING_TERMS |
-| `license-entry-family` | License Entry Family | PRODUCT_METADATA |
 | `license-term` | License Term | PRICING_LICENSING_TERMS |
 | `license-type` | License Type | PRICING_LICENSING_TERMS |
 | `liferay-products-capabilities` | Liferay Products Capabilities | PRODUCT_METADATA |
@@ -244,7 +242,7 @@ Liferay Commerce has no system object definition for CPInstance, so custom objec
 
 **Options (SKU-contributing)**
 
-Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU carrying an option whose key ends in `-license-usage-type` is licensable: `CommerceSkuUtil.hasLicenseUsageTypeOption` and the frontend's `LICENSE_USAGE_TYPE_SKU_OPTION_KEYS` both key off that suffix.
+Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU carrying an option whose key ends in `-license-usage-type` is licensable. The two sides decide this differently: `CommerceSkuUtil.hasLicenseUsageTypeOption` matches the suffix, so it covers every key below, while the frontend's `LICENSE_USAGE_TYPE_SKU_OPTION_KEYS` is `Object.values(ProductLicense)` — an explicit list that deliberately omits `ai-hub-license-usage-type`, since AI Hub tiers are read through `getAiHubTier` rather than the license-tier helpers. Adding a license usage type means adding it to `ProductLicense` as well as to this file.
 
 | Key | ERC | Values |
 |---|---|---|
@@ -377,6 +375,8 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |
 | `defaultQuantity` | double | Default; overridden at order item level via `sizing` |
 | `grantType` | string | `fixed` · `rollover` · `metered` · `prepaid` |
+| `licenseEntryFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
+| `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |
 | `overageRate` | double | Price of one overage bucket; empty if the definition cannot bill overage |
 | `overageSkuExternalReferenceCode` | string | Overage bucket SKU, e.g. `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` |
@@ -394,6 +394,8 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 When a project's `events` entitlements have no pricing or conflicting pricing, or its usage definition has no bucket size, `LDPEventUsageReportService` records the overage but leaves the SKU, bucket count, and amount empty for a reviewer. A project with add-on buckets and no bucket size is skipped, since its entitled quantity is unknown.
 
 **License generation:** Presence of an EntitlementDefinition with `name = 'licenseGeneration'` (`grantType = fixed`, `unit = boolean`) indicates the product can generate license keys. This replaces the old boolean `licenses` flag on products.
+
+**Licensing is SKU level.** Which key type a purchase grants (`licenseKeyType`), how long the key lasts (`licenseKeyDurationDays`), which license entry family it resolves against (`licenseEntryFamily`), and whether it leads an activation key (`generatesActivationKey`) all live on the definition, keyed by SKU external reference code. None of them is a product specification: a product external reference code is minted by whichever catalog created the product and differs per environment, while the SKU is what Salesforce sells and what an entitlement resolves.
 
 ---
 

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getSpecificationValue} from '~/hooks/useProjectCommerce';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import {getAppType} from './getAppType';
 import {resolveProfile} from './resolveProfile';
@@ -34,7 +34,7 @@ export function resolveDownloadProfile({
 	product: DeliveryProduct;
 }): DownloadProfile {
 	const profile = resolveProfile(
-		getSpecificationValue(product, 'project-download-profile'),
+		getProductSpecificationValue('project-download-profile', product),
 		DOWNLOAD_PROFILES,
 		'none'
 	);

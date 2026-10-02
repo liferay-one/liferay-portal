@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getSpecificationValue} from '~/hooks/useProjectCommerce';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import {resolveProfile} from './resolveProfile';
 
@@ -30,7 +30,7 @@ export function resolveUtilizationProfile(
 	product: DeliveryProduct
 ): UtilizationProfile {
 	return resolveProfile(
-		getSpecificationValue(product, 'project-utilization-profile'),
+		getProductSpecificationValue('project-utilization-profile', product),
 		UTILIZATION_PROFILES,
 		'none'
 	);

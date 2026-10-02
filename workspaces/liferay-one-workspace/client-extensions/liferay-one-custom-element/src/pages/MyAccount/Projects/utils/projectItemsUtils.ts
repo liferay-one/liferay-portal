@@ -4,12 +4,12 @@
  */
 
 import {format} from 'date-fns';
-import {
-	ProjectProduct,
-	getSpecificationValue,
-	getSpecificationValues,
-} from '~/hooks/useProjectCommerce';
+import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {getOrderStatusToken} from '~/utils/orderUtils';
+import {
+	getProductSpecificationValue,
+	getProductSpecificationValues,
+} from '~/utils/productUtils';
 
 import {resolveProjectItemType} from './resolveProjectItemType';
 
@@ -36,16 +36,18 @@ function toProjectProduct(
 		externalReferenceCode: product.externalReferenceCode,
 		id: String(product.productId ?? product.id),
 		name: product.name,
-		publisher: getSpecificationValue(product, 'publisher-name'),
-		saleType: getSpecificationValue(product, 'price-model'),
+		publisher: getProductSpecificationValue('publisher-name', product),
+		saleType: getProductSpecificationValue('price-model', product),
 		specifications: product.productSpecifications ?? [],
 		startDate: order.createDate
 			? format(new Date(order.createDate), 'MMM d, yyyy')
 			: '',
 		status: getOrderStatusToken(order) || 'active',
 		type:
-			getSpecificationValues(product, 'liferay-products-categories')[0] ??
-			getSpecificationValue(product, 'price-model'),
+			getProductSpecificationValues(
+				'liferay-products-categories',
+				product
+			)[0] ?? getProductSpecificationValue('price-model', product),
 	};
 }
 

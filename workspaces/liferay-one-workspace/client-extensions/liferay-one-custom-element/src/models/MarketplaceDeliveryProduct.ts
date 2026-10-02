@@ -12,8 +12,9 @@ import {
 	ProductPriceModel,
 	ProductSpecificationKey,
 	ProductTypeLabels,
+	getProductSpecification,
+	getProductSpecificationValue,
 } from '~/utils/productUtils';
-import {safeJSONParse} from '~/utils/publishUtils';
 
 import i18n from '../i18n';
 
@@ -26,12 +27,6 @@ const productTypeIcons = {
 
 export class MarketplaceDeliveryProduct {
 	constructor(protected product: DeliveryProduct) {}
-
-	get appSettings() {
-		return safeJSONParse(this.specificationValues.APP_SETTINGS, {
-			isDownloadable: false,
-		});
-	}
 
 	get appType() {
 		const {APP_TYPE} = this.specificationValues;
@@ -201,13 +196,8 @@ export class MarketplaceDeliveryProduct {
 		return this.getCategories(ProductVocabulary.SOLUTION_CATEGORY);
 	}
 
-	public getSpecification(
-		specificationKey: string | typeof ProductSpecificationKey
-	) {
-		return this.product.productSpecifications.find(
-			(specification) =>
-				specification.specificationKey === specificationKey
-		);
+	public getSpecification(specificationKey: string) {
+		return getProductSpecification(specificationKey, this.product);
 	}
 
 	public hasEnoughResources(cloudUserProject: ConsoleUserProject) {
@@ -261,10 +251,11 @@ export class MarketplaceDeliveryProduct {
 		);
 	}
 
-	private getSpecificationValue(
-		specificationKey: string | typeof ProductSpecificationKey,
-		value = ''
-	) {
-		return this.getSpecification(specificationKey)?.value || value;
+	private getSpecificationValue(specificationKey: string, value = '') {
+		return getProductSpecificationValue(
+			specificationKey,
+			this.product,
+			value
+		);
 	}
 }

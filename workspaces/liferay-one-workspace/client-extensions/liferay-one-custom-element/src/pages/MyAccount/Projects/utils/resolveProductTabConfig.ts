@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getSpecificationValue} from '~/hooks/useProjectCommerce';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import {PROJECT_TAB_ORDER, SUPPORT_SPECIFICATION_KEYS} from './constants';
 import {resolveActivationProfile} from './resolveActivationProfile';
@@ -52,13 +52,13 @@ export function resolveProductTabConfig({
 	const downloadProfile = resolveDownloadProfile({itemType, product});
 	const environmentProfile = resolveEnvironmentProfile(product);
 	const utilizationProfile = resolveUtilizationProfile(product);
-	const learnUrl = getSpecificationValue(product, 'project-learn-url');
+	const learnUrl = getProductSpecificationValue('project-learn-url', product);
 
 	const hasSupportInfo =
 		Boolean(learnUrl) ||
 		(itemType === 'application' &&
 			SUPPORT_SPECIFICATION_KEYS.some((specificationKey) =>
-				getSpecificationValue(product, specificationKey)
+				getProductSpecificationValue(specificationKey, product)
 			));
 
 	const tabPresent: Record<ProjectTabKey, boolean> = {

@@ -13,7 +13,7 @@ import {PageRenderer} from '~/components/Page/Page';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import i18n from '~/i18n';
 import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {DeliveryProductModel} from '~/models/DeliveryProductModel';
+import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import useSSAActions from '~/pages/Admin/SSADashboard/hooks/useSSAActions';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
@@ -90,7 +90,7 @@ export default function TrialDetails() {
 	const parentPath = params.get('from') ?? '/';
 
 	const productModel = useMemo(
-		() => new DeliveryProductModel(product || {}),
+		() => new MarketplaceDeliveryProduct(product || {}),
 		[product]
 	);
 

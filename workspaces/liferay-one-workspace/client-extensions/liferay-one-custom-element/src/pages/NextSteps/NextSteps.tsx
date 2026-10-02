@@ -25,6 +25,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import CommerceOrders from '~/services/spring-boot/CommerceOrders';
 import {getAccountImage} from '~/utils/getAccountImage';
 import {
+	ProductSpecificationKey,
 	getProductCategoriesByVocabularyName,
 	getProductSpecification,
 } from '~/utils/productUtils';
@@ -318,7 +319,7 @@ function NextStepsPage() {
 	}
 
 	const solutionTypeSpecification = getProductSpecification(
-		'solution-type',
+		ProductSpecificationKey.SOLUTION_TYPE,
 		data?.product as DeliveryProduct
 	);
 

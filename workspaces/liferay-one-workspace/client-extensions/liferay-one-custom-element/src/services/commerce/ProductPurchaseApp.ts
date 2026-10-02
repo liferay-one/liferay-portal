@@ -6,7 +6,6 @@
 import {Analytics} from '~/services/liferay/Analytics';
 import GetAppInformations from '~/services/objects/GetAppInformations';
 import {getProductOrderTypes} from '~/utils/getProductOrderTypes';
-import {getProductSpecificationValues} from '~/utils/getProductSpecificationValues';
 import {OrderCustomFields} from '~/utils/orderUtils';
 import {
 	ProductSpecificationKey,
@@ -104,7 +103,10 @@ export default class ProductPurchaseApp extends ProductPurchase {
 		}
 
 		return getProductOrderTypes(
-			getProductSpecificationValues(product?.productSpecifications || [])
+			getProductSpecificationValue(
+				ProductSpecificationKey.APP_TYPE,
+				product
+			)
 		).externalReferenceCode;
 	}
 }
