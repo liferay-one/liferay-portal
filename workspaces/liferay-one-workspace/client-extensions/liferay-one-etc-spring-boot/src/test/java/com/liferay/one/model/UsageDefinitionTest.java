@@ -40,6 +40,45 @@ public class UsageDefinitionTest {
 	}
 
 	@Test
+	public void testSourceUnitFallsBackToUnit() {
+		UsageDefinition usageDefinition = new UsageDefinition(
+			_createUsageSourceJSONObject(
+				_USAGE_SOURCE, _USAGE_SOURCE_METRIC_KEY, null));
+
+		Assertions.assertEquals(_UNIT, usageDefinition.getUsageSourceUnit());
+
+		usageDefinition = new UsageDefinition(
+			_createUsageSourceJSONObject(
+				_USAGE_SOURCE, _USAGE_SOURCE_METRIC_KEY, _USAGE_SOURCE_UNIT));
+
+		Assertions.assertEquals(
+			_USAGE_SOURCE_UNIT, usageDefinition.getUsageSourceUnit());
+	}
+
+	@Test
+	public void testUsageSourceNeedsSourceAndMetricKey() {
+		UsageDefinition usageDefinition = new UsageDefinition(
+			_createUsageSourceJSONObject(
+				_USAGE_SOURCE, _USAGE_SOURCE_METRIC_KEY, null));
+
+		Assertions.assertTrue(usageDefinition.hasUsageSource());
+
+		usageDefinition = new UsageDefinition(
+			_createUsageSourceJSONObject(_USAGE_SOURCE, null, null));
+
+		Assertions.assertFalse(usageDefinition.hasUsageSource());
+
+		usageDefinition = new UsageDefinition(
+			_createUsageSourceJSONObject(null, _USAGE_SOURCE_METRIC_KEY, null));
+
+		Assertions.assertFalse(usageDefinition.hasUsageSource());
+
+		usageDefinition = _createUsageDefinition(null);
+
+		Assertions.assertFalse(usageDefinition.hasUsageSource());
+	}
+
+	@Test
 	public void testUsesWholeBucketsForExactMultiples() {
 		UsageDefinition usageDefinition = _createUsageDefinition(
 			_OVERAGE_BUCKET_SIZE);
@@ -72,6 +111,32 @@ public class UsageDefinitionTest {
 		return new UsageDefinition(jsonObject);
 	}
 
+	private JSONObject _createUsageSourceJSONObject(
+		String usageSource, String usageSourceMetricKey,
+		String usageSourceUnit) {
+
+		return new JSONObject(
+		).put(
+			"id", 1L
+		).put(
+			"unit", _UNIT
+		).put(
+			"usageSource", usageSource
+		).put(
+			"usageSourceMetricKey", usageSourceMetricKey
+		).put(
+			"usageSourceUnit", usageSourceUnit
+		);
+	}
+
 	private static final double _OVERAGE_BUCKET_SIZE = 200000;
+
+	private static final String _UNIT = "events";
+
+	private static final String _USAGE_SOURCE = "ldp-event-summary";
+
+	private static final String _USAGE_SOURCE_METRIC_KEY = "eventsCount";
+
+	private static final String _USAGE_SOURCE_UNIT = "bytes";
 
 }

@@ -362,8 +362,13 @@ When a project's `events` entitlements have no pricing or conflicting pricing, o
 | `aggregationType` | string | count / sum. Renamed from `aggregation`: a field literally named `aggregation` collides with Liferay's reserved OData aggregation term and generates an empty DB column name, so the object fails to publish (`CREATE TABLE` syntax error). |
 | `period` | string | Per month, day, hour |
 | `overageBucketSize` | double | Units of the metric one overage bucket covers, e.g. 200,000 events. Unset means overage is not billable for this metric |
+| `usageSource` | string | Which DataOps API shape the consumed quantity is read from, e.g. `ldp-event-summary`. One `UsageSource` adapter exists in `liferay-one-etc-spring-boot` per value. Unset means no usage report is generated for this metric |
+| `usageSourceMetricKey` | string | The field the adapter reads from that API's response, e.g. `eventsCount` |
+| `usageSourceUnit` | string | The unit that field is reported in, e.g. `bytes`; converted to `unit` when it differs. Unset means the source already reports in `unit` |
 
 Overage rate and SKU live on the EntitlementDefinition; see **Bucket priced overage**.
+
+**Declarative usage reports.** The three `usageSource*` fields, together with the `usageDefinitionToEntitlementDefinition` relationship and the `consumption-role` SKU option, are everything the usage report generator needs to report a metric. A new metric served by an API that already has an adapter is seed data only: a UsageDefinition row, the EntitlementDefinition rows that link to it, and the SKUs those definitions grant from.
 
 ---
 

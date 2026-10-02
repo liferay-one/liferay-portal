@@ -5,9 +5,17 @@
 
 package com.liferay.one.model;
 
+import com.liferay.portal.kernel.util.Validator;
+
 import org.json.JSONObject;
 
 /**
+ * A metered quantity a product sells. The usage source fields declare where
+ * the consumed quantity is read from: the source names the API shape, the
+ * metric key names the field in that API's response, and the source unit is
+ * the unit that field is reported in, which may differ from the definition's
+ * own unit.
+ *
  * @author Drew Brokke
  */
 public final class UsageDefinition {
@@ -20,6 +28,9 @@ public final class UsageDefinition {
 		_period = jsonObject.optString("period");
 		_unit = jsonObject.optString("unit");
 		_usageDefinitionId = jsonObject.getLong("id");
+		_usageSource = jsonObject.optString("usageSource");
+		_usageSourceMetricKey = jsonObject.optString("usageSourceMetricKey");
+		_usageSourceUnit = jsonObject.optString("usageSourceUnit");
 	}
 
 	public String getAggregationType() {
@@ -59,8 +70,42 @@ public final class UsageDefinition {
 		return _usageDefinitionId;
 	}
 
+	public String getUsageSource() {
+		return _usageSource;
+	}
+
+	public String getUsageSourceMetricKey() {
+		return _usageSourceMetricKey;
+	}
+
+	/**
+	 * Returns the unit the usage source reports the metric in, falling back to
+	 * the definition's own unit when the source does not declare one.
+	 */
+	public String getUsageSourceUnit() {
+		if (Validator.isNull(_usageSourceUnit)) {
+			return _unit;
+		}
+
+		return _usageSourceUnit;
+	}
+
 	public boolean hasOverageBucketSize() {
 		if ((_overageBucketSize == null) || (_overageBucketSize <= 0)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Returns <code>true</code> when a usage report can be generated for this
+	 * definition, which takes both a source and a metric key to read from it.
+	 */
+	public boolean hasUsageSource() {
+		if (Validator.isNull(_usageSource) ||
+			Validator.isNull(_usageSourceMetricKey)) {
+
 			return false;
 		}
 
@@ -73,5 +118,8 @@ public final class UsageDefinition {
 	private final String _period;
 	private final String _unit;
 	private final long _usageDefinitionId;
+	private final String _usageSource;
+	private final String _usageSourceMetricKey;
+	private final String _usageSourceUnit;
 
 }

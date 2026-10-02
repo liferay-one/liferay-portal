@@ -7765,6 +7765,60 @@
 					"state": false,
 					"system": false,
 					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_DEFINITION_USAGE_SOURCE",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Usage Source"
+					},
+					"name": "usageSource",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_DEFINITION_USAGE_SOURCE_METRIC_KEY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Usage Source Metric Key"
+					},
+					"name": "usageSourceMetricKey",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_USAGE_DEFINITION_USAGE_SOURCE_UNIT",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Usage Source Unit"
+					},
+					"name": "usageSourceUnit",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				}
 			],
 			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",

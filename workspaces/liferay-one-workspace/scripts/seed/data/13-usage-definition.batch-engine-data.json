@@ -27,7 +27,10 @@
 			"externalReferenceCode": "events-monthly",
 			"overageBucketSize": 200000,
 			"period": "per month",
-			"unit": "events"
+			"unit": "events",
+			"usageSource": "ldp-event-summary",
+			"usageSourceMetricKey": "eventsCount",
+			"usageSourceUnit": "events"
 		},
 		{
 			"aggregationType": "count",
