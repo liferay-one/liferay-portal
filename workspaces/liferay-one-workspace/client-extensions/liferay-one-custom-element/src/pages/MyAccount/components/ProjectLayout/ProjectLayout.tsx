@@ -43,7 +43,7 @@ export default function ProjectLayout() {
 	);
 
 	const standaloneMatch = useMatch(
-		'/:accountERC/project/:projectId/activation-keys/generate'
+		'/:accountERC/project/:projectId/activation/generate'
 	);
 
 	const contentHeader =
