@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getSpecificationValue} from '~/hooks/useProjectCommerce';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {DeliveryProduct} from '~/types/product';
 
@@ -25,7 +25,7 @@ const APP_TYPES: AppType[] = [
 ];
 
 export function getAppType(product: DeliveryProduct): AppType | undefined {
-	const value = getSpecificationValue(product, 'type').toLowerCase();
+	const value = getProductSpecificationValue('type', product).toLowerCase();
 
 	return (APP_TYPES as string[]).includes(value)
 		? (value as AppType)

@@ -4,9 +4,9 @@
  */
 
 import {
-	getSpecificationValue,
-	getSpecificationValues,
-} from '~/hooks/useProjectCommerce';
+	getProductSpecificationValue,
+	getProductSpecificationValues,
+} from '~/utils/productUtils';
 
 import type {DeliveryProduct} from '~/types/product';
 
@@ -48,15 +48,18 @@ export function resolveDetailsProfile({
 		return 'basic';
 	}
 
-	const profile = getSpecificationValue(product, 'project-details-profile');
+	const profile = getProductSpecificationValue(
+		'project-details-profile',
+		product
+	);
 
 	if (isDetailsProfile(profile)) {
 		return profile;
 	}
 
-	const categories = getSpecificationValues(
-		product,
-		'liferay-products-categories'
+	const categories = getProductSpecificationValues(
+		'liferay-products-categories',
+		product
 	);
 
 	if (categories.includes('Platform')) {

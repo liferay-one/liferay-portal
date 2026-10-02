@@ -3,18 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ProductLicense, ProductLicenseTier} from '~/enums/Product';
+import {
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEYS,
+	ProductLicenseTier,
+} from '~/enums/Product';
 import {Word} from '~/i18n';
 
 import type {DeliveryProduct, DeliverySKU} from '~/types/product';
-
-const LICENSE_USAGE_TYPE_SKU_OPTION_KEYS: readonly string[] = [
-	ProductLicense.BASE,
-	ProductLicense.CLOUD,
-	ProductLicense.CMP,
-	ProductLicense.DSR,
-	ProductLicense.DXP,
-];
 
 export const PRODUCT_LICENSE_TIER_ORDER: readonly ProductLicenseTier[] = [
 	ProductLicenseTier.DEVELOPER,
@@ -46,8 +41,9 @@ export function getSKULicenseTier(
 ): ProductLicenseTier | undefined {
 	const skuOption = (sku.skuOptions ?? []).find(
 		({skuOptionKey, skuOptionValueKey}) =>
-			LICENSE_USAGE_TYPE_SKU_OPTION_KEYS.includes(skuOptionKey) &&
-			isProductLicenseTier(skuOptionValueKey)
+			(LICENSE_USAGE_TYPE_SKU_OPTION_KEYS as readonly string[]).includes(
+				skuOptionKey
+			) && isProductLicenseTier(skuOptionValueKey)
 	);
 
 	return skuOption?.skuOptionValueKey as ProductLicenseTier | undefined;

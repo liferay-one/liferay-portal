@@ -7,7 +7,10 @@ import {Input} from '~/components/Input/Input';
 import {Section} from '~/components/Section/Section';
 import {NewAppTypes, useNewAppContext} from '~/context/NewAppContextProvider';
 import i18n from '~/i18n';
-import {ProductSpecificationKey} from '~/utils/productUtils';
+import {
+	ProductSpecificationKey,
+	getAdminProductSpecificationValue,
+} from '~/utils/productUtils';
 
 const Version = () => {
 	const [
@@ -18,10 +21,10 @@ const Version = () => {
 		dispatch,
 	] = useNewAppContext();
 
-	const publishedVersion = (_product?.productSpecifications ?? []).find(
-		({specificationKey}) =>
-			specificationKey === ProductSpecificationKey.APP_VERSION
-	)?.value?.en_US;
+	const publishedVersion = getAdminProductSpecificationValue(
+		ProductSpecificationKey.APP_VERSION,
+		_product?.productSpecifications
+	);
 
 	return (
 		<Section

@@ -18,7 +18,6 @@ import {
 
 import type {
 	DeliveryProductAttachment,
-	DeliveryProductSpecification,
 	ProductAttachment,
 	ProductSpecification,
 	SKU,
@@ -150,20 +149,6 @@ export function getProductVersionFromSpecifications(
 	return productVersion;
 }
 
-export function getValueFromDeliverySpecifications(
-	specifications: DeliveryProductSpecification[],
-	valueKey: string
-) {
-	let value = '';
-	specifications?.forEach((specification) => {
-		if (specification?.specificationKey === valueKey) {
-			value = specification?.value;
-		}
-	});
-
-	return value;
-}
-
 export function getAccountImage(url?: string) {
 	return url?.includes('img_id=0') || !url ? accountPlaceholder : url;
 }
@@ -184,7 +169,7 @@ export function getSkuPrice(appLicensePrice: LicenceTiersPrices, sku: SKU) {
 		}
 
 		if (sku?.sku.endsWith('d')) {
-			appLicensePrice.developer[0]?.value ?? 0;
+			return appLicensePrice.developer[0]?.value ?? 0;
 		}
 
 		return appLicensePrice.standard[0]?.value ?? 0;

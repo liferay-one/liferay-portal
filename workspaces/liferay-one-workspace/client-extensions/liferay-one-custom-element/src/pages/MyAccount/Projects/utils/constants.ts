@@ -11,11 +11,7 @@ import type {ProjectTabKey} from '../types';
 
 export const LAST_PROJECT_STORAGE_KEY = 'liferay-one:last-project';
 
-export const PROJECT_SECTION_PATHS = [
-	'activation',
-	'applications',
-	'products',
-];
+export const PROJECT_SECTION_PATHS = ['activation', 'applications', 'products'];
 
 export const PROJECT_TAB_LABELS: Record<ProjectTabKey, Word> = {
 	'activation': 'activation',

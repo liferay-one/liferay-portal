@@ -4,7 +4,6 @@
  */
 
 import type {OrderType} from '~/types/orders';
-import type {ProductType} from '~/types/product';
 
 const productTypeERC = {
 	'ai-hub': 'AI_HUB',
@@ -22,7 +21,9 @@ export function getProductOrderTypes(productSpecificationValue: string) {
 
 	return {
 		externalReferenceCode:
-			productTypeERC[productSpecification as ProductType] || 'NOTYPE',
+			productTypeERC[
+				productSpecification as keyof typeof productTypeERC
+			] || 'NOTYPE',
 	} as OrderType;
 }
 
