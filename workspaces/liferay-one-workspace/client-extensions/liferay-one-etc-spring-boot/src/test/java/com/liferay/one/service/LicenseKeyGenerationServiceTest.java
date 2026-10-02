@@ -1209,22 +1209,6 @@ public class LicenseKeyGenerationServiceTest {
 		);
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getLicenseEntryFamily(Mockito.any())
-		).thenAnswer(
-			invocation -> {
-				Product product = invocation.getArgument(0);
-
-				if (Objects.equals(
-						product.getExternalReferenceCode(), "PRDCT-DSR")) {
-
-					return "DSR";
-				}
-
-				return "DXP";
-			}
-		);
-
-		Mockito.when(
 			_licenseKeyGenerateFormService.grantsLicense(Mockito.any())
 		).thenReturn(
 			true
@@ -1271,12 +1255,6 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyGenerateFormService.fetchProduct(Mockito.any())
 		).thenReturn(
 			product
-		);
-
-		Mockito.when(
-			_licenseKeyGenerateFormService.getLicenseEntryFamily(Mockito.any())
-		).thenReturn(
-			"dxp"
 		);
 
 		Mockito.when(
@@ -1359,6 +1337,9 @@ public class LicenseKeyGenerationServiceTest {
 				"id", entitlementId
 			).put(
 				"licenseKeyDurationDays", licenseKeyDurationDays
+			).put(
+				"licenseKeyFamily",
+				_licenseKeyFamilies.get(skuExternalReferenceCode)
 			).put(
 				"skuExternalReferenceCode", skuExternalReferenceCode
 			)
@@ -1463,6 +1444,13 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
+
+	private static final Map<String, String> _licenseKeyFamilies =
+		HashMapBuilder.put(
+			"PRDCT-DSR", "DSR"
+		).put(
+			"PRDCT-DXP", "DXP"
+		).build();
 
 	private ActivationKeyService _activationKeyService;
 	private EntitlementService _entitlementService;

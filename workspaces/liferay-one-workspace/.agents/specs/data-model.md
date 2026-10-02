@@ -375,7 +375,9 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |
 | `defaultQuantity` | double | Default; overridden at order item level via `sizing` |
 | `grantType` | string | `fixed` · `rollover` · `metered` · `prepaid` |
-| `licenseEntryFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
+| `licenseKeyType` | string | The key type this SKU grants, e.g. `production`, `developer`, `backup`, `complimentary`; empty when the definition grants no key type of its own |
+| `licenseKeyDurationDays` | integer | How long a generated key lasts; empty for the subscription's own dates |
+| `licenseKeyFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
 | `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |
 | `overageRate` | double | Price of one overage bucket; empty if the definition cannot bill overage |
@@ -395,7 +397,7 @@ When a project's `events` entitlements have no pricing or conflicting pricing, o
 
 **License generation:** Presence of an EntitlementDefinition with `name = 'licenseGeneration'` (`grantType = fixed`, `unit = boolean`) indicates the product can generate license keys. This replaces the old boolean `licenses` flag on products.
 
-**Licensing is SKU level.** Which key type a purchase grants (`licenseKeyType`), how long the key lasts (`licenseKeyDurationDays`), which license entry family it resolves against (`licenseEntryFamily`), and whether it leads an activation key (`generatesActivationKey`) all live on the definition, keyed by SKU external reference code. None of them is a product specification: a product external reference code is minted by whichever catalog created the product and differs per environment, while the SKU is what Salesforce sells and what an entitlement resolves.
+**Licensing is SKU level.** Which key type a purchase grants (`licenseKeyType`), how long the key lasts (`licenseKeyDurationDays`), which license entry family it resolves against (`licenseKeyFamily`), and whether it leads an activation key (`generatesActivationKey`) all live on the definition, keyed by SKU external reference code. None of them is a product specification: a product external reference code is minted by whichever catalog created the product and differs per environment, while the SKU is what Salesforce sells and what an entitlement resolves.
 
 ---
 

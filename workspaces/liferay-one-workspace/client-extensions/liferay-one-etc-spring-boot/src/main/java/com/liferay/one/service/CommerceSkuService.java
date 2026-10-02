@@ -14,8 +14,10 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResou
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -25,11 +27,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommerceSkuService extends OneBaseService {
 
-	@Cacheable("skuProductId")
 	public Long fetchProductId(String skuExternalReferenceCode)
 		throws Exception {
 
-		Sku sku = fetchSku(skuExternalReferenceCode);
+		Sku sku = _commerceSkuService.fetchSku(skuExternalReferenceCode);
 
 		if (sku == null) {
 			return null;
@@ -38,7 +39,7 @@ public class CommerceSkuService extends OneBaseService {
 		return sku.getProductId();
 	}
 
-	@Cacheable("sku")
+	@Cacheable(unless = "#result == null", value = "sku")
 	public Sku fetchSku(String externalReferenceCode) throws Exception {
 		SkuResource skuResource = _buildSkuResource();
 
@@ -66,7 +67,7 @@ public class CommerceSkuService extends OneBaseService {
 		return new ArrayList<>(skusPage.getItems());
 	}
 
-	@CacheEvict(allEntries = true, cacheNames = {"sku", "skuProductId"})
+	@CacheEvict(allEntries = true, cacheNames = "sku")
 	public Sku patchSku(String externalReferenceCode, Sku sku)
 		throws Exception {
 
@@ -97,5 +98,9 @@ public class CommerceSkuService extends OneBaseService {
 	}
 
 	private static final int _PAGE_SIZE = 500;
+
+	@Autowired
+	@Lazy
+	private CommerceSkuService _commerceSkuService;
 
 }
