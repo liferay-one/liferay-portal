@@ -5,12 +5,16 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductResource;
+import com.liferay.one.constants.CommerceCatalogConstants;
 import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
 import java.util.List;
@@ -88,14 +92,14 @@ public class CommerceProductService extends OneBaseService {
 
 	@CacheEvict(allEntries = true, cacheNames = {"product", "productName"})
 	public void updateProduct(
-			String description, String name, String salesforceProductId)
+			String description, String name, String productGroup,
+			String salesforceProductId)
 		throws Exception {
 
-		Sku sku = _updateSku(true, salesforceProductId);
+		Long productId = _updateOrAddSku(
+			description, name, productGroup, salesforceProductId);
 
-		if (sku == null) {
-			_logMissingSku(salesforceProductId);
-
+		if (productId == null) {
 			return;
 		}
 
@@ -105,13 +109,15 @@ public class CommerceProductService extends OneBaseService {
 
 		product.setActive(() -> Boolean.TRUE);
 
-		if (_hasSingleSku(sku.getProductId())) {
+		if (_hasSingleSku(productId)) {
 			product.setDescription(
-				() -> Collections.singletonMap("en_US", description));
-			product.setName(() -> Collections.singletonMap("en_US", name));
+				() -> Collections.singletonMap(
+					_LANGUAGE_ID_DEFAULT, description));
+			product.setName(
+				() -> Collections.singletonMap(_LANGUAGE_ID_DEFAULT, name));
 		}
 
-		productResource.patchProduct(sku.getProductId(), product);
+		productResource.patchProduct(productId, product);
 	}
 
 	protected ProductResource buildProductResource() {
@@ -123,6 +129,43 @@ public class CommerceProductService extends OneBaseService {
 		).parameter(
 			"nestedFields", "productSpecifications"
 		).build();
+	}
+
+	private Product _addProduct(
+			String description, String name, String productGroup)
+		throws Exception {
+
+		Catalog catalog = _commerceCatalogService.fetchCatalog(
+			CommerceCatalogConstants.
+				EXTERNAL_REFERENCE_CODE_LIFERAY_INC_CATALOG);
+
+		if (catalog == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to add product ", productGroup,
+						" without catalog ",
+						CommerceCatalogConstants.
+							EXTERNAL_REFERENCE_CODE_LIFERAY_INC_CATALOG));
+			}
+
+			return null;
+		}
+
+		ProductResource productResource = buildProductResource();
+
+		Product product = new Product();
+
+		product.setActive(() -> Boolean.TRUE);
+		product.setCatalogId(catalog::getId);
+		product.setDescription(
+			() -> Collections.singletonMap(_LANGUAGE_ID_DEFAULT, description));
+		product.setExternalReferenceCode(() -> productGroup);
+		product.setName(
+			() -> Collections.singletonMap(_LANGUAGE_ID_DEFAULT, name));
+		product.setProductType(() -> _PRODUCT_TYPE_VIRTUAL);
+
+		return productResource.postProduct(product);
 	}
 
 	private Product _fetchProduct(long id) throws Exception {
@@ -189,6 +232,46 @@ public class CommerceProductService extends OneBaseService {
 		}
 	}
 
+	private Long _updateOrAddSku(
+			String description, String name, String productGroup,
+			String salesforceProductId)
+		throws Exception {
+
+		Sku sku = _updateSku(true, salesforceProductId);
+
+		if (sku != null) {
+			return sku.getProductId();
+		}
+
+		if (Validator.isNull(productGroup)) {
+			_logMissingSku(salesforceProductId);
+
+			return null;
+		}
+
+		Product product = _fetchProduct(productGroup);
+
+		if (product == null) {
+			product = _addProduct(description, name, productGroup);
+		}
+
+		if (product == null) {
+			return null;
+		}
+
+		Sku productGroupSku = new Sku();
+
+		productGroupSku.setExternalReferenceCode(() -> salesforceProductId);
+		productGroupSku.setNeverExpire(() -> Boolean.TRUE);
+		productGroupSku.setPublished(() -> Boolean.TRUE);
+		productGroupSku.setPurchasable(() -> Boolean.TRUE);
+		productGroupSku.setSku(() -> salesforceProductId);
+
+		_commerceSkuService.addSku(productGroup, productGroupSku);
+
+		return product.getId();
+	}
+
 	private Sku _updateSku(boolean published, String salesforceProductId)
 		throws Exception {
 
@@ -200,8 +283,15 @@ public class CommerceProductService extends OneBaseService {
 		return _commerceSkuService.patchSku(salesforceProductId, sku);
 	}
 
+	private static final String _LANGUAGE_ID_DEFAULT = "en_US";
+
+	private static final String _PRODUCT_TYPE_VIRTUAL = "virtual";
+
 	private static final Log _log = LogFactory.getLog(
 		CommerceProductService.class);
+
+	@Autowired
+	private CommerceCatalogService _commerceCatalogService;
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;

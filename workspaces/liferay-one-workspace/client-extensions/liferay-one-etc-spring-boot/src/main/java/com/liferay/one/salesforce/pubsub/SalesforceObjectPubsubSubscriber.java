@@ -256,7 +256,9 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 		else {
 			_commerceProductService.updateProduct(
 				salesforceProduct2.getDescription(),
-				salesforceProduct2.getName(), salesforceProduct2.getId());
+				salesforceProduct2.getName(),
+				salesforceProduct2.getProductGroup(),
+				salesforceProduct2.getId());
 		}
 	}
 

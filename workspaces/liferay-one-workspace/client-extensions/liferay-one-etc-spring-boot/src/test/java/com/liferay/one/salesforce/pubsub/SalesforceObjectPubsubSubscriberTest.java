@@ -97,7 +97,7 @@ public class SalesforceObjectPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceProductService, Mockito.never()
 		).updateProduct(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -192,7 +192,7 @@ public class SalesforceObjectPubsubSubscriberTest {
 		).when(
 			_commerceProductService
 		).updateProduct(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Message message = new Message(
@@ -215,13 +215,13 @@ public class SalesforceObjectPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceProductService, Mockito.times(2)
 		).updateProduct(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Mockito.verify(
 			_commerceProductService
 		).updateProduct(
-			Mockito.any(), Mockito.eq("Gadget"), Mockito.any()
+			Mockito.any(), Mockito.eq("Gadget"), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -385,7 +385,7 @@ public class SalesforceObjectPubsubSubscriberTest {
 		).when(
 			_commerceProductService
 		).updateProduct(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Message message = new Message(
@@ -567,7 +567,7 @@ public class SalesforceObjectPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceProductService
 		).updateProduct(
-			"A description", "Widget", _PRODUCT_2_ID
+			"A description", "Widget", _PRODUCT_GROUP, _PRODUCT_2_ID
 		);
 	}
 
@@ -631,6 +631,8 @@ public class SalesforceObjectPubsubSubscriberTest {
 			"Id", _PRODUCT_2_ID
 		).put(
 			"Name", name
+		).put(
+			"Product_Group__c", _PRODUCT_GROUP
 		);
 	}
 
@@ -656,6 +658,8 @@ public class SalesforceObjectPubsubSubscriberTest {
 	private static final String _PRICEBOOK_ENTRY_ID = "PBE-1";
 
 	private static final String _PRODUCT_2_ID = "PROD-1";
+
+	private static final String _PRODUCT_GROUP = "PRDCT-AI-HUB";
 
 	private static final long _SKU_ID = 2000L;
 

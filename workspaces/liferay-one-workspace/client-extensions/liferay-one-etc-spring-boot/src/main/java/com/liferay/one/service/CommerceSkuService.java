@@ -27,6 +27,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class CommerceSkuService extends OneBaseService {
 
+	public Sku addSku(String productExternalReferenceCode, Sku sku)
+		throws Exception {
+
+		SkuResource skuResource = _buildSkuResource();
+
+		return skuResource.postProductByExternalReferenceCodeSku(
+			productExternalReferenceCode, sku);
+	}
+
 	public Long fetchProductId(String skuExternalReferenceCode)
 		throws Exception {
 
