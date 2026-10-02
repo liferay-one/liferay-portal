@@ -2763,6 +2763,24 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
+					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_FAMILY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Family"
+					},
+					"name": "licenseKeyFamily",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
 					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_TYPE",
 					"indexed": true,
 					"indexedAsKeyword": true,

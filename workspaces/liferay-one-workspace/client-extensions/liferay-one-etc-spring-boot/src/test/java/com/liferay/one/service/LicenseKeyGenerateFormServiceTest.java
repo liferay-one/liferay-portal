@@ -86,63 +86,24 @@ public class LicenseKeyGenerateFormServiceTest {
 	@Test
 	public void testGetEntitledProductsReadsEverySoldSku() throws Exception {
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			new LicenseKeyGenerateFormService();
-
-		CommerceProductService commerceProductService = Mockito.mock(
-			CommerceProductService.class);
-
-		Product product = new Product();
-
-		product.setExternalReferenceCode("PRDCT-CONTENT-MARKETING");
-		product.setProductId(1L);
-
-		Mockito.when(
-			commerceProductService.fetchProduct(1L)
-		).thenReturn(
-			product
-		);
-
-		Mockito.when(
-			commerceProductService.getSpecificationValues(1L)
-		).thenReturn(
-			Collections.emptyMap()
-		);
-
-		CommerceSkuService commerceSkuService = Mockito.mock(
-			CommerceSkuService.class);
-
-		Mockito.when(
-			commerceSkuService.fetchSku("PRDCT-CONTENT-MARKETING")
-		).thenReturn(
-			_toSku(1L, null)
-		);
-
-		Mockito.when(
-			commerceSkuService.fetchSku("PRDCT-CONTENT-MARKETING-DEVELOPER")
-		).thenReturn(
-			_toSku(1L, "cmp-license-usage-type")
-		);
-
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_commerceProductService",
-			commerceProductService);
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_commerceSkuService",
-			commerceSkuService);
+			_toLicenseKeyGenerateFormService(
+				"PRDCT-CONTENT-MARKETING",
+				HashMapBuilder.put(
+					"PRDCT-CONTENT-MARKETING", _toSku(1L, null)
+				).put(
+					"PRDCT-CONTENT-MARKETING-DEVELOPER",
+					_toSku(1L, "cmp-license-usage-type")
+				).build());
 
 		List<Entitlement> entitlements = Arrays.asList(
 			_toLicenseGenerationEntitlement(
-				1L, null, "PRDCT-CONTENT-MARKETING"),
+				1L, false, "CMP", null, "PRDCT-CONTENT-MARKETING"),
 			_toLicenseGenerationEntitlement(
-				2L, "developer", "PRDCT-CONTENT-MARKETING-DEVELOPER"));
+				2L, false, "CMP", "developer",
+				"PRDCT-CONTENT-MARKETING-DEVELOPER"));
 
-		Map<Long, Object> resolvedProducts = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getResolvedProducts",
-			entitlements);
-
-		List<Object> entitledProducts = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getEntitledProducts", entitlements,
-			resolvedProducts);
+		List<Object> entitledProducts = _getEntitledProducts(
+			entitlements, licenseKeyGenerateFormService);
 
 		Assertions.assertEquals(1, entitledProducts.size());
 
@@ -150,6 +111,71 @@ public class LicenseKeyGenerateFormServiceTest {
 			entitledProducts.get(0), "isGeneratesActivationKey");
 
 		Assertions.assertTrue(generatesActivationKey);
+	}
+
+	@Test
+	public void testGetEntitledProductsReadsTheLicenseKeyFamily()
+		throws Exception {
+
+		// The license entry family is what the generate form groups a
+		// product's key types under, and it travels with the SKU that was
+		// sold rather than with the product the SKU belongs to.
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				"PRDCT-DXP",
+				HashMapBuilder.put(
+					"PRDCT-DXP", _toSku(1L, null)
+				).build());
+
+		List<Entitlement> entitlements = Collections.singletonList(
+			_toLicenseGenerationEntitlement(
+				1L, true, "DXP", null, "PRDCT-DXP"));
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			entitlements, licenseKeyGenerateFormService);
+
+		Assertions.assertEquals(1, entitledProducts.size());
+
+		String licenseKeyFamily = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "getLicenseKeyFamily");
+
+		Assertions.assertEquals("DXP", licenseKeyFamily);
+
+		boolean generatesActivationKey = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "isGeneratesActivationKey");
+
+		Assertions.assertTrue(generatesActivationKey);
+	}
+
+	@Test
+	public void testGetEntitledProductsWithoutAnActivationKey()
+		throws Exception {
+
+		// A SKU carrying no license usage type option leads an activation key
+		// only where its entitlement definition says so, which is what keeps
+		// the cloud products out of the bundle.
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				"PRDCT-CLOUD-NATIVE",
+				HashMapBuilder.put(
+					"PRDCT-CLOUD-NATIVE", _toSku(1L, null)
+				).build());
+
+		List<Entitlement> entitlements = Collections.singletonList(
+			_toLicenseGenerationEntitlement(
+				1L, false, "Cloud Native", null, "PRDCT-CLOUD-NATIVE"));
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			entitlements, licenseKeyGenerateFormService);
+
+		Assertions.assertEquals(1, entitledProducts.size());
+
+		boolean generatesActivationKey = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "isGeneratesActivationKey");
+
+		Assertions.assertFalse(generatesActivationKey);
 	}
 
 	@Test
@@ -182,11 +208,11 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, "DXP",
+			false, false,
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
-			licenseKeyTypeEntitlements, Collections.emptyList());
+			"DXP", licenseKeyTypeEntitlements, Collections.emptyList());
 
 		Assertions.assertEquals(1, jsonArray.length());
 
@@ -425,8 +451,8 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			allowComplimentary, hasComplimentaryActivationKey, false, "DXP",
-			Collections.emptyMap(),
+			allowComplimentary, hasComplimentaryActivationKey, false,
+			Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, Entitlement>>put(
 				"DXP",
 				(Map<String, Entitlement>)HashMapBuilder.put(
@@ -434,6 +460,19 @@ public class LicenseKeyGenerateFormServiceTest {
 				).build()
 			).build(),
 			Collections.emptyList());
+	}
+
+	private List<Object> _getEntitledProducts(
+		List<Entitlement> entitlements,
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService) {
+
+		Map<Long, Object> resolvedProducts = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getResolvedProducts",
+			entitlements);
+
+		return ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getEntitledProducts", entitlements,
+			resolvedProducts);
 	}
 
 	private boolean _isGeneratable(JSONObject... productJSONObjects) {
@@ -509,7 +548,8 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private Entitlement _toLicenseGenerationEntitlement(
-		long entitlementId, String licenseKeyType,
+		long entitlementId, boolean generatesActivationKey,
+		String licenseKeyFamily, String licenseKeyType,
 		String skuExternalReferenceCode) {
 
 		return new Entitlement(
@@ -518,7 +558,11 @@ public class LicenseKeyGenerateFormServiceTest {
 				"entitlementDefinitionToEntitlement",
 				new JSONObject(
 				).put(
+					"generatesActivationKey", generatesActivationKey
+				).put(
 					"id", entitlementId
+				).put(
+					"licenseKeyFamily", licenseKeyFamily
 				).put(
 					"licenseKeyType", licenseKeyType
 				).put(
@@ -531,6 +575,47 @@ public class LicenseKeyGenerateFormServiceTest {
 			).put(
 				"id", entitlementId
 			));
+	}
+
+	private LicenseKeyGenerateFormService _toLicenseKeyGenerateFormService(
+			String productExternalReferenceCode, Map<String, Sku> skus)
+		throws Exception {
+
+		CommerceProductService commerceProductService = Mockito.mock(
+			CommerceProductService.class);
+		CommerceSkuService commerceSkuService = Mockito.mock(
+			CommerceSkuService.class);
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode(productExternalReferenceCode);
+		product.setProductId(1L);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(1L)
+		).thenReturn(
+			product
+		);
+
+		for (Map.Entry<String, Sku> entry : skus.entrySet()) {
+			Mockito.when(
+				commerceSkuService.fetchSku(entry.getKey())
+			).thenReturn(
+				entry.getValue()
+			);
+		}
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceProductService",
+			commerceProductService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceSkuService",
+			commerceSkuService);
+
+		return licenseKeyGenerateFormService;
 	}
 
 	private JSONObject _toProductJSONObject(

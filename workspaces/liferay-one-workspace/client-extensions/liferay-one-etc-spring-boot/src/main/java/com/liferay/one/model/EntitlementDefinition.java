@@ -28,8 +28,11 @@ public class EntitlementDefinition {
 		_displayName = jsonObject.optString("displayName");
 		_entitlementDefinitionId = jsonObject.getLong("id");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
+		_generatesActivationKey = jsonObject.optBoolean(
+			"generatesActivationKey");
 		_grantType = jsonObject.optString("grantType");
 		_licenseKeyDurationDays = jsonObject.optInt("licenseKeyDurationDays");
+		_licenseKeyFamily = jsonObject.optString("licenseKeyFamily");
 		_licenseKeyType = jsonObject.optString("licenseKeyType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
@@ -64,6 +67,10 @@ public class EntitlementDefinition {
 
 	public int getLicenseKeyDurationDays() {
 		return _licenseKeyDurationDays;
+	}
+
+	public String getLicenseKeyFamily() {
+		return _licenseKeyFamily;
 	}
 
 	public String getLicenseKeyType() {
@@ -102,6 +109,10 @@ public class EntitlementDefinition {
 		return _active;
 	}
 
+	public boolean isGeneratesActivationKey() {
+		return _generatesActivationKey;
+	}
+
 	private Map<String, String> _getProductOptions(JSONObject jsonObject) {
 		Map<String, String> productOptions = new HashMap<>();
 
@@ -136,8 +147,10 @@ public class EntitlementDefinition {
 	private final String _displayName;
 	private final long _entitlementDefinitionId;
 	private final String _externalReferenceCode;
+	private final boolean _generatesActivationKey;
 	private final String _grantType;
 	private final int _licenseKeyDurationDays;
+	private final String _licenseKeyFamily;
 	private final String _licenseKeyType;
 	private final Double _maxQuantity;
 	private final String _name;
