@@ -1,1 +1,1 @@
-../.agents/liferay-rules.md
+../.agents/AGENTS.md

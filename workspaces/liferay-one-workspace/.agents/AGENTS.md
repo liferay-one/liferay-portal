@@ -1,6 +1,13 @@
 # Liferay One Workspace
 
-Instructions here stack on top of the repo-root instructions — when the two conflict, this file wins.
+Instructions here stack on top of the repo root instructions — when the two conflict, this file wins. `.claude/CLAUDE.md` is a symlink to this file, so Claude Code loads it for any work under this workspace.
+
+Two further files sit beside it, each reachable through its own symlink under `.claude/`:
+
+- [`.workspace-rules/liferay-rules.md`](../.workspace-rules/liferay-rules.md) (`.claude/cx.md` reads from the same tree) — the generic Liferay Workspace rules: how to establish the workspace root, the DXP version, and the bundle state. Read it when the task is about the workspace shell rather than about this product.
+- [`.workspace-rules/initial-setup-guide.md`](../.workspace-rules/initial-setup-guide.md) — first time setup.
+
+The canonical code style for the whole repository lives in `pr-reviewer/rules`, one numbered file per rule, with the philosophy behind them in `pr-reviewer/STYLE.md`. The rules below add what is specific to this workspace and cite those numbers in brackets where the two meet.
 
 ## Architecture
 
@@ -30,6 +37,7 @@ Run from `workspaces/liferay-one-workspace/`.
 - Reset environment: Run `/one-env-reset` skill.
 - Liferay MCP setup: Run `/one-mcp` skill.
 - **Build:** `./gradlew build`
+- **Lint:** `yarn lint`
 - **Format:** Run the `/format-source` skill.
 - **Deploy:** Run the `/one-deploy` skill.
 - **Pre-commit:** Run format and build first; do not deploy a failing build.
@@ -38,15 +46,19 @@ Run from `workspaces/liferay-one-workspace/`.
 
 ## Rules
 
-`.agents/rules/` contains coding standards and PR conventions derived from Brian Chan's review feedback. Read these before writing or reviewing code:
+`.agents/rules/` contains coding standards and PR conventions derived from Brian Chan's review feedback. Read these before writing or reviewing code. Most carry a `paths:` scope in their frontmatter, so they load for the client extension they govern:
 
 - [`rules/code-style.md`](./rules/code-style.md) — sorting, log conventions, string concatenation, FreeMarker, Java ordering
 - [`rules/concurrency.md`](./rules/concurrency.md) — shared state on Spring singletons, formatter fields, React effect races
+- [`rules/custom-element-safety.md`](./rules/custom-element-safety.md) — CSRF, XSS, filter injection, unbounded pagination, timezone-safe dates
+- [`rules/custom-element-structure.md`](./rules/custom-element-structure.md) — file location by tier, read and write separation, page and component placement
 - [`rules/data-access.md`](./rules/data-access.md) — one-row reads, service calls in loops, pagination bounds
 - [`rules/naming.md`](./rules/naming.md) — brand name casing, file naming, REST controller naming
 - [`rules/object-naming.md`](./rules/object-naming.md) — ERC patterns, Object names, field casing
 - [`rules/page-folder-structure.md`](./rules/page-folder-structure.md) — one subfolder per sub-page component
 - [`rules/pr-hygiene.md`](./rules/pr-hygiene.md) — PR scope, merge conflicts, commit messages
+- [`rules/simplified-technical-english.md`](./rules/simplified-technical-english.md) — ASD-STE100 controlled language for everything a person reads
+- [`rules/spring-boot-analysis.md`](./rules/spring-boot-analysis.md) — SpotBugs coverage, its limits, and the open findings
 
 ## Specs
 
