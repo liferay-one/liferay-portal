@@ -2,7 +2,7 @@
 
 Every other class in liferay-one-etc-spring-boot that the groups above do not claim: utils, license key generation and parsing, usage strategies, Pub/Sub clients and publishers, the XML reader, base classes, and the models. A class with logic worth proving is `planned`, and a JUnit test exercises it directly. A plain data holder (getters, setters, and a builder with no branch) is kept `n/a`. The plan lists it so the list of the surface stays complete, but the go live denominator excludes it. Exceptions, constants, and the Spring application and cache configuration classes are not listed.
 
-> Autoscaffolded from the code surface (89 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (90 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -93,5 +93,6 @@ Every other class in liferay-one-etc-spring-boot that the groups above do not cl
 | CLS-TICKETATTACHMENT | Ticket attachment parsed from JSON — the storage path is tickets slash issue key slash attachment ID slash file name, and only status code zero counts as approved | unit | P1 | planned | class:TicketAttachment |
 | CLS-USAGEDEFINITION | Usage definition — overage bucket count rounds up with ceiling, a non positive quantity or a missing or non positive bucket size yields zero buckets; a usage source needs both a source key and a metric key, and the source unit falls back to the unit | unit | P0 | planned | class:UsageDefinition |
 | CLS-USAGEREPORT | Usage report parsed from JSON — blank dates yield null, and the review status reads from a nested key object or falls back to a plain string | unit | P1 | planned | class:UsageReport |
+| CLS-USAGEUNITUTIL | Usage unit conversion — byte scale units convert exactly in both directions, the same unit and any pair of non byte units pass through, and a byte scale unit against any other unit is rejected | unit | P0 | planned | class:UsageUnitUtil |
 | CLS-USERACCOUNTUTIL | User account lookups — account roles are collected only from the matching account brief, membership and role checks handle null briefs and null role arrays, and the uuid and verified custom fields return null or false when absent | unit | P0 | planned | class:UserAccountUtil |
 | CLS-VERSIONCOMPARATOR | Version ordering — quarterly versions compare by year then quarter, a quarterly version sorts above a non quarterly one, other versions compare as strings, and descending mode reverses the result | unit | P1 | planned | class:VersionComparator |
