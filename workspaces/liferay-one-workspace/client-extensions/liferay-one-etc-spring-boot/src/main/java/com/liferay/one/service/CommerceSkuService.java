@@ -6,10 +6,13 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.headless.commerce.admin.catalog.client.pagination.Page;
 import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResource;
+import com.liferay.one.constants.SkuOptionConstants;
+import com.liferay.one.util.CommerceOrderUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,32 @@ public class CommerceSkuService extends OneBaseService {
 
 		return skuResource.postProductByExternalReferenceCodeSku(
 			productExternalReferenceCode, sku);
+	}
+
+	/**
+	 * Returns the <code>consumption-role</code> option value of the SKU, which
+	 * tells a consumable product's SKUs apart. Returns <code>null</code> when
+	 * the SKU does not exist or carries no such option, which callers read as
+	 * the base allotment.
+	 */
+	@Cacheable("skuConsumptionRole")
+	public String fetchConsumptionRole(String skuExternalReferenceCode)
+		throws Exception {
+
+		Sku sku = fetchSku(skuExternalReferenceCode);
+
+		if (sku == null) {
+			return null;
+		}
+
+		SkuOption[] skuOptions = sku.getSkuOptions();
+
+		if (skuOptions == null) {
+			return null;
+		}
+
+		return CommerceOrderUtil.getSkuOptionValue(
+			SkuOptionConstants.KEY_CONSUMPTION_ROLE, skuOptions);
 	}
 
 	public Long fetchProductId(String skuExternalReferenceCode)

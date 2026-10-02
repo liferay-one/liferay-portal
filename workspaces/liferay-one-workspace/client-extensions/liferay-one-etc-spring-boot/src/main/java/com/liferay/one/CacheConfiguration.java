@@ -168,6 +168,15 @@ public class CacheConfiguration {
 				1000
 			).build());
 
+		caffeineCacheManager.registerCustomCache(
+			"skuConsumptionRole",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
 		return caffeineCacheManager;
 	}
 

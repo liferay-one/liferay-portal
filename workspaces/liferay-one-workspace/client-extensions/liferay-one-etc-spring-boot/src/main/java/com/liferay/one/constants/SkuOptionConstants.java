@@ -10,7 +10,15 @@ package com.liferay.one.constants;
  */
 public class SkuOptionConstants {
 
+	public static final String KEY_CONSUMPTION_ROLE = "consumption-role";
+
 	public static final String KEY_SUFFIX_LICENSE_USAGE_TYPE =
 		"-license-usage-type";
+
+	public static final String VALUE_CONSUMPTION_ROLE_ADD_ON = "add-on";
+
+	public static final String VALUE_CONSUMPTION_ROLE_ALLOTMENT = "allotment";
+
+	public static final String VALUE_CONSUMPTION_ROLE_OVERAGE = "overage";
 
 }

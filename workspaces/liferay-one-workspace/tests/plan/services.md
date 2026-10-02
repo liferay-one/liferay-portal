@@ -27,7 +27,7 @@ Every Spring service in liferay-one-etc-spring-boot. A service with branching lo
 | SVC-COMMERCEPRICELISTSERVICE | Thin headless-commerce client wrapper — fetches a single price list with no branch worth proving | unit | P2 | n/a | service:CommercePriceListService |
 | SVC-COMMERCEPRODUCTSERVICE | Product add-vs-update and deactivate branches are proven in isolation | unit | P2 | planned | service:CommerceProductService |
 | SVC-COMMERCEPRODUCTVIRTUALSETTINGSSERVICE | Virtual settings file entry selection — the exact-version match, the latest-version comparator fallback, the error-status asset fetch, and the SHA-256 checksum are proven | unit | P1 | planned | service:CommerceProductVirtualSettingsService |
-| SVC-COMMERCESKUSERVICE | Thin headless-commerce client wrapper — fetches a single SKU with no branch worth proving | unit | P2 | n/a | service:CommerceSkuService |
+| SVC-COMMERCESKUSERVICE | SKU lookups — fetches a single SKU, and the consumption role reads the consumption-role SKU option, null when the SKU, its options, or the option is missing | unit | P1 | planned | service:CommerceSkuService |
 | SVC-COMMONLICENSEKEYSERVICE | Common license key creation — product family dispatch, environment type mapping, and the existing-key dedupe guard are proven | unit | P0 | planned | service:CommonLicenseKeyService |
 | SVC-CONSOLESERVICE | Console token caching with expiry-buffer refresh, self-invite skip, and the per-member invite loop that continues past a failed invite are proven | unit | P1 | planned | service:ConsoleService |
 | SVC-CONTRACTSERVICE | Contract upsert (PATCH then PUT-on-not-found), optional-field guards, project-link idempotency, and the entitlement re-assignment loop are proven | unit | P0 | planned | service:ContractService |
