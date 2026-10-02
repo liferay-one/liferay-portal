@@ -25,6 +25,7 @@ function MyAccountRoutes() {
 				{element: <MyAccountRedirect />, path: 'account-members'},
 				{element: <MyAccountRedirect />, path: 'project-members'},
 				{element: <MyAccountRedirect />, path: 'orders/*'},
+				{element: <ProjectRedirect />, path: 'activation/*'},
 				{element: <ProjectRedirect />, path: 'project/*'},
 				{
 					children: [
