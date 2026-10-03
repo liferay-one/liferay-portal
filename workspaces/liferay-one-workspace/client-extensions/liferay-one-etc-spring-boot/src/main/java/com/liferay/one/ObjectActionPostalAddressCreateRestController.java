@@ -34,7 +34,7 @@ public class ObjectActionPostalAddressCreateRestController
 	@PostMapping
 	public void post(@RequestBody String json) throws Exception {
 		if (_log.isInfoEnabled()) {
-			_log.info("Received postal address create action: " + json);
+			_log.info("Received postal address create action " + json);
 		}
 
 		JSONObject jsonObject = new JSONObject(json);
