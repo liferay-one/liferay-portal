@@ -331,14 +331,6 @@ public class LicenseKeyExporter {
 		}
 	}
 
-	private boolean _isXMLDocument(String key) {
-		if (key == null) {
-			return false;
-		}
-
-		return key.startsWith(StringPool.LESS_THAN);
-	}
-
 	protected String formatFileName(String fileName) {
 		fileName = StringUtil.replace(
 			fileName, CharPool.SPACE, StringPool.BLANK);
@@ -573,6 +565,14 @@ public class LicenseKeyExporter {
 		if (value != null) {
 			childElement.addText(value);
 		}
+	}
+
+	private boolean _isXMLDocument(String key) {
+		if (key == null) {
+			return false;
+		}
+
+		return key.startsWith(StringPool.LESS_THAN);
 	}
 
 	@Autowired

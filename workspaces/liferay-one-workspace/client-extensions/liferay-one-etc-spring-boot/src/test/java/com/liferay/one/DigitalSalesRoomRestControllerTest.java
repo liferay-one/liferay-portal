@@ -174,6 +174,21 @@ public class DigitalSalesRoomRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisioningOrderWithUnsupportedOrderType()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createOrder(
+				"LDP", CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED,
+				_DSR_SETTINGS));
+
+		Assertions.assertThrows(
+			IllegalArgumentException.class,
+			() -> _digitalSalesRoomRestController.postProvisioningOrder(
+				_ORDER_ID));
+	}
+
+	@Test
 	public void testPostProvisioningOrderWithoutOrder() throws Exception {
 		_whenFetchCommerceOrder(null);
 
@@ -194,21 +209,6 @@ public class DigitalSalesRoomRestControllerTest {
 
 		Assertions.assertThrows(
 			IllegalStateException.class,
-			() -> _digitalSalesRoomRestController.postProvisioningOrder(
-				_ORDER_ID));
-	}
-
-	@Test
-	public void testPostProvisioningOrderWithUnsupportedOrderType()
-		throws Exception {
-
-		_whenFetchCommerceOrder(
-			_createOrder(
-				"LDP", CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED,
-				_DSR_SETTINGS));
-
-		Assertions.assertThrows(
-			IllegalArgumentException.class,
 			() -> _digitalSalesRoomRestController.postProvisioningOrder(
 				_ORDER_ID));
 	}

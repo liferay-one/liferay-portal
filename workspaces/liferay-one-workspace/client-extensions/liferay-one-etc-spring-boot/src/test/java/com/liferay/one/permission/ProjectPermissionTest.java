@@ -274,9 +274,9 @@ public class ProjectPermissionTest {
 
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACC-1";
 
-	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
-
 	private static final long _ORGANIZATION_ID = 44444;
+
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
 	private static final long _USER_ID = 22222;
 

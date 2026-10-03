@@ -225,6 +225,19 @@ public abstract class OneBaseRestController extends BaseRestController {
 			responseStatusException.getStatusCode());
 	}
 
+	protected UserAccount getMyUserAccount(Jwt jwt) throws Exception {
+		try {
+			return _userAccountService.getMyUserAccount(jwt);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to get user account", exception);
+			}
+
+			throw new PrincipalException();
+		}
+	}
+
 	protected boolean getRequiredBoolean(JSONObject jsonObject, String name)
 		throws LicenseKeyValidationException {
 
@@ -240,19 +253,6 @@ public abstract class OneBaseRestController extends BaseRestController {
 		}
 
 		return (Boolean)value;
-	}
-
-	protected UserAccount getMyUserAccount(Jwt jwt) throws Exception {
-		try {
-			return _userAccountService.getMyUserAccount(jwt);
-		}
-		catch (Exception exception) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to get user account", exception);
-			}
-
-			throw new PrincipalException();
-		}
 	}
 
 	protected <T> ResponseEntity<String> getResponseEntity(

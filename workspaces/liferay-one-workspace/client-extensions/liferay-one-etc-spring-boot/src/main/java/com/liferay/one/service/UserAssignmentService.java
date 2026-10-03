@@ -478,43 +478,6 @@ public class UserAssignmentService {
 		}
 	}
 
-	private void _syncOrganizationRolesUnassignmentToJSM(
-		Organization organization, UserAccount userAccount) {
-
-		OrganizationBrief organizationBrief = FindUtil.findFirst(
-			userAccount.getOrganizationBriefs(),
-			organizationBrief1 -> Objects.equals(
-				organization.getExternalReferenceCode(),
-				organizationBrief1.getExternalReferenceCode()));
-
-		if (organizationBrief == null) {
-			return;
-		}
-
-		RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
-
-		if (roleBriefs == null) {
-			return;
-		}
-
-		for (RoleBrief roleBrief : roleBriefs) {
-			try {
-				_organizationUserAccountRoleSynchronizer.syncUnassignRole(
-					roleBrief.getExternalReferenceCode(),
-					userAccount.getExternalReferenceCode(),
-					organization.getExternalReferenceCode());
-			}
-			catch (Exception exception) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to sync organization contact role ",
-						"unassignment for role ",
-						roleBrief.getExternalReferenceCode(), " to JSM"),
-					exception);
-			}
-		}
-	}
-
 	private void _syncOrganizationRoleToJSM(
 		boolean assigned, long organizationId, long organizationRoleId,
 		long userId) {
@@ -549,6 +512,43 @@ public class UserAssignmentService {
 					"Unable to sync organization role ", organizationRoleId,
 					" for user ", userId, " to JSM"),
 				exception);
+		}
+	}
+
+	private void _syncOrganizationRolesUnassignmentToJSM(
+		Organization organization, UserAccount userAccount) {
+
+		OrganizationBrief organizationBrief = FindUtil.findFirst(
+			userAccount.getOrganizationBriefs(),
+			organizationBrief1 -> Objects.equals(
+				organization.getExternalReferenceCode(),
+				organizationBrief1.getExternalReferenceCode()));
+
+		if (organizationBrief == null) {
+			return;
+		}
+
+		RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
+
+		if (roleBriefs == null) {
+			return;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			try {
+				_organizationUserAccountRoleSynchronizer.syncUnassignRole(
+					roleBrief.getExternalReferenceCode(),
+					userAccount.getExternalReferenceCode(),
+					organization.getExternalReferenceCode());
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to sync organization contact role ",
+						"unassignment for role ",
+						roleBrief.getExternalReferenceCode(), " to JSM"),
+					exception);
+			}
 		}
 	}
 
