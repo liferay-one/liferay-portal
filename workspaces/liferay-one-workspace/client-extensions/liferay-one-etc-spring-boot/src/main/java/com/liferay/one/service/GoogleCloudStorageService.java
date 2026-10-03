@@ -24,6 +24,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +72,7 @@ public class GoogleCloudStorageService extends BaseService {
 		throws Exception {
 
 		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcsServiceAccountKey.getBytes())) {
+				_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
 
 			ServiceAccountCredentials serviceAccountCredentials =
 				ServiceAccountCredentials.fromStream(inputStream);
@@ -167,7 +169,7 @@ public class GoogleCloudStorageService extends BaseService {
 
 	private String _getAccessToken() throws Exception {
 		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcsServiceAccountKey.getBytes())) {
+				_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
 
 			ServiceAccountCredentials serviceAccountCredentials =
 				ServiceAccountCredentials.fromStream(inputStream);

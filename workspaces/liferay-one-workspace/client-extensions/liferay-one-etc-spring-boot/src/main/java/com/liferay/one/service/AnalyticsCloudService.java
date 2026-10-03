@@ -8,6 +8,8 @@ package com.liferay.one.service;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.petra.string.StringBundler;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.Base64;
 import java.util.Objects;
 
@@ -105,7 +107,10 @@ public class AnalyticsCloudService extends BaseService {
 			analyticsCloudContextJSONObject.getString("emailAddress") + ":" +
 				analyticsCloudContextJSONObject.getString("password");
 
-		return "Basic " + encoder.encodeToString(authorization.getBytes());
+		String encodedAuthorization = encoder.encodeToString(
+			authorization.getBytes(StandardCharsets.UTF_8));
+
+		return "Basic " + encodedAuthorization;
 	}
 
 	public JSONObject provisionAnalyticsCloudProject(
