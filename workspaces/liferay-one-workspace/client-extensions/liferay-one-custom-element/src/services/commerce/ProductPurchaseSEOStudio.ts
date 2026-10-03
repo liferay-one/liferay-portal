@@ -34,7 +34,7 @@ export class ProductPurchaseSEOStudio extends ProductPurchase {
 		} as Cart;
 	}
 
-	public async createOrder(cart: Cart, cartOptions: any) {
+	public async createOrder(cart: Cart, cartOptions?: unknown) {
 		if (!this.form) {
 			throw new Error('Form is missing.');
 		}
