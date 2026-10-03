@@ -7,6 +7,7 @@ import ClayBadge from '@clayui/badge';
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import ClaySticker from '@clayui/sticker';
+import DOMPurify from 'dompurify';
 import {useEffect, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import paypal from '~/assets/images/paypal.png';
@@ -217,9 +218,11 @@ const AIHubTokenOrderSummary = () => {
 						<p
 							className="font-weight-normal mb-0 sub-text text-black-50"
 							dangerouslySetInnerHTML={{
-								__html: i18n.sub('online-payments-with-x', [
-									'<b>PayPal</b>',
-								]),
+								__html: DOMPurify.sanitize(
+									i18n.sub('online-payments-with-x', [
+										'<b>PayPal</b>',
+									])
+								),
 							}}
 						/>
 					</div>

@@ -4,6 +4,7 @@
  */
 
 import {ClayInput, ClayRadio} from '@clayui/form';
+import DOMPurify from 'dompurify';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
 	Controller,
@@ -653,8 +654,10 @@ const BusinessEventsAddPage: React.FC = () => {
 		) : (
 			<p
 				dangerouslySetInnerHTML={{
-					__html: translate(
-						'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+					__html: DOMPurify.sanitize(
+						translate(
+							'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+						)
 					),
 				}}
 			/>
