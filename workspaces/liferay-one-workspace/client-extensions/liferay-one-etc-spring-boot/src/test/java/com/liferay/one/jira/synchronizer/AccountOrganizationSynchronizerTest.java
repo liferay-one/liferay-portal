@@ -417,6 +417,26 @@ public class AccountOrganizationSynchronizerTest {
 		);
 	}
 
+	private void _assertSkipped(String organizationExternalKey) {
+		JiraAssetObject jiraAssetObject = _mockAssignment();
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singleton(organizationExternalKey), new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
 	private void _assertSkipsAssignmentsUpdatedSinceStartDate(Date startDate) {
 		BiPredicate<JiraAssetObject, JiraAssetObject> biPredicate =
 			_captureShouldSkipUpdateBiPredicate();
@@ -439,26 +459,6 @@ public class AccountOrganizationSynchronizerTest {
 		Assertions.assertTrue(
 			biPredicate.test(
 				existingJiraAssetObject, Mockito.mock(JiraAssetObject.class)));
-	}
-
-	private void _assertSkipped(String organizationExternalKey) {
-		JiraAssetObject jiraAssetObject = _mockAssignment();
-
-		Mockito.when(
-			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
-		).thenReturn(
-			Collections.singletonList(jiraAssetObject)
-		);
-
-		_accountOrganizationSynchronizer.syncUnassignStaleOrganizations(
-			_ACCOUNT_EXTERNAL_KEY,
-			Collections.singleton(organizationExternalKey), new Date());
-
-		Mockito.verify(
-			_jiraAssetService, Mockito.never()
-		).upsert(
-			Mockito.any(), Mockito.any(), Mockito.any()
-		);
 	}
 
 	private AtomicReference<String> _captureAQL() {

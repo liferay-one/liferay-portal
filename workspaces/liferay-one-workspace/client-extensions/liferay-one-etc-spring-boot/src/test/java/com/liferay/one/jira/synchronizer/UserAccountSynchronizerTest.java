@@ -247,26 +247,6 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences()
-		throws Exception {
-
-		_assertUpsertsAttribute(
-			ContactConstants.ATTRIBUTE_NAME_TEAMS,
-			() -> _userAccountSynchronizer.syncUserAccountOrganizations(
-				_createUserAccount()));
-	}
-
-	@Test
-	public void testSyncUserAccountRolesUpsertsRoleReferences()
-		throws Exception {
-
-		_assertUpsertsAttribute(
-			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
-			() -> _userAccountSynchronizer.syncUserAccountRoles(
-				_createUserAccount()));
-	}
-
-	@Test
 	public void testSyncUserAccountAssignsRolesSinceStartDate()
 		throws Exception {
 
@@ -309,6 +289,26 @@ public class UserAccountSynchronizerTest {
 			Mockito.eq("role-erc"), Mockito.eq(_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq("organization-erc"), Mockito.isNull()
 		);
+	}
+
+	@Test
+	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences()
+		throws Exception {
+
+		_assertUpsertsAttribute(
+			ContactConstants.ATTRIBUTE_NAME_TEAMS,
+			() -> _userAccountSynchronizer.syncUserAccountOrganizations(
+				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountRolesUpsertsRoleReferences()
+		throws Exception {
+
+		_assertUpsertsAttribute(
+			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
+			() -> _userAccountSynchronizer.syncUserAccountRoles(
+				_createUserAccount()));
 	}
 
 	@Test

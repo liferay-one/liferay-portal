@@ -1233,6 +1233,19 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveSkipsOpportunityWithUnmatchedProductFamily()
+		throws Exception {
+
+		JSONObject recordJSONObject = _createOpportunityRecordJSONObject(
+			_OPPORTUNITY_ID, "X", "", "Closed Won",
+			OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		_verifyNoProvisioningInteractions();
+	}
+
+	@Test
 	public void testReceiveSkipsOpportunityWithoutLineItems() throws Exception {
 		JSONObject opportunityJSONObject =
 			SalesforceModelTestUtil.createOpportunityJSONObject(
@@ -1256,19 +1269,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		JSONObject recordJSONObject = _createOpportunityRecordJSONObject(
 			_OPPORTUNITY_ID, "", "", "Closed Won",
-			OpportunityConstants.TYPE_NEW_BUSINESS);
-
-		_receiveOpportunityMessage(recordJSONObject);
-
-		_verifyNoProvisioningInteractions();
-	}
-
-	@Test
-	public void testReceiveSkipsOpportunityWithUnmatchedProductFamily()
-		throws Exception {
-
-		JSONObject recordJSONObject = _createOpportunityRecordJSONObject(
-			_OPPORTUNITY_ID, "X", "", "Closed Won",
 			OpportunityConstants.TYPE_NEW_BUSINESS);
 
 		_receiveOpportunityMessage(recordJSONObject);

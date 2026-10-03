@@ -107,6 +107,26 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsProjectsOnlyTalliedFields()
+		throws Exception {
+
+		// The tally reads four fields off a license key. Projecting them keeps
+		// a project holding thousands of keys from serializing every field and
+		// action envelope on each one.
+
+		_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(
+			"active,entitlementId,id," +
+				"r_activationKeyToLicenseKey_c_activationKeyId",
+			_fieldsCaptor.getValue());
+		Assertions.assertEquals(
+			"(active eq true) and (r_projectToLicenseKey_c_projectERC eq " +
+				"'PRJCT-1')",
+			_projectedFilterCaptor.getValue());
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsSkipsDeactivatedComplimentaryKeys()
 		throws Exception {
 
@@ -147,26 +167,6 @@ public class LicenseKeyServiceTest {
 			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
 
 		Assertions.assertEquals(1, counts.get(10L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsProjectsOnlyTalliedFields()
-		throws Exception {
-
-		// The tally reads four fields off a license key. Projecting them keeps
-		// a project holding thousands of keys from serializing every field and
-		// action envelope on each one.
-
-		_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
-
-		Assertions.assertEquals(
-			"active,entitlementId,id," +
-				"r_activationKeyToLicenseKey_c_activationKeyId",
-			_fieldsCaptor.getValue());
-		Assertions.assertEquals(
-			"(active eq true) and (r_projectToLicenseKey_c_projectERC eq " +
-				"'PRJCT-1')",
-			_projectedFilterCaptor.getValue());
 	}
 
 	@Test
@@ -382,7 +382,7 @@ public class LicenseKeyServiceTest {
 
 	private ArgumentCaptor<String> _fieldsCaptor;
 	private ArgumentCaptor<String> _filterCaptor;
-	private ArgumentCaptor<String> _projectedFilterCaptor;
 	private LicenseKeyService _licenseKeyService;
+	private ArgumentCaptor<String> _projectedFilterCaptor;
 
 }

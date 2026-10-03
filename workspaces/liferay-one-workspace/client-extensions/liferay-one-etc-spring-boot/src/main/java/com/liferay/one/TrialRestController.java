@@ -806,9 +806,6 @@ public class TrialRestController extends BaseRestController {
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
 
-	@Autowired
-	private ConsoleService _consoleService;
-
 	@Value("${liferay.one.console.ssa.cluster}")
 	private String _consoleSSACluster;
 
@@ -817,6 +814,9 @@ public class TrialRestController extends BaseRestController {
 
 	@Value("${liferay.one.console.ssa.project.uid}")
 	private String _consoleSSAProjectUid;
+
+	@Autowired
+	private ConsoleService _consoleService;
 
 	@Value("${liferay.one.console.cluster}")
 	private String _consoleTrialCluster;

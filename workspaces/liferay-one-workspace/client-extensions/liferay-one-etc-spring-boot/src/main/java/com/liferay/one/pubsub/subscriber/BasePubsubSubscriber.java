@@ -161,12 +161,12 @@ public abstract class BasePubsubSubscriber extends BasePubsubClient {
 		return StringPool.BLANK;
 	}
 
-	protected boolean isAutoCreateSubscription() {
-		return false;
-	}
-
 	protected String getSubscriptionName() {
 		return StringPool.BLANK;
+	}
+
+	protected boolean isAutoCreateSubscription() {
+		return false;
 	}
 
 	private void _ensureSubscriptionExists(

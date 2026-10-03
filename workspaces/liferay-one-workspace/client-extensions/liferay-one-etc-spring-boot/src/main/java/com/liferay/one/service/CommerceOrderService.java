@@ -829,19 +829,6 @@ public class CommerceOrderService extends OneBaseService {
 		return true;
 	}
 
-	private String _getAddressCountry(Long defaultBillingAddressId)
-		throws Exception {
-
-		if (Validator.isNull(defaultBillingAddressId)) {
-			return null;
-		}
-
-		PostalAddress postalAddress = _postalAddressService.getPostalAddress(
-			defaultBillingAddressId);
-
-		return postalAddress.getAddressCountry();
-	}
-
 	private long _getAIHubAccountEntryId(
 			Order order, String salesforceProjectId)
 		throws Exception {
@@ -1009,6 +996,19 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return quotaBlockSize;
+	}
+
+	private String _getAddressCountry(Long defaultBillingAddressId)
+		throws Exception {
+
+		if (Validator.isNull(defaultBillingAddressId)) {
+			return null;
+		}
+
+		PostalAddress postalAddress = _postalAddressService.getPostalAddress(
+			defaultBillingAddressId);
+
+		return postalAddress.getAddressCountry();
 	}
 
 	private Map<String, Object> _getCustomFields(

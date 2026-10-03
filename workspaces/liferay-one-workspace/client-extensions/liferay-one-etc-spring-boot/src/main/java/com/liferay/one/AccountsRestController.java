@@ -783,6 +783,16 @@ public class AccountsRestController extends OneBaseRestController {
 		return roleExternalReferenceCodes;
 	}
 
+	private boolean _hasAccountManagerRole(Set<String> accountRoleNames) {
+		for (String accountRoleName : RoleConstants.NAMES_ACCOUNT_MANAGER) {
+			if (accountRoleNames.contains(accountRoleName)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private JSONObject _toJSONObject(AccountInvitation accountInvitation)
 		throws Exception {
 
@@ -832,14 +842,17 @@ public class AccountsRestController extends OneBaseRestController {
 		);
 	}
 
-	private boolean _hasAccountManagerRole(Set<String> accountRoleNames) {
-		for (String accountRoleName : RoleConstants.NAMES_ACCOUNT_MANAGER) {
-			if (accountRoleNames.contains(accountRoleName)) {
-				return true;
-			}
-		}
+	private void _validateAccountInvitation(
+		Account account, UserAccount userAccount) {
 
-		return false;
+		if ((userAccount != null) &&
+			UserAccountUtil.hasAccountMembership(
+				userAccount, account.getId())) {
+
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"The user is already a member of this account");
+		}
 	}
 
 	private void _validateAccountManagerRemains(
@@ -870,19 +883,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 		throw new ResponseStatusException(
 			HttpStatus.CONFLICT, "At least one account manager is required");
-	}
-
-	private void _validateAccountInvitation(
-		Account account, UserAccount userAccount) {
-
-		if ((userAccount != null) &&
-			UserAccountUtil.hasAccountMembership(
-				userAccount, account.getId())) {
-
-			throw new ResponseStatusException(
-				HttpStatus.CONFLICT,
-				"The user is already a member of this account");
-		}
 	}
 
 	private void _validateInvitation(

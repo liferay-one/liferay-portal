@@ -149,6 +149,18 @@ public class DataOpsUsageService extends BaseService {
 		return "Bearer " + accessToken.getTokenValue();
 	}
 
+	private GoogleCredentials _getGoogleCredentials() throws Exception {
+		GoogleCredentials googleCredentials = _googleCredentials;
+
+		if (googleCredentials == null) {
+			googleCredentials = GoogleCredentials.getApplicationDefault();
+
+			_googleCredentials = googleCredentials;
+		}
+
+		return googleCredentials;
+	}
+
 	private IdTokenCredentials _getIdTokenCredentials(
 			String audience, String serviceAccount)
 		throws Exception {
@@ -163,18 +175,6 @@ public class DataOpsUsageService extends BaseService {
 			).setTargetAudience(
 				targetAudience
 			).build());
-	}
-
-	private GoogleCredentials _getGoogleCredentials() throws Exception {
-		GoogleCredentials googleCredentials = _googleCredentials;
-
-		if (googleCredentials == null) {
-			googleCredentials = GoogleCredentials.getApplicationDefault();
-
-			_googleCredentials = googleCredentials;
-		}
-
-		return googleCredentials;
 	}
 
 	private IdTokenProvider _getIdTokenProvider(String serviceAccount)

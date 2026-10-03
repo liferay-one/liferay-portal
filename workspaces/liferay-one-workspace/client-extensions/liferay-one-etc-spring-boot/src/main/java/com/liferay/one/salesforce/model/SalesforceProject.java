@@ -27,12 +27,12 @@ public class SalesforceProject {
 			"Security_Contact_Email_Address__c");
 	}
 
-	public String getAccountId() {
-		return _accountId;
-	}
-
 	public String getAIHubAccountName() {
 		return _aiHubAccountName;
+	}
+
+	public String getAccountId() {
+		return _accountId;
 	}
 
 	public String getAllowedEmailDomains() {

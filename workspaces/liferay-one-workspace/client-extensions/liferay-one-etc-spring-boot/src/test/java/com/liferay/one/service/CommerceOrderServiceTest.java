@@ -519,29 +519,33 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAddress()
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithPendingAIHubOrder()
 		throws Exception {
 
-		Order order = _createAIHubTokenOrder();
+		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
-		order.setBillingAddress((BillingAddress)null);
+		Order aiHubOrder = _createAIHubOrder(
+			"{\"aiHubAccountEntryId\": 9999, \"salesforceProjectId\": " +
+				"\"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
 
-		_whenFetchCommerceOrder(order);
+		aiHubOrder.setId(2000L);
 
 		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
+			List.of(aiHubOrder)
 		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
+			_commerceOrderService
+		).getOrders(
 			ArgumentMatchers.anyString()
 		);
 
-		Assertions.assertThrows(
-			IllegalStateException.class,
-			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
 
 		_verifyNeverCompleted();
 	}
@@ -569,6 +573,34 @@ public class CommerceOrderServiceTest {
 		).purchaseQuotaPrepaidBlock(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
+
+		_verifyNeverCompleted();
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAddress()
+		throws Exception {
+
+		Order order = _createAIHubTokenOrder();
+
+		order.setBillingAddress((BillingAddress)null);
+
+		_whenFetchCommerceOrder(order);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
 
 		_verifyNeverCompleted();
 	}
@@ -673,38 +705,6 @@ public class CommerceOrderServiceTest {
 		).when(
 			_aiHubService
 		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_aiHubService, Mockito.never()
-		).purchaseQuotaPrepaidBlock(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
-		);
-
-		_verifyNeverCompleted();
-	}
-
-	@Test
-	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithPendingAIHubOrder()
-		throws Exception {
-
-		_whenFetchCommerceOrder(_createAIHubTokenOrder());
-
-		Order aiHubOrder = _createAIHubOrder(
-			"{\"aiHubAccountEntryId\": 9999, \"salesforceProjectId\": " +
-				"\"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PENDING);
-
-		aiHubOrder.setId(2000L);
-
-		Mockito.doReturn(
-			List.of(aiHubOrder)
-		).when(
-			_commerceOrderService
-		).getOrders(
 			ArgumentMatchers.anyString()
 		);
 
@@ -1139,27 +1139,6 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCreateAIHubOpportunitySkipsOrderWithoutProject()
-		throws Exception {
-
-		_whenFetchCommerceOrder(
-			_createAIHubOrder(
-				"{\"aiHubForm\": {\"aiHubAccountName\": \"Test\"}}",
-				CommerceOrderConstants.ORDER_STATUS_PENDING));
-
-		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderService, Mockito.never()
-		).updateOrder(
-			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
-			ArgumentMatchers.anyInt()
-		);
-
-		_verifyNeverPostedOpportunity();
-	}
-
-	@Test
 	public void testCreateAIHubOpportunitySkipsOrderWithReferenceCode()
 		throws Exception {
 
@@ -1177,6 +1156,27 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService, Mockito.never()
 		).patchOrderExternalReferenceCode(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
+		);
+
+		_verifyNeverPostedOpportunity();
+	}
+
+	@Test
+	public void testCreateAIHubOpportunitySkipsOrderWithoutProject()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createAIHubOrder(
+				"{\"aiHubForm\": {\"aiHubAccountName\": \"Test\"}}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+
+		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
 		);
 
 		_verifyNeverPostedOpportunity();
@@ -1218,36 +1218,6 @@ public class CommerceOrderServiceTest {
 		_whenPostSalesforceOpportunity(lineItemsJSONArray, "006TEST");
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
-			ArgumentMatchers.any(), ArgumentMatchers.any()
-		);
-	}
-
-	@Test
-	public void testCreateAIHubOpportunitySkipsStampingWithoutLineItems()
-		throws Exception {
-
-		Order order = _createAIHubOrder(
-			"{\"salesforceProjectId\": \"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PENDING);
-
-		order.setOrderItems(
-			new OrderItem[] {_createOrderItem(null, 1L, "SKU-PLAN")});
-
-		_whenFetchCommerceOrder(order);
-
-		_whenPostSalesforceOpportunity("006TEST");
-
-		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderService
-		).patchOrderExternalReferenceCode(
-			_ORDER_ID, "006TEST"
-		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
@@ -1326,6 +1296,36 @@ public class CommerceOrderServiceTest {
 		_whenPostSalesforceOpportunity(lineItemsJSONArray, "006TEST");
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItem(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testCreateAIHubOpportunitySkipsStampingWithoutLineItems()
+		throws Exception {
+
+		Order order = _createAIHubOrder(
+			"{\"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderItems(
+			new OrderItem[] {_createOrderItem(null, 1L, "SKU-PLAN")});
+
+		_whenFetchCommerceOrder(order);
+
+		_whenPostSalesforceOpportunity("006TEST");
+
+		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderExternalReferenceCode(
+			_ORDER_ID, "006TEST"
+		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()

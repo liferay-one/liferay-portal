@@ -93,20 +93,6 @@ public class JiraBusinessEventService {
 			_jiraAssetPersistence.getObject(id), StringPool.BLANK);
 	}
 
-	public List<JiraBusinessEvent> getJiraBusinessEvents(
-			String projectExternalReferenceCode)
-		throws Exception {
-
-		return _jiraAssetPersistence.searchObjects(
-			_businessEventConverter.getAQLWithBuilder(
-				aqlBuilder -> aqlBuilder.andEquals(
-					projectExternalReferenceCode,
-					JiraBusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
-					"External Key")),
-			jsonObject -> _businessEventConverter.toJiraBusinessEvent(
-				jsonObject, projectExternalReferenceCode));
-	}
-
 	public List<JiraBusinessEventVersion> getJiraBusinessEventVersions(
 			String businessEventId)
 		throws Exception {
@@ -124,6 +110,20 @@ public class JiraBusinessEventService {
 					"Updated"
 				)),
 			_businessEventVersionConverter::toJiraBusinessEventVersion);
+	}
+
+	public List<JiraBusinessEvent> getJiraBusinessEvents(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return _jiraAssetPersistence.searchObjects(
+			_businessEventConverter.getAQLWithBuilder(
+				aqlBuilder -> aqlBuilder.andEquals(
+					projectExternalReferenceCode,
+					JiraBusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT,
+					"External Key")),
+			jsonObject -> _businessEventConverter.toJiraBusinessEvent(
+				jsonObject, projectExternalReferenceCode));
 	}
 
 	@Cacheable("productVersions")
