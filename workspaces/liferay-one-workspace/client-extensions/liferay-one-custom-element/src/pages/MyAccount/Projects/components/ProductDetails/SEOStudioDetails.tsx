@@ -32,7 +32,7 @@ const SEOStudioDetails = () => {
 	return (
 		<DetailedCard
 			cardIconAltText="Profile Icon"
-			cardTitle={i18n.translate('seo-studio-account-details' as any)}
+			cardTitle={i18n.translate('seo-studio-account-details')}
 			clayIcon="order-form-tag"
 		>
 			<DetailTable
@@ -40,16 +40,16 @@ const SEOStudioDetails = () => {
 				items={[
 					{
 						className: 'mb-4',
-						title: i18n.translate('seo-studio-account-name' as any),
+						title: i18n.translate('seo-studio-account-name'),
 						value: seoStudioForm?.seoStudioAccountName,
 					},
 					{
 						className: 'mb-4',
-						title: i18n.translate('administration-email' as any),
+						title: i18n.translate('administration-email'),
 						value: seoStudioForm?.administratorEmailAddress,
 					},
 					{
-						title: i18n.translate('seo-studio-url' as any),
+						title: i18n.translate('seo-studio-url'),
 						value: seoStudioURL ? (
 							<a
 								href={

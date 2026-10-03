@@ -206,7 +206,7 @@ export function getProductPurchaseSteps({
 				{
 					element: <SEOStudioForm />,
 					path: 'seo-studio-form',
-					title: i18n.translate('request-access' as any),
+					title: i18n.translate('request-access'),
 				},
 			];
 		}

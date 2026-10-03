@@ -1311,7 +1311,7 @@ export default {
 	'request-access': 'アクセスをリクエスト',
 	'request-access-to-ai-hub-private-beta':
 		'AI Hubプライベートベータへのアクセスをリクエスト',
-	'request-access-to-seo-&-aeo-studio-beta':
+	'request-access-to-seo-and-aeo-studio-beta':
 		'SEO&AEO Studioベータへのアクセスをリクエスト',
 	'request-account': 'アカウントをリクエスト',
 	'request-description': 'リクエストの説明',
