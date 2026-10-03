@@ -735,13 +735,13 @@
 														},
 														"text": {
 															"defaultFragmentInlineValue": {
-																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_001.png$]"
+																"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_001.png$]"
 															},
 															"mapping": {
 																"fieldKey": "FileEntry_downloadURL",
 																"itemReference": {
 																	"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																	"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_001.png#]"
+																	"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_001.png#]"
 																}
 															}
 														}
@@ -1024,13 +1024,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_002.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_002.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_002.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_002.png#]"
 																						}
 																					}
 																				}
@@ -1097,13 +1097,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_003.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_003.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_003.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_003.png#]"
 																						}
 																					}
 																				}
@@ -1336,13 +1336,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_004.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_004.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_004.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_004.png#]"
 																						}
 																					}
 																				}
@@ -1408,13 +1408,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_005.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_005.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/DSR_005.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/dsr_content/dsr_005.png#]"
 																						}
 																					}
 																				}
