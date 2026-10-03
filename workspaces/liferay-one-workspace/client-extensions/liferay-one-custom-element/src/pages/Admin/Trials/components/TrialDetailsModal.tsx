@@ -9,7 +9,7 @@ import {formatDistance} from 'date-fns';
 import {z} from 'zod';
 import DetailTable from '~/components/DetailTable/DetailTable';
 import i18n from '~/i18n';
-import commerceSchemas from '~/schema/commerceSchemas';
+import commerceSchemas from '~/schemas/commerceSchemas';
 import {OrderCustomFields} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 

@@ -17,7 +17,7 @@ import {
 	EXTEND_OPTIONS,
 	EXTEND_TYPES,
 } from '~/pages/Admin/SSADashboard/utils/constants';
-import adminSchemas from '~/schema/adminSchemas';
+import adminSchemas from '~/schemas/adminSchemas';
 import {Liferay} from '~/services/liferay/liferay';
 import TrialExtensionRequests from '~/services/objects/TrialExtensionRequests';
 import trialOAuth2 from '~/services/spring-boot/Trial';

@@ -78,7 +78,7 @@ There is one GraphQL client: `services/graphql/GraphQL.ts`. Import that client.
 
 - `services/actions/` — write orchestration. A publish operation changes a catalog, then a price list, then an asset. That sequence is an action, not a service method.
 - `services/commerce/` — commerce reads.
-- `services/fetcher/` — transport. This tier holds the fetcher, its error type, the SWR cache, and the query string builders `SearchBuilder` and `CreateFilters` with the table of schemas they read. A query string builder is part of the transport, not a general helper, so it does not belong in `utils/`, where both builders sit today. The table is not a type, so it does not belong in `types/`.
+- `services/fetcher/` — transport. This tier holds the fetcher, its error type, the SWR cache, and the query string builders `SearchBuilder` and `CreateFilters`. A query string builder is part of the transport, not a general helper, so it does not belong in `utils/`. The table of schemas that `CreateFilters` reads belongs here as well. That table is not a type, so it does not belong in `types/`, where it sits today as `types/filters.ts`.
 - `services/graphql/` — the GraphQL client.
 - `services/queries/` — read orchestration, and the counterpart to `services/actions/`. A file here exports a `DataQuery`: a `key` and a `fetcher` that a hook gives to SWR, and that `preloadAppData.ts` gives to the cache before the first render. The query belongs here, and not in the hook, because two callers use it. Name the file for the domain and use the plural form, as in `accountQueries.ts` and `orderQueries.ts`.
 - `services/headless/` — Liferay headless reads.

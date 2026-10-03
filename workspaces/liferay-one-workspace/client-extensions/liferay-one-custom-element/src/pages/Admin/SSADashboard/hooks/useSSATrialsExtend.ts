@@ -4,8 +4,8 @@
  */
 
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import TrialExtensionRequests from '~/services/objects/TrialExtensionRequests';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 import type {Account} from '~/types/accounts';
 

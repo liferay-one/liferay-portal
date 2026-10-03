@@ -6,9 +6,9 @@
 import {addDays} from 'date-fns';
 import {useEffect, useMemo, useState} from 'react';
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminOrder from '~/services/headless/HeadlessCommerceAdminOrder';
 import trialOAuth2, {Availability} from '~/services/spring-boot/Trial';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {OrderWorkflowStatusCode} from '~/utils/orderUtils';
 
 import type {PlacedOrder} from '~/types/orders';

@@ -13,7 +13,6 @@ import {
 	useProjectsWithProjectItemType,
 } from '~/hooks/useProjectItems';
 import {translate} from '~/i18n';
-import DeliveryOrderModel from '~/models/DeliveryOrderModel';
 import {
 	ListColumn,
 	ListFilter,
@@ -27,6 +26,7 @@ import {
 	isUnassignedProject,
 } from '~/pages/MyAccount/Projects/projects';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
+import DeliveryOrderModel from '~/services/models/DeliveryOrderModel';
 
 export default function Applications() {
 	const navigate = useNavigate();

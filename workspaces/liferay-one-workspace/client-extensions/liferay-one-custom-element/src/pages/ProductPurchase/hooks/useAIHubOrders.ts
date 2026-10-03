@@ -4,9 +4,9 @@
  */
 
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 const useAIHubOrders = (accountId?: number) => {
 	const channelId = Liferay.CommerceContext.commerceChannelId;

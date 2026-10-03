@@ -4,8 +4,8 @@
  */
 
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 export function useTrialProducts(channelId: number, name: string) {
 	return useSWR(`administrator-dashboard/trial/products/${name}`, () =>

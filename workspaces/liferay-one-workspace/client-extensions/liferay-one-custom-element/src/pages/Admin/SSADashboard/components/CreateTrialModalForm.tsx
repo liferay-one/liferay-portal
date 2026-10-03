@@ -26,7 +26,7 @@ import {
 	siteInitializers,
 	trialObjectives,
 } from '~/pages/Admin/SSADashboard/utils/constants';
-import adminSchemas from '~/schema/adminSchemas';
+import adminSchemas from '~/schemas/adminSchemas';
 import ProductPurchaseSSATrial from '~/services/commerce/ProductPurchaseSSATrial';
 import {Liferay} from '~/services/liferay/liferay';
 import trialOAuth2 from '~/services/spring-boot/Trial';

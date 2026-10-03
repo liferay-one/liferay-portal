@@ -4,7 +4,7 @@
  */
 
 import {useFetch} from '~/hooks/useFetch';
-import SearchBuilder from '~/utils/SearchBuilder';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';

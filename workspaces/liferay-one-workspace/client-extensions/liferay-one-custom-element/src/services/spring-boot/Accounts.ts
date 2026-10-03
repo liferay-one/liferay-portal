@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import zodSchema, {z} from '~/schema/zodSchema';
+import zodSchema, {z} from '~/schemas/zodSchema';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 

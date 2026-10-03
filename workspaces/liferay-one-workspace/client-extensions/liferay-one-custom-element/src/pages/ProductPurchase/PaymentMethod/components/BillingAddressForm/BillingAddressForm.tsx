@@ -11,7 +11,7 @@ import FormInput from '~/components/FormInput/FormInput';
 import Select from '~/components/Select/Select';
 import i18n from '~/i18n';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
-import commerceSchemas from '~/schema/commerceSchemas';
+import commerceSchemas from '~/schemas/commerceSchemas';
 
 import type {BillingAddress} from '~/types/orders';
 

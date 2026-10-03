@@ -10,7 +10,7 @@ import {z} from 'zod';
 import {useOneContext} from '~/context/OneContextProvider';
 import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import i18n from '~/i18n';
-import publishingSchemas from '~/schema/publishingSchemas';
+import publishingSchemas from '~/schemas/publishingSchemas';
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
 
