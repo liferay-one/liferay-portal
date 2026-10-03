@@ -35,6 +35,7 @@ const config = {
 			parser: 'jsonc-eslint-parser',
 			plugins: ['jsonc'],
 			rules: {
+				'@typescript-eslint/naming-convention': 'off',
 				'@typescript-eslint/no-explicit-any': 'off',
 				'jsonc/no-dupe-keys': 'error',
 				'jsonc/sort-keys': 'error',
