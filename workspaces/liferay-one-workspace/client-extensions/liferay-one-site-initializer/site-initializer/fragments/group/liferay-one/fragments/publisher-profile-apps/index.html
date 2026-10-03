@@ -71,16 +71,14 @@
 
 					[#assign productType = productTypes[0]!"" /]
 
-					[#if product.productSpecifications?has_content]
-						[#assign productSpecifications = product.productSpecifications![] /]
+					[#assign productSpecifications = product.productSpecifications![] /]
 
-						[#function getSpecificationValue key defaultValue=""]
-							[#local specification = productSpecifications?filter(productSpecification ->
-								stringUtil.equals(productSpecification.specificationKey, key)) /]
+					[#function getSpecificationValue key defaultValue=""]
+						[#local specification = productSpecifications?filter(productSpecification ->
+							stringUtil.equals(productSpecification.specificationKey, key)) /]
 
-							[#return (specification?first.value)!defaultValue /]
-						[/#function]
-					[/#if]
+						[#return (specification?first.value)!defaultValue /]
+					[/#function]
 
 					[#assign productDescription = stringUtil.shorten(htmlUtil.stripHtml(product.description!""), 140, "...") /]
 
