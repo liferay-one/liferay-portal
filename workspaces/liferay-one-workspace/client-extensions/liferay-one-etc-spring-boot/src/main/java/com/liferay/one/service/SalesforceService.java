@@ -25,6 +25,8 @@ import com.liferay.portal.kernel.util.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import java.nio.charset.StandardCharsets;
+
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
@@ -155,7 +157,7 @@ public class SalesforceService extends BaseService {
 		}
 
 		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcfServiceAccountKey.getBytes())) {
+				_gcfServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
 
 			IdTokenCredentials idTokenCredential =
 				IdTokenCredentials.newBuilder(

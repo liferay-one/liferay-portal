@@ -1125,7 +1125,8 @@ public class CloudRestController extends OneBaseRestController {
 
 		Base64.Encoder encoder = Base64.getEncoder();
 
-		return encoder.encodeToString(licenseXML.getBytes());
+		return encoder.encodeToString(
+			licenseXML.getBytes(StandardCharsets.UTF_8));
 	}
 
 	private Set<Long> _getBundledEntitlementIds(
