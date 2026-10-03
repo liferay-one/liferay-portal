@@ -230,16 +230,22 @@ export default function CloudActivationForm({
 		[allFields, hasDisasterRecoveryEntitlement]
 	);
 
-	const disasterRecoveryRegionOptions =
-		allFields.find(
-			(field) => field.environmentField === 'disasterRecoveryRegion'
-		)?.options ?? [];
+	const disasterRecoveryRegionOptions = useMemo(
+		() =>
+			allFields.find(
+				(field) => field.environmentField === 'disasterRecoveryRegion'
+			)?.options ?? [],
+		[allFields]
+	);
 
-	const regionOptions =
-		profile === 'saas'
-			? saasRegionOptions
-			: allFields.find((field) => field.environmentField === 'region')
-					?.options ?? [];
+	const regionOptions = useMemo(
+		() =>
+			profile === 'saas'
+				? saasRegionOptions
+				: allFields.find((field) => field.environmentField === 'region')
+						?.options ?? [],
+		[allFields, profile, saasRegionOptions]
+	);
 
 	const {
 		control,

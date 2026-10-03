@@ -9,25 +9,25 @@ import {useEffect, useRef, useState} from 'react';
 
 import './AccountSelectDropDown.css';
 
-interface Option {
+interface IOption {
 	key: string;
 	name: string;
 	text: string;
 }
 
-interface DropdDownProps {
+interface IDropDownProps {
 	onChange: (value: string) => void;
-	options: Option[];
-	value?: Option;
+	options: IOption[];
+	value?: IOption;
 }
 
 export default function AccountSelectDropDown({
 	onChange,
 	options,
 	value,
-}: DropdDownProps) {
+}: IDropDownProps) {
 	const [isOpen, setIsOpen] = useState(false);
-	const [selected, setSelected] = useState<Option | undefined>(value);
+	const [selected, setSelected] = useState<IOption | undefined>(value);
 	const dropDownRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
@@ -44,7 +44,7 @@ export default function AccountSelectDropDown({
 		return () => document.removeEventListener('click', handleClickOutside);
 	}, []);
 
-	function handleSelect(option: Option) {
+	function handleSelect(option: IOption) {
 		setSelected(option);
 		setIsOpen(false);
 		onChange(option.key);

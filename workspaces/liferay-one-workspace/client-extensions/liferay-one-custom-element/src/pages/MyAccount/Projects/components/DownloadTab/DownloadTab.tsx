@@ -22,7 +22,7 @@ export default function DownloadTab({
 	profile = 'app',
 	virtualItems = [],
 }: DownloadTabProps) {
-	const {bundles, loading} = useLiferayBundles();
+	const {bundles} = useLiferayBundles();
 
 	const isBundle = profile === 'bundle';
 

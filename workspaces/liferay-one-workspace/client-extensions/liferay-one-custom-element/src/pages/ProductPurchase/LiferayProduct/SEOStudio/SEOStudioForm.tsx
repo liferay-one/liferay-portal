@@ -190,7 +190,7 @@ const SEOStudioForm = () => {
 							{...register('country')}
 							label={i18n.translate('country')}
 							name="country"
-							options={countries.map((country: any) => ({
+							options={countries.map((country) => ({
 								key: country.title_i18n?.en_US,
 								name: country.title_i18n?.en_US,
 							}))}
@@ -244,32 +244,29 @@ const SEOStudioForm = () => {
 									</div>
 								}
 							>
-								<ClayDropDown.ItemList items={phones as any}>
-									{(item) => {
-										const phone = item as any;
+								<ClayDropDown.ItemList>
+									{phones.map((phone, index) => (
+										<ClayDropDown.Item
+											key={index}
+											onClick={() => {
+												setValue(
+													'intlCode',
+													{
+														code: phone.code,
+														flag: phone.flag,
+													},
+													setValuesOptions
+												);
+											}}
+										>
+											<ClayIcon
+												className="mr-2"
+												symbol={phone.flag}
+											/>
 
-										return (
-											<ClayDropDown.Item
-												onClick={() => {
-													setValue(
-														'intlCode',
-														{
-															code: phone.code,
-															flag: phone.flag,
-														},
-														setValuesOptions
-													);
-												}}
-											>
-												<ClayIcon
-													className="mr-2"
-													symbol={phone.flag}
-												/>
-
-												{phone.code}
-											</ClayDropDown.Item>
-										);
-									}}
+											{phone.code}
+										</ClayDropDown.Item>
+									))}
 								</ClayDropDown.ItemList>
 							</ClayDropDown>
 
@@ -322,8 +319,7 @@ const SEOStudioForm = () => {
 								<span>
 									{
 										PURPOSE_OPTIONS.find(
-											(item: any) =>
-												item.value === purpose
+											(item) => item.value === purpose
 										)?.title
 									}
 								</span>
@@ -334,7 +330,7 @@ const SEOStudioForm = () => {
 					}
 				>
 					<ClayDropDown.ItemList>
-						{PURPOSE_OPTIONS.map((option: any, index: number) => (
+						{PURPOSE_OPTIONS.map((option, index) => (
 							<ClayDropDown.Item
 								className="d-flex flex-column"
 								key={index}

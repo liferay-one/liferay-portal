@@ -7,7 +7,7 @@ import Button from '@clayui/button';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
-import {Size} from '@clayui/modal/lib/types';
+import {Observer, Size} from '@clayui/modal/lib/types';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {ChangeEvent, useState} from 'react';
 import {useForm} from 'react-hook-form';
@@ -28,7 +28,7 @@ import './CreateAccountModalForm.css';
 
 type CreateAccountModalFormProps = {
 	modal: {
-		observer: any;
+		observer: Observer;
 		onClose: () => void;
 		open: boolean;
 	};
@@ -90,7 +90,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 	const regions = regionsResponse?.items || [];
 
 	const states =
-		regions.find((region: any) => region.a2 === billingAddress?.country)
+		regions.find((region) => region.a2 === billingAddress?.country)
 			?.regions ?? [];
 
 	const isTypeExistingBusiness = accountType === 'existing-business';
@@ -391,7 +391,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 										onChange={({target: {value}}) => {
 											const states =
 												regions.find(
-													(region: any) =>
+													(region) =>
 														region.a2 === value
 												)?.regions ?? [];
 
@@ -412,7 +412,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 												regionISOCode as string
 											);
 										}}
-										options={regions.map((region: any) => ({
+										options={regions.map((region) => ({
 											key: region.a2,
 											name:
 												region.title_i18n[
@@ -444,7 +444,7 @@ const CreateAccountModalForm: React.FC<CreateAccountModalFormProps> = ({
 												value
 											)
 										}
-										options={states.map((state: any) => ({
+										options={states.map((state) => ({
 											key: state.regionCode,
 											name: state.name,
 										}))}
