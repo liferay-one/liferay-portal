@@ -7,6 +7,7 @@ import {Nav} from '@clayui/core';
 import ClayIcon from '@clayui/icon';
 import {useModal} from '@clayui/modal';
 import NavigationBar from '@clayui/navigation-bar';
+import DOMPurify from 'dompurify';
 import {useCallback, useEffect, useState} from 'react';
 import {Link, useLocation, useNavigate, useParams} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
@@ -325,8 +326,10 @@ const BusinessEventsDetails = () => {
 						!canViewTickets ? (
 							<p
 								dangerouslySetInnerHTML={{
-									__html: translate(
-										'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+									__html: DOMPurify.sanitize(
+										translate(
+											'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+										)
 									),
 								}}
 							/>

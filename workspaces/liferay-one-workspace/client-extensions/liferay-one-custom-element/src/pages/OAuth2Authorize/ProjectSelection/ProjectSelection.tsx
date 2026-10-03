@@ -4,6 +4,7 @@
  */
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
+import DOMPurify from 'dompurify';
 import {useEffect} from 'react';
 import {Navigate, useNavigate} from 'react-router-dom';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
@@ -78,7 +79,9 @@ export default function ProjectSelection() {
 			<p
 				className="secondary-text"
 				dangerouslySetInnerHTML={{
-					__html: i18n.sub('x-available-for-you', ['projects']),
+					__html: DOMPurify.sanitize(
+						i18n.sub('x-available-for-you', ['projects'])
+					),
 				}}
 			/>
 

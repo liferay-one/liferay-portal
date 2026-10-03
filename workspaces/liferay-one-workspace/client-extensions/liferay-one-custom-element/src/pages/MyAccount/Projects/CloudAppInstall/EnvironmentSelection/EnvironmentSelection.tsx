@@ -4,6 +4,7 @@
  */
 
 import ClayBadge from '@clayui/badge';
+import DOMPurify from 'dompurify';
 import {useMemo} from 'react';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
@@ -59,9 +60,9 @@ const EnvironmentSelection = ({
 			subtitle={
 				<span
 					dangerouslySetInnerHTML={{
-						__html: i18n.sub('x-available-for-you', [
-							'environments',
-						]),
+						__html: DOMPurify.sanitize(
+							i18n.sub('x-available-for-you', ['environments'])
+						),
 					}}
 				/>
 			}

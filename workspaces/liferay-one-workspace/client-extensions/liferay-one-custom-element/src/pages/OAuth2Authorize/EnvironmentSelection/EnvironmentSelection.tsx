@@ -4,6 +4,7 @@
  */
 
 import ClayBadge from '@clayui/badge';
+import DOMPurify from 'dompurify';
 import {Navigate, useNavigate} from 'react-router-dom';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import i18n from '~/i18n';
@@ -38,7 +39,9 @@ export default function EnvironmentSelection() {
 			<p
 				className="secondary-text"
 				dangerouslySetInnerHTML={{
-					__html: i18n.sub('x-available-for-you', ['environments']),
+					__html: DOMPurify.sanitize(
+						i18n.sub('x-available-for-you', ['environments'])
+					),
 				}}
 			/>
 

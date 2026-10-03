@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import DOMPurify from 'dompurify';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import i18n from '~/i18n';
@@ -61,7 +62,9 @@ const ProjectSelection = ({
 			subtitle={
 				<span
 					dangerouslySetInnerHTML={{
-						__html: i18n.sub('x-available-for-you', ['projects']),
+						__html: DOMPurify.sanitize(
+							i18n.sub('x-available-for-you', ['projects'])
+						),
 					}}
 				/>
 			}
