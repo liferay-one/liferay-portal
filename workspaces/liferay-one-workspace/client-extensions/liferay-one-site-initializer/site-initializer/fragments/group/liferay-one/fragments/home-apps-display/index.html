@@ -88,7 +88,12 @@
 			<div class="apps-container d-flex flex-row flex-wrap mb-5">
 				[#list products as product]
 				[#if product?has_content]
-				[#assign remainingCategoriesText=[] /]
+				[#assign
+				categoriesListSize=0
+				productCategories=[]
+				productTypes=[]
+				remainingCategoriesText=[]
+				/]
 
 				[#if product.categories?has_content]
 				[#assign productCategories=product.categories?filter(productCategory ->
@@ -99,7 +104,6 @@
 
 				[#assign productType = productTypes[0]!"" /]
 
-				[#if product.productSpecifications?has_content]
 				[#assign productSpecifications=product.productSpecifications![] /]
 
 				[#function getSpecificationValue key defaultValue=""]
@@ -108,7 +112,6 @@
 
 				[#return (specification?first.value)!defaultValue /]
 				[/#function]
-				[/#if]
 
 				[#assign productDescription=stringUtil.shorten(htmlUtil.stripHtml(product.description!""), 140, "...")
 				/]
