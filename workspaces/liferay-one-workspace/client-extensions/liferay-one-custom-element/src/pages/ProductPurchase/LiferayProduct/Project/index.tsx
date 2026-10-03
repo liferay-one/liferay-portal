@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import DOMPurify from 'dompurify';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {
@@ -76,10 +77,12 @@ const ProjectSelection = () => {
 			<span
 				className="mb-4 secondary-text"
 				dangerouslySetInnerHTML={{
-					__html: i18n.sub('x-available-for-you', [
-						'projects-and-resources',
-						Liferay.ThemeDisplay.getUserEmailAddress(),
-					]),
+					__html: DOMPurify.sanitize(
+						i18n.sub('x-available-for-you', [
+							'projects-and-resources',
+							Liferay.ThemeDisplay.getUserEmailAddress(),
+						])
+					),
 				}}
 			/>
 			<RadioCardList<ProjectAPIItem>

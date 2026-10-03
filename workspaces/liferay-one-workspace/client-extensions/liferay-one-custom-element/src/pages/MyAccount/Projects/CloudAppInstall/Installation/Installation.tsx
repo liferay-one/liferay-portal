@@ -5,6 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
+import DOMPurify from 'dompurify';
 import {useMemo} from 'react';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
@@ -29,11 +30,13 @@ const getStatuses = () => ({
 		bodyMessage: (
 			<span
 				dangerouslySetInnerHTML={{
-					__html: i18n.sub(
-						'we-could-not-install-your-app-please-try-again-if-the-problem-continues-contact-x-for-assistance',
-						[
-							`<a href="mailto:${MARKETPLACE_ADMIN_EMAIL}">${MARKETPLACE_ADMIN_EMAIL}</a>`,
-						]
+					__html: DOMPurify.sanitize(
+						i18n.sub(
+							'we-could-not-install-your-app-please-try-again-if-the-problem-continues-contact-x-for-assistance',
+							[
+								`<a href="mailto:${MARKETPLACE_ADMIN_EMAIL}">${MARKETPLACE_ADMIN_EMAIL}</a>`,
+							]
+						)
 					),
 				}}
 			/>

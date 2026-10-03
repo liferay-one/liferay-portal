@@ -7,6 +7,7 @@ import {Nav, useModal} from '@clayui/core';
 import {ClayInput, ClayRadio} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import NavigationBar from '@clayui/navigation-bar';
+import DOMPurify from 'dompurify';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {
 	Controller,
@@ -891,8 +892,10 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 		) : (
 			<p
 				dangerouslySetInnerHTML={{
-					__html: translate(
-						'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+					__html: DOMPurify.sanitize(
+						translate(
+							'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project'
+						)
 					),
 				}}
 			/>

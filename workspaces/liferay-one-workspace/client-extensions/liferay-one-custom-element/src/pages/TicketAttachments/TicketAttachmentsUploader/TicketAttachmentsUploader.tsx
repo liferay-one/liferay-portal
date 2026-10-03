@@ -6,6 +6,7 @@
 import {Button as ClayButton} from '@clayui/core';
 import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
+import DOMPurify from 'dompurify';
 import {useCallback, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import useJiraTicketURL from '~/hooks/useJiraTicketURL';
@@ -232,13 +233,15 @@ const TicketAttachmentsUploader = ({
 					<div className="h2">
 						<p
 							dangerouslySetInnerHTML={{
-								__html: i18n.sub('attach-file-to-ticket-x', [
-									'<a href="' +
-										ticketURL +
-										'">' +
-										ticketId +
-										'</a>',
-								]),
+								__html: DOMPurify.sanitize(
+									i18n.sub('attach-file-to-ticket-x', [
+										'<a href="' +
+											ticketURL +
+											'">' +
+											ticketId +
+											'</a>',
+									])
+								),
 							}}
 						/>
 					</div>
