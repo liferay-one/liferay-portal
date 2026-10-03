@@ -25,7 +25,7 @@
 			<span class = "lexicon-icon-overwide"> <@clay["icon"] symbol = "angle-left" /></span>
 		</button>
 
-		<img alt = "${filteredProductImages[0].title?html}" id = "main-image" src = "${(filteredProductImages[0].src?replace("https://", "http://"))}" />
+		<img alt = "${filteredProductImages[0].title?html}" id = "main-image" src = "${filteredProductImages[0].src}" />
 
 		<button class="nav-button next" aria-label="Next Image">
 			<span class="lexicon-icon-overwide"> <@clay["icon"] symbol="angle-right" /></span>
@@ -79,7 +79,7 @@
 		images = [
 			<#list filteredProductImages as image>
 			{
-				src: "${(image.src?replace('https://', 'http://'))?js_string}",
+				src: "${image.src?js_string}",
 				alt: "${image.title?html?js_string}"
 			}<#if image_has_next>,</#if>
 			</#list>
