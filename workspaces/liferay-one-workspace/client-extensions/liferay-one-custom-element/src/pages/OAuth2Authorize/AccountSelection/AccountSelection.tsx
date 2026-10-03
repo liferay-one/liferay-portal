@@ -13,9 +13,9 @@ import useSWR from 'swr';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import {Liferay, getIconSpriteMap} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
 

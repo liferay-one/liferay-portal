@@ -4,7 +4,7 @@
  */
 
 import {z} from 'zod';
-import zodSchema from '~/schema/zodSchema';
+import zodSchema from '~/schemas/zodSchema';
 import {Cart, OrderTypes} from '~/types/orders';
 import {OrderCustomFields} from '~/utils/orderUtils';
 

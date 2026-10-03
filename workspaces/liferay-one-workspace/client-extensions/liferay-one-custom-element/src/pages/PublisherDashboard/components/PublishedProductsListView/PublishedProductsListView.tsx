@@ -14,11 +14,11 @@ import Page from '~/components/Page/Page';
 import {useFetch} from '~/hooks/useFetch';
 import usePublisherCatalog from '~/hooks/usePublisherCatalog';
 import i18n, {Word} from '~/i18n';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {
 	FilterSchemaOption,
 	filterSchema as filterSchemas,
 } from '~/types/filters';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {
 	ProductSpecificationKey,
 	ProductTypeLabels,

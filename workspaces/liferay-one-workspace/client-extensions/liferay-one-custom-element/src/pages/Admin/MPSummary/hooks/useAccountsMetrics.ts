@@ -9,8 +9,8 @@ import {
 	METRIC_PARAMETER,
 	MetricPeriod,
 } from '~/pages/Admin/MPSummary/utils/constants';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 const useAccountsMetrics = (param: MetricPeriod) => {
 	const getAccountsMetrics = async () => {

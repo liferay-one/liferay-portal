@@ -4,11 +4,11 @@
  */
 
 import useSWR, {SWRConfiguration} from 'swr';
-import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
+import DeliveryOrderModel from '~/services/models/DeliveryOrderModel';
+import {MarketplaceDeliveryProduct} from '~/services/models/MarketplaceDeliveryProduct';
 import {
 	getProductFallback,
 	getProductImageFallback,

@@ -19,7 +19,7 @@ import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
-import {adminSchemas as zodSchema} from '~/schema/adminSchemas';
+import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
 import {Liferay} from '~/services/liferay/liferay';
 import phones from '~/utils/phones';
 

@@ -22,12 +22,12 @@ import {PURPOSE_OPTIONS} from '~/pages/ProductPurchase/LiferayProduct/AIHub/AIHu
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
-import zodSchema, {z} from '~/schema/zodSchema';
+import zodSchema, {z} from '~/schemas/zodSchema';
 import {ProductPurchaseSEOStudio} from '~/services/commerce/ProductPurchaseSEOStudio';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
-import SearchBuilder from '~/utils/SearchBuilder';
 import phones from '~/utils/phones';
 import {productAgreements} from '~/utils/productAgreements';
 

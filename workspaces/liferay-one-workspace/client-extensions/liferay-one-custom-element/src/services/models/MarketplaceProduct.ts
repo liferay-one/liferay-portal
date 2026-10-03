@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminPricing from '~/services/headless/HeadlessCommerceAdminPricing';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {SkuOptions} from '~/utils/productUtils';
 
 import {MarketplaceDeliveryProduct} from './MarketplaceDeliveryProduct';

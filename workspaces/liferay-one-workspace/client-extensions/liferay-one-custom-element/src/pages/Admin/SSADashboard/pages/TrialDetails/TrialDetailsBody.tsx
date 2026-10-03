@@ -8,12 +8,12 @@ import DetailTable, {Orientation} from '~/components/DetailTable/DetailTable';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
-import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import ExtensionStatus from '~/pages/Admin/SSADashboard/components/ExtensionStatus/ExtensionStatus';
 import TrialStatus from '~/pages/Admin/SSADashboard/components/TrialStatus/TrialStatus';
 import {useSSADashboardOutlet} from '~/pages/Admin/SSADashboard/hooks/useSSADashboardOutlet';
 import {EXTEND_TRIAL_STATUS_LABEL} from '~/pages/Admin/SSADashboard/utils/constants';
+import DeliveryOrderModel from '~/services/models/DeliveryOrderModel';
+import {MarketplaceDeliveryProduct} from '~/services/models/MarketplaceDeliveryProduct';
 import {formatDate, formatDateTime} from '~/utils/dateUtils';
 import {OrderWorkflowStatusCode} from '~/utils/orderUtils';
 

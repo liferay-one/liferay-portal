@@ -5,7 +5,7 @@
 
 import {Params} from 'react-router-dom';
 import i18n from '~/i18n';
-import SearchBuilder, {Operators} from '~/utils/SearchBuilder';
+import SearchBuilder, {Operators} from '~/services/fetcher/SearchBuilder';
 import {
 	OrderWorkflowStatusCode,
 	PaymentStatus,

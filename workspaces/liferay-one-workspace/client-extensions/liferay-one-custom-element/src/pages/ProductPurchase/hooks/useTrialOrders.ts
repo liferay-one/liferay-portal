@@ -4,10 +4,10 @@
  */
 
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 const TRIAL_ORDER_TYPE_EXTERNAL_REFERENCE_CODES = [
 	OrderTypes.SOLUTIONS7,

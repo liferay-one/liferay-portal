@@ -5,7 +5,7 @@
 
 import {SolutionInitialState} from '~/context/SolutionContextProvider';
 import i18n from '~/i18n';
-import zodSchema from '~/schema/zodSchema';
+import zodSchema from '~/schemas/zodSchema';
 
 import {PublishMode} from '../../NewAppFlow/constants';
 

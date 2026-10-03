@@ -11,9 +11,9 @@ import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import useModalContext from '~/hooks/useModalContext';
 import i18n from '~/i18n';
 import ProjectsUsingMarketplaceModalBody from '~/pages/Admin/MPSummary/components/ProjectsUsingMarketplace';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import GraphQL from '~/services/headless/GraphQL';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {ProductWorkflowStatusCode} from '~/utils/productUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 

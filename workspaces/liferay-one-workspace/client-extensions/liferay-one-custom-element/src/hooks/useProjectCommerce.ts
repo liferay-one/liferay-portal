@@ -14,11 +14,11 @@ import {
 	ONE_TIME_PURCHASES,
 	isUnassignedProject,
 } from '~/pages/MyAccount/Projects/projects';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {

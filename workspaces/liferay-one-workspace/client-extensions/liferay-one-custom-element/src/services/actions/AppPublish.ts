@@ -4,7 +4,7 @@
  */
 
 import {NewAppInitialState} from '~/context/NewAppContextProvider';
-import SearchBuilder from '~/utils/SearchBuilder';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Properties} from '~/utils/attributeUtils';
 import {base64ToText, fileToBase64} from '~/utils/fileUtils';
 import {

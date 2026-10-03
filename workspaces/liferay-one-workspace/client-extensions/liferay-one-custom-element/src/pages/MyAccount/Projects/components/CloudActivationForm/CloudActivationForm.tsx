@@ -13,7 +13,7 @@ import {Input} from '~/components/Input/Input';
 import useDXPProductVersions from '~/hooks/useDXPProductVersions';
 import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import {Word, translate} from '~/i18n';
-import projectSchemas, {requiredSelectSchema} from '~/schema/projectSchemas';
+import projectSchemas, {requiredSelectSchema} from '~/schemas/projectSchemas';
 import FetcherError from '~/services/fetcher/FetcherError';
 import Cloud from '~/services/spring-boot/Cloud';
 

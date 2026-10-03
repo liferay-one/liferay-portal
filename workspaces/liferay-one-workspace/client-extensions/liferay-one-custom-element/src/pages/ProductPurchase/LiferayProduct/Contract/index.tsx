@@ -15,8 +15,8 @@ import {useFetch} from '~/hooks/useFetch';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {formatTermRange} from '~/utils/dateUtils';
 
 import NoContractAvailable from './NoContractAvailable/NoContractAvailable';
