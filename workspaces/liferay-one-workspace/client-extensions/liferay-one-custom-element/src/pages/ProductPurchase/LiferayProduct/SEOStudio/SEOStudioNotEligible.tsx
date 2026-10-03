@@ -23,7 +23,7 @@ const SEOStudioNotEligible = () => {
 					disabled: true,
 				},
 			}}
-			title={i18n.translate('seo-studio' as any)}
+			title={i18n.translate('seo-studio')}
 		>
 			<EmptyState
 				description={
@@ -44,7 +44,7 @@ const SEOStudioNotEligible = () => {
 					</>
 				}
 				title={i18n.translate(
-					'seo-studio-is-available-only-for-ai-hub-customers' as any
+					'seo-studio-is-available-only-for-ai-hub-customers'
 				)}
 				type="NO_ACCESS"
 			/>
