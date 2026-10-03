@@ -34,6 +34,7 @@ import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -983,7 +984,8 @@ public class CommerceOrderService extends OneBaseService {
 				quantity = orderItemQuantity.longValue();
 			}
 
-			quotaBlockSize += Long.valueOf(orderItemQuotaBlockSize) * quantity;
+			quotaBlockSize +=
+				GetterUtil.getLong(orderItemQuotaBlockSize) * quantity;
 		}
 
 		if (quotaBlockSize == 0) {
