@@ -11,7 +11,7 @@ import FormFieldInput from '~/components/FormFieldInput/FormFieldInput';
 import FormMultiSelect from '~/components/FormMultiSelect/FormMultiSelect';
 import FormSelect from '~/components/FormSelect/FormSelect';
 import i18n from '~/i18n';
-import {Operators} from '~/utils/SearchBuilder';
+import {Operators} from '~/services/fetcher/SearchBuilder';
 
 type AutoCompleteProps = {
 	label?: string;

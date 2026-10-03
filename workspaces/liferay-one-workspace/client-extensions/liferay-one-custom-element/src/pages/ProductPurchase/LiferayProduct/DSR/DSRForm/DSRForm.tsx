@@ -16,7 +16,7 @@ import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
-import adminSchemas from '~/schema/adminSchemas';
+import adminSchemas from '~/schemas/adminSchemas';
 import ProductPurchaseDSR, {
 	DSRFormData,
 } from '~/services/commerce/ProductPurchaseDSR';

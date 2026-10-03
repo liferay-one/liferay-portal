@@ -8,10 +8,10 @@ import {Navigate} from 'react-router-dom';
 import congratulationsIcon from '~/assets/icons/congratulations_icon.svg';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
 import DXP from '~/services/spring-boot/DXP';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 import useOAuth2AuthorizeContext from '../hooks/useOAuth2AuthorizeContext';
 

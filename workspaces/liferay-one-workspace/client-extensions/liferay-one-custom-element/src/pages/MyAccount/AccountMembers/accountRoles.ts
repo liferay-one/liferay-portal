@@ -5,7 +5,7 @@
 
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 
-import type {UserAccountModel} from '~/models/UserAccountModel';
+import type {UserAccountModel} from '~/services/models/UserAccountModel';
 import type {RoleBrief} from '~/types/accounts';
 
 export const ACCOUNT_ADMINISTRATOR = 'Account Administrator';

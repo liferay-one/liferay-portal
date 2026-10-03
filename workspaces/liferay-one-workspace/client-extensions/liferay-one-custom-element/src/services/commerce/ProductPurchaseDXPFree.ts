@@ -4,7 +4,7 @@
  */
 
 import {z} from 'zod';
-import commerceSchemas from '~/schema/commerceSchemas';
+import commerceSchemas from '~/schemas/commerceSchemas';
 import DXPFreeActivationKeyRequests from '~/services/objects/DXPFreeActivationKeyRequests';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 

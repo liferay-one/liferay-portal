@@ -9,8 +9,8 @@ import {
 	METRIC_PARAMETER,
 	MetricPeriod,
 } from '~/pages/Admin/MPSummary/utils/constants';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import GraphQL from '~/services/headless/GraphQL';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {getLastDayOfMonth} from '~/utils/dateUtils';
 import {OrderWorkflowStatusCode} from '~/utils/orderUtils';
 

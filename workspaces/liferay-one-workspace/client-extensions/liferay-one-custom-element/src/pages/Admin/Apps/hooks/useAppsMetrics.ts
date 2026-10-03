@@ -5,8 +5,8 @@
 
 import {addDays} from 'date-fns';
 import useSWR from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {ProductWorkflowStatusCode} from '~/utils/productUtils';
 
 type FilterType = 'month' | 'q1' | 'q2' | 'q3' | 'q4' | 'week';

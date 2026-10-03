@@ -23,8 +23,8 @@ import {
 } from '~/pages/MyAccount/Projects/projects';
 import useDeleteTicketAttachment from '~/pages/TicketAttachments/hooks/useDeleteTicketAttachment';
 import formatFileSize from '~/pages/TicketAttachments/utils/formatFileSize';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 import type {APIResponse} from '~/types/api';
 

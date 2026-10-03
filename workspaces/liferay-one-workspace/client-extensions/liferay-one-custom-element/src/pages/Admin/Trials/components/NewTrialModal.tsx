@@ -18,7 +18,7 @@ import {useOneContext} from '~/context/OneContextProvider';
 import useDebounce from '~/hooks/useDebounce';
 import i18n from '~/i18n';
 import {useTrialProducts} from '~/pages/Admin/Trials/hooks/useTrialProducts';
-import commerceSchemas from '~/schema/commerceSchemas';
+import commerceSchemas from '~/schemas/commerceSchemas';
 import ProductPurchaseSolutionTrial from '~/services/commerce/ProductPurchaseSolutionTrial';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderCustomFields} from '~/utils/orderUtils';

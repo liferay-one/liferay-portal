@@ -6,7 +6,7 @@
 import {ReactNode} from 'react';
 import {RouteObject} from 'react-router-dom';
 import {NavItem} from '~/components/SideNav/SideNav';
-import {UserAccountModel} from '~/models/UserAccountModel';
+import {UserAccountModel} from '~/services/models/UserAccountModel';
 
 type CanAccess = (userAccountModel: UserAccountModel) => boolean;
 

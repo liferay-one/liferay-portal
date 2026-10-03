@@ -17,8 +17,8 @@ import BillingAddress from '~/pages/ProductPurchase/PaymentMethod/components/Bil
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context';
 import useAccountAddresses from '~/pages/ProductPurchase/hooks/useAccountAddresses';
-import {adminSchemas as zodSchema} from '~/schema/adminSchemas';
-import {commerceSchemas as commerceZodSchema} from '~/schema/commerceSchemas';
+import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
+import {commerceSchemas as commerceZodSchema} from '~/schemas/commerceSchemas';
 import {ProductPurchaseAIHubOpenBeta} from '~/services/commerce/ProductPurchaseAIHubOpenBeta';
 import {Liferay} from '~/services/liferay/liferay';
 import {formatCurrency} from '~/utils/formatCurrency';

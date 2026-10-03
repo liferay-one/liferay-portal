@@ -14,7 +14,7 @@ import i18n from '~/i18n';
 import LicenseTermsCheckbox from '~/pages/ProductPurchase/components/LicenseTermsCheckbox/LicenseTermsCheckbox';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
-import adminSchemas from '~/schema/adminSchemas';
+import adminSchemas from '~/schemas/adminSchemas';
 import {Liferay} from '~/services/liferay/liferay';
 
 type FormFields = z.infer<typeof adminSchemas.ldpProvisioning>;

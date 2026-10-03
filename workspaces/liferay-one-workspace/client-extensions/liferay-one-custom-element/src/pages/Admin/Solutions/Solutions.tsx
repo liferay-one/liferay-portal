@@ -9,7 +9,7 @@ import {useNavigate} from 'react-router-dom';
 import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import i18n from '~/i18n';
-import SearchBuilder from '~/utils/SearchBuilder';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {formatDate} from '~/utils/dateUtils';
 import {ProductWorkflowDisplayType} from '~/utils/productUtils';
 

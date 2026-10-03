@@ -7,8 +7,8 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import ListView from '~/components/ListView/ListView';
 import OrderStatus from '~/components/OrderStatus/OrderStatus';
 import i18n from '~/i18n';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {PlacedOrder} from '~/types/orders';

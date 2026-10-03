@@ -11,11 +11,11 @@ import {UploadedFile} from '~/components/FileList/FileList';
 import Loading from '~/components/Loading/Loading';
 import {ProductVocabulary} from '~/enums/Product';
 import {useGetVocabulariesAndCategories} from '~/hooks/useGetVocabulariesAndCategories';
-import {MarketplaceProduct} from '~/models/MarketplaceProduct';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminCatalogImpl from '~/services/headless/HeadlessCommerceAdminCatalog';
 import HeadlessDelivery from '~/services/headless/HeadlessDelivery';
 import HeadlessPublisherAsset from '~/services/headless/HeadlessPublisherAsset';
-import SearchBuilder from '~/utils/SearchBuilder';
+import {MarketplaceProduct} from '~/services/models/MarketplaceProduct';
 import {getTaxonomyCategoryLabel} from '~/utils/getTaxonomyCategoryLabel';
 import {ProductSpecificationKey, ProductTags} from '~/utils/productUtils';
 

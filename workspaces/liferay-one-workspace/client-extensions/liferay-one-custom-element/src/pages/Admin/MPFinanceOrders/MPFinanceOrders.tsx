@@ -9,9 +9,9 @@ import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import PaymentStatusBadge from '~/components/PaymentStatusBadge/PaymentStatusBadge';
 import i18n from '~/i18n';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminOrder from '~/services/headless/HeadlessCommerceAdminOrder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {PaymentStatus} from '~/utils/orderUtils';
 
 import type {Order} from '~/types/orders';

@@ -30,13 +30,13 @@ import ManagementToolbar, {
 } from '~/components/ManagementToolbar/ManagementToolbar';
 import {useFetch} from '~/hooks/useFetch';
 import i18n from '~/i18n';
+import CreateFilters from '~/services/fetcher/CreateFilters';
 import {
 	FilterSchema as FilterSchemaType,
 	FilterSchemaOption,
 	RendererFields,
 	filterSchema as filterSchemas,
 } from '~/types/filters';
-import CreateFilters from '~/utils/CreateFilters';
 import {PAGINATION, SortDirection} from '~/utils/appConstants';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 

@@ -18,8 +18,8 @@ import {
 	getLeadingProductRank,
 } from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import escapeODataString from '~/utils/escapeODataString';
 
 export type ProjectActivationKey = {

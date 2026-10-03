@@ -4,7 +4,7 @@
  */
 
 import {z} from 'zod';
-import {adminSchemas as zodSchema} from '~/schema/adminSchemas';
+import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
 import {OrderCustomFields} from '~/utils/orderUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 

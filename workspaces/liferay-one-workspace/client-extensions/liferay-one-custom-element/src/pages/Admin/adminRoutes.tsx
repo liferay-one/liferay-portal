@@ -6,7 +6,7 @@
 import {lazy} from 'react';
 import {Navigate} from 'react-router-dom';
 import i18n from '~/i18n';
-import {UserAccountModel} from '~/models/UserAccountModel';
+import {UserAccountModel} from '~/services/models/UserAccountModel';
 import {AppRoute} from '~/utils/routeUtils';
 
 const AppDetail = lazy(() => import('./Apps/AppDetail/AppDetail'));

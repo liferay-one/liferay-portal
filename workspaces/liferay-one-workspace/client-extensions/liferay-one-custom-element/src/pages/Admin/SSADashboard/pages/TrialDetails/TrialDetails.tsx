@@ -12,9 +12,9 @@ import BackLink from '~/components/BackLink/BackLink';
 import {PageRenderer} from '~/components/Page/Page';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import i18n from '~/i18n';
-import DeliveryOrderModel from '~/models/DeliveryOrderModel';
-import {MarketplaceDeliveryProduct} from '~/models/MarketplaceDeliveryProduct';
 import useSSAActions from '~/pages/Admin/SSADashboard/hooks/useSSAActions';
+import DeliveryOrderModel from '~/services/models/DeliveryOrderModel';
+import {MarketplaceDeliveryProduct} from '~/services/models/MarketplaceDeliveryProduct';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import OrderDetailsHeader from './OrderDetailsHeader/OrderDetailsHeader';

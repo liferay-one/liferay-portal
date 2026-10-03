@@ -25,9 +25,9 @@ import {
 } from '~/components/ListView/context/ListViewContextProvider';
 import useUpdateUrlParams from '~/components/ListView/hooks/useUpdateUrlParams';
 import i18n from '~/i18n';
+import CreateFilters from '~/services/fetcher/CreateFilters';
 import fetcher from '~/services/fetcher/fetcher';
 import {FilterSchema, RendererFields} from '~/types/filters';
-import CreateFilters from '~/utils/CreateFilters';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import './ManagementToolbarFilters.css';

@@ -4,8 +4,8 @@
  */
 
 import useSWR, {SWRConfiguration} from 'swr';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import PublisherDetails from '~/services/objects/PublisherDetails';
-import SearchBuilder from '~/utils/SearchBuilder';
 
 const usePublisherDetails = (
 	catalogId?: number | null,

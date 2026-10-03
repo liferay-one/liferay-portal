@@ -5,11 +5,11 @@
 
 import {ReactNode, createContext, useContext} from 'react';
 import useSWR, {KeyedMutator} from 'swr';
-import {MarketplaceUserAccount} from '~/models/MarketplaceUserAccount';
 import HeadlessAdminUser, {
 	MY_USER_ACCOUNT_URL,
 } from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import {MarketplaceUserAccount} from '~/services/models/MarketplaceUserAccount';
 import {Properties} from '~/utils/attributeUtils';
 
 import type {UserAccount} from '~/types/accounts';

@@ -6,8 +6,8 @@
 import useSWR, {KeyedMutator} from 'swr';
 import {useOneContext} from '~/context/OneContextProvider';
 import {usePlacedOrders} from '~/hooks/usePlacedOrder';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {OrderWorkflowStatusCode} from '~/utils/orderUtils';
 
 import {useSSATrialsExtend} from './useSSATrialsExtend';

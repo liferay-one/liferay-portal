@@ -17,7 +17,7 @@ import Modal from '~/components/Modal/Modal';
 import Select from '~/components/Select/Select';
 import i18n from '~/i18n';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
-import zodSchema, {z} from '~/schema/zodSchema';
+import zodSchema, {z} from '~/schemas/zodSchema';
 import CommerceUI from '~/services/headless/CommerceUI';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';

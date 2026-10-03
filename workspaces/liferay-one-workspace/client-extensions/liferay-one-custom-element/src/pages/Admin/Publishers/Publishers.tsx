@@ -7,7 +7,7 @@ import Label from '@clayui/label';
 import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import i18n from '~/i18n';
-import SearchBuilder from '~/utils/SearchBuilder';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {formatDate} from '~/utils/dateUtils';
 
 import type {Account} from '~/types/accounts';

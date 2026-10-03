@@ -15,14 +15,14 @@ import {
 	isPartnerRole,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import AccountRolesSelect from '~/pages/MyAccount/AccountMembers/components/AccountRolesSelect/AccountRolesSelect';
-import accountSchemas, {MAX_INVITATIONS_COUNT} from '~/schema/accountSchemas';
+import accountSchemas, {MAX_INVITATIONS_COUNT} from '~/schemas/accountSchemas';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
 
 import '../../AccountMembers.css';
 
-import type {InviteMembersForm} from '~/schema/accountSchemas';
+import type {InviteMembersForm} from '~/schemas/accountSchemas';
 
 const createEmptyInvite = () => ({
 	emailAddress: '',

@@ -4,6 +4,7 @@
  */
 
 import {ProductType, ProductVocabulary} from '~/enums/Product';
+import i18n from '~/i18n';
 import {ConsoleUserProject} from '~/services/spring-boot/types';
 import {
 	ProductLicense,
@@ -15,8 +16,6 @@ import {
 	getProductSpecification,
 	getProductSpecificationValue,
 } from '~/utils/productUtils';
-
-import i18n from '../i18n';
 
 import type {DeliveryProduct} from '~/types/product';
 

@@ -14,7 +14,7 @@ import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchase
 import {useCartContext} from '~/pages/ProductPurchase/context/CartContext';
 import useAccountAddresses from '~/pages/ProductPurchase/hooks/useAccountAddresses';
 import {PaymentMethodType} from '~/pages/ProductPurchase/types';
-import {commerceSchemas as commerceZodSchema} from '~/schema/commerceSchemas';
+import {commerceSchemas as commerceZodSchema} from '~/schemas/commerceSchemas';
 import ProductPurchaseApp from '~/services/commerce/ProductPurchaseApp';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';

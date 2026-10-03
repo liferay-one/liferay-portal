@@ -5,9 +5,9 @@
 
 import useSWR from 'swr';
 import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 const useSSAProduct = () => {

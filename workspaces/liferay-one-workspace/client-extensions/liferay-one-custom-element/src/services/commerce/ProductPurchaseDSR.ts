@@ -4,7 +4,7 @@
  */
 
 import {z} from 'zod';
-import adminSchemas from '~/schema/adminSchemas';
+import adminSchemas from '~/schemas/adminSchemas';
 import {Liferay} from '~/services/liferay/liferay';
 import DSRRequests from '~/services/objects/DSRRequests';
 import DigitalSalesRoom from '~/services/spring-boot/DigitalSalesRoom';

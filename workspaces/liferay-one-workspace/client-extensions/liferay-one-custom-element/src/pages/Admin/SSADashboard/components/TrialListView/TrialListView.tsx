@@ -15,8 +15,8 @@ import ExtensionStatus from '~/pages/Admin/SSADashboard/components/ExtensionStat
 import TrialStatus from '~/pages/Admin/SSADashboard/components/TrialStatus/TrialStatus';
 import {useSSADashboardOutlet} from '~/pages/Admin/SSADashboard/hooks/useSSADashboardOutlet';
 import {EXTEND_TRIAL_STATUS_LABEL} from '~/pages/Admin/SSADashboard/utils/constants';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import SearchBuilder from '~/utils/SearchBuilder';
 import {Action} from '~/utils/appConstants';
 import {formatDate, formatDateTime} from '~/utils/dateUtils';
 import {OrderCustomFields} from '~/utils/orderUtils';
