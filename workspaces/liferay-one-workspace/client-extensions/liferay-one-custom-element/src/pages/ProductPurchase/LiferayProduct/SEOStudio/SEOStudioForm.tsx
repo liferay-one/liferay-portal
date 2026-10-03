@@ -148,13 +148,11 @@ const SEOStudioForm = () => {
 	return (
 		<ProductPurchase.Shell
 			className="liferay-seo-studio-form"
-			title={i18n.translate(
-				'request-access-to-seo-&-aeo-studio-beta' as any
-			)}
+			title={i18n.translate('request-access-to-seo-and-aeo-studio-beta')}
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
-					'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome' as any
+					'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome'
 				)}
 			</p>
 
@@ -358,7 +356,7 @@ const SEOStudioForm = () => {
 				</ClayDropDown>
 
 				<p className="h4 mt-6">
-					{i18n.translate('seo-studio-information' as any)}
+					{i18n.translate('seo-studio-information')}
 				</p>
 
 				<hr className="mb-5 mt-3" />
@@ -369,9 +367,7 @@ const SEOStudioForm = () => {
 							className="w-100"
 							errorMessage={errors.seoStudioAccountName?.message}
 							id="seoStudioAccountName"
-							label={i18n.translate(
-								'seo-studio-account-name' as any
-							)}
+							label={i18n.translate('seo-studio-account-name')}
 							placeholder={i18n.translate('account-name')}
 							required
 						/>

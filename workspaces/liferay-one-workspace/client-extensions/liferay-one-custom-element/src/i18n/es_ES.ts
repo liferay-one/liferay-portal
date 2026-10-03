@@ -1338,7 +1338,7 @@ export default {
 	'request-access': 'Solicitar acceso',
 	'request-access-to-ai-hub-private-beta':
 		'Solicitar acceso a la versión beta privada de AI Hub',
-	'request-access-to-seo-&-aeo-studio-beta':
+	'request-access-to-seo-and-aeo-studio-beta':
 		'Solicitar acceso a la versión beta de SEO&AEO Studio',
 	'request-account': 'Solicitar cuenta',
 	'request-description': 'Descripción de la solicitud',

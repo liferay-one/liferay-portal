@@ -1167,6 +1167,7 @@ export default {
 	'performance-management': 'Performance Management',
 	'permissions-successfully-updated': 'Permissions successfully updated.',
 	'perpetual': 'Perpetual',
+	'person': 'Person',
 	'personal': 'Personal',
 	'personal-account': 'Personal Account',
 	'personal-information': 'Personal Information',
@@ -1378,14 +1379,15 @@ export default {
 	'request-access': 'Request Access',
 	'request-access-to-ai-hub-private-beta':
 		'Request Access to AI Hub Private Beta',
-	'request-access-to-seo-&-aeo-studio-beta':
-		'Request Access to SEO&AEO Studio Beta',
+	'request-access-to-seo-and-aeo-studio-beta':
+		'Request Access to SEO & AEO Studio Beta',
 	'request-account': 'Request Account',
 	'request-description': 'Request Description',
 	'request-details': 'Request Details',
 	'request-sent-successfully': 'Request Sent Successfully',
 	'requested': 'Requested',
 	'requester': 'Requester',
+	'requirements': 'Requirements',
 	'resend-invitation': 'Resend Invitation',
 	'resource-requirements': 'Resource Requirements',
 	'resource-usage': 'Resource Usage',
@@ -1489,7 +1491,14 @@ export default {
 	'self-service-portal': 'Self-Service Portal',
 	'send-invitation': 'Send Invitation',
 	'send-request': 'Send Request',
+	'seo-studio': 'SEO Studio',
+	'seo-studio-account-details': 'SEO Studio Account Details',
+	'seo-studio-account-name': 'SEO Studio Account Name',
+	'seo-studio-information': 'SEO Studio Information',
+	'seo-studio-is-available-only-for-ai-hub-customers':
+		'SEO Studio Is Available Only for AI Hub Customers',
 	'seo-studio-requirements': 'SEO Studio Requirements',
+	'seo-studio-url': 'SEO Studio URL',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
 	'set-up-analytics-cloud': 'Set up Analytics Cloud',

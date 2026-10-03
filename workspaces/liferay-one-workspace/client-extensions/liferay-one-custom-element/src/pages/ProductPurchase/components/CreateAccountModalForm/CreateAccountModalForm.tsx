@@ -38,12 +38,12 @@ const AccountType = [
 	{
 		key: 'business',
 		name: 'business',
-		text: i18n.translate('business' as any),
+		text: i18n.translate('business'),
 	},
 	{
 		key: 'person',
 		name: 'person',
-		text: i18n.translate('person' as any),
+		text: i18n.translate('person'),
 	},
 ];
 
