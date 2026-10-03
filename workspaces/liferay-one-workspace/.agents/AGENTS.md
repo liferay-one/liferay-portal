@@ -4,8 +4,8 @@ Instructions here stack on top of the repo root instructions — when the two co
 
 Two further files sit beside it, each reachable through its own symlink under `.claude/`:
 
-- [`.workspace-rules/liferay-rules.md`](../.workspace-rules/liferay-rules.md) (`.claude/cx.md` reads from the same tree) — the generic Liferay Workspace rules: how to establish the workspace root, the DXP version, and the bundle state. Read it when the task is about the workspace shell rather than about this product.
-- [`.workspace-rules/initial-setup-guide.md`](../.workspace-rules/initial-setup-guide.md) — first time setup.
+- [`liferay-rules.md`](./liferay-rules.md) (`.claude/cx.md` is a symlink to it) — the generic Liferay Workspace rules: how to establish the workspace root, the DXP version, and the bundle state. Read it when the task is about the workspace shell rather than about this product.
+- [`skills/initial-setup-guide/SKILL.md`](./skills/initial-setup-guide/SKILL.md) (`.claude/setup.md` is a symlink to it) — first time setup.
 
 The canonical code style for the whole repository lives in `pr-reviewer/rules`, one numbered file per rule, with the philosophy behind them in `pr-reviewer/STYLE.md`. The rules below add what is specific to this workspace and cite those numbers in brackets where the two meet.
 
