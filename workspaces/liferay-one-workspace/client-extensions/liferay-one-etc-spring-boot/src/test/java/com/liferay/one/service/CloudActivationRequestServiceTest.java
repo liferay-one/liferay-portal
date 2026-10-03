@@ -833,103 +833,6 @@ public class CloudActivationRequestServiceTest {
 	}
 
 	@Test
-	public void testAddActivationRequestSendsAnalyticsCloudNotificationWithoutSalesforceAccountLink()
-		throws Exception {
-
-		JSONObject fieldsJSONObject = _createAnalyticsCloudFieldsJSONObject();
-
-		Mockito.when(
-			_environmentService.fetchActivationEnvironment(
-				_ACCOUNT_ENTRY_ID,
-				EnvironmentConstants.OFFERING_ANALYTICS_CLOUD, _PROJECT_ERC)
-		).thenReturn(
-			null
-		);
-
-		Mockito.when(
-			_notificationTemplateService.getAndProcessTemplateJSONObject(
-				Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
-				Mockito.eq("en_US"), Mockito.anyMap())
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"body", "body"
-			).put(
-				"from", _EMAIL_ADDRESS_GLOBAL
-			).put(
-				"fromName", _FROM_NAME
-			).put(
-				"subject", "subject"
-			).put(
-				"to", _CLOUD_PROVISIONING_EMAIL_ADDRESS
-			)
-		);
-
-		_cloudActivationRequestService.addActivationRequest(
-			_ACCOUNT_ENTRY_ID, "ACCNT-013", _CONTRACT_ID, "analytics-cloud",
-			fieldsJSONObject, _PROJECT_ERC);
-
-		ArgumentCaptor<Map<String, String>> placeholdersArgumentCaptor =
-			ArgumentCaptor.forClass(Map.class);
-
-		Mockito.verify(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
-			Mockito.eq("en_US"), placeholdersArgumentCaptor.capture()
-		);
-
-		Map<String, String> placeholders =
-			placeholdersArgumentCaptor.getValue();
-
-		Assertions.assertEquals(
-			"< none >", placeholders.get("PROJECT_SALESFORCE_ACCOUNT_LINK"));
-	}
-
-	@Test
-	public void testAddActivationRequestSendsAnalyticsCloudNotificationWithoutSalesforceProjectLinkForInvalidProjectId()
-		throws Exception {
-
-		JSONObject fieldsJSONObject = _createAnalyticsCloudFieldsJSONObject();
-
-		Mockito.when(
-			_environmentService.fetchActivationEnvironment(
-				_ACCOUNT_ENTRY_ID,
-				EnvironmentConstants.OFFERING_ANALYTICS_CLOUD, _PROJECT_ERC)
-		).thenReturn(
-			null
-		);
-
-		Mockito.when(
-			_notificationTemplateService.getAndProcessTemplateJSONObject(
-				Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
-				Mockito.eq("en_US"), Mockito.anyMap())
-		).thenReturn(
-			_createProcessedTemplateJSONObject()
-		);
-
-		_cloudActivationRequestService.addActivationRequest(
-			_ACCOUNT_ENTRY_ID, _ACCOUNT_ERC, _CONTRACT_ID, "analytics-cloud",
-			fieldsJSONObject, _PROJECT_ERC);
-
-		ArgumentCaptor<Map<String, String>> placeholdersArgumentCaptor =
-			ArgumentCaptor.forClass(Map.class);
-
-		Mockito.verify(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
-			Mockito.eq("en_US"), placeholdersArgumentCaptor.capture()
-		);
-
-		Map<String, String> placeholders =
-			placeholdersArgumentCaptor.getValue();
-
-		Assertions.assertEquals(
-			"< none >", placeholders.get("PROJECT_SALESFORCE_PROJECT_LINK"));
-	}
-
-	@Test
 	public void testAddActivationRequestSendsAnalyticsCloudNotificationWithSalesforceAccountLink()
 		throws Exception {
 
@@ -1048,6 +951,103 @@ public class CloudActivationRequestServiceTest {
 			"https://liferay.lightning.force.com/lightning/r/Project__c/" +
 				_SALESFORCE_PROJECT_ID + "/view",
 			placeholders.get("PROJECT_SALESFORCE_PROJECT_LINK"));
+	}
+
+	@Test
+	public void testAddActivationRequestSendsAnalyticsCloudNotificationWithoutSalesforceAccountLink()
+		throws Exception {
+
+		JSONObject fieldsJSONObject = _createAnalyticsCloudFieldsJSONObject();
+
+		Mockito.when(
+			_environmentService.fetchActivationEnvironment(
+				_ACCOUNT_ENTRY_ID,
+				EnvironmentConstants.OFFERING_ANALYTICS_CLOUD, _PROJECT_ERC)
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
+				Mockito.eq("en_US"), Mockito.anyMap())
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"body", "body"
+			).put(
+				"from", _EMAIL_ADDRESS_GLOBAL
+			).put(
+				"fromName", _FROM_NAME
+			).put(
+				"subject", "subject"
+			).put(
+				"to", _CLOUD_PROVISIONING_EMAIL_ADDRESS
+			)
+		);
+
+		_cloudActivationRequestService.addActivationRequest(
+			_ACCOUNT_ENTRY_ID, "ACCNT-013", _CONTRACT_ID, "analytics-cloud",
+			fieldsJSONObject, _PROJECT_ERC);
+
+		ArgumentCaptor<Map<String, String>> placeholdersArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
+			Mockito.eq("en_US"), placeholdersArgumentCaptor.capture()
+		);
+
+		Map<String, String> placeholders =
+			placeholdersArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"< none >", placeholders.get("PROJECT_SALESFORCE_ACCOUNT_LINK"));
+	}
+
+	@Test
+	public void testAddActivationRequestSendsAnalyticsCloudNotificationWithoutSalesforceProjectLinkForInvalidProjectId()
+		throws Exception {
+
+		JSONObject fieldsJSONObject = _createAnalyticsCloudFieldsJSONObject();
+
+		Mockito.when(
+			_environmentService.fetchActivationEnvironment(
+				_ACCOUNT_ENTRY_ID,
+				EnvironmentConstants.OFFERING_ANALYTICS_CLOUD, _PROJECT_ERC)
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
+				Mockito.eq("en_US"), Mockito.anyMap())
+		).thenReturn(
+			_createProcessedTemplateJSONObject()
+		);
+
+		_cloudActivationRequestService.addActivationRequest(
+			_ACCOUNT_ENTRY_ID, _ACCOUNT_ERC, _CONTRACT_ID, "analytics-cloud",
+			fieldsJSONObject, _PROJECT_ERC);
+
+		ArgumentCaptor<Map<String, String>> placeholdersArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("SETUP-ANALYTICS-CLOUD-ENVIRONMENT"),
+			Mockito.eq("en_US"), placeholdersArgumentCaptor.capture()
+		);
+
+		Map<String, String> placeholders =
+			placeholdersArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"< none >", placeholders.get("PROJECT_SALESFORCE_PROJECT_LINK"));
 	}
 
 	@Test

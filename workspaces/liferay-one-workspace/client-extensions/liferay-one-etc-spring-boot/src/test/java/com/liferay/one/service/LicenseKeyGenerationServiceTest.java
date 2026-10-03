@@ -452,6 +452,50 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAProductionEntitlement()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlementOfKeyType(1L, 5.0, "production"));
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(1)));
+
+		Assertions.assertEquals(
+			"The selected entitlement does not grant a complimentary key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsASecondServer()
+		throws Exception {
+
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 5.0));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(2)));
+
+		Assertions.assertEquals(
+			"A complimentary key covers exactly one server",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryRejectsAnExpiredTerm()
 		throws Exception {
 
@@ -490,50 +534,6 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			"The purpose exceeds 255 characters",
 			licenseKeyValidationException.getMessage());
-
-		_verifyNoActivationKeyAdded();
-
-		Mockito.verifyNoInteractions(_licenseKeyService);
-	}
-
-	@Test
-	public void testGenerateActivationKeyComplimentaryRejectsAProductionEntitlement()
-		throws Exception {
-
-		_stubEntitlements(_toEntitlementOfKeyType(1L, 5.0, "production"));
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					_toComplimentaryGenerateRequest(1)));
-
-		Assertions.assertEquals(
-			"The selected entitlement does not grant a complimentary key",
-			licenseKeyEntitlementException.getMessage());
-
-		_verifyNoActivationKeyAdded();
-
-		Mockito.verifyNoInteractions(_licenseKeyService);
-	}
-
-	@Test
-	public void testGenerateActivationKeyComplimentaryRejectsASecondServer()
-		throws Exception {
-
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 5.0));
-
-		_stubLicensedProducts();
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					_toComplimentaryGenerateRequest(2)));
-
-		Assertions.assertEquals(
-			"A complimentary key covers exactly one server",
-			licenseKeyEntitlementException.getMessage());
 
 		_verifyNoActivationKeyAdded();
 
@@ -934,6 +934,42 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyWithUnentitledBundleProduct()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toGenerateRequest(Arrays.asList(1L, 2L), 1L)));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to entitlement 2"
+			));
+	}
+
+	@Test
+	public void testGenerateActivationKeyWithUnentitledSubscription() {
+		_stubEntitlements(_toEntitlement(1L, 1.0));
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toGenerateRequest(Collections.singletonList(1L), 99L)));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to the selected subscription"
+			));
+	}
+
+	@Test
 	public void testGenerateActivationKeyWithoutActivationsLeft()
 		throws Exception {
 
@@ -994,42 +1030,6 @@ public class LicenseKeyGenerationServiceTest {
 			licenseKeyEntitlementException.getMessage(
 			).contains(
 				"No product backs entitlement 1"
-			));
-	}
-
-	@Test
-	public void testGenerateActivationKeyWithUnentitledBundleProduct()
-		throws Exception {
-
-		_stubEntitlements(_toEntitlement(1L, 1.0));
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					_toGenerateRequest(Arrays.asList(1L, 2L), 1L)));
-
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"not entitled to entitlement 2"
-			));
-	}
-
-	@Test
-	public void testGenerateActivationKeyWithUnentitledSubscription() {
-		_stubEntitlements(_toEntitlement(1L, 1.0));
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					_toGenerateRequest(Collections.singletonList(1L), 99L)));
-
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"not entitled to the selected subscription"
 			));
 	}
 

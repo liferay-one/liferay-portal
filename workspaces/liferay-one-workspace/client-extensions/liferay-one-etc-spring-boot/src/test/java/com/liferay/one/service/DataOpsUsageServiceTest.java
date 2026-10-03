@@ -269,18 +269,6 @@ public class DataOpsUsageServiceTest {
 				_dataOpsUsageService, "_getIdTokenProvider", ""));
 	}
 
-	private String _decodeIdTokenPayload(String authorization) {
-		String token = authorization.substring(_BEARER_PREFIX.length());
-
-		int begin = token.indexOf('.') + 1;
-
-		Base64.Decoder decoder = Base64.getUrlDecoder();
-
-		return new String(
-			decoder.decode(token.substring(begin, token.indexOf('.', begin))),
-			StandardCharsets.UTF_8);
-	}
-
 	private String _createIdTokenValue(String audience) {
 		Base64.Encoder encoder = Base64.getUrlEncoder(
 		).withoutPadding();
@@ -305,6 +293,18 @@ public class DataOpsUsageServiceTest {
 			"signature".getBytes(StandardCharsets.UTF_8));
 
 		return StringBundler.concat(header, ".", payload, ".", signature);
+	}
+
+	private String _decodeIdTokenPayload(String authorization) {
+		String token = authorization.substring(_BEARER_PREFIX.length());
+
+		int begin = token.indexOf('.') + 1;
+
+		Base64.Decoder decoder = Base64.getUrlDecoder();
+
+		return new String(
+			decoder.decode(token.substring(begin, token.indexOf('.', begin))),
+			StandardCharsets.UTF_8);
 	}
 
 	private IdTokenCredentials _getIdTokenCredentials(String audience) {

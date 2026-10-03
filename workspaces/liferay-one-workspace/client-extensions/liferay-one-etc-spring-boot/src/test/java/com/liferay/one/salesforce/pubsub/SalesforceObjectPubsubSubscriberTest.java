@@ -128,6 +128,22 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveDoesNotSetAccountCurrencyForInactiveAccount()
+		throws Exception {
+
+		_receiveMessage(
+			"update", "Account",
+			SalesforceModelTestUtil.createAccountJSONObject(
+				false, "", "EUR", "SF-ACCOUNT-1", "Test Account"));
+
+		Mockito.verify(
+			_commerceAccountCurrencyService, Mockito.never()
+		).upsertAccountCurrency(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveDoesNothingWhenRecordsArrayIsEmpty()
 		throws Exception {
 
@@ -145,22 +161,6 @@ public class SalesforceObjectPubsubSubscriberTest {
 			_commercePriceEntryService, _commercePriceListService,
 			_commerceProductService, _commerceSkuService, _contractService,
 			_projectService);
-	}
-
-	@Test
-	public void testReceiveDoesNotSetAccountCurrencyForInactiveAccount()
-		throws Exception {
-
-		_receiveMessage(
-			"update", "Account",
-			SalesforceModelTestUtil.createAccountJSONObject(
-				false, "", "EUR", "SF-ACCOUNT-1", "Test Account"));
-
-		Mockito.verify(
-			_commerceAccountCurrencyService, Mockito.never()
-		).upsertAccountCurrency(
-			Mockito.any(), Mockito.any()
-		);
 	}
 
 	@Test
@@ -337,26 +337,6 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testReceiveSkipsPricebookEntryWithoutSku() throws Exception {
-		Mockito.when(
-			_commerceSkuService.fetchSku(_PRODUCT_2_ID)
-		).thenReturn(
-			null
-		);
-
-		_receiveMessage(
-			"update", "PricebookEntry",
-			_createPricebookEntryJSONObject("USD", 100.0));
-
-		Mockito.verify(
-			_commercePriceEntryService, Mockito.never()
-		).addOrUpdatePriceEntry(
-			Mockito.anyBoolean(), Mockito.any(), Mockito.anyDouble(),
-			Mockito.anyLong(), Mockito.anyLong()
-		);
-	}
-
-	@Test
 	public void testReceiveSkipsPricebookEntryWithUnsupportedCurrency()
 		throws Exception {
 
@@ -369,6 +349,26 @@ public class SalesforceObjectPubsubSubscriberTest {
 		).fetchSku(
 			Mockito.any()
 		);
+
+		Mockito.verify(
+			_commercePriceEntryService, Mockito.never()
+		).addOrUpdatePriceEntry(
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyDouble(),
+			Mockito.anyLong(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testReceiveSkipsPricebookEntryWithoutSku() throws Exception {
+		Mockito.when(
+			_commerceSkuService.fetchSku(_PRODUCT_2_ID)
+		).thenReturn(
+			null
+		);
+
+		_receiveMessage(
+			"update", "PricebookEntry",
+			_createPricebookEntryJSONObject("USD", 100.0));
 
 		Mockito.verify(
 			_commercePriceEntryService, Mockito.never()

@@ -208,20 +208,20 @@ public class LicenseKey {
 		return _serverId;
 	}
 
-	public String getWorkspaceName() {
-		return _workspaceName;
-	}
-
-	public String getWorkspaceOwnerEmail() {
-		return _workspaceOwnerEmail;
-	}
-
 	public String getSizing() {
 		return _sizing;
 	}
 
 	public Instant getStartDateInstant() {
 		return _startDateInstant;
+	}
+
+	public String getWorkspaceName() {
+		return _workspaceName;
+	}
+
+	public String getWorkspaceOwnerEmail() {
+		return _workspaceOwnerEmail;
 	}
 
 	public boolean isActive() {
@@ -286,9 +286,9 @@ public class LicenseKey {
 	private final String _productVersionLabel;
 	private final String _projectExternalReferenceCode;
 	private final String _serverId;
-	private final String _workspaceName;
-	private final String _workspaceOwnerEmail;
 	private final String _sizing;
 	private final Instant _startDateInstant;
+	private final String _workspaceName;
+	private final String _workspaceOwnerEmail;
 
 }

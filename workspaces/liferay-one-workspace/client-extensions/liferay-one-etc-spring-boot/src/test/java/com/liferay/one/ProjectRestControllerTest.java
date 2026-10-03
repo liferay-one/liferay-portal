@@ -957,32 +957,6 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageReturnsEntitlementsWhenDataOpsReturnsNull()
-		throws Exception {
-
-		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
-
-		JSONObject metricsJSONObject = _getMetricsJSONObject();
-
-		Assertions.assertEquals(
-			Set.of(
-				"clientExtensionsCPU", "clientExtensionsRAM", "databaseStorage",
-				"documentLibraryAndBackupStorage", "logStorage",
-				"networkTraffic"),
-			metricsJSONObject.keySet());
-
-		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
-			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
-
-		Assertions.assertEquals(
-			300,
-			logStorageJSONObject.getBigDecimal(
-				"maxCount"
-			).intValue());
-		Assertions.assertFalse(logStorageJSONObject.has("usedCount"));
-	}
-
-	@Test
 	public void testGetUsageReturnsEntitlementsWhenDataOpsIsUnavailable()
 		throws Exception {
 
@@ -1008,6 +982,32 @@ public class ProjectRestControllerTest {
 		).getJSONObject(
 			ExperienceUsageStrategy.METRIC_LOG_STORAGE
 		);
+
+		Assertions.assertEquals(
+			300,
+			logStorageJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+		Assertions.assertFalse(logStorageJSONObject.has("usedCount"));
+	}
+
+	@Test
+	public void testGetUsageReturnsEntitlementsWhenDataOpsReturnsNull()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject();
+
+		Assertions.assertEquals(
+			Set.of(
+				"clientExtensionsCPU", "clientExtensionsRAM", "databaseStorage",
+				"documentLibraryAndBackupStorage", "logStorage",
+				"networkTraffic"),
+			metricsJSONObject.keySet());
+
+		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
+			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
 
 		Assertions.assertEquals(
 			300,

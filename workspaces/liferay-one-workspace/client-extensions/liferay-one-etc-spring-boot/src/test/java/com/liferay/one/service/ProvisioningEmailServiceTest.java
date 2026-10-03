@@ -228,47 +228,6 @@ public class ProvisioningEmailServiceTest {
 	}
 
 	@Test
-	public void testSendAssignedWelcomeEmailsIsolatesPerUserFailures()
-		throws Exception {
-
-		Account account = _createAccount(_ACCOUNT_ID);
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_USER_ID)
-		).thenThrow(
-			new RuntimeException("Unable to fetch user account")
-		);
-
-		UserAccount secondUserAccount = _createVerifiedUserAccount(
-			_SECOND_USER_ID);
-
-		secondUserAccount.setEmailAddress("second@example.com");
-
-		Mockito.when(
-			_userAccountService.getUserAccount(_SECOND_USER_ID)
-		).thenReturn(
-			secondUserAccount
-		);
-
-		Mockito.when(
-			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
-		).thenReturn(
-			true
-		);
-
-		_provisioningEmailService.sendAssignedWelcomeEmails(
-			account, List.of(_USER_ID, _SECOND_USER_ID));
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			Mockito.any(), Mockito.any(), Mockito.eq("second@example.com"),
-			Mockito.any(), Mockito.any()
-		);
-	}
-
-	@Test
 	public void testSendAssignedWelcomeEmailSkipsUnverifiedUser()
 		throws Exception {
 
@@ -401,6 +360,47 @@ public class ProvisioningEmailServiceTest {
 		).addNotificationQueueEntry(
 			_EMAIL_ADDRESS_US, "Liferay Provisioning", _EMAIL_ADDRESS,
 			"Subject", "Body"
+		);
+	}
+
+	@Test
+	public void testSendAssignedWelcomeEmailsIsolatesPerUserFailures()
+		throws Exception {
+
+		Account account = _createAccount(_ACCOUNT_ID);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenThrow(
+			new RuntimeException("Unable to fetch user account")
+		);
+
+		UserAccount secondUserAccount = _createVerifiedUserAccount(
+			_SECOND_USER_ID);
+
+		secondUserAccount.setEmailAddress("second@example.com");
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_SECOND_USER_ID)
+		).thenReturn(
+			secondUserAccount
+		);
+
+		Mockito.when(
+			_entitlementService.hasEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+		).thenReturn(
+			true
+		);
+
+		_provisioningEmailService.sendAssignedWelcomeEmails(
+			account, List.of(_USER_ID, _SECOND_USER_ID));
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			Mockito.any(), Mockito.any(), Mockito.eq("second@example.com"),
+			Mockito.any(), Mockito.any()
 		);
 	}
 

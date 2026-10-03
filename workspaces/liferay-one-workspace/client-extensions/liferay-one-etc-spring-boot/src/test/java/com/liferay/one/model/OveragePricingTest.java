@@ -35,6 +35,25 @@ public class OveragePricingTest {
 	}
 
 	@Test
+	public void testOfRequiresPositiveRate() {
+		Assertions.assertNull(
+			_createOveragePricing(0D, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertNull(
+			_createOveragePricing(-5D, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertNotNull(
+			_createOveragePricing(0.5, _SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testOfRequiresRateAndSku() {
+		Assertions.assertNotNull(
+			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertNull(
+			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertNull(_createOveragePricing(_RATE, null));
+	}
+
+	@Test
 	public void testOfReturnsNullWithoutOverageFields() {
 		Assertions.assertNull(
 			OveragePricing.of(
@@ -48,25 +67,6 @@ public class OveragePricingTest {
 				).put(
 					"overageSkuExternalReferenceCode", ""
 				)));
-	}
-
-	@Test
-	public void testOfRequiresRateAndSku() {
-		Assertions.assertNotNull(
-			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNull(
-			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNull(_createOveragePricing(_RATE, null));
-	}
-
-	@Test
-	public void testOfRequiresPositiveRate() {
-		Assertions.assertNull(
-			_createOveragePricing(0D, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNull(
-			_createOveragePricing(-5D, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNotNull(
-			_createOveragePricing(0.5, _SKU_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test

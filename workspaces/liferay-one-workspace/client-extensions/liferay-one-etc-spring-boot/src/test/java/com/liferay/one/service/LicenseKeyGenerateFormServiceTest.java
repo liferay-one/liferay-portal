@@ -411,6 +411,13 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testToComparableVersionWithProductFamily() {
+		Assertions.assertEquals(
+			"7.4",
+			LicenseKeyGenerateFormService.toComparableVersion("DXP 7.4"));
+	}
+
+	@Test
 	public void testToComparableVersionWithoutFamily() {
 		Assertions.assertEquals(
 			"7.4", LicenseKeyGenerateFormService.toComparableVersion("7.4"));
@@ -421,13 +428,6 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			"DXP Latest",
 			LicenseKeyGenerateFormService.toComparableVersion("DXP Latest"));
-	}
-
-	@Test
-	public void testToComparableVersionWithProductFamily() {
-		Assertions.assertEquals(
-			"7.4",
-			LicenseKeyGenerateFormService.toComparableVersion("DXP 7.4"));
 	}
 
 	private JSONArray _getComplimentaryKeyTypesJSONArray(

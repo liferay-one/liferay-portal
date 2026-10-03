@@ -24,6 +24,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class BasePubsubClient {
 
+	protected void ensureDeadLetterTopicExists() throws Exception {
+		if (!isDeadLetterTopicEnabled()) {
+			return;
+		}
+
+		TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder(
+		).setCredentialsProvider(
+			getCredentialsProvider()
+		).build();
+
+		try (TopicAdminClient topicAdminClient = TopicAdminClient.create(
+				topicAdminSettings)) {
+
+			_ensureTopicExists(getDeadLetterTopic(), topicAdminClient);
+		}
+	}
+
 	protected void ensureTopicExists(String topic) throws Exception {
 		TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder(
 		).setCredentialsProvider(
@@ -43,23 +60,6 @@ public abstract class BasePubsubClient {
 
 	protected CredentialsProvider getCredentialsProvider() throws Exception {
 		return _serviceAccountCredentialsProvider.getCredentialsProvider();
-	}
-
-	protected void ensureDeadLetterTopicExists() throws Exception {
-		if (!isDeadLetterTopicEnabled()) {
-			return;
-		}
-
-		TopicAdminSettings topicAdminSettings = TopicAdminSettings.newBuilder(
-		).setCredentialsProvider(
-			getCredentialsProvider()
-		).build();
-
-		try (TopicAdminClient topicAdminClient = TopicAdminClient.create(
-				topicAdminSettings)) {
-
-			_ensureTopicExists(getDeadLetterTopic(), topicAdminClient);
-		}
 	}
 
 	protected String getDeadLetterTopic() {

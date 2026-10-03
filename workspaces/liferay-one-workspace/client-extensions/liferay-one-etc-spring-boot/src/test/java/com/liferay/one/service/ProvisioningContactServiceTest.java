@@ -435,14 +435,6 @@ public class ProvisioningContactServiceTest {
 			));
 	}
 
-	private void _mockContactAccountRole() throws Exception {
-		Mockito.when(
-			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
-		).thenReturn(
-			_accountRole
-		);
-	}
-
 	private AccountRole _mockAdministratorAccountRole() throws Exception {
 		AccountRole administratorAccountRole = _createAccountRole(
 			_ADMINISTRATOR_ROLE_ID);
@@ -455,6 +447,14 @@ public class ProvisioningContactServiceTest {
 		);
 
 		return administratorAccountRole;
+	}
+
+	private void _mockContactAccountRole() throws Exception {
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByName(_CONTACT_ROLE)
+		).thenReturn(
+			_accountRole
+		);
 	}
 
 	private void _mockNewUserAccount(String emailAddress, long userId)

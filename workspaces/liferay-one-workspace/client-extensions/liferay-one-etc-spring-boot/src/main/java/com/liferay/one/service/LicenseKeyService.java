@@ -764,6 +764,19 @@ public class LicenseKeyService extends OneBaseService {
 		return jsonObject.optInt("totalCount");
 	}
 
+	private String _toISO8601(Date date) {
+		if (date == null) {
+			return null;
+		}
+
+		DateFormat dateFormat = new SimpleDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		return dateFormat.format(date);
+	}
+
 	private String _toIdFilterString(long[] licenseKeyIds) {
 		StringBundler sb = new StringBundler(licenseKeyIds.length * 4);
 
@@ -778,19 +791,6 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		return sb.toString();
-	}
-
-	private String _toISO8601(Date date) {
-		if (date == null) {
-			return null;
-		}
-
-		DateFormat dateFormat = new SimpleDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-		return dateFormat.format(date);
 	}
 
 	private static final String _FIELDS_ACTIVE_LICENSE_KEY_COUNT =
