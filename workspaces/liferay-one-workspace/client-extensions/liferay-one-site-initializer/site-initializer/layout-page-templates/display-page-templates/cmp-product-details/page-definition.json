@@ -1112,13 +1112,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_001.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_001.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_001.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_001.png#]"
 																						}
 																					}
 																				}
@@ -1185,13 +1185,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_004.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_004.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_004.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_004.png#]"
 																						}
 																					}
 																				}
@@ -1421,13 +1421,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_003.jpg$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_003.jpg$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_003.jpg#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_003.jpg#]"
 																						}
 																					}
 																				}
@@ -1492,13 +1492,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_005.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_005.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_005.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_005.png#]"
 																						}
 																					}
 																				}
@@ -1728,13 +1728,13 @@
 																				},
 																				"text": {
 																					"defaultFragmentInlineValue": {
-																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_002.png$]"
+																						"value": "[$DOCUMENT_URL:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_002.png$]"
 																					},
 																					"mapping": {
 																						"fieldKey": "FileEntry_downloadURL",
 																						"itemReference": {
 																							"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/CMP_002.png#]"
+																							"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/one_liferay_marketplace/cmp_media/cmp_002.png#]"
 																						}
 																					}
 																				}
