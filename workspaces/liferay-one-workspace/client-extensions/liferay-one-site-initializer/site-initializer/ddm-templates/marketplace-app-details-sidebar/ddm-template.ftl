@@ -50,7 +50,7 @@
 <#if publisherDetailsResponse.items?has_content>
 	<#assign
 		publisherDetails = publisherDetailsResponse.items[0]
-		profileImageURL = publisherDetails.publisherProfileImageURL?replace("https://", "http://")
+		profileImageURL = publisherDetails.publisherProfileImageURL
 	/>
 </#if>
 
