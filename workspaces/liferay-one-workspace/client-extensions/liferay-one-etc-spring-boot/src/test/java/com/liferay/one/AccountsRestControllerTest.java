@@ -317,6 +317,50 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetJiraObjectKeyChecksViewPermission() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getJiraObjectKey(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_accountAssetService);
+	}
+
+	@Test
+	public void testGetJiraObjectKeyReturnsTheObjectKey() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountAssetService.getAccountObjectKey(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			"CSA-1234"
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getJiraObjectKey(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals("CSA-1234", responseEntity.getBody());
+
+		Mockito.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+	}
+
+	@Test
 	public void testGetLicenseKeys() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
@@ -426,7 +470,7 @@ public class AccountsRestControllerTest {
 		int currentYear = TermCountUtil.getYear(Instant.now());
 
 		Instant endInstant = TermCountUtil.getStartOfYearInstant(
-			currentYear + 1);
+			currentYear + 2);
 		Instant startInstant = TermCountUtil.getStartOfYearInstant(currentYear);
 
 		Entitlement entitlement = Mockito.mock(Entitlement.class);
@@ -500,6 +544,8 @@ public class AccountsRestControllerTest {
 				null, _EXTERNAL_REFERENCE_CODE,
 				EntitlementConstants.EXTERNAL_REFERENCE_CODE_DXP);
 
+		int afterYear = TermCountUtil.getYear(Instant.now());
+
 		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
 
 		Assertions.assertEquals(1, jsonObject.getInt("currentConsumption"));
@@ -510,8 +556,12 @@ public class AccountsRestControllerTest {
 
 		JSONObject currentYearJSONObject = jsonArray.getJSONObject(1);
 
-		Assertions.assertEquals(
-			currentYear, currentYearJSONObject.getInt("year"));
+		Assertions.assertTrue(
+			List.of(
+				currentYear, afterYear
+			).contains(
+				currentYearJSONObject.getInt("year")
+			));
 
 		Assertions.assertEquals(
 			1, currentYearJSONObject.getInt("maxConcurrentConsumption"));

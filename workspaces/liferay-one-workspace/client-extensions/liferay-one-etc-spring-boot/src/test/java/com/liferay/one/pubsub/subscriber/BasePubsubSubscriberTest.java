@@ -9,6 +9,7 @@ import com.liferay.one.pubsub.Message;
 import com.liferay.petra.string.StringPool;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -16,6 +17,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Franca
  */
+@DisplayName("[CLS-BASEPUBSUBSUBSCRIBER] BasePubsubSubscriber")
 public class BasePubsubSubscriberTest {
 
 	@Test

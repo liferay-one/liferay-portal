@@ -10,11 +10,13 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Felipe Franca
  */
+@DisplayName("[CLS-MESSAGE] Message")
 public class MessageTest {
 
 	@Test

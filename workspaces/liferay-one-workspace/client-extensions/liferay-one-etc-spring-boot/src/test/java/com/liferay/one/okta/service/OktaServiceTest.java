@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -39,6 +40,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author Ryan Schuhler
  */
+@DisplayName("[SVC-OKTASERVICE] OktaService")
 public class OktaServiceTest {
 
 	@Test

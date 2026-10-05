@@ -7,12 +7,14 @@ package com.liferay.one.jira.synchronizer;
 
 import com.liferay.one.jira.constants.TeamRoleConstants;
 import com.liferay.one.jira.converter.TeamRoleConverter;
+import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.util.KeyedLock;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -22,6 +24,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CRON-SYNCTEAMROLES] TeamRoleSynchronizer")
 public class TeamRoleSynchronizerTest {
 
 	@BeforeEach
@@ -86,6 +89,33 @@ public class TeamRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testGetFirstLineSupportTeamRoleObjectIdThrowsWhenObjectIsStillMissing() {
+		_mockFetchReferenceObjectId(null);
+
+		Mockito.when(
+			_teamRoleConverter.getObjectTypeName()
+		).thenReturn(
+			"Team Role"
+		);
+
+		JiraAssetObjectException jiraAssetObjectException =
+			Assertions.assertThrows(
+				JiraAssetObjectException.class,
+				_teamRoleSynchronizer::getFirstLineSupportTeamRoleObjectId);
+
+		Assertions.assertEquals(
+			"No \"Team Role\" asset object exists for external key " +
+				TeamRoleConstants.EXTERNAL_KEY_FIRST_LINE_SUPPORT,
+			jiraAssetObjectException.getMessage());
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			_teamRoleConverter, _jiraAssetObject
+		);
+	}
+
+	@Test
 	public void testOnApplicationReadyCachesObjectId() {
 		_mockFetchReferenceObjectId("12345");
 
@@ -100,6 +130,18 @@ public class TeamRoleSynchronizerTest {
 		).fetchReferenceObjectId(
 			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testOnApplicationReadySwallowsFailure() {
+		_mockFetchReferenceObjectId(null, null, "12345");
+
+		Assertions.assertDoesNotThrow(
+			_teamRoleSynchronizer::onApplicationReady);
+
+		Assertions.assertEquals(
+			"12345",
+			_teamRoleSynchronizer.getFirstLineSupportTeamRoleObjectId());
 	}
 
 	@Test

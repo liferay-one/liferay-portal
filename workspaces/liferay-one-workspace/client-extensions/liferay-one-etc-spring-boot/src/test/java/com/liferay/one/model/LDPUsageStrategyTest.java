@@ -13,11 +13,13 @@ import java.util.List;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-LDPUSAGESTRATEGY] LDPUsageStrategy")
 public class LDPUsageStrategyTest {
 
 	@Test

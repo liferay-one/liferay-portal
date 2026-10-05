@@ -27,6 +27,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -36,6 +37,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Pedro Oliveira
  */
+@DisplayName(
+	"[SVC-LICENSEKEYGENERATEFORMSERVICE] LicenseKeyGenerateFormService"
+)
 public class LicenseKeyGenerateFormServiceTest {
 
 	@Test

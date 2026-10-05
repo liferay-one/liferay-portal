@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -30,6 +31,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[SVC-LICENSEKEYSERVICE] LicenseKeyService")
 public class LicenseKeyServiceTest {
 
 	@BeforeEach

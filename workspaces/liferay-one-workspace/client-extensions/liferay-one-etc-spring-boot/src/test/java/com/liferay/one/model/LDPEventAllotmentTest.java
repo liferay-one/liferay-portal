@@ -13,11 +13,13 @@ import java.util.Collections;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CLS-LDPEVENTALLOTMENT] LDPEventAllotment")
 public class LDPEventAllotmentTest {
 
 	@Test
