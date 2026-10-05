@@ -21,11 +21,13 @@ import com.liferay.portal.ee.license.shared.LicenseConstants;
 import java.util.Date;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-LICENSEKEYVALIDATOR] LicenseKeyValidator")
 public class LicenseKeyValidatorTest {
 
 	@Test

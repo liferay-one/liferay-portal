@@ -10,11 +10,13 @@ import java.net.URI;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Felipe Franca
  */
+@DisplayName("[SVC-ACTIVATIONKEYSERVICE] ActivationKeyService")
 public class ActivationKeyServiceTest {
 
 	@Test

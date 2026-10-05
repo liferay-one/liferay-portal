@@ -21,6 +21,7 @@ import java.util.Objects;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -30,6 +31,9 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Franca
  */
+@DisplayName(
+	"[PERM-ENVIRONMENTACTIVATIONPERMISSION] EnvironmentActivationPermission"
+)
 public class EnvironmentActivationPermissionTest {
 
 	@Test

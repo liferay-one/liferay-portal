@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CLS-JIRAASSETPERSISTENCE] JiraAssetPersistence")
 public class JiraAssetPersistenceTest {
 
 	@Test

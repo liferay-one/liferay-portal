@@ -14,6 +14,7 @@ import java.time.Instant;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[SVC-USAGEREPORTSERVICE] UsageReportService")
 public class UsageReportServiceTest {
 
 	@BeforeEach

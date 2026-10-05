@@ -22,12 +22,14 @@ import com.liferay.one.jira.util.AQLUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -38,6 +40,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CRON-RECONCILEORPHANEDASSIGNMENTS] OrphanedAssignmentReconciler")
 public class OrphanedAssignmentReconcilerTest {
 
 	@BeforeEach
@@ -186,7 +189,11 @@ public class OrphanedAssignmentReconcilerTest {
 			Collections.singletonList(orphanedJiraAssetObject)
 		);
 
+		Date beforeDate = new Date();
+
 		_orphanedAssignmentReconciler.reconcileOrphanedAssignments();
+
+		Date afterDate = new Date();
 
 		ArgumentCaptor<Predicate<JiraAssetObject>> predicateArgumentCaptor =
 			ArgumentCaptor.forClass(Predicate.class);
@@ -214,6 +221,21 @@ public class OrphanedAssignmentReconcilerTest {
 			predicateArgumentCaptor.getValue();
 
 		Assertions.assertTrue(predicate.test(existingJiraAssetObject));
+
+		ArgumentCaptor<Date> dateArgumentCaptor = ArgumentCaptor.forClass(
+			Date.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).isUpdatedSince(
+			Mockito.eq(_accountTeamRoleAssignmentConverter),
+			dateArgumentCaptor.capture(), Mockito.eq(existingJiraAssetObject)
+		);
+
+		Date startDate = dateArgumentCaptor.getValue();
+
+		Assertions.assertFalse(startDate.before(beforeDate));
+		Assertions.assertFalse(startDate.after(afterDate));
 	}
 
 	@Test
@@ -256,7 +278,8 @@ public class OrphanedAssignmentReconcilerTest {
 
 				consumer.accept(AQLUtil.builder("base"));
 
-				return Collections.emptyList();
+				return Collections.singletonList(
+					Mockito.mock(JiraAssetObject.class));
 			}
 		);
 

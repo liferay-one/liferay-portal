@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Date;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.InOrder;
@@ -32,6 +33,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[SYNC-ORGANIZATIONSYNCHRONIZER] OrganizationSynchronizer")
 public class OrganizationSynchronizerTest {
 
 	@BeforeEach

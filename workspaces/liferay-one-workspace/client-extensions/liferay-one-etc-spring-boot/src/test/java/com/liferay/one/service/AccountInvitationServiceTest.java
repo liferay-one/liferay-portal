@@ -9,6 +9,7 @@ import java.util.Collections;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 /**
  * @author Amos Fong
  */
+@DisplayName("[SVC-ACCOUNTINVITATIONSERVICE] AccountInvitationService")
 public class AccountInvitationServiceTest {
 
 	@BeforeEach

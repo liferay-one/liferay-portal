@@ -6,11 +6,13 @@
 package com.liferay.one.constants;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Amos Fong
  */
+@DisplayName("[CLS-PRODUCTVERSION] ProductVersion")
 public class ProductVersionTest {
 
 	@Test

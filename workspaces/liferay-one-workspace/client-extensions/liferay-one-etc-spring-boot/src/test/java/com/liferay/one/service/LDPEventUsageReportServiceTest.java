@@ -19,13 +19,16 @@ import java.time.YearMonth;
 import java.time.ZoneOffset;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -36,6 +39,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[SVC-LDPEVENTUSAGEREPORTSERVICE] LDPEventUsageReportService")
 public class LDPEventUsageReportServiceTest {
 
 	@BeforeEach
@@ -318,6 +322,59 @@ public class LDPEventUsageReportServiceTest {
 		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
 
 		_verifyNoReportAdded();
+	}
+
+	@Test
+	public void testSkipsReportAddedByAnEarlierRun() throws Exception {
+		_setUpEntitlements(
+			_createEventsEntitlement(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
+		_setUpEventSummary(_PROJECT_EXTERNAL_REFERENCE_CODE, 500000);
+
+		Map<String, UsageReport> usageReports = new HashMap<>();
+
+		Mockito.when(
+			_usageReportService.addUsageReport(
+				Mockito.anyDouble(), Mockito.any(), Mockito.any(),
+				Mockito.any(), Mockito.anyDouble(), Mockito.anyString(),
+				Mockito.any(), Mockito.any(), Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				UsageReport usageReport = new UsageReport(
+					new JSONObject(
+					).put(
+						"id", 1L
+					));
+
+				usageReports.put(invocation.getArgument(5), usageReport);
+
+				return usageReport;
+			}
+		);
+
+		Mockito.when(
+			_usageReportService.fetchUsageReport(Mockito.anyString())
+		).thenAnswer(
+			invocation -> usageReports.get(invocation.getArgument(0))
+		);
+
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+		_ldpEventUsageReportService.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			Mockito.anyDouble(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyDouble(),
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_usageReportService, Mockito.times(2)
+		).fetchUsageReport(
+			_USAGE_REPORT_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	@Test

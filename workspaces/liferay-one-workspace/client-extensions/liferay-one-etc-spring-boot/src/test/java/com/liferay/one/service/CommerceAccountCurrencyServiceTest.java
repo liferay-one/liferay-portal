@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentMatchers;
@@ -35,6 +36,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 /**
  * @author Felipe Franca
  */
+@DisplayName(
+	"[SVC-COMMERCEACCOUNTCURRENCYSERVICE] CommerceAccountCurrencyService"
+)
 public class CommerceAccountCurrencyServiceTest {
 
 	@BeforeEach

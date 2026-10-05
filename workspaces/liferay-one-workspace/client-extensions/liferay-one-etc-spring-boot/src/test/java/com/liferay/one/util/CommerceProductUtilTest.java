@@ -13,11 +13,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Amos Fong
  */
+@DisplayName("[CLS-COMMERCEPRODUCTUTIL] CommerceProductUtil")
 public class CommerceProductUtilTest {
 
 	@Test

@@ -25,6 +25,7 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -34,6 +35,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Veloso
  */
+@DisplayName("[SVC-ENTITLEMENTSERVICE] EntitlementService")
 public class EntitlementServiceTest {
 
 	@BeforeEach

@@ -5,11 +5,15 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.PropertyConstants;
+import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
+import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
@@ -35,6 +39,89 @@ import org.springframework.web.server.ResponseStatusException;
 public class OrganizationsRestControllerTest {
 
 	@Test
+	public void testDeleteAccountChecksAdminPermission() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> organizationsRestController.deleteAccount(
+				null, _ORGANIZATION_ID, _ACCOUNT_ID));
+
+		Mockito.verifyNoInteractions(
+			_accountOrganizationSynchronizer, _accountService);
+	}
+
+	@Test
+	public void testDeleteAccountRemovesAndUnsyncsTheAccount()
+		throws Exception {
+
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_setUpAccountAndOrganization();
+
+		organizationsRestController.deleteAccount(
+			null, _ORGANIZATION_ID, _ACCOUNT_ID);
+
+		Mockito.verify(
+			_accountService
+		).removeOrganizationAccount(
+			_ACCOUNT_ID, _ORGANIZATION_ID
+		);
+
+		Mockito.verify(
+			_accountOrganizationSynchronizer
+		).syncUnassignOrganization(
+			_ORGANIZATION_ERC, _ACCOUNT_ERC
+		);
+	}
+
+	@Test
+	public void testDeleteAccountSkipsTheJiraSyncWhenTheAccountIsMissing()
+		throws Exception {
+
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		organizationsRestController.deleteAccount(
+			null, _ORGANIZATION_ID, _ACCOUNT_ID);
+
+		Mockito.verify(
+			_accountService
+		).removeOrganizationAccount(
+			_ACCOUNT_ID, _ORGANIZATION_ID
+		);
+
+		Mockito.verifyNoInteractions(_accountOrganizationSynchronizer);
+	}
+
+	@Test
+	public void testDeleteAccountSwallowsAJiraSyncFailure() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenThrow(
+			new IllegalStateException()
+		);
+
+		organizationsRestController.deleteAccount(
+			null, _ORGANIZATION_ID, _ACCOUNT_ID);
+
+		Mockito.verify(
+			_accountService
+		).removeOrganizationAccount(
+			_ACCOUNT_ID, _ORGANIZATION_ID
+		);
+
+		Mockito.verifyNoInteractions(_accountOrganizationSynchronizer);
+	}
+
+	@Test
 	public void testDeleteUserAccountsOrganizationRoleUnassignsRole()
 		throws Exception {
 
@@ -49,6 +136,65 @@ public class OrganizationsRestControllerTest {
 		).unassignOrganizationRole(
 			_ORGANIZATION_ID, _ROLE_ID, _USER_ID
 		);
+	}
+
+	@Test
+	public void testPostAccountAddsAndSyncsTheAccount() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_setUpAccountAndOrganization();
+
+		organizationsRestController.postAccount(
+			null, _ORGANIZATION_ID, _ACCOUNT_ID);
+
+		Mockito.verify(
+			_accountService
+		).addOrganizationAccount(
+			_ACCOUNT_ID, _ORGANIZATION_ID
+		);
+
+		Mockito.verify(
+			_accountOrganizationSynchronizer
+		).syncAssignOrganization(
+			_ORGANIZATION_ERC, _ACCOUNT_ERC
+		);
+	}
+
+	@Test
+	public void testPostAccountChecksAdminPermission() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> organizationsRestController.postAccount(
+				null, _ORGANIZATION_ID, _ACCOUNT_ID));
+
+		Mockito.verifyNoInteractions(
+			_accountOrganizationSynchronizer, _accountService);
+	}
+
+	@Test
+	public void testPostAccountSkipsTheJiraSyncWhenTheAccountIsMissing()
+		throws Exception {
+
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		organizationsRestController.postAccount(
+			null, _ORGANIZATION_ID, _ACCOUNT_ID);
+
+		Mockito.verify(
+			_accountService
+		).addOrganizationAccount(
+			_ACCOUNT_ID, _ORGANIZATION_ID
+		);
+
+		Mockito.verifyNoInteractions(
+			_accountOrganizationSynchronizer, _organizationService);
 	}
 
 	@Test
@@ -177,6 +323,60 @@ public class OrganizationsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncToJSMChecksAdminPermission() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> organizationsRestController.postSyncToJSM(
+				null, _ORGANIZATION_ID));
+
+		Mockito.verifyNoInteractions(
+			_organizationService, _organizationSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMPropagatesAnUnknownOrganization()
+		throws Exception {
+
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		Mockito.when(
+			_organizationService.getOrganization(_ORGANIZATION_ID)
+		).thenThrow(
+			new IllegalStateException("No organization " + _ORGANIZATION_ID)
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> organizationsRestController.postSyncToJSM(
+				null, _ORGANIZATION_ID));
+
+		Mockito.verifyNoInteractions(_organizationSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMSyncsTheOrganization() throws Exception {
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		com.liferay.headless.admin.user.client.dto.v1_0.Organization
+			organization = _setUpOrganization();
+
+		organizationsRestController.postSyncToJSM(null, _ORGANIZATION_ID);
+
+		Mockito.verify(
+			_organizationSynchronizer
+		).syncOrganization(
+			organization
+		);
+	}
+
+	@Test
 	public void testPostUserAccountsOrganizationRoleAssignsRole()
 		throws Exception {
 
@@ -198,12 +398,20 @@ public class OrganizationsRestControllerTest {
 			new OrganizationsRestController();
 
 		ReflectionTestUtils.setField(
+			organizationsRestController, "_accountOrganizationSynchronizer",
+			_accountOrganizationSynchronizer);
+		ReflectionTestUtils.setField(
+			organizationsRestController, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
 			organizationsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_organizationService",
 			_organizationService);
+		ReflectionTestUtils.setField(
+			organizationsRestController, "_organizationSynchronizer",
+			_organizationSynchronizer);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
@@ -237,6 +445,30 @@ public class OrganizationsRestControllerTest {
 		return userAccount;
 	}
 
+	private void _denyAdminPermission() throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+	}
+
+	private void _setUpAccountAndOrganization() throws Exception {
+		Account account = new Account();
+
+		account.setExternalReferenceCode(_ACCOUNT_ERC);
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenReturn(
+			account
+		);
+
+		_setUpOrganization();
+	}
+
 	private void _setUpOktaGroup(String... emailAddresses) throws Exception {
 		Mockito.when(
 			_propertyService.getPropertyValue(
@@ -259,6 +491,26 @@ public class OrganizationsRestControllerTest {
 		);
 	}
 
+	private com.liferay.headless.admin.user.client.dto.v1_0.Organization
+			_setUpOrganization()
+		throws Exception {
+
+		com.liferay.headless.admin.user.client.dto.v1_0.Organization
+			organization =
+				new com.liferay.headless.admin.user.client.dto.v1_0.
+					Organization();
+
+		organization.setExternalReferenceCode(_ORGANIZATION_ERC);
+
+		Mockito.when(
+			_organizationService.getOrganization(_ORGANIZATION_ID)
+		).thenReturn(
+			organization
+		);
+
+		return organization;
+	}
+
 	private void _setUpOrganizationUserAccounts(UserAccount... userAccounts)
 		throws Exception {
 
@@ -269,7 +521,13 @@ public class OrganizationsRestControllerTest {
 		);
 	}
 
+	private static final String _ACCOUNT_ERC = "ACCNT-1";
+
+	private static final long _ACCOUNT_ID = 33333;
+
 	private static final String _OKTA_GROUP_ID = "00g1abcd2efGHIJK3l4m";
+
+	private static final String _ORGANIZATION_ERC = "ORG-1";
 
 	private static final long _ORGANIZATION_ID = 44444;
 
@@ -277,11 +535,18 @@ public class OrganizationsRestControllerTest {
 
 	private static final long _USER_ID = 22222;
 
+	private final AccountOrganizationSynchronizer
+		_accountOrganizationSynchronizer = Mockito.mock(
+			AccountOrganizationSynchronizer.class);
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final OrganizationService _organizationService = Mockito.mock(
 		OrganizationService.class);
+	private final OrganizationSynchronizer _organizationSynchronizer =
+		Mockito.mock(OrganizationSynchronizer.class);
 	private final PropertyService _propertyService = Mockito.mock(
 		PropertyService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
