@@ -12,9 +12,12 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtua
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.exception.ActivationCodeAlreadyUsedException;
 import com.liferay.one.exception.CloudNativeEntitlementException;
+import com.liferay.one.exception.EnvironmentAlreadyActivatedException;
 import com.liferay.one.exception.EnvironmentProfileEntitlementException;
 import com.liferay.one.exception.EnvironmentTypeEntitlementException;
+import com.liferay.one.exception.NoSuchActivationCodeException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
@@ -40,10 +43,19 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+
 import java.lang.reflect.UndeclaredThrowableException;
+
+import java.net.http.HttpHeaders;
+import java.net.http.HttpResponse;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+
+import java.text.ParseException;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +69,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -811,6 +824,140 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsActivation() throws Exception {
+		Mockito.when(
+			_environmentService.fetchEnvironment(Mockito.anyString())
+		).thenReturn(
+			_createCloudNativeEnvironment(
+				EnvironmentConstants.ACTIVATION_STATUS_PENDING, "CNE-PENDING",
+				EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _createActivationToken());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(SignedJWT.class)
+		);
+
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			_environmentService
+		).fetchEnvironment(
+			argumentCaptor.capture()
+		);
+
+		String filterString = argumentCaptor.getValue();
+
+		Assertions.assertTrue(filterString.contains(_ACTIVATION_CODE));
+		Assertions.assertTrue(
+			filterString.contains(EnvironmentConstants.OFFERING_CLOUD_NATIVE));
+
+		Mockito.verify(
+			_environmentService
+		).updateEnvironmentActivation(
+			EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+			_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _ENVIRONMENT_ID, "Production",
+			"public-key"
+		);
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsActivatedEnvironment()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		Assertions.assertThrows(
+			EnvironmentAlreadyActivatedException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createActivationToken()));
+
+		_assertEnvironmentNotActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsInvalidSignature()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(SignedJWT.class)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createActivationToken()));
+
+		Mockito.verifyNoInteractions(_environmentService);
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsMalformedToken()
+		throws Exception {
+
+		Assertions.assertThrows(
+			ParseException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "not-a-token"));
+
+		Mockito.verifyNoInteractions(
+			_cloudNativeSignatureValidator, _environmentService);
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsUnknownActivationCode()
+		throws Exception {
+
+		Assertions.assertThrows(
+			NoSuchActivationCodeException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createActivationToken()));
+
+		_assertEnvironmentNotActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsUsedActivationCode()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironment(Mockito.anyString())
+		).thenReturn(
+			_createCloudNativeEnvironment(
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, "CNE-ACTIVE",
+				EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		Assertions.assertThrows(
+			ActivationCodeAlreadyUsedException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createActivationToken()));
+
+		_assertEnvironmentNotActivated();
+	}
+
+	@Test
 	public void testPostEnvironmentsActivationRequestOmitsAmbiguousContract()
 		throws Exception {
 
@@ -1004,6 +1151,89 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsManifestRejectsInvalidSignature()
+		throws Exception {
+
+		_mockManifestEnvironment();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(), Mockito.any(SignedJWT.class)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _cloudRestController.postEnvironmentsManifest(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createManifestBody("DXP 2025.Q3.1")));
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testPostEnvironmentsManifestRejectsPayloadWithoutDXPVersion()
+		throws Exception {
+
+		_mockManifestEnvironment();
+
+		ResponseEntity<String> responseEntity =
+			_cloudRestController.postEnvironmentsManifest(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createManifestBody(null));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testPostEnvironmentsManifestRejectsUnknownEnvironment()
+		throws Exception {
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _cloudRestController.postEnvironmentsManifest(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+					_createManifestBody("DXP 2025.Q3.1")));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(
+			_cloudNativeSignatureValidator, _entitlementService);
+	}
+
+	@Test
+	public void testPostEnvironmentsManifestReturnsManifest() throws Exception {
+		Environment environment = _mockManifestEnvironment();
+
+		ResponseEntity<String> responseEntity =
+			_cloudRestController.postEnvironmentsManifest(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createManifestBody("DXP 2025.Q3.1"));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.has("licenseXML"));
+		Assertions.assertEquals(
+			EntitlementConstants.TERMINATION_STATUS_ACTIVE,
+			jsonObject.getString("dxpTerminationStatus"));
+
+		Mockito.verify(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.eq(environment.getPublicKey()), Mockito.any(SignedJWT.class)
+		);
+	}
+
+	@Test
 	public void testPostEnvironmentsOfflineActivationBundleStoresBundle()
 		throws Exception {
 
@@ -1095,9 +1325,11 @@ public class CloudRestControllerTest {
 	public void testPostEnvironmentsOfflineActivationReturnsEnvironmentId()
 		throws Exception {
 
+		String environmentId = "CNE-TOKEN";
+
 		Mockito.when(
 			_environmentService.fetchEnvironmentByExternalReferenceCode(
-				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+				environmentId)
 		).thenReturn(
 			null
 		);
@@ -1112,7 +1344,7 @@ public class CloudRestControllerTest {
 		).put(
 			"activationCode", _ACTIVATION_CODE
 		).put(
-			"token", _createOfflineActivationToken()
+			"token", _createOfflineActivationToken(environmentId)
 		);
 
 		ResponseEntity<String> responseEntity =
@@ -1124,20 +1356,172 @@ public class CloudRestControllerTest {
 		JSONObject responseJSONObject = new JSONObject(
 			responseEntity.getBody());
 
-		// Activation renames the environment to the ID the customer's token
-		// carries, so the caller has to be told what to address it by next.
-
 		Assertions.assertEquals(
-			_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
-			responseJSONObject.getString("environmentId"));
+			environmentId, responseJSONObject.getString("environmentId"));
 
 		Mockito.verify(
 			_environmentService
 		).updateEnvironmentActivation(
-			Mockito.eq(EnvironmentConstants.ACTIVATION_MODE_OFFLINE),
-			Mockito.eq(_ENVIRONMENT_EXTERNAL_REFERENCE_CODE),
-			Mockito.eq(_ENVIRONMENT_ID), Mockito.any(), Mockito.any()
+			EnvironmentConstants.ACTIVATION_MODE_OFFLINE, environmentId,
+			_ENVIRONMENT_ID, "Production", "public-key"
 		);
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownload() throws Exception {
+		_mockVirtualEntryDownload();
+
+		HttpResponse<InputStream> httpResponse = Mockito.mock(
+			HttpResponse.class);
+
+		Mockito.when(
+			httpResponse.body()
+		).thenReturn(
+			new ByteArrayInputStream(new byte[] {1, 2, 3})
+		);
+
+		Mockito.when(
+			httpResponse.headers()
+		).thenReturn(
+			HttpHeaders.of(
+				Map.of("Content-Type", List.of("application/zip")),
+				(name, value) -> true)
+		);
+
+		Mockito.when(
+			_commerceProductVirtualSettingsService.getAssetHttpResponse(
+				_VIRTUAL_ENTRY_SRC)
+		).thenReturn(
+			httpResponse
+		);
+
+		ResponseEntity<StreamingResponseBody> responseEntity =
+			_postProductsVirtualEntryDownload(_VIRTUAL_ENTRY_ID);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals(
+			"addon-1.0.lpkg",
+			responseEntity.getHeaders(
+			).getContentDisposition(
+			).getFilename());
+		Assertions.assertEquals(
+			"application/zip",
+			String.valueOf(
+				responseEntity.getHeaders(
+				).getContentType()));
+
+		ByteArrayOutputStream byteArrayOutputStream =
+			new ByteArrayOutputStream();
+
+		StreamingResponseBody streamingResponseBody = responseEntity.getBody();
+
+		streamingResponseBody.writeTo(byteArrayOutputStream);
+
+		Assertions.assertArrayEquals(
+			new byte[] {1, 2, 3}, byteArrayOutputStream.toByteArray());
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsInvalidSignature()
+		throws Exception {
+
+		_mockVirtualEntryDownload();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(), Mockito.any(SignedJWT.class)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _postProductsVirtualEntryDownload(_VIRTUAL_ENTRY_ID));
+
+		_assertVirtualEntryNotServed();
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsUnentitledEnvironment()
+		throws Exception {
+
+		_mockVirtualEntryDownload();
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _postProductsVirtualEntryDownload(_VIRTUAL_ENTRY_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseStatusException.getStatusCode());
+
+		_assertVirtualEntryNotServed();
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsUnknownEnvironment()
+		throws Exception {
+
+		_mockVirtualEntryDownload();
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			null
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _postProductsVirtualEntryDownload(_VIRTUAL_ENTRY_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		_assertVirtualEntryNotServed();
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsUnknownProduct()
+		throws Exception {
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _postProductsVirtualEntryDownload(_VIRTUAL_ENTRY_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(
+			_cloudNativeSignatureValidator, _environmentService);
+
+		_assertVirtualEntryNotServed();
+	}
+
+	@Test
+	public void testPostProductsVirtualEntryDownloadRejectsUnknownVirtualEntry()
+		throws Exception {
+
+		_mockVirtualEntryDownload();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _postProductsVirtualEntryDownload(9999L));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		_assertVirtualEntryNotServed();
 	}
 
 	@Test
@@ -1264,6 +1648,23 @@ public class CloudRestControllerTest {
 		);
 	}
 
+	private void _assertEnvironmentNotActivated() throws Exception {
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).updateEnvironmentActivation(
+			Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.any(),
+			Mockito.any()
+		);
+	}
+
+	private void _assertVirtualEntryNotServed() throws Exception {
+		Mockito.verify(
+			_commerceProductVirtualSettingsService, Mockito.never()
+		).getAssetHttpResponse(
+			Mockito.anyString()
+		);
+	}
+
 	private String _createActivationCodeJSON(String type) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -1282,6 +1683,18 @@ public class CloudRestControllerTest {
 		);
 
 		return jsonObject.toString();
+	}
+
+	private String _createActivationToken() throws Exception {
+		return _createSignedJWT(
+			new JWTClaimsSet.Builder(
+			).claim(
+				"activationCode", _ACTIVATION_CODE
+			).claim(
+				"environmentName", "Production"
+			).claim(
+				"publicKey", "public-key"
+			).build());
 	}
 
 	private Product _createCloudEnabledProduct(String externalReferenceCode) {
@@ -1391,27 +1804,28 @@ public class CloudRestControllerTest {
 		return new Entitlement(jsonObject);
 	}
 
-	private String _createOfflineActivationToken() throws Exception {
-		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+	private String _createManifestBody(String dxpVersion) throws Exception {
+		JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder();
 
-		keyPairGenerator.initialize(2048);
+		if (dxpVersion != null) {
+			builder.claim("dxpVersion", dxpVersion);
+		}
 
-		KeyPair keyPair = keyPairGenerator.generateKeyPair();
+		return _createSignedJWT(builder.build());
+	}
 
-		SignedJWT signedJWT = new SignedJWT(
-			new JWSHeader(JWSAlgorithm.RS256),
+	private String _createOfflineActivationToken(String environmentId)
+		throws Exception {
+
+		return _createSignedJWT(
 			new JWTClaimsSet.Builder(
 			).claim(
-				"environmentID", _ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+				"environmentID", environmentId
 			).claim(
 				"environmentName", "Production"
 			).claim(
 				"publicKey", "public-key"
 			).build());
-
-		signedJWT.sign(new RSASSASigner(keyPair.getPrivate()));
-
-		return signedJWT.serialize();
 	}
 
 	private Product _createProduct(String environmentProfile) {
@@ -1479,6 +1893,23 @@ public class CloudRestControllerTest {
 			));
 	}
 
+	private String _createSignedJWT(JWTClaimsSet jwtClaimsSet)
+		throws Exception {
+
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+
+		keyPairGenerator.initialize(2048);
+
+		KeyPair keyPair = keyPairGenerator.generateKeyPair();
+
+		SignedJWT signedJWT = new SignedJWT(
+			new JWSHeader(JWSAlgorithm.RS256), jwtClaimsSet);
+
+		signedJWT.sign(new RSASSASigner(keyPair.getPrivate()));
+
+		return signedJWT.serialize();
+	}
+
 	private JSONObject _getEnvironmentTypeJSONObject(String type)
 		throws Exception {
 
@@ -1526,6 +1957,91 @@ public class CloudRestControllerTest {
 		);
 	}
 
+	private Environment _mockManifestEnvironment() throws Exception {
+		Environment environment = _createEnvironment(
+			EnvironmentConstants.TYPE_PRODUCTION);
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			environment
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
+		);
+
+		return environment;
+	}
+
+	private void _mockVirtualEntryDownload() throws Exception {
+		_mockCloudEnabledProduct();
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(
+				_PRODUCT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createCloudEnabledProduct(_PRODUCT_EXTERNAL_REFERENCE_CODE)
+		);
+
+		ProductVirtualSettingsFileEntry productVirtualSettingsFileEntry =
+			new ProductVirtualSettingsFileEntry();
+
+		productVirtualSettingsFileEntry.setId(_VIRTUAL_ENTRY_ID);
+		productVirtualSettingsFileEntry.setSrc(_VIRTUAL_ENTRY_SRC);
+
+		Mockito.when(
+			_commerceProductVirtualSettingsService.
+				fetchProductVirtualSettingsFileEntry(
+					Mockito.anyLong(), Mockito.anyString())
+		).thenReturn(
+			productVirtualSettingsFileEntry
+		);
+
+		Mockito.when(
+			_commerceProductVirtualSettingsService.
+				fetchProductVirtualSettingsFileEntry(
+					_C_PRODUCT_ID, _VIRTUAL_ENTRY_ID)
+		).thenReturn(
+			productVirtualSettingsFileEntry
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(_createProductEntitlement(_SKU_EXTERNAL_REFERENCE_CODE))
+		);
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+	}
+
+	private ResponseEntity<StreamingResponseBody>
+			_postProductsVirtualEntryDownload(long virtualEntryId)
+		throws Exception {
+
+		RequestContextHolder.setRequestAttributes(
+			new ServletRequestAttributes(new MockHttpServletRequest()));
+
+		try {
+			return _cloudRestController.postProductsVirtualEntryDownload(
+				_PRODUCT_EXTERNAL_REFERENCE_CODE, virtualEntryId,
+				_createOfflineActivationToken(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE));
+		}
+		finally {
+			RequestContextHolder.resetRequestAttributes();
+		}
+	}
+
 	private static final long _ACCOUNT_ID = 1000L;
 
 	private static final String _ACTIVATION_CODE = "e9e3f0ef8e4d4a2e";
@@ -1544,6 +2060,11 @@ public class CloudRestControllerTest {
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-005";
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE = "SKU-3000";
+
+	private static final long _VIRTUAL_ENTRY_ID = 6000L;
+
+	private static final String _VIRTUAL_ENTRY_SRC =
+		"https://cdn.example.com/add-ons/addon-1.0.lpkg?signature=1";
 
 	private AccountService _accountService;
 	private CloudActivationRequestService _cloudActivationRequestService;

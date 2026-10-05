@@ -24,6 +24,7 @@ import java.util.List;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -33,6 +34,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Amos Fong
  */
+@DisplayName("[PERM-PROJECTPERMISSION] ProjectPermission")
 public class ProjectPermissionTest {
 
 	@Test

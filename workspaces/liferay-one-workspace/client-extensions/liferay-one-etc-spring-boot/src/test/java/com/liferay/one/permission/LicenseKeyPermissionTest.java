@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -28,6 +29,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Wellington Barbosa
  */
+@DisplayName("[PERM-LICENSEKEYPERMISSION] LicenseKeyPermission")
 public class LicenseKeyPermissionTest {
 
 	@Test

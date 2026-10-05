@@ -10,6 +10,7 @@ import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.util.KeyedLock;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -19,6 +20,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Amos Fong
  */
+@DisplayName("[SVC-ACCOUNTSERVICE] AccountService")
 public class AccountServiceTest {
 
 	@Test

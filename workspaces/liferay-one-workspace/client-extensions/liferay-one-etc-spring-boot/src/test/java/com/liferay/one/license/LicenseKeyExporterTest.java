@@ -22,6 +22,7 @@ import org.json.XML;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -29,6 +30,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-LICENSEKEYEXPORTER] LicenseKeyExporter")
 public class LicenseKeyExporterTest {
 
 	@BeforeEach

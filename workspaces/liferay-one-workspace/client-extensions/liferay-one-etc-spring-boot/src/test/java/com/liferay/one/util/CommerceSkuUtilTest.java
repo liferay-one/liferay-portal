@@ -9,11 +9,13 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Ryan Schuhler
  */
+@DisplayName("[CLS-COMMERCESKUUTIL] CommerceSkuUtil")
 public class CommerceSkuUtilTest {
 
 	@Test

@@ -10,11 +10,13 @@ import com.liferay.one.jira.model.JiraAssetObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CONV-TEAMROLECONVERTER] TeamRoleConverter")
 public class TeamRoleConverterTest {
 
 	@BeforeEach

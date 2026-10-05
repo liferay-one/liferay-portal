@@ -6,11 +6,13 @@
 package com.liferay.one.jira.util;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CLS-AQLUTIL] AQLUtil")
 public class AQLUtilTest {
 
 	@Test

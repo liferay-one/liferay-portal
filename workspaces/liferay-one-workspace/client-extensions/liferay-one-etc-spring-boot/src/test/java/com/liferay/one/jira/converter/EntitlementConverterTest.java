@@ -13,11 +13,13 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CONV-ENTITLEMENTCONVERTER] EntitlementConverter")
 public class EntitlementConverterTest {
 
 	@BeforeEach

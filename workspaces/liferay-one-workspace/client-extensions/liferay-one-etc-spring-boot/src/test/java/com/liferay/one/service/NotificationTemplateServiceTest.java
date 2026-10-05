@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -20,6 +21,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Franca
  */
+@DisplayName("[SVC-NOTIFICATIONTEMPLATESERVICE] NotificationTemplateService")
 public class NotificationTemplateServiceTest {
 
 	@BeforeEach
