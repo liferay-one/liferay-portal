@@ -214,8 +214,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_licenseKeyPermission.check(account.getId(), ActionKeys.VIEW, jwt);
 
-		if (!ArrayUtil.contains(
-				EntitlementConstants.EXTERNAL_REFERENCE_CODES_SELF_HOSTED,
+		if (!EntitlementConstants.externalReferenceCodesSelfHosted.contains(
 				productExternalReferenceCode)) {
 
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -784,7 +783,7 @@ public class AccountsRestController extends OneBaseRestController {
 	}
 
 	private boolean _hasAccountManagerRole(Set<String> accountRoleNames) {
-		for (String accountRoleName : RoleConstants.NAMES_ACCOUNT_MANAGER) {
+		for (String accountRoleName : RoleConstants.namesAccountManager) {
 			if (accountRoleNames.contains(accountRoleName)) {
 				return true;
 			}
@@ -926,8 +925,7 @@ public class AccountsRestController extends OneBaseRestController {
 					" for this account");
 		}
 
-		if (!ArrayUtil.contains(
-				RoleConstants.ERCS_SUPPORT_PROJECT,
+		if (!RoleConstants.ercsSupportProject.contains(
 				projectRoleExternalReferenceCode)) {
 
 			throw new ResponseStatusException(

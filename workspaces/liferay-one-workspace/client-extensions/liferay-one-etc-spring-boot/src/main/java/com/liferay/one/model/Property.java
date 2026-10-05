@@ -12,7 +12,7 @@ import org.json.JSONObject;
 /**
  * @author Felipe Veloso
  */
-public class Property {
+public final class Property {
 
 	public Property(JSONObject jsonObject) {
 		_accountEntryId = jsonObject.optLong(

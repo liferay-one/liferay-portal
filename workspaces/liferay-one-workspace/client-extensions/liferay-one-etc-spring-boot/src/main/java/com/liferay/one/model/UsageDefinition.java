@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * @author Drew Brokke
  */
-public class UsageDefinition {
+public final class UsageDefinition {
 
 	public UsageDefinition(JSONObject jsonObject) {
 		_aggregationType = jsonObject.optString("aggregationType");

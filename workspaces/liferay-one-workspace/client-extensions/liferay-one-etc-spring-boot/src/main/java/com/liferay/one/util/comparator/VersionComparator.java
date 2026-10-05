@@ -8,13 +8,15 @@ package com.liferay.one.util.comparator;
 import com.liferay.one.constants.ProductVersion;
 import com.liferay.portal.kernel.util.GetterUtil;
 
+import java.io.Serializable;
+
 import java.util.Comparator;
 import java.util.regex.Matcher;
 
 /**
  * @author Jenny Chen
  */
-public class VersionComparator implements Comparator<String> {
+public class VersionComparator implements Comparator<String>, Serializable {
 
 	public VersionComparator() {
 		this(true);
@@ -67,6 +69,8 @@ public class VersionComparator implements Comparator<String> {
 	public boolean isAscending() {
 		return _ascending;
 	}
+
+	private static final long serialVersionUID = 1L;
 
 	private final boolean _ascending;
 

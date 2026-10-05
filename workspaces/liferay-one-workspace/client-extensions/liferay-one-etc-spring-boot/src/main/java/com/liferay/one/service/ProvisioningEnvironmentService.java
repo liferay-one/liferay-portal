@@ -13,7 +13,6 @@ import com.liferay.one.model.Environment;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.ActivationCodeUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.List;
 
@@ -43,8 +42,7 @@ public class ProvisioningEnvironmentService {
 		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
 				salesforceOpportunityLineItems) {
 
-			if (ArrayUtil.contains(
-					CommerceProductConstants.NAMES_CLOUD_NATIVE_PRODUCTS,
+			if (CommerceProductConstants.namesCloudNativeProducts.contains(
 					salesforceOpportunityLineItem.getProductName())) {
 
 				cloudNative = true;
@@ -67,7 +65,7 @@ public class ProvisioningEnvironmentService {
 			return;
 		}
 
-		for (String type : EnvironmentConstants.TYPES) {
+		for (String type : EnvironmentConstants.types) {
 			try {
 				_environmentService.addCloudNativeEnvironment(
 					account.getId(), ActivationCodeUtil.generate(),

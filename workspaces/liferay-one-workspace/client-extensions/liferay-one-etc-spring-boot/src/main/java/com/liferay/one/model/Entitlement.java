@@ -15,7 +15,7 @@ import org.json.JSONObject;
 /**
  * @author Felipe Veloso
  */
-public class Entitlement {
+public final class Entitlement {
 
 	public Entitlement(JSONObject jsonObject) {
 		_accountEntryId = jsonObject.optLong(

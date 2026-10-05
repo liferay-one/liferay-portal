@@ -8,7 +8,6 @@ package com.liferay.one.util;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.model.Entitlement;
-import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,8 +27,7 @@ public class ClusterNodesUtil {
 		}
 
 		for (Entitlement entitlement : entitlements) {
-			if (!ArrayUtil.contains(
-					EntitlementConstants.NAMES_PRODUCTION_PODS,
+			if (!EntitlementConstants.namesProductionPods.contains(
 					entitlement.getName())) {
 
 				continue;
