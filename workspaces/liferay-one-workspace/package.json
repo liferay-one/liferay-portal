@@ -21,19 +21,29 @@
 	"scripts": {
 		"bootstrap:tests": "./tests/scripts/bootstrap.sh",
 		"build:plugin": "tsc --project tools/eslint-plugin-local/tsconfig.json",
-		"format": "node_modules/.bin/prettier --write \"client-extensions/liferay-one-custom-element/src/**/*.{ts,tsx,css}\" \"client-extensions/liferay-one-custom-element/@vite/**/*.ts\"",
-		"lint": "node_modules/.bin/eslint --ext .ts,.tsx,.json client-extensions/liferay-one-custom-element/src client-extensions/liferay-one-custom-element/@vite client-extensions/liferay-one-site-initializer",
-		"lint:fix": "node_modules/.bin/eslint --ext .ts,.tsx --fix client-extensions/liferay-one-custom-element/src client-extensions/liferay-one-custom-element/@vite",
+		"format": "node_modules/.bin/prettier --write \"client-extensions/liferay-one-custom-element/src/**/*.{ts,tsx,css}\" \"client-extensions/liferay-one-custom-element/@vite/**/*.ts\" \"tests/{e2e,integration,scripts,utils}/**/*.ts\" tests/playwright.config.ts",
+		"lint": "node_modules/.bin/eslint --ext .ts,.tsx,.json client-extensions/liferay-one-custom-element/src client-extensions/liferay-one-custom-element/@vite client-extensions/liferay-one-site-initializer tests/e2e tests/integration tests/playwright.config.ts tests/scripts tests/utils",
+		"lint:fix": "node_modules/.bin/eslint --ext .ts,.tsx --fix client-extensions/liferay-one-custom-element/src client-extensions/liferay-one-custom-element/@vite tests/e2e tests/integration tests/playwright.config.ts tests/scripts tests/utils",
 		"lint:fs": "node_modules/.bin/ls-lint",
+		"plan": "yarn plan:check && yarn plan:report",
+		"plan:check": "yarn workspace @liferay/liferay-one-workspace-tests plan:check",
+		"plan:coverage": "yarn workspace @liferay/liferay-one-workspace-tests plan:coverage",
+		"plan:report": "yarn workspace @liferay/liferay-one-workspace-tests plan:report",
+		"plan:scaffold": "yarn workspace @liferay/liferay-one-workspace-tests plan:scaffold",
 		"prelint": "yarn build:plugin && yarn install --check-files",
-		"test:e2e": "yarn workspace @liferay/liferay-one-workspace-tests playwright:e2e",
-		"test:integration": "yarn workspace @liferay/liferay-one-workspace-tests playwright:integration",
-		"test:unit": "yarn workspace @liferay/liferay-one-custom-element test"
+		"test:all": "yarn workspace @liferay/liferay-one-workspace-tests test:all",
+		"test:e2e": "yarn workspace @liferay/liferay-one-workspace-tests test:e2e",
+		"test:integration": "yarn workspace @liferay/liferay-one-workspace-tests test:integration",
+		"test:report": "yarn workspace @liferay/liferay-one-workspace-tests test:report",
+		"test:ui": "yarn workspace @liferay/liferay-one-workspace-tests test:ui",
+		"test:unit": "yarn workspace @liferay/liferay-one-custom-element test",
+		"typecheck": "yarn workspace @liferay/liferay-one-workspace-tests typecheck"
 	},
 	"workspaces": {
 		"packages": [
 			"client-extensions/liferay-one-custom-element",
-			"tools/eslint-plugin-local"
+			"tools/eslint-plugin-local",
+			"tests"
 		]
 	}
 }
