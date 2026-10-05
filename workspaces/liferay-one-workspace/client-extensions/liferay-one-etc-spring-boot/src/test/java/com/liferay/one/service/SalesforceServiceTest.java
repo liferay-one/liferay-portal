@@ -5,6 +5,11 @@
 
 package com.liferay.one.service;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.IdTokenCredentials;
+import com.google.auth.oauth2.IdTokenProvider;
+import com.google.auth.oauth2.ImpersonatedCredentials;
+
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 
@@ -14,14 +19,75 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import org.mockito.Mockito;
+
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Felipe Veloso
  */
 @DisplayName("[SVC-SALESFORCESERVICE] SalesforceService")
 public class SalesforceServiceTest {
+
+	@BeforeEach
+	public void setUp() {
+		_salesforceService = new SalesforceService();
+
+		ReflectionTestUtils.setField(
+			_salesforceService, "_gcfAudience", _AUDIENCE);
+		ReflectionTestUtils.setField(
+			_salesforceService, "_googleCredentials", _googleCredentials);
+	}
+
+	@Test
+	public void testGetIdTokenCredentialsReusesOneInstance() {
+		ReflectionTestUtils.setField(
+			_salesforceService, "_gcfServiceAccount", _SERVICE_ACCOUNT);
+
+		IdTokenCredentials idTokenCredentials =
+			ReflectionTestUtils.invokeMethod(
+				_salesforceService, "_getIdTokenCredentials");
+
+		Assertions.assertSame(
+			idTokenCredentials,
+			ReflectionTestUtils.invokeMethod(
+				_salesforceService, "_getIdTokenCredentials"));
+	}
+
+	@Test
+	public void testGetIdTokenProviderImpersonatesTheConfiguredAccount() {
+		ReflectionTestUtils.setField(
+			_salesforceService, "_gcfServiceAccount", _SERVICE_ACCOUNT);
+
+		IdTokenProvider idTokenProvider = ReflectionTestUtils.invokeMethod(
+			_salesforceService, "_getIdTokenProvider");
+
+		Assertions.assertInstanceOf(
+			ImpersonatedCredentials.class, idTokenProvider);
+
+		ImpersonatedCredentials impersonatedCredentials =
+			(ImpersonatedCredentials)idTokenProvider;
+
+		Assertions.assertEquals(
+			_SERVICE_ACCOUNT, impersonatedCredentials.getAccount());
+	}
+
+	@Test
+	public void testGetIdTokenProviderUsesApplicationDefaultCredentials() {
+		ReflectionTestUtils.setField(
+			_salesforceService, "_gcfServiceAccount", "");
+		ReflectionTestUtils.setField(
+			_salesforceService, "_gcfServiceAccountKey", "");
+
+		Assertions.assertSame(
+			_googleCredentials,
+			ReflectionTestUtils.invokeMethod(
+				_salesforceService, "_getIdTokenProvider"));
+	}
 
 	@Test
 	public void testGetLineItemsJSONArraySendsEachOrderItemSku() {
@@ -62,7 +128,18 @@ public class SalesforceServiceTest {
 		return orderItem;
 	}
 
-	private final SalesforceService _salesforceService =
-		new SalesforceService();
+	private static final String _AUDIENCE =
+		"https://us-west2-is-sales.cloudfunctions.net/marketplace-api";
+
+	private static final String _SERVICE_ACCOUNT =
+		"marketplace-portal@is-sales.iam.gserviceaccount.com";
+
+	private final GoogleCredentials _googleCredentials = Mockito.mock(
+		GoogleCredentials.class,
+		Mockito.withSettings(
+		).extraInterfaces(
+			IdTokenProvider.class
+		));
+	private SalesforceService _salesforceService;
 
 }
