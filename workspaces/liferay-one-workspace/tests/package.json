@@ -1,0 +1,27 @@
+{
+	"devDependencies": {
+		"@playwright/test": "1.63.0",
+		"@types/node": "^22.0.0",
+		"dotenv": "^16.3.2",
+		"typescript": "^5.4.0"
+	},
+	"engines": {
+		"node": ">=22.18.0"
+	},
+	"name": "@liferay/liferay-one-workspace-tests",
+	"private": true,
+	"scripts": {
+		"install:browsers": "playwright install chromium",
+		"plan:check": "node scripts/checkPlan.ts",
+		"plan:coverage": "node scripts/checkCoverage.ts",
+		"plan:report": "node scripts/planReport.ts",
+		"plan:scaffold": "node scripts/scaffoldPlan.ts",
+		"test:all": "playwright test --pass-with-no-tests",
+		"test:e2e": "playwright test --pass-with-no-tests --project=e2e",
+		"test:integration": "playwright test --pass-with-no-tests --project=integration",
+		"test:report": "playwright show-report",
+		"test:ui": "playwright test --ui",
+		"typecheck": "tsc --project tsconfig.json && tsc --project scripts/tsconfig.json"
+	},
+	"version": "1.0.0"
+}

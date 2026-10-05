@@ -46,13 +46,21 @@
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
+		"@testing-library/dom": "^10.4.0",
+		"@testing-library/jest-dom": "^6.9.1",
+		"@testing-library/react": "^16.3.0",
+		"@testing-library/user-event": "^14.6.1",
 		"@types/dompurify": "^3.0.2",
+		"@types/node": "^22.0.0",
 		"@types/react": "^18.2.6",
 		"@types/react-dom": "^18.0.9",
 		"@types/spark-md5": "^3.0.5",
 		"@vitejs/plugin-react": "^6.0.3",
+		"@vitest/coverage-v8": "5.0.3",
+		"jsdom": "^26.1.0",
 		"typescript": "5.7.2",
-		"vite": "^8.1.5"
+		"vite": "^8.1.5",
+		"vitest": "5.0.3"
 	},
 	"license": "LGPL",
 	"name": "@liferay/liferay-one-custom-element",
@@ -60,7 +68,10 @@
 	"scripts": {
 		"build": "tsc && vite build",
 		"dev": "vite",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"test": "vitest run --passWithNoTests",
+		"test:coverage": "vitest run --coverage --passWithNoTests",
+		"test:watch": "vitest"
 	},
 	"type": "module",
 	"version": "0.0.0"
