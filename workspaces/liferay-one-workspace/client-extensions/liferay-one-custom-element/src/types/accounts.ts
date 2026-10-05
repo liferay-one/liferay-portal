@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import type {BillingAddress} from './orders';
 import type {CustomField} from './product';
 
 export type Account = {
@@ -20,6 +21,12 @@ export type Account = {
 	status: number;
 	taxId: string;
 	type: string;
+};
+
+export type AccountAddress = BillingAddress & {
+	defaultBilling?: boolean;
+	defaultShipping?: boolean;
+	type?: number;
 };
 
 export type AccountBrief = {

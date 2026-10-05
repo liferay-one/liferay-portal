@@ -5,18 +5,24 @@
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import CommerceUI from '~/services/headless/CommerceUI';
+import HeadlessCommerceAdminAccount from '~/services/headless/HeadlessCommerceAdminAccount';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Analytics} from '~/services/liferay/Analytics';
 import {Liferay} from '~/services/liferay/liferay';
 
 import ProductPurchase from './ProductPurchase';
 
-import type {Account} from '~/types/accounts';
+import type {Account, AccountAddress} from '~/types/accounts';
+import type {APIResponse} from '~/types/api';
 import type {Cart, OrderTypes} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 vi.mock('~/services/headless/CommerceUI', () => ({
 	default: {selectAccount: vi.fn()},
+}));
+
+vi.mock('~/services/headless/HeadlessCommerceAdminAccount', () => ({
+	default: {getAccountAddresses: vi.fn()},
 }));
 
 vi.mock('~/services/headless/HeadlessCommerceDeliveryCart', () => ({
@@ -57,6 +63,17 @@ function expectedCartItems(productId = 20) {
 	];
 }
 
+function mockAccountAddresses(addresses: AccountAddress[]) {
+	vi.mocked(
+		HeadlessCommerceAdminAccount.getAccountAddresses
+	).mockResolvedValue({items: addresses} as APIResponse<AccountAddress>);
+}
+
+function getCreatedCart() {
+	return vi.mocked(HeadlessCommerceDeliveryCart.createCart).mock
+		.calls[0][1] as Cart;
+}
+
 describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 	const commerceContext = {...Liferay.CommerceContext};
 
@@ -66,6 +83,11 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 			currency: {currencyCode: 'USD'},
 		});
 
+		mockAccountAddresses([]);
+
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			valid: true,
+		} as Cart);
 		vi.mocked(HeadlessCommerceDeliveryCart.createCart).mockResolvedValue({
 			id: 5,
 		} as Cart);
@@ -117,6 +139,69 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 
 		expect(createOrder).toBeLessThan(checkoutOrder);
 		expect(checkoutOrder).toBeLessThan(trackOrder);
+	});
+
+	it("creates the cart with the account's default billing address", async () => {
+		mockAccountAddresses([
+			{id: 2, type: 3},
+			{defaultBilling: true, id: 5, type: 2},
+		] as AccountAddress[]);
+
+		await new ProductPurchase(account, product).createOrder();
+
+		expect(
+			HeadlessCommerceAdminAccount.getAccountAddresses
+		).toHaveBeenCalledWith(1);
+		expect(getCreatedCart()).toMatchObject({
+			accountId: 1,
+			billingAddressId: 5,
+		});
+	});
+
+	it('falls back to a billing capable address when none is the default', async () => {
+		mockAccountAddresses([
+			{id: 2, type: 3},
+			{id: 3, type: 1},
+		] as AccountAddress[]);
+
+		await new ProductPurchase(account, product).createOrder();
+
+		expect(getCreatedCart().billingAddressId).toBe(3);
+	});
+
+	it('sends no billing address when the account only has shipping addresses', async () => {
+		mockAccountAddresses([{id: 2, type: 3}] as AccountAddress[]);
+
+		await new ProductPurchase(account, product).createOrder();
+
+		expect(getCreatedCart().billingAddressId).toBeUndefined();
+	});
+
+	it('keeps the billing address the caller passed', async () => {
+		await new ProductPurchase(account, product).createOrder({
+			billingAddress: {name: 'Billing'},
+		} as Cart);
+
+		expect(
+			HeadlessCommerceAdminAccount.getAccountAddresses
+		).not.toHaveBeenCalled();
+		expect(getCreatedCart()).toMatchObject({
+			billingAddress: {name: 'Billing'},
+		});
+		expect(getCreatedCart().billingAddressId).toBeUndefined();
+	});
+
+	it('rejects when the portal refuses the checkout', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			id: 5,
+			valid: false,
+		} as Cart);
+
+		await expect(
+			new ProductPurchase(account, product).createOrder()
+		).rejects.toThrow('Invalid billing address');
+		expect(Analytics.track).not.toHaveBeenCalled();
 	});
 
 	it('falls back to the payment callback when no payment URL returns', async () => {
@@ -209,6 +294,9 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		} as DeliveryProduct).createOrder({id: 6} as Cart);
 
 		expect(newCart).toEqual({id: 6});
+		expect(
+			HeadlessCommerceAdminAccount.getAccountAddresses
+		).not.toHaveBeenCalled();
 		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
 		expect(HeadlessCommerceDeliveryCart.updateCart).toHaveBeenCalledWith(
 			6,

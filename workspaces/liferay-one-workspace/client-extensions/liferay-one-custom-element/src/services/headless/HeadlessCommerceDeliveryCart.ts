@@ -19,7 +19,7 @@ export default class HeadlessCommerceDeliveryCart {
 	}
 
 	static async checkoutCart(cartId: number) {
-		return fetcher.post(
+		return fetcher.post<Cart>(
 			`/o/headless-commerce-delivery-cart/v1.0/carts/${cartId}/checkout`
 		);
 	}

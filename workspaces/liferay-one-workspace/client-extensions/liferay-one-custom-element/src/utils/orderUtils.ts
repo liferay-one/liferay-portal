@@ -34,6 +34,15 @@ export function getTotalByOrderKey(
 	return formatCurrency(total, 'USD');
 }
 
+export const AccountAddressType = {
+	BILLING: 1,
+	BILLING_AND_SHIPPING: 2,
+	SHIPPING: 3,
+};
+
+export type AccountAddressType =
+	(typeof AccountAddressType)[keyof typeof AccountAddressType];
+
 export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',
