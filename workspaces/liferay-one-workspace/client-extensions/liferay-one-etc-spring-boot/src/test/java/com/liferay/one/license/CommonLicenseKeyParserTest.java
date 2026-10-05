@@ -10,11 +10,13 @@ import com.liferay.one.constants.UploadProductEnvironmentConstants;
 import java.time.Instant;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-COMMONLICENSEKEYPARSER] CommonLicenseKeyParser")
 public class CommonLicenseKeyParserTest {
 
 	@Test

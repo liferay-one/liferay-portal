@@ -10,11 +10,13 @@ import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-ACCOUNTUTIL] AccountUtil")
 public class AccountUtilTest {
 
 	@Test

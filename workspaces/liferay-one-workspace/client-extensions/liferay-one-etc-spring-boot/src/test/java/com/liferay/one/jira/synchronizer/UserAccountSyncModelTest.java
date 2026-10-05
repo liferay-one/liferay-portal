@@ -14,6 +14,7 @@ import com.liferay.one.service.PropertyService;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[SYNC-USERACCOUNTSYNCMODEL] UserAccountSyncModel")
 public class UserAccountSyncModelTest {
 
 	@BeforeEach

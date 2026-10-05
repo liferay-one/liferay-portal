@@ -12,6 +12,7 @@ import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
 import com.liferay.one.exception.ProjectNotFoundException;
+import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
@@ -37,7 +38,6 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.TimeZone;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -64,6 +64,9 @@ public class ProjectRestControllerTest {
 	public void setUp() throws Exception {
 		_projectRestController = new ProjectRestController();
 
+		ReflectionTestUtils.setField(
+			_projectRestController, "_accountAssetService",
+			_accountAssetService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_accountSynchronizer",
 			_accountSynchronizer);
@@ -154,6 +157,41 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testGetJiraObjectKeyChecksViewPermission() throws Exception {
+		_denyProjectPermission(ActionKeys.VIEW);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.getJiraObjectKey(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_accountAssetService);
+	}
+
+	@Test
+	public void testGetJiraObjectKeyReturnsTheObjectKey() throws Exception {
+		Mockito.when(
+			_accountAssetService.getAccountObjectKey(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			"CSA-1234"
+		);
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getJiraObjectKey(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals("CSA-1234", responseEntity.getBody());
+
+		Mockito.verify(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	@Test
 	public void testGetUsageChecksPermissionBeforeReadingUsage()
 		throws Exception {
 
@@ -199,34 +237,18 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventHistoryForwardsTheRequestedDatesUnchanged()
 		throws Exception {
 
-		TimeZone timeZone = TimeZone.getDefault();
+		_setUpProductName(_PRODUCT_NAME_LDP);
 
-		// A day boundary resolved in the JVM's zone rather than UTC shifts the
-		// forwarded date by one. The zone has to sit behind UTC for that to
-		// show: converting a UTC start of day into a zone ahead of it lands on
-		// the same date and hides the bug.
+		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
-		TimeZone.setDefault(TimeZone.getTimeZone("Pacific/Midway"));
+		_getUsageEventHistory(_END_DATE, "month", _START_DATE_PREVIOUS_MONTH);
 
-		try {
-			_setUpProductName(_PRODUCT_NAME_LDP);
-
-			_setUpEntitlements(
-				_createEntitlement(1, null, "events", 1000000.0));
-
-			_getUsageEventHistory(
-				_END_DATE, "month", _START_DATE_PREVIOUS_MONTH);
-
-			Mockito.verify(
-				_dataOpsUsageService
-			).fetchLDPProjectEventHistory(
-				_END_DATE, "month", _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_START_DATE_PREVIOUS_MONTH
-			);
-		}
-		finally {
-			TimeZone.setDefault(timeZone);
-		}
+		Mockito.verify(
+			_dataOpsUsageService
+		).fetchLDPProjectEventHistory(
+			_END_DATE, "month", _PROJECT_EXTERNAL_REFERENCE_CODE,
+			_START_DATE_PREVIOUS_MONTH
+		);
 	}
 
 	@Test
@@ -1212,6 +1234,57 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncToJSMChecksUpdatePermission() throws Exception {
+		_denyProjectPermission(ActionKeys.UPDATE);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.postSyncToJSM(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_accountSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMPropagatesAnUnknownProject() throws Exception {
+		Mockito.when(
+			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN)
+		).thenThrow(
+			new ProjectNotFoundException()
+		);
+
+		Assertions.assertThrows(
+			ProjectNotFoundException.class,
+			() -> _projectRestController.postSyncToJSM(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN));
+
+		Mockito.verifyNoInteractions(_accountSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMSyncsTheProject() throws Exception {
+		Project project = _createProject();
+
+		Mockito.when(
+			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			project
+		);
+
+		ResponseEntity<Void> responseEntity =
+			_projectRestController.postSyncToJSM(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncProject(
+			project
+		);
+	}
+
+	@Test
 	public void testPutProjectMembershipsRejectsNonprojectRole() {
 		ResponseStatusException responseStatusException =
 			Assertions.assertThrows(
@@ -1460,6 +1533,16 @@ public class ProjectRestControllerTest {
 		);
 	}
 
+	private void _denyProjectPermission(String actionId) throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			actionId, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
 	private JSONObject _getMetricsJSONObject() throws Exception {
 		ResponseEntity<String> responseEntity = _getUsage();
 
@@ -1627,6 +1710,8 @@ public class ProjectRestControllerTest {
 
 	private static final long _USER_ID = 1L;
 
+	private final AccountAssetService _accountAssetService = Mockito.mock(
+		AccountAssetService.class);
 	private final AccountSynchronizer _accountSynchronizer = Mockito.mock(
 		AccountSynchronizer.class);
 	private final CommerceProductService _commerceProductService = Mockito.mock(

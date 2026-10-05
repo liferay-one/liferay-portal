@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
@@ -24,6 +25,67 @@ import org.springframework.test.util.ReflectionTestUtils;
  * @author Ricardo Mariz
  */
 public class UserAccountsRestControllerTest {
+
+	@Test
+	public void testPostSyncToJSMChecksAdminPermission() throws Exception {
+		UserAccountsRestController userAccountsRestController =
+			_createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> userAccountsRestController.postSyncToJSM(null, _USER_ID));
+
+		Mockito.verifyNoInteractions(
+			_userAccountService, _userAccountSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMPropagatesAnUnknownUser() throws Exception {
+		UserAccountsRestController userAccountsRestController =
+			_createController();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenThrow(
+			new IllegalStateException("No user " + _USER_ID)
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> userAccountsRestController.postSyncToJSM(null, _USER_ID));
+
+		Mockito.verifyNoInteractions(_userAccountSynchronizer);
+	}
+
+	@Test
+	public void testPostSyncToJSMSyncsTheUserAccount() throws Exception {
+		UserAccountsRestController userAccountsRestController =
+			_createController();
+
+		UserAccount userAccount = new UserAccount();
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		userAccountsRestController.postSyncToJSM(null, _USER_ID);
+
+		Mockito.verify(
+			_userAccountSynchronizer
+		).syncUserAccount(
+			userAccount
+		);
+	}
 
 	@Test
 	public void testPostSyncWithOktaChecksAdminPermission() throws Exception {
@@ -134,6 +196,9 @@ public class UserAccountsRestControllerTest {
 			userAccountsRestController, "_userAccountService",
 			_userAccountService);
 		ReflectionTestUtils.setField(
+			userAccountsRestController, "_userAccountSynchronizer",
+			_userAccountSynchronizer);
+		ReflectionTestUtils.setField(
 			userAccountsRestController, "_userAssignmentService",
 			_userAssignmentService);
 
@@ -147,6 +212,8 @@ public class UserAccountsRestControllerTest {
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
+	private final UserAccountSynchronizer _userAccountSynchronizer =
+		Mockito.mock(UserAccountSynchronizer.class);
 	private final UserAssignmentService _userAssignmentService = Mockito.mock(
 		UserAssignmentService.class);
 

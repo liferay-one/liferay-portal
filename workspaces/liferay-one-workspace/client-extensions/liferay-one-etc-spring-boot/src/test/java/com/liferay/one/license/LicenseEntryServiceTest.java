@@ -8,11 +8,13 @@ package com.liferay.one.license;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[SVC-LICENSEENTRYSERVICE] LicenseEntryService")
 public class LicenseEntryServiceTest {
 
 	@Test

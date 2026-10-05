@@ -5,15 +5,23 @@
 
 package com.liferay.one;
 
+import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.jira.synchronizer.TeamRoleSynchronizer;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
+import com.liferay.one.service.LDPEventUsageReportService;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +39,48 @@ import org.springframework.web.server.ResponseStatusException;
  * @author Karoline Silva
  */
 public class AdminRestControllerTest {
+
+	@Test
+	public void testGetPubsubSubscribersChecksAdminPermission()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController(
+			_createSubscriber("test-topic"));
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> adminRestController.getPubsubSubscribers(null));
+	}
+
+	@Test
+	public void testGetPubsubSubscribersSkipsSubscribersWithoutTopic()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController(
+			_createSubscriber("test-topic"), _createSubscriber(null),
+			_createSubscriber(StringPool.BLANK));
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.getPubsubSubscribers(null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONArray jsonArray = new JSONArray(responseEntity.getBody());
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertTrue(
+			jsonObject.getString(
+				"name"
+			).startsWith(
+				BasePubsubSubscriber.class.getSimpleName()
+			));
+		Assertions.assertEquals("test-topic", jsonObject.getString("topic"));
+	}
 
 	@Test
 	public void testPostDispatchesMessageToMatchingSubscriber()
@@ -115,6 +165,126 @@ public class AdminRestControllerTest {
 		Mockito.verify(
 			teamRoleSynchronizer
 		).syncTeamRoles();
+	}
+
+	@Test
+	public void testPostLDPEventUsageReportsGenerateChecksAdminPermission()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		_denyAdminPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> adminRestController.postLDPEventUsageReportsGenerate(
+				null, "2026-08"));
+
+		Mockito.verifyNoInteractions(_ldpEventUsageReportService);
+	}
+
+	@Test
+	public void testPostLDPEventUsageReportsGenerateDefaultsToThePreviousMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		YearMonth beforeYearMonth = _getPreviousYearMonth();
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.postLDPEventUsageReportsGenerate(null, null);
+
+		YearMonth afterYearMonth = _getPreviousYearMonth();
+
+		ArgumentCaptor<YearMonth> argumentCaptor = ArgumentCaptor.forClass(
+			YearMonth.class);
+
+		Mockito.verify(
+			_ldpEventUsageReportService
+		).generateUsageReports(
+			argumentCaptor.capture()
+		);
+
+		YearMonth yearMonth = argumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			List.of(
+				beforeYearMonth, afterYearMonth
+			).contains(
+				yearMonth
+			));
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			yearMonth.toString(), jsonObject.getString("yearMonth"));
+	}
+
+	@Test
+	public void testPostLDPEventUsageReportsGenerateGeneratesTheGivenMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		ResponseEntity<String> responseEntity =
+			adminRestController.postLDPEventUsageReportsGenerate(
+				null, "2026-08");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_ldpEventUsageReportService
+		).generateUsageReports(
+			YearMonth.of(2026, 8)
+		);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals("2026-08", jsonObject.getString("yearMonth"));
+	}
+
+	@Test
+	public void testPostLDPEventUsageReportsGenerateRejectsAMalformedMonth()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> adminRestController.postLDPEventUsageReportsGenerate(
+					null, "08-2026"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_ldpEventUsageReportService);
+	}
+
+	@Test
+	public void testPostLDPEventUsageReportsGenerateRejectsAnInvalidParameter()
+		throws Exception {
+
+		AdminRestController adminRestController = _createController();
+
+		Mockito.doThrow(
+			new InvalidUsageParameterException("Month is in the future")
+		).when(
+			_ldpEventUsageReportService
+		).generateUsageReports(
+			YearMonth.of(2099, 1)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> adminRestController.postLDPEventUsageReportsGenerate(
+					null, "2099-01"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertEquals(
+			"Month is in the future", responseStatusException.getReason());
 	}
 
 	@Test
@@ -266,8 +436,10 @@ public class AdminRestControllerTest {
 			adminRestController, "_basePubsubSubscribers",
 			Arrays.asList(basePubsubSubscribers));
 		ReflectionTestUtils.setField(
-			adminRestController, "_adminPermission",
-			Mockito.mock(AdminPermission.class));
+			adminRestController, "_adminPermission", _adminPermission);
+		ReflectionTestUtils.setField(
+			adminRestController, "_ldpEventUsageReportService",
+			_ldpEventUsageReportService);
 
 		return adminRestController;
 	}
@@ -284,5 +456,28 @@ public class AdminRestControllerTest {
 
 		return basePubsubSubscriber;
 	}
+
+	private void _denyAdminPermission() throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+	}
+
+	private YearMonth _getPreviousYearMonth() {
+		return YearMonth.now(
+			ZoneOffset.UTC
+		).minusMonths(
+			1
+		);
+	}
+
+	private final AdminPermission _adminPermission = Mockito.mock(
+		AdminPermission.class);
+	private final LDPEventUsageReportService _ldpEventUsageReportService =
+		Mockito.mock(LDPEventUsageReportService.class);
 
 }

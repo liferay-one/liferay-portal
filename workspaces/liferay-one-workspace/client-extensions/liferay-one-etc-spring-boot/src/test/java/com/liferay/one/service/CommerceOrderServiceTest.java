@@ -8,11 +8,13 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.address.client.dto.v1_0.Country;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Project;
@@ -29,10 +31,12 @@ import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -40,6 +44,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Ricardo Mariz
  */
+@DisplayName("[SVC-COMMERCEORDERSERVICE] CommerceOrderService")
 public class CommerceOrderServiceTest {
 
 	@BeforeEach
@@ -48,6 +53,7 @@ public class CommerceOrderServiceTest {
 		_aiHubService = Mockito.mock(AIHubService.class);
 		_commerceAccountCurrencyService = Mockito.mock(
 			CommerceAccountCurrencyService.class);
+		_commerceCurrencyService = Mockito.mock(CommerceCurrencyService.class);
 		_commerceOrderItemService = Mockito.mock(
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.spy(new CommerceOrderService());
@@ -67,6 +73,9 @@ public class CommerceOrderServiceTest {
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_commerceAccountCurrencyService",
 			_commerceAccountCurrencyService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_commerceCurrencyService",
+			_commerceCurrencyService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_commerceOrderItemService",
 			_commerceOrderItemService);
@@ -124,6 +133,99 @@ public class CommerceOrderServiceTest {
 		).updateOrder(
 			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
 			ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
+	public void testCalculateTaxPatchesOrderAndOrderItems() throws Exception {
+		OrderItem firstOrderItem = _createOrderItem("ITEM-1", 11L, "SKU-1");
+
+		firstOrderItem.setFinalPrice(new BigDecimal("60"));
+
+		OrderItem secondOrderItem = _createOrderItem("ITEM-2", 12L, "SKU-2");
+
+		secondOrderItem.setFinalPrice(new BigDecimal("40"));
+
+		Order order = _createTaxableOrder(
+			"IE", firstOrderItem, secondOrderItem);
+
+		Currency currency = new Currency();
+
+		currency.setRate(new BigDecimal("0.9"));
+
+		Mockito.when(
+			_commerceCurrencyService.fetchCurrency("EUR")
+		).thenReturn(
+			currency
+		);
+
+		OrderResource orderResource = _calculateTax(order);
+
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+
+		Mockito.verify(
+			orderResource
+		).patchOrder(
+			ArgumentMatchers.eq(_ORDER_ID), orderArgumentCaptor.capture()
+		);
+
+		Order taxedOrder = orderArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			0,
+			new BigDecimal(
+				"20"
+			).compareTo(
+				taxedOrder.getTaxAmount()
+			));
+		Assertions.assertEquals(
+			0,
+			new BigDecimal(
+				"120"
+			).compareTo(
+				taxedOrder.getTotal()
+			));
+
+		Map<String, String> customFields =
+			(Map<String, String>)taxedOrder.getCustomFields();
+
+		Assertions.assertEquals("value", customFields.get("other"));
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.get("order-metadata"));
+
+		Assertions.assertEquals(
+			"0.9",
+			orderMetadataJSONObject.get(
+				"exchangeRate"
+			).toString());
+
+		_verifyTaxedOrderItem("60", 11L, "72");
+		_verifyTaxedOrderItem("40", 12L, "48");
+	}
+
+	@Test
+	public void testCalculateTaxSkipsOrderOutsideTaxJurisdiction()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem("ITEM-1", 11L, "SKU-1");
+
+		orderItem.setFinalPrice(new BigDecimal("60"));
+
+		OrderResource orderResource = _calculateTax(
+			_createTaxableOrder("US", orderItem));
+
+		Mockito.verify(
+			orderResource, Mockito.never()
+		).patchOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any(Order.class)
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItem(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any(OrderItem.class)
 		);
 	}
 
@@ -1975,6 +2077,51 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	private OrderResource _calculateTax(Order order) throws Exception {
+		OrderResource orderResource = Mockito.mock(OrderResource.class);
+
+		Mockito.when(
+			orderResource.getOrder(_ORDER_ID)
+		).thenReturn(
+			order
+		);
+
+		OrderResource.Builder builder = Mockito.mock(
+			OrderResource.Builder.class, Mockito.RETURNS_SELF);
+
+		Mockito.when(
+			builder.build()
+		).thenReturn(
+			orderResource
+		);
+
+		Mockito.doReturn(
+			"Bearer token"
+		).when(
+			_commerceOrderService
+		).getAuthorization();
+
+		Mockito.doReturn(
+			"localhost:8080"
+		).when(
+			_commerceOrderService
+		).getDXPEndpointAddress();
+
+		try (MockedStatic<OrderResource> orderResourceMockedStatic =
+				Mockito.mockStatic(OrderResource.class)) {
+
+			orderResourceMockedStatic.when(
+				OrderResource::builder
+			).thenReturn(
+				builder
+			);
+
+			_commerceOrderService.calculateTax(_ORDER_ID);
+		}
+
+		return orderResource;
+	}
+
 	private Order _createAIHubOrder(String orderMetadata, int orderStatus) {
 		Order order = _createOrder(
 			orderStatus, "AI_HUB", _PAYMENT_STATUS_PENDING);
@@ -2109,6 +2256,37 @@ public class CommerceOrderServiceTest {
 			));
 	}
 
+	private Order _createTaxableOrder(
+		String countryISOCode, OrderItem... orderItems) {
+
+		com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account
+			account =
+				new com.liferay.headless.commerce.admin.order.client.dto.v1_0.
+					Account();
+
+		account.setType(2);
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode(countryISOCode);
+
+		Order order = new Order();
+
+		order.setAccount(account);
+		order.setBillingAddress(billingAddress);
+		order.setCustomFields(
+			HashMapBuilder.put(
+				"order-metadata", "{}"
+			).put(
+				"other", "value"
+			).build());
+		order.setId(_ORDER_ID);
+		order.setOrderItems(orderItems);
+		order.setSubtotalAmount(100D);
+
+		return order;
+	}
+
 	private void _setAIHubOrderFields(Order order, String orderMetadata) {
 		order.setAccountExternalReferenceCode("ACCNT-TEST");
 
@@ -2166,6 +2344,38 @@ public class CommerceOrderServiceTest {
 		Map<String, String> customFields = mapArgumentCaptor.getValue();
 
 		Assertions.assertEquals(projectName, customFields.get("projectName"));
+	}
+
+	private void _verifyTaxedOrderItem(
+			String finalPrice, long orderItemId, String finalPriceWithTaxAmount)
+		throws Exception {
+
+		ArgumentCaptor<OrderItem> argumentCaptor = ArgumentCaptor.forClass(
+			OrderItem.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItem(
+			ArgumentMatchers.eq(orderItemId), argumentCaptor.capture()
+		);
+
+		OrderItem orderItem = argumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			0,
+			new BigDecimal(
+				finalPrice
+			).compareTo(
+				orderItem.getFinalPrice()
+			));
+		Assertions.assertEquals(
+			0,
+			new BigDecimal(
+				finalPriceWithTaxAmount
+			).compareTo(
+				orderItem.getFinalPriceWithTaxAmount()
+			));
+		Assertions.assertTrue(orderItem.getPriceManuallyAdjusted());
 	}
 
 	private void _whenFetchCommerceOrder(Order order) throws Exception {
@@ -2273,6 +2483,7 @@ public class CommerceOrderServiceTest {
 	private AccountService _accountService;
 	private AIHubService _aiHubService;
 	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
+	private CommerceCurrencyService _commerceCurrencyService;
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
 	private CommerceProductService _commerceProductService;

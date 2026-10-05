@@ -6,7 +6,9 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
+import com.liferay.one.exception.NoSuchActivationKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyType;
@@ -14,6 +16,7 @@ import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
@@ -24,6 +27,7 @@ import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.time.Instant;
 
@@ -49,6 +53,123 @@ import org.springframework.web.server.ResponseStatusException;
  * @author Pedro Oliveira
  */
 public class ActivationKeysRestControllerTest {
+
+	@Test
+	public void testDeleteSubscriptionsChecksEveryKeyBeforeDeleting()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		ActivationKey activationKey = _stubActivationKey(8L);
+
+		Mockito.when(
+			activationKey.getAccountEntryId()
+		).thenReturn(
+			_OTHER_ACCOUNT_ID
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			_OTHER_ACCOUNT_ID, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.deleteSubscriptions(
+				null, new long[] {7L, 8L}));
+
+		Mockito.verifyNoInteractions(_subscriptionEntryService);
+	}
+
+	@Test
+	public void testDeleteSubscriptionsDeletesEveryKeyForTheUser()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+		_stubActivationKey(8L);
+
+		activationKeysRestController.deleteSubscriptions(
+			null, new long[] {7L, 8L});
+
+		Mockito.verify(
+			_subscriptionEntryService
+		).deleteSubscriptionEntry(
+			null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
+		);
+
+		Mockito.verify(
+			_subscriptionEntryService
+		).deleteSubscriptionEntry(
+			null, ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
+		);
+	}
+
+	@Test
+	public void testGetActivationKeyChecksViewPermission() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			_ACCOUNT_ID, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.getActivationKey(null, 7L));
+	}
+
+	@Test
+	public void testGetActivationKeyReturnsTheActivationKey() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		ActivationKey activationKey = _stubActivationKey(7L);
+
+		Assertions.assertSame(
+			activationKey,
+			activationKeysRestController.getActivationKey(null, 7L));
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			_ACCOUNT_ID, ActionKeys.VIEW, null
+		);
+	}
+
+	@Test
+	public void testGetActivationKeyThrowsWhenTheKeyIsUnknown()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_activationKeyService.getActivationKey(null, 9L)
+		).thenThrow(
+			new NoSuchActivationKeyException()
+		);
+
+		Assertions.assertThrows(
+			NoSuchActivationKeyException.class,
+			() -> activationKeysRestController.getActivationKey(null, 9L));
+
+		Mockito.verifyNoInteractions(_licenseKeyPermission);
+	}
 
 	@Test
 	public void testGetActivationKeysDownloadAggregatesTheLicenseKeys()
@@ -306,6 +427,67 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetSubscriptionsChecksViewPermission() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			_ACCOUNT_ID, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.getSubscriptions(null, 7L));
+
+		Mockito.verifyNoInteractions(_subscriptionEntryService);
+	}
+
+	@Test
+	public void testGetSubscriptionsReportsNotSubscribed() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getSubscriptions(null, 7L);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertFalse(jsonObject.getBoolean("subscribed"));
+	}
+
+	@Test
+	public void testGetSubscriptionsReportsSubscribed() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		Mockito.when(
+			_subscriptionEntryService.fetchSubscriptionEntry(
+				null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID)
+		).thenReturn(
+			Mockito.mock(SubscriptionEntry.class)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getSubscriptions(null, 7L);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.getBoolean("subscribed"));
+	}
+
+	@Test
 	public void testPatchActivationKeysActiveComplimentaryNeedsAnAdmin()
 		throws Exception {
 
@@ -554,6 +736,53 @@ public class ActivationKeysRestControllerTest {
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
 
+	@Test
+	public void testPutSubscriptionsAddsEveryKeyForTheUser() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+		_stubActivationKey(8L);
+
+		activationKeysRestController.putSubscriptions(
+			null, new long[] {7L, 8L});
+
+		Mockito.verify(
+			_subscriptionEntryService
+		).addSubscriptionEntry(
+			null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
+		);
+
+		Mockito.verify(
+			_subscriptionEntryService
+		).addSubscriptionEntry(
+			null, ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
+		);
+	}
+
+	@Test
+	public void testPutSubscriptionsChecksEveryKeyBeforeAdding()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(7L);
+
+		Mockito.when(
+			_activationKeyService.getActivationKey(null, 8L)
+		).thenThrow(
+			new NoSuchActivationKeyException()
+		);
+
+		Assertions.assertThrows(
+			NoSuchActivationKeyException.class,
+			() -> activationKeysRestController.putSubscriptions(
+				null, new long[] {7L, 8L}));
+
+		Mockito.verifyNoInteractions(_subscriptionEntryService);
+	}
+
 	private ActivationKeysRestController _createController() throws Exception {
 		ActivationKeysRestController activationKeysRestController =
 			new ActivationKeysRestController();
@@ -707,6 +936,8 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final long _OTHER_ACCOUNT_ID = 556L;
 
 	private static final String _PROJECT_ERC = "PROJ-1";
 

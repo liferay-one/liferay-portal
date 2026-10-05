@@ -12,11 +12,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Allen Ziegenfus
  */
+@DisplayName("[CLS-TERMCOUNTUTIL] TermCountUtil")
 public class TermCountUtilTest {
 
 	@Test
