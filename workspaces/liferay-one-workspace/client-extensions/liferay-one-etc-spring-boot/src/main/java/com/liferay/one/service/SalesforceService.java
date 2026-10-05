@@ -9,6 +9,7 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
+import com.google.auth.oauth2.ImpersonatedCredentials;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.headless.admin.address.client.dto.v1_0.Country;
@@ -30,7 +31,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.logging.Log;
@@ -146,39 +149,18 @@ public class SalesforceService extends BaseService {
 	}
 
 	private String _getAuthorization() throws Exception {
-		if (_accessToken != null) {
-			Date expirationTime = _accessToken.getExpirationTime();
+		IdTokenCredentials idTokenCredentials = _getIdTokenCredentials();
 
-			if ((System.currentTimeMillis() + _EXPIRATION_BUFFER) <
-					expirationTime.getTime()) {
+		idTokenCredentials.refreshIfExpired();
 
-				return _authorization;
-			}
+		AccessToken accessToken = idTokenCredentials.getAccessToken();
+
+		if (accessToken == null) {
+			throw new Exception(
+				"Unable to get access token for audience " + _gcfAudience);
 		}
 
-		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcfServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
-
-			IdTokenCredentials idTokenCredential =
-				IdTokenCredentials.newBuilder(
-				).setIdTokenProvider(
-					(IdTokenProvider)GoogleCredentials.fromStream(inputStream)
-				).setTargetAudience(
-					_gcfAudience
-				).build();
-
-			AccessToken accessToken = idTokenCredential.refreshAccessToken();
-
-			if (accessToken == null) {
-				throw new Exception("Unable to get access token");
-			}
-
-			_accessToken = accessToken;
-
-			_authorization = "Bearer " + accessToken.getTokenValue();
-
-			return _authorization;
-		}
+		return "Bearer " + accessToken.getTokenValue();
 	}
 
 	private JSONObject _getBillingAddressJSONObject(
@@ -202,6 +184,54 @@ public class SalesforceService extends BaseService {
 			"street",
 			billingAddress.getStreet1() + " " + billingAddress.getStreet2()
 		);
+	}
+
+	private GoogleCredentials _getGoogleCredentials() throws Exception {
+		GoogleCredentials googleCredentials = _googleCredentials;
+
+		if (googleCredentials == null) {
+			googleCredentials = GoogleCredentials.getApplicationDefault();
+
+			_googleCredentials = googleCredentials;
+		}
+
+		return googleCredentials;
+	}
+
+	private IdTokenCredentials _getIdTokenCredentials() throws Exception {
+		IdTokenCredentials idTokenCredentials = _idTokenCredentials;
+
+		if (idTokenCredentials == null) {
+			idTokenCredentials = IdTokenCredentials.newBuilder(
+			).setIdTokenProvider(
+				_getIdTokenProvider()
+			).setTargetAudience(
+				_gcfAudience
+			).build();
+
+			_idTokenCredentials = idTokenCredentials;
+		}
+
+		return idTokenCredentials;
+	}
+
+	private IdTokenProvider _getIdTokenProvider() throws Exception {
+		if (Validator.isNotNull(_gcfServiceAccount)) {
+			return ImpersonatedCredentials.create(
+				_getGoogleCredentials(), _gcfServiceAccount, null, _scopes,
+				3600);
+		}
+
+		if (Validator.isNotNull(_gcfServiceAccountKey)) {
+			try (InputStream inputStream = new ByteArrayInputStream(
+					_gcfServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
+
+				return (IdTokenProvider)GoogleCredentials.fromStream(
+					inputStream);
+			}
+		}
+
+		return (IdTokenProvider)_getGoogleCredentials();
 	}
 
 	private String _getPaymentMethodType(Order order) {
@@ -379,12 +409,10 @@ public class SalesforceService extends BaseService {
 		return null;
 	}
 
-	private static final long _EXPIRATION_BUFFER = 60 * 1000;
-
 	private static final Log _log = LogFactory.getLog(SalesforceService.class);
 
-	private AccessToken _accessToken;
-	private String _authorization;
+	private static final List<String> _scopes = Collections.singletonList(
+		"https://www.googleapis.com/auth/cloud-platform");
 
 	@Value("${liferay.one.salesforce.gcf.audience}")
 	private String _gcfAudience;
@@ -392,7 +420,13 @@ public class SalesforceService extends BaseService {
 	@Value("${liferay.one.salesforce.gcf.base.url}")
 	private String _gcfBaseUrl;
 
-	@Value("${liferay.one.salesforce.gcf.service.account.key}")
+	@Value("${liferay.one.salesforce.gcf.service.account:}")
+	private String _gcfServiceAccount;
+
+	@Value("${liferay.one.salesforce.gcf.service.account.key:}")
 	private String _gcfServiceAccountKey;
+
+	private volatile GoogleCredentials _googleCredentials;
+	private volatile IdTokenCredentials _idTokenCredentials;
 
 }
