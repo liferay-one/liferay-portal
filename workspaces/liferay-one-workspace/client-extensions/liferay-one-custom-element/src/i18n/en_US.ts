@@ -1808,6 +1808,7 @@ export default {
 	'transaction-details': 'Transaction Details',
 	'transaction-id': 'Transaction ID',
 	'trial': 'Trial',
+	'trial-deleted-successfully': 'Trial deleted successfully.',
 	'trial-details': 'Trial Details',
 	'trial-end-date': 'Trial End Date',
 	'trial-error': 'Trial Error',
