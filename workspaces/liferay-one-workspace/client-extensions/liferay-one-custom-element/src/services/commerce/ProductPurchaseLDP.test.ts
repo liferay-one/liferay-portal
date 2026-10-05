@@ -4,6 +4,7 @@
  */
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import HeadlessCommerceAdminAccount from '~/services/headless/HeadlessCommerceAdminAccount';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Liferay} from '~/services/liferay/liferay';
 import LiferayDataPlatform from '~/services/spring-boot/LiferayDataPlatform';
@@ -16,6 +17,10 @@ import type {DeliveryProduct} from '~/types/product';
 
 vi.mock('~/services/headless/CommerceUI', () => ({
 	default: {selectAccount: vi.fn()},
+}));
+
+vi.mock('~/services/headless/HeadlessCommerceAdminAccount', () => ({
+	default: {getAccountAddresses: vi.fn()},
 }));
 
 vi.mock('~/services/headless/HeadlessCommerceDeliveryCart', () => ({
@@ -66,6 +71,12 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASELDP] ProductPurchaseLDP', () => {
 			currency: {currencyCode: 'USD'},
 		});
 
+		vi.mocked(
+			HeadlessCommerceAdminAccount.getAccountAddresses
+		).mockResolvedValue({items: []} as never);
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			valid: true,
+		} as Cart);
 		vi.mocked(HeadlessCommerceDeliveryCart.createCart).mockResolvedValue({
 			id: 5,
 		} as Cart);

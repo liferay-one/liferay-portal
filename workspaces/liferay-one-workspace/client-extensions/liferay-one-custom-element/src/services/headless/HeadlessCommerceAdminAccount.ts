@@ -5,10 +5,19 @@
 
 import fetcher from '~/services/fetcher/fetcher';
 
+import type {AccountAddress} from '~/types/accounts';
+import type {APIResponse} from '~/types/api';
+
 export default class HeadlessCommerceAdminAccount {
 	static async deleteAccountAddress(id: number) {
 		return fetcher.delete(
 			`/o/headless-commerce-admin-account/v1.0/accountAddresses/${id}`
+		);
+	}
+
+	static async getAccountAddresses(accountId: number) {
+		return fetcher<APIResponse<AccountAddress>>(
+			`/o/headless-commerce-admin-account/v1.0/accounts/${accountId}/accountAddresses`
 		);
 	}
 }

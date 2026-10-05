@@ -4,9 +4,11 @@
  */
 
 import CommerceUI from '~/services/headless/CommerceUI';
+import HeadlessCommerceAdminAccount from '~/services/headless/HeadlessCommerceAdminAccount';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Analytics} from '~/services/liferay/Analytics';
 import {Liferay} from '~/services/liferay/liferay';
+import {AccountAddressType} from '~/utils/orderUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
 import type {Account} from '~/types/accounts';
@@ -75,6 +77,18 @@ export default class ProductPurchase {
 		});
 	}
 
+	protected async getAccountBillingAddressId() {
+		const {items} = await HeadlessCommerceAdminAccount.getAccountAddresses(
+			this.account.id
+		);
+
+		const address =
+			items.find((item) => item.defaultBilling) ??
+			items.find((item) => item.type !== AccountAddressType.SHIPPING);
+
+		return address?.id;
+	}
+
 	public async createOrder(cart?: Cart, _options?: unknown): Promise<Cart> {
 		const body = {
 			...this.getCart(),
@@ -86,6 +100,10 @@ export default class ProductPurchase {
 				this.orderTypeExternalReferenceCode;
 		}
 
+		if (!cart?.id && !body.billingAddress && !body.billingAddressId) {
+			body.billingAddressId = await this.getAccountBillingAddressId();
+		}
+
 		const newCart = await (cart?.id
 			? HeadlessCommerceDeliveryCart.updateCart(cart.id, body)
 			: HeadlessCommerceDeliveryCart.createCart(
@@ -93,10 +111,17 @@ export default class ProductPurchase {
 					body
 				));
 
-		await Promise.all([
+		const [, checkedOutCart] = await Promise.all([
 			CommerceUI.selectAccount(this.account.id),
 			HeadlessCommerceDeliveryCart.checkoutCart(newCart.id),
 		]);
+
+		if (checkedOutCart.valid === false) {
+			throw new Error(
+				checkedOutCart.errorMessages?.join(', ') ||
+					`Unable to check out cart ${newCart.id}`
+			);
+		}
 
 		this.analyticsTrack();
 

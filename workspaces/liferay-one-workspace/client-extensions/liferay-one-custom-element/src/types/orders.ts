@@ -25,9 +25,11 @@ export type Cart = {
 	accountId: number;
 	author?: string;
 	billingAddress: BillingAddress;
+	billingAddressId?: number;
 	cartItems: CartItem[];
 	currencyCode: string;
 	customFields: Record<string, unknown>;
+	errorMessages?: string[];
 	id: number;
 	orderStatusInfo: {
 		[key: string]: string;
@@ -47,6 +49,7 @@ export type Cart = {
 		taxValueFormatted: string;
 		totalFormatted: string;
 	};
+	valid?: boolean;
 };
 
 export type CartItem = {
