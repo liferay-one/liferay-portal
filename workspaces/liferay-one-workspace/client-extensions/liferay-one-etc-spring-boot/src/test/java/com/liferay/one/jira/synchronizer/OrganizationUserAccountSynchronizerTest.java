@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -18,6 +19,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName(
+	"[SYNC-ORGANIZATIONUSERACCOUNTSYNCHRONIZER] " +
+		"OrganizationUserAccountSynchronizer"
+)
 public class OrganizationUserAccountSynchronizerTest {
 
 	@BeforeEach

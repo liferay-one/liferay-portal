@@ -12,7 +12,10 @@ import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
+import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
+import com.liferay.one.exception.LicenseKeyValidationException;
+import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -281,6 +284,79 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetLicenseKeysDownloadChecksViewOnEveryLicenseKey()
+		throws Exception {
+
+		// REST-GET-LICENSE-KEYS-DOWNLOAD streams several keys at once, so a
+		// single key on an account the caller cannot view rejects the batch.
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		List<LicenseKey> licenseKeys = Arrays.asList(
+			_createLicenseKeyOnAccount(_ACCOUNT_ID, 1L),
+			_createLicenseKeyOnAccount(_OTHER_ACCOUNT_ID, 2L));
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			licenseKeys
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_OTHER_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.VIEW)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.getLicenseKeysDownload(
+				null, new long[] {1L, 2L}));
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.VIEW)
+		);
+
+		Mockito.verify(
+			_licenseKeyExporter, Mockito.never()
+		).toXML(
+			Mockito.anyList()
+		);
+	}
+
+	@Test
+	public void testGetLicenseKeysDownloadPropagatesUnknownLicenseKey()
+		throws Exception {
+
+		// REST-GET-LICENSE-KEYS-LICENSEKEYID-DOWNLOAD lets an unknown ID
+		// surface as an error before any permission check or export runs.
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(Mockito.any(), Mockito.anyLong())
+		).thenThrow(
+			new NoSuchLicenseKeyException()
+		);
+
+		Assertions.assertThrows(
+			NoSuchLicenseKeyException.class,
+			() -> licenseKeysRestController.getLicenseKeysDownload(null, 1L));
+
+		Mockito.verifyNoInteractions(
+			_licenseKeyExporter, _licenseKeyPermission);
+	}
+
+	@Test
 	public void testGetLicenseKeysDownloadThrowsForbiddenWhenAccountNotViewable()
 		throws Exception {
 
@@ -355,6 +431,72 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testGetLicenseKeysDownloadThrowsNotFoundWhenNoLicenseKeyIsActive()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			licenseKey.isActive()
+		).thenReturn(
+			false
+		);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.getLicenseKeysDownload(
+					null, new long[] {1L}));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
+			Mockito.eq(ActionKeys.VIEW)
+		);
+
+		Mockito.verifyNoInteractions(_licenseKeyExporter);
+	}
+
+	@Test
+	public void testGetLicenseKeysDownloadThrowsWhenLicenseKeyIsMissing()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeysByIds(
+				Mockito.any(), Mockito.any(long[].class))
+		).thenReturn(
+			Collections.singletonList(licenseKey)
+		);
+
+		Assertions.assertThrows(
+			NoSuchLicenseKeyException.class,
+			() -> licenseKeysRestController.getLicenseKeysDownload(
+				null, new long[] {1L, 2L}));
+
+		Mockito.verifyNoInteractions(
+			_licenseKeyExporter, _licenseKeyPermission);
 	}
 
 	@Test
@@ -657,6 +799,142 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPatchLicenseKeysActiveChecksAccountPermissionWithoutProject()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_mockGetLicenseKey(_createLicenseKey(1L));
+
+		licenseKeysRestController.patchLicenseKeysActive(
+			null, 1L, "{\"active\": false}");
+
+		Mockito.verify(
+			_licenseKeyPermission
+		).check(
+			_ACCOUNT_ID, ActionKeys.UPDATE, null
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			false, 1L
+		);
+
+		Mockito.verifyNoInteractions(_environmentActivationPermission);
+	}
+
+	@Test
+	public void testPatchLicenseKeysActiveChecksEnvironmentActivationForProject()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			licenseKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		_mockGetLicenseKey(licenseKey);
+
+		licenseKeysRestController.patchLicenseKeysActive(
+			null, 1L, "{\"active\": true}");
+
+		Mockito.verify(
+			_environmentActivationPermission
+		).checkLicenseKeyActivation(
+			null, _PROJECT_ERC
+		);
+
+		Mockito.verify(
+			_licenseKeyPermission, Mockito.never()
+		).check(
+			Mockito.anyLong(), Mockito.anyString(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_licenseKeyService
+		).updateLicenseKeyActive(
+			true, 1L
+		);
+	}
+
+	@Test
+	public void testPatchLicenseKeysActiveRejectsLicenseKeyUnderActivationKey()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			licenseKey.getActivationKeyId()
+		).thenReturn(
+			9L
+		);
+
+		_mockGetLicenseKey(licenseKey);
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> licenseKeysRestController.patchLicenseKeysActive(
+				null, 1L, "{\"active\": true}"));
+
+		_verifyNeverUpdatedLicenseKeyActive();
+
+		Mockito.verifyNoInteractions(
+			_environmentActivationPermission, _licenseKeyPermission);
+	}
+
+	@Test
+	public void testPatchLicenseKeysActiveRejectsMissingActiveFlag()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_mockGetLicenseKey(_createLicenseKey(1L));
+
+		Assertions.assertThrows(
+			LicenseKeyValidationException.class,
+			() -> licenseKeysRestController.patchLicenseKeysActive(
+				null, 1L, "{\"active\": \"false\"}"));
+
+		_verifyNeverUpdatedLicenseKeyActive();
+	}
+
+	@Test
+	public void testPatchLicenseKeysActiveThrowsForbiddenWithoutPermission()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_mockGetLicenseKey(_createLicenseKey(1L));
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_licenseKeyPermission
+		).check(
+			_ACCOUNT_ID, ActionKeys.UPDATE, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.patchLicenseKeysActive(
+				null, 1L, "{\"active\": true}"));
+
+		_verifyNeverUpdatedLicenseKeyActive();
+	}
+
+	@Test
 	public void testPostLicenseKeysExtend() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -900,6 +1178,23 @@ public class LicenseKeysRestControllerTest {
 			_commerceOrderService
 		).completeOrder(
 			999L, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+	}
+
+	@Test
+	public void testPostLicenseKeysTypeFreeDomainsCheckPassesWhenDomainIsFree()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		licenseKeysRestController.postLicenseKeysTypeFreeDomainsCheck(
+			"{\"domains\": \"example.com\", \"owner\": \"owner@example.com\"}");
+
+		Mockito.verify(
+			_licenseKeyService
+		).hasValidLicenseKeyTypeFree(
+			"example.com", "owner@example.com"
 		);
 	}
 
@@ -1544,6 +1839,22 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		return licenseKey;
+	}
+
+	private void _mockGetLicenseKey(LicenseKey licenseKey) throws Exception {
+		Mockito.when(
+			_licenseKeyService.getLicenseKey(null, licenseKey.getLicenseKeyId())
+		).thenReturn(
+			licenseKey
+		);
+	}
+
+	private void _verifyNeverUpdatedLicenseKeyActive() throws Exception {
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
 	}
 
 	private static final long _ACCOUNT_ID = 555L;

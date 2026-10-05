@@ -6,11 +6,13 @@
 package com.liferay.one.util;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Pedro Oliveira
  */
+@DisplayName("[CLS-SERVERINFOUTIL] ServerInfoUtil")
 public class ServerInfoUtilTest {
 
 	@Test

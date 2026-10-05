@@ -16,6 +16,7 @@ import java.util.Properties;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.boot.context.properties.bind.Bindable;
@@ -26,6 +27,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Ryan Schuhler
  */
+@DisplayName("[CLS-LICENSEKEYTYPE] LicenseKeyType")
 public class LicenseKeyTypeTest {
 
 	@BeforeEach

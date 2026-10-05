@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 /**
  * @author Drew Brokke
  */
+@DisplayName("[CLS-MEMOIZEDVALUE] MemoizedValue")
 public class MemoizedValueTest {
 
 	@BeforeEach

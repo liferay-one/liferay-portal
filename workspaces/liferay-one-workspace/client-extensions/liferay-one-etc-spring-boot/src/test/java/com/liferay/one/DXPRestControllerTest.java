@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentMatchers;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
@@ -75,6 +76,9 @@ public class DXPRestControllerTest {
 
 	@Test
 	public void testGetProjectUsage() throws Exception {
+
+		// [REST-GET-DXP-PROJECT-USAGE]
+
 		ResponseEntity<String> responseEntity =
 			_dxpRestController.getProjectUsage(null, _PROJECT_ID);
 
@@ -97,14 +101,38 @@ public class DXPRestControllerTest {
 	}
 
 	@Test
+	public void testGetProjectUsageThrowsForbiddenWhenUserAccountIsUnavailable()
+		throws Exception {
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenThrow(
+			new IllegalStateException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _dxpRestController.getProjectUsage(null, _PROJECT_ID));
+
+		Mockito.verifyNoInteractions(_consoleService);
+	}
+
+	@Test
 	public void testPostProvisioningCompletesSettledOrderBeforeDeploying()
 		throws Exception {
 
-		Order order = _createOrder(
-			"CLOUDAPP",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+		// [REST-POST-DXP-PROVISIONING-ORDERID]
 
-		_whenFetchCommerceOrder(order);
+		Order pendingOrder = _createOrder("CLOUDAPP", _PAYMENT_STATUS_PENDING);
+
+		Mockito.when(
+			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
+		).thenReturn(
+			pendingOrder,
+			_createOrder(
+				"CLOUDAPP",
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)
+		);
 
 		ResponseEntity<Void> responseEntity =
 			_dxpRestController.postProvisioning(
@@ -112,13 +140,28 @@ public class DXPRestControllerTest {
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
-		Mockito.verify(
+		InOrder inOrder = Mockito.inOrder(
+			_cloudAppService, _commerceOrderService);
+
+		inOrder.verify(
 			_commerceOrderService
-		).completeSettledOrder(
-			order
+		).fetchCommerceOrder(
+			_ORDER_ID
 		);
 
-		Mockito.verify(
+		inOrder.verify(
+			_commerceOrderService
+		).completeSettledOrder(
+			pendingOrder
+		);
+
+		inOrder.verify(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		inOrder.verify(
 			_cloudAppService
 		).deployCloudApp(
 			_ORDER_ID, _ORDER_ITEM_ID, _PROJECT_ID
@@ -145,6 +188,29 @@ public class DXPRestControllerTest {
 		).deployCloudApp(
 			_ORDER_ID, _ORDER_ITEM_ID, _PROJECT_ID
 		);
+	}
+
+	@Test
+	public void testPostProvisioningRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			ArgumentMatchers.eq(_ORDER_ID),
+			ArgumentMatchers.any(UserAccount.class)
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _dxpRestController.postProvisioning(
+				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID)));
+
+		Mockito.verifyNoInteractions(_commerceOrderService, _consoleService);
+
+		_verifyNeverDeployed();
 	}
 
 	@Test
@@ -202,6 +268,18 @@ public class DXPRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseEntity.getStatusCode());
+
+		_verifyNeverDeployed();
+	}
+
+	@Test
+	public void testPostProvisioningThrowsWhenOrderDoesNotExist()
+		throws Exception {
+
+		Assertions.assertThrows(
+			IllegalArgumentException.class,
+			() -> _dxpRestController.postProvisioning(
+				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID)));
 
 		_verifyNeverDeployed();
 	}

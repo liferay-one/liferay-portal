@@ -16,6 +16,7 @@ import java.util.function.BiPredicate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
@@ -26,6 +27,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Drew Brokke
  */
+@DisplayName(
+	"[SYNC-ORGANIZATIONUSERACCOUNTROLESYNCHRONIZER] " +
+		"OrganizationUserAccountRoleSynchronizer"
+)
 public class OrganizationUserAccountRoleSynchronizerTest {
 
 	@BeforeEach

@@ -8,11 +8,13 @@ package com.liferay.one.model;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 /**
  * @author Ryan Schuhler
  */
+@DisplayName("[CLS-USAGEDEFINITION] UsageDefinition")
 public class UsageDefinitionTest {
 
 	@Test
