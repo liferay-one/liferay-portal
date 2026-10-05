@@ -13,6 +13,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -96,22 +97,7 @@ public class UserAccountUtil {
 	}
 
 	public static boolean hasAccountRole(
-		UserAccount userAccount, long accountId, String[] roleNames) {
-
-		Set<String> accountRoleNames = getAccountRoleNames(
-			userAccount, accountId);
-
-		for (String roleName : roleNames) {
-			if (accountRoleNames.contains(roleName)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static boolean hasAccountRole(
-		UserAccount userAccount, String[] roleNames) {
+		UserAccount userAccount, List<String> roleNames) {
 
 		AccountBrief[] accountBriefs = userAccount.getAccountBriefs();
 
@@ -132,6 +118,21 @@ public class UserAccountUtil {
 						return true;
 					}
 				}
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean hasAccountRole(
+		UserAccount userAccount, long accountId, List<String> roleNames) {
+
+		Set<String> accountRoleNames = getAccountRoleNames(
+			userAccount, accountId);
+
+		for (String roleName : roleNames) {
+			if (accountRoleNames.contains(roleName)) {
+				return true;
 			}
 		}
 

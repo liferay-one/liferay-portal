@@ -20,7 +20,7 @@ import org.json.JSONObject;
 /**
  * @author Felipe Veloso
  */
-public class EntitlementDefinition {
+public final class EntitlementDefinition {
 
 	public EntitlementDefinition(JSONObject jsonObject) {
 		_active = jsonObject.optBoolean("active");

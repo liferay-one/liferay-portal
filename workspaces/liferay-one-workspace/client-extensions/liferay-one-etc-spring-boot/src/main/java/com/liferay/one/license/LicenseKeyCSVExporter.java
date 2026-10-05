@@ -150,10 +150,6 @@ public class LicenseKeyCSVExporter {
 			_commerceOrderService.getAccountSupportInfo(
 				account.getId(), account.getDefaultBillingAddressId());
 
-		if (accountSupportInfo == null) {
-			return StringPool.BLANK;
-		}
-
 		return accountSupportInfo.getSupportRegion();
 	}
 

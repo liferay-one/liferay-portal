@@ -5,6 +5,10 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Pedro Oliveira
  */
@@ -17,10 +21,6 @@ public class LicenseKeyGenerationConstants {
 	public static final int DEVELOPER_DURATION_DAYS = 365;
 
 	public static final int DEVELOPER_MAJOR_VERSION_COUNT = 2;
-
-	public static final String[] DOWNLOADABLE_KEY_TYPES = {
-		"developer", "developer-cluster"
-	};
 
 	public static final String ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION =
 		"licenseGeneration";
@@ -41,5 +41,9 @@ public class LicenseKeyGenerationConstants {
 		"PRDCT-PORTAL";
 
 	public static final String PRODUCT_GROUP_DXP = "dxp";
+
+	public static final List<String> downloadableKeyTypes =
+		Collections.unmodifiableList(
+			Arrays.asList("developer", "developer-cluster"));
 
 }

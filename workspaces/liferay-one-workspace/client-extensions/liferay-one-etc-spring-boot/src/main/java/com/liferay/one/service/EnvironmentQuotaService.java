@@ -134,7 +134,7 @@ public class EnvironmentQuotaService {
 
 		List<EnvironmentQuota> environmentQuotas = new ArrayList<>();
 
-		for (String type : EnvironmentConstants.TYPES) {
+		for (String type : EnvironmentConstants.types) {
 			environmentQuotas.add(
 				_getEnvironmentQuota(entitlements, environments, type));
 		}

@@ -12,7 +12,7 @@ import org.json.JSONObject;
 /**
  * @author Amos Fong
  */
-public class TicketAttachment {
+public final class TicketAttachment {
 
 	public static final int STATUS_APPROVED = 0;
 

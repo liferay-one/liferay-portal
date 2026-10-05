@@ -29,7 +29,6 @@ import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashSet;
@@ -384,9 +383,7 @@ public class UserAssignmentService {
 		Account account, String accountRoleName, boolean assigned,
 		UserAccount userAccount) {
 
-		if (!ArrayUtil.contains(
-				RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES, accountRoleName)) {
-
+		if (!RoleConstants.namesPartnerAccountRoles.contains(accountRoleName)) {
 			return;
 		}
 

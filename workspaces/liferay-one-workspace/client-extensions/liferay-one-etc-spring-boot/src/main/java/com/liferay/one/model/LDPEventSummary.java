@@ -24,7 +24,7 @@ import org.json.JSONObject;
  *
  * @author Drew Brokke
  */
-public class LDPEventSummary {
+public final class LDPEventSummary {
 
 	public LDPEventSummary(JSONObject jsonObject) {
 		_dataSourceEventCounts = _parseDataSourceEventCounts(

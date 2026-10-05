@@ -39,7 +39,6 @@ import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.EntitlementUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.LocalDate;
@@ -292,15 +291,13 @@ public class ProjectRestController extends OneBaseRestController {
 	private BaseUsageStrategy _createUsageStrategy(
 		List<Entitlement> entitlements, String productName, String response) {
 
-		if (ArrayUtil.contains(
-				CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS,
+		if (CommerceProductConstants.namesExperienceProducts.contains(
 				productName)) {
 
 			return new ExperienceUsageStrategy(response, entitlements);
 		}
 
-		if (ArrayUtil.contains(
-				CommerceProductConstants.NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
+		if (CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
 				productName)) {
 
 			return new LDPUsageStrategy(response, entitlements);
@@ -350,8 +347,7 @@ public class ProjectRestController extends OneBaseRestController {
 			project.getExternalReferenceCode();
 
 		try {
-			if (ArrayUtil.contains(
-					CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS,
+			if (CommerceProductConstants.namesExperienceProducts.contains(
 					productName)) {
 
 				LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
@@ -361,10 +357,8 @@ public class ProjectRestController extends OneBaseRestController {
 					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER));
 			}
 
-			if (ArrayUtil.contains(
-					CommerceProductConstants.
-						NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
-					productName)) {
+			if (CommerceProductConstants.namesLiferayDataPlatformProducts.
+					contains(productName)) {
 
 				return _dataOpsUsageService.fetchLDPProjectUsage(
 					projectExternalReferenceCode);
@@ -511,14 +505,11 @@ public class ProjectRestController extends OneBaseRestController {
 				"Unable to find product " + productExternalReferenceCode);
 		}
 
-		if (!ArrayUtil.contains(
-				CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS,
+		if (!CommerceProductConstants.namesExperienceProducts.contains(
 				productName) &&
-			!ArrayUtil.contains(
-				CommerceProductConstants.NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
+			!CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
 				productName) &&
-			!ArrayUtil.contains(
-				CommerceProductConstants.NAMES_SAAS_PLAN_PRODUCTS,
+			!CommerceProductConstants.namesSaaSPlanProducts.contains(
 				productName)) {
 
 			throw new InvalidUsageProductException(
@@ -560,26 +551,21 @@ public class ProjectRestController extends OneBaseRestController {
 			return false;
 		}
 
-		if (ArrayUtil.contains(
-				CommerceProductConstants.NAMES_EXPERIENCE_PRODUCTS,
+		if (CommerceProductConstants.namesExperienceProducts.contains(
 				dashboardProductName)) {
 
-			return ArrayUtil.contains(
-				CommerceProductConstants.NAMES_EXPERIENCE_ENTITLEMENT_PRODUCTS,
-				productName);
+			return CommerceProductConstants.namesExperienceEntitlementProducts.
+				contains(productName);
 		}
 
-		if (ArrayUtil.contains(
-				CommerceProductConstants.NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
+		if (CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
 				dashboardProductName)) {
 
-			return ArrayUtil.contains(
-				CommerceProductConstants.NAMES_LIFERAY_DATA_PLATFORM_PRODUCTS,
-				productName);
+			return CommerceProductConstants.namesLiferayDataPlatformProducts.
+				contains(productName);
 		}
 
-		if (ArrayUtil.contains(
-				CommerceProductConstants.NAMES_SAAS_PLAN_ENTITLEMENT_PRODUCTS,
+		if (CommerceProductConstants.namesSaaSPlanEntitlementProducts.contains(
 				productName) ||
 			productName.startsWith(
 				CommerceProductConstants.
@@ -664,8 +650,7 @@ public class ProjectRestController extends OneBaseRestController {
 	}
 
 	private void _validateProjectRole(String accountRoleExternalReferenceCode) {
-		if (!ArrayUtil.contains(
-				RoleConstants.ERCS_SUPPORT_PROJECT,
+		if (!RoleConstants.ercsSupportProject.contains(
 				accountRoleExternalReferenceCode)) {
 
 			throw new ResponseStatusException(

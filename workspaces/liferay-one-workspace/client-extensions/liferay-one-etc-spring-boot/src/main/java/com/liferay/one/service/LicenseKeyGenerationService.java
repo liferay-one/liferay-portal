@@ -26,7 +26,6 @@ import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -84,8 +83,7 @@ public class LicenseKeyGenerationService {
 			String keyType, String productName, Project project, String version)
 		throws Exception {
 
-		if (!ArrayUtil.contains(
-				LicenseKeyGenerationConstants.DOWNLOADABLE_KEY_TYPES,
+		if (!LicenseKeyGenerationConstants.downloadableKeyTypes.contains(
 				keyType)) {
 
 			throw new LicenseKeyEntitlementException(

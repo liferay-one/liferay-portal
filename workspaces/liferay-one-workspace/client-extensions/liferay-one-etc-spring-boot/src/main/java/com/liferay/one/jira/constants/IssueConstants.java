@@ -7,6 +7,10 @@ package com.liferay.one.jira.constants;
 
 import com.liferay.petra.string.StringPool;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Jenny Chen
  */
@@ -24,16 +28,18 @@ public interface IssueConstants {
 
 	public static final String STATUS_SOLUTION_PROPOSED = "Solution Proposed";
 
-	public static final String[] STATUSES_CLOSED = {
-		STATUS_CLOSED, STATUS_FLS_CLOSED, STATUS_SOLUTION_ACCEPTED
-	};
-
-	public static final String[] STATUSES_SOLVED_AND_CLOSED = {
-		STATUS_CLOSED, STATUS_FLS_CLOSED, STATUS_FLS_SOLVED, STATUS_INACTIVE,
-		STATUS_SOLUTION_ACCEPTED, STATUS_SOLUTION_PROPOSED
-	};
-
 	public static final String TYPE_GENERAL_REQUEST = "General Request";
+
+	public static final List<String> statusesClosed =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				STATUS_CLOSED, STATUS_FLS_CLOSED, STATUS_SOLUTION_ACCEPTED));
+	public static final List<String> statusesSolvedAndClosed =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				STATUS_CLOSED, STATUS_FLS_CLOSED, STATUS_FLS_SOLVED,
+				STATUS_INACTIVE, STATUS_SOLUTION_ACCEPTED,
+				STATUS_SOLUTION_PROPOSED));
 
 	public static String toJQLCustomField(String customField) {
 		int index = customField.indexOf(StringPool.UNDERLINE);

@@ -143,8 +143,7 @@ public class CommerceAccountCurrencyService extends OneBaseService {
 			return;
 		}
 
-		if (!ArrayUtil.contains(
-				CommerceCurrencyConstants.CODES_SUPPORTED_CURRENCIES,
+		if (!CommerceCurrencyConstants.codesSupportedCurrencies.contains(
 				currencyIsoCode)) {
 
 			if (_log.isWarnEnabled()) {

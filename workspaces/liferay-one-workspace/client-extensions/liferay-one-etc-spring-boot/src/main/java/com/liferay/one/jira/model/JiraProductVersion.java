@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * @author Felipe Franca
  */
-public class JiraProductVersion {
+public final class JiraProductVersion {
 
 	public JiraProductVersion(JSONObject jsonObject) {
 		_id = jsonObject.getString("id");

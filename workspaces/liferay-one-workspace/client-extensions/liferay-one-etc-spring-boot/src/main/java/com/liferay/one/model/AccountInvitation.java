@@ -23,7 +23,7 @@ import org.json.JSONObject;
 /**
  * @author Pedro Oliveira
  */
-public class AccountInvitation {
+public final class AccountInvitation {
 
 	public AccountInvitation(JSONObject jsonObject) {
 		_accepted = jsonObject.optBoolean("accepted");

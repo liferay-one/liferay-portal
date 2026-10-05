@@ -49,7 +49,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
@@ -711,7 +710,7 @@ public class CloudRestController extends OneBaseRestController {
 
 		String type = jsonObject.optString("type");
 
-		if (!ArrayUtil.contains(EnvironmentConstants.TYPES, type)) {
+		if (!EnvironmentConstants.types.contains(type)) {
 			throw new ResponseStatusException(
 				HttpStatus.BAD_REQUEST,
 				"The environment type is not recognized");
@@ -806,9 +805,7 @@ public class CloudRestController extends OneBaseRestController {
 			String environmentProfile, String projectExternalReferenceCode)
 		throws Exception {
 
-		if (!ArrayUtil.contains(
-				EnvironmentConstants.PROFILES, environmentProfile)) {
-
+		if (!EnvironmentConstants.profiles.contains(environmentProfile)) {
 			throw new ResponseStatusException(
 				HttpStatus.BAD_REQUEST,
 				"The environment profile is not recognized");
@@ -1260,8 +1257,7 @@ public class CloudRestController extends OneBaseRestController {
 		Entitlement cloudNativeEntitlement = null;
 
 		for (Entitlement entitlement : entitlements) {
-			if (ArrayUtil.contains(
-					EntitlementConstants.NAMES_CLOUD_NATIVE,
+			if (EntitlementConstants.namesCloudNative.contains(
 					entitlement.getName())) {
 
 				cloudNativeEntitlement = entitlement;
@@ -1329,18 +1325,17 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private int _getTerminationStatusRank(Entitlement entitlement) {
-		String terminationStatus = entitlement.getTerminationStatus();
+		List<String> terminationStatuses =
+			EntitlementConstants.terminationStatuses;
 
-		String[] terminationStatuses =
-			EntitlementConstants.TERMINATION_STATUSES;
+		int index = terminationStatuses.indexOf(
+			entitlement.getTerminationStatus());
 
-		for (int i = 0; i < terminationStatuses.length; i++) {
-			if (Objects.equals(terminationStatuses[i], terminationStatus)) {
-				return i;
-			}
+		if (index < 0) {
+			return terminationStatuses.size();
 		}
 
-		return terminationStatuses.length;
+		return index;
 	}
 
 	private boolean _hasAddOn(Product product, String body) throws Exception {

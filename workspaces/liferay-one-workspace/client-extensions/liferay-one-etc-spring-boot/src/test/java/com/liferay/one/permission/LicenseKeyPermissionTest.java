@@ -92,7 +92,7 @@ public class LicenseKeyPermissionTest {
 	public void testCheckUpdateGrantsManageLicenseKeysAccountRoles()
 		throws Exception {
 
-		for (String roleName : RoleConstants.NAMES_MANAGE_LICENSE_KEYS) {
+		for (String roleName : RoleConstants.namesManageLicenseKeys) {
 			LicenseKeyPermission licenseKeyPermission = _createPermission(
 				_createUserAccount(
 					new String[0],

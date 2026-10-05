@@ -5,13 +5,14 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Keven Leone
  */
 public class CommerceOrderConstants {
-
-	public static final String[] CLOUD_APP_ORDER_TYPE_EXTERNAL_REFERENCE_CODES =
-		{"CLOUDAPP", "CLOUD_APP"};
 
 	public static final int ORDER_PAYMENT_STATUS_COMPLETED = 0;
 
@@ -36,5 +37,8 @@ public class CommerceOrderConstants {
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR = "DSR";
 
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_LDP = "LDP";
+
+	public static final List<String> cloudAppOrderTypeExternalReferenceCodes =
+		Collections.unmodifiableList(Arrays.asList("CLOUDAPP", "CLOUD_APP"));
 
 }

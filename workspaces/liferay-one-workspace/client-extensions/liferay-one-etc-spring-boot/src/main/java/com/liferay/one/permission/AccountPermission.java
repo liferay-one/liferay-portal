@@ -65,24 +65,21 @@ public class AccountPermission {
 			}
 
 			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_ACCOUNT_MANAGER,
+				if (RoleConstants.namesAccountManager.contains(
 						roleBrief.getName()) &&
 					actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
 
 					return true;
 				}
 
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_SUPPORT_ACCOUNT,
+				if (RoleConstants.namesSupportAccount.contains(
 						roleBrief.getName()) &&
 					actionId.equals(ActionKeys.VIEW)) {
 
 					return true;
 				}
 
-				if (ArrayUtil.contains(
-						RoleConstants.NAMES_SUPPORT_ACCOUNT_TICKET,
+				if (RoleConstants.namesSupportAccountTicket.contains(
 						roleBrief.getName()) &&
 					actionId.equals(ActionKeys.UPDATE)) {
 

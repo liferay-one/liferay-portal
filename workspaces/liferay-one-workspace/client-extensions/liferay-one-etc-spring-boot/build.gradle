@@ -106,7 +106,7 @@ sourceSets {
 
 spotbugs {
 	excludeFilter = file("spotbugs-exclude.xml")
-	ignoreFailures = true
+	ignoreFailures = false
 }
 
 spotbugsTest {

@@ -5,6 +5,10 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Felipe Veloso
  */
@@ -17,11 +21,6 @@ public class EntitlementConstants {
 
 	public static final String EXTERNAL_REFERENCE_CODE_PORTAL_EWSA =
 		"C_ENT_DEF_PORTAL_EWSA";
-
-	public static final String[] EXTERNAL_REFERENCE_CODES_SELF_HOSTED = {
-		EXTERNAL_REFERENCE_CODE_DXP, EXTERNAL_REFERENCE_CODE_PORTAL,
-		EXTERNAL_REFERENCE_CODE_PORTAL_EWSA
-	};
 
 	public static final String GRANT_TYPE_UNLIMITED = "unlimited";
 
@@ -141,27 +140,6 @@ public class EntitlementConstants {
 
 	public static final String NAME_VCPU = "vcpu";
 
-	public static final String[] NAMES_CLOUD_NATIVE = {
-		NAME_CLOUD_NATIVE, NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
-		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
-		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
-		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE
-	};
-
-	public static final String[] NAMES_PRODUCTION_PODS = {
-		NAME_1_PRODUCTION_POD, NAME_UP_TO_3_PRODUCTION_PODS,
-		NAME_UP_TO_5_PRODUCTION_PODS, NAME_UP_TO_7_PRODUCTION_PODS,
-		NAME_UP_TO_9_PRODUCTION_PODS, NAME_UP_TO_CUSTOM_PRODUCTION_PODS
-	};
-
-	public static final String[] NAMES_SLAS = {
-		NAME_GLOBAL_24_7_SUPPORT, NAME_GOLD_SUPPORT, NAME_LIMITED_SUPPORT,
-		NAME_PLATINUM_SUPPORT, NAME_PREMIER_24_7_SUPPORT,
-		NAME_PREMIUM_SUBSCRIPTION, NAME_SELF_SERVICE_SUPPORT,
-		NAME_SILVER_SUBSCRIPTION, NAME_STANDARD_8_5_SUPPORT,
-		NAME_STRATEGIC_24_7_SUPPORT
-	};
-
 	public static final String STATE_ACTIVE = "Active";
 
 	public static final String STATE_EXPIRED = "Expired";
@@ -174,9 +152,37 @@ public class EntitlementConstants {
 
 	public static final String TERMINATION_STATUS_TERMINATED = "terminated";
 
-	public static final String[] TERMINATION_STATUSES = {
-		TERMINATION_STATUS_ACTIVE, TERMINATION_STATUS_SUSPENDED,
-		TERMINATION_STATUS_TERMINATED
-	};
+	public static final List<String> externalReferenceCodesSelfHosted =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				EXTERNAL_REFERENCE_CODE_DXP, EXTERNAL_REFERENCE_CODE_PORTAL,
+				EXTERNAL_REFERENCE_CODE_PORTAL_EWSA));
+	public static final List<String> namesCloudNative =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_CLOUD_NATIVE,
+				NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
+				NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
+				NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
+				NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE));
+	public static final List<String> namesProductionPods =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_1_PRODUCTION_POD, NAME_UP_TO_3_PRODUCTION_PODS,
+				NAME_UP_TO_5_PRODUCTION_PODS, NAME_UP_TO_7_PRODUCTION_PODS,
+				NAME_UP_TO_9_PRODUCTION_PODS,
+				NAME_UP_TO_CUSTOM_PRODUCTION_PODS));
+	public static final List<String> namesSLAs = Collections.unmodifiableList(
+		Arrays.asList(
+			NAME_GLOBAL_24_7_SUPPORT, NAME_GOLD_SUPPORT, NAME_LIMITED_SUPPORT,
+			NAME_PLATINUM_SUPPORT, NAME_PREMIER_24_7_SUPPORT,
+			NAME_PREMIUM_SUBSCRIPTION, NAME_SELF_SERVICE_SUPPORT,
+			NAME_SILVER_SUBSCRIPTION, NAME_STANDARD_8_5_SUPPORT,
+			NAME_STRATEGIC_24_7_SUPPORT));
+	public static final List<String> terminationStatuses =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				TERMINATION_STATUS_ACTIVE, TERMINATION_STATUS_SUSPENDED,
+				TERMINATION_STATUS_TERMINATED));
 
 }

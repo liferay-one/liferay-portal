@@ -5,6 +5,10 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Felipe Franca
  * @author Felipe Veloso
@@ -16,14 +20,6 @@ public class RoleConstants {
 	public static final String ERC_PROJECT_REQUESTER = "C_PROJECT_REQUESTER";
 
 	public static final String ERC_PROJECT_USER = "C_PROJECT_USER";
-
-	public static final String[] ERCS_SUPPORT_PROJECT = {
-		ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER, ERC_PROJECT_USER
-	};
-
-	public static final String[] ERCS_SUPPORT_PROJECT_TICKET = {
-		ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER
-	};
 
 	public static final String NAME_ACCOUNT_ADMINISTRATOR =
 		"Account Administrator";
@@ -66,30 +62,41 @@ public class RoleConstants {
 	public static final String NAME_SUPPORT_ADMINISTRATOR =
 		"Support Administrator";
 
-	public static final String[] NAMES_ACCOUNT_MANAGER = {
-		NAME_ACCOUNT_ADMINISTRATOR, NAME_PARTNER_ACCOUNT_ADMIN, NAME_SSA_ADMIN
-	};
-
-	public static final String[] NAMES_CUSTOMER_ACCOUNT_ROLES = {
-		NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER, NAME_ACCOUNT_REQUESTER,
-		NAME_SUPPORT_ADMINISTRATOR
-	};
-
-	public static final String[] NAMES_MANAGE_LICENSE_KEYS = {
-		NAME_LIFERAY_SALES, NAME_PARTNER_MANAGER, NAME_SUPPORT_ADMINISTRATOR
-	};
-
-	public static final String[] NAMES_PARTNER_ACCOUNT_ROLES = {
-		NAME_PARTNER_MANAGER, NAME_PARTNER_MARKETING_USER, NAME_PARTNER_MEMBER,
-		NAME_PARTNER_SALES_USER, NAME_PARTNER_TECHNICAL_USER
-	};
-
-	public static final String[] NAMES_SUPPORT_ACCOUNT = {
-		NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER, NAME_ACCOUNT_REQUESTER
-	};
-
-	public static final String[] NAMES_SUPPORT_ACCOUNT_TICKET = {
-		NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_REQUESTER
-	};
+	public static final List<String> ercsSupportProject =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER, ERC_PROJECT_USER));
+	public static final List<String> ercsSupportProjectTicket =
+		Collections.unmodifiableList(
+			Arrays.asList(ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER));
+	public static final List<String> namesAccountManager =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_ACCOUNT_ADMINISTRATOR, NAME_PARTNER_ACCOUNT_ADMIN,
+				NAME_SSA_ADMIN));
+	public static final List<String> namesCustomerAccountRoles =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER,
+				NAME_ACCOUNT_REQUESTER, NAME_SUPPORT_ADMINISTRATOR));
+	public static final List<String> namesManageLicenseKeys =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_LIFERAY_SALES, NAME_PARTNER_MANAGER,
+				NAME_SUPPORT_ADMINISTRATOR));
+	public static final List<String> namesPartnerAccountRoles =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_PARTNER_MANAGER, NAME_PARTNER_MARKETING_USER,
+				NAME_PARTNER_MEMBER, NAME_PARTNER_SALES_USER,
+				NAME_PARTNER_TECHNICAL_USER));
+	public static final List<String> namesSupportAccount =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER,
+				NAME_ACCOUNT_REQUESTER));
+	public static final List<String> namesSupportAccountTicket =
+		Collections.unmodifiableList(
+			Arrays.asList(NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_REQUESTER));
 
 }

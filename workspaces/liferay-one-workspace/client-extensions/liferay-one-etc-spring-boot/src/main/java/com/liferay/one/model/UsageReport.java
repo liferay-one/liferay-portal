@@ -14,7 +14,7 @@ import org.json.JSONObject;
 /**
  * @author Drew Brokke
  */
-public class UsageReport {
+public final class UsageReport {
 
 	public UsageReport(JSONObject jsonObject) {
 		_accountExternalReferenceCode = jsonObject.optString(

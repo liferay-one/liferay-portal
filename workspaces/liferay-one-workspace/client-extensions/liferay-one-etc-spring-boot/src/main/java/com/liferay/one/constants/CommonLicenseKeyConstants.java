@@ -52,11 +52,14 @@ public class CommonLicenseKeyConstants {
 
 	private static final Set<String>
 		_commerceEntitlementDefinitionExternalReferenceCodes =
-			SetUtil.fromArray("C_ENT_DEF_COMMERCE", "C_ENT_DEF_COMMERCE_CLOUD");
+			Collections.unmodifiableSet(
+				SetUtil.fromArray(
+					"C_ENT_DEF_COMMERCE", "C_ENT_DEF_COMMERCE_CLOUD"));
 	private static final Set<String>
 		_enterpriseSearchEntitlementDefinitionExternalReferenceCodes =
-			SetUtil.fromArray(
-				"C_ENT_DEF_ENTERPRISE_SEARCH",
-				"C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD");
+			Collections.unmodifiableSet(
+				SetUtil.fromArray(
+					"C_ENT_DEF_ENTERPRISE_SEARCH",
+					"C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD"));
 
 }

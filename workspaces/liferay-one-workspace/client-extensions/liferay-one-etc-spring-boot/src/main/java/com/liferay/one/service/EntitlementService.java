@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -426,17 +427,23 @@ public class EntitlementService extends OneBaseService {
 			_getEntitlementNamesFilterString(
 				"r_projectToEntitlement_c_projectERC eq '" +
 					escapeODataString(projectExternalReferenceCode) + "'",
-				entitlementNames));
+				Arrays.asList(entitlementNames)));
 
 		return !entitlements.isEmpty();
 	}
 
-	public boolean hasEntitlement(long accountId, String... entitlementNames)
+	public boolean hasEntitlement(long accountId, List<String> entitlementNames)
 		throws Exception {
 
 		return _hasEntitlement(
 			"r_accountEntryToEntitlement_accountEntryId eq '" + accountId + "'",
 			entitlementNames);
+	}
+
+	public boolean hasEntitlement(long accountId, String... entitlementNames)
+		throws Exception {
+
+		return hasEntitlement(accountId, Arrays.asList(entitlementNames));
 	}
 
 	public boolean hasEntitlement(
@@ -446,7 +453,7 @@ public class EntitlementService extends OneBaseService {
 		return _hasEntitlement(
 			"r_projectToEntitlement_c_projectERC eq '" +
 				escapeODataString(projectExternalReferenceCode) + "'",
-			entitlementNames);
+			Arrays.asList(entitlementNames));
 	}
 
 	public void updateEntitlementContract(long entitlementId, long contractId)
@@ -587,21 +594,21 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	private String _getEntitlementNamesFilterString(
-		String filterString, String... entitlementNames) {
+		String filterString, List<String> entitlementNames) {
 
-		StringBundler sb = new StringBundler((entitlementNames.length * 3) + 4);
+		StringBundler sb = new StringBundler((entitlementNames.size() * 3) + 4);
 
 		sb.append("(");
 		sb.append(filterString);
 		sb.append(") and (");
 
-		for (int i = 0; i < entitlementNames.length; i++) {
+		for (int i = 0; i < entitlementNames.size(); i++) {
 			if (i > 0) {
 				sb.append(" or ");
 			}
 
 			sb.append("name eq '");
-			sb.append(escapeODataString(entitlementNames[i]));
+			sb.append(escapeODataString(entitlementNames.get(i)));
 			sb.append("'");
 		}
 
@@ -670,10 +677,10 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	private boolean _hasEntitlement(
-			String filterString, String... entitlementNames)
+			String filterString, List<String> entitlementNames)
 		throws Exception {
 
-		if (entitlementNames.length == 0) {
+		if (entitlementNames.isEmpty()) {
 			return false;
 		}
 

@@ -20,7 +20,7 @@ import org.json.JSONObject;
 /**
  * @author Amos Fong
  */
-public class LicenseKey {
+public final class LicenseKey {
 
 	public LicenseKey(JSONObject jsonObject) {
 		_accountEntryId = jsonObject.optLong(

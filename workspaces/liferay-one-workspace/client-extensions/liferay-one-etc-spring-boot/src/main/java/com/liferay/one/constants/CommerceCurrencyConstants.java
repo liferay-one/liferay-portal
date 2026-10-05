@@ -5,13 +5,18 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Kyle Bischof
  */
 public class CommerceCurrencyConstants {
 
-	public static final String[] CODES_SUPPORTED_CURRENCIES = {
-		"AUD", "BRL", "EUR", "GBP", "INR", "JPY", "SGD", "USD"
-	};
+	public static final List<String> codesSupportedCurrencies =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				"AUD", "BRL", "EUR", "GBP", "INR", "JPY", "SGD", "USD"));
 
 }

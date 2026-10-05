@@ -88,7 +88,7 @@ public class ProvisioningEmailService extends OneBaseService {
 		for (UserAccount userAccount : userAccounts) {
 			if (UserAccountUtil.hasAccountRole(
 					userAccount, account.getId(),
-					RoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
+					RoleConstants.namesCustomerAccountRoles) &&
 				UserAccountUtil.isVerified(userAccount)) {
 
 				_sendWelcomeEmail(
@@ -398,12 +398,12 @@ public class ProvisioningEmailService extends OneBaseService {
 
 			if ((UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					RoleConstants.NAMES_CUSTOMER_ACCOUNT_ROLES) &&
+					RoleConstants.namesCustomerAccountRoles) &&
 				 _entitlementService.hasEntitlement(
-					 accountId, EntitlementConstants.NAMES_SLAS)) ||
+					 accountId, EntitlementConstants.namesSLAs)) ||
 				(UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES) &&
+					RoleConstants.namesPartnerAccountRoles) &&
 				 _entitlementService.hasEntitlement(
 					 accountId, EntitlementConstants.NAME_PARTNER))) {
 
@@ -424,7 +424,7 @@ public class ProvisioningEmailService extends OneBaseService {
 		long accountId = account.getId();
 
 		if (_entitlementService.hasEntitlement(
-				accountId, EntitlementConstants.NAMES_SLAS) ||
+				accountId, EntitlementConstants.namesSLAs) ||
 			_entitlementService.hasEntitlement(
 				accountId, EntitlementConstants.NAME_PARTNER)) {
 

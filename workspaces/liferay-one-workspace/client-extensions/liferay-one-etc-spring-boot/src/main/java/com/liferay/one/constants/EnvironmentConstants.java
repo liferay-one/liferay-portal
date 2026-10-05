@@ -5,6 +5,10 @@
 
 package com.liferay.one.constants;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * @author Amos Fong
  */
@@ -34,18 +38,15 @@ public class EnvironmentConstants {
 
 	public static final String PROFILE_SAAS = "saas";
 
-	public static final String[] PROFILES = {
-		PROFILE_ANALYTICS_CLOUD, PROFILE_PAAS, PROFILE_SAAS
-	};
-
 	public static final String TYPE_NONPRODUCTION = "non-production";
 
 	public static final String TYPE_PRODUCTION = "production";
 
 	public static final String TYPE_UAT = "uat";
 
-	public static final String[] TYPES = {
-		TYPE_NONPRODUCTION, TYPE_PRODUCTION, TYPE_UAT
-	};
+	public static final List<String> profiles = Collections.unmodifiableList(
+		Arrays.asList(PROFILE_ANALYTICS_CLOUD, PROFILE_PAAS, PROFILE_SAAS));
+	public static final List<String> types = Collections.unmodifiableList(
+		Arrays.asList(TYPE_NONPRODUCTION, TYPE_PRODUCTION, TYPE_UAT));
 
 }
