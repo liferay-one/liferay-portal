@@ -7,6 +7,11 @@
 
 import {parsePlan, validatePlan} from './lib/plan.ts';
 import {bar, pct} from './lib/progress.ts';
+import {
+	indexRequirements,
+	isTraceable,
+	parseRequirements,
+} from './lib/requirements.ts';
 import {indexTests} from './lib/testsIndex.ts';
 
 function main(): number {
@@ -95,7 +100,52 @@ function main(): number {
 	);
 	console.log('');
 
+	const requirementIndex = indexRequirements(parseRequirements());
+	const traceable = items.filter(isTraceable);
+
+	const isTraced = (id: string) => requirementIndex.has(id);
+
+	const untraced = traceable
+		.filter((item) => !isTraced(item.id))
+		.sort((left, right) => left.priority.localeCompare(right.priority));
+
+	console.log('Requirement traceability — does a requirement cite it?\n');
+
+	for (const file of [
+		...new Set(traceable.map((item) => item.file)),
+	].sort()) {
+		const inFile = traceable.filter((item) => item.file === file);
+		const done = inFile.filter((item) => isTraced(item.id)).length;
+
+		console.log(
+			`  ${bar(done, inFile.length)} ${pct(done, inFile.length).padStart(6)}  ` +
+				`${file.replace(/\.md$/, '').padEnd(20)} ${done}/${inFile.length}`
+		);
+	}
+
+	const tracedCount = traceable.length - untraced.length;
+
+	console.log('');
+	console.log(
+		`  ${bar(tracedCount, traceable.length)} ` +
+			`${pct(tracedCount, traceable.length).padStart(6)}  ` +
+			`TRACED               ${tracedCount}/${traceable.length}`
+	);
+	console.log('');
+
 	if (list) {
+		if (untraced.length) {
+			console.log(`Untraced (${untraced.length}):\n`);
+
+			for (const item of untraced) {
+				console.log(
+					`  ${item.priority}  ${item.id}  — ${item.requirement}`
+				);
+			}
+
+			console.log('');
+		}
+
 		const uncovered = planned
 			.filter((item) => !isCovered(item.id))
 			.sort((left, right) => left.priority.localeCompare(right.priority));
@@ -127,7 +177,13 @@ function main(): number {
 			console.log('');
 		}
 
-		console.log('Run with --list to see every uncovered item.\n');
+		console.log(
+			`Untraced P0: ${untraced.filter((item) => item.priority === 'P0').length}.`
+		);
+		console.log('');
+		console.log(
+			'Run with --list to see every uncovered and every untraced item.\n'
+		);
 	}
 
 	if (min !== null) {

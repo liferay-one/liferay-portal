@@ -6,6 +6,13 @@
 /* eslint-disable no-console -- CLI script; console output is its user interface */
 
 import {findDanglingReferences, parsePlan, validatePlan} from './lib/plan.ts';
+import {
+	indexRequirements,
+	isTraceable,
+	parseMinTraced,
+	parseRequirements,
+	validateRequirements,
+} from './lib/requirements.ts';
 import {ENUMERABLE_PREFIXES, enumerateSurface} from './lib/surface.ts';
 import {findOrphanTags} from './lib/testsIndex.ts';
 
@@ -14,6 +21,17 @@ function sourcePrefix(source: string): string {
 }
 
 function main(): number {
+	const minTraced = parseMinTraced(process.argv.slice(2));
+
+	if (minTraced === undefined) {
+		console.error(
+			'Invalid --min-traced value. Give a percentage, for example ' +
+				'--min-traced 40.'
+		);
+
+		return 1;
+	}
+
 	const items = parsePlan();
 	const {errors} = validatePlan(items);
 
@@ -112,6 +130,17 @@ function main(): number {
 		}
 	}
 
+	const requirements = parseRequirements();
+	const requirementErrors = validateRequirements(requirements, items);
+
+	if (requirementErrors.length) {
+		console.log('');
+
+		for (const error of requirementErrors) {
+			console.log(`  ✗ REQUIREMENT ${error}`);
+		}
+	}
+
 	console.log('');
 
 	if (
@@ -119,7 +148,8 @@ function main(): number {
 		staleCount ||
 		unknown.length ||
 		orphans.length ||
-		dangling.length
+		dangling.length ||
+		requirementErrors.length
 	) {
 		const reasons = [];
 
@@ -143,13 +173,18 @@ function main(): number {
 			reasons.push(`${dangling.length} dangling reference(s)`);
 		}
 
+		if (requirementErrors.length) {
+			reasons.push(`${requirementErrors.length} requirement error(s)`);
+		}
+
 		console.log(
 			`FAIL — ${reasons.join(', ')}. ` +
 				`Run \`node scripts/scaffoldPlan.ts\` to add rows for gaps. For a ` +
 				`stale row, edit its Source to the renamed anchor so it keeps its ` +
 				`ID, or delete the row if the code is gone. ` +
 				`Fix unknown Source prefixes, orphan tags, and dangling ` +
-				`references to match the code surface or a plan ID.`
+				`references to match the code surface or a plan ID. Fix requirement ` +
+				`errors in specs.`
 		);
 
 		return 1;
@@ -160,11 +195,40 @@ function main(): number {
 	).length;
 	const specInPlan = items.length - enumerableInPlan;
 
+	const requirementIndex = indexRequirements(requirements);
+	const traceable = items.filter(isTraceable);
+	const traced = traceable.filter((item) => requirementIndex.has(item.id));
+	const tracedPercent = traceable.length
+		? (traced.length / traceable.length) * 100
+		: 100;
+	const unverifiedCount = requirements.filter(
+		(requirement) => !requirement.verifiedBy.length
+	).length;
+
 	console.log(
 		`OK — plan covers all ${enumerableInPlan} enumerable surface items` +
 			` (+${specInPlan} spec derived flow and cross cutting items tracked); ` +
 			`all test tags and plan references resolve.`
 	);
+	console.log(
+		`   ${requirements.length} requirement(s) in ` +
+			`${new Set(requirements.map((requirement) => requirement.area)).size} ` +
+			`area(s), ${unverifiedCount} not yet verified by a plan item; ` +
+			`${traced.length}/${traceable.length} plan items ` +
+			`(${tracedPercent.toFixed(1)}%) trace to a requirement.`
+	);
+
+	if (minTraced !== null && tracedPercent < minTraced) {
+		console.log('');
+		console.log(
+			`FAIL — ${tracedPercent.toFixed(1)}% of plan items trace to a ` +
+				`requirement, below the ${minTraced}% floor. Cite the new plan ` +
+				'items from a requirement in specs, or run ' +
+				'`yarn plan:coverage --list` to see every untraced item.'
+		);
+
+		return 1;
+	}
 
 	return 0;
 }
