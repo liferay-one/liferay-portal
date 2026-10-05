@@ -63,9 +63,12 @@ Run from `workspaces/liferay-one-workspace/`.
 
 ## Specs
 
-`.agents/specs/` documents the stable shape of this workspace. Read these before making any implementation decisions — they are the fastest way to find where something lives and why. Nothing under `.agents/` is authoritative, though: the object definitions in `client-extensions/liferay-one-batch/batch/` and the `liferay-one-etc-spring-boot` controllers are the source of truth for ERCs, fields, list types, and endpoints, and a spec that disagrees with them is stale.
+`specs/` records what the workspace must do and how it is built. Read [`specs/README.md`](../specs/README.md) before you make an implementation decision. It is the fastest way to find where something lives and why.
 
-- [`specs/workspace.md`](./specs/workspace.md) — shell layout, client extensions, naming conventions
-- [`specs/data-model.md`](./specs/data-model.md) — full entity index, ERC + FriendlyURL registry, field mappings
+- [`specs/business/`](../specs/business/) — business requirements by feature area, `REQ-<AREA>-<NNN>`
+- [`specs/technical/`](../specs/technical/) — technical requirements by quality attribute, integration contracts, the workspace layout, and the data model
+- [`specs/glossary.md`](../specs/glossary.md) — the shared terms
 
-For the API surface, page/route map, and integration contracts, read the code directly (Spring Boot controllers in `liferay-one-etc-spring-boot`, the service layer and `src/pages/` in `liferay-one-custom-element`) — these change too often for a parallel spec to stay accurate.
+Requirement rows are checked against the test plan by `yarn plan:check`. The prose files, such as `technical/data-model.md` and `technical/workspace.md`, are not checked. The object definitions in `client-extensions/liferay-one-batch/batch/` and the `liferay-one-etc-spring-boot` controllers are the source of truth for ERCs, fields, list types, and endpoints, and a prose spec that disagrees with them is stale.
+
+For the API surface and the page and route map, read the code directly (Spring Boot controllers in `liferay-one-etc-spring-boot`, the service layer and `src/pages/` in `liferay-one-custom-element`). These change too often for a parallel spec to stay accurate.

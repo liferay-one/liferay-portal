@@ -313,13 +313,15 @@ function inferRestControllerCoverage(
 				continue;
 			}
 
-			const receiver =
-				controller.charAt(0).toLowerCase() + controller.slice(1);
+			const receiver = controller.replace(
+				/^[A-Z]+?(?=[A-Z][a-z]|$)|^[A-Z]/,
+				(prefix) => prefix.toLowerCase()
+			);
 			const calls = new Set(
 				[
 					...source.matchAll(
 						new RegExp(
-							`(?:^|[^\\w.])_?${receiver}\\.(\\w+)\\s*\\(`,
+							`(?:^|[^\\w.])_?${receiver}\\.\\s*(\\w+)\\s*\\(`,
 							'g'
 						)
 					),

@@ -12,7 +12,7 @@
 	"private": true,
 	"scripts": {
 		"install:browsers": "playwright install chromium",
-		"plan:check": "node scripts/checkPlan.ts",
+		"plan:check": "node scripts/checkPlan.ts --min-traced 99",
 		"plan:coverage": "node scripts/checkCoverage.ts",
 		"plan:report": "node scripts/planReport.ts",
 		"plan:scaffold": "node scripts/scaffoldPlan.ts",
