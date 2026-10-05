@@ -13,8 +13,8 @@ Every DTO/model converter in liferay-one-etc-spring-boot. Each converter is a pu
 | CONV-CONTACTROLECONVERTER | Converter maps input to output across its branches: ContactRoleConverter | unit | P1 | planned | converter:ContactRoleConverter |
 | CONV-ENTITLEMENTCONVERTER | Converter maps input to output across its branches: EntitlementConverter | unit | P1 | planned | converter:EntitlementConverter |
 | CONV-EXTERNALLINKCONVERTER | Converter maps input to output across its branches: ExternalLinkConverter | unit | P1 | planned | converter:ExternalLinkConverter |
-| CONV-JIRABUSINESSEVENTCONVERTER | Converter maps input to output across its branches: JiraBusinessEventConverter | unit | P1 | planned | converter:JiraBusinessEventConverter |
-| CONV-JIRABUSINESSEVENTVERSIONCONVERTER | Converter maps input to output across its branches: JiraBusinessEventVersionConverter | unit | P1 | planned | converter:JiraBusinessEventVersionConverter |
+| CONV-JIRABUSINESSEVENTCONVERTER | Maps request JSON and asset objects to business events; the account and the author are written only on create, and the last updated author is the caller | unit | P1 | planned | converter:JiraBusinessEventConverter |
+| CONV-JIRABUSINESSEVENTVERSIONCONVERTER | Maps a version asset object to its author, change, comment, and created date | unit | P2 | planned | converter:JiraBusinessEventVersionConverter |
 | CONV-JIRAORGANIZATIONCONVERTER | Converter maps input to output across its branches: JiraOrganizationConverter | unit | P1 | planned | converter:JiraOrganizationConverter |
 | CONV-PHONECONVERTER | Converter maps input to output across its branches: PhoneConverter | unit | P1 | planned | converter:PhoneConverter |
 | CONV-POSTALADDRESSCONVERTER | Converter maps input to output across its branches: PostalAddressConverter | unit | P1 | planned | converter:PostalAddressConverter |
