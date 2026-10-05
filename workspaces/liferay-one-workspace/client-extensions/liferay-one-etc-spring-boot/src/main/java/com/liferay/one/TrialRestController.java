@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -77,8 +78,24 @@ public class TrialRestController extends BaseRestController {
 		JSONObject trialProvisioningContextJSONObject =
 			_getTrialProvisioningContextJSONObject(order);
 
-		_consoleService.deleteProject(
-			trialProvisioningContextJSONObject.getString("projectId"));
+		String projectId = trialProvisioningContextJSONObject.getString(
+			"projectId");
+
+		try {
+			_consoleService.deleteProject(projectId);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (!httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+				throw webClientResponseException;
+			}
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Project " + projectId + " no longer exists");
+			}
+		}
 
 		Map<String, String> customFields =
 			(Map<String, String>)order.getCustomFields();

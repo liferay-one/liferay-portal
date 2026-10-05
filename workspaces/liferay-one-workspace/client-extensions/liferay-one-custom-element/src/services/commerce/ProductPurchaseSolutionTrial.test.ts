@@ -95,15 +95,19 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESOLUTIONTRIAL] ProductPurchaseSolution
 		).resolves.toBe('/next-steps?orderId=5&state=hold');
 	});
 
-	it('creates the order, then fires trial provisioning', async () => {
-		vi.mocked(Trial.provisioningTrial).mockReturnValue(
-			new Promise(() => {})
+	it('creates the order, then fires trial provisioning and exposes its promise', async () => {
+		const provisioning = new Promise<void>(() => {});
+
+		vi.mocked(Trial.provisioningTrial).mockReturnValue(provisioning);
+
+		const productPurchase = new ProductPurchaseSolutionTrial(
+			account,
+			product
 		);
 
-		await expect(
-			new ProductPurchaseSolutionTrial(account, product).createOrder()
-		).resolves.toEqual({id: 5});
+		await expect(productPurchase.createOrder()).resolves.toEqual({id: 5});
 
+		expect(productPurchase.provisioning).toBe(provisioning);
 		expect(
 			vi.mocked(HeadlessCommerceDeliveryCart.createCart).mock.calls[0][1]
 		).toMatchObject({orderTypeExternalReferenceCode: 'SOLUTIONS7'});

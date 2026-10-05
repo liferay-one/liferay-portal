@@ -4,17 +4,19 @@
  */
 
 import ClayButton from '@clayui/button';
-import DropDown from '@clayui/drop-down';
-import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import {Status} from '@clayui/modal/lib/types';
 import {formatDistance} from 'date-fns';
 import Loading from '~/components/Loading/Loading';
+import RowActionsMenu, {
+	RowAction,
+} from '~/components/RowActionsMenu/RowActionsMenu';
 import Table from '~/components/Table/Table';
 import {useConfirmationModal} from '~/hooks/useConfirmationModal';
 import useModalContext from '~/hooks/useModalContext';
 import i18n from '~/i18n';
 import HeadlessCommerceAdminOrder from '~/services/headless/HeadlessCommerceAdminOrder';
+import {Liferay} from '~/services/liferay/liferay';
 import trialOAuth2 from '~/services/spring-boot/Trial';
 import {OrderCustomFields, OrderWorkflowStatusCode} from '~/utils/orderUtils';
 
@@ -30,26 +32,28 @@ type TrialTableProps = {
 	revalidate: () => void;
 };
 
-type DropDownItems = {
-	id: number;
-	name: string;
-	onClick: (item?: Order) => void;
-};
-
-const safeRunner = async (promise: Promise<unknown>) => {
-	try {
-		await promise;
-	}
-	catch {}
-};
-
 const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 	const modalContext = useModalContext();
 	const confirmationModal = useConfirmationModal();
 
 	const onDeleteTrial = async (order: Order) => {
-		await safeRunner(HeadlessCommerceAdminOrder.deleteOrder(order.id));
-		await safeRunner(trialOAuth2.deleteTrial(order.id));
+		try {
+			await trialOAuth2.deleteTrial(order.id);
+			await HeadlessCommerceAdminOrder.deleteOrder(order.id);
+
+			Liferay.Util.openToast({
+				message: i18n.translate('trial-deleted-successfully'),
+				type: 'success',
+			});
+		}
+		catch (error) {
+			console.error(error);
+
+			Liferay.Util.openToast({
+				message: i18n.translate('an-unexpected-error-occurred'),
+				type: 'danger',
+			});
+		}
 
 		await revalidate();
 	};
@@ -76,40 +80,40 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 		});
 	};
 
-	const itemsDropdown = [
-		{
-			name: i18n.translate('view-details'),
-			onClick: onClickDetails,
-		},
-		{
-			name: i18n.translate('go-to-trial'),
-			onClick: (order: Order) =>
-				window.open(
-					`https://${
-						order?.customFields?.[
-							OrderCustomFields.TRIAL_VIRTUAL_HOST
-						]
-					}`
-				),
-		},
-		{
-			name: i18n.translate('delete'),
-			onClick: (order: Order) => {
-				confirmationModal.openModal({
-					body: (
-						<p>
-							{i18n.sub(
-								'x-will-be-deleted-and-this-action-cant-be-undone-are-you-sure-you-want-to-delete-it',
-								`Order ${order.id}`
-							)}
-						</p>
-					),
-					header: i18n.translate('confirm-deletion'),
-					onConfirm: () => onDeleteTrial(order),
-				});
+	const getRowActions = (order: Order): RowAction[] => {
+		const virtualHost =
+			order.customFields?.[OrderCustomFields.TRIAL_VIRTUAL_HOST];
+
+		return [
+			{
+				label: 'view-details',
+				onClick: () => onClickDetails(order),
 			},
-		},
-	];
+			{
+				disabled: !virtualHost,
+				label: 'go-to-trial',
+				onClick: () => {
+					window.open(`https://${virtualHost}`);
+				},
+			},
+			{
+				label: 'delete',
+				onClick: () =>
+					confirmationModal.openModal({
+						body: (
+							<p>
+								{i18n.sub(
+									'x-will-be-deleted-and-this-action-cant-be-undone-are-you-sure-you-want-to-delete-it',
+									`Order ${order.id}`
+								)}
+							</p>
+						),
+						header: i18n.translate('confirm-deletion'),
+						onConfirm: () => onDeleteTrial(order),
+					}),
+			},
+		];
+	};
 
 	return (
 		<DashboardPage
@@ -272,38 +276,9 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 							key: 'accountId',
 							noWrap: true,
 							render: (_, order) => (
-								<DropDown
-									closeOnClick
-									filterKey="name"
-									trigger={
-										<ClayButton
-											aria-label="Action Dropdown"
-											displayType="unstyled"
-										>
-											<ClayIcon symbol="ellipsis-v" />
-										</ClayButton>
-									}
-								>
-									<DropDown.ItemList items={itemsDropdown}>
-										{(dropDownItem: unknown) => {
-											const item =
-												dropDownItem as DropDownItems;
-
-											return (
-												<DropDown.Item
-													key={item.name}
-													onClick={() =>
-														item.onClick(
-															order as Order
-														)
-													}
-												>
-													{item?.name}
-												</DropDown.Item>
-											);
-										}}
-									</DropDown.ItemList>
-								</DropDown>
+								<RowActionsMenu
+									actions={getRowActions(order as Order)}
+								/>
 							),
 							title: '',
 							width: '1%',
