@@ -50,6 +50,7 @@ Run from `workspaces/liferay-one-workspace/`.
 
 - [`rules/code-style.md`](./rules/code-style.md) — sorting, log conventions, string concatenation, FreeMarker, Java ordering
 - [`rules/concurrency.md`](./rules/concurrency.md) — shared state on Spring singletons, formatter fields, React effect races
+- [`rules/css-sort-order.md`](./rules/css-sort-order.md) — selector group order (`&`, elements, IDs, classes, at rules) and the cascade exceptions
 - [`rules/custom-element-safety.md`](./rules/custom-element-safety.md) — CSRF, XSS, filter injection, unbounded pagination, timezone-safe dates
 - [`rules/custom-element-structure.md`](./rules/custom-element-structure.md) — file location by tier, read and write separation, page and component placement
 - [`rules/data-access.md`](./rules/data-access.md) — one-row reads, service calls in loops, pagination bounds
