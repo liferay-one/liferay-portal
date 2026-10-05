@@ -153,7 +153,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -184,7 +184,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -317,7 +317,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -348,7 +348,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -388,7 +388,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -514,14 +514,14 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_SECOND_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_SECOND_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -552,7 +552,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);
@@ -680,7 +680,7 @@ public class ProvisioningEmailServiceTest {
 
 		Mockito.when(
 			_entitlementService.hasEntitlement(
-				_ACCOUNT_ID, EntitlementConstants.NAMES_SLAS)
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
 		).thenReturn(
 			true
 		);

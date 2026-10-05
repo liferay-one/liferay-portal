@@ -23,7 +23,7 @@ import org.json.JSONObject;
 /**
  * @author Amos Fong
  */
-public class Environment {
+public final class Environment {
 
 	public Environment(JSONObject jsonObject) {
 		_accountEntryId = jsonObject.optLong(

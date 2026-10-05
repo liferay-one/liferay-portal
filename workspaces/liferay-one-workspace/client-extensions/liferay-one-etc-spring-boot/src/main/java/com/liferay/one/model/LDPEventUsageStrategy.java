@@ -17,7 +17,7 @@ import org.json.JSONObject;
 /**
  * @author Ryan Schuhler
  */
-public class LDPEventUsageStrategy extends BaseUsageStrategy {
+public final class LDPEventUsageStrategy extends BaseUsageStrategy {
 
 	public static final String FIELD_EVENT_HISTORY = "eventHistory";
 

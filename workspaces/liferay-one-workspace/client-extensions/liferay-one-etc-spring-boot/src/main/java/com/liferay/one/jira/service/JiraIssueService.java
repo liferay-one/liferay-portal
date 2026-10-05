@@ -152,7 +152,7 @@ public class JiraIssueService extends BaseJiraService {
 		sb.append(externalReferenceCode);
 		sb.append("\\\"') and (status not in ('");
 		sb.append(
-			StringUtil.merge(IssueConstants.STATUSES_SOLVED_AND_CLOSED, "','"));
+			StringUtil.merge(IssueConstants.statusesSolvedAndClosed, "','"));
 		sb.append("')) and ");
 		sb.append(
 			IssueConstants.toJQLCustomField(

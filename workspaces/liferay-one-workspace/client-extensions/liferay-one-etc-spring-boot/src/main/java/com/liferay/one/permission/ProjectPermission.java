@@ -92,16 +92,14 @@ public class ProjectPermission {
 				return true;
 			}
 
-			if (ArrayUtil.contains(
-					RoleConstants.ERCS_SUPPORT_PROJECT,
+			if (RoleConstants.ercsSupportProject.contains(
 					projectMembership.getRoleExternalReferenceCode()) &&
 				actionId.equals(ActionKeys.VIEW)) {
 
 				return true;
 			}
 
-			if (ArrayUtil.contains(
-					RoleConstants.ERCS_SUPPORT_PROJECT_TICKET,
+			if (RoleConstants.ercsSupportProjectTicket.contains(
 					projectMembership.getRoleExternalReferenceCode()) &&
 				actionId.equals(ActionKeys.UPDATE)) {
 

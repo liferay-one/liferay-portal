@@ -241,7 +241,7 @@ public class UserAssignmentServiceTest {
 
 	@Test
 	public void testAssignAccountRoleSendsPartnerEmail() throws Exception {
-		String accountRoleName = RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES[0];
+		String accountRoleName = RoleConstants.namesPartnerAccountRoles.get(0);
 
 		_userAssignmentService.assignAccountRole(
 			_account, _createAccountRole(accountRoleName), _USER_ID);
@@ -303,7 +303,7 @@ public class UserAssignmentServiceTest {
 	public void testAssignAccountRoleSwallowsPartnerEmailFailure()
 		throws Exception {
 
-		String accountRoleName = RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES[0];
+		String accountRoleName = RoleConstants.namesPartnerAccountRoles.get(0);
 
 		Mockito.doThrow(
 			new RuntimeException("Unable to send email")
@@ -677,7 +677,7 @@ public class UserAssignmentServiceTest {
 	public void testUnassignAccountRemovesProjectMembershipsAndAccountRoles()
 		throws Exception {
 
-		String accountRoleName = RoleConstants.NAMES_PARTNER_ACCOUNT_ROLES[0];
+		String accountRoleName = RoleConstants.namesPartnerAccountRoles.get(0);
 
 		_addAccountBrief(accountRoleName);
 

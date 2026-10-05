@@ -7,7 +7,6 @@ package com.liferay.one.jira.model;
 
 import com.liferay.one.jira.constants.IssueConstants;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +17,7 @@ import org.json.JSONObject;
 /**
  * @author Jenny Chen
  */
-public class JiraSupportIssue {
+public final class JiraSupportIssue {
 
 	public JiraSupportIssue(JSONObject jsonObject) {
 		_key = jsonObject.getString("key");
@@ -83,7 +82,7 @@ public class JiraSupportIssue {
 	}
 
 	public boolean isClosed() {
-		return ArrayUtil.contains(IssueConstants.STATUSES_CLOSED, _status);
+		return IssueConstants.statusesClosed.contains(_status);
 	}
 
 	public JSONObject toJSONObject() {

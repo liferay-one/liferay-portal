@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * @author Amos Fong
  */
-public class SubscriptionEntry {
+public final class SubscriptionEntry {
 
 	public SubscriptionEntry(JSONObject jsonObject) {
 		_className = jsonObject.getString("className");

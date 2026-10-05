@@ -10,7 +10,7 @@ import org.json.JSONObject;
 /**
  * @author Allen Ziegenfus
  */
-public class ProductVersion {
+public final class ProductVersion {
 
 	public ProductVersion(JSONObject jsonObject) {
 		_productGroup = jsonObject.optString("productGroup");

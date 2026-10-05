@@ -25,7 +25,6 @@ import com.liferay.one.service.ContractService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Objects;
@@ -191,8 +190,7 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 
 		String currencyIsoCode = salesforcePricebookEntry.getCurrencyIsoCode();
 
-		if (!ArrayUtil.contains(
-				CommerceCurrencyConstants.CODES_SUPPORTED_CURRENCIES,
+		if (!CommerceCurrencyConstants.codesSupportedCurrencies.contains(
 				currencyIsoCode)) {
 
 			return;

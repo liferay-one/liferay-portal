@@ -360,9 +360,9 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		sb.append(StringPool.COMMA);
 		sb.append(_jiraProjectSupportHC);
 		sb.append(")) and (status in ('");
-		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
+		sb.append(StringUtil.merge(IssueConstants.statusesClosed, "', '"));
 		sb.append("')) and (status changed to ('");
-		sb.append(StringUtil.merge(IssueConstants.STATUSES_CLOSED, "', '"));
+		sb.append(StringUtil.merge(IssueConstants.statusesClosed, "', '"));
 		sb.append("') after -8d before -7d)");
 
 		List<JiraSupportIssue> jiraSupportIssues = _jiraIssueService.search(

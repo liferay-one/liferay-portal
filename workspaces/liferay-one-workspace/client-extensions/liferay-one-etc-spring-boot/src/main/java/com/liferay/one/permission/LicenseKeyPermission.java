@@ -88,7 +88,7 @@ public class LicenseKeyPermission {
 		if (actionId.equals(ActionKeys.UPDATE)) {
 			return UserAccountUtil.hasAccountRole(
 				userAccount, accountEntryId,
-				RoleConstants.NAMES_MANAGE_LICENSE_KEYS);
+				RoleConstants.namesManageLicenseKeys);
 		}
 
 		if (!actionId.equals(ActionKeys.VIEW)) {
