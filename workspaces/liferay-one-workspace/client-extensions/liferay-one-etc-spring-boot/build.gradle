@@ -25,7 +25,10 @@ apply plugin: "org.springframework.boot"
 
 def liferayReleaseToolEEDir = file("liferay-release-tool-ee")
 
-clean {
+task cleanReleaseToolEE(type: Delete)
+task cloneReleaseToolEE
+
+cleanReleaseToolEE {
 	delete liferayReleaseToolEEDir
 }
 
@@ -38,8 +41,6 @@ def executeCommand = {
 			"Failed: ${command}\n${process.err.text}")
 	}
 }
-
-task cloneReleaseToolEE
 
 cloneReleaseToolEE {
 	outputs.dir liferayReleaseToolEEDir
