@@ -19,6 +19,7 @@ Lists, arrays, and JSON entries must always be in sorted order. This applies to:
 - `[#assign ... /]` variable blocks in FreeMarker templates (logical dependency order, then alphabetical)
 - Java `import` statements (already handled by source formatter)
 - Entries in configuration files
+- CSS rules, nested rules, and properties — see [`css-sort-order.md`](./css-sort-order.md) for the selector group order
 - Method and constructor parameter lists — alphabetical by parameter name. Reordering a signature means reordering the arguments at every call site. Where the reordered parameters share a type, the compiler cannot catch a missed call site — the code still compiles while the arguments land in the wrong parameters — so verify each call site by reading it against the new order, not by trusting a green build. Example (same type, the dangerous case): `notify(String message, String recipient)` → `notify(String recipient, String message)`.
 
 When Brian sees items out of order, he comments `"sort"` and bounces the PR back.
