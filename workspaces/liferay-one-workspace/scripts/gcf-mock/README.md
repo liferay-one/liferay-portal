@@ -116,6 +116,12 @@ written twice.
 A month left out of `MONTHS` returns zero counts from event-summary and no bucket from
 event-history, which is how the deliberate 2026-01 and 2026-04 gaps work.
 
+The 2026-09 row deliberately exceeds the 1,200,000 events the seeded `PRJCT-028` order
+entitles (a 1,000,000 allotment plus one 200,000 add-on bucket), so generating that month's
+usage report through `POST /admin/usage-reports/generate?yearMonth=2026-09` exercises the
+overage path: 300,000 events over, two overage buckets, a report in `readyForReview`. Every
+earlier month stays under the allotment and produces a `completed` report.
+
 Entitlement caps are deliberately **not** here. Those come from the seeded orders, so the
 percentages the UI shows are mock usage over real entitlements.
 
