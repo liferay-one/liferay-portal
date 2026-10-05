@@ -114,7 +114,9 @@ const NewTrialModal: React.FC<NewTrialModalProps> = ({onClose, revalidate}) => {
 
 			await revalidate();
 
-			setTimeout(() => revalidate(), 5000);
+			productPurchase.provisioning
+				?.catch((error) => console.error(error))
+				.finally(() => revalidate());
 
 			Liferay.Util.openToast({
 				message: 'Trial created successfully',

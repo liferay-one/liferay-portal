@@ -42,6 +42,7 @@ import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Ryan Schuhler
@@ -195,6 +196,57 @@ public class TrialRestControllerTest {
 		).deletePortalInstance(
 			"other." + _TRIAL_DXP_DOMAIN
 		);
+	}
+
+	@Test
+	public void testDeleteTrialIgnoresMissingConsoleProject() throws Exception {
+		_mockOrder(
+			HashMapBuilder.put(
+				"trial-virtual-host", _VIRTUAL_HOST
+			).build(),
+			CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS, "SOLUTIONS7");
+
+		_mockPortalInstancesPage(
+			1, List.of(_createPortalInstance(_VIRTUAL_HOST)));
+
+		Mockito.doThrow(
+			new WebClientResponseException(404, "Not Found", null, null, null)
+		).when(
+			_consoleService
+		).deleteProject(
+			"trial-ext" + _ORDER_ID
+		);
+
+		_trialRestController.deleteTrial(_ORDER_ID);
+
+		Mockito.verify(
+			_portalInstanceResource
+		).deletePortalInstance(
+			_VIRTUAL_HOST
+		);
+	}
+
+	@Test
+	public void testDeleteTrialPropagatesConsoleError() throws Exception {
+		_mockOrder(
+			HashMapBuilder.put(
+				"trial-virtual-host", _VIRTUAL_HOST
+			).build(),
+			CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS, "SOLUTIONS7");
+
+		Mockito.doThrow(
+			new WebClientResponseException(502, "Bad Gateway", null, null, null)
+		).when(
+			_consoleService
+		).deleteProject(
+			"trial-ext" + _ORDER_ID
+		);
+
+		Assertions.assertThrows(
+			WebClientResponseException.class,
+			() -> _trialRestController.deleteTrial(_ORDER_ID));
+
+		Mockito.verifyNoInteractions(_portalInstanceResource);
 	}
 
 	@Test

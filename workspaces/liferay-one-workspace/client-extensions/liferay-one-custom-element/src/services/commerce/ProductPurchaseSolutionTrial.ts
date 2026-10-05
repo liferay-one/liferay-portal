@@ -10,12 +10,14 @@ import ProductPurchase from './ProductPurchase';
 import type {Cart, OrderTypes} from '~/types/orders';
 
 export default class ProductPurchaseSolutionTrial extends ProductPurchase {
+	public provisioning?: Promise<void>;
+
 	protected orderTypeExternalReferenceCode: OrderTypes = 'SOLUTIONS7';
 
 	public async createOrder(cart?: Cart): Promise<Cart> {
 		const order = await super.createOrder(cart);
 
-		trialOAuth2.provisioningTrial(order.id);
+		this.provisioning = trialOAuth2.provisioningTrial(order.id);
 
 		return order;
 	}
