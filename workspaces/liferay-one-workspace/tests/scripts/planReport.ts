@@ -10,6 +10,11 @@ import * as path from 'path';
 
 import {VALID_TYPES, parsePlan} from './lib/plan.ts';
 import {bar, pct} from './lib/progress.ts';
+import {
+	indexRequirements,
+	isTraceable,
+	parseRequirements,
+} from './lib/requirements.ts';
 import {WORKSPACE_ROOT} from './lib/surface.ts';
 import {indexTests} from './lib/testsIndex.ts';
 
@@ -19,6 +24,14 @@ import type {ICoverageEntry} from './lib/testsIndex.ts';
 const OUTPUT = path.join(WORKSPACE_ROOT, 'tests/test-results/plan-report.md');
 
 type Klass = 'deferred' | 'pending' | 'real' | 'uncovered';
+
+type RequirementKlass = 'partial' | 'unverified' | 'verified';
+
+const REQUIREMENT_MARK: Record<RequirementKlass, string> = {
+	partial: '◐ partial',
+	unverified: '✗ unverified',
+	verified: '✓ verified',
+};
 
 const MARK: Record<Klass, string> = {
 	deferred: '⊘ deferred',
@@ -135,6 +148,56 @@ function main(): void {
 		);
 	}
 
+	const requirements = parseRequirements();
+	const requirementIndex = indexRequirements(requirements);
+	const klassById = new Map(
+		classified.map((entry) => [entry.item.id, entry.klass])
+	);
+
+	const classifiedRequirements = requirements.map((requirement) => {
+		const realCount = requirement.verifiedBy.filter(
+			(id) => klassById.get(id) === 'real'
+		).length;
+
+		let klass: RequirementKlass = 'partial';
+
+		if (!realCount) {
+			klass = 'unverified';
+		}
+		else if (realCount === requirement.verifiedBy.length) {
+			klass = 'verified';
+		}
+
+		return {klass, realCount, requirement};
+	});
+
+	const countRequirements = (klass: RequirementKlass) =>
+		classifiedRequirements.filter((entry) => entry.klass === klass).length;
+
+	const traceable = items.filter(isTraceable);
+	const tracedCount = traceable.filter((item) =>
+		requirementIndex.has(item.id)
+	).length;
+
+	console.log('');
+	console.log('  Requirements (every cited plan item has a real test):');
+	console.log(
+		`  ${bar(countRequirements('verified'), requirements.length)} ` +
+			`${pct(countRequirements('verified'), requirements.length).padStart(6)}  ` +
+			`VERIFIED             ${countRequirements('verified')}/${requirements.length}`
+	);
+	console.log(
+		`           verified ${countRequirements('verified')} · partial ` +
+			`${countRequirements('partial')} · unverified ` +
+			`${countRequirements('unverified')}`
+	);
+	console.log(
+		`  ${bar(tracedCount, traceable.length)} ` +
+			`${pct(tracedCount, traceable.length).padStart(6)}  ` +
+			`TRACED               ${tracedCount}/${traceable.length} plan items ` +
+			'cited by a requirement'
+	);
+
 	const lines: string[] = [
 		'# Liferay One — Testing Plan Report',
 		'',
@@ -170,6 +233,25 @@ function main(): void {
 		'',
 	];
 
+	lines.push(
+		'## Requirements',
+		'',
+		'A requirement is **verified** when every plan item it cites has a ' +
+			'real test, **partial** when some do, and **unverified** when none ' +
+			`do. ${tracedCount}/${traceable.length} plan items ` +
+			`(${pct(tracedCount, traceable.length)}) are cited by a requirement.`,
+		'',
+		'| ID | Priority | Status | Real / Cited |',
+		'| --- | --- | --- | --- |',
+		...classifiedRequirements.map(
+			({klass, realCount, requirement}) =>
+				`| ${requirement.id} | ${requirement.priority} | ` +
+				`${REQUIREMENT_MARK[klass]} | ${realCount}/` +
+				`${requirement.verifiedBy.length} |`
+		),
+		''
+	);
+
 	for (const file of files) {
 		const inFile = classified.filter((entry) => entry.item.file === file);
 
@@ -178,8 +260,8 @@ function main(): void {
 		}
 
 		lines.push(`## ${file.replace(/\.md$/, '')}`, '');
-		lines.push('| ID | Priority | Status | Covered by |');
-		lines.push('| --- | --- | --- | --- |');
+		lines.push('| ID | Priority | Status | Covered by | Requirements |');
+		lines.push('| --- | --- | --- | --- | --- |');
 
 		for (const {entries, item, klass} of inFile) {
 			const covered = entries.length
@@ -190,8 +272,11 @@ function main(): void {
 						.join('<br>')
 				: '—';
 
+			const requirementIds = requirementIndex.get(item.id);
+
 			lines.push(
-				`| ${item.id} | ${item.priority} | ${MARK[klass]} | ${covered} |`
+				`| ${item.id} | ${item.priority} | ${MARK[klass]} | ${covered} | ` +
+					`${requirementIds ? requirementIds.join('<br>') : '—'} |`
 			);
 		}
 

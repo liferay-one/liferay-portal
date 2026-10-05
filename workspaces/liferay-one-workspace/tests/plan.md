@@ -5,6 +5,8 @@ Every SPA route, hook, API client, context provider, and logic module in the cus
 - **`checkPlan`** — the plan covers the code. It enumerates the real code surface and fails on anything that ships without a row.
 - **`checkCoverage`** — the tests cover the plan. It scans the suites for plan IDs and reports how far the suite is from go live.
 
+The business and technical requirements in [`../specs/`](../specs/) sit one layer above the plan. Each requirement cites the plan IDs that prove it, and `checkPlan` fails when a citation matches no plan item. See [`../specs/README.md`](../specs/README.md).
+
 ## Files
 
 One file per surface, scaffolded from the code and then curated by hand.
@@ -81,6 +83,8 @@ yarn plan:coverage    # Does every item have a test, stubs included?
 yarn plan:report      # Real versus pending versus uncovered
 yarn plan:scaffold    # Reconcile after a code change; preserves curation
 ```
+
+`plan:check` also enforces a floor on requirement traceability: the share of plan items, other than `n/a` rows, that a requirement in [`../specs/`](../specs/) cites. The floor lives in the `--min-traced` argument of `plan:check` in `tests/package.json`. Raise it each time an area file lands, and never lower it. `plan:coverage` shows traceability for each plan file, and `plan:coverage --list` names every untraced item. `plan:report` marks each requirement as verified, partial, or unverified from the tests of the plan items it cites.
 
 `plan:coverage` counts any reference, so a pending stub scores the same as a real test. It answers "is every item tracked?". `plan:report` looks at *which* file covers each item and separates real tests from stubs. It writes per item traceability to `tests/test-results/plan-report.md`. `checkCoverage` also takes `--list` to name every uncovered item and `--min <pct>` to fail under a threshold.
 

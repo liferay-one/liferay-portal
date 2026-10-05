@@ -34,24 +34,7 @@
 
 ---
 
-#### AccountFlag (`C_ACCNT_FLAG`)
-
-**system:** `false`
-
-| Field | Type | Notes |
-|---|---|---|
-| PK `accountFlagId` | long | |
-| FK `accountId` | long | |
-| `flagCode` | picklist | |
-| `flagValue` | picklist | |
-| `startDate`, `endDate` | datetime | |
-| `note` | string | |
-| `finished` | boolean | |
-| `accountKey` | string | Denormalized account identifier |
-
----
-
-#### AccountNote (`C_ACCNT_NOTE`)
+#### AccountNote (`C_ACCOUNT_NOTE`)
 
 **system:** `false`
 
@@ -93,38 +76,6 @@ Liferay system Organization, migrated from support.liferay for FLS (First Line S
 **Relationships:**
 
 - `organizationToProject` (`L_ORGANIZATION → C_PROJECT`, one-to-many, disassociate) — the FLS partner use case: which customer projects an org supports. A project is supported by at most one org. Valid because `C_PROJECT` is a custom object. Drives partner-scoped project visibility (VIEW permission + restricted-page gating are a dependent follow-up).
-
----
-
-#### BannedEmailDomain (`C_BANNED_EMAIL`)
-
-**system:** `false`
-
-| Field | Type | Notes |
-|---|---|---|
-| PK `bannedEmailDomainId` | long | |
-| `domain` | string | e.g. `mailinator.com`; unique |
-| `reason` | string | |
-| `addedAt` | datetime | |
-| `addedByUserId` | long | |
-
----
-
-#### CreditHold (`C_CREDIT_HOLD`)
-
-**system:** `false`
-
-Finance/A/R-set hard hold; overrides spend limits.
-
-| Field | Type | Notes |
-|---|---|---|
-| PK `creditHoldId` | long | |
-| FK `accountId` | long | |
-| `reason` | string | |
-| `startDate` | datetime | |
-| `endDate` | datetime | Null = indefinite |
-| `setByUserId` | long | Finance user |
-| `note` | string | |
 
 ---
 
@@ -401,20 +352,6 @@ When a project's `events` entitlements have no pricing or conflicting pricing, o
 
 ---
 
-#### InvoiceRequest (`C_INVOICE_REQUEST`)
-
-**system:** `false`
-
-| Field | Type | Notes |
-|---|---|---|
-| PK `invoiceRequestId` | long | |
-| FK `subscriptionId` | long | |
-| `type` | string | |
-| `status` | string | |
-| `requestedAt` | datetime | |
-
----
-
 #### UsageDefinition (`C_USAGE_DEFINITION`)
 
 **system:** `false`
@@ -601,16 +538,12 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 
 | Object | ERC | Separator |
 |---|---|---|
-| `AccountFlag` | `C_ACCNT_FLAG` | `cpaf` |
-| `AccountNote` | `C_ACCNT_NOTE` | `l` |
-| `BannedEmailDomain` | `C_BANNED_EMAIL` | `cpbd` |
+| `AccountNote` | `C_ACCOUNT_NOTE` | `l` |
 | `Contract` | `C_CONTRACT` | `cpct` |
-| `CreditHold` | `C_CREDIT_HOLD` | `cpch` |
 | `Entitlement` | `C_ENTITLEMENT` | `cpen` |
 | `EntitlementDefinition` | `C_ENTITLEMENT_DEFINITION` | `cped` |
 | `Environment` | `C_ENVIRONMENT` | `cpdp` |
 | `EnvironmentAdmin` | `C_ENVIRONMENT_ADMIN` | `l` |
-| `InvoiceRequest` | `C_INVOICE_REQUEST` | `cpir` |
 | `LicenseKey` | `C_LICENSE_KEY` | `cplk` |
 | `Property` | `C_PROPERTY` | `cppr` |
 | `UsageDefinition` | `C_USAGE_DEFINITION` | `cpud` |

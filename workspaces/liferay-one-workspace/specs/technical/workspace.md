@@ -56,11 +56,11 @@ definitions, roles, and OAuth2 applications are imported by the
 
 ### Object Names
 
-PascalCase, no prefix: `AccountFlag`, `SupportTicket`, `LicenseKey`.
+PascalCase, no prefix: `AccountNote`, `TicketAttachment`, `LicenseKey`.
 
 ### Field Names
 
-camelCase. Booleans phrased as questions: `internal`, `clustered`, `hasDisasterDataCenterRegion`.
+camelCase. Booleans name the condition they hold: `active`, `isPrimary`, `generatesActivationKey`.
 
 ### Friendly URL Separators
 
