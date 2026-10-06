@@ -12,10 +12,20 @@ import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.TopicName;
 
 import com.liferay.one.pubsub.Message;
+import com.liferay.one.service.NotificationQueueEntryService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * @author Kyle Bischof
@@ -28,6 +38,11 @@ public abstract class BaseDeadLetterPubsubSubscriber
 
 	public static final String SOURCE_SUBSCRIPTION_ATTRIBUTE_NAME =
 		"CloudPubSubDeadLetterSourceSubscription";
+
+	@Override
+	public String getTopic() {
+		return getDeadLetterTopic();
+	}
 
 	@Override
 	public final void receive(Message message) throws Exception {
@@ -72,9 +87,57 @@ public abstract class BaseDeadLetterPubsubSubscriber
 		return false;
 	}
 
-	protected abstract void onDeadLetter(
+	protected void onDeadLetter(
+		int deliveryAttempt, Message message, String sourceSubscriptionName) {
+
+		try {
+			_log.error(
+				StringBundler.concat(
+					"Unable to process message from source subscription ",
+					sourceSubscriptionName, " after ", deliveryAttempt,
+					" delivery attempts ", message));
+
+			_sendNotificationEmail(
+				deliveryAttempt, message, sourceSubscriptionName);
+		}
+		catch (Exception exception) {
+			_log.error("Unable to report the dead letter message", exception);
+		}
+	}
+
+	private void _sendNotificationEmail(
 			int deliveryAttempt, Message message, String sourceSubscriptionName)
-		throws Exception;
+		throws Exception {
+
+		if (Validator.isNull(_notificationRecipient)) {
+			return;
+		}
+
+		String body = StringBundler.concat(
+			"<p>A message was moved to the dead letter topic after ",
+			deliveryAttempt, " delivery attempts.</p><p>Source Subscription: ",
+			HtmlUtil.escape(sourceSubscriptionName),
+			"</p><p>Attributes:</p><pre>",
+			HtmlUtil.escape(String.valueOf(message.getAttributes())),
+			"</pre><p>Payload:</p><pre>", HtmlUtil.escape(message.getPayload()),
+			"</pre>");
+
+		_notificationQueueEntryService.addNotificationQueueEntry(
+			_emailAddressGlobal, "Liferay One", _notificationRecipient,
+			"Liferay One Dead Letter Notification", body);
+	}
+
+	private static final Log _log = LogFactory.getLog(
+		BaseDeadLetterPubsubSubscriber.class);
+
+	@Value("${liferay.one.provisioning.email.address.global}")
+	private String _emailAddressGlobal;
+
+	@Autowired
+	private NotificationQueueEntryService _notificationQueueEntryService;
+
+	@Value("${liferay.one.dead.letter.notification.recipient}")
+	private String _notificationRecipient;
 
 	private final Map<String, String> _topics = new ConcurrentHashMap<>();
 
