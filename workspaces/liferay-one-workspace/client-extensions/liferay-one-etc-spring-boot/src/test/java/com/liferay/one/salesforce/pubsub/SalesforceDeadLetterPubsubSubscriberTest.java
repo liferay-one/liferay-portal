@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.one.pubsub.subscriber;
+package com.liferay.one.salesforce.pubsub;
 
 import com.liferay.one.pubsub.Message;
+import com.liferay.one.pubsub.subscriber.BaseDeadLetterPubsubSubscriber;
 import com.liferay.one.service.NotificationQueueEntryService;
 
 import java.util.Collections;
@@ -24,12 +25,14 @@ import org.springframework.test.util.ReflectionTestUtils;
 /**
  * @author Felipe Franca
  */
-@DisplayName("[SUB-DEADLETTERPUBSUBSUBSCRIBER] DeadLetterPubsubSubscriber")
-public class DeadLetterPubsubSubscriberTest {
+@DisplayName(
+	"[SUB-DEADLETTERPUBSUBSUBSCRIBER] SalesforceDeadLetterPubsubSubscriber"
+)
+public class SalesforceDeadLetterPubsubSubscriberTest {
 
 	@BeforeEach
 	public void setUp() {
-		_subscriber = new DeadLetterPubsubSubscriber();
+		_subscriber = new SalesforceDeadLetterPubsubSubscriber();
 
 		_notificationQueueEntryService = Mockito.mock(
 			NotificationQueueEntryService.class);
@@ -61,11 +64,6 @@ public class DeadLetterPubsubSubscriberTest {
 	public void testGetTopicReturnsDeadLetterTopic() {
 		Assertions.assertEquals(
 			"one-liferay-dead-letter", _subscriber.getTopic());
-	}
-
-	@Test
-	public void testIsDeadLetterTopicEnabledReturnsFalse() {
-		Assertions.assertFalse(_subscriber.isDeadLetterTopicEnabled());
 	}
 
 	@Test
@@ -258,6 +256,6 @@ public class DeadLetterPubsubSubscriberTest {
 		"projects/test-project/subscriptions/source-subscription";
 
 	private NotificationQueueEntryService _notificationQueueEntryService;
-	private DeadLetterPubsubSubscriber _subscriber;
+	private SalesforceDeadLetterPubsubSubscriber _subscriber;
 
 }

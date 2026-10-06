@@ -92,6 +92,13 @@ public class BaseDeadLetterPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testIsDeadLetterTopicEnabledReturnsFalse() {
+		Assertions.assertFalse(
+			new TestDeadLetterPubsubSubscriber(
+			).isDeadLetterTopicEnabled());
+	}
+
+	@Test
 	public void testReceiveFallsBackToZeroWithoutDeliveryCount()
 		throws Exception {
 
