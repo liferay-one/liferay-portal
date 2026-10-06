@@ -587,7 +587,7 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
-		if (!_productVersionService.isPatchVersion(
+		if (!_productVersionService.isQuarterlyPatchVersion(
 				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, dxpVersion)) {
 
 			throw new ResponseStatusException(
