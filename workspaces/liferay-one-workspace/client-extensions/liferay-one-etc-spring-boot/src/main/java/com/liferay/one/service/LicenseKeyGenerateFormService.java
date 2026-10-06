@@ -27,6 +27,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
+import java.time.Year;
+import java.time.ZoneOffset;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,6 +195,9 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		JSONArray bundleProductsJSONArray = new JSONArray();
+		JSONArray cloudNativeDeveloperVersionsJSONArray =
+			_toCloudNativeDeveloperVersionsJSONArray(
+				productVersions, Year.now(ZoneOffset.UTC));
 		JSONArray productsJSONArray = new JSONArray();
 		JSONArray developerVersionsJSONArray = _toDeveloperVersionsJSONArray(
 			productVersions);
@@ -223,7 +228,13 @@ public class LicenseKeyGenerateFormService {
 			productsJSONArray.put(
 				new JSONObject(
 				).put(
-					"developerVersions", developerVersionsJSONArray
+					"developerVersions",
+					Objects.equals(
+						LicenseKeyGenerationConstants.
+							PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
+						entitledProduct.getExternalReferenceCode()) ?
+							cloudNativeDeveloperVersionsJSONArray :
+								developerVersionsJSONArray
 				).put(
 					"entitlementId",
 					entitledProduct.getEntitlement(
@@ -810,6 +821,32 @@ public class LicenseKeyGenerateFormService {
 		).put(
 			"name", entitledProduct.getName()
 		);
+	}
+
+	private JSONArray _toCloudNativeDeveloperVersionsJSONArray(
+		List<ProductVersion> productVersions, Year year) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		String quarterlyPrefix = year.getValue() + ".Q";
+
+		for (ProductVersion productVersion : productVersions) {
+			String productGroupVersion = productVersion.getProductGroupVersion();
+
+			if (Validator.isNull(productGroupVersion)) {
+				continue;
+			}
+
+			if (productGroupVersion.startsWith(quarterlyPrefix) ||
+				Objects.equals(
+					productGroupVersion,
+					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION)) {
+
+				jsonArray.put(productVersion.getVersion());
+			}
+		}
+
+		return jsonArray;
 	}
 
 	private JSONArray _toDeveloperVersionsJSONArray(
