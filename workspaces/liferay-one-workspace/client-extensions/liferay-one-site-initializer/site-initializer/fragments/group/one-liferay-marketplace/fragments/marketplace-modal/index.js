@@ -12,9 +12,9 @@ let modalReady = false;
 function getLastIdFromURL() {
 	const parts = window.location.pathname
 		.split('/')
-		.filter((part) => part.length > 0 && !isNaN(part));
+		.filter((part) => !!part.length && !isNaN(part));
 
-	return parts.length > 0 ? parts[parts.length - 1] : null;
+	return parts.length ? parts[parts.length - 1] : null;
 }
 
 function setupModal(button) {

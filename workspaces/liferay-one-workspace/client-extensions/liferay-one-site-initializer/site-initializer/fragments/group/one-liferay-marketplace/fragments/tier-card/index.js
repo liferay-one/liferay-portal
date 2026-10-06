@@ -1,4 +1,8 @@
-/* eslint-disable no-undef */
+/**
+ * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
 
 /**
  * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
@@ -45,7 +49,7 @@ async function hasAIHubOrder(accountId) {
 
 		const {items = []} = await response.json();
 
-		return items.length > 0;
+		return !!items.length;
 	}
 	catch (error) {
 		console.error('Unable to read the placed orders', error);
