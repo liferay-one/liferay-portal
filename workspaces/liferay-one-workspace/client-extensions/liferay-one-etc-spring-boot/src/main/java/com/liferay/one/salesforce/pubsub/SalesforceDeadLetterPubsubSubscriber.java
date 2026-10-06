@@ -32,7 +32,7 @@ public class SalesforceDeadLetterPubsubSubscriber
 		return _subscription;
 	}
 
-	@Value("${liferay.one.salesforce.dead.letter.pubsub.subscriber.project.id}")
+	@Value("${liferay.one.salesforce.pubsub.project.id}")
 	private String _projectId;
 
 	@Value(

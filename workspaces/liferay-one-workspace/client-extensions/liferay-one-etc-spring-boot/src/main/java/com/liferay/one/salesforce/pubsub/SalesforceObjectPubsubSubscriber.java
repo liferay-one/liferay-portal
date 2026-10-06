@@ -316,7 +316,7 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	@Autowired
 	private ContractService _contractService;
 
-	@Value("${liferay.one.salesforce.object.pubsub.subscriber.project.id}")
+	@Value("${liferay.one.salesforce.pubsub.project.id}")
 	private String _projectId;
 
 	@Autowired

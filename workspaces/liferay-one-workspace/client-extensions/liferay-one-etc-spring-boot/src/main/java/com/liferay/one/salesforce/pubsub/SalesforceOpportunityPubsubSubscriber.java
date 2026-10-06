@@ -659,7 +659,7 @@ public class SalesforceOpportunityPubsubSubscriber
 	@Autowired
 	private ContractService _contractService;
 
-	@Value("${liferay.one.salesforce.opportunity.pubsub.subscriber.project.id}")
+	@Value("${liferay.one.salesforce.pubsub.project.id}")
 	private String _projectId;
 
 	@Autowired
