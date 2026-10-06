@@ -1610,6 +1610,8 @@ export default {
 		'A chave de ativação solicitada ainda não está disponível.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'O projeto selecionado não atende aos requisitos de recursos necessários para este aplicativo. Entre em contato com a equipe de vendas para solicitar recursos adicionais.',
+	'the-ssa-trial-product-was-not-found-check-the-custom-element-properties':
+		'O produto de trial do SSA não foi encontrado. Verifique as propriedades do elemento personalizado.',
 	'the-start-and-end-dates-must-be-different':
 		'As datas de início e término devem ser diferentes.',
 	'the-start-date-must-be-earlier-than-the-end-date':
