@@ -8,6 +8,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {
 	LICENSE_KEY_PAGE_SIZE,
+	getServerSummary,
 	toActivationKeyLicenseKey,
 	useActivationKeyLicenseKeys,
 	useUnaggregatedLicenseKey,
@@ -25,6 +26,24 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 			error: undefined,
 			isLoading: false,
 			revalidate: vi.fn(),
+		});
+	});
+
+	describe('getServerSummary', () => {
+		it('prefers the host name, then the IP addresses, then the MAC addresses', () => {
+			const licenseKey = toActivationKeyLicenseKey({
+				active: true,
+				ipAddresses: '1.1.1.1,2.2.2.2',
+				macAddresses: 'AA-BB-CC-DD-EE-FF',
+			});
+
+			expect(
+				getServerSummary({...licenseKey, hostName: 'liferay-host'})
+			).toBe('liferay-host');
+			expect(getServerSummary(licenseKey)).toBe('1.1.1.1,2.2.2.2');
+			expect(getServerSummary({...licenseKey, ipAddresses: ''})).toBe(
+				'AA-BB-CC-DD-EE-FF'
+			);
 		});
 	});
 

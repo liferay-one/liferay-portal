@@ -7,7 +7,10 @@ import ClayIcon from '@clayui/icon';
 import {format} from 'date-fns';
 import {useState} from 'react';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
-import {ActivationKeyLicenseKey} from '~/hooks/useActivationKeyLicenseKeys';
+import {
+	ActivationKeyLicenseKey,
+	getServerSummary,
+} from '~/hooks/useActivationKeyLicenseKeys';
 import i18n, {Word, translate} from '~/i18n';
 import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
@@ -133,7 +136,7 @@ export default function LicenseKeyList({licenseKeys}: LicenseKeyListProps) {
 										className="text-neutral-7"
 										style={{whiteSpace: 'nowrap'}}
 									>
-										{licenseKey.hostName}
+										{getServerSummary(licenseKey)}
 									</span>
 								</button>
 
