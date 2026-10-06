@@ -12,6 +12,8 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.license.LicenseEntry;
+import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.Entitlement;
@@ -106,6 +108,53 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			Arrays.asList("DXP 2026.Q2", "DXP 2026.Q1", "DXP 7.4"),
 			jsonArray.toList());
+	}
+
+	@Test
+	public void testGetLicensedVersionsKeepsVersionsWithLicenseEntries() {
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				"Search%", "2026.Q1")
+		).thenReturn(
+			Collections.singletonList(
+				new LicenseEntry(
+					"search", "Search Production", "production", "2026.Q1",
+					"2026.Q1"))
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+
+		List<ProductVersion> productVersions = Arrays.asList(
+			_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+			_toProductVersion("7.4", "DXP 7.4"));
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
+			"Search", productVersions);
+
+		Assertions.assertEquals(
+			Collections.singletonList("DXP 2026.Q1"), jsonArray.toList());
+
+		jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
+			"Workspace", productVersions);
+
+		Assertions.assertTrue(jsonArray.isEmpty());
 	}
 
 	@Test
