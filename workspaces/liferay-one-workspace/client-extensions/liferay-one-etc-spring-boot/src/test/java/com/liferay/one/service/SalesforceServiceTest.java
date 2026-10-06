@@ -80,8 +80,6 @@ public class SalesforceServiceTest {
 	public void testGetIdTokenProviderUsesApplicationDefaultCredentials() {
 		ReflectionTestUtils.setField(
 			_salesforceService, "_gcfServiceAccount", "");
-		ReflectionTestUtils.setField(
-			_salesforceService, "_gcfServiceAccountKey", "");
 
 		Assertions.assertSame(
 			_googleCredentials,

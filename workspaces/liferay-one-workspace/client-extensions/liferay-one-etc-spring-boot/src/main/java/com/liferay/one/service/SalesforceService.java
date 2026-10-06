@@ -23,11 +23,6 @@ import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import java.nio.charset.StandardCharsets;
-
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
@@ -222,15 +217,6 @@ public class SalesforceService extends BaseService {
 				3600);
 		}
 
-		if (Validator.isNotNull(_gcfServiceAccountKey)) {
-			try (InputStream inputStream = new ByteArrayInputStream(
-					_gcfServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
-
-				return (IdTokenProvider)GoogleCredentials.fromStream(
-					inputStream);
-			}
-		}
-
 		return (IdTokenProvider)_getGoogleCredentials();
 	}
 
@@ -422,9 +408,6 @@ public class SalesforceService extends BaseService {
 
 	@Value("${liferay.one.salesforce.gcf.service.account:}")
 	private String _gcfServiceAccount;
-
-	@Value("${liferay.one.salesforce.gcf.service.account.key:}")
-	private String _gcfServiceAccountKey;
 
 	private volatile GoogleCredentials _googleCredentials;
 	private volatile IdTokenCredentials _idTokenCredentials;
