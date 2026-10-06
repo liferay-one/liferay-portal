@@ -350,6 +350,7 @@ export default {
 	'connect-anyway': 'Conectar mesmo assim',
 	'connect-your-liferay-data-platform': 'Conecte sua Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Conecte seu Liferay DSR',
+	'connection-date': 'Data da Conexão',
 	'connectors': 'Conectores',
 	'consumer-products': 'Produtos de consumo',
 	'contact': 'Contato',
@@ -683,6 +684,7 @@ export default {
 	'header': 'Cabeçalho',
 	'healthcare': 'Saúde',
 	'help-and-support': 'Ajuda e suporte',
+	'help-page': 'página de ajuda',
 	'higher-education': 'Ensino superior',
 	'hold-tight-we-re-preparing-your-environment-so-you-can-start-using-your-liferay-data-platform-this-will-only-take-a-moment':
 		'Aguarde um momento. Estamos preparando seu ambiente para que você possa começar a usar sua Liferay Data Platform. Isso levará apenas um instante!',
@@ -1304,6 +1306,7 @@ export default {
 	'recent-trials': 'Avaliações recentes',
 	'recently-published': 'Publicado recentemente',
 	'record-actual-event-date': 'Registrar Data Real do Evento',
+	'refresh': 'Atualizar',
 	'region': 'Região',
 	'reimbursement': 'Reembolso',
 	'reject-request': 'Rejeitar solicitação',
@@ -1469,6 +1472,7 @@ export default {
 	'solutions-info': 'Informações de soluções',
 	'something-went-wrong': 'Algo deu errado.',
 	'sorry-there-are-no-results-found': 'Desculpe, nenhum resultado encontrado',
+	'source': 'Origem',
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Especifique a versão do seu aplicativo. Isso ajudará o usuário a entender a versão mais recente do seu aplicativo oferecida no Marketplace.',
 	'ssa-dashboard': 'Painel do SSA',
@@ -1690,6 +1694,8 @@ export default {
 		'Para gerar seu arquivo exclusivo de chave de ativação, forneça as especificações técnicas necessárias abaixo. Esses detalhes são usados exclusivamente para configurar o software para o seu ambiente e garantir a compatibilidade do hardware.',
 	'to-join-an-existing-business-account-pleasecontact-your-administrator-who-can-add-you-once-added-you-will-automatically-become-part-of-that-account-and-will-be-able-to-manage-it-and-make-purchases-on-markeplace':
 		'Para ingressar em uma conta empresarial existente, entre em contato com seu administrador, que poderá adicionar você. Depois de adicionado, você se tornará automaticamente parte dessa conta e poderá gerenciá-la e fazer compras no Marketplace.',
+	'to-learn-how-to-create-a-connection-see-the-x':
+		'Para saber como criar uma conexão, consulte a {0}.',
 	'to-request-a-new-or-replacement-activation-key-please':
 		'Para solicitar uma chave de ativação nova ou substituta, por favor favor',
 	'token-monthly-allowance': 'Cota mensal de tokens',
@@ -1796,6 +1802,7 @@ export default {
 	'user-doesnt-exist': 'O usuário não existe',
 	'user-email': 'E-mail do usuário',
 	'user-information': 'Informação do usuário',
+	'user-name': 'Nome de Usuário',
 	'user-roles-successfully-updated':
 		'Funções de usuário atualizadas com sucesso',
 	'users-requests-to-become-a-publisher':

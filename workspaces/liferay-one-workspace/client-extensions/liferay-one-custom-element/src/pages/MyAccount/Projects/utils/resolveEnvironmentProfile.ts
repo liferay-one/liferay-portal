@@ -13,6 +13,7 @@ export type EnvironmentProfile =
 	| 'ac-token'
 	| 'ai-hub'
 	| 'analytics-cloud'
+	| 'dxp'
 	| 'none'
 	| 'paas'
 	| 'saas'
@@ -22,6 +23,7 @@ const ENVIRONMENT_PROFILES: EnvironmentProfile[] = [
 	'ac-token',
 	'ai-hub',
 	'analytics-cloud',
+	'dxp',
 	'none',
 	'paas',
 	'saas',
