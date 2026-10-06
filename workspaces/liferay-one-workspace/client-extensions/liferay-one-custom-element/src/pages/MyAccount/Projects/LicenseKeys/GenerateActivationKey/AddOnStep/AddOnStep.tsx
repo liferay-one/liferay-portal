@@ -16,30 +16,38 @@ import {
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectionButtons from '../components/SelectionButtons/SelectionButtons';
+import VersionField from '../components/VersionField/VersionField';
 import {GenerateActivationKeyForm} from '../types';
-import {getBundleProducts} from '../utils';
+import {getBundleProducts, isLicensedForVersion} from '../utils';
 
 type AddOnStepProps = {
+	developer: boolean;
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	generateForm: GenerateForm;
 	onClickBack: () => void;
 	onClickCancel: () => void;
 	onClickContinue: () => void;
 	renewing?: boolean;
+	submitting: boolean;
+	versions: string[];
 };
 
 export default function AddOnStep({
+	developer,
 	form,
 	generateForm,
 	onClickBack,
 	onClickCancel,
 	onClickContinue,
 	renewing,
+	submitting,
+	versions,
 }: AddOnStepProps) {
 	const {setValue, watch} = form;
 
 	const bundleEntitlementIds = watch('bundleEntitlementIds');
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
+	const version = watch('version');
 
 	const bundleProducts = getBundleProducts(
 		generateForm,
@@ -51,9 +59,15 @@ export default function AddOnStep({
 			return translate('no-license-is-available-for-this-product');
 		}
 
-		if (!renewing && bundleProduct.availableCount <= 0) {
+		if (!developer && !renewing && bundleProduct.availableCount <= 0) {
 			return translate(
 				'no-key-activations-are-available-for-this-product'
+			);
+		}
+
+		if (!isLicensedForVersion(bundleProduct, version)) {
+			return translate(
+				'this-product-is-not-available-for-the-selected-version'
 			);
 		}
 
@@ -111,6 +125,8 @@ export default function AddOnStep({
 
 	return (
 		<>
+			<VersionField form={form} renewing={renewing} versions={versions} />
+
 			<SelectionButtons
 				onClickDeselectAll={() =>
 					setValue('bundleEntitlementIds', requiredEntitlementIds)
@@ -163,11 +179,15 @@ export default function AddOnStep({
 			</div>
 
 			<WizardFooter
-				backButtonProps={{onClick: onClickBack}}
-				cancelButtonProps={{onClick: onClickCancel}}
+				backButtonProps={{disabled: submitting, onClick: onClickBack}}
+				cancelButtonProps={{
+					disabled: submitting,
+					onClick: onClickCancel,
+				}}
 				continueButtonProps={{
-					children: translate('next'),
-					disabled: !bundleEntitlementIds.length,
+					children: translate(developer ? 'download' : 'next'),
+					disabled:
+						!bundleEntitlementIds.length || !version || submitting,
 					onClick: onClickContinue,
 				}}
 			/>

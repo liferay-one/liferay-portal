@@ -20,6 +20,7 @@ import {
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
+	isLicensedForVersion,
 	toServerField,
 	validateIPAddresses,
 	validateMACAddresses,
@@ -190,6 +191,34 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				'Liferay Portal'
 			);
 			expect(getLeadingProductLabel('PRDCT-SEARCH')).toBe('');
+		});
+	});
+
+	describe('isLicensedForVersion', () => {
+		const bundleProduct = {
+			availableCount: 1,
+			entitlementId: 1,
+			externalReferenceCode: 'PRDCT-SEARCH',
+			licensable: true,
+			licenseKeyFamily: 'Search',
+			licensedVersions: ['DXP 2026.Q1'],
+			name: 'Search',
+		};
+
+		it('accepts only the licensed versions when the product lists any', () => {
+			expect(isLicensedForVersion(bundleProduct, 'DXP 2026.Q1')).toBe(
+				true
+			);
+			expect(isLicensedForVersion(bundleProduct, 'DXP 7.4')).toBe(false);
+		});
+
+		it('accepts every version when the product lists none', () => {
+			expect(
+				isLicensedForVersion(
+					{...bundleProduct, licensedVersions: []},
+					'DXP 7.4'
+				)
+			).toBe(true);
 		});
 	});
 

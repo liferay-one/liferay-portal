@@ -15,6 +15,7 @@ import {parseUTCDateString, toUTCDateString} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
+import VersionField from '../components/VersionField/VersionField';
 import {GenerateActivationKeyForm} from '../types';
 import {
 	COMPLIMENTARY_PURPOSE_MAX_LENGTH,
@@ -30,6 +31,7 @@ type ComplimentaryStepProps = {
 	onClickBack: () => void;
 	onClickCancel: () => void;
 	onClickContinue: () => void;
+	versions: string[];
 };
 
 export default function ComplimentaryStep({
@@ -37,6 +39,7 @@ export default function ComplimentaryStep({
 	onClickBack,
 	onClickCancel,
 	onClickContinue,
+	versions,
 }: ComplimentaryStepProps) {
 	const {control, register, setValue, watch} = form;
 
@@ -88,6 +91,8 @@ export default function ComplimentaryStep({
 
 	return (
 		<>
+			<VersionField form={form} versions={versions} />
+
 			<h2 className="h4">{translate('complimentary')}</h2>
 
 			<p>

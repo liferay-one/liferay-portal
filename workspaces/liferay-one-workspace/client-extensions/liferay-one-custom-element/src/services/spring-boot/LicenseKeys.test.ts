@@ -68,6 +68,7 @@ describe('[CLIENT-SPRING-BOOT-LICENSEKEYS] LicenseKeys', () => {
 		oAuth2Fetch.mockResolvedValue(response);
 
 		await LicenseKeys.downloadDeveloperKey({
+			bundleEntitlementIds: [7, 8],
 			keyType: 'developer cluster',
 			name: 'developer.xml',
 			productName: 'DXP & Commerce',
@@ -76,7 +77,7 @@ describe('[CLIENT-SPRING-BOOT-LICENSEKEYS] LicenseKeys', () => {
 		});
 
 		expect(oAuth2Fetch).toHaveBeenCalledWith(
-			'/license-keys/developer-download?keyType=developer+cluster&productName=DXP+%26+Commerce&projectExternalReferenceCode=PRJCT-1&version=2026.q1',
+			'/license-keys/developer-download?keyType=developer+cluster&productName=DXP+%26+Commerce&projectExternalReferenceCode=PRJCT-1&version=2026.q1&bundleEntitlementIds=7&bundleEntitlementIds=8',
 			{earlyReturn: true}
 		);
 		expect(downloadFile).toHaveBeenCalledWith('developer.xml', response);
