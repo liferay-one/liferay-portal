@@ -77,6 +77,12 @@ function getClusterSize(node: LicenseKeyNode): string {
 	return nodes ? String(nodes) : '';
 }
 
+export function getServerSummary(licenseKey: ActivationKeyLicenseKey): string {
+	return (
+		licenseKey.hostName || licenseKey.ipAddresses || licenseKey.macAddresses
+	);
+}
+
 export function toActivationKeyLicenseKey(
 	node: LicenseKeyNode
 ): ActivationKeyLicenseKey {
