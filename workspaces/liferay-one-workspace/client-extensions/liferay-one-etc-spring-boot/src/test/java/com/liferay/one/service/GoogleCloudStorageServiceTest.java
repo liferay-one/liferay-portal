@@ -5,6 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ImpersonatedCredentials;
+
 import com.liferay.one.exception.FileServerUnavailableException;
 
 import com.sun.net.httpserver.HttpServer;
@@ -145,6 +148,47 @@ public class GoogleCloudStorageServiceTest {
 	}
 
 	@Test
+	public void testGetProjectIdPrefersTheConfiguredProjectId() {
+		ReflectionTestUtils.setField(
+			_testGoogleCloudStorageService, "_gcsProjectId", _PROJECT_ID);
+
+		Assertions.assertEquals(
+			_PROJECT_ID,
+			ReflectionTestUtils.invokeMethod(
+				_testGoogleCloudStorageService, "_getProjectId",
+				Mockito.mock(GoogleCredentials.class)));
+	}
+
+	@Test
+	public void testGetStorageGoogleCredentialsImpersonatesConfiguredAccount() {
+		_setUpImpersonation();
+
+		GoogleCredentials googleCredentials = ReflectionTestUtils.invokeMethod(
+			_testGoogleCloudStorageService, "_getStorageGoogleCredentials");
+
+		Assertions.assertInstanceOf(
+			ImpersonatedCredentials.class, googleCredentials);
+
+		ImpersonatedCredentials impersonatedCredentials =
+			(ImpersonatedCredentials)googleCredentials;
+
+		Assertions.assertEquals(
+			_SERVICE_ACCOUNT, impersonatedCredentials.getAccount());
+	}
+
+	@Test
+	public void testGetStorageGoogleCredentialsReusesOneInstance() {
+		_setUpImpersonation();
+
+		Assertions.assertSame(
+			ReflectionTestUtils.invokeMethod(
+				_testGoogleCloudStorageService, "_getStorageGoogleCredentials"),
+			ReflectionTestUtils.invokeMethod(
+				_testGoogleCloudStorageService,
+				"_getStorageGoogleCredentials"));
+	}
+
+	@Test
 	public void testGetUploadSessionURLReturnsLocation() throws Exception {
 		List<ClientRequest> clientRequests = new ArrayList<>();
 
@@ -264,6 +308,20 @@ public class GoogleCloudStorageServiceTest {
 				"bucket-1", "1024", "object-1", "https://one.example.com");
 		}
 	}
+
+	private void _setUpImpersonation() {
+		ReflectionTestUtils.setField(
+			_testGoogleCloudStorageService, "_gcsServiceAccount",
+			_SERVICE_ACCOUNT);
+		ReflectionTestUtils.setField(
+			_testGoogleCloudStorageService, "_googleCredentials",
+			Mockito.mock(GoogleCredentials.class));
+	}
+
+	private static final String _PROJECT_ID = "large-file-uploader";
+
+	private static final String _SERVICE_ACCOUNT =
+		"large-file-uploader-uat@large-file-uploader.iam.gserviceaccount.com";
 
 	private HttpServer _httpServer;
 	private final TestGoogleCloudStorageService _testGoogleCloudStorageService =
