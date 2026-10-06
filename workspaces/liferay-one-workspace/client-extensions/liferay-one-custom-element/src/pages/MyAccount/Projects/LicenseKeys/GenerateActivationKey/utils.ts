@@ -48,8 +48,8 @@ export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
 
 const LEADING_PRODUCT_LABELS: Record<string, string> = {
 	[CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE]: 'Cloud Native',
-	'PRDCT-DXP': 'DXP',
-	'PRDCT-PORTAL': 'Portal',
+	'PRDCT-DXP': 'Liferay DXP',
+	'PRDCT-PORTAL': 'Liferay Portal',
 };
 
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
