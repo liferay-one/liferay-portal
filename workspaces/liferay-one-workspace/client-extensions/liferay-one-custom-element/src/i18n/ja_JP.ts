@@ -348,6 +348,7 @@ export default {
 	'connect-anyway': '接続を続行',
 	'connect-your-liferay-data-platform': 'Liferay Data Platform を接続',
 	'connect-your-liferay-dsr': 'Liferay DSRを接続',
+	'connection-date': '接続日',
 	'connectors': 'コネクタ',
 	'consumer-products': '消費財',
 	'contact': '連絡先',
@@ -677,6 +678,7 @@ export default {
 	'header': 'ヘッダ',
 	'healthcare': 'ヘルスケア',
 	'help-and-support': 'ヘルプとサポート',
+	'help-page': 'ヘルプページ',
 	'higher-education': '高等教育',
 	'hold-tight-we-re-preparing-your-environment-so-you-can-start-using-your-liferay-data-platform-this-will-only-take-a-moment':
 		'少々お待ちください。Liferay Data Platformの使用を開始できるように環境を準備しています。これには少し時間がかかります。',
@@ -1289,6 +1291,7 @@ export default {
 	'recent-trials': '最近のトライアル',
 	'recently-published': '最近公開された項目',
 	'record-actual-event-date': '実際のイベント日を記録',
+	'refresh': '更新',
 	'region': '地域 (都道府県)',
 	'reimbursement': '払い戻し',
 	'reject-request': 'リクエストを拒否',
@@ -1453,6 +1456,7 @@ export default {
 	'something-went-wrong': '問題が発生しました。',
 	'sorry-there-are-no-results-found':
 		'残念ながら一致する結果が見つかりませんでした',
+	'source': 'ソース',
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'アプリのバージョンを指定します。これにより、ユーザーはMarketplaceで提供されているアプリの最新バージョンを把握できます。',
 	'ssa-dashboard': 'SSAダッシュボード',
@@ -1675,6 +1679,8 @@ export default {
 		'一意のアクティベーションキーファイルを生成するには、以下に必要な技術仕様を指定してください。これらの詳細は、ソフトウェアをご利用の環境に合わせて設定し、ハードウェアの互換性を確保するためにのみ使用されます。',
 	'to-join-an-existing-business-account-pleasecontact-your-administrator-who-can-add-you-once-added-you-will-automatically-become-part-of-that-account-and-will-be-able-to-manage-it-and-make-purchases-on-markeplace':
 		'既存のビジネスアカウントに参加するには、管理者にお問い合わせください。管理者が追加できます。追加されると、自動的にそのアカウントの一部となり、アカウントの管理やMarketplaceでの購入が可能になります。',
+	'to-learn-how-to-create-a-connection-see-the-x':
+		'接続の作成方法については、{0}を参照してください。',
 	'to-request-a-new-or-replacement-activation-key-please':
 		'新しいアクティベーションキーまたは交換用のアクティベーション キーをリクエストするには',
 	'token-monthly-allowance': '月間トークン割り当て',
@@ -1780,6 +1786,7 @@ export default {
 	'user-doesnt-exist': 'ユーザーが存在しません',
 	'user-email': 'ユーザーのメールアドレス',
 	'user-information': 'ユーザー情報',
+	'user-name': 'ユーザー名',
 	'user-roles-successfully-updated': 'ユーザーロールが正常に更新されました',
 	'users-requests-to-become-a-publisher':
 		'パブリッシャーになるためのユーザーリクエスト',
