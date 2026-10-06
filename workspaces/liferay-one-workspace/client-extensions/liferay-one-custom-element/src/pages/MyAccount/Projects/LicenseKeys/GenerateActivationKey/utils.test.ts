@@ -185,6 +185,10 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getLeadingProductLabel('PRDCT-CLOUD-NATIVE')).toBe(
 				'Cloud Native'
 			);
+			expect(getLeadingProductLabel('PRDCT-DXP')).toBe('Liferay DXP');
+			expect(getLeadingProductLabel('PRDCT-PORTAL')).toBe(
+				'Liferay Portal'
+			);
 			expect(getLeadingProductLabel('PRDCT-SEARCH')).toBe('');
 		});
 	});

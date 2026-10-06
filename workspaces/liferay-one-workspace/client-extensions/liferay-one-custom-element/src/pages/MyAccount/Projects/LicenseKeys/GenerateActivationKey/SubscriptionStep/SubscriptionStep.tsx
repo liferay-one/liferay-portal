@@ -24,6 +24,7 @@ import {GenerateActivationKeyForm} from '../types';
 import {
 	COMPLIMENTARY_DURATION_DAYS,
 	FREE_KEY_TYPE,
+	getLeadingProductLabel,
 	hasAvailableActivations,
 	hasAvailableKeyType,
 	isCloudNativeProduct,
@@ -231,7 +232,11 @@ export default function SubscriptionStep({
 											!hasAvailableKeyType(current)
 										}
 										key={current.externalReferenceCode}
-										label={current.label}
+										label={
+											getLeadingProductLabel(
+												current.externalReferenceCode
+											) || current.label
+										}
 										value={current.externalReferenceCode}
 									/>
 								))}
