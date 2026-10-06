@@ -2153,6 +2153,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "dxp"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
