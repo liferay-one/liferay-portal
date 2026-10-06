@@ -5,11 +5,12 @@
 
 import DetailTable, {Orientation} from '~/components/DetailTable/DetailTable';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
+import Loading from '~/components/Loading/Loading';
 import Page from '~/components/Page/Page';
-import {useOneContext} from '~/context/OneContextProvider';
 import useAccountDetails from '~/hooks/useAccountDetails';
 import i18n from '~/i18n';
 import SyncToJSMButton from '~/pages/MyAccount/AccountDetails/SyncToJSMButton/SyncToJSMButton';
+import usePrimaryContact from '~/pages/MyAccount/AccountDetails/hooks/usePrimaryContact';
 
 import './AccountDetails.css';
 
@@ -48,9 +49,10 @@ function textWrapper(content?: string | number) {
 }
 
 export default function AccountDetails() {
-	const {myUserAccount} = useOneContext();
-
 	const {data, error, isLoading} = useAccountDetails();
+
+	const {data: primaryContact, isLoading: primaryContactLoading} =
+		usePrimaryContact();
 
 	const {account, postalAddresses} = data || {};
 
@@ -58,10 +60,10 @@ export default function AccountDetails() {
 		postalAddresses?.items.find((address) => address.primary) ||
 		postalAddresses?.items[0];
 
-	const contactName = myUserAccount?.name;
-	const contactEmail = myUserAccount?.emailAddress;
+	const contactName = primaryContact?.name;
+	const contactEmail = primaryContact?.emailAddress;
 	const contactPhone =
-		myUserAccount?.userAccountContactInformation?.telephones?.[0]
+		primaryContact?.userAccountContactInformation?.telephones?.[0]
 			?.phoneNumber;
 
 	const accountInitial = account?.name?.charAt(0) ?? '';
@@ -163,23 +165,27 @@ export default function AccountDetails() {
 							{i18n.translate('primary-contact')}
 						</p>
 
-						<DetailTable
-							items={[
-								{
-									title: i18n.translate('name'),
-									value: textWrapper(contactName),
-								},
-								{
-									title: i18n.translate('email'),
-									value: textWrapper(contactEmail),
-								},
-								{
-									title: i18n.translate('phone'),
-									value: textWrapper(contactPhone),
-								},
-							]}
-							orientation={Orientation.VERTICAL}
-						/>
+						{primaryContactLoading ? (
+							<Loading className="my-4" size="sm" />
+						) : (
+							<DetailTable
+								items={[
+									{
+										title: i18n.translate('name'),
+										value: textWrapper(contactName),
+									},
+									{
+										title: i18n.translate('email'),
+										value: textWrapper(contactEmail),
+									},
+									{
+										title: i18n.translate('phone'),
+										value: textWrapper(contactPhone),
+									},
+								]}
+								orientation={Orientation.VERTICAL}
+							/>
+						)}
 					</DetailedCard>
 
 					<DetailedCard

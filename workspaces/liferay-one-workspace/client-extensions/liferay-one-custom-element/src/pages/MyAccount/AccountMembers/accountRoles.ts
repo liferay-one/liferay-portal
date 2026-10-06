@@ -6,7 +6,7 @@
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 
 import type {UserAccountModel} from '~/services/models/UserAccountModel';
-import type {RoleBrief} from '~/types/accounts';
+import type {RoleBrief, UserAccount} from '~/types/accounts';
 
 export const ACCOUNT_ADMINISTRATOR = 'Account Administrator';
 export const ACCOUNT_BUYER = 'Account Buyer';
@@ -18,6 +18,7 @@ export const PARTNER_MARKETING_USER = 'Partner Marketing User';
 export const PARTNER_MEMBER = 'Partner Member';
 export const PARTNER_SALES_USER = 'Partner Sales User';
 export const PARTNER_TECHNICAL_USER = 'Partner Technical User';
+export const PRIMARY_CONTACT = 'Primary Contact';
 
 export const STANDARD_ACCOUNT_ROLES = [
 	ACCOUNT_ADMINISTRATOR,
@@ -59,6 +60,21 @@ export function sortRoleNames(roleNames: string[] = []) {
 
 export function getMembershipRoleNames(roleBriefs: RoleBrief[] = []) {
 	return sortRoleNames(roleBriefs.map(({name}) => name));
+}
+
+export function getPrimaryContact(
+	accountId: number,
+	userAccounts: UserAccount[]
+) {
+	return userAccounts.find((userAccount) =>
+		userAccount.accountBriefs?.some(
+			(accountBrief) =>
+				accountBrief.id === accountId &&
+				accountBrief.roleBriefs?.some(
+					(roleBrief) => roleBrief.name === PRIMARY_CONTACT
+				)
+		)
+	);
 }
 
 export async function fetchRoleExternalReferenceCodesByName(
