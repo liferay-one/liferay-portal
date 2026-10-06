@@ -19,8 +19,6 @@ public interface ContactConstants {
 	public static final String ATTRIBUTE_NAME_EMAIL_ADDRESS_VERIFIED =
 		"Email Address Verified";
 
-	public static final String ATTRIBUTE_NAME_ENTITLEMENTS = "Entitlements";
-
 	public static final String ATTRIBUTE_NAME_EXTERNAL_CREATED_AT =
 		"External Created At";
 
