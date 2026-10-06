@@ -12,10 +12,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccountContactInformation;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.Property;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.MemoizedValue;
@@ -34,12 +32,10 @@ import org.apache.commons.logging.LogFactory;
 public class UserAccountSyncModel {
 
 	public UserAccountSyncModel(
-		EntitlementService entitlementService,
 		ExternalLinkConverter externalLinkConverter,
 		ProjectMembershipService projectMembershipService,
 		PropertyService propertyService, UserAccount userAccount) {
 
-		_entitlementService = entitlementService;
 		_externalLinkConverter = externalLinkConverter;
 		_projectMembershipService = projectMembershipService;
 		_propertyService = propertyService;
@@ -52,9 +48,6 @@ public class UserAccountSyncModel {
 		_accountExternalReferenceCodes = new MemoizedValue<>(
 			"accounts for user account " + externalReferenceCode, _log,
 			this::_toAccountExternalReferenceCodes);
-		_entitlementDefinitions = new MemoizedValue<>(
-			"entitlements for user account " + externalReferenceCode, _log,
-			this::_toEntitlementDefinitions);
 		_externalLinkProperties = new MemoizedValue<>(
 			"external links for user account " + externalReferenceCode, _log,
 			this::_toExternalLinkProperties);
@@ -71,10 +64,6 @@ public class UserAccountSyncModel {
 
 	public List<String> getAccountExternalReferenceCodes() {
 		return _accountExternalReferenceCodes.get();
-	}
-
-	public List<EntitlementDefinition> getEntitlementDefinitions() {
-		return _entitlementDefinitions.get();
 	}
 
 	public List<Property> getExternalLinkProperties() {
@@ -119,20 +108,6 @@ public class UserAccountSyncModel {
 		}
 
 		return accountExternalReferenceCodes;
-	}
-
-	private List<EntitlementDefinition> _toEntitlementDefinitions()
-		throws Exception {
-
-		List<EntitlementDefinition> entitlementDefinitions = new ArrayList<>();
-
-		for (AccountBrief accountBrief : _accountBriefs) {
-			entitlementDefinitions.addAll(
-				_entitlementService.getActiveEntitlementDefinitions(
-					accountBrief.getId()));
-		}
-
-		return entitlementDefinitions;
 	}
 
 	private List<Property> _toExternalLinkProperties() throws Exception {
@@ -190,9 +165,6 @@ public class UserAccountSyncModel {
 
 	private final List<AccountBrief> _accountBriefs;
 	private final MemoizedValue<List<String>> _accountExternalReferenceCodes;
-	private final MemoizedValue<List<EntitlementDefinition>>
-		_entitlementDefinitions;
-	private final EntitlementService _entitlementService;
 	private final ExternalLinkConverter _externalLinkConverter;
 	private final MemoizedValue<List<Property>> _externalLinkProperties;
 	private final List<OrganizationBrief> _organizationBriefs;

@@ -14,15 +14,12 @@ import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
-import com.liferay.one.jira.converter.EntitlementConverter;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Property;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
@@ -169,8 +166,8 @@ public class UserAccountSynchronizer {
 		UserAccount userAccount) {
 
 		return new UserAccountSyncModel(
-			_entitlementService, _externalLinkConverter,
-			_projectMembershipService, _propertyService, userAccount);
+			_externalLinkConverter, _projectMembershipService, _propertyService,
+			userAccount);
 	}
 
 	private List<String> _getAccountObjectIds(
@@ -267,13 +264,6 @@ public class UserAccountSynchronizer {
 				_contactRoleConverter, userAccountSyncModel.getRoleBriefs(),
 				RoleBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
-			ContactConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
-			_jiraAssetService.getOrCreateReferenceObjectIds(
-				_entitlementConverter,
-				userAccountSyncModel.getEntitlementDefinitions(),
-				EntitlementDefinition::getDisplayName,
-				_entitlementConverter::toAssetObject));
-		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
 			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_externalLinkConverter,
@@ -312,12 +302,6 @@ public class UserAccountSynchronizer {
 
 	@Autowired
 	private ContactRoleConverter _contactRoleConverter;
-
-	@Autowired
-	private EntitlementConverter _entitlementConverter;
-
-	@Autowired
-	private EntitlementService _entitlementService;
 
 	@Autowired
 	private ExternalLinkConverter _externalLinkConverter;
