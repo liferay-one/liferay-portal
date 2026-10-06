@@ -1041,7 +1041,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					"developer", "DXP", _toProject(), "7.3"));
+					Collections.emptyList(), "developer", "DXP", _toProject(),
+					"7.3"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1059,7 +1060,7 @@ public class LicenseKeyGenerationServiceTest {
 		_stubLicensedProducts();
 
 		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			"developer", "DXP", _toProject(), "7.4");
+			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
 
 		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
 			Date.class);
@@ -1088,6 +1089,77 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLAggregatesTheAddOns()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
+
+		_stubLicensedProducts();
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode("PRDCT-SEARCH");
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", "Search"
+			).build());
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement -> entitlement.getEntitlementId() == 2L))
+		).thenReturn(
+			product
+		);
+
+		Mockito.when(
+			_licenseKeyExporter.aggregateXMLs(Mockito.any())
+		).thenReturn(
+			"<licenses />"
+		);
+
+		Assertions.assertEquals(
+			"<licenses />",
+			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
+				"7.4"));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP", "Search"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
+
+		Mockito.verify(
+			_licenseKeyExporter
+		).aggregateXMLs(
+			Mockito.argThat(xmls -> xmls.length == 2)
+		);
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnAddOnNotEntitled()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Collections.singletonList(9L), "developer", "DXP",
+					_toProject(), "7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to entitlement 9"
+			));
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLWithoutEntitledProduct() {
 		_stubEntitlements();
 
@@ -1095,7 +1167,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					"developer", "DXP", _toProject(), "7.4"));
+					Collections.emptyList(), "developer", "DXP", _toProject(),
+					"7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1122,7 +1195,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					"developer", "DXP", _toProject(), "7.4"));
+					Collections.emptyList(), "developer", "DXP", _toProject(),
+					"7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(

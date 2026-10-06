@@ -126,7 +126,7 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
-				"developer", "DXP", project, "7.4")
+				Arrays.asList(2L, 3L), "developer", "DXP", project, "7.4")
 		).thenReturn(
 			"<license />"
 		);
@@ -139,7 +139,8 @@ public class LicenseKeysRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			licenseKeysRestController.getLicenseKeysDeveloperDownload(
-				null, "developer", "DXP", _PROJECT_ERC, "7.4");
+				null, Arrays.asList(2L, 3L), "developer", "DXP", _PROJECT_ERC,
+				"7.4");
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		Assertions.assertEquals("<license />", responseEntity.getBody());
@@ -168,7 +169,7 @@ public class LicenseKeysRestControllerTest {
 		Assertions.assertThrows(
 			ProjectNotFoundException.class,
 			() -> licenseKeysRestController.getLicenseKeysDeveloperDownload(
-				null, "developer", "DXP", _PROJECT_ERC, "7.4"));
+				null, null, "developer", "DXP", _PROJECT_ERC, "7.4"));
 	}
 
 	@Test

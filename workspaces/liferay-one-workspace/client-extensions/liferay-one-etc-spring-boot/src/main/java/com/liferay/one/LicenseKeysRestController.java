@@ -35,6 +35,7 @@ import java.time.Instant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -104,6 +105,8 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	@GetMapping("/developer-download")
 	public ResponseEntity<String> getLicenseKeysDeveloperDownload(
 			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam(name = "bundleEntitlementIds", required = false) List
+				<Long> bundleEntitlementIds,
 			@RequestParam(defaultValue = "developer", name = "keyType") String
 				keyType,
 			@RequestParam("productName") String productName,
@@ -122,6 +125,8 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		String licenseXML =
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				(bundleEntitlementIds == null) ? Collections.emptyList() :
+					bundleEntitlementIds,
 				keyType, productName, project, version);
 
 		String fileName = _licenseKeyExporter.getFileName(
