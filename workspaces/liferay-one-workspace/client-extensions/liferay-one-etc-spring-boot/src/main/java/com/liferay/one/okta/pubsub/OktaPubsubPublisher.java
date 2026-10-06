@@ -21,7 +21,7 @@ public class OktaPubsubPublisher extends BasePubsubPublisher {
 		return _projectId;
 	}
 
-	@Value("${liferay.one.okta.pubsub.publisher.project.id}")
+	@Value("${liferay.one.okta.pubsub.project.id}")
 	private String _projectId;
 
 }

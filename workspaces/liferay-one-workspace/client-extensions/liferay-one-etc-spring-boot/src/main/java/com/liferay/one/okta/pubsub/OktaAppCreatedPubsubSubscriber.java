@@ -92,7 +92,7 @@ public class OktaAppCreatedPubsubSubscriber extends BasePubsubSubscriber {
 	@Autowired
 	private AccountService _accountService;
 
-	@Value("${liferay.one.okta.app.created.pubsub.subscriber.project.id}")
+	@Value("${liferay.one.okta.pubsub.project.id}")
 	private String _projectId;
 
 	@Autowired

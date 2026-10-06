@@ -37,7 +37,7 @@ public class OktaDeadLetterPubsubSubscriber
 		return true;
 	}
 
-	@Value("${liferay.one.okta.dead.letter.pubsub.subscriber.project.id}")
+	@Value("${liferay.one.okta.pubsub.project.id}")
 	private String _projectId;
 
 	@Value("${liferay.one.okta.dead.letter.pubsub.subscriber.subscription}")
