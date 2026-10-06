@@ -38,11 +38,7 @@ const marketoCallback = function (form) {
 	Liferay.on(`submit-marketo-form/${configuration.formId}`, (event) => {
 		const formData = event.details[0];
 
-		form.onSuccess((vals, thankYouURL) => {
-			console.debug('Marketo Form sent');
-
-			return false;
-		});
+		form.onSuccess(() => false);
 
 		form.vals(formData);
 		form.submit();

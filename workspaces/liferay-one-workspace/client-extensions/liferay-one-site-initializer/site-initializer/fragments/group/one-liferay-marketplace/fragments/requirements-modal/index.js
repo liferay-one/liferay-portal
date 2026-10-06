@@ -25,8 +25,6 @@ function isUserLoggedIn() {
 
 function openPurchaseInProgressModal() {
 	Liferay.Util.openModal({
-		headerHTML: '<h2>LIFERAY AI HUB</h2>',
-
 		bodyHTML: `
 			<div>
 				<h2 class="product-modal-title">
@@ -52,11 +50,10 @@ function openPurchaseInProgressModal() {
 				</div>
 			</div>
 		`,
-
 		center: true,
-		size: 'md',
-
+		headerHTML: '<h2>LIFERAY AI HUB</h2>',
 		onOpen: addModalClass,
+		size: 'md',
 	});
 }
 
@@ -64,8 +61,6 @@ function openUnloggedUserModal() {
 	const signInURL = `${Liferay.ThemeDisplay.getPortalURL()}${Liferay.ThemeDisplay.getPathMain()}/portal/login?redirect=${encodeURIComponent(window.location.href)}`;
 
 	Liferay.Util.openModal({
-		headerHTML: '<h2>LIFERAY AI HUB</h2>',
-
 		bodyHTML: `
 			<div>
 				<h2 class="product-modal-title">
@@ -95,10 +90,8 @@ function openUnloggedUserModal() {
 				</div>
 			</div>
 		`,
-
 		center: true,
-		size: 'md',
-
+		headerHTML: '<h2>LIFERAY AI HUB</h2>',
 		onOpen: () => {
 			addModalClass();
 
@@ -116,13 +109,12 @@ function openUnloggedUserModal() {
 					});
 			}, 0);
 		},
+		size: 'md',
 	});
 }
 
 function openProductRequirementsModal(destinationUrl) {
 	Liferay.Util.openModal({
-		headerHTML: `<h2>${header}</h2>`,
-
 		bodyHTML: `
 			<div>
 				<h2 class="product-modal-title">
@@ -152,10 +144,8 @@ function openProductRequirementsModal(destinationUrl) {
 				</div>
 			</div>
 		`,
-
 		center: true,
-		size: 'md',
-
+		headerHTML: `<h2>${header}</h2>`,
 		onOpen: () => {
 			addModalClass();
 
@@ -175,6 +165,7 @@ function openProductRequirementsModal(destinationUrl) {
 					});
 			}, 0);
 		},
+		size: 'md',
 	});
 }
 

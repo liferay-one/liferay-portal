@@ -51,7 +51,7 @@ if (appCards.length && paginationBarElement) {
 			pageLink.textContent = content;
 		}
 		else {
-			pageLink.innerHTML = `<svg class="lexicon-icon" role="presentation"><use href="${spritemap}#${content}" /></svg>`;
+			pageLink.innerHTML = `<svg class="lexicon-icon" role="presentation"><use href="${Liferay.Util.escapeHTML(spritemap)}#${content}" /></svg>`;
 		}
 
 		if (pageNumber) {
