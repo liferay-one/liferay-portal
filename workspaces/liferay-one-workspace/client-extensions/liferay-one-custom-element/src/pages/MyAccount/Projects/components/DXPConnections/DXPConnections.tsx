@@ -18,11 +18,29 @@ import {useDXPConnections} from '../../hooks/useDXPConnections';
 import type {Creator} from '../../hooks/useDXPConnections';
 
 function DXPConnectionsTable() {
-	const {connections, isLoading, isValidating, revalidate} =
+	const {connections, error, isLoading, isValidating, revalidate} =
 		useDXPConnections();
 
 	if (isLoading) {
 		return <Loading className="my-6" shape="circle" size="md" />;
+	}
+
+	if (error) {
+		return (
+			<EmptyState
+				description=""
+				title={i18n.translate('something-went-wrong')}
+				type="BLANK"
+			>
+				<ClayButton
+					disabled={isValidating}
+					displayType="secondary"
+					onClick={() => revalidate()}
+				>
+					{i18n.translate('try-again')}
+				</ClayButton>
+			</EmptyState>
+		);
 	}
 
 	if (!connections.length) {
