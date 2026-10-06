@@ -15,8 +15,11 @@ import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+
+import java.time.Year;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,6 +88,24 @@ public class LicenseKeyGenerateFormServiceTest {
 			).getString(
 				"key"
 			));
+	}
+
+	@Test
+	public void testToCloudNativeDeveloperVersionsKeepsTheCurrentYearAnd74() {
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(),
+			"_toCloudNativeDeveloperVersionsJSONArray",
+			Arrays.asList(
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+				_toProductVersion("2025.Q4", "DXP 2025.Q4"),
+				_toProductVersion("7.4", "DXP 7.4"),
+				_toProductVersion("7.3", "DXP 7.3")),
+			Year.of(2026));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP 2026.Q2", "DXP 2026.Q1", "DXP 7.4"),
+			jsonArray.toList());
 	}
 
 	@Test
@@ -637,6 +658,20 @@ public class LicenseKeyGenerateFormServiceTest {
 		).put(
 			"keyTypes", keyTypesJSONArray
 		);
+	}
+
+	private ProductVersion _toProductVersion(
+		String productGroupVersion, String version) {
+
+		return new ProductVersion(
+			new JSONObject(
+			).put(
+				"id", 1L
+			).put(
+				"productGroupVersion", productGroupVersion
+			).put(
+				"productVersion", version
+			));
 	}
 
 	private Sku _toSku(Long productId, String skuOptionKey) {
