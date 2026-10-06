@@ -13,14 +13,12 @@ import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
-import com.liferay.one.jira.converter.EntitlementConverter;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.ProjectMembership;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
@@ -77,8 +75,6 @@ public class UserAccountSynchronizerTest {
 		_projectMembershipService = Mockito.mock(
 			ProjectMembershipService.class);
 
-		_entitlementService = Mockito.mock(EntitlementService.class);
-
 		_propertyService = Mockito.mock(PropertyService.class);
 
 		Mockito.when(
@@ -105,12 +101,6 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_contactRoleConverter",
 			Mockito.mock(ContactRoleConverter.class));
-		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_entitlementConverter",
-			Mockito.mock(EntitlementConverter.class));
-		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_entitlementService",
-			_entitlementService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_externalLinkConverter",
 			Mockito.mock(ExternalLinkConverter.class));
@@ -328,20 +318,6 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountSkipsEntitlementsWhenEntitlementFails()
-		throws Exception {
-
-		Mockito.when(
-			_entitlementService.getActiveEntitlementDefinitions(
-				Mockito.anyLong())
-		).thenThrow(
-			new RuntimeException()
-		);
-
-		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_ENTITLEMENTS);
-	}
-
-	@Test
 	public void testSyncUserAccountSkipsExternalLinksWhenPropertyFails()
 		throws Exception {
 
@@ -493,7 +469,6 @@ public class UserAccountSynchronizerTest {
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
 	private ContactConverter _contactConverter;
-	private EntitlementService _entitlementService;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
 	private OrganizationUserAccountRoleSynchronizer

@@ -8,7 +8,6 @@ package com.liferay.one.jira.synchronizer;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
-import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.PropertyService;
 
@@ -27,7 +26,6 @@ public class UserAccountSyncModelTest {
 
 	@BeforeEach
 	public void setUp() {
-		_entitlementService = Mockito.mock(EntitlementService.class);
 		_projectMembershipService = Mockito.mock(
 			ProjectMembershipService.class);
 		_propertyService = Mockito.mock(PropertyService.class);
@@ -45,7 +43,7 @@ public class UserAccountSyncModelTest {
 		userAccount.setId(1L);
 
 		_userAccountSyncModel = new UserAccountSyncModel(
-			_entitlementService, Mockito.mock(ExternalLinkConverter.class),
+			Mockito.mock(ExternalLinkConverter.class),
 			_projectMembershipService, _propertyService, userAccount);
 	}
 
@@ -65,21 +63,6 @@ public class UserAccountSyncModelTest {
 	}
 
 	@Test
-	public void testGetEntitlementDefinitionsWhenEntitlementFails()
-		throws Exception {
-
-		Mockito.when(
-			_entitlementService.getActiveEntitlementDefinitions(
-				Mockito.anyLong())
-		).thenThrow(
-			new RuntimeException()
-		);
-
-		Assertions.assertNull(
-			_userAccountSyncModel.getEntitlementDefinitions());
-	}
-
-	@Test
 	public void testGetExternalLinkPropertiesWhenPropertyFails()
 		throws Exception {
 
@@ -93,7 +76,6 @@ public class UserAccountSyncModelTest {
 			_userAccountSyncModel.getExternalLinkProperties());
 	}
 
-	private EntitlementService _entitlementService;
 	private ProjectMembershipService _projectMembershipService;
 	private PropertyService _propertyService;
 	private UserAccountSyncModel _userAccountSyncModel;
