@@ -80,7 +80,8 @@ public class LicenseKeyGenerationService {
 	}
 
 	public String generateDeveloperLicenseXML(
-			String keyType, String productName, Project project, String version)
+			List<Long> bundleEntitlementIds, String keyType, String productName,
+			Project project, String version)
 		throws Exception {
 
 		if (!LicenseKeyGenerationConstants.downloadableKeyTypes.contains(
@@ -101,8 +102,12 @@ public class LicenseKeyGenerationService {
 					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION));
 		}
 
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				project.getExternalReferenceCode());
+
 		Entitlement entitlement = _fetchEntitledProductEntitlement(
-			productName, project);
+			entitlements, productName);
 
 		if (entitlement == null) {
 			throw new LicenseKeyEntitlementException(
@@ -125,25 +130,29 @@ public class LicenseKeyGenerationService {
 
 		Date expirationDate = calendar.getTime();
 
-		String accountName = project.getName();
-		String description = StringBundler.concat(
-			productName, StringPool.SPACE, _getDeveloperLabel(keyType));
-		int licenseVersion = LicenseVersion.getLicenseVersion(
-			productName, version);
+		List<String> licenseXMLs = new ArrayList<>();
 
-		String key = _licenseKeyGenerator.generateKey(
-			accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
-			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+		licenseXMLs.add(
+			_toDeveloperLicenseXML(
+				expirationDate, keyType, productName, project, startDate,
+				version));
 
-		return _licenseKeyExporter.toXML(
-			key, accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
-			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+		for (String bundleProductName :
+				_getDeveloperBundleProductNames(
+					bundleEntitlementIds, entitlements, productName)) {
+
+			licenseXMLs.add(
+				_toDeveloperLicenseXML(
+					expirationDate, keyType, bundleProductName, project,
+					startDate, version));
+		}
+
+		if (licenseXMLs.size() == 1) {
+			return licenseXMLs.get(0);
+		}
+
+		return _licenseKeyExporter.aggregateXMLs(
+			licenseXMLs.toArray(new String[0]));
 	}
 
 	public static class GenerateRequest {
@@ -449,13 +458,10 @@ public class LicenseKeyGenerationService {
 	}
 
 	private Entitlement _fetchEntitledProductEntitlement(
-			String productName, Project project)
+			List<Entitlement> entitlements, String productName)
 		throws Exception {
 
-		for (Entitlement entitlement :
-				_entitlementService.getActiveEntitlements(
-					project.getExternalReferenceCode())) {
-
+		for (Entitlement entitlement : entitlements) {
 			if (!_licenseKeyGenerateFormService.grantsLicense(entitlement)) {
 				continue;
 			}
@@ -670,6 +676,48 @@ public class LicenseKeyGenerationService {
 		return bundleEntitlements;
 	}
 
+	private Set<String> _getDeveloperBundleProductNames(
+			List<Long> bundleEntitlementIds, List<Entitlement> entitlements,
+			String productName)
+		throws Exception {
+
+		Set<String> bundleProductNames = new LinkedHashSet<>();
+
+		for (long bundleEntitlementId :
+				new LinkedHashSet<>(bundleEntitlementIds)) {
+
+			Entitlement entitlement = _findEntitlement(
+				bundleEntitlementId, entitlements);
+
+			if ((entitlement == null) ||
+				!_licenseKeyGenerateFormService.grantsLicense(entitlement)) {
+
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"The project is not entitled to entitlement ",
+						bundleEntitlementId, " selected for this bundle"));
+			}
+
+			Product product = _licenseKeyGenerateFormService.fetchProduct(
+				entitlement);
+
+			if (product == null) {
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"No product backs entitlement ", bundleEntitlementId,
+						" selected for this bundle"));
+			}
+
+			String bundleProductName = CommerceProductUtil.getName(product);
+
+			if (!Objects.equals(bundleProductName, productName)) {
+				bundleProductNames.add(bundleProductName);
+			}
+		}
+
+		return bundleProductNames;
+	}
+
 	private String _getDeveloperLabel(String keyType) {
 		if (Objects.equals(keyType, LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
 			return "Developer Cluster";
@@ -820,6 +868,32 @@ public class LicenseKeyGenerationService {
 		}
 
 		return Date.from(instant);
+	}
+
+	private String _toDeveloperLicenseXML(
+			Date expirationDate, String keyType, String productName,
+			Project project, Date startDate, String version)
+		throws Exception {
+
+		String accountName = project.getName();
+		String description = StringBundler.concat(
+			productName, StringPool.SPACE, _getDeveloperLabel(keyType));
+		int licenseVersion = LicenseVersion.getLicenseVersion(
+			productName, version);
+
+		String key = _licenseKeyGenerator.generateKey(
+			accountName, description, keyType, licenseVersion, productName,
+			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
+			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, startDate, expirationDate);
+
+		return _licenseKeyExporter.toXML(
+			key, accountName, description, keyType, licenseVersion, productName,
+			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
+			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, startDate, expirationDate);
 	}
 
 	private String _toLicenseXML(
