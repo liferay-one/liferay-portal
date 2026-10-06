@@ -11,6 +11,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtua
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.exception.ActivationCodeAlreadyUsedException;
@@ -42,6 +43,7 @@ import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
+import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
@@ -585,11 +587,31 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
+		if (!_productVersionService.isPatchVersion(
+				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, dxpVersion)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"DXP version " + dxpVersion + " is not supported");
+		}
+
 		Set<Long> entitlementIds = _toLongs(
 			jsonObject.optJSONArray("entitlementIds"));
 
 		Set<Long> bundledEntitlementIds = _getBundledEntitlementIds(
 			entitlementIds, environment);
+
+		if (!bundledEntitlementIds.containsAll(entitlementIds)) {
+			Set<Long> unentitledEntitlementIds = new LinkedHashSet<>(
+				entitlementIds);
+
+			unentitledEntitlementIds.removeAll(bundledEntitlementIds);
+
+			throw new ResponseStatusException(
+				HttpStatus.FORBIDDEN,
+				"The environment is not entitled to subscriptions " +
+					unentitledEntitlementIds);
+		}
 
 		Path path = _createOfflineActivationBundle(
 			dxpVersion, entitlementIds, environment);
@@ -1500,6 +1522,9 @@ public class CloudRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;
+
+	@Autowired
+	private ProductVersionService _productVersionService;
 
 	private static class EntitledProduct {
 

@@ -34,6 +34,7 @@ import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
+import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -118,6 +119,14 @@ public class CloudRestControllerTest {
 			CloudNativeSignatureValidator.class);
 		_licenseKeyGenerator = Mockito.mock(LicenseKeyGenerator.class);
 
+		_productVersionService = Mockito.mock(ProductVersionService.class);
+
+		Mockito.when(
+			_productVersionService.isPatchVersion("dxp", "DXP 2025.Q3.1")
+		).thenReturn(
+			true
+		);
+
 		Account account = new Account();
 
 		account.setName("Acme");
@@ -179,6 +188,9 @@ public class CloudRestControllerTest {
 			_cloudRestController, "_licenseKeyExporter", _licenseKeyExporter);
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_licenseKeyGenerator", _licenseKeyGenerator);
+		ReflectionTestUtils.setField(
+			_cloudRestController, "_productVersionService",
+			_productVersionService);
 	}
 
 	@Test
@@ -1279,6 +1291,85 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsOfflineActivationBundleRejectsUnentitledSubscriptions()
+		throws Exception {
+
+		_mockCloudEnabledProduct();
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createProductEntitlement(
+					_CONTRACT_ID, 11L, _SKU_EXTERNAL_REFERENCE_CODE, null))
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"dxpVersion", "DXP 2025.Q3.1"
+		).put(
+			"entitlementIds", new JSONArray(List.of(11L, 99L))
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() ->
+					_cloudRestController.
+						postEnvironmentsOfflineActivationBundle(
+							null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+							jsonObject.toString()));
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).updateEnvironmentOfflineBundle(
+			Mockito.any(), Mockito.anyLong(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationBundleRejectsUnsupportedVersion()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"dxpVersion", "DXP 2025.Q3"
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() ->
+					_cloudRestController.
+						postEnvironmentsOfflineActivationBundle(
+							null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+							jsonObject.toString()));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
 	public void testPostEnvironmentsOfflineActivationBundleStoresRequestedBundle()
 		throws Exception {
 
@@ -1304,19 +1395,16 @@ public class CloudRestControllerTest {
 		).put(
 			"dxpVersion", "DXP 2025.Q3.1"
 		).put(
-			"entitlementIds", new JSONArray(List.of(99L))
+			"entitlementIds", new JSONArray(List.of(11L))
 		);
 
 		_cloudRestController.postEnvironmentsOfflineActivationBundle(
 			null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, jsonObject.toString());
 
-		// Entitlement IDs that resolve to nothing mean an empty package, not
-		// every subscription the account holds.
-
 		Mockito.verify(
 			_environmentService
 		).updateEnvironmentOfflineBundle(
-			Mockito.eq(Set.of()), Mockito.eq(_ENVIRONMENT_ID),
+			Mockito.eq(Set.of(11L)), Mockito.eq(_ENVIRONMENT_ID),
 			Mockito.eq("DXP 2025.Q3.1")
 		);
 	}
@@ -2081,5 +2169,6 @@ public class CloudRestControllerTest {
 	private EnvironmentService _environmentService;
 	private LicenseKeyExporter _licenseKeyExporter;
 	private LicenseKeyGenerator _licenseKeyGenerator;
+	private ProductVersionService _productVersionService;
 
 }

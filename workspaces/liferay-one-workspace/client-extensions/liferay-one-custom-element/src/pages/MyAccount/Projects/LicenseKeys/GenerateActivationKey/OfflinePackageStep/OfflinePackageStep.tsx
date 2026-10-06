@@ -9,7 +9,7 @@ import {useEffect, useState} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import Button from '~/components/Button/Button';
 import Loading from '~/components/Loading/Loading';
-import {translate} from '~/i18n';
+import {sub, translate} from '~/i18n';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
@@ -76,6 +76,16 @@ export default function OfflinePackageStep({
 		subscriptions,
 	]);
 
+	const removedCount = offlineModifying
+		? (bundledEntitlementIds ?? []).filter(
+				(entitlementId) =>
+					!subscriptions.some(
+						(subscription) =>
+							subscription.entitlementId === entitlementId
+					)
+			).length
+		: 0;
+
 	const visibleSubscriptions = expanded
 		? subscriptions
 		: subscriptions.slice(0, COLLAPSED_COUNT);
@@ -111,7 +121,7 @@ export default function OfflinePackageStep({
 					backButtonProps={{onClick: onClickBack}}
 					cancelButtonProps={{onClick: onClickCancel}}
 					continueButtonProps={{
-						children: translate('download-package'),
+						children: translate('save-and-download-package'),
 						disabled: true,
 						onClick: onClickDownload,
 					}}
@@ -123,6 +133,20 @@ export default function OfflinePackageStep({
 	return (
 		<>
 			<VersionField form={form} versions={versions} />
+
+			{removedCount > 0 && (
+				<ClayAlert
+					className="mb-3"
+					displayType="warning"
+					spritemap={getIconSpriteMap()}
+					title={translate('warning')}
+				>
+					{sub(
+						'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed',
+						[String(removedCount)]
+					)}
+				</ClayAlert>
+			)}
 
 			{subscriptions.length ? (
 				<>
@@ -183,7 +207,7 @@ export default function OfflinePackageStep({
 					onClick: onClickCancel,
 				}}
 				continueButtonProps={{
-					children: translate('download-package'),
+					children: translate('save-and-download-package'),
 					disabled: submitting || !offlineSubscriptionIds.length,
 					onClick: onClickDownload,
 				}}

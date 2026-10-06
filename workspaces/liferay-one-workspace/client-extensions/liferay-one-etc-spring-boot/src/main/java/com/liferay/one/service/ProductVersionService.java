@@ -20,6 +20,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,6 +142,23 @@ public class ProductVersionService extends OneBaseService {
 					"(productGroup eq '", productGroup, "') and (supported eq ",
 					supported, ") and (versionLevel eq '",
 					ProductVersionConstants.LEVEL_MAJOR, "')")));
+	}
+
+	public boolean isPatchVersion(String productGroup, String version)
+		throws Exception {
+
+		ProductVersion productVersion = getProductVersion(
+			productGroup, version);
+
+		if ((productVersion == null) ||
+			!Objects.equals(
+				ProductVersionConstants.LEVEL_PATCH,
+				productVersion.getVersionLevel())) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@EventListener(ApplicationReadyEvent.class)

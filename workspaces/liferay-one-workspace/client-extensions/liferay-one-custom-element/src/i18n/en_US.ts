@@ -505,7 +505,6 @@ export default {
 	'download-offline-activation-bundle': 'Download Offline Activation Bundle',
 	'download-offline-activation-package':
 		'Download Offline Activation Package',
-	'download-package': 'Download Package',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
@@ -1095,6 +1094,8 @@ export default {
 		'One Host Name, IP Address, or MAC Address is required',
 	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
 		'One or more add-ons are not available for the selected DXP version.',
+	'one-or-more-selected-subscriptions-are-not-entitled-to-this-project':
+		'One or more selected subscriptions are not entitled to this project.',
 	'one-time-purchases': 'One-Time Purchases',
 	'online': 'Online',
 	'online-payments-with-paypal': 'Online payments with PayPal',
@@ -1421,6 +1422,7 @@ export default {
 	'sale-type': 'Sale Type',
 	'sales-email': 'Sales Email',
 	'save': 'Save',
+	'save-and-download-package': 'Save and Download Package',
 	'save-as-a-draft-exit': 'Save as a Draft & Exit',
 	'save-as-draft': 'Save as Draft',
 	'save-changes': 'Save Changes',
@@ -1677,6 +1679,8 @@ export default {
 		'The requested activation key exceeds the purchased subscriptions for this Liferay project. In case of unauthorized use, Liferay can request financial compensation for breach of use. For more information, please reach out to your Liferay contact or sales@liferay.com.',
 	'the-requested-activation-key-is-not-yet-available':
 		'The requested activation key is not yet available.',
+	'the-selected-dxp-version-is-not-supported':
+		'The selected DXP version is not supported.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
 	'the-start-and-end-dates-must-be-different':
@@ -1975,6 +1979,8 @@ export default {
 	'x-more': '+{0} more',
 	'x-of-x-available': '{0} of {1} available',
 	'x-of-x-invitations-were-sent': '{0} of {1} invitations were sent.',
+	'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed':
+		'{0} previously selected subscriptions are no longer entitled and were removed.',
 	'x-result-for-x': '{0} Result for "{1}"',
 	'x-results-for': '{0} Results for',
 	'x-results-for-x': '{0} Results for "{1}"',
