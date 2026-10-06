@@ -121,6 +121,7 @@ export default function GenerateActivationKey() {
 	const keyType = watch('keyType');
 
 	const complimentary = isComplimentaryKeyType(keyType);
+	const developer = isDeveloperKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const version = watch('version');
 
@@ -172,12 +173,13 @@ export default function GenerateActivationKey() {
 				.filter(
 					(bundleProduct) =>
 						bundleProduct.licensable &&
-						bundleProduct.availableCount > 0
+						(developer || bundleProduct.availableCount > 0)
 				)
 				.map((bundleProduct) => bundleProduct.entitlementId)
 		);
 	}, [
 		complimentary,
+		developer,
 		generateForm,
 		productExternalReferenceCode,
 		renewing,
@@ -275,7 +277,7 @@ export default function GenerateActivationKey() {
 				current.externalReferenceCode === productExternalReferenceCode
 		);
 
-		if (isDeveloperKeyType(keyType)) {
+		if (developer) {
 			return product?.developerVersions ?? [];
 		}
 
@@ -286,8 +288,8 @@ export default function GenerateActivationKey() {
 		return product?.versions ?? [];
 	}, [
 		cloudNative,
+		developer,
 		generateForm,
-		keyType,
 		productExternalReferenceCode,
 		productVersions,
 	]);
@@ -355,7 +357,7 @@ export default function GenerateActivationKey() {
 			return;
 		}
 
-		if (!cloudNative) {
+		if (!cloudNative || developer) {
 			goTo('add-ons');
 
 			return;
@@ -462,6 +464,7 @@ export default function GenerateActivationKey() {
 
 		try {
 			await LicenseKeys.downloadDeveloperKey({
+				bundleEntitlementIds: values.bundleEntitlementIds,
 				keyType: values.keyType,
 				name: `activation-key-${values.keyType}-${values.version}.xml`,
 				productName: getProductName(
@@ -644,23 +647,25 @@ export default function GenerateActivationKey() {
 							generateForm={generateForm}
 							onClickCancel={onClickCancel}
 							onClickContinue={onClickContinueSubscription}
-							onClickDownload={onClickDownload}
 							renewing={renewing}
-							submitting={submitting}
-							versions={versions}
 						/>
 					)}
 
 					{step === 'add-ons' && (
 						<AddOnStep
+							developer={developer}
 							form={form}
 							generateForm={generateForm}
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
 							onClickContinue={() =>
-								goTo(needsDSRStep ? 'dsr' : 'environment')
+								developer
+									? onClickDownload()
+									: goTo(needsDSRStep ? 'dsr' : 'environment')
 							}
 							renewing={renewing}
+							submitting={submitting}
+							versions={versions}
 						/>
 					)}
 
@@ -670,6 +675,7 @@ export default function GenerateActivationKey() {
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
 							onClickContinue={() => goTo('environment')}
+							versions={versions}
 						/>
 					)}
 
@@ -734,7 +740,6 @@ export default function GenerateActivationKey() {
 							onClickGenerate={onClickGenerate}
 							renewing={renewing}
 							submitting={submitting}
-							versions={versions}
 						/>
 					)}
 				</ProductPurchase.Body>

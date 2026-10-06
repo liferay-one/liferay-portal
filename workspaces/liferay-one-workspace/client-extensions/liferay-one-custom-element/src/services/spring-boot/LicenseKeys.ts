@@ -41,12 +41,14 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 	}
 
 	async downloadDeveloperKey({
+		bundleEntitlementIds,
 		keyType,
 		name,
 		productName,
 		projectExternalReferenceCode,
 		version,
 	}: {
+		bundleEntitlementIds: number[];
 		keyType: string;
 		name: string;
 		productName: string;
@@ -59,6 +61,13 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 			projectExternalReferenceCode,
 			version,
 		});
+
+		bundleEntitlementIds.forEach((bundleEntitlementId) =>
+			searchParams.append(
+				'bundleEntitlementIds',
+				String(bundleEntitlementId)
+			)
+		);
 
 		const response = await this.get<Response>(
 			`/developer-download?${searchParams}`,

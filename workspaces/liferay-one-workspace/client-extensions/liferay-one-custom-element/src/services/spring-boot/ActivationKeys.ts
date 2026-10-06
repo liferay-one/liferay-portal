@@ -13,6 +13,7 @@ export type GenerateFormBundleProduct = {
 	externalReferenceCode: string;
 	licensable: boolean;
 	licenseKeyFamily: string;
+	licensedVersions: string[];
 	name: string;
 };
 

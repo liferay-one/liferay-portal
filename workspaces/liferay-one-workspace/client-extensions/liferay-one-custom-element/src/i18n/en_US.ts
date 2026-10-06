@@ -1739,6 +1739,8 @@ export default {
 		'This order must be completed before downloading this app.',
 	'this-product-is-no-longer-available':
 		'This product is no longer available.',
+	'this-product-is-not-available-for-the-selected-version':
+		'This product is not available for the selected version.',
 	'this-product-is-only-available-for-ai-hub-customers':
 		'This product is only available for AI Hub customers.',
 	'this-project-does-not-have-an-active-subscription-for-this-product-contact-your-liferay-sales-representative':

@@ -19,7 +19,6 @@ import {formatDate} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
-import VersionField from '../components/VersionField/VersionField';
 import {GenerateActivationKeyForm} from '../types';
 import {
 	COMPLIMENTARY_DURATION_DAYS,
@@ -38,10 +37,7 @@ type SubscriptionStepProps = {
 	generateForm: GenerateForm;
 	onClickCancel: () => void;
 	onClickContinue: () => void;
-	onClickDownload: () => void;
 	renewing?: boolean;
-	submitting: boolean;
-	versions: string[];
 };
 
 export default function SubscriptionStep({
@@ -50,17 +46,13 @@ export default function SubscriptionStep({
 	generateForm,
 	onClickCancel,
 	onClickContinue,
-	onClickDownload,
 	renewing,
-	submitting,
-	versions,
 }: SubscriptionStepProps) {
 	const {register, setValue, watch} = form;
 
 	const keyType = watch('keyType');
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
-	const version = watch('version');
 
 	const product: GenerateFormProduct | undefined = useMemo(
 		() =>
@@ -192,7 +184,6 @@ export default function SubscriptionStep({
 	const canContinue = Boolean(
 		productExternalReferenceCode &&
 			keyType &&
-			(!developer || version) &&
 			(!requiresContractTerm || subscriptionEntitlementId) &&
 			!noActivationsAvailable
 	);
@@ -294,14 +285,6 @@ export default function SubscriptionStep({
 				</div>
 			</div>
 
-			{developer && (
-				<VersionField
-					form={form}
-					renewing={renewing}
-					versions={versions}
-				/>
-			)}
-
 			{complimentary && (
 				<ClayAlert
 					className="generate-activation-key-subscription-alert"
@@ -387,16 +370,11 @@ export default function SubscriptionStep({
 			)}
 
 			<WizardFooter
-				cancelButtonProps={{
-					disabled: submitting,
-					onClick: onClickCancel,
-				}}
+				cancelButtonProps={{onClick: onClickCancel}}
 				continueButtonProps={{
-					children: developer
-						? translate('download')
-						: translate('next'),
-					disabled: !canContinue || submitting,
-					onClick: developer ? onClickDownload : onClickContinue,
+					children: translate('next'),
+					disabled: !canContinue,
+					onClick: onClickContinue,
 				}}
 			/>
 		</>
