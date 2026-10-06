@@ -1036,6 +1036,62 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLAggregatesTheAddOns()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
+
+		_stubLicensedProducts();
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode("PRDCT-SEARCH");
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", "Search"
+			).build());
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement -> entitlement.getEntitlementId() == 2L))
+		).thenReturn(
+			product
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.isLicensedForVersion(
+				Mockito.any(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_licenseKeyExporter.aggregateXMLs(Mockito.any())
+		).thenReturn(
+			"<licenses />"
+		);
+
+		Assertions.assertEquals(
+			"<licenses />",
+			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
+				"7.4"));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP", "Search"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
+
+		Mockito.verify(
+			_licenseKeyExporter
+		).aggregateXMLs(
+			Mockito.argThat(xmls -> xmls.length == 2)
+		);
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLBelowMinimumVersion() {
 		LicenseKeyEntitlementException licenseKeyEntitlementException =
 			Assertions.assertThrows(
@@ -1048,6 +1104,87 @@ public class LicenseKeyGenerationServiceTest {
 			licenseKeyEntitlementException.getMessage(
 			).contains(
 				"minimum version is 7.4"
+			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnAddOnNotEntitled()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Collections.singletonList(9L), "developer", "DXP",
+					_toProject(), "7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to entitlement 9"
+			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnAddOnNotLicensedForTheVersion()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
+
+		_stubLicensedProducts();
+
+		_stubDeveloperBundleProduct(2L, "PRDCT-SEARCH", "Search");
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
+					"7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"Search is not licensed for version 7.4"
+			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnotherLeadingProduct()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-PORTAL"));
+
+		_stubLicensedProducts();
+
+		_stubDeveloperBundleProduct(2L, "PRDCT-PORTAL", "Portal");
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.isLicensedForVersion(
+				Mockito.any(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
+					"7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"another leading product"
 			));
 	}
 
@@ -1086,77 +1223,6 @@ public class LicenseKeyGenerationServiceTest {
 			90,
 			TimeUnit.MILLISECONDS.toDays(
 				expirationDate.getTime() - startDate.getTime()));
-	}
-
-	@Test
-	public void testGenerateDeveloperLicenseXMLAggregatesTheAddOns()
-		throws Exception {
-
-		_stubEntitlements(
-			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
-			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
-
-		_stubLicensedProducts();
-
-		Product product = new Product();
-
-		product.setExternalReferenceCode("PRDCT-SEARCH");
-		product.setName(
-			HashMapBuilder.put(
-				"en_US", "Search"
-			).build());
-
-		Mockito.when(
-			_licenseKeyGenerateFormService.fetchProduct(
-				Mockito.argThat(
-					entitlement -> entitlement.getEntitlementId() == 2L))
-		).thenReturn(
-			product
-		);
-
-		Mockito.when(
-			_licenseKeyExporter.aggregateXMLs(Mockito.any())
-		).thenReturn(
-			"<licenses />"
-		);
-
-		Assertions.assertEquals(
-			"<licenses />",
-			_licenseKeyGenerationService.generateDeveloperLicenseXML(
-				Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
-				"7.4"));
-
-		Assertions.assertEquals(
-			Arrays.asList("DXP", "Search"),
-			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
-
-		Mockito.verify(
-			_licenseKeyExporter
-		).aggregateXMLs(
-			Mockito.argThat(xmls -> xmls.length == 2)
-		);
-	}
-
-	@Test
-	public void testGenerateDeveloperLicenseXMLRejectsAnAddOnNotEntitled()
-		throws Exception {
-
-		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP"));
-
-		_stubLicensedProducts();
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.singletonList(9L), "developer", "DXP",
-					_toProject(), "7.4"));
-
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"not entitled to entitlement 9"
-			));
 	}
 
 	@Test
@@ -1302,6 +1368,28 @@ public class LicenseKeyGenerationServiceTest {
 				return new LicenseEntry(
 					"portal", "DXP Backup", "production", "7.4", "7.4");
 			}
+		);
+	}
+
+	private void _stubDeveloperBundleProduct(
+			long entitlementId, String externalReferenceCode, String name)
+		throws Exception {
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode(externalReferenceCode);
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", name
+			).build());
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement ->
+						entitlement.getEntitlementId() == entitlementId))
+		).thenReturn(
+			product
 		);
 	}
 

@@ -310,6 +310,21 @@ public class LicenseKeyGenerateFormService {
 			_accountService.getAccount(accountId), "allowComplimentary", false);
 	}
 
+	public boolean isLicensedForVersion(String licenseKeyFamily, String version)
+		throws Exception {
+
+		JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
+			licenseKeyFamily, _getProductVersions());
+
+		if (licensedVersionsJSONArray.isEmpty()) {
+			return true;
+		}
+
+		List<Object> licensedVersions = licensedVersionsJSONArray.toList();
+
+		return licensedVersions.contains(version);
+	}
+
 	public String toLicenseEntryKeyType(String keyTypeKey) {
 		if (Objects.equals(
 				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
@@ -574,23 +589,6 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private JSONArray _getLicensedVersionsJSONArray(
-		String licenseKeyFamily, List<ProductVersion> productVersions) {
-
-		JSONArray jsonArray = new JSONArray();
-
-		for (ProductVersion productVersion : productVersions) {
-			List<LicenseEntry> licenseEntries = _getLicenseEntries(
-				licenseKeyFamily, productVersion.getVersion());
-
-			if (!licenseEntries.isEmpty()) {
-				jsonArray.put(productVersion.getVersion());
-			}
-		}
-
-		return jsonArray;
-	}
-
 	private List<LicenseEntry> _getLicenseEntries(
 		String licenseKeyFamily, String version) {
 
@@ -650,6 +648,23 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return licenseKeyTypeEntitlements;
+	}
+
+	private JSONArray _getLicensedVersionsJSONArray(
+		String licenseKeyFamily, List<ProductVersion> productVersions) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (ProductVersion productVersion : productVersions) {
+			List<LicenseEntry> licenseEntries = _getLicenseEntries(
+				licenseKeyFamily, productVersion.getVersion());
+
+			if (!licenseEntries.isEmpty()) {
+				jsonArray.put(productVersion.getVersion());
+			}
+		}
+
+		return jsonArray;
 	}
 
 	private List<ProductVersion> _getProductVersions() throws Exception {

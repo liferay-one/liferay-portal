@@ -139,7 +139,7 @@ public class LicenseKeyGenerationService {
 
 		for (String bundleProductName :
 				_getDeveloperBundleProductNames(
-					bundleEntitlementIds, entitlements, productName)) {
+					bundleEntitlementIds, entitlements, productName, version)) {
 
 			licenseXMLs.add(
 				_toDeveloperLicenseXML(
@@ -678,7 +678,7 @@ public class LicenseKeyGenerationService {
 
 	private Set<String> _getDeveloperBundleProductNames(
 			List<Long> bundleEntitlementIds, List<Entitlement> entitlements,
-			String productName)
+			String productName, String version)
 		throws Exception {
 
 		Set<String> bundleProductNames = new LinkedHashSet<>();
@@ -710,9 +710,32 @@ public class LicenseKeyGenerationService {
 
 			String bundleProductName = CommerceProductUtil.getName(product);
 
-			if (!Objects.equals(bundleProductName, productName)) {
-				bundleProductNames.add(bundleProductName);
+			if (Objects.equals(bundleProductName, productName)) {
+				continue;
 			}
+
+			if (_leadingProductExternalReferenceCodes.contains(
+					product.getExternalReferenceCode())) {
+
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"Entitlement ", bundleEntitlementId,
+						" is for another leading product and cannot be ",
+						"bundled with ", productName));
+			}
+
+			if (!_licenseKeyGenerateFormService.isLicensedForVersion(
+					LicenseKeyGenerateFormService.getLicenseKeyFamily(
+						entitlement),
+					version)) {
+
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"Product ", bundleProductName,
+						" is not licensed for version ", version));
+			}
+
+			bundleProductNames.add(bundleProductName);
 		}
 
 		return bundleProductNames;
@@ -939,6 +962,14 @@ public class LicenseKeyGenerationService {
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerationService.class);
+
+	private static final Set<String> _leadingProductExternalReferenceCodes =
+		Set.of(
+			LicenseKeyGenerationConstants.
+				PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
+			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
+			LicenseKeyGenerationConstants.
+				PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;
