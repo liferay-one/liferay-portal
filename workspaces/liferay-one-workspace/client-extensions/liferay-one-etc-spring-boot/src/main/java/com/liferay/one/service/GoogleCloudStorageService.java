@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ImpersonatedCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
@@ -20,13 +19,8 @@ import com.liferay.one.exception.FileServerUnavailableException;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import java.net.URI;
 import java.net.URL;
-
-import java.nio.charset.StandardCharsets;
 
 import java.util.Collections;
 import java.util.List;
@@ -187,21 +181,6 @@ public class GoogleCloudStorageService extends BaseService {
 		return googleCredentials;
 	}
 
-	private String _getProjectId(GoogleCredentials googleCredentials) {
-		if (Validator.isNotNull(_gcsProjectId)) {
-			return _gcsProjectId;
-		}
-
-		if (googleCredentials instanceof ServiceAccountCredentials) {
-			ServiceAccountCredentials serviceAccountCredentials =
-				(ServiceAccountCredentials)googleCredentials;
-
-			return serviceAccountCredentials.getProjectId();
-		}
-
-		return null;
-	}
-
 	private Storage _getStorage() throws Exception {
 		Storage storage = _storage;
 
@@ -209,16 +188,12 @@ public class GoogleCloudStorageService extends BaseService {
 			return storage;
 		}
 
-		GoogleCredentials googleCredentials = _getStorageGoogleCredentials();
-
 		StorageOptions.Builder builder = StorageOptions.newBuilder();
 
-		builder.setCredentials(googleCredentials);
+		builder.setCredentials(_getStorageGoogleCredentials());
 
-		String projectId = _getProjectId(googleCredentials);
-
-		if (Validator.isNotNull(projectId)) {
-			builder.setProjectId(projectId);
+		if (Validator.isNotNull(_gcsProjectId)) {
+			builder.setProjectId(_gcsProjectId);
 		}
 
 		StorageOptions storageOptions = builder.build();
@@ -242,17 +217,6 @@ public class GoogleCloudStorageService extends BaseService {
 				_getGoogleCredentials(), _gcsServiceAccount, null, _scopes,
 				3600);
 		}
-		else if (Validator.isNotNull(_gcsServiceAccountKey)) {
-			try (InputStream inputStream = new ByteArrayInputStream(
-					_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
-
-				storageGoogleCredentials = ServiceAccountCredentials.fromStream(
-					inputStream);
-			}
-
-			storageGoogleCredentials = storageGoogleCredentials.createScoped(
-				_scopes);
-		}
 		else {
 			GoogleCredentials googleCredentials = _getGoogleCredentials();
 
@@ -275,9 +239,6 @@ public class GoogleCloudStorageService extends BaseService {
 
 	@Value("${liferay.one.gcs.service.account:}")
 	private String _gcsServiceAccount;
-
-	@Value("${liferay.one.gcs.service.account.key:}")
-	private String _gcsServiceAccountKey;
 
 	private volatile GoogleCredentials _googleCredentials;
 	private volatile Storage _storage;
