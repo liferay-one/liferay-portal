@@ -204,8 +204,10 @@ public class LicenseKeyGenerateFormService {
 		JSONArray versionsJSONArray = _toVersionsJSONArray(productVersions);
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
-			boolean hasLicenseEntries = _hasLicenseEntries(
+			JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
 				entitledProduct.getLicenseKeyFamily(), productVersions);
+
+			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, hasComplimentaryActivationKey,
@@ -218,23 +220,29 @@ public class LicenseKeyGenerateFormService {
 					_toBundleProductJSONObject(
 						entitledProduct,
 						(keyTypesJSONArray.length() > 0) || !hasLicenseEntries,
-						licenseKeyCounts));
+						licenseKeyCounts, licensedVersionsJSONArray));
 			}
 
 			if (keyTypesJSONArray.length() == 0) {
 				continue;
 			}
 
+			JSONArray productDeveloperVersionsJSONArray =
+				developerVersionsJSONArray;
+
+			if (Objects.equals(
+					LicenseKeyGenerationConstants.
+						PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
+					entitledProduct.getExternalReferenceCode())) {
+
+				productDeveloperVersionsJSONArray =
+					cloudNativeDeveloperVersionsJSONArray;
+			}
+
 			productsJSONArray.put(
 				new JSONObject(
 				).put(
-					"developerVersions",
-					Objects.equals(
-						LicenseKeyGenerationConstants.
-							PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
-						entitledProduct.getExternalReferenceCode()) ?
-							cloudNativeDeveloperVersionsJSONArray :
-								developerVersionsJSONArray
+					"developerVersions", productDeveloperVersionsJSONArray
 				).put(
 					"entitlementId",
 					entitledProduct.getEntitlement(
@@ -566,6 +574,23 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
+	private JSONArray _getLicensedVersionsJSONArray(
+		String licenseKeyFamily, List<ProductVersion> productVersions) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (ProductVersion productVersion : productVersions) {
+			List<LicenseEntry> licenseEntries = _getLicenseEntries(
+				licenseKeyFamily, productVersion.getVersion());
+
+			if (!licenseEntries.isEmpty()) {
+				jsonArray.put(productVersion.getVersion());
+			}
+		}
+
+		return jsonArray;
+	}
+
 	private List<LicenseEntry> _getLicenseEntries(
 		String licenseKeyFamily, String version) {
 
@@ -731,21 +756,6 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private boolean _hasLicenseEntries(
-		String licenseKeyFamily, List<ProductVersion> productVersions) {
-
-		for (ProductVersion productVersion : productVersions) {
-			List<LicenseEntry> licenseEntries = _getLicenseEntries(
-				licenseKeyFamily, productVersion.getVersion());
-
-			if (!licenseEntries.isEmpty()) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	private boolean _isGeneratable(JSONObject generateFormJSONObject) {
 		JSONArray productsJSONArray = generateFormJSONObject.getJSONArray(
 			"products");
@@ -799,7 +809,8 @@ public class LicenseKeyGenerateFormService {
 
 	private JSONObject _toBundleProductJSONObject(
 		EntitledProduct entitledProduct, boolean licensable,
-		Map<Long, Integer> licenseKeyCounts) {
+		Map<Long, Integer> licenseKeyCounts,
+		JSONArray licensedVersionsJSONArray) {
 
 		Entitlement entitlement = entitledProduct.getEntitlement();
 
@@ -817,6 +828,8 @@ public class LicenseKeyGenerateFormService {
 		).put(
 			"licensable", licensable
 		).put(
+			"licensedVersions", licensedVersionsJSONArray
+		).put(
 			"licenseKeyFamily", entitledProduct.getLicenseKeyFamily()
 		).put(
 			"name", entitledProduct.getName()
@@ -831,7 +844,8 @@ public class LicenseKeyGenerateFormService {
 		String quarterlyPrefix = year.getValue() + ".Q";
 
 		for (ProductVersion productVersion : productVersions) {
-			String productGroupVersion = productVersion.getProductGroupVersion();
+			String productGroupVersion =
+				productVersion.getProductGroupVersion();
 
 			if (Validator.isNull(productGroupVersion)) {
 				continue;
