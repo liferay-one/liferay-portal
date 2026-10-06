@@ -1595,6 +1595,8 @@ export default {
 		'リクエストされたアクティベーションキーはまだ利用できません。',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'選択したプロジェクトは、このアプリに必要なリソース要件を満たしていません。追加のリソースをリクエストするには営業担当者にお問い合わせください。',
+	'the-ssa-trial-product-was-not-found-check-the-custom-element-properties':
+		'SSAトライアル製品が見つかりませんでした。カスタム要素のプロパティを確認してください。',
 	'the-start-and-end-dates-must-be-different':
 		'開始日と終了日は異なる必要があります。',
 	'the-start-date-must-be-earlier-than-the-end-date':

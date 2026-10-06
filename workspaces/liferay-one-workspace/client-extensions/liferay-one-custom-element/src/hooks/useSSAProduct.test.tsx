@@ -7,10 +7,15 @@ import {act, renderHook, waitFor} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {SWRConfig} from 'swr';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useOneContext} from '~/context/OneContextProvider';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 
 import {useSSAProduct} from './useSSAProduct';
+
+vi.mock('~/context/OneContextProvider', () => ({
+	useOneContext: vi.fn(),
+}));
 
 function mockProductsPage(response: unknown) {
 	return vi
@@ -24,13 +29,10 @@ function mockProductsPage(response: unknown) {
 		);
 }
 
-function product(id: number, solutionType: string) {
-	return {
-		id,
-		productSpecifications: [
-			{specificationKey: 'solution-type', value: solutionType},
-		],
-	};
+function mockProperties(ssaProductExternalReferenceCode: string) {
+	vi.mocked(useOneContext).mockReturnValue({
+		properties: {ssaProductExternalReferenceCode},
+	} as unknown as ReturnType<typeof useOneContext>);
 }
 
 function wrapper({children}: {children: ReactNode}) {
@@ -48,6 +50,8 @@ describe('[HOOK-USESSAPRODUCT] useSSAProduct', () => {
 			currencyCode: 'USD',
 			currencyId: '1',
 		};
+
+		mockProperties('PRDCT-TRIAL');
 	});
 
 	afterEach(() => {
@@ -67,34 +71,40 @@ describe('[HOOK-USESSAPRODUCT] useSSAProduct', () => {
 		expect(getProductsPage).not.toHaveBeenCalled();
 	});
 
-	it('returns the first item whose solution type is the pre built trial', async () => {
-		const getProductsPage = mockProductsPage({
-			items: [
-				product(1, 'ai-hub'),
-				product(2, 'pre-built-trial'),
-				product(3, 'pre-built-trial'),
-			],
-		});
+	it('sends no request without a product external reference code', async () => {
+		mockProperties('');
+
+		const getProductsPage = mockProductsPage({items: []});
 
 		const {result} = renderHook(() => useSSAProduct(), {wrapper});
 
-		await waitFor(() =>
-			expect(result.current.data).toEqual(product(2, 'pre-built-trial'))
-		);
+		await act(async () => {});
+
+		expect(result.current.data).toBeUndefined();
+		expect(getProductsPage).not.toHaveBeenCalled();
+	});
+
+	it('returns the product matching the external reference code', async () => {
+		const product = {externalReferenceCode: 'PRDCT-TRIAL', id: 1};
+
+		const getProductsPage = mockProductsPage({items: [product]});
+
+		const {result} = renderHook(() => useSSAProduct(), {wrapper});
+
+		await waitFor(() => expect(result.current.data).toEqual(product));
 
 		const [channelId, params] = getProductsPage.mock.calls[0];
 
 		expect(channelId).toBe('42');
 		expect(params?.get('filter')).toBe(
-			"(specificationValues/any(x:(x eq 'pre-built-trial')))"
+			"externalReferenceCode eq 'PRDCT-TRIAL'"
 		);
+		expect(params?.get('pageSize')).toBe('1');
 		expect(params?.get('skus.currencyCode')).toBe('USD');
 	});
 
-	it('returns undefined when no item is a pre built trial', async () => {
-		const getProductsPage = mockProductsPage({
-			items: [product(1, 'ai-hub')],
-		});
+	it('returns undefined when no product matches', async () => {
+		const getProductsPage = mockProductsPage({items: []});
 
 		const {result} = renderHook(
 			() => {

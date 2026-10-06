@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import Button from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import {Observer, Size} from '@clayui/modal/lib/types';
@@ -68,7 +69,7 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 }) => {
 	const {ssaAccount} = useSSADashboardOutlet();
 	const {properties} = useOneContext();
-	const {data: product} = useSSAProduct();
+	const {data: product, isLoading: isProductLoading} = useSSAProduct();
 
 	const productPurchase = useMemo(() => {
 		if (!ssaAccount || !product) {
@@ -110,6 +111,10 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 
 	const onSubmit = useCallback(
 		async (data: FormFields) => {
+			if (!productPurchase) {
+				return;
+			}
+
 			const projectId = data.projectId.toLowerCase();
 
 			try {
@@ -140,9 +145,7 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 			];
 
 			try {
-				const order = await (
-					productPurchase as ProductPurchaseSSATrial
-				).createOrder({
+				const order = await productPurchase.createOrder({
 					customFields: {
 						[OrderCustomFields.TRIAL_SETTINGS]: JSON.stringify({
 							consoleInviteEmailAddresses,
@@ -241,6 +244,14 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 			title={i18n.translate('add-new-trial')}
 			visible={modal.open}
 		>
+			{!isProductLoading && !product && (
+				<ClayAlert displayType="warning" role={null}>
+					{i18n.translate(
+						'the-ssa-trial-product-was-not-found-check-the-custom-element-properties'
+					)}
+				</ClayAlert>
+			)}
+
 			<ClayForm.Group className="mb-3 pr-2 w-100">
 				<Form.Label className="mb-2">
 					{i18n.translate('project-id')}
@@ -360,7 +371,7 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 				</Button>
 
 				<Button
-					disabled={isSubmitting}
+					disabled={isSubmitting || !productPurchase}
 					displayType="primary"
 					onClick={handleSubmit(onSubmit)}
 				>
