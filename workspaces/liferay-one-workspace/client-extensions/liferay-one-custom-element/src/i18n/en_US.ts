@@ -1683,6 +1683,8 @@ export default {
 		'The selected DXP version is not supported.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
+	'the-ssa-trial-product-was-not-found-check-the-custom-element-properties':
+		'The SSA trial product was not found. Check the custom element properties.',
 	'the-start-and-end-dates-must-be-different':
 		'The start and end dates must be different.',
 	'the-start-date-must-be-earlier-than-the-end-date':

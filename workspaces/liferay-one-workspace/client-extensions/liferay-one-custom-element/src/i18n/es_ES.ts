@@ -1623,6 +1623,8 @@ export default {
 		'El código de activación solicitado aún no está disponible.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'El proyecto seleccionado no cumple los requisitos de recursos necesarios para esta aplicación. Ponte en contacto con Ventas para solicitar recursos adicionales.',
+	'the-ssa-trial-product-was-not-found-check-the-custom-element-properties':
+		'No se encontró el producto de prueba de SSA. Revise las propiedades del elemento personalizado.',
 	'the-start-and-end-dates-must-be-different':
 		'Las fechas de inicio y fin deben ser diferentes.',
 	'the-start-date-must-be-earlier-than-the-end-date':
