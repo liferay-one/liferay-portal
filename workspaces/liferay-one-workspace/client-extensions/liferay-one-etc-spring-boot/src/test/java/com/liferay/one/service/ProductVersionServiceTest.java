@@ -150,6 +150,40 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
+	public void testIsPatchVersion() throws Exception {
+		Mockito.doReturn(
+			null
+		).when(
+			_productVersionService
+		).getProductVersion(
+			"dxp", "DXP 2026.Q9.1"
+		);
+
+		Mockito.doReturn(
+			_toProductVersion("major")
+		).when(
+			_productVersionService
+		).getProductVersion(
+			"dxp", "DXP 2026.Q2"
+		);
+
+		Mockito.doReturn(
+			_toProductVersion("patch")
+		).when(
+			_productVersionService
+		).getProductVersion(
+			"dxp", "DXP 2026.Q2.1"
+		);
+
+		Assertions.assertFalse(
+			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q9.1"));
+		Assertions.assertFalse(
+			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q2"));
+		Assertions.assertTrue(
+			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q2.1"));
+	}
+
+	@Test
 	public void testSyncProductVersions() throws Exception {
 		Map<String, JSONObject> jsonObjects = _syncProductVersions(
 			_releasesJSON());
@@ -356,6 +390,20 @@ public class ProductVersionServiceTest {
 		}
 
 		return jsonObjects;
+	}
+
+	private ProductVersion _toProductVersion(String versionLevel) {
+		return new ProductVersion(
+			new JSONObject(
+			).put(
+				"id", 1L
+			).put(
+				"versionLevel",
+				new JSONObject(
+				).put(
+					"key", versionLevel
+				)
+			));
 	}
 
 	private ArgumentCaptor<String> _filterCaptor;
