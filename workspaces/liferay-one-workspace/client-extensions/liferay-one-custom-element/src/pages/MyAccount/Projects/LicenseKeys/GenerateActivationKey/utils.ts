@@ -100,6 +100,16 @@ export function getGenerateButtonLabel(renewing: boolean): Word {
 	return renewing ? 'renew-key' : 'generate-key';
 }
 
+export function isLicensedForVersion(
+	bundleProduct: GenerateFormBundleProduct,
+	version: string
+): boolean {
+	return (
+		!bundleProduct.licensedVersions.length ||
+		bundleProduct.licensedVersions.includes(version)
+	);
+}
+
 export function isCloudNativeProduct(externalReferenceCode: string): boolean {
 	return (
 		externalReferenceCode === CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE

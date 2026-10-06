@@ -11,7 +11,6 @@ import {Word, translate} from '~/i18n';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import ServerFieldGroup from '../components/ServerFieldGroup/ServerFieldGroup';
-import VersionField from '../components/VersionField/VersionField';
 import {
 	GenerateActivationKeyForm,
 	GenerateActivationKeyServerField,
@@ -39,7 +38,6 @@ type EnvironmentStepProps = {
 	onClickGenerate: () => void;
 	renewing: boolean;
 	submitting: boolean;
-	versions: string[];
 };
 
 export default function EnvironmentStep({
@@ -51,7 +49,6 @@ export default function EnvironmentStep({
 	onClickGenerate,
 	renewing,
 	submitting,
-	versions,
 }: EnvironmentStepProps) {
 	const {
 		control,
@@ -102,8 +99,6 @@ export default function EnvironmentStep({
 
 	return (
 		<>
-			<VersionField form={form} renewing={renewing} versions={versions} />
-
 			<Input
 				{...register('environmentName')}
 				disabled={renewing}
