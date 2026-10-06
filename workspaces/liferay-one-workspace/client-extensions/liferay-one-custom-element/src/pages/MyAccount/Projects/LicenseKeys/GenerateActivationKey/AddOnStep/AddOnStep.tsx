@@ -6,7 +6,7 @@
 import {ClayCheckbox} from '@clayui/form';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
-import {useEffect} from 'react';
+import {useEffect, useRef} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import {translate} from '~/i18n';
 import {
@@ -65,7 +65,10 @@ export default function AddOnStep({
 			);
 		}
 
-		if (!isLicensedForVersion(bundleProduct, version)) {
+		if (
+			!isRequired(bundleProduct) &&
+			!isLicensedForVersion(bundleProduct, version)
+		) {
 			return translate(
 				'this-product-is-not-available-for-the-selected-version'
 			);
@@ -78,15 +81,41 @@ export default function AddOnStep({
 		.filter((bundleProduct) => getUnavailableReason(bundleProduct))
 		.map((bundleProduct) => bundleProduct.entitlementId);
 
-	useEffect(() => {
-		const selectableEntitlementIds = bundleEntitlementIds.filter(
-			(entitlementId) =>
-				!unavailableEntitlementIds.includes(entitlementId)
-		);
+	const deselectedEntitlementIdsRef = useRef<number[]>([]);
 
-		if (selectableEntitlementIds.length !== bundleEntitlementIds.length) {
-			setValue('bundleEntitlementIds', selectableEntitlementIds);
+	useEffect(() => {
+		const deselectedEntitlementIds = bundleEntitlementIds.filter(
+			(entitlementId) => unavailableEntitlementIds.includes(entitlementId)
+		);
+		const reselectedEntitlementIds =
+			deselectedEntitlementIdsRef.current.filter(
+				(entitlementId) =>
+					!unavailableEntitlementIds.includes(entitlementId) &&
+					!bundleEntitlementIds.includes(entitlementId)
+			);
+
+		if (
+			!deselectedEntitlementIds.length &&
+			!reselectedEntitlementIds.length
+		) {
+			return;
 		}
+
+		deselectedEntitlementIdsRef.current = [
+			...deselectedEntitlementIdsRef.current.filter(
+				(entitlementId) =>
+					!reselectedEntitlementIds.includes(entitlementId)
+			),
+			...deselectedEntitlementIds,
+		];
+
+		setValue('bundleEntitlementIds', [
+			...bundleEntitlementIds.filter(
+				(entitlementId) =>
+					!unavailableEntitlementIds.includes(entitlementId)
+			),
+			...reselectedEntitlementIds,
+		]);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [bundleEntitlementIds.join(), unavailableEntitlementIds.join()]);
@@ -112,7 +141,18 @@ export default function AddOnStep({
 		)
 		.map((bundleProduct) => bundleProduct.entitlementId);
 
+	function select(entitlementIds: number[]) {
+		deselectedEntitlementIdsRef.current = [];
+
+		setValue('bundleEntitlementIds', entitlementIds);
+	}
+
 	function toggle(entitlementId: number) {
+		deselectedEntitlementIdsRef.current =
+			deselectedEntitlementIdsRef.current.filter(
+				(current) => current !== entitlementId
+			);
+
 		setValue(
 			'bundleEntitlementIds',
 			bundleEntitlementIds.includes(entitlementId)
@@ -128,12 +168,8 @@ export default function AddOnStep({
 			<VersionField form={form} renewing={renewing} versions={versions} />
 
 			<SelectionButtons
-				onClickDeselectAll={() =>
-					setValue('bundleEntitlementIds', requiredEntitlementIds)
-				}
-				onClickSelectAll={() =>
-					setValue('bundleEntitlementIds', selectableEntitlementIds)
-				}
+				onClickDeselectAll={() => select(requiredEntitlementIds)}
+				onClickSelectAll={() => select(selectableEntitlementIds)}
 			/>
 
 			<div className="generate-activation-key-add-ons">
@@ -187,7 +223,9 @@ export default function AddOnStep({
 				continueButtonProps={{
 					children: translate(developer ? 'download' : 'next'),
 					disabled:
-						!bundleEntitlementIds.length || !version || submitting,
+						(!developer && !bundleEntitlementIds.length) ||
+						!version ||
+						submitting,
 					onClick: onClickContinue,
 				}}
 			/>
