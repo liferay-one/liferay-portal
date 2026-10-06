@@ -21,6 +21,8 @@ export const ACTIVATION_FORM_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 };
 
 export const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
+	400: 'the-selected-dxp-version-is-not-supported',
+	403: 'one-or-more-selected-subscriptions-are-not-entitled-to-this-project',
 	404: 'the-cloud-native-environment-was-not-found',
 	422: 'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version',
 };
