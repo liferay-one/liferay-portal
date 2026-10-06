@@ -2111,6 +2111,12 @@
 					}
 				},
 				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "dxp"
+					}
+				},
+				{
 					"specificationKey": "support-email-address",
 					"value": {
 						"en_US": "support@liferay.com"

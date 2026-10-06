@@ -264,29 +264,21 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 			expect(isSEOStudioProduct(undefined)).toBe(false);
 		});
 
-		it('is a DXP free tier product only when free and DXP', () => {
+		it('is a DXP free tier product only for the dxp solution type', () => {
 			expect(
-				isDXPFreeTierProduct(
-					toProduct([
-						['price-model', 'Free'],
-						['type', 'dxp'],
-					])
-				)
+				isDXPFreeTierProduct(toProduct([['solution-type', 'dxp']]))
 			).toBe(true);
 			expect(
 				isDXPFreeTierProduct(
 					toProduct([
 						['price-model', 'Free'],
-						['type', 'cloud'],
+						['type', 'dxp'],
 					])
 				)
 			).toBe(false);
 			expect(
 				isDXPFreeTierProduct(
-					toProduct([
-						['price-model', 'Paid'],
-						['type', 'dxp'],
-					])
+					toProduct([['solution-type', 'seo-studio']])
 				)
 			).toBe(false);
 		});
