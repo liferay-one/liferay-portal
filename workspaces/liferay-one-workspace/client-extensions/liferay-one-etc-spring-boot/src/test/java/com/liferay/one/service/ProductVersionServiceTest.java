@@ -131,6 +131,17 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
+	public void testGetProductVersionFilterEscapesQuotes() throws Exception {
+		_productVersionService.getProductVersion(
+			"dxp", "x') or (versionLevel eq 'patch");
+
+		Assertions.assertEquals(
+			"(productGroup eq 'dxp') and (productVersion eq 'x'') or " +
+				"(versionLevel eq ''patch')",
+			_filterCaptor.getValue());
+	}
+
+	@Test
 	public void testGetProductVersionsFilter() throws Exception {
 		_productVersionService.getProductVersions("dxp");
 
@@ -150,7 +161,7 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
-	public void testIsPatchVersion() throws Exception {
+	public void testIsQuarterlyPatchVersion() throws Exception {
 		Mockito.doReturn(
 			null
 		).when(
@@ -160,7 +171,7 @@ public class ProductVersionServiceTest {
 		);
 
 		Mockito.doReturn(
-			_toProductVersion("major")
+			_toProductVersion("quarterly", "major")
 		).when(
 			_productVersionService
 		).getProductVersion(
@@ -168,19 +179,33 @@ public class ProductVersionServiceTest {
 		);
 
 		Mockito.doReturn(
-			_toProductVersion("patch")
+			_toProductVersion("quarterly", "patch")
 		).when(
 			_productVersionService
 		).getProductVersion(
 			"dxp", "DXP 2026.Q2.1"
 		);
 
+		Mockito.doReturn(
+			_toProductVersion("update", "patch")
+		).when(
+			_productVersionService
+		).getProductVersion(
+			"dxp", "DXP 7.4 U92"
+		);
+
 		Assertions.assertFalse(
-			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q9.1"));
+			_productVersionService.isQuarterlyPatchVersion(
+				"dxp", "DXP 2026.Q9.1"));
 		Assertions.assertFalse(
-			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q2"));
+			_productVersionService.isQuarterlyPatchVersion(
+				"dxp", "DXP 2026.Q2"));
 		Assertions.assertTrue(
-			_productVersionService.isPatchVersion("dxp", "DXP 2026.Q2.1"));
+			_productVersionService.isQuarterlyPatchVersion(
+				"dxp", "DXP 2026.Q2.1"));
+		Assertions.assertFalse(
+			_productVersionService.isQuarterlyPatchVersion(
+				"dxp", "DXP 7.4 U92"));
 	}
 
 	@Test
@@ -392,11 +417,17 @@ public class ProductVersionServiceTest {
 		return jsonObjects;
 	}
 
-	private ProductVersion _toProductVersion(String versionLevel) {
+	private ProductVersion _toProductVersion(String type, String versionLevel) {
 		return new ProductVersion(
 			new JSONObject(
 			).put(
 				"id", 1L
+			).put(
+				"type",
+				new JSONObject(
+				).put(
+					"key", type
+				)
 			).put(
 				"versionLevel",
 				new JSONObject(

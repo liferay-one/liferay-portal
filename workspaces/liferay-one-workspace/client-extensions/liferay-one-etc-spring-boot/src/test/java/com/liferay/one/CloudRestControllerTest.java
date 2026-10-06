@@ -122,7 +122,8 @@ public class CloudRestControllerTest {
 		_productVersionService = Mockito.mock(ProductVersionService.class);
 
 		Mockito.when(
-			_productVersionService.isPatchVersion("dxp", "DXP 2025.Q3.1")
+			_productVersionService.isQuarterlyPatchVersion(
+				"dxp", "DXP 2025.Q3.1")
 		).thenReturn(
 			true
 		);
@@ -1246,51 +1247,6 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
-	public void testPostEnvironmentsOfflineActivationBundleStoresBundle()
-		throws Exception {
-
-		_mockCloudEnabledProduct();
-
-		Mockito.when(
-			_environmentService.fetchEnvironmentByExternalReferenceCode(
-				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, null)
-		).thenReturn(
-			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
-		);
-
-		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
-		).thenReturn(
-			List.of(
-				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
-				_createProductEntitlement(
-					_CONTRACT_ID, 11L, _SKU_EXTERNAL_REFERENCE_CODE, null))
-		);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"dxpVersion", "DXP 2025.Q3.1"
-		);
-
-		ResponseEntity<StreamingResponseBody> responseEntity =
-			_cloudRestController.postEnvironmentsOfflineActivationBundle(
-				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
-				jsonObject.toString());
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		// An empty request means every entitled subscription, so what is stored
-		// has to be the resolved set rather than the empty one that arrived.
-
-		Mockito.verify(
-			_environmentService
-		).updateEnvironmentOfflineBundle(
-			Mockito.eq(Set.of(11L)), Mockito.eq(_ENVIRONMENT_ID),
-			Mockito.eq("DXP 2025.Q3.1")
-		);
-	}
-
-	@Test
 	public void testPostEnvironmentsOfflineActivationBundleRejectsUnentitledSubscriptions()
 		throws Exception {
 
@@ -1367,6 +1323,51 @@ public class CloudRestControllerTest {
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 
 		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationBundleStoresBundle()
+		throws Exception {
+
+		_mockCloudEnabledProduct();
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createProductEntitlement(
+					_CONTRACT_ID, 11L, _SKU_EXTERNAL_REFERENCE_CODE, null))
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"dxpVersion", "DXP 2025.Q3.1"
+		);
+
+		ResponseEntity<StreamingResponseBody> responseEntity =
+			_cloudRestController.postEnvironmentsOfflineActivationBundle(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				jsonObject.toString());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		// An empty request means every entitled subscription, so what is stored
+		// has to be the resolved set rather than the empty one that arrived.
+
+		Mockito.verify(
+			_environmentService
+		).updateEnvironmentOfflineBundle(
+			Mockito.eq(Set.of(11L)), Mockito.eq(_ENVIRONMENT_ID),
+			Mockito.eq("DXP 2025.Q3.1")
+		);
 	}
 
 	@Test

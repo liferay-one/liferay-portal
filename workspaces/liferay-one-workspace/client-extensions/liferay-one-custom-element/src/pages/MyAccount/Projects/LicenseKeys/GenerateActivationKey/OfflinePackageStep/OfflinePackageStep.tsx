@@ -44,6 +44,7 @@ export default function OfflinePackageStep({
 	const offlineEnvironment = watch('offlineEnvironment');
 	const offlineModifying = watch('offlineModifying');
 	const offlineSubscriptionIds = watch('offlineSubscriptionIds');
+	const version = watch('version');
 
 	const {error, loading, subscriptions} = useEnvironmentSubscriptions(
 		offlineEnvironment?.environmentId
@@ -208,7 +209,10 @@ export default function OfflinePackageStep({
 				}}
 				continueButtonProps={{
 					children: translate('save-and-download-package'),
-					disabled: submitting || !offlineSubscriptionIds.length,
+					disabled:
+						submitting ||
+						!offlineSubscriptionIds.length ||
+						!version,
 					onClick: onClickDownload,
 				}}
 			/>

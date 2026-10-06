@@ -160,6 +160,15 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
+			"quarterlyPatchVersions",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
 			"sku",
 			Caffeine.newBuilder(
 			).expireAfterWrite(

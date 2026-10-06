@@ -109,8 +109,9 @@ public class ProductVersionService extends OneBaseService {
 
 		List<ProductVersion> productVersions = _getProductVersions(
 			StringBundler.concat(
-				"(productGroup eq '", productGroup,
-				"') and (productVersion eq '", version, "')"));
+				"(productGroup eq '", escapeODataString(productGroup),
+				"') and (productVersion eq '", escapeODataString(version),
+				"')"));
 
 		if (productVersions.isEmpty()) {
 			return null;
@@ -144,7 +145,8 @@ public class ProductVersionService extends OneBaseService {
 					ProductVersionConstants.LEVEL_MAJOR, "')")));
 	}
 
-	public boolean isPatchVersion(String productGroup, String version)
+	@Cacheable("quarterlyPatchVersions")
+	public boolean isQuarterlyPatchVersion(String productGroup, String version)
 		throws Exception {
 
 		ProductVersion productVersion = getProductVersion(
@@ -153,7 +155,10 @@ public class ProductVersionService extends OneBaseService {
 		if ((productVersion == null) ||
 			!Objects.equals(
 				ProductVersionConstants.LEVEL_PATCH,
-				productVersion.getVersionLevel())) {
+				productVersion.getVersionLevel()) ||
+			!Objects.equals(
+				ProductVersionConstants.TYPE_QUARTERLY,
+				productVersion.getType())) {
 
 			return false;
 		}
@@ -173,7 +178,10 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
-	@CacheEvict(allEntries = true, cacheNames = "productVersionsByProductGroup")
+	@CacheEvict(
+		allEntries = true,
+		cacheNames = {"productVersionsByProductGroup", "quarterlyPatchVersions"}
+	)
 	@Scheduled(cron = "${liferay.one.product.version.sync.cron}")
 	public void syncProductVersions() throws Exception {
 		if (_log.isInfoEnabled()) {
