@@ -273,10 +273,12 @@ export function isSEOStudioProduct(product?: DeliveryProduct) {
 }
 
 export function isDXPFreeTierProduct(product: DeliveryProduct) {
-	const {isFreeApp} = getProductPriceModel(product);
-	const {isDXP} = getProductType(product);
-
-	return isFreeApp && isDXP;
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === SolutionTypes.DXP
+	);
 }
 
 const AI_HUB_TIERS = ['activate', 'studio'];
