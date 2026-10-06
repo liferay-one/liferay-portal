@@ -76,9 +76,12 @@ export default class HeadlessAdminUser {
 		return fetcher(`/o/headless-admin-user/v1.0/user-accounts`);
 	}
 
-	static async getUserAccountsByAccountId(accountId: string | number) {
-		return fetcher(
-			`/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
+	static async getUserAccountsByAccountId(
+		accountId: string | number,
+		searchParams = new URLSearchParams()
+	) {
+		return fetcher<APIResponse<UserAccount>>(
+			`/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts?${searchParams}`
 		);
 	}
 
