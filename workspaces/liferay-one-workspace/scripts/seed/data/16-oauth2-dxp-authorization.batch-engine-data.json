@@ -1,0 +1,29 @@
+{
+	"configuration": {
+		"className": "com.liferay.object.model.ObjectDefinition#C_OAUTH2_DXP_AUTHORIZATION",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "DEFAULT",
+			"updateStrategy": "UPDATE"
+		}
+	},
+	"items": [
+		{
+			"connectionSource": "https://dxp.omni.example.com",
+			"externalReferenceCode": "C_OAUTH2_DXP_AUTHORIZATION_OMNI_PRD",
+			"r_accountEntryToOAuth2DxpAuthorization_accountEntryERC": "ACCNT-001"
+		},
+		{
+			"connectionSource": "https://uat.dxp.omni.example.com",
+			"externalReferenceCode": "C_OAUTH2_DXP_AUTHORIZATION_OMNI_UAT",
+			"r_accountEntryToOAuth2DxpAuthorization_accountEntryERC": "ACCNT-001"
+		},
+		{
+			"connectionSource": "http://localhost:8080",
+			"externalReferenceCode": "C_OAUTH2_DXP_AUTHORIZATION_OMNI_LOCAL",
+			"r_accountEntryToOAuth2DxpAuthorization_accountEntryERC": "ACCNT-001"
+		}
+	]
+}
