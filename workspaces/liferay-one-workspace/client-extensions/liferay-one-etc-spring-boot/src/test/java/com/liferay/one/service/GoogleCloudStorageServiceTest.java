@@ -7,11 +7,14 @@ package com.liferay.one.service;
 
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.ImpersonatedCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 
 import com.liferay.one.exception.FileServerUnavailableException;
 
 import com.sun.net.httpserver.HttpServer;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import java.net.InetSocketAddress;
@@ -89,8 +92,10 @@ public class GoogleCloudStorageServiceTest {
 		_httpServer.start();
 
 		ReflectionTestUtils.setField(
-			_testGoogleCloudStorageService, "_gcsServiceAccountKey",
-			_createServiceAccountKey());
+			_testGoogleCloudStorageService, "_gcsProjectId", "project-1");
+		ReflectionTestUtils.setField(
+			_testGoogleCloudStorageService, "_storageGoogleCredentials",
+			_createServiceAccountCredentials());
 	}
 
 	@AfterEach
@@ -137,26 +142,15 @@ public class GoogleCloudStorageServiceTest {
 	}
 
 	@Test
-	public void testGetDownloadURLWithInvalidKeyThrows() {
+	public void testGetDownloadURLWhenCredentialsCannotSignThrows() {
 		ReflectionTestUtils.setField(
-			_testGoogleCloudStorageService, "_gcsServiceAccountKey", "{}");
+			_testGoogleCloudStorageService, "_storageGoogleCredentials",
+			Mockito.mock(GoogleCredentials.class));
 
 		Assertions.assertThrows(
 			FileServerUnavailableException.class,
 			() -> _testGoogleCloudStorageService.getDownloadURL(
 				"bucket-1", "object-1"));
-	}
-
-	@Test
-	public void testGetProjectIdPrefersTheConfiguredProjectId() {
-		ReflectionTestUtils.setField(
-			_testGoogleCloudStorageService, "_gcsProjectId", _PROJECT_ID);
-
-		Assertions.assertEquals(
-			_PROJECT_ID,
-			ReflectionTestUtils.invokeMethod(
-				_testGoogleCloudStorageService, "_getProjectId",
-				Mockito.mock(GoogleCredentials.class)));
 	}
 
 	@Test
@@ -243,6 +237,16 @@ public class GoogleCloudStorageServiceTest {
 				).build()));
 	}
 
+	private ServiceAccountCredentials _createServiceAccountCredentials()
+		throws Exception {
+
+		try (InputStream inputStream = new ByteArrayInputStream(
+				_createServiceAccountKey().getBytes(StandardCharsets.UTF_8))) {
+
+			return ServiceAccountCredentials.fromStream(inputStream);
+		}
+	}
+
 	private String _createServiceAccountKey() throws Exception {
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 
@@ -311,14 +315,14 @@ public class GoogleCloudStorageServiceTest {
 
 	private void _setUpImpersonation() {
 		ReflectionTestUtils.setField(
+			_testGoogleCloudStorageService, "_storageGoogleCredentials", null);
+		ReflectionTestUtils.setField(
 			_testGoogleCloudStorageService, "_gcsServiceAccount",
 			_SERVICE_ACCOUNT);
 		ReflectionTestUtils.setField(
 			_testGoogleCloudStorageService, "_googleCredentials",
 			Mockito.mock(GoogleCredentials.class));
 	}
-
-	private static final String _PROJECT_ID = "large-file-uploader";
 
 	private static final String _SERVICE_ACCOUNT =
 		"large-file-uploader-uat@large-file-uploader.iam.gserviceaccount.com";
