@@ -728,6 +728,12 @@ def _check_references(report, universes, scope):
 		"entitlement definition",
 	)
 	check(
+		scope["dxp_authorizations"],
+		"r_accountEntryToOAuth2DxpAuthorization_accountEntryERC",
+		"account",
+		"DXP authorization",
+	)
+	check(
 		scope["environments"],
 		"r_accountEntryToEnvironment_accountEntryERC",
 		"account",
@@ -853,6 +859,7 @@ def _check_unique(report, scope):
 	for label, key in (
 		("account", "accounts"),
 		("contract", "contracts"),
+		("DXP authorization", "dxp_authorizations"),
 		("entitlement", "entitlements"),
 		("entitlement definition", "definitions"),
 		("environment", "environments"),
@@ -915,6 +922,7 @@ def main():
 	usage_definitions = items("13-usage-definition.batch-engine-data.json")
 	environments = items("14-environment.batch-engine-data.json")
 	definitions = items("15-entitlement-definition.batch-engine-data.json")
+	dxp_authorizations = items("16-oauth2-dxp-authorization.batch-engine-data.json")
 
 	batch = os.path.join(
 		WORKSPACE_ROOT, "client-extensions", "liferay-one-batch", "batch"
