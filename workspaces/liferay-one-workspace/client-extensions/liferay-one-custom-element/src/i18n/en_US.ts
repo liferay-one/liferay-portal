@@ -356,6 +356,7 @@ export default {
 	'connect-anyway': 'Connect Anyway',
 	'connect-your-liferay-data-platform': 'Connect Your Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Connect Your Liferay DSR',
+	'connection-date': 'Connection Date',
 	'connectors': 'Connectors',
 	'consumer-products': 'Consumer Products',
 	'contact': 'Contact',
@@ -708,6 +709,7 @@ export default {
 	'header': 'Header',
 	'healthcare': 'Healthcare',
 	'help-and-support': 'Help & Support',
+	'help-page': 'help page',
 	'higher-education': 'Higher Education',
 	'hold-tight-we-re-preparing-your-environment-so-you-can-start-using-your-liferay-data-platform-this-will-only-take-a-moment':
 		'Hold tight. We’re preparing your environment so you can start using your Liferay Data Platform. This will only take a moment!',
@@ -1351,6 +1353,7 @@ export default {
 	'recent-trials': 'Recent Trials',
 	'recently-published': 'Recently Published',
 	'record-actual-event-date': 'Record Actual Event Date',
+	'refresh': 'Refresh',
 	'region': 'Region',
 	'reimbursement': 'Reimbursement',
 	'reject-request': 'Reject Request',
@@ -1534,6 +1537,7 @@ export default {
 	'solutions-info': 'Solutions Info',
 	'something-went-wrong': 'Something went wrong.',
 	'sorry-there-are-no-results-found': 'Sorry, there are no results found.',
+	'source': 'Source',
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Specify your app’s version. This will help the user understand the latest version of your app offered on the Marketplace.',
 	'ssa-dashboard': 'SSA Dashboard',
@@ -1774,6 +1778,8 @@ export default {
 		'To generate your unique activation key file, please provide the technical specifications required below. These details are used exclusively to configure the software for your environment and ensure hardware compatibility.',
 	'to-join-an-existing-business-account-pleasecontact-your-administrator-who-can-add-you-once-added-you-will-automatically-become-part-of-that-account-and-will-be-able-to-manage-it-and-make-purchases-on-markeplace':
 		'To join an existing business account, please contact your administrator, who can add you. Once added, you will automatically become part of that account and will be able to manage it and make purchases on Markeplace.',
+	'to-learn-how-to-create-a-connection-see-the-x':
+		'To learn how to create a connection, see the {0}.',
 	'to-request-a-new-or-replacement-activation-key-please':
 		'To request a new or replacement activation key, please',
 	'token-monthly-allowance': 'Token Monthly Allowance',
@@ -1874,6 +1880,7 @@ export default {
 	'user-doesnt-exist': 'User doesn’t exist',
 	'user-email': 'User Email',
 	'user-information': 'User Information',
+	'user-name': 'User Name',
 	'user-roles-successfully-updated': 'User roles successfully updated',
 	'users-requests-to-become-a-publisher':
 		'Users requests to become a publisher',

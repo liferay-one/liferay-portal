@@ -11,6 +11,7 @@ import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filt
 
 import AIHubEnvironment from '../AIHubEnvironment/AIHubEnvironment';
 import DSREnvironment from '../DSREnvironment/DSREnvironment';
+import DXPConnections from '../DXPConnections/DXPConnections';
 import EnvironmentCard from '../EnvironmentCard/EnvironmentCard';
 import LDPTokenCard from '../LDPTokenCard/LDPTokenCard';
 import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
@@ -27,6 +28,7 @@ const ENVIRONMENT_OFFERING_BY_PROFILE: Record<EnvironmentProfile, string> = {
 	'ac-token': 'DSR',
 	'ai-hub': 'AI Hub',
 	'analytics-cloud': 'Analytics Cloud',
+	'dxp': '',
 	'none': '',
 	'paas': 'PaaS',
 	'saas': 'SaaS',
@@ -50,6 +52,10 @@ export default function EnvironmentTab({
 	);
 
 	const [environmentEntry] = matchingEnvironments;
+
+	if (profile === 'dxp') {
+		return <DXPConnections />;
+	}
 
 	if (loading) {
 		return <Loading.Page />;
