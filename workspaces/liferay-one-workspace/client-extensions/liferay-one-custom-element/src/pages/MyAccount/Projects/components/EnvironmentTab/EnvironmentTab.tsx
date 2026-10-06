@@ -19,26 +19,33 @@ import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 import type {ProductEnvironmentInfo} from '~/hooks/useProjectOrders';
 import type {EnvironmentProfile} from '~/pages/MyAccount/Projects/utils/resolveEnvironmentProfile';
 
+type ProductEnvironmentProfile = Exclude<EnvironmentProfile, 'dxp'>;
+
 type EnvironmentTabProps = {
 	environment: ProductEnvironmentInfo;
 	profile?: EnvironmentProfile;
 };
 
-const ENVIRONMENT_OFFERING_BY_PROFILE: Record<EnvironmentProfile, string> = {
+const ENVIRONMENT_OFFERING_BY_PROFILE: Record<
+	ProductEnvironmentProfile,
+	string
+> = {
 	'ac-token': 'DSR',
 	'ai-hub': 'AI Hub',
 	'analytics-cloud': 'Analytics Cloud',
-	'dxp': '',
 	'none': '',
 	'paas': 'PaaS',
 	'saas': 'SaaS',
 	'workspace': 'LDP',
 };
 
-export default function EnvironmentTab({
+function ProductEnvironment({
 	environment,
 	profile,
-}: EnvironmentTabProps) {
+}: {
+	environment: ProductEnvironmentInfo;
+	profile?: ProductEnvironmentProfile;
+}) {
 	const {projectId} = useProject();
 	const {environments, loading} = useProjectEnvironments();
 
@@ -52,10 +59,6 @@ export default function EnvironmentTab({
 	);
 
 	const [environmentEntry] = matchingEnvironments;
-
-	if (profile === 'dxp') {
-		return <DXPConnections />;
-	}
 
 	if (loading) {
 		return <Loading.Page />;
@@ -100,4 +103,15 @@ export default function EnvironmentTab({
 			/>
 		</>
 	);
+}
+
+export default function EnvironmentTab({
+	environment,
+	profile,
+}: EnvironmentTabProps) {
+	if (profile === 'dxp') {
+		return <DXPConnections />;
+	}
+
+	return <ProductEnvironment environment={environment} profile={profile} />;
 }

@@ -28,6 +28,7 @@ type DXPConnectionAPIItem = {
 
 export function useDXPConnections(): {
 	connections: DXPConnectionAPIItem[];
+	error: unknown;
 	isLoading: boolean;
 	isValidating: boolean;
 	revalidate: () => void;
@@ -36,6 +37,7 @@ export function useDXPConnections(): {
 
 	const {
 		data: response,
+		error,
 		isLoading,
 		isValidating,
 		revalidate,
@@ -55,5 +57,5 @@ export function useDXPConnections(): {
 
 	const connections = (response?.items || []).filter(({creator}) => creator);
 
-	return {connections, isLoading, isValidating, revalidate};
+	return {connections, error, isLoading, isValidating, revalidate};
 }
