@@ -93,71 +93,6 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testToCloudNativeDeveloperVersionsKeepsTheCurrentYearAnd74() {
-		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			new LicenseKeyGenerateFormService(),
-			"_toCloudNativeDeveloperVersionsJSONArray",
-			Arrays.asList(
-				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
-				_toProductVersion("2026.Q1", "DXP 2026.Q1"),
-				_toProductVersion("2025.Q4", "DXP 2025.Q4"),
-				_toProductVersion("7.4", "DXP 7.4"),
-				_toProductVersion("7.3", "DXP 7.3")),
-			Year.of(2026));
-
-		Assertions.assertEquals(
-			Arrays.asList("DXP 2026.Q2", "DXP 2026.Q1", "DXP 7.4"),
-			jsonArray.toList());
-	}
-
-	@Test
-	public void testGetLicensedVersionsKeepsVersionsWithLicenseEntries() {
-		LicenseEntryService licenseEntryService = Mockito.mock(
-			LicenseEntryService.class);
-
-		Mockito.when(
-			licenseEntryService.getLicenseEntriesByNameVersion(
-				Mockito.anyString(), Mockito.anyString())
-		).thenReturn(
-			Collections.emptyList()
-		);
-
-		Mockito.when(
-			licenseEntryService.getLicenseEntriesByNameVersion(
-				"Search%", "2026.Q1")
-		).thenReturn(
-			Collections.singletonList(
-				new LicenseEntry(
-					"search", "Search Production", "production", "2026.Q1",
-					"2026.Q1"))
-		);
-
-		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			new LicenseKeyGenerateFormService();
-
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_licenseEntryService",
-			licenseEntryService);
-
-		List<ProductVersion> productVersions = Arrays.asList(
-			_toProductVersion("2026.Q1", "DXP 2026.Q1"),
-			_toProductVersion("7.4", "DXP 7.4"));
-
-		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
-			"Search", productVersions);
-
-		Assertions.assertEquals(
-			Collections.singletonList("DXP 2026.Q1"), jsonArray.toList());
-
-		jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
-			"Workspace", productVersions);
-
-		Assertions.assertTrue(jsonArray.isEmpty());
-	}
-
-	@Test
 	public void testGetEntitledProductsReadsEverySoldSku() throws Exception {
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
 			_toLicenseKeyGenerateFormService(
@@ -353,6 +288,53 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetLicensedVersionsKeepsVersionsWithLicenseEntries() {
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				"Search%", "2026.Q1")
+		).thenReturn(
+			Collections.singletonList(
+				new LicenseEntry(
+					"search", "Search Production", "production", "2026.Q1",
+					"2026.Q1"))
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+
+		List<ProductVersion> productVersions = Arrays.asList(
+			_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+			_toProductVersion("7.4", "DXP 7.4"));
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
+			"Search", productVersions);
+
+		Assertions.assertEquals(
+			Collections.singletonList("DXP 2026.Q1"), jsonArray.toList());
+
+		jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
+			"Workspace", productVersions);
+
+		Assertions.assertTrue(jsonArray.isEmpty());
+	}
+
+	@Test
 	public void testGetSummaryCarriesOnlyWhatTheListReads() throws Exception {
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
 			Mockito.spy(new LicenseKeyGenerateFormService());
@@ -466,6 +448,24 @@ public class LicenseKeyGenerateFormServiceTest {
 	@Test
 	public void testIsGeneratableWithoutProducts() {
 		Assertions.assertFalse(_isGeneratable());
+	}
+
+	@Test
+	public void testToCloudNativeDeveloperVersionsKeepsTheCurrentYearAnd74() {
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(),
+			"_toCloudNativeDeveloperVersionsJSONArray",
+			Arrays.asList(
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+				_toProductVersion("2025.Q4", "DXP 2025.Q4"),
+				_toProductVersion("7.4", "DXP 7.4"),
+				_toProductVersion("7.3", "DXP 7.3")),
+			Year.of(2026));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP 2026.Q2", "DXP 2026.Q1", "DXP 7.4"),
+			jsonArray.toList());
 	}
 
 	@Test
