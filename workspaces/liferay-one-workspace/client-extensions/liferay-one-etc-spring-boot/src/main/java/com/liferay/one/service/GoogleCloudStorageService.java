@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ImpersonatedCredentials;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
@@ -17,6 +18,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.exception.FileServerUnavailableException;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -26,8 +28,8 @@ import java.net.URL;
 
 import java.nio.charset.StandardCharsets;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -71,20 +73,8 @@ public class GoogleCloudStorageService extends BaseService {
 	public String getDownloadURL(String bucketName, String objectName)
 		throws Exception {
 
-		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
-
-			ServiceAccountCredentials serviceAccountCredentials =
-				ServiceAccountCredentials.fromStream(inputStream);
-
-			StorageOptions storageOptions = StorageOptions.newBuilder(
-			).setCredentials(
-				serviceAccountCredentials
-			).setProjectId(
-				serviceAccountCredentials.getProjectId()
-			).build();
-
-			Storage storage = storageOptions.getService();
+		try {
+			Storage storage = _getStorage();
 
 			URL url = storage.signUrl(
 				BlobInfo.newBuilder(
@@ -168,33 +158,129 @@ public class GoogleCloudStorageService extends BaseService {
 	}
 
 	private String _getAccessToken() throws Exception {
-		try (InputStream inputStream = new ByteArrayInputStream(
-				_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
+		GoogleCredentials googleCredentials = _getStorageGoogleCredentials();
 
-			ServiceAccountCredentials serviceAccountCredentials =
-				ServiceAccountCredentials.fromStream(inputStream);
+		googleCredentials.refreshIfExpired();
 
-			Set<String> scopes = new HashSet<>();
+		AccessToken accessToken = googleCredentials.getAccessToken();
 
-			scopes.add("https://www.googleapis.com/auth/cloud-platform");
-
-			GoogleCredentials googleCredentials =
-				serviceAccountCredentials.createScoped(scopes);
-
-			AccessToken accessToken = googleCredentials.refreshAccessToken();
-
-			return accessToken.getTokenValue();
+		if (accessToken == null) {
+			throw new Exception("Unable to get access token");
 		}
+
+		return accessToken.getTokenValue();
 	}
 
 	private String _getBaseURL() {
 		return "https://storage.googleapis.com";
 	}
 
+	private GoogleCredentials _getGoogleCredentials() throws Exception {
+		GoogleCredentials googleCredentials = _googleCredentials;
+
+		if (googleCredentials == null) {
+			googleCredentials = GoogleCredentials.getApplicationDefault();
+
+			_googleCredentials = googleCredentials;
+		}
+
+		return googleCredentials;
+	}
+
+	private String _getProjectId(GoogleCredentials googleCredentials) {
+		if (Validator.isNotNull(_gcsProjectId)) {
+			return _gcsProjectId;
+		}
+
+		if (googleCredentials instanceof ServiceAccountCredentials) {
+			ServiceAccountCredentials serviceAccountCredentials =
+				(ServiceAccountCredentials)googleCredentials;
+
+			return serviceAccountCredentials.getProjectId();
+		}
+
+		return null;
+	}
+
+	private Storage _getStorage() throws Exception {
+		Storage storage = _storage;
+
+		if (storage != null) {
+			return storage;
+		}
+
+		GoogleCredentials googleCredentials = _getStorageGoogleCredentials();
+
+		StorageOptions.Builder builder = StorageOptions.newBuilder();
+
+		builder.setCredentials(googleCredentials);
+
+		String projectId = _getProjectId(googleCredentials);
+
+		if (Validator.isNotNull(projectId)) {
+			builder.setProjectId(projectId);
+		}
+
+		StorageOptions storageOptions = builder.build();
+
+		storage = storageOptions.getService();
+
+		_storage = storage;
+
+		return storage;
+	}
+
+	private GoogleCredentials _getStorageGoogleCredentials() throws Exception {
+		GoogleCredentials storageGoogleCredentials = _storageGoogleCredentials;
+
+		if (storageGoogleCredentials != null) {
+			return storageGoogleCredentials;
+		}
+
+		if (Validator.isNotNull(_gcsServiceAccount)) {
+			storageGoogleCredentials = ImpersonatedCredentials.create(
+				_getGoogleCredentials(), _gcsServiceAccount, null, _scopes,
+				3600);
+		}
+		else if (Validator.isNotNull(_gcsServiceAccountKey)) {
+			try (InputStream inputStream = new ByteArrayInputStream(
+					_gcsServiceAccountKey.getBytes(StandardCharsets.UTF_8))) {
+
+				storageGoogleCredentials = ServiceAccountCredentials.fromStream(
+					inputStream);
+			}
+
+			storageGoogleCredentials = storageGoogleCredentials.createScoped(
+				_scopes);
+		}
+		else {
+			GoogleCredentials googleCredentials = _getGoogleCredentials();
+
+			storageGoogleCredentials = googleCredentials.createScoped(_scopes);
+		}
+
+		_storageGoogleCredentials = storageGoogleCredentials;
+
+		return storageGoogleCredentials;
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		GoogleCloudStorageService.class);
 
-	@Value("${liferay.one.gcs.service.account.key}")
+	private static final List<String> _scopes = Collections.singletonList(
+		"https://www.googleapis.com/auth/cloud-platform");
+
+	@Value("${liferay.one.gcs.project.id:}")
+	private String _gcsProjectId;
+
+	@Value("${liferay.one.gcs.service.account:}")
+	private String _gcsServiceAccount;
+
+	@Value("${liferay.one.gcs.service.account.key:}")
 	private String _gcsServiceAccountKey;
+
+	private volatile GoogleCredentials _googleCredentials;
+	private volatile Storage _storage;
+	private volatile GoogleCredentials _storageGoogleCredentials;
 
 }
