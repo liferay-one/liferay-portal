@@ -1279,7 +1279,8 @@ public class CloudRestController extends OneBaseRestController {
 		Entitlement cloudNativeEntitlement = null;
 
 		for (Entitlement entitlement : entitlements) {
-			if (EntitlementConstants.namesCloudNative.contains(
+			if (Objects.equals(
+					EntitlementConstants.NAME_CLOUD_NATIVE,
 					entitlement.getName())) {
 
 				cloudNativeEntitlement = entitlement;

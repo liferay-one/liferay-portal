@@ -27,7 +27,8 @@ public class ClusterNodesUtil {
 		}
 
 		for (Entitlement entitlement : entitlements) {
-			if (!EntitlementConstants.namesProductionPods.contains(
+			if (!Objects.equals(
+					EntitlementConstants.NAME_PRODUCTION_PODS,
 					entitlement.getName())) {
 
 				continue;

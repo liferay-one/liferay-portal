@@ -138,6 +138,15 @@ public class ProvisioningEmailServiceTest {
 	}
 
 	@Test
+	public void testEntitlementNamesMatchEntitlementDefinitionNames() {
+		for (String name : EntitlementConstants.namesSLAs) {
+			Assertions.assertTrue(name.matches("[a-z0-9]+(-[a-z0-9]+)*"), name);
+		}
+
+		Assertions.assertEquals("partner", EntitlementConstants.NAME_PARTNER);
+	}
+
+	@Test
 	public void testSendAssignedWelcomeEmailFallsBackToDefaultLanguageForUnsupportedId()
 		throws Exception {
 

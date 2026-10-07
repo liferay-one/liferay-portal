@@ -24,8 +24,6 @@ public class EntitlementConstants {
 
 	public static final String GRANT_TYPE_UNLIMITED = "unlimited";
 
-	public static final String NAME_1_PRODUCTION_POD = "1 Production Pod";
-
 	public static final String NAME_ACTIVE_BATCH_SEGMENTS =
 		"active-batch-segments";
 
@@ -60,29 +58,18 @@ public class EntitlementConstants {
 
 	public static final String NAME_EXTENSIONS_VCPUS = "extensions-vcpus";
 
-	public static final String NAME_GLOBAL_24_7_SUPPORT = "Global 24/7 Support";
+	public static final String NAME_GLOBAL_24_7_SUPPORT = "global-24-7-support";
 
-	public static final String NAME_GOLD_SUPPORT = "Gold Support";
+	public static final String NAME_GLOBAL_SUPPORT = "global-support";
+
+	public static final String NAME_GOLD_SUPPORT = "gold-support";
 
 	public static final String NAME_LICENSE_GENERATION = "licenseGeneration";
 
-	public static final String
-		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE =
-			"Liferay Cloud Native - Digital Accelerator Bundle";
+	public static final String NAME_LIFERAY_SAAS_SUPPORT =
+		"liferay-saas-support";
 
-	public static final String
-		NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE =
-			"Liferay Cloud Native - Enhanced Resilience Bundle";
-
-	public static final String
-		NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE =
-			"Liferay Cloud Native - Maximum Resilience Bundle";
-
-	public static final String
-		NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE =
-			"Liferay Cloud Native - Standard Operations Bundle";
-
-	public static final String NAME_LIMITED_SUPPORT = "Limited Support";
+	public static final String NAME_LIMITED_SUPPORT = "limited-support";
 
 	public static final String NAME_LOGS = "logs";
 
@@ -91,54 +78,38 @@ public class EntitlementConstants {
 	public static final String NAME_NONPRODUCTION_ENVIRONMENTS =
 		"non-production-environments";
 
-	public static final String NAME_PARTNER = "Partner";
+	public static final String NAME_PARTNER = "partner";
 
-	public static final String NAME_PLATINUM_SUPPORT = "Platinum Support";
+	public static final String NAME_PLATINUM_SUPPORT = "platinum-support";
 
 	public static final String NAME_PREMIER_24_7_SUPPORT =
-		"Premier 24/7 Support";
-
-	public static final String NAME_PREMIUM_SUBSCRIPTION =
-		"Premium Subscription";
+		"premier-24-7-support";
 
 	public static final String NAME_PRODUCTION_ENVIRONMENTS =
 		"production-environments";
 
+	public static final String NAME_PRODUCTION_PODS = "production-pods";
+
 	public static final String NAME_RAM = "ram";
 
 	public static final String NAME_SELF_SERVICE_SUPPORT =
-		"Self-Service Support";
-
-	public static final String NAME_SILVER_SUBSCRIPTION = "Silver Subscription";
+		"self-service-support";
 
 	public static final String NAME_SITES = "sites";
 
 	public static final String NAME_STANDARD_8_5_SUPPORT =
-		"Standard 8/5 Support";
+		"standard-8-5-support";
+
+	public static final String NAME_STANDARD_SUPPORT = "standard-support";
 
 	public static final String NAME_STORAGE = "storage";
 
 	public static final String NAME_STRATEGIC_24_7_SUPPORT =
-		"Strategic 24/7 Support";
+		"strategic-24-7-support";
 
 	public static final String NAME_TRAFFIC_NETWORKING = "traffic-networking";
 
 	public static final String NAME_UAT_ENVIRONMENTS = "uat-environments";
-
-	public static final String NAME_UP_TO_3_PRODUCTION_PODS =
-		"Up to 3 Production Pods";
-
-	public static final String NAME_UP_TO_5_PRODUCTION_PODS =
-		"Up to 5 Production Pods";
-
-	public static final String NAME_UP_TO_7_PRODUCTION_PODS =
-		"Up to 7 Production Pods";
-
-	public static final String NAME_UP_TO_9_PRODUCTION_PODS =
-		"Up to 9 Production Pods";
-
-	public static final String NAME_UP_TO_CUSTOM_PRODUCTION_PODS =
-		"Up to Custom Production Pods";
 
 	public static final String NAME_VCPU = "vcpu";
 
@@ -159,28 +130,13 @@ public class EntitlementConstants {
 			Arrays.asList(
 				EXTERNAL_REFERENCE_CODE_DXP, EXTERNAL_REFERENCE_CODE_PORTAL,
 				EXTERNAL_REFERENCE_CODE_PORTAL_EWSA));
-	public static final List<String> namesCloudNative =
-		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_CLOUD_NATIVE,
-				NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE,
-				NAME_LIFERAY_CLOUD_NATIVE_ENHANCED_RESILIENCE_BUNDLE,
-				NAME_LIFERAY_CLOUD_NATIVE_MAXIMUM_RESILIENCE_BUNDLE,
-				NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE));
-	public static final List<String> namesProductionPods =
-		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_1_PRODUCTION_POD, NAME_UP_TO_3_PRODUCTION_PODS,
-				NAME_UP_TO_5_PRODUCTION_PODS, NAME_UP_TO_7_PRODUCTION_PODS,
-				NAME_UP_TO_9_PRODUCTION_PODS,
-				NAME_UP_TO_CUSTOM_PRODUCTION_PODS));
 	public static final List<String> namesSLAs = Collections.unmodifiableList(
 		Arrays.asList(
-			NAME_GLOBAL_24_7_SUPPORT, NAME_GOLD_SUPPORT, NAME_LIMITED_SUPPORT,
+			NAME_GLOBAL_24_7_SUPPORT, NAME_GLOBAL_SUPPORT, NAME_GOLD_SUPPORT,
+			NAME_LIFERAY_SAAS_SUPPORT, NAME_LIMITED_SUPPORT,
 			NAME_PLATINUM_SUPPORT, NAME_PREMIER_24_7_SUPPORT,
-			NAME_PREMIUM_SUBSCRIPTION, NAME_SELF_SERVICE_SUPPORT,
-			NAME_SILVER_SUBSCRIPTION, NAME_STANDARD_8_5_SUPPORT,
-			NAME_STRATEGIC_24_7_SUPPORT));
+			NAME_SELF_SERVICE_SUPPORT, NAME_STANDARD_8_5_SUPPORT,
+			NAME_STANDARD_SUPPORT, NAME_STRATEGIC_24_7_SUPPORT));
 	public static final List<String> terminationStatuses =
 		Collections.unmodifiableList(
 			Arrays.asList(
