@@ -6,7 +6,10 @@
 import {Locator, Page, expect} from '@playwright/test';
 
 import {DataApiHelpers, getHeader} from '../../../helpers/ApiHelpers';
-import {TPermission} from '../../../helpers/HeadlessAdminUserApiHelper';
+import {
+	TAccount,
+	TPermission,
+} from '../../../helpers/HeadlessAdminUserApiHelper';
 import {CommerceAdminChannelDetailsPage} from '../../../pages/commerce/commerce-channel-web/commerceAdminChannelDetailsPage';
 import {CommerceAdminChannelsPage} from '../../../pages/commerce/commerce-channel-web/commerceAdminChannelsPage';
 import {CommerceAdminProductPage} from '../../../pages/commerce/commerce-product-definitions-web/commerceAdminProductPage';
@@ -19,7 +22,6 @@ import getRandomString from '../../../utils/getRandomString';
 import {performLogout, userData} from '../../../utils/performLogin';
 import {openProductMenu} from '../../../utils/productMenu';
 import {waitForAlert} from '../../../utils/waitForAlert';
-import {TAccount} from '../../workspaces/liferay-partner-workspace/main/types/account';
 import {ORDER_WORKFLOW_STATUS_CODE} from '../../workspaces/liferay-workspace-marketplace/main/utils/constants';
 
 type TBrakeFluidUnitsOfMeasure = {

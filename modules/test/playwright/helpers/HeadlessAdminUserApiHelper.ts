@@ -8,7 +8,7 @@ import {createReadStream} from 'fs';
 import {getRandomInt} from '../utils/getRandomInt';
 import {ApiHelpers, DataApiHelpers} from './ApiHelpers';
 
-type TAccount = {
+export type TAccount = {
 	alternateName?: string;
 	description?: string;
 	externalReferenceCode?: string;

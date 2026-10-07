@@ -1,7 +1,0 @@
-{
-	"contentType": {
-		"className": "[$OBJECT_DEFINITION_CLASS_NAME:MDFClaim$]"
-	},
-	"defaultTemplate": true,
-	"name": "MDF Claim Details Template"
-}

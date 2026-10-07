@@ -1,7 +1,0 @@
-{
-	"contentType": {
-		"className": "com.liferay.blogs.model.BlogsEntry"
-	},
-	"defaultTemplate": true,
-	"name": "Announcement Detail Template"
-}
