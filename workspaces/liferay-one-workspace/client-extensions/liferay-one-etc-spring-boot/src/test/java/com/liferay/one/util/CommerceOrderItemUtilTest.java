@@ -65,6 +65,19 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	@Test
+	public void testGetEntitlementEndDateInstantTreatsEpochAsUnset() {
+		Assertions.assertEquals(
+			Instant.parse(_DECEMBER_31),
+			CommerceOrderItemUtil.getEntitlementEndDateInstant(
+				_createOrderItem(
+					"effectiveEndDate", _EPOCH, "endDate", _DECEMBER_31)));
+		Assertions.assertNull(
+			CommerceOrderItemUtil.getEntitlementEndDateInstant(
+				_createOrderItem(
+					"effectiveEndDate", _EPOCH, "endDate", _EPOCH)));
+	}
+
+	@Test
 	public void testGetProductOptionsParsesOptions() {
 		OrderItem orderItem = _createOrderItem();
 
@@ -116,6 +129,17 @@ public class CommerceOrderItemUtilTest {
 			CommerceOrderItemUtil.getProductOptions(
 				_createOrderItem()
 			).isEmpty());
+	}
+
+	@Test
+	public void testGetStartDateInstantTreatsEpochAsUnset() {
+		Assertions.assertNull(
+			CommerceOrderItemUtil.getStartDateInstant(
+				_createOrderItem("startDate", _EPOCH)));
+		Assertions.assertEquals(
+			Instant.parse(_JUNE_30),
+			CommerceOrderItemUtil.getStartDateInstant(
+				_createOrderItem("startDate", _JUNE_30)));
 	}
 
 	@Test
@@ -220,6 +244,8 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	private static final String _DECEMBER_31 = "2026-12-31T00:00:00Z";
+
+	private static final String _EPOCH = "1970-01-01T00:00:00Z";
 
 	private static final String _JUNE_30 = "2026-06-30T00:00:00Z";
 
