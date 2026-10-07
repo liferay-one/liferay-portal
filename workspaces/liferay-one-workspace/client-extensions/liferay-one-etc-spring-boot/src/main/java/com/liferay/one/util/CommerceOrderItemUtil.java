@@ -181,7 +181,13 @@ public class CommerceOrderItemUtil {
 			return null;
 		}
 
-		return Instant.parse(value);
+		Instant instant = Instant.parse(value);
+
+		if (instant.equals(Instant.EPOCH)) {
+			return null;
+		}
+
+		return instant;
 	}
 
 	private static Object _getCustomFieldValue(
