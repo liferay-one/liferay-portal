@@ -6,7 +6,7 @@
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {translate} from '~/i18n';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
@@ -113,6 +113,8 @@ const EditProjectPermissionsModal = ({
 	);
 	const [error, setError] = useState('');
 
+	const submittingRef = useRef(false);
+
 	const updateMember = (index: number, patch: Partial<WorkingMember>) =>
 		setMembers((previous) =>
 			previous.map((member, memberIndex) =>
@@ -150,6 +152,10 @@ const EditProjectPermissionsModal = ({
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
+		if (submittingRef.current) {
+			return;
+		}
+
 		const activeMembers = members.filter((member) => !member.removed);
 
 		if (activeMembers.some((member) => !member.userId)) {
@@ -163,6 +169,8 @@ const EditProjectPermissionsModal = ({
 
 			return;
 		}
+
+		submittingRef.current = true;
 
 		try {
 			await Promise.all(
@@ -267,6 +275,9 @@ const EditProjectPermissionsModal = ({
 				title: translate('error'),
 				type: 'danger',
 			});
+		}
+		finally {
+			submittingRef.current = false;
 		}
 	};
 
