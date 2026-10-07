@@ -1,0 +1,577 @@
+{
+	"customFields": {
+		"cloudProjectName": "omni-groups-cloud"
+	},
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_CONSULTING_ARCHITECT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-architect",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_CONSULTING_ARCHITECT",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CONSULTING_ARCHITECT",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_CONSULTING_PREPAID",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-pre-paid-consulting",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_CONSULTING_PREPAID",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CONSULTING_PREPAID",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_DYNATRACE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "dynatrace-for-liferay-paas-s",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_DYNATRACE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_ELASTIC",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_ELASTIC",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_INFRASTRUCTURE_PODS",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "production-pods",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_INFRASTRUCTURE_PODS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_PODS",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_INFRASTRUCTURE_VCPU",
+			"grantType": "fixed",
+			"maxQuantity": 4,
+			"name": "vcpu",
+			"quantity": 4,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_INFRASTRUCTURE_VCPU",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_VCPU",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_LIFERAY_PAAS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-paas-business-solution-bundle",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_LIFERAY_PAAS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_MANAGED_SERVICES_BASE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-base-package",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_MANAGED_SERVICES_BASE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_MANAGED_SERVICES_BASE",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_MANAGED_SERVICES_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-additional-uat-environment",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_MANAGED_SERVICES_UAT",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_MANAGED_SERVICES_UAT",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_OVERAGE_APV",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-apv-overage-fee",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_OVERAGE_APV",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_APV",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_OVERAGE_MALU",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-malu-overage-fee",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_OVERAGE_MALU",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_MALU",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SAAS_ADDON_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_ADDON_DISASTER_RECOVERY",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SAAS_ADDON_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "storage",
+			"quantity": 100,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_ADDON_STORAGE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_STORAGE",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SAAS_APV",
+			"grantType": "fixed",
+			"maxQuantity": 1000000,
+			"name": "apv",
+			"quantity": 1000000,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_APV",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_APV_1M",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SAAS_MALU",
+			"grantType": "fixed",
+			"maxQuantity": 5000,
+			"name": "malu",
+			"quantity": 5000,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_MALU",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_MALU_5000",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay Self-Hosted",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_BACKUP",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Backup",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_BACKUP",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_COMPLIMENTARY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Liferay Self-Hosted Complimentary",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_COMPLIMENTARY",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_DEVELOPER",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Developer",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_DEVELOPER_CLUSTER",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Developer Cluster",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_NON_PRODUCTION",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Non-Production",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_NON_PRODUCTION",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_PRODUCTION",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Production",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_PRODUCTION",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_BUSINESS_VIRTUAL_CLUSTER",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "Liferay Self-Hosted Virtual Cluster",
+			"quantity": 5,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_OMNI_GROUPS_SELF_HOSTED_ENTERPRISE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-enterprise-solution",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_ENTERPRISE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-001",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_OMNI",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_OMNI_GROUPS",
+		"orderItems": [
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_CONSULTING_ARCHITECT",
+				"name": "Consulting - Architect",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000OM9MlAAL",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_CONSULTING_PREPAID",
+				"name": "Consulting - Pre-paid Consulting",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000OLxDvAAL",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_DYNATRACE",
+				"name": "Dynatrace for Liferay PaaS - S",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000UvVqAAAV",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_ELASTIC",
+				"name": "Elastic Subscription Liferay Self-Hosted - Sizing 1",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t7000000QIzKyAAL",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_INFRASTRUCTURE_PODS",
+				"name": "Up to 5 Production Pods",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000QYrkwYAD",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_INFRASTRUCTURE_VCPU",
+				"name": "Client Extensions vCPUs",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000QYrkfYAD",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_LIFERAY_PAAS",
+				"name": "Liferay PaaS - Business Solution Bundle",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000dchPoAAI",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_MANAGED_SERVICES_BASE",
+				"name": "Managed Services - Base Package",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO000005Hh2TYAS",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_MANAGED_SERVICES_UAT",
+				"name": "Managed Services - Additional UAT Environment",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO000005HfYYYA0",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_OVERAGE_APV",
+				"name": "Liferay SaaS - APV Overage Fee",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jyGAAQ",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_OVERAGE_MALU",
+				"name": "Liferay SaaS - MALU Overage Fee",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jyBAAQ",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_ADDON_DISASTER_RECOVERY",
+				"name": "Disaster Recovery Addon for SaaS",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000F8DYvYAN",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_ADDON_STORAGE",
+				"name": "Additional Storage (100GB)",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jPBAAY",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_APV",
+				"name": "Liferay SaaS - Entitlements for up to 1,000,000 APVs",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jQnAAI",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SAAS_MALU",
+				"name": "Liferay SaaS - Entitlements for up to 5,000 MALUs",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jPfAAI",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_BUSINESS",
+				"name": "Liferay Self-Hosted - Business Solution",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_OMNI_GROUPS_SELF_HOSTED_ENTERPRISE",
+				"name": "Liferay Self-Hosted - Enterprise Solution",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000c8fFiAAI",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 5,
+		"orderTypeExternalReferenceCode": "SALESFORCE",
+		"projectExternalReferenceCode": "PRJCT-001"
+	},
+	"purchaseOrderNumber": "PO-OMNI-GROUPS"
+}

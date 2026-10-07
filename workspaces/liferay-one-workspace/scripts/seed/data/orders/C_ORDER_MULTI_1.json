@@ -88,7 +88,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MULTI_1_CONTENT_MARKETING",
 				"name": "Content Marketing Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING",
+				"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
 				"unitPrice": 0
 			},
 			{
@@ -101,7 +101,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MULTI_1_AIHUB",
 				"name": "Liferay AI Hub",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-AI-HUB",
+				"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 				"unitPrice": 0
 			},
 			{

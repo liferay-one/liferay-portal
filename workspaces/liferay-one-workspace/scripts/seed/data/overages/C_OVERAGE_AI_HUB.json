@@ -19,7 +19,7 @@
 				"externalReferenceCode": "C_OVERAGE_ORDER_ITEM_AI_HUB_2026_07",
 				"name": "Liferay AI Hub",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-AI-HUB",
+				"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 				"unitPrice": 250
 			}
 		],
@@ -44,7 +44,7 @@
 		"projectExternalReferenceCode": "PRJCT-026",
 		"r_usageDefinitionToUsageReport_c_usageDefinitionERC": "ai-tokens-monthly",
 		"reviewStatus": "approved",
-		"skuExternalReferenceCode": "PRDCT-AI-HUB",
+		"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 		"targetType": "project"
 	}
 }
