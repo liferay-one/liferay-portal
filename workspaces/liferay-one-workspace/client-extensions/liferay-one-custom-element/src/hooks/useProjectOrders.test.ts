@@ -141,7 +141,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		});
 
 		const aiHubOrder = placedOrder({
-			account: 'Acme',
+			author: 'Jane Doe',
 			createDate: '2026-03-15T12:00:00Z',
 			customFields: {
 				cloudProjectName: 'cloud-1',
@@ -165,7 +165,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			orderId: '11',
 			orderType: 'AI_HUB',
 			purchaseNumber: 'PO-1',
-			purchasedBy: 'Acme',
+			purchasedBy: 'Jane Doe',
 			status: 'completed',
 		});
 	});
