@@ -2458,6 +2458,12 @@
 					"value": {
 						"en_US": "https://www.liferay.com/support"
 					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -4167,6 +4173,12 @@
 					"value": {
 						"en_US": "application"
 					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "client-extension"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -4681,6 +4693,12 @@
 					"value": {
 						"en_US": "Test Supplier CRM Accelerator"
 					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "composite-app"
+					}
 				}
 			],
 			"productType": "virtual",
@@ -4993,6 +5011,12 @@
 					"specificationKey": "solution-header-title",
 					"value": {
 						"en_US": "Test Supplier Partner Portal"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "composite-app"
 					}
 				}
 			],
@@ -5603,6 +5627,12 @@
 					"specificationKey": "support-url",
 					"value": {
 						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "client-extension"
 					}
 				}
 			],
