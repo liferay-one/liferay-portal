@@ -5,7 +5,9 @@
 
 package com.liferay.one;
 
-import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DataOpsUnavailableException;
@@ -37,6 +39,7 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -116,7 +119,7 @@ public class ProjectRestControllerTest {
 				))
 		);
 
-		_setUpProductName(_PRODUCT_NAME_EXPERIENCE);
+		_setUpUtilizationProfile(_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD);
 	}
 
 	@Test
@@ -237,8 +240,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventHistoryForwardsTheRequestedDatesUnchanged()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		_getUsageEventHistory(_END_DATE, "month", _START_DATE_PREVIOUS_MONTH);
@@ -295,8 +296,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventHistoryReturnsHistoryWithTotals()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		Mockito.when(
@@ -336,8 +335,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventSummaryAcceptsARangeOfExactlyOneDay()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		_getUsageEventSummary(_END_DATE, _END_DATE);
@@ -355,8 +352,6 @@ public class ProjectRestControllerTest {
 	@Test
 	public void testGetUsageEventSummaryAcceptsTheMaximumRange()
 		throws Exception {
-
-		_setUpProductName(_PRODUCT_NAME_LDP);
 
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
@@ -398,24 +393,14 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageEventSummaryCountsAddOnBucketsFromTheAddOnSku()
+	public void testGetUsageEventSummaryCountsAddOnBucketsOfAProductWithoutAProfile()
 		throws Exception {
-
-		_setUpProductName(_PRODUCT_NAME_LDP);
 
 		_setUpEntitlements(
 			_createEntitlement(1, null, "events", 1000000.0),
 			_createEntitlement(
 				2, null, "events-add-on-bucket", 2.0,
-				_SKU_EXTERNAL_REFERENCE_CODE_UNRELATED, null));
-
-		_setUpUnrelatedProduct();
-
-		Mockito.when(
-			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
-		).thenReturn(
-			CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM
-		);
+				_SKU_EXTERNAL_REFERENCE_CODE_ADD_ON, null));
 
 		_setUpLDPEventSummary();
 
@@ -484,8 +469,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventSummaryReturnsEntitlementsWhenDataOpsIsUnavailable()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		Mockito.when(
@@ -516,8 +499,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventSummaryReturnsEntitlementsWhenDataOpsReturnsNull()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(_createEntitlement(1, null, "events", 1000000.0));
 
 		ResponseEntity<String> responseEntity = _getUsageEventSummary(
@@ -539,8 +520,6 @@ public class ProjectRestControllerTest {
 	@Test
 	public void testGetUsageEventSummaryReturnsSummaryWithAddOnBuckets()
 		throws Exception {
-
-		_setUpProductName(_PRODUCT_NAME_LDP);
 
 		_setUpEntitlements(
 			_createEntitlement(1, null, "events", 1000000.0),
@@ -590,8 +569,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventSummaryTreatsUnlimitedBucketsAsNegativeMaxCount()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(
 			_createEntitlement(1, null, "events", 1000000.0),
 			_createEntitlement(2, "unlimited", "events-add-on-bucket", null));
@@ -614,8 +591,6 @@ public class ProjectRestControllerTest {
 	public void testGetUsageEventSummaryTreatsUnlimitedEventsAsNegativeMaxCount()
 		throws Exception {
 
-		_setUpProductName(_PRODUCT_NAME_LDP);
-
 		_setUpEntitlements(
 			_createEntitlement(1, "unlimited", "events", null),
 			_createEntitlement(2, null, "events-add-on-bucket", 2.0));
@@ -635,42 +610,39 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageExcludesEntitlementsFromUnrelatedProducts()
+	public void testGetUsageExperienceProfileExcludesEntitlementsOfAnotherDashboard()
 		throws Exception {
 
-		_setUpEntitlements(
-			_createEntitlement(1, null, "sites", 5.0),
-			_createEntitlement(
-				2, null, "vcpu", 16.0, _SKU_EXTERNAL_REFERENCE_CODE_UNRELATED,
-				null));
-
-		_setUpUnrelatedProduct();
-
 		Mockito.when(
-			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
+			_commerceSkuService.fetchProductId(
+				_SKU_EXTERNAL_REFERENCE_CODE_SAAS)
 		).thenReturn(
-			"Liferay PaaS Instance - Backup L"
+			_PRODUCT_ID_SAAS
 		);
 
-		_setUpCustomerUsage();
+		Mockito.when(
+			_commerceProductService.fetchProduct(_PRODUCT_ID_SAAS)
+		).thenReturn(
+			_createProduct(_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD)
+		);
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "logs", 300.0),
+			_createEntitlement(
+				2, null, "logs", 900.0, _SKU_EXTERNAL_REFERENCE_CODE_SAAS,
+				null));
+
+		_setUpComposableUsage();
 
 		JSONObject metricsJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_SAAS_PLAN);
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD);
 
-		JSONObject sitesJSONObject = metricsJSONObject.getJSONObject("sites");
-
-		Assertions.assertEquals(
-			5,
-			sitesJSONObject.getBigDecimal(
-				"maxCount"
-			).intValue());
-
-		JSONObject clientExtensionsCapacityCPUJSONObject =
-			metricsJSONObject.getJSONObject("clientExtensionsCapacityCPU");
+		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
+			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
 
 		Assertions.assertEquals(
-			0,
-			clientExtensionsCapacityCPUJSONObject.getBigDecimal(
+			300,
+			logStorageJSONObject.getBigDecimal(
 				"maxCount"
 			).intValue());
 	}
@@ -686,7 +658,7 @@ public class ProjectRestControllerTest {
 		_setUpComposableUsage();
 
 		JSONObject metricsJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_EXPERIENCE);
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD);
 
 		Assertions.assertEquals(
 			Set.of(
@@ -709,26 +681,19 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageLDPProfileExcludesEntitlementsFromUnrelatedProducts()
+	public void testGetUsageLDPProfileIgnoresEntitlementsItDoesNotRead()
 		throws Exception {
 
 		_setUpEntitlements(
 			_createEntitlement(1, null, "api-requests", 500000.0),
-			_createEntitlement(
-				2, null, "connectors", 10.0,
-				_SKU_EXTERNAL_REFERENCE_CODE_UNRELATED, null));
-
-		_setUpUnrelatedProduct();
-
-		Mockito.when(
-			_commerceProductService.fetchProductName(_CPRODUCT_ID_UNRELATED)
-		).thenReturn(
-			CommerceProductConstants.NAME_LIFERAY_SAAS_PRO_PLAN
-		);
+			_createEntitlement(2, null, "logs", 300.0),
+			_createEntitlement(3, null, "sites", 5.0),
+			_createEntitlement(4, null, "vcpu", 16.0));
 
 		_setUpLDPUsage();
 
-		JSONObject metricsJSONObject = _getMetricsJSONObject(_PRODUCT_NAME_LDP);
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_UTILIZATION_PROFILE_USAGE_METRICS);
 
 		JSONObject apiRequestsJSONObject = metricsJSONObject.getJSONObject(
 			LDPUsageStrategy.METRIC_API_REQUESTS);
@@ -739,14 +704,22 @@ public class ProjectRestControllerTest {
 				"maxCount"
 			).intValue());
 
-		JSONObject connectorsJSONObject = metricsJSONObject.getJSONObject(
-			LDPUsageStrategy.METRIC_CONNECTORS);
+		for (String metricName :
+				Arrays.asList(
+					LDPUsageStrategy.METRIC_ACTIVE_BATCH_SEGMENTS,
+					LDPUsageStrategy.METRIC_ACTIVE_REAL_TIME_SEGMENTS,
+					LDPUsageStrategy.METRIC_CONNECTORS)) {
 
-		Assertions.assertEquals(
-			0,
-			connectorsJSONObject.getBigDecimal(
-				"maxCount"
-			).intValue());
+			JSONObject metricJSONObject = metricsJSONObject.getJSONObject(
+				metricName);
+
+			Assertions.assertEquals(
+				0,
+				metricJSONObject.getBigDecimal(
+					"maxCount"
+				).intValue(),
+				metricName);
+		}
 	}
 
 	@Test
@@ -755,7 +728,7 @@ public class ProjectRestControllerTest {
 
 		_setUpLDPUsage();
 
-		_getMetricsJSONObject(_PRODUCT_NAME_LDP);
+		_getMetricsJSONObject(_UTILIZATION_PROFILE_USAGE_METRICS);
 
 		Mockito.verify(
 			_dataOpsUsageService
@@ -772,7 +745,8 @@ public class ProjectRestControllerTest {
 
 		_setUpLDPUsage();
 
-		JSONObject metricsJSONObject = _getMetricsJSONObject(_PRODUCT_NAME_LDP);
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_UTILIZATION_PROFILE_USAGE_METRICS);
 
 		Assertions.assertEquals(
 			Set.of(
@@ -816,7 +790,7 @@ public class ProjectRestControllerTest {
 		_setUpCustomerUsage();
 
 		JSONObject metricsJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_SAAS_PLAN);
+			_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD);
 
 		Assertions.assertEquals(
 			Set.of(
@@ -838,18 +812,39 @@ public class ProjectRestControllerTest {
 	public void testGetUsageRejectsProductWithoutUsageDashboard()
 		throws Exception {
 
-		_setUpProductName("SaaS (Legacy)");
+		_setUpUtilizationProfile("legacy");
 
 		Assertions.assertThrows(
 			InvalidUsageProductException.class, this::_getUsage);
+
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
+	}
+
+	@Test
+	public void testGetUsageRejectsProductWithoutUtilizationProfile()
+		throws Exception {
+
+		_setUpUtilizationProfile(null);
+
+		Assertions.assertThrows(
+			InvalidUsageProductException.class, this::_getUsage);
+
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
 	public void testGetUsageRejectsUnknownProduct() throws Exception {
-		_setUpProductName(null);
+		Mockito.when(
+			_commerceProductService.fetchProduct(
+				_PRODUCT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			null
+		);
 
 		Assertions.assertThrows(
 			InvalidUsageProductException.class, this::_getUsage);
+
+		Mockito.verifyNoInteractions(_dataOpsUsageService);
 	}
 
 	@Test
@@ -873,7 +868,7 @@ public class ProjectRestControllerTest {
 		_setUpComposableUsage();
 
 		JSONObject metricsJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_EXPERIENCE);
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD);
 
 		JSONObject logStorageJSONObject = metricsJSONObject.getJSONObject(
 			ExperienceUsageStrategy.METRIC_LOG_STORAGE);
@@ -898,7 +893,7 @@ public class ProjectRestControllerTest {
 
 		_setUpEntitlements(_createEntitlement(1, null, "sites", 1.0));
 
-		_setUpProductName(_PRODUCT_NAME_SAAS_PLAN);
+		_setUpUtilizationProfile(_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD);
 
 		_setUpCustomerUsage();
 
@@ -961,7 +956,7 @@ public class ProjectRestControllerTest {
 		);
 
 		JSONObject logStorageJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_EXPERIENCE
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD
 		).getJSONObject(
 			ExperienceUsageStrategy.METRIC_LOG_STORAGE
 		);
@@ -1046,7 +1041,7 @@ public class ProjectRestControllerTest {
 		_setUpEntitlements(_createEntitlement(1, null, "sites", 15.0));
 
 		JSONObject sitesJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_SAAS_PLAN
+			_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD
 		).getJSONObject(
 			"sites"
 		);
@@ -1076,6 +1071,46 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testGetUsageSaaSPlanProfileIgnoresEntitlementsItDoesNotRead()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlement(1, null, "api-requests", 500000.0),
+			_createEntitlement(2, null, "logs", 300.0),
+			_createEntitlement(3, null, "sites", 5.0));
+
+		_setUpCustomerUsage();
+
+		JSONObject metricsJSONObject = _getMetricsJSONObject(
+			_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD);
+
+		JSONObject sitesJSONObject = metricsJSONObject.getJSONObject("sites");
+
+		Assertions.assertEquals(
+			5,
+			sitesJSONObject.getBigDecimal(
+				"maxCount"
+			).intValue());
+
+		for (String metricName :
+				Arrays.asList(
+					"anonymousPageViews", "clientExtensionsCapacityCPU",
+					"clientExtensionsCapacityRAM", "monthlyActiveLoggedInUsers",
+					"storageCapacityDocumentLibrary")) {
+
+			JSONObject metricJSONObject = metricsJSONObject.getJSONObject(
+				metricName);
+
+			Assertions.assertEquals(
+				0,
+				metricJSONObject.getBigDecimal(
+					"maxCount"
+				).intValue(),
+				metricName);
+		}
+	}
+
+	@Test
 	public void testGetUsageSumsContributingEntitlementNames()
 		throws Exception {
 
@@ -1086,7 +1121,7 @@ public class ProjectRestControllerTest {
 		_setUpComposableUsage();
 
 		JSONObject clientExtensionsCPUJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_EXPERIENCE
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD
 		).getJSONObject(
 			ExperienceUsageStrategy.METRIC_CLIENT_EXTENSIONS_CPU
 		);
@@ -1104,7 +1139,7 @@ public class ProjectRestControllerTest {
 
 		_setUpEntitlements(_createEntitlement(1, "unlimited", "sites", null));
 
-		_setUpProductName(_PRODUCT_NAME_SAAS_PLAN);
+		_setUpUtilizationProfile(_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD);
 
 		_setUpCustomerUsage();
 
@@ -1132,7 +1167,7 @@ public class ProjectRestControllerTest {
 		_setUpComposableUsage();
 
 		JSONObject storageJSONObject = _getMetricsJSONObject(
-			_PRODUCT_NAME_EXPERIENCE
+			_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD
 		).getJSONObject(
 			ExperienceUsageStrategy.METRIC_DOCUMENT_LIBRARY_AND_BACKUP_STORAGE
 		);
@@ -1489,6 +1524,29 @@ public class ProjectRestControllerTest {
 		).toString();
 	}
 
+	private Product _createProduct(String utilizationProfile) {
+		Product product = new Product();
+
+		product.setExternalReferenceCode(_PRODUCT_EXTERNAL_REFERENCE_CODE);
+
+		if (utilizationProfile == null) {
+			return product;
+		}
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(
+			() ->
+				ProductSpecificationConstants.KEY_PROJECT_UTILIZATION_PROFILE);
+		productSpecification.setValue(
+			() -> Map.of("en_US", utilizationProfile));
+
+		product.setProductSpecifications(
+			() -> new ProductSpecification[] {productSpecification});
+
+		return product;
+	}
+
 	private Project _createProject() {
 		return new Project(
 			new JSONObject(
@@ -1553,10 +1611,10 @@ public class ProjectRestControllerTest {
 		return jsonObject.getJSONObject("metrics");
 	}
 
-	private JSONObject _getMetricsJSONObject(String productName)
+	private JSONObject _getMetricsJSONObject(String utilizationProfile)
 		throws Exception {
 
-		_setUpProductName(productName);
+		_setUpUtilizationProfile(utilizationProfile);
 
 		return _getMetricsJSONObject();
 	}
@@ -1642,33 +1700,14 @@ public class ProjectRestControllerTest {
 		);
 	}
 
-	private void _setUpProductName(String productName) throws Exception {
-		Mockito.when(
-			_commerceSkuService.fetchProductId(_SKU_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			_CPRODUCT_ID
-		);
+	private void _setUpUtilizationProfile(String utilizationProfile)
+		throws Exception {
 
 		Mockito.when(
-			_commerceProductService.fetchProductName(_CPRODUCT_ID)
-		).thenReturn(
-			productName
-		);
-
-		Mockito.when(
-			_commerceProductService.fetchProductName(
+			_commerceProductService.fetchProduct(
 				_PRODUCT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
-			productName
-		);
-	}
-
-	private void _setUpUnrelatedProduct() throws Exception {
-		Mockito.when(
-			_commerceSkuService.fetchProductId(
-				_SKU_EXTERNAL_REFERENCE_CODE_UNRELATED)
-		).thenReturn(
-			_CPRODUCT_ID_UNRELATED
+			_createProduct(utilizationProfile)
 		);
 	}
 
@@ -1677,24 +1716,13 @@ public class ProjectRestControllerTest {
 
 	private static final long _ACCOUNT_ID = 40001;
 
-	private static final long _CPRODUCT_ID = 55501;
-
-	private static final long _CPRODUCT_ID_UNRELATED = 99901;
-
 	private static final String _END_DATE = "2026-07-28";
 
 	private static final String _KORONEIKI_ACCOUNT_KEY = "abc-123-def";
 
 	private static final String _PRODUCT_EXTERNAL_REFERENCE_CODE = "PRDCT-PAAS";
 
-	private static final String _PRODUCT_NAME_EXPERIENCE =
-		CommerceProductConstants.NAME_PAAS_EXPERIENCE;
-
-	private static final String _PRODUCT_NAME_LDP =
-		CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM;
-
-	private static final String _PRODUCT_NAME_SAAS_PLAN =
-		CommerceProductConstants.NAME_LIFERAY_SAAS_BUSINESS_PLAN;
+	private static final long _PRODUCT_ID_SAAS = 2;
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-004";
 
@@ -1703,12 +1731,22 @@ public class ProjectRestControllerTest {
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE = "SKU-001";
 
-	private static final String _SKU_EXTERNAL_REFERENCE_CODE_UNRELATED =
-		"SKU-999";
+	private static final String _SKU_EXTERNAL_REFERENCE_CODE_ADD_ON = "SKU-999";
+
+	private static final String _SKU_EXTERNAL_REFERENCE_CODE_SAAS = "SKU-SAAS";
 
 	private static final String _START_DATE_PREVIOUS_MONTH = "2026-06-01";
 
 	private static final long _USER_ID = 1L;
+
+	private static final String _UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD =
+		ProductSpecificationConstants.UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD;
+
+	private static final String _UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD =
+		ProductSpecificationConstants.UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD;
+
+	private static final String _UTILIZATION_PROFILE_USAGE_METRICS =
+		ProductSpecificationConstants.UTILIZATION_PROFILE_USAGE_METRICS;
 
 	private final AccountAssetService _accountAssetService = Mockito.mock(
 		AccountAssetService.class);

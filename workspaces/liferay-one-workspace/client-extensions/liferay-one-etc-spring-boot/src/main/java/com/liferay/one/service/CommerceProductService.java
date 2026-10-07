@@ -128,6 +128,8 @@ public class CommerceProductService extends OneBaseService {
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).parameter(
 			"nestedFields", "productSpecifications"
+		).parameter(
+			"productSpecifications.pageSize", "-1"
 		).build();
 	}
 
