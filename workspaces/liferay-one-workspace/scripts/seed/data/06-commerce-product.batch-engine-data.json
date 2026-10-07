@@ -1275,12 +1275,6 @@
 					}
 				},
 				{
-					"specificationKey": "type",
-					"value": {
-						"en_US": "ssa-saas"
-					}
-				},
-				{
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "cmp"
@@ -1767,12 +1761,6 @@
 					}
 				},
 				{
-					"specificationKey": "type",
-					"value": {
-						"en_US": "ssa-saas"
-					}
-				},
-				{
 					"specificationKey": "project-activation-profile",
 					"value": {
 						"en_US": "licenses"
@@ -1952,12 +1940,6 @@
 					"specificationKey": "support-url",
 					"value": {
 						"en_US": "https://www.liferay.com/support"
-					}
-				},
-				{
-					"specificationKey": "type",
-					"value": {
-						"en_US": "ssa-saas"
 					}
 				},
 				{
@@ -5509,7 +5491,7 @@
 				{
 					"specificationKey": "type",
 					"value": {
-						"en_US": "ssa-saas"
+						"en_US": "cloud"
 					}
 				},
 				{

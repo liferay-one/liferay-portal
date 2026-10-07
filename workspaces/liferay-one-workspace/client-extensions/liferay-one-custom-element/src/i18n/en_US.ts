@@ -856,6 +856,8 @@ export default {
 	'liferay-dxp-version': 'Liferay DXP Version',
 	'liferay-end-user-agreement': 'Liferay End User Agreement',
 	'liferay-learn': 'Liferay Learn',
+	'liferay-one-did-not-find-exactly-one-product-of-the-ssa-saas-type':
+		'Liferay One did not find exactly one product of the SSA SaaS type.',
 	'liferay-paas': 'Liferay PaaS',
 	'liferay-paas-activation': 'Liferay PaaS Activation',
 	'liferay-publisher-license-agreement':
@@ -1683,8 +1685,6 @@ export default {
 		'The selected DXP version is not supported.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
-	'the-ssa-trial-product-was-not-found-check-the-custom-element-properties':
-		'The SSA trial product was not found. Check the custom element properties.',
 	'the-start-and-end-dates-must-be-different':
 		'The start and end dates must be different.',
 	'the-start-date-must-be-earlier-than-the-end-date':

@@ -247,7 +247,7 @@ const CreateTrialModalForm: React.FC<CreateTrialModalFormProps> = ({
 			{!isProductLoading && !product && (
 				<ClayAlert displayType="warning" role={null}>
 					{i18n.translate(
-						'the-ssa-trial-product-was-not-found-check-the-custom-element-properties'
+						'liferay-one-did-not-find-exactly-one-product-of-the-ssa-saas-type'
 					)}
 				</ClayAlert>
 			)}

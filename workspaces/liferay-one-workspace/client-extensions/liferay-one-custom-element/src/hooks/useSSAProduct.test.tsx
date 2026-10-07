@@ -7,15 +7,12 @@ import {act, renderHook, waitFor} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {SWRConfig} from 'swr';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {useOneContext} from '~/context/OneContextProvider';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 
 import {useSSAProduct} from './useSSAProduct';
 
-vi.mock('~/context/OneContextProvider', () => ({
-	useOneContext: vi.fn(),
-}));
+import type {DeliveryProduct} from '~/types/product';
 
 function mockProductsPage(response: unknown) {
 	return vi
@@ -29,10 +26,18 @@ function mockProductsPage(response: unknown) {
 		);
 }
 
-function mockProperties(ssaProductExternalReferenceCode: string) {
-	vi.mocked(useOneContext).mockReturnValue({
-		properties: {ssaProductExternalReferenceCode},
-	} as unknown as ReturnType<typeof useOneContext>);
+function toProduct(
+	id: number,
+	specifications: [string, string][],
+	skus: {id: number}[] = [{id: id * 10}]
+) {
+	return {
+		id,
+		productSpecifications: specifications.map(
+			([specificationKey, value]) => ({specificationKey, value})
+		),
+		skus,
+	} as unknown as DeliveryProduct;
 }
 
 function wrapper({children}: {children: ReactNode}) {
@@ -50,8 +55,6 @@ describe('[HOOK-USESSAPRODUCT] useSSAProduct', () => {
 			currencyCode: 'USD',
 			currencyId: '1',
 		};
-
-		mockProperties('PRDCT-TRIAL');
 	});
 
 	afterEach(() => {
@@ -71,21 +74,8 @@ describe('[HOOK-USESSAPRODUCT] useSSAProduct', () => {
 		expect(getProductsPage).not.toHaveBeenCalled();
 	});
 
-	it('sends no request without a product external reference code', async () => {
-		mockProperties('');
-
-		const getProductsPage = mockProductsPage({items: []});
-
-		const {result} = renderHook(() => useSSAProduct(), {wrapper});
-
-		await act(async () => {});
-
-		expect(result.current.data).toBeUndefined();
-		expect(getProductsPage).not.toHaveBeenCalled();
-	});
-
-	it('returns the product matching the external reference code', async () => {
-		const product = {externalReferenceCode: 'PRDCT-TRIAL', id: 1};
+	it('returns the only product whose type specification is ssa-saas', async () => {
+		const product = toProduct(1, [['type', 'ssa-saas']]);
 
 		const getProductsPage = mockProductsPage({items: [product]});
 
@@ -97,27 +87,53 @@ describe('[HOOK-USESSAPRODUCT] useSSAProduct', () => {
 
 		expect(channelId).toBe('42');
 		expect(params?.get('filter')).toBe(
-			"externalReferenceCode eq 'PRDCT-TRIAL'"
+			"(specificationValues/any(x:(x eq 'ssa-saas')))"
 		);
-		expect(params?.get('pageSize')).toBe('1');
+		expect(params?.get('pageSize')).toBe('50');
 		expect(params?.get('skus.currencyCode')).toBe('USD');
 	});
 
-	it('returns undefined when no product matches', async () => {
-		const getProductsPage = mockProductsPage({items: []});
+	it('ignores products that carry ssa-saas under another key or have no SKU', async () => {
+		const product = toProduct(1, [['type', 'ssa-saas']]);
 
-		const {result} = renderHook(
-			() => {
-				const {data, isLoading} = useSSAProduct();
+		mockProductsPage({
+			items: [
+				toProduct(2, [['product-type', 'ssa-saas']]),
+				toProduct(3, [['type', 'ssa-saas']], []),
+				product,
+			],
+		});
 
-				return {data, isLoading};
-			},
-			{wrapper}
-		);
+		const {result} = renderHook(() => useSSAProduct(), {wrapper});
 
-		await waitFor(() => expect(getProductsPage).toHaveBeenCalled());
-		await waitFor(() => expect(result.current.isLoading).toBe(false));
+		await waitFor(() => expect(result.current.data).toEqual(product));
+	});
 
-		expect(result.current.data).toBeUndefined();
+	it('returns undefined when the type matches no product or more than one', async () => {
+		for (const items of [
+			[],
+			[
+				toProduct(1, [['type', 'ssa-saas']]),
+				toProduct(2, [['type', 'ssa-saas']]),
+			],
+		]) {
+			const getProductsPage = mockProductsPage({items});
+
+			const {result} = renderHook(
+				() => {
+					const {data, isLoading} = useSSAProduct();
+
+					return {data, isLoading};
+				},
+				{wrapper}
+			);
+
+			await waitFor(() => expect(getProductsPage).toHaveBeenCalled());
+			await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+			expect(result.current.data).toBeUndefined();
+
+			vi.restoreAllMocks();
+		}
 	});
 });
