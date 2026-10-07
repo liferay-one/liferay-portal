@@ -140,7 +140,7 @@ public class GoogleConnectivityCheck {
 				_getStatusCode(
 					StringBundler.concat(
 						_GCS_BASE_URL, "/storage/v1/b/", _gcsBucketName,
-						"?fields=name"),
+						"/o?fields=kind&maxResults=1"),
 					accessToken.getTokenValue()));
 		}
 		catch (Exception exception) {
@@ -276,7 +276,9 @@ public class GoogleConnectivityCheck {
 
 		try {
 			IdToken idToken = idTokenProvider.idTokenWithAudience(
-				audience, Collections.emptyList());
+				audience,
+				Collections.singletonList(
+					IdTokenProvider.Option.INCLUDE_EMAIL));
 
 			details.add(_getIdTokenDescription(idToken));
 
