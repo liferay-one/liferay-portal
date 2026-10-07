@@ -186,7 +186,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MIXED_BUSINESS_PAAS_ADDON_DISASTER_RECOVERY",
 				"name": "Disaster Recovery Add-on",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-DISASTER-RECOVERY",
+				"skuExternalReferenceCode": "01tVO00000F8DYvYAN",
 				"unitPrice": 0
 			},
 			{
@@ -199,7 +199,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MIXED_BUSINESS_PAAS_BUSINESS",
 				"name": "Liferay SaaS - Business Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-BUSINESS-PLAN",
+				"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 				"unitPrice": 0
 			},
 			{
@@ -212,7 +212,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MIXED_BUSINESS_PAAS_PAAS",
 				"name": "PaaS Experience",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PAAS",
+				"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 				"unitPrice": 0
 			}
 		],

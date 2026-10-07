@@ -27,20 +27,6 @@
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ANALYTICS_CLOUD",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-029",
 			"startDate": "2026-08-09T00:00:00Z"
-		},
-		{
-			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_DSR_ANALYTICS_CLOUD_DISASTER_RECOVERY",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "disasterRecovery",
-			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-029",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_DSR_ADDON_DISASTER_RECOVERY",
-			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_DSR",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
-			"r_projectToEntitlement_c_projectERC": "PRJCT-029",
-			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
 	"order": {
@@ -60,20 +46,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DSR",
 				"name": "Digital Sales Room",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DSR",
-				"unitPrice": 0
-			},
-			{
-				"customFields": {
-					"customStatus": "Approved",
-					"effectiveEndDate": "2027-09-08T00:00:00Z",
-					"endDate": "2027-08-09T00:00:00Z",
-					"startDate": "2026-08-09T00:00:00Z"
-				},
-				"externalReferenceCode": "C_ORDER_ITEM_DSR_ADDON_DISASTER_RECOVERY",
-				"name": "Disaster Recovery Add-on",
-				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-DISASTER-RECOVERY",
+				"skuExternalReferenceCode": "01tVO00000UccNyYAJ",
 				"unitPrice": 0
 			},
 			{
@@ -86,7 +59,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DSR_ANALYTICS_CLOUD",
 				"name": "Liferay Analytics Cloud Subscription - Basic Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ANALYTICS-CLOUD",
+				"skuExternalReferenceCode": "01t4u00000fKEejAAG",
 				"unitPrice": 0
 			}
 		],

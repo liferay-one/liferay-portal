@@ -86,7 +86,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_CLOUD_NATIVE_PENDING",
 				"name": "Liferay Cloud Native - Standard Operations Bundle",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+				"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 				"unitPrice": 0
 			},
 			{
@@ -99,7 +99,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_CLOUD_NATIVE_PENDING_PODS",
 				"name": "Up to 5 Production Pods",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE-PODS",
+				"skuExternalReferenceCode": "01tVO00000QYrkwYAD",
 				"unitPrice": 0
 			}
 		],

@@ -145,7 +145,7 @@
 		{
 			"accountName": "Enterprise Plan Test Account",
 			"active": true,
-			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-SAAS-ENTERPRISE-PLAN\", \"name\": \"Liferay DXP - Free Tier\", \"sizing\": \"16\"}]}",
+			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-LIFERAY-SAAS\", \"name\": \"Liferay DXP - Free Tier\", \"sizing\": \"16\"}]}",
 			"complimentary": false,
 			"customExpirationDate": "2027-08-09T00:00:00Z",
 			"description": "Enterprise production cluster",
@@ -159,7 +159,7 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "2024.Q3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-010",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-SAAS-ENTERPRISE-PLAN",
+			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-LIFERAY-SAAS",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-010",
 			"sizing": "16",
 			"startDate": "2026-08-09T00:00:00Z"

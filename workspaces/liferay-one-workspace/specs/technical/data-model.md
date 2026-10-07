@@ -200,9 +200,9 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 | `ai-hub-license-usage-type` | `LO_OPTION_AI_HUB_LICENSE_USAGE` | `activate` · `enterprise` · `studio` |
 | `base-license-usage-type` | `LO_OPTION_BASE_LICENSE_USAGE` | `developer` · `standard` |
 | `cloud-license-usage-type` | `LO_OPTION_CLOUD_LICENSE_USAGE` | `standard` · `trial` |
-| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `standard` · `trial` |
+| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `trial` |
 | `consumption-role` | `LO_OPTION_CONSUMPTION_ROLE` | `add-on` · `allotment` · `overage` |
-| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` · `standard` |
+| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` |
 | `dxp-license-usage-type` | `LO_OPTION_DXP_LICENSE_USAGE` | `developer` · `standard` · `trial` |
 | `salesforce-product` | `LO_OPTION_SALESFORCE_PRODUCT` | One value for each Salesforce SKU, on every product that has one, whether the product has one SKU or many. The key is the lowercase Salesforce product ID, and the name is the Salesforce product name. Liferay keeps only one SKU of a product published unless each SKU has its own value, so the Salesforce sync and the seed data set this option on every Salesforce SKU. A SKU that is not a Salesforce product, such as a Liferay Data Platform event bucket, has no value. |
 
