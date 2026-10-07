@@ -6,11 +6,15 @@
 package com.liferay.one.service;
 
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.LicenseKey;
+
+import java.net.URI;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
 
 /**
  * @author Allen Ziegenfus
@@ -61,6 +66,74 @@ public class LicenseKeyServiceTest {
 			Mockito.eq("/o/c/licensekeys"), _fieldsCaptor.capture(),
 			_projectedFilterCaptor.capture(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testAddLicenseKeyTypeFreeLinksTheOrderProductById()
+		throws Exception {
+
+		List<String> bodies = new ArrayList<>();
+
+		LicenseKeyService licenseKeyService = new LicenseKeyService() {
+
+			@Override
+			protected String getAuthorization() {
+				return "Bearer test";
+			}
+
+			@Override
+			protected String post(String authorization, String body, URI uri) {
+				bodies.add(body);
+
+				return "{\"id\": 1}";
+			}
+
+		};
+
+		LicenseKeyGenerator licenseKeyGenerator = Mockito.mock(
+			LicenseKeyGenerator.class);
+
+		Mockito.when(
+			licenseKeyGenerator.generateKey(
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
+				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+		).thenReturn(
+			"key"
+		);
+
+		ReflectionTestUtils.setField(
+			licenseKeyService, "_licenseKeyGenerator", licenseKeyGenerator);
+
+		ProductVersionService productVersionService = Mockito.mock(
+			ProductVersionService.class);
+
+		Mockito.when(
+			productVersionService.getFreeTierProductVersion()
+		).thenReturn(
+			"2025.q1"
+		);
+
+		ReflectionTestUtils.setField(
+			licenseKeyService, "_productVersionService", productVersionService);
+
+		licenseKeyService.addLicenseKeyTypeFree(
+			555L, 35729766L, "example.com", "999", "owner@example.com");
+
+		JSONObject jsonObject = new JSONObject(bodies.get(0));
+
+		Assertions.assertEquals(
+			35729766L,
+			jsonObject.getLong("r_commerceProductToLicenseKey_CProductId"));
+		Assertions.assertFalse(
+			jsonObject.has("r_commerceProductToLicenseKey_CProductERC"));
+		Assertions.assertEquals(
+			555L,
+			jsonObject.getLong("r_accountEntryToLicenseKey_accountEntryId"));
+		Assertions.assertEquals("999", jsonObject.getString("orderId"));
 	}
 
 	@Test
