@@ -174,7 +174,8 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public LicenseKey addLicenseKeyTypeFree(
-			long accountEntryId, String domains, String orderId, String owner)
+			long accountEntryId, long cProductId, String domains,
+			String orderId, String owner)
 		throws Exception {
 
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -233,7 +234,7 @@ public class LicenseKeyService extends OneBaseService {
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
 		).put(
-			"r_commerceProductToLicenseKey_CProductERC", _FREE_TIER_PRODUCT_ERC
+			"r_commerceProductToLicenseKey_CProductId", cProductId
 		).put(
 			"startDate", _toISO8601(startDate)
 		);
@@ -804,8 +805,6 @@ public class LicenseKeyService extends OneBaseService {
 	private static final int _FREE_TIER_LICENSE_VERSION = 3;
 
 	private static final int _FREE_TIER_MAX_CLUSTER_NODES = 1;
-
-	private static final String _FREE_TIER_PRODUCT_ERC = "PRDCT-DXP";
 
 	private static final String _FREE_TIER_PRODUCT_NAME =
 		"Liferay DXP - Free Tier";
