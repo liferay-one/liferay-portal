@@ -176,7 +176,7 @@ export default function ProjectItemDetails({
 		'help-and-support': () => (
 			<HelpSupportTab learnUrl={learnUrl} product={product} />
 		),
-		'orders': () => <OrdersTab />,
+		'orders': () => <OrdersTab productId={product.productId} />,
 		'utilization': () => (
 			<UtilizationTab
 				productExternalReferenceCode={itemERC}

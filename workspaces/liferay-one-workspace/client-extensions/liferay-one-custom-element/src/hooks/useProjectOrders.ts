@@ -156,7 +156,13 @@ export function projectOrdersQuery(accountId?: number | string | null) {
 	return placedOrdersQuery(toProjectOrdersProps(accountId));
 }
 
-export function useProjectOrders(projectName?: string) {
+function hasProduct(order: PlacedOrder, productId: number): boolean {
+	return (order.placedOrderItems ?? []).some(
+		(placedOrderItem) => placedOrderItem.productId === productId
+	);
+}
+
+export function useProjectOrders(projectName?: string, productId?: number) {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
 	const {data, error, isLoading} = usePlacedOrders(
@@ -166,9 +172,11 @@ export function useProjectOrders(projectName?: string) {
 	const placedOrders = useMemo(
 		() =>
 			(data?.items ?? []).filter(
-				(order) => !projectName || getProjectName(order) === projectName
+				(order) =>
+					(!projectName || getProjectName(order) === projectName) &&
+					(productId === undefined || hasProduct(order, productId))
 			),
-		[data, projectName]
+		[data, productId, projectName]
 	);
 
 	const orders = useMemo<ProjectOrder[]>(

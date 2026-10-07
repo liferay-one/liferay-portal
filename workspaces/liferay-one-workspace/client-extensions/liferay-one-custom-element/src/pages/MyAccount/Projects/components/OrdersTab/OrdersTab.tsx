@@ -21,14 +21,18 @@ function matchesSearch(order: ProjectOrder, search: string): boolean {
 	return order.orderId.toLowerCase().includes(search);
 }
 
-export default function OrdersTab() {
+type OrdersTabProps = {
+	productId?: number;
+};
+
+export default function OrdersTab({productId}: OrdersTabProps) {
 	const {project} = useProject();
 	const {accountERC} = useParams();
 	const navigate = useNavigate();
 
 	const projectName = project?.name;
 
-	const {loading, orders} = useProjectOrders(projectName);
+	const {loading, orders} = useProjectOrders(projectName, productId);
 
 	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(
