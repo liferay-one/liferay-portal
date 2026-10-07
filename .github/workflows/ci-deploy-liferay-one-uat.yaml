@@ -18,13 +18,14 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   env:
-                    LCP_CONFIG: ${{secrets.LCP_CONFIG}}
+                    LCP_EMAIL_ADDRESS: ${{secrets.LCP_EMAIL_ADDRESS}}
+                    LCP_PASSWORD: ${{secrets.LCP_PASSWORD}}
                     LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}}
                 name: Check the secrets
                 run: |
                     missing_secrets=0
 
-                    for secret_name in LCP_CONFIG LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY
+                    for secret_name in LCP_EMAIL_ADDRESS LCP_PASSWORD LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY
                     do
                         if [ -z "${!secret_name}" ]
                         then
@@ -95,7 +96,8 @@ jobs:
 
                     ssh-keyscan github.com >> ~/.ssh/known_hosts
             -   env:
-                    LCP_CONFIG: ${{secrets.LCP_CONFIG}}
+                    LCP_EMAIL_ADDRESS: ${{secrets.LCP_EMAIL_ADDRESS}}
+                    LCP_PASSWORD: ${{secrets.LCP_PASSWORD}}
                 name: Set up the lcp CLI
                 run: |
                     curl \
@@ -105,9 +107,7 @@ jobs:
                         --silent \
                         https://cdn.liferay.cloud/lcp/stable/latest/install.sh | sudo bash
 
-                    echo "${LCP_CONFIG}" > ~/.lcp
-
-                    chmod 600 ~/.lcp
+                    printf "%s\n%s\n" "${LCP_EMAIL_ADDRESS}" "${LCP_PASSWORD}" | lcp login --no-browser
 
                     lcp list --project "${LCP_PROJECT}" > /dev/null
             -   name: Check that UAT is up
