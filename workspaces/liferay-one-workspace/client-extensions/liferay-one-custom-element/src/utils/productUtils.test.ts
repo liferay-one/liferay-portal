@@ -10,7 +10,7 @@ import {
 	getAiHubTier,
 	getAiHubTierSKU,
 	getAiHubTierSKUs,
-	getAiHubTokenSKUs,
+	getLRTokenSKUs,
 	getNormalizedSKUOptions,
 	getOfferingTypes,
 	getProductCategoriesByVocabularyName,
@@ -23,6 +23,7 @@ import {
 	isContactSalesProduct,
 	isDXPFreeTierProduct,
 	isLDPProduct,
+	isLRTokensProduct,
 	isSEOStudioProduct,
 	isTrialSKU,
 } from './productUtils';
@@ -329,11 +330,44 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 			expect(getAiHubTierSKU(product, 'MISSING')).toBe(activateSKU);
 		});
 
-		it('sorts token SKUs by the number in the SKU', () => {
-			expect(getAiHubTokenSKUs(product)).toEqual([
-				tokens20SKU,
-				tokens100SKU,
+		it('keeps the purchasable SKUs with a token block size and sorts them by size', () => {
+			expect(
+				getLRTokenSKUs(
+					product,
+					new Map([
+						['T100', 100],
+						['T20', 20],
+						['UNPURCHASABLE', 10],
+					])
+				)
+			).toEqual([
+				{...tokens20SKU, tokenBlockSize: 20},
+				{...tokens100SKU, tokenBlockSize: 100},
 			]);
+		});
+
+		it('drops a SKU whose token block size is zero', () => {
+			expect(
+				getLRTokenSKUs(
+					product,
+					new Map([
+						['T100', 0],
+						['T20', 20],
+					])
+				)
+			).toEqual([{...tokens20SKU, tokenBlockSize: 20}]);
+		});
+	});
+
+	describe('isLRTokensProduct', () => {
+		it('matches only the lr-tokens solution type', () => {
+			expect(
+				isLRTokensProduct(toProduct([['solution-type', 'lr-tokens']]))
+			).toBe(true);
+			expect(
+				isLRTokensProduct(toProduct([['solution-type', 'ai-hub']]))
+			).toBe(false);
+			expect(isLRTokensProduct(toProduct([]))).toBe(false);
 		});
 	});
 

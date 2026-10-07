@@ -20,10 +20,12 @@ import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Contract;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -34,7 +36,6 @@ import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -922,7 +923,7 @@ public class CommerceOrderService extends OneBaseService {
 		return 0;
 	}
 
-	private Long _getAIHubQuotaBlockSize(Order order) {
+	private Long _getAIHubQuotaBlockSize(Order order) throws Exception {
 		long orderId = order.getId();
 
 		OrderItem[] orderItems = order.getOrderItems();
@@ -936,41 +937,41 @@ public class CommerceOrderService extends OneBaseService {
 			return null;
 		}
 
+		Set<String> skuExternalReferenceCodes = new TreeSet<>();
+
+		for (OrderItem orderItem : orderItems) {
+			if (Validator.isNotNull(orderItem.getSkuExternalReferenceCode())) {
+				skuExternalReferenceCodes.add(
+					escapeODataString(orderItem.getSkuExternalReferenceCode()));
+			}
+		}
+
+		Map<String, Double> tokenBlockSizes = new HashMap<>();
+
+		if (!skuExternalReferenceCodes.isEmpty()) {
+			for (EntitlementDefinition entitlementDefinition :
+					_entitlementDefinitionService.getEntitlementDefinitions(
+						StringBundler.concat(
+							"(name eq '",
+							EntitlementConstants.NAME_AI_TOKEN_BLOCK,
+							"') and (active eq true) and ",
+							"(skuExternalReferenceCode in ('",
+							StringUtil.merge(skuExternalReferenceCodes, "','"),
+							"'))"))) {
+
+				tokenBlockSizes.put(
+					entitlementDefinition.getSkuExternalReferenceCode(),
+					entitlementDefinition.getDefaultQuantity());
+			}
+		}
+
 		long quotaBlockSize = 0;
 
 		for (OrderItem orderItem : orderItems) {
-			String options = orderItem.getOptions();
+			Double tokenBlockSize = tokenBlockSizes.get(
+				orderItem.getSkuExternalReferenceCode());
 
-			if (Validator.isNull(options)) {
-				continue;
-			}
-
-			String skuOptionValue = null;
-
-			try {
-				skuOptionValue = CommerceOrderUtil.getSkuOptionValue(
-					"license-usage-type", options);
-			}
-			catch (Exception exception) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to read the license usage type option of ",
-						"order item ", orderItem.getId()),
-					exception);
-
-				continue;
-			}
-
-			if ((skuOptionValue == null) ||
-				!skuOptionValue.endsWith(_LR_TOKENS)) {
-
-				continue;
-			}
-
-			String orderItemQuotaBlockSize = StringUtil.removeSubstring(
-				skuOptionValue, _LR_TOKENS);
-
-			if (!Validator.isNumber(orderItemQuotaBlockSize)) {
+			if (tokenBlockSize == null) {
 				continue;
 			}
 
@@ -984,8 +985,7 @@ public class CommerceOrderService extends OneBaseService {
 				quantity = orderItemQuantity.longValue();
 			}
 
-			quotaBlockSize +=
-				GetterUtil.getLong(orderItemQuotaBlockSize) * quantity;
+			quotaBlockSize += tokenBlockSize.longValue() * quantity;
 		}
 
 		if (quotaBlockSize == 0) {
@@ -1690,8 +1690,6 @@ public class CommerceOrderService extends OneBaseService {
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
 
-	private static final String _LR_TOKENS = "-lr-tokens";
-
 	private static final int _PAGE_SIZE = 500;
 
 	private static final double _TAX_PERCENTAGE = 0.20;
@@ -1752,6 +1750,9 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private CountryService _countryService;
+
+	@Autowired
+	private EntitlementDefinitionService _entitlementDefinitionService;
 
 	private final Set<Long> _inFlightAIHubOpportunityOrderIds =
 		ConcurrentHashMap.newKeySet();

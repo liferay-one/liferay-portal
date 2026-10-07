@@ -16,7 +16,9 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.model.Contract;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -61,6 +63,8 @@ public class CommerceOrderServiceTest {
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
 		_contractService = Mockito.mock(ContractService.class);
 		_countryService = Mockito.mock(CountryService.class);
+		_entitlementDefinitionService = Mockito.mock(
+			EntitlementDefinitionService.class);
 		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 		_salesforceService = Mockito.mock(SalesforceService.class);
@@ -89,6 +93,9 @@ public class CommerceOrderServiceTest {
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_countryService", _countryService);
 		ReflectionTestUtils.setField(
+			_commerceOrderService, "_entitlementDefinitionService",
+			_entitlementDefinitionService);
+		ReflectionTestUtils.setField(
 			_commerceOrderService, "_postalAddressService",
 			_postalAddressService);
 		ReflectionTestUtils.setField(
@@ -111,6 +118,25 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).getOrders(
 			ArgumentMatchers.anyString()
+		);
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				ArgumentMatchers.anyString())
+		).thenReturn(
+			List.of(
+				new EntitlementDefinition(
+					new JSONObject(
+					).put(
+						"defaultQuantity", 5000000
+					).put(
+						"id", 1L
+					).put(
+						"name", EntitlementConstants.NAME_AI_TOKEN_BLOCK
+					).put(
+						"skuExternalReferenceCode",
+						_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK
+					)))
 		);
 
 		Mockito.doNothing(
@@ -784,6 +810,59 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutTokenBlockDefinition()
+		throws Exception {
+
+		_whenFetchCommerceOrder(_createAIHubTokenOrder());
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				ArgumentMatchers.anyString())
+		).thenReturn(
+			List.of()
+		);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).getAIHubApplicationJSONObject(
+			ArgumentMatchers.anyString()
+		);
+
+		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+
+		ArgumentCaptor<String> filterStringArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
+
+		Mockito.verify(
+			_entitlementDefinitionService
+		).getEntitlementDefinitions(
+			filterStringArgumentCaptor.capture()
+		);
+
+		String filterString = filterStringArgumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			filterString.contains(
+				"'" + _SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK + "'"));
+		Assertions.assertTrue(
+			filterString.contains(
+				"name eq '" + EntitlementConstants.NAME_AI_TOKEN_BLOCK + "'"));
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		_verifyNeverCompleted();
+	}
+
+	@Test
 	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutTokens()
 		throws Exception {
 
@@ -791,9 +870,7 @@ public class CommerceOrderServiceTest {
 
 		OrderItem orderItem = new OrderItem();
 
-		orderItem.setOptions(
-			"[{\"key\": \"ai-hub-license-usage-type\", \"value\": " +
-				"[\"activate\"]}]");
+		orderItem.setSkuExternalReferenceCode("AI-HUB-ACTIVATE");
 
 		order.setOrderItems(new OrderItem[] {orderItem});
 
@@ -2143,9 +2220,8 @@ public class CommerceOrderServiceTest {
 
 		OrderItem orderItem = new OrderItem();
 
-		orderItem.setOptions(
-			"[{\"key\": \"ai-hub-license-usage-type\", \"value\": " +
-				"[\"5000000-lr-tokens\"]}]");
+		orderItem.setSkuExternalReferenceCode(
+			_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK);
 
 		order.setOrderItems(new OrderItem[] {orderItem});
 
@@ -2480,6 +2556,9 @@ public class CommerceOrderServiceTest {
 
 	private static final int _PAYMENT_STATUS_PENDING = 1;
 
+	private static final String _SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK =
+		"01tVO00000TVrllYAD";
+
 	private AccountService _accountService;
 	private AIHubService _aiHubService;
 	private CommerceAccountCurrencyService _commerceAccountCurrencyService;
@@ -2490,6 +2569,7 @@ public class CommerceOrderServiceTest {
 	private CommerceSkuService _commerceSkuService;
 	private ContractService _contractService;
 	private CountryService _countryService;
+	private EntitlementDefinitionService _entitlementDefinitionService;
 	private PostalAddressService _postalAddressService;
 	private ProjectService _projectService;
 	private SalesforceService _salesforceService;

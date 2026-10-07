@@ -25,6 +25,7 @@ import {
 	getLicenseTagText,
 	getProductPriceModel,
 	isLDPProduct,
+	isLRTokensProduct,
 } from '~/utils/productUtils';
 
 import {useAppPurchaseContext} from '../../context/AppPurchaseContext';
@@ -91,8 +92,7 @@ const ProductPurchaseLayout = ({
 
 	const {salesforceProject} = useAppPurchaseContext();
 
-	const searchParams = new URLSearchParams(window.location.search);
-	const isAiHubTokens = searchParams.has('aiHubTokens');
+	const isAiHubTokens = isLRTokensProduct(product);
 
 	const {isFreeApp, isPaidApp} = getProductPriceModel(product);
 

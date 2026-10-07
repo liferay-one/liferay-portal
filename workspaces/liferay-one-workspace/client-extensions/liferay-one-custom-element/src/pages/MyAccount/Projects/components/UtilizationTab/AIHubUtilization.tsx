@@ -6,15 +6,18 @@
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import ListView from '~/components/ListView/ListView';
 import OrderStatus from '~/components/OrderStatus/OrderStatus';
+import {useAITokenBlockSizes} from '~/hooks/useAITokenBlockSizes';
 import i18n from '~/i18n';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
-import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {PlacedOrder} from '~/types/orders';
 
 const AIHubUtilization = () => {
 	const accountId = Liferay.CommerceContext.account?.accountId;
+
+	const {isLoading: tokenBlockSizesLoading, tokenBlockSizes} =
+		useAITokenBlockSizes();
 
 	if (!accountId) {
 		return null;
@@ -60,31 +63,20 @@ const AIHubUtilization = () => {
 							render: (placedOrderItems) => {
 								const item = placedOrderItems?.[0];
 
-								if (!item) {
+								const tokenBlockSize = item
+									? tokenBlockSizes.get(item.sku)
+									: undefined;
+
+								if (
+									tokenBlockSizesLoading ||
+									!item ||
+									!tokenBlockSize
+								) {
 									return '-';
 								}
 
-								type SkuOption = {
-									skuOptionValueName?: string;
-									skuOptionValueNames?: string[];
-								};
-
-								const options = safeJSONParse<SkuOption[]>(
-									item.options,
-									[]
-								);
-
-								const optionValue =
-									options[0]?.skuOptionValueNames?.[0] ||
-									options[0]?.skuOptionValueName ||
-									'';
-
 								return Intl.NumberFormat().format(
-									Number(
-										optionValue
-											.replace(/[^\d]/g, '')
-											.trim() || 0
-									)
+									tokenBlockSize * item.quantity
 								);
 							},
 						},

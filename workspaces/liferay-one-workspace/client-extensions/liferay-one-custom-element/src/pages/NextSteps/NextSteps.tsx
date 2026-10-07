@@ -71,6 +71,7 @@ const SolutionTypes = {
 	AI_HUB_OPEN_BETA: 'ai-hub-open-beta',
 	ANALYTICS: 'analytics',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
+	LR_TOKENS: 'lr-tokens',
 } as const;
 
 type SolutionTypes = (typeof SolutionTypes)[keyof typeof SolutionTypes];
@@ -337,6 +338,16 @@ function NextStepsPage() {
 		solutionTypeSpecificationValue === SolutionTypes.LIFERAY_DATA_PLATFORM
 	) {
 		return <LDPNextSteps data={data} error={error} isLoading={isLoading} />;
+	}
+
+	if (solutionTypeSpecificationValue === SolutionTypes.LR_TOKENS) {
+		return (
+			<AIHubTokenNextSteps
+				data={data}
+				error={error}
+				isLoading={isLoading}
+			/>
+		);
 	}
 
 	if (

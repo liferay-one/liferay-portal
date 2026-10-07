@@ -5,17 +5,19 @@
 
 import ClayIcon from '@clayui/icon';
 import {useEffect, useMemo, useState} from 'react';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {
 	RadioOption,
 } from '~/components/RadioCardList/RadioCardList';
+import {useAITokenBlockSizes} from '~/hooks/useAITokenBlockSizes';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
 import {useCartContext} from '~/pages/ProductPurchase/context/CartContext';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Liferay} from '~/services/liferay/liferay';
-import {getAiHubTokenSKUs} from '~/utils/productUtils';
+import {getLRTokenSKUs} from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
 import '../AIHubForm/AIHubForm.css';
@@ -40,7 +42,16 @@ const AIHubTokenSelection = () => {
 		setLicenseType('PAID');
 	}, [setLicenseType]);
 
-	const aiHubTokens = useMemo(() => getAiHubTokenSKUs(product), [product]);
+	const {
+		error: tokenBlockSizesError,
+		isLoading: tokenBlockSizesLoading,
+		tokenBlockSizes,
+	} = useAITokenBlockSizes();
+
+	const aiHubTokens = useMemo(
+		() => getLRTokenSKUs(product, tokenBlockSizes),
+		[product, tokenBlockSizes]
+	);
 
 	const [isCartLoading, setIsCartLoading] = useState(true);
 	const [selectedSkuId, setSelectedSkuId] = useState<number | undefined>();
@@ -211,7 +222,13 @@ const AIHubTokenSelection = () => {
 			</p>
 
 			<div>
-				{aiHubTokens.length ? (
+				{tokenBlockSizesLoading ? (
+					<Loading.Page />
+				) : tokenBlockSizesError ? (
+					<p className="font-weight-bold my-5">
+						{i18n.translate('an-unexpected-error-occurred')}
+					</p>
+				) : aiHubTokens.length ? (
 					<RadioCardList
 						contentList={aiHubTokens.map((token) => ({
 							...token,
@@ -224,10 +241,12 @@ const AIHubTokenSelection = () => {
 								<div className="align-items-center d-flex justify-content-between pt-2">
 									<div>
 										<p className="liferay-ai-hub-form-token-name mb-1">
-											{
-												token.skuOptions?.[0]
-													?.skuOptionValueNames?.[0]
-											}
+											{i18n.sub(
+												'x-tokens',
+												Intl.NumberFormat().format(
+													token.tokenBlockSize
+												)
+											)}
 										</p>
 
 										<p className="liferay-ai-hub-form-token-description mb-0 text-black-50">

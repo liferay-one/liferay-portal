@@ -11,8 +11,10 @@ import DOMPurify from 'dompurify';
 import {useEffect, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import paypal from '~/assets/images/paypal.png';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import Section from '~/components/Section/Section';
+import {useAITokenBlockSizes} from '~/hooks/useAITokenBlockSizes';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
@@ -20,7 +22,7 @@ import {useCartContext} from '~/pages/ProductPurchase/context/CartContext';
 import useAccountAddresses from '~/pages/ProductPurchase/hooks/useAccountAddresses';
 import {ProductPurchaseAIHubToken} from '~/services/commerce/ProductPurchaseAIHubToken';
 import {formatCurrency} from '~/utils/formatCurrency';
-import {getAiHubTokenSKUs} from '~/utils/productUtils';
+import {getLRTokenSKUs} from '~/utils/productUtils';
 
 import '../AIHubOrderSummary/AIHubOrderSummary.css';
 
@@ -75,7 +77,10 @@ const AIHubTokenOrderSummary = () => {
 		setBillingAddress,
 	]);
 
-	const tokens = getAiHubTokenSKUs(product);
+	const {isLoading: tokenBlockSizesLoading, tokenBlockSizes} =
+		useAITokenBlockSizes();
+
+	const tokens = getLRTokenSKUs(product, tokenBlockSizes);
 
 	const selectedSku = tokens.find((token) => token.id === selectedSkuId);
 
@@ -112,6 +117,14 @@ const AIHubTokenOrderSummary = () => {
 		return <Navigate to="/payment-method" />;
 	}
 
+	if (tokenBlockSizesLoading) {
+		return <Loading.Page />;
+	}
+
+	if (!selectedSku) {
+		return <Navigate to="/" />;
+	}
+
 	return (
 		<ProductPurchase.Shell
 			className="ai-hub-order-summary product-purchase-summary select-payment-step"
@@ -124,58 +137,57 @@ const AIHubTokenOrderSummary = () => {
 			}
 			title={i18n.translate('summary')}
 		>
-			{selectedSku && (
-				<Section
-					className="ai-hub-summary"
-					label={i18n.translate('tokens')}
-				>
-					<div className="ai-hub-summary-infomation-card">
-						<div className="align-items-center d-flex justify-content-between w-100">
-							<div className="align-items-center d-flex">
-								{selectedSku.customFields?.find(
-									(field: CustomField) =>
-										field.name === 'icon-url'
-								)?.customValue.data && (
-									<div className="mr-3">
-										<ClaySticker shape="circle" size="lg">
-											<ClaySticker.Image
-												alt="AI Hub Token Icon"
-												src={
-													selectedSku.customFields?.find(
-														(field: CustomField) =>
-															field.name ===
-															'icon-url'
-													)?.customValue
-														.data as string
-												}
-											/>
-										</ClaySticker>
-									</div>
-								)}
-								<div>
-									<p className="liferay-ai-hub-form-token-name mb-1">
-										{
-											selectedSku.skuOptions?.[0]
-												?.skuOptionValueNames?.[0]
-										}
-									</p>
-									<p className="liferay-ai-hub-form-token-description mb-0 text-black-50">
-										{
-											selectedSku.customFields?.find(
-												(field: CustomField) =>
-													field.name === 'description'
-											)?.customValue.data as string
-										}
-									</p>
+			<Section
+				className="ai-hub-summary"
+				label={i18n.translate('tokens')}
+			>
+				<div className="ai-hub-summary-infomation-card">
+					<div className="align-items-center d-flex justify-content-between w-100">
+						<div className="align-items-center d-flex">
+							{selectedSku.customFields?.find(
+								(field: CustomField) =>
+									field.name === 'icon-url'
+							)?.customValue.data && (
+								<div className="mr-3">
+									<ClaySticker shape="circle" size="lg">
+										<ClaySticker.Image
+											alt="AI Hub Token Icon"
+											src={
+												selectedSku.customFields?.find(
+													(field: CustomField) =>
+														field.name ===
+														'icon-url'
+												)?.customValue.data as string
+											}
+										/>
+									</ClaySticker>
 								</div>
+							)}
+							<div>
+								<p className="liferay-ai-hub-form-token-name mb-1">
+									{i18n.sub(
+										'x-tokens',
+										Intl.NumberFormat().format(
+											selectedSku.tokenBlockSize
+										)
+									)}
+								</p>
+								<p className="liferay-ai-hub-form-token-description mb-0 text-black-50">
+									{
+										selectedSku.customFields?.find(
+											(field: CustomField) =>
+												field.name === 'description'
+										)?.customValue.data as string
+									}
+								</p>
 							</div>
-							<p className="liferay-ai-hub-form-token-price mb-0">
-								{selectedSku.price?.priceFormatted}
-							</p>
 						</div>
+						<p className="liferay-ai-hub-form-token-price mb-0">
+							{selectedSku.price?.priceFormatted}
+						</p>
 					</div>
-				</Section>
-			)}
+				</div>
+			</Section>
 
 			<Section
 				className="ai-hub-summary"
