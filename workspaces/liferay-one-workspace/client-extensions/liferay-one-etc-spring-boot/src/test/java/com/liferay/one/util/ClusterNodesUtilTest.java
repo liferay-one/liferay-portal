@@ -55,8 +55,7 @@ public class ClusterNodesUtilTest {
 			ClusterNodesUtil.getMaxClusterNodes(
 				Arrays.asList(
 					_createEntitlement(
-						EntitlementConstants.NAME_UP_TO_3_PRODUCTION_PODS,
-						null),
+						EntitlementConstants.NAME_PRODUCTION_PODS, null),
 					_createEntitlement(
 						EntitlementConstants.NAME_GOLD_SUPPORT, 9.0)),
 				EnvironmentConstants.TYPE_PRODUCTION));
@@ -95,11 +94,8 @@ public class ClusterNodesUtilTest {
 
 	private static final List<Entitlement> _entitlements = Arrays.asList(
 		_createEntitlement(EntitlementConstants.NAME_GOLD_SUPPORT, 9.0),
-		_createEntitlement(
-			EntitlementConstants.NAME_UP_TO_3_PRODUCTION_PODS, 3.0),
-		_createEntitlement(
-			EntitlementConstants.NAME_UP_TO_5_PRODUCTION_PODS, 5.0),
-		_createEntitlement(
-			EntitlementConstants.NAME_UP_TO_5_PRODUCTION_PODS, null));
+		_createEntitlement(EntitlementConstants.NAME_PRODUCTION_PODS, 3.0),
+		_createEntitlement(EntitlementConstants.NAME_PRODUCTION_PODS, 5.0),
+		_createEntitlement(EntitlementConstants.NAME_PRODUCTION_PODS, null));
 
 }
