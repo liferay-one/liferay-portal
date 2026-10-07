@@ -40,6 +40,9 @@ public class LicenseKeyGenerationConstants {
 	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL =
 		"PRDCT-PORTAL";
 
+	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED =
+		"PRDCT-SELF-HOSTED";
+
 	public static final String PRODUCT_GROUP_DXP = "dxp";
 
 	public static final List<String> downloadableKeyTypes =
