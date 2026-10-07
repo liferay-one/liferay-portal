@@ -188,13 +188,13 @@ export function useProjectOrders(projectName?: string) {
 
 export function getProductOrderInfo(
 	placedOrders: PlacedOrder[],
-	productName: string
+	productId: number
 ): ProductOrderInfo {
 	const order = placedOrders.find(
 		(placedOrder) =>
 			placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN' &&
 			(placedOrder.placedOrderItems ?? []).some(
-				(item) => item.name === productName
+				(item) => item.productId === productId
 			)
 	);
 
@@ -240,11 +240,11 @@ export function getProductOrderInfo(
 
 export function getProductVirtualItems(
 	placedOrders: PlacedOrder[],
-	productName: string
+	productId: number
 ): VirtualItem[] {
 	for (const placedOrder of placedOrders) {
 		const placedOrderItem = (placedOrder.placedOrderItems ?? []).find(
-			(item) => item.name === productName
+			(item) => item.productId === productId
 		);
 
 		if (placedOrderItem) {

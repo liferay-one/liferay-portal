@@ -118,8 +118,11 @@ export default function ProjectItemDetails({
 			product
 		)[0] ?? getProductSpecificationValue('price-model', product);
 
-	const orderInfo = getProductOrderInfo(placedOrders, product.name);
-	const virtualItems = getProductVirtualItems(placedOrders, product.name);
+	const orderInfo = getProductOrderInfo(placedOrders, product.productId);
+	const virtualItems = getProductVirtualItems(
+		placedOrders,
+		product.productId
+	);
 
 	const {
 		activationProfile,
