@@ -969,7 +969,9 @@ public class LicenseKeyGenerationService {
 				PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
 			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
 			LicenseKeyGenerationConstants.
-				PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL);
+				PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL,
+			LicenseKeyGenerationConstants.
+				PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

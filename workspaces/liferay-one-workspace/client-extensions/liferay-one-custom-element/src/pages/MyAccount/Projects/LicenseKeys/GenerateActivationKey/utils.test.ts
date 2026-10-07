@@ -172,7 +172,8 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getLeadingProductRank('PRDCT-CLOUD-NATIVE')).toBe(0);
 			expect(getLeadingProductRank('PRDCT-DXP')).toBe(1);
 			expect(getLeadingProductRank('PRDCT-PORTAL')).toBe(2);
-			expect(getLeadingProductRank('PRDCT-SEARCH')).toBe(3);
+			expect(getLeadingProductRank('PRDCT-SELF-HOSTED')).toBe(3);
+			expect(getLeadingProductRank('PRDCT-SEARCH')).toBe(4);
 		});
 
 		it('ranks environment types in order and unknown types last', () => {
@@ -189,6 +190,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getLeadingProductLabel('PRDCT-DXP')).toBe('Liferay DXP');
 			expect(getLeadingProductLabel('PRDCT-PORTAL')).toBe(
 				'Liferay Portal'
+			);
+			expect(getLeadingProductLabel('PRDCT-SELF-HOSTED')).toBe(
+				'Liferay Self-Hosted'
 			);
 			expect(getLeadingProductLabel('PRDCT-SEARCH')).toBe('');
 		});

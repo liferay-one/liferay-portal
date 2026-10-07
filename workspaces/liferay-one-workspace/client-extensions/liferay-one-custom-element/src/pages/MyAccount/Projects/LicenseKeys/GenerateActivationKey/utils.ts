@@ -44,12 +44,14 @@ export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
 	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
 	'PRDCT-DXP',
 	'PRDCT-PORTAL',
+	'PRDCT-SELF-HOSTED',
 ];
 
 const LEADING_PRODUCT_LABELS: Record<string, string> = {
 	[CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE]: 'Cloud Native',
 	'PRDCT-DXP': 'Liferay DXP',
 	'PRDCT-PORTAL': 'Liferay Portal',
+	'PRDCT-SELF-HOSTED': 'Liferay Self-Hosted',
 };
 
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
