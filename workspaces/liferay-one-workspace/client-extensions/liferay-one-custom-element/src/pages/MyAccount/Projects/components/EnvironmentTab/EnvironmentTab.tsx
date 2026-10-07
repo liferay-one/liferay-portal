@@ -13,6 +13,7 @@ import AIHubEnvironment from '../AIHubEnvironment/AIHubEnvironment';
 import DSREnvironment from '../DSREnvironment/DSREnvironment';
 import DXPConnections from '../DXPConnections/DXPConnections';
 import EnvironmentCard from '../EnvironmentCard/EnvironmentCard';
+import EnvironmentCards from '../EnvironmentCards/EnvironmentCards';
 import LDPTokenCard from '../LDPTokenCard/LDPTokenCard';
 import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 
@@ -64,35 +65,10 @@ function ProductEnvironment({
 		return <Loading.Page />;
 	}
 
-	const ldpTokenCard =
-		profile === 'workspace' ? (
-			<LDPTokenCard
-				dataSourceAccessToken={environment.ldpDataSourceAccessToken}
-			/>
-		) : null;
-
-	if (!profile || !environmentEntry) {
-		return (
-			<>
-				{ldpTokenCard}
-
-				<EnvironmentCard environment={environment} />
-			</>
-		);
-	}
-
-	if (profile === 'ai-hub') {
-		return <AIHubEnvironment environment={environmentEntry} />;
-	}
-
-	if (profile === 'ac-token') {
-		return <DSREnvironment environment={environmentEntry} />;
-	}
-
-	return (
-		<>
-			{ldpTokenCard}
-
+	const workspaceInfoCard =
+		!profile || !environmentEntry ? (
+			<EnvironmentCard environment={environment} />
+		) : (
 			<SectionedDetailsCard
 				icon="cloud"
 				sections={buildEnvironmentSections(
@@ -101,7 +77,30 @@ function ProductEnvironment({
 				)}
 				title="workspace-info"
 			/>
-		</>
+		);
+
+	if (profile && environmentEntry) {
+		if (profile === 'ai-hub') {
+			return <AIHubEnvironment environment={environmentEntry} />;
+		}
+
+		if (profile === 'ac-token') {
+			return <DSREnvironment environment={environmentEntry} />;
+		}
+	}
+
+	if (profile !== 'workspace') {
+		return workspaceInfoCard;
+	}
+
+	return (
+		<EnvironmentCards>
+			{workspaceInfoCard}
+
+			<LDPTokenCard
+				dataSourceAccessToken={environment.ldpDataSourceAccessToken}
+			/>
+		</EnvironmentCards>
 	);
 }
 
