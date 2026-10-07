@@ -4,21 +4,17 @@
  */
 
 import useSWR from 'swr';
-import {useOneContext} from '~/context/OneContextProvider';
+import {ProductSpecificationKey, ProductType} from '~/enums/Product';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 const useSSAProduct = () => {
-	const {properties} = useOneContext();
-
 	const commerceChannelId = Liferay.CommerceContext.commerceChannelId;
-	const externalReferenceCode = properties.ssaProductExternalReferenceCode;
 
 	return useSWR(
-		commerceChannelId && externalReferenceCode
-			? `/ssa-product/${commerceChannelId}/${externalReferenceCode}`
-			: null,
+		commerceChannelId ? `/ssa-product/${commerceChannelId}` : null,
 		async () => {
 			const {items} =
 				await HeadlessCommerceDeliveryCatalog.getProductsPage(
@@ -26,14 +22,13 @@ const useSSAProduct = () => {
 					new URLSearchParams({
 						'accountId': '-1',
 						'attachments.accountId': '-1',
-						'filter': SearchBuilder.eq(
-							'externalReferenceCode',
-							externalReferenceCode
-						),
+						'filter': new SearchBuilder()
+							.lambda('specificationValues', ProductType.SSA_SAAS)
+							.build(),
 						'images.accountId': '-1',
 						'nestedFields':
 							'attachments,categories,images,productSpecifications,skus',
-						'pageSize': '1',
+						'pageSize': '50',
 						'productSpecifications.pageSize': '-1',
 						'skus.accountId': '-1',
 						'skus.currencyCode':
@@ -41,7 +36,15 @@ const useSSAProduct = () => {
 					})
 				);
 
-			return items?.[0];
+			const products = (items ?? []).filter(
+				(product) =>
+					getProductSpecificationValue(
+						ProductSpecificationKey.APP_TYPE,
+						product
+					) === ProductType.SSA_SAAS && product.skus?.length
+			);
+
+			return products.length === 1 ? products[0] : undefined;
 		}
 	);
 };

@@ -18,7 +18,6 @@ export const baseAttributes = [
 	'marketoFormIdLiferayProduct',
 	'publisherLicenseAgreement',
 	'ssaAccountExternalReferenceCode',
-	'ssaProductExternalReferenceCode',
 	'ssaProjectPrefix',
 	'trialAccountCheck',
 	'trialSSAHostPrefix',
