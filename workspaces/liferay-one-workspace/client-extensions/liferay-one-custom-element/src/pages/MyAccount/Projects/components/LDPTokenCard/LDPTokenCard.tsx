@@ -20,7 +20,7 @@ export default function LDPTokenCard({
 				'connect-your-liferay-data-platform'
 			)}
 			cardTitle={i18n.translate('connect-your-liferay-data-platform')}
-			className="mt-3"
+			className="detailed-card-compact mt-3"
 			clayIcon="diagram"
 			fitContent
 		>

@@ -6,11 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import {ReactNode} from 'react';
 import i18n, {Word} from '~/i18n';
-
-const STATUS_COLORS: {[key: string]: string} = {
-	active: 'var(--color-success)',
-	completed: 'var(--color-success)',
-};
+import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 
 type DetailHeaderProps = {
 	actions?: ReactNode;
@@ -116,9 +112,7 @@ export default function DetailHeader({
 							>
 								<span
 									style={{
-										background:
-											STATUS_COLORS[status] ??
-											'var(--color-neutral-6)',
+										background: getStatusColor(status),
 										borderRadius: '50%',
 										display: 'inline-block',
 										height: '0.5rem',
