@@ -4,7 +4,7 @@
  */
 
 import {ClayInput} from '@clayui/form';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {FieldBase} from '~/components/FieldBase/FieldBase';
 import {translate} from '~/i18n';
 import {
@@ -46,6 +46,8 @@ const InviteProjectMemberModal = ({
 		[]
 	);
 
+	const submittingRef = useRef(false);
+
 	const toggleDesignation = (designation: string) =>
 		setSelectedDesignations((previous) =>
 			previous.includes(designation)
@@ -55,6 +57,10 @@ const InviteProjectMemberModal = ({
 
 	const onSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+
+		if (submittingRef.current) {
+			return;
+		}
 
 		const trimmedEmail = emailAddress.trim();
 		const trimmedFamilyName = familyName.trim();
@@ -85,6 +91,8 @@ const InviteProjectMemberModal = ({
 		if (hasError) {
 			return;
 		}
+
+		submittingRef.current = true;
 
 		try {
 			const roleExternalReferenceCodes = selectedDesignations.length
@@ -124,6 +132,9 @@ const InviteProjectMemberModal = ({
 				title: translate('error'),
 				type: 'danger',
 			});
+		}
+		finally {
+			submittingRef.current = false;
 		}
 	};
 
