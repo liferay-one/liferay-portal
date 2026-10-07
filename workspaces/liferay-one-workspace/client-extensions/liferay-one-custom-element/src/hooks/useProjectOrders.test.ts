@@ -125,6 +125,21 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		expect(result.current.orders.map(({id}) => id)).toEqual(['2']);
 	});
 
+	it('filters the orders by the product in their items', () => {
+		const productOrder = placedOrder({
+			customFields: {projectName: 'Alpha'},
+			id: 4,
+			placedOrderItems: [{productId: 9}, {productId: 12}],
+		});
+
+		mockPlacedOrders([alphaOrder, betaOrder, productOrder]);
+
+		const {result} = renderHook(() => useProjectOrders('Alpha', 12));
+
+		expect(result.current.placedOrders).toEqual([productOrder]);
+		expect(result.current.orders.map(({id}) => id)).toEqual(['4']);
+	});
+
 	it('returns no orders while the data is missing', () => {
 		mockPlacedOrders(undefined);
 
