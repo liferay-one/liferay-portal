@@ -382,12 +382,9 @@ public class CloudRestControllerTest {
 			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEntitlement(
-					EntitlementConstants.
-						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
-					1),
-				_createEntitlement(
-					EntitlementConstants.NAME_UP_TO_5_PRODUCTION_PODS, 5))
+					EntitlementConstants.NAME_PRODUCTION_PODS, 5))
 		);
 
 		JSONObject jsonObject = _getManifestJSONObject(
@@ -496,14 +493,11 @@ public class CloudRestControllerTest {
 			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEntitlement(
-					EntitlementConstants.
-						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
-					1),
+					EntitlementConstants.NAME_PRODUCTION_PODS, 3),
 				_createEntitlement(
-					EntitlementConstants.NAME_UP_TO_3_PRODUCTION_PODS, 3),
-				_createEntitlement(
-					EntitlementConstants.NAME_UP_TO_7_PRODUCTION_PODS, 7))
+					EntitlementConstants.NAME_PRODUCTION_PODS, 7))
 		);
 
 		JSONObject jsonObject = _getManifestJSONObject(
@@ -676,7 +670,7 @@ public class CloudRestControllerTest {
 		).thenReturn(
 			List.of(
 				_createEntitlement(
-					EntitlementConstants.NAME_UP_TO_3_PRODUCTION_PODS, 3),
+					EntitlementConstants.NAME_PRODUCTION_PODS, 3),
 				_createEnvironmentEntitlement(
 					null, 1.0,
 					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS),
