@@ -46,7 +46,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_ENTERPRISE_SEARCH",
 				"name": "Liferay Enterprise Search - Production",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ENTERPRISE-SEARCH",
+				"skuExternalReferenceCode": "01t4u00000dIUt6AAG",
 				"unitPrice": 0
 			},
 			{
@@ -59,7 +59,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_ENTERPRISE_SEARCH_CLOUD",
 				"name": "Enterprise Search Cloud",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ENTERPRISE-SEARCH-CLOUD",
+				"skuExternalReferenceCode": "01t0g00000aN0VrAAK",
 				"unitPrice": 0
 			}
 		],

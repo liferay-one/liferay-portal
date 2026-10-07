@@ -22,6 +22,14 @@ function main {
 
 	_wait_for_object_definitions
 
+	# On 2026.q1.2 the liferay-one-batch client extension does not create the
+	# commerce options, because OptionResourceImpl throws a
+	# NullPointerException for each new option. Without the options, each
+	# published SKU expires its siblings. The REST import upserts, so it is
+	# safe to run when the deploy already created them.
+
+	_import "${BATCH_DIR}/09-commerce-option.batch-engine-data.json"
+
 	local file
 
 	for file in data/*.batch-engine-data.json

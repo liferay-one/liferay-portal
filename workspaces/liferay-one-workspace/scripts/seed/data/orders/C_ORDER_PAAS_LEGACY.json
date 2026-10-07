@@ -16,15 +16,57 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_PAAS_LEGACY_DISASTER_RECOVERY",
+			"externalReferenceCode": "C_ENT_PAAS_LEGACY_DISASTER_RECOVERY_ENVIRONMENT",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "disasterRecovery",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-005",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_LEGACY_ADDON_DISASTER_RECOVERY",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_LEGACY_DISASTER_RECOVERY",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_LEGACY",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-005",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PAAS_LEGACY_DYNATRACE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "dynatrace-for-liferay-paas-s",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-005",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_LEGACY_DYNATRACE",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_LEGACY",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-005",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PAAS_LEGACY_LIFERAY_PAAS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-paas-business-solution-bundle",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-005",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_LEGACY_LIFERAY_PAAS",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_LEGACY",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-005",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PAAS_LEGACY_MANAGED_SERVICES",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-base-package",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-005",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_LEGACY_MANAGED_SERVICES",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_LEGACY",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_MANAGED_SERVICES_BASE",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-005",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
@@ -46,7 +88,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY",
 				"name": "Liferay PaaS Subscription - HA Prod Env",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PAAS-LEGACY",
+				"skuExternalReferenceCode": "01t4u00000dIUryAAG",
 				"unitPrice": 0
 			},
 			{
@@ -56,10 +98,49 @@
 					"endDate": "2027-08-09T00:00:00Z",
 					"startDate": "2026-08-09T00:00:00Z"
 				},
-				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY_ADDON_DISASTER_RECOVERY",
-				"name": "Disaster Recovery Add-on",
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY_DISASTER_RECOVERY",
+				"name": "Liferay PaaS Subscription - HA DR Env",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-DISASTER-RECOVERY",
+				"skuExternalReferenceCode": "01t4u00000dIUs3AAG",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY_DYNATRACE",
+				"name": "Dynatrace for Liferay PaaS - S",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t0g00000UvVqAAAV",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY_LIFERAY_PAAS",
+				"name": "Liferay PaaS - Business Solution Bundle",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000dchPoAAI",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_LEGACY_MANAGED_SERVICES",
+				"name": "Managed Services - Base Package",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO000005Hh2TYAS",
 				"unitPrice": 0
 			}
 		],

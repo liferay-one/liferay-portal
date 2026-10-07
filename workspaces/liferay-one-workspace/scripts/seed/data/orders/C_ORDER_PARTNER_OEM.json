@@ -74,7 +74,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_OEM_DISTRIBUTION",
 				"name": "Distribution Partnership",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PARTNERSHIP-DISTRIBUTION",
+				"skuExternalReferenceCode": "01t7000000Py0lGAAR",
 				"unitPrice": 0
 			},
 			{
@@ -100,7 +100,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PARTNER_OEM_VAR",
 				"name": "Value-Added Reseller Partnership",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PARTNERSHIP-VAR",
+				"skuExternalReferenceCode": "01t7000000Py0tgAAB",
 				"unitPrice": 0
 			}
 		],

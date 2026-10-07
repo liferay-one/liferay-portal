@@ -60,13 +60,13 @@
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_BUSINESS_PLAN_MALU",
 			"grantType": "fixed",
-			"maxQuantity": 2500,
+			"maxQuantity": 5000,
 			"name": "malu",
-			"quantity": 2500,
+			"quantity": 5000,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-008",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_BUSINESS_PLAN_MALU",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_BUSINESS_PLAN",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_MALU_2500",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_MALU_5000",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-008",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -81,6 +81,34 @@
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_BUSINESS_PLAN_DXP",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_BUSINESS_PLAN",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_MARKER",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-008",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_BUSINESS_PLAN_OVERAGE_APV",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-apv-overage-fee",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-008",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_BUSINESS_PLAN_OVERAGE_APV",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_BUSINESS_PLAN",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_APV",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-008",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_BUSINESS_PLAN_OVERAGE_MALU",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-malu-overage-fee",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-008",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_BUSINESS_PLAN_OVERAGE_MALU",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_BUSINESS_PLAN",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_MALU",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-008",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -144,7 +172,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_APV",
 				"name": "Liferay SaaS - Entitlements for up to 1,000,000 APVs",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-APV-1M",
+				"skuExternalReferenceCode": "01t4u00000f7jQnAAI",
 				"unitPrice": 0
 			},
 			{
@@ -157,7 +185,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_DXP",
 				"name": "Liferay SaaS - Business Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-BUSINESS-PLAN",
+				"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 				"unitPrice": 0
 			},
 			{
@@ -170,7 +198,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_EXTRA_STORAGE",
 				"name": "Liferay SaaS - 100GB Extra Storage (Document Library)",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-EXTRA-STORAGE-DL",
+				"skuExternalReferenceCode": "01t4u00000dZBxHAAW",
 				"unitPrice": 0
 			},
 			{
@@ -181,9 +209,35 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_MALU",
-				"name": "Liferay SaaS - Entitlements for up to 2,500 MALUs",
+				"name": "Liferay SaaS - Entitlements for up to 5,000 MALUs",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-MALU-2500",
+				"skuExternalReferenceCode": "01t4u00000f7jPfAAI",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_OVERAGE_APV",
+				"name": "Liferay SaaS - APV Overage Fee",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jyGAAQ",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_BUSINESS_PLAN_OVERAGE_MALU",
+				"name": "Liferay SaaS - MALU Overage Fee",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t4u00000f7jyBAAQ",
 				"unitPrice": 0
 			}
 		],

@@ -16,20 +16,6 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_PAAS_ADDON_DISASTER_RECOVERY",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "disasterRecovery",
-			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-004",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_ADDON_DISASTER_RECOVERY",
-			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_EXPERIENCE",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
-			"r_projectToEntitlement_c_projectERC": "PRJCT-004",
-			"startDate": "2026-08-09T00:00:00Z"
-		},
-		{
-			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PAAS_ADDON_RECOMMENDATIONS",
 			"grantType": "fixed",
 			"maxQuantity": 1,
@@ -50,9 +36,9 @@
 			"name": "storage",
 			"quantity": 100,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-004",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_ADDON_STORAGE",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_ADDON_EXTRA_STORAGE",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_EXPERIENCE",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_STORAGE",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_ADDON_STORAGE",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-004",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -81,6 +67,20 @@
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_EXPERIENCE",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DATABASE",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-004",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_PAAS_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-004",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PAAS_DISASTER_RECOVERY",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_PAAS_EXPERIENCE",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-004",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -172,7 +172,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PAAS",
 				"name": "PaaS Experience",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PAAS",
+				"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 				"unitPrice": 0
 			},
 			{
@@ -182,10 +182,10 @@
 					"endDate": "2027-08-09T00:00:00Z",
 					"startDate": "2026-08-09T00:00:00Z"
 				},
-				"externalReferenceCode": "C_ORDER_ITEM_PAAS_ADDON_DISASTER_RECOVERY",
-				"name": "Disaster Recovery Add-on",
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_ADDON_EXTRA_STORAGE",
+				"name": "Liferay PaaS Subscription - Extra Storage (Document Library) - Production - 100 GB",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-DISASTER-RECOVERY",
+				"skuExternalReferenceCode": "01t4u00000dkhiXAAQ",
 				"unitPrice": 0
 			},
 			{
@@ -198,20 +198,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PAAS_ADDON_RECOMMENDATIONS",
 				"name": "Commerce Product Recommendations",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-COMMERCE-RECOMMENDATIONS",
-				"unitPrice": 0
-			},
-			{
-				"customFields": {
-					"customStatus": "Approved",
-					"effectiveEndDate": "2027-09-08T00:00:00Z",
-					"endDate": "2027-08-09T00:00:00Z",
-					"startDate": "2026-08-09T00:00:00Z"
-				},
-				"externalReferenceCode": "C_ORDER_ITEM_PAAS_ADDON_STORAGE",
-				"name": "Additional Storage (100 GB)",
-				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-STORAGE",
+				"skuExternalReferenceCode": "01tVO000007m14DYAQ",
 				"unitPrice": 0
 			},
 			{
@@ -224,7 +211,20 @@
 				"externalReferenceCode": "C_ORDER_ITEM_PAAS_ADDON_VCPU",
 				"name": "Additional vCPU",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ADDON-VCPU",
+				"skuExternalReferenceCode": "01tVO00000QYrkfYAD",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_PAAS_DISASTER_RECOVERY",
+				"name": "Disaster Recovery Environment",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000QYrkdYAD",
 				"unitPrice": 0
 			}
 		],

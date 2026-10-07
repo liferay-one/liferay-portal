@@ -102,7 +102,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MIXED_LEGACY_BUSINESS_BUSINESS",
 				"name": "Liferay SaaS - Business Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-BUSINESS-PLAN",
+				"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 				"unitPrice": 0
 			},
 			{
@@ -115,7 +115,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_MIXED_LEGACY_BUSINESS_LEGACY",
 				"name": "SaaS (Legacy)",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-LEGACY",
+				"skuExternalReferenceCode": "01t4u00000dZBxAAAW",
 				"unitPrice": 0
 			}
 		],

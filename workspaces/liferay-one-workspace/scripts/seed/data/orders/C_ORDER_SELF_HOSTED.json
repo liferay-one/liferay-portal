@@ -2,29 +2,43 @@
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_SELF_HOSTED_DXP",
+			"externalReferenceCode": "C_ENT_SELF_HOSTED",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Liferay DXP",
+			"name": "Liferay Self-Hosted",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-011",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SELF_HOSTED_DXP",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SELF_HOSTED_BUSINESS",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_SELF_HOSTED",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-011",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_SELF_HOSTED_DXP_COMPLIMENTARY",
+			"externalReferenceCode": "C_ENT_SELF_HOSTED_COMPLIMENTARY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Liferay DXP Complimentary",
+			"name": "Liferay Self-Hosted Complimentary",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-011",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SELF_HOSTED_DXP",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SELF_HOSTED_BUSINESS",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_SELF_HOSTED",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_COMPLIMENTARY",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_COMPLIMENTARY",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-011",
+			"startDate": "2026-08-09T00:00:00Z"
+		},
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_SELF_HOSTED_ELASTIC",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-011",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SELF_HOSTED_ELASTIC",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_SELF_HOSTED",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-011",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
@@ -43,10 +57,23 @@
 					"endDate": "2027-08-09T00:00:00Z",
 					"startDate": "2026-08-09T00:00:00Z"
 				},
-				"externalReferenceCode": "C_ORDER_ITEM_SELF_HOSTED_DXP",
-				"name": "Liferay DXP",
+				"externalReferenceCode": "C_ORDER_ITEM_SELF_HOSTED_BUSINESS",
+				"name": "Liferay Self-Hosted - Business Solution",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DXP",
+				"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
+				"unitPrice": 0
+			},
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_SELF_HOSTED_ELASTIC",
+				"name": "Elastic Subscription Liferay Self-Hosted - Sizing 1",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01t7000000QIzKyAAL",
 				"unitPrice": 0
 			}
 		],

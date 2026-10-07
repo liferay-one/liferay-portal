@@ -572,7 +572,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_AI_HUB",
 				"name": "Liferay AI Hub",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-AI-HUB",
+				"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 				"unitPrice": 0
 			},
 			{
@@ -585,7 +585,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_ANALYTICS_CLOUD",
 				"name": "Liferay Analytics Cloud Subscription - Basic Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ANALYTICS-CLOUD",
+				"skuExternalReferenceCode": "01t4u00000fKEejAAG",
 				"unitPrice": 0
 			},
 			{
@@ -598,7 +598,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_CLOUD_NATIVE",
 				"name": "Liferay Cloud Native - Standard Operations Bundle",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CLOUD-NATIVE",
+				"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 				"unitPrice": 0
 			},
 			{
@@ -611,7 +611,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_COMMERCE",
 				"name": "Liferay Commerce Subscription - Prod Sizing 1",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-COMMERCE",
+				"skuExternalReferenceCode": "01t4u00000dIUqlAAG",
 				"unitPrice": 0
 			},
 			{
@@ -624,7 +624,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_COMMERCE_CLOUD",
 				"name": "Commerce Cloud Business Solution Bundle",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-COMMERCE-CLOUD",
+				"skuExternalReferenceCode": "01t4u00000dchPtAAI",
 				"unitPrice": 0
 			},
 			{
@@ -637,7 +637,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_CONTENT_MARKETING",
 				"name": "Content Marketing Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING",
+				"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
 				"unitPrice": 0
 			},
 			{
@@ -650,7 +650,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_DATA_PLATFORM",
 				"name": "Liferay Data Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM",
+				"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 				"unitPrice": 0
 			},
 			{
@@ -663,7 +663,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_DSR",
 				"name": "Digital Sales Room",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DSR",
+				"skuExternalReferenceCode": "01tVO00000UccNyYAJ",
 				"unitPrice": 0
 			},
 			{
@@ -689,7 +689,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_ENTERPRISE_SEARCH",
 				"name": "Liferay Enterprise Search - Production",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-ENTERPRISE-SEARCH",
+				"skuExternalReferenceCode": "01t4u00000dIUt6AAG",
 				"unitPrice": 0
 			},
 			{
@@ -702,7 +702,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_PAAS",
 				"name": "PaaS Experience",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PAAS",
+				"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 				"unitPrice": 0
 			},
 			{
@@ -715,7 +715,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_PAAS_LEGACY",
 				"name": "Liferay PaaS Subscription - HA Prod Env",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PAAS-LEGACY",
+				"skuExternalReferenceCode": "01t4u00000dIUryAAG",
 				"unitPrice": 0
 			},
 			{
@@ -728,7 +728,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_PORTAL",
 				"name": "Portal EE 6.x License (Production)",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PORTAL",
+				"skuExternalReferenceCode": "01t70000002ljneAAA",
 				"unitPrice": 0
 			},
 			{
@@ -741,7 +741,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_PORTAL_EWSA",
 				"name": "Portal Enterprise-Wide License",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-PORTAL-EWSA",
+				"skuExternalReferenceCode": "01t70000002mUasAAE",
 				"unitPrice": 0
 			},
 			{
@@ -754,7 +754,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_SAAS",
 				"name": "SaaS Experience",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS",
+				"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 				"unitPrice": 0
 			},
 			{
@@ -767,7 +767,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_SAAS_BUSINESS_PLAN",
 				"name": "Liferay SaaS - Business Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-BUSINESS-PLAN",
+				"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 				"unitPrice": 0
 			},
 			{
@@ -780,7 +780,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_SAAS_ENTERPRISE_PLAN",
 				"name": "Liferay SaaS - Enterprise Plan",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAAS-ENTERPRISE-PLAN",
+				"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 				"unitPrice": 0
 			}
 		],
