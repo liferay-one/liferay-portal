@@ -10,6 +10,7 @@
 /poshi/test-results
 /poshi/tests
 @vite/*
+TEST-frontend-js.xml
 bin
 build
 coverage
@@ -17,6 +18,7 @@ dist
 node_modules
 node_modules_cache
 playwright-report
+test-classes
 test-results
 
 !@vite/refresh.ts
