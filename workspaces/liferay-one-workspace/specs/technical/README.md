@@ -33,5 +33,6 @@ These files are prose. `plan:check` does not read them, so they can become stale
 | --- | --- |
 | [`workspace.md`](./workspace.md) | The shell layout, the client extensions, and the naming conventions |
 | [`data-model.md`](./data-model.md) | The entity index, the ERC and friendly URL registry, and the field mappings |
+| [`consumable-products.md`](./consumable-products.md) | How a metered product joins the monthly usage reports, and the seed data that a new one needs |
 
 For the API surface and the page and route map, read the code: the Spring Boot controllers under `client-extensions/liferay-one-etc-spring-boot`, and the service layer and `src/pages/` under `client-extensions/liferay-one-custom-element`.
