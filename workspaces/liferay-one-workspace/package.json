@@ -42,8 +42,8 @@
 	"workspaces": {
 		"packages": [
 			"client-extensions/liferay-one-custom-element",
-			"tests",
-			"tools/eslint-plugin-local"
+			"tools/eslint-plugin-local",
+			"tests"
 		]
 	}
 }
