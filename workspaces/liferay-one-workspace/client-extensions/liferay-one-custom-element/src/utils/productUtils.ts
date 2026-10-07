@@ -281,6 +281,15 @@ export function isDXPFreeTierProduct(product: DeliveryProduct) {
 	);
 }
 
+export function isLRTokensProduct(product: DeliveryProduct) {
+	return (
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		) === SolutionTypes.LR_TOKENS
+	);
+}
+
 const AI_HUB_TIERS = ['activate', 'studio'];
 
 export function getAiHubTier(sku?: DeliverySKU) {
@@ -309,19 +318,19 @@ export function getAiHubTierSKUs(product: DeliveryProduct) {
 		.sort((a, b) => (a.price?.price ?? 0) - (b.price?.price ?? 0));
 }
 
-export function getAiHubTokenSKUs(product: DeliveryProduct) {
-	return (product.skus ?? [])
-		.filter(
-			({purchasable, skuOptions}) =>
-				purchasable &&
-				skuOptions &&
-				skuOptions.some((skuOption) =>
-					skuOption.skuOptionValueKey.includes('tokens')
-				)
-		)
-		.sort(
-			(a, b) =>
-				parseInt(a?.sku?.replace(/[^\d]/g, ''), 10) -
-				parseInt(b?.sku?.replace(/[^\d]/g, ''), 10)
-		);
+export function getLRTokenSKUs(
+	product: DeliveryProduct,
+	tokenBlockSizes: Map<string, number>
+) {
+	const lrTokenSKUs: (DeliverySKU & {tokenBlockSize: number})[] = [];
+
+	for (const sku of product.skus ?? []) {
+		const tokenBlockSize = tokenBlockSizes.get(sku.externalReferenceCode);
+
+		if (sku.purchasable && tokenBlockSize) {
+			lrTokenSKUs.push({...sku, tokenBlockSize});
+		}
+	}
+
+	return lrTokenSKUs.sort((a, b) => a.tokenBlockSize - b.tokenBlockSize);
 }

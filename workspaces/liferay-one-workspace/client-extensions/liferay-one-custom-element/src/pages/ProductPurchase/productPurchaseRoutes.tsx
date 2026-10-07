@@ -77,13 +77,11 @@ export function getProductPurchaseSteps({
 	isLDP = false,
 	isPaidApp,
 	product,
-	searchParams = new URLSearchParams(),
 }: {
 	isDXPFreeOnly?: boolean;
 	isLDP?: boolean;
 	isPaidApp: boolean;
 	product?: DeliveryProduct;
-	searchParams?: URLSearchParams;
 }): ProductPurchaseStep[] {
 	if (product) {
 		if (
@@ -126,27 +124,27 @@ export function getProductPurchaseSteps({
 			];
 		}
 
-		if (solutionType === 'ai-hub-open-beta') {
-			if (searchParams.has('aiHubTokens')) {
-				return [
-					{
-						element: <AIHubTokenSelection />,
-						index: true,
-						title: i18n.translate('tokens-amount'),
-					},
-					{
-						element: <AIHubPaymentMethod />,
-						path: 'payment-method',
-						title: i18n.translate('payment-method'),
-					},
-					{
-						element: <AIHubTokenOrderSummary />,
-						path: 'summary',
-						title: i18n.translate('summary'),
-					},
-				];
-			}
+		if (solutionType === 'lr-tokens') {
+			return [
+				{
+					element: <AIHubTokenSelection />,
+					index: true,
+					title: i18n.translate('tokens-amount'),
+				},
+				{
+					element: <AIHubPaymentMethod />,
+					path: 'payment-method',
+					title: i18n.translate('payment-method'),
+				},
+				{
+					element: <AIHubTokenOrderSummary />,
+					path: 'summary',
+					title: i18n.translate('summary'),
+				},
+			];
+		}
 
+		if (solutionType === 'ai-hub-open-beta') {
 			return [
 				{
 					element: <AccountSelection />,

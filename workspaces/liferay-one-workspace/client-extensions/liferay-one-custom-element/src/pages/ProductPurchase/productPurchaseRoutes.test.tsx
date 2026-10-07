@@ -165,7 +165,7 @@ describe('productPurchaseRoutes', () => {
 	});
 
 	describe('ai-hub-open-beta', () => {
-		it('[ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM] [ROUTE-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-PROJECT] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the account, project, contract, form, and summary steps without aiHubTokens', () => {
+		it('[ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM] [ROUTE-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-PROJECT] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the account, project, contract, form, and summary steps', () => {
 			expect(
 				toStepItems(
 					getProductPurchaseSteps({
@@ -180,25 +180,6 @@ describe('productPurchaseRoutes', () => {
 				{
 					key: '/ai-hub-open-beta-form',
 					title: i18n.translate('account-details'),
-				},
-				{key: '/summary', title: i18n.translate('summary')},
-			]);
-		});
-
-		it('[ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the token, payment method, and summary steps with aiHubTokens', () => {
-			expect(
-				toStepItems(
-					getProductPurchaseSteps({
-						isPaidApp: true,
-						product: solutionTypeProduct('ai-hub-open-beta'),
-						searchParams: new URLSearchParams('aiHubTokens=1000'),
-					})
-				)
-			).toEqual([
-				{key: '/', title: i18n.translate('tokens-amount')},
-				{
-					key: '/payment-method',
-					title: i18n.translate('payment-method'),
 				},
 				{key: '/summary', title: i18n.translate('summary')},
 			]);
@@ -220,6 +201,26 @@ describe('productPurchaseRoutes', () => {
 					key: '/dsr-form',
 					title: i18n.translate('digital-sales-room'),
 				},
+			]);
+		});
+	});
+
+	describe('lr-tokens', () => {
+		it('[ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the token, payment method, and summary steps', () => {
+			expect(
+				toStepItems(
+					getProductPurchaseSteps({
+						isPaidApp: true,
+						product: solutionTypeProduct('lr-tokens'),
+					})
+				)
+			).toEqual([
+				{key: '/', title: i18n.translate('tokens-amount')},
+				{
+					key: '/payment-method',
+					title: i18n.translate('payment-method'),
+				},
+				{key: '/summary', title: i18n.translate('summary')},
 			]);
 		});
 	});

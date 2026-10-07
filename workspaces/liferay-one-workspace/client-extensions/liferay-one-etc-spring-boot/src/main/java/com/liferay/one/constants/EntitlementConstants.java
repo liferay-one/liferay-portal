@@ -32,6 +32,8 @@ public class EntitlementConstants {
 	public static final String NAME_ACTIVE_REAL_TIME_SEGMENTS =
 		"active-real-time-segments";
 
+	public static final String NAME_AI_TOKEN_BLOCK = "aiTokenBlock";
+
 	public static final String NAME_API_REQUESTS = "api-requests";
 
 	public static final String NAME_APV = "apv";

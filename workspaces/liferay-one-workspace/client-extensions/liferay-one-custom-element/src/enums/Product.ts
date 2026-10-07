@@ -20,6 +20,7 @@ export type ProductEditionOption =
 	(typeof ProductEditionOption)[keyof typeof ProductEditionOption];
 
 export const ProductExternalReferenceCode = {
+	LR_TOKENS: 'PRDCT-LR-TOKENS',
 	PAAS_EXPERIENCE: 'PRDCT-PAAS',
 	SAAS_EXPERIENCE: 'PRDCT-SAAS',
 } as const;
@@ -219,6 +220,7 @@ export const SolutionTypes = {
 	DSR: 'dsr',
 	DXP: 'dxp',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
+	LR_TOKENS: 'lr-tokens',
 	PRE_BUILT_TRIAL: 'pre-built-trial',
 	SEO_STUDIO: 'seo-studio',
 } as const;

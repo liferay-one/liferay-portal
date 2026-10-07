@@ -41,14 +41,11 @@ const PurchaseCompleted = lazy(
 
 const ProductPurchaseRoutes = ({product}: {product: DeliveryProduct}) => {
 	const {isPaidApp} = getProductPriceModel(product);
-	const searchParams = new URLSearchParams(window.location.search);
-
 	const steps = getProductPurchaseSteps({
 		isDXPFreeOnly: isDXPFreeTierProduct(product),
 		isLDP: isLDPProduct(product),
 		isPaidApp,
 		product,
-		searchParams,
 	});
 
 	const routes: AppRoute[] = [
