@@ -20,7 +20,7 @@ liferay-one-custom-element:
         marketoFormIdDefault: 3738
         marketoFormIdLiferayProduct: 6253
         ssaAccountExternalReferenceCode: SSA-ACCOUNT
-        ssaProductExternalReferenceCode: PRDCT-TRIAL
+        ssaProductExternalReferenceCode: PRDCT-SSA-TRIAL
     type: customElement
     urls:
         -   index.*.js

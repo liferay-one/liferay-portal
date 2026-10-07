@@ -5370,6 +5370,78 @@
 		{
 			"active": true,
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"description": {
+				"en_US": "A Liferay SaaS environment that the SSA team provisions for a prospect to evaluate, with a sample site, a Liferay Cloud project, and an administrator invitation."
+			},
+			"externalReferenceCode": "PRDCT-SSA-TRIAL",
+			"name": {
+				"en_US": "SSA - SaaS Trial"
+			},
+			"productConfiguration": {
+				"allowBackOrder": true,
+				"displayAvailability": true,
+				"displayStockQuantity": true
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "developer-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Free"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "application"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "ssa"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "ssa-saas"
+					}
+				}
+			],
+			"productType": "virtual",
+			"productVirtualSettings": {
+				"activationStatus": 0,
+				"duration": 0,
+				"maxUsages": 0,
+				"termsOfUseRequired": false,
+				"useSample": false
+			},
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-SSA-TRIAL",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SSA-TRIAL"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
 				{
 					"externalReferenceCode": "MARKETPLACE_AVAILABILITY_COMMUNITY"
