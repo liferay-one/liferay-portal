@@ -59,8 +59,6 @@ import {
 
 import './GenerateActivationKey.css';
 
-const DSR_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-ADDON-DISASTER-RECOVERY';
-
 const GENERATE_ACTIVATION_KEY_WIDTH = 860;
 
 export default function GenerateActivationKey() {
@@ -260,8 +258,7 @@ export default function GenerateActivationKey() {
 		).some(
 			(bundleProduct) =>
 				bundleEntitlementIds.includes(bundleProduct.entitlementId) &&
-				bundleProduct.externalReferenceCode ===
-					DSR_PRODUCT_EXTERNAL_REFERENCE_CODE
+				bundleProduct.disasterRecovery
 		);
 	}, [bundleEntitlementIds, generateForm, productExternalReferenceCode]);
 

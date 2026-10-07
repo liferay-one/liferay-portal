@@ -197,6 +197,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	describe('isLicensedForVersion', () => {
 		const bundleProduct = {
 			availableCount: 1,
+			disasterRecovery: false,
 			entitlementId: 1,
 			externalReferenceCode: 'PRDCT-SEARCH',
 			licensable: true,
