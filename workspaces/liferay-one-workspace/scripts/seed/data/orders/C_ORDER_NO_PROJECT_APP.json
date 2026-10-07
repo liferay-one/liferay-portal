@@ -35,7 +35,7 @@
 				"unitPrice": 0
 			}
 		],
-		"orderStatus": 5,
+		"orderStatus": 0,
 		"orderTypeExternalReferenceCode": "DXP_APP"
 	},
 	"purchaseOrderNumber": "PO-NO-PROJECT-APP"

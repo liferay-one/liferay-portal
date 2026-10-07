@@ -756,7 +756,7 @@
 				}
 			],
 			"description": {
-				"en_US": "TODO"
+				"en_US": "Understand how visitors engage with your sites, build segments from their behavior, and measure the content that converts."
 			},
 			"externalReferenceCode": "PRDCT-ANALYTICS-CLOUD",
 			"images": [
@@ -1111,7 +1111,7 @@
 				}
 			],
 			"description": {
-				"en_US": "TODO"
+				"en_US": "Sell to businesses and consumers from one platform with product catalogs, account specific pricing, and self service ordering."
 			},
 			"externalReferenceCode": "PRDCT-COMMERCE",
 			"images": [
@@ -1464,7 +1464,21 @@
 							"key": "salesforce-product",
 							"value": "01tvo00000uccnzyaj"
 						}
-					]
+					],
+					"skuVirtualSettings": {
+						"activationStatus": 0,
+						"duration": 0,
+						"maxUsages": 0,
+						"override": true,
+						"skuVirtualSettingsFileEntries": [
+							{
+								"url": "https://releases.liferay.com/dxp/2026.q1.11-lts",
+								"version": "1.0"
+							}
+						],
+						"termsOfUseRequired": false,
+						"useSample": false
+					}
 				}
 			]
 		},
