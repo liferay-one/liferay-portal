@@ -1,4 +1,8 @@
 {
+	"customFields": {
+		"ldpAnalyticsCloudProject": "{\"dataSourceAccessToken\": \"ldp-omni-data-source-token\", \"friendlyURL\": \"/omni-ldp\", \"groupId\": 41001, \"name\": \"omni-ldp\"}",
+		"ldpWorkspaceName": "omni-ldp"
+	},
 	"entitlements": [
 		{
 			"endDate": "2027-08-09T00:00:00Z",
@@ -784,10 +788,11 @@
 				"unitPrice": 0
 			}
 		],
-		"orderStatus": 5,
+		"orderStatus": 0,
 		"orderTypeExternalReferenceCode": "SALESFORCE",
 		"projectExternalReferenceCode": "PRJCT-001"
 	},
+	"paymentStatus": 23,
 	"purchaseOrderNumber": "PO-OMNI",
 	"usageEvents": [
 		{

@@ -50,10 +50,11 @@
 				"unitPrice": 0
 			}
 		],
-		"orderStatus": 5,
+		"orderStatus": 0,
 		"orderTypeExternalReferenceCode": "CMP",
 		"projectExternalReferenceCode": "PRJCT-027"
 	},
+	"paymentStatus": 23,
 	"purchaseOrderNumber": "PO-CONTENT-MARKETING",
 	"usageEvents": [
 		{

@@ -144,7 +144,7 @@
 				"unitPrice": 0
 			}
 		],
-		"orderStatus": 5,
+		"orderStatus": 0,
 		"orderTypeExternalReferenceCode": "DXP_APP",
 		"projectExternalReferenceCode": "PRJCT-001"
 	},

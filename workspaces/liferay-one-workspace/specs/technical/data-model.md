@@ -219,7 +219,7 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 | FK `accountEntryId` | long | |
 | FK `commerceOrderTypeId` | long | |
 | `currencyCode` | string | e.g. USD, EUR |
-| `orderStatus` | int | 0=pending · 1=open · 2=in-progress · 5=completed · 6=cancelled |
+| `orderStatus` | int | 0=completed · 1=pending · 2=open · 6=in-progress · 8=cancelled · 10=processing · 20=on-hold (`CommerceOrderConstants`) |
 | `paymentStatus` | int | |
 | `paymentMethodKey` | string | |
 | `total`, `subtotal`, `shippingAmount`, `taxAmount`, `totalWithTaxAmount` | decimal(30,16) | |

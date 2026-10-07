@@ -22,7 +22,7 @@
 				"unitPrice": 0
 			}
 		],
-		"orderStatus": 5,
+		"orderStatus": 0,
 		"orderTypeExternalReferenceCode": "SALESFORCE",
 		"projectExternalReferenceCode": "PRJCT-002-2"
 	},
