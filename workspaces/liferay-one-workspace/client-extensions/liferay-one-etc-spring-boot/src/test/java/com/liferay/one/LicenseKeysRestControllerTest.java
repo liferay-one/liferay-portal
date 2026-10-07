@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
@@ -1148,6 +1149,20 @@ public class LicenseKeysRestControllerTest {
 			999L
 		);
 
+		OrderItem orderItem = Mockito.mock(OrderItem.class);
+
+		Mockito.when(
+			orderItem.getProductId()
+		).thenReturn(
+			_C_PRODUCT_ID
+		);
+
+		Mockito.when(
+			order.getOrderItems()
+		).thenReturn(
+			new OrderItem[] {orderItem}
+		);
+
 		Mockito.when(
 			order.getOrderStatus()
 		).thenReturn(
@@ -1164,7 +1179,8 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyService.addLicenseKeyTypeFree(
-				_ACCOUNT_ID, "example.com", "999", "owner@example.com")
+				_ACCOUNT_ID, _C_PRODUCT_ID, "example.com", "999",
+				"owner@example.com")
 		).thenReturn(
 			licenseKey
 		);
@@ -1224,6 +1240,45 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPostLicenseKeysTypeFreeRejectsOrderWithoutItems()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Order order = Mockito.mock(Order.class);
+
+		Mockito.when(
+			order.getOrderItems()
+		).thenReturn(
+			new OrderItem[0]
+		);
+
+		Mockito.when(
+			_commerceOrderService.getCommerceOrder(999L)
+		).thenReturn(
+			order
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.postLicenseKeysTypeFree(
+					"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
+						"\"owner\": \"owner@example.com\"}"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).addLicenseKeyTypeFree(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString(),
+			Mockito.anyString(), Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -1859,6 +1914,8 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final long _C_PRODUCT_ID = 35729766L;
 
 	private static final long _ENTITLEMENT_ID = 777L;
 
