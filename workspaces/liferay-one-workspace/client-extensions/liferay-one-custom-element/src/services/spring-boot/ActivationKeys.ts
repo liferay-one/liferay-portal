@@ -9,6 +9,7 @@ import {OneSpringBootOAuth2} from './OAuth2Client';
 
 export type GenerateFormBundleProduct = {
 	availableCount: number;
+	disasterRecovery: boolean;
 	entitlementId: number;
 	externalReferenceCode: string;
 	licensable: boolean;
