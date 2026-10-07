@@ -9,15 +9,20 @@ import {Liferay} from '~/services/liferay/liferay';
 
 import {useCartContext} from '../context/CartContext';
 
+import type {ChannelCurrency} from '~/types/commerce';
 import type {CartItem} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 const useProductPurchaseCart = (
 	accountId?: number,
 	product?: DeliveryProduct,
-	orderTypeExternalReferenceCode?: string
+	orderTypeExternalReferenceCode?: string,
+	accountCurrency?: ChannelCurrency
 ) => {
 	const channelId = Liferay.CommerceContext.commerceChannelId;
+
+	const currencyCode =
+		accountCurrency?.code ?? Liferay.CommerceContext.currency.currencyCode;
 
 	const {cart, cartItems, reset, setCart, setCartItems} = useCartContext();
 
@@ -31,7 +36,7 @@ const useProductPurchaseCart = (
 				channelId,
 				{
 					accountId,
-					currencyCode: Liferay.CommerceContext.currency.currencyCode,
+					currencyCode,
 					orderTypeExternalReferenceCode,
 				}
 			);
@@ -80,6 +85,8 @@ const useProductPurchaseCart = (
 	);
 
 	useEffect(() => {
+		let active = true;
+
 		(async () => {
 			if (!accountId || !product) {
 				return;
@@ -111,14 +118,53 @@ const useProductPurchaseCart = (
 					cartItem.productId === (product.productId ?? product.id)
 			);
 
+			if (!active) {
+				return;
+			}
+
 			if (!hasCorrectProduct) {
 				return removeCart(openCart.id);
+			}
+
+			if (
+				accountCurrency &&
+				!Object.values(accountCurrency.name).includes(
+					openCart.summary?.currency ?? ''
+				)
+			) {
+				const accountCurrencyCart =
+					await HeadlessCommerceDeliveryCart.createCart(channelId, {
+						accountId,
+						currencyCode: accountCurrency.code,
+						orderTypeExternalReferenceCode,
+					});
+
+				await HeadlessCommerceDeliveryCart.deleteCart(openCart.id);
+
+				if (!active) {
+					return;
+				}
+
+				setCart(accountCurrencyCart);
+				setCartItems(
+					openCartItems.map(
+						({productId, quantity, skuId}) =>
+							({productId, quantity, skuId}) as CartItem
+					)
+				);
+
+				return;
 			}
 
 			setCart(openCart);
 			setCartItems(openCartItems);
 		})();
+
+		return () => {
+			active = false;
+		};
 	}, [
+		accountCurrency,
 		accountId,
 		channelId,
 		orderTypeExternalReferenceCode,
