@@ -19,11 +19,7 @@ import ProductPurchaseLDP, {
 	LDPSettings,
 } from '~/services/commerce/ProductPurchaseLDP';
 import {Liferay} from '~/services/liferay/liferay';
-import {
-	formatCurrency,
-	formatProductPrice,
-	getCurrencyForCountry,
-} from '~/utils/currencyUtils';
+import {formatCurrency} from '~/utils/currencyUtils';
 import {
 	getAiHubTierSKU,
 	getLicenseTagText,
@@ -32,8 +28,9 @@ import {
 } from '~/utils/productUtils';
 
 import {useAppPurchaseContext} from '../../context/AppPurchaseContext';
-import useAccountAddresses from '../../hooks/useAccountAddresses';
+import useAccountSKUs from '../../hooks/useAccountSKUs';
 import useAccounts from '../../hooks/useAccounts';
+import useChannelCurrencies from '../../hooks/useChannelCurrencies';
 import useProductPurchaseCart from '../../hooks/useProductPurchaseCart';
 import {ProductPurchaseStepItem} from '../../productPurchaseRoutes';
 import {PaymentMethodType, ProductPurchasePayment} from '../../types';
@@ -97,14 +94,6 @@ const ProductPurchaseLayout = ({
 	const searchParams = new URLSearchParams(window.location.search);
 	const isAiHubTokens = searchParams.has('aiHubTokens');
 
-	const productPurchaseCart = useProductPurchaseCart(
-		selectedAccount?.id,
-		product,
-		isAiHubTokens
-			? 'AI_HUB_TOKEN'
-			: ProductPurchaseApp.getOrderTypeExternalReferenceCode(product)
-	);
-
 	const {isFreeApp, isPaidApp} = getProductPriceModel(product);
 
 	const skuRef = useRef<string | undefined>(
@@ -116,61 +105,48 @@ const ProductPurchaseLayout = ({
 		? undefined
 		: getAiHubTierSKU(product, skuRef.current);
 
-	const activeSku =
-		product.skus?.find(
-			(sku) => sku?.externalReferenceCode === skuRef.current
-		) || product.skus?.[0];
-
-	const {data: accountAddressesResponse} = useAccountAddresses(
+	const {data: accountSKUsPage} = useAccountSKUs(
+		product.productId ?? product.id,
 		selectedAccount?.id
 	);
 
-	const defaultAddress = useMemo(() => {
-		const items = accountAddressesResponse?.items || [];
+	const {data: channelCurrenciesPage} = useChannelCurrencies();
 
-		if (selectedAccount?.defaultBillingAddressId) {
-			const found = items.find(
-				(item) => item.id === selectedAccount.defaultBillingAddressId
-			);
+	const accountCurrencyName = accountSKUsPage?.items?.[0]?.price?.currency;
 
-			if (found) {
-				return found;
-			}
-		}
-
-		return (
-			items.find(
-				(
-					item: BillingAddress & {
-						addressType?: string;
-						type?: number | string;
-					}
-				) =>
-					item.type === 1 ||
-					item.type === 3 ||
-					(typeof item.type === 'string' &&
-						item.type.toLowerCase().includes('billing')) ||
-					(typeof item.addressType === 'string' &&
-						item.addressType.toLowerCase().includes('billing'))
-			) || items[0]
-		);
-	}, [accountAddressesResponse, selectedAccount]);
-
-	const activeCurrencyCode =
-		getCurrencyForCountry(
-			payment.billingAddress?.country ||
-				payment.billingAddress?.countryISOCode ||
-				defaultAddress?.country ||
-				defaultAddress?.countryISOCode
-		) ||
-		Liferay.CommerceContext.currency.currencyCode ||
-		'USD';
-
-	const formattedSkuPrice = formatProductPrice(
-		activeSku?.price?.price ?? 99,
-		activeSku?.price?.priceFormatted,
-		activeCurrencyCode
+	const accountCurrency = useMemo(
+		() =>
+			accountCurrencyName
+				? channelCurrenciesPage?.items?.find((channelCurrency) =>
+						Object.values(channelCurrency.name).includes(
+							accountCurrencyName
+						)
+					)
+				: undefined,
+		[accountCurrencyName, channelCurrenciesPage]
 	);
+
+	const productPurchaseCart = useProductPurchaseCart(
+		selectedAccount?.id,
+		product,
+		isAiHubTokens
+			? 'AI_HUB_TOKEN'
+			: ProductPurchaseApp.getOrderTypeExternalReferenceCode(product),
+		accountCurrency
+	);
+
+	const accountProduct = useMemo(
+		() =>
+			accountSKUsPage?.items?.length
+				? {...product, skus: accountSKUsPage.items}
+				: product,
+		[accountSKUsPage, product]
+	);
+
+	const activeSku =
+		accountProduct.skus?.find(
+			(sku) => sku?.externalReferenceCode === skuRef.current
+		) || accountProduct.skus?.[0];
 
 	const {pathname} = useLocation();
 
@@ -184,13 +160,17 @@ const ProductPurchaseLayout = ({
 			licenseStepIndex;
 
 	const cartPrice =
-		productPurchaseCart.cart?.summary?.totalFormatted ||
-		formatCurrency(0, Liferay.CommerceContext.currency.currencyCode);
+		productPurchaseCart.cart?.summary?.subtotalFormatted ||
+		formatCurrency(
+			0,
+			accountCurrency?.code ??
+				Liferay.CommerceContext.currency.currencyCode
+		);
 
 	const priceLabel = isFreeApp
 		? i18n.translate('free')
 		: (isCartPriceStep && cartPrice) ||
-			formattedSkuPrice ||
+			activeSku?.price?.priceFormatted ||
 			aiHubTierSKU?.price?.priceFormatted ||
 			productPurchaseCart.cart?.summary?.totalFormatted ||
 			i18n.translate('free');
@@ -327,7 +307,7 @@ const ProductPurchaseLayout = ({
 		isSingleAccount: accounts.length === 1,
 		isSubmitting,
 		payment,
-		product,
+		product: accountProduct,
 		productPurchaseCart,
 		selectedAccount,
 		setForm,
