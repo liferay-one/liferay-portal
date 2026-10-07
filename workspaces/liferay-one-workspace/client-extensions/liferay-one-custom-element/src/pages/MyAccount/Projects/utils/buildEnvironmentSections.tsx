@@ -46,6 +46,26 @@ const ENVIRONMENT_FIELDS_BY_PROFILE: Partial<
 		},
 		{label: 'time-zone', value: (environment) => environment.timeZone},
 	],
+	'cloud-native': [
+		{
+			label: 'environment-name',
+			value: (environment) => environment.name,
+		},
+		{
+			label: 'environment-type',
+			value: (environment) => i18n.translate(environment.type as Word),
+		},
+		{label: 'region', value: (environment) => environment.region},
+		{
+			label: 'activation-mode',
+			value: (environment) =>
+				i18n.translate(environment.activationMode as Word),
+		},
+		{
+			label: 'activation-status',
+			value: (environment) => i18n.translate(environment.status as Word),
+		},
+	],
 	'paas': [
 		{label: 'project-id', value: (environment) => environment.projectId},
 		{

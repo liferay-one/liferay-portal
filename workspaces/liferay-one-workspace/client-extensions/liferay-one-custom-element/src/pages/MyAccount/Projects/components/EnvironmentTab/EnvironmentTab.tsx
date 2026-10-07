@@ -34,6 +34,7 @@ const ENVIRONMENT_OFFERING_BY_PROFILE: Record<
 	'ac-token': 'DSR',
 	'ai-hub': 'AI Hub',
 	'analytics-cloud': 'Analytics Cloud',
+	'cloud-native': 'Cloud Native',
 	'none': '',
 	'paas': 'PaaS',
 	'saas': 'SaaS',
