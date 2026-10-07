@@ -1272,6 +1272,17 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "SSA - SaaS Trial",
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"skuExternalReferenceCode": "PRDCT-SSA-TRIAL",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Test App",
 			"externalReferenceCode": "C_ENT_DEF_TEST_APP",
 			"generatesActivationKey": true,
