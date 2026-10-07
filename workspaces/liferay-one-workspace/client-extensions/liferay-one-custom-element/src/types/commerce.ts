@@ -25,6 +25,13 @@ export type Channel = {
 	type: string;
 };
 
+export type ChannelCurrency = {
+	code: string;
+	id: number;
+	name: Record<string, string>;
+	primary: boolean;
+};
+
 export type CommerceAccount = {
 	active: boolean;
 	logoURL: string;

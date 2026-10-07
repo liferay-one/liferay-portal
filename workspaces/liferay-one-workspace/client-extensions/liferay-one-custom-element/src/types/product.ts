@@ -62,7 +62,7 @@ export type DeliverySKU = {
 	externalReferenceCode: string;
 	id: number;
 	neverExpire?: boolean;
-	price: {price: number; priceFormatted: string};
+	price: {currency?: string; price: number; priceFormatted: string};
 	purchasable: boolean;
 	sku: string;
 	skuOptions: DeliverySKUOption[];

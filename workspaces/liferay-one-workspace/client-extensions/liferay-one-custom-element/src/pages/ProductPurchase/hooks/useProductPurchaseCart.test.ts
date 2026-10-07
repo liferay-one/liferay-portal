@@ -10,6 +10,7 @@ import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDe
 import {useCartContext} from '../context/CartContext';
 import useProductPurchaseCart from './useProductPurchaseCart';
 
+import type {ChannelCurrency} from '~/types/commerce';
 import type {DeliveryProduct} from '~/types/product';
 
 vi.mock('~/services/headless/HeadlessCommerceDeliveryCart', () => ({
@@ -37,6 +38,13 @@ vi.mock('../context/CartContext', () => ({
 }));
 
 const cartAPI = vi.mocked(HeadlessCommerceDeliveryCart);
+
+const euro = {
+	code: 'EUR',
+	id: 3,
+	name: {en_US: 'Euro'},
+	primary: false,
+} as ChannelCurrency;
 
 const product = {id: 100, productId: 10} as DeliveryProduct;
 
@@ -104,6 +112,24 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			expect(returnedCart).toEqual({
 				cartItems: [{productId: 10, quantity: 1, skuId: 20}],
 				id: 5,
+			});
+		});
+
+		it('creates the cart in the currency of the account', async () => {
+			cartAPI.createCart.mockResolvedValue({id: 5} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(1, undefined, 'DXP', euro)
+			);
+
+			await act(async () => {
+				await result.current.addCart(10, 20);
+			});
+
+			expect(cartAPI.createCart).toHaveBeenCalledWith(77, {
+				accountId: 1,
+				currencyCode: 'EUR',
+				orderTypeExternalReferenceCode: 'DXP',
 			});
 		});
 
@@ -249,6 +275,62 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			await waitFor(() =>
 				expect(cartContext.setCart).toHaveBeenCalledWith(openCart)
 			);
+		});
+
+		it('keeps an open cart that is in the currency of the account', async () => {
+			const openCart = {
+				author: 'Test User',
+				id: 9,
+				orderStatusInfo: {label: 'open'},
+				orderTypeExternalReferenceCode: 'DXP',
+				summary: {currency: 'Euro'},
+			};
+
+			mockAccountCarts([openCart]);
+			cartAPI.getCartItems.mockResolvedValue({
+				items: [{productId: 10, quantity: 2, skuId: 20}],
+			} as never);
+
+			renderHook(() => useProductPurchaseCart(1, product, 'DXP', euro));
+
+			await waitFor(() =>
+				expect(cartContext.setCart).toHaveBeenCalledWith(openCart)
+			);
+
+			expect(cartAPI.createCart).not.toHaveBeenCalled();
+			expect(cartAPI.deleteCart).not.toHaveBeenCalled();
+		});
+
+		it('moves the items of an open cart in another currency to a new cart in the currency of the account', async () => {
+			mockAccountCarts([
+				{
+					author: 'Test User',
+					id: 9,
+					orderStatusInfo: {label: 'open'},
+					orderTypeExternalReferenceCode: 'DXP',
+					summary: {currency: 'US Dollar'},
+				},
+			]);
+			cartAPI.createCart.mockResolvedValue({id: 12} as never);
+			cartAPI.getCartItems.mockResolvedValue({
+				items: [{id: 31, productId: 10, quantity: 2, skuId: 20}],
+			} as never);
+
+			renderHook(() => useProductPurchaseCart(1, product, 'DXP', euro));
+
+			await waitFor(() =>
+				expect(cartContext.setCart).toHaveBeenCalledWith({id: 12})
+			);
+
+			expect(cartAPI.createCart).toHaveBeenCalledWith(77, {
+				accountId: 1,
+				currencyCode: 'EUR',
+				orderTypeExternalReferenceCode: 'DXP',
+			});
+			expect(cartAPI.deleteCart).toHaveBeenCalledWith(9);
+			expect(cartContext.setCartItems).toHaveBeenCalledWith([
+				{productId: 10, quantity: 2, skuId: 20},
+			]);
 		});
 
 		it('deletes an open cart that lacks the product and resets the cart', async () => {

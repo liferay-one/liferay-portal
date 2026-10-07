@@ -6,8 +6,8 @@
 import fetcher from '~/services/fetcher/fetcher';
 
 import type {APIResponse} from '~/types/api';
-import type {Channel} from '~/types/commerce';
-import type {DeliveryProduct} from '~/types/product';
+import type {Channel, ChannelCurrency} from '~/types/commerce';
+import type {DeliveryProduct, DeliverySKU} from '~/types/product';
 
 export default class HeadlessCommerceDeliveryCatalog {
 	static async getProduct(
@@ -26,6 +26,25 @@ export default class HeadlessCommerceDeliveryCatalog {
 	) {
 		return fetcher<APIResponse<DeliveryProduct>>(
 			`o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?${searchParams.toString()}`
+		);
+	}
+
+	static async getProductSKUsPage(
+		channelId: number | string,
+		productId: number | string,
+		searchParams = new URLSearchParams()
+	) {
+		return fetcher<APIResponse<DeliverySKU>>(
+			`o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}/skus?${searchParams.toString()}`
+		);
+	}
+
+	static async getChannelCurrenciesPage(
+		channelId: number | string,
+		searchParams = new URLSearchParams()
+	) {
+		return fetcher<APIResponse<ChannelCurrency>>(
+			`o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/currencies?${searchParams.toString()}`
 		);
 	}
 

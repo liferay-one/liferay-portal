@@ -45,6 +45,7 @@ export type Cart = {
 	purchaseOrderNumber?: string;
 	shippingAddress: BillingAddress;
 	summary: {
+		currency?: string;
 		subtotalFormatted: string;
 		taxValueFormatted: string;
 		totalFormatted: string;

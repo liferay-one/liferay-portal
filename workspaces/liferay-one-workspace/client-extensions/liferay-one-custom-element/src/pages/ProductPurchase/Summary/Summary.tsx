@@ -4,24 +4,17 @@
  */
 
 import classNames from 'classnames';
-import {useMemo, useState} from 'react';
+import {useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import Section from '~/components/Section/Section';
 import i18n from '~/i18n';
 import LicenseTermsCheckbox from '~/pages/ProductPurchase/components/LicenseTermsCheckbox/LicenseTermsCheckbox';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
-import useAccountAddresses from '~/pages/ProductPurchase/hooks/useAccountAddresses';
 import {PaymentMethodType} from '~/pages/ProductPurchase/types';
 import {Liferay} from '~/services/liferay/liferay';
-import {
-	formatCurrency,
-	formatProductPrice,
-	getCurrencyForCountry,
-} from '~/utils/currencyUtils';
+import {formatCurrency} from '~/utils/formatCurrency';
 import {getProductPriceModel} from '~/utils/productUtils';
-
-import type {BillingAddress} from '~/types/orders';
 
 const Summary = () => {
 	const [eulaAgreement, setEulaAgreement] = useState(false);
@@ -33,43 +26,9 @@ const Summary = () => {
 		isSubmitting,
 		payment,
 		product,
+		productPurchaseCart,
 		selectedAccount,
 	} = useProductPurchaseLayoutContext();
-
-	const {data: accountAddressesResponse} = useAccountAddresses(
-		selectedAccount?.id
-	);
-
-	const defaultAddress = useMemo(() => {
-		const items = accountAddressesResponse?.items || [];
-
-		if (selectedAccount?.defaultBillingAddressId) {
-			const found = items.find(
-				(item) => item.id === selectedAccount.defaultBillingAddressId
-			);
-
-			if (found) {
-				return found;
-			}
-		}
-
-		return (
-			items.find(
-				(
-					item: BillingAddress & {
-						addressType?: string;
-						type?: number | string;
-					}
-				) =>
-					item.type === 1 ||
-					item.type === 3 ||
-					(typeof item.type === 'string' &&
-						item.type.toLowerCase().includes('billing')) ||
-					(typeof item.addressType === 'string' &&
-						item.addressType.toLowerCase().includes('billing'))
-			) || items[0]
-		);
-	}, [accountAddressesResponse, selectedAccount]);
 
 	if (!selectedAccount?.id) {
 		return <Navigate replace to="/" />;
@@ -77,41 +36,32 @@ const Summary = () => {
 
 	const {isPaidApp} = getProductPriceModel(product);
 
-	const billingAddress = payment.billingAddress;
-
-	const activeCurrencyCode =
-		getCurrencyForCountry(
-			billingAddress?.country ||
-				billingAddress?.countryISOCode ||
-				defaultAddress?.country ||
-				defaultAddress?.countryISOCode
-		) ||
-		Liferay.CommerceContext.currency.currencyCode ||
-		'USD';
-
-	const freePrice = formatCurrency(0, activeCurrencyCode);
-
-	const activeSku = product.skus?.[0];
-	const formattedPrice = formatProductPrice(
-		activeSku?.price?.price ?? 99,
-		activeSku?.price?.priceFormatted,
-		activeCurrencyCode
+	const freePrice = formatCurrency(
+		0,
+		Liferay.CommerceContext.currency.currencyCode
 	);
+
+	const cartSKUId = productPurchaseCart.cartItems?.[0]?.skuId;
+
+	const sku =
+		product.skus?.find((sku) => sku?.id === cartSKUId) ?? product.skus?.[0];
+
+	const summary = productPurchaseCart.cart?.summary;
+
+	const billingAddress = payment.billingAddress;
 
 	const summaryRows = [
 		{
 			label: i18n.translate('net-price'),
-			value: isPaidApp ? formattedPrice : freePrice,
+			value: (isPaidApp && sku?.price?.priceFormatted) || freePrice,
 		},
 		{
 			label: i18n.translate('vat'),
-			value: isPaidApp
-				? formatCurrency(0, activeCurrencyCode)
-				: freePrice,
+			value: (isPaidApp && summary?.taxValueFormatted) || freePrice,
 		},
 		{
 			label: i18n.translate('total'),
-			value: isPaidApp ? formattedPrice : freePrice,
+			value: (isPaidApp && summary?.totalFormatted) || freePrice,
 		},
 	];
 
