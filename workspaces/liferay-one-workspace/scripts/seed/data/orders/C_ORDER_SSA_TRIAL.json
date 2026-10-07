@@ -15,7 +15,7 @@
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "SSA-ACCOUNT",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SSA_TRIAL",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TRIAL",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SSA_TRIAL",
 			"startDate": "2026-08-28T00:00:00Z"
 		}
 	],
@@ -33,9 +33,9 @@
 					"startDate": "2026-08-28T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_SSA_TRIAL",
-				"name": "Liferay Prebuilt 7 Day Trial",
+				"name": "SSA - SaaS Trial",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TRIAL",
+				"skuExternalReferenceCode": "PRDCT-SSA-TRIAL",
 				"unitPrice": 0
 			}
 		],
