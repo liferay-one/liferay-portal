@@ -1,0 +1,151 @@
+concurrency:
+    cancel-in-progress: false
+    group: deploy-liferay-one-uat
+defaults:
+    run:
+        shell: bash
+        working-directory: workspaces/liferay-one-workspace
+jobs:
+    deploy:
+        env:
+            LCP_PROJECT: exte5a2oneliferay-extuat
+            LIFERAY_URL: https://one-uat.liferay.com
+        environment: uat
+        if: ${{github.repository == 'liferay-one/liferay-portal'}}
+        permissions:
+            actions: read
+            contents: read
+        runs-on: ubuntu-latest
+        steps:
+            -   env:
+                    LCP_CONFIG: ${{secrets.LCP_CONFIG}}
+                    LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}}
+                name: Check the secrets
+                run: |
+                    missing_secrets=0
+
+                    for secret_name in LCP_CONFIG LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY
+                    do
+                        if [ -z "${!secret_name}" ]
+                        then
+                            echo "::error::The ${secret_name} secret is not set on the uat environment."
+
+                            missing_secrets=1
+                        fi
+                    done
+
+                    exit "${missing_secrets}"
+                working-directory: .
+            -   name: Checkout code
+                uses: actions/checkout@v4
+                with:
+                    fetch-depth: 1
+                    filter: blob:none
+                    show-progress: false
+                    sparse-checkout: workspaces/liferay-one-workspace
+            -   env:
+                    DEPLOY_ALL: ${{inputs.deploy-all}}
+                    GH_TOKEN: ${{github.token}}
+                id: base-commit
+                name: Resolve the last deployed commit
+                run: |
+                    base_commit=""
+
+                    if [ "${DEPLOY_ALL}" != "true" ]
+                    then
+                        base_commit=$( \
+                            gh run list \
+                                --branch "${GITHUB_REF_NAME}" \
+                                --jq ".[0].headSha // \"\"" \
+                                --json headSha \
+                                --limit 1 \
+                                --repo "${GITHUB_REPOSITORY}" \
+                                --status success \
+                                --workflow ci-deploy-liferay-one-uat.yaml)
+                    fi
+
+                    if [ -n "${base_commit}" ] &&
+                       ! git fetch \
+                            --depth=1 \
+                            --filter=blob:none \
+                            origin \
+                            "${base_commit}"
+                    then
+                        echo "::warning::Unable to fetch the last deployed commit ${base_commit}. Every client extension will be deployed."
+
+                        base_commit=""
+                    fi
+
+                    echo "commit=${base_commit}" >> "${GITHUB_OUTPUT}"
+            -   name: Set up JDK 21
+                uses: actions/setup-java@v4
+                with:
+                    cache: gradle
+                    distribution: zulu
+                    java-version: "21"
+            -   env:
+                    LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}}
+                name: Set up the SSH key for liferay-release-tool-ee
+                run: |
+                    mkdir --parents ~/.ssh
+
+                    echo "${LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}" > ~/.ssh/id_ed25519
+
+                    chmod 600 ~/.ssh/id_ed25519
+
+                    ssh-keyscan github.com >> ~/.ssh/known_hosts
+            -   env:
+                    LCP_CONFIG: ${{secrets.LCP_CONFIG}}
+                name: Set up the lcp CLI
+                run: |
+                    curl \
+                        --fail \
+                        --location \
+                        --show-error \
+                        --silent \
+                        https://cdn.liferay.cloud/lcp/stable/latest/install.sh | sudo bash
+
+                    echo "${LCP_CONFIG}" > ~/.lcp
+
+                    chmod 600 ~/.lcp
+
+                    lcp list --project "${LCP_PROJECT}" > /dev/null
+            -   name: Check that UAT is up
+                run: |
+                    for _ in $(seq 1 60)
+                    do
+                        http_code=$( \
+                            curl \
+                                --output /dev/null \
+                                --silent \
+                                --write-out "%{http_code}" \
+                                "${LIFERAY_URL}/o/oauth2/jwks")
+
+                        if [ "${http_code}" == "200" ]
+                        then
+                            exit 0
+                        fi
+
+                        sleep 10
+                    done
+
+                    echo "::error::${LIFERAY_URL}/o/oauth2/jwks did not return 200 within 10 minutes."
+
+                    exit 1
+            -   name: Build and deploy the changed client extensions
+                run: scripts/deploy.sh "${{steps.base-commit.outputs.commit}}"
+        timeout-minutes: 60
+on:
+    push:
+        branches:
+            -   one-uat
+        paths:
+            -   .github/workflows/ci-deploy-liferay-one-uat.yaml
+            -   workspaces/liferay-one-workspace/**
+    workflow_dispatch:
+        inputs:
+            deploy-all:
+                default: false
+                description:
+                    Deploy every client extension, not only the ones that changed since the last deploy.
+                type: boolean
