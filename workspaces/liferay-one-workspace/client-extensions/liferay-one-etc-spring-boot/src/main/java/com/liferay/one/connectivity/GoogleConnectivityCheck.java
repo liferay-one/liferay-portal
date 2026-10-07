@@ -371,15 +371,15 @@ public class GoogleConnectivityCheck {
 
 	private static final int _IMPERSONATION_LIFETIME = 3600;
 
+	private static final String _SIGNATURE_PROBE = "connectivity";
+
+	private static final Duration _TIMEOUT = Duration.ofSeconds(10);
+
 	private static final Log _log = LogFactory.getLog(
 		GoogleConnectivityCheck.class);
 
 	private static final List<String> _scopes = Collections.singletonList(
 		"https://www.googleapis.com/auth/cloud-platform");
-
-	private static final String _SIGNATURE_PROBE = "connectivity";
-
-	private static final Duration _TIMEOUT = Duration.ofSeconds(10);
 
 	@Value("${liferay.one.gcf.composable.service.account:}")
 	private String _composableServiceAccount;
