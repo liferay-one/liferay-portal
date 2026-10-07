@@ -33,17 +33,6 @@
 		},
 		{
 			"deletionType": "prevent",
-			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_ACTIVATION_KEY",
-			"label": {
-				"en_US": "Account Entry to Activation Key"
-			},
-			"name": "accountEntryToActivationKey",
-			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
-			"objectDefinitionExternalReferenceCode2": "C_ACTIVATION_KEY",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "prevent",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_CONTRACT",
 			"label": {
 				"en_US": "Account Entry to Contract"

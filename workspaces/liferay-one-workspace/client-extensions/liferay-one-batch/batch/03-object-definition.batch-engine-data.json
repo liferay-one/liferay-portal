@@ -2443,60 +2443,6 @@
 				{
 					"DBType": "Double",
 					"businessType": "Decimal",
-					"externalReferenceCode": "C_ENTITLEMENT_OVERAGE_RATE",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage Rate"
-					},
-					"name": "overageRate",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Double"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_ENTITLEMENT_OVERAGE_SKU_EXTERNAL_REFERENCE_CODE",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Overage SKU External Reference Code"
-					},
-					"name": "overageSkuExternalReferenceCode",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "Clob",
-					"businessType": "LongText",
-					"externalReferenceCode": "C_ENTITLEMENT_PRODUCT_OPTIONS",
-					"indexed": false,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "Product Options"
-					},
-					"name": "productOptions",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "Clob"
-				},
-				{
-					"DBType": "Double",
-					"businessType": "Decimal",
 					"externalReferenceCode": "C_ENTITLEMENT_QUANTITY",
 					"indexed": true,
 					"indexedAsKeyword": false,
