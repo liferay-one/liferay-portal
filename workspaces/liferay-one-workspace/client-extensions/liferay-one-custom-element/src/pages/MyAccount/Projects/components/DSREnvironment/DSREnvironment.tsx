@@ -8,6 +8,7 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import i18n from '~/i18n';
 
 import DetailsCard, {DetailsRow} from '../DetailsCard/DetailsCard';
+import EnvironmentCards from '../EnvironmentCards/EnvironmentCards';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 
@@ -32,11 +33,18 @@ export default function DSREnvironment({environment}: DSREnvironmentProps) {
 	].filter((row) => row.value);
 
 	return (
-		<>
+		<EnvironmentCards>
+			<DetailsCard
+				compact
+				icon="document"
+				rows={rows}
+				title="workspace-info"
+			/>
+
 			<DetailedCard
 				cardIconAltText={i18n.translate('connect-your-liferay-dsr')}
 				cardTitle={i18n.translate('connect-your-liferay-dsr')}
-				className="mt-3"
+				className="detailed-card-compact mt-3"
 				clayIcon="diagram"
 				fitContent
 			>
@@ -52,13 +60,6 @@ export default function DSREnvironment({environment}: DSREnvironmentProps) {
 					/>
 				</div>
 			</DetailedCard>
-
-			<DetailsCard
-				compact
-				icon="document"
-				rows={rows}
-				title="workspace-info"
-			/>
-		</>
+		</EnvironmentCards>
 	);
 }
