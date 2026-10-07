@@ -18,11 +18,12 @@ function toProduct(value?: string) {
 }
 
 describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEENVIRONMENTPROFILE] resolveEnvironmentProfile', () => {
-	it('returns each of the eight known profiles', () => {
+	it('returns each of the nine known profiles', () => {
 		for (const profile of [
 			'ac-token',
 			'ai-hub',
 			'analytics-cloud',
+			'cloud-native',
 			'dxp',
 			'none',
 			'paas',

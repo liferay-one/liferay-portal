@@ -1072,6 +1072,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "cloud-native"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
