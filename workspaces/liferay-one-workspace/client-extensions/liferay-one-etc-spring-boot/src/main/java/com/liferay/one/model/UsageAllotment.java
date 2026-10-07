@@ -9,6 +9,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.util.UsageUnitUtil;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -23,8 +24,10 @@ import java.util.Set;
  * SKU that granted it: an allotment adds its quantity, an add-on bucket counts
  * buckets and is multiplied by the usage definition's bucket size, and an
  * overage bucket is ignored because it bills past consumption rather than
- * granting future consumption. An entitlement whose SKU carries no role is an
- * allotment. Overage pricing is read from the allotments alone.
+ * granting future consumption. An entitlement whose SKU carries no role
+ * contributes nothing and its SKU is reported instead, since the role cannot be
+ * guessed without risking a wrong entitled quantity. An entitlement with no SKU
+ * at all is an allotment. Overage pricing is read from the allotments alone.
  *
  * @author Drew Brokke
  */
@@ -42,11 +45,20 @@ public class UsageAllotment {
 		long addOnBucketCount = 0;
 		double baseQuantity = 0;
 		Set<OveragePricing> overagePricings = new LinkedHashSet<>();
+		Set<String> skuExternalReferenceCodesWithoutConsumptionRole =
+			new LinkedHashSet<>();
 		boolean unlimited = false;
 
 		for (Entitlement entitlement : entitlements) {
 			String consumptionRole = _getConsumptionRole(
 				consumptionRolesBySkuExternalReferenceCode, entitlement);
+
+			if (consumptionRole == null) {
+				skuExternalReferenceCodesWithoutConsumptionRole.add(
+					_getSkuExternalReferenceCode(entitlement));
+
+				continue;
+			}
 
 			if (!consumptionRole.equals(
 					SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ADD_ON) &&
@@ -100,6 +112,9 @@ public class UsageAllotment {
 		_addOnBucketCount = addOnBucketCount;
 		_baseQuantity = baseQuantity;
 		_conflictingOveragePricing = overagePricings.size() > 1;
+		_skuExternalReferenceCodesWithoutConsumptionRole =
+			Collections.unmodifiableSet(
+				skuExternalReferenceCodesWithoutConsumptionRole);
 		_unlimited = unlimited;
 
 		if (overagePricings.size() == 1) {
@@ -135,6 +150,15 @@ public class UsageAllotment {
 		return _overagePricing;
 	}
 
+	/**
+	 * Returns the SKUs that granted an entitlement but carry no
+	 * <code>consumption-role</code> option, which leaves the entitled quantity
+	 * unknown.
+	 */
+	public Set<String> getSkuExternalReferenceCodesWithoutConsumptionRole() {
+		return _skuExternalReferenceCodesWithoutConsumptionRole;
+	}
+
 	public boolean hasConflictingOveragePricing() {
 		return _conflictingOveragePricing;
 	}
@@ -155,21 +179,26 @@ public class UsageAllotment {
 		Map<String, String> consumptionRolesBySkuExternalReferenceCode,
 		Entitlement entitlement) {
 
+		String skuExternalReferenceCode = _getSkuExternalReferenceCode(
+			entitlement);
+
+		if (skuExternalReferenceCode == null) {
+			return SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ALLOTMENT;
+		}
+
+		return consumptionRolesBySkuExternalReferenceCode.get(
+			skuExternalReferenceCode);
+	}
+
+	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
 
 		if (entitlementDefinition == null) {
-			return SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ALLOTMENT;
+			return null;
 		}
 
-		String consumptionRole = consumptionRolesBySkuExternalReferenceCode.get(
-			entitlementDefinition.getSkuExternalReferenceCode());
-
-		if (consumptionRole == null) {
-			return SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ALLOTMENT;
-		}
-
-		return consumptionRole;
+		return entitlementDefinition.getSkuExternalReferenceCode();
 	}
 
 	private String _getUnit(Entitlement entitlement) {
@@ -188,6 +217,7 @@ public class UsageAllotment {
 	private final boolean _conflictingOveragePricing;
 	private final long _overageBucketSize;
 	private final OveragePricing _overagePricing;
+	private final Set<String> _skuExternalReferenceCodesWithoutConsumptionRole;
 	private final boolean _unlimited;
 
 }

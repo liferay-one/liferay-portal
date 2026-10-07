@@ -111,14 +111,32 @@ public class UsageAllotmentTest {
 	}
 
 	@Test
-	public void testMissingRoleMeansAllotment() {
+	public void testMissingRoleIsReported() {
 		UsageAllotment usageAllotment = _createUsageAllotment(
 			Arrays.asList(
-				_createEntitlement("fixed", 1000000D, _SKU_UNLISTED),
+				_createEntitlement("fixed", 1000000D, _SKU_ALLOTMENT),
+				_createEntitlement("fixed", 1D, _SKU_UNLISTED)),
+			_OVERAGE_BUCKET_SIZE);
+
+		Assertions.assertEquals(1000000D, usageAllotment.getEntitledQuantity());
+		Assertions.assertEquals(
+			Collections.singleton(_SKU_UNLISTED),
+			usageAllotment.
+				getSkuExternalReferenceCodesWithoutConsumptionRole());
+	}
+
+	@Test
+	public void testMissingSkuMeansAllotment() {
+		UsageAllotment usageAllotment = _createUsageAllotment(
+			Arrays.asList(
+				_createEntitlement("fixed", 1000000D, _SKU_ALLOTMENT),
 				_createEntitlement("fixed", 500000D, null)),
 			_OVERAGE_BUCKET_SIZE);
 
 		Assertions.assertEquals(1500000D, usageAllotment.getEntitledQuantity());
+		Assertions.assertTrue(
+			usageAllotment.getSkuExternalReferenceCodesWithoutConsumptionRole(
+			).isEmpty());
 	}
 
 	@Test

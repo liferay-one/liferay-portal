@@ -47,7 +47,7 @@ A consumable product has one SKU per role, told apart by the `consumption-role` 
 | `add-on` | Prepaid extra buckets bought up front. Quantity is a bucket count. | `PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET` |
 | `overage` | Buckets billed after the fact on an overage order. Never counts toward a cap. | `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` |
 
-A SKU with no `consumption-role` option is treated as an allotment, so a plain subscription SKU needs nothing added. A SKU with a role value outside this table is ignored.
+Every SKU that grants an entitlement linked to a metric must set its role, including the plain subscription SKU. When one of a project's SKUs has no `consumption-role` option, the generator skips that project and logs an error naming the SKU, because guessing the role risks a wrong cap on a bill. A SKU with a role value outside this table is ignored.
 
 The product declares the option under `productOptions` and each SKU sets its value under `skuOptions`. File: `scripts/seed/data/06-commerce-product.batch-engine-data.json`.
 
@@ -134,6 +134,7 @@ Then reseed, place an order for the product against a project, and trigger a com
 ## Pitfalls
 
 - A definition the generator cannot find the source for is logged and skipped, not failed. Check the log for `Unable to find usage source` after seeding a new metric.
+- A SKU option only exists when its option does. If the `consumption-role` option is missing from an environment, the product import drops every role silently and the generator skips every project with `have no consumption-role option`.
 - The entitlement window is `startDate < month end` and `endDate >= month start`, so an order placed mid-month is reported for that month in full.
 - Several allotments for the same metric and project add up. Two orders for the same product double the cap, which is intended for add-ons and worth knowing for plain subscriptions.
 - Changing a report ERC scheme, a bucket size, or a cap never rewrites existing reports. They are an audit trail.

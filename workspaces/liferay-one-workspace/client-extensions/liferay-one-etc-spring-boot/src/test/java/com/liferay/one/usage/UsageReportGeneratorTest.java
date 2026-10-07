@@ -376,6 +376,28 @@ public class UsageReportGeneratorTest {
 	}
 
 	@Test
+	public void testSkipsProjectWithSkuWithoutConsumptionRole()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createAllotment(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE),
+			_createEntitlement(
+				"fixed", _PROJECT_EXTERNAL_REFERENCE_CODE, 1D,
+				"PRDCT-DATA-PLATFORM-EVENTS-LEGACY-BUCKET", null));
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		_verifyNoReportAdded();
+
+		Mockito.verify(
+			_usageSource, Mockito.never()
+		).fetchUsage(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSkipsProjectWithoutUsageData() throws Exception {
 		_setUpEntitlements(
 			_createAllotment(

@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -249,6 +250,23 @@ public class UsageReportGenerator {
 		UsageAllotment usageAllotment = new UsageAllotment(
 			consumptionRolesBySkuExternalReferenceCode, entitlements,
 			_getOverageBucketSize(usageDefinition), usageDefinition.getUnit());
+
+		Set<String> skuExternalReferenceCodesWithoutConsumptionRole =
+			usageAllotment.getSkuExternalReferenceCodesWithoutConsumptionRole();
+
+		if (!skuExternalReferenceCodesWithoutConsumptionRole.isEmpty()) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to generate the ",
+					usageDefinition.getExternalReferenceCode(),
+					" usage report for project ", projectExternalReferenceCode,
+					" because SKUs ",
+					skuExternalReferenceCodesWithoutConsumptionRole,
+					" have no ", SkuOptionConstants.KEY_CONSUMPTION_ROLE,
+					" option"));
+
+			return false;
+		}
 
 		if (usageAllotment.isUnlimited()) {
 			if (_log.isInfoEnabled()) {
