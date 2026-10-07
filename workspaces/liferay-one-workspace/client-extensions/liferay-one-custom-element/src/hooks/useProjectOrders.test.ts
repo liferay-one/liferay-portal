@@ -137,7 +137,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		const tokenOrder = placedOrder({
 			id: 10,
 			orderTypeExternalReferenceCode: 'AI_HUB_TOKEN',
-			placedOrderItems: [{name: 'AI Hub'}],
+			placedOrderItems: [{productId: 7}],
 		});
 
 		const aiHubOrder = placedOrder({
@@ -151,25 +151,23 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			id: 11,
 			orderStatusInfo: {code: 0, label: 'Completed'},
 			orderTypeExternalReferenceCode: 'AI_HUB',
-			placedOrderItems: [{name: 'AI Hub'}],
+			placedOrderItems: [{productId: 7}],
 			purchaseOrderNumber: 'PO-1',
 		});
 
-		expect(getProductOrderInfo([tokenOrder, aiHubOrder], 'AI Hub')).toEqual(
-			{
-				environment: {
-					cloudProjectName: 'cloud-1',
-					ldpDataSourceAccessToken: 'token-1',
-					projectName: 'Alpha',
-				},
-				orderDate: 'Mar 15, 2026',
-				orderId: '11',
-				orderType: 'AI_HUB',
-				purchaseNumber: 'PO-1',
-				purchasedBy: 'Acme',
-				status: 'completed',
-			}
-		);
+		expect(getProductOrderInfo([tokenOrder, aiHubOrder], 7)).toEqual({
+			environment: {
+				cloudProjectName: 'cloud-1',
+				ldpDataSourceAccessToken: 'token-1',
+				projectName: 'Alpha',
+			},
+			orderDate: 'Mar 15, 2026',
+			orderId: '11',
+			orderType: 'AI_HUB',
+			purchaseNumber: 'PO-1',
+			purchasedBy: 'Acme',
+			status: 'completed',
+		});
 	});
 
 	it('returns blank product order info when no order matches', () => {
@@ -179,10 +177,10 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 					placedOrder({
 						id: 10,
 						orderTypeExternalReferenceCode: 'AI_HUB_TOKEN',
-						placedOrderItems: [{name: 'AI Hub'}],
+						placedOrderItems: [{productId: 7}],
 					}),
 				],
-				'AI Hub'
+				7
 			)
 		).toEqual({
 			environment: {
@@ -201,31 +199,31 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 	it('takes the virtual items from the first matching order item', () => {
 		const orders = [
-			placedOrder({id: 1, placedOrderItems: [{name: 'Other'}]}),
+			placedOrder({id: 1, placedOrderItems: [{productId: 9}]}),
 			placedOrder({
 				id: 2,
 				placedOrderItems: [
-					{name: 'DXP', virtualItems: [{id: 'first'}]},
+					{productId: 7, virtualItems: [{id: 'first'}]},
 				],
 			}),
 			placedOrder({
 				id: 3,
 				placedOrderItems: [
-					{name: 'DXP', virtualItems: [{id: 'second'}]},
+					{productId: 7, virtualItems: [{id: 'second'}]},
 				],
 			}),
 		];
 
-		expect(getProductVirtualItems(orders, 'DXP')).toEqual([{id: 'first'}]);
+		expect(getProductVirtualItems(orders, 7)).toEqual([{id: 'first'}]);
 	});
 
 	it('returns no virtual items when the matching item has none or nothing matches', () => {
 		expect(
 			getProductVirtualItems(
-				[placedOrder({id: 1, placedOrderItems: [{name: 'DXP'}]})],
-				'DXP'
+				[placedOrder({id: 1, placedOrderItems: [{productId: 7}]})],
+				7
 			)
 		).toEqual([]);
-		expect(getProductVirtualItems([], 'DXP')).toEqual([]);
+		expect(getProductVirtualItems([], 7)).toEqual([]);
 	});
 });
