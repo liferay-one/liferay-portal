@@ -5,8 +5,9 @@
 
 package com.liferay.one;
 
-import com.liferay.one.constants.CommerceProductConstants;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DataOpsUnavailableException;
@@ -36,6 +37,7 @@ import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.EntitlementUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -289,16 +291,19 @@ public class ProjectRestController extends OneBaseRestController {
 	}
 
 	private BaseUsageStrategy _createUsageStrategy(
-		List<Entitlement> entitlements, String productName, String response) {
+		List<Entitlement> entitlements, String response,
+		String utilizationProfile) {
 
-		if (CommerceProductConstants.namesExperienceProducts.contains(
-				productName)) {
+		if (utilizationProfile.equals(
+				ProductSpecificationConstants.
+					UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD)) {
 
 			return new ExperienceUsageStrategy(response, entitlements);
 		}
 
-		if (CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
-				productName)) {
+		if (utilizationProfile.equals(
+				ProductSpecificationConstants.
+					UTILIZATION_PROFILE_USAGE_METRICS)) {
 
 			return new LDPUsageStrategy(response, entitlements);
 		}
@@ -340,15 +345,17 @@ public class ProjectRestController extends OneBaseRestController {
 		}
 	}
 
-	private String _fetchUsageResponse(String productName, Project project)
+	private String _fetchUsageResponse(
+			Project project, String utilizationProfile)
 		throws Exception {
 
 		String projectExternalReferenceCode =
 			project.getExternalReferenceCode();
 
 		try {
-			if (CommerceProductConstants.namesExperienceProducts.contains(
-					productName)) {
+			if (utilizationProfile.equals(
+					ProductSpecificationConstants.
+						UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD)) {
 
 				LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
 
@@ -357,8 +364,9 @@ public class ProjectRestController extends OneBaseRestController {
 					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER));
 			}
 
-			if (CommerceProductConstants.namesLiferayDataPlatformProducts.
-					contains(productName)) {
+			if (utilizationProfile.equals(
+					ProductSpecificationConstants.
+						UTILIZATION_PROFILE_USAGE_METRICS)) {
 
 				return _dataOpsUsageService.fetchLDPProjectUsage(
 					projectExternalReferenceCode);
@@ -390,13 +398,30 @@ public class ProjectRestController extends OneBaseRestController {
 		return project.getAccountExternalReferenceCode();
 	}
 
+	private List<Entitlement> _getActiveEntitlements(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				projectExternalReferenceCode);
+
+		if (entitlements.isEmpty() && _log.isWarnEnabled()) {
+			_log.warn(
+				"Unable to find active entitlements for project " +
+					projectExternalReferenceCode);
+		}
+
+		return entitlements;
+	}
+
 	private ResponseEntity<String> _getEventUsageResponseEntity(
 			String projectExternalReferenceCode, String response)
 		throws Exception {
 
 		List<Entitlement> entitlements = _getUsageDashboardEntitlements(
-			CommerceProductConstants.NAME_LIFERAY_DATA_PLATFORM,
-			projectExternalReferenceCode);
+			projectExternalReferenceCode,
+			ProductSpecificationConstants.UTILIZATION_PROFILE_USAGE_METRICS);
 
 		LDPEventUsageStrategy ldpEventUsageStrategy = new LDPEventUsageStrategy(
 			entitlements, _getLDPEventOverageBucketSize(entitlements),
@@ -461,25 +486,15 @@ public class ProjectRestController extends OneBaseRestController {
 	}
 
 	private List<Entitlement> _getUsageDashboardEntitlements(
-			String dashboardProductName, String projectExternalReferenceCode)
+			String projectExternalReferenceCode, String utilizationProfile)
 		throws Exception {
-
-		List<Entitlement> entitlements =
-			_entitlementService.getActiveEntitlements(
-				projectExternalReferenceCode);
-
-		if (entitlements.isEmpty() && _log.isWarnEnabled()) {
-			_log.warn(
-				"Unable to find active entitlements for project " +
-					projectExternalReferenceCode);
-		}
 
 		List<Entitlement> usageDashboardEntitlements = new ArrayList<>();
 
-		for (Entitlement entitlement : entitlements) {
-			if (_isUsageDashboardEntitlement(
-					dashboardProductName, entitlement)) {
+		for (Entitlement entitlement :
+				_getActiveEntitlements(projectExternalReferenceCode)) {
 
+			if (_isUsageDashboardEntitlement(entitlement, utilizationProfile)) {
 				usageDashboardEntitlements.add(entitlement);
 			}
 		}
@@ -497,84 +512,81 @@ public class ProjectRestController extends OneBaseRestController {
 				"Product external reference code is required");
 		}
 
-		String productName = _commerceProductService.fetchProductName(
+		Product product = _commerceProductService.fetchProduct(
 			productExternalReferenceCode);
 
-		if (Validator.isNull(productName)) {
+		if (product == null) {
 			throw new InvalidUsageProductException(
 				"Unable to find product " + productExternalReferenceCode);
 		}
 
-		if (!CommerceProductConstants.namesExperienceProducts.contains(
-				productName) &&
-			!CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
-				productName) &&
-			!CommerceProductConstants.namesSaaSPlanProducts.contains(
-				productName)) {
+		String utilizationProfile = CommerceProductUtil.getSpecificationValue(
+			product,
+			ProductSpecificationConstants.KEY_PROJECT_UTILIZATION_PROFILE);
+
+		if (Validator.isNull(utilizationProfile)) {
+			throw new InvalidUsageProductException(
+				StringBundler.concat(
+					"Product ", productExternalReferenceCode,
+					" has no utilization profile"));
+		}
+
+		if (!ProductSpecificationConstants.utilizationProfilesUsageDashboard.
+				contains(utilizationProfile)) {
 
 			throw new InvalidUsageProductException(
 				StringBundler.concat(
 					"Product ", productExternalReferenceCode,
-					" has no usage dashboard: ", productName));
+					" has utilization profile \"", utilizationProfile,
+					"\", which has no usage dashboard"));
 		}
 
 		Project project = _getProject(projectExternalReferenceCode);
 
 		return _createUsageStrategy(
 			_getUsageDashboardEntitlements(
-				productName, projectExternalReferenceCode),
-			productName, _fetchUsageResponse(productName, project));
+				projectExternalReferenceCode, utilizationProfile),
+			_fetchUsageResponse(project, utilizationProfile),
+			utilizationProfile);
 	}
 
 	private boolean _isUsageDashboardEntitlement(
-			String dashboardProductName, Entitlement entitlement)
+			Entitlement entitlement, String utilizationProfile)
 		throws Exception {
 
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
 
 		if (entitlementDefinition == null) {
-			return false;
+			return true;
 		}
 
 		Long productId = _commerceSkuService.fetchProductId(
 			entitlementDefinition.getSkuExternalReferenceCode());
 
 		if (productId == null) {
-			return false;
+			return true;
 		}
 
-		String productName = _commerceProductService.fetchProductName(
-			productId);
+		Product product = _commerceProductService.fetchProduct(productId);
 
-		if (Validator.isNull(productName)) {
-			return false;
+		if (product == null) {
+			return true;
 		}
 
-		if (CommerceProductConstants.namesExperienceProducts.contains(
-				dashboardProductName)) {
+		String productUtilizationProfile =
+			CommerceProductUtil.getSpecificationValue(
+				product,
+				ProductSpecificationConstants.KEY_PROJECT_UTILIZATION_PROFILE);
 
-			return CommerceProductConstants.namesExperienceEntitlementProducts.
-				contains(productName);
-		}
-
-		if (CommerceProductConstants.namesLiferayDataPlatformProducts.contains(
-				dashboardProductName)) {
-
-			return CommerceProductConstants.namesLiferayDataPlatformProducts.
-				contains(productName);
-		}
-
-		if (CommerceProductConstants.namesSaaSPlanEntitlementProducts.contains(
-				productName) ||
-			productName.startsWith(
-				CommerceProductConstants.
-					NAME_PREFIX_LIFERAY_SAAS_ENTITLEMENTS)) {
+		if (Validator.isNull(productUtilizationProfile) ||
+			!ProductSpecificationConstants.utilizationProfilesUsageDashboard.
+				contains(productUtilizationProfile)) {
 
 			return true;
 		}
 
-		return false;
+		return utilizationProfile.equals(productUtilizationProfile);
 	}
 
 	private void _logUnavailableUsage(
