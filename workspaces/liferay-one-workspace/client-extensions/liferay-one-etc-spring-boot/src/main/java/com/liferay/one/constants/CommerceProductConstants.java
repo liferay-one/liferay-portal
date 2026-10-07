@@ -32,6 +32,13 @@ public class CommerceProductConstants {
 
 	public static final String NAME_PAAS_EXPERIENCE = "PaaS Experience";
 
+	public static final String
+		OPTION_EXTERNAL_REFERENCE_CODE_SALESFORCE_PRODUCT =
+			"LO_OPTION_SALESFORCE_PRODUCT";
+
+	public static final String OPTION_KEY_SALESFORCE_PRODUCT =
+		"salesforce-product";
+
 	public static final String SPECIFICATION_KEY_CLOUD_ENABLED =
 		"cloud-enabled";
 

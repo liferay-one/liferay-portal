@@ -185,7 +185,7 @@ The sellable unit. A product has one or more SKUs; each SKU maps one to one to a
 |---|---|---|
 | PK `CPInstanceId` | long | |
 | FK `CProductId` | long | Parent product |
-| `externalReferenceCode` | string | The only cross-system key; order items, price entries, and entitlement definitions reference the SKU by this value. Salesforce `Product2.Id` (18-char) for migrated Salesforce products; `PRDCT-*` (matching the parent product) for seeded and Marketplace single-SKU products |
+| `externalReferenceCode` | string | The only cross-system key; order items, price entries, and entitlement definitions reference the SKU by this value. Salesforce `Product2.Id` (18-char) for Salesforce products, which includes the seeded SKUs that mirror them; `PRDCT-*` for Marketplace apps and for seeded SKUs that have no Salesforce counterpart |
 | `sku` | string | SKU code |
 | `skuOptions` | list | Plan, sizing, and license options that distinguish SKUs of one product |
 
@@ -197,13 +197,14 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 
 | Key | ERC | Values |
 |---|---|---|
-| `ai-hub-license-usage-type` | `LO_OPTION_AI_HUB_LICENSE_USAGE` | `1000000-lr-tokens` · `10000000-lr-tokens` · `5000000-lr-tokens` · `activate` · `studio` |
+| `ai-hub-license-usage-type` | `LO_OPTION_AI_HUB_LICENSE_USAGE` | `activate` · `enterprise` · `studio` |
 | `base-license-usage-type` | `LO_OPTION_BASE_LICENSE_USAGE` | `developer` · `standard` |
 | `cloud-license-usage-type` | `LO_OPTION_CLOUD_LICENSE_USAGE` | `standard` · `trial` |
-| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `trial` |
+| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `standard` · `trial` |
 | `consumption-role` | `LO_OPTION_CONSUMPTION_ROLE` | `add-on` · `allotment` · `overage` |
-| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` |
+| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` · `standard` |
 | `dxp-license-usage-type` | `LO_OPTION_DXP_LICENSE_USAGE` | `developer` · `standard` · `trial` |
+| `salesforce-product` | `LO_OPTION_SALESFORCE_PRODUCT` | One value for each Salesforce SKU, on every product that has one, whether the product has one SKU or many. The key is the lowercase Salesforce product ID, and the name is the Salesforce product name. Liferay keeps only one SKU of a product published unless each SKU has its own value, so the Salesforce sync and the seed data set this option on every Salesforce SKU. A SKU that is not a Salesforce product, such as a Liferay Data Platform event bucket, has no value. |
 
 ---
 
@@ -338,7 +339,7 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 
 **Several definitions per metric.** One product can sell a metric several ways, each its own EntitlementDefinition under the same UsageDefinition. For LDP, `events-monthly` parents:
 
-- `C_ENT_DEF_DATA_PLATFORM_EVENTS`: the base allotment, granted by `PRDCT-DATA-PLATFORM`. The only one with overage pricing.
+- `C_ENT_DEF_DATA_PLATFORM_EVENTS`: the base allotment, granted by the Liferay Data Platform SKU `01tVO00000UccNxYAJ`. The only one with overage pricing.
 - `C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET`: one 200,000 event bucket per unit, granted by `PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET`.
 - `C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET`: granted by `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` on overage orders. `LDPEventAllotment` ignores it.
 

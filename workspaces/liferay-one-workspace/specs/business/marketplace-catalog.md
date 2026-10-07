@@ -92,7 +92,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-CATALOG-070 | Each Salesforce product becomes a SKU of the catalog product that its product group names. When that catalog product does not exist, the system creates it as a virtual product in the Liferay Inc catalog. | P1 | LPD-88254 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER`, `SVC-COMMERCEPRODUCTSERVICE` |
+| REQ-CATALOG-070 | Each Salesforce product becomes a SKU of the catalog product that its product group names. When that catalog product does not exist, the system creates it as a virtual product in the Liferay Inc catalog. Each Salesforce SKU gets its own value of the `salesforce-product` option of its catalog product, named for its Salesforce product, whether the catalog product has one SKU or many. Each sync of a Salesforce product sets this value again, so a SKU that existed before the option keeps its other options and stays published. | P1 | LPD-88254 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER`, `SVC-COMMERCEPRODUCTSERVICE` |
 | REQ-CATALOG-071 | A SKU from Salesforce is published, purchasable, and never expires. A catalog product with exactly one SKU takes the name and the description of its Salesforce product. | P2 | LPD-88254 | `SVC-COMMERCEPRODUCTSERVICE` |
 | REQ-CATALOG-072 | A Salesforce product without a product group and without an existing SKU changes nothing. The system logs a warning. | P2 | LPD-88254 | `SVC-COMMERCEPRODUCTSERVICE` |
 | REQ-CATALOG-073 | When Salesforce deletes a product, the system unpublishes its SKU. The system deactivates the catalog product only when no other SKU of that product stays published. | P0 | LPD-88254 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER`, `SVC-COMMERCEPRODUCTSERVICE` |
