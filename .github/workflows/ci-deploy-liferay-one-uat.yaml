@@ -20,12 +20,12 @@ jobs:
             -   env:
                     LCP_EMAIL_ADDRESS: ${{secrets.LCP_EMAIL_ADDRESS}}
                     LCP_PASSWORD: ${{secrets.LCP_PASSWORD}}
-                    LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}}
+                    LIFERAY_RELEASE_TOOL_EE_SSH_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_SSH_KEY}}
                 name: Check the secrets
                 run: |
                     missing_secrets=0
 
-                    for secret_name in LCP_EMAIL_ADDRESS LCP_PASSWORD LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY
+                    for secret_name in LCP_EMAIL_ADDRESS LCP_PASSWORD LIFERAY_RELEASE_TOOL_EE_SSH_KEY
                     do
                         if [ -z "${!secret_name}" ]
                         then
@@ -85,12 +85,12 @@ jobs:
                     distribution: zulu
                     java-version: "21"
             -   env:
-                    LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}}
+                    LIFERAY_RELEASE_TOOL_EE_SSH_KEY: ${{secrets.LIFERAY_RELEASE_TOOL_EE_SSH_KEY}}
                 name: Set up the SSH key for liferay-release-tool-ee
                 run: |
                     mkdir --parents ~/.ssh
 
-                    echo "${LIFERAY_RELEASE_TOOL_EE_DEPLOY_KEY}" > ~/.ssh/id_ed25519
+                    echo "${LIFERAY_RELEASE_TOOL_EE_SSH_KEY}" > ~/.ssh/id_ed25519
 
                     chmod 600 ~/.ssh/id_ed25519
 
