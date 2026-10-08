@@ -647,6 +647,7 @@ export default {
 	'general-info': '一般情報',
 	'generate': '生成',
 	'generate-new': '新規生成',
+	'generate-sample': 'サンプルを生成',
 	'get-activation-key': 'アクティベーションキーを取得',
 	'get-app': 'アプリを入手',
 	'get-digital-sales-room': 'Digital Sales Roomを入手',
