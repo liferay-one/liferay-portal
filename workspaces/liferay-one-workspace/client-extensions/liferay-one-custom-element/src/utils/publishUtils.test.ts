@@ -75,6 +75,17 @@ describe('[MOD-PUBLISHUTILS] publishUtils', () => {
 			).toBe(0);
 		});
 
+		it('returns the price by a product family license usage option value', () => {
+			expect(
+				getSkuPrice(
+					appLicensePrice,
+					toSKU('TRIAL', [
+						{key: 'dxp-license-usage-type', value: 'trial'},
+					])
+				)
+			).toBe(0);
+		});
+
 		it('returns the price by license usage option value', () => {
 			expect(
 				getSkuPrice(
