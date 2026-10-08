@@ -20,6 +20,7 @@ const personalInformation = {
 const seoStudioForm = {
 	...personalInformation,
 	administratorEmailAddress: 'admin@liferay.com',
+	companyName: 'Acme',
 	purpose: 'Testing',
 	seoStudioAccountName: 'SEO',
 	termsAndConditions: true,
@@ -66,7 +67,7 @@ describe('[MOD-SCHEMAS-ZODSCHEMA] zodSchema', () => {
 		expect(typeof zodResolver).toBe('function');
 	});
 
-	it('seoStudioForm requires the account name, admin email, purpose, and both consents', () => {
+	it('seoStudioForm requires the account name, admin email, company name, purpose, and both consents', () => {
 		const schema = zodSchema.seoStudioForm;
 
 		expect(schema.safeParse(seoStudioForm).success).toBe(true);
@@ -89,6 +90,9 @@ describe('[MOD-SCHEMAS-ZODSCHEMA] zodSchema', () => {
 		).toBe(false);
 		expect(
 			schema.safeParse({...seoStudioForm, fullName: 'Ja'}).success
+		).toBe(false);
+		expect(
+			schema.safeParse({...seoStudioForm, companyName: ''}).success
 		).toBe(false);
 	});
 
