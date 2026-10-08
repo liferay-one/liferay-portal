@@ -87,12 +87,18 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
-		it('labels anything but completed as Requested for SEO Studio', () => {
-			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 1))).toBe(
-				'Requested'
-			);
+		it('labels SEO Studio orders as active, cancelled, or pending', () => {
 			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 0))).toBe(
-				'Workflow Label'
+				'Active'
+			);
+			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 8))).toBe(
+				'Cancelled'
+			);
+			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 1))).toBe(
+				'Pending'
+			);
+			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 20))).toBe(
+				'Pending'
 			);
 		});
 
