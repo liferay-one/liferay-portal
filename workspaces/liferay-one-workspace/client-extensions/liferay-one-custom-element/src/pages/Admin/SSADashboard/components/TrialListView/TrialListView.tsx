@@ -221,6 +221,7 @@ export default function TrialListView({
 							},
 						},
 					],
+					rowWrap: true,
 				}}
 				{...listViewProps}
 			>

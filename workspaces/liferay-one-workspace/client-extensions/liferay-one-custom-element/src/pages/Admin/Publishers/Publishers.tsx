@@ -95,6 +95,7 @@ export default function Publishers() {
 							},
 						},
 					],
+					rowWrap: true,
 				}}
 			/>
 		</Page>

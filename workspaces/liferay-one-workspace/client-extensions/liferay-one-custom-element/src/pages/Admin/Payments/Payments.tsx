@@ -158,6 +158,7 @@ const Payments = () => {
 						},
 					],
 					navigateTo: (entry) => `/mp-payments/${entry.id}`,
+					rowWrap: true,
 				}}
 			/>
 		</Page>

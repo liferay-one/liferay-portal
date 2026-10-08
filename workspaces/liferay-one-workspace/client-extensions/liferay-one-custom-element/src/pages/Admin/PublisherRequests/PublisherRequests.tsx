@@ -113,6 +113,7 @@ export default function PublisherRequests() {
 
 						modal.onOpenChange(true);
 					},
+					rowWrap: true,
 				}}
 			>
 				{(_, {mutate}) => (

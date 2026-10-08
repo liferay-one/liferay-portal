@@ -216,6 +216,7 @@ export function AdministratorOrdersListView({
 						sortable: isSortable,
 					},
 				],
+				rowWrap: true,
 			}}
 			{...listViewProps}
 		/>

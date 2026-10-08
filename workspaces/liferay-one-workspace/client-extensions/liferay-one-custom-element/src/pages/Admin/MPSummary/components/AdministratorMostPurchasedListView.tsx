@@ -110,6 +110,7 @@ const AdministratorMostPurchasedListView: React.FC<
 					items={sortedItems}
 					mutate={() => Promise.resolve(undefined)}
 					onSort={(key, direction) => setSort({direction, key})}
+					rowWrap
 					sort={sort}
 				/>
 			)}

@@ -82,6 +82,7 @@ export default function ManageSsaSaasUsers() {
 								formatDate(lastLoginDate),
 						},
 					],
+					rowWrap: true,
 				}}
 			/>
 		</Page>
