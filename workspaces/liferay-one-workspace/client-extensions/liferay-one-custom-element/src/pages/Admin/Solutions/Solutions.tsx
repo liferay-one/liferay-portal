@@ -98,6 +98,7 @@ export default function Solutions() {
 						},
 					],
 					navigateTo: ({productId}) => `/mp-solutions/${productId}`,
+					rowWrap: true,
 				}}
 			/>
 		</Page>

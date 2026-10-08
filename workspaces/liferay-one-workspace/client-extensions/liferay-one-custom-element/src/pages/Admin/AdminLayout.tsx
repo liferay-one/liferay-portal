@@ -13,5 +13,9 @@ type AdminLayoutProps = {
 };
 
 export default function AdminLayout({navItems}: AdminLayoutProps) {
-	return <AppLayout navItems={navItems} />;
+	return (
+		<div className="admin-layout">
+			<AppLayout navItems={navItems} />
+		</div>
+	);
 }

@@ -156,6 +156,7 @@ const MPFinanceOrders = () => {
 						},
 					],
 					navigateTo: (order) => `/mp-finance-orders/${order.id}`,
+					rowWrap: true,
 				}}
 			/>
 		</Page>

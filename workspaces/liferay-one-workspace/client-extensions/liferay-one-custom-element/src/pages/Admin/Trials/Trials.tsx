@@ -56,11 +56,11 @@ export default function Trials() {
 						<div className="d-flex justify-content-between mt-3 w-100">
 							<div className="d-flex">
 								<div className="d-flex flex-column mr-3">
-									<span className="font-weight-lighter text-black-50">
+									<span className="font-weight-lighter text-black-50 text-nowrap">
 										{i18n.translate('resources')}
 									</span>
 
-									<h2 className="align-items-center d-flex justify-content-center my-0">
+									<h2 className="align-items-center d-flex justify-content-center my-0 text-nowrap">
 										{availability?.resourcesAvailable ?? 0}
 									</h2>
 								</div>
@@ -74,11 +74,11 @@ export default function Trials() {
 							</div>
 							<div className="d-flex">
 								<div className="d-flex flex-column mr-3">
-									<span className="font-weight-lighter text-black-50">
+									<span className="font-weight-lighter text-black-50 text-nowrap">
 										{i18n.translate('available')}
 									</span>
 
-									<h2 className="align-items-center d-flex justify-content-center my-0">
+									<h2 className="align-items-center d-flex justify-content-center my-0 text-nowrap">
 										{availability?.available ?? 0}
 									</h2>
 								</div>
@@ -92,11 +92,11 @@ export default function Trials() {
 							</div>
 							<div className="d-flex">
 								<div className="d-flex flex-column mr-3">
-									<span className="font-weight-lighter text-black-50">
+									<span className="font-weight-lighter text-black-50 text-nowrap">
 										{i18n.translate('on-hold')}
 									</span>
 
-									<h2 className="align-items-center d-flex justify-content-center my-0">
+									<h2 className="align-items-center d-flex justify-content-center my-0 text-nowrap">
 										{totalCount.onHold}
 									</h2>
 								</div>
@@ -112,7 +112,6 @@ export default function Trials() {
 					</div>
 
 					<InfoCard
-						className="col-2"
 						limited
 						symbol="shopping-cart"
 						title={i18n.translate('all-orders')}
@@ -120,7 +119,6 @@ export default function Trials() {
 					/>
 
 					<InfoCard
-						className="col-2"
 						growth={0}
 						limited
 						symbol="date-time"
