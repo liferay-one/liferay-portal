@@ -81,29 +81,27 @@ describe('[CLIENT-MODELS-MARKETPLACEPRODUCT] MarketplaceProduct', () => {
 					id: 1,
 					sku: 'STANDARD-SKU',
 					skuOptions: [
-						{key: 'cloud-license-usage-type', value: 'standard'},
+						{key: 'base-license-usage-type', value: 'standard'},
 					],
 				},
 				{
 					id: 2,
 					sku: 'Developer',
 					skuOptions: [
-						{key: 'cloud-license-usage-type', value: 'developer'},
+						{key: 'base-license-usage-type', value: 'developer'},
 					],
 				},
 				{
 					id: 3,
 					sku: 'TRIAL',
 					skuOptions: [
-						{key: 'cloud-license-usage-type', value: 'trial'},
+						{key: 'base-license-usage-type', value: 'trial'},
 					],
 				},
 				{
 					id: 4,
-					sku: 'DXP',
-					skuOptions: [
-						{key: 'dxp-license-usage-type', value: 'standard'},
-					],
+					sku: 'ADD-ON',
+					skuOptions: [{key: 'consumption-role', value: 'add-on'}],
 				},
 			],
 		});
@@ -157,6 +155,5 @@ describe('[CLIENT-MODELS-MARKETPLACEPRODUCT] MarketplaceProduct', () => {
 		expect(product.specificationValues.APP_TYPE).toBe('cloud');
 		expect(product.specificationValues.APP_VERSION).toBe('3.0.0');
 		expect(product.specificationValues.APP_PRICING_MODEL).toBeUndefined();
-		expect(product.getProductOptionKey()).toBe('cloud-license-usage-type');
 	});
 });

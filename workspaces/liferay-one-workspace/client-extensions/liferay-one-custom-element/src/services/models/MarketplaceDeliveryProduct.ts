@@ -7,7 +7,6 @@ import {ProductType, ProductVocabulary} from '~/enums/Product';
 import i18n from '~/i18n';
 import {ConsoleUserProject} from '~/services/spring-boot/types';
 import {
-	ProductLicense,
 	ProductLicenseFriendlyName,
 	ProductLicenseType,
 	ProductPriceModel,
@@ -143,20 +142,6 @@ export class MarketplaceDeliveryProduct {
 		return this.product.images
 			.filter((image) => image.priority !== 0)
 			.map((image) => image.src);
-	}
-
-	public getProductOptionKey() {
-		const optionsTypes = {
-			[ProductType.CLOUD]: ProductLicense.CLOUD,
-			[ProductType.DXP]: ProductLicense.DXP,
-		};
-
-		return (
-			optionsTypes[
-				this.specificationValues
-					.APP_TYPE as unknown as keyof typeof optionsTypes
-			] || ProductLicense.BASE
-		);
 	}
 
 	public getProductResourceLabel() {

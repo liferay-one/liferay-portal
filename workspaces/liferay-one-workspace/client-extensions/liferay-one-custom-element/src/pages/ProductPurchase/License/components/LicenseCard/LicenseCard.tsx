@@ -5,13 +5,13 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEYS} from '~/enums/Product';
+import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 
 import LicenseTier from '../LicenseTier/LicenseTier';
 
-import type {DeliverySKU, ProductLicense} from '~/types/product';
+import type {DeliverySKU} from '~/types/product';
 
 const MAX_QUANTITY = 99;
 const MIN_QUANTITY = 0;
@@ -36,10 +36,8 @@ const LicenseCard = ({sku}: LicenseCardProps) => {
 		cartItems.find((item) => item.skuId === sku.id)?.quantity ||
 		MIN_QUANTITY;
 
-	const skuOption = (sku.skuOptions ?? []).find((skuOption) =>
-		LICENSE_USAGE_TYPE_SKU_OPTION_KEYS.includes(
-			skuOption.skuOptionKey as ProductLicense
-		)
+	const skuOption = (sku.skuOptions ?? []).find(
+		({skuOptionKey}) => skuOptionKey === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
 	);
 
 	const licenseType = skuOption?.skuOptionValueKey?.toLocaleLowerCase() ?? '';
