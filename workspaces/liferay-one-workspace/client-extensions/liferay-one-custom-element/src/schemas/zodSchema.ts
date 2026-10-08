@@ -443,6 +443,7 @@ const zodSchema = {
 		administratorEmailAddress: z
 			.string()
 			.email('Please fill in valid email'),
+		companyName: z.string().min(3, 'Company name is required'),
 		purpose: z.string().min(3, 'Purpose is required'),
 		seoStudioAccountName: z
 			.string()
