@@ -48,6 +48,22 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 		}
 	);
 
+	it.each([
+		['CLIENT_EXTENSION', true],
+		['COMPOSITE_APP', true],
+		['DXP_APP', true],
+		['LOW_CODE_CONFIGURATION', false],
+		['CLOUD_APP', false],
+	])(
+		'marks the %s order type as licensable without the item price: %s',
+		(orderType, expected) => {
+			expect(
+				createModel({orderTypeExternalReferenceCode: orderType})
+					.isLicensable
+			).toBe(expected);
+		}
+	);
+
 	it('maps every custom field key to the order custom field value', () => {
 		const model = createModel({
 			customFields: {
