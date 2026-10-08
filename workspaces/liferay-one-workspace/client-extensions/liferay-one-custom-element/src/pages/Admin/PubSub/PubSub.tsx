@@ -11,6 +11,10 @@ import EmptyState from '~/components/EmptyState/EmptyState';
 import Page from '~/components/Page/Page';
 import useHasAdminPermissions from '~/hooks/useHasAdminPermissions';
 import {translate} from '~/i18n';
+import GenerateSampleButton from '~/pages/Admin/PubSub/components/GenerateSampleButton/GenerateSampleButton';
+import getPubSubSamples, {
+	PubSubMessage,
+} from '~/pages/Admin/PubSub/utils/getPubSubSamples';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import DispatchMessage, {
@@ -41,6 +45,15 @@ export default function PubSub() {
 			})
 			.catch(() => setTopics([]));
 	}, [hasAdminPermissions]);
+
+	const samples = topics
+		.filter((item) => item.topic === topic)
+		.flatMap((item) => getPubSubSamples(item.name));
+
+	const handleGenerate = (message: PubSubMessage) => {
+		setAttributes(message.attributes);
+		setPayload(message.payload);
+	};
 
 	const handleSubmit = async (event: {preventDefault: () => void}) => {
 		event.preventDefault();
@@ -116,9 +129,16 @@ export default function PubSub() {
 				</ClayForm.Group>
 
 				<ClayForm.Group>
-					<label htmlFor="pubSubPayload">
-						{translate('payload')}
-					</label>
+					<div className="align-items-center d-flex justify-content-between mb-2">
+						<label className="mb-0" htmlFor="pubSubPayload">
+							{translate('payload')}
+						</label>
+
+						<GenerateSampleButton
+							onGenerate={handleGenerate}
+							samples={samples}
+						/>
+					</div>
 
 					<ClayInput
 						component="textarea"
@@ -127,6 +147,7 @@ export default function PubSub() {
 							setPayload(event.target.value)
 						}
 						required
+						style={{minHeight: '16rem'}}
 						value={payload}
 					/>
 				</ClayForm.Group>

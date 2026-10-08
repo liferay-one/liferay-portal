@@ -653,6 +653,7 @@ export default {
 	'general-info': 'Informações gerais',
 	'generate': 'Gerar',
 	'generate-new': 'Gerar chave',
+	'generate-sample': 'Gerar exemplo',
 	'get-activation-key': 'Obter chave de ativação',
 	'get-app': 'Obter aplicativo',
 	'get-digital-sales-room': 'Obter Digital Sales Room',
