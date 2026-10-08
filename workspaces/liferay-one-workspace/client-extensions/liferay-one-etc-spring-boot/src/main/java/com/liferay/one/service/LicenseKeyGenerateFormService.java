@@ -381,7 +381,20 @@ public class LicenseKeyGenerateFormService {
 			return null;
 		}
 
-		return _commerceProductService.fetchProduct(productId);
+		Product product = _commerceProductService.fetchProduct(productId);
+
+		if ((product != null) &&
+			Objects.equals(
+				LicenseKeyGenerationConstants.
+					PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED,
+				product.getExternalReferenceCode())) {
+
+			return _commerceProductService.fetchProduct(
+				LicenseKeyGenerationConstants.
+					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP);
+		}
+
+		return product;
 	}
 
 	private boolean _generatesActivationKey(

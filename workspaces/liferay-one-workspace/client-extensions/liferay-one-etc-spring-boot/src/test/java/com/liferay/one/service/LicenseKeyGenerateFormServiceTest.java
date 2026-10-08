@@ -169,6 +169,65 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetEntitledProductsReadsSelfHostedAsDXP() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				LicenseKeyGenerationConstants.
+					PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED,
+				HashMapBuilder.put(
+					"PRDCT-DXP", _toSku(2L, null)
+				).put(
+					"SELF-HOSTED-SKU", _toSku(1L, null)
+				).build());
+
+		CommerceProductService commerceProductService =
+			(CommerceProductService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_commerceProductService");
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode(
+			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP);
+		product.setProductId(2L);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(2L)
+		).thenReturn(
+			product
+		);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(
+				LicenseKeyGenerationConstants.
+					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP)
+		).thenReturn(
+			product
+		);
+
+		List<Entitlement> entitlements = Arrays.asList(
+			_toLicenseGenerationEntitlement(
+				1L, true, "DXP", "production", "PRDCT-DXP"),
+			_toLicenseGenerationEntitlement(
+				2L, true, "DXP", "production", "SELF-HOSTED-SKU"));
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			entitlements, licenseKeyGenerateFormService);
+
+		Assertions.assertEquals(1, entitledProducts.size());
+
+		String externalReferenceCode = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "getExternalReferenceCode");
+
+		Assertions.assertEquals(
+			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
+			externalReferenceCode);
+
+		Assertions.assertEquals(
+			product,
+			licenseKeyGenerateFormService.fetchProduct(entitlements.get(1)));
+	}
+
+	@Test
 	public void testGetEntitledProductsReadsTheLicenseKeyFamily()
 		throws Exception {
 
