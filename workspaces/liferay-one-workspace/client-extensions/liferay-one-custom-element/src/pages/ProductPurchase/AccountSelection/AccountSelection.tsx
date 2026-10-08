@@ -6,7 +6,7 @@
 import {ClayRadio} from '@clayui/form';
 import classNames from 'classnames';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
@@ -34,6 +34,7 @@ const AccountSelection = () => {
 		steps,
 	} = useProductPurchaseLayoutContext();
 
+	const location = useLocation();
 	const navigate = useNavigate();
 
 	const isSEOStudio = isSEOStudioProduct(product);
@@ -47,6 +48,8 @@ const AccountSelection = () => {
 
 	const isEligible = !isSEOStudio || hasAIHubOrder(aiHubOrders);
 
+	const skipAccountSelection = isSingleAccount && !location.state?.stepBack;
+
 	const stepAfterAccountKey = steps[1]?.key;
 
 	useEffect(() => {
@@ -59,7 +62,7 @@ const AccountSelection = () => {
 				setSelectedAccount(accounts[0]);
 			}
 
-			if (!isEligible) {
+			if (!isEligible || !skipAccountSelection) {
 				return;
 			}
 
@@ -72,15 +75,16 @@ const AccountSelection = () => {
 		isEligible,
 		isSingleAccount,
 		navigate,
-		setSelectedAccount,
 		product,
 		selectedAccount,
+		setSelectedAccount,
+		skipAccountSelection,
 		stepAfterAccountKey,
 	]);
 
 	if (
 		isLoadingAccounts ||
-		(isSingleAccount && (isLoadingAIHubOrders || isEligible))
+		(skipAccountSelection && (isLoadingAIHubOrders || isEligible))
 	) {
 		return <Loading.Page />;
 	}

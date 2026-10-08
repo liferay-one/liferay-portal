@@ -4,7 +4,7 @@
  */
 
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {SWRConfig} from 'swr';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
@@ -21,6 +21,7 @@ const {navigate, nextStep, openModal} = vi.hoisted(() => ({
 
 vi.mock('react-router-dom', async (importOriginal) => ({
 	...(await importOriginal<typeof import('react-router-dom')>()),
+	useLocation: vi.fn(),
 	useNavigate: vi.fn(),
 }));
 
@@ -121,6 +122,9 @@ describe('[FLOW-SEO-STUDIO-SIGNUP] AccountSelection AI Hub eligibility gate', ()
 
 		Liferay.CommerceContext.commerceChannelId = '42';
 
+		vi.mocked(useLocation).mockReturnValue({
+			state: null,
+		} as ReturnType<typeof useLocation>);
 		vi.mocked(useNavigate).mockReturnValue(navigate);
 	});
 
@@ -194,6 +198,24 @@ describe('[FLOW-SEO-STUDIO-SIGNUP] AccountSelection AI Hub eligibility gate', ()
 
 		expect(screen.getByTestId('loading-page')).toBeInTheDocument();
 		expect(openModal).not.toHaveBeenCalled();
+	});
+
+	it('shows the account step for a single eligible account when the buyer steps back', async () => {
+		mockPlacedOrders([{orderTypeExternalReferenceCode: 'AI_HUB'}]);
+
+		mockLayoutContext({isSingleAccount: true});
+
+		vi.mocked(useLocation).mockReturnValue({
+			state: {stepBack: true},
+		} as ReturnType<typeof useLocation>);
+
+		renderAccountSelection();
+
+		await clickContinue();
+
+		expect(navigate).not.toHaveBeenCalled();
+		expect(nextStep).toHaveBeenCalledTimes(1);
+		expect(screen.queryByTestId('loading-page')).not.toBeInTheDocument();
 	});
 
 	it('does not look up AI Hub orders for a product other than SEO Studio', async () => {

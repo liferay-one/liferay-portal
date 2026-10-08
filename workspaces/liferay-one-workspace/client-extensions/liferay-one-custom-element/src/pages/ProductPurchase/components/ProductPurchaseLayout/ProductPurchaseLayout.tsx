@@ -215,7 +215,7 @@ const ProductPurchaseLayout = ({
 		const step = steps[activeStepIndex + stepNumber];
 
 		if (step) {
-			navigate(step.key);
+			navigate(step.key, {state: {stepBack: stepNumber < 0}});
 		}
 	};
 
