@@ -447,7 +447,7 @@ const zodSchema = {
 		purpose: z.string().min(3, 'Purpose is required'),
 		seoStudioAccountName: z
 			.string()
-			.min(3, 'SEO Studio Account Name is required'),
+			.min(3, 'SEO&AEO Studio Beta Account Name is required'),
 		termsAndConditions: z.boolean().refine((value) => value === true),
 		userAgreement: z.boolean().refine((value) => value === true),
 	}),
