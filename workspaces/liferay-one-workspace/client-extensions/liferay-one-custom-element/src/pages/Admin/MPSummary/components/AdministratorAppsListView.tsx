@@ -141,6 +141,7 @@ const AdministratorAppsListView: React.FC<AdministratorAppsListViewProps> = ({
 				},
 			],
 			navigateTo: ({productId}) => `/mp-apps/${productId}`,
+			rowWrap: true,
 		}}
 		{...listViewProps}
 	/>

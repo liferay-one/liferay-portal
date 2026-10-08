@@ -1,3 +1,11 @@
+.admin-layout .tr-table {
+	& :is(td),
+	& th {
+		padding-left: var(--spacer-2);
+		padding-right: var(--spacer-2);
+	}
+}
+
 .app-details-page-table-icon {
 	border-radius: var(--border-radius-sm, 4px);
 	max-height: 36px;
