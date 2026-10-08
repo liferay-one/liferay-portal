@@ -26,22 +26,8 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASADMINPERMISSION] useHasAdminPermission'
 		mockedUseOneContext.mockReset();
 	});
 
-	it('grants access to an administrator', () => {
-		mockUserAccountModel({
-			isAdmin: true,
-			isProvisioningAdministrator: false,
-		});
-
-		const {result} = renderHook(() => useHasAdminPermission());
-
-		expect(result.current).toBe(true);
-	});
-
-	it('grants access to a provisioning administrator', () => {
-		mockUserAccountModel({
-			isAdmin: false,
-			isProvisioningAdministrator: true,
-		});
+	it('grants access to a user who manages all accounts', () => {
+		mockUserAccountModel({canManageAllAccounts: true});
 
 		const {result} = renderHook(() => useHasAdminPermission());
 
@@ -50,10 +36,9 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASADMINPERMISSION] useHasAdminPermission'
 
 	it('denies access to other roles', () => {
 		mockUserAccountModel({
+			canManageAllAccounts: false,
 			isAccountAdministrator: true,
-			isAdmin: false,
 			isLiferayStaff: true,
-			isProvisioningAdministrator: false,
 		});
 
 		const {result} = renderHook(() => useHasAdminPermission());

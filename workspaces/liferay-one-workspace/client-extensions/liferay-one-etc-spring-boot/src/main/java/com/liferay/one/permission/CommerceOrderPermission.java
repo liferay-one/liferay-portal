@@ -46,7 +46,9 @@ public class CommerceOrderPermission {
 			String roleBriefName = roleBrief.getName();
 
 			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
-				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF)) {
+				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
+				roleBriefName.equals(
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
 
 				return true;
 			}

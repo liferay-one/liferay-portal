@@ -126,7 +126,7 @@ export function isAccountManager(userAccountModel?: UserAccountModel | null) {
 	return Boolean(
 		userAccountModel?.hasAccountRoleName(ACCOUNT_ADMINISTRATOR) ||
 			userAccountModel?.hasAccountRoleName(PARTNER_ACCOUNT_ADMIN) ||
-			userAccountModel?.isAdmin
+			userAccountModel?.canManageAllAccounts
 	);
 }
 

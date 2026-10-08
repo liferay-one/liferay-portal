@@ -29,6 +29,10 @@ export class UserAccountModel {
 		return this.userAccount.type;
 	}
 
+	get canManageAllAccounts() {
+		return Boolean(this.isAdmin || this.isProvisioningAdministrator);
+	}
+
 	get canViewAllAccounts() {
 		return Boolean(
 			this.isAdmin ||

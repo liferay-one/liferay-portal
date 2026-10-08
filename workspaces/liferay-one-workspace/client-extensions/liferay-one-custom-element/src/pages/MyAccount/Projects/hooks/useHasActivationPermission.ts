@@ -80,7 +80,7 @@ export function useHasActivationPermission(
 	return useProjectAdminPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
-				userAccountModel?.isAdmin ||
+				userAccountModel?.canManageAllAccounts ||
 				userAccountModel?.isLiferayStaff
 		),
 		projectExternalReferenceCode
@@ -95,7 +95,7 @@ export function useHasLicenseKeyPermission(
 	return useProjectAdminPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
-				userAccountModel?.isAdmin ||
+				userAccountModel?.canManageAllAccounts ||
 				userAccountModel?.isLiferayStaff ||
 				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER)
 		),

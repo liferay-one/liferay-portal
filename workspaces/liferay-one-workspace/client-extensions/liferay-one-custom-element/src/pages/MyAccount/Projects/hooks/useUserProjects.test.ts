@@ -102,7 +102,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 		};
 	});
 
-	it.each(['isAccountAdministrator', 'isAdmin'])(
+	it.each(['canManageAllAccounts', 'isAccountAdministrator'])(
 		'shows every account project to %s without a membership request',
 		(roleFlag) => {
 			mockUserAccountModel({[roleFlag]: true});
@@ -142,7 +142,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 	});
 
 	it('reports no account projects when the account has none', () => {
-		mockUserAccountModel({isAdmin: true});
+		mockUserAccountModel({canManageAllAccounts: true});
 		mockQueries({projects: []});
 
 		const {result} = renderHook(() => useUserProjects());
@@ -152,7 +152,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 	});
 
 	it('queries the projects of the current account', () => {
-		mockUserAccountModel({isAdmin: true});
+		mockUserAccountModel({canManageAllAccounts: true});
 		mockQueries({});
 
 		renderHook(() => useUserProjects());
