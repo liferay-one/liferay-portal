@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useOutletContext} from 'react-router-dom';
 import DetailTable, {Orientation} from '~/components/DetailTable/DetailTable';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import i18n from '~/i18n';
@@ -12,9 +11,11 @@ import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {PlacedOrder} from '~/types/orders';
 
-const SEOStudioDetails = () => {
-	const {placedOrder} = useOutletContext<{placedOrder: PlacedOrder}>();
+type SEOStudioDetailsProps = {
+	placedOrder?: Pick<PlacedOrder, 'customFields'>;
+};
 
+const SEOStudioDetails = ({placedOrder}: SEOStudioDetailsProps) => {
 	const orderMetadata = safeJSONParse(
 		placedOrder?.customFields?.[OrderCustomFields.ORDER_METADATA] || '{}',
 		{}
@@ -22,12 +23,11 @@ const SEOStudioDetails = () => {
 		seoStudioForm?: {
 			administratorEmailAddress?: string;
 			seoStudioAccountName?: string;
-			seoStudioURL?: string;
 		};
 	};
 
+	const aiHubURL = 'https://ai.hub.liferay.com';
 	const seoStudioForm = orderMetadata?.seoStudioForm || {};
-	const seoStudioURL = seoStudioForm?.seoStudioURL;
 
 	return (
 		<DetailedCard
@@ -49,21 +49,15 @@ const SEOStudioDetails = () => {
 						value: seoStudioForm?.administratorEmailAddress,
 					},
 					{
-						title: i18n.translate('seo-studio-url'),
-						value: seoStudioURL ? (
+						title: i18n.translate('ai-hub-url'),
+						value: (
 							<a
-								href={
-									seoStudioURL.startsWith('http')
-										? seoStudioURL
-										: `https://${seoStudioURL}`
-								}
+								href={aiHubURL}
 								rel="noopener noreferrer"
 								target="_blank"
 							>
-								{seoStudioURL}
+								{aiHubURL}
 							</a>
-						) : (
-							i18n.translate('pending')
 						),
 					},
 				]}
