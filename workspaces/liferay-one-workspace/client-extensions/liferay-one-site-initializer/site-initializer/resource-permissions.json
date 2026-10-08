@@ -172,7 +172,16 @@
 	},
 	{
 		"actionIds": [
-			"VIEW"
+			"ASSIGN_USERS",
+			"MANAGE_ADDRESSES",
+			"MANAGE_DOMAINS",
+			"UNASSIGN_USERS",
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_ORGANIZATIONS",
+			"VIEW_USERS"
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
@@ -465,6 +474,16 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
 		"roleName": "Guest",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
+		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},
 	{

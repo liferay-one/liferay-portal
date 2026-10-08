@@ -10,7 +10,7 @@ Use one term for one thing. Do not call a project a workspace, or an entitlement
 - **Account invitation**: a pending offer to join an account, or one project of the account, that the system sends by email. Area: `accounts-and-organizations.md`.
 - **Account manager**: a user who holds the Account Administrator, Partner Account Admin, or SSA Administrator role on an account. The custom element does not treat SSA Administrator as an account manager. Area: `accounts-and-organizations.md`.
 - **Account role**: a role that a user holds in one account. It grants nothing in any other account. Area: `identity-and-access.md`.
-- **Global administrator**: a user with the Administrator or the Provisioning Administrator role. The admin pages of the custom element admit only Administrator. Area: `identity-and-access.md`.
+- **Global administrator**: a user with the Administrator or the Provisioning Administrator role. The admin pages of the custom element admit Administrator, and admit Provisioning Administrator only to Pub/Sub and activation key uploads. Area: `identity-and-access.md`.
 - **Global role**: a regular role that applies to the whole company, for example Administrator, Provisioning Member, or Liferay Staff. Area: `identity-and-access.md`.
 - **Partner account**: an account that holds at least one product that Liferay marks as a partner product. Area: `accounts-and-organizations.md`.
 - **Project role**: the role of a project membership: Project Admin, Project Requester, or Project User. A project membership gives one user one project role on one project. Area: `projects.md`.
