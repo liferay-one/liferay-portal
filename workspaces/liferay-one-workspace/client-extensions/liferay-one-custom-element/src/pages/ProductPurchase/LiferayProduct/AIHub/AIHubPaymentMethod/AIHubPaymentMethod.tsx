@@ -18,6 +18,7 @@ import {commerceSchemas as commerceZodSchema} from '~/schemas/commerceSchemas';
 import ProductPurchaseApp from '~/services/commerce/ProductPurchaseApp';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
+import {isBillingAddress} from '~/utils/orderUtils';
 
 import TaxIdDisplay from '../TaxIdDisplay';
 
@@ -49,6 +50,7 @@ export default function AIHubPaymentMethod() {
 	const {
 		actions: {nextStep, previousStep},
 		handlePurchase,
+		isUpdatingCart,
 		payment: contextPayment,
 		product,
 		productPurchaseCart,
@@ -68,7 +70,7 @@ export default function AIHubPaymentMethod() {
 	}, [selectedAccount?.taxId, payment.taxId, setAccountTaxId]);
 
 	const {data: addressResponse} = useAccountAddresses(selectedAccount?.id);
-	const addresses = addressResponse?.items ?? [];
+	const addresses = (addressResponse?.items ?? []).filter(isBillingAddress);
 
 	useEffect(() => {
 		if (!licenseType) {
@@ -130,6 +132,7 @@ export default function AIHubPaymentMethod() {
 					disabled: !isPrimaryButtonActive || loading,
 					onClick: onClickContinue,
 				},
+				loading: isUpdatingCart,
 			}}
 			title={i18n.translate('payment-method')}
 		>

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import {
 	Outlet,
 	useLocation,
@@ -19,7 +19,7 @@ import ProductPurchaseLDP, {
 	LDPSettings,
 } from '~/services/commerce/ProductPurchaseLDP';
 import {Liferay} from '~/services/liferay/liferay';
-import {formatCurrency} from '~/utils/currencyUtils';
+import {formatCurrency, getCurrencyForCountry} from '~/utils/currencyUtils';
 import {
 	getAiHubTierSKU,
 	getLicenseTagText,
@@ -48,6 +48,7 @@ type ProductPurchaseLayoutProps = {
 };
 
 export type ProductPurchaseLayoutContext = {
+	accountCurrencyCode: string | undefined;
 	accounts: Account[];
 	actions: {
 		nextStep: () => void;
@@ -61,6 +62,7 @@ export type ProductPurchaseLayoutContext = {
 	isLoadingAccounts: boolean;
 	isSingleAccount: boolean;
 	isSubmitting: boolean;
+	isUpdatingCart: boolean;
 	payment: ProductPurchasePayment;
 	product: DeliveryProduct;
 	productPurchaseCart: ReturnType<typeof useProductPurchaseCart>;
@@ -105,14 +107,35 @@ const ProductPurchaseLayout = ({
 		? undefined
 		: getAiHubTierSKU(product, skuRef.current);
 
-	const {data: accountSKUsPage} = useAccountSKUs(
-		product.productId ?? product.id,
-		selectedAccount?.id
-	);
+	useEffect(() => {
+		setPayment((previousPayment) => ({
+			...previousPayment,
+			billingAddress: {} as BillingAddress,
+			defaultBillingAddressId: undefined,
+		}));
+	}, [selectedAccount?.id]);
+
+	const billingAddressCurrencyCode =
+		payment.billingAddress?.name &&
+		payment.billingAddress.id !== payment.defaultBillingAddressId
+			? getCurrencyForCountry(
+					payment.billingAddress.country ||
+						payment.billingAddress.countryISOCode
+				)
+			: undefined;
+
+	const {data: accountSKUsPage, isLoading: isLoadingAccountSKUs} =
+		useAccountSKUs(
+			selectedAccount?.id,
+			billingAddressCurrencyCode,
+			product.productId ?? product.id
+		);
 
 	const {data: channelCurrenciesPage} = useChannelCurrencies();
 
-	const accountCurrencyName = accountSKUsPage?.items?.[0]?.price?.currency;
+	const accountCurrencyName = isLoadingAccountSKUs
+		? undefined
+		: accountSKUsPage?.items?.[0]?.price?.currency;
 
 	const accountCurrency = useMemo(
 		() =>
@@ -127,12 +150,13 @@ const ProductPurchaseLayout = ({
 	);
 
 	const productPurchaseCart = useProductPurchaseCart(
+		accountCurrency,
 		selectedAccount?.id,
-		product,
+		payment.billingAddress?.id,
 		isAiHubTokens
 			? 'AI_HUB_TOKEN'
 			: ProductPurchaseApp.getOrderTypeExternalReferenceCode(product),
-		accountCurrency
+		product
 	);
 
 	const accountProduct = useMemo(
@@ -296,6 +320,7 @@ const ProductPurchaseLayout = ({
 	};
 
 	const context: ProductPurchaseLayoutContext = {
+		accountCurrencyCode: accountCurrency?.code,
 		accounts,
 		actions: {
 			nextStep: () => stepNavigate(1),
@@ -306,6 +331,10 @@ const ProductPurchaseLayout = ({
 		isLoadingAccounts: isLoading,
 		isSingleAccount: accounts.length === 1,
 		isSubmitting,
+		isUpdatingCart:
+			isLoadingAccountSKUs ||
+			productPurchaseCart.isSyncingCart ||
+			productPurchaseCart.isUpdatingBillingAddress,
 		payment,
 		product: accountProduct,
 		productPurchaseCart,

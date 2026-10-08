@@ -20,6 +20,7 @@ export type ProductPurchaseInvoice = {
 
 export type ProductPurchasePayment = {
 	billingAddress: BillingAddress;
+	defaultBillingAddressId?: number;
 	invoice: ProductPurchaseInvoice;
 	taxId: string;
 	type: PaymentMethodType;

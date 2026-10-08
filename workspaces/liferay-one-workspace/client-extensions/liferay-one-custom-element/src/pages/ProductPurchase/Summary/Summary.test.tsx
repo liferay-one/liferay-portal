@@ -58,15 +58,18 @@ function getRowValue(label: string) {
 }
 
 function mockLayoutContext({
+	accountCurrencyCode,
 	cart = {},
 	cartItems = [],
 	product = getProduct(),
 }: {
+	accountCurrencyCode?: string;
 	cart?: unknown;
 	cartItems?: unknown[];
 	product?: unknown;
 } = {}) {
 	vi.mocked(useProductPurchaseLayoutContext).mockReturnValue({
+		accountCurrencyCode,
 		actions: {previousStep: vi.fn()},
 		handlePurchase: vi.fn(),
 		isSingleAccount: false,
@@ -134,6 +137,19 @@ describe('[ROUTE-PRODUCT-PURCHASE-SUMMARY] Summary order summary prices', () => 
 		expect(getRowValue('Net Price')).toBe('€0.00');
 		expect(getRowValue('VAT')).toBe('€0.00');
 		expect(getRowValue('Total')).toBe('€0.00');
+	});
+
+	it('shows a zero price in the currency of the account when the cart has no summary', () => {
+		mockLayoutContext({
+			accountCurrencyCode: 'USD',
+			product: {...getProduct(), skus: []},
+		});
+
+		renderSummary();
+
+		expect(getRowValue('Net Price')).toBe('$0.00');
+		expect(getRowValue('VAT')).toBe('$0.00');
+		expect(getRowValue('Total')).toBe('$0.00');
 	});
 
 	it('shows a zero price in every row for a free app', () => {

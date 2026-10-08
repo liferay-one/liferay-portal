@@ -20,6 +20,7 @@ const Summary = () => {
 	const [eulaAgreement, setEulaAgreement] = useState(false);
 
 	const {
+		accountCurrencyCode,
 		actions: {previousStep},
 		handlePurchase,
 		isSingleAccount,
@@ -38,7 +39,7 @@ const Summary = () => {
 
 	const freePrice = formatCurrency(
 		0,
-		Liferay.CommerceContext.currency.currencyCode
+		accountCurrencyCode ?? Liferay.CommerceContext.currency.currencyCode
 	);
 
 	const cartSKUId = productPurchaseCart.cartItems?.[0]?.skuId;
