@@ -8,7 +8,6 @@ package com.liferay.one;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
-import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
@@ -360,7 +359,7 @@ public class ProjectRestController extends OneBaseRestController {
 				LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
 
 				return _dataOpsUsageService.fetchComposableAccountUsage(
-					_getAccountKey(project),
+					_propertyService.getDataOpsAccountKey(project),
 					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER));
 			}
 
@@ -373,7 +372,7 @@ public class ProjectRestController extends OneBaseRestController {
 			}
 
 			return _dataOpsUsageService.fetchCustomerAccountUsage(
-				_getAccountKey(project));
+				_propertyService.getDataOpsAccountKey(project));
 		}
 		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_logUnavailableUsage(
@@ -381,21 +380,6 @@ public class ProjectRestController extends OneBaseRestController {
 
 			return null;
 		}
-	}
-
-	private String _getAccountKey(Project project) throws Exception {
-		long accountId = project.getAccountId();
-
-		if (accountId > 0) {
-			String value = _propertyService.getPropertyValue(
-				accountId, PropertyConstants.NAME_KORONEIKI_ACCOUNT_KEY);
-
-			if (Validator.isNotNull(value)) {
-				return value;
-			}
-		}
-
-		return project.getAccountExternalReferenceCode();
 	}
 
 	private List<Entitlement> _getActiveEntitlements(

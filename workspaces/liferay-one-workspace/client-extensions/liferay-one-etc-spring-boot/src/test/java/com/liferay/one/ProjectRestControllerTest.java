@@ -108,6 +108,10 @@ public class ProjectRestControllerTest {
 		);
 
 		Mockito.when(
+			_propertyService.getDataOpsAccountKey(Mockito.any(Project.class))
+		).thenCallRealMethod();
+
+		Mockito.when(
 			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
 		).thenReturn(
 			new UsageDefinition(
