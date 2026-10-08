@@ -1,4 +1,23 @@
 {
 	"fieldSets": [
+		{
+			"fields": [
+				{
+					"defaultValue": "Get App",
+					"description": "Button text",
+					"label": "Button text",
+					"name": "buttonText",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"description": "Adds purchase description",
+					"label": "Use Description",
+					"name": "useDescription",
+					"type": "checkbox"
+				}
+			],
+			"label": "Configuration"
+		}
 	]
 }
