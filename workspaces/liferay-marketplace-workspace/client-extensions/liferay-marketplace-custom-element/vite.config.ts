@@ -5,7 +5,7 @@
 
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, splitVendorChunkPlugin} from 'vite';
+import {defineConfig} from 'vite';
 
 export default defineConfig({
 	build: {
@@ -15,6 +15,11 @@ export default defineConfig({
 				assetFileNames: 'assets/[name][extname]',
 				chunkFileNames: '[name]-[hash].js',
 				entryFileNames: 'main.js',
+				manualChunks(id) {
+					if (id.includes('node_modules')) {
+						return 'vendor';
+					}
+				},
 			},
 		},
 	},
@@ -23,7 +28,7 @@ export default defineConfig({
 			return `/o/liferay-marketplace-custom-element/${filename}`;
 		},
 	},
-	plugins: [react(), splitVendorChunkPlugin()],
+	plugins: [react()],
 	resolve: {
 		alias: {
 			'~': path.resolve(__dirname, './src/'),
