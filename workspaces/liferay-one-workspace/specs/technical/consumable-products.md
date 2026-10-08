@@ -6,7 +6,7 @@ How a metered product gets its monthly usage reports, and what it takes to add a
 
 A consumable product sells a metered quantity, called a **metric**, with a cap for the billing period. Usage past the cap is **overage**, sold in whole **buckets**. Once a month `UsageReportGenerator` (in `liferay-one-etc-spring-boot`) produces one `UsageReport` per project per metric: what the project consumed, what it was entitled to, the difference, and, when the data allows, the overage SKU and bucket count a reviewer turns into an order. The reviewer flow and the order are described under **UsageReport** in [`data-model.md`](./data-model.md).
 
-Liferay Data Platform events are the worked example throughout. The SaaS Experience and PaaS Experience metrics (LPD-100232) are the next products to use this.
+Liferay Data Platform events are the worked example throughout. The SaaS Experience and PaaS Experience metrics (LPD-100232) are the second type, and [Second Type: Experience Metrics](#second-type-experience-metrics) lists what they needed.
 
 ## The Five Pieces
 
@@ -87,9 +87,14 @@ When an order item is placed, one `Entitlement` is created per active definition
 
 `UsageSource` (in `com.liferay.one.usage`) reads one metric's consumption for one project and month from one DataOps API. Spring collects every implementation automatically and the generator picks the one whose `getKey()` matches the definition's `usageSource`.
 
-An adapter knows the response layout, not the metric: it reads whatever field `usageSourceMetricKey` names. So a second metric served by an API that already has an adapter is seed data only. A new API shape is one new class implementing two methods, plus a fixture in the DataOps mock (`scripts/gcf-mock`) so it can be exercised locally.
+An adapter knows the response layout, not the metric: it reads whatever field `usageSourceMetricKey` names. So a second metric served by an API that already has an adapter is seed data only. A new API shape is one new class implementing two methods, plus a route and a fixture in the DataOps mock (`client-extensions/liferay-one-gcf-mock`, described in `scripts/gcf-mock/README.md`) so it can be exercised locally.
 
-Adapters that exist: `ldp-event-summary`.
+Adapters that exist:
+
+| Key | Class | API | Keyed By |
+| --- | --- | --- | --- |
+| `composable-account-usage` | `ComposableAccountUsageSource` | Composable usage API, one month of an account | The DataOps account key of the project's account |
+| `ldp-event-summary` | `LDPEventSummaryUsageSource` | Liferay Data Platform Metrics API event summary | The project |
 
 ## How the Generator Reads It
 
@@ -131,6 +136,24 @@ What development seeds, in this order:
 
 Then reseed, place an order for the product against a project, and trigger a complete month through the admin endpoint. The report should appear under Usage Reports in the Objects admin UI with the product, both quantities, and the delta.
 
+## Second Type: Experience Metrics
+
+SaaS Experience and PaaS Experience each sell six metrics: client extension RAM, client extension vCPUs, storage, database, traffic, and logs. The Utilization tab already read them from the composable usage API, so the monthly reports needed these pieces and no change to the generator:
+
+1. One adapter, `ComposableAccountUsageSource`. It reads the field that the metric key names under `usage`, for the month and the DataOps account key of the project's account.
+
+1. Six usage definitions, `experience-database-monthly`, `experience-extensions-ram-monthly`, `experience-extensions-vcpus-monthly`, `experience-logs-monthly`, `experience-storage-monthly`, and `experience-traffic-networking-monthly`. The byte metrics have `usageSourceUnit` `bytes` and `unit` `GiB`. vCPUs are `vCPU` on both sides.
+
+1. The links from the PaaS Experience and SaaS Experience entitlement definitions, and from the Additional vCPU definition, to those usage definitions.
+
+1. Three SKU roles: `allotment` on the PaaS Experience and SaaS Experience SKUs, and `add-on` on the Additional vCPU SKU. Each of the three products also declares the `consumption-role` option.
+
+1. One mock route for the composable usage API, with a month under every allotment and a month over two of them.
+
+The metrics have no overage SKU and no price. The definitions leave `overageBucketSize` unset, so a report records the delta and leaves the SKU, the bucket count, and the amount empty. vCPUs are the exception: they set a bucket size of 1, because the Additional vCPU SKU is an add on whose entitlement quantity is 4 vCPUs, and an add on needs a bucket size. With no overage pricing on the allotment the report is still unpriced.
+
+**A usage definition is one metric from one source.** `storage-gb` already counted the SaaS plan document library, the storage add on, and PaaS storage, all as seed data with no source. Pointing it at the composable usage API would read Experience storage for the SaaS plan projects too, which is a different number from a different product. So Experience storage has its own definition, and `C_ENT_DEF_PAAS_STORAGE` and `C_ENT_DEF_SAAS_STORAGE` moved to it. When a metric name already has a usage definition, check every entitlement definition linked to it before you give it a source.
+
 ## Pitfalls
 
 - A definition the generator cannot find the source for is logged and skipped, not failed. Check the log for `Unable to find usage source` after seeding a new metric.
@@ -138,3 +161,6 @@ Then reseed, place an order for the product against a project, and trigger a com
 - The entitlement window is `startDate < month end` and `endDate >= month start`, so an order placed mid-month is reported for that month in full.
 - Several allotments for the same metric and project add up. Two orders for the same product double the cap, which is intended for add-ons and worth knowing for plain subscriptions.
 - Changing a report ERC scheme, a bucket size, or a cap never rewrites existing reports. They are an audit trail.
+- An add on SKU whose entitlement quantity is in the metric's unit, such as 4 vCPUs, still counts as buckets. Give its usage definition an `overageBucketSize` of 1, or every project with the add on is skipped because its cap is unknown.
+- A metric with no price logs `Unable to price the ... overage` when a project goes over. The report is still written with the delta. For a metric that is meant to be unpriced, this error is expected.
+- An account keyed source gives every project of an account the same consumption. Each project still compares it with its own allotment, so two projects on one account each report the full account usage.
