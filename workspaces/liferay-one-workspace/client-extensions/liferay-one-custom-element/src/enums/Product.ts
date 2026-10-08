@@ -36,17 +36,6 @@ export const ProductImageFallbackCategories = {
 export type ProductImageFallbackCategories =
 	(typeof ProductImageFallbackCategories)[keyof typeof ProductImageFallbackCategories];
 
-export const ProductLicense = {
-	BASE: 'base-license-usage-type',
-	CLOUD: 'cloud-license-usage-type',
-	CMP: 'cmp-license-usage-type',
-	DSR: 'dsr-license-usage-type',
-	DXP: 'dxp-license-usage-type',
-} as const;
-
-export type ProductLicense =
-	(typeof ProductLicense)[keyof typeof ProductLicense];
-
 export const ProductLicenseTier = {
 	DEVELOPER: 'developer',
 	PRODUCTION: 'production',
@@ -239,8 +228,7 @@ export const EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES: readonly Prod
 		ProductExternalReferenceCode.SAAS_EXPERIENCE,
 	];
 
-export const LICENSE_USAGE_TYPE_SKU_OPTION_KEYS: readonly ProductLicense[] =
-	Object.values(ProductLicense);
+export const LICENSE_USAGE_TYPE_SKU_OPTION_KEY = 'base-license-usage-type';
 
 const offeringTypes = {
 	'client-extension': ALL_OFFERINGS,

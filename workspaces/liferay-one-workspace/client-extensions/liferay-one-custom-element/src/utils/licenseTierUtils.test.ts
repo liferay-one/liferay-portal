@@ -28,18 +28,18 @@ function toSKU(
 	} as DeliverySKU;
 }
 
-const developerSKU = toSKU('DEV', 'dxp-license-usage-type', 'developer');
-const productionSKU = toSKU('PROD', 'cmp-license-usage-type', 'production');
+const developerSKU = toSKU('DEV', 'base-license-usage-type', 'developer');
+const productionSKU = toSKU('PROD', 'base-license-usage-type', 'production');
 const standardSKU = toSKU('STD', 'base-license-usage-type', 'standard');
-const trialSKU = toSKU('TRIAL', 'cloud-license-usage-type', 'trial');
+const trialSKU = toSKU('TRIAL', 'base-license-usage-type', 'trial');
 
 const product = {
 	skus: [
 		standardSKU,
-		toSKU('UNPURCHASABLE', 'dxp-license-usage-type', 'developer', false),
+		toSKU('UNPURCHASABLE', 'base-license-usage-type', 'developer', false),
 		productionSKU,
 		toSKU('OTHER-OPTION', 'color', 'trial'),
-		toSKU('UNKNOWN-TIER', 'dxp-license-usage-type', 'enterprise'),
+		toSKU('UNKNOWN-TIER', 'base-license-usage-type', 'enterprise'),
 		trialSKU,
 		developerSKU,
 	],

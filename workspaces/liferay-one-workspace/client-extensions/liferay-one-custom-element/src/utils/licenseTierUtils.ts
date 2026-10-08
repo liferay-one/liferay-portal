@@ -4,7 +4,7 @@
  */
 
 import {
-	LICENSE_USAGE_TYPE_SKU_OPTION_KEYS,
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
 	ProductLicenseTier,
 } from '~/enums/Product';
 import {Word} from '~/i18n';
@@ -41,9 +41,8 @@ export function getSKULicenseTier(
 ): ProductLicenseTier | undefined {
 	const skuOption = (sku.skuOptions ?? []).find(
 		({skuOptionKey, skuOptionValueKey}) =>
-			(LICENSE_USAGE_TYPE_SKU_OPTION_KEYS as readonly string[]).includes(
-				skuOptionKey
-			) && isProductLicenseTier(skuOptionValueKey)
+			skuOptionKey === LICENSE_USAGE_TYPE_SKU_OPTION_KEY &&
+			isProductLicenseTier(skuOptionValueKey)
 	);
 
 	return skuOption?.skuOptionValueKey as ProductLicenseTier | undefined;

@@ -6,7 +6,7 @@
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
 import {
-	LICENSE_USAGE_TYPE_SKU_OPTION_KEYS,
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
 	ProductLicenseFriendlyName,
 	ProductLicenseType,
 	ProductSpecificationKey,
@@ -22,7 +22,6 @@ import type {
 	DeliverySKUOption,
 	ProductCategories,
 	ProductImageFallbackCategories,
-	ProductLicense,
 	ProductOfferingTypes,
 	ProductSpecification,
 	ProductType,
@@ -31,7 +30,6 @@ import type {
 } from '~/types/product';
 
 export {
-	ProductLicense,
 	ProductLicenseFriendlyName,
 	ProductLicenseType,
 	ProductOfferingTypes,
@@ -190,9 +188,9 @@ export function getSkuByOptionValueKey(
 			purchasable &&
 			skuOptions?.find(
 				(skuOption) =>
-					LICENSE_USAGE_TYPE_SKU_OPTION_KEYS.includes(
-						skuOption.skuOptionKey as ProductLicense
-					) && skuOption.skuOptionValueKey === skuOptionValueKey
+					skuOption.skuOptionKey ===
+						LICENSE_USAGE_TYPE_SKU_OPTION_KEY &&
+					skuOption.skuOptionValueKey === skuOptionValueKey
 			)
 	);
 }

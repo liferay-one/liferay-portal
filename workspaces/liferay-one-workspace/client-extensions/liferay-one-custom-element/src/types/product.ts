@@ -243,13 +243,6 @@ export type ProductEditionOption = 'EE';
 
 export type ProductImageFallbackCategories = 'productIcon' | 'productImage';
 
-export type ProductLicense =
-	| 'base-license-usage-type'
-	| 'cloud-license-usage-type'
-	| 'cmp-license-usage-type'
-	| 'dsr-license-usage-type'
-	| 'dxp-license-usage-type';
-
 export type ProductLicenseTier =
 	| 'developer'
 	| 'production'

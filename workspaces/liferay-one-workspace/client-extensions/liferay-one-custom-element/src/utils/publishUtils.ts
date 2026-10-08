@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import {ProductTags} from '~/utils/productUtils';
 
 import accountPlaceholder from '../assets/images/account_placeholder.png';
 import appPlaceholder from '../assets/images/app_placeholder.png';
-import i18n from '../i18n';
 import {
 	createProductSpecification,
 	getProductSpecifications,
@@ -41,52 +41,6 @@ export function createSkuName(
 	return `${appProductId}v${appVersion.replace(/[^a-zA-Z0-9 ]/g, '')}${
 		concatValue ? concatValue : ''
 	}`;
-}
-
-export function getCloudOptionBody() {
-	return {
-		fieldType: 'radio',
-		key: 'cloud-license-usage-type',
-		name: {en_US: i18n.translate('cloud-license-usage-type')},
-	};
-}
-
-export function getCloudProductOptionBody(newOptionId: number) {
-	return {
-		facetable: false,
-		fieldType: 'radio',
-		key: 'cloud-license-usage-type',
-		name: {
-			en_US: i18n.translate('cloud-license-usage-type'),
-		},
-		optionId: newOptionId,
-		productOptionValues: [],
-		required: true,
-		skuContributor: true,
-	};
-}
-
-export function getDxpOptionBody() {
-	return {
-		fieldType: 'radio',
-		key: 'dxp-license-usage-type',
-		name: {en_US: i18n.translate('dxp-license-usage-type')},
-	};
-}
-
-export function getDxpProductOptionBody(newOptionId: number) {
-	return {
-		facetable: false,
-		fieldType: 'radio',
-		key: 'dxp-license-usage-type',
-		name: {
-			en_US: i18n.translate('dxp-license-usage-type'),
-		},
-		optionId: newOptionId,
-		productOptionValues: [],
-		required: true,
-		skuContributor: true,
-	};
 }
 
 export async function getEulaDescription() {
@@ -159,11 +113,11 @@ type LicenceTiersPrices = {
 };
 
 export function getSkuPrice(appLicensePrice: LicenceTiersPrices, sku: SKU) {
-	const dxpLicenseUsageType = sku.skuOptions.find(
-		({key}) => key === 'dxp-license-usage-type'
+	const licenseUsageType = sku.skuOptions.find(
+		({key}) => key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
 	);
 
-	if (!dxpLicenseUsageType) {
+	if (!licenseUsageType) {
 		if (sku.sku.endsWith('ts')) {
 			return 0;
 		}
@@ -175,12 +129,12 @@ export function getSkuPrice(appLicensePrice: LicenceTiersPrices, sku: SKU) {
 		return appLicensePrice.standard[0]?.value ?? 0;
 	}
 
-	const dxpLicenseUsageTypeValue = dxpLicenseUsageType.value;
+	const licenseUsageTypeValue = licenseUsageType.value;
 
-	if (dxpLicenseUsageTypeValue === 'standard') {
+	if (licenseUsageTypeValue === 'standard') {
 		return appLicensePrice['standard'][0]?.value;
 	}
-	else if (dxpLicenseUsageTypeValue === 'developer') {
+	else if (licenseUsageTypeValue === 'developer') {
 		return appLicensePrice['developer'][0]?.value;
 	}
 	else {

@@ -193,17 +193,12 @@ Liferay Commerce has no system object definition for CPInstance, so custom objec
 
 **Options (SKU-contributing)**
 
-Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU carrying an option whose key ends in `-license-usage-type` is licensable. The two sides decide this differently: `CommerceSkuUtil.hasLicenseUsageTypeOption` matches the suffix, so it covers every key below, while the frontend's `LICENSE_USAGE_TYPE_SKU_OPTION_KEYS` is `Object.values(ProductLicense)` — an explicit list that deliberately omits `ai-hub-license-usage-type`, since AI Hub tiers are read through `getAiHubTier` rather than the license-tier helpers. Adding a license usage type means adding it to `ProductLicense` as well as to this file.
+Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU that carries the `base-license-usage-type` option is licensable. This one option holds the license tiers of every product family. The frontend reads the key from `LICENSE_USAGE_TYPE_SKU_OPTION_KEY`. `CommerceSkuUtil.hasLicenseUsageTypeOption` in Spring Boot matches the `-license-usage-type` suffix, so it also accepts the older family keys (`ai-hub`, `cloud`, `cmp`, `dsr`, `dxp`) until the data migration replaces them. AI Hub tiers (`activate`, `enterprise`, `studio`) are read through `getAiHubTier`, which matches the value and not the key.
 
 | Key | ERC | Values |
 |---|---|---|
-| `ai-hub-license-usage-type` | `LO_OPTION_AI_HUB_LICENSE_USAGE` | `activate` · `enterprise` · `studio` |
-| `base-license-usage-type` | `LO_OPTION_BASE_LICENSE_USAGE` | `developer` · `standard` |
-| `cloud-license-usage-type` | `LO_OPTION_CLOUD_LICENSE_USAGE` | `standard` · `trial` |
-| `cmp-license-usage-type` | `LO_OPTION_CMP_LICENSE_USAGE` | `developer` · `production` · `trial` |
+| `base-license-usage-type` | `LO_OPTION_BASE_LICENSE_USAGE` | `activate` · `developer` · `enterprise` · `production` · `standard` · `studio` · `trial` |
 | `consumption-role` | `LO_OPTION_CONSUMPTION_ROLE` | `add-on` · `allotment` · `overage` |
-| `dsr-license-usage-type` | `LO_OPTION_DSR_LICENSE_USAGE` | `developer` |
-| `dxp-license-usage-type` | `LO_OPTION_DXP_LICENSE_USAGE` | `developer` · `standard` · `trial` |
 | `salesforce-product` | `LO_OPTION_SALESFORCE_PRODUCT` | One value for each Salesforce SKU, on every product that has one, whether the product has one SKU or many. The key is the lowercase Salesforce product ID, and the name is the Salesforce product name. Liferay keeps only one SKU of a product published unless each SKU has its own value, so the Salesforce sync and the seed data set this option on every Salesforce SKU. A SKU that is not a Salesforce product, such as a Liferay Data Platform event bucket, has no value. |
 
 ---
