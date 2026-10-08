@@ -221,6 +221,7 @@ const SEOStudioForm = () => {
 							placeholder={i18n.translate(
 								'enter-your-company-name'
 							)}
+							required
 						/>
 					</ClayInput.GroupItem>
 				</ClayInput.Group>
