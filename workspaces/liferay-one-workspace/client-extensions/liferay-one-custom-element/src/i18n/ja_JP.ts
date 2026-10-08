@@ -1423,7 +1423,7 @@ export default {
 	'self-service-portal': 'セルフサービスポータル',
 	'send-invitation': '招待を送信',
 	'send-request': 'リクエストを送信',
-	'seo-studio-requirements': 'SEO Studioの要件',
+	'seo-studio-requirements': 'SEO&AEO Studio Betaの要件',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'ユーザーのロールを設定します: SSAユーザーはトライアルを作成でき、SSA管理者はユーザー、ロール、トライアルを管理できます。',
 	'set-up-analytics-cloud': 'Analytics Cloud のセットアップ',

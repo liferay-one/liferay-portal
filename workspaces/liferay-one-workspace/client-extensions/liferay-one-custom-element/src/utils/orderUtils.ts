@@ -137,7 +137,7 @@ export const orderTypeLabel = {
 	LOW_CODE_CONFIGURATION: 'Low-Code Configuration',
 	OTHER: 'Other',
 	SALESFORCE: 'Salesforce',
-	SEO_STUDIO: 'SEO Studio',
+	SEO_STUDIO: 'SEO&AEO Studio Beta',
 	SOLUTIONS7: 'Solutions 7',
 	SOLUTIONS30: 'Solutions 30',
 	SSA_SAAS: 'SSA SaaS',

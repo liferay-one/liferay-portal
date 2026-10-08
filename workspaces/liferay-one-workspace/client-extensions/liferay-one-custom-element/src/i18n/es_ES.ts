@@ -1451,7 +1451,7 @@ export default {
 	'self-service-portal': 'Portal de autoservicio',
 	'send-invitation': 'Enviar invitación',
 	'send-request': 'Enviar solicitud',
-	'seo-studio-requirements': 'Requisitos de SEO Studio',
+	'seo-studio-requirements': 'Requisitos de SEO&AEO Studio Beta',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Establece el rol del usuario: los usuarios de SSA pueden crear pruebas, mientras que los administradores de SSA pueden gestionar usuarios, roles y pruebas.',
 	'set-up-analytics-cloud': 'Configurar Analytics Cloud',
