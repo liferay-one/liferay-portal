@@ -146,11 +146,11 @@ SaaS Experience and PaaS Experience each sell six metrics: client extension RAM,
 
 1. The links from the PaaS Experience and SaaS Experience entitlement definitions, and from the Additional vCPU definition, to those usage definitions.
 
-1. Three SKU roles: `allotment` on the PaaS Experience and SaaS Experience SKUs, and `add-on` on the Additional vCPU SKU. Each of the three products also declares the `consumption-role` option.
+1. Three SKU roles: `allotment` on the PaaS Experience and SaaS Experience SKUs, `add-on` on the Additional vCPU SKU, and `overage` on the twelve overage SKUs. Each of the three products also declares the `consumption-role` option.
 
-1. One mock route for the composable usage API, with a month under every allotment and a month over two of them.
+1. One mock route for the composable usage API, with a month under every allotment and a month over all six.
 
-The metrics have no overage SKU and no price. The definitions leave `overageBucketSize` unset, so a report records the delta and leaves the SKU, the bucket count, and the amount empty. vCPUs are the exception: they set a bucket size of 1, because the Additional vCPU SKU is an add on whose entitlement quantity is 4 vCPUs, and an add on needs a bucket size. With no overage pricing on the allotment the report is still unpriced.
+Each metric has one overage SKU per product, for example `PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE` and `PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE`. The twelve SKU codes are placeholders until product management supplies the Salesforce product IDs. Each allotment definition sets `overageSkuExternalReferenceCode` to its overage SKU and leaves `overageRate` unset. Each overage SKU also has its own entitlement definition, `C_ENT_DEF_<PAAS|SAAS>_<METRIC>_OVERAGE`, so an overage order item creates its entitlement as the Liferay Data Platform overage bucket does. Every Experience usage definition has an `overageBucketSize` of 1, so one bucket is one GiB or one vCPU. A report with overage therefore carries the overage SKU and the bucket count, and leaves the amount empty. BizOps prices the overage order in Salesforce. The bucket size of 1 also measures the Additional vCPU add on, whose entitlement quantity is 4 vCPUs.
 
 **A usage definition is one metric from one source.** `storage-gb` already counted the SaaS plan document library, the storage add on, and PaaS storage, all as seed data with no source. Pointing it at the composable usage API would read Experience storage for the SaaS plan projects too, which is a different number from a different product. So Experience storage has its own definition, and `C_ENT_DEF_PAAS_STORAGE` and `C_ENT_DEF_SAAS_STORAGE` moved to it. When a metric name already has a usage definition, check every entitlement definition linked to it before you give it a source.
 
@@ -162,5 +162,5 @@ The metrics have no overage SKU and no price. The definitions leave `overageBuck
 - Several allotments for the same metric and project add up. Two orders for the same product double the cap, which is intended for add-ons and worth knowing for plain subscriptions.
 - Changing a report ERC scheme, a bucket size, or a cap never rewrites existing reports. They are an audit trail.
 - An add on SKU whose entitlement quantity is in the metric's unit, such as 4 vCPUs, still counts as buckets. Give its usage definition an `overageBucketSize` of 1, or every project with the add on is skipped because its cap is unknown.
-- A metric with no price logs `Unable to price the ... overage` when a project goes over. The report is still written with the delta. For a metric that is meant to be unpriced, this error is expected.
+- A metric whose allotment has no overage SKU logs `Unable to price the ... overage` when a project goes over. The report is still written with the delta, but with no SKU and no bucket count. A metric with an overage SKU and no rate logs nothing: its report carries the SKU and the bucket count with no amount.
 - An account keyed source gives every project of an account the same consumption. Each project still compares it with its own allotment, so two projects on one account each report the full account usage.
