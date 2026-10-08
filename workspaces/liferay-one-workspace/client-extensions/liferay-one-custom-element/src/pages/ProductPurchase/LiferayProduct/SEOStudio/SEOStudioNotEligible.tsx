@@ -29,10 +29,11 @@ const SEOStudioNotEligible = () => {
 				description={
 					<>
 						<p className="px-2">
-							SEO Studio is a beta add-on for Liferay AI Hub, and
-							the account <strong>{selectedAccount?.name}</strong>{' '}
-							does not have an AI Hub purchase yet. Please select
-							another account or explore AI Hub to get started.
+							SEO&AEO Studio Beta is an add-on for Liferay AI Hub,
+							and the account{' '}
+							<strong>{selectedAccount?.name}</strong> does not
+							have an AI Hub purchase yet. Please select another
+							account or explore AI Hub to get started.
 						</p>
 
 						<p className="d-flex justify-content-center my-4 next-step-page-text-bold">

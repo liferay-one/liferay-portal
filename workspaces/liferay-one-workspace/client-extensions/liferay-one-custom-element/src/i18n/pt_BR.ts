@@ -1439,7 +1439,7 @@ export default {
 	'self-service-portal': 'Portal de autoatendimento',
 	'send-invitation': 'Enviar convite',
 	'send-request': 'Enviar solicitação',
-	'seo-studio-requirements': 'Requisitos do SEO Studio',
+	'seo-studio-requirements': 'Requisitos do SEO&AEO Studio Beta',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Defina a função do usuário: Usuários SSA podem criar avaliações, enquanto Administradores SSA podem gerenciar usuários, funções e avaliações.',
 	'set-up-analytics-cloud': 'Configurar o Analytics Cloud',

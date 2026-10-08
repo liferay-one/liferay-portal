@@ -400,8 +400,8 @@ const SEOStudioForm = () => {
 					</a>
 
 					<span>
-						carefully before accessing or in any way using the SEO
-						Studio beta experience.
+						carefully before accessing or in any way using the
+						SEO&AEO Studio Beta experience.
 					</span>
 				</p>
 

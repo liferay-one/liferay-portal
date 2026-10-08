@@ -203,12 +203,12 @@
 		{
 			"active": true,
 			"description": {
-				"en_US": "Designates that the order contains an SEO Studio beta."
+				"en_US": "Designates that the order contains an SEO&AEO Studio Beta."
 			},
 			"displayOrder": 15,
 			"externalReferenceCode": "SEO_STUDIO",
 			"name": {
-				"en_US": "SEO Studio"
+				"en_US": "SEO&AEO Studio Beta"
 			},
 			"neverExpire": true
 		},
