@@ -33,6 +33,60 @@
 			"usageSourceUnit": "events"
 		},
 		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-database-monthly",
+			"period": "per month",
+			"unit": "GiB",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "databaseStorage",
+			"usageSourceUnit": "bytes"
+		},
+		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-extensions-ram-monthly",
+			"period": "per month",
+			"unit": "GiB",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "clientExtensionsRAM",
+			"usageSourceUnit": "bytes"
+		},
+		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-extensions-vcpus-monthly",
+			"overageBucketSize": 1,
+			"period": "per month",
+			"unit": "vCPU",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "clientExtensionsCPU"
+		},
+		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-logs-monthly",
+			"period": "per month",
+			"unit": "GiB",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "logStorage",
+			"usageSourceUnit": "bytes"
+		},
+		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-storage-monthly",
+			"period": "per month",
+			"unit": "GiB",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "documentLibraryAndBackupStorage",
+			"usageSourceUnit": "bytes"
+		},
+		{
+			"aggregationType": "peak",
+			"externalReferenceCode": "experience-traffic-networking-monthly",
+			"period": "per month",
+			"unit": "GiB",
+			"usageSource": "composable-account-usage",
+			"usageSourceMetricKey": "networkTraffic",
+			"usageSourceUnit": "bytes"
+		},
+		{
 			"aggregationType": "count",
 			"externalReferenceCode": "license-generations",
 			"period": "per contract term",
