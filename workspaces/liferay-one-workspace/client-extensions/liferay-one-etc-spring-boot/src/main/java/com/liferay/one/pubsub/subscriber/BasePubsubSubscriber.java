@@ -193,11 +193,14 @@ public abstract class BasePubsubSubscriber extends BasePubsubClient {
 				return;
 			}
 			catch (NotFoundException notFoundException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(notFoundException);
+				}
+
 				if (_log.isInfoEnabled()) {
 					_log.info(
 						"Unable to find subscription. Creating subscription " +
-							projectSubscriptionName,
-						notFoundException);
+							projectSubscriptionName);
 				}
 			}
 
