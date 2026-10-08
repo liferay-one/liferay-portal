@@ -35,9 +35,13 @@ vi.mock('~/services/liferay/Analytics', () => ({
 	Analytics: {track: vi.fn()},
 }));
 
+vi.mock('~/utils/siteUtils', () => ({
+	getSiteURL: () => '/web/one',
+}));
+
 type SEOStudioForm = Parameters<ProductPurchaseSEOStudio['setForm']>[0];
 
-const account = {id: 1} as Account;
+const account = {externalReferenceCode: 'ACCOUNT-1', id: 1} as Account;
 
 const form = {
 	salesforceProjectId: 'PRJCT-1',
@@ -45,6 +49,7 @@ const form = {
 } as SEOStudioForm;
 
 const product = {
+	externalReferenceCode: 'PRDCT-SEO',
 	id: 10,
 	name: 'SEO Studio',
 	productId: 20,
@@ -103,16 +108,17 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO] ProductPurchaseSEOStudio', 
 		expect(cart.orderTypeExternalReferenceCode).toBe('SEO_STUDIO');
 	});
 
-	it('resolves next steps through the payment URL', async () => {
-		vi.mocked(
-			HeadlessCommerceDeliveryCart.getPaymentMethodURL
-		).mockResolvedValue('https://pay.example.com');
+	it('sends the buyer to the product on the project dashboard', async () => {
+		const productPurchase = new ProductPurchaseSEOStudio(account, product);
 
-		await expect(
-			new ProductPurchaseSEOStudio(account, product).getNextStepsLink({
-				id: 5,
-			} as Cart)
-		).resolves.toBe('https://pay.example.com');
+		productPurchase.setForm(form);
+
+		await expect(productPurchase.getNextStepsLink()).resolves.toBe(
+			`${window.location.origin}/web/one/my-account#/ACCOUNT-1/project/PRJCT-1/products/PRDCT-SEO`
+		);
+		expect(
+			HeadlessCommerceDeliveryCart.getPaymentMethodURL
+		).not.toHaveBeenCalled();
 	});
 
 	it('throws when the form is missing', async () => {
