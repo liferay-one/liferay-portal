@@ -8,6 +8,7 @@ import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Properties} from '~/utils/attributeUtils';
 import {base64ToText, fileToBase64} from '~/utils/fileUtils';
+import {isLicenseUsageTypeSKUOptionKey} from '~/utils/licenseTierUtils';
 import {
 	ProductOfferingTypes,
 	ProductSpecificationKey,
@@ -37,6 +38,33 @@ export type ProductConfig = {
 	isDraft: boolean;
 	isEdit?: boolean;
 	properties: Properties;
+};
+
+type AppSKUOption =
+	| typeof SkuOptions.DEVELOPER
+	| typeof SkuOptions.STANDARD
+	| typeof SkuOptions.TRIAL;
+
+const APP_TYPE_SKU_OPTIONS: Partial<
+	Record<ProductType, readonly AppSKUOption[]>
+> = {
+	[ProductType.CLOUD]: [SkuOptions.STANDARD, SkuOptions.TRIAL],
+	[ProductType.DXP]: [
+		SkuOptions.DEVELOPER,
+		SkuOptions.STANDARD,
+		SkuOptions.TRIAL,
+	],
+};
+
+const DEFAULT_APP_SKU_OPTIONS: readonly AppSKUOption[] = [
+	SkuOptions.DEVELOPER,
+	SkuOptions.STANDARD,
+];
+
+const SKU_OPTION_NAMES: Record<AppSKUOption, string> = {
+	[SkuOptions.DEVELOPER]: 'Developer',
+	[SkuOptions.STANDARD]: 'Standard',
+	[SkuOptions.TRIAL]: 'Trial',
 };
 
 type TemporaryData = {
@@ -171,7 +199,13 @@ export default class AppPublish extends BaseAppPublish {
 		const {
 			items: [productOption],
 		} = await HeadlessCommerceAdminCatalogImpl.createProductOption(
-			[{...optionBody, optionId: option.id}],
+			[
+				{
+					...optionBody,
+					optionId: option.id,
+					productOptionValues: this.getProductOptionValues(),
+				},
+			],
 			product.productId
 		);
 
@@ -182,6 +216,19 @@ export default class AppPublish extends BaseAppPublish {
 		product.productOptions.push(productOption);
 
 		return productOption;
+	}
+
+	private getProductOptionValues() {
+		const skuOptions =
+			APP_TYPE_SKU_OPTIONS[
+				this.context.build.appType as keyof typeof APP_TYPE_SKU_OPTIONS
+			] ?? DEFAULT_APP_SKU_OPTIONS;
+
+		return skuOptions.map((skuOption, index) => ({
+			key: skuOption,
+			name: {en_US: SKU_OPTION_NAMES[skuOption]},
+			priority: index,
+		}));
 	}
 
 	private getProductStatus() {
@@ -569,9 +616,8 @@ export default class AppPublish extends BaseAppPublish {
 					({sku: {id}}) => id === sku.id
 				);
 
-				const skuOptionValue = sku.skuOptions.find(
-					(skuOption) =>
-						skuOption.key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
+				const skuOptionValue = sku.skuOptions.find((skuOption) =>
+					isLicenseUsageTypeSKUOptionKey(skuOption.key)
 				)?.value;
 
 				if (!skuOptionValue) {

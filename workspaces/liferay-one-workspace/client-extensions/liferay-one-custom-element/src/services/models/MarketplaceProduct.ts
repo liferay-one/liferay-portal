@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceAdminPricing from '~/services/headless/HeadlessCommerceAdminPricing';
+import {isLicenseUsageTypeSKUOptionKey} from '~/utils/licenseTierUtils';
 import {SkuOptions} from '~/utils/productUtils';
 
 import {MarketplaceDeliveryProduct} from './MarketplaceDeliveryProduct';
@@ -58,7 +58,7 @@ export class MarketplaceProduct extends MarketplaceDeliveryProduct {
 			.filter((sku) =>
 				sku.skuOptions.some(
 					(skuOption) =>
-						skuOption.key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY &&
+						isLicenseUsageTypeSKUOptionKey(skuOption.key) &&
 						skuOption.value !== SkuOptions.TRIAL
 				)
 			)
