@@ -149,7 +149,11 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 		);
 	}
 
-	const installTab = isPaidApp ? 'activation' : 'download';
+	const installTab = isCloud ? 'activation' : 'download';
+
+	const installLabel = isCloud
+		? 'continue-to-install'
+		: 'continue-to-download';
 
 	const isDXPFree = isDXPFreeTierProduct(product);
 
@@ -222,7 +226,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 					onClick={() => Liferay.Util.navigate(itemDetailURL)}
 				>
 					{i18n.translate(
-						isDXPFree ? 'activation-key' : 'continue-to-install'
+						isDXPFree ? 'activation-key' : installLabel
 					)}
 				</ClayButton>
 			</div>
