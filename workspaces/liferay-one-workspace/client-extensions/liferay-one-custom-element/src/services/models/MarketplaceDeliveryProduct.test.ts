@@ -133,18 +133,6 @@ describe('[CLIENT-MODELS-MARKETPLACEDELIVERYPRODUCT] MarketplaceDeliveryProduct'
 		).toEqual(['first.png', 'second.png']);
 	});
 
-	it('chooses the option key by app type', () => {
-		expect(createProduct({type: 'cloud'}).getProductOptionKey()).toBe(
-			'cloud-license-usage-type'
-		);
-		expect(createProduct({type: 'dxp'}).getProductOptionKey()).toBe(
-			'dxp-license-usage-type'
-		);
-		expect(
-			createProduct({type: 'client-extension'}).getProductOptionKey()
-		).toBe('base-license-usage-type');
-	});
-
 	it('labels the product resources with zero defaults', () => {
 		expect(createProduct().getProductResourceLabel()).toBe(
 			'0CPUs, 0GB RAM'

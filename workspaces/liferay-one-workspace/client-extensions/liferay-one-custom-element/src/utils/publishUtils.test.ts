@@ -80,7 +80,7 @@ describe('[MOD-PUBLISHUTILS] publishUtils', () => {
 				getSkuPrice(
 					appLicensePrice,
 					toSKU('42v10ts', [
-						{key: 'dxp-license-usage-type', value: 'standard'},
+						{key: 'base-license-usage-type', value: 'standard'},
 					])
 				)
 			).toBe(100);
@@ -88,7 +88,7 @@ describe('[MOD-PUBLISHUTILS] publishUtils', () => {
 				getSkuPrice(
 					appLicensePrice,
 					toSKU('42v10', [
-						{key: 'dxp-license-usage-type', value: 'developer'},
+						{key: 'base-license-usage-type', value: 'developer'},
 					])
 				)
 			).toBe(25);
@@ -99,7 +99,7 @@ describe('[MOD-PUBLISHUTILS] publishUtils', () => {
 				getSkuPrice(
 					appLicensePrice,
 					toSKU('42v10s', [
-						{key: 'dxp-license-usage-type', value: 'trial'},
+						{key: 'base-license-usage-type', value: 'trial'},
 					])
 				)
 			).toBe(0);

@@ -352,11 +352,11 @@
 			"productOptions": [
 				{
 					"fieldType": "radio",
-					"key": "ai-hub-license-usage-type",
+					"key": "base-license-usage-type",
 					"name": {
-						"en_US": "AI Hub License Usage Type"
+						"en_US": "License Usage Type"
 					},
-					"optionExternalReferenceCode": "LO_OPTION_AI_HUB_LICENSE_USAGE",
+					"optionExternalReferenceCode": "LO_OPTION_BASE_LICENSE_USAGE",
 					"productOptionValues": [
 						{
 							"key": "activate",
@@ -563,7 +563,7 @@
 					"sku": "01tVO00000TVrlhYAD",
 					"skuOptions": [
 						{
-							"key": "ai-hub-license-usage-type",
+							"key": "base-license-usage-type",
 							"value": "enterprise"
 						},
 						{
@@ -581,7 +581,7 @@
 					"sku": "01tVO00000TVrljYAD",
 					"skuOptions": [
 						{
-							"key": "ai-hub-license-usage-type",
+							"key": "base-license-usage-type",
 							"value": "activate"
 						},
 						{
@@ -599,7 +599,7 @@
 					"sku": "01tVO00000UlE1RYAV",
 					"skuOptions": [
 						{
-							"key": "ai-hub-license-usage-type",
+							"key": "base-license-usage-type",
 							"value": "studio"
 						},
 						{
