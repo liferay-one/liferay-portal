@@ -54,6 +54,40 @@ describe('[HOOK-ADMIN-MPSUMMARY-USEACCOUNTSMETRICS] useAccountsMetrics', () => {
 		]);
 	});
 
+	it('keys the request on the account types too', () => {
+		renderHook(() => useAccountsMetrics('week', ['business', 'person']));
+
+		expect(mocks.useSWR.mock.calls[0][0]).toEqual([
+			'metrics/accounts',
+			'week',
+			'business',
+			'person',
+		]);
+	});
+
+	it('restricts every count to the requested account types', async () => {
+		mockTotalCounts(100, 30, 10);
+
+		renderHook(() => useAccountsMetrics('week', ['business', 'person']));
+
+		await mocks.useSWR.mock.calls[0][1]();
+
+		const lastPeriod = new Date(2026, 4, 8, 23, 59, 59).toISOString();
+
+		const [allParams, lastPeriodParams, windowParams] =
+			mocks.getAccounts.mock.calls.map(
+				([searchParams]) => searchParams as URLSearchParams
+			);
+
+		expect(allParams.get('filter')).toBe("type in ('business','person')");
+		expect(lastPeriodParams.get('filter')).toBe(
+			`type in ('business','person') and dateCreated gt ${lastPeriod}`
+		);
+		expect(windowParams.get('filter')).toContain(
+			`type in ('business','person') and dateCreated lt ${lastPeriod}`
+		);
+	});
+
 	it('computes new accounts as the last period minus the earlier window', async () => {
 		mockTotalCounts(100, 30, 10);
 
