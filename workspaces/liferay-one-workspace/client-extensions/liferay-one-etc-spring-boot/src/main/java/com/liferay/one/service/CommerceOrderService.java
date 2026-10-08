@@ -222,6 +222,15 @@ public class CommerceOrderService extends OneBaseService {
 
 		for (Order order : orders) {
 			try {
+				if (Objects.equals(
+						order.getOrderTypeExternalReferenceCode(),
+						"SEO_STUDIO")) {
+
+					provisionSEOStudio(order);
+
+					continue;
+				}
+
 				completeSettledOrder(order.getId());
 			}
 			catch (Exception exception) {
@@ -354,6 +363,14 @@ public class CommerceOrderService extends OneBaseService {
 						exception);
 				}
 			}
+
+			return;
+		}
+
+		if (Objects.equals(
+				order.getOrderTypeExternalReferenceCode(), "SEO_STUDIO")) {
+
+			provisionSEOStudio(order);
 
 			return;
 		}
@@ -501,6 +518,90 @@ public class CommerceOrderService extends OneBaseService {
 		order.setExternalReferenceCode(() -> externalReferenceCode);
 
 		orderResource.patchOrder(orderId, order);
+	}
+
+	public void provisionSEOStudio(Order order) throws Exception {
+		long orderId = order.getId();
+
+		if (!_inFlightOrderIds.add(orderId)) {
+			return;
+		}
+
+		try {
+			JSONObject orderMetadataJSONObject =
+				CommerceOrderUtil.getOrderMetadataJSONObject(order);
+
+			Integer paymentStatus = order.getPaymentStatus();
+
+			if (paymentStatus == null) {
+				paymentStatus =
+					CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED;
+			}
+
+			if (orderMetadataJSONObject.has("seoStudio")) {
+				if (!_isCompletableOrderStatus(order)) {
+					return;
+				}
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						"Completing order " + orderId +
+							" because it was already provisioned");
+				}
+
+				completeOrder(orderId, paymentStatus);
+
+				return;
+			}
+
+			if (!Objects.equals(
+					order.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_PENDING)) {
+
+				return;
+			}
+
+			JSONObject aiHubJSONObject = null;
+
+			try {
+				aiHubJSONObject = _provisionSEOStudio(
+					order, orderMetadataJSONObject);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to provision SEO&AEO Studio Beta for order " +
+						orderId,
+					exception);
+
+				String seoStudioError = exception.getMessage();
+
+				if (Validator.isNull(seoStudioError)) {
+					seoStudioError = exception.getClass(
+					).getName();
+				}
+
+				updateOrder(
+					Map.of(
+						"order-metadata",
+						orderMetadataJSONObject.put(
+							"seoStudioError", seoStudioError
+						).toString()),
+					orderId, CommerceOrderConstants.ORDER_STATUS_CANCELLED);
+
+				return;
+			}
+
+			completeOrder(
+				Map.of(
+					"order-metadata",
+					orderMetadataJSONObject.put(
+						"seoStudio", aiHubJSONObject
+					).toString()),
+				orderId, paymentStatus);
+		}
+		finally {
+			_inFlightOrderIds.remove(orderId);
+		}
 	}
 
 	public void updateOrder(
@@ -923,6 +1024,52 @@ public class CommerceOrderService extends OneBaseService {
 		return 0;
 	}
 
+	private JSONObject _getAIHubFormJSONObject(
+			Order order, String salesforceProjectId)
+		throws Exception {
+
+		List<Order> aiHubOrders = getOrders(
+			StringBundler.concat(
+				"accountId/any(x:x eq ", order.getAccountId(),
+				") and orderStatus/any(x:x eq ",
+				CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+				") and orderTypeExternalReferenceCode eq 'AI_HUB'"));
+
+		JSONObject aiHubFormJSONObject = null;
+		long aiHubOrderId = 0;
+
+		for (Order aiHubOrder : aiHubOrders) {
+			JSONObject orderMetadataJSONObject = null;
+
+			try {
+				orderMetadataJSONObject =
+					CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to read the order metadata of order " +
+						aiHubOrder.getId(),
+					exception);
+
+				continue;
+			}
+
+			if (orderMetadataJSONObject.has("aiHubForm") &&
+				(orderMetadataJSONObject.optLong("aiHubAccountEntryId") > 0) &&
+				Objects.equals(
+					orderMetadataJSONObject.optString("salesforceProjectId"),
+					salesforceProjectId) &&
+				(aiHubOrder.getId() > aiHubOrderId)) {
+
+				aiHubFormJSONObject = orderMetadataJSONObject.getJSONObject(
+					"aiHubForm");
+				aiHubOrderId = aiHubOrder.getId();
+			}
+		}
+
+		return aiHubFormJSONObject;
+	}
+
 	private Long _getAIHubQuotaBlockSize(Order order) throws Exception {
 		long orderId = order.getId();
 
@@ -1285,6 +1432,42 @@ public class CommerceOrderService extends OneBaseService {
 		return total;
 	}
 
+	private JSONObject _getUserAccountJSONObject(String emailAddress) {
+		String firstName = "AI Hub";
+		String lastName = "Administrator";
+
+		try {
+			UserAccount userAccount =
+				_userAccountService.getUserAccountByEmailAddress(emailAddress);
+
+			if (userAccount != null) {
+				if (Validator.isNotNull(userAccount.getGivenName())) {
+					firstName = userAccount.getGivenName();
+				}
+
+				if (Validator.isNotNull(userAccount.getFamilyName())) {
+					lastName = userAccount.getFamilyName();
+				}
+			}
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to fetch user account details for " + emailAddress,
+					exception);
+			}
+		}
+
+		return new JSONObject(
+		).put(
+			"emailAddress", emailAddress
+		).put(
+			"firstName", firstName
+		).put(
+			"lastName", lastName
+		);
+	}
+
 	private boolean _isCompletableOrderStatus(Order order) {
 		Integer orderStatus = order.getOrderStatus();
 
@@ -1512,28 +1695,6 @@ public class CommerceOrderService extends OneBaseService {
 			String emailAddress = aiHubFormJSONObject.getString(
 				"administratorEmailAddress");
 
-			String firstName = "AI Hub";
-			String lastName = "Administrator";
-
-			try {
-				UserAccount userAccount =
-					_userAccountService.getUserAccountByEmailAddress(
-						emailAddress);
-
-				if (userAccount != null) {
-					firstName = userAccount.getGivenName();
-					lastName = userAccount.getFamilyName();
-				}
-			}
-			catch (Exception exception) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to fetch user account details for " +
-							emailAddress,
-						exception);
-				}
-			}
-
 			JSONObject provisionJSONObject = new JSONObject(
 			).put(
 				"accountEntryName",
@@ -1544,14 +1705,7 @@ public class CommerceOrderService extends OneBaseService {
 				"userAccounts",
 				new JSONArray(
 				).put(
-					new JSONObject(
-					).put(
-						"emailAddress", emailAddress
-					).put(
-						"firstName", firstName
-					).put(
-						"lastName", lastName
-					)
+					_getUserAccountJSONObject(emailAddress)
 				)
 			);
 
@@ -1669,6 +1823,76 @@ public class CommerceOrderService extends OneBaseService {
 				"Unable to provision AI Hub for order: " + order.getId(),
 				exception);
 		}
+	}
+
+	private JSONObject _provisionSEOStudio(
+			Order order, JSONObject orderMetadataJSONObject)
+		throws Exception {
+
+		String salesforceProjectId = orderMetadataJSONObject.optString(
+			"salesforceProjectId");
+
+		if (Validator.isNull(salesforceProjectId)) {
+			throw new IllegalArgumentException(
+				"No project exists for order " + order.getId());
+		}
+
+		Project project = _projectService.fetchProject(salesforceProjectId);
+
+		if ((project == null) ||
+			!Objects.equals(project.getAccountId(), order.getAccountId())) {
+
+			throw new IllegalArgumentException(
+				StringBundler.concat(
+					"Project ", salesforceProjectId,
+					" does not belong to the account of order ",
+					order.getId()));
+		}
+
+		JSONObject aiHubFormJSONObject = _getAIHubFormJSONObject(
+			order, salesforceProjectId);
+
+		if ((aiHubFormJSONObject == null) ||
+			Validator.isNull(
+				aiHubFormJSONObject.optString("administratorEmailAddress")) ||
+			Validator.isNull(
+				aiHubFormJSONObject.optString("aiHubAccountName"))) {
+
+			throw new IllegalStateException(
+				"No AI Hub exists for project " + salesforceProjectId);
+		}
+
+		JSONObject aiHubJSONObject = _aiHubService.provision(
+			new JSONObject(
+			).put(
+				"accountEntryExternalReferenceCode", salesforceProjectId
+			).put(
+				"accountEntryName",
+				aiHubFormJSONObject.getString("aiHubAccountName")
+			).put(
+				"addOns",
+				new JSONArray(
+				).put(
+					"seoStudio"
+				)
+			).put(
+				"tier", "studio"
+			).put(
+				"userAccounts",
+				new JSONArray(
+				).put(
+					_getUserAccountJSONObject(
+						aiHubFormJSONObject.getString(
+							"administratorEmailAddress"))
+				)
+			));
+
+		if (aiHubJSONObject == null) {
+			throw new IllegalStateException(
+				"Unable to provision the SEO&AEO Studio Beta add on on AI Hub");
+		}
+
+		return aiHubJSONObject;
 	}
 
 	private Order _upsertOrder(String externalReferenceCode, Order order)
