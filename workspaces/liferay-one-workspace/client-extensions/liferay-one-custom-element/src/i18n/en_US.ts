@@ -675,6 +675,7 @@ export default {
 	'generate-activation-key': 'Generate Activation Key',
 	'generate-key': 'Generate Key',
 	'generate-new': 'Generate New',
+	'generate-sample': 'Generate Sample',
 	'generate-x-key': 'Generate {0} Key',
 	'generate-x-keys': 'Generate {0} Keys',
 	'get-activation-key': 'Get Activation Key',

@@ -35,6 +35,7 @@ Terms used in this file:
 | REQ-ADMIN-012 | Each attribute is one line in the form name=value. A line without a name before the equal sign gives status 400, and the system sends nothing. | P1 | LPD-89437 | `REST-POST-ADMIN-PUBSUB-DISPATCH` |
 | REQ-ADMIN-013 | A topic without a subscriber gives status 404. When a subscriber fails, the request gives status 502 and names the subscriber. | P1 | LPD-89437 | `REST-POST-ADMIN-PUBSUB-DISPATCH` |
 | REQ-ADMIN-014 | The Pub/Sub section shows its form only to a global administrator. Any other user sees an access required message. After a send, the section shows success or the problem detail from the service. | P1 | LPD-99658 | `HOOK-USEHASADMINPERMISSIONS`, `ROUTE-ADMIN-PUB-SUB` |
+| REQ-ADMIN-015 | When the subscriber of the selected topic is known, the Pub/Sub section offers sample messages for it. A sample fills the payload and the attributes with a message in the shape that the subscriber reads, so that the administrator changes only the fields to test. Each sample gets new IDs, and the IDs in one sample refer to each other. A dead letter sample also sets the source subscription and delivery count attributes. | P2 | LPD-88257 | `MOD-ADMIN-PUBSUB-GETPUBSUBSAMPLES`, `ROUTE-ADMIN-PUB-SUB` |
 
 ## Back Office Actions
 

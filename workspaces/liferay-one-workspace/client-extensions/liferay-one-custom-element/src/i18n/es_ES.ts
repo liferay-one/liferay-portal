@@ -660,6 +660,7 @@ export default {
 	'general-info': 'Información general',
 	'generate': 'Generar',
 	'generate-new': 'Generar nueva',
+	'generate-sample': 'Generar ejemplo',
 	'get-activation-key': 'Obtener clave de activación',
 	'get-app': 'Obtener aplicación',
 	'get-digital-sales-room': 'Obtener Digital Sales Room',

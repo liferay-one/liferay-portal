@@ -2,7 +2,7 @@
 
 Every React context provider and every logic module (utils, schemas, and resolvers) in the custom element. A provider or module with logic worth proving is `planned`, and a Vitest test covers it next to the source file. A module that only holds a static table is kept `n/a`. Components and pages are not listed here: the route rows in routes.md and the journeys in flows.md cover them.
 
-> Autoscaffolded from the code surface (94 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (95 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 ### Contexts
 
@@ -21,6 +21,7 @@ Every React context provider and every logic module (utils, schemas, and resolve
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
+| MOD-ADMIN-PUBSUB-GETPUBSUBSAMPLES | Pub/Sub sample messages — returns no samples for an unknown subscriber, one Okta users sample per event type with a group only for membership events, Salesforce object records that match the action and object name, opportunity records whose account, opportunity, and project IDs refer to each other, new IDs on every call, and the dead letter source attributes on dead letter samples. | unit | P2 | planned | module:pages/Admin/PubSub/utils/getPubSubSamples |
 | MOD-ADMIN-SSADASHBOARD-GETFILTEREDITEMS | Filter helper — returns the default items whose key is not in the selected items, and returns all defaults when selected items are undefined. | unit | P2 | planned | module:pages/Admin/SSADashboard/utils/getFilteredItems |
 | MOD-ADMIN-SOLUTIONS-SOLUTIONDETAIL-PARSESOLUTIONDETAIL | Solution detail parser — reads specifications into a map, builds the company object only when a company email exists, defaults missing text to empty strings, parses the details blocks JSON with an empty fallback on bad JSON, resolves image blocks by ERC and drops missing images, and filters categories by the marketplace solution category vocabulary. | unit | P1 | planned | module:pages/Admin/Solutions/SolutionDetail/parseSolutionDetail |
 | MOD-BECOMEAPUBLISHER | Publisher type helpers — uses the list type definition entries when present and the two default entries when absent or empty, and maps keys to names with a fallback to the default entry and then to the raw key. | unit | P2 | planned | module:pages/BecomeAPublisher/utils |
