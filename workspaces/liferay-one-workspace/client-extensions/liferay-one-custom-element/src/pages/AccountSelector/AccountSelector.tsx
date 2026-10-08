@@ -8,6 +8,7 @@ import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import EntitySelector, {
 	SelectorItem,
 } from '~/components/EntitySelector/EntitySelector';
+import {useOneContext} from '~/context/OneContextProvider';
 import {useAccounts, useCurrentAccount} from '~/hooks/useAccounts';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
@@ -26,6 +27,10 @@ export default function AccountSelector() {
 	const account = Liferay.CommerceContext?.account;
 	const currentAccountId = account?.accountId;
 
+	const {userAccountModel} = useOneContext();
+
+	const canViewAllAccounts = userAccountModel.canViewAllAccounts;
+
 	const [searchValue, setSearchValue] = useState('');
 	const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -40,7 +45,10 @@ export default function AccountSelector() {
 
 	const {data: currentAccount} = useCurrentAccount();
 
-	const {data, isLoading: loading} = useAccounts(debouncedSearch);
+	const {data, isLoading: loading} = useAccounts(
+		debouncedSearch,
+		canViewAllAccounts
+	);
 
 	const totalAccountCountRef = useRef<number>();
 
@@ -48,9 +56,13 @@ export default function AccountSelector() {
 		totalAccountCountRef.current = data.totalCount;
 	}
 
-	const readOnly = totalAccountCountRef.current === 1;
+	const readOnly =
+		Boolean(currentAccountId) && totalAccountCountRef.current === 1;
 
-	if (!Liferay.ThemeDisplay.isSignedIn() || !currentAccountId) {
+	if (
+		!Liferay.ThemeDisplay.isSignedIn() ||
+		(!currentAccountId && !canViewAllAccounts)
+	) {
 		return null;
 	}
 
@@ -67,7 +79,9 @@ export default function AccountSelector() {
 		subtitle: item.type,
 	}));
 
-	const name = currentAccount?.name ?? account?.accountName ?? '';
+	const name = currentAccountId
+		? currentAccount?.name ?? account?.accountName ?? ''
+		: i18n.translate('select-account');
 
 	async function handleSelect(accountId: string) {
 		if (accountId === String(currentAccountId)) {
@@ -109,7 +123,7 @@ export default function AccountSelector() {
 			onSelect={handleSelect}
 			readOnly={readOnly}
 			searchValue={searchValue}
-			selectedId={String(currentAccountId)}
+			selectedId={currentAccountId ? String(currentAccountId) : undefined}
 			triggerIcon={
 				<AccountAvatar
 					logoURL={currentAccount?.logoURL}
