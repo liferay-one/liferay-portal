@@ -7,6 +7,7 @@ import {z} from 'zod';
 import zodSchema from '~/schemas/zodSchema';
 import {Cart, OrderTypes} from '~/types/orders';
 import {OrderCustomFields} from '~/utils/orderUtils';
+import {getSiteURL} from '~/utils/siteUtils';
 
 import ProductPurchase from './ProductPurchase';
 
@@ -48,7 +49,7 @@ export class ProductPurchaseSEOStudio extends ProductPurchase {
 		);
 	}
 
-	public async getNextStepsLink(cart: Cart) {
-		return super.getPaymentNextStepsLink(cart);
+	public async getNextStepsLink() {
+		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${this.form?.salesforceProjectId}/products/${this.product.externalReferenceCode}`;
 	}
 }
