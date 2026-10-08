@@ -9,6 +9,7 @@ export type BillingAddress = {
 	city?: string;
 	country?: string;
 	countryISOCode?: string;
+	defaultBilling?: boolean;
 	description?: string;
 	id?: number;
 	name?: string;
@@ -17,6 +18,7 @@ export type BillingAddress = {
 	saveAddress?: boolean;
 	street1?: string;
 	street2?: string;
+	type?: number;
 	vatNumber?: string;
 	zip?: string;
 };

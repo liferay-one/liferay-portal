@@ -10,6 +10,7 @@ import ClayIcon from '@clayui/icon';
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Navigate} from 'react-router-dom';
 import {z} from 'zod';
+import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import Section from '~/components/Section/Section';
 import i18n from '~/i18n';
@@ -22,6 +23,7 @@ import {commerceSchemas as commerceZodSchema} from '~/schemas/commerceSchemas';
 import {ProductPurchaseAIHubOpenBeta} from '~/services/commerce/ProductPurchaseAIHubOpenBeta';
 import {Liferay} from '~/services/liferay/liferay';
 import {formatCurrency} from '~/utils/formatCurrency';
+import {isBillingAddress} from '~/utils/orderUtils';
 import {productAgreements} from '~/utils/productAgreements';
 import {getAiHubTier, getAiHubTierSKU} from '~/utils/productUtils';
 
@@ -31,8 +33,10 @@ import type {BillingAddress as BillingAddressType} from '~/types/orders';
 
 const AIHubOrderSummary = () => {
 	const {
+		accountCurrencyCode,
 		form,
 		handlePurchase,
+		isUpdatingCart,
 		payment: contextPayment,
 		product,
 		productPurchaseCart,
@@ -58,7 +62,7 @@ const AIHubOrderSummary = () => {
 	const {data: addressResponse} = useAccountAddresses(selectedAccount?.id);
 
 	const addresses = useMemo(
-		() => addressResponse?.items ?? [],
+		() => (addressResponse?.items ?? []).filter(isBillingAddress),
 		[addressResponse?.items]
 	);
 
@@ -116,7 +120,8 @@ const AIHubOrderSummary = () => {
 	}, [contextPayment?.billingAddress, setBillingAddress]);
 
 	const summary = productPurchaseCart.cart.summary;
-	const currencyCode = Liferay.CommerceContext.currency.currencyCode;
+	const currencyCode =
+		accountCurrencyCode ?? Liferay.CommerceContext.currency.currencyCode;
 
 	const valueFallBack = (value: string) => {
 		if (!value) {
@@ -164,6 +169,7 @@ const AIHubOrderSummary = () => {
 		await handlePurchase(productPurchase, {
 			...productPurchaseCart.cart,
 			billingAddress: paymentStore.billingAddress,
+			currencyCode,
 			paymentMethod: 'money-order',
 			shippingAddress: paymentStore.billingAddress,
 		});
@@ -378,6 +384,7 @@ const AIHubOrderSummary = () => {
 					disabled={
 						!aiHubTierSKU ||
 						!isBillingAddressValid ||
+						isUpdatingCart ||
 						!termsAndConditions ||
 						!userAgreement
 					}
@@ -391,7 +398,13 @@ const AIHubOrderSummary = () => {
 					}
 					size="regular"
 				>
-					{i18n.translate('purchase')}
+					{isUpdatingCart ? (
+						<Loading.Inline>
+							{i18n.translate('purchase')}
+						</Loading.Inline>
+					) : (
+						i18n.translate('purchase')
+					)}
 				</ClayButton>
 			</div>
 		</ProductPurchase.Shell>

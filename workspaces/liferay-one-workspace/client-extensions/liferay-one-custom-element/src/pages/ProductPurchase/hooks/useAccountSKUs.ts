@@ -7,13 +7,36 @@ import useSWR from 'swr';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
 
-const useAccountSKUs = (productId: number | string, accountId?: number) =>
-	useSWR(accountId ? `/account-skus/${accountId}/${productId}` : null, () =>
-		HeadlessCommerceDeliveryCatalog.getProductSKUsPage(
-			Liferay.CommerceContext.commerceChannelId,
-			productId,
-			new URLSearchParams({accountId: String(accountId)})
-		)
+const useAccountSKUs = (
+	accountId: number | undefined,
+	currencyCode: string | undefined,
+	productId: number | string
+) => {
+	const {data, error, isLoading} = useSWR(
+		accountId
+			? `/account-skus/${accountId}/${productId}/${currencyCode ?? ''}`
+			: null,
+		async () => ({
+			accountId,
+			skusPage: await HeadlessCommerceDeliveryCatalog.getProductSKUsPage(
+				Liferay.CommerceContext.commerceChannelId,
+				productId,
+				new URLSearchParams({
+					accountId: String(accountId),
+					...(currencyCode && {currencyCode}),
+				})
+			),
+		}),
+		{keepPreviousData: true}
 	);
+
+	const isAccountData = !error && data?.accountId === accountId;
+
+	return {
+		data: isAccountData ? data?.skusPage : undefined,
+		error,
+		isLoading,
+	};
+};
 
 export default useAccountSKUs;

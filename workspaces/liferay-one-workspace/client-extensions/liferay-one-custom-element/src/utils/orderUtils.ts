@@ -43,6 +43,10 @@ export const AccountAddressType = {
 export type AccountAddressType =
 	(typeof AccountAddressType)[keyof typeof AccountAddressType];
 
+export function isBillingAddress(address: {type?: number}) {
+	return address.type !== AccountAddressType.SHIPPING;
+}
+
 export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',

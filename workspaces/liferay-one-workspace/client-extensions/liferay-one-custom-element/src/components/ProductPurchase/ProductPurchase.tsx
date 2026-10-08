@@ -10,6 +10,7 @@ import ClaySticker from '@clayui/sticker';
 import classNames from 'classnames';
 import {ComponentProps, ReactElement, ReactNode} from 'react';
 import createdProjectIcon from '~/assets/images/created_project.svg';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {Liferay} from '~/services/liferay/liferay';
@@ -92,6 +93,7 @@ type ProductPurchaseFooterProps = {
 	backButtonProps?: ComponentProps<typeof ClayButton>;
 	cancelButtonProps?: ComponentProps<typeof ClayButton>;
 	continueButtonProps?: ComponentProps<typeof ClayButton>;
+	loading?: boolean;
 	termsAndConditions?: ReactElement;
 };
 
@@ -99,9 +101,13 @@ const ProductPurchaseFooter: React.FC<ProductPurchaseFooterProps> = ({
 	backButtonProps,
 	cancelButtonProps,
 	continueButtonProps,
+	loading,
 	termsAndConditions,
 }) => {
 	const {productPurchaseCart} = useProductPurchaseOutletContext();
+
+	const continueLabel =
+		continueButtonProps?.children || i18n.translate('continue');
 
 	return (
 		<div className="d-flex flex-column mt-3 w-100">
@@ -127,9 +133,16 @@ const ProductPurchaseFooter: React.FC<ProductPurchaseFooterProps> = ({
 						{backButtonProps?.children || i18n.translate('back')}
 					</ClayButton>
 
-					<ClayButton className="ml-4" {...continueButtonProps}>
-						{continueButtonProps?.children ||
-							i18n.translate('continue')}
+					<ClayButton
+						className="ml-4"
+						{...continueButtonProps}
+						disabled={continueButtonProps?.disabled || loading}
+					>
+						{loading ? (
+							<Loading.Inline>{continueLabel}</Loading.Inline>
+						) : (
+							continueLabel
+						)}
 					</ClayButton>
 				</div>
 			</div>
