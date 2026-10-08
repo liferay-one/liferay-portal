@@ -1,8 +1,8 @@
 # DataOps Metrics API Mock
 
-Fakes the Liferay Data Platform Metrics API so the LDP usage endpoints on
-`liferay-one-etc-spring-boot` can be exercised in the local k3s harness, without GCP
-credentials and without a deployed Cloud Function.
+Fakes the Liferay Data Platform Metrics API and the composable usage API so the LDP and
+Experience usage endpoints on `liferay-one-etc-spring-boot` can be exercised in the local k3s
+harness, without GCP credentials and without a deployed Cloud Function.
 
 ## Why This Is Needed
 
@@ -31,6 +31,23 @@ The response bodies follow the **0.1.1 - Liferay Data Platform Metrics API Contr
 the Data Operations Confluence space, linked from DOPS-3607. The counts are made up; the
 field names, nesting, and status codes are the documented contract. Update the `Caddyfile`
 whenever that contract changes.
+
+The composable usage API has no contract page here. Its body, `{"usage": {...}}` with six
+fields, takes its shape from what `ExperienceUsageStrategy` reads: `clientExtensionsCPU` as a
+decimal vCPU count, and `clientExtensionsRAM`, `databaseStorage`,
+`documentLibraryAndBackupStorage`, `logStorage`, and `networkTraffic` in bytes. The numbers are
+made up.
+
+The mock serves these routes:
+
+| Route | Response |
+| --- | --- |
+| `/composable_usage_api/api/v1/accounts/<accountKey>/usage/month/<yyyy-MM>` | `composable-usage-<yyyy-MM>.json`, or `composable-usage-empty.json` for a month with no row |
+| `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage` | `usage.json` |
+| `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage/event-history` | `event-history.json` |
+| `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage/event-summary?startDate=<yyyy-MM-dd>` | `event-summary-<startDate>.json`, or `event-summary-empty.json` for a month with no row |
+
+The composable route ignores the account key, so every account reads the same numbers.
 
 ## How It Is Wired
 
@@ -121,6 +138,14 @@ entitles (a 1,000,000 allotment plus one 200,000 add-on bucket), so generating t
 usage report through `POST /admin/usage-reports/generate?yearMonth=2026-09` exercises the
 overage path: 300,000 events over, two overage buckets, a report in `readyForReview`. Every
 earlier month stays under the allotment and produces a `completed` report.
+
+The `COMPOSABLE_MONTHS` rows hold the composable usage per month: the vCPU count, then RAM,
+database, storage, logs, and traffic in bytes. The 2026-08 row stays under every allotment of
+the seeded PaaS Experience project `PRJCT-004` (7 vCPUs, 2 GiB of RAM, 100 GiB of database,
+1 TiB of storage, 300 GiB of logs, and 1 TiB of traffic). The 2026-09 row goes over on all six,
+with values that do not land on whole units: 7.25 vCPUs, 2.5 GiB of RAM, one byte over 100 GiB
+of database, 1.5 TiB of storage, 300.75 GiB of logs, and one byte over 1 TiB of traffic. So
+generating that month gives all six Experience reports a delta over zero. The current month has no row, so the Utilization tab shows no Experience usage.
 
 Entitlement caps are deliberately **not** here. Those come from the seeded orders, so the
 percentages the UI shows are mock usage over real entitlements.

@@ -43,6 +43,15 @@
 		respond "liferay-one-mock" 200
 	}
 
+	@composableUsage path_regexp composableUsage ^/composable_usage_api/api/v1/accounts/[^/]+/usage/month/([^/]+)$
+
+	handle @composableUsage {
+		header Content-Type application/json
+		rewrite * /composable-usage-{re.composableUsage.1}.json
+		try_files {path} /composable-usage-empty.json
+		file_server
+	}
+
 	@eventHistory path_regexp ^/ldp_metrics_api/api/v1/projects/[^/]+/ldp/usage/event-history$
 
 	handle @eventHistory {
