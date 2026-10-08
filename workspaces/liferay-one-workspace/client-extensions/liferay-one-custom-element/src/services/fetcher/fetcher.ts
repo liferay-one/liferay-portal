@@ -50,6 +50,24 @@ function getHeaders(options?: RequestInit): Record<string, string> {
 	return headers;
 }
 
+const FETCH_ERROR_MESSAGE = 'An error occurred while fetching the data.';
+
+async function readJSON<T>(response: Response): Promise<T | undefined> {
+	const body = await response.text();
+
+	try {
+		return JSON.parse(body);
+	}
+	catch (error) {
+		console.error(
+			`Unable to parse the response from ${response.url}`,
+			error
+		);
+
+		return undefined;
+	}
+}
+
 const fetcher = async <T = unknown>(
 	resource: RequestInfo,
 	options?: RequestInit
@@ -62,11 +80,9 @@ const fetcher = async <T = unknown>(
 	});
 
 	if (!response.ok) {
-		const error = new FetcherError(
-			'An error occurred while fetching the data.'
-		);
+		const error = new FetcherError(FETCH_ERROR_MESSAGE);
 
-		error.info = await response.json();
+		error.info = await readJSON<FetcherError['info']>(response);
 		error.status = response.status;
 		throw error;
 	}
@@ -79,7 +95,16 @@ const fetcher = async <T = unknown>(
 		return {} as T;
 	}
 
-	return response.json();
+	const body = await readJSON<T>(response);
+
+	if (body === undefined) {
+		const error = new FetcherError(FETCH_ERROR_MESSAGE);
+
+		error.status = response.status;
+		throw error;
+	}
+
+	return body;
 };
 
 fetcher.delete = (resource: RequestInfo) =>

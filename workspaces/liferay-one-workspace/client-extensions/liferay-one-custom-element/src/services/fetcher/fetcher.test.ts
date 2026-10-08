@@ -153,4 +153,47 @@ describe('[CLIENT-FETCHER-FETCHER] fetcher', () => {
 		);
 		expect(error.status).toBe(400);
 	});
+
+	it('throws a FetcherError instead of a parse error when a 200 body ends partway', async () => {
+		const consoleErrorSpy = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => {});
+
+		fetchMock.mockResolvedValue(
+			new Response('{"items": [{"id": 1, "price": ', {status: 200})
+		);
+
+		const error = await fetcher('/a').catch(
+			(caughtError: FetcherError) => caughtError
+		);
+
+		expect(error).toBeInstanceOf(FetcherError);
+		expect((error as FetcherError).message).toBe(
+			'An error occurred while fetching the data.'
+		);
+		expect((error as FetcherError).status).toBe(200);
+		expect(consoleErrorSpy).toHaveBeenCalledOnce();
+
+		consoleErrorSpy.mockRestore();
+	});
+
+	it('keeps the status when a non ok response body is not JSON', async () => {
+		const consoleErrorSpy = vi
+			.spyOn(console, 'error')
+			.mockImplementation(() => {});
+
+		fetchMock.mockResolvedValue(
+			new Response('<html>Bad Gateway</html>', {status: 502})
+		);
+
+		const error = await fetcher<FetcherError>('/a').catch(
+			(caughtError: FetcherError) => caughtError
+		);
+
+		expect(error).toBeInstanceOf(FetcherError);
+		expect(error.info).toBeUndefined();
+		expect(error.status).toBe(502);
+
+		consoleErrorSpy.mockRestore();
+	});
 });
