@@ -29,12 +29,9 @@ export default class DeliveryOrderModel {
 	}
 
 	get canGenerateLicenses() {
-		return (
-			['CLIENT_EXTENSION', 'COMPOSITE_APP', 'DXP_APP'].includes(
-				this.order.orderTypeExternalReferenceCode as OrderTypes
-			) && !this.isFreeApp
-		);
+		return this.isLicensable && !this.isFreeApp;
 	}
+
 	get customFields() {
 		const customFields = {} as CustomFields;
 
@@ -58,6 +55,12 @@ export default class DeliveryOrderModel {
 
 	get isFreeApp() {
 		return this.order.placedOrderItems?.[0]?.price?.price === 0;
+	}
+
+	get isLicensable() {
+		return ['CLIENT_EXTENSION', 'COMPOSITE_APP', 'DXP_APP'].includes(
+			this.order.orderTypeExternalReferenceCode as OrderTypes
+		);
 	}
 
 	get isOrderCompleted() {
