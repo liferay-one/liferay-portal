@@ -10,7 +10,8 @@ source ../_common.sh
 # Everyone; the user groups and the roles they carry ship in the
 # liferay-one-batch client extension. A few roles are assigned to a user
 # directly rather than through a group -- the Publisher persona and the default
-# administrator carry the Marketplace Publisher role.
+# administrator carry the Marketplace Publisher role, and the Provisioning
+# persona carries the Provisioning Administrator role.
 #
 # Neither membership is expressible through the UserAccount batch document: the
 # headless UserAccount import path ignores both userGroupBriefs and (for regular
@@ -30,8 +31,8 @@ USER_GROUP_URL="${LIFERAY_URL}/o/headless-admin-user/v1.0/user-groups"
 
 GROUP_MEMBERSHIPS=(
 	"C_CUSTOMERS=USER_CUSTOMER_ADMIN USER_CUSTOMER_MEMBER"
-	"C_EMPLOYEES=USER_STAFF"
-	"C_EVERYONE=USER_CUSTOMER_ADMIN USER_CUSTOMER_MEMBER USER_PARTNER_ADMIN USER_PARTNER_MEMBER USER_PUBLISHER_ADMIN USER_STAFF"
+	"C_EMPLOYEES=USER_PROVISIONING_ADMIN USER_STAFF"
+	"C_EVERYONE=USER_CUSTOMER_ADMIN USER_CUSTOMER_MEMBER USER_PARTNER_ADMIN USER_PARTNER_MEMBER USER_PROVISIONING_ADMIN USER_PUBLISHER_ADMIN USER_STAFF"
 	"C_PARTNERS=USER_PARTNER_ADMIN USER_PARTNER_MEMBER"
 )
 
@@ -43,6 +44,7 @@ GROUP_MEMBERSHIPS=(
 
 ROLE_MEMBERSHIPS=(
 	"C_MARKETPLACE_PUBLISHER=USER_PUBLISHER_ADMIN test@liferay.com"
+	"C_PROVISIONING_ADMIN=USER_PROVISIONING_ADMIN"
 )
 
 function main {
