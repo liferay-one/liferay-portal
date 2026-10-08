@@ -11,9 +11,7 @@ import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurc
 import commerceSchemas from '~/schemas/commerceSchemas';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
-import {Liferay} from '~/services/liferay/liferay';
 import CommerceOrders from '~/services/spring-boot/CommerceOrders';
-import {getCurrencyForCountry} from '~/utils/currencyUtils';
 
 import BillingAddress from './components/BillingAddress/BillingAddress';
 import PaymentTypeSelector from './components/PaymentTypeSelector/PaymentTypeSelector';
@@ -24,6 +22,7 @@ const PaymentMethod = () => {
 
 	const {
 		actions: {nextStep, previousStep},
+		isUpdatingCart,
 		payment,
 		productPurchaseCart,
 		selectedAccount,
@@ -44,19 +43,8 @@ const PaymentMethod = () => {
 			const cartId = productPurchaseCart.cart?.id;
 
 			if (cartId) {
-				const targetCurrency = getCurrencyForCountry(
-					payment.billingAddress?.country ||
-						payment.billingAddress?.countryISOCode
-				);
-
-				if (targetCurrency) {
-					Liferay.CommerceContext.currency.currencyCode =
-						targetCurrency;
-				}
-
 				await productPurchaseCart.updateCart(cartId, {
 					billingAddress: payment.billingAddress,
-					currencyCode: targetCurrency,
 					shippingAddress: payment.billingAddress,
 				});
 
@@ -94,6 +82,7 @@ const PaymentMethod = () => {
 					disabled: !isBillingAddressValid || loading,
 					onClick: onContinue,
 				},
+				loading: isUpdatingCart,
 			}}
 			title={i18n.translate('payment-method')}
 		>

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useCallback, useEffect} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -14,12 +14,23 @@ import type {CartItem} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 const useProductPurchaseCart = (
-	accountId?: number,
-	product?: DeliveryProduct,
-	orderTypeExternalReferenceCode?: string,
-	accountCurrency?: ChannelCurrency
+	accountCurrency: ChannelCurrency | undefined,
+	accountId: number | undefined,
+	billingAddressId: number | undefined,
+	orderTypeExternalReferenceCode: string | undefined,
+	product: DeliveryProduct | undefined
 ) => {
+	const [isSyncingCart, setSyncingCart] = useState(
+		Boolean(accountId && product)
+	);
+	const [isUpdatingBillingAddress, setUpdatingBillingAddress] =
+		useState(false);
+
 	const channelId = Liferay.CommerceContext.commerceChannelId;
+
+	const billingAddressIdRef = useRef(billingAddressId);
+
+	billingAddressIdRef.current = billingAddressId;
 
 	const currencyCode =
 		accountCurrency?.code ?? Liferay.CommerceContext.currency.currencyCode;
@@ -27,6 +38,44 @@ const useProductPurchaseCart = (
 	const {cart, cartItems, reset, setCart, setCartItems} = useCartContext();
 
 	const cartId = cart?.id;
+
+	const cartIdRef = useRef(cartId);
+
+	cartIdRef.current = cartId;
+
+	const updateBillingAddress = useCallback(
+		async (newBillingAddressId?: number) => {
+			const updatedCartId = cartIdRef.current;
+
+			if (!newBillingAddressId || !updatedCartId) {
+				return;
+			}
+
+			setUpdatingBillingAddress(true);
+
+			try {
+				const updatedCart =
+					await HeadlessCommerceDeliveryCart.updateCart(
+						updatedCartId,
+						{billingAddressId: newBillingAddressId}
+					);
+
+				if (updatedCart && cartIdRef.current === updatedCartId) {
+					setCart(updatedCart);
+				}
+			}
+			catch (error) {
+				console.error(
+					'Unable to update the cart billing address',
+					error
+				);
+			}
+			finally {
+				setUpdatingBillingAddress(false);
+			}
+		},
+		[setCart]
+	);
 
 	const addCart = async (productId: number, skuId: number) => {
 		let currentCart = cart;
@@ -36,6 +85,7 @@ const useProductPurchaseCart = (
 				channelId,
 				{
 					accountId,
+					billingAddressId,
 					currencyCode,
 					orderTypeExternalReferenceCode,
 				}
@@ -87,7 +137,7 @@ const useProductPurchaseCart = (
 	useEffect(() => {
 		let active = true;
 
-		(async () => {
+		const syncCart = async () => {
 			if (!accountId || !product) {
 				return;
 			}
@@ -132,33 +182,53 @@ const useProductPurchaseCart = (
 					openCart.summary?.currency ?? ''
 				)
 			) {
-				const accountCurrencyCart =
-					await HeadlessCommerceDeliveryCart.createCart(channelId, {
-						accountId,
-						currencyCode: accountCurrency.code,
-						orderTypeExternalReferenceCode,
-					});
-
-				await HeadlessCommerceDeliveryCart.deleteCart(openCart.id);
-
-				if (!active) {
-					return;
-				}
-
-				setCart(accountCurrencyCart);
-				setCartItems(
-					openCartItems.map(
-						({productId, quantity, skuId}) =>
-							({productId, quantity, skuId}) as CartItem
-					)
+				const accountCurrencyCartItems = openCartItems.map(
+					({productId, quantity, skuId}) =>
+						({productId, quantity, skuId}) as CartItem
 				);
+
+				try {
+					const accountCurrencyCart =
+						await HeadlessCommerceDeliveryCart.createCart(
+							channelId,
+							{
+								accountId,
+								billingAddressId: billingAddressIdRef.current,
+								cartItems: accountCurrencyCartItems,
+								currencyCode: accountCurrency.code,
+								orderTypeExternalReferenceCode,
+							}
+						);
+
+					await HeadlessCommerceDeliveryCart.deleteCart(openCart.id);
+
+					if (!active) {
+						return;
+					}
+
+					setCart(accountCurrencyCart);
+					setCartItems(accountCurrencyCartItems);
+				}
+				catch (error) {
+					console.error('Unable to change the cart currency', error);
+				}
 
 				return;
 			}
 
 			setCart(openCart);
 			setCartItems(openCartItems);
-		})();
+		};
+
+		setSyncingCart(true);
+
+		syncCart()
+			.catch((error) => console.error('Unable to load the cart', error))
+			.finally(() => {
+				if (active) {
+					setSyncingCart(false);
+				}
+			});
 
 		return () => {
 			active = false;
@@ -178,10 +248,13 @@ const useProductPurchaseCart = (
 		addCart,
 		cart,
 		cartItems,
+		isSyncingCart,
+		isUpdatingBillingAddress,
 		removeCart,
 		removeFromCart,
 		reset,
 		setCart,
+		updateBillingAddress,
 		updateCart: HeadlessCommerceDeliveryCart.updateCart.bind(
 			HeadlessCommerceDeliveryCart
 		),

@@ -91,7 +91,13 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			cartAPI.createCart.mockResolvedValue({id: 5} as never);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP')
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
 			);
 
 			let returnedCart: unknown;
@@ -119,7 +125,7 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			cartAPI.createCart.mockResolvedValue({id: 5} as never);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP', euro)
+				useProductPurchaseCart(euro, 1, undefined, 'DXP', undefined)
 			);
 
 			await act(async () => {
@@ -133,6 +139,25 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			});
 		});
 
+		it('creates the cart with the selected billing address', async () => {
+			cartAPI.createCart.mockResolvedValue({id: 5} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(euro, 1, 52, 'DXP', undefined)
+			);
+
+			await act(async () => {
+				await result.current.addCart(10, 20);
+			});
+
+			expect(cartAPI.createCart).toHaveBeenCalledWith(77, {
+				accountId: 1,
+				billingAddressId: 52,
+				currencyCode: 'EUR',
+				orderTypeExternalReferenceCode: 'DXP',
+			});
+		});
+
 		it('increments the quantity of an existing SKU without creating a cart', async () => {
 			mockCartContext({id: 5}, [
 				{productId: 10, quantity: 2, skuId: 20},
@@ -140,7 +165,13 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			]);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP')
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
 			);
 
 			await act(async () => {
@@ -159,7 +190,13 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			mockCartContext({id: 5}, [{productId: 10, quantity: 1, skuId: 20}]);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP')
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
 			);
 
 			await act(async () => {
@@ -174,12 +211,99 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 		});
 	});
 
+	describe('updateBillingAddress', () => {
+		it('puts the billing address on the cart and reports the update while it runs', async () => {
+			mockCartContext({id: 5});
+			cartAPI.updateCart.mockResolvedValue({
+				billingAddressId: 52,
+				id: 5,
+			} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
+			);
+
+			let update: Promise<void> = Promise.resolve();
+
+			act(() => {
+				update = result.current.updateBillingAddress(52);
+			});
+
+			expect(result.current.isUpdatingBillingAddress).toBe(true);
+
+			await act(async () => {
+				await update;
+			});
+
+			expect(cartAPI.updateCart).toHaveBeenCalledWith(5, {
+				billingAddressId: 52,
+			});
+			expect(cartContext.setCart).toHaveBeenCalledWith({
+				billingAddressId: 52,
+				id: 5,
+			});
+			expect(result.current.isUpdatingBillingAddress).toBe(false);
+		});
+
+		it('ignores the response when another cart replaced the cart in the meantime', async () => {
+			mockCartContext({id: 5});
+
+			let resolveUpdate: (cart: unknown) => void = () => {};
+
+			cartAPI.updateCart.mockReturnValue(
+				new Promise((resolve) => {
+					resolveUpdate = resolve;
+				}) as never
+			);
+
+			const {rerender, result} = renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
+			);
+
+			let update: Promise<void> = Promise.resolve();
+
+			act(() => {
+				update = result.current.updateBillingAddress(52);
+			});
+
+			mockCartContext({id: 12});
+
+			rerender();
+
+			await act(async () => {
+				resolveUpdate({id: 5});
+
+				await update;
+			});
+
+			expect(cartContext.setCart).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('removeFromCart', () => {
 		it('decrements the quantity of a SKU', async () => {
 			mockCartContext({id: 5}, [{productId: 10, quantity: 2, skuId: 20}]);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP')
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
 			);
 
 			await act(async () => {
@@ -198,7 +322,13 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			]);
 
 			const {result} = renderHook(() =>
-				useProductPurchaseCart(1, undefined, 'DXP')
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
 			);
 
 			await act(async () => {
@@ -213,8 +343,24 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 
 	describe('open cart restore', () => {
 		it('does not load carts without an account or a product', async () => {
-			renderHook(() => useProductPurchaseCart(undefined, product, 'DXP'));
-			renderHook(() => useProductPurchaseCart(1, undefined, 'DXP'));
+			renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					undefined,
+					undefined,
+					'DXP',
+					product
+				)
+			);
+			renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
+			);
 
 			await Promise.resolve();
 
@@ -242,7 +388,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				items: openCartItems,
 			} as never);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP'));
+			renderHook(() =>
+				useProductPurchaseCart(undefined, 1, undefined, 'DXP', product)
+			);
 
 			await waitFor(() =>
 				expect(cartContext.setCart).toHaveBeenCalledWith(openCart)
@@ -269,7 +417,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			} as never);
 
 			renderHook(() =>
-				useProductPurchaseCart(1, {id: 100} as DeliveryProduct, 'DXP')
+				useProductPurchaseCart(undefined, 1, undefined, 'DXP', {
+					id: 100,
+				} as DeliveryProduct)
 			);
 
 			await waitFor(() =>
@@ -291,7 +441,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				items: [{productId: 10, quantity: 2, skuId: 20}],
 			} as never);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP', euro));
+			renderHook(() =>
+				useProductPurchaseCart(euro, 1, undefined, 'DXP', product)
+			);
 
 			await waitFor(() =>
 				expect(cartContext.setCart).toHaveBeenCalledWith(openCart)
@@ -316,7 +468,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				items: [{id: 31, productId: 10, quantity: 2, skuId: 20}],
 			} as never);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP', euro));
+			renderHook(() =>
+				useProductPurchaseCart(euro, 1, 52, 'DXP', product)
+			);
 
 			await waitFor(() =>
 				expect(cartContext.setCart).toHaveBeenCalledWith({id: 12})
@@ -324,6 +478,8 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 
 			expect(cartAPI.createCart).toHaveBeenCalledWith(77, {
 				accountId: 1,
+				billingAddressId: 52,
+				cartItems: [{productId: 10, quantity: 2, skuId: 20}],
 				currencyCode: 'EUR',
 				orderTypeExternalReferenceCode: 'DXP',
 			});
@@ -331,6 +487,38 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			expect(cartContext.setCartItems).toHaveBeenCalledWith([
 				{productId: 10, quantity: 2, skuId: 20},
 			]);
+		});
+
+		it('keeps the open cart when the new cart in the currency of the account cannot be created', async () => {
+			mockAccountCarts([
+				{
+					author: 'Test User',
+					id: 9,
+					orderStatusInfo: {label: 'open'},
+					orderTypeExternalReferenceCode: 'DXP',
+					summary: {currency: 'US Dollar'},
+				},
+			]);
+			cartAPI.createCart.mockRejectedValue(new Error('Unavailable'));
+			cartAPI.getCartItems.mockResolvedValue({
+				items: [{productId: 10, quantity: 2, skuId: 20}],
+			} as never);
+
+			vi.spyOn(console, 'error').mockImplementation(() => {});
+
+			renderHook(() =>
+				useProductPurchaseCart(euro, 1, undefined, 'DXP', product)
+			);
+
+			await waitFor(() =>
+				expect(console.error).toHaveBeenCalledWith(
+					'Unable to change the cart currency',
+					expect.any(Error)
+				)
+			);
+
+			expect(cartAPI.deleteCart).not.toHaveBeenCalled();
+			expect(cartContext.setCart).not.toHaveBeenCalled();
 		});
 
 		it('deletes an open cart that lacks the product and resets the cart', async () => {
@@ -346,7 +534,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				items: [{productId: 99, quantity: 1, skuId: 20}],
 			} as never);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP'));
+			renderHook(() =>
+				useProductPurchaseCart(undefined, 1, undefined, 'DXP', product)
+			);
 
 			await waitFor(() => expect(cartContext.reset).toHaveBeenCalled());
 
@@ -365,7 +555,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				},
 			]);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP'));
+			renderHook(() =>
+				useProductPurchaseCart(undefined, 1, undefined, 'DXP', product)
+			);
 
 			await waitFor(() =>
 				expect(cartAPI.getAccountCarts).toHaveBeenCalled()
@@ -375,6 +567,33 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 			expect(cartAPI.getCartItems).not.toHaveBeenCalled();
 			expect(cartAPI.deleteCart).not.toHaveBeenCalled();
 			expect(cartContext.setCart).not.toHaveBeenCalled();
+		});
+
+		it('reports that the cart is syncing until the open cart is restored', async () => {
+			const openCart = {
+				author: 'Test User',
+				id: 9,
+				orderStatusInfo: {label: 'open'},
+				orderTypeExternalReferenceCode: 'DXP',
+				summary: {currency: 'Euro'},
+			};
+
+			mockAccountCarts([openCart]);
+			cartAPI.getCartItems.mockResolvedValue({
+				items: [{productId: 10, quantity: 1, skuId: 20}],
+			} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(euro, 1, undefined, 'DXP', product)
+			);
+
+			expect(result.current.isSyncingCart).toBe(true);
+
+			await waitFor(() =>
+				expect(result.current.isSyncingCart).toBe(false)
+			);
+
+			expect(cartContext.setCart).toHaveBeenCalledWith(openCart);
 		});
 
 		it('ignores an open cart written by another author', async () => {
@@ -387,7 +606,9 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 				},
 			]);
 
-			renderHook(() => useProductPurchaseCart(1, product, 'DXP'));
+			renderHook(() =>
+				useProductPurchaseCart(undefined, 1, undefined, 'DXP', product)
+			);
 
 			await waitFor(() =>
 				expect(cartAPI.getAccountCarts).toHaveBeenCalled()
