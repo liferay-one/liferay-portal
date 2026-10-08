@@ -35,6 +35,7 @@
 		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-database-monthly",
+			"overageBucketSize": 1,
 			"period": "per month",
 			"unit": "GiB",
 			"usageSource": "composable-account-usage",
@@ -44,6 +45,7 @@
 		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-extensions-ram-monthly",
+			"overageBucketSize": 1,
 			"period": "per month",
 			"unit": "GiB",
 			"usageSource": "composable-account-usage",
@@ -62,6 +64,7 @@
 		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-logs-monthly",
+			"overageBucketSize": 1,
 			"period": "per month",
 			"unit": "GiB",
 			"usageSource": "composable-account-usage",
@@ -71,6 +74,7 @@
 		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-storage-monthly",
+			"overageBucketSize": 1,
 			"period": "per month",
 			"unit": "GiB",
 			"usageSource": "composable-account-usage",
@@ -80,6 +84,7 @@
 		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-traffic-networking-monthly",
+			"overageBucketSize": 1,
 			"period": "per month",
 			"unit": "GiB",
 			"usageSource": "composable-account-usage",

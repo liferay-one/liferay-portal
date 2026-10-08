@@ -2755,6 +2755,90 @@
 							"value": "01tvo00000qyrkpyad"
 						}
 					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-DATABASE-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-LOGS-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-STORAGE-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
 				}
 			]
 		},
@@ -3574,6 +3658,90 @@
 						{
 							"key": "salesforce-product",
 							"value": "01tvo00000qyrkoyad"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-DATABASE-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-LOGS-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-STORAGE-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
+					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
 						}
 					]
 				}
