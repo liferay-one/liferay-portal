@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.address.client.dto.v1_0.Country;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
@@ -110,6 +111,14 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).completeOrder(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
 		);
 
 		Mockito.doReturn(
@@ -984,6 +993,44 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCompleteSettledOrdersProvisionsSEOStudioOrder()
+		throws Exception {
+
+		Order order = _createSEOStudioOrder(
+			"{\"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		Mockito.doReturn(
+			List.of(order)
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.anyString()
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).provisionSEOStudio(
+			ArgumentMatchers.any(Order.class)
+		);
+
+		_commerceOrderService.completeSettledOrders();
+
+		Mockito.verify(
+			_commerceOrderService
+		).provisionSEOStudio(
+			order
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
 	public void testCompleteSettledOrdersSweepsEveryPendingSettledOrder()
 		throws Exception {
 
@@ -1763,6 +1810,167 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateCancelsSEOStudioOrderWhenProvisioningFails()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyCancelledSEOStudioOrder(
+			"Unable to provision the SEO&AEO Studio Beta add on on AI Hub");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCancelsSEOStudioOrderWhenProvisioningThrows()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyCancelledSEOStudioOrder("java.lang.IllegalStateException");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCancelsSEOStudioOrderWithProjectOfAnotherAccount()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(456L);
+		_whenGetAIHubOrders();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		_verifyCancelledSEOStudioOrder(
+			"Project a1tTEST does not belong to the account of order 1000");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCancelsSEOStudioOrderWithUnprovisionedAIHub()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Order aiHubOrder = _createAIHubOrder(
+			new JSONObject(
+			).put(
+				"aiHubForm",
+				new JSONObject(
+				).put(
+					"administratorEmailAddress", "admin@liferay.com"
+				).put(
+					"aiHubAccountName", "Test"
+				)
+			).put(
+				"salesforceProjectId", "a1tTEST"
+			).toString(),
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.doReturn(
+			List.of(aiHubOrder)
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.contains("'AI_HUB'")
+		);
+
+		_whenGetAIHubApplication(aiHubOrder.getId());
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		_verifyCancelledSEOStudioOrder("No AI Hub exists for project a1tTEST");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCancelsSEOStudioOrderWithoutAIHub()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		_verifyCancelledSEOStudioOrder("No AI Hub exists for project a1tTEST");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCompletesProvisionedProcessingSEOStudioOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\", \"seoStudio\": " +
+					"{\"accountEntryId\": 4321}}",
+				CommerceOrderConstants.ORDER_STATUS_PROCESSING));
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyCompletedProvisionedSEOStudioOrder();
+	}
+
+	@Test
+	public void testDispatchOrderUpdateCompletesProvisionedSEOStudioOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\", \"seoStudio\": " +
+					"{\"accountEntryId\": 4321}}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyCompletedProvisionedSEOStudioOrder();
+	}
+
+	@Test
 	public void testDispatchOrderUpdateCompletesSettledOrder()
 		throws Exception {
 
@@ -1874,6 +2082,97 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateProvisionsSEOStudioOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+		_whenProvisionAIHub();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyProvisionedSEOStudioOrder("admin@liferay.com", "Test");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateProvisionsSEOStudioOrderWithDefaultNames()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+		_whenProvisionAIHub();
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setFamilyName("Ribeiro");
+
+		Mockito.doReturn(
+			userAccount
+		).when(
+			_userAccountService
+		).getUserAccountByEmailAddress(
+			"admin@liferay.com"
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		ArgumentCaptor<JSONObject> provisionArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).provision(
+			provisionArgumentCaptor.capture()
+		);
+
+		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
+
+		JSONObject userAccountJSONObject = provisionJSONObject.getJSONArray(
+			"userAccounts"
+		).getJSONObject(
+			0
+		);
+
+		Assertions.assertEquals(
+			"AI Hub", userAccountJSONObject.getString("firstName"));
+		Assertions.assertEquals(
+			"Ribeiro", userAccountJSONObject.getString("lastName"));
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsCompletedSEOStudioOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\", \"seoStudio\": " +
+					"{\"accountEntryId\": 4321}}",
+				CommerceOrderConstants.ORDER_STATUS_COMPLETED));
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
 	public void testDispatchOrderUpdateSkipsMissingOrder() throws Exception {
 		_whenFetchCommerceOrder(null);
 
@@ -1907,6 +2206,43 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService, Mockito.never()
 		).createAIHubOpportunity(
 			ArgumentMatchers.any(Order.class)
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsProcessingSEOStudioOrder()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PROCESSING));
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeSettledOrder(
+			ArgumentMatchers.any(Order.class)
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
 		);
 	}
 
@@ -2322,6 +2658,16 @@ public class CommerceOrderServiceTest {
 		return order;
 	}
 
+	private Order _createSEOStudioOrder(String orderMetadata, int orderStatus) {
+		Order order = _createOrder(
+			orderStatus, "SEO_STUDIO",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+
+		_setAIHubOrderFields(order, orderMetadata);
+
+		return order;
+	}
+
 	private SalesforceOpportunityLineItem _createSalesforceOpportunityLineItem(
 		String product2Id) {
 
@@ -2381,6 +2727,62 @@ public class CommerceOrderServiceTest {
 		order.setCustomFields(() -> customFields);
 	}
 
+	private void _verifyCancelledSEOStudioOrder(String seoStudioError)
+		throws Exception {
+
+		ArgumentCaptor<Map<String, String>> customFieldsArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateOrder(
+			customFieldsArgumentCaptor.capture(),
+			ArgumentMatchers.eq(_ORDER_ID),
+			ArgumentMatchers.eq(CommerceOrderConstants.ORDER_STATUS_CANCELLED)
+		);
+
+		Map<String, String> customFields =
+			customFieldsArgumentCaptor.getValue();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.get("order-metadata"));
+
+		Assertions.assertEquals(
+			seoStudioError,
+			orderMetadataJSONObject.getString("seoStudioError"));
+		Assertions.assertEquals(
+			"a1tTEST",
+			orderMetadataJSONObject.getString("salesforceProjectId"));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
+		);
+	}
+
+	private void _verifyCompletedProvisionedSEOStudioOrder() throws Exception {
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			_ORDER_ID, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
+		);
+	}
+
 	private void _verifyNeverCompleted() throws Exception {
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
@@ -2420,6 +2822,81 @@ public class CommerceOrderServiceTest {
 		Map<String, String> customFields = mapArgumentCaptor.getValue();
 
 		Assertions.assertEquals(projectName, customFields.get("projectName"));
+	}
+
+	private void _verifyProvisionedSEOStudioOrder(
+			String administratorEmailAddress, String aiHubAccountName)
+		throws Exception {
+
+		ArgumentCaptor<JSONObject> provisionArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).provision(
+			provisionArgumentCaptor.capture()
+		);
+
+		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"a1tTEST",
+			provisionJSONObject.getString("accountEntryExternalReferenceCode"));
+		Assertions.assertEquals(
+			aiHubAccountName,
+			provisionJSONObject.getString("accountEntryName"));
+		Assertions.assertEquals(
+			"[\"seoStudio\"]",
+			provisionJSONObject.getJSONArray(
+				"addOns"
+			).toString());
+		Assertions.assertEquals(
+			"studio", provisionJSONObject.getString("tier"));
+
+		JSONArray userAccountsJSONArray = provisionJSONObject.getJSONArray(
+			"userAccounts");
+
+		Assertions.assertEquals(1, userAccountsJSONArray.length());
+		Assertions.assertEquals(
+			administratorEmailAddress,
+			userAccountsJSONArray.getJSONObject(
+				0
+			).getString(
+				"emailAddress"
+			));
+
+		ArgumentCaptor<Map<String, String>> customFieldsArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			customFieldsArgumentCaptor.capture(),
+			ArgumentMatchers.eq(_ORDER_ID),
+			ArgumentMatchers.eq(
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED)
+		);
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFieldsArgumentCaptor.getValue(
+			).get(
+				"order-metadata"
+			));
+
+		Assertions.assertEquals(
+			4321L,
+			orderMetadataJSONObject.getJSONObject(
+				"seoStudio"
+			).getLong(
+				"accountEntryId"
+			));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.eq(CommerceOrderConstants.ORDER_STATUS_CANCELLED)
+		);
 	}
 
 	private void _verifyTaxedOrderItem(
@@ -2512,6 +2989,35 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	private void _whenGetAIHubOrders() throws Exception {
+		Order aiHubOrder = _createAIHubOrder(
+			new JSONObject(
+			).put(
+				"aiHubAccountEntryId", 4321L
+			).put(
+				"aiHubForm",
+				new JSONObject(
+				).put(
+					"administratorEmailAddress", "admin@liferay.com"
+				).put(
+					"aiHubAccountName", "Test"
+				)
+			).put(
+				"salesforceProjectId", "a1tTEST"
+			).toString(),
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		aiHubOrder.setId(900L);
+
+		Mockito.doReturn(
+			List.of(aiHubOrder)
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.contains("'AI_HUB'")
+		);
+	}
+
 	private void _whenPostSalesforceOpportunity(
 			JSONArray lineItemsJSONArray, String opportunityId)
 		throws Exception {
@@ -2548,6 +3054,19 @@ public class CommerceOrderServiceTest {
 		throws Exception {
 
 		_whenPostSalesforceOpportunity(null, opportunityId);
+	}
+
+	private void _whenProvisionAIHub() {
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
 	}
 
 	private static final long _ACCOUNT_ID = 123;
