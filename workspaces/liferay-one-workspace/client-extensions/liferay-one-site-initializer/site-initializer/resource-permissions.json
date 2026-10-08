@@ -175,7 +175,6 @@
 			"ASSIGN_USERS",
 			"MANAGE_ADDRESSES",
 			"MANAGE_DOMAINS",
-			"UNASSIGN_USERS",
 			"UPDATE",
 			"VIEW",
 			"VIEW_ACCOUNT_ROLES",
@@ -823,6 +822,15 @@
 		"primKey": "[$ROLE_ID:Liferay Staff$]",
 		"resourceName": "com.liferay.portal.kernel.model.Role",
 		"roleName": "Liferay Staff",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$ROLE_ID:Provisioning Administrator$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Provisioning Administrator",
 		"scope": "4"
 	},
 	{
