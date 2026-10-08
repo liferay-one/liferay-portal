@@ -52,6 +52,7 @@
 			"grantType": "fixed",
 			"maxQuantity": 4,
 			"name": "vcpu",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkfYAD",
 			"unit": "vCPU"
 		},
@@ -621,6 +622,7 @@
 			"maxQuantity": 100,
 			"name": "database",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
@@ -633,6 +635,7 @@
 			"maxQuantity": 2,
 			"name": "extensions-ram",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
@@ -645,6 +648,7 @@
 			"maxQuantity": 3,
 			"name": "extensions-vcpus",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "vCPU"
 		},
@@ -668,6 +672,7 @@
 			"maxQuantity": 300,
 			"name": "logs",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
@@ -680,7 +685,7 @@
 			"maxQuantity": 1,
 			"name": "storage",
 			"productOptions": "{\"machineType\": \"standard\"}",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "TiB"
 		},
@@ -693,6 +698,7 @@
 			"maxQuantity": 1,
 			"name": "traffic-networking",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "TiB"
 		},
@@ -1004,6 +1010,7 @@
 			"maxQuantity": 100,
 			"name": "database",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
@@ -1082,6 +1089,7 @@
 			"maxQuantity": 2,
 			"name": "extensions-ram",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
@@ -1094,6 +1102,7 @@
 			"maxQuantity": 3,
 			"name": "extensions-vcpus",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "vCPU"
 		},
@@ -1129,6 +1138,7 @@
 			"maxQuantity": 300,
 			"name": "logs",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
@@ -1207,7 +1217,7 @@
 			"maxQuantity": 1,
 			"name": "storage",
 			"productOptions": "{\"machineType\": \"standard\"}",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "TiB"
 		},
@@ -1220,6 +1230,7 @@
 			"maxQuantity": 1,
 			"name": "traffic-networking",
 			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "TiB"
 		},

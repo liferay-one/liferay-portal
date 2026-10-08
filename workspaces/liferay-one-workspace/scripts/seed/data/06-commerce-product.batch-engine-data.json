@@ -217,6 +217,39 @@
 			},
 			"productOptions": [
 				{
+					"fieldType": "radio",
+					"key": "consumption-role",
+					"name": {
+						"en_US": "Consumption Role"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+					"productOptionValues": [
+						{
+							"key": "add-on",
+							"name": {
+								"en_US": "Add-On Bucket"
+							},
+							"priority": 1
+						},
+						{
+							"key": "allotment",
+							"name": {
+								"en_US": "Base Allotment"
+							},
+							"priority": 0
+						},
+						{
+							"key": "overage",
+							"name": {
+								"en_US": "Overage Bucket"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				},
+				{
 					"fieldType": "select",
 					"key": "salesforce-product",
 					"name": {
@@ -280,6 +313,10 @@
 					"purchasable": true,
 					"sku": "01tVO00000QYrkfYAD",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "add-on"
+						},
 						{
 							"key": "salesforce-product",
 							"value": "01tvo00000qyrkfyad"
@@ -2553,6 +2590,39 @@
 			},
 			"productOptions": [
 				{
+					"fieldType": "radio",
+					"key": "consumption-role",
+					"name": {
+						"en_US": "Consumption Role"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+					"productOptionValues": [
+						{
+							"key": "add-on",
+							"name": {
+								"en_US": "Add-On Bucket"
+							},
+							"priority": 1
+						},
+						{
+							"key": "allotment",
+							"name": {
+								"en_US": "Base Allotment"
+							},
+							"priority": 0
+						},
+						{
+							"key": "overage",
+							"name": {
+								"en_US": "Overage Bucket"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				},
+				{
 					"fieldType": "select",
 					"key": "machineType",
 					"name": {
@@ -2676,6 +2746,10 @@
 					"purchasable": true,
 					"sku": "01tVO00000QYrkpYAD",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "allotment"
+						},
 						{
 							"key": "salesforce-product",
 							"value": "01tvo00000qyrkpyad"
@@ -3337,6 +3411,39 @@
 			},
 			"productOptions": [
 				{
+					"fieldType": "radio",
+					"key": "consumption-role",
+					"name": {
+						"en_US": "Consumption Role"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+					"productOptionValues": [
+						{
+							"key": "add-on",
+							"name": {
+								"en_US": "Add-On Bucket"
+							},
+							"priority": 1
+						},
+						{
+							"key": "allotment",
+							"name": {
+								"en_US": "Base Allotment"
+							},
+							"priority": 0
+						},
+						{
+							"key": "overage",
+							"name": {
+								"en_US": "Overage Bucket"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				},
+				{
 					"fieldType": "select",
 					"key": "machineType",
 					"name": {
@@ -3460,6 +3567,10 @@
 					"purchasable": true,
 					"sku": "01tVO00000QYrkoYAD",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "allotment"
+						},
 						{
 							"key": "salesforce-product",
 							"value": "01tvo00000qyrkoyad"
