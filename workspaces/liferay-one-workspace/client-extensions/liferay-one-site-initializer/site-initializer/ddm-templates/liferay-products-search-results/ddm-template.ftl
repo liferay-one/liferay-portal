@@ -45,8 +45,8 @@
 			<#list entries as entry>
 				<#if entry?has_content>
 					<#assign
-						capabilities = getSpecificationValues("product-metadata", "liferay-product-capabilities", entry.getCPDefinitionId())
-						categories = getSpecificationValues("product-metadata", "liferay-product-categories", entry.getCPDefinitionId())
+						capabilities = getSpecificationValues("product-metadata", "liferay-products-capabilities", entry.getCPDefinitionId())
+						categories = getSpecificationValues("product-metadata", "liferay-products-categories", entry.getCPDefinitionId())
 						developerName = getSpecificationValue("product-metadata", "developer-name", entry.getCPDefinitionId())
 						productDescription = stringUtil.shorten(htmlUtil.stripHtml(entry.getDescription()!""), 160, "...")
 						productImage = cpContentHelper.getDefaultImageFileURL(-1, entry.getCPDefinitionId())
