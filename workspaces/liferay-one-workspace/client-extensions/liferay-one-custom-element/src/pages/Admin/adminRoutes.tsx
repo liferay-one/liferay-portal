@@ -45,6 +45,9 @@ const canAccessAdmin = (userAccountModel: UserAccountModel) =>
 const canAccessFinance = (userAccountModel: UserAccountModel) =>
 	userAccountModel.isAdmin || userAccountModel.isFinanceAdministrator;
 
+const canAccessProvisioning = (userAccountModel: UserAccountModel) =>
+	userAccountModel.isAdmin || userAccountModel.isProvisioningAdministrator;
+
 const canAccessSSA = (userAccountModel: UserAccountModel) =>
 	userAccountModel.isSSAAdmin || userAccountModel.isSSAUser;
 
@@ -162,13 +165,13 @@ export const adminRoutes: AppRoute[] = [
 		path: 'details/:orderId',
 	},
 	{
-		canAccess: canAccessAdmin,
+		canAccess: canAccessProvisioning,
 		element: <PubSub />,
 		nav: {icon: 'message-boards', label: i18n.translate('pub-sub')},
 		path: 'pub-sub',
 	},
 	{
-		canAccess: canAccessAdmin,
+		canAccess: canAccessProvisioning,
 		element: <LicenseKeyUploads />,
 		nav: {
 			icon: 'password-policies',
