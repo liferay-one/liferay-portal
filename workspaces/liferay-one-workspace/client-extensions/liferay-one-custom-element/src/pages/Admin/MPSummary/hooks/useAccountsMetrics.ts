@@ -12,7 +12,10 @@ import {
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
 
-const useAccountsMetrics = (param: MetricPeriod) => {
+const useAccountsMetrics = (
+	param: MetricPeriod,
+	accountTypes: string[] = []
+) => {
 	const getAccountsMetrics = async () => {
 		const currentTime = new Date();
 
@@ -26,22 +29,34 @@ const useAccountsMetrics = (param: MetricPeriod) => {
 		beforeLastPeriod.setHours(0, 0, 0, 0);
 		lastPeriod.setHours(23, 59, 59);
 
+		const createSearchBuilder = () => {
+			const searchBuilder = new SearchBuilder();
+
+			if (accountTypes.length) {
+				searchBuilder.in('type', accountTypes).and();
+			}
+
+			return searchBuilder;
+		};
+
 		const requestsParams = [
 			new URLSearchParams({
 				fields: 'id',
+				...(!!accountTypes.length && {
+					filter: SearchBuilder.in('type', accountTypes),
+				}),
 				pageSize: '1',
 			}),
 			new URLSearchParams({
 				fields: 'id',
-				filter: SearchBuilder.gt(
-					'dateCreated',
-					lastPeriod.toISOString()
-				),
+				filter: createSearchBuilder()
+					.gt('dateCreated', lastPeriod.toISOString())
+					.build(),
 				pageSize: '1',
 			}),
 			new URLSearchParams({
 				fields: 'id',
-				filter: new SearchBuilder()
+				filter: createSearchBuilder()
 					.lt('dateCreated', lastPeriod.toISOString())
 					.and()
 					.gt('dateCreated', beforeLastPeriod.toISOString())
@@ -75,7 +90,10 @@ const useAccountsMetrics = (param: MetricPeriod) => {
 		};
 	};
 
-	return useSWR(['metrics/accounts', param], getAccountsMetrics);
+	return useSWR(
+		['metrics/accounts', param, ...accountTypes],
+		getAccountsMetrics
+	);
 };
 
 export default useAccountsMetrics;

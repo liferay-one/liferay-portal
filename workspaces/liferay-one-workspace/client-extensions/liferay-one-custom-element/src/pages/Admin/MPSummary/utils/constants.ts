@@ -5,6 +5,8 @@
 
 export type MetricPeriod = 'month' | 'q1' | 'q2' | 'q3' | 'q4' | 'week';
 
+export const CUSTOMER_ACCOUNT_TYPES = ['business', 'person'];
+
 export const METRIC_PARAMETER: Record<MetricPeriod, number> = {
 	month: 30,
 	q1: 1,
@@ -13,6 +15,8 @@ export const METRIC_PARAMETER: Record<MetricPeriod, number> = {
 	q4: 4,
 	week: 7,
 };
+
+export const PUBLISHER_ACCOUNT_TYPES = ['supplier'];
 
 export function percentage(total: number, partial: number): number {
 	if (!total) {
