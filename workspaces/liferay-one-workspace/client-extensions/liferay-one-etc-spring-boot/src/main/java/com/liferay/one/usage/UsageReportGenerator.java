@@ -479,7 +479,7 @@ public class UsageReportGenerator {
 					"Unable to price the ",
 					usageDefinitionExternalReferenceCode,
 					" overage of project ", projectExternalReferenceCode,
-					" because its allotments carry no overage pricing"));
+					" because its allotments carry no overage SKU"));
 		}
 
 		return null;

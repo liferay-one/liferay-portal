@@ -22,9 +22,15 @@ public class OveragePricingTest {
 		Assertions.assertEquals(
 			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE),
 			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertEquals(
+			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE),
+			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE));
 		Assertions.assertNotEquals(
 			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE),
 			_createOveragePricing(25D, _SKU_EXTERNAL_REFERENCE_CODE));
+		Assertions.assertNotEquals(
+			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE),
+			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test
@@ -37,20 +43,28 @@ public class OveragePricingTest {
 	}
 
 	@Test
-	public void testOfRequiresPositiveRate() {
-		Assertions.assertNull(
-			_createOveragePricing(0D, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNull(
-			_createOveragePricing(-5D, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNotNull(
-			_createOveragePricing(0.5, _SKU_EXTERNAL_REFERENCE_CODE));
+	public void testNonpositiveRateMeansNoRate() {
+		OveragePricing overagePricing = _createOveragePricing(
+			0D, _SKU_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertNull(overagePricing.getRate());
+
+		overagePricing = _createOveragePricing(
+			-5D, _SKU_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertNull(overagePricing.getRate());
+
+		overagePricing = _createOveragePricing(
+			0.5, _SKU_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(0.5, overagePricing.getRate());
 	}
 
 	@Test
-	public void testOfRequiresRateAndSku() {
+	public void testOfRequiresSkuOnly() {
 		Assertions.assertNotNull(
 			_createOveragePricing(_RATE, _SKU_EXTERNAL_REFERENCE_CODE));
-		Assertions.assertNull(
+		Assertions.assertNotNull(
 			_createOveragePricing(null, _SKU_EXTERNAL_REFERENCE_CODE));
 		Assertions.assertNull(_createOveragePricing(_RATE, null));
 	}
@@ -86,6 +100,24 @@ public class OveragePricingTest {
 
 		Assertions.assertEquals(
 			overagePricing, OveragePricing.of(overagePricing.toJSONObject()));
+
+		overagePricing = _createOveragePricing(
+			null, _SKU_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(
+			overagePricing, OveragePricing.of(overagePricing.toJSONObject()));
+	}
+
+	@Test
+	public void testWithoutRateMeansNoAmount() {
+		OveragePricing overagePricing = _createOveragePricing(
+			null, _SKU_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertNull(overagePricing.getAmount(0));
+		Assertions.assertNull(overagePricing.getAmount(3));
+		Assertions.assertEquals(
+			_SKU_EXTERNAL_REFERENCE_CODE,
+			overagePricing.getSkuExternalReferenceCode());
 	}
 
 	private OveragePricing _createOveragePricing(

@@ -38,8 +38,9 @@ public class UsageReportService extends OneBaseService {
 
 	/**
 	 * Adds a usage report for consumption beyond the entitled quantity.
-	 * The SKU, bucket count, and amount stay empty when no pricing data is
-	 * present. The product is the one whose SKU granted the allotment the
+	 * The SKU and bucket count stay empty when there is no overage SKU. The
+	 * amount also stays empty when the overage SKU has no rate, so that the
+	 * overage is priced downstream. The product is the one whose SKU granted the allotment the
 	 * report measures against, recorded so downstream consumers need not
 	 * derive it.
 	 */

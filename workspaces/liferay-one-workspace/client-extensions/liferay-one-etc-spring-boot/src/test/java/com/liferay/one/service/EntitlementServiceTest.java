@@ -12,6 +12,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.OveragePricing;
 
 import java.math.BigDecimal;
 
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -125,6 +127,67 @@ public class EntitlementServiceTest {
 			Mockito.eq(entitlementDefinition.getOveragePricing()),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGenerateEntitlementsCopiesTheOverageSkuWithoutRate()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
+			new JSONObject(
+			).put(
+				"defaultQuantity", 7.0
+			).put(
+				"grantType", "fixed"
+			).put(
+				"id", 1L
+			).put(
+				"name", "extensions-vcpus"
+			).put(
+				"overageSkuExternalReferenceCode",
+				"PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE"
+			));
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyString(), Mockito.anyMap())
+		).thenReturn(
+			List.of(entitlementDefinition)
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "extensions-vcpus")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		ArgumentCaptor<OveragePricing> overagePricingArgumentCaptor =
+			ArgumentCaptor.forClass(OveragePricing.class);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), overagePricingArgumentCaptor.capture(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		OveragePricing overagePricing = overagePricingArgumentCaptor.getValue();
+
+		Assertions.assertNull(overagePricing.getRate());
+		Assertions.assertEquals(
+			"PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
+			overagePricing.getSkuExternalReferenceCode());
 	}
 
 	@Test

@@ -327,7 +327,7 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 | `licenseKeyFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
 | `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |
-| `overageRate` | double | Price of one overage bucket; empty if the definition cannot bill overage |
+| `overageRate` | double | Price of one overage bucket; empty when the overage is priced downstream or cannot be billed |
 | `overageSkuExternalReferenceCode` | string | Overage bucket SKU, e.g. `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` |
 | `productOptions` | string | JSON map of SKU option key/value pairs the order item must carry for this definition to apply; empty matches any |
 | `active` | boolean | Default `true`; set `false` to deprecate without deleting |
@@ -338,9 +338,9 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 - `C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET`: one 200,000 event bucket per unit, granted by `PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET`.
 - `C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET`: granted by `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` on overage orders. `UsageAllotment` ignores it, because its SKU carries the `overage` consumption role.
 
-**Bucket priced overage.** Entitlements copy `overageRate` and `overageSkuExternalReferenceCode` from their definition at grant time, so a later definition change never reprices a grant. The two are set together or not at all, enforced by the `*_OVERAGE_PRICING_PAIR` validation rule on both objects. A rate of 0 or less counts as unset, since Liferay stores an unset decimal as 0. Bucket size belongs to the metric (`UsageDefinition.overageBucketSize`) and also measures add-on buckets. Overage bills in whole buckets: 300,000 events over with a 200,000 event bucket bills two. Currency is not stored; the overage order takes it from its Commerce channel.
+**Bucket priced overage.** Entitlements copy `overageRate` and `overageSkuExternalReferenceCode` from their definition at grant time, so a later definition change never reprices a grant. The SKU makes an overage orderable and the rate makes it priceable. A SKU without a rate is valid: the report carries the SKU and the bucket count, and the amount stays empty for BizOps to price downstream. A rate without a SKU is refused by the `*_OVERAGE_PRICING_PAIR` validation rule on both objects. A rate of 0 or less counts as unset, since Liferay stores an unset decimal as 0. Bucket size belongs to the metric (`UsageDefinition.overageBucketSize`) and also measures add-on buckets. Overage bills in whole buckets: 300,000 events over with a 200,000 event bucket bills two. Currency is not stored; the overage order takes it from its Commerce channel.
 
-When a project's allotments have no pricing or conflicting pricing, or its usage definition has no bucket size, `UsageReportGenerator` records the overage but leaves the SKU, bucket count, and amount empty for a reviewer. A project with add-on buckets and no bucket size is skipped, since its entitled quantity is unknown.
+When a project's allotments have no overage SKU or conflicting pricing, or its usage definition has no bucket size, `UsageReportGenerator` records the overage but leaves the SKU, bucket count, and amount empty for a reviewer. A project with add-on buckets and no bucket size is skipped, since its entitled quantity is unknown.
 
 **License generation:** Presence of an EntitlementDefinition with `name = 'licenseGeneration'` (`grantType = fixed`, `unit = boolean`) indicates the product can generate license keys. This replaces the old boolean `licenses` flag on products.
 
@@ -410,7 +410,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `entitledQuantity` | double | Allotted quantity for the period, in the metric's unit |
 | `overageQuantity` | double | `max(aggregateQuantity − entitledQuantity, 0)`, in the metric's unit |
 | `overageSkuQuantity` | double | Order line quantity: `ceil(overageQuantity ÷ overageBucketSize)`. Empty when unpriced |
-| `overageAmount` | double | `overageSkuQuantity` × `overageRate`. Empty when unpriced |
+| `overageAmount` | double | `overageSkuQuantity` × `overageRate`. Empty when unpriced, or when the overage SKU has no rate |
 | `overageCurrency` | string | Not populated; the order's Commerce channel sets the currency |
 | `productExternalReferenceCode` | string | Denormalized; the product whose SKU granted the allotment the report measures against, e.g. `PRDCT-SAAS`. Downstream consumers read it rather than re-deriving which product a project's overage belongs to |
 | `productName` | string | Denormalized; the product's name at generation time, e.g. `SaaS Experience`, for the reviewer |

@@ -51,6 +51,32 @@ public class UsageReportServiceTest {
 	}
 
 	@Test
+	public void testLeavesAmountEmptyWithoutOverageRate() throws Exception {
+		_usageReportService.addUsageReport(
+			1400000, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
+			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE,
+			OveragePricing.of(
+				new JSONObject(
+				).put(
+					"overageSkuExternalReferenceCode",
+					_SKU_EXTERNAL_REFERENCE_CODE
+				)),
+			_PRODUCT_EXTERNAL_REFERENCE_CODE, _PRODUCT_NAME, _project,
+			_usageDefinition);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE, 1400000,
+			_CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,
+			_DATE_TO_INSTANT, 1000000, _EXTERNAL_REFERENCE_CODE, null, 400000,
+			Long.valueOf(2), _PRODUCT_EXTERNAL_REFERENCE_CODE, _PRODUCT_NAME,
+			_PROJECT_ID, UsageReportService.REVIEW_STATUS_READY_FOR_REVIEW,
+			_SKU_EXTERNAL_REFERENCE_CODE, _USAGE_DEFINITION_ID
+		);
+	}
+
+	@Test
 	public void testLeavesBillingEmptyWithoutOveragePricing() throws Exception {
 		_usageReportService.addUsageReport(
 			1400000, _CONTRACT_EXTERNAL_REFERENCE_CODE, _DATE_FROM_INSTANT,

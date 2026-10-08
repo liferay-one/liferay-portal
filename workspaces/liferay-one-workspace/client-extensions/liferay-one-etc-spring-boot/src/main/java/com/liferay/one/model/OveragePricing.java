@@ -15,24 +15,23 @@ import org.json.JSONObject;
 
 /**
  * The overage rate and SKU an entitlement copies from its definition at grant
- * time. The rate is the price of one bucket.
+ * time. The SKU makes an overage orderable: a usage report names it with the
+ * bucket quantity. The rate makes an overage priceable: it is the price of
+ * one bucket. Without a rate, the amount is unknown and is priced
+ * downstream.
  *
  * @author Drew Brokke
  */
 public class OveragePricing {
 
 	/**
-	 * Returns <code>null</code> unless the JSON object has a positive rate and
-	 * a SKU.
+	 * Returns <code>null</code> unless the JSON object has a SKU. A rate that
+	 * is not positive is read as no rate.
 	 */
 	public static OveragePricing of(JSONObject jsonObject) {
 		OveragePricing overagePricing = new OveragePricing(jsonObject);
 
-		Double rate = overagePricing.getRate();
-
-		if ((rate == null) || (rate <= 0) ||
-			Validator.isNull(overagePricing.getSkuExternalReferenceCode())) {
-
+		if (Validator.isNull(overagePricing.getSkuExternalReferenceCode())) {
 			return null;
 		}
 
@@ -60,9 +59,16 @@ public class OveragePricing {
 		return false;
 	}
 
-	public double getAmount(long bucketQuantity) {
+	/**
+	 * Returns <code>null</code> when there is no rate.
+	 */
+	public Double getAmount(long bucketQuantity) {
+		if (_rate == null) {
+			return null;
+		}
+
 		if (bucketQuantity <= 0) {
-			return 0;
+			return 0D;
 		}
 
 		return BigDecimal.valueOf(
@@ -95,7 +101,13 @@ public class OveragePricing {
 	}
 
 	private OveragePricing(JSONObject jsonObject) {
-		_rate = jsonObject.optDoubleObject("overageRate", null);
+		Double rate = jsonObject.optDoubleObject("overageRate", null);
+
+		if ((rate != null) && (rate <= 0)) {
+			rate = null;
+		}
+
+		_rate = rate;
 
 		_skuExternalReferenceCode = jsonObject.optString(
 			"overageSkuExternalReferenceCode", null);

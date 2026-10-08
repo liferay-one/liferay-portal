@@ -221,6 +221,42 @@ public class UsageReportGeneratorTest {
 	}
 
 	@Test
+	public void testGeneratesUnpricedReportWithOverageSkuWithoutRate()
+		throws Exception {
+
+		JSONObject jsonObject = _createEntitlementJSONObject(
+			"fixed", _PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _SKU_ALLOTMENT,
+			null);
+
+		jsonObject.put("overageSkuExternalReferenceCode", _SKU_OVERAGE);
+
+		_setUpEntitlements(new Entitlement(jsonObject));
+
+		_setUpUsage(1200000D);
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		ArgumentCaptor<OveragePricing> overagePricingArgumentCaptor =
+			ArgumentCaptor.forClass(OveragePricing.class);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			Mockito.eq(1200000D), Mockito.anyString(), Mockito.any(),
+			Mockito.any(), Mockito.eq(1000000D),
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE),
+			overagePricingArgumentCaptor.capture(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		OveragePricing overagePricing = overagePricingArgumentCaptor.getValue();
+
+		Assertions.assertNull(overagePricing.getRate());
+		Assertions.assertEquals(
+			_SKU_OVERAGE, overagePricing.getSkuExternalReferenceCode());
+	}
+
+	@Test
 	public void testGeneratesUnpricedReportWithoutOveragePricing()
 		throws Exception {
 

@@ -2493,14 +2493,14 @@
 					"active": true,
 					"engine": "ddm",
 					"errorLabel": {
-						"en_US": "Overage Rate and Overage SKU External Reference Code must be set together or not at all."
+						"en_US": "An Overage Rate requires an Overage SKU External Reference Code."
 					},
 					"externalReferenceCode": "C_ENTITLEMENT_OVERAGE_PRICING_PAIR",
 					"name": {
 						"en_US": "Entitlement Overage Pricing Pair"
 					},
 					"outputType": "fullValidation",
-					"script": "(overageRate <= 0) == isEmpty(overageSkuExternalReferenceCode)"
+					"script": "(overageRate <= 0) OR NOT isEmpty(overageSkuExternalReferenceCode)"
 				}
 			],
 			"objectViews": [
@@ -2872,14 +2872,14 @@
 					"active": true,
 					"engine": "ddm",
 					"errorLabel": {
-						"en_US": "Overage Rate and Overage SKU External Reference Code must be set together or not at all."
+						"en_US": "An Overage Rate requires an Overage SKU External Reference Code."
 					},
 					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_OVERAGE_PRICING_PAIR",
 					"name": {
 						"en_US": "Entitlement Definition Overage Pricing Pair"
 					},
 					"outputType": "fullValidation",
-					"script": "(overageRate <= 0) == isEmpty(overageSkuExternalReferenceCode)"
+					"script": "(overageRate <= 0) OR NOT isEmpty(overageSkuExternalReferenceCode)"
 				}
 			],
 			"objectViews": [

@@ -166,6 +166,23 @@ public class UsageAllotmentTest {
 	}
 
 	@Test
+	public void testSameSkuWithoutRateDoesNotConflict() {
+		UsageAllotment usageAllotment = _createUsageAllotment(
+			Arrays.asList(
+				_createPricedEntitlement(1000000D, null, _SKU_ALLOTMENT),
+				_createPricedEntitlement(500000D, null, _SKU_ALLOTMENT)),
+			_OVERAGE_BUCKET_SIZE);
+
+		OveragePricing overagePricing = usageAllotment.getOveragePricing();
+
+		Assertions.assertNull(overagePricing.getRate());
+		Assertions.assertEquals(
+			_SKU_OVERAGE, overagePricing.getSkuExternalReferenceCode());
+
+		Assertions.assertFalse(usageAllotment.hasConflictingOveragePricing());
+	}
+
+	@Test
 	public void testUnlimitedGrantType() {
 		UsageAllotment usageAllotment = _createUsageAllotment(
 			Arrays.asList(
@@ -237,7 +254,7 @@ public class UsageAllotmentTest {
 	}
 
 	private Entitlement _createPricedEntitlement(
-		Double quantity, double overageRate, String skuExternalReferenceCode) {
+		Double quantity, Double overageRate, String skuExternalReferenceCode) {
 
 		JSONObject jsonObject = _createEntitlementJSONObject(
 			"fixed", quantity, skuExternalReferenceCode);
