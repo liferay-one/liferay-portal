@@ -48,7 +48,8 @@ export function useUserProjects(): {
 	const {userAccountModel} = useOneContext();
 
 	const showAllAccountProjects = Boolean(
-		userAccountModel?.isAccountAdministrator || userAccountModel?.isAdmin
+		userAccountModel?.isAccountAdministrator ||
+			userAccountModel?.canManageAllAccounts
 	);
 
 	const enabled = Boolean(accountId && userId);

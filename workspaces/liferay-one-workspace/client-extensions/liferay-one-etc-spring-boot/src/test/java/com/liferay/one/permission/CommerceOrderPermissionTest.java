@@ -79,6 +79,19 @@ public class CommerceOrderPermissionTest {
 	}
 
 	@Test
+	public void testCheckAllowsProvisioningAdministrator() throws Exception {
+		_commerceOrderPermission.check(
+			_COMMERCE_ORDER_ID,
+			_createUserAccount(RoleConstants.NAME_PROVISIONING_ADMINISTRATOR));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).fetchCommerceOrder(
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
 	public void testCheckDeniesMissingAccount() throws Exception {
 		_whenFetchCommerceOrder(new Order());
 

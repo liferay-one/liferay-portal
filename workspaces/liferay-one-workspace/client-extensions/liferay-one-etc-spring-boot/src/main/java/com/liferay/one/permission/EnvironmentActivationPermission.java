@@ -77,7 +77,10 @@ public class EnvironmentActivationPermission {
 				if (Objects.equals(
 						RoleConstants.NAME_ADMINISTRATOR, roleBriefName) ||
 					Objects.equals(
-						RoleConstants.NAME_LIFERAY_STAFF, roleBriefName)) {
+						RoleConstants.NAME_LIFERAY_STAFF, roleBriefName) ||
+					Objects.equals(
+						RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
+						roleBriefName)) {
 
 					return true;
 				}

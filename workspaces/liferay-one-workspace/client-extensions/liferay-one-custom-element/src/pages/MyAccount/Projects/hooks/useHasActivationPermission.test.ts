@@ -79,7 +79,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 		mockMembership({});
 	});
 
-	it.each(['isAccountAdministrator', 'isAdmin', 'isLiferayStaff'])(
+	it.each(['canManageAllAccounts', 'isAccountAdministrator', 'isLiferayStaff'])(
 		'grants access to %s without a membership request',
 		(roleFlag) => {
 			mockContext({userAccountModel: {[roleFlag]: true}});
@@ -170,7 +170,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 	it('holds loading until the user account loads', () => {
 		mockContext({
 			myUserAccount: null,
-			userAccountModel: {isAdmin: true},
+			userAccountModel: {canManageAllAccounts: true},
 		});
 
 		const {result} = renderHook(() =>

@@ -129,6 +129,21 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testContainsAllowsProvisioningAdministrator() throws Exception {
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)
+			});
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+				userAccount));
+	}
+
+	@Test
 	public void testContainsAllowsSSAAdminToAssignMembers() throws Exception {
 		Assertions.assertTrue(
 			_accountPermission.contains(

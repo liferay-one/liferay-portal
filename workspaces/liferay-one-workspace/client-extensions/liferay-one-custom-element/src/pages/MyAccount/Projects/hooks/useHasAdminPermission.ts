@@ -9,8 +9,7 @@ export function useHasAdminPermission(): boolean {
 	const {userAccountModel} = useOneContext();
 
 	return Boolean(
-		userAccountModel?.isAdmin ||
-			userAccountModel?.isProvisioningAdministrator
+		userAccountModel?.canManageAllAccounts
 	);
 }
 
