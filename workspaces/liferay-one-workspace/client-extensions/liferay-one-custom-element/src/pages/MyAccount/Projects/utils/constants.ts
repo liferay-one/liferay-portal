@@ -38,7 +38,6 @@ export const STATUS_DOT_COLORS: {[key: string]: string} = {
 	'pending': 'var(--color-state-warning)',
 	'pending-payment': 'var(--color-state-warning)',
 	'processing': 'var(--color-state-warning)',
-	'requested': 'var(--color-state-info)',
 };
 
 export type SupportLink = {

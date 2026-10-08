@@ -107,7 +107,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-ORDERS-080 | For a subscription order (`ADDONS`, `CMP`, `CMP_BETA`, `DSR`, `DXP`, or `SALESFORCE`), a cancelled order shows Expired. A completed or in progress order shows Active. A pending, processing, or on hold order shows Pending. | P1 | LPD-102451 | `MOD-ORDERUTILS` |
 | REQ-ORDERS-081 | An AI Hub order that is pending, processing, or on hold shows Pending. | P1 | LPD-90605 | `MOD-ORDERUTILS` |
-| REQ-ORDERS-082 | An SEO Studio order shows Requested until it is completed. | P1 | LPD-102451 | `MOD-ORDERUTILS` |
+| REQ-ORDERS-082 | An SEO Studio order that is completed shows Active. A cancelled order shows Cancelled. Any other order shows Pending. | P1 | LPD-102451, LPD-105834 | `MOD-ORDERUTILS` |
 | REQ-ORDERS-083 | The status filter treats "Cancelled" and "Canceled" as one status. | P2 | — | `MOD-ORDERUTILS` |
 | REQ-ORDERS-084 | The payment status of an order shows as paid, unpaid, pending, failed, canceled, or not required. | P2 | — | `ROUTE-MY-ACCOUNT-ORDERID` |
 

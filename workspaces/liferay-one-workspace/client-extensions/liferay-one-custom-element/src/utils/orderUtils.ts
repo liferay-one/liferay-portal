@@ -230,16 +230,16 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		);
 	}
 
-	const requestableOrderTypes: OrderTypes[] = ['SEO_STUDIO'];
-
-	if (
-		requestableOrderTypes.includes(
-			order.orderTypeExternalReferenceCode as OrderTypes
-		)
-	) {
-		if (order.orderStatusInfo.code !== OrderWorkflowStatusCode.COMPLETED) {
-			return 'Requested';
+	if (order.orderTypeExternalReferenceCode === 'SEO_STUDIO') {
+		if (order.orderStatusInfo.code === OrderWorkflowStatusCode.CANCELLED) {
+			return 'Cancelled';
 		}
+
+		if (order.orderStatusInfo.code !== OrderWorkflowStatusCode.COMPLETED) {
+			return 'Pending';
+		}
+
+		return 'Active';
 	}
 
 	return statusLabel;
