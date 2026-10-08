@@ -1508,7 +1508,6 @@ export default {
 	'seo-studio-is-available-only-for-ai-hub-customers':
 		'SEO Studio Is Available Only for AI Hub Customers',
 	'seo-studio-requirements': 'SEO Studio Requirements',
-	'seo-studio-url': 'SEO Studio URL',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
 	'set-up-analytics-cloud': 'Set up Analytics Cloud',
