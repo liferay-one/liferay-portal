@@ -62,6 +62,15 @@ describe('[HOOK-USEACCOUNTS] useAccounts', () => {
 		expect(currentAccountQuery(null).key).toBeNull();
 	});
 
+	it('keys the account list without an account id for a user who views all accounts', () => {
+		expect(accountsQuery(undefined, 'acme', true).key).toBe(
+			'/graphql/accounts/none/acme'
+		);
+		expect(accountsQuery(5, 'acme', true).key).toBe(
+			'/graphql/accounts/5/acme'
+		);
+	});
+
 	it('keys the queries on the account id and search', () => {
 		expect(accountsQuery(5, 'acme').key).toBe('/graphql/accounts/5/acme');
 		expect(currentAccountQuery(5).key).toBe('/graphql/account/5');
@@ -110,6 +119,14 @@ describe('[HOOK-USEACCOUNTS] useAccounts', () => {
 		);
 		expect(vi.mocked(useDataQuery).mock.calls[1][0].key).toBe(
 			'/graphql/account/7'
+		);
+	});
+
+	it('queries the account list without an account for a user who views all accounts', () => {
+		renderHook(() => useAccounts('abc', true));
+
+		expect(vi.mocked(useDataQuery).mock.calls[0][0].key).toBe(
+			'/graphql/accounts/none/abc'
 		);
 	});
 

@@ -20,7 +20,8 @@ function toAccount(account: Account): Account {
 
 export function accountsQuery(
 	accountId?: number | string | null,
-	search = ''
+	search = '',
+	canViewAllAccounts = false
 ): DataQuery<APIResponse<Account>> {
 	const filter = search
 		? `contains(name, '${search.replace(/'/g, "''")}')`
@@ -36,7 +37,10 @@ export function accountsQuery(
 				...data.accounts,
 				items: data.accounts.items.map(toAccount),
 			})),
-		key: accountId ? `/graphql/accounts/${accountId}/${search}` : null,
+		key:
+			accountId || canViewAllAccounts
+				? `/graphql/accounts/${accountId ?? 'none'}/${search}`
+				: null,
 	};
 }
 
@@ -52,9 +56,13 @@ export function currentAccountQuery(
 	};
 }
 
-export function useAccounts(search = '') {
+export function useAccounts(search = '', canViewAllAccounts = false) {
 	return useDataQuery(
-		accountsQuery(Liferay.CommerceContext.account?.accountId, search)
+		accountsQuery(
+			Liferay.CommerceContext.account?.accountId,
+			search,
+			canViewAllAccounts
+		)
 	);
 }
 

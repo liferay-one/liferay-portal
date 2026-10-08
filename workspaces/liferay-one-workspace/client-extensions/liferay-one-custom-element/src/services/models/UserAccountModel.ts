@@ -29,6 +29,14 @@ export class UserAccountModel {
 		return this.userAccount.type;
 	}
 
+	get canViewAllAccounts() {
+		return Boolean(
+			this.isAdmin ||
+				this.isFinanceAdministrator ||
+				this.isProvisioningAdministrator
+		);
+	}
+
 	get isAccountAdministrator() {
 		return this.hasAccountRole('Account Administrator');
 	}
