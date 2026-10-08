@@ -12,12 +12,6 @@
 		border: solid 1px red !important;
 	}
 
-	&-next-step-page-icon {
-		height: 40px !important;
-		margin: 20px !important;
-		width: 40px !important;
-	}
-
 	&-select-input {
 		height: 40px;
 	}
