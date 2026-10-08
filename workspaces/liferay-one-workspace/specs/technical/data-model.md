@@ -193,7 +193,7 @@ Liferay Commerce has no system object definition for CPInstance, so custom objec
 
 **Options (SKU-contributing)**
 
-Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU that carries the `base-license-usage-type` option is licensable. This one option holds the license tiers of every product family. The frontend reads the key from `LICENSE_USAGE_TYPE_SKU_OPTION_KEY`. `CommerceSkuUtil.hasLicenseUsageTypeOption` in Spring Boot matches the `-license-usage-type` suffix, so it also accepts the older family keys (`ai-hub`, `cloud`, `cmp`, `dsr`, `dxp`) until the data migration replaces them. AI Hub tiers (`activate`, `enterprise`, `studio`) are read through `getAiHubTier`, which matches the value and not the key.
+Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-engine-data.json`. A SKU that carries the `base-license-usage-type` option is licensable. This one option holds the license tiers of every product family. New apps get this option from `LICENSE_USAGE_TYPE_SKU_OPTION_KEY`, with only the tiers of their app type. To read a SKU, the frontend (`isLicenseUsageTypeSKUOptionKey`) and Spring Boot (`CommerceSkuUtil.hasLicenseUsageTypeOption`) both match the `-license-usage-type` suffix. They therefore also accept the older family keys (`ai-hub`, `cloud`, `cmp`, `dsr`, `dxp`), which existing and migrated products still carry, until a data migration replaces them. AI Hub tiers (`activate`, `enterprise`, `studio`) are read through `getAiHubTier`, which matches the value and not the key.
 
 | Key | ERC | Values |
 |---|---|---|

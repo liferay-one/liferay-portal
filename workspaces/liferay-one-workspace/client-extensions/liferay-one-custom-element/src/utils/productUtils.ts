@@ -6,7 +6,6 @@
 import productIconFallback from '~/assets/icons/purchased_app_icon.svg';
 import productImageFallback from '~/assets/images/app_placeholder.png';
 import {
-	LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
 	ProductLicenseFriendlyName,
 	ProductLicenseType,
 	ProductSpecificationKey,
@@ -14,6 +13,7 @@ import {
 } from '~/enums/Product';
 import i18n from '~/i18n';
 
+import {isLicenseUsageTypeSKUOptionKey} from './licenseTierUtils';
 import {getSiteURL} from './siteUtils';
 
 import type {
@@ -188,8 +188,7 @@ export function getSkuByOptionValueKey(
 			purchasable &&
 			skuOptions?.find(
 				(skuOption) =>
-					skuOption.skuOptionKey ===
-						LICENSE_USAGE_TYPE_SKU_OPTION_KEY &&
+					isLicenseUsageTypeSKUOptionKey(skuOption.skuOptionKey) &&
 					skuOption.skuOptionValueKey === skuOptionValueKey
 			)
 	);

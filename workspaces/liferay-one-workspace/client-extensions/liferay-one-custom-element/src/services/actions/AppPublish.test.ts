@@ -247,6 +247,19 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 					key: LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
 					name: 'License Usage Type',
 					optionId: 5,
+					productOptionValues: [
+						{
+							key: 'developer',
+							name: {en_US: 'Developer'},
+							priority: 0,
+						},
+						{
+							key: 'standard',
+							name: {en_US: 'Standard'},
+							priority: 1,
+						},
+						{key: 'trial', name: {en_US: 'Trial'}, priority: 2},
+					],
 				},
 			],
 			1
@@ -320,6 +333,45 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 			ProductSpecificationKey.APP_LICENSING_TYPE,
 		]);
 	});
+
+	it.each([
+		[ProductType.CLOUD, ['standard', 'trial']],
+		[ProductType.CLIENT_EXTENSION, ['developer', 'standard']],
+	])(
+		'creates only the %s license tiers on the product option',
+		async (appType, skuOptions) => {
+			const product = createProduct();
+
+			catalog.getOptions.mockResolvedValue({
+				items: [
+					{id: 5, key: LICENSE_USAGE_TYPE_SKU_OPTION_KEY, name: ''},
+				],
+			} as never);
+			catalog.createProductOption.mockResolvedValue({
+				items: [{id: 50, productOptionValues: []}],
+			} as never);
+			pricing.createPriceList.mockResolvedValue({id: 80} as never);
+
+			const appPublish = new AppPublish(
+				createContext({
+					_product: product,
+					build: {appType, liferayPackages: []},
+					licensing: {licenseType: 'Perpetual', prices: {}},
+				})
+			);
+
+			await appPublish.syncLicensing(product);
+
+			const [[[productOptionBody]]] =
+				catalog.createProductOption.mock.calls;
+
+			const {productOptionValues} = productOptionBody as {
+				productOptionValues: {key: string}[];
+			};
+
+			expect(productOptionValues.map(({key}) => key)).toEqual(skuOptions);
+		}
+	);
 
 	it('does nothing for licensing when no license type is set', async () => {
 		const appPublish = new AppPublish(createContext());

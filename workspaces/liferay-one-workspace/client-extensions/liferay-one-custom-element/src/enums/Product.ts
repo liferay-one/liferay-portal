@@ -230,6 +230,8 @@ export const EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES: readonly Prod
 
 export const LICENSE_USAGE_TYPE_SKU_OPTION_KEY = 'base-license-usage-type';
 
+export const LICENSE_USAGE_TYPE_SKU_OPTION_KEY_SUFFIX = '-license-usage-type';
+
 const offeringTypes = {
 	'client-extension': ALL_OFFERINGS,
 	'cloud': [ProductOfferingTypes.LIFERAY_SAAS],

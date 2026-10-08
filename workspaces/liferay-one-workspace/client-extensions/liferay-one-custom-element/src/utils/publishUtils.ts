@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
+import {isLicenseUsageTypeSKUOptionKey} from '~/utils/licenseTierUtils';
 import {ProductTags} from '~/utils/productUtils';
 
 import accountPlaceholder from '../assets/images/account_placeholder.png';
@@ -113,8 +113,8 @@ type LicenceTiersPrices = {
 };
 
 export function getSkuPrice(appLicensePrice: LicenceTiersPrices, sku: SKU) {
-	const licenseUsageType = sku.skuOptions.find(
-		({key}) => key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
+	const licenseUsageType = sku.skuOptions.find(({key}) =>
+		isLicenseUsageTypeSKUOptionKey(key)
 	);
 
 	if (!licenseUsageType) {

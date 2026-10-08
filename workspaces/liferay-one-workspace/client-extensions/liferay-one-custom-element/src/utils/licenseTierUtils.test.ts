@@ -10,6 +10,7 @@ import {
 	getLicenseTierSKUs,
 	getProductLicenseTiers,
 	getSKULicenseTier,
+	isLicenseUsageTypeSKUOptionKey,
 	isProductLicenseTier,
 } from './licenseTierUtils';
 
@@ -84,6 +85,25 @@ describe('[MOD-LICENSETIERUTILS] licenseTierUtils', () => {
 		expect(
 			getSKULicenseTier(toSKU('OTHER-OPTION', 'color', 'trial'))
 		).toBeUndefined();
+	});
+
+	it('reads the tier of a SKU that still carries a product family option', () => {
+		expect(
+			getSKULicenseTier(
+				toSKU('LEGACY', 'dxp-license-usage-type', 'developer')
+			)
+		).toBe('developer');
+	});
+
+	it('recognizes every license usage type option key', () => {
+		expect(isLicenseUsageTypeSKUOptionKey('base-license-usage-type')).toBe(
+			true
+		);
+		expect(isLicenseUsageTypeSKUOptionKey('cloud-license-usage-type')).toBe(
+			true
+		);
+		expect(isLicenseUsageTypeSKUOptionKey('consumption-role')).toBe(false);
+		expect(isLicenseUsageTypeSKUOptionKey(undefined)).toBe(false);
 	});
 
 	it('recognizes the known tiers', () => {

@@ -5,9 +5,9 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import ClayIcon from '@clayui/icon';
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
+import {isLicenseUsageTypeSKUOptionKey} from '~/utils/licenseTierUtils';
 
 import LicenseTier from '../LicenseTier/LicenseTier';
 
@@ -36,8 +36,8 @@ const LicenseCard = ({sku}: LicenseCardProps) => {
 		cartItems.find((item) => item.skuId === sku.id)?.quantity ||
 		MIN_QUANTITY;
 
-	const skuOption = (sku.skuOptions ?? []).find(
-		({skuOptionKey}) => skuOptionKey === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
+	const skuOption = (sku.skuOptions ?? []).find(({skuOptionKey}) =>
+		isLicenseUsageTypeSKUOptionKey(skuOptionKey)
 	);
 
 	const licenseType = skuOption?.skuOptionValueKey?.toLocaleLowerCase() ?? '';
