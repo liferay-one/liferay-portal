@@ -4,10 +4,10 @@
  */
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';
 import HeadlessCommerceAdminPricing from '~/services/headless/HeadlessCommerceAdminPricing';
 import {
-	ProductLicense,
 	ProductSpecificationKey,
 	ProductType,
 	ProductWorkflowStatusCode,
@@ -118,7 +118,7 @@ function createSKU(id: number, value: string) {
 		externalReferenceCode: `SKU-${value}`,
 		id,
 		sku: value,
-		skuOptions: [{key: ProductLicense.DXP, value}],
+		skuOptions: [{key: LICENSE_USAGE_TYPE_SKU_OPTION_KEY, value}],
 	};
 }
 
@@ -202,13 +202,13 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 
 		catalog.getOptions.mockResolvedValue({
 			items: [
-				{id: 4, key: ProductLicense.BASE, name: 'Base'},
+				{id: 4, key: 'consumption-role', name: 'Consumption Role'},
 				{
 					actions: {},
-					externalReferenceCode: 'OPTION-DXP',
+					externalReferenceCode: 'OPTION-LICENSE-USAGE-TYPE',
 					id: 5,
-					key: ProductLicense.DXP,
-					name: 'DXP',
+					key: LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
+					name: 'License Usage Type',
 				},
 			],
 		} as never);
@@ -241,7 +241,14 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 		await appPublish.syncLicensing(product);
 
 		expect(catalog.createProductOption).toHaveBeenCalledWith(
-			[{id: 5, key: ProductLicense.DXP, name: 'DXP', optionId: 5}],
+			[
+				{
+					id: 5,
+					key: LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
+					name: 'License Usage Type',
+					optionId: 5,
+				},
+			],
 			1
 		);
 		expect(catalog.createProductSKU.mock.calls).toEqual([

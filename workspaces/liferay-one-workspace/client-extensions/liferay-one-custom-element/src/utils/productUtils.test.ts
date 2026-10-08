@@ -150,7 +150,7 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 				isTrialSKU(
 					toSKU('APP1', [
 						{
-							skuOptionKey: 'dxp-license-usage-type',
+							skuOptionKey: 'base-license-usage-type',
 							skuOptionValueKey: 'trial',
 						},
 					])
@@ -191,14 +191,14 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 		it('needs a purchasable SKU with a license usage option of the key', () => {
 			const unpurchasableSKU = toDeliverySKU(
 				'UNPURCHASABLE',
-				[['dxp-license-usage-type', 'standard']],
+				[['base-license-usage-type', 'standard']],
 				{purchasable: false}
 			);
 			const otherOptionSKU = toDeliverySKU('OTHER', [
 				['color', 'standard'],
 			]);
 			const standardSKU = toDeliverySKU('STANDARD', [
-				['cloud-license-usage-type', 'standard'],
+				['base-license-usage-type', 'standard'],
 			]);
 
 			const product = toProduct(

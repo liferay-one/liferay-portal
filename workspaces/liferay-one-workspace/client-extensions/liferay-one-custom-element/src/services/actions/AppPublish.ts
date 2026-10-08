@@ -4,11 +4,11 @@
  */
 
 import {NewAppInitialState} from '~/context/NewAppContextProvider';
+import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Properties} from '~/utils/attributeUtils';
 import {base64ToText, fileToBase64} from '~/utils/fileUtils';
 import {
-	ProductLicense,
 	ProductOfferingTypes,
 	ProductSpecificationKey,
 	ProductTags,
@@ -152,7 +152,7 @@ export default class AppPublish extends BaseAppPublish {
 			await HeadlessCommerceAdminCatalogImpl.getOptions();
 
 		const option = options.find(
-			(option) => option.key === this.getProductOptionKey()
+			(option) => option.key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
 		);
 
 		if (!option) {
@@ -182,19 +182,6 @@ export default class AppPublish extends BaseAppPublish {
 		product.productOptions.push(productOption);
 
 		return productOption;
-	}
-
-	private getProductOptionKey() {
-		const optionsTypes = {
-			[ProductType.CLOUD]: ProductLicense.CLOUD,
-			[ProductType.DXP]: ProductLicense.DXP,
-		};
-
-		return (
-			optionsTypes[
-				this.context.build.appType as keyof typeof optionsTypes
-			] || ProductLicense.BASE
-		);
 	}
 
 	private getProductStatus() {
@@ -583,7 +570,8 @@ export default class AppPublish extends BaseAppPublish {
 				);
 
 				const skuOptionValue = sku.skuOptions.find(
-					(skuOption) => skuOption.key === this.getProductOptionKey()
+					(skuOption) =>
+						skuOption.key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
 				)?.value;
 
 				if (!skuOptionValue) {

@@ -58,7 +58,7 @@ function createProduct(specifications: Record<string, string>) {
 				purchasable: true,
 				skuOptions: [
 					{
-						skuOptionKey: 'dxp-license-usage-type',
+						skuOptionKey: 'base-license-usage-type',
 						skuOptionValueKey: 'trial',
 					},
 				],
@@ -68,7 +68,7 @@ function createProduct(specifications: Record<string, string>) {
 				purchasable: true,
 				skuOptions: [
 					{
-						skuOptionKey: 'dxp-license-usage-type',
+						skuOptionKey: 'base-license-usage-type',
 						skuOptionValueKey: 'standard',
 					},
 				],
