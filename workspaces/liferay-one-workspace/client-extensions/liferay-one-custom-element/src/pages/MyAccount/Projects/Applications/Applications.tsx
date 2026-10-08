@@ -7,6 +7,7 @@ import {useMemo} from 'react';
 import {Navigate, useNavigate, useParams} from 'react-router-dom';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
+import {ProductPriceModel} from '~/enums/Product';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {
 	useProjectItems,
@@ -68,8 +69,10 @@ export default function Applications() {
 			return [];
 		}
 
-		const {canDownload, canGenerateLicenses, isOrderCompleted} =
+		const {canDownload, isLicensable, isOrderCompleted} =
 			new DeliveryOrderModel(order);
+		const canGenerateLicenses =
+			isLicensable && application.saleType !== ProductPriceModel.FREE;
 		const activationPath = '../activation';
 		const actions: RowAction[] = [];
 
