@@ -91,10 +91,12 @@ public abstract class BasePubsubClient {
 			topicAdminClient.getTopic(topicName);
 		}
 		catch (NotFoundException notFoundException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(notFoundException);
+			}
+
 			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Unable to find topic. Creating topic " + topicName,
-					notFoundException);
+				_log.info("Unable to find topic. Creating topic " + topicName);
 			}
 
 			topicAdminClient.createTopic(topicName);
