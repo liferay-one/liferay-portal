@@ -20,23 +20,41 @@ import InfoCard from './components/InfoCard';
 import useAccountsMetrics from './hooks/useAccountsMetrics';
 import useKPI from './hooks/useKPI';
 import useOrderMetrics from './hooks/useOrderMetrics';
+import {
+	CUSTOMER_ACCOUNT_TYPES,
+	PUBLISHER_ACCOUNT_TYPES,
+} from './utils/constants';
 
 import './MPSummary.css';
 
 export default function MPSummary() {
 	const {data: {kpis = []} = {}} = useKPI();
-	const {data: accounts} = useAccountsMetrics('week');
+	const {data: customerAccounts} = useAccountsMetrics(
+		'week',
+		CUSTOMER_ACCOUNT_TYPES
+	);
+	const {data: publisherAccounts} = useAccountsMetrics(
+		'week',
+		PUBLISHER_ACCOUNT_TYPES
+	);
 	const {data: orderMetrics} = useOrderMetrics('week');
 	const {userAccountModel} = useOneContext();
 
 	const infoCards = useMemo(
 		() => [
 			{
-				growth: accounts?.growth ?? 0,
-				growthContext: `+${accounts?.lastPeriod ?? 0} this week `,
+				growth: publisherAccounts?.growth ?? 0,
+				growthContext: `+${publisherAccounts?.lastPeriod ?? 0} this week `,
 				symbol: 'users',
-				title: i18n.translate('accounts'),
-				value: accounts?.totalCount ?? 0,
+				title: i18n.translate('publisher-accounts'),
+				value: publisherAccounts?.totalCount ?? 0,
+			},
+			{
+				growth: customerAccounts?.growth ?? 0,
+				growthContext: `+${customerAccounts?.lastPeriod ?? 0} this week `,
+				symbol: 'users',
+				title: i18n.translate('customer-accounts'),
+				value: customerAccounts?.totalCount ?? 0,
 			},
 			{
 				symbol: 'dollar-symbol',
@@ -57,13 +75,16 @@ export default function MPSummary() {
 			},
 		],
 		[
-			accounts?.growth,
-			accounts?.lastPeriod,
-			accounts?.totalCount,
+			customerAccounts?.growth,
+			customerAccounts?.lastPeriod,
+			customerAccounts?.totalCount,
 			orderMetrics?.growth,
 			orderMetrics?.lastPeriod,
 			orderMetrics?.totalAmount,
 			orderMetrics?.totalCount,
+			publisherAccounts?.growth,
+			publisherAccounts?.lastPeriod,
+			publisherAccounts?.totalCount,
 		]
 	);
 
@@ -75,7 +96,7 @@ export default function MPSummary() {
 			title={i18n.translate('administrator-dashboard')}
 		>
 			<div className="d-flex flex-column">
-				<div className="d-flex flex-wrap mb-3" style={{gap: '20px'}}>
+				<div className="kpi-container mb-3">
 					<ErrorBoundary>
 						{kpis.map((chart, index) => (
 							<DonutKPIChart {...chart} key={index} />

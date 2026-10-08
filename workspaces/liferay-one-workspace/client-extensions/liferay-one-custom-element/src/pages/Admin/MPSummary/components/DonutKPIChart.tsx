@@ -86,15 +86,15 @@ const DonutKPIChart: React.FC<DonutKPIChartProps> = ({
 				style={{marginTop: '0.75rem'}}
 			>
 				<div className="donut-chart-container">
-					<ResponsiveContainer>
+					<ResponsiveContainer aspect={1} width="100%">
 						<PieChart tabIndex={-1}>
 							<Pie
 								cornerRadius={0}
 								data={data}
 								dataKey="value"
 								endAngle={-270}
-								innerRadius={40}
-								outerRadius={80}
+								innerRadius="48%"
+								outerRadius="97%"
 								paddingAngle={0}
 								startAngle={90}
 							>
