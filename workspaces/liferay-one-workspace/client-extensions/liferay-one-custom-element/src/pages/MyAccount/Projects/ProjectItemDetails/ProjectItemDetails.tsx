@@ -150,7 +150,14 @@ export default function ProjectItemDetails({
 		),
 		'details': () => {
 			if (orderInfo.orderType === 'SEO_STUDIO') {
-				return <SEOStudioDetails />;
+				return (
+					<SEOStudioDetails
+						placedOrder={placedOrders.find(
+							(placedOrder) =>
+								String(placedOrder.id) === orderInfo.orderId
+						)}
+					/>
+				);
 			}
 
 			return (
