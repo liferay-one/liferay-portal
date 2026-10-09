@@ -42,56 +42,65 @@ const AppPublishSidebar: React.FC<AppPublishSidebar> = ({
 	activeIndex,
 	items,
 	navigable = false,
-}) => (
-	<nav className="side-nav">
-		<div className="side-nav-panel">
-			<ul className="side-nav-list">
-				{items.map(({hide, label, path}, index) => {
-					if (hide) {
-						return null;
-					}
+}) => {
+	const activeItem = items[activeIndex];
+	const visibleActiveIndex = activeItem?.hide
+		? items.findLastIndex((item, i) => i <= activeIndex && !item.hide)
+		: activeIndex;
 
-					const checked = index < activeIndex;
-					const selected = activeIndex === index;
+	return (
+		<nav className="side-nav">
+			<div className="side-nav-panel">
+				<ul className="side-nav-list">
+					{items.map(({hide, label, path}, index) => {
+						if (hide) {
+							return null;
+						}
 
-					const className = classNames('side-nav-link', {
-						'side-nav-link-active': selected,
-						'side-nav-link-complete': checked,
-					});
+						const checked = index < visibleActiveIndex;
+						const selected = visibleActiveIndex === index;
 
-					const displayLabel = i18n.translateLabel(label);
+						const className = classNames('side-nav-link', {
+							'side-nav-link-active': selected,
+							'side-nav-link-complete': checked,
+						});
 
-					const content = (
-						<>
-							<ClayIcon
-								aria-label={
-									selected ? 'radio selected' : 'circle fill'
-								}
-								className="app-flow-step-icon side-nav-icon"
-								symbol={getIcon({checked, selected})}
-							/>
+						const displayLabel = i18n.translateLabel(label);
 
-							<span className="side-nav-label">
-								{displayLabel}
-							</span>
-						</>
-					);
+						const content = (
+							<>
+								<ClayIcon
+									aria-label={
+										selected
+											? 'radio selected'
+											: 'circle fill'
+									}
+									className="app-flow-step-icon side-nav-icon"
+									symbol={getIcon({checked, selected})}
+								/>
 
-					return (
-						<li className="side-nav-item" key={index}>
-							{navigable ? (
-								<Link className={className} to={path}>
-									{content}
-								</Link>
-							) : (
-								<span className={className}>{content}</span>
-							)}
-						</li>
-					);
-				})}
-			</ul>
-		</div>
-	</nav>
-);
+								<span className="side-nav-label">
+									{displayLabel}
+								</span>
+							</>
+						);
+
+						return (
+							<li className="side-nav-item" key={index}>
+								{navigable ? (
+									<Link className={className} to={path}>
+										{content}
+									</Link>
+								) : (
+									<span className={className}>{content}</span>
+								)}
+							</li>
+						);
+					})}
+				</ul>
+			</div>
+		</nav>
+	);
+};
 
 export default AppPublishSidebar;
