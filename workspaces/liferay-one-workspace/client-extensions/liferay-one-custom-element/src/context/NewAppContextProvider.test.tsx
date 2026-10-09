@@ -6,7 +6,7 @@
 import {act, renderHook, screen} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {MemoryRouter} from 'react-router-dom';
-import {describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import NewAppContextProvider, {
 	AppActions,
@@ -90,6 +90,14 @@ function dispatchAction(
 }
 
 describe('[CTX-NEWAPPCONTEXTPROVIDER] NewAppContextProvider', () => {
+	beforeEach(() => {
+		sessionStorage.clear();
+	});
+
+	afterEach(() => {
+		sessionStorage.clear();
+	});
+
 	it('maps a product into state on SET_CONTEXT', () => {
 		const {result} = renderNewAppContext();
 
