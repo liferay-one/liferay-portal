@@ -1969,6 +1969,129 @@
 		},
 		{
 			"active": true,
+			"attachments": [
+				{
+					"attachment": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgZmlsbD0ibm9uZSIgdmlld0JveD0iMCAwIDQwIDQwIj4KICA8cGF0aCBmaWxsPSIjQjNDREZGIiBkPSJNMzAuODkyIDE3LjI4OGMwIDcuNjY3LTYuMjMyIDEzLjg4Mi0xMy45MTggMTMuODgyLTcuNjg3IDAtMTMuOTE4LTYuMjE1LTEzLjkxOC0xMy44ODJTOS4yODcgMy40MDYgMTYuOTc0IDMuNDA2YzcuNjg2IDAgMTMuOTE4IDYuMjE1IDEzLjkxOCAxMy44ODJaIi8+CiAgPHBhdGggZmlsbD0iIzgwQUNGRiIgZD0iTTI2LjUxNiA3LjE5YTEzLjgyIDEzLjgyIDAgMCAxIDQuMzc2IDEwLjA5OGMwIDQuMzM0LTEuOTk0IDguMi01LjExMyAxMC43NDZhMTMuODI2IDEzLjgyNiAwIDAgMS00LjM3MS0xMC4wOThjMC00LjMzMiAxLjk5LTguMjAxIDUuMTA4LTEwLjc0N1oiLz4KICA8cGF0aCBmaWxsPSIjNTc5MUZGIiBkPSJNOC4xOC42MmMuMjI0LS44MjYgMS4zOTktLjgyNiAxLjYyMyAwbDEuNDg4IDUuNDY0YS44NC44NCAwIDAgMCAuNTkyLjU5bDUuNDc4IDEuNDg0Yy44MjguMjI0LjgyOCAxLjM5NiAwIDEuNjJsLTUuNDc4IDEuNDg0YS44NC44NCAwIDAgMC0uNTkyLjU5bC0xLjQ4OCA1LjQ2NWMtLjIyNC44MjYtMS40LjgyNi0xLjYyNCAwbC0xLjQ4OC01LjQ2NWEuODQuODQgMCAwIDAtLjU5MS0uNTlMLjYyIDkuNzc4Yy0uODI4LS4yMjQtLjgyOC0xLjM5NiAwLTEuNjJMNi4xIDYuNjc0YS44NC44NCAwIDAgMCAuNTkxLS41OUw4LjE4LjYyWiIvPgogIDxwYXRoIGZpbGw9IiMwQjVGRkYiIGQ9Ik0xMS4yOTEgNi4wODRhLjg0Ljg0IDAgMCAwIC41OTIuNTlsNS40NzggMS40ODRjLjgyOC4yMjQuODI4IDEuMzk2IDAgMS42MmwtNS40NzggMS40ODRhLjg0Ljg0IDAgMCAwLS41OTIuNTlsLTEuNDg4IDUuNDY1Yy0uMjI0LjgyNi0xLjQuODI2LTEuNjI0IDBsLTEuNDg4LTUuNDY1YS44NC44NCAwIDAgMC0uNTkxLS41OWwtMS40NjMtLjM5N2ExMy45NTUgMTMuOTU1IDAgMCAxIDYuMjk4LTYuMDg2bC4zNTYgMS4zMDVaIi8+CiAgPHBhdGggZmlsbD0iIzAwNTNGMCIgZD0iTTI5LjY2NSAyMC4zNjdjLTIuNTctMi41NjItNi43NC0yLjU1OC05LjMxMy4wMDlhNi41NTcgNi41NTcgMCAwIDAtLjAwOSA5LjI4OWMyLjU3IDIuNTYyIDYuNzQgMi41NTggOS4zMTMtLjAwOWwyLjE4OSAyLjE4M2MtMy43ODUgMy43NzUtOS45MTYgMy43OC0xMy42OTQuMDEzLTMuNzc4LTMuNzY5LTMuNzczLTkuODg0LjAxMi0xMy42NTkgMy43ODUtMy43NzUgOS45MTYtMy43OCAxMy42OTQtLjAxMiAzLjc3OCAzLjc2OCAzLjc3MiA5Ljg4My0uMDEyIDEzLjY1OGwtMi4xODktMi4xODNhNi41NTcgNi41NTcgMCAwIDAgLjAwOS05LjI4OVoiLz4KICA8cGF0aCBmaWxsPSIjMDA1M0YwIiBkPSJNMzAuMTE2IDMyLjg1YTEuOTMgMS45MyAwIDAgMSAwLTIuNzM1IDEuOTQyIDEuOTQyIDAgMCAxIDIuNzQyIDBsMS4wOTggMS4wOTVhMS45MyAxLjkzIDAgMCAxIDAgMi43MzUgMS45NDIgMS45NDIgMCAwIDEtMi43NDIgMGwtMS4wOTgtMS4wOTZaIi8+CiAgPHBhdGggZmlsbD0iIzU3OTFGRiIgZD0iTTMzLjIgMzIuOTIyYS45OTcuOTk3IDAgMCAxIDEuMjkyLS4wOTlsLjAxMS4wMDhhMS45MiAxLjkyIDAgMCAxLS41NDcgMS4xMTQgMS45MzIgMS45MzIgMCAwIDEtMS4yMzIuNTYuOTg4Ljk4OCAwIDAgMSAuMTMtMS4yMzlsLjM0Ni0uMzQ0WiIvPgogIDxwYXRoIGZpbGw9IiNCM0NERkYiIGQ9Ik0zMi42OTkgMzQuNTUzYS45OTEuOTkxIDAgMCAxIC4xMjMtMS4yNTVsLjQxLS40MWEuOTk3Ljk5NyAwIDAgMSAxLjI0OC0uMTI5bDQuNDQyIDIuODlhMi4zNjQgMi4zNjQgMCAwIDEgLjM4MyAzLjY1NyAyLjM3OCAyLjM3OCAwIDAgMS0zLjY1MS0uMzU2bC0yLjk1NS00LjM5N1oiLz4KICA8cGF0aCBmaWxsPSIjNTc5MUZGIiBkPSJNMzMuMjMyIDMyLjg4OWEuOTk3Ljk5NyAwIDAgMSAxLjI0OC0uMTNsNC40NDIgMi44OWEyLjM2MyAyLjM2MyAwIDAgMSAuMzg4IDMuNjVsLTYuMjUyLTYuMjM3LjE3NC0uMTczWiIvPgogIDxwYXRoIGZpbGw9IiM4MEFDRkYiIGQ9Ik0xMS40IDIyLjAwNWMxLjQzIDEuNTIyIDEuODQgMy40NTYuOTE3IDQuMzE5LS45MjQuODYzLTIuODMxLjMyOS00LjI2MS0xLjE5My0xLjQzLTEuNTIyLTEuODQtMy40NTUtLjkxNy00LjMxOC45MjMtLjg2NCAyLjgzMS0uMzMgNC4yNjEgMS4xOTJabTYuMDY4LTUuOTg3YTEuOTkxIDEuOTkxIDAgMCAxLTMuODQ3LTEuMDI3IDEuOTkyIDEuOTkyIDAgMCAxIDMuODQ3IDEuMDI3WiIvPgo8L3N2Zz4K",
+					"contentType": "image/svg+xml",
+					"neverExpire": true,
+					"title": {
+						"en_US": "SEO & AEO Studio"
+					}
+				}
+			],
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_LISTING_LISTED"
+				},
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "Be found everywhere, from traditional to AI search engines. Detect and fix visibility issues at scale with Liferay SEO & AEO Studio."
+			},
+			"externalReferenceCode": "PRDCT-SEO",
+			"name": {
+				"en_US": "SEO & AEO Studio"
+			},
+			"productConfiguration": {
+				"allowBackOrder": true,
+				"displayAvailability": true,
+				"displayStockQuantity": true
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "developer-name",
+					"value": {
+						"en_US": "Liferay"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Apply fixes at scale with one-click and AI-powered suggestions"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Automatically discover opportunities for visibility optimization across your entire site"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Measure real impact with metrics that matter"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "AI"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Add-on"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Beta"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Free"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay Inc."
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "seo-studio"
+					}
+				}
+			],
+			"productType": "virtual",
+			"productVirtualSettings": {
+				"activationStatus": 0,
+				"duration": 0,
+				"maxUsages": 0,
+				"termsOfUseRequired": false,
+				"useSample": false
+			},
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-SEO",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-SEO"
+				}
+			],
+			"urls": {
+				"en_US": "seo-studio-beta"
+			}
+		},
+		{
+			"active": true,
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
 				{
