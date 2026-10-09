@@ -24,9 +24,9 @@
 			"optionValues": [
 				{
 					"externalReferenceCode": "LO_OPTION_BASE_LICENSE_USAGE_ACTIVATE",
-					"key": "activate",
+					"key": "plan-activate",
 					"name": {
-						"en_US": "Activate"
+						"en_US": "Plan Activate"
 					},
 					"priority": 4
 				},
@@ -40,9 +40,9 @@
 				},
 				{
 					"externalReferenceCode": "LO_OPTION_BASE_LICENSE_USAGE_ENTERPRISE",
-					"key": "enterprise",
+					"key": "plan-enterprise",
 					"name": {
-						"en_US": "Enterprise"
+						"en_US": "Plan Enterprise"
 					},
 					"priority": 6
 				},
@@ -64,9 +64,9 @@
 				},
 				{
 					"externalReferenceCode": "LO_OPTION_BASE_LICENSE_USAGE_STUDIO",
-					"key": "studio",
+					"key": "plan-studio",
 					"name": {
-						"en_US": "Studio"
+						"en_US": "Plan Studio"
 					},
 					"priority": 5
 				},
