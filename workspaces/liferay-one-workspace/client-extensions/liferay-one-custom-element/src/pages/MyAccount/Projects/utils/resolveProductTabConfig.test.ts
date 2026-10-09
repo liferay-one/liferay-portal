@@ -115,6 +115,23 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		});
 	});
 
+	it('shows activation and download tabs for a cloud application', () => {
+		const config = resolveProductTabConfig({
+			hasActiveExperienceOffering: false,
+			itemType: 'application',
+			product: toProduct({type: 'cloud'}),
+		});
+
+		expect(config.activationProfile).toBe('app-provisioning');
+		expect(config.downloadProfile).toBe('app');
+		expect(config.tabKeys).toEqual([
+			'details',
+			'activation',
+			'download',
+			'orders',
+		]);
+	});
+
 	it('shows help and support for an application with support specifications', () => {
 		expect(
 			resolveProductTabConfig({

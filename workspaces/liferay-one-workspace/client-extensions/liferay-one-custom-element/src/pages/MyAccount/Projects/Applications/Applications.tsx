@@ -69,7 +69,7 @@ export default function Applications() {
 			return [];
 		}
 
-		const {canDownload, isLicensable, isOrderCompleted} =
+		const {canDownload, isCloudApp, isLicensable, isOrderCompleted} =
 			new DeliveryOrderModel(order);
 		const canGenerateLicenses =
 			isLicensable && application.saleType !== ProductPriceModel.FREE;
@@ -113,7 +113,8 @@ export default function Applications() {
 						),
 			});
 		}
-		else {
+
+		if (isCloudApp) {
 			actions.push({
 				label: 'cloud-provisioning',
 				onClick: () =>

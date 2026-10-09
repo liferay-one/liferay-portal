@@ -43,7 +43,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDOWNLOADPROFILE] resolveDownloadProfile
 	it('falls back to the app type table for an application', () => {
 		const cases: [string, string][] = [
 			['client-extension', 'app'],
-			['cloud', 'none'],
+			['cloud', 'app'],
 			['composite-app', 'app'],
 			['dxp', 'app'],
 			['low-code-configuration', 'app'],
