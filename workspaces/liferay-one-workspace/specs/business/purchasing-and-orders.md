@@ -154,9 +154,10 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ORDERS-130 | Liferay sells SEO Studio only to an account that already has an AI Hub order. For another account, the account step opens the requirements dialog, and the request form refuses the submit. | P0 | LPD-102451 | `FLOW-SEO-STUDIO-SIGNUP`, `HOOK-PRODUCTPURCHASE-USEAIHUBORDERS` |
+| REQ-ORDERS-130 | Liferay sells SEO Studio only to an account that already has an AI Hub order. For another account, the account step opens the requirements dialog. The request form also refuses the submit when the selected project has no completed and provisioned AI Hub order. | P0 | LPD-102451, LPD-105834 | `FLOW-SEO-STUDIO-SIGNUP`, `HOOK-PRODUCTPURCHASE-USEAIHUBORDERS` |
 | REQ-ORDERS-131 | The requirements dialog sends the buyer to the AI Hub product page. When that page is unknown, it sends the buyer to the products page. | P2 | LPD-102451 | `HOOK-PRODUCTPURCHASE-USESEOSTUDIOREQUIREMENTSMODAL` |
 | REQ-ORDERS-132 | An AI Hub order, an AI Hub open beta order, and an SEO Studio order each need the completed form. The system refuses the order without it. The order metadata keeps the form. | P0 | LPD-90605, LPD-102451 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA`, `CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO` |
+| REQ-ORDERS-133 | The system adds the SEO&AEO Studio Beta add on to the AI Hub of the project after the payment of the order settles, with the administrator from the request and the tier of the AI Hub order, and then completes the order. It cancels the order when the project does not belong to the account or has no AI Hub. It leaves the order pending, to try again, when AI Hub does not respond. | P0 | LPD-105834 | `SVC-COMMERCEORDERSERVICE` |
 
 ## Order Item Changes
 
