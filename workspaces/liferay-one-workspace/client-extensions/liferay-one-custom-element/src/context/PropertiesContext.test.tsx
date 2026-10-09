@@ -28,6 +28,11 @@ describe('[CTX-PROPERTIESCONTEXT] PropertiesContext', () => {
 	});
 
 	it('throws when used outside the provider', () => {
+		const preventErrorReport = (event: ErrorEvent) =>
+			event.preventDefault();
+
+		window.addEventListener('error', preventErrorReport);
+
 		vi.spyOn(console, 'error').mockImplementation(() => {});
 
 		expect(() => renderHook(() => useProperties())).toThrow(
@@ -35,5 +40,7 @@ describe('[CTX-PROPERTIESCONTEXT] PropertiesContext', () => {
 		);
 
 		vi.restoreAllMocks();
+
+		window.removeEventListener('error', preventErrorReport);
 	});
 });
