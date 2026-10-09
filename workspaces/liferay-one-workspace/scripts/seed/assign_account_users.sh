@@ -27,21 +27,31 @@ USER_ACCOUNT_DATA="data/02-user-account.batch-engine-data.json"
 # Sorted by account external reference code, then email address.
 
 ROLE_ASSIGNMENTS=(
+	"ACCNT-001=accountmember@customer.com=Account Member"
 	"ACCNT-001=admin@customer.com=Account Administrator"
 	"ACCNT-001=admin@partner.com=Partner Manager"
+	"ACCNT-001=buyer@customer.com=Account Buyer"
 	"ACCNT-001=member@customer.com="
 	"ACCNT-001=member@partner.com=Partner Member"
+	"ACCNT-001=norole-project@customer.com="
+	"ACCNT-001=norole@customer.com="
+	"ACCNT-001=partneradmin@partner.com=Partner Account Admin"
+	"ACCNT-001=projectadmin@customer.com=Account Member"
+	"ACCNT-001=requester@customer.com=Account Member"
 	"ACCNT-001=test@liferay.com=Account Administrator"
 	"ACCNT-021=admin@publisher.com=Account Administrator"
 	"ACCNT-021=test@liferay.com=Account Administrator"
 	"ACCNT-028=admin@customer.com=Account Administrator"
 	"ACCNT-028=member@customer.com=Buyer"
+	"SSA-ACCOUNT=ssa@liferay.com=SSA User"
 )
 
 declare -A ACCOUNT_ROLE_IDS
 declare -A MEMBERSHIPS_GRANTED
 
 function main {
+	_require_local_seed_target
+
 	_acquire_oauth_token
 
 	local assignment

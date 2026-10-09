@@ -11,6 +11,13 @@
 	},
 	"items": [
 		{
+			"externalReferenceCode": "C_PM_CUST_ACCOUNT_MEMBER_ERC_001",
+			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-001",
+			"r_projectToProjectMembership_c_projectERC": "PRJCT-001",
+			"r_userToProjectMembership_userERC": "USER_CUSTOMER_ACCOUNT_MEMBER",
+			"roleExternalReferenceCode": "C_PROJECT_USER"
+		},
+		{
 			"externalReferenceCode": "C_PM_CUST_ADMIN_ERC_001",
 			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-001",
 			"r_projectToProjectMembership_c_projectERC": "PRJCT-001",
@@ -429,6 +436,27 @@
 			"r_projectToProjectMembership_c_projectERC": "PRJCT-021",
 			"r_userToProjectMembership_userERC": "USER_CUSTOMER_MEMBER",
 			"roleExternalReferenceCode": "C_PROJECT_USER"
+		},
+		{
+			"externalReferenceCode": "C_PM_CUST_NO_ROLE_PROJECT_ERC_001",
+			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-001",
+			"r_projectToProjectMembership_c_projectERC": "PRJCT-001",
+			"r_userToProjectMembership_userERC": "USER_CUSTOMER_NO_ROLE_PROJECT",
+			"roleExternalReferenceCode": "C_PROJECT_USER"
+		},
+		{
+			"externalReferenceCode": "C_PM_CUST_PROJECT_ADMIN_ERC_001",
+			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-001",
+			"r_projectToProjectMembership_c_projectERC": "PRJCT-001",
+			"r_userToProjectMembership_userERC": "USER_CUSTOMER_PROJECT_ADMIN",
+			"roleExternalReferenceCode": "C_PROJECT_ADMIN"
+		},
+		{
+			"externalReferenceCode": "C_PM_CUST_REQUESTER_ERC_001",
+			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-001",
+			"r_projectToProjectMembership_c_projectERC": "PRJCT-001",
+			"r_userToProjectMembership_userERC": "USER_CUSTOMER_REQUESTER",
+			"roleExternalReferenceCode": "C_PROJECT_REQUESTER"
 		},
 		{
 			"externalReferenceCode": "C_PM_PART_ADMIN_ERC_001",

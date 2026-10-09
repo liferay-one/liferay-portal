@@ -15,6 +15,23 @@
 				{
 					"externalReferenceCode": "ACCNT-001",
 					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "accountmember",
+			"emailAddress": "accountmember@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_ACCOUNT_MEMBER",
+			"familyName": "Member",
+			"givenName": "Account",
+			"name": "Account Member",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
 						{
 							"name": "Account Administrator"
 						}
@@ -278,6 +295,23 @@
 				{
 					"externalReferenceCode": "ACCNT-001",
 					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "customerbuyer",
+			"emailAddress": "buyer@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_BUYER",
+			"familyName": "Buyer",
+			"givenName": "Customer",
+			"name": "Customer Buyer",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
 						{
 							"name": "Account Member"
 						}
@@ -522,6 +556,108 @@
 				{
 					"externalReferenceCode": "ACCNT-001",
 					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "norole",
+			"emailAddress": "norole@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_NO_ROLE",
+			"familyName": "Role",
+			"givenName": "No",
+			"name": "No Role",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "noroleproject",
+			"emailAddress": "norole-project@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_NO_ROLE_PROJECT",
+			"familyName": "Project Member",
+			"givenName": "No Role",
+			"name": "No Role Project Member",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "projectadmin",
+			"emailAddress": "projectadmin@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_PROJECT_ADMIN",
+			"familyName": "Admin",
+			"givenName": "Project",
+			"name": "Project Admin",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "projectrequester",
+			"emailAddress": "requester@customer.com",
+			"externalReferenceCode": "USER_CUSTOMER_REQUESTER",
+			"familyName": "Requester",
+			"givenName": "Project",
+			"name": "Project Requester",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "financeadmin",
+			"emailAddress": "finance@liferay.com",
+			"externalReferenceCode": "USER_FINANCE_ADMIN",
+			"familyName": "Admin",
+			"givenName": "Finance",
+			"name": "Finance Admin",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "partneraccountadmin",
+			"emailAddress": "partneradmin@partner.com",
+			"externalReferenceCode": "USER_PARTNER_ACCOUNT_ADMIN",
+			"familyName": "Account Admin",
+			"givenName": "Partner",
+			"name": "Partner Account Admin",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-001",
+					"roleBriefs": [
 						{
 							"name": "Account Administrator"
 						}
@@ -597,6 +733,23 @@
 			"familyName": "Admin",
 			"givenName": "Publisher",
 			"name": "Publisher Admin",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "SSA-ACCOUNT",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "ssauser",
+			"emailAddress": "ssa@liferay.com",
+			"externalReferenceCode": "USER_SSA_USER",
+			"familyName": "User",
+			"givenName": "SSA",
+			"name": "SSA User",
 			"password": "test",
 			"status": "Active"
 		},

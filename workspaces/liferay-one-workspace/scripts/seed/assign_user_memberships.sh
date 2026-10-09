@@ -11,7 +11,8 @@ source ../_common.sh
 # liferay-one-batch client extension. A few roles are assigned to a user
 # directly rather than through a group -- the Publisher persona and the default
 # administrator carry the Marketplace Publisher role, and the Provisioning
-# persona carries the Provisioning Administrator role.
+# persona carries the Provisioning Administrator role, and the Finance persona
+# carries the Finance Administrator role.
 #
 # Neither membership is expressible through the UserAccount batch document: the
 # headless UserAccount import path ignores both userGroupBriefs and (for regular
@@ -30,10 +31,10 @@ USER_GROUP_URL="${LIFERAY_URL}/o/headless-admin-user/v1.0/user-groups"
 # code.
 
 GROUP_MEMBERSHIPS=(
-	"C_CUSTOMERS=USER_CUSTOMER_ADMIN USER_CUSTOMER_MEMBER"
-	"C_EMPLOYEES=USER_PROVISIONING_ADMIN USER_STAFF"
-	"C_EVERYONE=USER_CUSTOMER_ADMIN USER_CUSTOMER_MEMBER USER_PARTNER_ADMIN USER_PARTNER_MEMBER USER_PROVISIONING_ADMIN USER_PUBLISHER_ADMIN USER_STAFF"
-	"C_PARTNERS=USER_PARTNER_ADMIN USER_PARTNER_MEMBER"
+	"C_CUSTOMERS=USER_CUSTOMER_ACCOUNT_MEMBER USER_CUSTOMER_ADMIN USER_CUSTOMER_BUYER USER_CUSTOMER_MEMBER USER_CUSTOMER_NO_ROLE USER_CUSTOMER_NO_ROLE_PROJECT USER_CUSTOMER_PROJECT_ADMIN USER_CUSTOMER_REQUESTER"
+	"C_EMPLOYEES=USER_FINANCE_ADMIN USER_PROVISIONING_ADMIN USER_SSA_USER USER_STAFF"
+	"C_EVERYONE=USER_CUSTOMER_ACCOUNT_MEMBER USER_CUSTOMER_ADMIN USER_CUSTOMER_BUYER USER_CUSTOMER_MEMBER USER_CUSTOMER_NO_ROLE USER_CUSTOMER_NO_ROLE_PROJECT USER_CUSTOMER_PROJECT_ADMIN USER_CUSTOMER_REQUESTER USER_FINANCE_ADMIN USER_PARTNER_ACCOUNT_ADMIN USER_PARTNER_ADMIN USER_PARTNER_MEMBER USER_PROVISIONING_ADMIN USER_PUBLISHER_ADMIN USER_SSA_USER USER_STAFF"
+	"C_PARTNERS=USER_PARTNER_ACCOUNT_ADMIN USER_PARTNER_ADMIN USER_PARTNER_MEMBER"
 )
 
 # Each entry is "<regular role external reference code>=<space-separated user
@@ -43,11 +44,14 @@ GROUP_MEMBERSHIPS=(
 # administrator). Sorted by role external reference code.
 
 ROLE_MEMBERSHIPS=(
+	"C_FINANCE_ADMIN=USER_FINANCE_ADMIN"
 	"C_MARKETPLACE_PUBLISHER=USER_PUBLISHER_ADMIN test@liferay.com"
 	"C_PROVISIONING_ADMIN=USER_PROVISIONING_ADMIN"
 )
 
 function main {
+	_require_local_seed_target
+
 	_acquire_oauth_token
 
 	local membership
