@@ -18,6 +18,7 @@ import {
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
+	getProductOrder,
 	getProductOrderInfo,
 	getProductVirtualItems,
 	useProjectOrders,
@@ -152,9 +153,9 @@ export default function ProjectItemDetails({
 			if (orderInfo.orderType === 'SEO_STUDIO') {
 				return (
 					<SEOStudioDetails
-						placedOrder={placedOrders.find(
-							(placedOrder) =>
-								String(placedOrder.id) === orderInfo.orderId
+						placedOrder={getProductOrder(
+							placedOrders,
+							product.productId
 						)}
 					/>
 				);
