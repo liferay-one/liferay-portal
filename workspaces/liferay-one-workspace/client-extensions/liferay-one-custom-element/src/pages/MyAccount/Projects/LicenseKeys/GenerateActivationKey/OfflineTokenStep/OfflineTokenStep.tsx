@@ -9,15 +9,34 @@ import {Word, sub, translate} from '~/i18n';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
-import {GenerateActivationKeyForm} from '../types';
+import {
+	GenerateActivationKeyForm,
+	GenerateActivationKeyOfflineTokenError,
+} from '../types';
 
 const ACTIVATION_CLI_COMMAND = '[activation CLI command]';
+
+const TOKEN_ERROR_MESSAGE_KEYS: Record<
+	GenerateActivationKeyOfflineTokenError,
+	{body: Word; heading: Word}
+> = {
+	expired: {
+		body: 'activation-tokens-are-valid-for-90-days-generate-a-new-token-from-your-cloud-native-environment-then-paste-it-here-to-continue',
+		heading: 'this-activation-token-has-expired',
+	},
+	invalid: {
+		body: 'make-sure-you-copied-the-full-token-from-your-cloud-native-environment-and-try-again',
+		heading: 'we-couldn-t-verify-this-activation-token',
+	},
+};
 
 type OfflineTokenStepProps = {
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	onClickBack: () => void;
 	onClickCancel: () => void;
 	onClickContinue: () => void;
+	tokenError: GenerateActivationKeyOfflineTokenError | null;
+	validating: boolean;
 };
 
 export default function OfflineTokenStep({
@@ -25,6 +44,8 @@ export default function OfflineTokenStep({
 	onClickBack,
 	onClickCancel,
 	onClickContinue,
+	tokenError,
+	validating,
 }: OfflineTokenStepProps) {
 	const {register, watch} = form;
 
@@ -33,7 +54,7 @@ export default function OfflineTokenStep({
 
 	return (
 		<>
-			<div className="form-group">
+			<div className={tokenError ? 'form-group has-error' : 'form-group'}>
 				<label className="ml-0" htmlFor="generateKeyActivationToken">
 					{translate('cne-environment-token')}
 				</label>
@@ -45,6 +66,24 @@ export default function OfflineTokenStep({
 					rows={3}
 					{...register('activationToken')}
 				/>
+
+				{tokenError && (
+					<div className="form-feedback-group">
+						<div className="form-feedback-item">
+							<strong>
+								{translate(
+									TOKEN_ERROR_MESSAGE_KEYS[tokenError].heading
+								)}
+							</strong>
+						</div>
+
+						<div className="form-feedback-item">
+							{translate(
+								TOKEN_ERROR_MESSAGE_KEYS[tokenError].body
+							)}
+						</div>
+					</div>
+				)}
 			</div>
 
 			<ClayAlert
@@ -65,7 +104,7 @@ export default function OfflineTokenStep({
 				cancelButtonProps={{onClick: onClickCancel}}
 				continueButtonProps={{
 					children: translate('next'),
-					disabled: !activationToken.trim(),
+					disabled: !activationToken.trim() || validating,
 					onClick: onClickContinue,
 				}}
 			/>

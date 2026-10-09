@@ -22,6 +22,7 @@ import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.exception.EnvironmentAlreadyActivatedException;
 import com.liferay.one.exception.EnvironmentProfileEntitlementException;
 import com.liferay.one.exception.EnvironmentTypeEntitlementException;
+import com.liferay.one.exception.ExpiredActivationTokenException;
 import com.liferay.one.exception.InvalidEnvironmentAdminsException;
 import com.liferay.one.exception.NoSuchActivationCodeException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -514,34 +515,17 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
+		HttpStatus httpStatus = _validateOfflineActivationToken(token);
+
+		if (httpStatus != HttpStatus.OK) {
+			return new ResponseEntity<>(httpStatus);
+		}
+
 		SignedJWT signedJWT = SignedJWT.parse(token);
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
 		String environmentId = jwtClaimsSet.getStringClaim("environmentID");
-
-		if (Validator.isNull(environmentId)) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"The offline activation token is missing the environment " +
-						"ID");
-			}
-
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		try {
-			_cloudNativeSignatureValidator.validateSignature(signedJWT);
-		}
-		catch (PrincipalException principalException) {
-			if (_log.isWarnEnabled()) {
-				_log.warn(
-					"Unable to verify the offline activation token",
-					principalException);
-			}
-
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
 
 		_activateEnvironment(
 			activationCode, EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
@@ -648,6 +632,22 @@ public class CloudRestController extends OneBaseRestController {
 				}
 			},
 			httpHeaders, HttpStatus.OK);
+	}
+
+	@PostMapping("/environments/offline-activation/token-validation")
+	public ResponseEntity<Void>
+		postEnvironmentsOfflineActivationTokenValidation(
+			@RequestBody String json) {
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		return new ResponseEntity<>(
+			_validateOfflineActivationToken(
+				jsonObject.optString(
+					"token"
+				).replaceAll(
+					"\\s", ""
+				)));
 	}
 
 	@PostMapping(
@@ -1435,6 +1435,49 @@ public class CloudRestController extends OneBaseRestController {
 		}
 
 		return longs;
+	}
+
+	private HttpStatus _validateOfflineActivationToken(String token) {
+		try {
+			SignedJWT signedJWT = SignedJWT.parse(token);
+
+			JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+			if (Validator.isNull(
+					jwtClaimsSet.getStringClaim("environmentID"))) {
+
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						"The offline activation token is missing the " +
+							"environment ID");
+				}
+
+				return HttpStatus.BAD_REQUEST;
+			}
+
+			_cloudNativeSignatureValidator.validateSignature(signedJWT);
+		}
+		catch (ExpiredActivationTokenException
+					expiredActivationTokenException) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"The offline activation token has expired",
+					expiredActivationTokenException);
+			}
+
+			return HttpStatus.GONE;
+		}
+		catch (ParseException | PrincipalException exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to verify the offline activation token", exception);
+			}
+
+			return HttpStatus.BAD_REQUEST;
+		}
+
+		return HttpStatus.OK;
 	}
 
 	private void _writeAddOn(

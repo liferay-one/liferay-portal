@@ -13,6 +13,7 @@ export const ACTIVATION_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	400: 'the-activation-token-is-not-valid',
 	404: 'the-activation-code-was-not-found',
 	409: 'this-environment-has-already-been-activated',
+	410: 'this-activation-token-has-expired',
 };
 
 export const ACTIVATION_FORM_ERROR_MESSAGE_KEYS: Record<number, Word> = {
