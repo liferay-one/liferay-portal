@@ -22,10 +22,7 @@ import {
 import type {UserAccountModel} from '~/services/models/UserAccountModel';
 import type {RoleBrief} from '~/types/accounts';
 
-function toUserAccountModel(
-	roleNames: string[],
-	canManageAllAccounts = false
-) {
+function toUserAccountModel(roleNames: string[], canManageAllAccounts = false) {
 	return {
 		canManageAllAccounts,
 		hasAccountRoleName: (roleName: string) => roleNames.includes(roleName),

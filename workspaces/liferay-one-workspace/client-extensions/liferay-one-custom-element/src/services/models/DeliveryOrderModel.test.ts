@@ -20,13 +20,31 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 		['DXP_APP', true],
 		['LOW_CODE_CONFIGURATION', true],
 		['OTHER', true],
-		['CLOUD_APP', false],
+		['CLOUD_APP', true],
+		['CLOUDAPP', true],
 		['AI_HUB', false],
 	])('allows download for the %s order type: %s', (orderType, expected) => {
 		expect(
 			createModel({orderTypeExternalReferenceCode: orderType}).canDownload
 		).toBe(expected);
 	});
+
+	it.each([
+		['CLOUD_APP', true],
+		['CLOUDAPP', true],
+		['CLIENT_EXTENSION', false],
+		['COMPOSITE_APP', false],
+		['DXP_APP', false],
+		['AI_HUB', false],
+	])(
+		'identifies cloud apps for the %s order type: %s',
+		(orderType, expected) => {
+			expect(
+				createModel({orderTypeExternalReferenceCode: orderType})
+					.isCloudApp
+			).toBe(expected);
+		}
+	);
 
 	it.each([
 		['CLIENT_EXTENSION', 10, true],

@@ -8,9 +8,7 @@ import {useOneContext} from '~/context/OneContextProvider';
 export function useHasAdminPermission(): boolean {
 	const {userAccountModel} = useOneContext();
 
-	return Boolean(
-		userAccountModel?.canManageAllAccounts
-	);
+	return Boolean(userAccountModel?.canManageAllAccounts);
 }
 
 export default useHasAdminPermission;
