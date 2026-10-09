@@ -1762,6 +1762,8 @@ export default {
 	'this-project-has-no-extension-environments':
 		'This project has no extension environments.',
 	'this-project-has-no-members': 'This project has no members yet.',
+	'this-project-has-no-subscriptions-that-can-generate-activation-keys-contact-your-liferay-sales-representative':
+		'This project has no subscriptions that can generate activation keys. Contact your Liferay sales representative.',
 	'this-project-is-not-entitled-to-another-environment-of-this-type':
 		'This project is not entitled to another environment of this type.',
 	'this-project-is-on-a-legacy-billing-model':

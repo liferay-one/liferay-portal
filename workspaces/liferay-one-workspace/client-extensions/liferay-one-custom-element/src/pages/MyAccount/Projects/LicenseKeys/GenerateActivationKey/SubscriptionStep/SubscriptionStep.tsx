@@ -188,6 +188,26 @@ export default function SubscriptionStep({
 			!noActivationsAvailable
 	);
 
+	if (!generateForm.products.length) {
+		return (
+			<>
+				<ClayAlert
+					className="generate-activation-key-subscription-alert"
+					displayType="warning"
+					role={null}
+					spritemap={getIconSpriteMap()}
+					symbol="warning-full"
+				>
+					{translate(
+						'this-project-has-no-subscriptions-that-can-generate-activation-keys-contact-your-liferay-sales-representative'
+					)}
+				</ClayAlert>
+
+				<WizardFooter cancelButtonProps={{onClick: onClickCancel}} />
+			</>
+		);
+	}
+
 	return (
 		<>
 			<div className="row">
