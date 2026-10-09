@@ -4,7 +4,7 @@
  */
 
 import {useLayoutEffect, useMemo} from 'react';
-import {HashRouter, Navigate, useRoutes} from 'react-router-dom';
+import {HashRouter, Navigate, useRoutes} from 'react-router';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import Loading from '~/components/Loading/Loading';
 import {useOneContext} from '~/context/OneContextProvider';

@@ -4,7 +4,7 @@
  */
 
 import {render, screen, waitFor} from '@testing-library/react';
-import {MemoryRouter, Route, Routes} from 'react-router-dom';
+import {MemoryRouter, Route, Routes} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useFetch} from '~/hooks/useFetch';

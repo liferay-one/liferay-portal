@@ -4,7 +4,7 @@
  */
 
 import {useEffect} from 'react';
-import {Outlet, useNavigate, useParams} from 'react-router-dom';
+import {Outlet, useNavigate, useParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {translate} from '~/i18n';

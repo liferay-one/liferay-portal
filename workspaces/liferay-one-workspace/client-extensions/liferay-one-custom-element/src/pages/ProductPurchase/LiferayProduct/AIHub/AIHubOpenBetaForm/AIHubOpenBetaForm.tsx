@@ -10,7 +10,7 @@ import ClayIcon from '@clayui/icon';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useEffect} from 'react';
 import {useForm} from 'react-hook-form';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {z} from 'zod';
 import {Input} from '~/components/Input/Input';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';

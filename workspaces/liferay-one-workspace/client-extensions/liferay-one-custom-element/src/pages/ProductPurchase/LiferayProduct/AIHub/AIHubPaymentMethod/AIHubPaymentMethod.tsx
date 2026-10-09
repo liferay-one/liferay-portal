@@ -4,7 +4,7 @@
  */
 
 import {useEffect, useMemo, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import i18n from '~/i18n';
 import BillingAddress from '~/pages/ProductPurchase/PaymentMethod/components/BillingAddress/BillingAddress';

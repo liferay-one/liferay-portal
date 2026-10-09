@@ -5,7 +5,7 @@
 
 import classNames from 'classnames';
 import {useState} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import Section from '~/components/Section/Section';
 import i18n from '~/i18n';
 import LicenseTermsCheckbox from '~/pages/ProductPurchase/components/LicenseTermsCheckbox/LicenseTermsCheckbox';

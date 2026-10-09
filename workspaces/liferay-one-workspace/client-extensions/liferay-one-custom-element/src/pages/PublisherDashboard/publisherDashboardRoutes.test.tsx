@@ -5,7 +5,7 @@
 
 import {render, screen} from '@testing-library/react';
 import {ReactNode, Suspense} from 'react';
-import {MemoryRouter, useRoutes} from 'react-router-dom';
+import {MemoryRouter, useRoutes} from 'react-router';
 import {describe, expect, it, vi} from 'vitest';
 import i18n from '~/i18n';
 import {buildNavItems, toRouteObjects} from '~/utils/routeUtils';
@@ -62,7 +62,7 @@ vi.mock('./PublisherProfileEdit/PublisherProfileEdit', () => ({
 }));
 vi.mock('./pages/NewAppFlow/PublishAppOutlet', async () => {
 	const {Fragment, createElement} = await import('react');
-	const {Outlet} = await import('react-router-dom');
+	const {Outlet} = await import('react-router');
 
 	return {
 		default: ({mode = 'default'}: {mode?: string}) =>
@@ -106,7 +106,7 @@ vi.mock('./pages/NewAppFlow/pages/Version', () => ({
 }));
 vi.mock('./pages/NewSolutionFlow/PublishSolutionOutlet', async () => {
 	const {Fragment, createElement} = await import('react');
-	const {Outlet} = await import('react-router-dom');
+	const {Outlet} = await import('react-router');
 
 	return {
 		default: () =>

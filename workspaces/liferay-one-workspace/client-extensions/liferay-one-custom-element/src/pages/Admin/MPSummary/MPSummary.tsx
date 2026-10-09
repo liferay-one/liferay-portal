@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
-import {Link} from 'react-router-dom';
+import {Link} from 'react-router';
 import ErrorBoundary from '~/components/ErrorBoundary/ErrorBoundary';
 import Page from '~/components/Page/Page';
 import {useOneContext} from '~/context/OneContextProvider';

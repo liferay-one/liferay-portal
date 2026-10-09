@@ -4,7 +4,7 @@
  */
 
 import ClayButton from '@clayui/button';
-import {useLocation} from 'react-router-dom';
+import {useLocation} from 'react-router';
 import purchaseInvoiceIconUrl from '~/assets/icons/purchase_invoice.svg';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import i18n from '~/i18n';

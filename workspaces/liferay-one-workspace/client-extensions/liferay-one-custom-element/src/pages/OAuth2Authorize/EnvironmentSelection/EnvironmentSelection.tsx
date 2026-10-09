@@ -5,7 +5,7 @@
 
 import ClayBadge from '@clayui/badge';
 import DOMPurify from 'dompurify';
-import {Navigate, useNavigate} from 'react-router-dom';
+import {Navigate, useNavigate} from 'react-router';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import i18n from '~/i18n';
 import SelectedProjectBanner from '~/pages/MyAccount/Projects/CloudAppInstall/SelectedProjectBanner/SelectedProjectBanner';

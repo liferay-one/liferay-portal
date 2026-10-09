@@ -4,7 +4,7 @@
  */
 
 import {act, renderHook} from '@testing-library/react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {scrollToTop} from '~/utils/browserUtils';
 
@@ -14,7 +14,7 @@ import type {AppFlowItem} from '~/pages/PublisherDashboard/pages/NewAppFlow/cons
 
 const {navigate} = vi.hoisted(() => ({navigate: vi.fn()}));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
 	useLocation: vi.fn(),
 	useNavigate: vi.fn(),
 	useParams: vi.fn(),

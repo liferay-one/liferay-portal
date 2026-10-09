@@ -8,7 +8,7 @@ import DropDown from '@clayui/drop-down';
 import ClayForm from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {UseFormReturn} from 'react-hook-form';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import FormInput from '~/components/FormInput/FormInput';
 import {Header} from '~/components/Header/Header';
 import {Tooltip} from '~/components/Tooltip/Tooltip';

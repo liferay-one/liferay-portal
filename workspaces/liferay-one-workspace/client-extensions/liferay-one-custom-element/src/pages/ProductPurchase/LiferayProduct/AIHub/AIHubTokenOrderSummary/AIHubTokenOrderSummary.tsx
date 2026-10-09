@@ -9,7 +9,7 @@ import ClayIcon from '@clayui/icon';
 import ClaySticker from '@clayui/sticker';
 import DOMPurify from 'dompurify';
 import {useEffect, useState} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import paypal from '~/assets/images/paypal.png';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';

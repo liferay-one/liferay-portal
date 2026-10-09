@@ -4,7 +4,7 @@
  */
 
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router';
 import {SWRConfig} from 'swr';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
@@ -19,8 +19,8 @@ const {navigate, nextStep, openModal} = vi.hoisted(() => ({
 	openModal: vi.fn(),
 }));
 
-vi.mock('react-router-dom', async (importOriginal) => ({
-	...(await importOriginal<typeof import('react-router-dom')>()),
+vi.mock('react-router', async (importOriginal) => ({
+	...(await importOriginal<typeof import('react-router')>()),
 	useLocation: vi.fn(),
 	useNavigate: vi.fn(),
 }));

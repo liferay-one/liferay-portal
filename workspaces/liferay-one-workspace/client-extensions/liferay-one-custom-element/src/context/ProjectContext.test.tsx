@@ -12,7 +12,7 @@ import {
 	useLocation,
 	useNavigate,
 	useNavigationType,
-} from 'react-router-dom';
+} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useAccount} from '~/context/AccountContext';
 import {

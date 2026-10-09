@@ -4,7 +4,7 @@
  */
 
 import {fireEvent, render, screen} from '@testing-library/react';
-import {MemoryRouter} from 'react-router-dom';
+import {MemoryRouter} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 import {Liferay} from '~/services/liferay/liferay';

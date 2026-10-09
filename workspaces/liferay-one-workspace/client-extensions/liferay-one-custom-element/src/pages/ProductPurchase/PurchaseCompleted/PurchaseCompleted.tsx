@@ -6,7 +6,7 @@
 import ClayButton from '@clayui/button';
 import DOMPurify from 'dompurify';
 import {useEffect} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router';
 import useSWR from 'swr';
 import purchaseFailedIconUrl from '~/assets/icons/purchase_failed.svg';
 import purchaseSuccessIconUrl from '~/assets/icons/purchase_success.svg';

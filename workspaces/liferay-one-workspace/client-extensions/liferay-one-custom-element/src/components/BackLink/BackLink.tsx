@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import {ReactNode} from 'react';
-import {Link} from 'react-router-dom';
+import {Link} from 'react-router';
 
 type BackLinkProps = {
 	children: ReactNode;

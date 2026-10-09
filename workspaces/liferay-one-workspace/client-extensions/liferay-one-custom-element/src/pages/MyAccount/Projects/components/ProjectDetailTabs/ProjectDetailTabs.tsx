@@ -5,7 +5,7 @@
 
 import ClayTabs from '@clayui/tabs';
 import {ReactNode} from 'react';
-import {useLocation, useSearchParams} from 'react-router-dom';
+import {useLocation, useSearchParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import i18n, {Word} from '~/i18n';
 

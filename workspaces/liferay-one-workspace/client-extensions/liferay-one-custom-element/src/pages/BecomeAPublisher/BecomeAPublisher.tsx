@@ -4,7 +4,7 @@
  */
 
 import ClayButton from '@clayui/button';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 import {getSiteURL} from '~/utils/siteUtils';

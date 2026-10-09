@@ -6,7 +6,7 @@
 import Button from '@clayui/button';
 import ClayForm, {ClaySelect} from '@clayui/form';
 import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';

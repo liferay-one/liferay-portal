@@ -4,7 +4,7 @@
  */
 
 import {useEffect} from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router';
 import {scrollToTop} from '~/utils/browserUtils';
 
 import type {AppFlowItem} from '~/pages/PublisherDashboard/pages/NewAppFlow/constants';

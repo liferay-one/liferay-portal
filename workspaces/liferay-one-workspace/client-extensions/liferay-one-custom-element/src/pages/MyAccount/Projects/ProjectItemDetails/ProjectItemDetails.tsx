@@ -4,7 +4,7 @@
  */
 
 import {ReactNode} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
 import Loading from '~/components/Loading/Loading';

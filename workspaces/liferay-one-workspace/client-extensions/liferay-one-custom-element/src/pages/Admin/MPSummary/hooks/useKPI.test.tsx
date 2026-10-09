@@ -33,7 +33,7 @@ vi.mock('swr', () => ({
 	default: mocks.useSWR,
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
 	useNavigate: () => mocks.navigate,
 }));
 

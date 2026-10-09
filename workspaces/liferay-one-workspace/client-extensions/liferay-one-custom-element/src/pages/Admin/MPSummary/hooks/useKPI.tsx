@@ -4,7 +4,7 @@
  */
 
 import {ComponentProps} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import useSWR from 'swr';
 import {useOneContext} from '~/context/OneContextProvider';
 import useListTypeDefinition from '~/hooks/useListTypeDefinition';

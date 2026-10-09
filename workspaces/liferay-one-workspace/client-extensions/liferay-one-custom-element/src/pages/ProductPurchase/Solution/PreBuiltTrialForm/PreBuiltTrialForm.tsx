@@ -4,7 +4,7 @@
  */
 
 import ClayButton from '@clayui/button';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import {Header} from '~/components/Header/Header';
 import Loading from '~/components/Loading/Loading';
 import MarketoForm from '~/components/MarketoForm/MarketoForm';
