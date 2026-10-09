@@ -20,6 +20,29 @@
 	padding-top: 24px;
 }
 
+.currency-selector-modal .modal-body {
+	border: none;
+}
+
+.currency-selector-modal .modal-header {
+	border: none;
+	padding-top: 1.5rem;
+}
+
+.currency-selector-modal .modal-subtitle-section {
+	color: var(--color-neutral-7);
+	display: flex;
+	padding-inline: 1.5rem;
+}
+
+.currency-selector-modal .modal-title {
+	font-size: 32px;
+	font-weight: 700;
+	letter-spacing: 0%;
+	line-height: 40px;
+	vertical-align: middle;
+}
+
 .license-icon-button {
 	background: var(--color-brand-primary-lighten-6);
 	border: 1px solid var(--color-brand-primary-lighten-5);
@@ -30,25 +53,30 @@
 	line-height: 16px;
 }
 
-.currency-selector-modal .modal-body {
-	border: none;
+.license-price-panel .panel-header.panel-header-link,
+.license-price-panel .panel-header.panel-header-link[aria-expanded='true'],
+.license-price-panel .panel-header.panel-header-link.show {
+	color: var(--color-neutral-9);
+
+	&:hover {
+		color: var(--color-neutral-10);
+	}
+
+	.collapse-icon-closed,
+	.collapse-icon-open {
+		color: var(--color-action-neutral-default);
+	}
 }
 
-.currency-selector-modal .modal-subtitle-section {
-	color: var(--color-neutral-7);
-	display: flex;
-	padding-inline: 1.5rem;
+.license-price-panel-currency-code {
+	color: var(--color-neutral-9);
+	font-weight: var(--font-weight-semi-bold, 600);
 }
 
-.currency-selector-modal .modal-header {
-	border: none;
-	padding-top: 1.5rem;
-}
+.license-price-panel-delete-button {
+	color: var(--color-action-neutral-default);
 
-.currency-selector-modal .modal-title {
-	font-size: 32px;
-	font-weight: 700;
-	letter-spacing: 0%;
-	line-height: 40px;
-	vertical-align: middle;
+	&:hover {
+		color: var(--color-action-neutral-hover);
+	}
 }
