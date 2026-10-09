@@ -4,7 +4,13 @@
  */
 
 import {filesize} from 'filesize';
-import {ReactNode, createContext, useContext, useReducer} from 'react';
+import {
+	ReactNode,
+	createContext,
+	useContext,
+	useEffect,
+	useReducer,
+} from 'react';
 import {useParams} from 'react-router-dom';
 import useSWR from 'swr';
 import {UploadedFile} from '~/components/FileList/FileList';
@@ -18,6 +24,7 @@ import HeadlessPublisherAsset from '~/services/headless/HeadlessPublisherAsset';
 import {MarketplaceProduct} from '~/services/models/MarketplaceProduct';
 import {getTaxonomyCategoryLabel} from '~/utils/getTaxonomyCategoryLabel';
 import {ProductSpecificationKey, ProductTags} from '~/utils/productUtils';
+import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {useMarketplaceContext} from './MarketplaceContextProvider';
 
@@ -653,6 +660,36 @@ const reducer = (state: NewAppInitialState, action: AppActions) => {
 	}
 };
 
+export const NEW_APP_DRAFT_STORAGE_KEY = 'marketplace:new-app-flow-draft';
+
+const getInitialState = (): NewAppInitialState => {
+	const raw = sessionStorage.getItem(NEW_APP_DRAFT_STORAGE_KEY);
+	const parsed = safeJSONParse<Partial<NewAppInitialState> | null>(raw, null);
+
+	if (parsed && typeof parsed === 'object') {
+		return {
+			...newAppInitialState,
+			...parsed,
+			build: {...newAppInitialState.build, ...parsed.build},
+			licensing: {
+				...newAppInitialState.licensing,
+				...parsed.licensing,
+			},
+			loading: false,
+			pricing: {...newAppInitialState.pricing, ...parsed.pricing},
+			profile: {...newAppInitialState.profile, ...parsed.profile},
+			storefront: {
+				...newAppInitialState.storefront,
+				...parsed.storefront,
+			},
+			support: {...newAppInitialState.support, ...parsed.support},
+			version: {...newAppInitialState.version, ...parsed.version},
+		};
+	}
+
+	return newAppInitialState;
+};
+
 export const NewAppContext = createContext<
 	[NewAppInitialState, React.Dispatch<AppActions>]
 >([newAppInitialState, () => null]);
@@ -668,9 +705,21 @@ export default function NewAppContextProvider({
 }: NewAppContextProviderProps) {
 	const {properties} = useMarketplaceContext() || {};
 	const featurePreview = properties?.featurePreview ?? [];
-	const [state, dispatch] = useReducer(reducer, newAppInitialState);
+	const [state, dispatch] = useReducer(reducer, null, getInitialState);
 
 	const {productId} = useParams();
+
+	useEffect(() => {
+		if (!productId) {
+			try {
+				sessionStorage.setItem(
+					NEW_APP_DRAFT_STORAGE_KEY,
+					JSON.stringify(state)
+				);
+			}
+			catch (error) {}
+		}
+	}, [productId, state]);
 	const {data = {}, isLoading: isLoadingVocabularies} =
 		useGetVocabulariesAndCategories([
 			ProductVocabulary.APP_AREA,
