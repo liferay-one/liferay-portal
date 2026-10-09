@@ -6,99 +6,94 @@
 /**
  * Enforces the account-level and project-level permission matrices (LPD-95398).
  *
- * Every row signs in as its own persona, so each persona needs a seeded user
- * whose email address and password are supplied through the environment. The
- * variables are listed in .env.example; nothing here falls back to the default
- * administrator, because a persona that silently resolves to an administrator
- * turns a denial row into a pass for the wrong reason.
+ * Every row signs in as its own persona from `getPersona.ts`, which defaults to
+ * the users `scripts/seed` provisions on ACCNT-001 and PRJCT-001. Nothing here
+ * falls back to the administrator, because an administrator session turns a
+ * denial row into a pass for the wrong reason.
  *
- * A block whose variables are unset is skipped with a reason naming them, so an
- * environment without seeded personas reports "not configured" rather than a
- * wall of failures. The hard failures below stay as a second line of defence
- * for a persona that slips past the skip guard.
+ * Each cell asserts the access the matrix requires. A cell the application
+ * does not honor yet is listed in `KNOWN_DEFECTS` with what it does instead;
+ * it runs as an expected failure, so the suite stays green while the defect is
+ * open and fails as soon as the defect is fixed, which is the signal to delete
+ * the entry.
  */
 
-import {Locator, Page, expect, test} from '@playwright/test';
+import {Locator, Page} from '@playwright/test';
 
+import {expect, oneTest as test} from '../fixtures/oneTest';
+import {selectCurrentAccount} from '../utils/accountUtils';
 import {gotoAndExpectRender} from '../utils/customElementUtils';
-import {liferayLogin, liferayLogout} from '../utils/loginUtils';
+import {
+	ACCOUNT_ERC,
+	PROJECT_ERC,
+	PROJECT_NAME,
+	UNASSIGNED_PROJECT_ERC,
+	UNASSIGNED_PROJECT_NAME,
+	sitePath,
+} from '../utils/environmentUtils';
+import getPersona, {PersonaKey} from '../utils/getPersona';
+import {FakeJira} from '../utils/supportFakesUtils';
 
 type Access = 'full' | 'none' | 'view';
 
 type Feature = {
 	action?: (page: Page) => Locator;
 	content: (page: Page) => Locator;
+	denial?: (page: Page) => Locator;
 	goto: (page: Page) => Promise<void>;
 	name: string;
 };
 
-type Persona = {
-	emailVariable: string;
-	label: string;
-	passwordVariable: string;
-};
-
-const ACCOUNT_ERC_VARIABLE = 'ONE_ACCOUNT_ERC';
-const ACCOUNT_KEY_VARIABLE = 'ONE_ACCOUNT_KEY';
-const PROJECT_ERC_VARIABLE = 'ONE_PROJECT_ERC';
-const UNASSIGNED_PROJECT_ERC_VARIABLE = 'ONE_UNASSIGNED_PROJECT_ERC';
+const FETCH_ERROR_TEXT = 'An error occurred while fetching the data.';
 
 const LOADING_INDICATOR = '.loading-animation';
 
+const NO_ACCESS_TEXT = 'You do not have access to this page.';
+
 const RENDER_TIMEOUT = 30000;
 
-function environmentValue(name: string): string {
-	return process.env[name]?.trim() ?? '';
-}
+/**
+ * Matrix cells the application does not honor yet, keyed by
+ * `<persona label> — <feature name>`, with what happens instead.
+ */
 
-function missingVariables(names: string[]): string[] {
-	return names.filter((name) => !environmentValue(name));
-}
+const PLACED_ORDERS_404 =
+	'GET /o/headless-commerce-delivery-order/v1.0/channels/{channelId}/accounts/{accountId}/placed-orders answers 404 for every role but Account Administrator, so the page shows "An error occurred while fetching the data."';
 
-function personaVariables(persona: Persona): string[] {
-	return [persona.emailVariable, persona.passwordVariable];
-}
+const KNOWN_DEFECTS: Record<string, string> = {
+	'Account Admin — Account Details':
+		'Account Details renders no edit control for any role, so an administrator cannot change the account details the matrix grants them.',
+	'Account Buyer — Account Orders': PLACED_ORDERS_404,
+	'Account Buyer — Projects':
+		'An Account Buyer with no project membership lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
+		PLACED_ORDERS_404,
+	'Account Member — Account Orders': PLACED_ORDERS_404,
+	'No Role (null) — Account Members list':
+		'The page loads the invitations from the Spring Boot client extension first, which refuses a user without an account role, so the page shows "An error occurred while fetching the data. Forbidden" instead of the member list.',
+	'No Role (null) — Projects':
+		'A user without an account role or project lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
+		PLACED_ORDERS_404,
+	'No Role (null) — no project membership':
+		'The Account Members list shows "An error occurred while fetching the data. Forbidden" for a user without an account role (see the No Role (null) — Account Members list cell).',
+	'No Role (null), project member — assigned project': `The assigned project opens, but its Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
+	'Partner Account Admin — Account Details':
+		'Account Details renders no edit control for any role, so a partner administrator cannot change the account details the matrix grants them.',
+	'Partner Account Admin — Account Members list':
+		'The Spring Boot invitations read refuses a Partner Account Admin, so the page shows "An error occurred while fetching the data. Forbidden" and no Invite Member action.',
+	'Partner Account Admin — Account Orders': PLACED_ORDERS_404,
+	'Partner Account Admin — Projects':
+		'A Partner Account Admin is not treated as an account manager, sees none of the account projects, and lands on the One-Time Purchases pseudo-project with "An error occurred while fetching the data."',
+	'Project Admin — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
+	'Project Requester — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
+	'Project User — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
+	'Project User — Submit support ticket':
+		'The Support menu offers Submit a Request, an external Jira Service Management link, to every signed in user, so a Project User is not limited to viewing tickets.',
+	'Project User — Ticket Attachments (view)':
+		'Ticket Attachments shows New Attachment to every project member; the upload is refused only after the user picks a ticket, by the Spring Boot access check.',
+};
 
-function requiredValue(name: string): string {
-	const value = environmentValue(name);
-
-	if (!value) {
-		throw new Error(
-			`Unable to build a permission matrix path because ${name} is not ` +
-				`set. Set it in .env (see .env.example) and point it at the ` +
-				`seeded record this matrix runs against.`
-		);
-	}
-
-	return value;
-}
-
-function skipReason(names: string[]): string {
-	return (
-		`Persona credentials are not configured: ${[...names].sort().join(', ')}. ` +
-		`Set them in .env (see .env.example) and seed a user per persona; ` +
-		`running this matrix as the default administrator would pass rows ` +
-		`that expect a denial.`
-	);
-}
-
-async function signIn(page: Page, persona: Persona): Promise<void> {
-	const missing = missingVariables(personaVariables(persona));
-
-	if (missing.length) {
-		throw new Error(
-			`Unable to sign in as the ${persona.label} persona because ` +
-				`${missing.join(' and ')} is not set. This matrix never falls ` +
-				`back to the default administrator, because an administrator ` +
-				`session would satisfy rows that expect no access.`
-		);
-	}
-
-	await liferayLogin(
-		page,
-		environmentValue(persona.emailVariable),
-		environmentValue(persona.passwordVariable)
-	);
+function myAccountPath(path: string) {
+	return sitePath(`/my-account#/${ACCOUNT_ERC}${path}`);
 }
 
 /**
@@ -129,16 +124,34 @@ async function assertAccess(page: Page, feature: Feature, access: Access) {
 			`expected ${feature.name} to be denied`
 		).not.toBeVisible();
 
+		await expect(
+			page.getByText(FETCH_ERROR_TEXT),
+			`expected ${feature.name} to be denied rather than broken`
+		).toHaveCount(0);
+
+		if (feature.denial) {
+			await expect(
+				feature.denial(page).first(),
+				`expected ${feature.name} to say that access is denied`
+			).toBeVisible();
+		}
+
 		return;
 	}
 
-	await expect(content.first()).toBeVisible({timeout: RENDER_TIMEOUT});
+	await expect(
+		content.first(),
+		`expected ${feature.name} to be visible`
+	).toBeVisible({timeout: RENDER_TIMEOUT});
 
 	if (feature.action) {
 		const action = feature.action(page).first();
 
 		if (access === 'full') {
-			await expect(action).toBeVisible();
+			await expect(
+				action,
+				`expected ${feature.name} to offer its action`
+			).toBeVisible();
 		}
 		else {
 			await expect(
@@ -149,111 +162,77 @@ async function assertAccess(page: Page, feature: Feature, access: Access) {
 	}
 }
 
-const ACCOUNT_ADMIN: Persona = {
-	emailVariable: 'ONE_ACCOUNT_ADMIN_EMAIL',
-	label: 'Account Admin',
-	passwordVariable: 'ONE_ACCOUNT_ADMIN_PASSWORD',
-};
+/**
+ * Pins the persona's current account to the matrix account. The current
+ * account is stored per user on the server, so another test may have left a
+ * different one selected.
+ */
 
-const ACCOUNT_BUYER: Persona = {
-	emailVariable: 'ONE_ACCOUNT_BUYER_EMAIL',
-	label: 'Account Buyer',
-	passwordVariable: 'ONE_ACCOUNT_BUYER_PASSWORD',
-};
+async function signInOnAccount(
+	page: Page,
+	signIn: (key: PersonaKey) => Promise<unknown>,
+	persona: PersonaKey
+) {
+	await signIn(persona);
 
-const ACCOUNT_MEMBER: Persona = {
-	emailVariable: 'ONE_ACCOUNT_MEMBER_EMAIL',
-	label: 'Account Member',
-	passwordVariable: 'ONE_ACCOUNT_MEMBER_PASSWORD',
-};
+	await selectCurrentAccount(page, ACCOUNT_ERC);
+}
 
-const NULL_PROJECT_MEMBER: Persona = {
-	emailVariable: 'ONE_NULL_PROJECT_MEMBER_EMAIL',
-	label: 'No Role (null), project member',
-	passwordVariable: 'ONE_NULL_PROJECT_MEMBER_PASSWORD',
-};
+function markKnownDefect(cell: string) {
+	const defect = KNOWN_DEFECTS[cell];
 
-const NULL_ROLE: Persona = {
-	emailVariable: 'ONE_NULL_ROLE_EMAIL',
-	label: 'No Role (null)',
-	passwordVariable: 'ONE_NULL_ROLE_PASSWORD',
-};
+	if (defect) {
+		test.info().annotations.push({description: defect, type: 'issue'});
 
-const PARTNER_ACCOUNT_ADMIN: Persona = {
-	emailVariable: 'ONE_PARTNER_ADMIN_EMAIL',
-	label: 'Partner Account Admin',
-	passwordVariable: 'ONE_PARTNER_ADMIN_PASSWORD',
-};
-
-const PROJECT_ADMIN: Persona = {
-	emailVariable: 'ONE_PROJECT_ADMIN_EMAIL',
-	label: 'Project Admin',
-	passwordVariable: 'ONE_PROJECT_ADMIN_PASSWORD',
-};
-
-const PROJECT_REQUESTER: Persona = {
-	emailVariable: 'ONE_PROJECT_REQUESTER_EMAIL',
-	label: 'Project Requester',
-	passwordVariable: 'ONE_PROJECT_REQUESTER_PASSWORD',
-};
-
-const PROJECT_USER: Persona = {
-	emailVariable: 'ONE_PROJECT_USER_EMAIL',
-	label: 'Project User',
-	passwordVariable: 'ONE_PROJECT_USER_PASSWORD',
-};
-
-test.afterEach(async ({page}) => {
-	await liferayLogout(page);
-});
+		test.fail();
+	}
+}
 
 const ACCOUNT_DETAILS: Feature = {
 	action: (page) => page.getByRole('button', {name: /edit/i}),
-	content: (page) => page.getByRole('heading', {name: /account details/i}),
+	content: (page) => page.getByText('Main Information', {exact: true}),
 	goto: (page) =>
-		gotoAndExpectRender(
-			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/account-details`
-		),
+		gotoAndExpectRender(page, myAccountPath('/account-details')),
 	name: 'Account Details',
 };
 
 const ACCOUNT_MEMBERS: Feature = {
-	action: (page) => page.getByRole('button', {name: /invite/i}),
+	action: (page) => page.getByRole('button', {name: 'Invite Member'}),
 	content: (page) => page.getByRole('table'),
+	denial: (page) => page.getByText(NO_ACCESS_TEXT),
 	goto: (page) =>
-		gotoAndExpectRender(
-			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/account-members`
-		),
+		gotoAndExpectRender(page, myAccountPath('/account-members')),
 	name: 'Account Members list',
 };
 
 const ACCOUNT_ORDERS: Feature = {
 	content: (page) => page.getByRole('table'),
-	goto: (page) =>
-		gotoAndExpectRender(
-			page,
-			`/web/one/my-account#/${requiredValue(ACCOUNT_ERC_VARIABLE)}/orders`
-		),
+	denial: (page) => page.getByText(NO_ACCESS_TEXT),
+	goto: (page) => gotoAndExpectRender(page, myAccountPath('/orders')),
 	name: 'Account Orders',
 };
 
+/**
+ * An account administrator reaches every project on the account, including
+ * one they are not a member of, so the open project selector offers the
+ * unassigned project; a member reaches only the projects they belong to.
+ */
+
 const PROJECTS: Feature = {
-	action: (page) => page.getByRole('tab', {name: /project permissions/i}),
-	content: (page) =>
-		page.getByRole('link', {
-			name: new RegExp(requiredValue(PROJECT_ERC_VARIABLE), 'i'),
-		}),
-	goto: (page) =>
-		gotoAndExpectRender(
-			page,
-			`/web/one/my-account#/${requiredValue(ACCOUNT_ERC_VARIABLE)}`
-		),
+	action: (page) =>
+		page.getByRole('menuitem', {name: new RegExp(UNASSIGNED_PROJECT_NAME)}),
+	content: (page) => page.getByText(PROJECT_NAME, {exact: true}),
+	goto: async (page) => {
+		await gotoAndExpectRender(page, myAccountPath('/project'));
+
+		await expectSettled(page);
+
+		const selector = page.getByRole('button', {name: 'Select Project'});
+
+		if (await selector.count()) {
+			await selector.click();
+		}
+	},
 	name: 'Projects',
 };
 
@@ -303,33 +282,31 @@ const ACCOUNT_LEVEL_MATRIX: Array<{
 	},
 ];
 
-const ACCOUNT_LEVEL_VARIABLES = [ACCOUNT_ERC_VARIABLE, PROJECT_ERC_VARIABLE];
-
-const ACCOUNT_PERSONAS: Persona[] = [
-	ACCOUNT_ADMIN,
-	PARTNER_ACCOUNT_ADMIN,
-	ACCOUNT_BUYER,
-	ACCOUNT_MEMBER,
-	NULL_ROLE,
+const ACCOUNT_PERSONAS: PersonaKey[] = [
+	'ACCOUNT_ADMIN',
+	'PARTNER_ADMIN',
+	'ACCOUNT_BUYER',
+	'ACCOUNT_MEMBER',
+	'NULL_ROLE',
 ];
 
 test.describe('[FLOW-ROLE-ACCOUNT-PERMISSIONS] account-level pages permission matrix', () => {
-	for (const account of ACCOUNT_PERSONAS) {
-		test.describe(account.label, () => {
-			const missing = missingVariables([
-				...ACCOUNT_LEVEL_VARIABLES,
-				...personaVariables(account),
-			]);
+	for (const personaKey of ACCOUNT_PERSONAS) {
+		const {label} = getPersona(personaKey);
 
-			test.skip(Boolean(missing.length), skipReason(missing));
-
+		test.describe(label, () => {
 			for (const {access, feature} of ACCOUNT_LEVEL_MATRIX) {
-				test(`[FLOW-ROLE-ACCOUNT-PERMISSIONS] ${account.label} — ${feature.name}: ${access[account.label]}`, async ({
-					page,
-				}) => {
-					await signIn(page, account);
+				const cell = `${label} — ${feature.name}`;
 
-					await assertAccess(page, feature, access[account.label]);
+				test(`[FLOW-ROLE-ACCOUNT-PERMISSIONS] ${cell}: ${access[label]}`, async ({
+					page,
+					signIn,
+				}) => {
+					await signInOnAccount(page, signIn, personaKey);
+
+					markKnownDefect(cell);
+
+					await assertAccess(page, feature, access[label]);
 				});
 			}
 		});
@@ -337,56 +314,66 @@ test.describe('[FLOW-ROLE-ACCOUNT-PERMISSIONS] account-level pages permission ma
 });
 
 const BUSINESS_EVENTS: Feature = {
-	action: (page) => page.getByRole('button', {name: /add|new/i}),
+	action: (page) => page.getByRole('link', {name: 'Create Event'}),
 	content: (page) => page.getByRole('table'),
 	goto: (page) =>
 		gotoAndExpectRender(
 			page,
-			`/web/one/support/business-events#/${requiredValue(
-				ACCOUNT_KEY_VARIABLE
-			)}/business-events`
+			sitePath(`/support/business-events#/${PROJECT_ERC}/business-events`)
 		),
 	name: 'Business Events (view)',
 };
 
 const PROJECT_DETAILS: Feature = {
-	content: (page) => page.getByRole('heading', {level: 1}),
+	content: (page) => page.getByRole('table'),
 	goto: (page) =>
 		gotoAndExpectRender(
 			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/${requiredValue(PROJECT_ERC_VARIABLE)}`
+			myAccountPath(`/project/${PROJECT_ERC}/products`)
 		),
 	name: 'Project details (view)',
 };
 
 const PROJECT_MEMBERS: Feature = {
-	action: (page) => page.getByRole('button', {name: /edit|assign|manage/i}),
-	content: (page) => page.getByRole('table'),
+	action: (page) =>
+		page
+			.getByRole('row')
+			.filter({hasText: PROJECT_NAME})
+			.getByRole('button', {name: 'Manage project options'}),
+	content: (page) => page.getByRole('row').filter({hasText: PROJECT_NAME}),
 	goto: (page) =>
-		gotoAndExpectRender(
-			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/project-members`
-		),
+		gotoAndExpectRender(page, myAccountPath('/project-members')),
 	name: 'Project Members',
 };
 
 const SUBMIT_SUPPORT_TICKET: Feature = {
 	action: (page) =>
-		page.getByRole('button', {name: /submit|new ticket|create/i}),
-	content: (page) => page.getByRole('heading', {name: /support|tickets/i}),
-	goto: (page) => gotoAndExpectRender(page, '/web/one/support'),
+		page.locator('.adt-navigation').getByRole('link', {
+			name: /^Submit a Request/,
+		}),
+	content: (page) =>
+		page.locator('.adt-navigation').getByRole('link', {
+			name: /^View My Tickets/,
+		}),
+	goto: async (page) => {
+		await page.goto(sitePath('/home'));
+
+		await page
+			.locator('.adt-navigation')
+			.getByRole('button', {name: 'Support'})
+			.click();
+	},
 	name: 'Submit support ticket',
 };
 
 const TICKET_ATTACHMENTS: Feature = {
-	action: (page) => page.getByRole('button', {name: /upload|attach/i}),
-	content: (page) => page.getByRole('table'),
+	action: (page) => page.getByRole('button', {name: 'New Attachment'}),
+	content: (page) =>
+		page
+			.getByRole('table')
+			.or(page.getByText('No ticket attachments were found.')),
 	goto: (page) =>
-		gotoAndExpectRender(page, '/web/one/support/ticket-attachments#/'),
+		gotoAndExpectRender(page, sitePath('/support/ticket-attachments#/')),
 	name: 'Ticket Attachments (view)',
 };
 
@@ -441,135 +428,133 @@ const PROJECT_LEVEL_MATRIX: Array<{
 	},
 ];
 
-const PROJECT_LEVEL_VARIABLES = [
-	ACCOUNT_ERC_VARIABLE,
-	ACCOUNT_KEY_VARIABLE,
-	PROJECT_ERC_VARIABLE,
-];
-
-const PROJECT_PERSONAS: Persona[] = [
-	ACCOUNT_ADMIN,
-	PROJECT_ADMIN,
-	PROJECT_REQUESTER,
-	PROJECT_USER,
+const PROJECT_PERSONAS: PersonaKey[] = [
+	'ACCOUNT_ADMIN',
+	'PROJECT_ADMIN',
+	'PROJECT_REQUESTER',
+	'PROJECT_USER',
 ];
 
 test.describe('[FLOW-ROLE-PROJECT-PERMISSIONS] project-level pages permission matrix', () => {
-	for (const projectPersona of PROJECT_PERSONAS) {
-		test.describe(projectPersona.label, () => {
-			const missing = missingVariables([
-				...PROJECT_LEVEL_VARIABLES,
-				...personaVariables(projectPersona),
-			]);
+	for (const personaKey of PROJECT_PERSONAS) {
+		const {label} = getPersona(personaKey);
 
-			test.skip(Boolean(missing.length), skipReason(missing));
-
+		test.describe(label, () => {
 			for (const {access, feature} of PROJECT_LEVEL_MATRIX) {
-				test(`[FLOW-ROLE-PROJECT-PERMISSIONS] ${projectPersona.label} — ${feature.name}: ${access[projectPersona.label]}`, async ({
-					page,
-				}) => {
-					await signIn(page, projectPersona);
+				const cell = `${label} — ${feature.name}`;
 
-					await assertAccess(
-						page,
-						feature,
-						access[projectPersona.label]
-					);
+				test(`[FLOW-ROLE-PROJECT-PERMISSIONS] ${cell}: ${access[label]}`, async ({
+					page,
+					signIn,
+					springBoot,
+				}) => {
+					if (feature === BUSINESS_EVENTS) {
+						test.skip(
+							!springBoot.enabled,
+							'The business events table needs an event, which only the stubbed Jira can seed'
+						);
+
+						const jira = new FakeJira(springBoot);
+
+						await jira.install();
+
+						jira.addEvent({name: 'Matrix Event'});
+					}
+
+					await signInOnAccount(page, signIn, personaKey);
+
+					markKnownDefect(cell);
+
+					await assertAccess(page, feature, access[label]);
 				});
 			}
 		});
 	}
 });
 
-const NULL_PROJECT_ACCESS_VARIABLES = [
-	ACCOUNT_ERC_VARIABLE,
-	PROJECT_ERC_VARIABLE,
-	UNASSIGNED_PROJECT_ERC_VARIABLE,
-	...personaVariables(NULL_PROJECT_MEMBER),
-	...personaVariables(NULL_ROLE),
-];
-
 test.describe('[FLOW-ROLE-NULL-PROJECT-ACCESS] null role project access', () => {
-	const missing = missingVariables(NULL_PROJECT_ACCESS_VARIABLES);
-
-	test.skip(Boolean(missing.length), skipReason(missing));
-
 	test('[FLOW-ROLE-NULL-PROJECT-ACCESS] with no project membership, only account-level pages are reachable', async ({
 		page,
+		signIn,
 	}) => {
-		await signIn(page, NULL_ROLE);
+		await signInOnAccount(page, signIn, 'NULL_ROLE');
+
+		markKnownDefect('No Role (null) — no project membership');
 
 		await assertAccess(page, ACCOUNT_DETAILS, 'view');
 		await assertAccess(page, ACCOUNT_MEMBERS, 'view');
 
 		await gotoAndExpectRender(
 			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/${requiredValue(PROJECT_ERC_VARIABLE)}`
+			myAccountPath(`/project/${PROJECT_ERC}/products`)
 		);
 
 		await expectSettled(page);
 
 		await expect(
-			page.getByRole('table').first(),
+			page.getByText(PROJECT_NAME, {exact: true}),
+			'expected a project the user is not a member of to stay hidden'
+		).toHaveCount(0);
+
+		await expect(
+			page.getByRole('table'),
 			'expected a project the user is not a member of to render no data'
-		).not.toBeVisible();
+		).toHaveCount(0);
 	});
 
 	test('[FLOW-ROLE-NULL-PROJECT-ACCESS] with a project membership, account-level and that project are reachable', async ({
 		page,
+		signIn,
 	}) => {
-		await signIn(page, NULL_PROJECT_MEMBER);
+		await signInOnAccount(page, signIn, 'NULL_PROJECT_MEMBER');
+
+		markKnownDefect('No Role (null), project member — assigned project');
 
 		await assertAccess(page, ACCOUNT_DETAILS, 'view');
 
 		await gotoAndExpectRender(
 			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/${requiredValue(PROJECT_ERC_VARIABLE)}`
+			myAccountPath(`/project/${PROJECT_ERC}/products`)
 		);
 
 		await expectSettled(page);
 
-		await expect(page.getByRole('heading', {level: 1}).first()).toBeVisible(
-			{
-				timeout: RENDER_TIMEOUT,
-			}
-		);
+		await expect(page).toHaveURL(new RegExp(`/project/${PROJECT_ERC}/`));
+
+		await expect(
+			page.getByText(PROJECT_NAME, {exact: true}).first()
+		).toBeVisible();
+		await expect(page.getByRole('table')).toBeVisible({
+			timeout: RENDER_TIMEOUT,
+		});
 	});
 
 	test('[FLOW-ROLE-NULL-PROJECT-ACCESS] a project the user is not assigned to is not displayed', async ({
+		adminAPI,
 		page,
+		signIn,
 	}) => {
-		await signIn(page, NULL_PROJECT_MEMBER);
-
-		const unassignedProjectERC = requiredValue(
-			UNASSIGNED_PROJECT_ERC_VARIABLE
+		const unassignedProject = await adminAPI.get<{name: string}>(
+			`/o/c/projects/by-external-reference-code/${UNASSIGNED_PROJECT_ERC}`
 		);
+
+		await signInOnAccount(page, signIn, 'NULL_PROJECT_MEMBER');
 
 		await gotoAndExpectRender(
 			page,
-			`/web/one/my-account#/${requiredValue(
-				ACCOUNT_ERC_VARIABLE
-			)}/${unassignedProjectERC}`
+			myAccountPath(`/project/${UNASSIGNED_PROJECT_ERC}/products`)
 		);
 
 		await expectSettled(page);
 
 		await expect(
-			page
-				.getByRole('link', {
-					name: new RegExp(unassignedProjectERC, 'i'),
-				})
-				.first(),
-			'expected an unassigned project to stay out of the navigation'
-		).not.toBeVisible();
+			page,
+			'expected an unassigned project to redirect to one the user belongs to'
+		).not.toHaveURL(new RegExp(`/project/${UNASSIGNED_PROJECT_ERC}/`));
 
 		await expect(
-			page.getByRole('table').first(),
-			'expected an unassigned project to render no data'
-		).not.toBeVisible();
+			page.getByText(unassignedProject.name, {exact: true}),
+			'expected an unassigned project to stay out of the navigation'
+		).toHaveCount(0);
 	});
 });
