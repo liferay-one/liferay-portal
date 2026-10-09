@@ -35,7 +35,7 @@ export default function Publishers() {
 							id: 'name',
 							name: i18n.translate('name'),
 							render: (name, {logoURL}) => (
-								<div>
+								<div className="admin-table-name">
 									<img
 										className="mr-2 rounded"
 										draggable={false}
@@ -43,7 +43,10 @@ export default function Publishers() {
 										src={logoURL}
 										width={42}
 									/>
-									<span className="font-weight-bold">
+									<span
+										className="font-weight-bold text-truncate"
+										title={name}
+									>
 										{name}
 									</span>
 								</div>
