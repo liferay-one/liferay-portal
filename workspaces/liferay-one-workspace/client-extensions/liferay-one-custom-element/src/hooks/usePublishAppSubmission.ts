@@ -8,6 +8,7 @@ import {useNavigate} from 'react-router-dom';
 import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
 import {
 	AppActions,
+	NEW_APP_DRAFT_STORAGE_KEY,
 	NewAppInitialState,
 	NewAppTypes,
 } from '~/context/NewAppContextProvider';
@@ -57,6 +58,11 @@ const usePublishAppSubmission = (
 	const onSaveAsDraft = async () => {
 		await _onSave({isDraft: true});
 
+		try {
+			sessionStorage.removeItem(NEW_APP_DRAFT_STORAGE_KEY);
+		}
+		catch (error) {}
+
 		Liferay.Util.openToast({
 			message: i18n.sub('x-saved-as-a-draft-successfully', [
 				context.profile.name,
@@ -76,6 +82,11 @@ const usePublishAppSubmission = (
 				context._product.productStatus !==
 					ProductWorkflowStatusCode.DRAFT,
 		});
+
+		try {
+			sessionStorage.removeItem(NEW_APP_DRAFT_STORAGE_KEY);
+		}
+		catch (error) {}
 
 		Liferay.Util.openToast({
 			message: i18n.sub('app-x-submitted', [context.profile.name]),

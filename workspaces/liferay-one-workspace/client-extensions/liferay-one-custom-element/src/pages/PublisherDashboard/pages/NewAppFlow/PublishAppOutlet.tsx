@@ -10,7 +10,10 @@ import {Link} from 'react-router-dom';
 import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
-import {useNewAppContext} from '~/context/NewAppContextProvider';
+import {
+	NEW_APP_DRAFT_STORAGE_KEY,
+	useNewAppContext,
+} from '~/context/NewAppContextProvider';
 import PublishModeContextProvider from '~/context/PublishModeContextProvider';
 import usePublishAppSubmission from '~/hooks/usePublishAppSubmission';
 import usePublishHeader from '~/hooks/usePublishHeader';
@@ -80,6 +83,13 @@ const PublishAppOutlet = ({mode}: {mode?: PublishMode}) => {
 
 	const isValidSchema = parsedSchema ? !parsedSchema.success : false;
 
+	const clearDraft = () => {
+		try {
+			sessionStorage.removeItem(NEW_APP_DRAFT_STORAGE_KEY);
+		}
+		catch (error) {}
+	};
+
 	if (context.loading) {
 		return <Loading.Page />;
 	}
@@ -105,12 +115,20 @@ const PublishAppOutlet = ({mode}: {mode?: PublishMode}) => {
 							<ClayButton
 								disabled={isValidSchema || !canSaveAsDraft}
 								displayType="secondary"
-								onClick={() => onSaveAsDraft().then(onExit)}
+								onClick={() => {
+									clearDraft();
+
+									return onSaveAsDraft().then(onExit);
+								}}
 							>
 								{i18n.translate('save-as-a-draft-exit')}
 							</ClayButton>
 
-							<Link className="btn btn-primary ml-2" to="/">
+							<Link
+								className="btn btn-primary ml-2"
+								onClick={clearDraft}
+								to="/"
+							>
 								{i18n.translate('exit')}
 							</Link>
 						</>
@@ -132,13 +150,16 @@ const PublishAppOutlet = ({mode}: {mode?: PublishMode}) => {
 							<ClayButton
 								className="btn btn-primary ml-2"
 								displayType="primary"
-								onClick={onExit}
+								onClick={() => {
+									clearDraft();
+									onExit();
+								}}
 							>
 								{i18n.translate('exit')}
 							</ClayButton>
 						}
 						observer={onExitModal.observer}
-						title="Exit from creating an App"
+						title="Exit from creating an app"
 						visible={onExitModal.open}
 					>
 						<p>
