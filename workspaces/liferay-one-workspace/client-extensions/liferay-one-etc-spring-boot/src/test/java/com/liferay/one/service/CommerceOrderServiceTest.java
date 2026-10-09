@@ -1810,47 +1810,6 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testDispatchOrderUpdateCancelsSEOStudioOrderWhenProvisioningFails()
-		throws Exception {
-
-		_whenFetchCommerceOrder(
-			_createSEOStudioOrder(
-				"{\"salesforceProjectId\": \"a1tTEST\"}",
-				CommerceOrderConstants.ORDER_STATUS_PENDING));
-		_whenFetchProject(_ACCOUNT_ID);
-		_whenGetAIHubOrders();
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		_verifyCancelledSEOStudioOrder(
-			"Unable to provision the SEO&AEO Studio Beta add on on AI Hub");
-	}
-
-	@Test
-	public void testDispatchOrderUpdateCancelsSEOStudioOrderWhenProvisioningThrows()
-		throws Exception {
-
-		_whenFetchCommerceOrder(
-			_createSEOStudioOrder(
-				"{\"salesforceProjectId\": \"a1tTEST\"}",
-				CommerceOrderConstants.ORDER_STATUS_PENDING));
-		_whenFetchProject(_ACCOUNT_ID);
-		_whenGetAIHubOrders();
-
-		Mockito.doThrow(
-			new IllegalStateException()
-		).when(
-			_aiHubService
-		).provision(
-			ArgumentMatchers.any()
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		_verifyCancelledSEOStudioOrder("java.lang.IllegalStateException");
-	}
-
-	@Test
 	public void testDispatchOrderUpdateCancelsSEOStudioOrderWithProjectOfAnotherAccount()
 		throws Exception {
 
@@ -2082,6 +2041,60 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateLeavesSEOStudioOrderPendingWhenProvisioningFails()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyPendingSEOStudioOrder();
+	}
+
+	@Test
+	public void testDispatchOrderUpdateLeavesSEOStudioOrderPendingWhenProvisioningThrows()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.dispatchOrderUpdate(_ORDER_ID));
+
+		_verifyPendingSEOStudioOrder();
+
+		_whenProvisionAIHub();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.eq(_ORDER_ID),
+			ArgumentMatchers.eq(
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED)
+		);
+	}
+
+	@Test
 	public void testDispatchOrderUpdateProvisionsSEOStudioOrder()
 		throws Exception {
 
@@ -2092,6 +2105,39 @@ public class CommerceOrderServiceTest {
 		_whenFetchProject(_ACCOUNT_ID);
 		_whenGetAIHubOrders();
 		_whenProvisionAIHub();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyProvisionedSEOStudioOrder("admin@liferay.com", "Test");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateProvisionsSEOStudioOrderOnce()
+		throws Exception {
+
+		Order order = _createSEOStudioOrder(
+			"{\"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		_whenFetchCommerceOrder(order);
+
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+
+		Mockito.doAnswer(
+			invocation -> {
+				_commerceOrderService.provisionSEOStudio(order);
+
+				return new JSONObject(
+				).put(
+					"accountEntryId", 4321L
+				);
+			}
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
 
 		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
 
@@ -2145,6 +2191,60 @@ public class CommerceOrderServiceTest {
 			"AI Hub", userAccountJSONObject.getString("firstName"));
 		Assertions.assertEquals(
 			"Ribeiro", userAccountJSONObject.getString("lastName"));
+	}
+
+	@Test
+	public void testDispatchOrderUpdateProvisionsSEOStudioOrderWithSEOStudioAdministrator()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				new JSONObject(
+				).put(
+					"salesforceProjectId", "a1tTEST"
+				).put(
+					"seoStudioForm",
+					new JSONObject(
+					).put(
+						"administratorEmailAddress", "seo@liferay.com"
+					)
+				).toString(),
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders();
+		_whenProvisionAIHub();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		_verifyProvisionedSEOStudioOrder("seo@liferay.com", "Test");
+	}
+
+	@Test
+	public void testDispatchOrderUpdateProvisionsSEOStudioOrderWithoutTier()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createSEOStudioOrder(
+				"{\"salesforceProjectId\": \"a1tTEST\"}",
+				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		_whenFetchProject(_ACCOUNT_ID);
+		_whenGetAIHubOrders(null);
+		_whenProvisionAIHub();
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		ArgumentCaptor<JSONObject> provisionArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).provision(
+			provisionArgumentCaptor.capture()
+		);
+
+		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
+
+		Assertions.assertFalse(provisionJSONObject.has("tier"));
 	}
 
 	@Test
@@ -2244,6 +2344,29 @@ public class CommerceOrderServiceTest {
 			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
 			ArgumentMatchers.anyInt()
 		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsUnpaidSEOStudioOrder()
+		throws Exception {
+
+		Order order = _createSEOStudioOrder(
+			"{\"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setPaymentStatus(_PAYMENT_STATUS_PENDING);
+
+		_whenFetchCommerceOrder(order);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		_verifyPendingSEOStudioOrder();
 	}
 
 	@Test
@@ -2824,6 +2947,22 @@ public class CommerceOrderServiceTest {
 		Assertions.assertEquals(projectName, customFields.get("projectName"));
 	}
 
+	private void _verifyPendingSEOStudioOrder() throws Exception {
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyInt()
+		);
+	}
+
 	private void _verifyProvisionedSEOStudioOrder(
 			String administratorEmailAddress, String aiHubAccountName)
 		throws Exception {
@@ -2851,7 +2990,7 @@ public class CommerceOrderServiceTest {
 				"addOns"
 			).toString());
 		Assertions.assertEquals(
-			"studio", provisionJSONObject.getString("tier"));
+			"activate", provisionJSONObject.getString("tier"));
 
 		JSONArray userAccountsJSONArray = provisionJSONObject.getJSONArray(
 			"userAccounts");
@@ -2877,11 +3016,14 @@ public class CommerceOrderServiceTest {
 				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED)
 		);
 
+		Map<String, String> customFields =
+			customFieldsArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"Test Project", customFields.get("projectName"));
+
 		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFieldsArgumentCaptor.getValue(
-			).get(
-				"order-metadata"
-			));
+			customFields.get("order-metadata"));
 
 		Assertions.assertEquals(
 			4321L,
@@ -2990,6 +3132,10 @@ public class CommerceOrderServiceTest {
 	}
 
 	private void _whenGetAIHubOrders() throws Exception {
+		_whenGetAIHubOrders("activate");
+	}
+
+	private void _whenGetAIHubOrders(String tier) throws Exception {
 		Order aiHubOrder = _createAIHubOrder(
 			new JSONObject(
 			).put(
@@ -3004,6 +3150,8 @@ public class CommerceOrderServiceTest {
 				)
 			).put(
 				"salesforceProjectId", "a1tTEST"
+			).put(
+				"tier", tier
 			).toString(),
 			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
