@@ -7,7 +7,7 @@ import ClayAlert from '@clayui/alert';
 import {format} from 'date-fns';
 import {useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
-import {Navigate, useNavigate, useSearchParams} from 'react-router-dom';
+import {Navigate, useNavigate, useSearchParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import {useProject} from '~/context/ProjectContext';

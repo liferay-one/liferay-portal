@@ -8,7 +8,7 @@ import ClayButton from '@clayui/button';
 import ClayLink from '@clayui/link';
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {useEffect} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import useSWR from 'swr';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import {useOneContext} from '~/context/OneContextProvider';

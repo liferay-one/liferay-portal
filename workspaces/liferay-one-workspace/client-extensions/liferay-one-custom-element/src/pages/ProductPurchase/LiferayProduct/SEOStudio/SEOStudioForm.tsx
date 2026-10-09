@@ -12,7 +12,7 @@ import {zodResolver} from '@hookform/resolvers/zod';
 import classNames from 'classnames';
 import {useState} from 'react';
 import {useForm} from 'react-hook-form';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {RequiredMask} from '~/components/FieldBase/FieldBase';
 import {Input} from '~/components/Input/Input';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';

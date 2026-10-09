@@ -4,7 +4,7 @@
  */
 
 import {Suspense} from 'react';
-import {HashRouter, useRoutes} from 'react-router-dom';
+import {HashRouter, useRoutes} from 'react-router';
 import {toRouteObjects} from '~/utils/routeUtils';
 
 import {businessEventsRoutes} from './businessEventsRoutes';

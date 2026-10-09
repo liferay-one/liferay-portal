@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useSearchParams} from 'react-router-dom';
+import {useSearchParams} from 'react-router';
 import Page from '~/components/Page/Page';
 import i18n from '~/i18n';
 import AdministratorAppsListView from '~/pages/Admin/MPSummary/components/AdministratorAppsListView';

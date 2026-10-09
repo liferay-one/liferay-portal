@@ -8,7 +8,7 @@ import ClayButton from '@clayui/button';
 import {ClayCheckbox} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {z} from 'zod';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';

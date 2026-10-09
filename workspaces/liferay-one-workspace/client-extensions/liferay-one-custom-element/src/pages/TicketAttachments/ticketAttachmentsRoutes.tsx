@@ -4,7 +4,7 @@
  */
 
 import {lazy} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {AppRoute} from '~/utils/routeUtils';
 
 import TicketAttachmentsLayout from './components/TicketAttachmentsLayout/TicketAttachmentsLayout';
@@ -43,7 +43,7 @@ export const ticketAttachmentsRoutes: AppRoute[] = [
 				path: 'id/:ticketAttachmentId',
 			},
 			{element: <TicketAttachmentsUploaderOutlet />, path: ':ticketId'},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		element: <TicketAttachmentsLayout />,
 	},

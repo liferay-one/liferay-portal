@@ -4,7 +4,7 @@
  */
 
 import DOMPurify from 'dompurify';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import AppReviewSection from '~/components/AppReviewSection/AppReviewSection';
 import {Section} from '~/components/Section/Section';
 import VideoThumbnail from '~/components/VideoThumbnail/VideoThumbnail';

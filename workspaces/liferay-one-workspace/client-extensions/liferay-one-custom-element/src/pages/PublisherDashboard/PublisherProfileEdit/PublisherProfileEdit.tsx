@@ -6,7 +6,7 @@
 import ClayAlert from '@clayui/alert';
 import ClayForm, {ClayInput} from '@clayui/form';
 import {ReactNode, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import Button from '~/components/Button/Button';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import Page from '~/components/Page/Page';

@@ -4,7 +4,7 @@
  */
 
 import {renderHook} from '@testing-library/react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useMarketplaceContext} from '~/context/MarketplaceContextProvider';
 import {NewAppInitialState, NewAppTypes} from '~/context/NewAppContextProvider';
@@ -25,8 +25,8 @@ const {AppPublish, navigate, sync} = vi.hoisted(() => {
 	};
 });
 
-vi.mock('react-router-dom', async (importOriginal) => ({
-	...(await importOriginal<typeof import('react-router-dom')>()),
+vi.mock('react-router', async (importOriginal) => ({
+	...(await importOriginal<typeof import('react-router')>()),
 	useNavigate: vi.fn(),
 }));
 

@@ -4,7 +4,7 @@
  */
 
 import {ReactNode} from 'react';
-import {RouteObject} from 'react-router-dom';
+import {RouteObject} from 'react-router';
 import {NavItem} from '~/components/SideNav/SideNav';
 import {UserAccountModel} from '~/services/models/UserAccountModel';
 

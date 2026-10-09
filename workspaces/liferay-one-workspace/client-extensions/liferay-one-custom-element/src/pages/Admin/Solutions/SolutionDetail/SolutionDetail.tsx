@@ -8,7 +8,7 @@ import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import DOMPurify from 'dompurify';
 import {ComponentProps, ReactNode} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import DetailSection from '~/components/DetailSection/DetailSection';
 import {PageRenderer} from '~/components/Page/Page';

@@ -12,7 +12,7 @@ import React, {
 	useEffect,
 	useMemo,
 } from 'react';
-import {useSearchParams} from 'react-router-dom';
+import {useSearchParams} from 'react-router';
 import {KeyedMutator} from 'swr';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import ListViewContextProvider, {

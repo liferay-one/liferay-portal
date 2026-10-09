@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {HashRouter, Navigate, useRoutes} from 'react-router-dom';
+import {HashRouter, Navigate, useRoutes} from 'react-router';
 import {AccountProvider} from '~/context/AccountContext';
 import {ProjectProvider} from '~/context/ProjectContext';
 import useRequireSignIn from '~/hooks/useRequireSignIn';

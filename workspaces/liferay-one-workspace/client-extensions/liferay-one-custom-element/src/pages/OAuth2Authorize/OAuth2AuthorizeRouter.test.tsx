@@ -22,7 +22,7 @@ vi.mock('./EnvironmentSelection/EnvironmentSelection', () => ({
 	default: () => 'EnvironmentSelection page',
 }));
 vi.mock('./ProjectSelection/ProjectSelection', async () => {
-	const {useOutletContext} = await import('react-router-dom');
+	const {useOutletContext} = await import('react-router');
 
 	return {
 		default: function ProjectSelection() {

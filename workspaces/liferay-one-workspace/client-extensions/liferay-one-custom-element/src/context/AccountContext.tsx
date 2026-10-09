@@ -4,7 +4,7 @@
  */
 
 import {createContext, useContext, useEffect, useState} from 'react';
-import {Outlet, useParams} from 'react-router-dom';
+import {Outlet, useParams} from 'react-router';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import Loading from '~/components/Loading/Loading';
 import {useCurrentAccount} from '~/hooks/useAccounts';

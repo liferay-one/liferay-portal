@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {useSearchParams} from 'react-router-dom';
+import {useSearchParams} from 'react-router';
 
 type Params = {
 	[key: string]: string | number | boolean;

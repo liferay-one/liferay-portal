@@ -5,7 +5,7 @@
 
 import ClayAlert from '@clayui/alert';
 import {useState} from 'react';
-import {HashRouter, Navigate, Outlet, useRoutes} from 'react-router-dom';
+import {HashRouter, Navigate, Outlet, useRoutes} from 'react-router';
 import useGetResourceInfo from '~/hooks/useGetResourceInfo';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
 import i18n from '~/i18n';

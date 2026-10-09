@@ -7,7 +7,7 @@ import {ClayCheckbox} from '@clayui/form';
 import {zodResolver} from '@hookform/resolvers/zod';
 import classNames from 'classnames';
 import {Controller, useForm} from 'react-hook-form';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {RequiredMask} from '~/components/FieldBase/FieldBase';
 import {Input} from '~/components/Input/Input';
 import Loading from '~/components/Loading/Loading';

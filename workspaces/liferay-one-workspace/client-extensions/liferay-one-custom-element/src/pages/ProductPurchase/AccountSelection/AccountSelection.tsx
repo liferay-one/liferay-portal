@@ -6,7 +6,7 @@
 import {ClayRadio} from '@clayui/form';
 import classNames from 'classnames';
 import {useEffect} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router';
 import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';

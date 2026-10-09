@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import {ClayToggle} from '@clayui/form';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';

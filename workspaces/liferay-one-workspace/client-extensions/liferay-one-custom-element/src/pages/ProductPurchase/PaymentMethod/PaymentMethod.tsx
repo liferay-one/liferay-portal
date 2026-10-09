@@ -4,7 +4,7 @@
  */
 
 import {useState} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';

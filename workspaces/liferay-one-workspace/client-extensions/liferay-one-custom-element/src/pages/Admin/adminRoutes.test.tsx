@@ -5,7 +5,7 @@
 
 import {render, screen} from '@testing-library/react';
 import {Suspense} from 'react';
-import {MemoryRouter, useRoutes} from 'react-router-dom';
+import {MemoryRouter, useRoutes} from 'react-router';
 import {describe, expect, it, vi} from 'vitest';
 import i18n from '~/i18n';
 import {

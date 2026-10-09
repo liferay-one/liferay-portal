@@ -7,7 +7,7 @@ import ClayForm from '@clayui/form';
 import ClayMultiSelect from '@clayui/multi-select';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {Controller, useForm} from 'react-hook-form';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {z} from 'zod';
 import {Input} from '~/components/Input/Input';
 import i18n from '~/i18n';

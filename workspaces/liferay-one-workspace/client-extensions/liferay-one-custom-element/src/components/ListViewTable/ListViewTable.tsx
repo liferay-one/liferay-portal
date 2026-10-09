@@ -8,7 +8,7 @@ import ClayIcon from '@clayui/icon';
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
 import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
+import {Link} from 'react-router';
 import {KeyedMutator} from 'swr';
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import {Sort} from '~/components/ListView/context/ListViewContextProvider';

@@ -7,7 +7,7 @@ import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {format} from 'date-fns';
 import {MouseEvent, useEffect, useMemo, useRef} from 'react';
-import {useNavigate, useSearchParams} from 'react-router-dom';
+import {useNavigate, useSearchParams} from 'react-router';
 import Button from '~/components/Button/Button';
 import Page from '~/components/Page/Page';
 import {useProject} from '~/context/ProjectContext';

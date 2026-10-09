@@ -4,7 +4,7 @@
  */
 
 import {Suspense} from 'react';
-import {HashRouter, useRoutes} from 'react-router-dom';
+import {HashRouter, useRoutes} from 'react-router';
 import useRequireSignIn from '~/hooks/useRequireSignIn';
 import {toRouteObjects} from '~/utils/routeUtils';
 

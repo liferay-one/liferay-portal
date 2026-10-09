@@ -5,7 +5,7 @@
 
 import classNames from 'classnames';
 import {CSSProperties, ReactNode} from 'react';
-import {NavLink} from 'react-router-dom';
+import {NavLink} from 'react-router';
 import CustomIcon from '~/components/CustomIcon/CustomIcon';
 import i18n from '~/i18n';
 

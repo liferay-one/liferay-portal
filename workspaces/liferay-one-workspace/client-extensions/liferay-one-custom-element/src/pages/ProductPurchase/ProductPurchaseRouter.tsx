@@ -4,7 +4,7 @@
  */
 
 import {Suspense, lazy} from 'react';
-import {HashRouter, useRoutes} from 'react-router-dom';
+import {HashRouter, useRoutes} from 'react-router';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import Loading from '~/components/Loading/Loading';
 import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';

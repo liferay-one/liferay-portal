@@ -5,7 +5,7 @@
 
 import {act, render, renderHook, screen, waitFor} from '@testing-library/react';
 import {ReactNode} from 'react';
-import {MemoryRouter, Route, Routes} from 'react-router-dom';
+import {MemoryRouter, Route, Routes} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';
 

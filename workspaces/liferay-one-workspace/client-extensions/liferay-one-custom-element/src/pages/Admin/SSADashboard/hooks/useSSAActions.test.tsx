@@ -21,7 +21,7 @@ const mocks = vi.hoisted(() => ({
 	ssaTrialExtendMutate: vi.fn(),
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
 	useLocation: () => ({pathname: '/ssa'}),
 	useNavigate: () => mocks.navigate,
 }));

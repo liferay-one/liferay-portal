@@ -4,7 +4,7 @@
  */
 
 import {useLayoutEffect} from 'react';
-import {HashRouter, useRoutes} from 'react-router-dom';
+import {HashRouter, useRoutes} from 'react-router';
 import MarketplaceContextProvider from '~/context/MarketplaceContextProvider';
 import {useOneContext} from '~/context/OneContextProvider';
 import {toRouteObjects} from '~/utils/routeUtils';

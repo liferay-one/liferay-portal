@@ -8,7 +8,7 @@ import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import DOMPurify from 'dompurify';
 import {useCallback, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import useJiraTicketURL from '~/hooks/useJiraTicketURL';
 import i18n from '~/i18n';
 import DropzoneUpload from '~/pages/TicketAttachments/components/DropzoneUpload/DropzoneUpload';

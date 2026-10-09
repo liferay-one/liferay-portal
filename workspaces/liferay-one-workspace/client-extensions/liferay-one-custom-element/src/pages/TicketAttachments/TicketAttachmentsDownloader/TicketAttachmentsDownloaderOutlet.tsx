@@ -5,7 +5,7 @@
 
 import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
 import AttachmentNotFound from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/AttachmentNotFound';

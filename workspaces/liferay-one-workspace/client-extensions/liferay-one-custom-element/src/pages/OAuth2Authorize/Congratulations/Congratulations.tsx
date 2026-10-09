@@ -4,7 +4,7 @@
  */
 
 import {useEffect, useRef, useState} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import congratulationsIcon from '~/assets/icons/congratulations_icon.svg';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';

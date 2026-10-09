@@ -27,7 +27,7 @@ vi.mock('@clayui/modal', async (importOriginal) => ({
 	useModal: () => ({observer: {}, onOpenChange: vi.fn(), open: false}),
 }));
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
 	useNavigate: () => mocks.navigate,
 }));
 

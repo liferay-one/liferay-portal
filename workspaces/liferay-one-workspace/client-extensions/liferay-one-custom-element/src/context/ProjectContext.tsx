@@ -11,7 +11,7 @@ import {
 	useMemo,
 	useState,
 } from 'react';
-import {useNavigate, useParams} from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router';
 import {useAccount} from '~/context/AccountContext';
 import {
 	useChannelProducts,

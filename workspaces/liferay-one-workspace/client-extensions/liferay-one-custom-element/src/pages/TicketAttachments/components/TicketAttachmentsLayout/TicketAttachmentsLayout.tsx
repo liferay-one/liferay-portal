@@ -4,7 +4,7 @@
  */
 
 import {Suspense} from 'react';
-import {Outlet} from 'react-router-dom';
+import {Outlet} from 'react-router';
 
 const TicketAttachmentsLayout = () => {
 	return (

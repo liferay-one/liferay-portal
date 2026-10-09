@@ -10,7 +10,7 @@ import {
 	useEffect,
 	useReducer,
 } from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import {useGetVocabulariesAndCategories} from '~/hooks/useGetVocabulariesAndCategories';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';

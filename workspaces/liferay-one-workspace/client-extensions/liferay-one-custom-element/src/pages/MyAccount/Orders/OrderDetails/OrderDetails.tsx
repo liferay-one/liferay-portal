@@ -4,7 +4,7 @@
  */
 
 import {format} from 'date-fns';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {PageRenderer} from '~/components/Page/Page';

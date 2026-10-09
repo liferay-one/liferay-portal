@@ -5,7 +5,7 @@
 
 import {useModal} from '@clayui/core';
 import {useMemo} from 'react';
-import {Link, useLocation} from 'react-router-dom';
+import {Link, useLocation} from 'react-router';
 import ListView, {ListViewProps} from '~/components/ListView/ListView';
 import {ManagementToolbarProps} from '~/components/ManagementToolbar/ManagementToolbar';
 import {useOneContext} from '~/context/OneContextProvider';

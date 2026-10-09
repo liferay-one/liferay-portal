@@ -6,7 +6,7 @@
 import {zodResolver} from '@hookform/resolvers/zod';
 import {useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
-import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
+import {useNavigate, useParams, useSearchParams} from 'react-router';
 import {z} from 'zod';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';

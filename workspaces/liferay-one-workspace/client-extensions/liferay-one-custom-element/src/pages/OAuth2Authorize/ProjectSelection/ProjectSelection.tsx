@@ -6,7 +6,7 @@
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import DOMPurify from 'dompurify';
 import {useEffect} from 'react';
-import {Navigate, useNavigate} from 'react-router-dom';
+import {Navigate, useNavigate} from 'react-router';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';

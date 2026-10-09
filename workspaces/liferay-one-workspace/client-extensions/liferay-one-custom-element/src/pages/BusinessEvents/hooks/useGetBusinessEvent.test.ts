@@ -4,7 +4,7 @@
  */
 
 import {renderHook, waitFor} from '@testing-library/react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {Liferay} from '~/services/liferay/liferay';
 import {getBusinessEventById} from '~/services/spring-boot/Jira';
@@ -13,8 +13,8 @@ import useGetBusinessEvent from './useGetBusinessEvent';
 
 const {navigate} = vi.hoisted(() => ({navigate: vi.fn()}));
 
-vi.mock('react-router-dom', async (importOriginal) => ({
-	...(await importOriginal<typeof import('react-router-dom')>()),
+vi.mock('react-router', async (importOriginal) => ({
+	...(await importOriginal<typeof import('react-router')>()),
 	useNavigate: vi.fn(),
 }));
 

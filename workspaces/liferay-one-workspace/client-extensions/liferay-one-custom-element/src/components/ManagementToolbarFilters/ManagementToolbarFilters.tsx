@@ -15,7 +15,7 @@ import {
 	useRef,
 	useState,
 } from 'react';
-import {useLocation, useNavigate, useParams} from 'react-router-dom';
+import {useLocation, useNavigate, useParams} from 'react-router';
 import useSWR from 'swr';
 import Form from '~/components/Form/Form';
 import {FieldOptions} from '~/components/FormRenderer/FormRenderer';
