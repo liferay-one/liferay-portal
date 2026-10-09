@@ -57,14 +57,17 @@ export default function Solutions() {
 							id: 'name',
 							name: i18n.translate('name'),
 							render: (name, {thumbnail}) => (
-								<div>
+								<div className="admin-table-name">
 									<img
 										alt="App Image"
 										className="app-details-page-table-icon"
 										src={thumbnail}
 									/>
 
-									<span className="font-weight-semi-bold ml-2 text-nowrap">
+									<span
+										className="font-weight-semi-bold ml-2 text-truncate"
+										title={name?.en_US}
+									>
 										{name?.en_US}
 									</span>
 								</div>

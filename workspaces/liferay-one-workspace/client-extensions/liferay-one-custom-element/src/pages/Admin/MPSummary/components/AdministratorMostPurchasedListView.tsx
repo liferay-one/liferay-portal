@@ -64,7 +64,7 @@ const AdministratorMostPurchasedListView: React.FC<
 			id: 'productName',
 			name: i18n.translate('name'),
 			render: (productName, {thumbnail}) => (
-				<div className="align-items-center d-flex">
+				<div className="admin-table-name">
 					<img
 						alt={productName}
 						className="app-details-page-table-icon"
@@ -72,8 +72,9 @@ const AdministratorMostPurchasedListView: React.FC<
 					/>
 
 					<span
-						className="font-weight-semi-bold text-nowrap"
+						className="font-weight-semi-bold text-truncate"
 						style={{marginLeft: '0.75rem'}}
+						title={productName}
 					>
 						{productName}
 					</span>
