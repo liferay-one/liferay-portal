@@ -597,6 +597,8 @@ export default {
 	'events-per-month': 'Events / Month',
 	'events-successfully-ingested-by-ldp-this-month-resets-monthly-add-on-buckets-raise-the-included-volume':
 		'Events successfully ingested by LDP this month. Resets monthly; add-on buckets raise the included volume.',
+	'every-x-activation-code-is-in-use-each-activation-code-activates-one-environment':
+		'Every {0} activation code is in use. Each activation code activates one environment.',
 	'exact-match': 'Exact Match',
 	'exclude': 'Exclude',
 	'excluding-vat': 'Excluding VAT',
@@ -752,6 +754,7 @@ export default {
 		'In the future, you will be able to submit your app directly from Liferay SaaS projects.',
 	'in-the-future-you-will-be-able-to-submit-your-app-source-code-for-additional-support-and-partnership-opportunities-with-liferay':
 		'In the future, you will be able to submit your app source code for additional support and partnership opportunities with Liferay.',
+	'in-use': 'In Use',
 	'inactive': 'Inactive',
 	'incident-report-contacts': 'Incident Report Contacts',
 	'include-a-description-to-uniquely-identify-this-environment-this-cannot-be-edited-later':
