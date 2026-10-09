@@ -10,6 +10,7 @@ import {
 	getOrderStatusToken,
 	getTotalByOrderKey,
 	hasAIHubOrder,
+	hasProvisionedAIHubOrder,
 	isBetaOrder,
 	toStatusToken,
 } from './orderUtils';
@@ -170,6 +171,56 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			).toBe(true);
 			expect(hasAIHubOrder([toPlacedOrder('DXP', 0)])).toBe(false);
 			expect(hasAIHubOrder()).toBe(false);
+		});
+	});
+
+	describe('hasProvisionedAIHubOrder', () => {
+		function toAIHubOrder(
+			code: number,
+			orderMetadata: Record<string, unknown>
+		) {
+			return {
+				...toPlacedOrder('AI_HUB', code),
+				customFields: {
+					'order-metadata': JSON.stringify(orderMetadata),
+				},
+			} as PlacedOrder;
+		}
+
+		const orderMetadata = {
+			aiHubAccountEntryId: 4321,
+			aiHubForm: {aiHubAccountName: 'Acme AI Hub'},
+			salesforceProjectId: 'PRJCT-1',
+		};
+
+		it('detects a completed and provisioned AI Hub order of the project', () => {
+			expect(
+				hasProvisionedAIHubOrder(
+					[toPlacedOrder('DXP', 0), toAIHubOrder(0, orderMetadata)],
+					'PRJCT-1'
+				)
+			).toBe(true);
+		});
+
+		it('ignores an AI Hub order that is not completed, provisioned, or of the project', () => {
+			expect(
+				hasProvisionedAIHubOrder(
+					[
+						toAIHubOrder(1, orderMetadata),
+						toAIHubOrder(0, {
+							...orderMetadata,
+							salesforceProjectId: 'PRJCT-2',
+						}),
+						toAIHubOrder(0, {
+							...orderMetadata,
+							aiHubAccountEntryId: undefined,
+						}),
+						toAIHubOrder(0, {...orderMetadata, aiHubForm: {}}),
+					],
+					'PRJCT-1'
+				)
+			).toBe(false);
+			expect(hasProvisionedAIHubOrder(undefined, 'PRJCT-1')).toBe(false);
 		});
 	});
 });

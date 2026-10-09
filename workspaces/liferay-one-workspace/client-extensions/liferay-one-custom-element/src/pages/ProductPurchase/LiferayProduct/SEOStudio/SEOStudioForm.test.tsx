@@ -50,7 +50,10 @@ vi.mock(
 
 vi.mock('~/pages/ProductPurchase/context/AppPurchaseContext', () => ({
 	useAppPurchaseContext: () => ({
-		salesforceProject: {externalReferenceCode: 'PRJCT-1'},
+		salesforceProject: {
+			externalReferenceCode: 'PRJCT-1',
+			name: 'Acme Project',
+		},
 	}),
 }));
 
@@ -69,6 +72,20 @@ const product = {
 };
 
 const selectedAccount = {id: 7, name: 'Acme'};
+
+function toAIHubOrder(code: number, salesforceProjectId: string) {
+	return {
+		customFields: {
+			'order-metadata': JSON.stringify({
+				aiHubAccountEntryId: 4321,
+				aiHubForm: {aiHubAccountName: 'Acme AI Hub'},
+				salesforceProjectId,
+			}),
+		},
+		orderStatusInfo: {code},
+		orderTypeExternalReferenceCode: 'AI_HUB',
+	};
+}
 
 function mockPlacedOrders(items: unknown[]) {
 	return vi
@@ -137,11 +154,29 @@ describe('[FLOW-SEO-STUDIO-SIGNUP] SEOStudioForm AI Hub eligibility gate', () =>
 		expect(params?.get('filter')).toBe(
 			"orderTypeExternalReferenceCode eq 'AI_HUB'"
 		);
-		expect(params?.get('pageSize')).toBe('1');
+		expect(params?.get('pageSize')).toBe('-1');
 	});
 
-	it('places the SEO Studio purchase when the account holds an AI Hub order', async () => {
-		mockPlacedOrders([{orderTypeExternalReferenceCode: 'AI_HUB'}]);
+	it('refuses the submit when the AI Hub order of the project is not completed', async () => {
+		mockPlacedOrders([toAIHubOrder(1, 'PRJCT-1')]);
+
+		await submitForm();
+
+		expect(await screen.findByTestId('not-eligible')).toBeInTheDocument();
+		expect(handlePurchase).not.toHaveBeenCalled();
+	});
+
+	it('refuses the submit when the AI Hub order belongs to another project', async () => {
+		mockPlacedOrders([toAIHubOrder(0, 'PRJCT-2')]);
+
+		await submitForm();
+
+		expect(await screen.findByTestId('not-eligible')).toBeInTheDocument();
+		expect(handlePurchase).not.toHaveBeenCalled();
+	});
+
+	it('places the SEO Studio purchase when the project holds a provisioned AI Hub order', async () => {
+		mockPlacedOrders([toAIHubOrder(0, 'PRJCT-1')]);
 
 		await submitForm();
 
@@ -152,7 +187,10 @@ describe('[FLOW-SEO-STUDIO-SIGNUP] SEOStudioForm AI Hub eligibility gate', () =>
 			product
 		);
 		expect(setForm).toHaveBeenCalledWith(
-			expect.objectContaining({salesforceProjectId: 'PRJCT-1'})
+			expect.objectContaining({
+				salesforceProjectId: 'PRJCT-1',
+				salesforceProjectName: 'Acme Project',
+			})
 		);
 		expect(screen.queryByTestId('not-eligible')).not.toBeInTheDocument();
 	});
