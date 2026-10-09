@@ -185,17 +185,24 @@ export function useProjectOrders(projectName?: string, productId?: number) {
 	return {error, loading: isLoading, orders, placedOrders};
 }
 
-export function getProductOrderInfo(
+export function getProductOrder(
 	placedOrders: PlacedOrder[],
 	productId: number
-): ProductOrderInfo {
-	const order = placedOrders.find(
+): PlacedOrder | undefined {
+	return placedOrders.find(
 		(placedOrder) =>
 			placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN' &&
 			(placedOrder.placedOrderItems ?? []).some(
 				(item) => item.productId === productId
 			)
 	);
+}
+
+export function getProductOrderInfo(
+	placedOrders: PlacedOrder[],
+	productId: number
+): ProductOrderInfo {
+	const order = getProductOrder(placedOrders, productId);
 
 	if (!order) {
 		return {
