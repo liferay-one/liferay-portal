@@ -148,6 +148,7 @@
 															{
 																"definition": {
 																	"fragmentStyle": {
+																		"backgroundColor": "colorNeutral3",
 																		"borderWidth": "0",
 																		"marginLeft": "2",
 																		"marginRight": "2",
@@ -241,6 +242,7 @@
 															{
 																"definition": {
 																	"fragmentStyle": {
+																		"backgroundColor": "colorNeutral3",
 																		"borderWidth": "0",
 																		"marginLeft": "2",
 																		"marginRight": "2",
@@ -693,6 +695,7 @@
 											"fragmentConfig": {
 												"fragmentHeight": "381px",
 												"fragmentId": "1",
+												"fragmentRadius": "24px",
 												"fragmentWidth": "600px",
 												"shape": "trapezoid"
 											},
@@ -978,6 +981,7 @@
 																	"fragmentConfig": {
 																		"fragmentHeight": "351px",
 																		"fragmentId": "2",
+																		"fragmentRadius": "24px",
 																		"fragmentWidth": "601px",
 																		"shape": "rectangle"
 																	},
@@ -1050,6 +1054,7 @@
 																	"fragmentConfig": {
 																		"fragmentHeight": "351px",
 																		"fragmentId": "3",
+																		"fragmentRadius": "24px",
 																		"fragmentWidth": "601px",
 																		"shape": "rectangle"
 																	},
@@ -1290,6 +1295,7 @@
 																	"fragmentConfig": {
 																		"fragmentHeight": "351px",
 																		"fragmentId": "4",
+																		"fragmentRadius": "24px",
 																		"fragmentWidth": "601px",
 																		"shape": "rectangle"
 																	},
@@ -1361,6 +1367,7 @@
 																	"fragmentConfig": {
 																		"fragmentHeight": "351px",
 																		"fragmentId": "5",
+																		"fragmentRadius": "24px",
 																		"fragmentWidth": "601px",
 																		"shape": "rectangle"
 																	},
