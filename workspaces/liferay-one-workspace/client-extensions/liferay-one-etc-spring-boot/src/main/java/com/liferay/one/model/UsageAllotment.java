@@ -43,6 +43,7 @@ public class UsageAllotment {
 		List<Entitlement> entitlements, long overageBucketSize, String unit) {
 
 		long addOnBucketCount = 0;
+		boolean allotment = false;
 		double baseQuantity = 0;
 		Set<OveragePricing> overagePricings = new LinkedHashSet<>();
 		Set<String> skuExternalReferenceCodesWithoutConsumptionRole =
@@ -69,10 +70,13 @@ public class UsageAllotment {
 			}
 
 			if (consumptionRole.equals(
-					SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ALLOTMENT) &&
-				(entitlement.getOveragePricing() != null)) {
+					SkuOptionConstants.VALUE_CONSUMPTION_ROLE_ALLOTMENT)) {
 
-				overagePricings.add(entitlement.getOveragePricing());
+				allotment = true;
+
+				if (entitlement.getOveragePricing() != null) {
+					overagePricings.add(entitlement.getOveragePricing());
+				}
 			}
 
 			if (Objects.equals(
@@ -110,6 +114,7 @@ public class UsageAllotment {
 		_overageBucketSize = overageBucketSize;
 
 		_addOnBucketCount = addOnBucketCount;
+		_allotment = allotment;
 		_baseQuantity = baseQuantity;
 		_conflictingOveragePricing = overagePricings.size() > 1;
 		_skuExternalReferenceCodesWithoutConsumptionRole =
@@ -157,6 +162,15 @@ public class UsageAllotment {
 	 */
 	public Set<String> getSkuExternalReferenceCodesWithoutConsumptionRole() {
 		return _skuExternalReferenceCodesWithoutConsumptionRole;
+	}
+
+	/**
+	 * Returns <code>true</code> when at least one entitlement grants the base
+	 * allotment. Add on and overage buckets alone are not a subscription to
+	 * the metric, so a project with only those is not reported.
+	 */
+	public boolean hasAllotment() {
+		return _allotment;
 	}
 
 	public boolean hasConflictingOveragePricing() {
@@ -213,6 +227,7 @@ public class UsageAllotment {
 	}
 
 	private final long _addOnBucketCount;
+	private final boolean _allotment;
 	private final double _baseQuantity;
 	private final boolean _conflictingOveragePricing;
 	private final long _overageBucketSize;

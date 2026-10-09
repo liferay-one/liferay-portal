@@ -146,7 +146,28 @@ public class UsageAllotmentTest {
 
 		Assertions.assertEquals(0D, usageAllotment.getEntitledQuantity());
 		Assertions.assertNull(usageAllotment.getOveragePricing());
+		Assertions.assertFalse(usageAllotment.hasAllotment());
 		Assertions.assertFalse(usageAllotment.isUnlimited());
+	}
+
+	@Test
+	public void testOnlyBucketsMeansNoAllotment() {
+		UsageAllotment usageAllotment = _createUsageAllotment(
+			Arrays.asList(
+				_createEntitlement("fixed", 2D, _SKU_ADD_ON),
+				_createEntitlement("fixed", 1D, _SKU_OVERAGE)),
+			_OVERAGE_BUCKET_SIZE);
+
+		Assertions.assertFalse(usageAllotment.hasAllotment());
+		Assertions.assertEquals(
+			2 * _OVERAGE_BUCKET_SIZE, usageAllotment.getEntitledQuantity());
+
+		Assertions.assertTrue(
+			_createUsageAllotment(
+				Arrays.asList(
+					_createEntitlement("fixed", 1000000D, _SKU_ALLOTMENT)),
+				_OVERAGE_BUCKET_SIZE
+			).hasAllotment());
 	}
 
 	@Test

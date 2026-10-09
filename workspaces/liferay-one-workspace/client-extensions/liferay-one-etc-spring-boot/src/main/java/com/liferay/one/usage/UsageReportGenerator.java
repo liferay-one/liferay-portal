@@ -121,13 +121,27 @@ public class UsageReportGenerator {
 
 			projectCount += entitlementsByProject.size();
 
+			Map<String, UsageAllotment> usageAllotmentsByProject =
+				_getUsageAllotmentsByProject(
+					consumptionRolesBySkuExternalReferenceCode,
+					entitlementsByProject, usageDefinition, yearMonth);
+
 			Map<String, List<String>> sharedAccountProjects =
-				_getSharedAccountProjects(entitlementsByProject, usageSource);
+				_getSharedAccountProjects(
+					entitlementsByProject, usageAllotmentsByProject,
+					usageSource);
 
 			for (Map.Entry<String, List<Entitlement>> entry :
 					entitlementsByProject.entrySet()) {
 
 				String projectExternalReferenceCode = entry.getKey();
+
+				UsageAllotment usageAllotment = usageAllotmentsByProject.get(
+					projectExternalReferenceCode);
+
+				if (usageAllotment == null) {
+					continue;
+				}
 
 				List<String> accountProjectExternalReferenceCodes =
 					sharedAccountProjects.get(projectExternalReferenceCode);
@@ -152,7 +166,8 @@ public class UsageReportGenerator {
 							consumptionRolesBySkuExternalReferenceCode,
 							endInstant, entry.getValue(),
 							projectExternalReferenceCode, startInstant,
-							usageDefinition, usageSource, yearMonth)) {
+							usageAllotment, usageDefinition, usageSource,
+							yearMonth)) {
 
 						generatedCount++;
 					}
@@ -261,16 +276,9 @@ public class UsageReportGenerator {
 			Map<String, String> consumptionRolesBySkuExternalReferenceCode,
 			Instant endInstant, List<Entitlement> entitlements,
 			String projectExternalReferenceCode, Instant startInstant,
-			UsageDefinition usageDefinition, UsageSource usageSource,
-			YearMonth yearMonth)
+			UsageAllotment usageAllotment, UsageDefinition usageDefinition,
+			UsageSource usageSource, YearMonth yearMonth)
 		throws Exception {
-
-		_resolveConsumptionRoles(
-			consumptionRolesBySkuExternalReferenceCode, entitlements);
-
-		UsageAllotment usageAllotment = new UsageAllotment(
-			consumptionRolesBySkuExternalReferenceCode, entitlements,
-			_getOverageBucketSize(usageDefinition), usageDefinition.getUnit());
 
 		Set<String> skuExternalReferenceCodesWithoutConsumptionRole =
 			usageAllotment.getSkuExternalReferenceCodesWithoutConsumptionRole();
@@ -285,6 +293,19 @@ public class UsageReportGenerator {
 					skuExternalReferenceCodesWithoutConsumptionRole,
 					" have no ", SkuOptionConstants.KEY_CONSUMPTION_ROLE,
 					" option"));
+
+			return false;
+		}
+
+		if (!usageAllotment.hasAllotment()) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Skipping project ", projectExternalReferenceCode,
+						" because it has no ",
+						usageDefinition.getExternalReferenceCode(),
+						" allotment, only add on or overage buckets"));
+			}
 
 			return false;
 		}
@@ -508,13 +529,16 @@ public class UsageReportGenerator {
 
 	/**
 	 * Returns, for each project that shares its account with another project
-	 * in the map, every project of that account. An account keyed source
-	 * reports the account's whole consumption for each of them, so none can
-	 * be reported without billing the account once per project. The map is
-	 * empty for a source keyed by project.
+	 * that would be reported, every such project of that account. An account
+	 * keyed source reports the account's whole consumption for each of them,
+	 * so none can be reported without billing the account once per project.
+	 * A project that is skipped for another reason, such as holding only
+	 * buckets, does not count, since it would not be billed. The map is empty
+	 * for a source keyed by project.
 	 */
 	private Map<String, List<String>> _getSharedAccountProjects(
 		Map<String, List<Entitlement>> entitlementsByProject,
+		Map<String, UsageAllotment> usageAllotmentsByProject,
 		UsageSource usageSource) {
 
 		Map<String, List<String>> sharedAccountProjects = new HashMap<>();
@@ -527,6 +551,10 @@ public class UsageReportGenerator {
 
 		for (Map.Entry<String, List<Entitlement>> entry :
 				entitlementsByProject.entrySet()) {
+
+			if (!_isReportable(usageAllotmentsByProject.get(entry.getKey()))) {
+				continue;
+			}
 
 			for (Entitlement entitlement : entry.getValue()) {
 				long accountEntryId = entitlement.getAccountEntryId();
@@ -580,6 +608,74 @@ public class UsageReportGenerator {
 		}
 
 		return skuExternalReferenceCode;
+	}
+
+	/**
+	 * Rolls up the allotment of each project before any project is reported,
+	 * so the rules that compare projects, such as the shared account rule,
+	 * see which projects would be reported. A project whose roll up fails is
+	 * logged and left out.
+	 */
+	private Map<String, UsageAllotment> _getUsageAllotmentsByProject(
+		Map<String, String> consumptionRolesBySkuExternalReferenceCode,
+		Map<String, List<Entitlement>> entitlementsByProject,
+		UsageDefinition usageDefinition, YearMonth yearMonth) {
+
+		Map<String, UsageAllotment> usageAllotmentsByProject =
+			new LinkedHashMap<>();
+
+		for (Map.Entry<String, List<Entitlement>> entry :
+				entitlementsByProject.entrySet()) {
+
+			String projectExternalReferenceCode = entry.getKey();
+
+			try {
+				_resolveConsumptionRoles(
+					consumptionRolesBySkuExternalReferenceCode,
+					entry.getValue());
+
+				usageAllotmentsByProject.put(
+					projectExternalReferenceCode,
+					new UsageAllotment(
+						consumptionRolesBySkuExternalReferenceCode,
+						entry.getValue(),
+						_getOverageBucketSize(usageDefinition),
+						usageDefinition.getUnit()));
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to generate the ",
+						usageDefinition.getExternalReferenceCode(),
+						" usage report for project ",
+						projectExternalReferenceCode, " for ", yearMonth),
+					exception);
+			}
+		}
+
+		return usageAllotmentsByProject;
+	}
+
+	/**
+	 * Returns <code>true</code> when the allotment passes every rule that
+	 * decides whether a project is reported before its usage is read.
+	 */
+	private boolean _isReportable(UsageAllotment usageAllotment) {
+		if (usageAllotment == null) {
+			return false;
+		}
+
+		Set<String> skuExternalReferenceCodesWithoutConsumptionRole =
+			usageAllotment.getSkuExternalReferenceCodesWithoutConsumptionRole();
+
+		if (!skuExternalReferenceCodesWithoutConsumptionRole.isEmpty() ||
+			!usageAllotment.hasAllotment() || usageAllotment.isUnlimited() ||
+			!usageAllotment.isEntitledQuantityKnown()) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private void _resolveConsumptionRoles(

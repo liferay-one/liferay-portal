@@ -367,6 +367,34 @@ public class UsageReportGeneratorTest {
 	}
 
 	@Test
+	public void testReportsTheOnlyAllotmentOfAnAccountNextToABucketOnlyProject()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlement("fixed", "PRJCT-002", 2D, _SKU_ADD_ON, null),
+			_createAllotment(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
+		_setUpUsage(500000D);
+
+		Mockito.when(
+			_usageSource.isKeyedByAccount()
+		).thenReturn(
+			true
+		);
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			Mockito.anyDouble(), Mockito.anyString(), Mockito.any(),
+			Mockito.any(), Mockito.anyDouble(),
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReportsTheOnlyProjectOfAnAccountOnAnAccountKeyedSource()
 		throws Exception {
 
@@ -448,6 +476,25 @@ public class UsageReportGeneratorTest {
 			_createEntitlement(
 				"fixed", _PROJECT_EXTERNAL_REFERENCE_CODE, 1D,
 				"PRDCT-DATA-PLATFORM-EVENTS-LEGACY-BUCKET", null));
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		_verifyNoReportAdded();
+
+		Mockito.verify(
+			_usageSource, Mockito.never()
+		).fetchUsage(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSkipsProjectWithoutAllotment() throws Exception {
+		_setUpEntitlements(
+			_createEntitlement(
+				"fixed", _PROJECT_EXTERNAL_REFERENCE_CODE, 2D, _SKU_ADD_ON,
+				null));
+		_setUpUsage(500000D);
 
 		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
 
