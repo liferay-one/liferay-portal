@@ -67,11 +67,9 @@ public class AIHubService extends OneBaseService {
 				).toUri());
 
 			if (_log.isInfoEnabled()) {
-				String accountEntryExternalReferenceCode = jsonObject.optString(
-					"accountEntryExternalReferenceCode");
-
 				_log.info(
-					"AI Hub provisioned " + accountEntryExternalReferenceCode);
+					"AI Hub provisioned " +
+						jsonObject.optString("accountEntryName"));
 			}
 
 			return new JSONObject(response);
