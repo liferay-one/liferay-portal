@@ -13,6 +13,7 @@ import ProductPurchase from './ProductPurchase';
 
 type SEOStudioForm = z.infer<typeof zodSchema.seoStudioForm> & {
 	salesforceProjectId: string;
+	salesforceProjectName: string;
 };
 
 export class ProductPurchaseSEOStudio extends ProductPurchase {
@@ -31,6 +32,8 @@ export class ProductPurchaseSEOStudio extends ProductPurchase {
 					salesforceProjectId: this.form?.salesforceProjectId,
 					seoStudioForm: this.form,
 				}),
+				[OrderCustomFields.PROJECT_NAME]:
+					this.form?.salesforceProjectName,
 			},
 		} as Cart;
 	}
@@ -50,6 +53,10 @@ export class ProductPurchaseSEOStudio extends ProductPurchase {
 	}
 
 	public async getNextStepsLink() {
-		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${this.form?.salesforceProjectId}/products/${this.product.externalReferenceCode}`;
+		if (!this.form) {
+			throw new Error('Form is missing.');
+		}
+
+		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${this.form.salesforceProjectId}/products/${this.product.externalReferenceCode}`;
 	}
 }

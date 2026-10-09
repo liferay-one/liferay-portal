@@ -44,8 +44,9 @@ type SEOStudioForm = Parameters<ProductPurchaseSEOStudio['setForm']>[0];
 const account = {externalReferenceCode: 'ACCOUNT-1', id: 1} as Account;
 
 const form = {
+	administratorEmailAddress: 'admin@acme.com',
 	salesforceProjectId: 'PRJCT-1',
-	seoStudioAccountName: 'Acme SEO',
+	salesforceProjectName: 'Acme Project',
 } as SEOStudioForm;
 
 const product = {
@@ -88,7 +89,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO] ProductPurchaseSEOStudio', 
 		vi.restoreAllMocks();
 	});
 
-	it('carries the project ID and the form in the order metadata with the SEO_STUDIO order type', async () => {
+	it('carries the project and the form in the custom fields with the SEO_STUDIO order type', async () => {
 		const productPurchase = new ProductPurchaseSEOStudio(account, product);
 
 		productPurchase.setForm(form);
@@ -104,6 +105,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO] ProductPurchaseSEOStudio', 
 				salesforceProjectId: 'PRJCT-1',
 				seoStudioForm: form,
 			}),
+			'projectName': 'Acme Project',
 		});
 		expect(cart.orderTypeExternalReferenceCode).toBe('SEO_STUDIO');
 	});
@@ -119,6 +121,12 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO] ProductPurchaseSEOStudio', 
 		expect(
 			HeadlessCommerceDeliveryCart.getPaymentMethodURL
 		).not.toHaveBeenCalled();
+	});
+
+	it('throws when the form is missing for the next steps link', async () => {
+		await expect(
+			new ProductPurchaseSEOStudio(account, product).getNextStepsLink()
+		).rejects.toThrow('Form is missing.');
 	});
 
 	it('throws when the form is missing', async () => {
