@@ -291,8 +291,10 @@ const AI_HUB_TIERS = ['activate', 'studio'];
 
 export function getAiHubTier(sku?: DeliverySKU) {
 	for (const {skuOptionValueKey} of sku?.skuOptions ?? []) {
-		if (AI_HUB_TIERS.includes(skuOptionValueKey)) {
-			return skuOptionValueKey;
+		const tier = skuOptionValueKey.replace(/^plan-/, '');
+
+		if (AI_HUB_TIERS.includes(tier)) {
+			return tier;
 		}
 	}
 

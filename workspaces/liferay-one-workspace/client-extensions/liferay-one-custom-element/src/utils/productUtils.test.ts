@@ -321,6 +321,37 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 			expect(getAiHubTier(undefined)).toBeUndefined();
 		});
 
+		it('reads the tier of a SKU whose option value has the plan prefix', () => {
+			expect(
+				getAiHubTier(
+					toDeliverySKU('PLAN-ACTIVATE', [
+						['dxp-license-usage-type', 'plan-activate'],
+					])
+				)
+			).toBe('activate');
+			expect(
+				getAiHubTier(
+					toDeliverySKU('PLAN-STUDIO', [
+						['dxp-license-usage-type', 'plan-studio'],
+					])
+				)
+			).toBe('studio');
+
+			for (const skuOptionValueKey of [
+				'plan-enterprise',
+				'plan-trial',
+				'private-beta',
+			]) {
+				expect(
+					getAiHubTier(
+						toDeliverySKU(skuOptionValueKey, [
+							['dxp-license-usage-type', skuOptionValueKey],
+						])
+					)
+				).toBeUndefined();
+			}
+		});
+
 		it('filters tier SKUs by purchasable and sorts them by price', () => {
 			expect(getAiHubTierSKUs(product)).toEqual([activateSKU, studioSKU]);
 		});
