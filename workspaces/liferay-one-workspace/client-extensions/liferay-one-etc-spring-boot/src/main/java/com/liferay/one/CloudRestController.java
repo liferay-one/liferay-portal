@@ -1011,14 +1011,12 @@ public class CloudRestController extends OneBaseRestController {
 
 	private String _generateDXPLicenseXML(
 			String accountName, Date expirationDate, String licenseEntryName,
-			int maxClusterNodes, String owner, String productVersion,
-			Date startDate)
+			int maxClusterNodes, String owner, String productName,
+			String productVersion, Date startDate)
 		throws Exception {
 
 		String description = "Cloud Native";
 		String licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
-
-		String productName = "DXP Production";
 
 		int licenseVersion = LicenseVersion.getLicenseVersion(
 			productName, productVersion);
@@ -1117,9 +1115,9 @@ public class CloudRestController extends OneBaseRestController {
 
 	private String _getAggregateLicenseXML(
 			JSONArray addOnsJSONArray, String accountName,
-			String dxpProductVersion, Date expirationDate,
-			String licenseEntryName, int maxClusterNodes, String owner,
-			Date startDate)
+			String dxpProductName, String dxpProductVersion,
+			Date expirationDate, String licenseEntryName, int maxClusterNodes,
+			String owner, Date startDate)
 		throws Exception {
 
 		List<String> licenseXMLs = new ArrayList<>();
@@ -1137,7 +1135,7 @@ public class CloudRestController extends OneBaseRestController {
 		licenseXMLs.add(
 			_generateDXPLicenseXML(
 				accountName, expirationDate, licenseEntryName, maxClusterNodes,
-				owner, dxpProductVersion, startDate));
+				owner, dxpProductName, dxpProductVersion, startDate));
 
 		String licenseXML = _licenseKeyExporter.aggregateXMLs(
 			licenseXMLs.toArray(new String[0]));
@@ -1313,11 +1311,13 @@ public class CloudRestController extends OneBaseRestController {
 				_filterByEntitlementId(entitlements, entitlementIds)));
 
 		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
+		String productName = "DXP Non-Production";
 
 		if (Objects.equals(
 				environment.getType(), EnvironmentConstants.TYPE_PRODUCTION)) {
 
 			licenseEntryName = "DXP Production (Virtual Cluster)";
+			productName = "DXP Production";
 		}
 
 		return new JSONObject(
@@ -1329,7 +1329,7 @@ public class CloudRestController extends OneBaseRestController {
 		).put(
 			"licenseXML",
 			_getAggregateLicenseXML(
-				addOnsJSONArray, _getAccountName(environment),
+				addOnsJSONArray, _getAccountName(environment), productName,
 				ProductVersion.extractQuarterlyRelease(dxpVersion),
 				expirationDate, licenseEntryName, maxClusterNodes,
 				environment.getExternalReferenceCode(), startDate)
