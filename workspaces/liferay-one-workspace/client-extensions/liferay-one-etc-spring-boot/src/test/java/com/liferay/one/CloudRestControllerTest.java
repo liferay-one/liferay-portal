@@ -402,10 +402,7 @@ public class CloudRestControllerTest {
 			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
 		).thenReturn(
 			List.of(
-				_createEntitlement(
-					EntitlementConstants.
-						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
-					1))
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
 		);
 
 		_getManifestJSONObject(
