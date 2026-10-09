@@ -492,7 +492,7 @@ public class LicenseKeyExporter {
 
 			_addElement(
 				rootElement, "max-cluster-nodes",
-				properties.get("max-cluster-nodes"));
+				properties.get("maxClusterNodes"));
 		}
 
 		if (licenseEntryType.equals(LicenseConstants.TYPE_CLUSTER) ||
