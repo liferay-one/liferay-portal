@@ -79,22 +79,23 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 		mockMembership({});
 	});
 
-	it.each(['canManageAllAccounts', 'isAccountAdministrator', 'isLiferayStaff'])(
-		'grants access to %s without a membership request',
-		(roleFlag) => {
-			mockContext({userAccountModel: {[roleFlag]: true}});
+	it.each([
+		'canManageAllAccounts',
+		'isAccountAdministrator',
+		'isLiferayStaff',
+	])('grants access to %s without a membership request', (roleFlag) => {
+		mockContext({userAccountModel: {[roleFlag]: true}});
 
-			const {result} = renderHook(() =>
-				useHasActivationPermission('PRJCT-1')
-			);
+		const {result} = renderHook(() =>
+			useHasActivationPermission('PRJCT-1')
+		);
 
-			expect(getRequestedURL()).toBeNull();
-			expect(result.current).toEqual({
-				hasActivationPermission: true,
-				loading: false,
-			});
-		}
-	);
+		expect(getRequestedURL()).toBeNull();
+		expect(result.current).toEqual({
+			hasActivationPermission: true,
+			loading: false,
+		});
+	});
 
 	it('grants access to a project admin membership', () => {
 		mockContext({});

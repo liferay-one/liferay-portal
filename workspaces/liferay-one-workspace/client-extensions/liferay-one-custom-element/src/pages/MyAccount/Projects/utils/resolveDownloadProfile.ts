@@ -19,7 +19,7 @@ const DOWNLOAD_PROFILES: DownloadProfile[] = ['app', 'bundle', 'none'];
 
 const DOWNLOAD_PROFILE_BY_APP_TYPE: Record<AppType, DownloadProfile> = {
 	'client-extension': 'app',
-	'cloud': 'none',
+	'cloud': 'app',
 	'composite-app': 'app',
 	'dxp': 'app',
 	'low-code-configuration': 'app',

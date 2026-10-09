@@ -17,6 +17,8 @@ export default class DeliveryOrderModel {
 	get canDownload() {
 		return [
 			'CLIENT_EXTENSION',
+			'CLOUD_APP',
+			'CLOUDAPP',
 			'COMPOSITE_APP',
 			'DXP_APP',
 			'LOW_CODE_CONFIGURATION',
@@ -50,6 +52,12 @@ export default class DeliveryOrderModel {
 		return (
 			this.order?.orderStatusInfo?.code ===
 			OrderWorkflowStatusCode.CANCELLED
+		);
+	}
+
+	get isCloudApp() {
+		return ['CLOUD_APP', 'CLOUDAPP'].includes(
+			this.order.orderTypeExternalReferenceCode as OrderTypes
 		);
 	}
 
