@@ -18,6 +18,8 @@ source ../_common.sh
 BATCH_ENGINE_URL="${LIFERAY_URL}/o/headless-batch-engine/v1.0/import-task"
 
 function main {
+	_require_local_seed_target
+
 	_acquire_oauth_token
 
 	_wait_for_object_definitions

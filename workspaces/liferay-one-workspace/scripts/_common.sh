@@ -67,6 +67,7 @@ then
 		LIFERAY_OAUTH_SCOPE \
 		LIFERAY_OAUTH_TOKEN \
 		LIFERAY_OAUTH_TOKEN_URL \
+		LIFERAY_SEED_REMOTE \
 		LIFERAY_URL
 	do
 		[[ -n ${!_env_key:-} ]] && continue
@@ -250,6 +251,36 @@ function _read_property {
 	then
 		grep "^${key}=" "${file}" | cut -d= -f2- | tr -d "[:space:]"
 	fi
+}
+
+# Refuses to seed anything but a local or private instance unless
+# LIFERAY_SEED_REMOTE is true. The seed creates persona users whose password is
+# "test", several of them with administrator roles, so a .env that points
+# LIFERAY_URL at a shared environment must not seed it by accident. Loopback,
+# *.localhost, and private and tailnet IPv4 addresses (a worktree stack on the
+# NUC) count as local.
+
+function _require_local_seed_target {
+	local host="${LIFERAY_URL#*://}"
+
+	host="${host%%[:/]*}"
+
+	if [[ ${LIFERAY_SEED_REMOTE:-} == "true" ]] ||
+	   [[ ${host} == "localhost" ]] ||
+	   [[ ${host} == *".localhost" ]] ||
+	   [[ ${host} =~ ^127\. ]] ||
+	   [[ ${host} =~ ^10\. ]] ||
+	   [[ ${host} =~ ^192\.168\. ]] ||
+	   [[ ${host} =~ ^172\.(1[6-9]|2[0-9]|3[01])\. ]] ||
+	   [[ ${host} =~ ^100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\. ]]
+	then
+		return 0
+	fi
+
+	_warn "Refusing to seed ${LIFERAY_URL}, which is not a local instance."
+	_warn "The seed creates persona users whose password is \"test\". Set LIFERAY_SEED_REMOTE=true to seed it anyway."
+
+	exit 1
 }
 
 function _warn {

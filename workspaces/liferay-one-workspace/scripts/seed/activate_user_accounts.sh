@@ -14,6 +14,8 @@ source ../_common.sh
 USER_ACCOUNTS_JSON="data/02-user-account.batch-engine-data.json"
 
 function main {
+	_require_local_seed_target
+
 	_acquire_oauth_token
 
 	local external_reference_codes
