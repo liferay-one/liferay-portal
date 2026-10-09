@@ -512,7 +512,7 @@
 											"value": {
 												"html": {
 													"value_i18n": {
-														"en_US": "<h1 class=\"dxp-gradient-text\">\n SEO & AEO Studio\n</h1>\n\n"
+														"en_US": "<h1 class=\"dxp-gradient-text\">\n SEO&amp;AEO Studio Beta\n</h1>\n\n"
 													}
 												}
 											}
@@ -940,7 +940,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "<p class=\"dxp-capabilities-description\">\nLiferay SEO & AEO Studio <span class=\"highlight\">monitors your site and surfaces prioritized improvement opportunities for both traditional search and AI answer engine visibility.</span>\nEach insight provides clear explanations of what is broken, why it matters, and what to do next. \n</p>\n\n\n\n\n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nLiferay SEO&amp;AEO Studio Beta <span class=\"highlight\">monitors your site and surfaces prioritized improvement opportunities for both traditional search and AI answer engine visibility.</span>\nEach insight provides clear explanations of what is broken, why it matters, and what to do next. \n</p>\n\n\n\n\n"
 																					}
 																				}
 																			}
@@ -1466,7 +1466,7 @@
 																			"value": {
 																				"html": {
 																					"value_i18n": {
-																						"en_US": "<p class=\"dxp-capabilities-description\">\nBy connecting data from Liferay DXP, Google Search Console, and PageSpeed Insights, Liferay SEO & AEO Studio gives marketing and IT teams the right performance data at the right time.\n</p>\n"
+																						"en_US": "<p class=\"dxp-capabilities-description\">\nBy connecting data from Liferay DXP, Google Search Console, and PageSpeed Insights, Liferay SEO&amp;AEO Studio Beta gives marketing and IT teams the right performance data at the right time.\n</p>\n"
 																					}
 																				}
 																			}
