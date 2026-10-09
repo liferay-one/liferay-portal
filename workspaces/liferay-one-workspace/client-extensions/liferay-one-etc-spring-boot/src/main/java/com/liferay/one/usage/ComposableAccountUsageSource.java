@@ -82,6 +82,11 @@ public class ComposableAccountUsageSource implements UsageSource {
 		return KEY;
 	}
 
+	@Override
+	public boolean isKeyedByAccount() {
+		return true;
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		ComposableAccountUsageSource.class);
 

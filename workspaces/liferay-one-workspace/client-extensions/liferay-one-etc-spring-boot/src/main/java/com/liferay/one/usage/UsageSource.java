@@ -33,4 +33,14 @@ public interface UsageSource {
 
 	public String getKey();
 
+	/**
+	 * Returns <code>true</code> when the API reports consumption for the
+	 * project's account rather than for the project, so every project of the
+	 * account reads the same quantity. The generator then reports an account
+	 * only while it has one project with entitlements for the metric.
+	 */
+	public default boolean isKeyedByAccount() {
+		return false;
+	}
+
 }

@@ -63,6 +63,11 @@ public class ComposableAccountUsageSourceTest {
 	}
 
 	@Test
+	public void testIsKeyedByAccount() {
+		Assertions.assertTrue(_composableAccountUsageSource.isKeyedByAccount());
+	}
+
+	@Test
 	public void testMissingDataIsNull() throws Exception {
 		_setUpUsage(null);
 

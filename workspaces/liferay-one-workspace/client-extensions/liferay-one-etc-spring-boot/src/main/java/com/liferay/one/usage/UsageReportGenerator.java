@@ -121,10 +121,31 @@ public class UsageReportGenerator {
 
 			projectCount += entitlementsByProject.size();
 
+			Map<String, List<String>> sharedAccountProjects =
+				_getSharedAccountProjects(entitlementsByProject, usageSource);
+
 			for (Map.Entry<String, List<Entitlement>> entry :
 					entitlementsByProject.entrySet()) {
 
 				String projectExternalReferenceCode = entry.getKey();
+
+				List<String> accountProjectExternalReferenceCodes =
+					sharedAccountProjects.get(projectExternalReferenceCode);
+
+				if (accountProjectExternalReferenceCodes != null) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Skipping project ",
+								projectExternalReferenceCode,
+								" because usage source ", usageSource.getKey(),
+								" is keyed by account and projects ",
+								accountProjectExternalReferenceCodes,
+								" share the account"));
+					}
+
+					continue;
+				}
 
 				try {
 					if (_generateUsageReport(
@@ -483,6 +504,64 @@ public class UsageReportGenerator {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns, for each project that shares its account with another project
+	 * in the map, every project of that account. An account keyed source
+	 * reports the account's whole consumption for each of them, so none can
+	 * be reported without billing the account once per project. The map is
+	 * empty for a source keyed by project.
+	 */
+	private Map<String, List<String>> _getSharedAccountProjects(
+		Map<String, List<Entitlement>> entitlementsByProject,
+		UsageSource usageSource) {
+
+		Map<String, List<String>> sharedAccountProjects = new HashMap<>();
+
+		if (!usageSource.isKeyedByAccount()) {
+			return sharedAccountProjects;
+		}
+
+		Map<Long, List<String>> projectsByAccountEntryId = new HashMap<>();
+
+		for (Map.Entry<String, List<Entitlement>> entry :
+				entitlementsByProject.entrySet()) {
+
+			for (Entitlement entitlement : entry.getValue()) {
+				long accountEntryId = entitlement.getAccountEntryId();
+
+				if (accountEntryId <= 0) {
+					continue;
+				}
+
+				List<String> projectExternalReferenceCodes =
+					projectsByAccountEntryId.computeIfAbsent(
+						accountEntryId, key -> new ArrayList<>());
+
+				projectExternalReferenceCodes.add(entry.getKey());
+
+				break;
+			}
+		}
+
+		for (List<String> projectExternalReferenceCodes :
+				projectsByAccountEntryId.values()) {
+
+			if (projectExternalReferenceCodes.size() < 2) {
+				continue;
+			}
+
+			for (String projectExternalReferenceCode :
+					projectExternalReferenceCodes) {
+
+				sharedAccountProjects.put(
+					projectExternalReferenceCode,
+					projectExternalReferenceCodes);
+			}
+		}
+
+		return sharedAccountProjects;
 	}
 
 	private String _getSkuExternalReferenceCode(Entitlement entitlement) {

@@ -367,6 +367,33 @@ public class UsageReportGeneratorTest {
 	}
 
 	@Test
+	public void testReportsTheOnlyProjectOfAnAccountOnAnAccountKeyedSource()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createAllotment(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
+		_setUpUsage(500000D);
+
+		Mockito.when(
+			_usageSource.isKeyedByAccount()
+		).thenReturn(
+			true
+		);
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		Mockito.verify(
+			_usageReportService
+		).addUsageReport(
+			Mockito.anyDouble(), Mockito.anyString(), Mockito.any(),
+			Mockito.any(), Mockito.anyDouble(),
+			Mockito.eq(_USAGE_REPORT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSkipsAddOnBucketsWithoutBucketSize() throws Exception {
 		_setUpUsageDefinitions(_createUsageDefinition(null));
 		_setUpEntitlements(
@@ -443,6 +470,33 @@ public class UsageReportGeneratorTest {
 		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
 
 		_verifyNoReportAdded();
+	}
+
+	@Test
+	public void testSkipsProjectsSharingAnAccountOnAnAccountKeyedSource()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createAllotment("PRJCT-002", 1000000D, _OVERAGE_RATE),
+			_createAllotment(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, 1000000D, _OVERAGE_RATE));
+		_setUpUsage(500000D);
+
+		Mockito.when(
+			_usageSource.isKeyedByAccount()
+		).thenReturn(
+			true
+		);
+
+		_usageReportGenerator.generateUsageReports(_YEAR_MONTH);
+
+		_verifyNoReportAdded();
+
+		Mockito.verify(
+			_usageSource, Mockito.never()
+		).fetchUsage(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -546,6 +600,8 @@ public class UsageReportGeneratorTest {
 			"grantType", grantType
 		).put(
 			"id", 1L
+		).put(
+			"r_accountEntryToEntitlement_accountEntryId", _ACCOUNT_ENTRY_ID
 		).put(
 			"r_contractToEntitlement_c_contractId", _CONTRACT_ID
 		).put(
@@ -666,6 +722,8 @@ public class UsageReportGeneratorTest {
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
+
+	private static final long _ACCOUNT_ENTRY_ID = 55;
 
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
 
