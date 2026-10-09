@@ -159,6 +159,22 @@ describe('myAccountRoutes', () => {
 				).toBeInTheDocument();
 			});
 
+			it('is the default redirect for an unknown nested project path', async () => {
+				renderAt('/unknown-section/unknown', projectDetailRoutes);
+
+				expect(
+					await screen.findByText('Products page')
+				).toBeInTheDocument();
+			});
+
+			it('redirects an unknown path under products to the Products list', async () => {
+				renderAt('/products/PRDCT-001/unknown', projectDetailRoutes);
+
+				expect(
+					await screen.findByText('Products page')
+				).toBeInTheDocument();
+			});
+
 			it('[ROUTE-MY-ACCOUNT-PRODUCTERC] renders ProjectItemDetails with kind product for :productERC', async () => {
 				renderAt('/products/PRDCT-001', projectDetailRoutes);
 
@@ -182,6 +198,17 @@ describe('myAccountRoutes', () => {
 
 			it('renders the Applications list at its index', async () => {
 				renderAt('/applications', projectDetailRoutes);
+
+				expect(
+					await screen.findByText('Applications page')
+				).toBeInTheDocument();
+			});
+
+			it('redirects an unknown path under applications to the Applications list', async () => {
+				renderAt(
+					'/applications/PRDCT-APP/unknown',
+					projectDetailRoutes
+				);
 
 				expect(
 					await screen.findByText('Applications page')
@@ -223,6 +250,14 @@ describe('myAccountRoutes', () => {
 				).toBeInTheDocument();
 			});
 
+			it('redirects an unknown path under activation to the LicenseKeys list', async () => {
+				renderAt('/activation/KEY-001/unknown', projectDetailRoutes);
+
+				expect(
+					await screen.findByText('LicenseKeys page')
+				).toBeInTheDocument();
+			});
+
 			it('[ROUTE-MY-ACCOUNT-GENERATE] renders GenerateActivationKey for generate', async () => {
 				renderAt('/activation/generate', projectDetailRoutes);
 
@@ -254,6 +289,14 @@ describe('myAccountRoutes', () => {
 
 			it('renders the Orders list at its index', async () => {
 				renderAt('/orders', accountRoutes);
+
+				expect(
+					await screen.findByText('Orders page')
+				).toBeInTheDocument();
+			});
+
+			it('redirects an unknown path under orders to the Orders list', async () => {
+				renderAt('/orders/42/unknown', accountRoutes);
 
 				expect(
 					await screen.findByText('Orders page')
