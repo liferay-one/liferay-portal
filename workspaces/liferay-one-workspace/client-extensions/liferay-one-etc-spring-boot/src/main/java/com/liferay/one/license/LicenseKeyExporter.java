@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -375,8 +376,8 @@ public class LicenseKeyExporter {
 
 		_addElement(rootElement, "license-version", properties.get("version"));
 
-		DateFormat longDateFormatDateTime = DateFormat.getDateTimeInstance(
-			DateFormat.FULL, DateFormat.FULL, LocaleUtil.US);
+		DateFormat longDateFormatDateTime = new SimpleDateFormat(
+			_LICENSE_DATE_FORMAT, LocaleUtil.US);
 
 		longDateFormatDateTime.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -467,8 +468,8 @@ public class LicenseKeyExporter {
 		_addElement(
 			rootElement, "license-version", String.valueOf(licenseVersion));
 
-		DateFormat longDateFormatDateTime = DateFormat.getDateTimeInstance(
-			DateFormat.FULL, DateFormat.FULL, LocaleUtil.US);
+		DateFormat longDateFormatDateTime = new SimpleDateFormat(
+			_LICENSE_DATE_FORMAT, LocaleUtil.US);
 
 		longDateFormatDateTime.setTimeZone(TimeZone.getTimeZone("GMT"));
 
@@ -574,6 +575,9 @@ public class LicenseKeyExporter {
 
 		return key.startsWith(StringPool.LESS_THAN);
 	}
+
+	private static final String _LICENSE_DATE_FORMAT =
+		"EEEE, MMMM d, yyyy h:mm:ss a z";
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;

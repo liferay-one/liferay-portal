@@ -129,6 +129,27 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testToXMLFormatsDates() throws Exception {
+		String xml = _licenseKeyExporter.toXML(
+			"TESTKEY", "Acme Corp", "Enterprise",
+			LicenseConstants.TYPE_ENTERPRISE, 3, "Liferay DXP", "", "7.4",
+			"Acme Corp", 0, 0, 0, 0L, 0L, "", "", "", "host.example.com",
+			"127.0.0.1", "00:11:22:33:44:55", "srv-1", new Date(1000000000000L),
+			new Date(2000000000000L));
+
+		JSONObject jsonObject = XML.toJSONObject(xml);
+
+		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
+
+		Assertions.assertEquals(
+			"Wednesday, May 18, 2033 3:33:20 AM GMT",
+			licenseJSONObject.getString("expiration-date"));
+		Assertions.assertEquals(
+			"Sunday, September 9, 2001 1:46:40 AM GMT",
+			licenseJSONObject.getString("start-date"));
+	}
+
+	@Test
 	public void testToXMLFromLicenseKey() throws Exception {
 		String xml = _licenseKeyExporter.toXML(
 			_toLicenseKey(1L, "KEY1", "key-1"));
