@@ -5,6 +5,7 @@
 
 package com.liferay.one.util;
 
+import com.liferay.one.exception.ExpiredActivationTokenException;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -105,7 +106,7 @@ public class CloudNativeSignatureValidatorTest {
 				)));
 
 		Assertions.assertThrows(
-			PrincipalException.class,
+			ExpiredActivationTokenException.class,
 			() -> _cloudNativeSignatureValidator.validateSignature(
 				_toPEM(_keyPair.getPublic()), signedJWT));
 	}

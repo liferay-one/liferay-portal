@@ -12,6 +12,8 @@ export type GenerateActivationKeyOfflineEnvironment = {
 	type: string;
 };
 
+export type GenerateActivationKeyOfflineTokenError = 'expired' | 'invalid';
+
 export type GenerateActivationKeyServer = {
 	hostName: string;
 	ipAddresses: string;
