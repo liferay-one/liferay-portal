@@ -1975,7 +1975,7 @@
 					"contentType": "image/svg+xml",
 					"neverExpire": true,
 					"title": {
-						"en_US": "SEO & AEO Studio"
+						"en_US": "SEO&AEO Studio Beta"
 					}
 				}
 			],
@@ -1989,11 +1989,11 @@
 				}
 			],
 			"description": {
-				"en_US": "Be found everywhere, from traditional to AI search engines. Detect and fix visibility issues at scale with Liferay SEO & AEO Studio."
+				"en_US": "Be found everywhere, from traditional to AI search engines. Detect and fix visibility issues at scale with Liferay SEO&AEO Studio Beta."
 			},
 			"externalReferenceCode": "PRDCT-SEO",
 			"name": {
-				"en_US": "SEO & AEO Studio"
+				"en_US": "SEO&AEO Studio Beta"
 			},
 			"productConfiguration": {
 				"allowBackOrder": true,
