@@ -90,6 +90,9 @@ describe('ActivationCodesStep', () => {
 			screen.queryByRole('button', {name: 'click here'})
 		).not.toBeInTheDocument();
 		expect(
+			screen.queryByRole('button', {name: 'Finish Online Activation'})
+		).not.toBeInTheDocument();
+		expect(
 			Cloud.postProjectsEnvironmentsActivationCodes
 		).not.toHaveBeenCalled();
 	});
@@ -101,6 +104,9 @@ describe('ActivationCodesStep', () => {
 
 		expect(screen.queryByText('In Use')).not.toBeInTheDocument();
 		expect(screen.getByRole('button', {name: 'Copy'})).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', {name: 'Finish Online Activation'})
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole('button', {name: 'click here'})
 		).toBeInTheDocument();

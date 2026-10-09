@@ -279,10 +279,14 @@ export default function ActivationCodesStep({
 			<WizardFooter
 				backButtonProps={{onClick: onClickBack}}
 				cancelButtonProps={{onClick: onClickCancel}}
-				continueButtonProps={{
-					children: translate('finish-online-activation'),
-					onClick: onClickFinish,
-				}}
+				continueButtonProps={
+					activationCodeInUse
+						? undefined
+						: {
+								children: translate('finish-online-activation'),
+								onClick: onClickFinish,
+							}
+				}
 			/>
 
 			{!!activationCode && !activationCodeInUse && (
