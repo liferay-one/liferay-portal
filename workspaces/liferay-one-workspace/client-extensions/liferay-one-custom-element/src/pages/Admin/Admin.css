@@ -6,6 +6,16 @@
 	}
 }
 
+.admin-table-name {
+	align-items: center;
+	display: flex;
+	max-width: 280px;
+
+	& img {
+		flex-shrink: 0;
+	}
+}
+
 .app-details-page-table-icon {
 	border-radius: var(--border-radius-sm, 4px);
 	max-height: 36px;
