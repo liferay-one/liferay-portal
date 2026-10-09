@@ -36,6 +36,7 @@ import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -391,6 +392,35 @@ public class CloudRestControllerTest {
 			_createEnvironment(EnvironmentConstants.TYPE_NONPRODUCTION));
 
 		Assertions.assertEquals(1, jsonObject.getInt("maxClusterNodes"));
+	}
+
+	@Test
+	public void testGetManifestJSONObjectNamesProductByEnvironmentType()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(
+					EntitlementConstants.
+						NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
+					1))
+		);
+
+		_getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_NONPRODUCTION));
+
+		_verifyDXPLicenseXML(
+			"DXP Non-Production (Virtual Cluster)", "DXP Non-Production");
+
+		Mockito.clearInvocations(_licenseKeyExporter);
+
+		_getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		_verifyDXPLicenseXML(
+			"DXP Production (Virtual Cluster)", "DXP Production");
 	}
 
 	@Test
@@ -2123,6 +2153,29 @@ public class CloudRestControllerTest {
 		finally {
 			RequestContextHolder.resetRequestAttributes();
 		}
+	}
+
+	private void _verifyDXPLicenseXML(
+			String licenseEntryName, String productName)
+		throws Exception {
+
+		Mockito.verify(
+			_licenseKeyExporter
+		).toXML(
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.eq(licenseEntryName),
+			ArgumentMatchers.eq(LicenseConstants.TYPE_VIRTUAL_CLUSTER),
+			ArgumentMatchers.anyInt(), ArgumentMatchers.eq(productName),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.<String>any(),
+			ArgumentMatchers.<String>any(), ArgumentMatchers.<String>any(),
+			ArgumentMatchers.<String>any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any()
+		);
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
