@@ -5,6 +5,7 @@
 
 package com.liferay.one.util;
 
+import com.liferay.one.exception.ExpiredActivationTokenException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -54,7 +55,7 @@ public class CloudNativeSignatureValidator {
 		Date expirationTime = jwtClaimsSet.getExpirationTime();
 
 		if ((expirationTime == null) || expirationTime.before(new Date())) {
-			throw new PrincipalException();
+			throw new ExpiredActivationTokenException();
 		}
 	}
 

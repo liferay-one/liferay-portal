@@ -56,6 +56,8 @@ export default {
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
 	'activation-token': 'Activation Token',
+	'activation-tokens-are-valid-for-90-days-generate-a-new-token-from-your-cloud-native-environment-then-paste-it-here-to-continue':
+		'Activation tokens are valid for 90 days. Generate a new token from your Cloud Native environment, then paste it here to continue.',
 	'active': 'Active',
 	'active-batch-segments': 'Active Batch Segments',
 	'active-real-time-segments': 'Active Real-Time Segments',
@@ -894,6 +896,8 @@ export default {
 		'Make sure the project link is correct and that you have access to this project.',
 	'make-sure-the-ticket-number-is-correct':
 		'Make sure the ticket number is correct.',
+	'make-sure-you-copied-the-full-token-from-your-cloud-native-environment-and-try-again':
+		'Make sure you copied the full token from your Cloud Native environment and try again.',
 	'manage': 'Manage',
 	'manage-activation-key': 'Manage Activation Key',
 	'manage-all-your-app-purchases-and-subscriptions-in-one-place-read-other-users-reviews-get-notifications-when-updates-are-available-and-get-the-most-out-of-our-apps-catalog':
@@ -1712,6 +1716,7 @@ export default {
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
 	'this-activation-key-cannot-be-renewed':
 		'This activation key cannot be renewed.',
+	'this-activation-token-has-expired': 'This activation token has expired',
 	'this-app-is-already-installed-in-this-environment':
 		'This app is already installed in this environment.',
 	'this-email-address-is-duplicated': 'This email address is duplicated.',
@@ -1934,6 +1939,8 @@ export default {
 		'We are still confirming your payment. Your tokens will be credited once it settles, and we will notify you by email.',
 	'we-could-not-install-your-app-please-try-again-if-the-problem-continues-contact-x-for-assistance':
 		'We could not install your app. Please try again. If the problem continues, contact {0} for assistance.',
+	'we-couldn-t-verify-this-activation-token':
+		"We couldn't verify this activation token",
 	'we-couldnt-set-up-your-environment-please-contact-support':
 		'We couldn’t set up your environment. Please contact support.',
 	'we-ll-need-a-few-details-to-finish-building-your-liferay-paas-environment':

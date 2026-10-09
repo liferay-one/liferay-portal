@@ -42,6 +42,7 @@ import useRenewSource from './hooks/useRenewSource';
 import {
 	GenerateActivationKeyForm,
 	GenerateActivationKeyOfflineEnvironment,
+	GenerateActivationKeyOfflineTokenError,
 	GenerateActivationKeyStep,
 } from './types';
 import {
@@ -83,9 +84,12 @@ export default function GenerateActivationKey() {
 	const renewing = Boolean(renewExternalReferenceCode);
 
 	const [generated, setGenerated] = useState(false);
+	const [offlineTokenError, setOfflineTokenError] =
+		useState<GenerateActivationKeyOfflineTokenError | null>(null);
 	const [step, setStep] = useState<GenerateActivationKeyStep>('subscription');
 	const [submitError, setSubmitError] = useState('');
 	const [submitting, setSubmitting] = useState(false);
+	const [validatingOfflineToken, setValidatingOfflineToken] = useState(false);
 
 	const form = useForm<GenerateActivationKeyForm>({
 		defaultValues: {
@@ -115,6 +119,7 @@ export default function GenerateActivationKey() {
 
 	const {getValues, setValue, watch} = form;
 
+	const activationToken = watch('activationToken');
 	const bundleEntitlementIds = watch('bundleEntitlementIds');
 	const keyType = watch('keyType');
 
@@ -137,6 +142,10 @@ export default function GenerateActivationKey() {
 			),
 		[modifyEnvironmentId, offlineEnvironments]
 	);
+
+	useEffect(() => {
+		setOfflineTokenError(null);
+	}, [activationToken]);
 
 	useEffect(() => {
 		if (!generateForm || !renewing || bundleEntitlementIds.length) {
@@ -345,6 +354,34 @@ export default function GenerateActivationKey() {
 
 	function onClickCancel() {
 		navigate('..');
+	}
+
+	async function onClickContinueOfflineToken() {
+		setOfflineTokenError(null);
+		setSubmitError('');
+		setValidatingOfflineToken(true);
+
+		try {
+			await Cloud.postEnvironmentsOfflineActivationTokenValidation(
+				getValues('activationToken').trim()
+			);
+
+			goTo('offline-package');
+		}
+		catch (error) {
+			if (error instanceof FetcherError && error.status === 410) {
+				setOfflineTokenError('expired');
+			}
+			else if (error instanceof FetcherError && error.status === 400) {
+				setOfflineTokenError('invalid');
+			}
+			else {
+				setSubmitError(translate('an-unexpected-error-occurred'));
+			}
+		}
+		finally {
+			setValidatingOfflineToken(false);
+		}
 	}
 
 	function onClickContinueSubscription() {
@@ -691,7 +728,9 @@ export default function GenerateActivationKey() {
 							form={form}
 							onClickBack={() => goTo('activation-codes')}
 							onClickCancel={onClickCancel}
-							onClickContinue={() => goTo('offline-package')}
+							onClickContinue={onClickContinueOfflineToken}
+							tokenError={offlineTokenError}
+							validating={validatingOfflineToken}
 						/>
 					)}
 

@@ -17,6 +17,7 @@ import com.liferay.one.exception.CloudNativeEntitlementException;
 import com.liferay.one.exception.EnvironmentAlreadyActivatedException;
 import com.liferay.one.exception.EnvironmentProfileEntitlementException;
 import com.liferay.one.exception.EnvironmentTypeEntitlementException;
+import com.liferay.one.exception.ExpiredActivationTokenException;
 import com.liferay.one.exception.NoSuchActivationCodeException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -76,6 +77,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -1432,6 +1434,40 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsOfflineActivationRejectsExpiredToken()
+		throws Exception {
+
+		Mockito.doThrow(
+			new ExpiredActivationTokenException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(SignedJWT.class)
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"activationCode", _ACTIVATION_CODE
+		).put(
+			"token", _createOfflineActivationToken("CNE-TOKEN")
+		);
+
+		ResponseEntity<String> responseEntity =
+			_cloudRestController.postEnvironmentsOfflineActivation(
+				jsonObject.toString());
+
+		Assertions.assertEquals(
+			HttpStatus.GONE, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).updateEnvironmentActivation(
+			Mockito.anyString(), Mockito.anyString(), Mockito.anyLong(),
+			Mockito.anyString(), Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testPostEnvironmentsOfflineActivationReturnsEnvironmentId()
 		throws Exception {
 
@@ -1475,6 +1511,59 @@ public class CloudRestControllerTest {
 			EnvironmentConstants.ACTIVATION_MODE_OFFLINE, environmentId,
 			_ENVIRONMENT_ID, "Production", "public-key"
 		);
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationTokenValidationAcceptsValidToken()
+		throws Exception {
+
+		Assertions.assertEquals(
+			HttpStatus.OK,
+			_postEnvironmentsOfflineActivationTokenValidation(
+				_createOfflineActivationToken("CNE-TOKEN")));
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationTokenValidationRejectsExpiredToken()
+		throws Exception {
+
+		Mockito.doThrow(
+			new ExpiredActivationTokenException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(SignedJWT.class)
+		);
+
+		Assertions.assertEquals(
+			HttpStatus.GONE,
+			_postEnvironmentsOfflineActivationTokenValidation(
+				_createOfflineActivationToken("CNE-TOKEN")));
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationTokenValidationRejectsInvalidSignature()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_cloudNativeSignatureValidator
+		).validateSignature(
+			Mockito.any(SignedJWT.class)
+		);
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST,
+			_postEnvironmentsOfflineActivationTokenValidation(
+				_createOfflineActivationToken("CNE-TOKEN")));
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationTokenValidationRejectsMalformedToken() {
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST,
+			_postEnvironmentsOfflineActivationTokenValidation("not-a-token"));
 	}
 
 	@Test
@@ -2132,6 +2221,20 @@ public class CloudRestControllerTest {
 		).thenReturn(
 			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
 		);
+	}
+
+	private HttpStatusCode _postEnvironmentsOfflineActivationTokenValidation(
+		String token) {
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.
+				postEnvironmentsOfflineActivationTokenValidation(
+					new JSONObject(
+					).put(
+						"token", token
+					).toString());
+
+		return responseEntity.getStatusCode();
 	}
 
 	private ResponseEntity<StreamingResponseBody>

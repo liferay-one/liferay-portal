@@ -138,6 +138,21 @@ describe('[CLIENT-SPRING-BOOT-CLOUD] Cloud', () => {
 		);
 	});
 
+	it('posts the offline activation token for validation', async () => {
+		oAuth2Fetch.mockResolvedValue(new Response(null, {status: 200}));
+
+		await Cloud.postEnvironmentsOfflineActivationTokenValidation('TOKEN');
+
+		expect(oAuth2Fetch).toHaveBeenCalledWith(
+			'/cloud/environments/offline-activation/token-validation',
+			{
+				body: '{"token":"TOKEN"}',
+				earlyReturn: true,
+				method: 'POST',
+			}
+		);
+	});
+
 	it('throws a FetcherError with the status for every non ok earlyReturn post', async () => {
 		oAuth2Fetch.mockImplementation(() =>
 			Promise.resolve(jsonResponse({title: 'Conflict'}, 409))
@@ -148,6 +163,9 @@ describe('[CLIENT-SPRING-BOOT-CLOUD] Cloud', () => {
 			getError(Cloud.offlineActivation('CODE', 'TOKEN')),
 			getError(
 				Cloud.postEnvironmentsActivationRequest('production', {}, 'P')
+			),
+			getError(
+				Cloud.postEnvironmentsOfflineActivationTokenValidation('TOKEN')
 			),
 			getError(
 				Cloud.postProjectsEnvironmentsActivationCodes('P', 'production')
