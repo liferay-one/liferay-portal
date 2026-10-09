@@ -28,10 +28,10 @@ const LicensePrices = () => {
 
 	return (
 		<div>
-			{Object.entries(prices).map(([currencyCode, tierPrices], index) => (
+			{Object.entries(prices).map(([currencyCode, tierPrices]) => (
 				<LicensePricePanel
 					currencyCode={currencyCode}
-					key={index}
+					key={currencyCode}
 					tierPrices={tierPrices as unknown as LicensingPrices}
 				/>
 			))}
