@@ -4,7 +4,7 @@
  */
 
 import DOMPurify from 'dompurify';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {

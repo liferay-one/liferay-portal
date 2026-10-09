@@ -11,7 +11,7 @@ import {
 	useEffect,
 	useReducer,
 } from 'react';
-import {useParams} from 'react-router-dom';
+import {useParams} from 'react-router';
 import useSWR from 'swr';
 import {UploadedFile} from '~/components/FileList/FileList';
 import Loading from '~/components/Loading/Loading';

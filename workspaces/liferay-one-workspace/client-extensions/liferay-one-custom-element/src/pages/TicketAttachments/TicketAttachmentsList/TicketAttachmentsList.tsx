@@ -5,7 +5,7 @@
 
 import Button from '@clayui/button';
 import ClayLink from '@clayui/link';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';

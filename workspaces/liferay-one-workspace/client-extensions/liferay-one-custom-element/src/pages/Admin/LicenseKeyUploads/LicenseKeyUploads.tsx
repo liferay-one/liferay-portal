@@ -7,7 +7,7 @@ import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
 import ClayTabs from '@clayui/tabs';
 import {ChangeEvent, FormEvent, useEffect, useRef, useState} from 'react';
-import {useSearchParams} from 'react-router-dom';
+import {useSearchParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import Page from '~/components/Page/Page';

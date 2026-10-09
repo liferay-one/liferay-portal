@@ -5,7 +5,7 @@
 
 import {render, screen} from '@testing-library/react';
 import {Suspense} from 'react';
-import {MemoryRouter, useRoutes} from 'react-router-dom';
+import {MemoryRouter, useRoutes} from 'react-router';
 import {describe, expect, it, vi} from 'vitest';
 import {toRouteObjects} from '~/utils/routeUtils';
 
@@ -31,7 +31,7 @@ vi.mock('./BusinessEventsEdit/BusinessEventsEdit', () => ({
 }));
 vi.mock('./BusinessEventsRedirect', async () => {
 	const {Fragment, createElement} = await import('react');
-	const {Outlet} = await import('react-router-dom');
+	const {Outlet} = await import('react-router');
 
 	return {
 		default: () =>

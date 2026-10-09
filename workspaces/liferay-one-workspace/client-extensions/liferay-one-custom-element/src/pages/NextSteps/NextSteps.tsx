@@ -7,7 +7,7 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import DOMPurify from 'dompurify';
 import {ReactElement, useEffect} from 'react';
-import {HashRouter} from 'react-router-dom';
+import {HashRouter} from 'react-router';
 import useSWR from 'swr';
 import checkCircleIcon from '~/assets/icons/check_circle_icon.svg';
 import paymentPendingIcon from '~/assets/icons/payment_pending_icon.svg';

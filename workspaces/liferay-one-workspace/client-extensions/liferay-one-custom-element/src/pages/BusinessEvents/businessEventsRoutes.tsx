@@ -4,7 +4,7 @@
  */
 
 import {lazy} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import {AppRoute} from '~/utils/routeUtils';
 
 const BusinessEventsRedirect = lazy(() => import('./BusinessEventsRedirect'));
@@ -37,11 +37,11 @@ export const businessEventsRoutes: AppRoute[] = [
 						element: <BusinessEventsActivityHistory />,
 						path: 'activity-history',
 					},
-					{element: <Navigate replace to="." />, path: '*'},
+					{element: <Navigate replace to=".." />, path: '*'},
 				],
 				path: ':id',
 			},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		element: <BusinessEventsRedirect />,
 		path: ':projectERC/business-events',

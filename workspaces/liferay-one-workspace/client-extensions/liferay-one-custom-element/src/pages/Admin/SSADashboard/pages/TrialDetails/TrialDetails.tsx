@@ -7,7 +7,7 @@ import ClayButton from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
-import {useParams, useSearchParams} from 'react-router-dom';
+import {useParams, useSearchParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import {PageRenderer} from '~/components/Page/Page';
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';

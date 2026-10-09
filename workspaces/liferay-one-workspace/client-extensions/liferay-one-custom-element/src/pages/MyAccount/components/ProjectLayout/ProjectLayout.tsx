@@ -5,7 +5,7 @@
 
 import ClayLoadingIndicator from '@clayui/loading-indicator';
 import {Suspense, useMemo} from 'react';
-import {Outlet, useMatch, useNavigate, useParams} from 'react-router-dom';
+import {Outlet, useMatch, useNavigate, useParams} from 'react-router';
 import AppLayout from '~/components/AppLayout/AppLayout';
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';

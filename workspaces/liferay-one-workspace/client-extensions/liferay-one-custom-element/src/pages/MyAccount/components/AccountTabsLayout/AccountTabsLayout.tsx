@@ -5,7 +5,7 @@
 
 import ClayTabs from '@clayui/tabs';
 import {Suspense} from 'react';
-import {Outlet, useLocation, useNavigate, useParams} from 'react-router-dom';
+import {Outlet, useLocation, useNavigate, useParams} from 'react-router';
 import {Header} from '~/components/Header/Header';
 import {useOneContext} from '~/context/OneContextProvider';
 import i18n, {Word} from '~/i18n';

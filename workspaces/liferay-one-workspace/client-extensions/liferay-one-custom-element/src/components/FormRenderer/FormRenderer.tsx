@@ -4,7 +4,7 @@
  */
 
 import React, {memo} from 'react';
-import {Params} from 'react-router-dom';
+import {Params} from 'react-router';
 import Checkbox from '~/components/Checkbox/Checkbox';
 import DateRange from '~/components/DateRange/DateRange';
 import FormFieldInput from '~/components/FormFieldInput/FormFieldInput';

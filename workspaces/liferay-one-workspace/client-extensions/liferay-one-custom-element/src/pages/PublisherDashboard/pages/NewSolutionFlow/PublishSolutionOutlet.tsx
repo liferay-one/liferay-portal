@@ -5,7 +5,7 @@
 
 import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
-import {Link} from 'react-router-dom';
+import {Link} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import Modal from '~/components/Modal/Modal';
 import PublishModeContextProvider from '~/context/PublishModeContextProvider';

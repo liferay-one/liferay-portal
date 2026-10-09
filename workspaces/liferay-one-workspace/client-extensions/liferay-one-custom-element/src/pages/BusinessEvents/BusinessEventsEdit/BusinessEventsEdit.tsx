@@ -15,7 +15,7 @@ import {
 	useForm,
 	useFormContext,
 } from 'react-hook-form';
-import {Link, useNavigate, useParams} from 'react-router-dom';
+import {Link, useNavigate, useParams} from 'react-router';
 import Button from '~/components/Button/Button';
 import DatePicker from '~/components/DatePicker/DatePicker';
 import Loading from '~/components/Loading/Loading';

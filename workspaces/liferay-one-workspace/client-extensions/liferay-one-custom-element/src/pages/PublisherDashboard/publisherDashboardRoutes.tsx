@@ -4,7 +4,7 @@
  */
 
 import {lazy} from 'react';
-import {Navigate, Outlet} from 'react-router-dom';
+import {Navigate, Outlet} from 'react-router';
 import NewAppContextProvider from '~/context/NewAppContextProvider';
 import SolutionContextProvider from '~/context/SolutionContextProvider';
 import usePublisherCatalog from '~/hooks/usePublisherCatalog';
@@ -132,7 +132,7 @@ export const publisherDashboardRoutes: AppRoute[] = [
 		children: [
 			{element: <PublisherProfile />, index: true},
 			{element: <PublisherProfileEdit />, path: 'edit'},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		nav: {icon: 'user', label: i18n.translate('publisher-profile')},
 		path: 'publisher-profile',
@@ -199,5 +199,5 @@ export const publisherDashboardRoutes: AppRoute[] = [
 		],
 		path: 'newversion',
 	},
-	{element: <Navigate replace to="published-apps" />, path: '*'},
+	{element: <Navigate replace to="../published-apps" />, path: '*'},
 ];

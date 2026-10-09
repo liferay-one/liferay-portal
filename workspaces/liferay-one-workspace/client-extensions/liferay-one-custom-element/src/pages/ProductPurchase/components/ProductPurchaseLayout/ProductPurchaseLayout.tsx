@@ -4,12 +4,7 @@
  */
 
 import {useEffect, useMemo, useRef, useState} from 'react';
-import {
-	Outlet,
-	useLocation,
-	useNavigate,
-	useOutletContext,
-} from 'react-router-dom';
+import {Outlet, useLocation, useNavigate, useOutletContext} from 'react-router';
 import AccountAvatar from '~/components/AccountAvatar/AccountAvatar';
 import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';

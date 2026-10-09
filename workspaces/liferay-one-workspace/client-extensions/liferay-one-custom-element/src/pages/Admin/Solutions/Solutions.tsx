@@ -5,7 +5,7 @@
 
 import Label from '@clayui/label';
 import {ComponentProps} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import i18n from '~/i18n';

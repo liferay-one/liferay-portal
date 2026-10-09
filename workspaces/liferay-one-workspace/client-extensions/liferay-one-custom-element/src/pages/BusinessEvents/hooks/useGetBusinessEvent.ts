@@ -4,7 +4,7 @@
  */
 
 import {useCallback, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router';
 import {translate} from '~/i18n';
 import {IBusinessEvent} from '~/pages/BusinessEvents/types';
 import {Liferay} from '~/services/liferay/liferay';

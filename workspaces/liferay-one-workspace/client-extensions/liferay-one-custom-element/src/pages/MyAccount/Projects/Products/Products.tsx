@@ -5,7 +5,7 @@
 
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
-import {Navigate, useNavigate, useParams} from 'react-router-dom';
+import {Navigate, useNavigate, useParams} from 'react-router';
 import {useProject} from '~/context/ProjectContext';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {

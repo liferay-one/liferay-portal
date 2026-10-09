@@ -4,7 +4,7 @@
  */
 
 import {Suspense} from 'react';
-import {Outlet} from 'react-router-dom';
+import {Outlet} from 'react-router';
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb';
 
 export default function AccountLayout() {

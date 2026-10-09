@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router';
 import {useOneContext} from '~/context/OneContextProvider';
 import useModalContext from '~/hooks/useModalContext';
 import i18n from '~/i18n';

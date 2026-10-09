@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {Navigate, useNavigate, useParams} from 'react-router-dom';
+import {Navigate, useNavigate, useParams} from 'react-router';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
 import {ProductPriceModel} from '~/enums/Product';

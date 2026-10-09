@@ -4,7 +4,7 @@
  */
 
 import {lazy} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import i18n from '~/i18n';
 import {UserAccountModel} from '~/services/models/UserAccountModel';
 import {AppRoute} from '~/utils/routeUtils';
@@ -180,5 +180,5 @@ export const adminRoutes: AppRoute[] = [
 		path: 'activation-key-uploads',
 	},
 
-	{element: <Navigate replace to="." />, path: '*'},
+	{element: <Navigate replace to=".." />, path: '*'},
 ];

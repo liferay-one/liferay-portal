@@ -9,7 +9,7 @@ import {useModal} from '@clayui/modal';
 import NavigationBar from '@clayui/navigation-bar';
 import DOMPurify from 'dompurify';
 import {useCallback, useEffect, useState} from 'react';
-import {Link, useLocation, useNavigate, useParams} from 'react-router-dom';
+import {Link, useLocation, useNavigate, useParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import {Word, translate} from '~/i18n';
 import AssociatedTicketsContainer from '~/pages/BusinessEvents/components/AssociatedTicketsContainer/AssociatedTicketsContainer';

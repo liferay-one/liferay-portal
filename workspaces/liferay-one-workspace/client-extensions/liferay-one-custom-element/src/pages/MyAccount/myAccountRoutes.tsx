@@ -4,7 +4,7 @@
  */
 
 import {lazy} from 'react';
-import {Navigate} from 'react-router-dom';
+import {Navigate} from 'react-router';
 import i18n from '~/i18n';
 import {AppRoute} from '~/utils/routeUtils';
 
@@ -45,7 +45,7 @@ export const projectDetailRoutes: AppRoute[] = [
 				element: <ProjectItemDetails itemType="product" />,
 				path: ':productERC',
 			},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		nav: {icon: 'products', label: i18n.translate('products')},
 		path: 'products',
@@ -61,7 +61,7 @@ export const projectDetailRoutes: AppRoute[] = [
 				element: <CloudAppInstall />,
 				path: ':applicationERC/install/:orderId',
 			},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		nav: {icon: 'applications', label: i18n.translate('applications')},
 		path: 'applications',
@@ -71,19 +71,19 @@ export const projectDetailRoutes: AppRoute[] = [
 			{element: <LicenseKeys />, index: true},
 			{element: <GenerateActivationKey />, path: 'generate'},
 			{element: <LicenseKeyDetails />, path: ':licenseKeyERC'},
-			{element: <Navigate replace to="." />, path: '*'},
+			{element: <Navigate replace to=".." />, path: '*'},
 		],
 		nav: {icon: 'key-horizontal', label: i18n.translate('activation')},
 		path: 'activation',
 	},
-	{element: <Navigate replace to="products" />, path: '*'},
+	{element: <Navigate replace to="../products" />, path: '*'},
 ];
 
 const orderRoutes: AppRoute[] = [
 	{element: <Orders />, index: true},
 	{element: <OrderHistory />, path: 'history'},
 	{element: <OrderDetails />, path: ':orderId'},
-	{element: <Navigate replace to="." />, path: '*'},
+	{element: <Navigate replace to=".." />, path: '*'},
 ];
 
 export const accountRoutes: AppRoute[] = [

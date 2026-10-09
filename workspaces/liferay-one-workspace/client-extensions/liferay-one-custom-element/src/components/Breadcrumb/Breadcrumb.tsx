@@ -4,7 +4,7 @@
  */
 
 import ClayIcon from '@clayui/icon';
-import {Link, useLocation, useParams} from 'react-router-dom';
+import {Link, useLocation, useParams} from 'react-router';
 import i18n, {Word} from '~/i18n';
 
 type Crumb = {
