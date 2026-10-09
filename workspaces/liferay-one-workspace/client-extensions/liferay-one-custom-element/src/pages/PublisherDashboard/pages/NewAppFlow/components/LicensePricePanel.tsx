@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ClayButtonWithIcon} from '@clayui/button';
 import Panel from '@clayui/panel';
 import React from 'react';
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
@@ -103,29 +104,34 @@ const LicensePricePanel: React.FC<LicensePricePanelProps> = ({
 
 	return (
 		<Panel
+			className="license-price-panel"
 			collapsable
 			defaultExpanded
 			displayTitle={
 				<div className="align-items-center d-flex justify-content-between w-100">
 					<div className="align-items-center d-flex">
-						<span className="mr-2">{currencyCode}</span>
+						<span className="license-price-panel-currency-code mr-2">
+							{currencyCode}
+						</span>
 
 						<CurrencyFlag {...currentCurrency} />
 					</div>
 
 					{currencyCode !== 'USD' && (
-						<ButtonWithIcon
+						<ClayButtonWithIcon
 							aria-label={`Delete all prices for ${currencyCode}`}
-							className="h-auto ml-auto"
+							className="license-price-panel-delete-button ml-auto"
 							displayType="unstyled"
-							onClick={() =>
+							onClick={(event) => {
+								event.stopPropagation();
+
 								dispatch({
 									payload: {currency: currencyCode},
 									type: NewAppTypes.SET_LICENSING_DELETE_CURRENCY,
-								})
-							}
+								});
+							}}
 							symbol="trash"
-							title="Delete all prices"
+							title={i18n.translate('delete')}
 						/>
 					)}
 				</div>

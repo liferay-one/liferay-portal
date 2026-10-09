@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ClayButtonWithIcon} from '@clayui/button';
 import ClayForm, {ClayInput} from '@clayui/form';
 import classNames from 'classnames';
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import {FieldBase} from '~/components/FieldBase/FieldBase';
 import {ProductLicenseTier} from '~/enums/Product';
+import i18n from '~/i18n';
 import {currenciesCode} from '~/utils/currencyUtils';
 
 import './LicensePriceCard.css';
@@ -119,13 +121,13 @@ const LicensePriceCard: React.FC<LicensePriceCardProps> = ({
 				{!(
 					index === 0 && licenseTier === ProductLicenseTier.STANDARD
 				) && (
-					<ButtonWithIcon
-						aria-label="Delete"
-						className="btn-monospaced"
-						displayType={null}
+					<ClayButtonWithIcon
+						aria-label={i18n.translate('delete')}
+						className="license-card-delete-button"
+						displayType="unstyled"
 						onClick={() => onDelete(Number(key), currency)}
 						symbol="trash"
-						title="Delete"
+						title={i18n.translate('delete')}
 					/>
 				)}
 			</div>
