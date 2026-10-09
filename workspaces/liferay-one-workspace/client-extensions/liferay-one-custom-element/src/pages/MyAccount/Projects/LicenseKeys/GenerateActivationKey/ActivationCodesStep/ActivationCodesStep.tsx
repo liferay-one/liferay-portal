@@ -5,6 +5,7 @@
 
 import ClayAlert from '@clayui/alert';
 import {ClayButtonWithIcon} from '@clayui/button';
+import ClayLabel from '@clayui/label';
 import ClayTable from '@clayui/table';
 import {useEffect, useRef, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
@@ -58,6 +59,9 @@ export default function ActivationCodesStep({
 	);
 
 	const activationCode = unusedActivationCode ?? activationCodes[0];
+
+	const activationCodeInUse =
+		activationCode?.activationStatus === ACTIVATION_STATUS_ACTIVE;
 
 	const entitledToAnother = Boolean(
 		environmentType &&
@@ -179,6 +183,20 @@ export default function ActivationCodesStep({
 				</ClayAlert>
 			)}
 
+			{activationCodeInUse && (
+				<ClayAlert
+					className="mb-3"
+					displayType="info"
+					role={null}
+					spritemap={getIconSpriteMap()}
+				>
+					{sub(
+						'every-x-activation-code-is-in-use-each-activation-code-activates-one-environment',
+						translate(keyType as Word)
+					)}
+				</ClayAlert>
+			)}
+
 			{activationCode ? (
 				<ClayTable className="generate-activation-key-table">
 					<ClayTable.Head>
@@ -204,21 +222,37 @@ export default function ActivationCodesStep({
 							</ClayTable.Cell>
 
 							<ClayTable.Cell>
-								<span className="align-items-center d-flex">
+								<span
+									className={
+										activationCodeInUse
+											? 'align-items-center d-flex text-secondary'
+											: 'align-items-center d-flex'
+									}
+								>
 									{activationCode.activationCode || '-'}
 
-									{!!activationCode.activationCode && (
-										<ClayButtonWithIcon
-											aria-label={translate('copy')}
+									{activationCodeInUse && (
+										<ClayLabel
 											className="ml-2"
-											displayType="unstyled"
-											onClick={onClickCopy}
-											size="sm"
-											spritemap={getIconSpriteMap()}
-											symbol="copy"
-											title={translate('copy')}
-										/>
+											displayType="secondary"
+										>
+											{translate('in-use')}
+										</ClayLabel>
 									)}
+
+									{!!activationCode.activationCode &&
+										!activationCodeInUse && (
+											<ClayButtonWithIcon
+												aria-label={translate('copy')}
+												className="ml-2"
+												displayType="unstyled"
+												onClick={onClickCopy}
+												size="sm"
+												spritemap={getIconSpriteMap()}
+												symbol="copy"
+												title={translate('copy')}
+											/>
+										)}
 								</span>
 							</ClayTable.Cell>
 
@@ -251,7 +285,7 @@ export default function ActivationCodesStep({
 				}}
 			/>
 
-			{!!activationCode && (
+			{!!activationCode && !activationCodeInUse && (
 				<p className="generate-activation-key-offline-note mt-3">
 					{offlineNoteStart}
 
