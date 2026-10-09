@@ -5,7 +5,9 @@
 
 import '@testing-library/jest-dom/vitest';
 import {cleanup} from '@testing-library/react';
-import {afterEach} from 'vitest';
+import {afterEach, vi} from 'vitest';
+
+import type {RenderHookOptions, RenderOptions} from '@testing-library/react';
 
 const themeDisplayStub = new Proxy(
 	{},
@@ -41,6 +43,47 @@ const themeDisplayStub = new Proxy(
 	fire: () => null,
 	on: () => {},
 };
+
+vi.mock('@testing-library/react', async (importOriginal) => {
+	const testingLibrary =
+		await importOriginal<typeof import('@testing-library/react')>();
+
+	const {ClayIconSpriteContext} = await import('@clayui/icon');
+	const {createElement} = await import('react');
+
+	type Wrapper = React.JSXElementConstructor<{children: React.ReactNode}>;
+
+	function withIconSpriteMap(wrapper?: Wrapper) {
+		return function IconSpriteMapWrapper({
+			children,
+		}: {
+			children: React.ReactNode;
+		}) {
+			return createElement(
+				ClayIconSpriteContext.Provider,
+				{value: '/clay/icons.svg'},
+				wrapper ? createElement(wrapper, null, children) : children
+			);
+		};
+	}
+
+	return {
+		...testingLibrary,
+		render: (ui: React.ReactNode, options?: RenderOptions) =>
+			testingLibrary.render(ui, {
+				...options,
+				wrapper: withIconSpriteMap(options?.wrapper),
+			}),
+		renderHook: <Result, Props>(
+			callback: (props: Props) => Result,
+			options?: RenderHookOptions<Props>
+		) =>
+			testingLibrary.renderHook(callback, {
+				...options,
+				wrapper: withIconSpriteMap(options?.wrapper),
+			}),
+	};
+});
 
 afterEach(() => {
 	cleanup();
