@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useEffect} from 'react';
 import {useLocation, useNavigate, useParams} from 'react-router-dom';
 import {scrollToTop} from '~/utils/browserUtils';
 
@@ -29,6 +30,14 @@ const usePublishNavigation = <TContext>({
 	let activeIndex = publishAppSteps.findIndex(({path}) => path === lastPath);
 
 	const isLastStep = activeIndex + 1 === publishAppSteps.length;
+
+	useEffect(() => {
+		if (activeIndex === -1 && publishAppSteps.length) {
+			navigate(publishAppSteps[0].path || '..', {
+				replace: true,
+			});
+		}
+	}, [activeIndex, navigate, publishAppSteps]);
 
 	if (activeIndex === -1) {
 		activeIndex = 0;
