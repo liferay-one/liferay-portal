@@ -443,11 +443,8 @@ const zodSchema = {
 		administratorEmailAddress: z
 			.string()
 			.email('Please fill in valid email'),
-		companyName: z.string().min(3, 'Company name is required'),
+		companyName: z.string().min(1, 'Company name is required'),
 		purpose: z.string().min(3, 'Purpose is required'),
-		seoStudioAccountName: z
-			.string()
-			.min(3, 'SEO&AEO Studio Beta Account Name is required'),
 		termsAndConditions: z.boolean().refine((value) => value === true),
 		userAgreement: z.boolean().refine((value) => value === true),
 	}),

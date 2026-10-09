@@ -187,6 +187,39 @@ export function hasAIHubOrder(placedOrders?: PlacedOrder[]) {
 	);
 }
 
+export function hasProvisionedAIHubOrder(
+	placedOrders: PlacedOrder[] | undefined,
+	salesforceProjectId: string
+) {
+	return Boolean(
+		placedOrders?.some((placedOrder) => {
+			if (
+				placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB' ||
+				placedOrder.orderStatusInfo?.code !==
+					OrderWorkflowStatusCode.COMPLETED
+			) {
+				return false;
+			}
+
+			const orderMetadata = safeJSONParse<{
+				aiHubAccountEntryId?: number;
+				aiHubForm?: {aiHubAccountName?: string};
+				salesforceProjectId?: string;
+			}>(
+				placedOrder.customFields?.[OrderCustomFields.ORDER_METADATA] ??
+					null,
+				{}
+			);
+
+			return (
+				orderMetadata.salesforceProjectId === salesforceProjectId &&
+				Number(orderMetadata.aiHubAccountEntryId) > 0 &&
+				Boolean(orderMetadata.aiHubForm?.aiHubAccountName)
+			);
+		})
+	);
+}
+
 export function getOrderStatusLabel(order: PlacedOrder) {
 	const statusLabel =
 		order.orderStatusInfo?.label ||

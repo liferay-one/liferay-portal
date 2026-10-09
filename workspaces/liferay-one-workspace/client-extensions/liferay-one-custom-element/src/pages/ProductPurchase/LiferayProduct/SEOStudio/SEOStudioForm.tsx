@@ -28,6 +28,7 @@ import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
+import {hasProvisionedAIHubOrder} from '~/utils/orderUtils';
 import phones from '~/utils/phones';
 import {productAgreements} from '~/utils/productAgreements';
 
@@ -74,7 +75,6 @@ const SEOStudioForm = () => {
 			jobTitle: '',
 			phoneNumber: '',
 			purpose: '',
-			seoStudioAccountName: '',
 			termsAndConditions: false,
 			userAgreement: false,
 		},
@@ -93,6 +93,10 @@ const SEOStudioForm = () => {
 	const countries = regionsResponse?.items ?? [];
 
 	const onSubmit = async (form: z.infer<typeof zodSchema.seoStudioForm>) => {
+		if (!salesforceProject) {
+			return;
+		}
+
 		setLoading(true);
 
 		try {
@@ -105,11 +109,16 @@ const SEOStudioForm = () => {
 							'orderTypeExternalReferenceCode',
 							OrderTypes.AI_HUB
 						),
-						pageSize: '1',
+						pageSize: '-1',
 					})
 				);
 
-			if (!aiHubOrders?.length) {
+			if (
+				!hasProvisionedAIHubOrder(
+					aiHubOrders,
+					salesforceProject.externalReferenceCode
+				)
+			) {
 				setIsNotEligible(true);
 				setLoading(false);
 
@@ -123,9 +132,8 @@ const SEOStudioForm = () => {
 
 			productPurchase.setForm({
 				...form,
-				salesforceProjectId: String(
-					salesforceProject?.externalReferenceCode
-				),
+				salesforceProjectId: salesforceProject.externalReferenceCode,
+				salesforceProjectName: salesforceProject.name,
 			});
 
 			await handlePurchase(productPurchase);
@@ -358,18 +366,6 @@ const SEOStudioForm = () => {
 
 				<hr className="mb-5 mt-3" />
 				<ClayInput.Group>
-					<ClayInput.GroupItem>
-						<Input
-							{...register('seoStudioAccountName')}
-							className="w-100"
-							errorMessage={errors.seoStudioAccountName?.message}
-							id="seoStudioAccountName"
-							label={i18n.translate('seo-studio-account-name')}
-							placeholder={i18n.translate('account-name')}
-							required
-						/>
-					</ClayInput.GroupItem>
-
 					<ClayInput.GroupItem>
 						<Input
 							{...register('administratorEmailAddress')}

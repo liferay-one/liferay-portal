@@ -1503,7 +1503,6 @@ export default {
 	'send-request': 'Send Request',
 	'seo-studio': 'SEO&AEO Studio Beta',
 	'seo-studio-account-details': 'SEO&AEO Studio Beta Account Details',
-	'seo-studio-account-name': 'SEO&AEO Studio Beta Account Name',
 	'seo-studio-information': 'SEO&AEO Studio Beta Information',
 	'seo-studio-is-available-only-for-ai-hub-customers':
 		'SEO&AEO Studio Beta Is Available Only for AI Hub Customers',
