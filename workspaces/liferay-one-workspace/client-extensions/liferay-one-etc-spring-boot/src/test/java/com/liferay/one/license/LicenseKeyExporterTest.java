@@ -166,6 +166,24 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testToXMLWritesMaxClusterNodes() throws Exception {
+		String xml = _licenseKeyExporter.toXML(
+			"Acme Corp", "DXP Non-Production (Virtual Cluster)",
+			LicenseConstants.TYPE_VIRTUAL_CLUSTER, 6, "DXP Production", "",
+			"2026.Q1", "Acme Corp", 3, 0, 0, 0L, 0L, "Sizing 4", "", "",
+			new String[] {""}, new String[] {""}, new String[] {""},
+			new String[] {""}, new Date(1000000000000L),
+			new Date(2000000000000L));
+
+		JSONObject jsonObject = XML.toJSONObject(xml);
+
+		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
+
+		Assertions.assertEquals(
+			3, licenseJSONObject.getInt("max-cluster-nodes"));
+	}
+
+	@Test
 	public void testToZipRenamesDuplicateFileNames() throws Exception {
 		byte[] bytes = _licenseKeyExporter.toZip(
 			List.of(
