@@ -497,6 +497,7 @@ public class SalesforceOpportunityPubsubSubscriber
 		if (renewal) {
 			_provisioningOrderService.trimRenewedOrderItems(
 				account.getId(), salesforceOpportunity.getId(),
+				salesforceOpportunity.getProjectId(),
 				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
 
@@ -612,7 +613,7 @@ public class SalesforceOpportunityPubsubSubscriber
 			account, provisionableSalesforceOpportunityLineItems);
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			account, contractId, currencyCode, recordJSONObject,
+			account, contractId, currencyCode, recordJSONObject, renewal,
 			salesforceOpportunity, salesforceProject, warningMessages);
 
 		List<Long> userIds = new ArrayList<>();

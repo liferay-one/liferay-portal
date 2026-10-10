@@ -992,8 +992,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningOrderService, Mockito.never()
 		).trimRenewedOrderItems(
-			Mockito.anyLong(), Mockito.anyString(), Mockito.anyList(),
-			Mockito.anyList()
+			Mockito.anyLong(), Mockito.anyString(), Mockito.anyString(),
+			Mockito.anyList(), Mockito.anyList()
 		);
 	}
 
@@ -1043,7 +1043,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningProjectEntitlementService
 		).processProjectEntitlements(
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.anyList()
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyList()
 		);
 
 		Mockito.verify(
@@ -1101,7 +1102,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningProjectEntitlementService
 		).processProjectEntitlements(
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.anyList()
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyList()
 		);
 	}
 
@@ -1117,7 +1119,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningOrderService
 		).trimRenewedOrderItems(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_OPPORTUNITY_ID),
-			Mockito.anyList(), Mockito.anyList()
+			Mockito.anyString(), Mockito.anyList(), Mockito.anyList()
 		);
 
 		Mockito.verify(
@@ -1629,8 +1631,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		JSONObject opportunityJSONObject =
 			SalesforceModelTestUtil.createOpportunityJSONObject(
-				_ACCOUNT_ID_SF, "", true, _OPPORTUNITY_ID, "", "E", "", "",
-				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+				_ACCOUNT_ID_SF, "", true, _OPPORTUNITY_ID, "", "E", _PROJECT_ID,
+				"", "Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -1654,7 +1656,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningOrderService
 		).trimRenewedOrderItems(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_OPPORTUNITY_ID),
-			Mockito.anyList(), Mockito.anyList()
+			Mockito.eq(_PROJECT_ID), Mockito.anyList(), Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_provisioningProjectEntitlementService
+		).processProjectEntitlements(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.anyList()
 		);
 	}
 
