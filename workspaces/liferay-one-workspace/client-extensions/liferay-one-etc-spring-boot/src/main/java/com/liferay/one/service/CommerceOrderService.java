@@ -781,6 +781,7 @@ public class CommerceOrderService extends OneBaseService {
 			customFields.putAll(sourceCustomFields);
 		}
 
+		customFields.put("projectName", project.getName());
 		customFields.put("salesforceProjectId", projectExternalReferenceCode);
 
 		order.setCustomFields(() -> customFields);
