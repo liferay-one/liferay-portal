@@ -831,7 +831,7 @@
 			"unit": "boolean"
 		},
 		{
-			"active": true,
+			"active": false,
 			"defaultQuantity": 1,
 			"displayName": "Portal Enterprise-Wide License",
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA",

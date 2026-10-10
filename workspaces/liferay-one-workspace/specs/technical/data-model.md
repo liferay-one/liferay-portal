@@ -210,7 +210,7 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 | Field | Type | Notes |
 |---|---|---|
 | PK `commerceOrderId` | long | |
-| `externalReferenceCode` | string | Salesforce Opportunity.Id |
+| `externalReferenceCode` | string | Salesforce Opportunity.Id, or Salesforce ProjectEntitlement.Id for a project entitlement order |
 | FK `accountEntryId` | long | |
 | FK `commerceOrderTypeId` | long | |
 | `currencyCode` | string | e.g. USD, EUR |
