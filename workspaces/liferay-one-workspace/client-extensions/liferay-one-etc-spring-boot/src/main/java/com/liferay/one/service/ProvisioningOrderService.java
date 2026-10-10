@@ -149,7 +149,8 @@ public class ProvisioningOrderService {
 	}
 
 	public void trimRenewedOrderItems(
-			long accountId, String opportunityId,
+			long accountId, String orderExternalReferenceCode,
+			String projectExternalReferenceCode,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			List<String> warningMessages)
 		throws Exception {
@@ -158,8 +159,10 @@ public class ProvisioningOrderService {
 
 		for (Order order : orders) {
 			if (Objects.equals(
-					order.getExternalReferenceCode(), opportunityId) ||
-				(order.getOrderItems() == null)) {
+					order.getExternalReferenceCode(),
+					orderExternalReferenceCode) ||
+				(order.getOrderItems() == null) ||
+				!_isProjectOrder(order, projectExternalReferenceCode)) {
 
 				continue;
 			}
@@ -250,6 +253,21 @@ public class ProvisioningOrderService {
 		return Objects.equals(
 			GetterUtil.getString(customFields.get("parentOpportunityId")),
 			parentOpportunityId);
+	}
+
+	private boolean _isProjectOrder(
+		Order order, String projectExternalReferenceCode) {
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		if (customFields == null) {
+			return false;
+		}
+
+		return Objects.equals(
+			GetterUtil.getString(customFields.get("salesforceProjectId")),
+			projectExternalReferenceCode);
 	}
 
 	private static final Log _log = LogFactory.getLog(

@@ -19,6 +19,7 @@ import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectEntitlement;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -121,7 +122,7 @@ public class ProvisioningProjectEntitlementService {
 
 	public void processProjectEntitlements(
 			Account account, Long contractId, String currencyCode,
-			JSONObject recordJSONObject,
+			JSONObject recordJSONObject, boolean renewal,
 			SalesforceOpportunity salesforceOpportunity,
 			SalesforceProject salesforceProject, List<String> warningMessages)
 		throws Exception {
@@ -142,7 +143,8 @@ public class ProvisioningProjectEntitlementService {
 
 			try {
 				_processProjectEntitlement(
-					account, contractId, currencyCode, salesforceOpportunity,
+					account, contractId, currencyCode, renewal,
+					salesforceOpportunity,
 					salesforceOpportunityLineItemsMap.get(
 						salesforceProjectEntitlement.getId()),
 					salesforceProject, salesforceProjectEntitlement,
@@ -234,6 +236,16 @@ public class ProvisioningProjectEntitlementService {
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem =
 			new SalesforceOpportunityLineItem(
 				_toSalesforceOpportunityLineItemJSONObject(recordJSONObject));
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		if (GetterUtil.getBoolean(customFields.get("renewal"))) {
+			_provisioningOrderService.trimRenewedOrderItems(
+				order.getAccountId(), projectEntitlementId,
+				GetterUtil.getString(customFields.get("salesforceProjectId")),
+				List.of(salesforceOpportunityLineItem), new ArrayList<>());
+		}
 
 		_upsertOrderItem(
 			order, projectEntitlementId, salesforceOpportunityLineItem,
@@ -331,7 +343,7 @@ public class ProvisioningProjectEntitlementService {
 
 	private void _processProjectEntitlement(
 			Account account, Long contractId, String currencyCode,
-			SalesforceOpportunity salesforceOpportunity,
+			boolean renewal, SalesforceOpportunity salesforceOpportunity,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject,
 			SalesforceProjectEntitlement salesforceProjectEntitlement,
@@ -363,6 +375,12 @@ public class ProvisioningProjectEntitlementService {
 				null);
 
 			return;
+		}
+
+		if (renewal) {
+			_provisioningOrderService.trimRenewedOrderItems(
+				account.getId(), projectEntitlementId, projectId,
+				salesforceOpportunityLineItems, warningMessages);
 		}
 
 		Order order = _commerceOrderService.upsertOrder(
@@ -506,5 +524,8 @@ public class ProvisioningProjectEntitlementService {
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private ProvisioningOrderService _provisioningOrderService;
 
 }
