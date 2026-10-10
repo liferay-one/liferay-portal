@@ -9,10 +9,13 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.petra.string.StringBundler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -49,7 +53,11 @@ public class ProvisioningProjectEntitlementServiceTest {
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
+		_entitlementDefinitionService = Mockito.mock(
+			EntitlementDefinitionService.class);
 		_projectService = Mockito.mock(ProjectService.class);
+		_provisioningOrderService = Mockito.mock(
+			ProvisioningOrderService.class);
 
 		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService, "_commerceOrderItemService",
@@ -61,8 +69,14 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_provisioningProjectEntitlementService, "_commerceSkuService",
 			_commerceSkuService);
 		ReflectionTestUtils.setField(
+			_provisioningProjectEntitlementService,
+			"_entitlementDefinitionService", _entitlementDefinitionService);
+		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService, "_projectService",
 			_projectService);
+		ReflectionTestUtils.setField(
+			_provisioningProjectEntitlementService, "_provisioningOrderService",
+			_provisioningOrderService);
 
 		Mockito.when(
 			_projectService.fetchProject(Mockito.anyString())
@@ -74,6 +88,18 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceSkuService.fetchSku(Mockito.anyString())
 		).thenReturn(
 			new Sku()
+		);
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyString())
+		).thenReturn(
+			List.of(
+				new EntitlementDefinition(
+					new JSONObject(
+					).put(
+						"id", 1L
+					)))
 		);
 
 		Order newOrder = new Order();
@@ -251,6 +277,44 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testHasProjectEntitlementLineItemsIgnoresEmptyHeaders() {
+		Assertions.assertTrue(
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(_createRecordJSONObject()));
+
+		JSONObject recordJSONObject = new JSONObject(
+		).put(
+			"projectEntitlementLineItems", new JSONArray()
+		).put(
+			"projectEntitlements",
+			new JSONArray(
+			).put(
+				SalesforceModelTestUtil.createProjectEntitlementJSONObject(
+					_ENTITLEMENT_ID_1, _PROJECT_ID_1, _OPPORTUNITY_ID)
+			)
+		);
+
+		Assertions.assertFalse(
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(recordJSONObject));
+
+		Assertions.assertFalse(
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(new JSONObject()));
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsDoesNotTrimWithoutRenewal()
+		throws Exception {
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+
+		Mockito.verifyNoInteractions(_provisioningOrderService);
+	}
+
+	@Test
 	public void testProcessProjectEntitlementsIsolatesAFailingEntitlement()
 		throws Exception {
 
@@ -280,7 +344,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
 			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			_createSalesforceOpportunity(), null, warningMessages);
+			false, _createSalesforceOpportunity(), null, warningMessages);
 
 		Mockito.verify(
 			_commerceOrderService
@@ -299,7 +363,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
 			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			_createSalesforceOpportunity(), null, new ArrayList<>());
+			false, _createSalesforceOpportunity(), null, new ArrayList<>());
 
 		ArgumentCaptor<SalesforceOpportunityLineItem> argumentCaptor =
 			ArgumentCaptor.forClass(SalesforceOpportunityLineItem.class);
@@ -328,6 +392,89 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testProcessProjectEntitlementsPatchesProjectName()
+		throws Exception {
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ID_1)
+		).thenReturn(
+			new Project(
+				new JSONObject(
+				).put(
+					"name", "EWSA Project 2"
+				))
+		);
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.times(2)
+		).patchOrderCustomFields(
+			Mockito.eq(_NEW_ORDER_ID), Mockito.anyMap()
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_NEW_ORDER_ID, Map.of("projectName", "EWSA Project 2")
+		);
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsReplayUpsertsTheSameOrders()
+		throws Exception {
+
+		for (int i = 0; i < 2; i++) {
+			_provisioningProjectEntitlementService.processProjectEntitlements(
+				_createAccount(), _CONTRACT_ID, "USD",
+				_createRecordJSONObject(), false,
+				_createSalesforceOpportunity(), null, new ArrayList<>());
+		}
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.times(2)
+		).upsertOrder(
+			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.eq(_ENTITLEMENT_ID_1), Mockito.anyString(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.times(2)
+		).upsertOrder(
+			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
+		);
+
+		for (String lineItemId :
+				new String[] {
+					_LINE_ITEM_ID_1, _LINE_ITEM_ID_2, _LINE_ITEM_ID_3
+				}) {
+
+			Mockito.verify(
+				_commerceOrderItemService, Mockito.times(2)
+			).upsertOrderItem(
+				Mockito.any(Order.class),
+				Mockito.argThat(
+					salesforceOpportunityLineItem -> lineItemId.equals(
+						salesforceOpportunityLineItem.getId())),
+				Mockito.anyString()
+			);
+		}
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(6)
+		).upsertOrderItem(
+			Mockito.any(Order.class),
+			Mockito.any(SalesforceOpportunityLineItem.class),
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testProcessProjectEntitlementsSkipsEntitlementWithoutLineItems()
 		throws Exception {
 
@@ -342,10 +489,43 @@ public class ProvisioningProjectEntitlementServiceTest {
 		);
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", recordJSONObject,
+			_createAccount(), _CONTRACT_ID, "USD", recordJSONObject, false,
 			_createSalesforceOpportunity(), null, new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsTrimsRenewedOrderItemsPerProject()
+		throws Exception {
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
+			true, _createSalesforceOpportunity(), null, warningMessages);
+
+		Mockito.verify(
+			_provisioningOrderService
+		).trimRenewedOrderItems(
+			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ENTITLEMENT_ID_1),
+			Mockito.eq(_PROJECT_ID_1),
+			Mockito.argThat(
+				salesforceOpportunityLineItems ->
+					salesforceOpportunityLineItems.size() == 2),
+			Mockito.same(warningMessages)
+		);
+
+		Mockito.verify(
+			_provisioningOrderService
+		).trimRenewedOrderItems(
+			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ENTITLEMENT_ID_2),
+			Mockito.eq(_PROJECT_ID_2),
+			Mockito.argThat(
+				salesforceOpportunityLineItems ->
+					salesforceOpportunityLineItems.size() == 1),
+			Mockito.same(warningMessages)
+		);
 	}
 
 	@Test
@@ -365,9 +545,44 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
 			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			_createSalesforceOpportunity(), null, warningMessages);
+			false, _createSalesforceOpportunity(), null, warningMessages);
 
 		Assertions.assertEquals(2, warningMessages.size());
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsWarnsForSkuWithoutActiveDefinition()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				"(skuExternalReferenceCode eq '" + _PRODUCT_2_ID_2 +
+					"') and (active eq true)")
+		).thenReturn(
+			new ArrayList<>()
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				StringBundler.concat(
+					"Unable to find an active entitlement definition for SKU ",
+					_PRODUCT_2_ID_2, " on project entitlement ",
+					_ENTITLEMENT_ID_1)),
+			warningMessages);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(3)
+		).upsertOrderItem(
+			Mockito.any(Order.class),
+			Mockito.any(SalesforceOpportunityLineItem.class),
+			Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -384,7 +599,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
 			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			_createSalesforceOpportunity(), null, warningMessages);
+			false, _createSalesforceOpportunity(), null, warningMessages);
 
 		Assertions.assertEquals(1, warningMessages.size());
 
@@ -435,6 +650,34 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpsertProjectEntitlementLineItemDoesNotTrimWithoutRenewal()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setAccountId(_ACCOUNT_ID);
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		_provisioningProjectEntitlementService.upsertProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+
+		Mockito.verifyNoInteractions(_provisioningOrderService);
+	}
+
+	@Test
 	public void testUpsertProjectEntitlementLineItemLeavesEntitlementsToTheObjectAction()
 		throws Exception {
 
@@ -444,6 +687,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Order order = new Order();
 
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
 		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
 		order.setId(_NEW_ORDER_ID);
 		order.setOrderItems(new OrderItem[] {existingOrderItem});
@@ -479,6 +724,57 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpsertProjectEntitlementLineItemReplayCreatesNoDuplicate()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		for (int i = 0; i < 2; i++) {
+			_provisioningProjectEntitlementService.
+				upsertProjectEntitlementLineItem(
+					SalesforceModelTestUtil.
+						createProjectEntitlementLineItemJSONObject(
+							"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+							_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+		}
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(2)
+		).upsertOrderItem(
+			Mockito.same(order),
+			Mockito.argThat(
+				salesforceOpportunityLineItem -> _LINE_ITEM_ID_1.equals(
+					salesforceOpportunityLineItem.getId())),
+			Mockito.anyString()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).upsertProjectEntitlementOrder(
+			Mockito.anyString(), Mockito.anyString(), Mockito.any(Order.class)
+		);
+	}
+
+	@Test
 	public void testUpsertProjectEntitlementLineItemRequiresTheParentOrder()
 		throws Exception {
 
@@ -501,8 +797,70 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
-	public void testUpsertProjectEntitlementPatchesOnlyTheProjectWhenTheOrderExists()
+	public void testUpsertProjectEntitlementLineItemTrimsRenewalOrder()
 		throws Exception {
+
+		Order order = new Order();
+
+		order.setAccountId(_ACCOUNT_ID);
+		order.setCustomFields(
+			Map.of("renewal", true, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		_provisioningProjectEntitlementService.upsertProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+
+		InOrder inOrder = Mockito.inOrder(
+			_provisioningOrderService, _commerceOrderItemService);
+
+		inOrder.verify(
+			_provisioningOrderService
+		).trimRenewedOrderItems(
+			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ENTITLEMENT_ID_1),
+			Mockito.eq(_PROJECT_ID_1),
+			Mockito.argThat(
+				salesforceOpportunityLineItems ->
+					(salesforceOpportunityLineItems.size() == 1) &&
+					_LINE_ITEM_ID_1.equals(
+						salesforceOpportunityLineItems.get(
+							0
+						).getId())),
+			Mockito.anyList()
+		);
+
+		inOrder.verify(
+			_commerceOrderItemService
+		).upsertOrderItem(
+			Mockito.same(order),
+			Mockito.any(SalesforceOpportunityLineItem.class),
+			Mockito.anyString()
+		);
+	}
+
+	@Test
+	public void testUpsertProjectEntitlementPatchesTheProjectNameAndIdWhenTheOrderExists()
+		throws Exception {
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ID_2)
+		).thenReturn(
+			new Project(
+				new JSONObject(
+				).put(
+					"name", "EWSA Project 2"
+				))
+		);
 
 		Order order = new Order();
 
@@ -523,7 +881,10 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderService
 		).patchOrderCustomFields(
-			_NEW_ORDER_ID, Map.of("salesforceProjectId", _PROJECT_ID_2)
+			_NEW_ORDER_ID,
+			Map.of(
+				"projectName", "EWSA Project 2", "salesforceProjectId",
+				_PROJECT_ID_2)
 		);
 
 		Mockito.verify(
@@ -642,7 +1003,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
 	private CommerceSkuService _commerceSkuService;
+	private EntitlementDefinitionService _entitlementDefinitionService;
 	private ProjectService _projectService;
+	private ProvisioningOrderService _provisioningOrderService;
 	private ProvisioningProjectEntitlementService
 		_provisioningProjectEntitlementService;
 

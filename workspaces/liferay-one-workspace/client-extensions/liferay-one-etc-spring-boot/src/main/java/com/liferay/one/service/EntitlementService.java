@@ -526,6 +526,21 @@ public class EntitlementService extends OneBaseService {
 				}
 			}
 
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (entitlementDefinition != null) {
+				Double quantity = _multiply(
+					orderItem.getQuantity(),
+					entitlementDefinition.getDefaultQuantity());
+
+				if ((quantity != null) &&
+					!Objects.equals(entitlement.getQuantity(), quantity)) {
+
+					entitlementJSONObject.put("quantity", quantity);
+				}
+			}
+
 			if (entitlementJSONObject.length() == 0) {
 				continue;
 			}

@@ -11,6 +11,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.OpportunityConstants;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -18,6 +19,7 @@ import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectEntitlement;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -99,9 +101,28 @@ public class ProvisioningProjectEntitlementService {
 		_trimOrderItem(orderItem);
 	}
 
+	public boolean hasProjectEntitlementLineItems(JSONObject recordJSONObject) {
+		Map<String, List<SalesforceOpportunityLineItem>>
+			salesforceOpportunityLineItemsMap =
+				_getSalesforceOpportunityLineItemsMap(recordJSONObject);
+
+		for (SalesforceProjectEntitlement salesforceProjectEntitlement :
+				_getSalesforceProjectEntitlements(recordJSONObject)) {
+
+			if (ListUtil.isNotEmpty(
+					salesforceOpportunityLineItemsMap.get(
+						salesforceProjectEntitlement.getId()))) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public void processProjectEntitlements(
 			Account account, Long contractId, String currencyCode,
-			JSONObject recordJSONObject,
+			JSONObject recordJSONObject, boolean renewal,
 			SalesforceOpportunity salesforceOpportunity,
 			SalesforceProject salesforceProject, List<String> warningMessages)
 		throws Exception {
@@ -122,7 +143,8 @@ public class ProvisioningProjectEntitlementService {
 
 			try {
 				_processProjectEntitlement(
-					account, contractId, currencyCode, salesforceOpportunity,
+					account, contractId, currencyCode, renewal,
+					salesforceOpportunity,
 					salesforceOpportunityLineItemsMap.get(
 						salesforceProjectEntitlement.getId()),
 					salesforceProject, salesforceProjectEntitlement,
@@ -166,7 +188,10 @@ public class ProvisioningProjectEntitlementService {
 
 		if (order != null) {
 			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("salesforceProjectId", projectId));
+				order.getId(),
+				Map.of(
+					"projectName", project.getName(), "salesforceProjectId",
+					projectId));
 
 			return;
 		}
@@ -212,9 +237,19 @@ public class ProvisioningProjectEntitlementService {
 			new SalesforceOpportunityLineItem(
 				_toSalesforceOpportunityLineItemJSONObject(recordJSONObject));
 
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		if (GetterUtil.getBoolean(customFields.get("renewal"))) {
+			_provisioningOrderService.trimRenewedOrderItems(
+				order.getAccountId(), projectEntitlementId,
+				GetterUtil.getString(customFields.get("salesforceProjectId")),
+				List.of(salesforceOpportunityLineItem), new ArrayList<>());
+		}
+
 		_upsertOrderItem(
 			order, projectEntitlementId, salesforceOpportunityLineItem,
-			OpportunityConstants.STAGE_NAME_CLOSED_WON);
+			OpportunityConstants.STAGE_NAME_CLOSED_WON, new ArrayList<>());
 
 		if (!_isCompleted(order)) {
 			_commerceOrderService.completeOrder(
@@ -308,7 +343,7 @@ public class ProvisioningProjectEntitlementService {
 
 	private void _processProjectEntitlement(
 			Account account, Long contractId, String currencyCode,
-			SalesforceOpportunity salesforceOpportunity,
+			boolean renewal, SalesforceOpportunity salesforceOpportunity,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject,
 			SalesforceProjectEntitlement salesforceProjectEntitlement,
@@ -342,10 +377,19 @@ public class ProvisioningProjectEntitlementService {
 			return;
 		}
 
+		if (renewal) {
+			_provisioningOrderService.trimRenewedOrderItems(
+				account.getId(), projectEntitlementId, projectId,
+				salesforceOpportunityLineItems, warningMessages);
+		}
+
 		Order order = _commerceOrderService.upsertOrder(
 			account, contractId, currencyCode, projectEntitlementId, projectId,
 			salesforceOpportunity, salesforceOpportunityLineItems,
 			salesforceProject);
+
+		_commerceOrderService.patchOrderCustomFields(
+			order.getId(), Map.of("projectName", project.getName()));
 
 		int provisionedOrderItemCount = 0;
 
@@ -355,7 +399,7 @@ public class ProvisioningProjectEntitlementService {
 			try {
 				_upsertOrderItem(
 					order, projectEntitlementId, salesforceOpportunityLineItem,
-					salesforceOpportunity.getStageName());
+					salesforceOpportunity.getStageName(), warningMessages);
 
 				provisionedOrderItemCount++;
 			}
@@ -429,7 +473,7 @@ public class ProvisioningProjectEntitlementService {
 	private void _upsertOrderItem(
 			Order order, String projectEntitlementId,
 			SalesforceOpportunityLineItem salesforceOpportunityLineItem,
-			String stageName)
+			String stageName, List<String> warningMessages)
 		throws Exception {
 
 		String product2Id = salesforceOpportunityLineItem.getProduct2Id();
@@ -441,6 +485,22 @@ public class ProvisioningProjectEntitlementService {
 				StringBundler.concat(
 					"Unable to find SKU for Salesforce product ", product2Id,
 					" on project entitlement ", projectEntitlementId));
+		}
+
+		List<EntitlementDefinition> entitlementDefinitions =
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				StringBundler.concat(
+					"(skuExternalReferenceCode eq '", product2Id,
+					"') and (active eq true)"));
+
+		if (entitlementDefinitions.isEmpty()) {
+			_addWarning(
+				warningMessages,
+				StringBundler.concat(
+					"Unable to find an active entitlement definition for SKU ",
+					product2Id, " on project entitlement ",
+					projectEntitlementId),
+				null);
 		}
 
 		_commerceOrderItemService.upsertOrderItem(
@@ -460,6 +520,12 @@ public class ProvisioningProjectEntitlementService {
 	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
+	private EntitlementDefinitionService _entitlementDefinitionService;
+
+	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private ProvisioningOrderService _provisioningOrderService;
 
 }

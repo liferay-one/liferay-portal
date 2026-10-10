@@ -44,7 +44,7 @@ Terms used in this file:
 | TECH-SALESFORCE-024 | A contract record gives `Id`, `AccountId`, `StartDate`, `EndDate`, `ContractTerm`, `SBQQ__Opportunity__c`, and `SBQQ__RenewalOpportunity__c`. Liferay One skips a contract without an ID or an account ID, and logs a warning. | P0 | LPD-95476, LPD-92221 | `SVC-CONTRACTSERVICE` |
 | TECH-SALESFORCE-025 | A price book entry gives `Id`, `Pricebook2Id`, `Product2Id`, `CurrencyIsoCode`, `UnitPrice`, and `IsActive`. The currency is one of AUD, BRL, EUR, GBP, INR, JPY, SGD, or USD. Liferay One ignores an entry in any other currency. | P0 | LPD-99156 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER` |
 | TECH-SALESFORCE-026 | A product record gives `Id`, `Name`, `Description`, and `Product_Group__c`. A project record gives `Id`, `Account__c`, `Name`, and the workspace, data center, version, email domain, and security contact fields of the project. | P1 | LPD-95476, LPD-103716 | — |
-| TECH-SALESFORCE-027 | A project entitlement record gives `Id`, `Project__c`, and `Purchasing_Opportunity__c`. Its line items give `Product2__c`, `Quantity__c`, and `Start_Date__c`. | P0 | LPD-102591 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
+| TECH-SALESFORCE-027 | A project entitlement record gives `Id`, `Project__c`, and `Purchasing_Opportunity__c`. Its line items give `Product2__c`, `ProjectEntitlement__c`, `Quantity__c`, `Start_Date__c`, and `End_Date__c`. | P0 | LPD-102591, LPD-107900 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
 
 ## Identifiers
 

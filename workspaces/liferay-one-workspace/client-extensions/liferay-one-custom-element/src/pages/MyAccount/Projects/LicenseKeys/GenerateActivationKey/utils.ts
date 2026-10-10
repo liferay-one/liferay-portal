@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Word, translate} from '~/i18n';
+import {Word, sub, translate} from '~/i18n';
 import {
 	GenerateForm,
 	GenerateFormBundleProduct,
 	GenerateFormKeyType,
 	GenerateFormProduct,
+	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
 import {ipv4Regex, macAddressRegex} from '~/utils/schemaUtils';
 
@@ -84,6 +85,34 @@ export function getBundleProducts(
 			!LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.includes(
 				bundleProduct.externalReferenceCode
 			)
+	);
+}
+
+export function getComplimentaryDescription(
+	subscription: GenerateFormSubscription
+): string {
+	return sub(
+		'you-can-use-this-option-to-generate-complimentary-activation-keys-that-expire-x-days-after-their-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+		[String(getComplimentaryDurationDays(subscription))]
+	);
+}
+
+export function getComplimentaryDurationDays(
+	subscription: GenerateFormSubscription
+): number {
+	if (subscription.licenseKeyDurationDays > 0) {
+		return subscription.licenseKeyDurationDays;
+	}
+
+	return COMPLIMENTARY_DURATION_DAYS;
+}
+
+export function getComplimentaryExpiration(
+	subscription: GenerateFormSubscription
+): string {
+	return sub(
+		'this-key-expires-x-days-after-its-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+		[String(getComplimentaryDurationDays(subscription))]
 	);
 }
 

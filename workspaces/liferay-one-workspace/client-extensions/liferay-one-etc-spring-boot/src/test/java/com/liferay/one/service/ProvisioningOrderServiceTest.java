@@ -297,6 +297,54 @@ public class ProvisioningOrderServiceTest {
 	}
 
 	@Test
+	public void testTrimRenewedOrderItemsExcludesTheCurrentOrder()
+		throws Exception {
+
+		OrderItem orderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
+
+		Order currentOrder = new Order();
+
+		currentOrder.setCustomFields(
+			Map.of("salesforceProjectId", _PROJECT_ID));
+		currentOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
+		currentOrder.setOrderItems(new OrderItem[] {orderItem});
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(currentOrder)
+		);
+
+		_provisioningOrderService.trimRenewedOrderItems(
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
+			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testTrimRenewedOrderItemsKeepsAnEffectiveEndDateBeforeTheStart()
+		throws Exception {
+
+		OrderItem orderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-01-15T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
+
+		_stubFamilyOrder(orderItem);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRenewedOrderItems(
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
+			List.of(_createRenewalLineItem("2025-02-01")), warningMessages);
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		Assertions.assertEquals(0, warningMessages.size());
+	}
+
+	@Test
 	public void testTrimRenewedOrderItemsPatchesEffectiveEndDate()
 		throws Exception {
 
@@ -309,7 +357,7 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRenewedOrderItems(
-			_ACCOUNT_ID, _OPPORTUNITY_ID,
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), warningMessages);
 
 		Mockito.verify(
@@ -319,6 +367,81 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		Assertions.assertEquals(0, warningMessages.size());
+	}
+
+	@Test
+	public void testTrimRenewedOrderItemsPatchesOnlyTheGivenProject()
+		throws Exception {
+
+		OrderItem projectOrderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
+
+		Order projectOrder = new Order();
+
+		projectOrder.setCustomFields(
+			Map.of("salesforceProjectId", _PROJECT_ID));
+		projectOrder.setExternalReferenceCode("OPP-PROJECT");
+		projectOrder.setOrderItems(new OrderItem[] {projectOrderItem});
+
+		OrderItem otherProjectOrderItem =
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+				"ORDER-ITEM-2", 5002L, _PRODUCT_2_ID, null);
+
+		Order otherProjectOrder = new Order();
+
+		otherProjectOrder.setCustomFields(
+			Map.of("salesforceProjectId", "PROJECT-2"));
+		otherProjectOrder.setExternalReferenceCode("OPP-OTHER");
+		otherProjectOrder.setOrderItems(
+			new OrderItem[] {otherProjectOrderItem});
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(otherProjectOrder, projectOrder)
+		);
+
+		_provisioningOrderService.trimRenewedOrderItems(
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
+			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")
+		);
+
+		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testTrimRenewedOrderItemsSkipsOrderOfAnotherProject()
+		throws Exception {
+
+		OrderItem orderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
+
+		Order otherProjectOrder = new Order();
+
+		otherProjectOrder.setCustomFields(
+			Map.of("salesforceProjectId", "PROJECT-2"));
+		otherProjectOrder.setExternalReferenceCode("OPP-OTHER");
+		otherProjectOrder.setOrderItems(new OrderItem[] {orderItem});
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(otherProjectOrder)
+		);
+
+		_provisioningOrderService.trimRenewedOrderItems(
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
+			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
 	}
 
 	@Test
@@ -334,7 +457,7 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRenewedOrderItems(
-			_ACCOUNT_ID, _OPPORTUNITY_ID,
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
@@ -354,7 +477,7 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRenewedOrderItems(
-			_ACCOUNT_ID, _OPPORTUNITY_ID,
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2024-12-01")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
@@ -388,6 +511,7 @@ public class ProvisioningOrderServiceTest {
 	private void _stubFamilyOrder(OrderItem orderItem) throws Exception {
 		Order order = new Order();
 
+		order.setCustomFields(Map.of("salesforceProjectId", _PROJECT_ID));
 		order.setExternalReferenceCode(_PARENT_OPPORTUNITY_ID);
 		order.setOrderItems(new OrderItem[] {orderItem});
 
@@ -405,6 +529,8 @@ public class ProvisioningOrderServiceTest {
 	private static final String _PARENT_OPPORTUNITY_ID = "OPP-PARENT";
 
 	private static final String _PRODUCT_2_ID = "PROD-1";
+
+	private static final String _PROJECT_ID = "PROJECT-1";
 
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;

@@ -2877,6 +2877,19 @@
 					"active": true,
 					"engine": "ddm",
 					"errorLabel": {
+						"en_US": "License Key Duration Days cannot be negative. Leave it empty for a key that expires with its entitlement."
+					},
+					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_LICENSE_KEY_DURATION_RANGE",
+					"name": {
+						"en_US": "Entitlement Definition License Key Duration Range"
+					},
+					"outputType": "fullValidation",
+					"script": "licenseKeyDurationDays >= 0"
+				},
+				{
+					"active": true,
+					"engine": "ddm",
+					"errorLabel": {
 						"en_US": "Overage Rate and Overage SKU External Reference Code must be set together or not at all."
 					},
 					"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_OVERAGE_PRICING_PAIR",

@@ -601,6 +601,44 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveDoesNotRepeatIssueAndWelcomeEmailWhenProjectEntitlementRecordIsReplayed()
+		throws Exception {
+
+		Order existingOrder = new Order();
+
+		existingOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
+		existingOrder.setOrderItems(new OrderItem[0]);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.never()
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_provisioningEmailService
+		).sendAssignedWelcomeEmails(
+			Mockito.eq(_account), Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_provisioningEmailService, Mockito.never()
+		).sendWelcomeEmails(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveDoesNothingWhenRecordsArrayIsEmpty()
 		throws Exception {
 
@@ -715,6 +753,34 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_commerceAccountCurrencyService, Mockito.never()
 		).upsertAccountCurrency(
 			Mockito.any(), Mockito.eq("USD")
+		);
+	}
+
+	@Test
+	public void testReceiveIssuesAndSendsWelcomeEmailOnFirstDeliveryOfProjectEntitlementRecord()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_provisioningEmailService
+		).sendWelcomeEmails(
+			Mockito.eq(_account),
+			Mockito.eq(OpportunityConstants.TYPE_NEW_BUSINESS),
+			Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_provisioningEmailService, Mockito.never()
+		).sendAssignedWelcomeEmails(
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -926,8 +992,65 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningOrderService, Mockito.never()
 		).trimRenewedOrderItems(
-			Mockito.anyLong(), Mockito.anyString(), Mockito.anyList(),
+			Mockito.anyLong(), Mockito.anyString(), Mockito.anyString(),
+			Mockito.anyList(), Mockito.anyList()
+		);
+	}
+
+	@Test
+	public void testReceiveProvisionsOpportunityLineItemsAndProjectEntitlements()
+		throws Exception {
+
+		Mockito.when(
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(Mockito.any(JSONObject.class))
+		).thenReturn(
+			true
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONArray opportunityLineItemsJSONArray = recordJSONObject.getJSONArray(
+			"opportunityLineItems");
+
+		opportunityLineItemsJSONArray.put(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-2", "PROD-2", "Gadget", "Subscription", 1,
+				null)
+		).put(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-3", "PROD-3", "Gizmo", "Subscription", 1,
+				null)
+		);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(3)
+		).upsertOrderItem(
+			Mockito.argThat(order -> order.getId() == _NEW_ORDER_ID),
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_provisioningProjectEntitlementService
+		).processProjectEntitlements(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 			Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			Mockito.anyLong(), Mockito.anyMap()
 		);
 	}
 
@@ -957,6 +1080,34 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveProvisionsProjectEntitlementsWithoutOpportunityLineItems()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).upsertOrderItem(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_provisioningProjectEntitlementService
+		).processProjectEntitlements(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
+			Mockito.anyList()
+		);
+	}
+
+	@Test
 	public void testReceiveProvisionsRenewalOpportunity() throws Exception {
 		JSONObject recordJSONObject = _createOpportunityRecordJSONObject(
 			_OPPORTUNITY_ID, "E", "", "Closed Lost",
@@ -968,7 +1119,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningOrderService
 		).trimRenewedOrderItems(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_OPPORTUNITY_ID),
-			Mockito.anyList(), Mockito.anyList()
+			Mockito.anyString(), Mockito.anyList(), Mockito.anyList()
 		);
 
 		Mockito.verify(
@@ -1480,8 +1631,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		JSONObject opportunityJSONObject =
 			SalesforceModelTestUtil.createOpportunityJSONObject(
-				_ACCOUNT_ID_SF, "", true, _OPPORTUNITY_ID, "", "E", "", "",
-				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+				_ACCOUNT_ID_SF, "", true, _OPPORTUNITY_ID, "", "E", _PROJECT_ID,
+				"", "Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -1505,7 +1656,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningOrderService
 		).trimRenewedOrderItems(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_OPPORTUNITY_ID),
-			Mockito.anyList(), Mockito.anyList()
+			Mockito.eq(_PROJECT_ID), Mockito.anyList(), Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_provisioningProjectEntitlementService
+		).processProjectEntitlements(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.anyList()
 		);
 	}
 
@@ -2185,6 +2343,25 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 				lineItemJSONObject
 			),
 			new JSONArray(), null);
+	}
+
+	private JSONObject _createProjectEntitlementRecordJSONObject() {
+		Mockito.when(
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(Mockito.any(JSONObject.class))
+		).thenReturn(
+			true
+		);
+
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
+				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		return SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+			SalesforceModelTestUtil.createAccountJSONObject(
+				_ACCOUNT_ID_SF, "Test Salesforce Account"),
+			opportunityJSONObject, new JSONArray(), new JSONArray(), null);
 	}
 
 	private void _receiveOpportunityMessage(JSONObject recordJSONObject)

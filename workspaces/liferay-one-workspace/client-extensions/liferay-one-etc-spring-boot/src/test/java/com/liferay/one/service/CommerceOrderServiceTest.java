@@ -2613,6 +2613,43 @@ public class CommerceOrderServiceTest {
 		);
 	}
 
+	@Test
+	public void testUpsertProjectEntitlementOrderSetsTheProjectName()
+		throws Exception {
+
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Order sourceOrder = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		sourceOrder.setCustomFields(
+			() -> Map.of("projectName", "Purchasing Project", "renewal", "1"));
+
+		OrderResource orderResource = _upsertProjectEntitlementOrder(
+			sourceOrder);
+
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+
+		Mockito.verify(
+			orderResource
+		).postOrder(
+			orderArgumentCaptor.capture()
+		);
+
+		Order order = orderArgumentCaptor.getValue();
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		Assertions.assertEquals(
+			"Test Project", customFields.get("projectName"));
+		Assertions.assertEquals("1", customFields.get("renewal"));
+		Assertions.assertEquals(
+			"a1tTEST", customFields.get("salesforceProjectId"));
+	}
+
 	private OrderResource _calculateTax(Order order) throws Exception {
 		OrderResource orderResource = Mockito.mock(OrderResource.class);
 
@@ -2848,6 +2885,56 @@ public class CommerceOrderServiceTest {
 		).build();
 
 		order.setCustomFields(() -> customFields);
+	}
+
+	private OrderResource _upsertProjectEntitlementOrder(Order sourceOrder)
+		throws Exception {
+
+		OrderResource orderResource = Mockito.mock(OrderResource.class);
+
+		OrderResource.Builder builder = Mockito.mock(
+			OrderResource.Builder.class, Mockito.RETURNS_SELF);
+
+		Mockito.when(
+			builder.build()
+		).thenReturn(
+			orderResource
+		);
+
+		Mockito.doReturn(
+			"Bearer token"
+		).when(
+			_commerceOrderService
+		).getAuthorization();
+
+		Mockito.doReturn(
+			"localhost:8080"
+		).when(
+			_commerceOrderService
+		).getDXPEndpointAddress();
+
+		Mockito.doReturn(
+			null
+		).when(
+			_commerceOrderService
+		).fetchOrderByExternalReferenceCode(
+			"a0P-1"
+		);
+
+		try (MockedStatic<OrderResource> orderResourceMockedStatic =
+				Mockito.mockStatic(OrderResource.class)) {
+
+			orderResourceMockedStatic.when(
+				OrderResource::builder
+			).thenReturn(
+				builder
+			);
+
+			_commerceOrderService.upsertProjectEntitlementOrder(
+				"a0P-1", "a1tTEST", sourceOrder);
+		}
+
+		return orderResource;
 	}
 
 	private void _verifyCancelledSEOStudioOrder(String seoStudioError)

@@ -706,6 +706,7 @@ export default function GenerateActivationKey() {
 					{step === 'complimentary' && (
 						<ComplimentaryStep
 							form={form}
+							generateForm={generateForm}
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
 							onClickContinue={() => goTo('environment')}

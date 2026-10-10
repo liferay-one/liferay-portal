@@ -15,6 +15,8 @@ import com.liferay.one.model.EntitlementDefinition;
 
 import java.math.BigDecimal;
 
+import java.net.URI;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -40,7 +42,25 @@ public class EntitlementServiceTest {
 
 	@BeforeEach
 	public void setUp() {
-		_entitlementService = Mockito.spy(new EntitlementService());
+		_entitlementService = Mockito.spy(
+			new EntitlementService() {
+
+				@Override
+				protected String getAuthorization() {
+					return "Bearer test";
+				}
+
+				@Override
+				protected String patch(
+					String authorization, String body, URI uri) {
+
+					_patchBodies.add(body);
+					_patchURIs.add(uri);
+
+					return "{}";
+				}
+
+			});
 
 		ReflectionTestUtils.setField(
 			_entitlementService, "_commerceOrderItemService",
@@ -342,6 +362,104 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpdateEntitlementsKeepsQuantityWithoutDefinition()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.doReturn(
+			List.of(_createEntitlementWithQuantity(11, null, 100.0))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertTrue(_patchBodies.isEmpty());
+	}
+
+	@Test
+	public void testUpdateEntitlementsPatchesOnlyEntitlementsOfItsOrderItem()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setCustomFields(
+			new CustomField[] {
+				_createCustomField("effectiveEndDate", "2030-01-01T00:00:00Z"),
+				_createCustomField("startDate", "2030-01-01T00:00:00Z")
+			});
+
+		_setUpOrderItem(orderItem);
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithDates(
+					11, "2026-01-01T00:00:00Z", "2026-12-31T00:00:00Z"))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithDates(
+					12, "2026-01-01T00:00:00Z", "2026-12-31T00:00:00Z"))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID + 1
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).getEntitlements(
+			_ORDER_ITEM_ID + 1
+		);
+
+		Assertions.assertEquals(
+			List.of(URI.create("/o/c/entitlements/11")), _patchURIs);
+		Assertions.assertEquals(1, _patchBodies.size());
+	}
+
+	@Test
+	public void testUpdateEntitlementsSyncsQuantity() throws Exception {
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithQuantity(11, 100.0, 100.0),
+				_createEntitlementWithQuantity(12, 100.0, 200.0))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertEquals(
+			List.of(URI.create("/o/c/entitlements/11")), _patchURIs);
+		Assertions.assertEquals(1, _patchBodies.size());
+
+		JSONObject jsonObject = new JSONObject(_patchBodies.get(0));
+
+		Assertions.assertEquals(200.0, jsonObject.getDouble("quantity"));
+		Assertions.assertEquals(1, jsonObject.length());
+	}
+
+	@Test
 	public void testUpdateEntitlementsTrimsCanceledOrderItem()
 		throws Exception {
 
@@ -441,6 +559,55 @@ public class EntitlementServiceTest {
 		);
 	}
 
+	private Entitlement _createEntitlementWithDates(
+		long entitlementId, String startDate, String endDate) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"id", entitlementId
+		).put(
+			"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+			_ORDER_ITEM_ID
+		);
+
+		if (startDate != null) {
+			jsonObject.put("startDate", startDate);
+		}
+
+		if (endDate != null) {
+			jsonObject.put("endDate", endDate);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _createEntitlementWithQuantity(
+		long entitlementId, Double defaultQuantity, Double quantity) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"id", entitlementId
+		).put(
+			"quantity", quantity
+		).put(
+			"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+			_ORDER_ITEM_ID
+		);
+
+		if (defaultQuantity != null) {
+			jsonObject.put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"defaultQuantity", defaultQuantity
+				).put(
+					"id", 1
+				));
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
 	private Entitlement _createEntitlementWithoutDefinition(
 		long entitlementDefinitionId, String name) {
 
@@ -513,5 +680,7 @@ public class EntitlementServiceTest {
 	private final EntitlementDefinitionService _entitlementDefinitionService =
 		Mockito.mock(EntitlementDefinitionService.class);
 	private EntitlementService _entitlementService;
+	private final List<String> _patchBodies = new ArrayList<>();
+	private final List<URI> _patchURIs = new ArrayList<>();
 
 }
