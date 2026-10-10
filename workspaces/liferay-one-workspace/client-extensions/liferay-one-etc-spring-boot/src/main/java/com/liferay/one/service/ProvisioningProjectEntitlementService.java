@@ -186,7 +186,10 @@ public class ProvisioningProjectEntitlementService {
 
 		if (order != null) {
 			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("salesforceProjectId", projectId));
+				order.getId(),
+				Map.of(
+					"projectName", project.getName(), "salesforceProjectId",
+					projectId));
 
 			return;
 		}

@@ -362,6 +362,25 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpdateEntitlementsKeepsQuantityWithoutDefinition()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.doReturn(
+			List.of(_createEntitlementWithQuantity(11, null, 100.0))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertTrue(_patchBodies.isEmpty());
+	}
+
+	@Test
 	public void testUpdateEntitlementsPatchesOnlyEntitlementsOfItsOrderItem()
 		throws Exception {
 
@@ -412,6 +431,32 @@ public class EntitlementServiceTest {
 		Assertions.assertEquals(
 			List.of(URI.create("/o/c/entitlements/11")), _patchURIs);
 		Assertions.assertEquals(1, _patchBodies.size());
+	}
+
+	@Test
+	public void testUpdateEntitlementsSyncsQuantity() throws Exception {
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithQuantity(11, 100.0, 100.0),
+				_createEntitlementWithQuantity(12, 100.0, 200.0))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertEquals(
+			List.of(URI.create("/o/c/entitlements/11")), _patchURIs);
+		Assertions.assertEquals(1, _patchBodies.size());
+
+		JSONObject jsonObject = new JSONObject(_patchBodies.get(0));
+
+		Assertions.assertEquals(200.0, jsonObject.getDouble("quantity"));
+		Assertions.assertEquals(1, jsonObject.length());
 	}
 
 	@Test
@@ -531,6 +576,33 @@ public class EntitlementServiceTest {
 
 		if (endDate != null) {
 			jsonObject.put("endDate", endDate);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _createEntitlementWithQuantity(
+		long entitlementId, Double defaultQuantity, Double quantity) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"id", entitlementId
+		).put(
+			"quantity", quantity
+		).put(
+			"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+			_ORDER_ITEM_ID
+		);
+
+		if (defaultQuantity != null) {
+			jsonObject.put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"defaultQuantity", defaultQuantity
+				).put(
+					"id", 1
+				));
 		}
 
 		return new Entitlement(jsonObject);

@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
@@ -643,6 +644,55 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpsertProjectEntitlementLineItemReplayCreatesNoDuplicate()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		for (int i = 0; i < 2; i++) {
+			_provisioningProjectEntitlementService.
+				upsertProjectEntitlementLineItem(
+					SalesforceModelTestUtil.
+						createProjectEntitlementLineItemJSONObject(
+							"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+							_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+		}
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(2)
+		).upsertOrderItem(
+			Mockito.same(order),
+			Mockito.argThat(
+				salesforceOpportunityLineItem -> _LINE_ITEM_ID_1.equals(
+					salesforceOpportunityLineItem.getId())),
+			Mockito.anyString()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).upsertProjectEntitlementOrder(
+			Mockito.anyString(), Mockito.anyString(), Mockito.any(Order.class)
+		);
+	}
+
+	@Test
 	public void testUpsertProjectEntitlementLineItemRequiresTheParentOrder()
 		throws Exception {
 
@@ -665,8 +715,18 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
-	public void testUpsertProjectEntitlementPatchesOnlyTheProjectWhenTheOrderExists()
+	public void testUpsertProjectEntitlementPatchesTheProjectNameAndIdWhenTheOrderExists()
 		throws Exception {
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ID_2)
+		).thenReturn(
+			new Project(
+				new JSONObject(
+				).put(
+					"name", "EWSA Project 2"
+				))
+		);
 
 		Order order = new Order();
 
@@ -687,7 +747,10 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderService
 		).patchOrderCustomFields(
-			_NEW_ORDER_ID, Map.of("salesforceProjectId", _PROJECT_ID_2)
+			_NEW_ORDER_ID,
+			Map.of(
+				"projectName", "EWSA Project 2", "salesforceProjectId",
+				_PROJECT_ID_2)
 		);
 
 		Mockito.verify(
