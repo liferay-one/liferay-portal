@@ -289,7 +289,13 @@ public class SalesforceOpportunityPubsubSubscriber
 		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
 			_getSalesforceOpportunityLineItems(recordJSONObject);
 
-		if (salesforceOpportunityLineItems.isEmpty()) {
+		boolean hasProjectEntitlementLineItems =
+			_provisioningProjectEntitlementService.
+				hasProjectEntitlementLineItems(recordJSONObject);
+
+		if (salesforceOpportunityLineItems.isEmpty() &&
+			!hasProjectEntitlementLineItems) {
+
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					"Skipping opportunity " + salesforceOpportunity.getId() +
@@ -308,7 +314,13 @@ public class SalesforceOpportunityPubsubSubscriber
 		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
 			salesforceOpportunity.getId());
 
-		boolean reprocessing = _isProvisioned(order);
+		boolean reprocessing = false;
+
+		if (_isProvisioned(order) ||
+			(hasProjectEntitlementLineItems && (order != null))) {
+
+			reprocessing = true;
+		}
 
 		if (reprocessing && _log.isInfoEnabled()) {
 			_log.info(

@@ -25,6 +25,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-006 | The quantity of an entitlement is the default quantity of its definition multiplied by the quantity of the order item. The entitlement copies the name, the grant type, the maximum quantity, and the product options from its definition. | P0 | LPD-100375 | `SVC-ENTITLEMENTSERVICE` |
 | REQ-ENTITLEMENTS-007 | An entitlement copies the overage rate and the overage SKU from its definition when the system grants it. A later change to the definition does not change the price of an existing entitlement. A rate of zero or less, or a rate without a SKU, means that the entitlement has no overage price. | P0 | LPD-99837 | `SVC-ENTITLEMENTSERVICE`, `CLS-OVERAGEPRICING` |
 | REQ-ENTITLEMENTS-008 | A system process can ask for the entitlements of one order item by the ID of the order item. This request follows the same rules as the object action and is safe to repeat. | P1 | LPD-89424 | `REST-POST-ENTITLEMENTS-GENERATE`, `FLOW-CHECKOUT-FREE` |
+| REQ-ENTITLEMENTS-009 | The Enterprise-Wide product has no active entitlement definition, so its opportunity line creates an order item and no entitlement. Entitlements that the system gave to a project before this rule stay as they are. The other lines of the deal grant as usual: an opportunity line to the purchasing project, and a project entitlement line to the project of its header. | P0 | LPD-107900 | — |
 
 ## Entitlement Dates
 
@@ -37,6 +38,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-014 | A renewal applies to the approved order items of the account for the same SKU. When such an order item has an effective end date after the renewal start date, the system moves it back to the renewal start date. A renewal that starts before the end date of the order item changes nothing and adds a warning. | P0 | LPD-89686 | `SVC-PROVISIONINGORDERSERVICE` |
 | REQ-ENTITLEMENTS-015 | When an amendment changes the dates of an approved order item in the same opportunity family, the system sets the effective end date to the amended end date. It never moves an effective end date later. It adds a warning when the amended end date differs from the original end date. | P0 | LPD-89686 | `SVC-PROVISIONINGORDERSERVICE` |
 | REQ-ENTITLEMENTS-016 | When Salesforce deletes a project entitlement or one of its line items, the system ends the matching order items at the current time. It does not move an effective end date that is already in the past. | P0 | LPD-102591 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
+| REQ-ENTITLEMENTS-017 | An update of an order item changes only the entitlements of that order item. It never changes an entitlement of another order item, such as a project entitlement order item of the same deal. | P0 | LPD-107900 | `SVC-ENTITLEMENTSERVICE` |
 
 ## Entitlement State
 
