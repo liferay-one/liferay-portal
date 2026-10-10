@@ -4,12 +4,15 @@
  */
 
 import {describe, expect, it} from 'vitest';
-import {translate} from '~/i18n';
+import {sub, translate} from '~/i18n';
 
 import {
 	buildEmptyServer,
 	findMatchingVersion,
 	getBundleProducts,
+	getComplimentaryDescription,
+	getComplimentaryDurationDays,
+	getComplimentaryExpiration,
 	getComplimentaryPurpose,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
@@ -31,6 +34,7 @@ import type {
 	GenerateFormBundleProduct,
 	GenerateFormKeyType,
 	GenerateFormProduct,
+	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
 
 function toBundleProduct(externalReferenceCode: string) {
@@ -73,6 +77,90 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 		it('returns an empty list when the product is unknown', () => {
 			expect(getBundleProducts(generateForm, 'PRDCT-UNKNOWN')).toEqual(
 				[]
+			);
+		});
+	});
+
+	describe('getComplimentaryDescription', () => {
+		it('states the duration of the definition in days', () => {
+			expect(
+				getComplimentaryDescription({
+					licenseKeyDurationDays: 45,
+				} as GenerateFormSubscription)
+			).toBe(
+				sub(
+					'you-can-use-this-option-to-generate-complimentary-activation-keys-that-expire-x-days-after-their-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+					['45']
+				)
+			);
+		});
+
+		it('states 30 days when the definition has no duration', () => {
+			expect(
+				getComplimentaryDescription({
+					licenseKeyDurationDays: 0,
+				} as GenerateFormSubscription)
+			).toBe(
+				sub(
+					'you-can-use-this-option-to-generate-complimentary-activation-keys-that-expire-x-days-after-their-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+					['30']
+				)
+			);
+		});
+	});
+
+	describe('getComplimentaryDurationDays', () => {
+		it('uses the duration of the definition', () => {
+			expect(
+				getComplimentaryDurationDays({
+					licenseKeyDurationDays: 45,
+				} as GenerateFormSubscription)
+			).toBe(45);
+		});
+
+		it('falls back to 30 days when the definition has no duration', () => {
+			expect(
+				getComplimentaryDurationDays({
+					licenseKeyDurationDays: 0,
+				} as GenerateFormSubscription)
+			).toBe(30);
+		});
+	});
+
+	describe('getComplimentaryExpiration', () => {
+		it('renders the English alert counted from the start date', () => {
+			expect(
+				getComplimentaryExpiration({
+					licenseKeyDurationDays: 30,
+				} as GenerateFormSubscription)
+			).toBe(
+				'This key expires 30 days after its start date, or when the subscription ends if that is earlier.'
+			);
+		});
+
+		it('states the duration of the definition in days', () => {
+			expect(
+				getComplimentaryExpiration({
+					licenseKeyDurationDays: 45,
+				} as GenerateFormSubscription)
+			).toBe(
+				sub(
+					'this-key-expires-x-days-after-its-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+					['45']
+				)
+			);
+		});
+
+		it('states 30 days when the definition has no duration', () => {
+			expect(
+				getComplimentaryExpiration({
+					licenseKeyDurationDays: 0,
+				} as GenerateFormSubscription)
+			).toBe(
+				sub(
+					'this-key-expires-x-days-after-its-start-date-or-when-the-subscription-ends-if-that-is-earlier',
+					['30']
+				)
 			);
 		});
 	});

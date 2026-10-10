@@ -323,7 +323,7 @@ SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a 
 | `defaultQuantity` | double | Default; overridden at order item level via `sizing` |
 | `grantType` | string | `fixed` · `rollover` · `metered` · `prepaid` |
 | `licenseKeyType` | string | The key type this SKU grants, e.g. `production`, `developer`, `backup`, `complimentary`; empty when the definition grants no key type of its own |
-| `licenseKeyDurationDays` | integer | How long a generated key lasts; empty for the subscription's own dates |
+| `licenseKeyDurationDays` | integer | How long a generated developer or complimentary key lasts, in days from its start date. Empty or 0 means no duration: a complimentary key then lasts 30 days after its start date, and a developer key expires on the entitlement end date. A complimentary key does not expire after the subscription end date. Liferay stores an empty value as 0, so the two are the same value, and the `C_ENTITLEMENT_DEFINITION_LICENSE_KEY_DURATION_RANGE` rule rejects a negative value. A key keeps the dates it was issued with. |
 | `licenseKeyFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
 | `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |

@@ -52,7 +52,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-LICENSING-030 | A project can generate a complimentary key only when its account allows complimentary keys. | P0 | — | `SVC-LICENSEKEYGENERATIONSERVICE`, `SVC-LICENSEKEYGENERATEFORMSERVICE`, `CLS-ACCOUNTUTIL` |
 | REQ-LICENSING-031 | A project has at most one active complimentary key at a time. | P0 | — | `SVC-LICENSEKEYGENERATIONSERVICE`, `SVC-LICENSEKEYGENERATEFORMSERVICE` |
-| REQ-LICENSING-032 | A complimentary key covers exactly one server and states a purpose of 255 characters or fewer. It lasts 30 days from its start date, unless its entitlement sets a different duration. It uses only an entitlement that grants complimentary keys, and such an entitlement grants no other key. | P0 | — | `SVC-LICENSEKEYGENERATIONSERVICE` |
+| REQ-LICENSING-032 | A complimentary key covers exactly one server and states a purpose of 255 characters or fewer. It lasts the license key duration of its entitlement definition, counted from its start date. When the definition sets no duration (empty or 0), it lasts 30 days after its start date. The key does not expire after the subscription end date: when the end date of the subscription comes before the end of the duration, the key expires on the end date of the subscription. The start date must be before the end date of the subscription. Otherwise the system refuses the key with a validation error. It uses only an entitlement that grants complimentary keys, and such an entitlement grants no other key. | P0 | LPD-108684 | `SVC-LICENSEKEYGENERATIONSERVICE` |
 | REQ-LICENSING-033 | Only an administrator can deactivate a complimentary activation key. Nobody can activate it again. | P0 | — | `REST-PATCH-ACTIVATION-KEYS-ACTIVATIONKEYID-ACTIVE`, `CLS-ACTIVATIONKEY` |
 
 ## Activation State
@@ -76,7 +76,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-LICENSING-060 | A project can download a developer key or a developer cluster key for DXP 7.4 and later, for a product that the project holds an active entitlement to. | P1 | — | `REST-GET-LICENSE-KEYS-DEVELOPER-DOWNLOAD`, `SVC-LICENSEKEYGENERATIONSERVICE` |
+| REQ-LICENSING-060 | A project can download a developer key or a developer cluster key for DXP 7.4 and later, for a product that the project holds an active entitlement to. The key comes from the project's entitlement for the requested key type, developer or developer cluster, of that product. A complimentary entitlement never grants it. The key lasts the license key duration of that entitlement's definition, counted from the download. When the definition sets no duration (empty or 0), the key expires on the end date of the entitlement. When the entitlement has no end date either, the download is refused. | P1 | LPD-108684 | `REST-GET-LICENSE-KEYS-DEVELOPER-DOWNLOAD`, `SVC-LICENSEKEYGENERATIONSERVICE` |
 
 ## Free DXP Licenses
 

@@ -31,6 +31,7 @@ export type GenerateFormSubscription = {
 	endDate?: string;
 	entitlementId: number;
 	instanceSize: number;
+	licenseKeyDurationDays: number;
 	startDate?: string;
 	totalCount: number;
 };

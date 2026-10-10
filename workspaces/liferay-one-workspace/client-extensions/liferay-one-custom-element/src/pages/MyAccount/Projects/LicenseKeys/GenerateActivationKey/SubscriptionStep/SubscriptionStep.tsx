@@ -21,8 +21,8 @@ import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
 import {GenerateActivationKeyForm} from '../types';
 import {
-	COMPLIMENTARY_DURATION_DAYS,
 	FREE_KEY_TYPE,
+	getComplimentaryExpiration,
 	getLeadingProductLabel,
 	hasAvailableActivations,
 	hasAvailableKeyType,
@@ -317,11 +317,13 @@ export default function SubscriptionStep({
 					<ul className="mb-0 pl-4">
 						<li>{translate('this-key-can-be-generated-once')}</li>
 
-						<li>
-							{sub('this-key-expires-after-x-days', [
-								String(COMPLIMENTARY_DURATION_DAYS),
-							])}
-						</li>
+						{selectedSubscription && (
+							<li>
+								{getComplimentaryExpiration(
+									selectedSubscription
+								)}
+							</li>
+						)}
 
 						<li>
 							{translate(

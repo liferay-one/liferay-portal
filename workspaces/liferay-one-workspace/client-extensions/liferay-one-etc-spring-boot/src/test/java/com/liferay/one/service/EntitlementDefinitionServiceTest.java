@@ -93,9 +93,28 @@ public class EntitlementDefinitionServiceTest {
 		Assertions.assertEquals(1, jsonObject.getInt("defaultQuantity"));
 		Assertions.assertEquals(
 			"Test App - Large", jsonObject.getString("name"));
+		Assertions.assertFalse(jsonObject.has("licenseKeyDurationDays"));
 		Assertions.assertFalse(jsonObject.has("productOptions"));
 		Assertions.assertEquals(
 			"SKU-LARGE", jsonObject.getString("skuExternalReferenceCode"));
+	}
+
+	@Test
+	public void testGenerateEntitlementDefinitionCreatesTrialDefinitionWithLicenseKeyDuration()
+		throws Exception {
+
+		_setUpProduct(
+			_createSku(
+				"SKU-TRIAL", true, "Trial", "dxp-license-usage-type", "trial"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		JSONObject jsonObject = new JSONObject(
+			_entitlementDefinitionService.putBodies.get(0));
+
+		Assertions.assertEquals(
+			30, jsonObject.getInt("licenseKeyDurationDays"));
 	}
 
 	@Test
@@ -179,6 +198,26 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionKeepsLicenseKeyDurationOfTrialDefinition()
+		throws Exception {
+
+		_setUpProduct(
+			_createSku(
+				"SKU-TRIAL", true, "Trial", "dxp-license-usage-type", "trial"));
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-TRIAL", 45, "Test App - Trial", "SKU-TRIAL"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionPropagatesMissingProduct()
 		throws Exception {
 
@@ -225,6 +264,33 @@ public class EntitlementDefinitionServiceTest {
 		Assertions.assertTrue(jsonObject.getBoolean("active"));
 		Assertions.assertEquals(
 			"Test App - Small", jsonObject.getString("name"));
+	}
+
+	@Test
+	public void testGenerateEntitlementDefinitionSetsLicenseKeyDurationOfTrialDefinition()
+		throws Exception {
+
+		_setUpProduct(
+			_createSku(
+				"SKU-TRIAL", true, "Trial", "dxp-license-usage-type", "trial"));
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-TRIAL", "Test App - Trial", "SKU-TRIAL"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
+		Assertions.assertEquals(
+			List.of("SKU-TRIAL"),
+			_getExternalReferenceCodes(
+				_entitlementDefinitionService.patchURIs));
+		Assertions.assertEquals(
+			1, _entitlementDefinitionService.patchBodies.size());
+		Assertions.assertEquals(
+			"{\"licenseKeyDurationDays\":30}",
+			_entitlementDefinitionService.patchBodies.get(0));
 	}
 
 	@Test
@@ -481,7 +547,8 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	private JSONObject _createEntitlementDefinitionJSONObject(
-		boolean active, String externalReferenceCode, String name,
+		boolean active, String externalReferenceCode,
+		int licenseKeyDurationDays, String name,
 		String skuExternalReferenceCode) {
 
 		return new JSONObject(
@@ -492,10 +559,20 @@ public class EntitlementDefinitionServiceTest {
 		).put(
 			"id", ++_entitlementDefinitionId
 		).put(
+			"licenseKeyDurationDays", licenseKeyDurationDays
+		).put(
 			"name", name
 		).put(
 			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
+	}
+
+	private JSONObject _createEntitlementDefinitionJSONObject(
+		boolean active, String externalReferenceCode, String name,
+		String skuExternalReferenceCode) {
+
+		return _createEntitlementDefinitionJSONObject(
+			active, externalReferenceCode, 0, name, skuExternalReferenceCode);
 	}
 
 	private Product _createProduct(String name, String priceModel) {
@@ -538,6 +615,14 @@ public class EntitlementDefinitionServiceTest {
 		String externalReferenceCode, boolean published, String sku,
 		String skuOptionKey) {
 
+		return _createSku(
+			externalReferenceCode, published, sku, skuOptionKey, "standard");
+	}
+
+	private Sku _createSku(
+		String externalReferenceCode, boolean published, String sku,
+		String skuOptionKey, String skuOptionValue) {
+
 		Sku skuDTO = new Sku();
 
 		skuDTO.setExternalReferenceCode(externalReferenceCode);
@@ -551,7 +636,7 @@ public class EntitlementDefinitionServiceTest {
 			SkuOption skuOption = new SkuOption();
 
 			skuOption.setKey(skuOptionKey);
-			skuOption.setValue("standard");
+			skuOption.setValue(skuOptionValue);
 
 			skuDTO.setSkuOptions(new SkuOption[] {skuOption});
 		}

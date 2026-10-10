@@ -56,6 +56,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class LicenseKeyGenerateFormService {
 
+	public static int getLicenseKeyDurationDays(Entitlement entitlement) {
+		EntitlementDefinition entitlementDefinition =
+			entitlement.getEntitlementDefinition();
+
+		if (entitlementDefinition == null) {
+			return 0;
+		}
+
+		return entitlementDefinition.getLicenseKeyDurationDays();
+	}
+
 	public static String getLicenseKeyFamily(Entitlement entitlement) {
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
@@ -814,6 +825,8 @@ public class LicenseKeyGenerateFormService {
 				"entitlementId", entitlement.getEntitlementId()
 			).put(
 				"instanceSize", _INSTANCE_SIZE_DEFAULT
+			).put(
+				"licenseKeyDurationDays", getLicenseKeyDurationDays(entitlement)
 			).put(
 				"startDate", _toISO8601(entitlement.getStartDateInstant())
 			).put(

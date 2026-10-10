@@ -107,7 +107,7 @@ public class LicenseKeyGenerationService {
 				project.getExternalReferenceCode());
 
 		Entitlement entitlement = _fetchEntitledProductEntitlement(
-			entitlements, productName);
+			entitlements, keyType, productName);
 
 		if (entitlement == null) {
 			throw new LicenseKeyEntitlementException(
@@ -122,13 +122,7 @@ public class LicenseKeyGenerationService {
 
 		Date startDate = calendar.getTime();
 
-		calendar.add(
-			Calendar.DATE,
-			_getDurationDays(
-				entitlement,
-				LicenseKeyGenerationConstants.DEVELOPER_DURATION_DAYS));
-
-		Date expirationDate = calendar.getTime();
+		Date expirationDate = _getExpirationDate(entitlement, startDate);
 
 		List<String> licenseXMLs = new ArrayList<>();
 
@@ -458,11 +452,16 @@ public class LicenseKeyGenerationService {
 	}
 
 	private Entitlement _fetchEntitledProductEntitlement(
-			List<Entitlement> entitlements, String productName)
+			List<Entitlement> entitlements, String keyType, String productName)
 		throws Exception {
 
 		for (Entitlement entitlement : entitlements) {
-			if (!_licenseKeyGenerateFormService.grantsLicense(entitlement)) {
+			if (!_licenseKeyGenerateFormService.grantsLicense(entitlement) ||
+				!Objects.equals(
+					keyType,
+					LicenseKeyGenerateFormService.getLicenseKeyType(
+						entitlement))) {
+
 				continue;
 			}
 
@@ -573,13 +572,26 @@ public class LicenseKeyGenerationService {
 
 			startDate = calendar.getTime();
 
+			Date subscriptionEndDate = expirationDate;
+
+			if ((subscriptionEndDate != null) &&
+				!startDate.before(subscriptionEndDate)) {
+
+				throw new LicenseKeyDateException(
+					"The start date must be before the subscription end date");
+			}
+
 			calendar.add(
 				Calendar.DATE,
-				_getDurationDays(
-					subscriptionEntitlement,
-					LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS));
+				_getComplimentaryDurationDays(subscriptionEntitlement));
 
 			expirationDate = calendar.getTime();
+
+			if ((subscriptionEndDate != null) &&
+				expirationDate.after(subscriptionEndDate)) {
+
+				expirationDate = subscriptionEndDate;
+			}
 
 			if (!expirationDate.after(new Date())) {
 				throw new LicenseKeyDateException(
@@ -676,6 +688,18 @@ public class LicenseKeyGenerationService {
 		return bundleEntitlements;
 	}
 
+	private int _getComplimentaryDurationDays(Entitlement entitlement) {
+		int licenseKeyDurationDays =
+			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
+				entitlement);
+
+		if (licenseKeyDurationDays > 0) {
+			return licenseKeyDurationDays;
+		}
+
+		return LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS;
+	}
+
 	private Set<String> _getDeveloperBundleProductNames(
 			List<Long> bundleEntitlementIds, List<Entitlement> entitlements,
 			String productName, String version)
@@ -749,22 +773,35 @@ public class LicenseKeyGenerationService {
 		return "Developer";
 	}
 
-	private int _getDurationDays(Entitlement entitlement, int defaultDays) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return defaultDays;
-		}
+	private Date _getExpirationDate(Entitlement entitlement, Date startDate)
+		throws Exception {
 
 		int licenseKeyDurationDays =
-			entitlementDefinition.getLicenseKeyDurationDays();
+			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
+				entitlement);
 
-		if (licenseKeyDurationDays <= 0) {
-			return defaultDays;
+		if (licenseKeyDurationDays > 0) {
+			Calendar calendar = Calendar.getInstance(
+				TimeZone.getTimeZone("UTC"));
+
+			calendar.setTime(startDate);
+
+			calendar.add(Calendar.DATE, licenseKeyDurationDays);
+
+			return calendar.getTime();
 		}
 
-		return licenseKeyDurationDays;
+		Instant endDateInstant = entitlement.getEndDateInstant();
+
+		if (endDateInstant == null) {
+			throw new LicenseKeyEntitlementException(
+				StringBundler.concat(
+					"Entitlement ", entitlement.getName(),
+					" has no end date or license key duration, so no key can ",
+					"be generated for it"));
+		}
+
+		return Date.from(endDateInstant);
 	}
 
 	private Map<Long, LicensedProduct> _getLicensedProducts(

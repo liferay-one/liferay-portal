@@ -8,11 +8,14 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.ProductSpecificationConstants;
+import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.CommerceSkuUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -175,7 +178,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 	}
 
 	private void _addEntitlementDefinition(
-			String name, String skuExternalReferenceCode)
+			String name, String skuExternalReferenceCode, boolean trial)
 		throws Exception {
 
 		JSONObject entitlementDefinitionJSONObject = new JSONObject(
@@ -190,6 +193,11 @@ public class EntitlementDefinitionService extends OneBaseService {
 		).put(
 			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
+
+		if (trial) {
+			entitlementDefinitionJSONObject.put(
+				"licenseKeyDurationDays", _TRIAL_LICENSE_KEY_DURATION_DAYS);
+		}
 
 		put(
 			getAuthorization(), entitlementDefinitionJSONObject.toString(),
@@ -273,6 +281,14 @@ public class EntitlementDefinitionService extends OneBaseService {
 		return false;
 	}
 
+	private boolean _isTrial(Sku sku) {
+		return StringUtil.equalsIgnoreCase(
+			CommerceOrderUtil.getSkuOptionValue(
+				SkuOptionConstants.KEY_SUFFIX_LICENSE_USAGE_TYPE,
+				sku.getSkuOptions()),
+			"trial");
+	}
+
 	private boolean _matches(
 		Map<String, String> entitlementDefinitionProductOptions,
 		Map<String, String> productOptions) {
@@ -336,6 +352,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 		}
 
 		boolean published = Boolean.TRUE.equals(sku.getPublished());
+		boolean trial = _isTrial(sku);
 
 		if (generatedEntitlementDefinition == null) {
 			if (!published) {
@@ -354,7 +371,7 @@ public class EntitlementDefinitionService extends OneBaseService {
 				return;
 			}
 
-			_addEntitlementDefinition(name, skuExternalReferenceCode);
+			_addEntitlementDefinition(name, skuExternalReferenceCode, trial);
 		}
 		else if (published && !generatedEntitlementDefinition.isActive()) {
 			_patchEntitlementDefinition(
@@ -391,7 +408,30 @@ public class EntitlementDefinitionService extends OneBaseService {
 						skuExternalReferenceCode));
 			}
 		}
+		else if (trial &&
+				 (generatedEntitlementDefinition.getLicenseKeyDurationDays() ==
+					 0)) {
+
+			_patchEntitlementDefinition(
+				new JSONObject(
+				).put(
+					"licenseKeyDurationDays", _TRIAL_LICENSE_KEY_DURATION_DAYS
+				),
+				skuExternalReferenceCode);
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Set the license key duration of the entitlement ",
+						"definition \"",
+						generatedEntitlementDefinition.getName(), "\" for SKU ",
+						skuExternalReferenceCode, " to ",
+						_TRIAL_LICENSE_KEY_DURATION_DAYS, " days"));
+			}
+		}
 	}
+
+	private static final int _TRIAL_LICENSE_KEY_DURATION_DAYS = 30;
 
 	private static final Log _log = LogFactory.getLog(
 		EntitlementDefinitionService.class);
