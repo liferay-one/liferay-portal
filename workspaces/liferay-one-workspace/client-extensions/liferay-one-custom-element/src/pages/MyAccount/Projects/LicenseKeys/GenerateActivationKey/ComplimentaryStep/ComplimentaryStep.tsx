@@ -11,6 +11,7 @@ import DatePicker from '~/components/DatePicker/DatePicker';
 import {Input} from '~/components/Input/Input';
 import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import {translate} from '~/i18n';
+import {GenerateForm} from '~/services/spring-boot/ActivationKeys';
 import {parseUTCDateString, toUTCDateString} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
@@ -20,6 +21,7 @@ import {GenerateActivationKeyForm} from '../types';
 import {
 	COMPLIMENTARY_PURPOSE_MAX_LENGTH,
 	COMPLIMENTARY_PURPOSE_OTHER,
+	getComplimentaryDescription,
 	getComplimentaryPurpose,
 } from '../utils';
 
@@ -28,6 +30,7 @@ const START_DATE_DAYS_LIMIT = 29;
 
 type ComplimentaryStepProps = {
 	form: UseFormReturn<GenerateActivationKeyForm>;
+	generateForm: GenerateForm;
 	onClickBack: () => void;
 	onClickCancel: () => void;
 	onClickContinue: () => void;
@@ -36,6 +39,7 @@ type ComplimentaryStepProps = {
 
 export default function ComplimentaryStep({
 	form,
+	generateForm,
 	onClickBack,
 	onClickCancel,
 	onClickContinue,
@@ -49,9 +53,23 @@ export default function ComplimentaryStep({
 
 	const listTypeEntries = useMemo(() => data?.listTypeEntries ?? [], [data]);
 
+	const keyType = watch('keyType');
+	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const purpose = watch('purpose');
 	const purposeDescription = watch('purposeDescription');
 	const startDate = watch('startDate');
+	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
+
+	const selectedSubscription = generateForm.products
+		.find(
+			(product) =>
+				product.externalReferenceCode === productExternalReferenceCode
+		)
+		?.keyTypes.find((current) => current.key === keyType)
+		?.subscriptions.find(
+			(subscription) =>
+				subscription.entitlementId === subscriptionEntitlementId
+		);
 
 	const now = new Date();
 
@@ -65,6 +83,15 @@ export default function ComplimentaryStep({
 		validStartDate &&
 		startDate < format(subDays(now, START_DATE_DAYS_LIMIT), 'yyyy-MM-dd');
 
+	const subscriptionEndDate = selectedSubscription?.endDate
+		? toUTCDateString(new Date(selectedSubscription.endDate))
+		: undefined;
+
+	const subscriptionEndReached =
+		validStartDate &&
+		subscriptionEndDate !== undefined &&
+		startDate >= subscriptionEndDate;
+
 	let startDateError: string | undefined;
 
 	if (!validStartDate) {
@@ -75,12 +102,18 @@ export default function ComplimentaryStep({
 			'the-start-date-must-be-less-than-30-days-ago'
 		);
 	}
+	else if (subscriptionEndReached) {
+		startDateError = translate(
+			'the-start-date-must-be-before-the-subscription-end-date'
+		);
+	}
 
 	const canContinue = Boolean(
 		confirmationTerms &&
 			getComplimentaryPurpose(purpose, purposeDescription) &&
 			validStartDate &&
-			!dateLimitExceeded
+			!dateLimitExceeded &&
+			!subscriptionEndReached
 	);
 
 	useEffect(() => {
@@ -95,11 +128,9 @@ export default function ComplimentaryStep({
 
 			<h2 className="h4">{translate('complimentary')}</h2>
 
-			<p>
-				{translate(
-					'you-can-use-this-option-to-generate-complimentary-activation-keys-with-a-duration-of-30-days'
-				)}
-			</p>
+			{selectedSubscription && (
+				<p>{getComplimentaryDescription(selectedSubscription)}</p>
+			)}
 
 			<Controller
 				control={control}

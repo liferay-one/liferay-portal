@@ -18,8 +18,6 @@ public class LicenseKeyGenerationConstants {
 
 	public static final int COMPLIMENTARY_PURPOSE_MAX_LENGTH = 255;
 
-	public static final int DEVELOPER_DURATION_DAYS = 365;
-
 	public static final int DEVELOPER_MAJOR_VERSION_COUNT = 2;
 
 	public static final String ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION =

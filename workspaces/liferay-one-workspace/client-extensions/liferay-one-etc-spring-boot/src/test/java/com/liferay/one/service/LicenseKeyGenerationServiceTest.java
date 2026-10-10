@@ -6,7 +6,6 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
-import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
@@ -22,6 +21,8 @@ import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.lang.reflect.Method;
+
+import java.time.Instant;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -359,6 +360,77 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryDoesNotOutliveTheSubscription()
+		throws Exception {
+
+		Date endDate = _toDateDaysFromNow(10);
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(
+				1L, 1.0, "complimentary", 45,
+				endDate.toInstant(
+				).toString()));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		Assertions.assertEquals(
+			Collections.singletonList(endDate),
+			_getInvocationArguments(
+				_activationKeyService, "addActivationKey", 2));
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryExpiresAfterTheDefinitionDuration()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(
+				1L, 1.0, "complimentary", 45,
+				_toDateDaysFromNow(
+					90
+				).toInstant(
+				).toString()));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(45), _getComplimentaryTermMillis());
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryFallsBackToThirtyDaysWithoutADuration()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(
+				1L, 1.0, "complimentary", 0,
+				_toDateDaysFromNow(
+					90
+				).toInstant(
+				).toString()));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(30), _getComplimentaryTermMillis());
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryIsFlaggedAndTimeBoxed()
 		throws Exception {
 
@@ -397,8 +469,7 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertTrue(startDate.getTime() >= (before - 1000));
 
 		Assertions.assertEquals(
-			TimeUnit.DAYS.toMillis(
-				LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS),
+			TimeUnit.DAYS.toMillis(30),
 			expirationDate.getTime() - startDate.getTime());
 	}
 
@@ -426,6 +497,77 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			Collections.singletonList("Sizing 4"),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 14));
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryKeepsTheIssuedTermWhenTheDefinitionChanges()
+		throws Exception {
+
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		List<Object> issuedStartDates = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 34);
+		List<Object> issuedExpirationDates = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 12);
+		List<Object> issuedXMLs = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 15);
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(1L, 1.0, "complimentary", 45, null));
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		List<Object> startDates = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 34);
+		List<Object> expirationDates = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 12);
+		List<Object> xmls = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 15);
+
+		Date firstExpirationDate = (Date)expirationDates.get(0);
+		Date firstStartDate = (Date)startDates.get(0);
+		Date secondExpirationDate = (Date)expirationDates.get(1);
+		Date secondStartDate = (Date)startDates.get(1);
+
+		Assertions.assertEquals(2, startDates.size());
+		Assertions.assertEquals(issuedStartDates.get(0), firstStartDate);
+		Assertions.assertEquals(
+			issuedExpirationDates.get(0), firstExpirationDate);
+		Assertions.assertEquals(issuedXMLs.get(0), xmls.get(0));
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(30),
+			firstExpirationDate.getTime() - firstStartDate.getTime());
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(45),
+			secondExpirationDate.getTime() - secondStartDate.getTime());
+
+		Mockito.verify(
+			_activationKeyService, Mockito.never()
+		).updateActivationKeyActive(
+			Mockito.anyLong(), Mockito.anyBoolean()
+		);
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKey(
+			Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.anyLong()
+		);
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
+		);
 	}
 
 	@Test
@@ -491,6 +633,66 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			"A complimentary key covers exactly one server",
 			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAStartDateAfterTheSubscriptionEnd()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(
+				1L, 1.0, "complimentary", 0,
+				_toDateDaysFromNow(
+					60
+				).toInstant(
+				).toString()));
+
+		_stubLicensedProducts();
+
+		LicenseKeyDateException licenseKeyDateException =
+			Assertions.assertThrows(
+				LicenseKeyDateException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(
+						"Load testing", 1, _toDateDaysFromNow(90))));
+
+		Assertions.assertEquals(
+			"The start date must be before the subscription end date",
+			licenseKeyDateException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAStartDateOnTheSubscriptionEnd()
+		throws Exception {
+
+		Date endDate = _toDateDaysFromNow(60);
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(
+				1L, 1.0, "complimentary", 0,
+				endDate.toInstant(
+				).toString()));
+
+		_stubLicensedProducts();
+
+		LicenseKeyDateException licenseKeyDateException =
+			Assertions.assertThrows(
+				LicenseKeyDateException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(
+						"Load testing", 1, endDate)));
+
+		Assertions.assertEquals(
+			"The start date must be before the subscription end date",
+			licenseKeyDateException.getMessage());
 
 		_verifyNoActivationKeyAdded();
 
@@ -599,8 +801,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(requestedStartDate, startDate);
 		Assertions.assertEquals(
-			TimeUnit.DAYS.toMillis(
-				LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS),
+			TimeUnit.DAYS.toMillis(30),
 			expirationDate.getTime() - startDate.getTime());
 	}
 
@@ -1040,7 +1241,7 @@ public class LicenseKeyGenerationServiceTest {
 		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
 			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
 
 		_stubLicensedProducts();
@@ -1108,10 +1309,53 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLExpiresWithTheEntitlement()
+		throws Exception {
+
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
+
+		Assertions.assertEquals(
+			Collections.singletonList(
+				Date.from(Instant.parse("2027-08-09T00:00:00Z"))),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 21));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAProductWithoutAnEntitlementOfTheKeyType()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toComplimentaryEntitlement(2L, 1.0));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Collections.emptyList(), "developer", "DXP", _toProject(),
+					"7.4"));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).contains(
+				"not entitled to DXP"
+			));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerator);
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLRejectsAnAddOnNotEntitled()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP"));
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
 
 		_stubLicensedProducts();
 
@@ -1134,7 +1378,7 @@ public class LicenseKeyGenerationServiceTest {
 		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
 			_toEntitlement(2L, 1.0, "PRDCT-SEARCH"));
 
 		_stubLicensedProducts();
@@ -1156,11 +1400,35 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnEntitlementWithoutAnEndDate()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 1.0, "PRDCT-DXP", 0, null, "developer"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Collections.emptyList(), "developer", "DXP", _toProject(),
+					"7.4"));
+
+		Assertions.assertEquals(
+			"Entitlement Entitlement 1 has no end date or license key " +
+				"duration, so no key can be generated for it",
+			licenseKeyEntitlementException.getMessage());
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerator);
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLRejectsAnotherLeadingProduct()
 		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlement(1L, 1.0, "PRDCT-DXP"),
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
 			_toEntitlement(2L, 1.0, "PRDCT-PORTAL"));
 
 		_stubLicensedProducts();
@@ -1192,7 +1460,9 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateDeveloperLicenseXMLTakesItsTermFromTheDefinition()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlement(1L, 1.0, "PRDCT-DXP", 90));
+		_stubEntitlements(
+			_toEntitlement(
+				1L, 1.0, "PRDCT-DXP", 90, "2027-08-09T00:00:00Z", "developer"));
 
 		_stubLicensedProducts();
 
@@ -1223,6 +1493,60 @@ public class LicenseKeyGenerationServiceTest {
 			90,
 			TimeUnit.MILLISECONDS.toDays(
 				expirationDate.getTime() - startDate.getTime()));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLUsesTheDeveloperClusterEntitlement()
+		throws Exception {
+
+		_stubEntitlements(
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
+			_toEntitlement(
+				2L, 1.0, "PRDCT-DXP", 45, "2027-08-09T00:00:00Z",
+				"developer-cluster"));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer-cluster", "DXP", _toProject(),
+			"7.4");
+
+		Date startDate = (Date)_getInvocationArguments(
+			_licenseKeyGenerator, "generateKey", 20
+		).get(
+			0
+		);
+		Date expirationDate = (Date)_getInvocationArguments(
+			_licenseKeyGenerator, "generateKey", 21
+		).get(
+			0
+		);
+
+		Assertions.assertEquals(
+			TimeUnit.DAYS.toMillis(45),
+			expirationDate.getTime() - startDate.getTime());
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLUsesTheEntitlementOfTheKeyType()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(
+				1L, 1.0, "PRDCT-DXP", 30, "2027-08-09T00:00:00Z",
+				"complimentary"),
+			_toEntitlement(
+				2L, 1.0, "PRDCT-DXP", 0, "2027-03-31T00:00:00Z", "developer"));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
+
+		Assertions.assertEquals(
+			Collections.singletonList(
+				Date.from(Instant.parse("2027-03-31T00:00:00Z"))),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 21));
 	}
 
 	@Test
@@ -1269,6 +1593,21 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"not entitled to DXP"
 			));
+	}
+
+	private long _getComplimentaryTermMillis() {
+		Date expirationDate = (Date)_getInvocationArguments(
+			_activationKeyService, "addActivationKey", 2
+		).get(
+			0
+		);
+		Date startDate = (Date)_getInvocationArguments(
+			_activationKeyService, "addActivationKey", 4
+		).get(
+			0
+		);
+
+		return expirationDate.getTime() - startDate.getTime();
 	}
 
 	private List<Object> _getInvocationArguments(
@@ -1439,7 +1778,7 @@ public class LicenseKeyGenerationServiceTest {
 		long entitlementId, Double maxQuantity) {
 
 		return _toEntitlementOfKeyType(
-			entitlementId, maxQuantity, "complimentary");
+			entitlementId, maxQuantity, "complimentary", 30, null);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest
@@ -1466,6 +1805,20 @@ public class LicenseKeyGenerationServiceTest {
 				TimeUnit.DAYS.toMillis(days));
 	}
 
+	private Date _toDateDaysFromNow(int days) {
+		return new Date(
+			(System.currentTimeMillis() / 1000 * 1000) +
+				TimeUnit.DAYS.toMillis(days));
+	}
+
+	private Entitlement _toDeveloperEntitlement(
+		long entitlementId, String skuExternalReferenceCode) {
+
+		return _toEntitlement(
+			entitlementId, 1.0, skuExternalReferenceCode, 0,
+			"2027-08-09T00:00:00Z", "developer");
+	}
+
 	private Entitlement _toEntitlement(long entitlementId, Double maxQuantity) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -1486,32 +1839,44 @@ public class LicenseKeyGenerationServiceTest {
 		String skuExternalReferenceCode) {
 
 		return _toEntitlement(
-			entitlementId, maxQuantity, skuExternalReferenceCode, 0);
+			entitlementId, maxQuantity, skuExternalReferenceCode, 0,
+			"2027-08-09T00:00:00Z", null);
 	}
 
 	private Entitlement _toEntitlement(
 		long entitlementId, Double maxQuantity, String skuExternalReferenceCode,
-		int licenseKeyDurationDays) {
+		int licenseKeyDurationDays, String endDate, String licenseKeyType) {
+
+		JSONObject entitlementDefinitionJSONObject = new JSONObject(
+		).put(
+			"id", entitlementId
+		).put(
+			"licenseKeyDurationDays", licenseKeyDurationDays
+		).put(
+			"licenseKeyFamily",
+			_licenseKeyFamilies.get(skuExternalReferenceCode)
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
+		);
+
+		if (licenseKeyType != null) {
+			entitlementDefinitionJSONObject.put(
+				"licenseKeyType", licenseKeyType);
+		}
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"entitlementDefinitionToEntitlement",
-			new JSONObject(
-			).put(
-				"id", entitlementId
-			).put(
-				"licenseKeyDurationDays", licenseKeyDurationDays
-			).put(
-				"licenseKeyFamily",
-				_licenseKeyFamilies.get(skuExternalReferenceCode)
-			).put(
-				"skuExternalReferenceCode", skuExternalReferenceCode
-			)
+			entitlementDefinitionJSONObject
 		).put(
 			"id", entitlementId
 		).put(
 			"name", "Entitlement " + entitlementId
 		);
+
+		if (endDate != null) {
+			jsonObject.put("endDate", endDate);
+		}
 
 		if (maxQuantity != null) {
 			jsonObject.put("maxQuantity", maxQuantity);
@@ -1523,12 +1888,22 @@ public class LicenseKeyGenerationServiceTest {
 	private Entitlement _toEntitlementOfKeyType(
 		long entitlementId, Double maxQuantity, String licenseKeyType) {
 
+		return _toEntitlementOfKeyType(
+			entitlementId, maxQuantity, licenseKeyType, 0, null);
+	}
+
+	private Entitlement _toEntitlementOfKeyType(
+		long entitlementId, Double maxQuantity, String licenseKeyType,
+		int licenseKeyDurationDays, String endDate) {
+
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"entitlementDefinitionToEntitlement",
 			new JSONObject(
 			).put(
 				"id", entitlementId
+			).put(
+				"licenseKeyDurationDays", licenseKeyDurationDays
 			).put(
 				"licenseKeyType", licenseKeyType
 			)
@@ -1537,6 +1912,10 @@ public class LicenseKeyGenerationServiceTest {
 		).put(
 			"name", "Entitlement " + entitlementId
 		);
+
+		if (endDate != null) {
+			jsonObject.put("endDate", endDate);
+		}
 
 		if (maxQuantity != null) {
 			jsonObject.put("maxQuantity", maxQuantity);

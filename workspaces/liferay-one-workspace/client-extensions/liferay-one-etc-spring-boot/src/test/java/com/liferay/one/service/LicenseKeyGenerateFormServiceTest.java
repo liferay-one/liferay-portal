@@ -293,6 +293,40 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesCarriesTheLicenseKeyDuration() {
+		Entitlement entitlement = new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", 1L
+				).put(
+					"licenseKeyDurationDays", 30
+				)
+			).put(
+				"id", 1L
+			).put(
+				"maxQuantity", 1.0
+			));
+
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, entitlement, false);
+
+		Assertions.assertEquals(
+			30,
+			jsonArray.getJSONObject(
+				0
+			).getJSONArray(
+				"subscriptions"
+			).getJSONObject(
+				0
+			).getInt(
+				"licenseKeyDurationDays"
+			));
+	}
+
+	@Test
 	public void testGetKeyTypesKeepsASpentKeyType() {
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
@@ -361,6 +395,8 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertEquals(
 			1, subscriptionJSONObject.getInt("availableCount"));
+		Assertions.assertEquals(
+			0, subscriptionJSONObject.getInt("licenseKeyDurationDays"));
 		Assertions.assertEquals(1, subscriptionJSONObject.getInt("totalCount"));
 	}
 
@@ -612,6 +648,15 @@ public class LicenseKeyGenerateFormServiceTest {
 	private JSONArray _getComplimentaryKeyTypesJSONArray(
 		boolean allowComplimentary, boolean hasComplimentaryActivationKey) {
 
+		return _getComplimentaryKeyTypesJSONArray(
+			allowComplimentary, _toEntitlement(1.0),
+			hasComplimentaryActivationKey);
+	}
+
+	private JSONArray _getComplimentaryKeyTypesJSONArray(
+		boolean allowComplimentary, Entitlement entitlement,
+		boolean hasComplimentaryActivationKey) {
+
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
 
@@ -635,7 +680,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			HashMapBuilder.<String, Map<String, Entitlement>>put(
 				"DXP",
 				(Map<String, Entitlement>)HashMapBuilder.put(
-					"complimentary", _toEntitlement(1.0)
+					"complimentary", entitlement
 				).build()
 			).build(),
 			Collections.emptyList());

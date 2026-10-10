@@ -1692,6 +1692,8 @@ export default {
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
 	'the-start-and-end-dates-must-be-different':
 		'The start and end dates must be different.',
+	'the-start-date-must-be-before-the-subscription-end-date':
+		'The start date must be before the subscription end date.',
 	'the-start-date-must-be-earlier-than-the-end-date':
 		'The start date must be earlier than the end date.',
 	'the-start-date-must-be-less-than-30-days-ago':
@@ -1737,8 +1739,8 @@ export default {
 	'this-is-the-first-version-of-the-app-to-be-published':
 		'This is the first version of the app to be published.',
 	'this-key-can-be-generated-once': 'This key can be generated once.',
-	'this-key-expires-after-x-days':
-		'This key expires {0} days after generation.',
+	'this-key-expires-x-days-after-its-start-date-or-when-the-subscription-ends-if-that-is-earlier':
+		'This key expires {0} days after its start date, or when the subscription ends if that is earlier.',
 	'this-key-is-expired-and-cannot-be-downloaded':
 		'This key is expired and cannot be downloaded.',
 	'this-key-is-not-tied-to-a-subscription-and-is-intended-for-temporary-access-only':
@@ -2029,8 +2031,8 @@ export default {
 		'You can upload one or many ZIP files. Max total size is 500MB.',
 	'you-can-use-this-option-to-generate-activation-keys-with-a-selected-contract-term':
 		'You can use this option to generate Activation Keys with a selected contract term.',
-	'you-can-use-this-option-to-generate-complimentary-activation-keys-with-a-duration-of-30-days':
-		'You can use this option to generate Complimentary Activation Keys with a duration of 30 days.',
+	'you-can-use-this-option-to-generate-complimentary-activation-keys-that-expire-x-days-after-their-start-date-or-when-the-subscription-ends-if-that-is-earlier':
+		'You can use this option to generate Complimentary Activation Keys that expire {0} days after their start date, or when the subscription ends if that is earlier.',
 	'you-can-view-your-app-in-cloud-console-or-go-back-to-my-apps':
 		'You can view your app in Cloud Console or go back to My Apps.',
 	'you-cannot-upload-more-than-x-files':
