@@ -5,18 +5,22 @@
 
 import {useDataQuery} from '~/hooks/useDataQuery';
 import ActivationKeys, {
+	ActivationKeyScope,
 	ActivationKeySummary,
 } from '~/services/spring-boot/ActivationKeys';
 
 export function useActivationKeySummary(
-	projectExternalReferenceCode: string,
+	scope?: ActivationKeyScope,
 	enabled = true
 ) {
 	const {data, error, isLoading} = useDataQuery<ActivationKeySummary>({
-		fetcher: () => ActivationKeys.getSummary(projectExternalReferenceCode),
+		fetcher: () =>
+			scope
+				? ActivationKeys.getSummary(scope)
+				: Promise.reject(new Error('No activation key scope')),
 		key:
-			enabled && projectExternalReferenceCode
-				? `/activation-keys/summary/${projectExternalReferenceCode}`
+			enabled && scope
+				? `/activation-keys/summary?${new URLSearchParams(scope)}`
 				: null,
 	});
 

@@ -26,13 +26,17 @@ function deferred<T>() {
 	return {promise, resolve};
 }
 
+const PROJECT_1 = {projectExternalReferenceCode: 'PRJCT-1'};
+
+const PROJECT_2 = {projectExternalReferenceCode: 'PRJCT-2'};
+
 describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATEACTIVATIONKEYFORM] useGenerateActivationKeyForm', () => {
 	beforeEach(() => {
 		mocks.getGenerateForm.mockReset();
 	});
 
-	it('sets the error and stops loading without a project external reference code', () => {
-		const {result} = renderHook(() => useGenerateActivationKeyForm(''));
+	it('sets the error and stops loading without a scope', () => {
+		const {result} = renderHook(() => useGenerateActivationKeyForm());
 
 		expect(result.current).toEqual({
 			error: true,
@@ -46,14 +50,14 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		mocks.getGenerateForm.mockResolvedValue({products: []});
 
 		const {result} = renderHook(() =>
-			useGenerateActivationKeyForm('PRJCT-1', 'KEY-1')
+			useGenerateActivationKeyForm(PROJECT_1, 'KEY-1')
 		);
 
 		expect(result.current.loading).toBe(true);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
-		expect(mocks.getGenerateForm).toHaveBeenCalledWith('PRJCT-1', 'KEY-1');
+		expect(mocks.getGenerateForm).toHaveBeenCalledWith(PROJECT_1, 'KEY-1');
 		expect(result.current).toEqual({
 			error: false,
 			generateForm: {products: []},
@@ -65,13 +69,13 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		mocks.getGenerateForm.mockResolvedValue({});
 
 		const {result} = renderHook(() =>
-			useGenerateActivationKeyForm('PRJCT-1', null)
+			useGenerateActivationKeyForm(PROJECT_1, null)
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
 		expect(mocks.getGenerateForm).toHaveBeenCalledWith(
-			'PRJCT-1',
+			PROJECT_1,
 			undefined
 		);
 	});
@@ -80,13 +84,25 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		mocks.getGenerateForm.mockRejectedValue(new Error('failed'));
 
 		const {result} = renderHook(() =>
-			useGenerateActivationKeyForm('PRJCT-1')
+			useGenerateActivationKeyForm(PROJECT_1)
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
 		expect(result.current.error).toBe(true);
 		expect(result.current.generateForm).toBeUndefined();
+	});
+
+	it('loads the generate form of the account', async () => {
+		mocks.getGenerateForm.mockResolvedValue({products: []});
+
+		const scope = {accountExternalReferenceCode: 'ACCNT-1'};
+
+		const {result} = renderHook(() => useGenerateActivationKeyForm(scope));
+
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(mocks.getGenerateForm).toHaveBeenCalledWith(scope, undefined);
 	});
 
 	it('ignores a late result after the argument changes', async () => {
@@ -98,12 +114,11 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 			.mockReturnValueOnce(second.promise);
 
 		const {rerender, result} = renderHook(
-			({projectExternalReferenceCode}) =>
-				useGenerateActivationKeyForm(projectExternalReferenceCode),
-			{initialProps: {projectExternalReferenceCode: 'PRJCT-1'}}
+			({scope}) => useGenerateActivationKeyForm(scope),
+			{initialProps: {scope: PROJECT_1}}
 		);
 
-		rerender({projectExternalReferenceCode: 'PRJCT-2'});
+		rerender({scope: PROJECT_2});
 
 		await act(async () => {
 			second.resolve({name: 'second'});

@@ -51,6 +51,10 @@ export type GenerateForm = {
 	products: GenerateFormProduct[];
 };
 
+export type ActivationKeyScope =
+	| {accountExternalReferenceCode: string}
+	| {projectExternalReferenceCode: string};
+
 export type ActivationKeySummaryKeyType = {
 	endDate?: string;
 	key: string;
@@ -68,13 +72,12 @@ export type GenerateServer = {
 	macAddresses: string;
 };
 
-export type GenerateActivationKeyRequest = {
+export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	bundleEntitlementIds: number[];
 	dataCenterLocation?: string;
 	description?: string;
 	environmentName: string;
 	keyType: string;
-	projectExternalReferenceCode: string;
 	purpose?: string;
 	renewedActivationKeyExternalReferenceCode?: string;
 	servers: GenerateServer[];
@@ -111,12 +114,10 @@ class ActivationKeysOAuth2 extends OneSpringBootOAuth2 {
 	}
 
 	getGenerateForm(
-		projectExternalReferenceCode: string,
+		scope: ActivationKeyScope,
 		renewedActivationKeyExternalReferenceCode?: string
 	): Promise<GenerateForm> {
-		const searchParams = new URLSearchParams({
-			projectExternalReferenceCode,
-		});
+		const searchParams = new URLSearchParams(scope);
 
 		if (renewedActivationKeyExternalReferenceCode) {
 			searchParams.set(
@@ -128,12 +129,8 @@ class ActivationKeysOAuth2 extends OneSpringBootOAuth2 {
 		return this.get<GenerateForm>(`/generate-form?${searchParams}`);
 	}
 
-	getSummary(
-		projectExternalReferenceCode: string
-	): Promise<ActivationKeySummary> {
-		const searchParams = new URLSearchParams({
-			projectExternalReferenceCode,
-		});
+	getSummary(scope: ActivationKeyScope): Promise<ActivationKeySummary> {
+		const searchParams = new URLSearchParams(scope);
 
 		return this.get<ActivationKeySummary>(`/summary?${searchParams}`);
 	}

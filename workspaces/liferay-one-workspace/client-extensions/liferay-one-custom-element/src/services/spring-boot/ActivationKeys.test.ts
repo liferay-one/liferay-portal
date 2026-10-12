@@ -52,12 +52,33 @@ describe('[CLIENT-SPRING-BOOT-ACTIVATIONKEYS] ActivationKeys', () => {
 			Promise.resolve(jsonResponse({bundleProducts: [], products: []}))
 		);
 
-		await ActivationKeys.getGenerateForm('PRJCT-1');
-		await ActivationKeys.getGenerateForm('PRJCT-1', 'KEY-9');
+		await ActivationKeys.getGenerateForm({
+			projectExternalReferenceCode: 'PRJCT-1',
+		});
+		await ActivationKeys.getGenerateForm(
+			{projectExternalReferenceCode: 'PRJCT-1'},
+			'KEY-9'
+		);
 
 		expect(oAuth2Fetch.mock.calls.map(([resource]) => resource)).toEqual([
 			'/activation-keys/generate-form?projectExternalReferenceCode=PRJCT-1',
 			'/activation-keys/generate-form?projectExternalReferenceCode=PRJCT-1&renewedActivationKeyExternalReferenceCode=KEY-9',
+		]);
+	});
+
+	it('scopes the generate form and the summary by the account', async () => {
+		oAuth2Fetch.mockImplementation(() => Promise.resolve(jsonResponse({})));
+
+		await ActivationKeys.getGenerateForm({
+			accountExternalReferenceCode: 'ACCNT-1',
+		});
+		await ActivationKeys.getSummary({
+			accountExternalReferenceCode: 'ACCNT-1',
+		});
+
+		expect(oAuth2Fetch.mock.calls.map(([resource]) => resource)).toEqual([
+			'/activation-keys/generate-form?accountExternalReferenceCode=ACCNT-1',
+			'/activation-keys/summary?accountExternalReferenceCode=ACCNT-1',
 		]);
 	});
 
@@ -95,7 +116,9 @@ describe('[CLIENT-SPRING-BOOT-ACTIVATIONKEYS] ActivationKeys', () => {
 		await ActivationKeys.generateActivationKey({
 			environmentName: 'prod',
 		} as Parameters<typeof ActivationKeys.generateActivationKey>[0]);
-		await ActivationKeys.getSummary('PRJCT-1');
+		await ActivationKeys.getSummary({
+			projectExternalReferenceCode: 'PRJCT-1',
+		});
 		await ActivationKeys.subscribe('8');
 		await ActivationKeys.unsubscribe('9');
 

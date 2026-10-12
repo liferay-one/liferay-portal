@@ -16,6 +16,7 @@ import {ipv4Regex, macAddressRegex} from '~/utils/schemaUtils';
 import type {
 	GenerateActivationKeyServer,
 	GenerateActivationKeyServerField,
+	GenerateActivationKeyStep,
 } from './types';
 
 const DEVELOPER_KEY_TYPES = ['developer', 'developer-cluster'];
@@ -120,6 +121,52 @@ export function getComplimentaryPurpose(
 	return purpose === COMPLIMENTARY_PURPOSE_OTHER
 		? purposeDescription.trim()
 		: purpose;
+}
+
+export function getStepAfterSubscription({
+	cloudNative,
+	complimentary,
+	developer,
+	unassigned,
+}: {
+	cloudNative: boolean;
+	complimentary: boolean;
+	developer: boolean;
+	unassigned: boolean;
+}): GenerateActivationKeyStep {
+	if (complimentary) {
+		return 'complimentary';
+	}
+
+	if (unassigned) {
+		return 'environment';
+	}
+
+	if (!cloudNative || developer) {
+		return 'add-ons';
+	}
+
+	return 'activation-codes';
+}
+
+export function getStepBeforeEnvironment({
+	complimentary,
+	needsDSRStep,
+	unassigned,
+}: {
+	complimentary: boolean;
+	needsDSRStep: boolean;
+	unassigned: boolean;
+}): GenerateActivationKeyStep {
+	if (complimentary) {
+		return 'complimentary';
+	}
+
+	if (unassigned) {
+		return 'subscription';
+	}
+
+	return needsDSRStep ? 'dsr' : 'add-ons';
 }
 
 export function getGenerateButtonLabel(renewing: boolean): Word {

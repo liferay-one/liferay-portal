@@ -20,6 +20,7 @@ import i18n, {Word, translate} from '~/i18n';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 import FilterableListCard, {
 	FilterOption,
@@ -34,6 +35,7 @@ import {
 	getLicenseKeyFamilyLabel,
 } from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
+import {useActivationKeyScope} from './hooks/useActivationKeyScope';
 import {useActivationKeySummary} from './hooks/useActivationKeySummary';
 
 import './LicenseKeys.css';
@@ -167,6 +169,7 @@ type KebabActionsProps = {
 	onReactivate: () => void;
 	onRenew: () => void;
 	onView: () => void;
+	renewable: boolean;
 	row: ProjectActivationKey;
 };
 
@@ -178,6 +181,7 @@ function KebabActions({
 	onReactivate,
 	onRenew,
 	onView,
+	renewable,
 	row,
 }: KebabActionsProps) {
 	return (
@@ -205,6 +209,7 @@ function KebabActions({
 				</ClayDropDown.Item>
 
 				{hasActivationPermission &&
+					renewable &&
 					!row.complimentary &&
 					isRenewableKey(row, admin) && (
 						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
@@ -282,10 +287,8 @@ export default function LicenseKeys() {
 		useProjectEnvironments();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
-	const {summary} = useActivationKeySummary(
-		projectId,
-		hasActivationPermission
-	);
+	const scope = useActivationKeyScope();
+	const {summary} = useActivationKeySummary(scope, hasActivationPermission);
 
 	const cloudNativeKeyTypes = useMemo(
 		() => summary?.cloudNativeKeyTypes ?? [],
@@ -424,6 +427,7 @@ export default function LicenseKeys() {
 						onReactivate={() => handleReactivate(row)}
 						onRenew={() => handleRenew(row)}
 						onView={() => navigate(row.id)}
+						renewable={!isUnassignedProject(projectId)}
 						row={row}
 					/>
 				);
