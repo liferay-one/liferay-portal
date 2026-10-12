@@ -22,9 +22,11 @@ source ../_common.sh
 # reset.
 #
 # Each entry below is "siteExternalReferenceCode virtualHostname". Keep sorted.
+# A virtual instance on the shared local server sets LIFERAY_ONE_VIRTUAL_HOST to
+# its own hostname, because two instances cannot share one.
 
 VIRTUAL_HOSTS=(
-	"LIFERAY_ONE one.localhost"
+	"LIFERAY_ONE ${LIFERAY_ONE_VIRTUAL_HOST:-one.localhost}"
 )
 
 function main {
