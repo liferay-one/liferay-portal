@@ -7,17 +7,10 @@ import {useMemo} from 'react';
 import {useActivationKeyLicenseKeys} from '~/hooks/useActivationKeyLicenseKeys';
 import {useProjectActivationKeys} from '~/hooks/useProjectActivationKeys';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
-import {
-	GenerateForm,
-	GenerateFormProduct,
-} from '~/services/spring-boot/ActivationKeys';
+import {GenerateForm} from '~/services/spring-boot/ActivationKeys';
 
 import {GenerateActivationKeyServer} from '../types';
-import {
-	getLeadingProductExternalReferenceCode,
-	getLeadingProductRank,
-	getLicenseKeyFamily,
-} from '../utils';
+import {getLicenseKeyFamilyRank} from '../utils';
 
 export type RenewSource = {
 	bundleEntitlementIds: number[];
@@ -51,18 +44,6 @@ export function useRenewSource(
 			return undefined;
 		}
 
-		const productsByExternalReferenceCode = new Map<
-			string,
-			GenerateFormProduct
-		>();
-
-		for (const product of generateForm?.products ?? []) {
-			productsByExternalReferenceCode.set(
-				product.externalReferenceCode,
-				product
-			);
-		}
-
 		const entitlementIds = new Set<number>();
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
@@ -70,23 +51,9 @@ export function useRenewSource(
 			.filter((licenseKey) => licenseKey.active)
 			.sort(
 				(a, b) =>
-					getLeadingProductRank(
-						getLeadingProductExternalReferenceCode(
-							a.licenseName,
-							a.productExternalReferenceCode
-						)
-					) -
-					getLeadingProductRank(
-						getLeadingProductExternalReferenceCode(
-							b.licenseName,
-							b.productExternalReferenceCode
-						)
-					)
+					getLicenseKeyFamilyRank(a.licenseKeyFamily) -
+					getLicenseKeyFamilyRank(b.licenseKeyFamily)
 			);
-
-		const keyType = activationKey.type;
-		let productExternalReferenceCode = '';
-		let subscriptionEntitlementId = 0;
 
 		for (const licenseKey of orderedLicenseKeys) {
 			if (licenseKey.entitlementId) {
@@ -105,45 +72,38 @@ export function useRenewSource(
 					macAddresses: licenseKey.macAddresses,
 				}
 			);
-
-			const product = productsByExternalReferenceCode.get(
-				licenseKey.productExternalReferenceCode
-			);
-
-			if (product && !productExternalReferenceCode) {
-				productExternalReferenceCode = product.externalReferenceCode;
-				subscriptionEntitlementId =
-					licenseKey.entitlementId || product.entitlementId;
-			}
 		}
 
 		const [leadingLicenseKey] = orderedLicenseKeys;
 
-		if (!productExternalReferenceCode && leadingLicenseKey) {
-			const licenseKeyFamily = getLicenseKeyFamily(
-				leadingLicenseKey.licenseName
-			);
+		const licenseKeyFamily =
+			activationKey.licenseKeyFamily ||
+			leadingLicenseKey?.licenseKeyFamily ||
+			'';
 
-			const product = licenseKeyFamily
-				? generateForm?.products.find(
-						(current) => current.label === licenseKeyFamily
-					)
-				: undefined;
+		const product = licenseKeyFamily
+			? generateForm?.products.find(
+					(current) => current.licenseKeyFamily === licenseKeyFamily
+				)
+			: undefined;
 
-			if (product) {
-				productExternalReferenceCode = product.externalReferenceCode;
-				subscriptionEntitlementId = product.entitlementId;
-			}
-		}
+		const subscriptionLicenseKey = orderedLicenseKeys.find(
+			(licenseKey) =>
+				licenseKey.entitlementId &&
+				licenseKey.licenseKeyFamily === licenseKeyFamily
+		);
 
 		return {
 			bundleEntitlementIds: [...entitlementIds],
 			description: leadingLicenseKey?.description ?? '',
 			environmentName: leadingLicenseKey?.name ?? '',
-			keyType,
-			productExternalReferenceCode,
+			keyType: activationKey.type,
+			productExternalReferenceCode: product?.externalReferenceCode ?? '',
 			servers: [...servers.values()],
-			subscriptionEntitlementId,
+			subscriptionEntitlementId:
+				subscriptionLicenseKey?.entitlementId ||
+				product?.entitlementId ||
+				0,
 			version: leadingLicenseKey?.productVersion ?? '',
 		};
 	}, [activationKey, generateForm, licenseKeys]);

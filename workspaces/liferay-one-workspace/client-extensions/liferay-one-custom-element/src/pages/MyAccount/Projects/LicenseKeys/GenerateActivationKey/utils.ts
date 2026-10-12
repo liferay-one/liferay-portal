@@ -28,8 +28,7 @@ export const CLOUD_NATIVE_ENVIRONMENT_TYPES = [
 	'non-production',
 ];
 
-export const CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE =
-	'PRDCT-CLOUD-NATIVE';
+export const CLOUD_NATIVE_LICENSE_KEY_FAMILY = 'Cloud Native';
 
 export const COMPLIMENTARY_DURATION_DAYS = 30;
 
@@ -41,34 +40,15 @@ export const COMPLIMENTARY_PURPOSE_OTHER = 'other';
 
 export const FREE_KEY_TYPE = 'free';
 
-export const LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES = [
-	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
-	'PRDCT-DXP',
-	'PRDCT-PORTAL',
-];
-
-const LEADING_PRODUCT_LABELS: Record<string, string> = {
-	[CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE]: 'Cloud Native',
-	'PRDCT-DXP': 'Liferay DXP',
-	'PRDCT-PORTAL': 'Liferay Portal',
+const LEADING_LICENSE_KEY_FAMILY_LABELS: Record<string, string> = {
+	[CLOUD_NATIVE_LICENSE_KEY_FAMILY]: 'Cloud Native',
+	DXP: 'Liferay DXP',
+	Portal: 'Liferay Portal',
 };
 
-const LICENSE_KEY_FAMILIES: {
-	licenseKeyFamily: string;
-	licenseNamePattern: RegExp;
-	productExternalReferenceCode: string;
-}[] = [
-	{
-		licenseKeyFamily: 'DXP',
-		licenseNamePattern: /^DXP /,
-		productExternalReferenceCode: 'PRDCT-DXP',
-	},
-	{
-		licenseKeyFamily: 'Portal',
-		licenseNamePattern: /^(TCAT )?Portal /,
-		productExternalReferenceCode: 'PRDCT-PORTAL',
-	},
-];
+const LEADING_LICENSE_KEY_FAMILIES = Object.keys(
+	LEADING_LICENSE_KEY_FAMILY_LABELS
+);
 
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
@@ -99,8 +79,8 @@ export function getBundleProducts(
 		(bundleProduct) =>
 			bundleProduct.externalReferenceCode ===
 				product.externalReferenceCode ||
-			!LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.includes(
-				bundleProduct.externalReferenceCode
+			!LEADING_LICENSE_KEY_FAMILIES.includes(
+				bundleProduct.licenseKeyFamily
 			)
 	);
 }
@@ -156,10 +136,8 @@ export function isLicensedForVersion(
 	);
 }
 
-export function isCloudNativeProduct(externalReferenceCode: string): boolean {
-	return (
-		externalReferenceCode === CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
-	);
+export function isCloudNativeProduct(product?: GenerateFormProduct): boolean {
+	return product?.licenseKeyFamily === CLOUD_NATIVE_LICENSE_KEY_FAMILY;
 }
 
 export function isComplimentaryKeyType(keyType: string): boolean {
@@ -231,45 +209,14 @@ export function toServerField(
 	);
 }
 
-export function getLeadingProductExternalReferenceCode(
-	licenseName: string,
-	productExternalReferenceCode: string
-): string {
-	const licenseKeyFamily = LICENSE_KEY_FAMILIES.find((current) =>
-		current.licenseNamePattern.test(licenseName)
-	);
-
-	if (licenseKeyFamily) {
-		return licenseKeyFamily.productExternalReferenceCode;
-	}
-
-	return LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.includes(
-		productExternalReferenceCode
-	)
-		? productExternalReferenceCode
-		: '';
+export function getLicenseKeyFamilyLabel(licenseKeyFamily: string): string {
+	return LEADING_LICENSE_KEY_FAMILY_LABELS[licenseKeyFamily] ?? '';
 }
 
-export function getLicenseKeyFamily(licenseName: string): string {
-	return (
-		LICENSE_KEY_FAMILIES.find((current) =>
-			current.licenseNamePattern.test(licenseName)
-		)?.licenseKeyFamily ?? ''
-	);
-}
+export function getLicenseKeyFamilyRank(licenseKeyFamily: string): number {
+	const index = LEADING_LICENSE_KEY_FAMILIES.indexOf(licenseKeyFamily);
 
-export function getLeadingProductLabel(externalReferenceCode: string): string {
-	return LEADING_PRODUCT_LABELS[externalReferenceCode] ?? '';
-}
-
-export function getLeadingProductRank(externalReferenceCode: string): number {
-	const index = LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.indexOf(
-		externalReferenceCode
-	);
-
-	return index === -1
-		? LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.length
-		: index;
+	return index === -1 ? LEADING_LICENSE_KEY_FAMILIES.length : index;
 }
 
 export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
