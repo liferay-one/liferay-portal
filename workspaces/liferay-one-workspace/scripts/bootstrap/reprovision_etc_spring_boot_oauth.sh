@@ -52,11 +52,13 @@ source ../_common.sh
 # Run this after set_virtual_hosts.sh from every orchestrator that binds a
 # virtual host: bootstrap.sh, instance_reset.sh, and site_reset.sh.
 
-CONTAINER_NAME="liferay"
+CONTAINER_NAME="${LIFERAY_CONTAINER_NAME}"
 
 DXP_DOMAINS_FILE="/opt/liferay/routes/default/dxp/com.liferay.lxc.dxp.domains"
 
 DXP_DOMAINS_FILE_ATTEMPTS=12
+
+SIDECAR_CONTAINER_NAME="${LIFERAY_SIDECAR_CONTAINER_NAME}"
 
 SIDECAR_SERVICE="liferay-one-etc-spring-boot"
 
@@ -112,12 +114,12 @@ function main {
 		# route) is visible instead of a wall of dots.
 
 		local status
-		status=$(docker inspect --format "{{.State.Status}}" "${SIDECAR_SERVICE}" 2>/dev/null || echo "missing")
+		status=$(docker inspect --format "{{.State.Status}}" "${SIDECAR_CONTAINER_NAME}" 2>/dev/null || echo "missing")
 
 		if [ "${status}" != "running" ]
 		then
 			echo "The Spring Boot client extension exited before becoming ready (status: ${status})." >&2
-			docker logs --tail 30 "${SIDECAR_SERVICE}" >&2 || true
+			docker logs --tail 30 "${SIDECAR_CONTAINER_NAME}" >&2 || true
 
 			return 1
 		fi
@@ -125,7 +127,7 @@ function main {
 		if [ "${elapsed}" -ge 120 ]
 		then
 			echo "Timed out waiting for the Spring Boot client extension." >&2
-			docker logs --tail 30 "${SIDECAR_SERVICE}" >&2 || true
+			docker logs --tail 30 "${SIDECAR_CONTAINER_NAME}" >&2 || true
 
 			return 1
 		fi

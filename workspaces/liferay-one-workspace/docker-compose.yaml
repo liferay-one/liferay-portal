@@ -1,7 +1,7 @@
 name: liferay-stack
 services:
     database:
-        container_name: database
+        container_name: ${LIFERAY_DATABASE_CONTAINER_NAME:-database}
         environment:
             POSTGRES_DB: lportal
             POSTGRES_HOST_AUTH_METHOD: trust
@@ -18,7 +18,7 @@ services:
         ports:
             -   5432:5432
     liferay:
-        container_name: liferay
+        container_name: ${LIFERAY_CONTAINER_NAME:-liferay}
         depends_on:
             database:
                 condition: service_healthy
@@ -31,7 +31,7 @@ services:
             LIFERAY_CONFIGURATION_PERIOD_OVERRIDE_PERIOD_COM_PERIOD_LIFERAY_PERIOD_MAIL_PERIOD_SETTINGS_PERIOD_CONFIGURATION_PERIOD__UPPERCASEM_AIL_UPPERCASES_ETTING_UPPERCASES_YSTEM_UPPERCASEC_ONFIGURATION_UNDERLINE_SEND_UPPERCASEB_LACKLIST: "\"\""
             LIFERAY_DISABLE_TRIAL_LICENSE: "true"
             LIFERAY_JPDA_ENABLED: "true"
-            LIFERAY_JVM_OPTS: -XX:MaxMetaspaceSize=1g -XX:MaxNewSize=2g -XX:MetaspaceSize=768m -XX:NewSize=2g -XX:SurvivorRatio=7 -Xms8g -Xmx8g
+            LIFERAY_JVM_OPTS: -XX:MaxMetaspaceSize=1g -XX:MaxNewSize=2g -XX:MetaspaceSize=768m -XX:NewSize=2g -XX:SurvivorRatio=7 -Xms${LIFERAY_HEAP_SIZE:-8g} -Xmx${LIFERAY_HEAP_SIZE:-8g}
             LIFERAY_WORKSPACE_ENVIRONMENT: local
         healthcheck:
             interval: 10s
@@ -43,9 +43,9 @@ services:
                 --silent
                 http://localhost:8080/c/portal/status
             timeout: 10s
-        image: liferay:local
-        mem_limit: 10g
-        mem_reservation: 8g
+        image: ${LIFERAY_IMAGE_TAG:-liferay:local}
+        mem_limit: ${LIFERAY_MEMORY_LIMIT:-10g}
+        mem_reservation: ${LIFERAY_MEMORY_RESERVATION:-8g}
         ports:
             -   80:8080
             -   8000:8000
@@ -58,7 +58,7 @@ services:
             -   liferay_data:/opt/liferay/data
             -   liferay_routes:/opt/liferay/routes
     liferay-one-etc-spring-boot:
-        container_name: liferay-one-etc-spring-boot
+        container_name: ${LIFERAY_SIDECAR_CONTAINER_NAME:-liferay-one-etc-spring-boot}
         depends_on:
             liferay:
                 condition: service_healthy
@@ -82,7 +82,7 @@ services:
             -   liferay_routes:/opt/liferay/routes:ro
             -   ./client-extensions/liferay-one-etc-spring-boot/scripts/wait-for-routes.sh:/usr/local/bin/liferay_jar_runner_set_up.sh:ro
     mail:
-        container_name: mail
+        container_name: ${LIFERAY_MAIL_CONTAINER_NAME:-mail}
         image: maildev/maildev
         ports:
             -   1025:1025

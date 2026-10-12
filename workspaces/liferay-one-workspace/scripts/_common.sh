@@ -82,6 +82,18 @@ fi
 
 LIFERAY_URL="${LIFERAY_URL:-http://localhost:8080}"
 
+# The Docker stack that the bootstrap and reset scripts drive. The defaults
+# match docker-compose.yaml, which reads the same variables. Set them to run a
+# second stack on one Docker daemon, or to drive a server on another machine
+# through DOCKER_HOST. LIFERAY_BOOTSTRAP_URL is separate from LIFERAY_URL on
+# purpose: the workspace .env may point LIFERAY_URL at a remote environment,
+# and a bootstrap must never seed one.
+
+LIFERAY_BOOTSTRAP_URL="${LIFERAY_BOOTSTRAP_URL:-http://localhost:8080}"
+LIFERAY_CONTAINER_NAME="${LIFERAY_CONTAINER_NAME:-liferay}"
+LIFERAY_IMAGE_TAG="${LIFERAY_IMAGE_TAG:-liferay:local}"
+LIFERAY_SIDECAR_CONTAINER_NAME="${LIFERAY_SIDECAR_CONTAINER_NAME:-liferay-one-etc-spring-boot}"
+
 LIFERAY_ADMIN_EMAIL="${LIFERAY_ADMIN_EMAIL:-test@liferay.com}"
 LIFERAY_ADMIN_PASSWORD="${LIFERAY_ADMIN_PASSWORD:-test}"
 

@@ -17,7 +17,7 @@ source ../_common.sh
 # against localhost, so it never depends on the local-dev OAuth2 application and
 # is never redirected at the remote environment the workspace .env may describe.
 
-CONTAINER_NAME="liferay"
+CONTAINER_NAME="${LIFERAY_CONTAINER_NAME}"
 
 SITE_FRIENDLY_URL_PATH="one"
 
@@ -26,7 +26,7 @@ function main {
 	export LIFERAY_ADMIN_PASSWORD=test
 	export LIFERAY_AUTH_MODE=basic
 	export LIFERAY_ENV_FILE=/dev/null
-	export LIFERAY_URL=http://localhost:8080
+	export LIFERAY_URL="${LIFERAY_BOOTSTRAP_URL}"
 
 	local container_id
 

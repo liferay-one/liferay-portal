@@ -45,7 +45,7 @@ source ../_common.sh
 
 DXP_OAUTH_APPLICATION_NAME="Marketplace DXP Connector"
 DXP_OAUTH_CLIENT_ID="${DXP_OAUTH_CLIENT_ID:-marketplace-client-id}"
-DXP_OAUTH_REDIRECT_URIS="${DXP_OAUTH_REDIRECT_URIS:-${LIFERAY_URL}/authorize http://one.localhost/authorize http://one.localhost:8080/authorize}"
+DXP_OAUTH_REDIRECT_URIS="${DXP_OAUTH_REDIRECT_URIS:-${LIFERAY_URL}/authorize http://${LIFERAY_ONE_VIRTUAL_HOST:-one.localhost}/authorize http://${LIFERAY_ONE_VIRTUAL_HOST:-one.localhost}:8080/authorize}"
 DXP_OAUTH_SCOPE_ALIASES="${DXP_OAUTH_SCOPE_ALIASES:-Liferay.Headless.Admin.User.everything.read Liferay.Headless.Commerce.Delivery.Catalog.everything.read Liferay.Headless.Commerce.Delivery.Order.everything.read}"
 
 LOGIN_PORTLET="com_liferay_login_web_portlet_LoginPortlet"

@@ -38,14 +38,25 @@ function main {
 		docker pull liferay/dxp:latest
 	fi
 
-	docker run \
+	#
+	# Stream the license through stdout rather than a bind mount, so it lands
+	# here even when DOCKER_HOST points at a daemon on another machine.
+	#
+
+	if ! docker run \
 		--entrypoint sh \
 		--rm \
-		--user root \
-		--volume "${license_dir}:/mnt/deploy" \
 		liferay/dxp:latest \
 		-c \
-		"cp /opt/liferay/osgi/modules/trial-dxp-license*.xml /mnt/deploy/license.xml 2> /dev/null || cp /opt/liferay/deploy/trial-dxp-license*.xml /mnt/deploy/license.xml"
+		"cat /opt/liferay/osgi/modules/trial-dxp-license*.xml 2> /dev/null || cat /opt/liferay/deploy/trial-dxp-license*.xml" > "${license_file}" ||
+	   [[ ! -s ${license_file} ]]
+	then
+		rm -f "${license_file}"
+
+		echo "Unable to extract the trial license from \"liferay/dxp:latest\"." >&2
+
+		return 1
+	fi
 }
 
 main "${@}"

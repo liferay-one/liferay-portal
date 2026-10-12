@@ -33,12 +33,12 @@ function main {
 	export LIFERAY_ADMIN_PASSWORD=test
 	export LIFERAY_AUTH_MODE=basic
 	export LIFERAY_ENV_FILE=/dev/null
-	export LIFERAY_URL=http://localhost:8080
+	export LIFERAY_URL="${LIFERAY_BOOTSTRAP_URL}"
 
 	if [ "${reset}" == "true" ]
 	then
 		echo "Tearing down containers and volumes."
-		docker compose --file docker-compose.yaml down --volumes
+		docker compose down --volumes
 	fi
 
 	./gradlew clean
@@ -53,14 +53,14 @@ function main {
 
 	workspace_name="$(basename "$(pwd)")"
 
-	echo "Tagging ${workspace_name}-liferay:${version_tag} as liferay:local."
-	docker tag "${workspace_name}-liferay:${version_tag}" "liferay:local"
+	echo "Tagging ${workspace_name}-liferay:${version_tag} as ${LIFERAY_IMAGE_TAG}."
+	docker tag "${workspace_name}-liferay:${version_tag}" "${LIFERAY_IMAGE_TAG}"
 
 	echo "Starting containers."
-	docker compose --file docker-compose.yaml up --detach
+	docker compose up --detach
 
 	echo "Waiting for Liferay to be healthy."
-	until curl --fail --max-time 5 --output /dev/null --silent "http://localhost:8080/c/portal/status"
+	until curl --fail --max-time 5 --output /dev/null --silent "${LIFERAY_BOOTSTRAP_URL}/c/portal/status"
 	do
 		printf '.'
 		sleep 10
