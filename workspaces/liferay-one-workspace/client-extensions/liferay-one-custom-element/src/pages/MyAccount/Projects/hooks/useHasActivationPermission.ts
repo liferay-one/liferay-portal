@@ -5,8 +5,13 @@
 
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
-import {PARTNER_MANAGER} from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {
+	LIFERAY_SALES,
+	PARTNER_MANAGER,
+	SUPPORT_ADMINISTRATOR,
+} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
 import escapeODataString from '~/utils/escapeODataString';
@@ -21,6 +26,12 @@ type ActivationPermission = {
 type ProjectMembershipAPIItem = {
 	roleExternalReferenceCode: string;
 };
+
+const LICENSE_KEY_MANAGER_ROLES = [
+	LIFERAY_SALES,
+	PARTNER_MANAGER,
+	SUPPORT_ADMINISTRATOR,
+];
 
 function useProjectAdminPermission(
 	hasElevatedRole: boolean,
@@ -92,14 +103,20 @@ export function useHasLicenseKeyPermission(
 ): ActivationPermission {
 	const {userAccountModel} = useOneContext();
 
+	const unassigned = isUnassignedProject(projectExternalReferenceCode);
+
 	return useProjectAdminPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
 				userAccountModel?.canManageAllAccounts ||
 				userAccountModel?.isLiferayStaff ||
-				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER)
+				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER) ||
+				(unassigned &&
+					LICENSE_KEY_MANAGER_ROLES.some((roleName) =>
+						userAccountModel?.hasAccountRoleName(roleName)
+					))
 		),
-		projectExternalReferenceCode
+		unassigned ? '' : projectExternalReferenceCode
 	);
 }
 

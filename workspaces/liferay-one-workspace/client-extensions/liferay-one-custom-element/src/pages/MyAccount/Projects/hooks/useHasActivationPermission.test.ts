@@ -7,8 +7,13 @@ import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
-import {PARTNER_MANAGER} from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {
+	LIFERAY_SALES,
+	PARTNER_MANAGER,
+	SUPPORT_ADMINISTRATOR,
+} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 
 import {
 	useHasActivationPermission,
@@ -232,6 +237,41 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 			useHasLicenseKeyPermission('PRJCT-1')
 		);
 
+		expect(result.current.hasActivationPermission).toBe(false);
+	});
+
+	it('grants access to a license key manager account role on One Time Purchases without a membership request', () => {
+		mockContext({accountRoleNames: [LIFERAY_SALES]});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission(ONE_TIME_PURCHASES)
+		);
+
+		expect(getRequestedURL()).toBeNull();
+		expect(result.current).toEqual({
+			hasActivationPermission: true,
+			loading: false,
+		});
+	});
+
+	it('denies a license key manager account role on a project', () => {
+		mockContext({accountRoleNames: [SUPPORT_ADMINISTRATOR]});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission('PRJCT-1')
+		);
+
+		expect(result.current.hasActivationPermission).toBe(false);
+	});
+
+	it('denies other users on One Time Purchases without a membership request', () => {
+		mockContext({accountRoleNames: ['Account Member']});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission(ONE_TIME_PURCHASES)
+		);
+
+		expect(getRequestedURL()).toBeNull();
 		expect(result.current.hasActivationPermission).toBe(false);
 	});
 });
