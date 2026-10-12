@@ -283,39 +283,10 @@ public class LicenseKeyService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		Map<Long, Integer> counts = new HashMap<>();
-
-		// A complimentary key counts against the entitlement that granted it,
-		// which allows one. It keeps counting once it expires, since expiring
-		// does not hand the grant back, and stops only when the key is
-		// deactivated. Inactive keys are dropped by the query and again by the
-		// loop, so the tally stays right whatever the query returns. Only the
-		// fields the tally reads are projected, since a project can hold
-		// thousands of keys and each one otherwise serializes thirty five
-		// fields plus its action envelope.
-
-		for (LicenseKey licenseKey :
-				getAllProjectedItems(
-					"/o/c/licensekeys", _FIELDS_ACTIVE_LICENSE_KEY_COUNT,
-					StringBundler.concat(
-						"(active eq true) and ",
-						"(r_projectToLicenseKey_c_projectERC eq '",
-						escapeODataString(projectExternalReferenceCode), "')"),
-					LicenseKey::new)) {
-
-			long entitlementId = licenseKey.getEntitlementId();
-
-			if ((entitlementId <= 0) || !licenseKey.isActive() ||
-				excludedActivationKeyIds.contains(
-					licenseKey.getActivationKeyId())) {
-
-				continue;
-			}
-
-			counts.merge(entitlementId, 1, Integer::sum);
-		}
-
-		return counts;
+		return _getActiveLicenseKeyCounts(
+			excludedActivationKeyIds,
+			"r_projectToLicenseKey_c_projectERC eq '" +
+				escapeODataString(projectExternalReferenceCode) + "'");
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
@@ -324,6 +295,18 @@ public class LicenseKeyService extends OneBaseService {
 
 		return getActiveLicenseKeyCounts(
 			Collections.emptyList(), projectExternalReferenceCode);
+	}
+
+	public Map<Long, Integer> getActiveUnassignedLicenseKeyCounts(
+			long accountEntryId)
+		throws Exception {
+
+		return _getActiveLicenseKeyCounts(
+			Collections.emptyList(),
+			StringBundler.concat(
+				"(r_accountEntryToLicenseKey_accountEntryId eq '",
+				accountEntryId,
+				"') and (r_projectToLicenseKey_c_projectId eq '0')"));
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(
@@ -742,6 +725,42 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getProjectExternalReferenceCode(),
 			licenseKey.getServerId(), licenseKey.getSizing(), startDate,
 			licenseKey.getWorkspaceName(), licenseKey.getWorkspaceOwnerEmail());
+	}
+
+	private Map<Long, Integer> _getActiveLicenseKeyCounts(
+			Collection<Long> excludedActivationKeyIds, String filterString)
+		throws Exception {
+
+		Map<Long, Integer> counts = new HashMap<>();
+
+		// A complimentary key counts against the entitlement that granted it,
+		// which allows one. It keeps counting once it expires, since expiring
+		// does not hand the grant back, and stops only when the key is
+		// deactivated. Inactive keys are dropped by the query and again by the
+		// loop, so the tally stays right whatever the query returns. Only the
+		// fields the tally reads are projected, since a project can hold
+		// thousands of keys and each one otherwise serializes thirty five
+		// fields plus its action envelope.
+
+		for (LicenseKey licenseKey :
+				getAllProjectedItems(
+					"/o/c/licensekeys", _FIELDS_ACTIVE_LICENSE_KEY_COUNT,
+					"(active eq true) and (" + filterString + ")",
+					LicenseKey::new)) {
+
+			long entitlementId = licenseKey.getEntitlementId();
+
+			if ((entitlementId <= 0) || !licenseKey.isActive() ||
+				excludedActivationKeyIds.contains(
+					licenseKey.getActivationKeyId())) {
+
+				continue;
+			}
+
+			counts.merge(entitlementId, 1, Integer::sum);
+		}
+
+		return counts;
 	}
 
 	private int _getCount(String filterString) throws Exception {

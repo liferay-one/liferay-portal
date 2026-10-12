@@ -402,6 +402,35 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGetActiveUnassignedEntitlementsFiltersByAccountWithoutProject()
+		throws Exception {
+
+		ArgumentCaptor<String> filterCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getAllItems(
+			Mockito.anyString(), filterCaptor.capture(), Mockito.any(),
+			Mockito.anyString()
+		);
+
+		_entitlementService.getActiveUnassignedEntitlements(77L);
+
+		String filter = filterCaptor.getValue();
+
+		Assertions.assertTrue(
+			filter.contains(
+				"((r_accountEntryToEntitlement_accountEntryId eq '77') and " +
+					"(r_projectToEntitlement_c_projectId eq '0'))"),
+			filter);
+		Assertions.assertTrue(filter.contains("endDate eq null"), filter);
+		Assertions.assertTrue(filter.contains("startDate eq null"), filter);
+	}
+
+	@Test
 	public void testGetEntitlementsRequestsNestedEntitlementDefinition()
 		throws Exception {
 

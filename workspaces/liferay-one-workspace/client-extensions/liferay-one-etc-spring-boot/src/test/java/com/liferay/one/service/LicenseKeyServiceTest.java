@@ -245,6 +245,33 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveUnassignedLicenseKeyCountsFiltersByAccountWithoutProject()
+		throws Exception {
+
+		Mockito.doReturn(
+			Arrays.asList(
+				_createLicenseKey(1L, true, false, 10L, 1L),
+				_createLicenseKey(2L, true, false, 10L, 2L))
+		).when(
+			_licenseKeyService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(),
+			_projectedFilterCaptor.capture(), Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(77L);
+
+		Assertions.assertEquals(2, counts.get(10L));
+
+		Assertions.assertEquals(
+			"(active eq true) and " +
+				"((r_accountEntryToLicenseKey_accountEntryId eq '77') and " +
+					"(r_projectToLicenseKey_c_projectId eq '0'))",
+			_projectedFilterCaptor.getValue());
+	}
+
+	@Test
 	public void testGetAssetReceiptLicenseLicenseKeysFilter() throws Exception {
 		_licenseKeyService.getAssetReceiptLicenseLicenseKeys(
 			true, false, "order-1");
