@@ -276,6 +276,38 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		});
 	});
 
+	it('names an activation key of a Marketplace app by the app', () => {
+		useProjectMock.mockReturnValue({projectId: 'one-time-purchases'});
+
+		const {activationKeys} = renderActivationKeys({
+			activationKeys: [
+				{
+					active: true,
+					endDate: daysFromNow(365),
+					externalReferenceCode: 'AK-1',
+					id: 1,
+					startDate: daysFromNow(-1),
+					type: 'production',
+				},
+			],
+			licenseKeys: [
+				{
+					active: true,
+					name: 'Staging',
+					productName: 'Acme App',
+					r_activationKeyToLicenseKey_c_activationKeyId: 1,
+					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-APP',
+				},
+			],
+		});
+
+		expect(activationKeys[0]).toMatchObject({
+			name: 'Staging',
+			productName: 'Acme App',
+			type: 'production',
+		});
+	});
+
 	it('marks a complimentary activation key and formats its dates', () => {
 		const {activationKeys} = renderActivationKeys({
 			activationKeys: [
