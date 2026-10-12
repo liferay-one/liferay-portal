@@ -60,6 +60,11 @@ DXP_DOMAINS_FILE_ATTEMPTS=12
 
 SIDECAR_SERVICE="liferay-one-etc-spring-boot"
 
+#
+# Probe from inside the Liferay container, whose network the sidecar shares, so
+# the check works when the server runs behind a remote Docker daemon.
+#
+
 SIDECAR_READY_URL="http://localhost:58081/ready"
 
 function main {
@@ -98,7 +103,7 @@ function main {
 
 	local elapsed=0
 
-	until curl --fail --max-time 5 --output /dev/null --silent "${SIDECAR_READY_URL}"
+	until docker exec "${container_id}" curl --fail --max-time 5 --output /dev/null --silent "${SIDECAR_READY_URL}"
 	do
 		# Fail fast when the container has already exited: a crashed sidecar
 		# never answers /ready, so without this the loop would burn the full
