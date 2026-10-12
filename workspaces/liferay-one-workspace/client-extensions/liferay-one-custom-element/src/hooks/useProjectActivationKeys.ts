@@ -14,6 +14,7 @@ import {
 import {useObjectItems} from '~/hooks/useObjectItems';
 import {Word} from '~/i18n';
 import {
+	getLeadingProductExternalReferenceCode,
 	getLeadingProductLabel,
 	getLeadingProductRank,
 } from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
@@ -70,6 +71,7 @@ const PROJECT_LICENSE_KEY_FIELDS = [
 	'description',
 	'externalReferenceCode',
 	'id',
+	'licenseName',
 	'licenseType',
 	'name',
 	'productName',
@@ -115,7 +117,10 @@ function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
 
 	for (const licenseKey of licenseKeys) {
 		const rank = getLeadingProductRank(
-			licenseKey.productExternalReferenceCode
+			getLeadingProductExternalReferenceCode(
+				licenseKey.licenseName,
+				licenseKey.productExternalReferenceCode
+			)
 		);
 
 		if (rank < leadingRank) {
@@ -130,7 +135,10 @@ function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
 
 	return (
 		getLeadingProductLabel(
-			leadingLicenseKey.productExternalReferenceCode
+			getLeadingProductExternalReferenceCode(
+				leadingLicenseKey.licenseName,
+				leadingLicenseKey.productExternalReferenceCode
+			)
 		) || leadingLicenseKey.productName
 	);
 }
@@ -182,7 +190,10 @@ function toUnaggregatedActivationKey(
 		name: node.name ?? '',
 		productName:
 			getLeadingProductLabel(
-				node.r_commerceProductToLicenseKey_CProductERC ?? ''
+				getLeadingProductExternalReferenceCode(
+					node.licenseName ?? '',
+					node.r_commerceProductToLicenseKey_CProductERC ?? ''
+				)
 			) ||
 			node.productName ||
 			'',

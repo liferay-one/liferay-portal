@@ -44,6 +44,7 @@ function licenseKey(overrides: Record<string, unknown>) {
 		entitlementId: 0,
 		hostName: 'host',
 		ipAddresses: '10.0.0.1',
+		licenseName: '',
 		macAddresses: 'aa',
 		name: '',
 		productExternalReferenceCode: 'PRDCT-OTHER',
@@ -166,6 +167,33 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			'PRDCT-DXP'
 		);
 		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(13);
+	});
+
+	it('matches the product by the license key family when no product ERC matches', () => {
+		mocks.licenseKeys = [
+			licenseKey({
+				entitlementId: 14,
+				licenseName: 'Portal Production',
+				productExternalReferenceCode: 'PRDCT-PORTAL-SUPERSEDED',
+			}),
+		];
+
+		const {result} = renderHook(() =>
+			useRenewSource('KEY-1', {
+				bundleProducts: [],
+				products: [
+					{
+						...generateFormProduct(902, 'marketplace-product-1'),
+						label: 'Portal',
+					},
+				],
+			})
+		);
+
+		expect(result.current.renewSource?.productExternalReferenceCode).toBe(
+			'marketplace-product-1'
+		);
+		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(902);
 	});
 
 	it('reports loading when either query is loading', () => {
