@@ -8,6 +8,12 @@ import {Page} from '@playwright/test';
 import {expect, oneTest as test} from '../fixtures/oneTest';
 import {selectCurrentAccount} from '../utils/accountUtils';
 import {PUBLISHER_ACCOUNT_ERC, uniqueName} from '../utils/environmentUtils';
+import {liferayLogin} from '../utils/loginUtils';
+import {
+	TemporaryMember,
+	createTemporaryAdministrator,
+	deleteTemporaryMember,
+} from '../utils/myAccountUtils';
 import {
 	NEW_APP_DRAFT_STORAGE_KEY,
 	PNG_FILE,
@@ -19,9 +25,10 @@ import {
 
 /**
  * A publisher creates an app and a solution through the publish flows of the
- * Publisher Dashboard and submits them for review. The journeys run as the
- * administrator on the Test Supplier publisher account (see
- * publisherDashboard.spec.ts for why the seeded publisher persona cannot).
+ * Publisher Dashboard and submits them for review. The journeys run as a
+ * temporary administrator on the Test Supplier publisher account (see
+ * publisherDashboard.spec.ts for why, and for why the seeded publisher
+ * persona cannot).
  * Every product a test submits is removed with the records created beside it.
  */
 
@@ -152,10 +159,22 @@ async function submitFreeApp(page: Page, name: string): Promise<void> {
 }
 
 test.describe('publish flows', () => {
-	test.beforeEach(async ({page, signIn}) => {
-		await signIn('ADMINISTRATOR');
+	let administrator: TemporaryMember | undefined;
+
+	test.beforeEach(async ({adminAPI, page}) => {
+		administrator = await createTemporaryAdministrator(adminAPI, [
+			PUBLISHER_ACCOUNT_ERC,
+		]);
+
+		await liferayLogin(page, administrator.email, administrator.password);
 
 		await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+	});
+
+	test.afterEach(async ({adminAPI}) => {
+		await deleteTemporaryMember(adminAPI, administrator);
+
+		administrator = undefined;
 	});
 
 	test.describe('[FLOW-PUBLISHER-APP-SUBMISSION] app submission', () => {
