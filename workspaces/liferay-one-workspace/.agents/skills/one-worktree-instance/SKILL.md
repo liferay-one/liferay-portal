@@ -14,11 +14,11 @@ One local Liferay server holds one virtual instance per worktree. Database parti
 
 | Address | Serves |
 | --- | --- |
-| `http://<web ID>.localhost:8080` | The instance (control panel, headless APIs) |
-| `http://<web ID>.one.localhost:8080` | The One site of the instance |
+| `http://<subdomain>.localhost` | The One site of the instance |
+| `http://admin.<subdomain>.localhost` | The instance (control panel, headless APIs) |
 | `http://localhost:<port>` | The Spring Boot sidecar of the instance, port 58082 to 58099 |
 
-Use the ticket key in lowercase as the web ID, for example `lpd-12345`.
+Use the ticket key in lowercase as the web ID, for example `lpd-12345`. The subdomain is the web ID unless `LIFERAY_INSTANCE_SUBDOMAIN` sets another one. `LIFERAY_INSTANCE_DOMAIN` replaces `localhost` for a server on another machine, `LIFERAY_SERVER_URL` sets the address of that server (default `http://localhost:8080`), and `LIFERAY_INSTANCE_INTERNAL_PORT` sets the port that the sidecar uses to call its instance (default `:8080`, empty when the instance host resolves to a proxy). Both hosts must reach the server on port 80.
 
 ## Prerequisite
 

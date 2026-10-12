@@ -2,8 +2,14 @@
 
 #
 # Runs one database partitioned virtual instance per worktree on the shared
-# local Liferay server. The instance answers on http://<web ID>.localhost:8080
-# and its One site on http://<web ID>.one.localhost:8080.
+# Liferay server. The One site answers on http://<subdomain>.<domain> and the
+# instance on http://admin.<subdomain>.<domain>. The subdomain defaults to the
+# web ID (LIFERAY_INSTANCE_SUBDOMAIN) and the domain to localhost
+# (LIFERAY_INSTANCE_DOMAIN). Both hosts must reach the server on port 80.
+#
+# The sidecar calls its instance through the Liferay container's network, at
+# the instance host plus LIFERAY_INSTANCE_INTERNAL_PORT (default :8080). Set it
+# to an empty string when the instance host resolves to a proxy instead.
 #
 # Client extensions are built with -Pliferay.virtual.instance.id=<web ID>, so
 # the workspace plugin suffixes the zip, the bundle symbolic name, and the web
@@ -21,7 +27,9 @@ DEFAULT_CLIENT_EXTENSIONS=(
 	liferay-one-batch
 	liferay-one-site-initializer
 )
-PORTAL_INSTANCES_URL="http://localhost:8080/o/headless-portal-instances/v1.0/portal-instances"
+INSTANCE_DOMAIN="${LIFERAY_INSTANCE_DOMAIN:-localhost}"
+INSTANCE_INTERNAL_PORT="${LIFERAY_INSTANCE_INTERNAL_PORT-:8080}"
+PORTAL_INSTANCES_URL="${LIFERAY_SERVER_URL:-http://localhost:8080}/o/headless-portal-instances/v1.0/portal-instances"
 SIDECAR_FIRST_PORT=58082
 SIDECAR_IMAGE="liferay-one-etc-spring-boot"
 SIDECAR_LAST_PORT=58099
@@ -244,7 +252,11 @@ function _get_container_id {
 }
 
 function _get_instance_host {
-	echo "${1}.localhost"
+	echo "admin.$(_get_subdomain "${1}").${INSTANCE_DOMAIN}"
+}
+
+function _get_internal_url {
+	echo "http://$(_get_instance_host "${1}")${INSTANCE_INTERNAL_PORT}"
 }
 
 function _get_sidecar_name {
@@ -281,11 +293,15 @@ function _get_sidecar_port {
 }
 
 function _get_site_host {
-	echo "${1}.one.localhost"
+	echo "$(_get_subdomain "${1}").${INSTANCE_DOMAIN}"
+}
+
+function _get_subdomain {
+	echo "${LIFERAY_INSTANCE_SUBDOMAIN:-${1}}"
 }
 
 function _get_url {
-	echo "http://$(_get_instance_host "${1}"):8080"
+	echo "http://$(_get_instance_host "${1}")"
 }
 
 function _has_log_since {
@@ -309,7 +325,7 @@ function _has_site {
 }
 
 function _is_sidecar_ready {
-	curl \
+	docker exec "${CONTAINER_NAME}" curl \
 		--fail \
 		--max-time 3 \
 		--output /dev/null \
@@ -355,7 +371,7 @@ function _provision {
 		./scripts/seed.sh
 	)
 
-	echo "Done. The One site of ${web_id} is running at http://$(_get_site_host "${web_id}"):8080."
+	echo "Done. The One site of ${web_id} is running at http://$(_get_site_host "${web_id}")."
 }
 
 function _set_service_port {
@@ -419,7 +435,7 @@ function _start_sidecar {
 		--detach \
 		--env "COM_LIFERAY_LXC_DXP_DOMAINS=$(_get_site_host "${web_id}"),$(_get_instance_host "${web_id}"),$(_get_site_host "${web_id}"):8080,$(_get_instance_host "${web_id}"):8080" \
 		--env "LIFERAY_JAR_RUNNER_JAVA_OPTS=--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED" \
-		--env "LIFERAY_ONE_PORTAL_URL=$(_get_url "${web_id}")" \
+		--env "LIFERAY_ONE_PORTAL_URL=$(_get_internal_url "${web_id}")" \
 		--env "LIFERAY_ROUTES_CLIENT_EXTENSION=/opt/liferay/routes/${web_id}/${SPRING_BOOT_CLIENT_EXTENSION}" \
 		--env "LIFERAY_ROUTES_DXP=/opt/liferay/routes/${web_id}/dxp" \
 		--env "SERVER_PORT=${port}" \
