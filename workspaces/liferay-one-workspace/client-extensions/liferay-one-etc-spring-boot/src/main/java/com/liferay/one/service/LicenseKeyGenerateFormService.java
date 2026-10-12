@@ -596,7 +596,9 @@ public class LicenseKeyGenerateFormService {
 				complimentary = true;
 			}
 
-			if (complimentary && !allowComplimentary) {
+			if (complimentary &&
+				(!allowComplimentary || hasComplimentaryActivationKey)) {
+
 				continue;
 			}
 
@@ -616,8 +618,7 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
-				entitlement, licenseKeyCounts,
-				complimentary && hasComplimentaryActivationKey);
+				entitlement, licenseKeyCounts);
 
 			jsonArray.put(
 				new JSONObject(
@@ -792,8 +793,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getSubscriptionsJSONArray(
-		Entitlement entitlement, Map<Long, Integer> licenseKeyCounts,
-		boolean spent) {
+		Entitlement entitlement, Map<Long, Integer> licenseKeyCounts) {
 
 		JSONArray jsonArray = new JSONArray();
 
@@ -802,7 +802,7 @@ public class LicenseKeyGenerateFormService {
 		int usedCount = licenseKeyCounts.getOrDefault(
 			entitlement.getEntitlementId(), 0);
 
-		int availableCount = spent ? 0 : Math.max(0, totalCount - usedCount);
+		int availableCount = Math.max(0, totalCount - usedCount);
 
 		jsonArray.put(
 			new JSONObject(
