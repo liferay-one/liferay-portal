@@ -5,9 +5,11 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
+import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.exception.NoSuchActivationKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
@@ -20,7 +22,9 @@ import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ActivationKeyService;
+import com.liferay.one.service.AppLicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
@@ -256,7 +260,7 @@ public class ActivationKeysRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC, null);
+				null, null, _PROJECT_ERC, null);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -286,7 +290,7 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC, null));
+				null, null, _PROJECT_ERC, null));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -330,9 +334,90 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC, "ACTVK-OTHER"));
+				null, null, _PROJECT_ERC, "ACTVK-OTHER"));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormForAccount() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		Mockito.when(
+			_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"products",
+				new JSONArray(
+				).put(
+					new JSONObject(
+					).put(
+						"externalReferenceCode", "PRDCT-APP"
+					)
+				)
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysGenerateForm(
+				_ACCOUNT_ERC, null, null, null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			"PRDCT-APP",
+			jsonObject.getJSONArray(
+				"products"
+			).getJSONObject(
+				0
+			).getString(
+				"externalReferenceCode"
+			));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormForAccountChecksPermission()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.getActivationKeysGenerateForm(
+				_ACCOUNT_ERC, null, null, null));
+
+		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormForMissingAccount()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Assertions.assertThrows(
+			NoSuchAccountException.class,
+			() -> activationKeysRestController.getActivationKeysGenerateForm(
+				_ACCOUNT_ERC, null, null, null));
+
+		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
 	}
 
 	@Test
@@ -345,7 +430,7 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			ProjectNotFoundException.class,
 			() -> activationKeysRestController.getActivationKeysGenerateForm(
-				null, _PROJECT_ERC, null));
+				null, null, _PROJECT_ERC, null));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -377,7 +462,7 @@ public class ActivationKeysRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			activationKeysRestController.getActivationKeysSummary(
-				null, _PROJECT_ERC);
+				null, null, _PROJECT_ERC);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -408,7 +493,38 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> activationKeysRestController.getActivationKeysSummary(
-				null, _PROJECT_ERC));
+				null, null, _PROJECT_ERC));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysSummaryForAccount() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		Mockito.when(
+			_appLicenseKeyGenerationService.getSummary(_ACCOUNT_ID)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"cloudNativeKeyTypes", new JSONArray()
+			).put(
+				"generatable", true
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysSummary(
+				_ACCOUNT_ERC, null, null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -421,7 +537,7 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			ProjectNotFoundException.class,
 			() -> activationKeysRestController.getActivationKeysSummary(
-				null, _PROJECT_ERC));
+				null, null, _PROJECT_ERC));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -551,6 +667,48 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPatchActivationKeysActiveWithoutProjectChecksTheAccount()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubActivationKey(78L);
+
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			account.getExternalReferenceCode()
+		).thenReturn(
+			_ACCOUNT_ERC
+		);
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.patchActivationKeysActive(
+				null, 78L, "{\"active\": false}"));
+
+		Mockito.verify(
+			_activationKeyService, Mockito.never()
+		).updateActivationKeyActive(
+			Mockito.anyLong(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
 	public void testPostActivationKeysGenerate() throws Exception {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
@@ -643,6 +801,59 @@ public class ActivationKeysRestControllerTest {
 			PrincipalException.class,
 			() -> activationKeysRestController.postActivationKeysGenerate(
 				null, _toGenerateJSON()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateForAccount() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Account account = _stubAccount();
+
+		ActivationKey activationKey = new ActivationKey(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", "ACTVK-2"
+			).put(
+				"id", 8L
+			));
+
+		ArgumentCaptor<LicenseKeyGenerationService.GenerateRequest>
+			generateRequestCaptor = ArgumentCaptor.forClass(
+				LicenseKeyGenerationService.GenerateRequest.class);
+
+		Mockito.when(
+			_appLicenseKeyGenerationService.generateActivationKey(
+				Mockito.eq(account), generateRequestCaptor.capture(),
+				Mockito.eq(_EMAIL_ADDRESS))
+		).thenReturn(
+			activationKey
+		);
+
+		JSONObject generateJSONObject = new JSONObject(_toGenerateJSON());
+
+		generateJSONObject.put(
+			"accountExternalReferenceCode", _ACCOUNT_ERC
+		).remove(
+			"projectExternalReferenceCode"
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.postActivationKeysGenerate(
+				null, generateJSONObject.toString());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(8L, jsonObject.getLong("activationKeyId"));
+
+		LicenseKeyGenerationService.GenerateRequest generateRequest =
+			generateRequestCaptor.getValue();
+
+		Assertions.assertNull(generateRequest.getProject());
+		Assertions.assertEquals(
+			101L, generateRequest.getSubscriptionEntitlementId());
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
@@ -790,6 +1001,12 @@ public class ActivationKeysRestControllerTest {
 		UserAccount userAccount = Mockito.mock(UserAccount.class);
 
 		Mockito.when(
+			userAccount.getEmailAddress()
+		).thenReturn(
+			_EMAIL_ADDRESS
+		);
+
+		Mockito.when(
 			userAccount.getId()
 		).thenReturn(
 			_USER_ID
@@ -805,11 +1022,18 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		ReflectionTestUtils.setField(
+			activationKeysRestController, "_accountService", _accountService);
+
+		ReflectionTestUtils.setField(
 			activationKeysRestController, "_activationKeyService",
 			_activationKeyService);
 
 		ReflectionTestUtils.setField(
 			activationKeysRestController, "_adminPermission", _adminPermission);
+
+		ReflectionTestUtils.setField(
+			activationKeysRestController, "_appLicenseKeyGenerationService",
+			_appLicenseKeyGenerationService);
 
 		ReflectionTestUtils.setField(
 			activationKeysRestController, "_licenseKeyTypeService",
@@ -848,6 +1072,25 @@ public class ActivationKeysRestControllerTest {
 			userAccountService);
 
 		return activationKeysRestController;
+	}
+
+	private Account _stubAccount() throws Exception {
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			account.getId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null)
+		).thenReturn(
+			account
+		);
+
+		return account;
 	}
 
 	private ActivationKey _stubActivationKey(long activationKeyId)
@@ -935,7 +1178,11 @@ public class ActivationKeysRestControllerTest {
 		).toString();
 	}
 
+	private static final String _ACCOUNT_ERC = "ACCNT-1";
+
 	private static final long _ACCOUNT_ID = 555L;
+
+	private static final String _EMAIL_ADDRESS = "test@liferay.com";
 
 	private static final long _OTHER_ACCOUNT_ID = 556L;
 
@@ -943,10 +1190,15 @@ public class ActivationKeysRestControllerTest {
 
 	private static final long _USER_ID = 123L;
 
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final ActivationKeyService _activationKeyService = Mockito.mock(
 		ActivationKeyService.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
+	private final AppLicenseKeyGenerationService
+		_appLicenseKeyGenerationService = Mockito.mock(
+			AppLicenseKeyGenerationService.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);

@@ -5,9 +5,11 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
+import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyType;
@@ -19,7 +21,9 @@ import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ActivationKeyService;
+import com.liferay.one.service.AppLicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
@@ -121,15 +125,34 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@GetMapping("/generate-form")
 	public ResponseEntity<String> getActivationKeysGenerateForm(
+			@RequestParam(
+				name = "accountExternalReferenceCode", required = false
+			)
+			String accountExternalReferenceCode,
 			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("projectExternalReferenceCode") String
-				projectExternalReferenceCode,
+			@RequestParam(
+				name = "projectExternalReferenceCode", required = false
+			)
+			String projectExternalReferenceCode,
 			@RequestParam(
 				name = "renewedActivationKeyExternalReferenceCode",
 				required = false
 			)
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			Account account = _getAccount(accountExternalReferenceCode, jwt);
+
+			return ResponseEntity.ok(
+			).contentType(
+				MediaType.APPLICATION_JSON
+			).body(
+				_appLicenseKeyGenerationService.getGenerateForm(
+					account.getId()
+				).toString()
+			);
+		}
 
 		Project project =
 			_environmentActivationPermission.checkLicenseKeyActivation(
@@ -155,10 +178,29 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@GetMapping("/summary")
 	public ResponseEntity<String> getActivationKeysSummary(
+			@RequestParam(
+				name = "accountExternalReferenceCode", required = false
+			)
+			String accountExternalReferenceCode,
 			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("projectExternalReferenceCode") String
-				projectExternalReferenceCode)
+			@RequestParam(
+				name = "projectExternalReferenceCode", required = false
+			)
+			String projectExternalReferenceCode)
 		throws Exception {
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			Account account = _getAccount(accountExternalReferenceCode, jwt);
+
+			return ResponseEntity.ok(
+			).contentType(
+				MediaType.APPLICATION_JSON
+			).body(
+				_appLicenseKeyGenerationService.getSummary(
+					account.getId()
+				).toString()
+			);
+		}
 
 		Project project =
 			_environmentActivationPermission.checkLicenseKeyActivation(
@@ -217,8 +259,12 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			activationKey.getProjectExternalReferenceCode();
 
 		if (Validator.isNull(projectExternalReferenceCode)) {
-			_licenseKeyPermission.check(
-				activationKey.getAccountEntryId(), ActionKeys.UPDATE, jwt);
+			Account account = _accountService.fetchAccount(
+				activationKey.getAccountEntryId());
+
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				(account == null) ? null : account.getExternalReferenceCode(),
+				jwt);
 		}
 		else {
 			_environmentActivationPermission.checkLicenseKeyActivation(
@@ -252,6 +298,20 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		String projectExternalReferenceCode = jsonObject.optString(
 			"projectExternalReferenceCode");
 
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			Account account = _getAccount(
+				jsonObject.optString("accountExternalReferenceCode"), jwt);
+
+			_checkKeyType(jsonObject.optString("keyType"), jwt);
+
+			UserAccount userAccount = getMyUserAccount(jwt);
+
+			return _toResponseEntity(
+				_appLicenseKeyGenerationService.generateActivationKey(
+					account, _toGenerateRequest(jsonObject, null),
+					userAccount.getEmailAddress()));
+		}
+
 		Project project =
 			_environmentActivationPermission.checkLicenseKeyActivation(
 				jwt, projectExternalReferenceCode);
@@ -268,35 +328,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
 
-		ActivationKey activationKey =
+		return _toResponseEntity(
 			_licenseKeyGenerationService.generateActivationKey(
-				new LicenseKeyGenerationService.GenerateRequest(
-					_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
-					jsonObject.optString("dataCenterLocation"),
-					jsonObject.optString("description"),
-					jsonObject.optString("environmentName"),
-					jsonObject.optString("keyType"), project,
-					jsonObject.optString("purpose", null),
-					renewedActivationKeyExternalReferenceCode,
-					_toServers(jsonObject.optJSONArray("servers")),
-					_toDate(jsonObject, "startDate"),
-					jsonObject.optLong("subscriptionEntitlementId"),
-					jsonObject.optString("version"),
-					jsonObject.optString("workspaceName"),
-					jsonObject.optString("workspaceOwnerEmail")));
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.APPLICATION_JSON
-		).body(
-			new JSONObject(
-			).put(
-				"activationKeyId", activationKey.getActivationKeyId()
-			).put(
-				"externalReferenceCode",
-				activationKey.getExternalReferenceCode()
-			).toString()
-		);
+				_toGenerateRequest(jsonObject, project)));
 	}
 
 	@PutMapping("/subscriptions")
@@ -362,6 +396,22 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private Account _getAccount(String accountExternalReferenceCode, Jwt jwt)
+		throws Exception {
+
+		Account account =
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				accountExternalReferenceCode, jwt);
+
+		if (account == null) {
+			throw new NoSuchAccountException(
+				"No account exists with external reference code " +
+					accountExternalReferenceCode);
+		}
+
+		return account;
+	}
+
 	private ActivationKey _getActivationKey(Jwt jwt, long activationKeyId)
 		throws Exception {
 
@@ -407,6 +457,26 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
+		JSONObject jsonObject, Project project) {
+
+		return new LicenseKeyGenerationService.GenerateRequest(
+			_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
+			jsonObject.optString("dataCenterLocation"),
+			jsonObject.optString("description"),
+			jsonObject.optString("environmentName"),
+			jsonObject.optString("keyType"), project,
+			jsonObject.optString("purpose", null),
+			jsonObject.optString(
+				"renewedActivationKeyExternalReferenceCode", null),
+			_toServers(jsonObject.optJSONArray("servers")),
+			_toDate(jsonObject, "startDate"),
+			jsonObject.optLong("subscriptionEntitlementId"),
+			jsonObject.optString("version"),
+			jsonObject.optString("workspaceName"),
+			jsonObject.optString("workspaceOwnerEmail"));
+	}
+
 	private List<Long> _toLongs(JSONArray jsonArray) {
 		List<Long> longs = new ArrayList<>();
 
@@ -419,6 +489,23 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 
 		return longs;
+	}
+
+	private ResponseEntity<String> _toResponseEntity(
+		ActivationKey activationKey) {
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			new JSONObject(
+			).put(
+				"activationKeyId", activationKey.getActivationKeyId()
+			).put(
+				"externalReferenceCode",
+				activationKey.getExternalReferenceCode()
+			).toString()
+		);
 	}
 
 	private List<LicenseKeyGenerationService.GenerateRequest.Server> _toServers(
@@ -445,10 +532,16 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
 	private ActivationKeyService _activationKeyService;
 
 	@Autowired
 	private AdminPermission _adminPermission;
+
+	@Autowired
+	private AppLicenseKeyGenerationService _appLicenseKeyGenerationService;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;

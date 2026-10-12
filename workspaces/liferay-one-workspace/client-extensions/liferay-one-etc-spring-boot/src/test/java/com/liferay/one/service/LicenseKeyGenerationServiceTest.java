@@ -562,6 +562,12 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.verify(
 			_activationKeyService, Mockito.never()
+		).deactivatePartialActivationKey(
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_activationKeyService, Mockito.never()
 		).updateActivationKeyActive(
 			Mockito.anyLong(), Mockito.anyBoolean()
 		);
@@ -940,8 +946,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.verify(
 			_activationKeyService
-		).updateActivationKeyActive(
-			activationKey.getActivationKeyId(), false
+		).deactivatePartialActivationKey(
+			activationKey
 		);
 	}
 
