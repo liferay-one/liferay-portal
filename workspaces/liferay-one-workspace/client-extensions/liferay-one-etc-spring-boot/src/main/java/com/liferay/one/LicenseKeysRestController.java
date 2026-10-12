@@ -14,7 +14,7 @@ import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
-import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
+import com.liferay.one.exception.LicenseKeyEntitlementIdException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyCSVExporter;
@@ -609,7 +609,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 
 		if (licenseKey.getEntitlementId() == 0) {
-			throw new LicenseKeyProductPurchaseKeyException(
+			throw new LicenseKeyEntitlementIdException(
 				"License key " + licenseKey.getLicenseKeyId() +
 					" is not backed by an entitlement");
 		}

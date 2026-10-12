@@ -69,7 +69,6 @@ export type LicenseTypePayload = {
 		macAddresses: string | undefined;
 		orderId: string;
 		productId?: string;
-		productPurchaseKey: string;
 		productVersion: string;
 	};
 	skuId: number;

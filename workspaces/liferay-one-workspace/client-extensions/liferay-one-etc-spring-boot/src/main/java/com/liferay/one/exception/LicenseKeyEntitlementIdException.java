@@ -8,23 +8,23 @@ package com.liferay.one.exception;
 /**
  * @author Allen Ziegenfus
  */
-public class LicenseKeyProductPurchaseKeyException
+public class LicenseKeyEntitlementIdException
 	extends LicenseKeyValidationException {
 
-	public LicenseKeyProductPurchaseKeyException() {
+	public LicenseKeyEntitlementIdException() {
 	}
 
-	public LicenseKeyProductPurchaseKeyException(String message) {
+	public LicenseKeyEntitlementIdException(String message) {
 		super(message);
 	}
 
-	public LicenseKeyProductPurchaseKeyException(
+	public LicenseKeyEntitlementIdException(
 		String message, Throwable throwable) {
 
 		super(message, throwable);
 	}
 
-	public LicenseKeyProductPurchaseKeyException(Throwable throwable) {
+	public LicenseKeyEntitlementIdException(Throwable throwable) {
 		super(throwable);
 	}
 

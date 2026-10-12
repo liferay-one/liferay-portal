@@ -14,7 +14,7 @@ import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
-import com.liferay.one.exception.LicenseKeyProductPurchaseKeyException;
+import com.liferay.one.exception.LicenseKeyEntitlementIdException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
@@ -1000,7 +1000,7 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		Assertions.assertThrows(
-			LicenseKeyProductPurchaseKeyException.class,
+			LicenseKeyEntitlementIdException.class,
 			() -> licenseKeysRestController.postLicenseKeysExtend(
 				null, _createExtensionBodyJSON(1L)));
 
