@@ -52,7 +52,9 @@ services:
             -   8080:8080
             -   11311:11311
             -   58081:58081
+            -   58082-58099:58082-58099
         volumes:
+            -   liferay_client_extensions:/opt/liferay/osgi/client-extensions
             -   liferay_data:/opt/liferay/data
             -   liferay_routes:/opt/liferay/routes
     liferay-one-etc-spring-boot:
@@ -87,5 +89,6 @@ services:
             -   1080:1080
         restart: always
 volumes:
+    liferay_client_extensions:
     liferay_data:
     liferay_routes:
