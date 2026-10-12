@@ -11,6 +11,8 @@ import {
 } from '../../utils/constants';
 import {LoginPage} from '../pages/LoginPage';
 
+const BASE_URL = process.env.BASE_URL ?? 'http://localhost:8080';
+
 type LiferayWindow = {
 	Liferay?: {ThemeDisplay?: {isSignedIn?: () => boolean}};
 };
@@ -30,6 +32,8 @@ export async function liferayLogin(
 	email: string = DEFAULT_ADMIN_EMAIL,
 	password: string = DEFAULT_ADMIN_PASSWORD
 ) {
+	await presetCookieConsent(page);
+
 	const loginPage = new LoginPage(page);
 
 	await loginPage.goto();
@@ -42,6 +46,53 @@ export async function liferayLogin(
 			message: 'expected the portal session to be signed in',
 		})
 		.toBe(true);
+
+	await dismissCookieBanner(page);
+}
+
+/**
+ * Records cookie consent in the browser context before the first page loads,
+ * so the consent banner never covers the bottom of the viewport. The portal
+ * deletes USER_CONSENT_CONFIGURED on the next request unless every optional
+ * consent type is present (CookiesPreAction), which is why declining the
+ * banner does not keep it away.
+ */
+
+export async function presetCookieConsent(page: Page) {
+	const url = new URL(page.url().startsWith('http') ? page.url() : BASE_URL);
+
+	await page.context().addCookies(
+		[
+			'CONSENT_TYPE_FUNCTIONAL',
+			'CONSENT_TYPE_NECESSARY',
+			'CONSENT_TYPE_PERFORMANCE',
+			'CONSENT_TYPE_PERSONALIZATION',
+			'USER_CONSENT_CONFIGURED',
+		].map((name) => ({
+			domain: url.hostname,
+			name,
+			path: '/',
+			value: 'true',
+		}))
+	);
+}
+
+/**
+ * Accepts the cookie consent banner when it renders anyway, which
+ * presetCookieConsent normally prevents.
+ */
+
+export async function dismissCookieBanner(page: Page) {
+	const acceptButton = page.getByRole('button', {name: 'Accept All'});
+
+	const isBannerShown = await acceptButton
+		.waitFor({state: 'visible', timeout: 3000})
+		.then(() => true)
+		.catch(() => false);
+
+	if (isBannerShown) {
+		await acceptButton.click();
+	}
 }
 
 export async function liferayLogout(page: Page) {
