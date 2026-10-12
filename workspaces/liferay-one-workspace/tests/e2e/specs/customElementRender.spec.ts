@@ -6,28 +6,29 @@
 import {test} from '@playwright/test';
 
 import {gotoAndExpectRender} from '../utils/customElementUtils';
+import {sitePath} from '../utils/environmentUtils';
 import {liferayLogin, liferayLogout} from '../utils/loginUtils';
 
-const ADMIN = '/web/one/admin';
-const BUSINESS_EVENTS = '/web/one/support/business-events';
-const HOME = '/web/one/home';
-const MY_ACCOUNT = '/web/one/my-account';
-const PRODUCT_PURCHASE = '/web/one/product-purchase';
-const PUBLISHER_DASHBOARD = '/web/one/my-account/publisher-dashboard';
-const TICKET_ATTACHMENTS = '/web/one/support/ticket-attachments';
+const ADMIN = sitePath('/admin');
+const BUSINESS_EVENTS = sitePath('/support/business-events');
+const HOME = sitePath('/home');
+const MY_ACCOUNT = sitePath('/my-account');
+const PRODUCT_PURCHASE = sitePath('/product-purchase');
+const PUBLISHER_DASHBOARD = sitePath('/my-account/publisher-dashboard');
+const TICKET_ATTACHMENTS = sitePath('/support/ticket-attachments');
 
 const ACCOUNT = 'placeholder-account';
 const ERC = 'placeholder-erc';
 const ID = '1';
 const PROJECT = 'placeholder-project';
 
-interface RouteCheck {
+interface IRouteCheck {
 	name: string;
 	planId: string;
 	url: string;
 }
 
-const ROUTE_CHECKS: RouteCheck[] = [
+const ROUTE_CHECKS: IRouteCheck[] = [
 	{
 		name: 'account-selector mounts in the page header',
 		planId: 'FLOW-SPA-RENDER-SMOKE',

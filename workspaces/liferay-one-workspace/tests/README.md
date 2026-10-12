@@ -137,3 +137,34 @@ yarn playwright test integration/specs/<name>.spec.ts
 Both projects pass when no specs exist (`--pass-with-no-tests`). The scripts stay green while the team writes the suites.
 
 > Only a unit suite may own a script named `test`. The Liferay Node plugin turns the `test` script of a project into a `packageRunTest` task. The CI `workspaces-js-unit` batch and the workspace unit test validation run this task with no portal. CI also stops at the first `package.json` with a `test` script and skips everything below it. So the custom element owns `test` (Vitest). This package and the workspace root expose the Playwright suites only under `test:*` names. Run the suites on demand through the scripts above, after the portal is up.
+
+## E2E Journeys
+
+Each spec under `e2e/specs` drives one page group through the browser as the persona the journey belongs to. Import `oneTest as test` from `e2e/fixtures/oneTest.ts`. It adds three fixtures:
+
+- `signIn(key)` signs the browser in as a persona from `e2e/utils/getPersona.ts`. Locally, every persona is a user that `scripts/seed` creates on ACCNT-001 with the password `test`. A persona never falls back to the administrator, because an administrator session passes every check that expects a denial.
+- `adminAPI` calls the headless APIs as the administrator. Use it to find the ID behind a seed external reference code, to create the record a journey needs, and to delete what the journey created. Every write a journey makes is cleaned up, so the suite can run again on the same environment.
+- `springBoot` answers the Spring Boot client extension endpoints that reach an external system (Jira, Google Cloud Storage, Liferay Cloud Console, PayPal). Calls to every other endpoint go to the real client extension.
+
+`ONE_E2E_BACKEND` selects the backend. `stub`, the default, installs the `springBoot` handlers. `live` installs none, so the same journeys reach the real systems on UAT. Write each handler so that it keeps state. For example, a handler that appends on POST and returns the list on GET lets one test body pass in both modes. Use `test.skip(!springBoot.enabled, …)` for a test that asserts data only a handler can return.
+
+A handler must send the content type of the real endpoint. The portal OAuth2 client resolves an `application/json` response to the parsed body, and it resolves any other response to the `Response` object. The services in the custom element expect the type that the endpoint really sends. A controller that returns `ResponseEntity<String>` sends `text/plain`, which is the default.
+
+When a journey finds a real defect, keep the correct assertion. Mark the test `test.fail()` with an `issue` annotation that states the defect. The suite stays green, and the test fails as soon as the defect is fixed, which tells you to remove the mark.
+
+Run the journeys:
+
+```bash
+yarn test:e2e                                          # Every journey, stubbed
+ONE_E2E_BACKEND=live yarn test:e2e                     # Every journey, real systems
+yarn playwright test e2e/specs/myAccount.spec.ts       # One page group
+```
+
+To load the seeded personas into an environment that was bootstrapped before they existed, run `scripts/seed.sh`, or run the user and membership steps alone:
+
+```bash
+cd scripts/seed
+./activate_user_accounts.sh && ./assign_user_memberships.sh && ./assign_account_users.sh
+```
+
+Run those steps after you import `data/02-user-account.batch-engine-data.json` and `data/08-project-membership.batch-engine-data.json`.

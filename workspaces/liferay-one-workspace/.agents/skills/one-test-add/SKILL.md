@@ -39,12 +39,14 @@ The `apiTest`/`APIHelpers` harness (`integration/fixtures/apiTest.ts`) is the te
 
 ### Playwright e2e
 
-The page objects under `tests/e2e/pages` and the `pagesTest` fixture are the template.
+The `oneTest` fixture (`tests/e2e/fixtures/oneTest.ts`) is the template. `tests/README.md` (E2E Journeys) explains it in full.
 
-- Sign in with `liferayLogin` (`tests/e2e/utils/loginUtils.ts`), then drive the SPA through `SPAPage` rather than raw selectors, so a markup change needs an edit in one file only.
-- Navigate with `gotoAndExpectRender` (`tests/e2e/utils/customElementUtils.ts`). It waits until the custom element renders, so the spec does not start before the SPA renders. `gotoStable` only waits for `domcontentloaded` and retries an aborted navigation once.
+- Import `oneTest as test` and sign in with `signIn('<PERSONA>')`. Each persona in `tests/e2e/utils/getPersona.ts` is a user that `scripts/seed` creates. A persona never falls back to the administrator, because the administrator's access would satisfy a check that expects a denial. Add a seed user before you add a persona.
+- Navigate with `gotoAndExpectRender` (`tests/e2e/utils/customElementUtils.ts`). It waits until the custom element renders, so the spec does not start before the SPA renders. Build paths with `sitePath` and the record values in `environmentUtils.ts`, never a literal `/web/one` or a seed external reference code.
 - Assert on what the user sees (`getByRole`, `getByText`), never on an internal class name.
-- A persona spec reads its credentials from environment variables. Add those variables to `.env.example`. When the variables are absent, skip the spec and give a reason. Never fall back to the administrator, because the administrator's access would satisfy a row that expects a denial.
+- Set up and clean up records with `adminAPI`. A test that writes creates its own records with `uniqueName` and deletes them in `afterEach` or `finally`. A test that changes a user's roles, memberships, or current account works on a throwaway user, never on a persona that other specs read in parallel.
+- Answer the Spring Boot endpoints that reach Jira, Google Cloud Storage, Liferay Cloud Console, or PayPal with `springBoot.on`, using the content type the real controller sends. Keep the handler stateful so the test also runs with `ONE_E2E_BACKEND=live`, or skip it with `test.skip(!springBoot.enabled, '<reason>')`.
+- Pin a known defect with `test.fail()` called after setup, immediately before the step that fails, so a broken setup still fails the test.
 
 ## 3. Link to the Plan
 
