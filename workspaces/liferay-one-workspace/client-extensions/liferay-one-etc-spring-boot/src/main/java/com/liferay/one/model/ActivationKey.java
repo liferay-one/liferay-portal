@@ -29,6 +29,7 @@ public class ActivationKey {
 		_active = jsonObject.optBoolean("active");
 		_endDateInstant = _toInstant(jsonObject, "endDate");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
+		_licenseKeyFamily = jsonObject.optString("licenseKeyFamily");
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToActivationKey_c_projectERC");
 		_startDateInstant = _toInstant(jsonObject, "startDate");
@@ -49,6 +50,10 @@ public class ActivationKey {
 
 	public String getExternalReferenceCode() {
 		return _externalReferenceCode;
+	}
+
+	public String getLicenseKeyFamily() {
+		return _licenseKeyFamily;
 	}
 
 	public String getProjectExternalReferenceCode() {
@@ -101,6 +106,7 @@ public class ActivationKey {
 	private final boolean _active;
 	private final Instant _endDateInstant;
 	private final String _externalReferenceCode;
+	private final String _licenseKeyFamily;
 	private final String _projectExternalReferenceCode;
 	private final Instant _startDateInstant;
 	private final String _type;

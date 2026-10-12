@@ -62,7 +62,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			"_getCloudNativeKeyTypesJSONArray",
 			_toGenerateFormJSONObject(
 				_toProductJSONObject(
-					"PRDCT-CLOUD-NATIVE",
+					"Cloud Native",
 					_toKeyTypeJSONObject(
 						"production", 1, "2026-12-31T00:00:00Z",
 						"2026-01-01T00:00:00Z"),
@@ -70,7 +70,7 @@ public class LicenseKeyGenerateFormServiceTest {
 						"uat", 1, "2026-06-30T00:00:00Z",
 						"2026-02-01T00:00:00Z")),
 				_toProductJSONObject(
-					"PRDCT-DXP",
+					"DXP",
 					_toKeyTypeJSONObject(
 						"production", 1, "2027-12-31T00:00:00Z",
 						"2027-01-01T00:00:00Z"))));
@@ -92,6 +92,85 @@ public class LicenseKeyGenerateFormServiceTest {
 			).getString(
 				"key"
 			));
+	}
+
+	@Test
+	public void testGetEntitledProductsGroupsALeadingLicenseKeyFamily()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				"marketplace-product-1",
+				HashMapBuilder.put(
+					"DXP-SKU", _toSku(1L, null)
+				).put(
+					"SELF-HOSTED-SKU", _toSku(2L, null)
+				).build());
+
+		CommerceProductService commerceProductService =
+			(CommerceProductService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_commerceProductService");
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode("salesforce-product-2");
+		product.setProductId(2L);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(2L)
+		).thenReturn(
+			product
+		);
+
+		List<Entitlement> entitlements = Arrays.asList(
+			_toLicenseGenerationEntitlement(
+				1L, true, "DXP", "production", "DXP-SKU"),
+			_toLicenseGenerationEntitlement(
+				2L, true, "DXP", "production", "SELF-HOSTED-SKU"));
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			entitlements, licenseKeyGenerateFormService);
+
+		Assertions.assertEquals(1, entitledProducts.size());
+
+		String name = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "getName");
+
+		Assertions.assertEquals("Liferay DXP", name);
+	}
+
+	@Test
+	public void testGetEntitledProductsKeepsTheProductNameOfAnAddOn()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				"marketplace-product-1",
+				HashMapBuilder.put(
+					"CMP-SKU", _toSku(1L, null)
+				).build());
+
+		CommerceProductService commerceProductService =
+			(CommerceProductService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_commerceProductService");
+
+		Product product = commerceProductService.fetchProduct(1L);
+
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", "Content Marketing Platform"
+			).build());
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			Collections.singletonList(
+				_toLicenseGenerationEntitlement(
+					1L, true, "CMP", "production", "CMP-SKU")),
+			licenseKeyGenerateFormService);
+
+		String name = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "getName");
+
+		Assertions.assertEquals("Content Marketing Platform", name);
 	}
 
 	@Test
@@ -166,65 +245,6 @@ public class LicenseKeyGenerateFormServiceTest {
 			entitledProducts.get(0), "isGeneratesActivationKey");
 
 		Assertions.assertTrue(generatesActivationKey);
-	}
-
-	@Test
-	public void testGetEntitledProductsReadsSelfHostedAsDXP() throws Exception {
-		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			_toLicenseKeyGenerateFormService(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED,
-				HashMapBuilder.put(
-					"PRDCT-DXP", _toSku(2L, null)
-				).put(
-					"SELF-HOSTED-SKU", _toSku(1L, null)
-				).build());
-
-		CommerceProductService commerceProductService =
-			(CommerceProductService)ReflectionTestUtils.getField(
-				licenseKeyGenerateFormService, "_commerceProductService");
-
-		Product product = new Product();
-
-		product.setExternalReferenceCode(
-			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP);
-		product.setProductId(2L);
-
-		Mockito.when(
-			commerceProductService.fetchProduct(2L)
-		).thenReturn(
-			product
-		);
-
-		Mockito.when(
-			commerceProductService.fetchProduct(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP)
-		).thenReturn(
-			product
-		);
-
-		List<Entitlement> entitlements = Arrays.asList(
-			_toLicenseGenerationEntitlement(
-				1L, true, "DXP", "production", "PRDCT-DXP"),
-			_toLicenseGenerationEntitlement(
-				2L, true, "DXP", "production", "SELF-HOSTED-SKU"));
-
-		List<Object> entitledProducts = _getEntitledProducts(
-			entitlements, licenseKeyGenerateFormService);
-
-		Assertions.assertEquals(1, entitledProducts.size());
-
-		String externalReferenceCode = ReflectionTestUtils.invokeMethod(
-			entitledProducts.get(0), "getExternalReferenceCode");
-
-		Assertions.assertEquals(
-			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
-			externalReferenceCode);
-
-		Assertions.assertEquals(
-			product,
-			licenseKeyGenerateFormService.fetchProduct(entitlements.get(1)));
 	}
 
 	@Test
@@ -471,13 +491,12 @@ public class LicenseKeyGenerateFormServiceTest {
 		Mockito.doReturn(
 			_toGenerateFormJSONObject(
 				_toProductJSONObject(
-					"PRDCT-CLOUD-NATIVE",
+					"Cloud Native",
 					_toKeyTypeJSONObject(
 						"production", 3, "2026-12-31T00:00:00Z",
 						"2026-01-01T00:00:00Z")),
 				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null)))
+					"DXP", _toKeyTypeJSONObject("production", 0, null, null)))
 		).when(
 			licenseKeyGenerateFormService
 		).getGenerateForm(
@@ -558,8 +577,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertTrue(
 			_isGeneratable(
 				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null),
+					"DXP", _toKeyTypeJSONObject("production", 0, null, null),
 					_toKeyTypeJSONObject("developer", 2, null, null))));
 	}
 
@@ -568,8 +586,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertFalse(
 			_isGeneratable(
 				_toProductJSONObject(
-					"PRDCT-DXP",
-					_toKeyTypeJSONObject("production", 0, null, null))));
+					"DXP", _toKeyTypeJSONObject("production", 0, null, null))));
 	}
 
 	@Test
@@ -835,7 +852,7 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private JSONObject _toProductJSONObject(
-		String externalReferenceCode, JSONObject... keyTypeJSONObjects) {
+		String licenseKeyFamily, JSONObject... keyTypeJSONObjects) {
 
 		JSONArray keyTypesJSONArray = new JSONArray();
 
@@ -845,9 +862,9 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return new JSONObject(
 		).put(
-			"externalReferenceCode", externalReferenceCode
-		).put(
 			"keyTypes", keyTypesJSONArray
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
 		);
 	}
 

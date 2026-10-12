@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -89,6 +88,20 @@ public class LicenseKeyGenerateFormService {
 		return entitlementDefinition.getLicenseKeyType();
 	}
 
+	public static String getProductName(
+		Entitlement entitlement, Product product) {
+
+		String productName =
+			LicenseKeyGenerationConstants.leadingLicenseKeyFamilyProductNames.
+				get(getLicenseKeyFamily(entitlement));
+
+		if (productName != null) {
+			return productName;
+		}
+
+		return CommerceProductUtil.getName(product);
+	}
+
 	public static int getTotalCount(Entitlement entitlement) {
 		Double maxQuantity = entitlement.getMaxQuantity();
 
@@ -97,6 +110,11 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return maxQuantity.intValue();
+	}
+
+	public static boolean isLeadingLicenseKeyFamily(String licenseKeyFamily) {
+		return LicenseKeyGenerationConstants.
+			leadingLicenseKeyFamilyProductNames.containsKey(licenseKeyFamily);
 	}
 
 	public static String toComparableVersion(String productVersion) {
@@ -245,8 +263,8 @@ public class LicenseKeyGenerateFormService {
 
 			if (Objects.equals(
 					LicenseKeyGenerationConstants.
-						PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
-					entitledProduct.getExternalReferenceCode())) {
+						LICENSE_KEY_FAMILY_CLOUD_NATIVE,
+					entitledProduct.getLicenseKeyFamily())) {
 
 				productDeveloperVersionsJSONArray =
 					cloudNativeDeveloperVersionsJSONArray;
@@ -266,7 +284,7 @@ public class LicenseKeyGenerateFormService {
 				).put(
 					"keyTypes", keyTypesJSONArray
 				).put(
-					"label", entitledProduct.getLicenseKeyFamily()
+					"licenseKeyFamily", entitledProduct.getLicenseKeyFamily()
 				).put(
 					"name", entitledProduct.getName()
 				).put(
@@ -392,20 +410,7 @@ public class LicenseKeyGenerateFormService {
 			return null;
 		}
 
-		Product product = _commerceProductService.fetchProduct(productId);
-
-		if ((product != null) &&
-			Objects.equals(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED,
-				product.getExternalReferenceCode())) {
-
-			return _commerceProductService.fetchProduct(
-				LicenseKeyGenerationConstants.
-					PRODUCT_EXTERNAL_REFERENCE_CODE_DXP);
-		}
-
-		return product;
+		return _commerceProductService.fetchProduct(productId);
 	}
 
 	private boolean _generatesActivationKey(
@@ -440,8 +445,8 @@ public class LicenseKeyGenerateFormService {
 
 			if (!Objects.equals(
 					LicenseKeyGenerationConstants.
-						PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
-					productJSONObject.optString("externalReferenceCode"))) {
+						LICENSE_KEY_FAMILY_CLOUD_NATIVE,
+					productJSONObject.optString("licenseKeyFamily"))) {
 
 				continue;
 			}
@@ -519,10 +524,10 @@ public class LicenseKeyGenerateFormService {
 
 		List<EntitledProduct> entitledProducts = new ArrayList<>();
 
-		Set<String> externalReferenceCodes = new LinkedHashSet<>();
 		Set<String> generatesActivationKeyExternalReferenceCodes =
 			_getGeneratesActivationKeyExternalReferenceCodes(
 				entitlements, resolvedProducts);
+		Set<String> keys = new HashSet<>();
 
 		for (Entitlement entitlement : _orderByLicenseKeyType(entitlements)) {
 			ResolvedProduct resolvedProduct = resolvedProducts.get(
@@ -536,7 +541,15 @@ public class LicenseKeyGenerateFormService {
 
 			String externalReferenceCode = product.getExternalReferenceCode();
 
-			if (!externalReferenceCodes.add(externalReferenceCode)) {
+			String licenseKeyFamily = getLicenseKeyFamily(entitlement);
+
+			String key = externalReferenceCode;
+
+			if (isLeadingLicenseKeyFamily(licenseKeyFamily)) {
+				key = licenseKeyFamily;
+			}
+
+			if (!keys.add(key)) {
 				continue;
 			}
 
@@ -547,8 +560,7 @@ public class LicenseKeyGenerateFormService {
 					entitlement, externalReferenceCode,
 					generatesActivationKeyExternalReferenceCodes.contains(
 						externalReferenceCode),
-					getLicenseKeyFamily(entitlement),
-					CommerceProductUtil.getName(product)));
+					licenseKeyFamily, getProductName(entitlement, product)));
 		}
 
 		return entitledProducts;

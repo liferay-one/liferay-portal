@@ -19,7 +19,6 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
-import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.ServerInfoUtil;
 import com.liferay.one.util.comparator.VersionComparator;
@@ -280,11 +279,11 @@ public class LicenseKeyGenerationService {
 
 	private ActivationKey _addActivationKey(
 			Date expirationDate, GenerateRequest generateRequest,
-			Project project, Date startDate)
+			String licenseKeyFamily, Project project, Date startDate)
 		throws Exception {
 
 		return _activationKeyService.addActivationKey(
-			project.getAccountId(), true, expirationDate,
+			project.getAccountId(), true, expirationDate, licenseKeyFamily,
 			project.getExternalReferenceCode(), startDate,
 			generateRequest.getKeyType());
 	}
@@ -323,6 +322,7 @@ public class LicenseKeyGenerationService {
 			_toLicenseXML(
 				description, expirationDate, generateRequest, licensedProduct,
 				project, server, startDate),
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			licenseEntry.getName(), licenseEntry.getType(),
 			LicenseVersion.getLicenseVersion(productName, version),
 			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()), 0, 0, 0,
@@ -470,7 +470,9 @@ public class LicenseKeyGenerationService {
 
 			if ((product != null) &&
 				Objects.equals(
-					productName, CommerceProductUtil.getName(product))) {
+					productName,
+					LicenseKeyGenerateFormService.getProductName(
+						entitlement, product))) {
 
 				return entitlement;
 			}
@@ -622,7 +624,10 @@ public class LicenseKeyGenerationService {
 		}
 
 		ActivationKey activationKey = _addActivationKey(
-			expirationDate, generateRequest, project, startDate);
+			expirationDate, generateRequest,
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(
+				subscriptionEntitlement),
+			project, startDate);
 
 		try {
 			for (GenerateRequest.Server server : generateRequest.getServers()) {
@@ -732,14 +737,17 @@ public class LicenseKeyGenerationService {
 						" selected for this bundle"));
 			}
 
-			String bundleProductName = CommerceProductUtil.getName(product);
+			String bundleProductName =
+				LicenseKeyGenerateFormService.getProductName(
+					entitlement, product);
 
 			if (Objects.equals(bundleProductName, productName)) {
 				continue;
 			}
 
-			if (_leadingProductExternalReferenceCodes.contains(
-					product.getExternalReferenceCode())) {
+			if (LicenseKeyGenerateFormService.isLeadingLicenseKeyFamily(
+					LicenseKeyGenerateFormService.getLicenseKeyFamily(
+						entitlement))) {
 
 				throw new LicenseKeyEntitlementException(
 					StringBundler.concat(
@@ -827,7 +835,8 @@ public class LicenseKeyGenerationService {
 						" selected for this bundle"));
 			}
 
-			String productName = CommerceProductUtil.getName(product);
+			String productName = LicenseKeyGenerateFormService.getProductName(
+				entitlement, product);
 
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
 				generateRequest, entitlement);
@@ -999,14 +1008,6 @@ public class LicenseKeyGenerationService {
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerationService.class);
-
-	private static final Set<String> _leadingProductExternalReferenceCodes =
-		Set.of(
-			LicenseKeyGenerationConstants.
-				PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE,
-			LicenseKeyGenerationConstants.PRODUCT_EXTERNAL_REFERENCE_CODE_DXP,
-			LicenseKeyGenerationConstants.
-				PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

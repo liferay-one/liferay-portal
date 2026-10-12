@@ -8,6 +8,7 @@ package com.liferay.one.constants;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Pedro Oliveira
@@ -27,24 +28,23 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String KEY_TYPE_PRODUCTION = "production";
 
+	public static final String LICENSE_KEY_FAMILY_CLOUD_NATIVE = "Cloud Native";
+
+	public static final String LICENSE_KEY_FAMILY_DXP = "DXP";
+
+	public static final String LICENSE_KEY_FAMILY_PORTAL = "Portal";
+
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
-
-	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_CLOUD_NATIVE =
-		"PRDCT-CLOUD-NATIVE";
-
-	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_DXP =
-		"PRDCT-DXP";
-
-	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_PORTAL =
-		"PRDCT-PORTAL";
-
-	public static final String PRODUCT_EXTERNAL_REFERENCE_CODE_SELF_HOSTED =
-		"PRDCT-SELF-HOSTED";
 
 	public static final String PRODUCT_GROUP_DXP = "dxp";
 
 	public static final List<String> downloadableKeyTypes =
 		Collections.unmodifiableList(
 			Arrays.asList("developer", "developer-cluster"));
+	public static final Map<String, String>
+		leadingLicenseKeyFamilyProductNames = Map.of(
+			LICENSE_KEY_FAMILY_CLOUD_NATIVE, "Cloud Native",
+			LICENSE_KEY_FAMILY_DXP, "Liferay DXP", LICENSE_KEY_FAMILY_PORTAL,
+			"Liferay Portal");
 
 }
