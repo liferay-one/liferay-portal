@@ -42,9 +42,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -437,20 +434,6 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
-	private void _deactivateActivationKey(ActivationKey activationKey) {
-		try {
-			_activationKeyService.updateActivationKeyActive(
-				activationKey.getActivationKeyId(), false);
-		}
-		catch (Exception exception) {
-			_log.error(
-				StringBundler.concat(
-					"Unable to deactivate the partially generated activation ",
-					"key ", activationKey.getActivationKeyId()),
-				exception);
-		}
-	}
-
 	private Entitlement _fetchEntitledProductEntitlement(
 			List<Entitlement> entitlements, String keyType, String productName)
 		throws Exception {
@@ -649,7 +632,7 @@ public class LicenseKeyGenerationService {
 			}
 		}
 		catch (Exception exception) {
-			_deactivateActivationKey(activationKey);
+			_activationKeyService.deactivatePartialActivationKey(activationKey);
 
 			throw exception;
 		}
@@ -1005,9 +988,6 @@ public class LicenseKeyGenerationService {
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";
 
 	private static final String _SIZING_DEFAULT = "Sizing 1";
-
-	private static final Log _log = LogFactory.getLog(
-		LicenseKeyGenerationService.class);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

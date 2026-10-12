@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +69,20 @@ public class ActivationKeyService extends OneBaseService {
 			).toUri());
 
 		return new ActivationKey(new JSONObject(response));
+	}
+
+	public void deactivatePartialActivationKey(ActivationKey activationKey) {
+		try {
+			updateActivationKeyActive(
+				activationKey.getActivationKeyId(), false);
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to deactivate the partially generated activation ",
+					"key ", activationKey.getActivationKeyId()),
+				exception);
+		}
 	}
 
 	public ActivationKey fetchActivationKey(String externalReferenceCode)
@@ -220,6 +237,9 @@ public class ActivationKeyService extends OneBaseService {
 
 		return dateFormat.format(date);
 	}
+
+	private static final Log _log = LogFactory.getLog(
+		ActivationKeyService.class);
 
 	@Autowired
 	@Lazy

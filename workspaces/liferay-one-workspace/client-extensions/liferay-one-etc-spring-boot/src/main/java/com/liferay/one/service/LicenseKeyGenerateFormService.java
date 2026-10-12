@@ -137,6 +137,14 @@ public class LicenseKeyGenerateFormService {
 		return productVersion;
 	}
 
+	public static String toISO8601(Instant instant) {
+		if (instant == null) {
+			return null;
+		}
+
+		return instant.toString();
+	}
+
 	public LicenseEntry fetchLicenseEntry(
 		String keyTypeKey, String licenseKeyFamily, String version) {
 
@@ -832,7 +840,7 @@ public class LicenseKeyGenerateFormService {
 			).put(
 				"availableCount", availableCount
 			).put(
-				"endDate", _toISO8601(entitlement.getEndDateInstant())
+				"endDate", toISO8601(entitlement.getEndDateInstant())
 			).put(
 				"entitlementId", entitlement.getEntitlementId()
 			).put(
@@ -840,7 +848,7 @@ public class LicenseKeyGenerateFormService {
 			).put(
 				"licenseKeyDurationDays", getLicenseKeyDurationDays(entitlement)
 			).put(
-				"startDate", _toISO8601(entitlement.getStartDateInstant())
+				"startDate", toISO8601(entitlement.getStartDateInstant())
 			).put(
 				"totalCount", totalCount
 			));
@@ -991,14 +999,6 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return jsonArray;
-	}
-
-	private String _toISO8601(Instant instant) {
-		if (instant == null) {
-			return null;
-		}
-
-		return instant.toString();
 	}
 
 	private JSONArray _toVersionsJSONArray(
