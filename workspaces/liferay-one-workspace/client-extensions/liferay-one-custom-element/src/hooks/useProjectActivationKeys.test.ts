@@ -222,6 +222,30 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		});
 	});
 
+	it('names an activation key by its product when no license key has a leading product label', () => {
+		const {activationKeys} = renderActivationKeys({
+			activationKeys: [
+				{
+					active: true,
+					externalReferenceCode: 'AK-1',
+					id: 1,
+					type: 'complimentary',
+				},
+			],
+			licenseKeys: [
+				{
+					active: true,
+					productName: 'Liferay DXP',
+					r_activationKeyToLicenseKey_c_activationKeyId: 1,
+					r_commerceProductToLicenseKey_CProductERC:
+						'marketplace-product-1',
+				},
+			],
+		});
+
+		expect(activationKeys[0].productName).toBe('Liferay DXP');
+	});
+
 	it('marks a complimentary activation key and formats its dates', () => {
 		const {activationKeys} = renderActivationKeys({
 			activationKeys: [
