@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.ClassNameConstants;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyGenerator;
@@ -58,13 +59,14 @@ public class LicenseKeyService extends OneBaseService {
 			String dataCenterLocation, String description, String domains,
 			long entitlementDefinitionId, long entitlementId,
 			Date expirationDate, String hostName, String ipAddresses,
-			String key, String licenseName, String licenseType,
-			int licenseVersion, String macAddresses, int maxClusterNodes,
-			long maxConcurrentUsers, int maxHttpSessions, int maxServers,
-			long maxUsers, String name, String orderId, String owner,
-			String productExternalId, String productName, String productVersion,
-			String projectExternalReferenceCode, String serverId, String sizing,
-			Date startDate, String workspaceName, String workspaceOwnerEmail)
+			String key, String licenseKeyFamily, String licenseName,
+			String licenseType, int licenseVersion, String macAddresses,
+			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
+			int maxServers, long maxUsers, String name, String orderId,
+			String owner, String productExternalId, String productName,
+			String productVersion, String projectExternalReferenceCode,
+			String serverId, String sizing, Date startDate,
+			String workspaceName, String workspaceOwnerEmail)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -112,6 +114,8 @@ public class LicenseKeyService extends OneBaseService {
 			"ipAddresses", ipAddresses
 		).put(
 			"key", key
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
 		).put(
 			"licenseName", licenseName
 		).put(
@@ -211,6 +215,9 @@ public class LicenseKeyService extends OneBaseService {
 			"domains", domains
 		).put(
 			"key", key
+		).put(
+			"licenseKeyFamily",
+			LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP
 		).put(
 			"licenseName", _FREE_TIER_LICENSE_NAME
 		).put(
@@ -724,14 +731,14 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
 			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
-			licenseKey.getLicenseName(), licenseKey.getLicenseType(),
-			licenseKey.getLicenseVersion(), licenseKey.getMacAddresses(),
-			licenseKey.getMaxClusterNodes(), licenseKey.getMaxConcurrentUsers(),
-			licenseKey.getMaxHttpSessions(), licenseKey.getMaxServers(),
-			licenseKey.getMaxUsers(), licenseKey.getName(),
-			licenseKey.getOrderId(), licenseKey.getOwner(),
-			licenseKey.getProductExternalId(), licenseKey.getProductName(),
-			licenseKey.getProductVersion(),
+			licenseKey.getLicenseKeyFamily(), licenseKey.getLicenseName(),
+			licenseKey.getLicenseType(), licenseKey.getLicenseVersion(),
+			licenseKey.getMacAddresses(), licenseKey.getMaxClusterNodes(),
+			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxHttpSessions(),
+			licenseKey.getMaxServers(), licenseKey.getMaxUsers(),
+			licenseKey.getName(), licenseKey.getOrderId(),
+			licenseKey.getOwner(), licenseKey.getProductExternalId(),
+			licenseKey.getProductName(), licenseKey.getProductVersion(),
 			licenseKey.getProjectExternalReferenceCode(),
 			licenseKey.getServerId(), licenseKey.getSizing(), startDate,
 			licenseKey.getWorkspaceName(), licenseKey.getWorkspaceOwnerEmail());

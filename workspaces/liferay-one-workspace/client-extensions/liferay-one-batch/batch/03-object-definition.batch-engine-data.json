@@ -637,6 +637,24 @@
 					"type": "Date"
 				},
 				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ACTIVATION_KEY_LICENSE_KEY_FAMILY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Family"
+					},
+					"name": "licenseKeyFamily",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
 					"DBType": "Date",
 					"businessType": "DateTime",
 					"externalReferenceCode": "C_ACTIVATION_KEY_START_DATE",
@@ -4197,6 +4215,24 @@
 					"state": false,
 					"system": false,
 					"type": "Clob"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_LICENSE_KEY_LICENSE_KEY_FAMILY",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Family"
+					},
+					"name": "licenseKeyFamily",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
 				},
 				{
 					"DBType": "String",

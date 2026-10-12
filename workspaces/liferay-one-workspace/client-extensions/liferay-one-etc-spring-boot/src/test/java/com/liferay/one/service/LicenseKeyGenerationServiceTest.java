@@ -115,12 +115,12 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+				Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
@@ -138,7 +138,7 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
@@ -155,18 +155,18 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyLong(), Mockito.eq(entitlementId),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+				Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any()
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 			);
 		}
 
 		Assertions.assertEquals(
 			Collections.nCopies(6, "Sizing 1"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 33));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 34));
 	}
 
 	@Test
@@ -209,8 +209,16 @@ public class LicenseKeyGenerationServiceTest {
 			licenseEntryNameArgumentCaptor.getAllValues());
 
 		Assertions.assertEquals(
-			Arrays.asList("DXP", "Digital Sales Room"),
+			Arrays.asList("Liferay DXP", "Digital Sales Room"),
 			productNameArgumentCaptor.getAllValues());
+
+		Assertions.assertEquals(
+			Collections.singletonList("DXP"),
+			_getInvocationArguments(
+				_activationKeyService, "addActivationKey", 3));
+		Assertions.assertEquals(
+			Arrays.asList("DXP", "DSR"),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 16));
 	}
 
 	@Test
@@ -242,12 +250,12 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), entitlementIdArgumentCaptor.capture(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
-			Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
-			Mockito.anyInt(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Assertions.assertEquals(
@@ -280,7 +288,7 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.anyBoolean(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
@@ -459,7 +467,8 @@ public class LicenseKeyGenerationServiceTest {
 		).addActivationKey(
 			Mockito.anyLong(), Mockito.eq(true),
 			expirationDateArgumentCaptor.capture(), Mockito.any(),
-			startDateArgumentCaptor.capture(), Mockito.eq("complimentary")
+			Mockito.any(), startDateArgumentCaptor.capture(),
+			Mockito.eq("complimentary")
 		);
 
 		Date expirationDate = expirationDateArgumentCaptor.getValue();
@@ -490,7 +499,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(
 			Collections.singletonList("Sizing 4"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 33));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 34));
 		Assertions.assertEquals(
 			Collections.singletonList("Sizing 4"),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 13));
@@ -515,7 +524,7 @@ public class LicenseKeyGenerationServiceTest {
 			_toComplimentaryGenerateRequest(1));
 
 		List<Object> issuedStartDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 34);
+			_licenseKeyService, "addLicenseKey", 35);
 		List<Object> issuedExpirationDates = _getInvocationArguments(
 			_licenseKeyService, "addLicenseKey", 12);
 		List<Object> issuedXMLs = _getInvocationArguments(
@@ -528,7 +537,7 @@ public class LicenseKeyGenerationServiceTest {
 			_toComplimentaryGenerateRequest(1));
 
 		List<Object> startDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 34);
+			_licenseKeyService, "addLicenseKey", 35);
 		List<Object> expirationDates = _getInvocationArguments(
 			_licenseKeyService, "addLicenseKey", 12);
 		List<Object> xmls = _getInvocationArguments(
@@ -792,7 +801,8 @@ public class LicenseKeyGenerationServiceTest {
 		).addActivationKey(
 			Mockito.anyLong(), Mockito.eq(true),
 			expirationDateArgumentCaptor.capture(), Mockito.any(),
-			startDateArgumentCaptor.capture(), Mockito.eq("complimentary")
+			Mockito.any(), startDateArgumentCaptor.capture(),
+			Mockito.eq("complimentary")
 		);
 
 		Date expirationDate = expirationDateArgumentCaptor.getValue();
@@ -913,12 +923,12 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+				Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenThrow(
 			new RuntimeException("The license key could not be added")
 		);
@@ -962,7 +972,7 @@ public class LicenseKeyGenerationServiceTest {
 			Mockito.eq(true), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
@@ -1001,7 +1011,8 @@ public class LicenseKeyGenerationServiceTest {
 			_activationKeyService
 		).addActivationKey(
 			Mockito.anyLong(), Mockito.eq(true), Mockito.any(), Mockito.any(),
-			startDateArgumentCaptor.capture(), Mockito.eq("DXP Backup")
+			Mockito.any(), startDateArgumentCaptor.capture(),
+			Mockito.eq("DXP Backup")
 		);
 
 		Assertions.assertNull(startDateArgumentCaptor.getValue());
@@ -1278,11 +1289,11 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			"<licenses />",
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
-				Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
+				Arrays.asList(1L, 2L), "developer", "Liferay DXP", _toProject(),
 				"7.4"));
 
 		Assertions.assertEquals(
-			Arrays.asList("DXP", "Search"),
+			Arrays.asList("Liferay DXP", "Search"),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
 
 		Mockito.verify(
@@ -1298,8 +1309,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.emptyList(), "developer", "DXP", _toProject(),
-					"7.3"));
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), "7.3"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1317,7 +1328,8 @@ public class LicenseKeyGenerationServiceTest {
 		_stubLicensedProducts();
 
 		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
+			Collections.emptyList(), "developer", "Liferay DXP", _toProject(),
+			"7.4");
 
 		Assertions.assertEquals(
 			Collections.singletonList(
@@ -1339,13 +1351,13 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.emptyList(), "developer", "DXP", _toProject(),
-					"7.4"));
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
 			).contains(
-				"not entitled to DXP"
+				"not entitled to Liferay DXP"
 			));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerator);
@@ -1363,7 +1375,7 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.singletonList(9L), "developer", "DXP",
+					Collections.singletonList(9L), "developer", "Liferay DXP",
 					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
@@ -1389,8 +1401,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
-					"7.4"));
+					Arrays.asList(1L, 2L), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1412,8 +1424,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.emptyList(), "developer", "DXP", _toProject(),
-					"7.4"));
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertEquals(
 			"Entitlement Entitlement 1 has no end date or license key " +
@@ -1446,8 +1458,8 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Arrays.asList(1L, 2L), "developer", "DXP", _toProject(),
-					"7.4"));
+					Arrays.asList(1L, 2L), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1467,7 +1479,8 @@ public class LicenseKeyGenerationServiceTest {
 		_stubLicensedProducts();
 
 		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
+			Collections.emptyList(), "developer", "Liferay DXP", _toProject(),
+			"7.4");
 
 		ArgumentCaptor<Date> startDateArgumentCaptor = ArgumentCaptor.forClass(
 			Date.class);
@@ -1508,8 +1521,8 @@ public class LicenseKeyGenerationServiceTest {
 		_stubLicensedProducts();
 
 		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer-cluster", "DXP", _toProject(),
-			"7.4");
+			Collections.emptyList(), "developer-cluster", "Liferay DXP",
+			_toProject(), "7.4");
 
 		Date startDate = (Date)_getInvocationArguments(
 			_licenseKeyGenerator, "generateKey", 20
@@ -1541,7 +1554,8 @@ public class LicenseKeyGenerationServiceTest {
 		_stubLicensedProducts();
 
 		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer", "DXP", _toProject(), "7.4");
+			Collections.emptyList(), "developer", "Liferay DXP", _toProject(),
+			"7.4");
 
 		Assertions.assertEquals(
 			Collections.singletonList(
@@ -1557,13 +1571,13 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.emptyList(), "developer", "DXP", _toProject(),
-					"7.4"));
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
 			).contains(
-				"not entitled to DXP"
+				"not entitled to Liferay DXP"
 			));
 	}
 
@@ -1585,13 +1599,13 @@ public class LicenseKeyGenerationServiceTest {
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
-					Collections.emptyList(), "developer", "DXP", _toProject(),
-					"7.4"));
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
 			).contains(
-				"not entitled to DXP"
+				"not entitled to Liferay DXP"
 			));
 	}
 
@@ -1602,7 +1616,7 @@ public class LicenseKeyGenerationServiceTest {
 			0
 		);
 		Date startDate = (Date)_getInvocationArguments(
-			_activationKeyService, "addActivationKey", 4
+			_activationKeyService, "addActivationKey", 5
 		).get(
 			0
 		);
@@ -1640,7 +1654,7 @@ public class LicenseKeyGenerationServiceTest {
 		Mockito.when(
 			_activationKeyService.addActivationKey(
 				Mockito.anyLong(), Mockito.anyBoolean(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			activationKey
 		);
@@ -1656,12 +1670,12 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.anyInt(),
-				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+				Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
@@ -1984,7 +1998,7 @@ public class LicenseKeyGenerationServiceTest {
 			_activationKeyService, Mockito.never()
 		).addActivationKey(
 			Mockito.anyLong(), Mockito.anyBoolean(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -1993,6 +2007,8 @@ public class LicenseKeyGenerationServiceTest {
 			"PRDCT-DSR", "DSR"
 		).put(
 			"PRDCT-DXP", "DXP"
+		).put(
+			"PRDCT-PORTAL", "Portal"
 		).build();
 
 	private ActivationKeyService _activationKeyService;

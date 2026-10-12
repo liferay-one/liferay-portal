@@ -46,6 +46,7 @@ public final class LicenseKey {
 		_ipAddresses = jsonObject.optString("ipAddresses");
 		_key = jsonObject.optString("key");
 		_licenseKeyId = jsonObject.getLong("id");
+		_licenseKeyFamily = jsonObject.optString("licenseKeyFamily");
 		_licenseName = jsonObject.optString("licenseName");
 		_licenseType = jsonObject.optString("licenseType");
 		_licenseVersion = jsonObject.optInt("licenseVersion");
@@ -130,6 +131,10 @@ public final class LicenseKey {
 	@JsonIgnore
 	public String getKey() {
 		return _key;
+	}
+
+	public String getLicenseKeyFamily() {
+		return _licenseKeyFamily;
 	}
 
 	public long getLicenseKeyId() {
@@ -267,6 +272,7 @@ public final class LicenseKey {
 	private final String _hostName;
 	private final String _ipAddresses;
 	private final String _key;
+	private final String _licenseKeyFamily;
 	private final long _licenseKeyId;
 	private final String _licenseName;
 	private final String _licenseType;

@@ -36,7 +36,8 @@ public class ActivationKeyService extends OneBaseService {
 
 	public ActivationKey addActivationKey(
 			long accountEntryId, boolean active, Date endDate,
-			String projectExternalReferenceCode, Date startDate, String type)
+			String licenseKeyFamily, String projectExternalReferenceCode,
+			Date startDate, String type)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(
@@ -44,6 +45,8 @@ public class ActivationKeyService extends OneBaseService {
 			"active", active
 		).put(
 			"endDate", _toISO8601(endDate)
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
 		).put(
 			"r_accountEntryToActivationKey_accountEntryId", accountEntryId
 		).put(
