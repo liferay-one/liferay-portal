@@ -110,8 +110,8 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 }
 
 function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
+	let leadingLicenseKey: ActivationKeyLicenseKey | undefined;
 	let leadingRank = Number.MAX_SAFE_INTEGER;
-	let leadingProductName = '';
 
 	for (const licenseKey of licenseKeys) {
 		const rank = getLeadingProductRank(
@@ -119,14 +119,20 @@ function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
 		);
 
 		if (rank < leadingRank) {
-			leadingProductName = getLeadingProductLabel(
-				licenseKey.productExternalReferenceCode
-			);
+			leadingLicenseKey = licenseKey;
 			leadingRank = rank;
 		}
 	}
 
-	return leadingProductName;
+	if (!leadingLicenseKey) {
+		return '';
+	}
+
+	return (
+		getLeadingProductLabel(
+			leadingLicenseKey.productExternalReferenceCode
+		) || leadingLicenseKey.productName
+	);
 }
 
 function getStatus(node: ActivationKeyNode): Word {
