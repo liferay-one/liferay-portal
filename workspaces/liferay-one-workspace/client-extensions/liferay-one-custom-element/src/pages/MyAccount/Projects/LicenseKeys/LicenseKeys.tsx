@@ -30,8 +30,8 @@ import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
 import {
 	ACTIVATION_STATUS_ACTIVE,
-	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
-	getLeadingProductLabel,
+	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
+	getLicenseKeyFamilyLabel,
 } from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
 import {useActivationKeySummary} from './hooks/useActivationKeySummary';
@@ -82,12 +82,11 @@ function toCloudNativeActivationKey(
 		expirationDate: toActivationKeyDate(keyType?.endDate),
 		expirationDateValue: toActivationKeyDateValue(keyType?.endDate),
 		id: environment.externalReferenceCode,
+		licenseKeyFamily: CLOUD_NATIVE_LICENSE_KEY_FAMILY,
 		name: environment.name,
 		offlineActivated:
 			environment.activationMode === ACTIVATION_MODE_OFFLINE,
-		productName: getLeadingProductLabel(
-			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
-		),
+		productName: getLicenseKeyFamilyLabel(CLOUD_NATIVE_LICENSE_KEY_FAMILY),
 		productVersion: '',
 		startDate: toActivationKeyDate(keyType?.startDate),
 		startDateValue: toActivationKeyDateValue(keyType?.startDate),

@@ -62,6 +62,7 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				externalReferenceCode: '',
 				hostName: '',
 				ipAddresses: '',
+				licenseKeyFamily: '',
 				licenseKeyId: '',
 				licenseName: '',
 				licenseType: '',

@@ -41,29 +41,18 @@ vi.mock('~/services/liferay/liferay', () => ({Liferay: liferayMock}));
 vi.mock(
 	'~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils',
 	() => {
-		const order = ['PRDCT-DXP', 'PRDCT-COMMERCE'];
 		const labels: Record<string, string> = {
-			'PRDCT-COMMERCE': 'Commerce',
-			'PRDCT-DXP': 'DXP',
+			DXP: 'Liferay DXP',
+			Portal: 'Liferay Portal',
 		};
 
-		return {
-			getLeadingProductExternalReferenceCode: (
-				licenseName: string,
-				externalReferenceCode: string
-			) => {
-				if (licenseName.startsWith('DXP ')) {
-					return 'PRDCT-DXP';
-				}
+		const order = Object.keys(labels);
 
-				return labels[externalReferenceCode]
-					? externalReferenceCode
-					: '';
-			},
-			getLeadingProductLabel: (externalReferenceCode: string) =>
-				labels[externalReferenceCode] ?? '',
-			getLeadingProductRank: (externalReferenceCode: string) => {
-				const index = order.indexOf(externalReferenceCode);
+		return {
+			getLicenseKeyFamilyLabel: (licenseKeyFamily: string) =>
+				labels[licenseKeyFamily] ?? '',
+			getLicenseKeyFamilyRank: (licenseKeyFamily: string) => {
+				const index = order.indexOf(licenseKeyFamily);
 
 				return index === -1 ? order.length : index;
 			},
@@ -199,22 +188,22 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 				{
 					active: true,
 					description: 'First',
+					licenseKeyFamily: 'CMP',
 					name: 'Commerce key',
 					productVersion: '7.4',
 					r_activationKeyToLicenseKey_c_activationKeyId: 1,
-					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-COMMERCE',
 				},
 				{
 					active: true,
+					licenseKeyFamily: 'DXP',
 					name: 'DXP key',
 					r_activationKeyToLicenseKey_c_activationKeyId: 1,
-					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-DXP',
 				},
 				{
 					active: true,
+					licenseKeyFamily: 'Portal',
 					name: 'Other activation key',
 					r_activationKeyToLicenseKey_c_activationKeyId: 2,
-					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-DXP',
 				},
 			],
 		});
@@ -226,15 +215,16 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 			complimentary: false,
 			description: 'First',
 			id: 'AK-1',
+			licenseKeyFamily: 'DXP',
 			name: 'Commerce key',
-			productName: 'DXP',
+			productName: 'Liferay DXP',
 			productVersion: '7.4',
 			status: 'active',
 			type: 'standard',
 		});
 	});
 
-	it('names an activation key by its product when no license key has a leading product label', () => {
+	it('names an activation key by its product when no license key has a leading family', () => {
 		const {activationKeys} = renderActivationKeys({
 			activationKeys: [
 				{
@@ -247,40 +237,43 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 			licenseKeys: [
 				{
 					active: true,
-					productName: 'Liferay DXP',
+					licenseKeyFamily: 'CMP',
+					productName: 'Content Marketing Platform',
 					r_activationKeyToLicenseKey_c_activationKeyId: 1,
-					r_commerceProductToLicenseKey_CProductERC:
-						'marketplace-product-1',
 				},
 			],
 		});
 
-		expect(activationKeys[0].productName).toBe('Liferay DXP');
+		expect(activationKeys[0].productName).toBe(
+			'Content Marketing Platform'
+		);
 	});
 
-	it('names an activation key by the family of its license name when its product is not a leading product', () => {
+	it('names an activation key by the family it records', () => {
 		const {activationKeys} = renderActivationKeys({
 			activationKeys: [
 				{
 					active: true,
 					externalReferenceCode: 'AK-1',
 					id: 1,
+					licenseKeyFamily: 'Portal',
 					type: 'production',
 				},
 			],
 			licenseKeys: [
 				{
 					active: true,
-					licenseName: 'DXP Non-Production',
+					licenseKeyFamily: 'DXP',
 					productName: 'AI Hub',
 					r_activationKeyToLicenseKey_c_activationKeyId: 1,
-					r_commerceProductToLicenseKey_CProductERC:
-						'marketplace-product-2',
 				},
 			],
 		});
 
-		expect(activationKeys[0].productName).toBe('DXP');
+		expect(activationKeys[0]).toMatchObject({
+			licenseKeyFamily: 'Portal',
+			productName: 'Liferay Portal',
+		});
 	});
 
 	it('marks a complimentary activation key and formats its dates', () => {
@@ -349,19 +342,19 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		});
 	});
 
-	it('labels an unaggregated row with the leading product label before the product name', () => {
+	it('labels an unaggregated row with its family before the product name', () => {
 		const {activationKeys} = renderActivationKeys({
 			licenseKeys: [
 				{
 					active: true,
 					externalReferenceCode: 'LK-1',
+					licenseKeyFamily: 'DXP',
 					productName: 'Fallback Product',
-					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-DXP',
 				},
 			],
 		});
 
-		expect(activationKeys[0].productName).toBe('DXP');
+		expect(activationKeys[0].productName).toBe('Liferay DXP');
 	});
 
 	it.each([

@@ -46,7 +46,7 @@ import {
 	GenerateActivationKeyStep,
 } from './types';
 import {
-	CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE,
+	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
 	buildEmptyServer,
 	findMatchingVersion,
 	getBundleProducts,
@@ -233,7 +233,7 @@ export default function GenerateActivationKey() {
 			return;
 		}
 
-		const product =
+		const defaultProduct =
 			generateForm.products.find(
 				(current) =>
 					current.externalReferenceCode ===
@@ -242,10 +242,10 @@ export default function GenerateActivationKey() {
 			generateForm.products.find(hasAvailableKeyType) ??
 			generateForm.products[0];
 
-		if (product) {
+		if (defaultProduct) {
 			setValue(
 				'productExternalReferenceCode',
-				product.externalReferenceCode
+				defaultProduct.externalReferenceCode
 			);
 		}
 	}, [
@@ -273,16 +273,21 @@ export default function GenerateActivationKey() {
 
 	const needsDSRStep = includesDSR && !hasWorkspace;
 
-	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+	const product = useMemo(
+		() =>
+			generateForm?.products.find(
+				(current) =>
+					current.externalReferenceCode ===
+					productExternalReferenceCode
+			),
+		[generateForm, productExternalReferenceCode]
+	);
+
+	const cloudNative = isCloudNativeProduct(product);
 
 	const {productVersions} = useDXPProductVersions(cloudNative);
 
 	const versions = useMemo(() => {
-		const product = generateForm?.products.find(
-			(current) =>
-				current.externalReferenceCode === productExternalReferenceCode
-		);
-
 		if (developer) {
 			return product?.developerVersions ?? [];
 		}
@@ -292,16 +297,19 @@ export default function GenerateActivationKey() {
 		}
 
 		return product?.versions ?? [];
-	}, [
-		cloudNative,
-		developer,
-		generateForm,
-		productExternalReferenceCode,
-		productVersions,
-	]);
+	}, [cloudNative, developer, product, productVersions]);
 
 	useEffect(() => {
-		if (!modifyEnvironment || getValues('offlineModifying')) {
+		const cloudNativeProduct = generateForm?.products.find(
+			(current) =>
+				current.licenseKeyFamily === CLOUD_NATIVE_LICENSE_KEY_FAMILY
+		);
+
+		if (
+			!cloudNativeProduct ||
+			!modifyEnvironment ||
+			getValues('offlineModifying')
+		) {
 			return;
 		}
 
@@ -319,11 +327,11 @@ export default function GenerateActivationKey() {
 		setValue('offlineModifying', true);
 		setValue(
 			'productExternalReferenceCode',
-			CLOUD_NATIVE_PRODUCT_EXTERNAL_REFERENCE_CODE
+			cloudNativeProduct.externalReferenceCode
 		);
 
 		setStep('offline-package');
-	}, [getValues, modifyEnvironment, setValue]);
+	}, [generateForm, getValues, modifyEnvironment, setValue]);
 
 	useEffect(() => {
 		const [firstVersion] = versions;

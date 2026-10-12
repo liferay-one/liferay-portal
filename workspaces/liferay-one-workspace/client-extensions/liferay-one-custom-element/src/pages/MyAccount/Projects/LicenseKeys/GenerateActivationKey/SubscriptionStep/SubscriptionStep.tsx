@@ -23,7 +23,6 @@ import {GenerateActivationKeyForm} from '../types';
 import {
 	FREE_KEY_TYPE,
 	getComplimentaryExpiration,
-	getLeadingProductLabel,
 	hasAvailableActivations,
 	hasAvailableKeyType,
 	isCloudNativeProduct,
@@ -64,7 +63,7 @@ export default function SubscriptionStep({
 		[generateForm.products, productExternalReferenceCode]
 	);
 
-	const cloudNative = isCloudNativeProduct(productExternalReferenceCode);
+	const cloudNative = isCloudNativeProduct(product);
 	const complimentary = isComplimentaryKeyType(keyType);
 	const developer = isDeveloperKeyType(keyType);
 	const free = keyType === FREE_KEY_TYPE;
@@ -243,11 +242,7 @@ export default function SubscriptionStep({
 											!hasAvailableKeyType(current)
 										}
 										key={current.externalReferenceCode}
-										label={
-											getLeadingProductLabel(
-												current.externalReferenceCode
-											) || current.label
-										}
+										label={current.name}
 										value={current.externalReferenceCode}
 									/>
 								))}

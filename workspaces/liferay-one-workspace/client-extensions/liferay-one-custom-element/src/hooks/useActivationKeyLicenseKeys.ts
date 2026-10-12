@@ -24,6 +24,7 @@ export type ActivationKeyLicenseKey = {
 	externalReferenceCode: string;
 	hostName: string;
 	ipAddresses: string;
+	licenseKeyFamily: string;
 	licenseKeyId: string;
 	licenseName: string;
 	licenseType: string;
@@ -53,6 +54,7 @@ export type LicenseKeyNode = {
 	hostName?: string;
 	id?: number;
 	ipAddresses?: string;
+	licenseKeyFamily?: string;
 	licenseName?: string;
 	licenseType?: string;
 	macAddresses?: string;
@@ -100,6 +102,7 @@ export function toActivationKeyLicenseKey(
 		externalReferenceCode: node.externalReferenceCode ?? '',
 		hostName: node.hostName ?? '',
 		ipAddresses: node.ipAddresses ?? '',
+		licenseKeyFamily: node.licenseKeyFamily ?? '',
 		licenseKeyId: node.id ? String(node.id) : '',
 		licenseName: node.licenseName ?? '',
 		licenseType: node.licenseType ?? '',

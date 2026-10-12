@@ -41,7 +41,7 @@ export type GenerateFormProduct = {
 	entitlementId: number;
 	externalReferenceCode: string;
 	keyTypes: GenerateFormKeyType[];
-	label: string;
+	licenseKeyFamily: string;
 	name: string;
 	versions: string[];
 };

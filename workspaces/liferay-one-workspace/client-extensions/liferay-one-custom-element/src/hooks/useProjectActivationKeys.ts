@@ -14,9 +14,8 @@ import {
 import {useObjectItems} from '~/hooks/useObjectItems';
 import {Word} from '~/i18n';
 import {
-	getLeadingProductExternalReferenceCode,
-	getLeadingProductLabel,
-	getLeadingProductRank,
+	getLicenseKeyFamilyLabel,
+	getLicenseKeyFamilyRank,
 } from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
@@ -34,6 +33,7 @@ export type ProjectActivationKey = {
 	expirationDate: string;
 	expirationDateValue: string;
 	id: string;
+	licenseKeyFamily: string;
 	licenseKeyId?: string;
 	name: string;
 	offlineActivated?: boolean;
@@ -52,12 +52,21 @@ type ActivationKeyNode = {
 	endDate?: string;
 	externalReferenceCode: string;
 	id?: number;
+	licenseKeyFamily?: string;
 	startDate?: string;
 	type?: string;
 };
 
-const ACTIVATION_KEY_FIELDS =
-	'active,dateCreated,endDate,externalReferenceCode,id,startDate,type';
+const ACTIVATION_KEY_FIELDS = [
+	'active',
+	'dateCreated',
+	'endDate',
+	'externalReferenceCode',
+	'id',
+	'licenseKeyFamily',
+	'startDate',
+	'type',
+].join(',');
 
 const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
@@ -71,7 +80,7 @@ const PROJECT_LICENSE_KEY_FIELDS = [
 	'description',
 	'externalReferenceCode',
 	'id',
-	'licenseName',
+	'licenseKeyFamily',
 	'licenseType',
 	'name',
 	'productName',
@@ -111,17 +120,14 @@ function getBadge(node: ActivationKeyNode): Word | undefined {
 	return undefined;
 }
 
-function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
+function getLeadingLicenseKey(
+	licenseKeys: ActivationKeyLicenseKey[]
+): ActivationKeyLicenseKey | undefined {
 	let leadingLicenseKey: ActivationKeyLicenseKey | undefined;
 	let leadingRank = Number.MAX_SAFE_INTEGER;
 
 	for (const licenseKey of licenseKeys) {
-		const rank = getLeadingProductRank(
-			getLeadingProductExternalReferenceCode(
-				licenseKey.licenseName,
-				licenseKey.productExternalReferenceCode
-			)
-		);
+		const rank = getLicenseKeyFamilyRank(licenseKey.licenseKeyFamily);
 
 		if (rank < leadingRank) {
 			leadingLicenseKey = licenseKey;
@@ -129,18 +135,7 @@ function getLeadingProductName(licenseKeys: ActivationKeyLicenseKey[]): string {
 		}
 	}
 
-	if (!leadingLicenseKey) {
-		return '';
-	}
-
-	return (
-		getLeadingProductLabel(
-			getLeadingProductExternalReferenceCode(
-				leadingLicenseKey.licenseName,
-				leadingLicenseKey.productExternalReferenceCode
-			)
-		) || leadingLicenseKey.productName
-	);
+	return leadingLicenseKey;
 }
 
 function getStatus(node: ActivationKeyNode): Word {
@@ -186,15 +181,11 @@ function toUnaggregatedActivationKey(
 		expirationDate: formatDate(node.customExpirationDate),
 		expirationDateValue: getDateValue(node.customExpirationDate),
 		id: activationKeyNode.externalReferenceCode,
+		licenseKeyFamily: node.licenseKeyFamily ?? '',
 		licenseKeyId: node.id ? String(node.id) : '',
 		name: node.name ?? '',
 		productName:
-			getLeadingProductLabel(
-				getLeadingProductExternalReferenceCode(
-					node.licenseName ?? '',
-					node.r_commerceProductToLicenseKey_CProductERC ?? ''
-				)
-			) ||
+			getLicenseKeyFamilyLabel(node.licenseKeyFamily ?? '') ||
 			node.productName ||
 			'',
 		productVersion: node.productVersion ?? '',
@@ -292,6 +283,15 @@ export function useProjectActivationKeys() {
 
 			const [licenseKey] = activationKeyLicenseKeys;
 
+			const leadingLicenseKey = getLeadingLicenseKey(
+				activationKeyLicenseKeys
+			);
+
+			const licenseKeyFamily =
+				node.licenseKeyFamily ||
+				leadingLicenseKey?.licenseKeyFamily ||
+				'';
+
 			return {
 				activationKeyId: node.id ? String(node.id) : '',
 				active: node.active,
@@ -301,8 +301,12 @@ export function useProjectActivationKeys() {
 				expirationDate: formatDate(node.endDate),
 				expirationDateValue: getDateValue(node.endDate),
 				id: node.externalReferenceCode,
+				licenseKeyFamily,
 				name: licenseKey?.name ?? '',
-				productName: getLeadingProductName(activationKeyLicenseKeys),
+				productName:
+					getLicenseKeyFamilyLabel(licenseKeyFamily) ||
+					leadingLicenseKey?.productName ||
+					'',
 				productVersion: licenseKey?.productVersion ?? '',
 				startDate: formatDate(node.startDate),
 				startDateValue: getDateValue(node.startDate),

@@ -16,10 +16,8 @@ import {
 	getComplimentaryPurpose,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
-	getLeadingProductExternalReferenceCode,
-	getLeadingProductLabel,
-	getLeadingProductRank,
-	getLicenseKeyFamily,
+	getLicenseKeyFamilyLabel,
+	getLicenseKeyFamilyRank,
 	hasAvailableKeyType,
 	hasServerInfo,
 	isCloudNativeProduct,
@@ -39,8 +37,11 @@ import type {
 	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
 
-function toBundleProduct(externalReferenceCode: string) {
-	return {externalReferenceCode} as GenerateFormBundleProduct;
+function toBundleProduct(externalReferenceCode: string, licenseKeyFamily = '') {
+	return {
+		externalReferenceCode,
+		licenseKeyFamily,
+	} as GenerateFormBundleProduct;
 }
 
 function toKeyType(availableCounts: number[]) {
@@ -51,29 +52,36 @@ function toKeyType(availableCounts: number[]) {
 	} as GenerateFormKeyType;
 }
 
-function toProduct(externalReferenceCode: string) {
-	return {externalReferenceCode} as GenerateFormProduct;
+function toProduct(externalReferenceCode: string, licenseKeyFamily = '') {
+	return {externalReferenceCode, licenseKeyFamily} as GenerateFormProduct;
 }
 
 describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () => {
 	describe('getBundleProducts', () => {
 		const generateForm = {
 			bundleProducts: [
-				toBundleProduct('PRDCT-CLOUD-NATIVE'),
-				toBundleProduct('PRDCT-DXP'),
-				toBundleProduct('PRDCT-PORTAL'),
+				toBundleProduct('marketplace-product-1', 'Cloud Native'),
+				toBundleProduct('marketplace-product-2', 'DXP'),
+				toBundleProduct('marketplace-product-3', 'Portal'),
 				toBundleProduct('PRDCT-SEARCH'),
-				toBundleProduct('PRDCT-COMMERCE'),
+				toBundleProduct('PRDCT-COMMERCE', 'CMP'),
 			],
-			products: [toProduct('PRDCT-DXP'), toProduct('PRDCT-PORTAL')],
+			products: [
+				toProduct('marketplace-product-2', 'DXP'),
+				toProduct('marketplace-product-3', 'Portal'),
+			],
 		} as GenerateForm;
 
 		it('returns the chosen product plus the non leading bundle products', () => {
 			expect(
-				getBundleProducts(generateForm, 'PRDCT-DXP').map(
+				getBundleProducts(generateForm, 'marketplace-product-2').map(
 					({externalReferenceCode}) => externalReferenceCode
 				)
-			).toEqual(['PRDCT-DXP', 'PRDCT-SEARCH', 'PRDCT-COMMERCE']);
+			).toEqual([
+				'marketplace-product-2',
+				'PRDCT-SEARCH',
+				'PRDCT-COMMERCE',
+			]);
 		});
 
 		it('returns an empty list when the product is unknown', () => {
@@ -258,11 +266,12 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	});
 
 	describe('ranks', () => {
-		it('ranks leading products in order and unknown codes last', () => {
-			expect(getLeadingProductRank('PRDCT-CLOUD-NATIVE')).toBe(0);
-			expect(getLeadingProductRank('PRDCT-DXP')).toBe(1);
-			expect(getLeadingProductRank('PRDCT-PORTAL')).toBe(2);
-			expect(getLeadingProductRank('PRDCT-SEARCH')).toBe(3);
+		it('ranks leading license key families in order and others last', () => {
+			expect(getLicenseKeyFamilyRank('Cloud Native')).toBe(0);
+			expect(getLicenseKeyFamilyRank('DXP')).toBe(1);
+			expect(getLicenseKeyFamilyRank('Portal')).toBe(2);
+			expect(getLicenseKeyFamilyRank('CMP')).toBe(3);
+			expect(getLicenseKeyFamilyRank('')).toBe(3);
 		});
 
 		it('ranks environment types in order and unknown types last', () => {
@@ -272,56 +281,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getEnvironmentTypeRank('sandbox')).toBe(3);
 		});
 
-		it('resolves the leading product from the license name before the product', () => {
-			expect(
-				getLeadingProductExternalReferenceCode(
-					'DXP Non-Production',
-					'marketplace-product-32654011'
-				)
-			).toBe('PRDCT-DXP');
-			expect(
-				getLeadingProductExternalReferenceCode(
-					'Portal Production',
-					'PRDCT-PORTAL-SUPERSEDED'
-				)
-			).toBe('PRDCT-PORTAL');
-			expect(
-				getLeadingProductExternalReferenceCode('TCAT Portal Backup', '')
-			).toBe('PRDCT-PORTAL');
-			expect(
-				getLeadingProductExternalReferenceCode('', 'PRDCT-CLOUD-NATIVE')
-			).toBe('PRDCT-CLOUD-NATIVE');
-			expect(
-				getLeadingProductExternalReferenceCode(
-					'Social Office',
-					'marketplace-product-1'
-				)
-			).toBe('');
-		});
-
-		it('resolves the license key family from the license name', () => {
-			expect(
-				getLicenseKeyFamily('DXP Production (Virtual Cluster)')
-			).toBe('DXP');
-			expect(getLicenseKeyFamily('Portal Developer')).toBe('Portal');
-			expect(getLicenseKeyFamily('TCAT Portal Production')).toBe(
-				'Portal'
-			);
-			expect(
-				getLicenseKeyFamily('Commerce Subscription Production')
-			).toBe('');
-			expect(getLicenseKeyFamily('')).toBe('');
-		});
-
-		it('labels leading products and leaves others empty', () => {
-			expect(getLeadingProductLabel('PRDCT-CLOUD-NATIVE')).toBe(
+		it('labels leading license key families and leaves others empty', () => {
+			expect(getLicenseKeyFamilyLabel('Cloud Native')).toBe(
 				'Cloud Native'
 			);
-			expect(getLeadingProductLabel('PRDCT-DXP')).toBe('Liferay DXP');
-			expect(getLeadingProductLabel('PRDCT-PORTAL')).toBe(
-				'Liferay Portal'
-			);
-			expect(getLeadingProductLabel('PRDCT-SEARCH')).toBe('');
+			expect(getLicenseKeyFamilyLabel('DXP')).toBe('Liferay DXP');
+			expect(getLicenseKeyFamilyLabel('Portal')).toBe('Liferay Portal');
+			expect(getLicenseKeyFamilyLabel('CMP')).toBe('');
 		});
 	});
 
@@ -387,8 +353,15 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 	describe('key types', () => {
 		it('classifies key types and products', () => {
-			expect(isCloudNativeProduct('PRDCT-CLOUD-NATIVE')).toBe(true);
-			expect(isCloudNativeProduct('PRDCT-DXP')).toBe(false);
+			expect(
+				isCloudNativeProduct(
+					toProduct('marketplace-product-1', 'Cloud Native')
+				)
+			).toBe(true);
+			expect(
+				isCloudNativeProduct(toProduct('PRDCT-CLOUD-NATIVE', 'DXP'))
+			).toBe(false);
+			expect(isCloudNativeProduct(undefined)).toBe(false);
 			expect(isComplimentaryKeyType('complimentary')).toBe(true);
 			expect(isComplimentaryKeyType('production')).toBe(false);
 			expect(isDeveloperKeyType('developer-cluster')).toBe(true);

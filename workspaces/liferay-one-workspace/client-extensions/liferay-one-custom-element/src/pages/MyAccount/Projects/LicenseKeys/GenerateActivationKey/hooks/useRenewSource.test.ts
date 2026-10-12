@@ -44,10 +44,9 @@ function licenseKey(overrides: Record<string, unknown>) {
 		entitlementId: 0,
 		hostName: 'host',
 		ipAddresses: '10.0.0.1',
-		licenseName: '',
+		licenseKeyFamily: '',
 		macAddresses: 'aa',
 		name: '',
-		productExternalReferenceCode: 'PRDCT-OTHER',
 		productVersion: '',
 		...overrides,
 	};
@@ -55,14 +54,15 @@ function licenseKey(overrides: Record<string, unknown>) {
 
 function generateFormProduct(
 	entitlementId: number,
-	externalReferenceCode: string
+	externalReferenceCode: string,
+	licenseKeyFamily: string
 ): GenerateFormProduct {
 	return {
 		developerVersions: [],
 		entitlementId,
 		externalReferenceCode,
 		keyTypes: [],
-		label: externalReferenceCode,
+		licenseKeyFamily,
 		name: externalReferenceCode,
 		versions: [],
 	};
@@ -71,8 +71,8 @@ function generateFormProduct(
 const generateForm: GenerateForm = {
 	bundleProducts: [],
 	products: [
-		generateFormProduct(900, 'PRDCT-PORTAL'),
-		generateFormProduct(901, 'PRDCT-DXP'),
+		generateFormProduct(900, 'marketplace-product-1', 'Portal'),
+		generateFormProduct(901, 'marketplace-product-2', 'DXP'),
 	],
 };
 
@@ -123,7 +123,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		mocks.licenseKeys = [
 			licenseKey({
 				entitlementId: 0,
-				productExternalReferenceCode: 'PRDCT-DXP',
+				licenseKeyFamily: 'DXP',
 			}),
 		];
 
@@ -132,7 +132,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		);
 
 		expect(result.current.renewSource?.productExternalReferenceCode).toBe(
-			'PRDCT-DXP'
+			'marketplace-product-2'
 		);
 		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(901);
 	});
@@ -143,20 +143,11 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		expect(mocks.useActivationKeyLicenseKeys).toHaveBeenCalledWith('AK-1');
 	});
 
-	it('picks the first product found in the generate form in leading product order', () => {
+	it('picks the product of the leading license key family', () => {
 		mocks.licenseKeys = [
-			licenseKey({
-				entitlementId: 11,
-				productExternalReferenceCode: 'PRDCT-OTHER',
-			}),
-			licenseKey({
-				entitlementId: 12,
-				productExternalReferenceCode: 'PRDCT-PORTAL',
-			}),
-			licenseKey({
-				entitlementId: 13,
-				productExternalReferenceCode: 'PRDCT-DXP',
-			}),
+			licenseKey({entitlementId: 11, licenseKeyFamily: 'CMP'}),
+			licenseKey({entitlementId: 12, licenseKeyFamily: 'Portal'}),
+			licenseKey({entitlementId: 13, licenseKeyFamily: 'DXP'}),
 		];
 
 		const {result} = renderHook(() =>
@@ -164,36 +155,33 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		);
 
 		expect(result.current.renewSource?.productExternalReferenceCode).toBe(
-			'PRDCT-DXP'
+			'marketplace-product-2'
 		);
 		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(13);
 	});
 
-	it('matches the product by the license key family when no product ERC matches', () => {
+	it('picks the product of the license key family the activation key records', () => {
+		mocks.activationKeys = [
+			{
+				activationKeyId: 'AK-1',
+				id: 'KEY-1',
+				licenseKeyFamily: 'Portal',
+				type: 'production',
+			},
+		];
 		mocks.licenseKeys = [
-			licenseKey({
-				entitlementId: 14,
-				licenseName: 'Portal Production',
-				productExternalReferenceCode: 'PRDCT-PORTAL-SUPERSEDED',
-			}),
+			licenseKey({entitlementId: 13, licenseKeyFamily: 'DXP'}),
+			licenseKey({entitlementId: 14, licenseKeyFamily: 'Portal'}),
 		];
 
 		const {result} = renderHook(() =>
-			useRenewSource('KEY-1', {
-				bundleProducts: [],
-				products: [
-					{
-						...generateFormProduct(902, 'marketplace-product-1'),
-						label: 'Portal',
-					},
-				],
-			})
+			useRenewSource('KEY-1', generateForm)
 		);
 
 		expect(result.current.renewSource?.productExternalReferenceCode).toBe(
 			'marketplace-product-1'
 		);
-		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(902);
+		expect(result.current.renewSource?.subscriptionEntitlementId).toBe(14);
 	});
 
 	it('reports loading when either query is loading', () => {
@@ -270,16 +258,16 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			licenseKey({
 				description: 'Portal description',
 				entitlementId: 21,
+				licenseKeyFamily: 'Portal',
 				name: 'portal-env',
-				productExternalReferenceCode: 'PRDCT-PORTAL',
 				productVersion: '7.4',
 			}),
 			licenseKey({
 				active: false,
 				description: 'Inactive DXP',
 				entitlementId: 22,
+				licenseKeyFamily: 'DXP',
 				name: 'inactive-env',
-				productExternalReferenceCode: 'PRDCT-DXP',
 				productVersion: '2025.q1',
 			}),
 		];
@@ -293,7 +281,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			description: 'Portal description',
 			environmentName: 'portal-env',
 			keyType: 'production',
-			productExternalReferenceCode: 'PRDCT-PORTAL',
+			productExternalReferenceCode: 'marketplace-product-1',
 			subscriptionEntitlementId: 21,
 			version: '7.4',
 		});
