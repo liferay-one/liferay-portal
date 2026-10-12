@@ -54,6 +54,7 @@ export const OrderCustomFields = {
 	LDP_ANALYTICS_CLOUD_PROJECT: 'ldpAnalyticsCloudProject',
 	ORDER_METADATA: 'order-metadata',
 	PROJECT_NAME: 'projectName',
+	SALESFORCE_PROJECT_ID: 'salesforceProjectId',
 	TRIAL_END_DATE: 'trial-end-date',
 	TRIAL_ERROR: 'trial-error',
 	TRIAL_SETTINGS: 'trial-settings',

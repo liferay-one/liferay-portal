@@ -30,9 +30,7 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 	const {accountERC} = useParams();
 	const navigate = useNavigate();
 
-	const projectName = project?.name;
-
-	const {loading, orders} = useProjectOrders(projectName, productId);
+	const {loading, orders} = useProjectOrders(project, productId);
 
 	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(

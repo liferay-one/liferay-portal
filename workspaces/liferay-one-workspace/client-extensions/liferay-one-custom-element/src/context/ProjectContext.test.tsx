@@ -164,7 +164,22 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 		).toEqual(['PRJCT-ALPHA', 'PRJCT-BETA']);
 	});
 
-	it('appends One Time Purchases when an order with no project name holds a project item', () => {
+	it('does not append One Time Purchases for an order that carries only a project external reference code', () => {
+		mockState({
+			placedOrders: [
+				{
+					customFields: {salesforceProjectId: 'PRJCT-ALPHA'},
+					placedOrderItems: [{productId: 50}],
+				},
+			],
+		});
+
+		renderProvider('/ACCNT-1/project/PRJCT-ALPHA');
+
+		expect(projectValue.projects).toHaveLength(2);
+	});
+
+	it('appends One Time Purchases when an order with no project holds a project item', () => {
 		mockState({
 			placedOrders: [
 				{customFields: {}, placedOrderItems: [{productId: 50}]},

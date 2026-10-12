@@ -17,7 +17,7 @@ import {
 	useChannelProducts,
 	useUnassignedCommerce,
 } from '~/hooks/useProjectCommerce';
-import {getProjectName, useProjectOrders} from '~/hooks/useProjectOrders';
+import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
 import {
 	LAST_PROJECT_STORAGE_KEY,
@@ -64,7 +64,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const hasUnassignedItems = useMemo(() => {
 		const itemsByProjectItemType = toProjectItemsByType(
-			placedOrders.filter((order) => !getProjectName(order)),
+			placedOrders.filter((order) => !hasProject(order)),
 			toProductsByProductId(channelProducts?.items ?? [])
 		);
 

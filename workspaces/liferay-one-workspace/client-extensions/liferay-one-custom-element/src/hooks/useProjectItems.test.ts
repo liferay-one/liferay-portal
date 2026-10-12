@@ -55,9 +55,24 @@ function toProduct(
 	};
 }
 
-function toOrder(id: number, productIds: number[], projectName = '') {
+function toOrder(
+	id: number,
+	productIds: number[],
+	projectName = '',
+	salesforceProjectId = ''
+) {
+	const customFields: Record<string, string> = {};
+
+	if (projectName) {
+		customFields.projectName = projectName;
+	}
+
+	if (salesforceProjectId) {
+		customFields.salesforceProjectId = salesforceProjectId;
+	}
+
 	return {
-		customFields: projectName ? {projectName} : {},
+		customFields,
 		id,
 		placedOrderItems: productIds.map((productId) => ({productId})),
 	};
@@ -120,13 +135,17 @@ describe('[HOOK-USEPROJECTITEMS] useProjectItems', () => {
 		mockChannelProducts([APPLICATION, PRODUCT_A, PRODUCT_B]);
 	});
 
-	it('keeps only orders with no project name for the unassigned project', () => {
+	it('keeps only orders with no project for the unassigned project', () => {
 		mockProject({
 			project: {name: 'One Time Purchases'},
 			projectId: ONE_TIME_PURCHASES,
 		});
 
-		mockOrders([toOrder(1, [2], 'Project A'), toOrder(2, [3])]);
+		mockOrders([
+			toOrder(1, [2], 'Project A'),
+			toOrder(2, [3]),
+			toOrder(3, [1], '', 'PRJCT-A'),
+		]);
 
 		const {result} = renderHook(() => useProjectItems());
 
@@ -155,14 +174,16 @@ describe('[HOOK-USEPROJECTITEMS] useProjectItems', () => {
 		expect(result.current.products).toHaveLength(2);
 	});
 
-	it('scopes orders to the project name', () => {
-		mockProject({project: {name: 'Project A'}, projectId: 'PRJCT-A'});
+	it('scopes orders to the project', () => {
+		const project = {externalReferenceCode: 'PRJCT-A', name: 'Project A'};
+
+		mockProject({project, projectId: 'PRJCT-A'});
 
 		mockOrders([]);
 
 		renderHook(() => useProjectItems());
 
-		expect(useProjectOrders).toHaveBeenCalledWith('Project A');
+		expect(useProjectOrders).toHaveBeenCalledWith(project);
 	});
 
 	it('splits products and applications by item type', () => {
@@ -303,5 +324,21 @@ describe('[HOOK-USEPROJECTITEMS] useProjectsWithProjectItemType', () => {
 			'PRJCT-A',
 			ONE_TIME_PURCHASES,
 		]);
+	});
+
+	it('matches orders to projects by external reference code before name', () => {
+		mockProject({
+			projects: [
+				{externalReferenceCode: 'PRJCT-A', name: 'Project A'},
+				{externalReferenceCode: 'PRJCT-B', name: 'Project B'},
+			],
+		});
+		mockOrders([toOrder(1, [1], 'Project A', 'PRJCT-B')]);
+
+		const {result} = renderHook(() =>
+			useProjectsWithProjectItemType('application')
+		);
+
+		expect(result.current.projectERCs).toEqual(['PRJCT-B']);
 	});
 });

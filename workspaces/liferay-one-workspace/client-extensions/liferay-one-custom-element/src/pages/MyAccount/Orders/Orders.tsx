@@ -18,12 +18,15 @@ import Page from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
+import {
+	getProjectExternalReferenceCode,
+	getProjectName,
+} from '~/hooks/useProjectOrders';
 import i18n, {Word, translate} from '~/i18n';
 import {canAccessOrders} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {Liferay} from '~/services/liferay/liferay';
-import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
-import {safeJSONParse} from '~/utils/safeJSONParse';
+import {getOrderStatusToken} from '~/utils/orderUtils';
 
 import './Orders.css';
 
@@ -38,21 +41,8 @@ type FilterCategory = 'project' | 'status';
 
 type FilterOption = {label: string; value: number | string};
 
-export function getProjectName(order: PlacedOrder): string {
-	const customFields = order.customFields ?? {};
-
-	const projectName = customFields[OrderCustomFields.PROJECT_NAME];
-
-	if (projectName) {
-		return projectName;
-	}
-
-	const projects = safeJSONParse<{name: string}[]>(
-		customFields[OrderCustomFields.KORONEIKI_PROJECT],
-		[]
-	);
-
-	return projects[0]?.name ?? '';
+function getProjectKey(order: PlacedOrder): string {
+	return getProjectExternalReferenceCode(order) || getProjectName(order);
 }
 
 export function getOrderTotal(order: PlacedOrder): string {
@@ -194,21 +184,30 @@ export default function Orders() {
 
 	const orders = useMemo(() => data?.items ?? [], [data]);
 
-	const projectOptions = useMemo<FilterOption[]>(() => {
-		const names = new Set<string>();
+	const projectLabels = useMemo(() => {
+		const labels = new Map<string, string>();
 
 		orders.forEach((order) => {
-			const name = getProjectName(order);
+			const key = getProjectKey(order);
 
-			if (name) {
-				names.add(name);
+			if (key && !labels.has(key)) {
+				labels.set(key, getProjectName(order) || key);
 			}
 		});
 
-		return Array.from(names)
-			.sort()
-			.map((name) => ({label: name, value: name}));
+		return labels;
 	}, [orders]);
+
+	const projectOptions = useMemo<FilterOption[]>(
+		() =>
+			Array.from(projectLabels, ([value, label]) => ({
+				label,
+				value,
+			})).sort((option1, option2) =>
+				option1.label.localeCompare(option2.label)
+			),
+		[projectLabels]
+	);
 
 	const statusOptions = useMemo<FilterOption[]>(() => {
 		const statuses = new Set<string>();
@@ -244,7 +243,9 @@ export default function Orders() {
 			}
 
 			if (projectFilter.values.length) {
-				const matches = projectFilter.values.includes(projectName);
+				const matches = projectFilter.values.includes(
+					getProjectKey(order)
+				);
 
 				if (projectFilter.exclude ? matches : !matches) {
 					return false;
@@ -275,7 +276,9 @@ export default function Orders() {
 			value: string;
 		}[] = [];
 
-		projectFilter.values.forEach((name) => {
+		projectFilter.values.forEach((key) => {
+			const name = projectLabels.get(key) ?? key;
+
 			filters.push({
 				label: projectFilter.exclude
 					? `${translate('project')}: ${translate('exclude')} ${name}`
@@ -284,12 +287,12 @@ export default function Orders() {
 					setProjectFilter((previous) => ({
 						...previous,
 						values: previous.values.filter(
-							(current) => current !== name
+							(current) => current !== key
 						),
 					}));
 					setPage(1);
 				},
-				value: `project-${name}`,
+				value: `project-${key}`,
 			});
 		});
 
@@ -307,7 +310,7 @@ export default function Orders() {
 		});
 
 		return filters;
-	}, [projectFilter, statusFilter]);
+	}, [projectFilter, projectLabels, statusFilter]);
 
 	const closeFilter = () => {
 		setFilterActive(false);

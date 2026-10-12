@@ -91,6 +91,7 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 				'ldpAnalyticsCloudProject': 'ldp',
 				'order-metadata': 'metadata',
 				'projectName': 'project',
+				'salesforceProjectId': 'PRJCT-1',
 				'trial-end-date': 'end',
 				'trial-error': 'error',
 				'trial-settings': 'settings',
@@ -106,6 +107,7 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 			LDP_ANALYTICS_CLOUD_PROJECT: 'ldp',
 			ORDER_METADATA: 'metadata',
 			PROJECT_NAME: 'project',
+			SALESFORCE_PROJECT_ID: 'PRJCT-1',
 			TRIAL_END_DATE: 'end',
 			TRIAL_ERROR: 'error',
 			TRIAL_SETTINGS: 'settings',
@@ -117,7 +119,7 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 	it('maps the custom field keys to undefined when the order has no custom fields', () => {
 		const customFields = createModel({}).customFields;
 
-		expect(Object.keys(customFields)).toHaveLength(11);
+		expect(Object.keys(customFields)).toHaveLength(12);
 		expect(
 			Object.values(customFields).every((value) => value === undefined)
 		).toBe(true);

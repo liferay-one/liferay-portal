@@ -10,7 +10,11 @@ import {
 	useProjectCommerce,
 	useProjectEntitlements,
 } from '~/hooks/useProjectCommerce';
-import {getProjectName, useProjectOrders} from '~/hooks/useProjectOrders';
+import {
+	hasProject,
+	isProjectOrder,
+	useProjectOrders,
+} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {
@@ -37,40 +41,28 @@ export function useProjectsWithProjectItemType(
 		[channelProducts]
 	);
 
-	const projectERCs = useMemo(() => {
-		const ordersByProjectName = new Map<string, PlacedOrder[]>();
-
-		for (const order of placedOrders) {
-			const projectName = getProjectName(order);
-
-			const orders = ordersByProjectName.get(projectName);
-
-			if (orders) {
-				orders.push(order);
-			}
-			else {
-				ordersByProjectName.set(projectName, [order]);
-			}
-		}
-
-		return projects
-			.filter((project) => {
-				const orders =
-					ordersByProjectName.get(
+	const projectERCs = useMemo(
+		() =>
+			projects
+				.filter((project) => {
+					const orders = placedOrders.filter((order) =>
 						isUnassignedProject(project.externalReferenceCode)
-							? ''
-							: project.name
-					) ?? [];
+							? !hasProject(order)
+							: isProjectOrder(order, project)
+					);
 
-				const itemsByProjectItemType = toProjectItemsByType(
-					orders,
-					productsByProductId
-				);
+					const itemsByProjectItemType = toProjectItemsByType(
+						orders,
+						productsByProductId
+					);
 
-				return Boolean(itemsByProjectItemType[projectItemType].size);
-			})
-			.map((project) => project.externalReferenceCode);
-	}, [placedOrders, productsByProductId, projectItemType, projects]);
+					return Boolean(
+						itemsByProjectItemType[projectItemType].size
+					);
+				})
+				.map((project) => project.externalReferenceCode),
+		[placedOrders, productsByProductId, projectItemType, projects]
+	);
 
 	return {
 		loading: ordersLoading || productsLoading,
@@ -81,9 +73,7 @@ export function useProjectsWithProjectItemType(
 export function useProjectItems() {
 	const {loading: projectLoading, project, projectId} = useProject();
 
-	const projectName = isUnassignedProject(projectId)
-		? undefined
-		: project?.name;
+	const orderProject = isUnassignedProject(projectId) ? undefined : project;
 
 	const {
 		data: channelProducts,
@@ -94,12 +84,12 @@ export function useProjectItems() {
 		error: ordersError,
 		loading: ordersLoading,
 		placedOrders,
-	} = useProjectOrders(projectName);
+	} = useProjectOrders(orderProject);
 
 	const scopedOrders = useMemo(
 		() =>
 			isUnassignedProject(projectId)
-				? placedOrders.filter((order) => !getProjectName(order))
+				? placedOrders.filter((order) => !hasProject(order))
 				: placedOrders,
 		[placedOrders, projectId]
 	);

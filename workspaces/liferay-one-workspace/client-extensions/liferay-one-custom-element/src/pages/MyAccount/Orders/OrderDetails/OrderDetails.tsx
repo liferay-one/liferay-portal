@@ -10,6 +10,7 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {PageRenderer} from '~/components/Page/Page';
 import Table from '~/components/Table/Table';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
+import {getProjectName} from '~/hooks/useProjectOrders';
 import i18n, {Word, translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
@@ -21,7 +22,7 @@ import {
 	paymentStatusLabels,
 } from '~/utils/orderUtils';
 
-import {getOrderTotal, getProjectName} from '../Orders';
+import {getOrderTotal} from '../Orders';
 
 import '../Orders.css';
 

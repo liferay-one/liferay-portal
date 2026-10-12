@@ -11,6 +11,7 @@ import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
 
+import type {UserProject} from '~/pages/MyAccount/Projects/types';
 import type {AnalyticsProject} from '~/types/analytics';
 import type {PlacedOrder, VirtualItem} from '~/types/orders';
 
@@ -100,9 +101,33 @@ export type ProductEnvironmentInfo = {
 	projectName: string;
 };
 
-export function getProjectName(order: {
+type OrderWithCustomFields = {
 	customFields?: {[key: string]: string};
-}): string {
+};
+
+export type OrderProject = Pick<UserProject, 'externalReferenceCode' | 'name'>;
+
+export function getProjectExternalReferenceCode(
+	order: OrderWithCustomFields
+): string {
+	const customFields = order.customFields ?? {};
+
+	const salesforceProjectId =
+		customFields[OrderCustomFields.SALESFORCE_PROJECT_ID];
+
+	if (salesforceProjectId) {
+		return salesforceProjectId;
+	}
+
+	const orderMetadata = safeJSONParse<{salesforceProjectId?: string}>(
+		customFields[OrderCustomFields.ORDER_METADATA],
+		{}
+	);
+
+	return orderMetadata.salesforceProjectId ?? '';
+}
+
+export function getProjectName(order: OrderWithCustomFields): string {
 	const customFields = order.customFields ?? {};
 
 	const projectName = customFields[OrderCustomFields.PROJECT_NAME];
@@ -117,6 +142,25 @@ export function getProjectName(order: {
 	);
 
 	return projects[0]?.name ?? '';
+}
+
+export function hasProject(order: OrderWithCustomFields): boolean {
+	return Boolean(
+		getProjectExternalReferenceCode(order) || getProjectName(order)
+	);
+}
+
+export function isProjectOrder(
+	order: OrderWithCustomFields,
+	project: OrderProject
+): boolean {
+	const projectExternalReferenceCode = getProjectExternalReferenceCode(order);
+
+	if (projectExternalReferenceCode) {
+		return projectExternalReferenceCode === project.externalReferenceCode;
+	}
+
+	return getProjectName(order) === project.name;
 }
 
 function getOrderTotal(order: PlacedOrder): string {
@@ -153,7 +197,7 @@ function hasProduct(order: PlacedOrder, productId: number): boolean {
 	);
 }
 
-export function useProjectOrders(projectName?: string, productId?: number) {
+export function useProjectOrders(project?: OrderProject, productId?: number) {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
 	const {data, error, isLoading} = usePlacedOrders(
@@ -164,10 +208,10 @@ export function useProjectOrders(projectName?: string, productId?: number) {
 		() =>
 			(data?.items ?? []).filter(
 				(order) =>
-					(!projectName || getProjectName(order) === projectName) &&
+					(!project || isProjectOrder(order, project)) &&
 					(productId === undefined || hasProduct(order, productId))
 			),
-		[data, productId, projectName]
+		[data, productId, project]
 	);
 
 	const orders = useMemo<ProjectOrder[]>(

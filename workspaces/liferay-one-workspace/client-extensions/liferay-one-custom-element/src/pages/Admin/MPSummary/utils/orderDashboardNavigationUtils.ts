@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {getProjectName} from '~/hooks/useProjectOrders';
+import {
+	getProjectExternalReferenceCode,
+	getProjectName,
+} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
@@ -32,6 +35,12 @@ export async function resolveProjectPath(order: Order) {
 		? 'applications'
 		: 'products';
 
+	const projectExternalReferenceCode = getProjectExternalReferenceCode(order);
+
+	if (projectExternalReferenceCode) {
+		return `${projectExternalReferenceCode}/${tab}`;
+	}
+
 	const projectName = getProjectName(order);
 
 	if (!projectName) {
@@ -50,10 +59,10 @@ export async function resolveProjectPath(order: Order) {
 		})}`
 	);
 
-	const projectExternalReferenceCode = items?.[0]?.externalReferenceCode;
+	const namedProjectExternalReferenceCode = items?.[0]?.externalReferenceCode;
 
-	return projectExternalReferenceCode
-		? `${projectExternalReferenceCode}/${tab}`
+	return namedProjectExternalReferenceCode
+		? `${namedProjectExternalReferenceCode}/${tab}`
 		: tab;
 }
 

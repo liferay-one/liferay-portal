@@ -64,9 +64,7 @@ export default function ProjectItemDetails({
 
 	const itemERC = productERC ?? applicationERC ?? '';
 
-	const projectName = isUnassignedProject(projectId)
-		? undefined
-		: project?.name;
+	const orderProject = isUnassignedProject(projectId) ? undefined : project;
 
 	const {contract, loading: contractLoading} = useProjectCommerce(
 		isUnassignedProject(projectId) ? '' : projectId,
@@ -85,7 +83,7 @@ export default function ProjectItemDetails({
 
 	const {data: product, isLoading} = useDeliveryProduct(productId);
 	const {loading: ordersLoading, placedOrders} =
-		useProjectOrders(projectName);
+		useProjectOrders(orderProject);
 	const {data: lrTokensProduct} = useDeliveryProductByExternalReferenceCode(
 		product && resolveEnvironmentProfile(product) === 'ai-hub'
 			? ProductExternalReferenceCode.LR_TOKENS

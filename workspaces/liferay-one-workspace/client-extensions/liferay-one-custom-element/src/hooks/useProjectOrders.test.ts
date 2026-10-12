@@ -12,7 +12,10 @@ import {usePlacedOrders} from './usePlacedOrder';
 import {
 	getProductOrderInfo,
 	getProductVirtualItems,
+	getProjectExternalReferenceCode,
 	getProjectName,
+	hasProject,
+	isProjectOrder,
 	useProjectOrders,
 } from './useProjectOrders';
 
@@ -48,6 +51,10 @@ const betaOrder = placedOrder({
 	id: 2,
 });
 
+const alphaProject = {externalReferenceCode: 'PRJCT-ALPHA', name: 'Alpha'};
+
+const betaProject = {externalReferenceCode: 'PRJCT-BETA', name: 'Beta'};
+
 describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 	beforeEach(() => {
 		Liferay.CommerceContext.account = {accountId: 7, accountName: 'Acme'};
@@ -69,6 +76,76 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 	it('returns an empty project name when neither field is set', () => {
 		expect(getProjectName(placedOrder({id: 3}))).toBe('');
+	});
+
+	it('takes the project external reference code from the custom field', () => {
+		expect(
+			getProjectExternalReferenceCode(
+				placedOrder({
+					customFields: {
+						'order-metadata': '{"salesforceProjectId":"PRJCT-OLD"}',
+						'salesforceProjectId': 'PRJCT-ALPHA',
+					},
+				})
+			)
+		).toBe('PRJCT-ALPHA');
+	});
+
+	it('falls back to the project external reference code in the order metadata', () => {
+		expect(
+			getProjectExternalReferenceCode(
+				placedOrder({
+					customFields: {
+						'order-metadata':
+							'{"salesforceProjectId":"PRJCT-ALPHA"}',
+					},
+				})
+			)
+		).toBe('PRJCT-ALPHA');
+	});
+
+	it('returns an empty project external reference code when neither field is set', () => {
+		expect(getProjectExternalReferenceCode(alphaOrder)).toBe('');
+		expect(getProjectExternalReferenceCode(placedOrder({id: 3}))).toBe('');
+	});
+
+	it('has a project when the order carries either a project external reference code or a name', () => {
+		expect(
+			hasProject(
+				placedOrder({
+					customFields: {salesforceProjectId: 'PRJCT-ALPHA'},
+				})
+			)
+		).toBe(true);
+		expect(hasProject(alphaOrder)).toBe(true);
+		expect(hasProject(placedOrder({id: 3}))).toBe(false);
+	});
+
+	it('matches the project by external reference code over a renamed project name', () => {
+		const renamedOrder = placedOrder({
+			customFields: {
+				projectName: 'Alpha Before Rename',
+				salesforceProjectId: 'PRJCT-ALPHA',
+			},
+		});
+
+		expect(isProjectOrder(renamedOrder, alphaProject)).toBe(true);
+	});
+
+	it('does not match a project that shares the name but not the external reference code', () => {
+		const otherAlphaOrder = placedOrder({
+			customFields: {
+				projectName: 'Alpha',
+				salesforceProjectId: 'PRJCT-OTHER-ALPHA',
+			},
+		});
+
+		expect(isProjectOrder(otherAlphaOrder, alphaProject)).toBe(false);
+	});
+
+	it('matches the project by name when the order has no project external reference code', () => {
+		expect(isProjectOrder(alphaOrder, alphaProject)).toBe(true);
+		expect(isProjectOrder(betaOrder, alphaProject)).toBe(false);
 	});
 
 	it('requests every page of the account orders, and skips the request without an account', () => {
@@ -116,10 +193,10 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		]);
 	});
 
-	it('filters the orders by project name', () => {
+	it('filters the orders by project', () => {
 		mockPlacedOrders([alphaOrder, betaOrder]);
 
-		const {result} = renderHook(() => useProjectOrders('Beta'));
+		const {result} = renderHook(() => useProjectOrders(betaProject));
 
 		expect(result.current.placedOrders).toEqual([betaOrder]);
 		expect(result.current.orders.map(({id}) => id)).toEqual(['2']);
@@ -134,7 +211,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 		mockPlacedOrders([alphaOrder, betaOrder, productOrder]);
 
-		const {result} = renderHook(() => useProjectOrders('Alpha', 12));
+		const {result} = renderHook(() => useProjectOrders(alphaProject, 12));
 
 		expect(result.current.placedOrders).toEqual([productOrder]);
 		expect(result.current.orders.map(({id}) => id)).toEqual(['4']);

@@ -95,6 +95,21 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 			).resolves.toBe('one-time-purchases/products');
 		});
 
+		it('uses the project external reference code on the order without a lookup', async () => {
+			await expect(
+				resolveProjectPath(
+					buildOrder({
+						customFields: {
+							projectName: 'Renamed Project',
+							salesforceProjectId: 'PRJCT-001',
+						},
+					})
+				)
+			).resolves.toBe('PRJCT-001/applications');
+
+			expect(mocks.fetcher).not.toHaveBeenCalled();
+		});
+
 		it('resolves the project by account and exact name with a single row', async () => {
 			mocks.fetcher.mockResolvedValue({
 				items: [{externalReferenceCode: 'PRJCT-001'}],
