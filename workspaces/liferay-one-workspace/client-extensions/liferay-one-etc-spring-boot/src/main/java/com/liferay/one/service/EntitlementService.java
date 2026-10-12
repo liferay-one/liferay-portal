@@ -325,6 +325,17 @@ public class EntitlementService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode) + "'");
 	}
 
+	public List<Entitlement> getActiveUnassignedEntitlements(
+			long accountEntryId)
+		throws Exception {
+
+		return _getActiveEntitlements(
+			StringBundler.concat(
+				"(r_accountEntryToEntitlement_accountEntryId eq '",
+				accountEntryId,
+				"') and (r_projectToEntitlement_c_projectId eq '0')"));
+	}
+
 	public Entitlement getEntitlement(long entitlementId) throws Exception {
 		try {
 			String response = get(
