@@ -40,7 +40,7 @@ public class LicenseKeyPermission {
 			UserAccount userAccount, long accountEntryId, String actionId)
 		throws Exception {
 
-		if (!_contains(userAccount, accountEntryId, actionId)) {
+		if (!contains(userAccount, accountEntryId, actionId)) {
 			throw new PrincipalException();
 		}
 	}
@@ -77,7 +77,7 @@ public class LicenseKeyPermission {
 		checkSelfProvisioning(accountEntryId);
 	}
 
-	private boolean _contains(
+	public boolean contains(
 			UserAccount userAccount, long accountEntryId, String actionId)
 		throws Exception {
 

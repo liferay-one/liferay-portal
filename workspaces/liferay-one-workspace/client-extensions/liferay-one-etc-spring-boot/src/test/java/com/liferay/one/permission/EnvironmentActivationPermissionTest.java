@@ -5,22 +5,26 @@
 
 package com.liferay.one.permission;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Objects;
 
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -35,6 +39,188 @@ import org.springframework.test.util.ReflectionTestUtils;
 	"[PERM-ENVIRONMENTACTIVATIONPERMISSION] EnvironmentActivationPermission"
 )
 public class EnvironmentActivationPermissionTest {
+
+	@BeforeEach
+	public void setUp() throws Exception {
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			account.getExternalReferenceCode()
+		).thenReturn(
+			_ACCOUNT_ERC
+		);
+
+		Mockito.when(
+			account.getId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			_accountService.fetchAccountByExternalReferenceCode(_ACCOUNT_ERC)
+		).thenReturn(
+			account
+		);
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsAccountAdministrator()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Account account =
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null);
+
+		Assertions.assertEquals(_ACCOUNT_ID, account.getId());
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsAdministratorForMissingAccount()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_ADMINISTRATOR}, null,
+					new String[0]),
+				null, null);
+
+		Assertions.assertNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_OTHER_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsLicenseKeyManager()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			new String[0], _ACCOUNT_ERC,
+			new String[] {RoleConstants.NAME_SUPPORT_ADMINISTRATOR});
+
+		Mockito.when(
+			_licenseKeyPermission.contains(
+				userAccount, _ACCOUNT_ID, ActionKeys.UPDATE)
+		).thenReturn(
+			true
+		);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(userAccount, null, null);
+
+		Assertions.assertNotNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsLiferayStaff()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_LIFERAY_STAFF}, null,
+					new String[0]),
+				null, null);
+
+		Assertions.assertNotNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsPartnerManager()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_PARTNER_MANAGER}),
+				null, null);
+
+		Assertions.assertNotNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsProvisioningAdministrator()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {
+						RoleConstants.NAME_PROVISIONING_ADMINISTRATOR
+					},
+					null, new String[0]),
+				null, null);
+
+		Assertions.assertNotNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationThrowsForAccountMember()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], _ACCOUNT_ERC, new String[0]),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				environmentActivationPermission.
+					checkAccountLicenseKeyActivation(_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationThrowsForAdministratorOfOtherAccount()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _OTHER_ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				environmentActivationPermission.
+					checkAccountLicenseKeyActivation(_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationThrowsForMissingAccount()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _OTHER_ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				environmentActivationPermission.
+					checkAccountLicenseKeyActivation(_OTHER_ACCOUNT_ERC, null));
+	}
 
 	@Test
 	public void testCheckGrantsAccountAdministrator() throws Exception {
@@ -264,6 +450,14 @@ public class EnvironmentActivationPermissionTest {
 		);
 
 		ReflectionTestUtils.setField(
+			environmentActivationPermission, "_accountService",
+			_accountService);
+
+		ReflectionTestUtils.setField(
+			environmentActivationPermission, "_licenseKeyPermission",
+			_licenseKeyPermission);
+
+		ReflectionTestUtils.setField(
 			environmentActivationPermission, "_projectMembershipService",
 			projectMembershipService);
 
@@ -382,12 +576,18 @@ public class EnvironmentActivationPermissionTest {
 
 	private static final String _ACCOUNT_ERC = "ACCOUNT-1";
 
+	private static final long _ACCOUNT_ID = 77L;
+
 	private static final String _OTHER_ACCOUNT_ERC = "ACCOUNT-2";
 
 	private static final String _PROJECT_ERC = "PRJCT-001";
 
 	private static final long _USER_ID = 1000L;
 
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
+	private final LicenseKeyPermission _licenseKeyPermission = Mockito.mock(
+		LicenseKeyPermission.class);
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
 
