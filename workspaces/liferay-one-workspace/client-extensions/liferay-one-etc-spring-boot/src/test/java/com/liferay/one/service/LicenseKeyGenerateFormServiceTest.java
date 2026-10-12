@@ -372,24 +372,10 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesSpendsComplimentaryWhileTheProjectHasOne() {
+	public void testGetKeyTypesSkipsComplimentaryWhileTheProjectHasOne() {
 		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, true);
 
-		Assertions.assertEquals(1, jsonArray.length());
-
-		JSONObject jsonObject = jsonArray.getJSONObject(0);
-
-		Assertions.assertEquals("complimentary", jsonObject.getString("key"));
-
-		JSONObject subscriptionJSONObject = jsonObject.getJSONArray(
-			"subscriptions"
-		).getJSONObject(
-			0
-		);
-
-		Assertions.assertEquals(
-			0, subscriptionJSONObject.getInt("availableCount"));
-		Assertions.assertEquals(1, subscriptionJSONObject.getInt("totalCount"));
+		Assertions.assertEquals(0, jsonArray.length());
 	}
 
 	@Test
