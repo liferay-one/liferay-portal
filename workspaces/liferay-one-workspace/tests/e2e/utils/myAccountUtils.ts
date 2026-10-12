@@ -138,6 +138,65 @@ export async function createTemporaryMember(
 }
 
 /**
+ * Creates a temporary member with the access of the seeded administrator: the
+ * Administrator and Marketplace Publisher regular roles, and Account
+ * Administrator on each given account. My Account and the publisher dashboard
+ * switch the current account of whoever opens them, and the current account
+ * is stored per user, so a journey that runs there as the shared
+ * administrator persona switches the account under every parallel test that
+ * also signs in as it. `deleteTemporaryMember` removes it.
+ */
+
+export async function createTemporaryAdministrator(
+	adminAPI: HeadlessAPI,
+	accountERCs: string[]
+): Promise<TemporaryMember> {
+	const member = await createTemporaryMember(adminAPI, accountERCs);
+
+	try {
+		for (const accountERC of accountERCs) {
+			const accountPath = `${ACCOUNTS_PATH}/by-external-reference-code/${accountERC}`;
+
+			const {items: accountRoles} = await adminAPI.get<
+				HeadlessPage<{id: number; name: string}>
+			>(`${accountPath}/account-roles?pageSize=200`);
+
+			const accountRole = accountRoles.find(
+				({name}) => name === 'Account Administrator'
+			);
+
+			expect(
+				accountRole,
+				`expected ${accountERC} to have an Account Administrator role`
+			).toBeTruthy();
+
+			await adminAPI.post(
+				`${accountPath}/account-roles/${accountRole!.id}/user-accounts/by-email-address/${member.email}`,
+				{}
+			);
+		}
+
+		for (const roleERC of ['C_MARKETPLACE_PUBLISHER', 'L_ADMINISTRATOR']) {
+			const role = await adminAPI.get<{id: number}>(
+				`/o/headless-admin-user/v1.0/roles/by-external-reference-code/${roleERC}`
+			);
+
+			await adminAPI.post(
+				`/o/headless-admin-user/v1.0/roles/${role.id}/association/user-account/${member.userId}`,
+				{}
+			);
+		}
+
+		return member;
+	}
+	catch (error) {
+		await deleteTemporaryMember(adminAPI, member);
+
+		throw error;
+	}
+}
+
+/**
  * Deletes the project memberships of a temporary member, then the member. A
  * membership left behind points at a deleted user and renders as an unknown
  * member chip on Project Permissions.

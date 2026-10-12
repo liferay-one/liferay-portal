@@ -19,6 +19,7 @@ import {liferayLogin} from '../utils/loginUtils';
 import {
 	TemporaryMember,
 	clickDropdownItemBesideCheckbox,
+	createTemporaryAdministrator,
 	createTemporaryMember,
 	deleteTemporaryMember,
 	expectSettled,
@@ -371,8 +372,8 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
 	});
 
 	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] syncs the account to JSM as an administrator', async ({
+		adminAPI,
 		page,
-		signIn,
 		springBoot,
 	}) => {
 		test.skip(
@@ -384,25 +385,39 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
 			status: 200,
 		});
 
-		await signIn('ADMINISTRATOR');
+		const administrator = await createTemporaryAdministrator(adminAPI, [
+			ACCOUNT_ERC,
+		]);
 
-		await gotoMyAccount(page, `${ACCOUNT_ERC}/account-details`);
+		try {
+			await liferayLogin(
+				page,
+				administrator.email,
+				administrator.password
+			);
 
-		const syncButton = page.getByRole('button', {name: 'Sync to JSM'});
+			await gotoMyAccount(page, `${ACCOUNT_ERC}/account-details`);
 
-		await expect(syncButton).toBeVisible();
+			const syncButton = page.getByRole('button', {name: 'Sync to JSM'});
 
-		await syncButton.click();
+			await expect(syncButton).toBeVisible();
 
-		await expectToast(page, 'The account was successfully synced to JSM.');
+			await syncButton.click();
 
-		if (springBoot.enabled) {
+			await expectToast(
+				page,
+				'The account was successfully synced to JSM.'
+			);
+
 			expect(
 				springBoot.callsTo(
 					'POST',
 					`/accounts/${ACCOUNT_ERC}/sync-to-jsm`
 				)
 			).toHaveLength(1);
+		}
+		finally {
+			await deleteTemporaryMember(adminAPI, administrator);
 		}
 	});
 });

@@ -8,6 +8,12 @@ import {Page} from '@playwright/test';
 import {expect, oneTest as test} from '../fixtures/oneTest';
 import {selectCurrentAccount} from '../utils/accountUtils';
 import {PUBLISHER_ACCOUNT_ERC} from '../utils/environmentUtils';
+import {liferayLogin} from '../utils/loginUtils';
+import {
+	TemporaryMember,
+	createTemporaryAdministrator,
+	deleteTemporaryMember,
+} from '../utils/myAccountUtils';
 import {
 	PUBLISHER_DASHBOARD_PATH,
 	gotoPublisherDashboard,
@@ -18,9 +24,11 @@ import {
  * The dashboard resolves the catalog from the commerce current account, so
  * each test selects the publisher account (Test Supplier, ACCNT-021) first.
  *
- * The journeys run as the administrator, who holds the Marketplace Publisher
- * role on Test Supplier. The seeded publisher persona holds the same role but
- * cannot read the catalog; the first test pins that gap.
+ * The journeys run as a temporary administrator with the Marketplace
+ * Publisher role and Account Administrator on Test Supplier, because selecting
+ * the account as the shared administrator persona would switch it under every
+ * parallel test signed in as that persona. The seeded publisher persona holds
+ * the same roles but cannot read the catalog; the first test pins that gap.
  */
 
 const SEEDED_APPS = [
@@ -69,10 +77,26 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 	});
 
 	test.describe('as the publisher of Test Supplier', () => {
-		test.beforeEach(async ({page, signIn}) => {
-			await signIn('ADMINISTRATOR');
+		let administrator: TemporaryMember | undefined;
+
+		test.beforeEach(async ({adminAPI, page}) => {
+			administrator = await createTemporaryAdministrator(adminAPI, [
+				PUBLISHER_ACCOUNT_ERC,
+			]);
+
+			await liferayLogin(
+				page,
+				administrator.email,
+				administrator.password
+			);
 
 			await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+		});
+
+		test.afterEach(async ({adminAPI}) => {
+			await deleteTemporaryMember(adminAPI, administrator);
+
+			administrator = undefined;
 		});
 
 		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-APPS] lists the published apps of the catalog', async ({
