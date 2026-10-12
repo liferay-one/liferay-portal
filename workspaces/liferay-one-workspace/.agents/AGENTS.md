@@ -35,6 +35,7 @@ Run from `workspaces/liferay-one-workspace/`.
 - Start environment: Run `/one-env-up` skill.
 - Stop environment: Run `/one-env-down` skill.
 - Reset environment: Run `/one-env-reset` skill.
+- Instance per worktree: Run `/one-worktree-instance` skill.
 - Liferay MCP setup: Run `/one-mcp` skill.
 - **Build:** `./gradlew build`
 - **Lint:** `yarn lint`

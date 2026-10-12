@@ -28,6 +28,10 @@ and a restart). So a clean instance is achieved by resetting the default
 company's data in place instead — which is exactly what this reset does, with no
 restart.
 
+A nondefault instance has none of these limits. For an instance that belongs to
+one worktree, `scripts/instance.sh delete` followed by `provision` or `clone`
+replaces it outright; see `/one-worktree-instance`.
+
 ## Prerequisite
 
 The Liferay containers must already be running (`docker ps` shows a healthy
