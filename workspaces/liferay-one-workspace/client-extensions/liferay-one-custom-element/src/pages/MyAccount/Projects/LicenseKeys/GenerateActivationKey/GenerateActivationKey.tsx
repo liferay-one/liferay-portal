@@ -17,6 +17,7 @@ import {
 	ACTIVATION_ERROR_MESSAGE_KEYS,
 	BUNDLE_ERROR_MESSAGE_KEYS,
 } from '~/pages/MyAccount/Projects/utils/cloudActivationErrorConstants';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
@@ -27,6 +28,7 @@ import {scrollToTop} from '~/utils/browserUtils';
 import {toISODate} from '~/utils/dateUtils';
 
 import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
+import {useActivationKeyScope} from '../hooks/useActivationKeyScope';
 import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
 import ComplimentaryStep from './ComplimentaryStep/ComplimentaryStep';
@@ -51,6 +53,8 @@ import {
 	findMatchingVersion,
 	getBundleProducts,
 	getComplimentaryPurpose,
+	getStepAfterSubscription,
+	getStepBeforeEnvironment,
 	hasAvailableKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
@@ -67,10 +71,15 @@ export default function GenerateActivationKey() {
 	const navigate = useNavigate();
 	const [searchParams] = useSearchParams();
 
-	const renewExternalReferenceCode = searchParams.get('renew');
+	const scope = useActivationKeyScope();
+	const unassigned = isUnassignedProject(projectId);
+
+	const renewExternalReferenceCode = unassigned
+		? null
+		: searchParams.get('renew');
 
 	const {error, generateForm, loading} = useGenerateActivationKeyForm(
-		projectId,
+		scope,
 		renewExternalReferenceCode
 	);
 	const {hasActivationPermission, loading: permissionLoading} =
@@ -123,8 +132,8 @@ export default function GenerateActivationKey() {
 	const bundleEntitlementIds = watch('bundleEntitlementIds');
 	const keyType = watch('keyType');
 
-	const complimentary = isComplimentaryKeyType(keyType);
-	const developer = isDeveloperKeyType(keyType);
+	const complimentary = !unassigned && isComplimentaryKeyType(keyType);
+	const developer = !unassigned && isDeveloperKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const version = watch('version');
 
@@ -393,19 +402,14 @@ export default function GenerateActivationKey() {
 	}
 
 	function onClickContinueSubscription() {
-		if (complimentary) {
-			goTo('complimentary');
-
-			return;
-		}
-
-		if (!cloudNative || developer) {
-			goTo('add-ons');
-
-			return;
-		}
-
-		goTo('activation-codes');
+		goTo(
+			getStepAfterSubscription({
+				cloudNative,
+				complimentary,
+				developer,
+				unassigned,
+			})
+		);
 	}
 
 	async function onClickDownloadPackage() {
@@ -527,6 +531,10 @@ export default function GenerateActivationKey() {
 	}
 
 	async function onClickGenerate() {
+		if (!scope) {
+			return;
+		}
+
 		const values = getValues();
 
 		setSubmitError('');
@@ -544,7 +552,6 @@ export default function GenerateActivationKey() {
 				description: values.description || undefined,
 				environmentName: values.environmentName,
 				keyType: values.keyType,
-				projectExternalReferenceCode: projectId,
 				purpose: complimentary
 					? getComplimentaryPurpose(
 							values.purpose,
@@ -562,6 +569,7 @@ export default function GenerateActivationKey() {
 				version: values.version,
 				workspaceName: values.workspaceName || undefined,
 				workspaceOwnerEmail: values.workspaceOwnerEmail || undefined,
+				...scope,
 			}));
 		}
 		catch (error) {
@@ -773,11 +781,11 @@ export default function GenerateActivationKey() {
 							generated={generated}
 							onClickBack={() =>
 								goTo(
-									complimentary
-										? 'complimentary'
-										: needsDSRStep
-											? 'dsr'
-											: 'add-ons'
+									getStepBeforeEnvironment({
+										complimentary,
+										needsDSRStep,
+										unassigned,
+									})
 								)
 							}
 							onClickCancel={onClickCancel}

@@ -18,6 +18,8 @@ import {
 	getGenerateButtonLabel,
 	getLicenseKeyFamilyLabel,
 	getLicenseKeyFamilyRank,
+	getStepAfterSubscription,
+	getStepBeforeEnvironment,
 	hasAvailableKeyType,
 	hasServerInfo,
 	isCloudNativeProduct,
@@ -317,6 +319,62 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 					'DXP 7.4'
 				)
 			).toBe(true);
+		});
+	});
+
+	describe('steps', () => {
+		const route = {
+			cloudNative: false,
+			complimentary: false,
+			developer: false,
+			unassigned: false,
+		};
+
+		it('goes from the subscription to the add ons of a project key', () => {
+			expect(getStepAfterSubscription(route)).toBe('add-ons');
+			expect(
+				getStepAfterSubscription({...route, cloudNative: true})
+			).toBe('activation-codes');
+			expect(
+				getStepAfterSubscription({...route, complimentary: true})
+			).toBe('complimentary');
+		});
+
+		it('goes from the subscription straight to the environment of an app key', () => {
+			expect(getStepAfterSubscription({...route, unassigned: true})).toBe(
+				'environment'
+			);
+			expect(
+				getStepBeforeEnvironment({
+					complimentary: false,
+					needsDSRStep: false,
+					unassigned: true,
+				})
+			).toBe('subscription');
+		});
+
+		it('goes back from the environment to the step before it', () => {
+			expect(
+				getStepBeforeEnvironment({
+					complimentary: false,
+					needsDSRStep: false,
+					unassigned: false,
+				})
+			).toBe('add-ons');
+			expect(
+				getStepBeforeEnvironment({
+					complimentary: false,
+					needsDSRStep: true,
+					unassigned: false,
+				})
+			).toBe('dsr');
+			expect(
+				getStepBeforeEnvironment({
+					complimentary: true,
+					needsDSRStep: false,
+					unassigned: false,
+				})
+			).toBe('complimentary');
 		});
 	});
 

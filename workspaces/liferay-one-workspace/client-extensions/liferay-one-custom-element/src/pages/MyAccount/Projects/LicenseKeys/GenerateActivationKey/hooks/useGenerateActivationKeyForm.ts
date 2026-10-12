@@ -5,11 +5,12 @@
 
 import {useEffect, useState} from 'react';
 import ActivationKeys, {
+	ActivationKeyScope,
 	GenerateForm,
 } from '~/services/spring-boot/ActivationKeys';
 
 export function useGenerateActivationKeyForm(
-	projectExternalReferenceCode: string,
+	scope?: ActivationKeyScope,
 	renewedActivationKeyExternalReferenceCode?: string | null
 ) {
 	const [error, setError] = useState(false);
@@ -17,7 +18,7 @@ export function useGenerateActivationKeyForm(
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		if (!projectExternalReferenceCode) {
+		if (!scope) {
 			setError(true);
 			setLoading(false);
 
@@ -30,7 +31,7 @@ export function useGenerateActivationKeyForm(
 		setLoading(true);
 
 		ActivationKeys.getGenerateForm(
-			projectExternalReferenceCode,
+			scope,
 			renewedActivationKeyExternalReferenceCode ?? undefined
 		)
 			.then((value) => {
@@ -52,10 +53,7 @@ export function useGenerateActivationKeyForm(
 		return () => {
 			cancelled = true;
 		};
-	}, [
-		projectExternalReferenceCode,
-		renewedActivationKeyExternalReferenceCode,
-	]);
+	}, [renewedActivationKeyExternalReferenceCode, scope]);
 
 	return {error, generateForm, loading};
 }
