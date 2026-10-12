@@ -5,17 +5,20 @@
 
 package com.liferay.one.permission;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Objects;
@@ -34,6 +37,36 @@ public class EnvironmentActivationPermission {
 		throws Exception {
 
 		return _check(false, jwt, projectExternalReferenceCode);
+	}
+
+	public Account checkAccountLicenseKeyActivation(
+			String accountExternalReferenceCode, Jwt jwt)
+		throws Exception {
+
+		Account account = null;
+
+		if (Validator.isNotNull(accountExternalReferenceCode)) {
+			account = _accountService.fetchAccountByExternalReferenceCode(
+				accountExternalReferenceCode);
+		}
+
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		if (_hasGlobalRole(userAccount)) {
+			return account;
+		}
+
+		if ((account != null) &&
+			(_isAccountAdministrator(
+				accountExternalReferenceCode, userAccount) ||
+			 _isPartnerManager(accountExternalReferenceCode, userAccount) ||
+			 _licenseKeyPermission.contains(
+				 userAccount, account.getId(), ActionKeys.UPDATE))) {
+
+			return account;
+		}
+
+		throw new PrincipalException();
 	}
 
 	public Project checkLicenseKeyActivation(
@@ -68,23 +101,8 @@ public class EnvironmentActivationPermission {
 
 		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
 
-		RoleBrief[] roleBriefs = userAccount.getRoleBriefs();
-
-		if (roleBriefs != null) {
-			for (RoleBrief roleBrief : roleBriefs) {
-				String roleBriefName = roleBrief.getName();
-
-				if (Objects.equals(
-						RoleConstants.NAME_ADMINISTRATOR, roleBriefName) ||
-					Objects.equals(
-						RoleConstants.NAME_LIFERAY_STAFF, roleBriefName) ||
-					Objects.equals(
-						RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
-						roleBriefName)) {
-
-					return true;
-				}
-			}
+		if (_hasGlobalRole(userAccount)) {
+			return true;
 		}
 
 		if (project == null) {
@@ -136,6 +154,31 @@ public class EnvironmentActivationPermission {
 		return accountBrief.getRoleBriefs();
 	}
 
+	private boolean _hasGlobalRole(UserAccount userAccount) {
+		RoleBrief[] roleBriefs = userAccount.getRoleBriefs();
+
+		if (roleBriefs == null) {
+			return false;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			String roleBriefName = roleBrief.getName();
+
+			if (Objects.equals(
+					RoleConstants.NAME_ADMINISTRATOR, roleBriefName) ||
+				Objects.equals(
+					RoleConstants.NAME_LIFERAY_STAFF, roleBriefName) ||
+				Objects.equals(
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
+					roleBriefName)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isAccountAdministrator(
 		String accountExternalReferenceCode, UserAccount userAccount) {
 
@@ -178,6 +221,12 @@ public class EnvironmentActivationPermission {
 
 		return false;
 	}
+
+	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
+	private LicenseKeyPermission _licenseKeyPermission;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;
