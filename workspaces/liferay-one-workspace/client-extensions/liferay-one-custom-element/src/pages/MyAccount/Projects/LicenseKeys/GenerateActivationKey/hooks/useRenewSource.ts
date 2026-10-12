@@ -13,7 +13,11 @@ import {
 } from '~/services/spring-boot/ActivationKeys';
 
 import {GenerateActivationKeyServer} from '../types';
-import {getLeadingProductRank} from '../utils';
+import {
+	getLeadingProductExternalReferenceCode,
+	getLeadingProductRank,
+	getLicenseKeyFamily,
+} from '../utils';
 
 export type RenewSource = {
 	bundleEntitlementIds: number[];
@@ -66,8 +70,18 @@ export function useRenewSource(
 			.filter((licenseKey) => licenseKey.active)
 			.sort(
 				(a, b) =>
-					getLeadingProductRank(a.productExternalReferenceCode) -
-					getLeadingProductRank(b.productExternalReferenceCode)
+					getLeadingProductRank(
+						getLeadingProductExternalReferenceCode(
+							a.licenseName,
+							a.productExternalReferenceCode
+						)
+					) -
+					getLeadingProductRank(
+						getLeadingProductExternalReferenceCode(
+							b.licenseName,
+							b.productExternalReferenceCode
+						)
+					)
 			);
 
 		const keyType = activationKey.type;
@@ -104,6 +118,23 @@ export function useRenewSource(
 		}
 
 		const [leadingLicenseKey] = orderedLicenseKeys;
+
+		if (!productExternalReferenceCode && leadingLicenseKey) {
+			const licenseKeyFamily = getLicenseKeyFamily(
+				leadingLicenseKey.licenseName
+			);
+
+			const product = licenseKeyFamily
+				? generateForm?.products.find(
+						(current) => current.label === licenseKeyFamily
+					)
+				: undefined;
+
+			if (product) {
+				productExternalReferenceCode = product.externalReferenceCode;
+				subscriptionEntitlementId = product.entitlementId;
+			}
+		}
 
 		return {
 			bundleEntitlementIds: [...entitlementIds],

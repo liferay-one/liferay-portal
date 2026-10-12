@@ -53,6 +53,23 @@ const LEADING_PRODUCT_LABELS: Record<string, string> = {
 	'PRDCT-PORTAL': 'Liferay Portal',
 };
 
+const LICENSE_KEY_FAMILIES: {
+	licenseKeyFamily: string;
+	licenseNamePattern: RegExp;
+	productExternalReferenceCode: string;
+}[] = [
+	{
+		licenseKeyFamily: 'DXP',
+		licenseNamePattern: /^DXP /,
+		productExternalReferenceCode: 'PRDCT-DXP',
+	},
+	{
+		licenseKeyFamily: 'Portal',
+		licenseNamePattern: /^(TCAT )?Portal /,
+		productExternalReferenceCode: 'PRDCT-PORTAL',
+	},
+];
+
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
 export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
@@ -211,6 +228,33 @@ export function toServerField(
 		SERVER_FIELDS.find((serverField) =>
 			Boolean(server[serverField].trim())
 		) ?? 'hostName'
+	);
+}
+
+export function getLeadingProductExternalReferenceCode(
+	licenseName: string,
+	productExternalReferenceCode: string
+): string {
+	const licenseKeyFamily = LICENSE_KEY_FAMILIES.find((current) =>
+		current.licenseNamePattern.test(licenseName)
+	);
+
+	if (licenseKeyFamily) {
+		return licenseKeyFamily.productExternalReferenceCode;
+	}
+
+	return LEADING_PRODUCT_EXTERNAL_REFERENCE_CODES.includes(
+		productExternalReferenceCode
+	)
+		? productExternalReferenceCode
+		: '';
+}
+
+export function getLicenseKeyFamily(licenseName: string): string {
+	return (
+		LICENSE_KEY_FAMILIES.find((current) =>
+			current.licenseNamePattern.test(licenseName)
+		)?.licenseKeyFamily ?? ''
 	);
 }
 

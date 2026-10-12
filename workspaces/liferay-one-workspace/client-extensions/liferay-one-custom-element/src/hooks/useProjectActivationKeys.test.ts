@@ -48,6 +48,18 @@ vi.mock(
 		};
 
 		return {
+			getLeadingProductExternalReferenceCode: (
+				licenseName: string,
+				externalReferenceCode: string
+			) => {
+				if (licenseName.startsWith('DXP ')) {
+					return 'PRDCT-DXP';
+				}
+
+				return labels[externalReferenceCode]
+					? externalReferenceCode
+					: '';
+			},
 			getLeadingProductLabel: (externalReferenceCode: string) =>
 				labels[externalReferenceCode] ?? '',
 			getLeadingProductRank: (externalReferenceCode: string) => {
@@ -244,6 +256,31 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		});
 
 		expect(activationKeys[0].productName).toBe('Liferay DXP');
+	});
+
+	it('names an activation key by the family of its license name when its product is not a leading product', () => {
+		const {activationKeys} = renderActivationKeys({
+			activationKeys: [
+				{
+					active: true,
+					externalReferenceCode: 'AK-1',
+					id: 1,
+					type: 'production',
+				},
+			],
+			licenseKeys: [
+				{
+					active: true,
+					licenseName: 'DXP Non-Production',
+					productName: 'AI Hub',
+					r_activationKeyToLicenseKey_c_activationKeyId: 1,
+					r_commerceProductToLicenseKey_CProductERC:
+						'marketplace-product-2',
+				},
+			],
+		});
+
+		expect(activationKeys[0].productName).toBe('DXP');
 	});
 
 	it('marks a complimentary activation key and formats its dates', () => {

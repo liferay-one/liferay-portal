@@ -16,8 +16,10 @@ import {
 	getComplimentaryPurpose,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
+	getLeadingProductExternalReferenceCode,
 	getLeadingProductLabel,
 	getLeadingProductRank,
+	getLicenseKeyFamily,
 	hasAvailableKeyType,
 	hasServerInfo,
 	isCloudNativeProduct,
@@ -268,6 +270,47 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getEnvironmentTypeRank('uat')).toBe(1);
 			expect(getEnvironmentTypeRank('non-production')).toBe(2);
 			expect(getEnvironmentTypeRank('sandbox')).toBe(3);
+		});
+
+		it('resolves the leading product from the license name before the product', () => {
+			expect(
+				getLeadingProductExternalReferenceCode(
+					'DXP Non-Production',
+					'marketplace-product-32654011'
+				)
+			).toBe('PRDCT-DXP');
+			expect(
+				getLeadingProductExternalReferenceCode(
+					'Portal Production',
+					'PRDCT-PORTAL-SUPERSEDED'
+				)
+			).toBe('PRDCT-PORTAL');
+			expect(
+				getLeadingProductExternalReferenceCode('TCAT Portal Backup', '')
+			).toBe('PRDCT-PORTAL');
+			expect(
+				getLeadingProductExternalReferenceCode('', 'PRDCT-CLOUD-NATIVE')
+			).toBe('PRDCT-CLOUD-NATIVE');
+			expect(
+				getLeadingProductExternalReferenceCode(
+					'Social Office',
+					'marketplace-product-1'
+				)
+			).toBe('');
+		});
+
+		it('resolves the license key family from the license name', () => {
+			expect(
+				getLicenseKeyFamily('DXP Production (Virtual Cluster)')
+			).toBe('DXP');
+			expect(getLicenseKeyFamily('Portal Developer')).toBe('Portal');
+			expect(getLicenseKeyFamily('TCAT Portal Production')).toBe(
+				'Portal'
+			);
+			expect(
+				getLicenseKeyFamily('Commerce Subscription Production')
+			).toBe('');
+			expect(getLicenseKeyFamily('')).toBe('');
 		});
 
 		it('labels leading products and leaves others empty', () => {
