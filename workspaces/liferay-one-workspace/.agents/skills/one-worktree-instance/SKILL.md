@@ -56,6 +56,36 @@ The Spring Boot image always builds as `liferay-one-etc-spring-boot:latest`, whi
 - `Unable to iterate over the following company IDs ... because company ID ... is locked` during a batch import. Only `IndexOnStartupExecutor` is affected, and the objects are new, so nothing is left unindexed.
 - `Unable to get client ID: 400 Bad Request` and JSM `404 Not Found` in the sidecar log. The default sidecar logs the same lines.
 
+## Running the Server on Another Machine
+
+The shared server can run on a second machine with more memory, while the builds, the editor, and the browser stay on yours. The scripts build on your machine and send everything else through `docker`, so set `DOCKER_HOST` to the remote daemon. A forwarded unix socket works for every tool, including the Gradle Docker plugin, which does not support `ssh://`:
+
+```bash
+ssh -fNT -L /tmp/remote-docker.sock:/var/run/docker.sock <host>
+
+export DOCKER_HOST=unix:///tmp/remote-docker.sock
+```
+
+The remote machine needs three things:
+
+1. A copy of the workspace at the same absolute path. The compose file and `instance.sh` bind mount files from it, and the daemon reads them from its own disk. Copy it with `rsync`, without `node_modules`, `build`, and `.gradle`.
+
+1. A domain that resolves to it, for example `*.lab`, and a proxy on port 80 that sends every host of that domain to port 8080 of the `liferay` container. The containers of the server must resolve the domain too. Set `dns:` on the `liferay` service in `docker-compose.override.yaml`, because the instance sidecars share its network.
+
+1. Enough memory. Set `LIFERAY_HEAP_SIZE`, `LIFERAY_MEMORY_LIMIT`, and `LIFERAY_MEMORY_RESERVATION` (defaults `8g`, `10g`, and `8g`) in the environment or in `.env`.
+
+Then bootstrap the server and provision instances with these variables:
+
+| Variable | Value for a server at `*.lab` |
+| --- | --- |
+| `LIFERAY_BOOTSTRAP_URL` | `http://admin.lab` (any host of the domain that is not bound to a site reaches the default instance) |
+| `LIFERAY_ONE_VIRTUAL_HOST` | `one.lab` |
+| `LIFERAY_INSTANCE_DOMAIN` | `lab` |
+| `LIFERAY_SERVER_URL` | `http://admin.lab` |
+| `LIFERAY_INSTANCE_INTERNAL_PORT` | empty, because the sidecars reach their instance through the proxy |
+
+`bootstrap.sh` reads `LIFERAY_BOOTSTRAP_URL`, not `LIFERAY_URL`, because the workspace `.env` can point `LIFERAY_URL` at a remote environment, and a bootstrap must never seed one. The scripts also read `LIFERAY_CONTAINER_NAME`, `LIFERAY_SIDECAR_CONTAINER_NAME`, and `LIFERAY_IMAGE_TAG`, so a second stack can run on the same daemon under other names.
+
 ## Limits
 
 - Portal properties, feature flags, OSGi configurations under `configs/`, the Dockerfile, and the hotfix apply to every instance. A branch that changes one of them needs its own environment (`/one-worktree` in a slot, or `/one-env-reset`).

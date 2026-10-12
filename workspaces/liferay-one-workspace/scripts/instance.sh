@@ -19,7 +19,7 @@
 #
 
 ADMIN_CREDENTIALS="test@liferay.com:test"
-CONTAINER_NAME="liferay"
+CONTAINER_NAME="${LIFERAY_CONTAINER_NAME:-liferay}"
 DEFAULT_CLIENT_EXTENSIONS=(
 	liferay-one-global-css
 	liferay-one-instance-settings
@@ -445,7 +445,7 @@ function _start_sidecar {
 		--label "one.sidecar.port=${port}" \
 		--name "${name}" \
 		--network "container:${CONTAINER_NAME}" \
-		--volume liferay-stack_liferay_routes:/opt/liferay/routes:ro \
+		--volume "${COMPOSE_PROJECT_NAME:-liferay-stack}_liferay_routes:/opt/liferay/routes:ro" \
 		--volume "${PWD}/client-extensions/${SPRING_BOOT_CLIENT_EXTENSION}/scripts/wait-for-routes.sh:/usr/local/bin/liferay_jar_runner_set_up.sh:ro" \
 		"${SIDECAR_IMAGE}:${web_id}" > /dev/null || return 1
 

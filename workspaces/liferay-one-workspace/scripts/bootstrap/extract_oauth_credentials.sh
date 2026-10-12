@@ -20,11 +20,11 @@ function main {
 
 	local client_id
 
-	client_id=$(docker exec liferay cat "/opt/liferay/routes/default/${oauth_application_name}/${oauth_application_name}.oauth2.headless.server.client.id")
+	client_id=$(docker exec "${LIFERAY_CONTAINER_NAME}" cat "/opt/liferay/routes/default/${oauth_application_name}/${oauth_application_name}.oauth2.headless.server.client.id")
 
 	local client_secret
 
-	client_secret=$(docker exec liferay cat "/opt/liferay/routes/default/${oauth_application_name}/${oauth_application_name}.oauth2.headless.server.client.secret")
+	client_secret=$(docker exec "${LIFERAY_CONTAINER_NAME}" cat "/opt/liferay/routes/default/${oauth_application_name}/${oauth_application_name}.oauth2.headless.server.client.secret")
 
 	{
 		echo "OAUTH_CLIENT_ID=${client_id}"

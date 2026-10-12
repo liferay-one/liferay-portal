@@ -12,7 +12,7 @@ function main {
 
 	echo "Starting containers."
 
-	docker_compose up --detach
+	docker compose up --detach
 
 	echo "Waiting for Liferay to be healthy."
 
@@ -25,14 +25,14 @@ function main {
 		--retry-delay 10 \
 		--retry-max-time 600 \
 		--silent \
-		http://localhost:8080/c/portal/status
+		"${LIFERAY_BOOTSTRAP_URL}/c/portal/status"
 
 	if [[ -f post-start.sh ]]
 	then
 		source post-start.sh
 	fi
 
-	echo "Liferay is running at http://localhost:8080."
+	echo "Liferay is running at ${LIFERAY_BOOTSTRAP_URL}."
 }
 
 main "${@}"

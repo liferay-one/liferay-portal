@@ -31,9 +31,9 @@ function main {
 
 	workspace_name=$(basename "$(dirname "$(dirname "${PWD}")")")
 
-	echo "Tagging ${workspace_name}-liferay:${version_tag} as liferay:local."
+	echo "Tagging ${workspace_name}-liferay:${version_tag} as ${LIFERAY_IMAGE_TAG}."
 
-	docker tag "${workspace_name}-liferay:${version_tag}" "liferay:local"
+	docker tag "${workspace_name}-liferay:${version_tag}" "${LIFERAY_IMAGE_TAG}"
 
 	if [[ -f post-build.sh ]]
 	then

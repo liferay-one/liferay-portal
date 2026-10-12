@@ -4,7 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source ../_common.sh
 
-CONTAINER_NAME="liferay"
+CONTAINER_NAME="${LIFERAY_CONTAINER_NAME}"
 
 function main {
 	cd ../..
