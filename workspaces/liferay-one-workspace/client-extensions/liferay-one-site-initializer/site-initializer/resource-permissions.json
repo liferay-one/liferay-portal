@@ -183,7 +183,7 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
 		"roleName": "Guest",
 		"scope": "1"
 	},
@@ -192,7 +192,7 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
 		"roleName": "User",
 		"scope": "1"
 	},
