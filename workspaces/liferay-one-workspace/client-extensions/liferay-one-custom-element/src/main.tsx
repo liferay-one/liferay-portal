@@ -7,18 +7,16 @@ import {ClayIconSpriteContext} from '@clayui/icon';
 import {ClayModalProvider} from '@clayui/modal';
 import React, {Suspense} from 'react';
 import {Root, createRoot} from 'react-dom/client';
-import {SWRConfig, SWRConfiguration} from 'swr';
+import {SWRConfig} from 'swr';
 import ErrorBoundary from '~/components/ErrorBoundary/ErrorBoundary';
 import Loading from '~/components/Loading/Loading';
 import OneContextProvider from '~/context/OneContextProvider';
 import {PropertiesProvider} from '~/context/PropertiesContext';
 import preloadAppData from '~/preloadAppData';
-import SWRCacheProvider from '~/services/fetcher/SWRCacheProvider';
 import fetcher from '~/services/fetcher/fetcher';
+import persistSWRCache from '~/services/fetcher/persistSWRCache';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 import {baseAttributes, getAttributes} from '~/utils/attributeUtils';
-
-type CacheProvider = Required<SWRConfiguration>['provider'];
 
 type RouterComponent = React.ComponentType;
 
@@ -53,6 +51,8 @@ const routers: Record<string, React.LazyExoticComponent<RouterComponent>> = {
 	),
 };
 
+persistSWRCache();
+
 class WebComponent extends HTMLElement {
 	private root: Root | undefined;
 
@@ -75,8 +75,6 @@ class WebComponent extends HTMLElement {
 					<SWRConfig
 						value={{
 							fetcher,
-							provider:
-								SWRCacheProvider as unknown as CacheProvider,
 							revalidateIfStale: true,
 							revalidateOnFocus: false,
 						}}

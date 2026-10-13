@@ -3,15 +3,19 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {cache} from 'swr/_internal';
+
+import type {State} from 'swr/_internal';
+
 const MAX_ENTRY_LENGTH = 65536;
 
 const MAX_STORAGE_LENGTH = 2097152;
 
 const STORAGE_KEY = '@liferay-one/swr';
 
-let sharedCacheMap: Map<string, unknown> | undefined;
+let persisted = false;
 
-function readCacheEntries(): [string, unknown][] {
+function readCacheEntries(): [string, State][] {
 	try {
 		return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
 	}
@@ -20,14 +24,26 @@ function readCacheEntries(): [string, unknown][] {
 	}
 }
 
-function toStorableEntries(
-	cacheMap: Map<string, unknown>
-): [string, unknown][] {
-	const entries: [string, unknown][] = [];
+function toStorableEntries(): [string, State][] {
+	const entries: [string, State][] = [];
 
 	let length = 0;
 
-	for (const entry of cacheMap.entries()) {
+	for (const key of cache.keys()) {
+		const state = cache.get(key);
+
+		if (state?.data === undefined) {
+			continue;
+		}
+
+		const storableState: State = {...state};
+
+		delete storableState.error;
+		delete storableState.isLoading;
+		delete storableState.isValidating;
+
+		const entry: [string, State] = [key, storableState];
+
 		const entryLength = JSON.stringify(entry).length;
 
 		if (
@@ -45,28 +61,28 @@ function toStorableEntries(
 	return entries;
 }
 
-const SWRCacheProvider = (): Map<string, unknown> => {
-	if (sharedCacheMap) {
-		return sharedCacheMap;
+export default function persistSWRCache(): void {
+	if (persisted) {
+		return;
 	}
 
-	const cacheMap = new Map<string, unknown>(readCacheEntries());
+	persisted = true;
+
+	for (const [key, state] of readCacheEntries()) {
+		if (!cache.get(key)) {
+			cache.set(key, state);
+		}
+	}
 
 	window.addEventListener('beforeunload', () => {
 		try {
 			sessionStorage.setItem(
 				STORAGE_KEY,
-				JSON.stringify(toStorableEntries(cacheMap))
+				JSON.stringify(toStorableEntries())
 			);
 		}
 		catch (error) {
 			sessionStorage.removeItem(STORAGE_KEY);
 		}
 	});
-
-	sharedCacheMap = cacheMap;
-
-	return cacheMap;
-};
-
-export default SWRCacheProvider;
+}
