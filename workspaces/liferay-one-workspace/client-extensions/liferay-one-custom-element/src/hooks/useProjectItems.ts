@@ -10,11 +10,7 @@ import {
 	useProjectCommerce,
 	useProjectEntitlements,
 } from '~/hooks/useProjectCommerce';
-import {
-	hasProject,
-	isProjectOrder,
-	useProjectOrders,
-} from '~/hooks/useProjectOrders';
+import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {
@@ -23,52 +19,8 @@ import {
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
 
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
-import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
 import type {PlacedOrder} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
-
-export function useProjectsWithProjectItemType(
-	projectItemType: ProjectItemType
-) {
-	const {projects} = useProject();
-
-	const {data: channelProducts, isLoading: productsLoading} =
-		useChannelProducts();
-	const {loading: ordersLoading, placedOrders} = useProjectOrders();
-
-	const productsByProductId = useMemo(
-		() => toProductsByProductId(channelProducts?.items ?? []),
-		[channelProducts]
-	);
-
-	const projectERCs = useMemo(
-		() =>
-			projects
-				.filter((project) => {
-					const orders = placedOrders.filter((order) =>
-						isUnassignedProject(project.externalReferenceCode)
-							? !hasProject(order)
-							: isProjectOrder(order, project)
-					);
-
-					const itemsByProjectItemType = toProjectItemsByType(
-						orders,
-						productsByProductId
-					);
-
-					return Boolean(
-						itemsByProjectItemType[projectItemType].size
-					);
-				})
-				.map((project) => project.externalReferenceCode),
-		[placedOrders, productsByProductId, projectItemType, projects]
-	);
-
-	return {
-		loading: ordersLoading || productsLoading,
-		projectERCs,
-	};
-}
 
 export function useProjectItems() {
 	const {loading: projectLoading, project, projectId} = useProject();
