@@ -5,17 +5,34 @@
 
 import {useEffect, useState} from 'react';
 import ActivationKeysService from '~/services/spring-boot/ActivationKeys';
+import LicenseKeysService from '~/services/spring-boot/LicenseKeys';
 
-export function useActivationKeySubscription(activationKeyId: string) {
+import type {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
+
+export function useKeySubscription({
+	activationKeyId,
+	licenseKeyId = '',
+	unaggregated = false,
+}: Pick<
+	ProjectActivationKey,
+	'activationKeyId' | 'licenseKeyId' | 'unaggregated'
+>) {
 	const [loading, setLoading] = useState(true);
 	const [subscribed, setSubscribed] = useState(false);
+
+	const keyId = unaggregated ? licenseKeyId : activationKeyId;
+
+	const keySubscriptionService = unaggregated
+		? LicenseKeysService
+		: ActivationKeysService;
 
 	useEffect(() => {
 		let active = true;
 
 		setLoading(true);
 
-		ActivationKeysService.getSubscription(activationKeyId)
+		keySubscriptionService
+			.getSubscription(keyId)
 			.then((value) => {
 				if (active) {
 					setSubscribed(value);
@@ -35,17 +52,17 @@ export function useActivationKeySubscription(activationKeyId: string) {
 		return () => {
 			active = false;
 		};
-	}, [activationKeyId]);
+	}, [keyId, keySubscriptionService]);
 
 	async function toggleSubscription(nextSubscribed: boolean) {
 		setSubscribed(nextSubscribed);
 
 		try {
 			if (nextSubscribed) {
-				await ActivationKeysService.subscribe(activationKeyId);
+				await keySubscriptionService.subscribe(keyId);
 			}
 			else {
-				await ActivationKeysService.unsubscribe(activationKeyId);
+				await keySubscriptionService.unsubscribe(keyId);
 			}
 		}
 		catch (error) {
@@ -56,4 +73,4 @@ export function useActivationKeySubscription(activationKeyId: string) {
 	return {loading, subscribed, toggleSubscription};
 }
 
-export default useActivationKeySubscription;
+export default useKeySubscription;

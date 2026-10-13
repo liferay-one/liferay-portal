@@ -527,6 +527,8 @@ export default {
 	'employee-portal': 'Portal del empleado',
 	'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
 		'Habilita notificaciones por correo electrónico cuando esta clave de activación esté a punto de caducar (30 días antes, 15 días antes y el día de vencimiento). Puedes darte de baja en cualquier momento.',
+	'enable-notifications-through-email-when-this-license-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
+		'Habilita notificaciones por correo electrónico cuando esta clave de licencia esté a punto de caducar (30 días antes, 15 días antes y el día de vencimiento). Puedes darte de baja en cualquier momento.',
 	'end-date': 'Fecha final',
 	'end-user-license-agreement': 'Acuerdo de licencia de usuario final',
 	'enter-administration-email-address':

@@ -520,6 +520,8 @@ export default {
 	'employee-portal': '従業員ポータル',
 	'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
 		'このアクティベーションキーの有効期限が切れる30日前、15日前、および有効期限当日にメールで通知を受け取ることができます。いつでも登録を解除できます。',
+	'enable-notifications-through-email-when-this-license-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
+		'このライセンスキーの有効期限が切れる30日前、15日前、および有効期限当日にメールで通知を受け取ることができます。いつでも登録を解除できます。',
 	'end-date': '終了日',
 	'end-user-license-agreement': 'エンドユーザーライセンス契約',
 	'enter-administration-email-address': '管理用メールアドレスを入力',

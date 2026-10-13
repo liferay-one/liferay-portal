@@ -540,6 +540,8 @@ export default {
 	'employee-portal': 'Employee Portal',
 	'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
 		'Enable notifications through email when this Activation Key is about to expire 30 days before, 15 days before, and on the day of expiration. You can unsubscribe at any time.',
+	'enable-notifications-through-email-when-this-license-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
+		'Enable notifications through email when this License Key is about to expire 30 days before, 15 days before, and on the day of expiration. You can unsubscribe at any time.',
 	'end-date': 'End Date',
 	'end-user-license-agreement': 'End User License Agreement',
 	'enter-a-valid-ip-address-on-each-line':

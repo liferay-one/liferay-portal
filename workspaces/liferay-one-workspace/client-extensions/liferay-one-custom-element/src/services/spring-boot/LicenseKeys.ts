@@ -77,6 +77,22 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		await downloadFile(name, response);
 	}
 
+	async getSubscription(licenseKeyId: string): Promise<boolean> {
+		const subscribed = await this.get<boolean>(
+			`/subscriptions?licenseKeyId=${licenseKeyId}`
+		);
+
+		return subscribed ?? false;
+	}
+
+	async subscribe(licenseKeyId: string): Promise<void> {
+		await this.put(`/subscriptions?licenseKeyIds=${licenseKeyId}`);
+	}
+
+	async unsubscribe(licenseKeyId: string): Promise<void> {
+		await this.delete(`/subscriptions?licenseKeyIds=${licenseKeyId}`);
+	}
+
 	async updateLicenseKeyActive(
 		active: boolean,
 		licenseKeyId: string

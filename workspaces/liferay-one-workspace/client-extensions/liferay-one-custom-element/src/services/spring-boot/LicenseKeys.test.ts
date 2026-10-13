@@ -96,6 +96,41 @@ describe('[CLIENT-SPRING-BOOT-LICENSEKEYS] LicenseKeys', () => {
 		expect(downloadFile).toHaveBeenCalledWith('license.xml', response);
 	});
 
+	it('returns the bare subscribed flag', async () => {
+		oAuth2Fetch.mockResolvedValue(jsonResponse(true));
+
+		await expect(LicenseKeys.getSubscription('9')).resolves.toBe(true);
+		expect(oAuth2Fetch).toHaveBeenCalledWith(
+			'/license-keys/subscriptions?licenseKeyId=9',
+			undefined
+		);
+	});
+
+	it('defaults the subscription to false when the body is null', async () => {
+		oAuth2Fetch.mockResolvedValue(jsonResponse(null));
+
+		await expect(LicenseKeys.getSubscription('9')).resolves.toBe(false);
+	});
+
+	it('subscribes and unsubscribes on fixed paths', async () => {
+		oAuth2Fetch.mockImplementation(() =>
+			Promise.resolve(new Response(null, {status: 204}))
+		);
+
+		await LicenseKeys.subscribe('8');
+		await LicenseKeys.unsubscribe('9');
+
+		expect(
+			oAuth2Fetch.mock.calls.map(([resource, options]) => [
+				resource,
+				options?.method,
+			])
+		).toEqual([
+			['/license-keys/subscriptions?licenseKeyIds=8', 'PUT'],
+			['/license-keys/subscriptions?licenseKeyIds=9', 'DELETE'],
+		]);
+	});
+
 	it('patches the active flag', async () => {
 		oAuth2Fetch.mockResolvedValue(jsonResponse({}));
 

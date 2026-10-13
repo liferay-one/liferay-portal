@@ -523,6 +523,8 @@ export default {
 	'employee-portal': 'Portal do funcionário',
 	'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
 		'Ative notificações por e-mail quando esta chave de ativação estiver prestes a expirar: 30 dias antes, 15 dias antes e no dia da expiração. Você pode cancelar a inscrição a qualquer momento.',
+	'enable-notifications-through-email-when-this-license-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time':
+		'Ative notificações por e-mail quando esta chave de licença estiver prestes a expirar: 30 dias antes, 15 dias antes e no dia da expiração. Você pode cancelar a inscrição a qualquer momento.',
 	'end-date': 'Data de Término',
 	'end-user-license-agreement': 'Contrato de licença de usuário final',
 	'enter-administration-email-address':

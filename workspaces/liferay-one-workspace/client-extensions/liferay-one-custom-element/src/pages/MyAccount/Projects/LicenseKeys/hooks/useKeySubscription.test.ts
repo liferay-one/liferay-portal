@@ -6,10 +6,13 @@
 import {act, renderHook, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
-import {useActivationKeySubscription} from './useActivationKeySubscription';
+import {useKeySubscription} from './useKeySubscription';
 
 const mocks = vi.hoisted(() => ({
 	getSubscription: vi.fn(),
+	licenseKeyGetSubscription: vi.fn(),
+	licenseKeySubscribe: vi.fn(),
+	licenseKeyUnsubscribe: vi.fn(),
 	subscribe: vi.fn(),
 	unsubscribe: vi.fn(),
 }));
@@ -22,18 +25,28 @@ vi.mock('~/services/spring-boot/ActivationKeys', () => ({
 	},
 }));
 
-describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] useActivationKeySubscription', () => {
+vi.mock('~/services/spring-boot/LicenseKeys', () => ({
+	default: {
+		getSubscription: mocks.licenseKeyGetSubscription,
+		subscribe: mocks.licenseKeySubscribe,
+		unsubscribe: mocks.licenseKeyUnsubscribe,
+	},
+}));
+
+function activationKey(activationKeyId: string) {
+	return {activationKeyId};
+}
+
+describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEKEYSUBSCRIPTION] useKeySubscription', () => {
 	beforeEach(() => {
-		mocks.getSubscription.mockReset();
-		mocks.subscribe.mockReset();
-		mocks.unsubscribe.mockReset();
+		Object.values(mocks).forEach((mock) => mock.mockReset());
 	});
 
 	it('loads the subscribed state', async () => {
 		mocks.getSubscription.mockResolvedValue(true);
 
 		const {result} = renderHook(() =>
-			useActivationKeySubscription('KEY-1')
+			useKeySubscription(activationKey('KEY-1'))
 		);
 
 		expect(result.current.loading).toBe(true);
@@ -48,7 +61,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 		mocks.getSubscription.mockRejectedValue(new Error('failed'));
 
 		const {result} = renderHook(() =>
-			useActivationKeySubscription('KEY-1')
+			useKeySubscription(activationKey('KEY-1'))
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
@@ -68,7 +81,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 
 		const {rerender, result} = renderHook(
 			({activationKeyId}) =>
-				useActivationKeySubscription(activationKeyId),
+				useKeySubscription(activationKey(activationKeyId)),
 			{initialProps: {activationKeyId: 'KEY-1'}}
 		);
 
@@ -98,7 +111,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 		);
 
 		const {result} = renderHook(() =>
-			useActivationKeySubscription('KEY-1')
+			useKeySubscription(activationKey('KEY-1'))
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
@@ -126,7 +139,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 		mocks.subscribe.mockRejectedValue(new Error('failed'));
 
 		const {result} = renderHook(() =>
-			useActivationKeySubscription('KEY-1')
+			useKeySubscription(activationKey('KEY-1'))
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
@@ -143,7 +156,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 		mocks.unsubscribe.mockRejectedValue(new Error('failed'));
 
 		const {result} = renderHook(() =>
-			useActivationKeySubscription('KEY-1')
+			useKeySubscription(activationKey('KEY-1'))
 		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
@@ -155,5 +168,53 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-USEACTIVATIONKEYSUBSCRIPTION] use
 		expect(mocks.unsubscribe).toHaveBeenCalledWith('KEY-1');
 		expect(mocks.subscribe).not.toHaveBeenCalled();
 		expect(result.current.subscribed).toBe(true);
+	});
+
+	it('uses the license key service for an unaggregated row', async () => {
+		mocks.licenseKeyGetSubscription.mockResolvedValue(false);
+		mocks.licenseKeySubscribe.mockResolvedValue(undefined);
+
+		const {result} = renderHook(() =>
+			useKeySubscription({
+				activationKeyId: '',
+				licenseKeyId: 'LK-9',
+				unaggregated: true,
+			})
+		);
+
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		await act(async () => {
+			await result.current.toggleSubscription(true);
+		});
+
+		expect(mocks.licenseKeyGetSubscription).toHaveBeenCalledWith('LK-9');
+		expect(mocks.licenseKeySubscribe).toHaveBeenCalledWith('LK-9');
+		expect(mocks.getSubscription).not.toHaveBeenCalled();
+		expect(mocks.subscribe).not.toHaveBeenCalled();
+		expect(result.current.subscribed).toBe(true);
+	});
+
+	it('unsubscribes a license key through the license key service', async () => {
+		mocks.licenseKeyGetSubscription.mockResolvedValue(true);
+		mocks.licenseKeyUnsubscribe.mockResolvedValue(undefined);
+
+		const {result} = renderHook(() =>
+			useKeySubscription({
+				activationKeyId: '',
+				licenseKeyId: 'LK-9',
+				unaggregated: true,
+			})
+		);
+
+		await waitFor(() => expect(result.current.subscribed).toBe(true));
+
+		await act(async () => {
+			await result.current.toggleSubscription(false);
+		});
+
+		expect(mocks.licenseKeyUnsubscribe).toHaveBeenCalledWith('LK-9');
+		expect(mocks.unsubscribe).not.toHaveBeenCalled();
+		expect(result.current.subscribed).toBe(false);
 	});
 });

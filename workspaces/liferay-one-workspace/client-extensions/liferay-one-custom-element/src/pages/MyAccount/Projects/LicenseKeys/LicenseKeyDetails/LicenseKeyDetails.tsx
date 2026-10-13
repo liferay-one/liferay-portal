@@ -29,7 +29,7 @@ import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
 import useActivationKeyActions from '../hooks/useActivationKeyActions';
-import useActivationKeySubscription from '../hooks/useActivationKeySubscription';
+import useKeySubscription from '../hooks/useKeySubscription';
 import LicenseKeyList from './LicenseKeyList/LicenseKeyList';
 
 export default function LicenseKeyDetails() {
@@ -205,24 +205,19 @@ function LicenseKeyDetailsContent({
 
 			<LicenseKeyList licenseKeys={licenseKeys} />
 
-			{!activationKey.unaggregated && (
-				<ExpirationNotifications
-					activationKeyId={activationKey.activationKeyId}
-				/>
-			)}
+			<ExpirationNotifications activationKey={activationKey} />
 		</>
 	);
 }
 
 type ExpirationNotificationsProps = {
-	activationKeyId: string;
+	activationKey: ProjectActivationKey;
 };
 
 function ExpirationNotifications({
-	activationKeyId,
+	activationKey,
 }: ExpirationNotificationsProps) {
-	const {subscribed, toggleSubscription} =
-		useActivationKeySubscription(activationKeyId);
+	const {subscribed, toggleSubscription} = useKeySubscription(activationKey);
 
 	return (
 		<div className="detailed-card-container mt-3">
@@ -252,7 +247,9 @@ function ExpirationNotifications({
 
 			<p className="mb-0 mt-3 text-neutral-7">
 				{translate(
-					'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time'
+					activationKey.unaggregated
+						? 'enable-notifications-through-email-when-this-license-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time'
+						: 'enable-notifications-through-email-when-this-activation-key-is-about-to-expire-30-days-before-15-days-before-and-on-the-day-of-expiration-you-can-unsubscribe-at-any-time'
 				)}
 			</p>
 		</div>
