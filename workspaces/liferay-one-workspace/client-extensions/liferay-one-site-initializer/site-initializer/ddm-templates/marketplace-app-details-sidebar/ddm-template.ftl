@@ -44,7 +44,9 @@
 >
 
 <#assign
-	publisherDetailsResponse = restClient.get("/c/publisherdetails?filter=publisherName eq '${catalogName}'")
+	publisherName = catalogName?replace("'", "''")
+
+	publisherDetailsResponse = restClient.get("/c/publisherdetails?filter=publisherName eq '${publisherName}'")
 />
 
 <#if publisherDetailsResponse.items?has_content>
