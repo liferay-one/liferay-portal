@@ -887,7 +887,7 @@ export default {
 	'lowercase-letters-and-numbers-only': 'Lowercase letters and numbers only.',
 	'lowercase-letters-numbers-and-dashes-only':
 		'Lowercase letters, numbers, and dashes only.',
-	'mac-addresses': 'Mac Addresses',
+	'mac-addresses': 'MAC Addresses',
 	'main': 'Main',
 	'main-information': 'Main Information',
 	'make-sure-the-attachment-id-is-correct':
