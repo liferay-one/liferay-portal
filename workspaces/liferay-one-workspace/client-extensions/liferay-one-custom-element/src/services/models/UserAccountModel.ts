@@ -45,6 +45,10 @@ export class UserAccountModel {
 		return this.hasAccountRole('Account Administrator');
 	}
 
+	get isAccountMember() {
+		return this.hasAccountRole('Account Member');
+	}
+
 	get isAdmin() {
 		return this.hasRegularRole('Administrator');
 	}

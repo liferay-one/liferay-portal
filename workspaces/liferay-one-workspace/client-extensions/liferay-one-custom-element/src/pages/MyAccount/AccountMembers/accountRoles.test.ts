@@ -109,6 +109,12 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 			).toBe(true);
 		});
 
+		it('is true for a Partner Manager', () => {
+			expect(
+				isAccountManager(toUserAccountModel(['Partner Manager']))
+			).toBe(true);
+		});
+
 		it('is true for the platform admin', () => {
 			expect(isAccountManager(toUserAccountModel([], true))).toBe(true);
 		});
