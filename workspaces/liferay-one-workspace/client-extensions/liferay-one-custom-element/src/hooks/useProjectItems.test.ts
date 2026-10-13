@@ -14,11 +14,7 @@ import {
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 
-import {
-	useProjectContractItems,
-	useProjectItems,
-	useProjectsWithProjectItemType,
-} from './useProjectItems';
+import {useProjectContractItems, useProjectItems} from './useProjectItems';
 
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
@@ -289,56 +285,5 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 
 		expect(useProjectCommerce).toHaveBeenCalledWith('', 'CONTRACT-10');
 		expect(useProjectEntitlements).toHaveBeenCalledWith('');
-	});
-});
-
-describe('[HOOK-USEPROJECTITEMS] useProjectsWithProjectItemType', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-
-		mockChannelProducts([APPLICATION, PRODUCT_A]);
-	});
-
-	it('returns the projects whose orders hold an item of the type', () => {
-		mockProject({
-			projects: [
-				{externalReferenceCode: 'PRJCT-A', name: 'Project A'},
-				{externalReferenceCode: 'PRJCT-B', name: 'Project B'},
-				{
-					externalReferenceCode: ONE_TIME_PURCHASES,
-					name: 'One Time Purchases',
-				},
-			],
-		});
-		mockOrders([
-			toOrder(1, [1], 'Project A'),
-			toOrder(2, [2], 'Project B'),
-			toOrder(3, [1]),
-		]);
-
-		const {result} = renderHook(() =>
-			useProjectsWithProjectItemType('application')
-		);
-
-		expect(result.current.projectERCs).toEqual([
-			'PRJCT-A',
-			ONE_TIME_PURCHASES,
-		]);
-	});
-
-	it('matches orders to projects by external reference code before name', () => {
-		mockProject({
-			projects: [
-				{externalReferenceCode: 'PRJCT-A', name: 'Project A'},
-				{externalReferenceCode: 'PRJCT-B', name: 'Project B'},
-			],
-		});
-		mockOrders([toOrder(1, [1], 'Project A', 'PRJCT-B')]);
-
-		const {result} = renderHook(() =>
-			useProjectsWithProjectItemType('application')
-		);
-
-		expect(result.current.projectERCs).toEqual(['PRJCT-B']);
 	});
 });

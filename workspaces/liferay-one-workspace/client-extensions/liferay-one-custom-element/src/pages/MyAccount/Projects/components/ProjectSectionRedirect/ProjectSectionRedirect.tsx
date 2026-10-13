@@ -3,47 +3,19 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {Navigate, useParams} from 'react-router';
+import {Navigate} from 'react-router';
 import Loading from '~/components/Loading/Loading';
-import {useProject} from '~/context/ProjectContext';
-import {
-	useProjectItems,
-	useProjectsWithProjectItemType,
-} from '~/hooks/useProjectItems';
-import {
-	ONE_TIME_PURCHASES,
-	isUnassignedProject,
-} from '~/pages/MyAccount/Projects/projects';
+import {useProjectItems} from '~/hooks/useProjectItems';
 
 export default function ProjectSectionRedirect() {
-	const {accountERC} = useParams();
-
-	const {projectId} = useProject();
-
 	const {applications, error, loading, products} = useProjectItems();
-	const {loading: projectERCsLoading, projectERCs} =
-		useProjectsWithProjectItemType('application');
 
-	if (loading || projectERCsLoading) {
+	if (loading) {
 		return <Loading.Page fill />;
 	}
 
-	if (!error && !products.length) {
-		if (applications.length) {
-			return <Navigate replace to="applications" />;
-		}
-
-		if (
-			!isUnassignedProject(projectId) &&
-			projectERCs.includes(ONE_TIME_PURCHASES)
-		) {
-			return (
-				<Navigate
-					replace
-					to={`/${accountERC}/project/${ONE_TIME_PURCHASES}/applications`}
-				/>
-			);
-		}
+	if (!error && !products.length && applications.length) {
+		return <Navigate replace to="applications" />;
 	}
 
 	return <Navigate replace to="products" />;
