@@ -20,6 +20,7 @@
 
 ADMIN_CREDENTIALS="test@liferay.com:test"
 CONTAINER_NAME="${LIFERAY_CONTAINER_NAME:-liferay}"
+DATABASE_CONTAINER_NAME="${LIFERAY_DATABASE_CONTAINER_NAME:-database}"
 DEFAULT_CLIENT_EXTENSIONS=(
 	liferay-one-global-css
 	liferay-one-instance-settings
@@ -29,6 +30,8 @@ DEFAULT_CLIENT_EXTENSIONS=(
 )
 INSTANCE_DOMAIN="${LIFERAY_INSTANCE_DOMAIN:-localhost}"
 INSTANCE_INTERNAL_PORT="${LIFERAY_INSTANCE_INTERNAL_PORT-:8080}"
+LOCK_DIR="/tmp/liferay-one-instance.lock"
+LOCK_STALE_MINUTES=60
 PORTAL_INSTANCES_URL="${LIFERAY_SERVER_URL:-http://localhost:8080}/o/headless-portal-instances/v1.0/portal-instances"
 SIDECAR_FIRST_PORT=58082
 SIDECAR_IMAGE="liferay-one-etc-spring-boot"
@@ -58,6 +61,9 @@ function main {
 		provision)
 			_provision "${@}"
 			;;
+		rebind)
+			_rebind "${@}"
+			;;
 		sidecar)
 			_start_sidecar "${@}"
 			;;
@@ -76,6 +82,7 @@ function _call_api {
 
 	local arguments=(
 		--header "Content-Type: application/json"
+		--max-time 900
 		--request "${method}"
 		--show-error
 		--silent
@@ -112,12 +119,26 @@ function _configure {
 function _create {
 	local web_id=${1:?Set the web ID.}
 
+	#
+	# Creating an instance imports the system batch data of the new company
+	# before the request returns, so it holds the lock like every other import
+	# (see _lock).
+	#
+
+	_lock || return 1
+
 	_call_api POST "" "$( \
 		jq \
 			--arg virtual_host "$(_get_instance_host "${web_id}")" \
 			--arg web_id "${web_id}" \
 			--null-input \
 			'{admin: {emailAddress: "test@liferay.com", familyName: "Test", givenName: "Test"}, domain: "liferay.com", portalInstanceId: $web_id, virtualHost: $virtual_host}')"
+
+	local status=${?}
+
+	_unlock
+
+	return ${status}
 }
 
 function _delete {
@@ -127,7 +148,12 @@ function _delete {
 
 	docker rmi "${SIDECAR_IMAGE}:${web_id}" &> /dev/null
 
-	docker exec "${CONTAINER_NAME}" sh -c "rm -f /opt/liferay/osgi/client-extensions/*_${web_id}.zip"
+	#
+	# A zip that stays behind makes the next provision of the same web ID copy
+	# an identical file, which Liferay does not deploy again.
+	#
+
+	docker exec "${CONTAINER_NAME}" sh -c "rm -f /opt/liferay/osgi/client-extensions/*_${web_id}.zip" || return 1
 
 	_call_api DELETE "/${web_id}"
 }
@@ -157,6 +183,15 @@ function _deploy {
 
 		echo "Deploying ${client_extension} to ${web_id}."
 
+		local imports="false"
+
+		if [ "${client_extension}" == "liferay-one-batch" ] || [ "${client_extension}" == "liferay-one-site-initializer" ]
+		then
+			imports="true"
+
+			_lock || return 1
+		fi
+
 		local has_site="false"
 
 		if [ "${client_extension}" == "liferay-one-site-initializer" ] && _has_site "${web_id}"
@@ -164,27 +199,35 @@ function _deploy {
 			has_site="true"
 		fi
 
-		local since
-
-		since=$(date +%s)
-
 		./gradlew \
 			":client-extensions:${client_extension}:deploy" \
 			-Ddeploy.docker.container.id="$(_get_container_id)" \
 			-Pliferay.virtual.instance.id="${web_id}" \
-			--quiet || return 1
+			--quiet || { _unlock; return 1; }
 
 		if [ "${client_extension}" == "liferay-one-batch" ]
 		then
-			_wait_for_batch_imports "${since}" || return 1
+			_wait_for_batch_imports "${web_id}" || { _unlock; return 1; }
 		elif [ "${client_extension}" == "liferay-one-site-initializer" ]
 		then
 			if [ "${has_site}" == "true" ]
 			then
 				echo "The One site of ${web_id} exists, so the site initializer does not run again. Delete the instance and provision it again to apply site initializer changes."
 			else
-				_wait_for "_has_log_since ${since} BundleSiteInitializer.*Initialized.One.for.group" 600 || return 1
+				#
+				# The site initializer runs in one transaction, so the site
+				# becomes visible only when the initializer finishes.
+				#
+
+				echo "Waiting for the site initializer of ${web_id} to finish."
+
+				_wait_for "_has_site ${web_id}" 600 || { _unlock; return 1; }
 			fi
+		fi
+
+		if [ "${imports}" == "true" ]
+		then
+			_unlock
 		fi
 	done
 }
@@ -192,16 +235,28 @@ function _deploy {
 function _deploy_spring_boot {
 	local web_id=${1}
 
+	#
+	# Two provisions that run at the same time would choose the same free port
+	# and could tag each other's image, because every build tags :latest. Hold
+	# a lock while the port is chosen and reserved and the image is built.
+	#
+
+	_lock || return 1
+
 	local port
 
 	port=$(_get_sidecar_port "${web_id}")
 
 	if [ -z "${port}" ]
 	then
+		_unlock
+
 		echo "No free sidecar port between ${SIDECAR_FIRST_PORT} and ${SIDECAR_LAST_PORT}." >&2
 
 		return 1
 	fi
+
+	_reserve_sidecar_port "${port}" "${web_id}" || { _unlock; return 1; }
 
 	echo "Deploying ${SPRING_BOOT_CLIENT_EXTENSION} to ${web_id} on port ${port}."
 
@@ -219,7 +274,7 @@ function _deploy_spring_boot {
 		":client-extensions:${SPRING_BOOT_CLIENT_EXTENSION}:buildDockerImage" \
 		-Pliferay.virtual.instance.id="${web_id}" \
 		--quiet \
-		--rerun-tasks || return 1
+		--rerun-tasks || { _unlock; return 1; }
 
 	docker tag "${SIDECAR_IMAGE}:latest" "${SIDECAR_IMAGE}:${web_id}"
 
@@ -227,6 +282,8 @@ function _deploy_spring_boot {
 	then
 		docker tag "${previous_image}" "${SIDECAR_IMAGE}:latest"
 	fi
+
+	_unlock
 
 	local zip_file="client-extensions/${SPRING_BOOT_CLIENT_EXTENSION}/dist/${SPRING_BOOT_CLIENT_EXTENSION}_${web_id}.zip"
 
@@ -245,6 +302,14 @@ function _deploy_spring_boot {
 	_wait_for "_has_new_route ${client_id_file} ${previous_route:-0}" 120 || return 1
 
 	_start_sidecar "${web_id}"
+}
+
+function _get_company_id {
+	curl \
+		--silent \
+		--url "${PORTAL_INSTANCES_URL}/${1}" \
+		--user "${ADMIN_CREDENTIALS}" | \
+		jq --raw-output '.companyId // empty'
 }
 
 function _get_container_id {
@@ -304,10 +369,6 @@ function _get_url {
 	echo "http://$(_get_instance_host "${1}")"
 }
 
-function _has_log_since {
-	docker logs --since "${1}" "${CONTAINER_NAME}" 2>&1 | grep --extended-regexp --quiet "${2}"
-}
-
 function _has_new_route {
 	local modified
 
@@ -341,6 +402,67 @@ function _list {
 		jq --raw-output '.items[] | [.companyId, .portalInstanceId, .virtualHost, .active] | @tsv'
 }
 
+function _lock {
+	#
+	# Only one batch import runs on the server at a time, for all instances.
+	# When two instances import batch data at the same time, the server applies
+	# the items of one import as a user of the other instance, and they fail
+	# with "Only the omniadmin can add users to another company". A creation
+	# that overlaps another import never returns. Hold this lock for each
+	# instance creation, batch or site initializer deploy, and seed, and for
+	# the Spring Boot image build.
+	#
+	# The lock lives in the Liferay container, so every machine that drives the
+	# server through the same Docker daemon shares it, and a restart of the
+	# container clears it.
+	#
+
+	local elapsed=0
+	local owner
+
+	owner="$(hostname) ${$}"
+
+	until docker exec "${CONTAINER_NAME}" mkdir "${LOCK_DIR}" 2> /dev/null
+	do
+		#
+		# Break the lock of a provision that died while it held it: at once
+		# when it ran on this machine, and after LOCK_STALE_MINUTES otherwise.
+		# A creation request can take 15 minutes and a seed about 10, so the
+		# limit is much longer than either.
+		#
+
+		local holder
+
+		holder=$(docker exec "${CONTAINER_NAME}" cat "${LOCK_DIR}/owner" 2> /dev/null)
+
+		if { [ "${holder%% *}" == "$(hostname)" ] && ! kill -0 "${holder##* }" 2> /dev/null; } ||
+			[ -n "$(docker exec "${CONTAINER_NAME}" find "${LOCK_DIR}" -maxdepth 0 -mmin +${LOCK_STALE_MINUTES} 2> /dev/null)" ]
+		then
+			docker exec "${CONTAINER_NAME}" rm -f -r "${LOCK_DIR}"
+
+			continue
+		fi
+
+		if [[ "${elapsed}" -eq 0 ]]
+		then
+			echo "Waiting for the batch import that ${holder} runs on the server."
+		fi
+
+		if [[ "${elapsed}" -ge 3600 ]]
+		then
+			echo "Timed out waiting for the lock ${LOCK_DIR} in ${CONTAINER_NAME}, held by ${holder}." >&2
+
+			return 1
+		fi
+
+		sleep 5
+
+		elapsed=$((elapsed + 5))
+	done
+
+	docker exec "${CONTAINER_NAME}" sh -c "echo '${owner}' > ${LOCK_DIR}/owner"
+}
+
 function _print_help {
 	echo "Usage: scripts/instance.sh <command> [arguments]"
 	echo ""
@@ -349,6 +471,7 @@ function _print_help {
 	echo "  deploy <web ID> [client extension ...]"
 	echo "  list"
 	echo "  provision <web ID>"
+	echo "  rebind <web ID>"
 	echo "  sidecar <web ID>"
 }
 
@@ -368,10 +491,85 @@ function _provision {
 		export LIFERAY_ENV_FILE=/dev/null
 		export LIFERAY_URL=$(_get_url "${web_id}")
 
+		_lock || exit 1
+
 		./scripts/seed.sh
-	)
+
+		local status=${?}
+
+		_unlock
+
+		exit ${status}
+	) || return 1
 
 	echo "Done. The One site of ${web_id} is running at http://$(_get_site_host "${web_id}")."
+}
+
+#
+# Move an instance to the hosts of LIFERAY_INSTANCE_SUBDOMAIN, or to the hosts
+# of its web ID when it is not set. A web ID cannot change, so this is how a
+# provisioned instance changes owners: the instance keeps its web ID, its data,
+# and its client extensions, and only its hosts move. Without a subdomain, it
+# moves an instance from the hosts of an earlier version of this script to the
+# current ones.
+#
+
+function _rebind {
+	local web_id=${1:?Set the web ID.}
+
+	echo "Moving ${web_id} to http://$(_get_site_host "${web_id}")."
+
+	_call_api PATCH "/${web_id}" "$( \
+		jq \
+			--arg virtual_host "$(_get_instance_host "${web_id}")" \
+			--null-input \
+			'{virtualHost: $virtual_host}')" | grep --quiet "^HTTP 200$" || {
+
+		echo "Unable to set the virtual host of ${web_id}." >&2
+
+		return 1
+	}
+
+	_set_up "${web_id}" || return 1
+
+	#
+	# The OAuth2 applications of the client extensions take their redirect URIs
+	# from the hosts that exist when the zips deploy. Liferay deploys a zip
+	# again only when its modification time changes. The redeploy imports the
+	# batch data again, so it holds the lock. Take it after _set_up, which takes
+	# the lock itself.
+	#
+
+	_lock || return 1
+
+	docker exec "${CONTAINER_NAME}" sh -c "touch /opt/liferay/osgi/client-extensions/*_${web_id}.zip" || { _unlock; return 1; }
+
+	_wait_for_batch_imports "${web_id}" || { _unlock; return 1; }
+
+	_unlock
+
+	echo "Done. The One site of ${web_id} is running at http://$(_get_site_host "${web_id}")."
+}
+
+#
+# A created container with the port label marks the port as used until the
+# sidecar replaces it. _start_sidecar removes the container by name first. The
+# container never starts, so it uses the image of the Liferay container, which
+# always exists. The sidecar image does not exist before the first build.
+#
+
+function _reserve_sidecar_port {
+	local port=${1}
+	local web_id=${2}
+
+	docker rm --force "$(_get_sidecar_name "${web_id}")" &> /dev/null
+
+	docker create \
+		--label "one.instance=${web_id}" \
+		--label "one.sidecar.port=${port}" \
+		--name "$(_get_sidecar_name "${web_id}")" \
+		--pull never \
+		"$(docker inspect --format "{{.Image}}" "${CONTAINER_NAME}")" > /dev/null
 }
 
 function _set_service_port {
@@ -429,6 +627,18 @@ function _start_sidecar {
 
 	docker rm --force "${name}" &> /dev/null
 
+	#
+	# The workspace .env.local is optional, as it is for the default sidecar in
+	# docker-compose.yaml.
+	#
+
+	local env_file_arguments=()
+
+	if [ -f .env.local ]
+	then
+		env_file_arguments+=(--env-file .env.local)
+	fi
+
 	echo "Starting ${name} on port ${port}."
 
 	docker run \
@@ -440,7 +650,7 @@ function _start_sidecar {
 		--env "LIFERAY_ROUTES_DXP=/opt/liferay/routes/${web_id}/dxp" \
 		--env "SERVER_PORT=${port}" \
 		--env-file "client-extensions/${SPRING_BOOT_CLIENT_EXTENSION}/build/local.env" \
-		--env-file .env.local \
+		"${env_file_arguments[@]}" \
 		--label "one.instance=${web_id}" \
 		--label "one.sidecar.port=${port}" \
 		--name "${name}" \
@@ -452,6 +662,18 @@ function _start_sidecar {
 	echo "Waiting for ${name} to be ready."
 
 	_wait_for "_is_sidecar_ready ${port}" 900
+}
+
+function _unlock {
+	#
+	# Remove the lock only when this process holds it, so that an error path
+	# that did not take the lock cannot free the lock of another process.
+	#
+
+	if [ "$(docker exec "${CONTAINER_NAME}" cat "${LOCK_DIR}/owner" 2> /dev/null)" == "$(hostname) ${$}" ]
+	then
+		docker exec "${CONTAINER_NAME}" rm -f -r "${LOCK_DIR}"
+	fi
 }
 
 function _wait_for {
@@ -475,21 +697,40 @@ function _wait_for {
 	done
 }
 
-function _wait_for_batch_imports {
-	local since=${1}
+#
+# Read the import tasks from the partition of the instance rather than from the
+# shared log, so a provision that runs at the same time cannot finish this wait.
+# The batch client extension creates a varying number of tasks, and some of
+# them fail on every instance, so wait until none is running and the count has
+# not changed for 20 seconds.
+#
 
-	local count
+function _wait_for_batch_imports {
+	local web_id=${1}
+
+	local company_id
+
+	company_id=$(_get_company_id "${web_id}")
+
+	if [ -z "${company_id}" ]
+	then
+		echo "Unable to find the company ID of ${web_id}." >&2
+
+		return 1
+	fi
+
+	echo "Waiting for the batch engine imports of ${web_id} to finish."
+
+	local counts
 	local elapsed=0
 	local idle=0
-	local last_count=0
-
-	echo "Waiting for the batch engine imports to finish."
+	local last_counts=""
 
 	while [[ "${idle}" -lt 20 ]]
 	do
 		if [[ "${elapsed}" -ge 600 ]]
 		then
-			echo "Timed out waiting for the batch engine imports." >&2
+			echo "Timed out waiting for the batch engine imports of ${web_id}." >&2
 
 			return 1
 		fi
@@ -498,16 +739,16 @@ function _wait_for_batch_imports {
 
 		elapsed=$((elapsed + 5))
 
-		count=$(docker logs --since "${since}" "${CONTAINER_NAME}" 2>&1 | grep --count "BatchEngineImportTaskExecutorImpl")
+		counts=$(docker exec "${DATABASE_CONTAINER_NAME}" psql --dbname lportal --no-align --tuples-only --username postgres --command "select count(*), count(*) filter (where executeStatus not in ('COMPLETED', 'FAILED')) from lpartition_${company_id}.BatchEngineImportTask" 2> /dev/null)
 
-		if [[ "${count}" -gt 0 ]] && [[ "${count}" -eq "${last_count}" ]]
+		if [[ "${counts}" =~ ^[1-9][0-9]*\|0$ ]] && [[ "${counts}" == "${last_counts}" ]]
 		then
 			idle=$((idle + 5))
 		else
 			idle=0
 		fi
 
-		last_count=${count}
+		last_counts=${counts}
 	done
 }
 
