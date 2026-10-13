@@ -9,7 +9,9 @@ import java.net.URI;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.json.JSONArray;
@@ -25,7 +27,9 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.cache.annotation.AnnotationCacheOperationSource;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cache.interceptor.CacheInterceptor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Ryan Schuhler
@@ -127,11 +131,228 @@ public class ProductVersionServiceSyncProductVersionsTest {
 			putCount * 2, _testProductVersionService.putBodies.size());
 	}
 
+	@Test
+	public void testSyncProductVersionsSetsBundleURL() throws Exception {
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).put(
+			_createReleaseJSONObject(
+				"2026.q1.13-lts", "2026.q1", "DXP 2026.Q1",
+				"DXP 2026.Q1.13 LTS")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q1.13-lts/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q1.13-lts/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q1.13-lts/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q1.13 LTS"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertFalse(
+			jsonObjects.get(
+				"DXP 2026.Q3"
+			).has(
+				"bundleURL"
+			));
+		Assertions.assertFalse(
+			jsonObjects.get(
+				"DXP 2026.Q1"
+			).has(
+				"bundleURL"
+			));
+	}
+
+	@Test
+	public void testSyncProductVersionsSetsBundleURLForLegacyVersions()
+		throws Exception {
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"7.4.13-u112", "7.4", "DXP 7.4", "DXP 7.4.13 U112")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/7.4.13-u112/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/7.4.13-u112/bundle.7z");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/7.4.13-u112/bundle.7z",
+			jsonObjects.get(
+				"DXP 7.4.13 U112"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertFalse(
+			jsonObjects.get(
+				"DXP 7.4"
+			).has(
+				"bundleURL"
+			));
+	}
+
+	@Test
+	public void testSyncProductVersionsSkipsPatchWhenBundleURLIsMissing()
+		throws Exception {
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.6", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.6")
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.6/release.properties",
+			"build.timestamp=1");
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(2, jsonObjects.size());
+		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertTrue(jsonObjects.containsKey("DXP 2026.Q3"));
+	}
+
+	@Test
+	public void testSyncProductVersionsSkipsPatchWhenReleasePropertiesAreMissing()
+		throws Exception {
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.6", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.6")
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(2, jsonObjects.size());
+		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertTrue(jsonObjects.containsKey("DXP 2026.Q3"));
+	}
+
+	@Test
+	public void testSyncProductVersionsSkipsPatchWhenReleasePropertiesFetchFails()
+		throws Exception {
+
+		JSONObject releaseJSONObject = _createReleaseJSONObject(
+			"2026.q3.6", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.6");
+
+		releaseJSONObject.put(
+			"tags",
+			new JSONArray(
+			).put(
+				"supported"
+			));
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			releaseJSONObject
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.6/release.properties",
+			new RuntimeException("Unable to read release properties"));
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(2, jsonObjects.size());
+		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getString(
+				"bundleURL"
+			));
+		Assertions.assertTrue(
+			jsonObjects.get(
+				"DXP 2026.Q3"
+			).getBoolean(
+				"supported"
+			));
+	}
+
+	@Test
+	public void testSyncProductVersionsSkipsPatchWhenURLIsMissing()
+		throws Exception {
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertEquals(1, jsonObjects.size());
+		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q1.0"));
+		Assertions.assertTrue(jsonObjects.containsKey("DXP 2026.Q1"));
+	}
+
 	public static class TestProductVersionService
 		extends ProductVersionService {
 
 		public int getAllItemsCount;
 		public final List<String> putBodies = new ArrayList<>();
+		public final Map<String, Object> releaseProperties = new HashMap<>();
 		public RuntimeException releasesFailure;
 		public int releasesFetchCount;
 		public String releasesResponse = new JSONArray(
@@ -156,6 +377,23 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		protected String get(String authorization, URI uri) {
 			if (!authorization.isEmpty()) {
 				return "{}";
+			}
+
+			String path = uri.getPath();
+
+			if (path.endsWith("/release.properties")) {
+				Object value = releaseProperties.get(uri.toString());
+
+				if (value instanceof RuntimeException) {
+					throw (RuntimeException)value;
+				}
+
+				if (value == null) {
+					throw WebClientResponseException.create(
+						404, "Not Found", HttpHeaders.EMPTY, new byte[0], null);
+				}
+
+				return (String)value;
 			}
 
 			releasesFetchCount++;
@@ -215,6 +453,40 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		return (T)proxyFactory.getProxy();
 	}
+
+	private JSONObject _createReleaseJSONObject(
+		String folder, String productGroupVersion, String productMajorVersion,
+		String productVersion) {
+
+		return new JSONObject(
+		).put(
+			"product", "dxp"
+		).put(
+			"productGroupVersion", productGroupVersion
+		).put(
+			"productMajorVersion", productMajorVersion
+		).put(
+			"productVersion", productVersion
+		).put(
+			"url", _RELEASES_CDN_URL + "/" + folder
+		);
+	}
+
+	private Map<String, JSONObject> _getPutJSONObjects() {
+		Map<String, JSONObject> jsonObjects = new HashMap<>();
+
+		for (String body : _testProductVersionService.putBodies) {
+			JSONObject jsonObject = new JSONObject(body);
+
+			jsonObjects.put(
+				jsonObject.getString("externalReferenceCode"), jsonObject);
+		}
+
+		return jsonObjects;
+	}
+
+	private static final String _RELEASES_CDN_URL =
+		"https://releases-cdn.liferay.com/dxp";
 
 	private ProductVersionService _productVersionService;
 	private TestProductVersionService _testProductVersionService;

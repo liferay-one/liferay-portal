@@ -5145,6 +5145,24 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
+					"externalReferenceCode": "C_PRODUCT_VERSION_BUNDLE_URL",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Bundle URL"
+					},
+					"name": "bundleURL",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
 					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_GROUP",
 					"indexed": true,
 					"indexedAsKeyword": true,
@@ -5308,6 +5326,13 @@
 							},
 							"objectFieldName": "supported",
 							"priority": 5
+						},
+						{
+							"label": {
+								"en_US": "Bundle URL"
+							},
+							"objectFieldName": "bundleURL",
+							"priority": 6
 						}
 					]
 				}

@@ -13,6 +13,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.io.StringReader;
+
 import java.net.URI;
 
 import java.time.Duration;
@@ -21,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -134,9 +137,6 @@ public class ProductVersionService extends OneBaseService {
 			String productGroup, boolean supported)
 		throws Exception {
 
-		// The list is shared by every caller that hits the cache, so it is
-		// handed out read only.
-
 		return Collections.unmodifiableList(
 			_getProductVersions(
 				StringBundler.concat(
@@ -208,10 +208,12 @@ public class ProductVersionService extends OneBaseService {
 	}
 
 	private JSONObject _createProductVersionJSONObject(
-		String productGroup, String productGroupVersion, boolean supported,
-		String type, String version, String versionLevel) {
+		String bundleURL, String productGroup, String productGroupVersion,
+		boolean supported, String type, String version, String versionLevel) {
 
 		JSONObject jsonObject = new JSONObject(
+		).put(
+			"bundleURL", bundleURL
 		).put(
 			"externalReferenceCode", version
 		).put(
@@ -240,6 +242,43 @@ public class ProductVersionService extends OneBaseService {
 		}
 
 		return jsonObject;
+	}
+
+	private String _getBundleURL(JSONObject releaseJSONObject) {
+		String url = releaseJSONObject.optString("url");
+
+		if (Validator.isNull(url)) {
+			return null;
+		}
+
+		try {
+			String releaseProperties = fetch(
+				StringPool.BLANK,
+				UriComponentsBuilder.fromUriString(
+					url + "/release.properties"
+				).build(
+				).toUri());
+
+			if (releaseProperties == null) {
+				return null;
+			}
+
+			Properties properties = new Properties();
+
+			properties.load(new StringReader(releaseProperties));
+
+			return properties.getProperty("bundle.url");
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get the bundle URL for product version " +
+						releaseJSONObject.optString("productVersion"),
+					exception);
+			}
+
+			return null;
+		}
 	}
 
 	private String _getMajorVersionType(String productGroupVersion) {
@@ -364,7 +403,7 @@ public class ProductVersionService extends OneBaseService {
 				productVersionJSONObjects.put(
 					majorVersion,
 					_createProductVersionJSONObject(
-						productGroup, productGroupVersion, supported,
+						null, productGroup, productGroupVersion, supported,
 						_getMajorVersionType(productGroupVersion), majorVersion,
 						ProductVersionConstants.LEVEL_MAJOR));
 			}
@@ -378,10 +417,16 @@ public class ProductVersionService extends OneBaseService {
 				continue;
 			}
 
+			String bundleURL = _getBundleURL(releaseJSONObject);
+
+			if (Validator.isNull(bundleURL)) {
+				continue;
+			}
+
 			productVersionJSONObjects.put(
 				version,
 				_createProductVersionJSONObject(
-					productGroup, productGroupVersion, supported,
+					bundleURL, productGroup, productGroupVersion, supported,
 					_getType(version), version,
 					ProductVersionConstants.LEVEL_PATCH));
 		}

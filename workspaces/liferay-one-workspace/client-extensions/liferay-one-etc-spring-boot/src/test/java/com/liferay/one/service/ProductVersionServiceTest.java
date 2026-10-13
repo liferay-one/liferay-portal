@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.one.model.ProductVersion;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.net.URI;
 
@@ -310,6 +311,8 @@ public class ProductVersionServiceTest {
 			"productVersion", productVersion
 		).put(
 			"tags", tagsJSONArray
+		).put(
+			"url", "https://releases.example.com/" + productGroupVersion
 		);
 
 		if (productMajorVersion != null) {
@@ -450,6 +453,16 @@ public class ProductVersionServiceTest {
 		@Override
 		protected String get(String authorization, URI uri) {
 			if (authorization.isEmpty()) {
+				String path = uri.getPath();
+
+				if (path.endsWith("/release.properties")) {
+					String bundleURL = StringUtil.replace(
+						uri.toString(), "/release.properties",
+						"/liferay-dxp-tomcat-bundle.7z");
+
+					return "bundle.url=" + bundleURL;
+				}
+
 				return releasesResponse;
 			}
 
