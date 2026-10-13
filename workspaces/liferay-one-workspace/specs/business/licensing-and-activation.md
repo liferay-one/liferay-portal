@@ -16,12 +16,10 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-LICENSING-001 | A user can see the license keys and activation keys of an account only when the user is a member of the account, belongs to an organization that shares the account, or holds a global role. Liferay Staff can see keys but cannot change them. | P0 | — | `PERM-LICENSEKEYPERMISSION`, `REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-LICENSE-KEYS`, `REST-GET-LICENSE-KEYS-LICENSEKEYID`, `REST-GET-ACTIVATION-KEYS-ACTIVATIONKEYID` |
-| REQ-LICENSING-002 | To activate, deactivate, or extend a license key, a user needs an account role that manages license keys, or a global role other than Liferay Staff. | P0 | — | `PERM-LICENSEKEYPERMISSION`, `REST-PUT-LICENSE-KEYS-ACTIVATE`, `REST-PUT-LICENSE-KEYS-DEACTIVATE`, `REST-POST-LICENSE-KEYS-EXTEND` |
-| REQ-LICENSING-003 | When an account does not allow self provisioning, its own users cannot change its keys. Only a global role that can change keys can do so for that account. | P0 | — | `PERM-LICENSEKEYPERMISSION`, `REST-POST-LICENSE-KEYS-EXTEND` |
+| REQ-LICENSING-001 | A user can see the license keys and activation keys of an account only when the user is a member of the account, belongs to an organization that shares the account, or holds a global role. Liferay Staff can see keys but cannot change them. | P0 | — | `PERM-LICENSEKEYPERMISSION`, `REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-LICENSE-KEYS`, `REST-GET-ACTIVATION-KEYS-ACTIVATIONKEYID` |
+| REQ-LICENSING-002 | To activate or deactivate a license key that has no activation key and no project, a user needs an account role that manages license keys, or a global role other than Liferay Staff. | P0 | — | `PERM-LICENSEKEYPERMISSION`, `REST-PATCH-LICENSE-KEYS-LICENSEKEYID-ACTIVE` |
 | REQ-LICENSING-004 | To generate activation keys for a project, a user must be an Administrator, Liferay Staff, the account administrator of the project's account, an administrator of the project, or the account Partner Manager. | P0 | — | `PERM-ENVIRONMENTACTIVATIONPERMISSION`, `HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION`, `REST-POST-ACTIVATION-KEYS-GENERATE` |
-| REQ-LICENSING-005 | A bulk change to license keys checks the permission on every key before it changes any key. One denied key stops the whole request. A request can name at most 100 keys. | P0 | — | `REST-PUT-LICENSE-KEYS-ACTIVATE`, `REST-PUT-LICENSE-KEYS-DEACTIVATE`, `REST-POST-LICENSE-KEYS-EXTEND` |
-| REQ-LICENSING-006 | A download or an export contains only the keys that the user can see. A CSV export neutralizes any value that a spreadsheet can run as a formula. | P0 | — | `REST-GET-LICENSE-KEYS-DOWNLOAD`, `REST-GET-LICENSE-KEYS-DOWNLOAD-ZIP`, `REST-GET-LICENSE-KEYS-EXPORT`, `REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-LICENSE-KEYS-EXPORT`, `CLS-LICENSEKEYCSVEXPORTER` |
+| REQ-LICENSING-006 | A download or an export contains only the keys that the user can see. A CSV export neutralizes any value that a spreadsheet can run as a formula. | P0 | — | `REST-GET-LICENSE-KEYS-DOWNLOAD`, `REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-LICENSE-KEYS-EXPORT`, `CLS-LICENSEKEYCSVEXPORTER` |
 
 ## Activation Key Generation
 
@@ -64,13 +62,11 @@ Terms used in this file:
 | REQ-LICENSING-042 | A key shows as not activated, active, or expired, from its dates. A key that expires 80 years or more after it starts shows as permanent. | P1 | — | `HOOK-USEPROJECTACTIVATIONKEYS`, `MOD-MYACCOUNT-PROJECTS-ISPERMANENTKEY` |
 | REQ-LICENSING-043 | A user can download a single license key only when the key uses license format version 2 or later. | P1 | — | `REST-GET-LICENSE-KEYS-LICENSEKEYID-DOWNLOAD` |
 | REQ-LICENSING-044 | The key list groups license keys under their activation key and shows each key as on premise, cluster, or virtual cluster. A cluster key shows its maximum number of cluster nodes. | P1 | — | `HOOK-USEACTIVATIONKEYLICENSEKEYS`, `MOD-MYACCOUNT-PROJECTS-GETKEYTYPE`, `ROUTE-MY-ACCOUNT-LICENSEKEYERC`, `CLS-ACTIVATIONKEY`, `CLS-LICENSEKEY`, `SVC-ACTIVATIONKEYSERVICE`, `CLIENT-SPRING-BOOT-ACTIVATIONKEYS`, `CLIENT-SPRING-BOOT-LICENSEKEYS` |
-| REQ-LICENSING-045 | A ZIP download of several license keys gives each key file a unique name. | P2 | — | `REST-GET-LICENSE-KEYS-DOWNLOAD-ZIP`, `CLS-LICENSEKEYEXPORTER` |
 
 ## Extension
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-LICENSING-050 | Only an active license key that an entitlement backs can be extended. The new expiration date cannot come before the new start date. | P0 | — | `REST-POST-LICENSE-KEYS-EXTEND` |
 
 ## Developer Keys
 

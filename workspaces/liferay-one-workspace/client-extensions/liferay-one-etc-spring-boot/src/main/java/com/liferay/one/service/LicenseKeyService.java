@@ -5,14 +5,12 @@
 
 package com.liferay.one.service;
 
-import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
 import com.liferay.one.model.LicenseKey;
-import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -254,28 +252,6 @@ public class LicenseKeyService extends OneBaseService {
 			).toUri());
 
 		return new LicenseKey(new JSONObject(response));
-	}
-
-	public LicenseKey extendLicenseKey(
-			Date expirationDate, long licenseKeyId, Date startDate)
-		throws Exception {
-
-		LicenseKey newLicenseKey = _copyLicenseKey(
-			expirationDate, getLicenseKey(licenseKeyId), startDate);
-
-		List<SubscriptionEntry> subscriptionEntries =
-			_subscriptionEntryService.getSubscriptionEntries(
-				StringBundler.concat(
-					"(className eq '", ClassNameConstants.LICENSE_KEY,
-					"') and (classPK eq ", licenseKeyId, ")"));
-
-		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
-			_subscriptionEntryService.addSubscriptionEntry(
-				ClassNameConstants.LICENSE_KEY, newLicenseKey.getLicenseKeyId(),
-				subscriptionEntry.getCustomUserId());
-		}
-
-		return newLicenseKey;
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
@@ -846,9 +822,5 @@ public class LicenseKeyService extends OneBaseService {
 	@Autowired
 	@Lazy
 	private ProductVersionService _productVersionService;
-
-	@Autowired
-	@Lazy
-	private SubscriptionEntryService _subscriptionEntryService;
 
 }

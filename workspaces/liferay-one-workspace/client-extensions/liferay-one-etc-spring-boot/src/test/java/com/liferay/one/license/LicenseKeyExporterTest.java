@@ -8,13 +8,8 @@ package com.liferay.one.license;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 
-import java.io.ByteArrayInputStream;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -181,38 +176,6 @@ public class LicenseKeyExporterTest {
 
 		Assertions.assertEquals(
 			3, licenseJSONObject.getInt("max-cluster-nodes"));
-	}
-
-	@Test
-	public void testToZipRenamesDuplicateFileNames() throws Exception {
-		byte[] bytes = _licenseKeyExporter.toZip(
-			List.of(
-				_toLicenseKey(1L, "KEY1", "key-1"),
-				_toLicenseKey(2L, "KEY2", "key-1")));
-
-		Assertions.assertEquals(
-			List.of(
-				"activation-key-dxp-2025.q3.9-key-1.xml",
-				"2-activation-key-dxp-2025.q3.9-key-1.xml"),
-			_getZipEntryNames(bytes));
-	}
-
-	private List<String> _getZipEntryNames(byte[] bytes) throws Exception {
-		List<String> names = new ArrayList<>();
-
-		try (ZipInputStream zipInputStream = new ZipInputStream(
-				new ByteArrayInputStream(bytes))) {
-
-			ZipEntry zipEntry = zipInputStream.getNextEntry();
-
-			while (zipEntry != null) {
-				names.add(zipEntry.getName());
-
-				zipEntry = zipInputStream.getNextEntry();
-			}
-		}
-
-		return names;
 	}
 
 	private LicenseKey _toLicenseKey(

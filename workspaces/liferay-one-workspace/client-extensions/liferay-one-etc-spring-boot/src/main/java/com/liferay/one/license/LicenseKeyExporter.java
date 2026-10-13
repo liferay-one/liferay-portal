@@ -19,23 +19,16 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.io.ByteArrayOutputStream;
-
-import java.nio.charset.StandardCharsets;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -255,42 +248,6 @@ public class LicenseKeyExporter {
 		}
 
 		return document.formattedString();
-	}
-
-	public byte[] toZip(List<LicenseKey> licenseKeys) throws Exception {
-		ByteArrayOutputStream byteArrayOutputStream =
-			new ByteArrayOutputStream();
-
-		Set<String> fileNames = new HashSet<>();
-
-		try (ZipOutputStream zipOutputStream = new ZipOutputStream(
-				byteArrayOutputStream)) {
-
-			for (LicenseKey licenseKey : licenseKeys) {
-				String fileName = getFileName(licenseKey);
-
-				if (!fileNames.add(fileName)) {
-					fileName = StringBundler.concat(
-						licenseKey.getLicenseKeyId(), "-", fileName);
-
-					fileNames.add(fileName);
-				}
-
-				zipOutputStream.putNextEntry(new ZipEntry(fileName));
-
-				byte[] bytes = toXML(
-					licenseKey
-				).getBytes(
-					StandardCharsets.UTF_8
-				);
-
-				zipOutputStream.write(bytes, 0, bytes.length);
-
-				zipOutputStream.closeEntry();
-			}
-		}
-
-		return byteArrayOutputStream.toByteArray();
 	}
 
 	protected void exportServerToXML(

@@ -11,19 +11,14 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.exception.LicenseKeyActiveException;
-import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
-import com.liferay.one.exception.LicenseKeyEntitlementIdException;
 import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
-import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
-import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.CommerceOrderService;
@@ -34,15 +29,9 @@ import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
-import java.time.Instant;
-
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -79,35 +68,6 @@ public class LicenseKeysRestControllerTest {
 			_subscriptionEntryService
 		).deleteSubscriptionEntry(
 			null, ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
-		);
-	}
-
-	@Test
-	public void testGetLicenseKey() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
-
-		Mockito.when(
-			licenseKey.getAccountEntryId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKey(Mockito.any(), Mockito.anyLong())
-		).thenReturn(
-			licenseKey
-		);
-
-		Assertions.assertSame(
-			licenseKey, licenseKeysRestController.getLicenseKey(null, 1L));
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			_ACCOUNT_ID, ActionKeys.VIEW, null
 		);
 	}
 
@@ -540,215 +500,6 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetLicenseKeysDownloadZip() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
-
-		Mockito.when(
-			licenseKey.getAccountEntryId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
-			licenseKey.isActive()
-		).thenReturn(
-			true
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		byte[] zip = {1, 2, 3};
-
-		Mockito.when(
-			_licenseKeyExporter.toZip(Mockito.anyList())
-		).thenReturn(
-			zip
-		);
-
-		ResponseEntity<byte[]> responseEntity =
-			licenseKeysRestController.getLicenseKeysDownloadZip(
-				null, new long[] {1L});
-
-		Assertions.assertSame(zip, responseEntity.getBody());
-
-		HttpHeaders httpHeaders = responseEntity.getHeaders();
-
-		Assertions.assertEquals(
-			"attachment; filename=\"activation-keys.zip\"",
-			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
-	}
-
-	@Test
-	public void testGetLicenseKeysDownloadZipWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.getLicenseKeysDownloadZip(
-					null, new long[101]));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_licenseKeyService);
-	}
-
-	@Test
-	public void testGetLicenseKeysDownloadZipWhenLicenseKeyIdsIsEmpty()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.getLicenseKeysDownloadZip(
-					null, new long[0]));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_licenseKeyService);
-	}
-
-	@Test
-	public void testGetLicenseKeysExport() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
-
-		Mockito.when(
-			licenseKey.getAccountEntryId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Mockito.when(
-			_licenseKeyCSVExporter.getFileName()
-		).thenReturn(
-			"activation-key-details.csv"
-		);
-
-		Mockito.when(
-			_licenseKeyCSVExporter.toCSV(Mockito.anyList())
-		).thenReturn(
-			"csv"
-		);
-
-		ResponseEntity<String> responseEntity =
-			licenseKeysRestController.getLicenseKeysExport(
-				null, new long[] {1L});
-
-		Assertions.assertEquals("csv", responseEntity.getBody());
-
-		HttpHeaders httpHeaders = responseEntity.getHeaders();
-
-		Assertions.assertEquals(
-			"attachment; filename=\"activation-key-details.csv\"",
-			httpHeaders.getFirst(HttpHeaders.CONTENT_DISPOSITION));
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(), Mockito.eq(_ACCOUNT_ID), Mockito.eq(ActionKeys.VIEW)
-		);
-	}
-
-	@Test
-	public void testGetLicenseKeysExportWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.getLicenseKeysExport(
-					null, new long[101]));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_licenseKeyCSVExporter);
-	}
-
-	@Test
-	public void testGetLicenseKeysExportWhenLicenseKeyIdsIsEmpty()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.getLicenseKeysExport(
-					null, new long[0]));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_licenseKeyCSVExporter);
-	}
-
-	@Test
-	public void testGetLicenseKeysExportWhenLicenseKeyIdsRepeat()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
-
-		Mockito.when(
-			licenseKey.getAccountEntryId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Mockito.when(
-			_licenseKeyCSVExporter.toCSV(Mockito.anyList())
-		).thenReturn(
-			"csv"
-		);
-
-		ResponseEntity<String> responseEntity =
-			licenseKeysRestController.getLicenseKeysExport(
-				null, new long[] {1L, 1L});
-
-		Assertions.assertEquals("csv", responseEntity.getBody());
-	}
-
-	@Test
 	public void testGetSubscriptionsReturnsFalseWhenNotSubscribed()
 		throws Exception {
 
@@ -937,185 +688,6 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testPostLicenseKeysExtend() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKeyWithEntitlement(
-			_ENTITLEMENT_ID, 1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		licenseKeysRestController.postLicenseKeysExtend(
-			null, _createExtensionBodyJSON(1L));
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).checkSelfProvisioning(
-			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
-		);
-
-		Mockito.verify(
-			_licenseKeyService
-		).extendLicenseKey(
-			Date.from(Instant.parse(_EXPIRATION_DATE)), 1L,
-			Date.from(Instant.parse(_START_DATE))
-		);
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenBodyIsEmpty() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.postLicenseKeysExtend(
-					null, "[]"));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenEntitlementIsMissing()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKeyWithEntitlement(0L, 1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Assertions.assertThrows(
-			LicenseKeyEntitlementIdException.class,
-			() -> licenseKeysRestController.postLicenseKeysExtend(
-				null, _createExtensionBodyJSON(1L)));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).extendLicenseKey(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
-		);
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenExpirationDatePrecedesStartDate()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKeyWithEntitlement(
-			_ENTITLEMENT_ID, 1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		String json = new JSONArray(
-		).put(
-			new JSONObject(
-			).put(
-				"expirationDate", _START_DATE
-			).put(
-				"licenseKeyId", 1L
-			).put(
-				"startDate", _EXPIRATION_DATE
-			)
-		).toString();
-
-		Assertions.assertThrows(
-			LicenseKeyDateException.class,
-			() -> licenseKeysRestController.postLicenseKeysExtend(null, json));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).extendLicenseKey(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
-		);
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		JSONArray jsonArray = new JSONArray();
-
-		for (int i = 0; i < 101; i++) {
-			jsonArray.put(
-				new JSONObject(
-				).put(
-					"licenseKeyId", i + 1
-				));
-		}
-
-		String json = jsonArray.toString();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.postLicenseKeysExtend(
-					null, json));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPostLicenseKeysExtendWhenLicenseKeyIsInactive()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKeyWithEntitlement(
-			_ENTITLEMENT_ID, 1L);
-
-		Mockito.when(
-			licenseKey.isActive()
-		).thenReturn(
-			false
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Assertions.assertThrows(
-			LicenseKeyActiveException.class,
-			() -> licenseKeysRestController.postLicenseKeysExtend(
-				null, _createExtensionBodyJSON(1L)));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).extendLicenseKey(
-			Mockito.any(), Mockito.anyLong(), Mockito.any()
-		);
-	}
-
-	@Test
 	public void testPostLicenseKeysTypeFree() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -1282,404 +854,6 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testPutLicenseKeysActivate() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		List<LicenseKey> licenseKeys = Arrays.asList(
-			_createLicenseKey(1L), _createLicenseKey(2L));
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			licenseKeys
-		);
-
-		licenseKeysRestController.putLicenseKeysActivate(
-			null, new long[] {1L, 2L});
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).checkSelfProvisioning(
-			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
-		);
-
-		Mockito.verify(
-			_licenseKeyService
-		).updateLicenseKeyActive(
-			true, 1L
-		);
-
-		Mockito.verify(
-			_licenseKeyService
-		).updateLicenseKeyActive(
-			true, 2L
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysActivateThrowsForbiddenWhenSelfProvisioningIsDisabled()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKey(1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_licenseKeyPermission
-		).checkSelfProvisioning(
-			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.putLicenseKeysActivate(
-				null, new long[] {1L}));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKeyActive(
-			Mockito.anyBoolean(), Mockito.anyLong()
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysActivateWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.putLicenseKeysActivate(
-					null, new long[101]));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPutLicenseKeysActivateWhenLicenseKeyIdsIsEmpty()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.putLicenseKeysActivate(
-					null, new long[0]));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivate() throws Exception {
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		List<LicenseKey> licenseKeys = Arrays.asList(
-			_createLicenseKey(1L), _createLicenseKey(2L));
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			licenseKeys
-		);
-
-		licenseKeysRestController.putLicenseKeysDeactivate(
-			null, new long[] {1L, 2L});
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).checkSelfProvisioning(
-			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
-		);
-
-		Mockito.verify(
-			_licenseKeyService
-		).updateLicenseKeyActive(
-			false, 1L
-		);
-
-		Mockito.verify(
-			_licenseKeyService
-		).updateLicenseKeyActive(
-			false, 2L
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateChecksEveryAccount()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		List<LicenseKey> licenseKeys = Arrays.asList(
-			_createLicenseKeyOnAccount(_ACCOUNT_ID, 1L),
-			_createLicenseKeyOnAccount(_OTHER_ACCOUNT_ID, 2L));
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			licenseKeys
-		);
-
-		licenseKeysRestController.putLicenseKeysDeactivate(
-			null, new long[] {1L, 2L});
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-
-		Mockito.verify(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_OTHER_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateRejectsEveryKeyWhenOneAccountIsForbidden()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		List<LicenseKey> licenseKeys = Arrays.asList(
-			_createLicenseKeyOnAccount(_ACCOUNT_ID, 1L),
-			_createLicenseKeyOnAccount(_OTHER_ACCOUNT_ID, 2L));
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			licenseKeys
-		);
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_OTHER_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.putLicenseKeysDeactivate(
-				null, new long[] {1L, 2L}));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKeyActive(
-			Mockito.anyBoolean(), Mockito.anyLong()
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateThrowsForbiddenWhenAccountNotManageable()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKey(1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_licenseKeyPermission
-		).check(
-			Mockito.any(UserAccount.class), Mockito.eq(_ACCOUNT_ID),
-			Mockito.eq(ActionKeys.UPDATE)
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.putLicenseKeysDeactivate(
-				null, new long[] {1L}));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKeyActive(
-			Mockito.anyBoolean(), Mockito.anyLong()
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateThrowsForbiddenWhenSelfProvisioningIsDisabled()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKey(1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_licenseKeyPermission
-		).checkSelfProvisioning(
-			Mockito.eq(_ACCOUNT_ID), Mockito.any(UserAccount.class)
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.putLicenseKeysDeactivate(
-				null, new long[] {1L}));
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKeyActive(
-			Mockito.anyBoolean(), Mockito.anyLong()
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsExceedsTheMaximum()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.putLicenseKeysDeactivate(
-					null, new long[101]));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsIsEmpty()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() -> licenseKeysRestController.putLicenseKeysDeactivate(
-					null, new long[0]));
-
-		Assertions.assertEquals(
-			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateWhenLicenseKeyIdsRepeat()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKey(1L);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		licenseKeysRestController.putLicenseKeysDeactivate(
-			null, new long[] {1L, 1L});
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.times(1)
-		).updateLicenseKeyActive(
-			false, 1L
-		);
-	}
-
-	@Test
-	public void testPutLicenseKeysDeactivateWhenLicenseKeyIsAlreadyInactive()
-		throws Exception {
-
-		LicenseKeysRestController licenseKeysRestController =
-			_createController();
-
-		LicenseKey licenseKey = _createLicenseKey(1L);
-
-		Mockito.when(
-			licenseKey.isActive()
-		).thenReturn(
-			false
-		);
-
-		Mockito.when(
-			_licenseKeyService.getLicenseKeysByIds(
-				Mockito.any(), Mockito.any(long[].class))
-		).thenReturn(
-			Collections.singletonList(licenseKey)
-		);
-
-		licenseKeysRestController.putLicenseKeysDeactivate(
-			null, new long[] {1L});
-
-		Mockito.verify(
-			_licenseKeyService
-		).updateLicenseKeyActive(
-			false, 1L
-		);
-	}
-
-	@Test
 	public void testPutSubscriptions() throws Exception {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
@@ -1797,19 +971,12 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		ReflectionTestUtils.setField(
-			licenseKeysRestController, "_adminPermission", _adminPermission);
-
-		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_commerceOrderService",
 			_commerceOrderService);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_environmentActivationPermission",
 			_environmentActivationPermission);
-
-		ReflectionTestUtils.setField(
-			licenseKeysRestController, "_licenseKeyCSVExporter",
-			_licenseKeyCSVExporter);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyExporter",
@@ -1836,20 +1003,6 @@ public class LicenseKeysRestControllerTest {
 			userAccountService);
 
 		return licenseKeysRestController;
-	}
-
-	private String _createExtensionBodyJSON(long licenseKeyId) {
-		return new JSONArray(
-		).put(
-			new JSONObject(
-			).put(
-				"expirationDate", _EXPIRATION_DATE
-			).put(
-				"licenseKeyId", licenseKeyId
-			).put(
-				"startDate", _START_DATE
-			)
-		).toString();
 	}
 
 	private LicenseKey _createLicenseKey(long licenseKeyId) {
@@ -1882,21 +1035,6 @@ public class LicenseKeysRestControllerTest {
 		return licenseKey;
 	}
 
-	private LicenseKey _createLicenseKeyWithEntitlement(
-		long entitlementId, long licenseKeyId) {
-
-		LicenseKey licenseKey = _createLicenseKeyOnAccount(
-			_ACCOUNT_ID, licenseKeyId);
-
-		Mockito.when(
-			licenseKey.getEntitlementId()
-		).thenReturn(
-			entitlementId
-		);
-
-		return licenseKey;
-	}
-
 	private void _mockGetLicenseKey(LicenseKey licenseKey) throws Exception {
 		Mockito.when(
 			_licenseKeyService.getLicenseKey(null, licenseKey.getLicenseKeyId())
@@ -1917,27 +1055,17 @@ public class LicenseKeysRestControllerTest {
 
 	private static final long _C_PRODUCT_ID = 35729766L;
 
-	private static final long _ENTITLEMENT_ID = 777L;
-
-	private static final String _EXPIRATION_DATE = "2027-01-01T00:00:00Z";
-
 	private static final long _OTHER_ACCOUNT_ID = 556L;
 
 	private static final String _PROJECT_ERC = "PROJ-1";
 
-	private static final String _START_DATE = "2026-01-01T00:00:00Z";
-
 	private static final long _USER_ID = 123L;
 
-	private final AdminPermission _adminPermission = Mockito.mock(
-		AdminPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);
-	private final LicenseKeyCSVExporter _licenseKeyCSVExporter = Mockito.mock(
-		LicenseKeyCSVExporter.class);
 	private final LicenseKeyExporter _licenseKeyExporter = Mockito.mock(
 		LicenseKeyExporter.class);
 	private final LicenseKeyGenerationService _licenseKeyGenerationService =

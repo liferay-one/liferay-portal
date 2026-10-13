@@ -11,18 +11,13 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
-import com.liferay.one.exception.LicenseKeyActiveException;
-import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
-import com.liferay.one.exception.LicenseKeyEntitlementIdException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
-import com.liferay.one.license.LicenseKeyCSVExporter;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
-import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.service.CommerceOrderService;
@@ -33,19 +28,13 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.time.Instant;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,21 +76,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				jwt, ClassNameConstants.LICENSE_KEY, licenseKeyId,
 				userAccount.getId());
 		}
-	}
-
-	@GetMapping("/{licenseKeyId}")
-	public LicenseKey getLicenseKey(
-			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("licenseKeyId") long licenseKeyId)
-		throws Exception {
-
-		LicenseKey licenseKey = _licenseKeyService.getLicenseKey(
-			jwt, licenseKeyId);
-
-		_licenseKeyPermission.check(
-			licenseKey.getAccountEntryId(), ActionKeys.VIEW, jwt);
-
-		return licenseKey;
 	}
 
 	@GetMapping("/developer-download")
@@ -201,61 +175,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		);
 	}
 
-	@GetMapping("/download-zip")
-	public ResponseEntity<byte[]> getLicenseKeysDownloadZip(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
-		throws Exception {
-
-		_checkLicenseKeyIds(licenseKeyIds);
-
-		List<LicenseKey> licenseKeys = _getActiveLicenseKeys(
-			jwt, licenseKeyIds);
-
-		if (licenseKeys.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-		}
-
-		return ResponseEntity.ok(
-		).contentType(
-			MediaType.parseMediaType("application/zip")
-		).header(
-			HttpHeaders.CONTENT_DISPOSITION,
-			"attachment; filename=\"activation-keys.zip\""
-		).body(
-			_licenseKeyExporter.toZip(licenseKeys)
-		);
-	}
-
-	@GetMapping("/export")
-	public ResponseEntity<String> getLicenseKeysExport(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
-		throws Exception {
-
-		_checkLicenseKeyIds(licenseKeyIds);
-
-		List<LicenseKey> licenseKeys = _getLicenseKeys(jwt, licenseKeyIds);
-
-		UserAccount userAccount = getMyUserAccount(jwt);
-
-		for (LicenseKey licenseKey : licenseKeys) {
-			_licenseKeyPermission.check(
-				userAccount, licenseKey.getAccountEntryId(), ActionKeys.VIEW);
-		}
-
-		return ResponseEntity.ok(
-		).contentType(
-			_CONTENT_TYPE_CSV
-		).header(
-			HttpHeaders.CONTENT_DISPOSITION,
-			"attachment; filename=\"" + _licenseKeyCSVExporter.getFileName() +
-				"\""
-		).body(
-			_licenseKeyCSVExporter.toCSV(licenseKeys)
-		);
-	}
-
 	@GetMapping("/subscriptions")
 	public boolean getSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -317,58 +236,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		_licenseKeyService.updateLicenseKeyActive(
 			getRequiredBoolean(jsonObject, "active"), licenseKeyId);
-	}
-
-	@PostMapping("/extend")
-	public List<LicenseKey> postLicenseKeysExtend(
-			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
-		throws Exception {
-
-		JSONArray jsonArray = new JSONArray(json);
-
-		long[] licenseKeyIds = new long[jsonArray.length()];
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-			licenseKeyIds[i] = jsonObject.getLong("licenseKeyId");
-		}
-
-		_checkLicenseKeyIds(licenseKeyIds);
-
-		Map<Long, LicenseKey> licenseKeysMap = new HashMap<>();
-
-		for (LicenseKey licenseKey : _getLicenseKeys(jwt, licenseKeyIds)) {
-			licenseKeysMap.put(licenseKey.getLicenseKeyId(), licenseKey);
-		}
-
-		List<LicenseKey> licenseKeys = new ArrayList<>();
-
-		for (long licenseKeyId : licenseKeyIds) {
-			licenseKeys.add(licenseKeysMap.get(licenseKeyId));
-		}
-
-		_checkManageLicenseKeys(licenseKeys, getMyUserAccount(jwt));
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			_validateExtension(jsonArray.getJSONObject(i), licenseKeys.get(i));
-		}
-
-		List<LicenseKey> extendedLicenseKeys = new ArrayList<>();
-
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-			LicenseKey licenseKey = licenseKeys.get(i);
-
-			extendedLicenseKeys.add(
-				_licenseKeyService.extendLicenseKey(
-					Date.from(_toInstant(jsonObject, "expirationDate")),
-					licenseKey.getLicenseKeyId(),
-					Date.from(_toInstant(jsonObject, "startDate"))));
-		}
-
-		return extendedLicenseKeys;
 	}
 
 	@PostMapping("/type-free")
@@ -435,24 +302,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
-	@PutMapping("/activate")
-	public void putLicenseKeysActivate(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
-		throws Exception {
-
-		_updateLicenseKeysActive(true, jwt, licenseKeyIds);
-	}
-
-	@PutMapping("/deactivate")
-	public void putLicenseKeysDeactivate(
-			@AuthenticationPrincipal Jwt jwt,
-			@RequestParam("licenseKeyIds") long[] licenseKeyIds)
-		throws Exception {
-
-		_updateLicenseKeysActive(false, jwt, licenseKeyIds);
-	}
-
 	@PutMapping("/subscriptions")
 	public void putSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -497,25 +346,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				HttpStatus.BAD_REQUEST,
 				"No more than " + _MAX_LICENSE_KEY_IDS +
 					" license keys may be requested at once");
-		}
-	}
-
-	private void _checkManageLicenseKeys(
-			List<LicenseKey> licenseKeys, UserAccount userAccount)
-		throws Exception {
-
-		Set<Long> accountEntryIds = new LinkedHashSet<>();
-
-		for (LicenseKey licenseKey : licenseKeys) {
-			accountEntryIds.add(licenseKey.getAccountEntryId());
-		}
-
-		for (long accountEntryId : accountEntryIds) {
-			_licenseKeyPermission.check(
-				userAccount, accountEntryId, ActionKeys.UPDATE);
-
-			_licenseKeyPermission.checkSelfProvisioning(
-				accountEntryId, userAccount);
 		}
 	}
 
@@ -572,74 +402,13 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return longs;
 	}
 
-	private Instant _toInstant(JSONObject jsonObject, String key) {
-		try {
-			return Instant.parse(jsonObject.getString(key));
-		}
-		catch (Exception exception) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Invalid \"" + key + "\"", exception);
-		}
-	}
-
-	private void _updateLicenseKeysActive(
-			boolean active, Jwt jwt, long[] licenseKeyIds)
-		throws Exception {
-
-		_checkLicenseKeyIds(licenseKeyIds);
-
-		List<LicenseKey> licenseKeys = _getLicenseKeys(jwt, licenseKeyIds);
-
-		_checkManageLicenseKeys(licenseKeys, getMyUserAccount(jwt));
-
-		for (LicenseKey licenseKey : licenseKeys) {
-			_licenseKeyService.updateLicenseKeyActive(
-				active, licenseKey.getLicenseKeyId());
-		}
-	}
-
-	private void _validateExtension(
-			JSONObject jsonObject, LicenseKey licenseKey)
-		throws Exception {
-
-		if (!licenseKey.isActive()) {
-			throw new LicenseKeyActiveException(
-				"License key " + licenseKey.getLicenseKeyId() +
-					" is not active");
-		}
-
-		if (licenseKey.getEntitlementId() == 0) {
-			throw new LicenseKeyEntitlementIdException(
-				"License key " + licenseKey.getLicenseKeyId() +
-					" is not backed by an entitlement");
-		}
-
-		Instant expirationDateInstant = _toInstant(
-			jsonObject, "expirationDate");
-		Instant startDateInstant = _toInstant(jsonObject, "startDate");
-
-		if (expirationDateInstant.isBefore(startDateInstant)) {
-			throw new LicenseKeyDateException(
-				"Invalid start date or expiration date");
-		}
-	}
-
-	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
-		"text/csv");
-
 	private static final int _MAX_LICENSE_KEY_IDS = 100;
-
-	@Autowired
-	private AdminPermission _adminPermission;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;
-
-	@Autowired
-	private LicenseKeyCSVExporter _licenseKeyCSVExporter;
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;
