@@ -29,6 +29,7 @@ The shared server must run with database partitioning on. Partitioning is set in
 ```bash
 scripts/instance.sh list
 scripts/instance.sh provision <web ID>
+scripts/instance.sh rebind <web ID>
 scripts/instance.sh deploy <web ID> [client extension ...]
 scripts/instance.sh sidecar <web ID>
 scripts/instance.sh delete <web ID>
@@ -37,6 +38,7 @@ scripts/instance.sh create <web ID>
 
 - `provision` creates an empty instance and gives it everything `bootstrap.sh` gives the default instance: the client extensions of this worktree, the One site host, the Spring Boot sidecar, the redirect entries, the payment methods, the DXP connector OAuth2 application, and the seed data. It takes about 8 minutes.
 - `deploy` redeploys client extensions after a code change. With no names, it deploys the global CSS, instance settings, custom element, batch, and site initializer client extensions, in that order. Name `liferay-one-etc-spring-boot` to rebuild the sidecar. The site initializer runs only when the One site does not exist yet, so apply a site initializer change with `delete` and `provision`.
+- `rebind` moves an instance to the hosts of `LIFERAY_INSTANCE_SUBDOMAIN`, or to the hosts of its web ID when that variable is not set. A web ID cannot change, so this lets a worktree take over an instance that another process provisioned, for example from a pool of ready instances. Without the variable, `rebind` moves an instance from the older `<web ID>.localhost:8080` and `<web ID>.one.localhost:8080` hosts to the current ones. The instance keeps its data and client extensions. `rebind` sets the instance host and the One site host, deploys the client extensions again so that their OAuth2 applications get the new redirect URIs, and restarts the sidecar. It takes about a minute and a half.
 - `sidecar` restarts the Spring Boot sidecar, for example after the `liferay` container is recreated.
 - `delete` removes the instance, its schema, its client extension zips, its sidecar, and its sidecar image.
 
@@ -50,6 +52,10 @@ The Spring Boot image always builds as `liferay-one-etc-spring-boot:latest`, whi
 
 - `company.administrator.can.publish` in `WorkflowDefinitionConfiguration`. Only an omniadmin can deploy workflow definitions, and the administrator of a nondefault instance is not an omniadmin. Without this setting the site initializer fails with `MustHavePermission ... ADD_DEFINITION`.
 - Ports 58082 to 58099 published on the `liferay` container, so that a browser can reach each sidecar.
+
+## Known Issue
+
+Liferay gives each new custom object a random class name suffix, such as `#Q0C0`, and checks only the instance's own data for a duplicate. The server keeps one mapping from the object portlet to its object for all instances, including deleted ones, until the `liferay` container restarts. When a new object draws a suffix that an object of another instance used, its batch import fails with `Portlet ..._<suffix> cannot be assigned to both com.liferay.object#<ID> and com.liferay.object#<ID> as root model resources`, and the site initializer then fails with `No ObjectDefinition exists with the primary key 0`. The chance grows with each instance that the server has created since it started. Run `delete` and then `provision` again, which draws new suffixes. If it fails again, restart the `liferay` container when no other worktree uses the server.
 
 ## Expected Log Noise
 
@@ -89,7 +95,7 @@ Then bootstrap the server and provision instances with these variables:
 ## Limits
 
 - Portal properties, feature flags, OSGi configurations under `configs/`, the Dockerfile, and the hotfix apply to every instance. A branch that changes one of them needs its own environment (`/one-worktree` in a slot, or `/one-env-reset`).
-- The waits read the shared `liferay` log, so run one `provision` or `deploy` at a time.
+- `provision` and `deploy` can run for several worktrees at the same time. Each wait reads the state of its own instance: the import tasks in the partition of the instance, and the One site, which the site initializer creates in one transaction. Two steps run one worktree at a time. The first is the creation of an instance: Liferay imports the system batch data of each new instance, and when any other batch import runs at the same time, for any instance, the imports fail and the request never returns. So a creation waits until no batch import runs, and new imports (the batch and site initializer deploys, the seed, and `rebind`) wait until the creation finishes. The second is the build of the Spring Boot image, because every build tags `:latest`. The locks live in the `liferay` container, so every machine that drives the server through the same Docker daemon shares them.
 - One JPDA port serves every instance. A breakpoint stops requests from all worktrees.
 
 ## Why Not Copy a Seeded Instance

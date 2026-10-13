@@ -112,22 +112,51 @@ function _assign_scopes {
 
 	local assign_page_url="${OAUTH_LIST_URL}&_${OAUTH_PORTLET}_mvcRenderCommandName=%2Foauth2_provider%2Fassign_scopes&_${OAUTH_PORTLET}_navigation=assign_scopes&_${OAUTH_PORTLET}_oAuth2ApplicationId=${application_id}"
 
+	# A new virtual instance registers its scope aliases some time after it is
+	# created, so wait up to two minutes for every alias to appear.
+
 	local available_scope_aliases
-
-	available_scope_aliases=$(_curl_session "${cookie_jar}" "${assign_page_url}" | _read_scope_aliases)
-
+	local elapsed=0
+	local missing_scope_alias
 	local scope_alias
-	local scope_arguments=()
 
-	for scope_alias in ${DXP_OAUTH_SCOPE_ALIASES}
+	while true
 	do
-		if ! grep --fixed-strings --line-regexp --quiet "${scope_alias}" <<< "${available_scope_aliases}"
+		available_scope_aliases=$(_curl_session "${cookie_jar}" "${assign_page_url}" | _read_scope_aliases)
+
+		missing_scope_alias=""
+
+		for scope_alias in ${DXP_OAUTH_SCOPE_ALIASES}
+		do
+			if ! grep --fixed-strings --line-regexp --quiet "${scope_alias}" <<< "${available_scope_aliases}"
+			then
+				missing_scope_alias="${scope_alias}"
+
+				break
+			fi
+		done
+
+		if [[ -z ${missing_scope_alias} ]]
 		then
-			echo "Scope alias ${scope_alias} is not available on ${LIFERAY_URL}." >&2
+			break
+		fi
+
+		if [[ ${elapsed} -ge 120 ]]
+		then
+			echo "Scope alias ${missing_scope_alias} is not available on ${LIFERAY_URL}." >&2
 
 			return 1
 		fi
 
+		sleep 5
+
+		elapsed=$((elapsed + 5))
+	done
+
+	local scope_arguments=()
+
+	for scope_alias in ${DXP_OAUTH_SCOPE_ALIASES}
+	do
 		scope_arguments+=(--data-urlencode "_${OAUTH_PORTLET}_scopeAliases=${scope_alias}")
 	done
 
