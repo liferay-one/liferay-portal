@@ -10,8 +10,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -35,6 +37,8 @@ public class AccountPermissionTest {
 	public void setUp() {
 		ReflectionTestUtils.setField(
 			_accountPermission, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			_accountPermission, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
 			_accountPermission, "_userAccountService", _userAccountService);
 	}
@@ -69,6 +73,32 @@ public class AccountPermissionTest {
 			PrincipalException.class,
 			() -> _accountPermission.check(
 				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null));
+	}
+
+	@Test
+	public void testContainsAllowsAccountAdministratorToUpdate()
+		throws Exception {
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+				_createUserAccount(
+					_EXTERNAL_REFERENCE_CODE,
+					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)));
+	}
+
+	@Test
+	public void testContainsAllowsAccountMemberWithoutRoleToView()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EXTERNAL_REFERENCE_CODE, null);
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null, userAccount));
+
+		Mockito.verifyNoInteractions(_accountService, _entitlementService);
 	}
 
 	@Test
@@ -117,15 +147,33 @@ public class AccountPermissionTest {
 	}
 
 	@Test
-	public void testContainsAllowsPartnerAccountAdminToAssignMembers()
+	public void testContainsAllowsPartnerAccountManagerOfPartnerAccount()
 		throws Exception {
 
-		Assertions.assertTrue(
-			_accountPermission.contains(
-				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
-				_createUserAccount(
-					_EXTERNAL_REFERENCE_CODE,
-					RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN)));
+		_mockPartnerEntitlement(true);
+
+		for (String roleName : RoleConstants.namesPartnerAccountManager) {
+			UserAccount userAccount = _createUserAccount(
+				_EXTERNAL_REFERENCE_CODE, roleName);
+
+			for (String actionId : _ACTION_IDS) {
+				Assertions.assertTrue(
+					_accountPermission.contains(
+						_EXTERNAL_REFERENCE_CODE, actionId, null, userAccount),
+					roleName + " " + actionId);
+			}
+		}
+	}
+
+	@Test
+	public void testContainsAllowsPartnerRolesToView() throws Exception {
+		for (String roleName : RoleConstants.namesPartnerAccountRoles) {
+			Assertions.assertTrue(
+				_accountPermission.contains(
+					_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null,
+					_createUserAccount(_EXTERNAL_REFERENCE_CODE, roleName)),
+				roleName);
+		}
 	}
 
 	@Test
@@ -186,6 +234,16 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testContainsRejectsAccountRequesterToUpdate() throws Exception {
+		Assertions.assertFalse(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+				_createUserAccount(
+					_EXTERNAL_REFERENCE_CODE,
+					RoleConstants.NAME_ACCOUNT_REQUESTER)));
+	}
+
+	@Test
 	public void testContainsRejectsOrganizationMemberToAssignMembers()
 		throws Exception {
 
@@ -202,6 +260,58 @@ public class AccountPermissionTest {
 				userAccount));
 
 		Mockito.verifyNoInteractions(_accountService);
+	}
+
+	@Test
+	public void testContainsRejectsPartnerAccountManagerOfNonpartnerAccount()
+		throws Exception {
+
+		_mockAccount();
+		_mockPartnerEntitlement(false);
+
+		for (String roleName : RoleConstants.namesPartnerAccountManager) {
+			UserAccount userAccount = _createUserAccount(
+				_EXTERNAL_REFERENCE_CODE, roleName);
+
+			Assertions.assertFalse(
+				_accountPermission.contains(
+					_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+					userAccount),
+				roleName);
+			Assertions.assertFalse(
+				_accountPermission.contains(
+					_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+					userAccount),
+				roleName);
+		}
+	}
+
+	@Test
+	public void testContainsRejectsPartnerRolesToAssignMembersAndUpdate()
+		throws Exception {
+
+		_mockAccount();
+		_mockPartnerEntitlement(true);
+
+		for (String roleName : RoleConstants.namesPartnerAccountRoles) {
+			if (RoleConstants.namesPartnerAccountManager.contains(roleName)) {
+				continue;
+			}
+
+			UserAccount userAccount = _createUserAccount(
+				_EXTERNAL_REFERENCE_CODE, roleName);
+
+			Assertions.assertFalse(
+				_accountPermission.contains(
+					_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+					userAccount),
+				roleName);
+			Assertions.assertFalse(
+				_accountPermission.contains(
+					_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+					userAccount),
+				roleName);
+		}
 	}
 
 	private OrganizationBrief _createOrganizationBrief() {
@@ -236,8 +346,15 @@ public class AccountPermissionTest {
 		AccountBrief accountBrief = new AccountBrief();
 
 		accountBrief.setExternalReferenceCode(accountExternalReferenceCode);
-		accountBrief.setRoleBriefs(
-			new RoleBrief[] {_createRoleBrief(accountRoleName)});
+		accountBrief.setId(_ACCOUNT_ID);
+
+		if (accountRoleName == null) {
+			accountBrief.setRoleBriefs(new RoleBrief[0]);
+		}
+		else {
+			accountBrief.setRoleBriefs(
+				new RoleBrief[] {_createRoleBrief(accountRoleName)});
+		}
 
 		userAccount.setAccountBriefs(new AccountBrief[] {accountBrief});
 
@@ -256,6 +373,21 @@ public class AccountPermissionTest {
 		);
 	}
 
+	private void _mockPartnerEntitlement(boolean partner) throws Exception {
+		Mockito.when(
+			_entitlementService.hasEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER)
+		).thenReturn(
+			partner
+		);
+	}
+
+	private static final long _ACCOUNT_ID = 33333;
+
+	private static final String[] _ACTION_IDS = {
+		ActionKeys.ASSIGN_MEMBERS, ActionKeys.UPDATE, ActionKeys.VIEW
+	};
+
 	private static final String _EXTERNAL_REFERENCE_CODE = "ACC-1";
 
 	private static final long _ORGANIZATION_ID = 44444;
@@ -264,6 +396,8 @@ public class AccountPermissionTest {
 		new AccountPermission();
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 
