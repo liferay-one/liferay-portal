@@ -155,6 +155,46 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testDeleteUserAccountsIgnoresPartnerAccountAdminOfNonpartnerAccount()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		UserAccount partnerUserAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
+
+		partnerUserAccount.setId(_USER_ID + 1);
+
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(partnerUserAccount, userAccount)
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.deleteUserAccounts(
+					null, _EXTERNAL_REFERENCE_CODE, _USER_ID));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
 	public void testDeleteUserAccountsRejectsLastAccountManager()
 		throws Exception {
 
@@ -252,6 +292,46 @@ public class AccountsRestControllerTest {
 		);
 
 		inOrder.verify(
+			_userAssignmentService
+		).unassignAccount(
+			account, _USER_ID
+		);
+	}
+
+	@Test
+	public void testDeleteUserAccountsUnassignsPartnerAccountAdminOfPartnerAccount()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _mockAccount();
+
+		_mockPartnerEntitlement();
+
+		UserAccount partnerUserAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_PARTNER_MANAGER);
+
+		partnerUserAccount.setId(_USER_ID + 1);
+
+		UserAccount userAccount = _createUserAccount(
+			_ACCOUNT_ID, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_userAccountService.getAccountUserAccounts(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(partnerUserAccount, userAccount)
+		);
+
+		accountsRestController.deleteUserAccounts(
+			null, _EXTERNAL_REFERENCE_CODE, _USER_ID);
+
+		Mockito.verify(
 			_userAssignmentService
 		).unassignAccount(
 			account, _USER_ID
@@ -1788,6 +1868,7 @@ public class AccountsRestControllerTest {
 
 		_mockAccount();
 		_mockAccountRole(_ACCOUNT_ROLE_ID, "Support Administrator");
+		_mockPartnerEntitlement();
 
 		UserAccount userAccount = _createUserAccount(
 			_ACCOUNT_ID, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
@@ -2175,6 +2256,15 @@ public class AccountsRestControllerTest {
 		);
 
 		return accountRole;
+	}
+
+	private void _mockPartnerEntitlement() throws Exception {
+		Mockito.when(
+			_entitlementService.hasEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER)
+		).thenReturn(
+			true
+		);
 	}
 
 	private static final long _ACCOUNT_ID = 11111;
