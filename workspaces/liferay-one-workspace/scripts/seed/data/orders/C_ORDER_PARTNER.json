@@ -89,7 +89,7 @@
 			"externalReferenceCode": "C_ENT_PARTNER_SOLUTION_RESELLER",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Solution Partnership - Reseller Program",
+			"name": "partner",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-016",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_PARTNER_SOLUTION_RESELLER",
