@@ -95,36 +95,43 @@ export default function SubscriptionStep({
 	}, [keyType, keyTypes, renewing, setValue]);
 
 	useEffect(() => {
-		if (renewing || requiresContractTerm) {
+		if (renewing) {
 			return;
 		}
 
-		const selectedKeyType = keyTypes.find(
-			(current) => current.key === keyType
-		);
-
-		if (selectedKeyType) {
-			setValue(
-				'subscriptionEntitlementId',
-				selectedKeyType.entitlementId
+		if (!requiresContractTerm) {
+			const selectedKeyType = keyTypes.find(
+				(current) => current.key === keyType
 			);
-		}
-	}, [keyType, keyTypes, renewing, requiresContractTerm, setValue]);
 
-	useEffect(() => {
-		if (renewing || !subscriptionEntitlementId) {
+			if (selectedKeyType) {
+				setValue(
+					'subscriptionEntitlementId',
+					selectedKeyType.entitlementId
+				);
+			}
+
 			return;
 		}
 
-		const entitled = subscriptions.some(
-			(subscription) =>
-				subscription.entitlementId === subscriptionEntitlementId
-		);
-
-		if (!entitled) {
+		if (
+			subscriptionEntitlementId &&
+			!subscriptions.some(
+				(subscription) =>
+					subscription.entitlementId === subscriptionEntitlementId
+			)
+		) {
 			setValue('subscriptionEntitlementId', 0);
 		}
-	}, [renewing, setValue, subscriptionEntitlementId, subscriptions]);
+	}, [
+		keyType,
+		keyTypes,
+		renewing,
+		requiresContractTerm,
+		setValue,
+		subscriptionEntitlementId,
+		subscriptions,
+	]);
 
 	const selectedSubscription = subscriptions.find(
 		(subscription) =>
