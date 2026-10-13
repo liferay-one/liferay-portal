@@ -57,18 +57,20 @@
 </#if>
 
 <#assign
-	appDocumentationURL = getSpecificationValue("app-documentation-url")
-	appInstallationGuideURL = getSpecificationValue("app-installation-guide-url")
-	appUsageTerms = getSpecificationValue("app-usage-terms-url")
-	cpuValue = getSpecificationValue("cpu")
-	developerName = getSpecificationValue("developer-name", catalogName)
-	publisherURL = (getSpecificationValue("publisher-web-site-url")?trim?replace(" ", ""))!""
-	ramValue = getSpecificationValue("ram")
-	sourceCode = getSpecificationValue("source-code-url")
-	supportEmail = getSpecificationValue("support-email-address")
-	supportPhone = getSpecificationValue("support-phone")
-	type = getSpecificationValue("type")?lower_case
+    appDocumentationURL = getSpecificationValue("app-documentation-url")
+    appInstallationGuideURL = getSpecificationValue("app-installation-guide-url")
+    appUsageTerms = getSpecificationValue("app-usage-terms-url")
+    cpuValue = getSpecificationValue("cpu")
+    developerName = getSpecificationValue("developer-name", catalogName)
+    publisherURL = getSpecificationValue("publisher-web-site-url")?trim?replace(" ", "")
+    ramValue = getSpecificationValue("ram")
+    sourceCode = getSpecificationValue("source-code-url")
+    supportEmail = getSpecificationValue("support-email-address")
+    supportPhone = getSpecificationValue("support-phone")
+    supportURL = getSpecificationValue("support-url")
+    type = getSpecificationValue("type")?lower_case
 >
+	
 <@section title = languageUtil.get(locale, "developer")>
 	<#if (publisherDetails.friendlyUrlPath)?has_content>
 		<a href = "/c_publisherdetail/${htmlUtil.escape(publisherDetails.friendlyUrlPath)}">
