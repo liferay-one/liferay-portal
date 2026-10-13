@@ -90,7 +90,7 @@ function setupModalOnContentInit(button) {
 
 	try {
 		const response = await Liferay.Util.fetch(
-			`/o/c/publisherdetailses/${objectId}`
+			`/o/c/publisherdetails/${objectId}`
 		);
 
 		if (!response.ok) {

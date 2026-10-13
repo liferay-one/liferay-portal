@@ -44,7 +44,7 @@
 >
 
 <#assign
-	publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'")
+	publisherDetailsResponse = restClient.get("/c/publisherdetails?filter=publisherName eq '${catalogName}'")
 />
 
 <#if publisherDetailsResponse.items?has_content>
@@ -69,7 +69,7 @@
 >
 <@section title = languageUtil.get(locale, "developer")>
 	<#if (publisherDetails.friendlyUrlPath)?has_content>
-		<a href = "/publisher-details/${publisherDetails.friendlyUrlPath}">
+		<a href = "/c_publisherdetail/${htmlUtil.escape(publisherDetails.friendlyUrlPath)}">
 			${developerName}
 		</a>
 	<#else>

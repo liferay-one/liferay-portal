@@ -6323,9 +6323,9 @@
 			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_DETAILS",
 			"label": {
-				"en_US": "Publisher Details"
+				"en_US": "Publisher Detail"
 			},
-			"name": "PublisherDetails",
+			"name": "PublisherDetail",
 			"objectFields": [
 				{
 					"DBType": "String",
@@ -6705,7 +6705,7 @@
 				"en_US": "Publisher Details"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publisherdetailses",
+			"restContextPath": "/o/c/publisherdetails",
 			"scope": "company",
 			"status": {
 				"code": 0,

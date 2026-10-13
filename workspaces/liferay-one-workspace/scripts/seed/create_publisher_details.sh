@@ -4,7 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source ../_common.sh
 
-# The PublisherDetails record powers the Publisher Dashboard's profile page and
+# The PublisherDetail record powers the Publisher Dashboard's profile page and
 # is keyed to a supplier's Commerce catalog through the numeric catalogId. That
 # ID does not exist at site initializer import time, so the record cannot be
 # seeded as an object entry. It is therefore created here, as a bootstrap step
@@ -39,7 +39,7 @@ function _create_publisher_details {
 
 	local catalog_url="${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/catalog/by-externalReferenceCode/${catalog_external_reference_code}"
 
-	local publisher_details_url="${LIFERAY_URL}/o/c/publisherdetailses/by-external-reference-code/${external_reference_code}"
+	local publisher_details_url="${LIFERAY_URL}/o/c/publisherdetails/by-external-reference-code/${external_reference_code}"
 
 	local attempt
 
@@ -58,7 +58,7 @@ function _create_publisher_details {
 			continue
 		fi
 
-		# Upsert the PublisherDetails record with the resolved catalog ID.
+		# Upsert the PublisherDetail record with the resolved catalog ID.
 
 		local body
 

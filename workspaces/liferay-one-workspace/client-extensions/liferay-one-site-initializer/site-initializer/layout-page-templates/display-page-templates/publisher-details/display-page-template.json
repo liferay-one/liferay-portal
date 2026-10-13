@@ -3,7 +3,7 @@
 		"subtypeId": 0
 	},
 	"contentType": {
-		"className": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]"
+		"className": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]"
 	},
 	"defaultTemplate": true,
 	"name": "Publisher Details"
