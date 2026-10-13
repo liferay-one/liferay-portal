@@ -44,6 +44,11 @@ export const SPRING_BOOT_BASE_URL = value(
 
 export const SSA_ACCOUNT_ERC = value('ONE_SSA_ACCOUNT_ERC', 'SSA-ACCOUNT');
 
+export const SSA_TRIAL_PRODUCT_ERC = value(
+	'ONE_SSA_TRIAL_PRODUCT_ERC',
+	'PRDCT-SSA-TRIAL'
+);
+
 export const SWITCH_ACCOUNT_ERC = value('ONE_SWITCH_ACCOUNT_ERC', 'ACCNT-002');
 
 export const UNASSIGNED_PROJECT_ERC = value(

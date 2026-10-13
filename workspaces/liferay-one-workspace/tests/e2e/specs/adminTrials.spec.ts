@@ -17,7 +17,11 @@ import {
 	tableRows,
 	toast,
 } from '../utils/adminUtils';
-import {SSA_ACCOUNT_ERC, uniqueName} from '../utils/environmentUtils';
+import {
+	SSA_ACCOUNT_ERC,
+	SSA_TRIAL_PRODUCT_ERC,
+	uniqueName,
+} from '../utils/environmentUtils';
 
 /**
  * The trial tools of the admin dashboard: the 7 day trials and the SSA SaaS
@@ -32,9 +36,14 @@ import {SSA_ACCOUNT_ERC, uniqueName} from '../utils/environmentUtils';
  * roles) is real, and each test removes what it created.
  */
 
+const DAY = 24 * 60 * 60 * 1000;
+
 const ORDERS_PATH = '/o/headless-commerce-admin-order/v1.0/orders';
 
-const SSA_ACME_PROJECT = 'ssa-acme-demo';
+const ORDER_STATUS_IN_PROGRESS = 6;
+
+const SSA_CHANNEL_PATH =
+	'/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/LIFERAY_ONE_CHANNEL';
 
 const SSA_GLOBEX_PROJECT = 'ssa-globex-demo';
 
@@ -107,18 +116,46 @@ async function deleteTrialExtensionRequests(
 	}
 }
 
-async function getSSAOrderId(page: Page, projectId: string): Promise<string> {
-	const href = await rowWithText(page, projectId)
-		.getByRole('link', {name: projectId})
-		.getAttribute('href');
+/**
+ * Creates an SSA trial order the test owns: in progress, so the list shows it
+ * as Active and offers its actions, and ending a week from now. The seeded
+ * trials carry fixed dates, and the Spring Boot trial cron completes every
+ * trial whose end date has passed, so a seeded trial cannot stay active.
+ */
 
-	const orderId = /details\/(\d+)/.exec(href ?? '')?.[1];
+async function createActiveSSATrial(
+	adminAPI: HeadlessAPI
+): Promise<{orderId: number; projectId: string}> {
+	const channel = await adminAPI.get<{id: number}>(SSA_CHANNEL_PATH);
 
-	if (!orderId) {
-		throw new Error(`Unable to read the order ID of ${projectId}`);
-	}
+	const product = await adminAPI.get<{skus: {id: number}[]}>(
+		`/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/${SSA_TRIAL_PRODUCT_ERC}?nestedFields=skus`
+	);
 
-	return orderId;
+	const projectId = `ssae2e${Date.now().toString(36)}${Math.random()
+		.toString(36)
+		.slice(2, 6)}`;
+
+	const now = Date.now();
+
+	const order = await adminAPI.post<{id: number}>(ORDERS_PATH, {
+		accountExternalReferenceCode: SSA_ACCOUNT_ERC,
+		channelId: channel.id,
+		currencyCode: 'USD',
+		customFields: {
+			'trial-end-date': new Date(now + 7 * DAY).toISOString(),
+			'trial-settings': JSON.stringify({
+				projectId,
+				siteInitializerKey: 'com.liferay.site.initializer.welcome',
+			}),
+			'trial-start-date': new Date(now).toISOString(),
+		},
+		orderItems: [{quantity: 1, skuId: product.skus[0].id, unitPrice: 0}],
+		orderStatus: ORDER_STATUS_IN_PROGRESS,
+		orderTypeExternalReferenceCode: 'SSA_SAAS',
+	});
+
+	return {orderId: order.id, projectId};
 }
 
 /**
@@ -339,18 +376,36 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] 7 day trials', () => {
 });
 
 test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
+
+	// Each test adds a trial to the same SSA account, and the list shows the
+	// newest first, so a trial created by a parallel test moves the rows. The
+	// table keys its rows by index, so an open row action menu then belongs to
+	// another trial. The tests run one at a time to keep the rows still.
+
+	test.describe.configure({mode: 'default'});
+
+	let trial: {orderId: number; projectId: string};
+
+	test.beforeEach(async ({adminAPI}) => {
+		trial = await createActiveSSATrial(adminAPI);
+	});
+
+	test.afterEach(async ({adminAPI}) => {
+		await adminAPI.deleteIfExists(`${ORDERS_PATH}/${trial.orderId}`);
+	});
+
 	test('[FLOW-ADMIN-SSA-TRIALS] [ROUTE-ADMIN-SSA-SAAS-ENVIRONMENTS] lists the team trials and searches them', async ({
 		page,
 	}) => {
 		await gotoAdmin(page, 'ssa-saas-environments', undefined, (page) =>
-			rowWithText(page, SSA_ACME_PROJECT)
+			rowWithText(page, trial.projectId)
 		);
 
 		const app = adminApp(page);
 
 		await expect(app.getByText('SaaS Demos', {exact: true})).toBeVisible();
 
-		await expect(rowWithText(page, SSA_ACME_PROJECT)).toContainText(
+		await expect(rowWithText(page, trial.projectId)).toContainText(
 			'Active'
 		);
 
@@ -358,24 +413,24 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 			'Expired'
 		);
 
-		await searchList(page, 'acme');
+		await searchList(page, trial.projectId);
 
 		await expect(tableRows(page)).toHaveCount(1);
 
-		await expect(tableRows(page).first()).toContainText(SSA_ACME_PROJECT);
+		await expect(tableRows(page).first()).toContainText(trial.projectId);
 	});
 
 	test('[FLOW-ADMIN-SSA-TRIALS] [ROUTE-ADMIN-DETAILS-ORDERID] opens a trial and returns to the list it came from', async ({
 		page,
 	}) => {
 		await gotoAdmin(page, 'ssa-saas-environments', undefined, (page) =>
-			rowWithText(page, SSA_ACME_PROJECT)
+			rowWithText(page, trial.projectId)
 		);
 
-		const orderId = await getSSAOrderId(page, SSA_ACME_PROJECT);
+		const {orderId} = trial;
 
-		await rowWithText(page, SSA_ACME_PROJECT)
-			.getByRole('link', {name: SSA_ACME_PROJECT})
+		await rowWithText(page, trial.projectId)
+			.getByRole('link', {name: trial.projectId})
 			.click();
 
 		await expectAdminSettled(page);
@@ -388,7 +443,7 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 
 		await expect(app.getByText('SSA Trial Summary')).toBeVisible();
 
-		await expect(app.getByText(SSA_ACME_PROJECT).first()).toBeVisible();
+		await expect(app.getByText(trial.projectId).first()).toBeVisible();
 
 		await app.getByRole('link', {name: 'Back to the list'}).click();
 
@@ -405,15 +460,15 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 		await springBoot.on('POST', '/trial/extend/:id', {status: 200});
 
 		await gotoAdmin(page, 'ssa-saas-environments', undefined, (page) =>
-			rowWithText(page, SSA_ACME_PROJECT)
+			rowWithText(page, trial.projectId)
 		);
 
-		const orderId = await getSSAOrderId(page, SSA_ACME_PROJECT);
+		const {orderId} = trial;
 
 		const createdRequestIds = trackTrialExtensionRequests(page);
 
 		try {
-			const row = rowWithText(page, SSA_ACME_PROJECT);
+			const row = rowWithText(page, trial.projectId);
 
 			await clickRowAction(row, 'Extend Trial');
 
@@ -497,7 +552,7 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 					(item) =>
 						String(
 							item.r_orderToTrialExtensionRequest_commerceOrderId
-						) === orderId
+						) === String(orderId)
 				)
 			).toBe(true);
 
@@ -520,12 +575,12 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 		await springBoot.on('POST', '/trial/expire/:orderId', {status: 200});
 
 		await gotoAdmin(page, 'ssa-saas-environments', undefined, (page) =>
-			rowWithText(page, SSA_ACME_PROJECT)
+			rowWithText(page, trial.projectId)
 		);
 
-		const orderId = await getSSAOrderId(page, SSA_ACME_PROJECT);
+		const {orderId} = trial;
 
-		const row = rowWithText(page, SSA_ACME_PROJECT);
+		const row = rowWithText(page, trial.projectId);
 
 		await clickRowAction(row, 'Expire Trial');
 
@@ -564,7 +619,7 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 		page,
 	}) => {
 		await gotoAdmin(page, 'my-ssa-saas-demo', undefined, (page) =>
-			rowWithText(page, SSA_ACME_PROJECT)
+			rowWithText(page, trial.projectId)
 		);
 
 		const app = adminApp(page);
@@ -575,7 +630,7 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
 
 		await expect(app.getByText('Manage your current trials')).toBeVisible();
 
-		await expect(rowWithText(page, SSA_ACME_PROJECT)).toBeVisible();
+		await expect(rowWithText(page, trial.projectId)).toBeVisible();
 
 		await app.getByRole('button', {name: 'Add New Trial'}).click();
 
