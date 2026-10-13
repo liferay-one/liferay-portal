@@ -77,12 +77,19 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		const userAccount = {
 			accountBriefs: [
 				{id: 1, roleBriefs: [{name: 'Account Administrator'}]},
-				{id: 2, roleBriefs: [{name: 'Account Solution Publisher'}]},
+				{
+					id: 2,
+					roleBriefs: [
+						{name: 'Account Member'},
+						{name: 'Account Solution Publisher'},
+					],
+				},
 			],
 			roleBriefs: [],
 		};
 
 		expect(createModel(userAccount).isAccountAdministrator).toBe(true);
+		expect(createModel(userAccount).isAccountMember).toBe(false);
 		expect(createModel(userAccount).isSolutionPublisher).toBe(false);
 		expect(createModel(userAccount).hasAccountRoleName('Custom')).toBe(
 			false
@@ -91,6 +98,7 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		setCommerceAccountId(2);
 
 		expect(createModel(userAccount).isAccountAdministrator).toBe(false);
+		expect(createModel(userAccount).isAccountMember).toBe(true);
 		expect(createModel(userAccount).isSolutionPublisher).toBe(true);
 		expect(
 			createModel(userAccount).hasAccountRoleName(

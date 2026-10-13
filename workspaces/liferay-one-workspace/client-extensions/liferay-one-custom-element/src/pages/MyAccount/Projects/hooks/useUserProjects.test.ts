@@ -87,7 +87,10 @@ function mockQueries({
 
 function mockUserAccountModel(userAccountModel: Record<string, unknown>) {
 	mockedUseOneContext.mockReturnValue({
-		userAccountModel,
+		userAccountModel: {
+			hasAccountRoleName: () => false,
+			...userAccountModel,
+		},
 	} as unknown as ReturnType<typeof useOneContext>);
 }
 
@@ -102,7 +105,11 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 		};
 	});
 
-	it.each(['canManageAllAccounts', 'isAccountAdministrator'])(
+	it.each([
+		'canManageAllAccounts',
+		'isAccountAdministrator',
+		'isAccountMember',
+	])(
 		'shows every account project to %s without a membership request',
 		(roleFlag) => {
 			mockUserAccountModel({[roleFlag]: true});
@@ -113,6 +120,29 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 			expect(mockedUseFetch.mock.calls[0][0]).toBeNull();
 			expect(result.current.projects).toEqual(projectItems);
 			expect(result.current.hasAccountProjects).toBe(true);
+		}
+	);
+
+	it.each([
+		'Partner Account Admin',
+		'Partner Manager',
+		'Partner Marketing User',
+		'Partner Member',
+		'Partner Sales User',
+		'Partner Technical User',
+	])(
+		'shows every account project to the %s role without a membership request',
+		(roleName) => {
+			mockUserAccountModel({
+				hasAccountRoleName: (accountRoleName: string) =>
+					accountRoleName === roleName,
+			});
+			mockQueries({});
+
+			const {result} = renderHook(() => useUserProjects());
+
+			expect(mockedUseFetch.mock.calls[0][0]).toBeNull();
+			expect(result.current.projects).toEqual(projectItems);
 		}
 	);
 
