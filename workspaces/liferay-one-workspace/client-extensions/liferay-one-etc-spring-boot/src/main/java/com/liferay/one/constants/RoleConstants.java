@@ -71,9 +71,7 @@ public class RoleConstants {
 			Arrays.asList(ERC_PROJECT_ADMIN, ERC_PROJECT_REQUESTER));
 	public static final List<String> namesAccountManager =
 		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_ACCOUNT_ADMINISTRATOR, NAME_PARTNER_ACCOUNT_ADMIN,
-				NAME_SSA_ADMIN));
+			Arrays.asList(NAME_ACCOUNT_ADMINISTRATOR, NAME_SSA_ADMIN));
 	public static final List<String> namesCustomerAccountRoles =
 		Collections.unmodifiableList(
 			Arrays.asList(
@@ -84,19 +82,14 @@ public class RoleConstants {
 			Arrays.asList(
 				NAME_LIFERAY_SALES, NAME_PARTNER_MANAGER,
 				NAME_SUPPORT_ADMINISTRATOR));
+	public static final List<String> namesPartnerAccountManager =
+		Collections.unmodifiableList(
+			Arrays.asList(NAME_PARTNER_ACCOUNT_ADMIN, NAME_PARTNER_MANAGER));
 	public static final List<String> namesPartnerAccountRoles =
 		Collections.unmodifiableList(
 			Arrays.asList(
 				NAME_PARTNER_MANAGER, NAME_PARTNER_MARKETING_USER,
 				NAME_PARTNER_MEMBER, NAME_PARTNER_SALES_USER,
 				NAME_PARTNER_TECHNICAL_USER));
-	public static final List<String> namesSupportAccount =
-		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER,
-				NAME_ACCOUNT_REQUESTER));
-	public static final List<String> namesSupportAccountTicket =
-		Collections.unmodifiableList(
-			Arrays.asList(NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_REQUESTER));
 
 }

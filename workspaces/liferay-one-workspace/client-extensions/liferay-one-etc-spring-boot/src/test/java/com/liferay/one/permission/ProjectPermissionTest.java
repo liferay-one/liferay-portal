@@ -9,16 +9,19 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONObject;
@@ -61,6 +64,19 @@ public class ProjectPermissionTest {
 			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN)));
 
 		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.ASSIGN_MEMBERS, null,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckAssignMembersRejectsAccountMember() throws Exception {
+		_mockAccountRoles(false, RoleConstants.NAME_ACCOUNT_MEMBER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
 			() -> projectPermission.check(
 				ActionKeys.ASSIGN_MEMBERS, null,
 				_PROJECT_EXTERNAL_REFERENCE_CODE));
@@ -112,6 +128,17 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
+	public void testCheckUpdateAllowsPartnerAccountManager() throws Exception {
+		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_MANAGER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
 	public void testCheckUpdateGrantsSecondaryTicketRole() throws Exception {
 		ProjectPermission projectPermission = _createPermission(
 			List.of(
@@ -123,6 +150,66 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
+	public void testCheckUpdateRejectsAccountMember() throws Exception {
+		_mockAccountRoles(false, RoleConstants.NAME_ACCOUNT_MEMBER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckUpdateRejectsAccountRequester() throws Exception {
+		_mockAccountRoles(true, RoleConstants.NAME_ACCOUNT_REQUESTER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckUpdateRejectsPartnerManagerAndAccountRequesterOfNonpartnerAccount()
+		throws Exception {
+
+		_mockAccountRoles(
+			false, RoleConstants.NAME_ACCOUNT_REQUESTER,
+			RoleConstants.NAME_PARTNER_MANAGER);
+
+		Mockito.when(
+			_accountPermission.contains(
+				_ACCOUNT_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+				_userAccount)
+		).thenReturn(
+			true
+		);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckUpdateRejectsPartnerMember() throws Exception {
+		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_MEMBER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
 	public void testCheckUpdateThrowsWithoutTicketRole() throws Exception {
 		ProjectPermission projectPermission = _createPermission(
 			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
@@ -131,6 +218,39 @@ public class ProjectPermissionTest {
 			PrincipalException.class,
 			() -> projectPermission.check(
 				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewAllowsAccountMember() throws Exception {
+		_mockAccountRoles(false, RoleConstants.NAME_ACCOUNT_MEMBER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewAllowsPartnerAccountManager() throws Exception {
+		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewAllowsPartnerTechnicalUser() throws Exception {
+		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_TECHNICAL_USER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test
@@ -155,6 +275,46 @@ public class ProjectPermissionTest {
 
 		projectPermission.check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+	}
+
+	@Test
+	public void testCheckViewRejectsAccountBuyer() throws Exception {
+		_mockAccountRoles(false, "Account Buyer");
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewRejectsPartnerAccountManagerOfNonpartnerAccount()
+		throws Exception {
+
+		_mockAccountRoles(false, RoleConstants.NAME_PARTNER_MANAGER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewRejectsPartnerTechnicalUserOfNonpartnerAccount()
+		throws Exception {
+
+		_mockAccountRoles(false, RoleConstants.NAME_PARTNER_TECHNICAL_USER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test
@@ -206,6 +366,8 @@ public class ProjectPermissionTest {
 		ReflectionTestUtils.setField(
 			projectPermission, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
+			projectPermission, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
 			projectPermission, "_projectMembershipService",
 			projectMembershipService);
 		ReflectionTestUtils.setField(
@@ -224,6 +386,8 @@ public class ProjectPermissionTest {
 			).put(
 				"r_accountEntryToProject_accountEntryERC",
 				_ACCOUNT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
 			));
 	}
 
@@ -274,7 +438,42 @@ public class ProjectPermissionTest {
 		return userAccount;
 	}
 
+	private void _mockAccountRoles(boolean partnerAccount, String... roleNames)
+		throws Exception {
+
+		AccountBrief accountBrief = new AccountBrief();
+
+		accountBrief.setExternalReferenceCode(_ACCOUNT_EXTERNAL_REFERENCE_CODE);
+
+		List<RoleBrief> roleBriefs = new ArrayList<>();
+
+		for (String roleName : roleNames) {
+			RoleBrief roleBrief = new RoleBrief();
+
+			roleBrief.setName(roleName);
+
+			roleBriefs.add(roleBrief);
+		}
+
+		accountBrief.setRoleBriefs(roleBriefs.toArray(new RoleBrief[0]));
+
+		Mockito.when(
+			_userAccount.getAccountBriefs()
+		).thenReturn(
+			new AccountBrief[] {accountBrief}
+		);
+
+		Mockito.when(
+			_entitlementService.hasEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER)
+		).thenReturn(
+			partnerAccount
+		);
+	}
+
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACC-1";
+
+	private static final long _ACCOUNT_ID = 11111;
 
 	private static final long _ORGANIZATION_ID = 44444;
 
@@ -286,6 +485,8 @@ public class ProjectPermissionTest {
 		AccountPermission.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private UserAccount _userAccount = _createUserAccount();
 
 }

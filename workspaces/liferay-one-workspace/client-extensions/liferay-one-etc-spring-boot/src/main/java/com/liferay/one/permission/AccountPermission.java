@@ -10,8 +10,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -66,7 +68,19 @@ public class AccountPermission {
 				continue;
 			}
 
+			if (actionId.equals(ActionKeys.VIEW)) {
+				return true;
+			}
+
+			boolean partnerAccountManager = false;
+
 			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
+				if (RoleConstants.namesPartnerAccountManager.contains(
+						roleBrief.getName())) {
+
+					partnerAccountManager = true;
+				}
+
 				if (RoleConstants.namesAccountManager.contains(
 						roleBrief.getName()) &&
 					actionId.equals(ActionKeys.ASSIGN_MEMBERS)) {
@@ -74,19 +88,22 @@ public class AccountPermission {
 					return true;
 				}
 
-				if (RoleConstants.namesSupportAccount.contains(
-						roleBrief.getName()) &&
-					actionId.equals(ActionKeys.VIEW)) {
-
-					return true;
-				}
-
-				if (RoleConstants.namesSupportAccountTicket.contains(
-						roleBrief.getName()) &&
+				if (Objects.equals(
+						roleBrief.getName(),
+						RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) &&
 					actionId.equals(ActionKeys.UPDATE)) {
 
 					return true;
 				}
+			}
+
+			if (partnerAccountManager &&
+				(actionId.equals(ActionKeys.ASSIGN_MEMBERS) ||
+				 actionId.equals(ActionKeys.UPDATE)) &&
+				_entitlementService.hasEntitlement(
+					accountBrief.getId(), EntitlementConstants.NAME_PARTNER)) {
+
+				return true;
 			}
 		}
 
@@ -112,6 +129,9 @@ public class AccountPermission {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
 
 	@Autowired
 	private UserAccountService _userAccountService;

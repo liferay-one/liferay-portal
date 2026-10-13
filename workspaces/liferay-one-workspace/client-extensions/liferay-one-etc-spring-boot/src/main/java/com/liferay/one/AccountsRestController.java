@@ -782,8 +782,10 @@ public class AccountsRestController extends OneBaseRestController {
 		return roleExternalReferenceCodes;
 	}
 
-	private boolean _hasAccountManagerRole(Set<String> accountRoleNames) {
-		for (String accountRoleName : RoleConstants.namesAccountManager) {
+	private boolean _hasAccountManagerRole(
+		List<String> accountManagerRoleNames, Set<String> accountRoleNames) {
+
+		for (String accountRoleName : accountManagerRoleNames) {
 			if (accountRoleNames.contains(accountRoleName)) {
 				return true;
 			}
@@ -859,10 +861,21 @@ public class AccountsRestController extends OneBaseRestController {
 			UserAccount userAccount)
 		throws Exception {
 
+		List<String> accountManagerRoleNames = new ArrayList<>(
+			RoleConstants.namesAccountManager);
+
+		if (_entitlementService.hasEntitlement(
+				account.getId(), EntitlementConstants.NAME_PARTNER)) {
+
+			accountManagerRoleNames.addAll(
+				RoleConstants.namesPartnerAccountManager);
+		}
+
 		if (!_hasAccountManagerRole(
+				accountManagerRoleNames,
 				UserAccountUtil.getAccountRoleNames(
 					userAccount, account.getId())) ||
-			_hasAccountManagerRole(accountRoleNames)) {
+			_hasAccountManagerRole(accountManagerRoleNames, accountRoleNames)) {
 
 			return;
 		}
@@ -873,6 +886,7 @@ public class AccountsRestController extends OneBaseRestController {
 			if (!Objects.equals(
 					accountUserAccount.getId(), userAccount.getId()) &&
 				_hasAccountManagerRole(
+					accountManagerRoleNames,
 					UserAccountUtil.getAccountRoleNames(
 						accountUserAccount, account.getId()))) {
 
