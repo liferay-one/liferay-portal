@@ -84,7 +84,7 @@ function _create_publisher_details {
 		sleep 3
 	done
 
-	echo "Unable to create publisher details ${external_reference_code} for catalog ${catalog_external_reference_code}." >&2
+	echo "Unable to create publisher details ${external_reference_code} for catalog ${catalog_external_reference_code} (last HTTP status ${status:-none} from ${publisher_details_url})." >&2
 
 	return 1
 }
