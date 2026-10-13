@@ -91,6 +91,11 @@
 			"roleType": "regular"
 		},
 		{
+			"externalReferenceCode": "C_MARKETPLACE_ACCOUNT_ADMIN",
+			"name": "Marketplace Account Administrator",
+			"roleType": "account"
+		},
+		{
 			"externalReferenceCode": "C_MARKETPLACE_PUBLISHER",
 			"name": "Marketplace Publisher",
 			"roleType": "regular"
