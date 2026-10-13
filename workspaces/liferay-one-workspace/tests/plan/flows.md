@@ -173,7 +173,8 @@ undocumented; all are **spec-not-staged**.
 Epics under LPD-87600 whose runtime feature has **no code in the two client
 extensions yet**. Unlike the deferred journeys above — which are implemented but
 cannot run locally — these are `planned` on purpose so they sit in the go-live
-denominator, each covered only by a `test.fixme` stub in `pendingFlows.spec.ts`.
+denominator, each covered only by a `test.fixme` stub in
+`integration/specs/pendingFlows.spec.ts`.
 `plan:report` therefore classifies them **⏳ pending** (counted, not real), so the
 GO-LIVE (real) percentage measures how much of the phase is actually finished:
 when each epic lands, replace its stub with a real test and the number climbs.
@@ -182,8 +183,15 @@ when each epic lands, replace its stub with a real test and the number climbs.
 | --- | --- | --- | --- | --- | --- |
 | FLOW-CONSUMPTION-METERING | Not built yet — per-account and per-project usage is metered and aggregated into billable consumption records on the billing cycle. Pending stub: `integration/specs/pendingFlows.spec.ts` (E24, LPD-88265) | integration | P0 | planned | spec:flow#consumption-metering |
 | FLOW-CONSUMPTION-BILLING | Not built yet — aggregated consumption converts to Stripe charges/invoice lines, with overage above the plan allowance billed and idempotent on re-run. Pending stub: `integration/specs/pendingFlows.spec.ts` (E24, LPD-88265) | integration | P0 | planned | spec:flow#consumption-billing |
-| FLOW-MULTI-CURRENCY-CHECKOUT | Not built yet — catalog prices and checkout totals render in the account's currency and the resulting CommerceOrder persists that currency. Pending stub: `e2e/specs/pendingFlows.spec.ts` (E26, LPD-88263) | e2e | P1 | planned | spec:flow#multi-currency-checkout |
-| FLOW-LOCALIZATION | Not built yet — the custom element renders localized labels and formats per the user's locale across the page groups. Pending stub: `e2e/specs/pendingFlows.spec.ts` (E26, LPD-88263) | e2e | P1 | planned | spec:flow#localization |
+
+## Multi-Currency and Localization (E26)
+
+E26 shipped, so its two journeys left the stub list above and run as real e2e tests.
+
+| ID | Requirement | Type | Priority | Status | Source |
+| --- | --- | --- | --- | --- | --- |
+| FLOW-MULTI-CURRENCY-CHECKOUT | A buyer whose billing address is in another country gets checkout totals in that country's currency, and the cart CommerceOrder is recreated in that currency (a German address prices the summary in euros and moves the cart to EUR). Spec: `e2e/specs/productPurchase.spec.ts` (E26, LPD-88263) | e2e | P1 | planned | spec:flow#multi-currency-checkout |
+| FLOW-LOCALIZATION | The custom element renders its labels in the page language for every language it ships (en_US, es_ES, pt_BR, ja_JP) on the admin and My Account page groups; a Spanish locale other than es_ES falls back to English (pinned defect). Spec: `e2e/specs/localization.spec.ts` (E26, LPD-88263) | e2e | P1 | planned | spec:flow#localization |
 
 ## Surface coverage matrix
 

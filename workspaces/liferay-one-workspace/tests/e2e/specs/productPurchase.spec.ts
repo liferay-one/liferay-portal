@@ -138,10 +138,27 @@ async function signInAsBuyer(page: Page, buyer: TemporaryBuyer) {
  * address and the chosen payment method, asserting each step on the way.
  */
 
+type BillingAddress = {
+	city: string;
+	country: string;
+	region?: string;
+	street: string;
+	zip: string;
+};
+
+const US_BILLING_ADDRESS: BillingAddress = {
+	city: 'Diamond Bar',
+	country: 'US',
+	region: 'CA',
+	street: '1400 Montefino Avenue',
+	zip: '91765',
+};
+
 async function goToPaidSummary(
 	page: Page,
 	productId: number,
-	paymentMethod: 'Pay with Bank Transfer' | 'Pay with Card'
+	paymentMethod: 'Pay with Bank Transfer' | 'Pay with Card',
+	billingAddress: BillingAddress = US_BILLING_ADDRESS
 ) {
 	await page.goto(purchasePath(productId));
 
@@ -176,18 +193,26 @@ async function goToPaidSummary(
 	await expect(saveButton).toBeDisabled();
 
 	await page.locator('#name').fill('E2E Buyer');
-	await page.locator('#street1').fill('1400 Montefino Avenue');
-	await page.locator('select[name="country"]').selectOption('US');
-	await page.locator('select[name="regionISOCode"]').selectOption('CA');
-	await page.locator('#city').fill('Diamond Bar');
-	await page.locator('#zip').fill('91765');
+	await page.locator('#street1').fill(billingAddress.street);
+	await page
+		.locator('select[name="country"]')
+		.selectOption(billingAddress.country);
+
+	if (billingAddress.region) {
+		await page
+			.locator('select[name="regionISOCode"]')
+			.selectOption(billingAddress.region);
+	}
+
+	await page.locator('#city').fill(billingAddress.city);
+	await page.locator('#zip').fill(billingAddress.zip);
 	await page.locator('#phoneNumber').fill('5555555555');
 
 	await expect(saveButton).toBeEnabled();
 
 	await saveButton.click();
 
-	await expect(page.getByText('1400 Montefino Avenue').first()).toBeVisible();
+	await expect(page.getByText(billingAddress.street).first()).toBeVisible();
 
 	await page
 		.locator('.product-purchase-radio-card', {hasText: paymentMethod})
@@ -623,6 +648,47 @@ test.describe('[FLOW-CHECKOUT-PAID] paid app checkout', () => {
 			account.defaultBillingAddressId,
 			'expected the new address to become the default billing address'
 		).toBeTruthy();
+	});
+
+	test('[FLOW-MULTI-CURRENCY-CHECKOUT] a billing address in Germany prices the summary in euros and moves the cart to EUR', async ({
+		adminAPI,
+		page,
+	}) => {
+		const productId = await getProductId(adminAPI, PRODUCT_ERCS.paidApp);
+
+		buyer = await createTemporaryBuyer(adminAPI, {label: 'Euro Summary'});
+
+		await signInAsBuyer(page, buyer);
+
+		await goToPaidSummary(page, productId, 'Pay with Bank Transfer', {
+			city: 'Berlin',
+			country: 'DE',
+			street: 'Alexanderplatz 1',
+			zip: '10178',
+		});
+
+		await expect(page.getByText(/^€\s?[\d.,]+$/).first()).toBeVisible();
+
+		await expect(page.getByText('$ 99.00')).toHaveCount(0);
+
+		const {account} = buyer;
+
+		await expect
+			.poll(
+				async () =>
+					(
+						await getAccountOrders<{
+							accountId: number;
+							currencyCode: string;
+							id: number;
+							orderStatus: number;
+						}>(adminAPI, account.id)
+					)
+						.filter(({orderStatus}) => orderStatus === 2)
+						.map(({currencyCode}) => currencyCode),
+				{message: 'expected the open cart to be in EUR'}
+			)
+			.toEqual(['EUR']);
 	});
 
 	test('[FLOW-CHECKOUT-PAID] [ROUTE-PRODUCT-PURCHASE-BANK-TRANSFER-COMPLETED] Purchase App with bank transfer places the order', async ({
