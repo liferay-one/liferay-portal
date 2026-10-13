@@ -5,11 +5,11 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ContractConstants;
 import com.liferay.one.exception.AmbiguousContractChainException;
-import com.liferay.one.exception.NoSuchContractException;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
 
@@ -45,14 +45,203 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class ContractServiceTest {
 
 	@BeforeEach
-	public void setUp() {
+	public void setUp() throws Exception {
 		_testContractService = new TestContractService();
 
+		ReflectionTestUtils.setField(
+			_testContractService, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
 			_testContractService, "_commerceOrderService",
 			_commerceOrderService);
 		ReflectionTestUtils.setField(
 			_testContractService, "_entitlementService", _entitlementService);
+
+		Mockito.when(
+			_accountService.fetchAccountByExternalReferenceCode(
+				ArgumentMatchers.anyString())
+		).thenReturn(
+			new Account()
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractLinksEveryOrderOfTheOpportunity()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isLatestContractQuery(uri)) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"id", 77
+					).put(
+						"opportunityId", "OPP-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of("salesforceProjectId", "PRJ-1"));
+
+		opportunityOrder.setAccountId(_ACCOUNT_ID);
+
+		_whenFetchOrder(opportunityOrder);
+
+		Order projectEntitlementOrder = _createOrder(
+			_PROJECT_ENTITLEMENT_ORDER_ID,
+			Map.of(
+				"salesforceOpportunityId", "OPP-1", "salesforceProjectId",
+				"PRJ-2"),
+			12L);
+		Order unrelatedOrder = _createOrder(
+			_UNRELATED_ORDER_ID, Map.of("salesforceOpportunityId", "OPP-9"),
+			13L);
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(opportunityOrder, projectEntitlementOrder, unrelatedOrder)
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '12'")
+		).thenReturn(
+			List.of(_createEntitlement(3, 0, null))
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77", "PATCH /o/c/contracts/77"),
+			_testContractService.requests);
+		Assertions.assertEquals(
+			_ACCOUNT_ID,
+			new JSONObject(
+				_testContractService.bodies.get(0)
+			).getLong(
+				"r_accountEntryToContract_accountEntryId"
+			));
+		Assertions.assertEquals(
+			"PRJ-1",
+			new JSONObject(
+				_testContractService.bodies.get(1)
+			).getString(
+				"r_projectToContract_c_projectERC"
+			));
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_ORDER_ID, Map.of("contractId", 77L)
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_PROJECT_ENTITLEMENT_ORDER_ID, Map.of("contractId", 77L)
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_UNRELATED_ORDER_ID), ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			3, 77
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementProject(
+			3, "PRJ-2"
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractSkipsUntilTheOpportunityIsProvisioned()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isLatestContractQuery(uri)) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"id", 77
+					));
+			}
+
+			return null;
+		};
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractsReconcilesRecentlyModifiedContracts()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			String query = uri.getQuery();
+
+			if (query.contains("dateModified ge ")) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"opportunityId", "OPP-1"
+					),
+					new JSONObject(
+					).put(
+						"opportunityId", "OPP-1"
+					),
+					new JSONObject());
+			}
+
+			if (_isLatestContractQuery(uri)) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"id", 77
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		_whenFetchOrder(_createOrder(Map.of("contractId", "77")));
+
+		_testContractService.reconcileOpportunityContracts();
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+
+		Mockito.verify(
+			_commerceOrderService
+		).fetchOrderByExternalReferenceCode(
+			"OPP-1"
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
 	}
 
 	@Test
@@ -214,10 +403,46 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testUpsertContractOmitsTheAccountUntilItExists()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.fetchAccountByExternalReferenceCode("ACCNT-1")
+		).thenReturn(
+			null
+		);
+
+		_testContractService.patchResponse = "{\"id\": 77}";
+
+		_testContractService.upsertContract(
+			"create", _createSalesforceContract());
+
+		JSONObject jsonObject = new JSONObject(
+			_testContractService.bodies.get(0));
+
+		Assertions.assertEquals(
+			"C1", jsonObject.getString("externalReferenceCode"));
+		Assertions.assertFalse(
+			jsonObject.has("r_accountEntryToContract_accountEntryERC"));
+	}
+
+	@Test
 	public void testUpsertContractReassignsOrderEntitlements()
 		throws Exception {
 
-		_testContractService.getFunction = uri -> _createItemsResponse();
+		_testContractService.getFunction = uri -> {
+			if (_isLatestContractQuery(uri)) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"id", 77
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return _createItemsResponse();
+		};
 		_testContractService.patchResponse = "{\"id\": 77}";
 
 		_whenFetchOrder(
@@ -321,6 +546,34 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testUpsertContractUpdateCreatesMissingContract()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			throw _createException(404);
+		};
+		_testContractService.patchResponse = "{\"id\": 77}";
+
+		_testContractService.upsertContract(
+			"update", _createSalesforceContract());
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/by-external-reference-code/C1"),
+			_testContractService.requests);
+
+		JSONObject jsonObject = new JSONObject(
+			_testContractService.bodies.get(0));
+
+		Assertions.assertEquals(
+			ContractConstants.TYPE_INITIAL,
+			jsonObject.getJSONObject(
+				"contractType"
+			).getString(
+				"key"
+			));
+	}
+
+	@Test
 	public void testUpsertContractUpdateKeepsExistingProjectLink()
 		throws Exception {
 
@@ -388,20 +641,6 @@ public class ContractServiceTest {
 			"PRJ-1", jsonObject.getString("r_projectToContract_c_projectERC"));
 	}
 
-	@Test
-	public void testUpsertContractUpdateThrowsWhenContractIsMissing() {
-		_testContractService.getFunction = uri -> {
-			throw _createException(404);
-		};
-
-		Assertions.assertThrows(
-			NoSuchContractException.class,
-			() -> _testContractService.upsertContract(
-				"update", _createSalesforceContract()));
-
-		Assertions.assertTrue(_testContractService.requests.isEmpty());
-	}
-
 	private Entitlement _createEntitlement(
 		long entitlementId, long contractId,
 		String projectExternalReferenceCode) {
@@ -438,12 +677,13 @@ public class ContractServiceTest {
 	}
 
 	private Order _createOrder(
-		Map<String, String> customFields, Long... orderItemIds) {
+		long orderId, Map<String, String> customFields, Long... orderItemIds) {
 
 		Order order = new Order();
 
 		order.setCustomFields(customFields);
-		order.setId(_ORDER_ID);
+		order.setExternalReferenceCode(String.valueOf(orderId));
+		order.setId(orderId);
 
 		OrderItem[] orderItems = new OrderItem[orderItemIds.length];
 
@@ -456,6 +696,16 @@ public class ContractServiceTest {
 		}
 
 		order.setOrderItems(orderItems);
+
+		return order;
+	}
+
+	private Order _createOrder(
+		Map<String, String> customFields, Long... orderItemIds) {
+
+		Order order = _createOrder(_ORDER_ID, customFields, orderItemIds);
+
+		order.setExternalReferenceCode("OPP-1");
 
 		return order;
 	}
@@ -486,6 +736,10 @@ public class ContractServiceTest {
 			uri.getPath(), "/o/c/contracts/by-external-reference-code/C1");
 	}
 
+	private boolean _isLatestContractQuery(URI uri) {
+		return _isChainQuery(uri, "sort=dateCreated:desc");
+	}
+
 	private void _whenFetchOrder(Order order) throws Exception {
 		Mockito.when(
 			_commerceOrderService.fetchOrderByExternalReferenceCode("OPP-1")
@@ -494,8 +748,16 @@ public class ContractServiceTest {
 		);
 	}
 
+	private static final long _ACCOUNT_ID = 5L;
+
 	private static final long _ORDER_ID = 900L;
 
+	private static final long _PROJECT_ENTITLEMENT_ORDER_ID = 901L;
+
+	private static final long _UNRELATED_ORDER_ID = 902L;
+
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(

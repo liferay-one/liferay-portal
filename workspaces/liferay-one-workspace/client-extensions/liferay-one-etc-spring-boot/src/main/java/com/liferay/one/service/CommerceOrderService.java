@@ -782,6 +782,8 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		customFields.put("projectName", project.getName());
+		customFields.put(
+			"salesforceOpportunityId", sourceOrder.getExternalReferenceCode());
 		customFields.put("salesforceProjectId", projectExternalReferenceCode);
 
 		order.setCustomFields(() -> customFields);
@@ -1264,6 +1266,8 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		customFields.put("renewal", salesforceOpportunity.isRenewal());
+		customFields.put(
+			"salesforceOpportunityId", salesforceOpportunity.getId());
 
 		if (Validator.isNotNull(salesforceOpportunity.getPricebook2Id())) {
 			customFields.put(

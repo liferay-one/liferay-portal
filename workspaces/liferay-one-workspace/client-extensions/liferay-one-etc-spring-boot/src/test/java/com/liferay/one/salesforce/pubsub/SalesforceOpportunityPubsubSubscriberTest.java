@@ -315,6 +315,30 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveAttachesContractToAccountWhenContractHasNoAccount()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.fetchLatestContractByOpportunityId(
+				Mockito.anyString())
+		).thenReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"id", 888L
+				))
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		Mockito.verify(
+			_contractService
+		).attachContractToAccount(
+			888L, _ACCOUNT_ID
+		);
+	}
+
+	@Test
 	public void testReceiveAttachesContractToProjectWhenProjectExternalReferenceCodeBlank()
 		throws Exception {
 
@@ -532,6 +556,32 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_containsSubstring(
 				"reconcile mixed currencies",
 				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveDoesNotAttachContractToAccountWhenAccountAlreadyAttached()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.fetchLatestContractByOpportunityId(
+				Mockito.anyString())
+		).thenReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"id", 888L
+				).put(
+					"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+				))
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).attachContractToAccount(
+			Mockito.anyLong(), Mockito.anyLong()
+		);
 	}
 
 	@Test
@@ -1818,6 +1868,48 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 
 		Assertions.assertNotNull(salesforceProjectArgumentCaptor.getValue());
+	}
+
+	@Test
+	public void testReceiveUsesAmendedContractForAmendment() throws Exception {
+		Mockito.when(
+			_contractService.fetchContractByExternalReferenceCode(
+				"AMENDED-CONTRACT-1")
+		).thenReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"id", 555L
+				))
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONObject opportunityJSONObject = recordJSONObject.getJSONObject(
+			"opportunity");
+
+		opportunityJSONObject.put(
+			"SBQQ__AmendedContract__c", "AMENDED-CONTRACT-1");
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
+			Long.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
+			Mockito.any(), Mockito.anyList(), Mockito.any()
+		);
+
+		Assertions.assertEquals(555L, contractIdArgumentCaptor.getValue());
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).fetchLatestContractByOpportunityId(
+			Mockito.anyString()
+		);
 	}
 
 	@Test

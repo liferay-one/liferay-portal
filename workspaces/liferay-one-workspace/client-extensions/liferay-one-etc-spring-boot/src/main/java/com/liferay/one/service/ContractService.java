@@ -5,11 +5,11 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ContractConstants;
 import com.liferay.one.exception.AmbiguousContractChainException;
-import com.liferay.one.exception.NoSuchContractException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
@@ -19,9 +19,16 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +40,7 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -42,6 +50,22 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @Component
 public class ContractService extends OneBaseService {
+
+	public void attachContractToAccount(long contractId, long accountEntryId)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"r_accountEntryToContract_accountEntryId", accountEntryId
+		);
+
+		patch(
+			getAuthorization(), jsonObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/contracts/" + contractId
+			).build(
+			).toUri());
+	}
 
 	public void attachContractToProject(
 			long contractId, String projectExternalReferenceCode)
@@ -129,6 +153,98 @@ public class ContractService extends OneBaseService {
 		return new Contract(jsonArray.getJSONObject(0));
 	}
 
+	public void reconcileOpportunityContract(String opportunityId)
+		throws Exception {
+
+		if (Validator.isNull(opportunityId)) {
+			return;
+		}
+
+		Contract contract = fetchLatestContractByOpportunityId(opportunityId);
+
+		if (contract == null) {
+			return;
+		}
+
+		Order opportunityOrder =
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				opportunityId);
+
+		if (opportunityOrder == null) {
+			return;
+		}
+
+		Long accountId = opportunityOrder.getAccountId();
+
+		if ((contract.getAccountEntryId() <= 0) && (accountId != null) &&
+			(accountId > 0)) {
+
+			attachContractToAccount(contract.getId(), accountId);
+		}
+
+		String projectExternalReferenceCode = _getSalesforceProjectId(
+			opportunityOrder);
+
+		if (Validator.isNull(contract.getProjectExternalReferenceCode()) &&
+			Validator.isNotNull(projectExternalReferenceCode)) {
+
+			attachContractToProject(
+				contract.getId(), projectExternalReferenceCode);
+		}
+
+		for (Order order : _getOpportunityOrders(opportunityOrder)) {
+			_syncOrderContract(contract, order);
+		}
+	}
+
+	@Scheduled(cron = "${liferay.one.contract.reconcile.cron}")
+	public void reconcileOpportunityContracts() {
+		if (!_reconciling.compareAndSet(false, true)) {
+			return;
+		}
+
+		try {
+			Instant instant = Instant.now(
+			).minus(
+				_RECONCILE_LOOKBACK_DAYS, ChronoUnit.DAYS
+			).truncatedTo(
+				ChronoUnit.SECONDS
+			);
+
+			Set<String> opportunityIds = new LinkedHashSet<>(
+				getAllItems(
+					"/o/c/contracts", "dateModified ge " + instant,
+					jsonObject -> jsonObject.optString("opportunityId")));
+
+			opportunityIds.removeIf(Validator::isNull);
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Reconciling the contracts of ", opportunityIds.size(),
+						" opportunities"));
+			}
+
+			for (String opportunityId : opportunityIds) {
+				try {
+					reconcileOpportunityContract(opportunityId);
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to reconcile the contract of opportunity " +
+							opportunityId,
+						exception);
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error("Unable to reconcile contracts", exception);
+		}
+		finally {
+			_reconciling.set(false);
+		}
+	}
+
 	public void upsertContract(
 			String action, SalesforceContract salesforceContract)
 		throws Exception {
@@ -148,10 +264,23 @@ public class ContractService extends OneBaseService {
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"externalReferenceCode", salesforceContract.getId()
-		).put(
-			"r_accountEntryToContract_accountEntryERC",
-			salesforceContract.getAccountId()
 		);
+
+		Account account = _accountService.fetchAccountByExternalReferenceCode(
+			salesforceContract.getAccountId());
+
+		if (account != null) {
+			jsonObject.put(
+				"r_accountEntryToContract_accountEntryERC",
+				salesforceContract.getAccountId());
+		}
+		else if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Upserting contract ", salesforceContract.getId(),
+					" without account ", salesforceContract.getAccountId(),
+					" because the account does not exist yet"));
+		}
 
 		if (salesforceContract.getContractTerm() != null) {
 			jsonObject.put(
@@ -181,24 +310,17 @@ public class ContractService extends OneBaseService {
 			jsonObject.put("startDate", startDate);
 		}
 
-		Order order = null;
-		Map<String, Object> customFields = null;
+		String projectExternalReferenceCode = null;
 
 		if (Validator.isNotNull(salesforceContract.getOpportunityId())) {
-			order = _commerceOrderService.fetchOrderByExternalReferenceCode(
-				salesforceContract.getOpportunityId());
-		}
+			Order order =
+				_commerceOrderService.fetchOrderByExternalReferenceCode(
+					salesforceContract.getOpportunityId());
 
-		if (order != null) {
-			customFields = (Map<String, Object>)order.getCustomFields();
+			if (order != null) {
+				projectExternalReferenceCode = _getSalesforceProjectId(order);
+			}
 		}
-
-		if (customFields == null) {
-			customFields = Map.of();
-		}
-
-		String projectExternalReferenceCode = GetterUtil.getString(
-			customFields.get("salesforceProjectId"));
 
 		Contract predecessorContract = _fetchPredecessorContract(
 			salesforceContract);
@@ -239,8 +361,7 @@ public class ContractService extends OneBaseService {
 			contract = new Contract(new JSONObject(response));
 		}
 
-		_syncOrderContract(
-			contract, customFields, order, projectExternalReferenceCode);
+		reconcileOpportunityContract(salesforceContract.getOpportunityId());
 
 		_attachSuccessorContract(contract, salesforceContract);
 	}
@@ -425,17 +546,59 @@ public class ContractService extends OneBaseService {
 			salesforceContract.getId());
 	}
 
-	private void _syncOrderContract(
-			Contract contract, Map<String, Object> customFields, Order order,
-			String projectExternalReferenceCode)
+	private List<Order> _getOpportunityOrders(Order opportunityOrder)
 		throws Exception {
 
-		if ((order == null) || (contract == null)) {
-			return;
+		List<Order> orders = new ArrayList<>();
+
+		orders.add(opportunityOrder);
+
+		Long accountId = opportunityOrder.getAccountId();
+
+		if (accountId == null) {
+			return orders;
 		}
 
-		long orderContractId = GetterUtil.getLong(
-			customFields.get("contractId"));
+		for (Order order : _commerceOrderService.getAccountOrders(accountId)) {
+			if (Objects.equals(order.getId(), opportunityOrder.getId())) {
+				continue;
+			}
+
+			Map<String, ?> customFields = order.getCustomFields();
+
+			if ((customFields != null) &&
+				Objects.equals(
+					customFields.get("salesforceOpportunityId"),
+					opportunityOrder.getExternalReferenceCode())) {
+
+				orders.add(order);
+			}
+		}
+
+		return orders;
+	}
+
+	private String _getSalesforceProjectId(Order order) {
+		Map<String, ?> customFields = order.getCustomFields();
+
+		if (customFields == null) {
+			return null;
+		}
+
+		return GetterUtil.getString(customFields.get("salesforceProjectId"));
+	}
+
+	private void _syncOrderContract(Contract contract, Order order)
+		throws Exception {
+
+		Map<String, ?> customFields = order.getCustomFields();
+
+		long orderContractId = 0;
+
+		if (customFields != null) {
+			orderContractId = GetterUtil.getLong(
+				customFields.get("contractId"));
+		}
 
 		if (orderContractId != contract.getId()) {
 			_commerceOrderService.patchOrderCustomFields(
@@ -446,6 +609,13 @@ public class ContractService extends OneBaseService {
 
 		if (orderItems == null) {
 			return;
+		}
+
+		String projectExternalReferenceCode = _getSalesforceProjectId(order);
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			projectExternalReferenceCode =
+				contract.getProjectExternalReferenceCode();
 		}
 
 		for (OrderItem orderItem : orderItems) {
@@ -497,9 +667,15 @@ public class ContractService extends OneBaseService {
 			salesforceContract.getId());
 
 		if (existingContract == null) {
-			throw new NoSuchContractException(
-				"Unable to find contract " + salesforceContract.getId() +
-					" for update");
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Creating contract " + salesforceContract.getId() +
+						" because an update arrived before it existed");
+			}
+
+			return _createContract(
+				jsonObject, predecessorContract, projectExternalReferenceCode,
+				uri);
 		}
 
 		if (predecessorContract != null) {
@@ -523,15 +699,22 @@ public class ContractService extends OneBaseService {
 		return patch(getAuthorization(), jsonObject.toString(), uri);
 	}
 
+	private static final int _RECONCILE_LOOKBACK_DAYS = 1;
+
 	private static final Log _log = LogFactory.getLog(ContractService.class);
 
 	private static final Pattern _datePattern = Pattern.compile(
 		"\\d{4}-\\d{2}-\\d{2}");
 
 	@Autowired
+	private AccountService _accountService;
+
+	@Autowired
 	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	private final AtomicBoolean _reconciling = new AtomicBoolean();
 
 }

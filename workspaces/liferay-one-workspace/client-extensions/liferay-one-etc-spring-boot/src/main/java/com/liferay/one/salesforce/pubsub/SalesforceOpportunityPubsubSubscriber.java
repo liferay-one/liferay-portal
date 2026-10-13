@@ -126,6 +126,18 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 	}
 
+	private Contract _fetchContract(SalesforceOpportunity salesforceOpportunity)
+		throws Exception {
+
+		if (Validator.isNotNull(salesforceOpportunity.getAmendedContractId())) {
+			return _contractService.fetchContractByExternalReferenceCode(
+				salesforceOpportunity.getAmendedContractId());
+		}
+
+		return _contractService.fetchLatestContractByOpportunityId(
+			salesforceOpportunity.getId());
+	}
+
 	private String _getCurrencyCode(
 		SalesforceOpportunity salesforceOpportunity,
 		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
@@ -435,13 +447,17 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceOpportunity.getAccountId(), salesforceProject);
 		}
 
-		Contract contract = _contractService.fetchLatestContractByOpportunityId(
-			salesforceOpportunity.getId());
+		Contract contract = _fetchContract(salesforceOpportunity);
 
 		Long contractId = null;
 
 		if (contract != null) {
 			contractId = contract.getId();
+
+			if (contract.getAccountEntryId() <= 0) {
+				_contractService.attachContractToAccount(
+					contract.getId(), account.getId());
+			}
 
 			if ((salesforceProject != null) &&
 				Validator.isNull(contract.getProjectExternalReferenceCode())) {

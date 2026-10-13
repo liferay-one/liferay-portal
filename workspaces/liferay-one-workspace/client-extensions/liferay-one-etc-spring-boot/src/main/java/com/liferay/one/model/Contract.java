@@ -17,6 +17,8 @@ import org.json.JSONObject;
 public class Contract {
 
 	public Contract(JSONObject jsonObject) {
+		_accountEntryId = jsonObject.optLong(
+			"r_accountEntryToContract_accountEntryId");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_id = jsonObject.optLong("id");
 		_opportunityId = jsonObject.optString("opportunityId");
@@ -44,6 +46,10 @@ public class Contract {
 		else {
 			_endDateInstant = Instant.parse(endDate);
 		}
+	}
+
+	public long getAccountEntryId() {
+		return _accountEntryId;
 	}
 
 	public String getContractType() {
@@ -78,6 +84,7 @@ public class Contract {
 		return _renewalOpportunityId;
 	}
 
+	private final long _accountEntryId;
 	private final String _contractType;
 	private final Instant _endDateInstant;
 	private final String _externalReferenceCode;

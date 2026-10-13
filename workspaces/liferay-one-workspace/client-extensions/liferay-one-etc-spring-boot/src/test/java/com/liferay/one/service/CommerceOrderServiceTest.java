@@ -12,6 +12,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
@@ -21,7 +22,9 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
+import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.math.BigDecimal;
@@ -2614,6 +2617,60 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderSetsTheSalesforceOpportunity() throws Exception {
+		Channel channel = new Channel();
+
+		channel.setId(1L);
+
+		CommerceChannelService commerceChannelService = Mockito.mock(
+			CommerceChannelService.class);
+
+		Mockito.when(
+			commerceChannelService.fetchChannel(ArgumentMatchers.any())
+		).thenReturn(
+			channel
+		);
+
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_commerceChannelService",
+			commerceChannelService);
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("SF-ACCOUNT-1");
+		account.setId(_ACCOUNT_ID);
+
+		OrderResource orderResource = _mockOrderResource(
+			() -> _commerceOrderService.upsertOrder(
+				account, null, "USD", "a0P-1", "a1tTEST",
+				new SalesforceOpportunity(
+					new JSONObject(
+					).put(
+						"Id", "006-PURCHASING"
+					)),
+				List.of(), null));
+
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+
+		Mockito.verify(
+			orderResource
+		).postOrder(
+			orderArgumentCaptor.capture()
+		);
+
+		Order order = orderArgumentCaptor.getValue();
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		Assertions.assertEquals(
+			"006-PURCHASING", customFields.get("salesforceOpportunityId"));
+		Assertions.assertEquals(
+			"a1tTEST", customFields.get("salesforceProjectId"));
+	}
+
+	@Test
 	public void testUpsertProjectEntitlementOrderSetsTheProjectName()
 		throws Exception {
 
@@ -2648,6 +2705,39 @@ public class CommerceOrderServiceTest {
 		Assertions.assertEquals("1", customFields.get("renewal"));
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
+	}
+
+	@Test
+	public void testUpsertProjectEntitlementOrderSetsThePurchasingOpportunity()
+		throws Exception {
+
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Order sourceOrder = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		sourceOrder.setExternalReferenceCode("006-PURCHASING");
+
+		OrderResource orderResource = _upsertProjectEntitlementOrder(
+			sourceOrder);
+
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+
+		Mockito.verify(
+			orderResource
+		).postOrder(
+			orderArgumentCaptor.capture()
+		);
+
+		Order order = orderArgumentCaptor.getValue();
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		Assertions.assertEquals(
+			"006-PURCHASING", customFields.get("salesforceOpportunityId"));
 	}
 
 	private OrderResource _calculateTax(Order order) throws Exception {
@@ -2869,25 +2959,8 @@ public class CommerceOrderServiceTest {
 		return order;
 	}
 
-	private void _setAIHubOrderFields(Order order, String orderMetadata) {
-		order.setAccountExternalReferenceCode("ACCNT-TEST");
-
-		BillingAddress billingAddress = new BillingAddress();
-
-		billingAddress.setCountryISOCode("US");
-
-		order.setBillingAddress(billingAddress);
-
-		order.setCreatorEmailAddress("test@liferay.com");
-
-		Map<String, String> customFields = HashMapBuilder.put(
-			"order-metadata", orderMetadata
-		).build();
-
-		order.setCustomFields(() -> customFields);
-	}
-
-	private OrderResource _upsertProjectEntitlementOrder(Order sourceOrder)
+	private OrderResource _mockOrderResource(
+			UnsafeRunnable<Exception> unsafeRunnable)
 		throws Exception {
 
 		OrderResource orderResource = Mockito.mock(OrderResource.class);
@@ -2930,11 +3003,36 @@ public class CommerceOrderServiceTest {
 				builder
 			);
 
-			_commerceOrderService.upsertProjectEntitlementOrder(
-				"a0P-1", "a1tTEST", sourceOrder);
+			unsafeRunnable.run();
 		}
 
 		return orderResource;
+	}
+
+	private void _setAIHubOrderFields(Order order, String orderMetadata) {
+		order.setAccountExternalReferenceCode("ACCNT-TEST");
+
+		BillingAddress billingAddress = new BillingAddress();
+
+		billingAddress.setCountryISOCode("US");
+
+		order.setBillingAddress(billingAddress);
+
+		order.setCreatorEmailAddress("test@liferay.com");
+
+		Map<String, String> customFields = HashMapBuilder.put(
+			"order-metadata", orderMetadata
+		).build();
+
+		order.setCustomFields(() -> customFields);
+	}
+
+	private OrderResource _upsertProjectEntitlementOrder(Order sourceOrder)
+		throws Exception {
+
+		return _mockOrderResource(
+			() -> _commerceOrderService.upsertProjectEntitlementOrder(
+				"a0P-1", "a1tTEST", sourceOrder));
 	}
 
 	private void _verifyCancelledSEOStudioOrder(String seoStudioError)
