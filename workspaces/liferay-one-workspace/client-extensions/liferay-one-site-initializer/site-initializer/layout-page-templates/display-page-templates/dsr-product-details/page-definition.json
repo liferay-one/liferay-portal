@@ -453,6 +453,9 @@
 																	}
 																}
 															],
+															"fragmentStyle": {
+																"hidden": true
+															},
 															"indexed": true
 														},
 														"id": "ff4b9c52-4907-44ea-800a-ea037d7ef2e7",
@@ -489,9 +492,6 @@
 																	}
 																}
 															],
-															"fragmentStyle": {
-																"hidden": true
-															},
 															"indexed": true
 														},
 														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
