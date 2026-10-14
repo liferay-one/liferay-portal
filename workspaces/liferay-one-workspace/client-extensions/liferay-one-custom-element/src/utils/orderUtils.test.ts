@@ -103,11 +103,48 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
+		it('maps application orders to completed or pending', () => {
+			for (const orderTypeExternalReferenceCode of [
+				'CLIENT_EXTENSION',
+				'CLOUD_APP',
+				'CLOUDAPP',
+				'COMPOSITE_APP',
+				'DXP_APP',
+				'LOW_CODE_CONFIGURATION',
+				'OTHER',
+			]) {
+				expect(
+					getOrderStatusLabel(
+						toPlacedOrder(orderTypeExternalReferenceCode, 0)
+					)
+				).toBe('Completed');
+			}
+
+			for (const code of [1, 5, 6, 8, 10, 20, 99]) {
+				expect(
+					getOrderStatusLabel(toPlacedOrder('DXP_APP', code))
+				).toBe('Pending');
+			}
+		});
+
+		it('maps a completed application order without an order status label to completed', () => {
+			expect(
+				getOrderStatusLabel({
+					...toPlacedOrder('DXP_APP', 0, ''),
+					workflowStatusInfo: {
+						code: 0,
+						label: 'approved',
+						label_i18n: 'Approved',
+					},
+				})
+			).toBe('Completed');
+		});
+
 		it('falls back to the workflow status label', () => {
 			expect(
 				getOrderStatusLabel({
 					orderStatusInfo: {code: 0, label: '', label_i18n: ''},
-					orderTypeExternalReferenceCode: 'DXP_APP',
+					orderTypeExternalReferenceCode: 'SSA_SAAS',
 					workflowStatusInfo: {label: 'approved', label_i18n: ''},
 				} as unknown as PlacedOrder)
 			).toBe('approved');

@@ -138,7 +138,10 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		const itemsByType = toProjectItemsByType(
 			[
 				toOrder(
-					{orderStatusInfo: {code: 0, label: '', label_i18n: ''}},
+					{
+						orderStatusInfo: {code: 0, label: '', label_i18n: ''},
+						orderTypeExternalReferenceCode: 'SSA_SAAS',
+					},
 					[2]
 				),
 			],
@@ -146,6 +149,31 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		);
 
 		expect(itemsByType.product.get('PRDCT-DXP')?.status).toBe('active');
+	});
+
+	it('shows a completed application order as completed and any other application order as pending', () => {
+		const toApplicationStatus = (code: number, label: string) =>
+			toProjectItemsByType(
+				[
+					toOrder(
+						{
+							orderStatusInfo: {code, label, label_i18n: ''},
+							workflowStatusInfo: {
+								code: 0,
+								label: 'approved',
+								label_i18n: 'Approved',
+							},
+						},
+						[1]
+					),
+				],
+				productsByProductId
+			).application.get('PRDCT-APP')?.status;
+
+		expect(toApplicationStatus(0, '')).toBe('completed');
+		expect(toApplicationStatus(1, 'pending')).toBe('pending');
+		expect(toApplicationStatus(5, '')).toBe('pending');
+		expect(toApplicationStatus(8, 'cancelled')).toBe('pending');
 	});
 
 	it('uses the price model as the type without a categories specification', () => {
