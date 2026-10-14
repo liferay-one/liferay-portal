@@ -1456,6 +1456,12 @@
 					}
 				},
 				{
+					"specificationKey": "self-service-trial-product-erc",
+					"value": {
+						"en_US": "PRDCT-CONTENT-MARKETING-TRIAL"
+					}
+				},
+				{
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "cmp"
@@ -1529,9 +1535,6 @@
 			"active": true,
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
-				{
-					"externalReferenceCode": "MARKETPLACE_LISTING_LISTED"
-				},
 				{
 					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
 				}
@@ -2077,6 +2080,12 @@
 					}
 				},
 				{
+					"specificationKey": "self-service-trial-product-erc",
+					"value": {
+						"en_US": "PRDCT-DSR-TRIAL"
+					}
+				},
+				{
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "dsr"
@@ -2166,9 +2175,6 @@
 			"active": true,
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"categories": [
-				{
-					"externalReferenceCode": "MARKETPLACE_LISTING_LISTED"
-				},
 				{
 					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
 				}

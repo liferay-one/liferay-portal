@@ -519,6 +519,19 @@
 		},
 		{
 			"description": {
+				"en_US": "The external reference code of the free self service trial product that the product page offers next to Contact Sales."
+			},
+			"facetable": false,
+			"key": "self-service-trial-product-erc",
+			"optionCategory": {
+				"externalReferenceCode": "PRODUCT_METADATA"
+			},
+			"title": {
+				"en_US": "Self Service Trial Product ERC"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the solution company description."
 			},
 			"facetable": true,
