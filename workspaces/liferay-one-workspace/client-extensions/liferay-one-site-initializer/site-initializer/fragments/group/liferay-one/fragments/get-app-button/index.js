@@ -17,6 +17,8 @@ const getAppButtonElement = fragmentElement.querySelector('button#get-app');
 const getAppDescriptionElement = fragmentElement.querySelector(
 	'#get-app-description'
 );
+const startTrialButtonElement =
+	fragmentElement.querySelector('button#start-trial');
 const tooltipElement = fragmentElement.querySelector('.clay-tooltip-bottom');
 
 const isFreeApp = (productSpecifications = []) =>
@@ -102,6 +104,60 @@ const getCommerceProduct = async (channelId) => {
 	}
 };
 
+const getSelfServiceTrialProduct = async (channelId, product) => {
+	const selfServiceTrialProductSpecification =
+		product.productSpecifications.find(
+			({specificationKey}) =>
+				specificationKey === 'self-service-trial-product-erc'
+		);
+
+	if (!selfServiceTrialProductSpecification?.value) {
+		return null;
+	}
+
+	const searchParams = new URLSearchParams({
+		accountId: '-1',
+		filter: `externalReferenceCode eq '${selfServiceTrialProductSpecification.value.replaceAll("'", "''")}'`,
+		pageSize: '1',
+	});
+
+	try {
+		const response = await Liferay.Util.fetch(
+			`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?${searchParams}`
+		);
+
+		const {items = []} = await response.json();
+
+		return items[0] ?? null;
+	}
+	catch {
+		return null;
+	}
+};
+
+const customizeStartTrialButton = async (channelId, product) => {
+	const selfServiceTrialProduct = await getSelfServiceTrialProduct(
+		channelId,
+		product
+	);
+
+	if (!selfServiceTrialProduct) {
+		return;
+	}
+
+	startTrialButtonElement.classList.remove('d-none');
+
+	startTrialButtonElement.onclick = () => {
+		trackAnalytics('Click on Start Trial Button', {
+			productName: product.name,
+		});
+
+		Liferay.Util.navigate(
+			`${getSiteURL()}/product-purchase?productId=${selfServiceTrialProduct.productId}`
+		);
+	};
+};
+
 const getSiteURL = () => {
 	const layoutRelativeURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
 
@@ -181,7 +237,7 @@ const main = async () => {
 			});
 		};
 
-		return;
+		return customizeStartTrialButton(channelId, product);
 	}
 
 	const skuPublished = product.skus.some((sku) => sku.purchasable);
