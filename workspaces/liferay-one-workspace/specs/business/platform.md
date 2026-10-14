@@ -22,7 +22,7 @@ Terms used in this file:
 | REQ-PLATFORM-020 | The system keeps a list of released product versions from the Liferay releases feed. It refreshes the list on a schedule and at startup. When a refresh fails, the system keeps the last good list. | P1 | LPD-88254 | `CRON-SYNCPRODUCTVERSIONS`, `SVC-PRODUCTVERSIONSERVICE`, `LSN-PRODUCTVERSIONSERVICE-ONAPPLICATIONREADY` |
 | REQ-PLATFORM-021 | Quarterly versions sort newest first, by year, then quarter, then patch. A quarterly version sorts above every other version. | P1 | — | `CLS-VERSIONCOMPARATOR`, `CLS-PRODUCTVERSION`, `HOOK-USEDXPPRODUCTVERSIONS` |
 | REQ-PLATFORM-022 | A DXP version list shows only quarterly versions. | P1 | — | `HOOK-USEDXPPRODUCTVERSIONS` |
-| REQ-PLATFORM-023 | The bundle list shows every Liferay bundle. A bundle without a download link shows no link. | P2 | — | `HOOK-USELIFERAYBUNDLES` |
+| REQ-PLATFORM-023 | The bundle list shows every quarterly DXP version from 2024.Q1 that has a bundle link, newest first. Each row links to the bundle of its version. | P2 | LPD-108730 | `HOOK-USEDXPPRODUCTVERSIONS`, `ROUTE-MY-ACCOUNT-PRODUCTERC` |
 | REQ-PLATFORM-024 | Each DXP patch version links to the bundle URL in its release properties, and the link can end in .zip or .7z. When the release properties cannot be read or have no bundle URL, the refresh skips that version, its stored row stays unchanged, and a new version gets no row. A major version has no link. | P2 | LPD-108730 | `CRON-SYNCPRODUCTVERSIONS` |
 
 ## Forms and Formats

@@ -23,6 +23,7 @@ const FILTER = [
 ].join(' and ');
 
 type ProductVersionNode = {
+	bundleURL?: string;
 	externalReferenceCode: string;
 	id: number;
 	productVersion?: string;
@@ -59,9 +60,9 @@ export function useDXPProductVersions(enabled = true) {
 		},
 	});
 
-	const productVersions = (data?.items ?? [])
+	const items = (data?.items ?? [])
 		.map((node) => ({
-			productVersion: node.productVersion ?? '',
+			node,
 			quarterlyVersion: parseQuarterlyVersion(node.productVersion ?? ''),
 		}))
 		.filter(({quarterlyVersion}) => quarterlyVersion)
@@ -71,9 +72,11 @@ export function useDXPProductVersions(enabled = true) {
 				productVersion1.quarterlyVersion as number[]
 			)
 		)
-		.map(({productVersion}) => productVersion);
+		.map(({node}) => node);
 
-	return {loading, productVersions};
+	const productVersions = items.map((node) => node.productVersion ?? '');
+
+	return {items, loading, productVersions};
 }
 
 export default useDXPProductVersions;

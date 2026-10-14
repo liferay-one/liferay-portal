@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useLiferayBundles} from '~/hooks/useLiferayBundles';
+import useDXPProductVersions from '~/hooks/useDXPProductVersions';
 
 import DownloadListCard, {
 	DownloadItem,
@@ -22,12 +22,18 @@ export default function DownloadTab({
 	profile = 'app',
 	virtualItems = [],
 }: DownloadTabProps) {
-	const {bundles} = useLiferayBundles();
-
 	const isBundle = profile === 'bundle';
 
+	const {items: productVersions} = useDXPProductVersions(isBundle);
+
 	const items: DownloadItem[] = isBundle
-		? bundles
+		? productVersions
+				.filter(({bundleURL}) => bundleURL)
+				.map(({bundleURL, externalReferenceCode, productVersion}) => ({
+					id: externalReferenceCode,
+					link: bundleURL ?? '',
+					name: `Liferay ${productVersion}`,
+				}))
 		: virtualItems.map((virtualItem, index) => ({
 				id: `${index}-${virtualItem.version}`,
 				link: virtualItem.url,

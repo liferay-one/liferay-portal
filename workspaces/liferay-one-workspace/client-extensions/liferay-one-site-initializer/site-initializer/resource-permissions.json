@@ -120,24 +120,6 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LiferayBundle$]",
-		"roleName": "Provisioning Administrator",
-		"scope": "1"
-	},
-	{
-		"actionIds": [
-			"VIEW"
-		],
-		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LiferayBundle$]",
-		"roleName": "User",
-		"scope": "1"
-	},
-	{
-		"actionIds": [
-			"VIEW"
-		],
-		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProductVersion$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
@@ -306,16 +288,6 @@
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:LicenseKey$]",
-		"roleName": "Provisioning Administrator",
-		"scope": "1"
-	},
-	{
-		"actionIds": [
-			"ACCESS_IN_CONTROL_PANEL",
-			"VIEW"
-		],
-		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:LiferayBundle$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},

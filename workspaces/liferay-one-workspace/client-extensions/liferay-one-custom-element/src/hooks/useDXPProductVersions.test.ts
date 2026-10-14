@@ -13,7 +13,7 @@ vi.mock('~/hooks/useFetch', () => ({
 	useFetch: vi.fn(),
 }));
 
-function mockItems(items?: {productVersion?: string}[]) {
+function mockItems(items?: {bundleURL?: string; productVersion?: string}[]) {
 	vi.mocked(useFetch).mockReturnValue({
 		data: items ? {items} : undefined,
 		isLoading: false,
@@ -58,6 +58,42 @@ describe('[HOOK-USEDXPPRODUCTVERSIONS] useDXPProductVersions', () => {
 		const {result} = renderHook(() => useDXPProductVersions());
 
 		expect(result.current.productVersions).toEqual(['DXP 2024.Q1.3']);
+	});
+
+	it('returns the sorted items with their bundle URL', () => {
+		mockItems([
+			{
+				bundleURL: 'https://example.com/2024.q4.2.zip',
+				productVersion: 'DXP 2024.Q4.2',
+			},
+			{productVersion: 'DXP 2025.Q1.0'},
+			{
+				bundleURL: 'https://example.com/2024.q4.10.7z',
+				productVersion: 'DXP 2024.Q4.10',
+			},
+		]);
+
+		const {result} = renderHook(() => useDXPProductVersions());
+
+		expect(
+			result.current.items.map(({bundleURL, productVersion}) => ({
+				bundleURL,
+				productVersion,
+			}))
+		).toEqual([
+			{bundleURL: undefined, productVersion: 'DXP 2025.Q1.0'},
+			{
+				bundleURL: 'https://example.com/2024.q4.10.7z',
+				productVersion: 'DXP 2024.Q4.10',
+			},
+			{
+				bundleURL: 'https://example.com/2024.q4.2.zip',
+				productVersion: 'DXP 2024.Q4.2',
+			},
+		]);
+		expect(result.current.productVersions).toEqual(
+			result.current.items.map(({productVersion}) => productVersion)
+		);
 	});
 
 	it('sorts newest first by year, quarter, then patch', () => {

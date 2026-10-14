@@ -4,23 +4,6 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source _teardown_common.sh
 
-# Layer 1 teardown: deletes the seeded records and demo content created by the
-# bootstrap post-deploy scripts (seed_test_data.sh, populate_orders.sh,
-# seed_journal_articles.sh, create_publisher_details.sh) and by the site
-# initializer (commerce products). It leaves the object definitions,
-# relationships, commerce configuration, roles, taxonomies, and list type
-# definitions in place, so the data can be re-seeded without an environment
-# rebuild. For a full teardown of the structural scaffolding too, run
-# teardown.sh --full (or teardown_structure.sh after this).
-#
-# Deletion runs leaf-to-root so the object relationships the batch marks
-# "prevent" never block a parent delete. Two relationships are "prevent":
-# accountEntryToContract and accountEntryToEntitlement. Their children
-# (contracts and entitlements) are therefore deleted before the accounts they
-# hang off of. Relationships marked "cascade" or "disassociate" do not block
-# deletion, but the explicit leaf-to-root order keeps the teardown
-# deterministic regardless.
-
 function main {
 	_delete_commerce_orders
 	_delete_usage_reports
@@ -52,27 +35,12 @@ function _delete_commerce_orders {
 }
 
 function _delete_usage_reports {
-
-	# Usage reports are the audit trail behind the overage orders deleted above
-	# (each records its order's ID in a plain commerceOrderId field, not a
-	# relationship, so there is no delete constraint between them). They are
-	# children of their project (projectToUsageReport is "cascade"), so deleting
-	# the projects below would remove them anyway; the explicit delete keeps the
-	# teardown leaf-to-root.
-
 	_log "Deleting usage reports..."
 
 	_delete_object_entries "C_USAGE_REPORT"
 }
 
 function _delete_entitlements {
-
-	# Entitlements (accountEntryToEntitlement is "prevent") must be gone before
-	# their accounts. Deleting an order item or a project only disassociates
-	# its entitlements (commerceOrderItemToEntitlement and projectToEntitlement
-	# are "disassociate"), so the orders above leave the entitlement entries
-	# behind for this step.
-
 	_log "Deleting entitlements..."
 
 	_delete_object_entries "C_ENTITLEMENT"
@@ -85,10 +53,6 @@ function _delete_license_keys {
 }
 
 function _delete_contracts {
-
-	# Contracts (accountEntryToContract is "prevent") must be gone before their
-	# accounts.
-
 	_log "Deleting contracts..."
 
 	_delete_object_entries "C_CONTRACT"
@@ -114,15 +78,9 @@ function _delete_publisher_data {
 	_delete_object_entries "C_PUBLISHER_ACCOUNT_REQUEST"
 	_delete_object_entries "C_PUBLISHER_ASSET_ATTACHMENT"
 	_delete_object_entries "C_PUBLISHER_ASSET"
-	_delete_object_entries "C_LIFERAY_BUNDLE"
 }
 
 function _delete_commerce_products {
-
-	# Products list a DTO "id" (the CPDefinition id) but delete by "productId"
-	# (the CProduct id) at /products/{productId}, so the delete is keyed off
-	# productId rather than the default id.
-
 	_log "Deleting commerce products..."
 
 	local ercs
@@ -170,13 +128,6 @@ function _delete_journal_articles {
 }
 
 function _delete_accounts {
-
-	# Accounts are deleted by their seeded external reference codes so the
-	# teardown never removes accounts created outside the bootstrap. With the
-	# "prevent" children (contracts, entitlements) already gone, the remaining
-	# account children ("cascade" relationships: projects, memberships,
-	# properties, notes, and so on) are removed automatically.
-
 	_log "Deleting seeded accounts..."
 
 	local ercs
