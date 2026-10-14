@@ -8,6 +8,7 @@ import {downloadFile} from '~/utils/downloadFileUtils';
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
 export type GenerateFormBundleProduct = {
+	app: boolean;
 	availableCount: number;
 	disasterRecovery: boolean;
 	entitlementId: number;

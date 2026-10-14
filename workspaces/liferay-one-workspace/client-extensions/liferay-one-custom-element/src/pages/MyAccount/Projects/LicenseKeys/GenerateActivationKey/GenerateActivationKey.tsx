@@ -185,7 +185,11 @@ export default function GenerateActivationKey() {
 
 		setValue(
 			'bundleEntitlementIds',
-			getBundleProducts(generateForm, productExternalReferenceCode)
+			getBundleProducts(
+				developer,
+				generateForm,
+				productExternalReferenceCode
+			)
 				.filter(
 					(bundleProduct) =>
 						bundleProduct.licensable &&
@@ -271,6 +275,7 @@ export default function GenerateActivationKey() {
 		}
 
 		return getBundleProducts(
+			developer,
 			generateForm,
 			productExternalReferenceCode
 		).some(
@@ -278,7 +283,12 @@ export default function GenerateActivationKey() {
 				bundleEntitlementIds.includes(bundleProduct.entitlementId) &&
 				bundleProduct.disasterRecovery
 		);
-	}, [bundleEntitlementIds, generateForm, productExternalReferenceCode]);
+	}, [
+		bundleEntitlementIds,
+		developer,
+		generateForm,
+		productExternalReferenceCode,
+	]);
 
 	const needsDSRStep = includesDSR && !hasWorkspace;
 

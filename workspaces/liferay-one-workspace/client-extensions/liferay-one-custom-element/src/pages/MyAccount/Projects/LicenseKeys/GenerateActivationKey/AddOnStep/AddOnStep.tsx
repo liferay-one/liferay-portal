@@ -50,6 +50,7 @@ export default function AddOnStep({
 	const version = watch('version');
 
 	const bundleProducts = getBundleProducts(
+		developer,
 		generateForm,
 		productExternalReferenceCode
 	);
