@@ -753,6 +753,8 @@ function _run_batch_import {
 
 	local url="${LIFERAY_URL}${rest_context_path}/batch?createStrategy=UPSERT&importStrategy=ON_ERROR_CONTINUE&updateStrategy=${update_strategy}"
 
+	_lock_batch_import
+
 	local import_task_id
 
 	import_task_id=$(echo "${items}" | _curl \
@@ -763,12 +765,23 @@ function _run_batch_import {
 
 	if [[ -z ${import_task_id} ]]
 	then
+		_unlock_batch_import
+
 		echo "Unable to start batch import of ${count} ${label}." >&2
 
 		return 1
 	fi
 
-	_wait_for_batch_import "${import_task_id}" "${label}" "${count}" || return 1
+	local status=0
+
+	_wait_for_batch_import "${import_task_id}" "${label}" "${count}" || status=${?}
+
+	_unlock_batch_import
+
+	if [[ "${status}" -ne 0 ]]
+	then
+		return "${status}"
+	fi
 
 	_verify_batch_import "${label}" "${rest_context_path}" "${items}"
 }

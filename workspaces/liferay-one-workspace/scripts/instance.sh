@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source "$(dirname "${BASH_SOURCE[0]}")/_batch_import_lock.sh"
+
 #
 # Runs one database partitioned virtual instance per worktree on the shared
 # Liferay server. The One site answers on http://<subdomain>.<domain> and the
@@ -30,8 +32,6 @@ DEFAULT_CLIENT_EXTENSIONS=(
 )
 INSTANCE_DOMAIN="${LIFERAY_INSTANCE_DOMAIN:-localhost}"
 INSTANCE_INTERNAL_PORT="${LIFERAY_INSTANCE_INTERNAL_PORT-:8080}"
-LOCK_DIR="/tmp/liferay-one-instance.lock"
-LOCK_STALE_MINUTES=60
 PORTAL_INSTANCES_URL="${LIFERAY_SERVER_URL:-http://localhost:8080}/o/headless-portal-instances/v1.0/portal-instances"
 SIDECAR_FIRST_PORT=58082
 SIDECAR_IMAGE="liferay-one-etc-spring-boot"
@@ -402,67 +402,6 @@ function _list {
 		jq --raw-output '.items[] | [.companyId, .portalInstanceId, .virtualHost, .active] | @tsv'
 }
 
-function _lock {
-	#
-	# Only one batch import runs on the server at a time, for all instances.
-	# When two instances import batch data at the same time, the server applies
-	# the items of one import as a user of the other instance, and they fail
-	# with "Only the omniadmin can add users to another company". A creation
-	# that overlaps another import never returns. Hold this lock for each
-	# instance creation, batch or site initializer deploy, and seed, and for
-	# the Spring Boot image build.
-	#
-	# The lock lives in the Liferay container, so every machine that drives the
-	# server through the same Docker daemon shares it, and a restart of the
-	# container clears it.
-	#
-
-	local elapsed=0
-	local owner
-
-	owner="$(hostname) ${$}"
-
-	until docker exec "${CONTAINER_NAME}" mkdir "${LOCK_DIR}" 2> /dev/null
-	do
-		#
-		# Break the lock of a provision that died while it held it: at once
-		# when it ran on this machine, and after LOCK_STALE_MINUTES otherwise.
-		# A creation request can take 15 minutes and a seed about 10, so the
-		# limit is much longer than either.
-		#
-
-		local holder
-
-		holder=$(docker exec "${CONTAINER_NAME}" cat "${LOCK_DIR}/owner" 2> /dev/null)
-
-		if { [ "${holder%% *}" == "$(hostname)" ] && ! kill -0 "${holder##* }" 2> /dev/null; } ||
-			[ -n "$(docker exec "${CONTAINER_NAME}" find "${LOCK_DIR}" -maxdepth 0 -mmin +${LOCK_STALE_MINUTES} 2> /dev/null)" ]
-		then
-			docker exec "${CONTAINER_NAME}" rm -f -r "${LOCK_DIR}"
-
-			continue
-		fi
-
-		if [[ "${elapsed}" -eq 0 ]]
-		then
-			echo "Waiting for the batch import that ${holder} runs on the server."
-		fi
-
-		if [[ "${elapsed}" -ge 3600 ]]
-		then
-			echo "Timed out waiting for the lock ${LOCK_DIR} in ${CONTAINER_NAME}, held by ${holder}." >&2
-
-			return 1
-		fi
-
-		sleep 5
-
-		elapsed=$((elapsed + 5))
-	done
-
-	docker exec "${CONTAINER_NAME}" sh -c "echo '${owner}' > ${LOCK_DIR}/owner"
-}
-
 function _print_help {
 	echo "Usage: scripts/instance.sh <command> [arguments]"
 	echo ""
@@ -489,17 +428,16 @@ function _provision {
 		export LIFERAY_ADMIN_PASSWORD=test
 		export LIFERAY_AUTH_MODE=basic
 		export LIFERAY_ENV_FILE=/dev/null
+		export LIFERAY_BATCH_IMPORT_LOCK=true
 		export LIFERAY_URL=$(_get_url "${web_id}")
 
-		_lock || exit 1
+		#
+		# The seed takes the lock for each of its batch imports, not for the
+		# whole run, so other provisions can seed through the REST calls in
+		# between.
+		#
 
 		./scripts/seed.sh
-
-		local status=${?}
-
-		_unlock
-
-		exit ${status}
 	) || return 1
 
 	echo "Done. The One site of ${web_id} is running at http://$(_get_site_host "${web_id}")."
@@ -662,18 +600,6 @@ function _start_sidecar {
 	echo "Waiting for ${name} to be ready."
 
 	_wait_for "_is_sidecar_ready ${port}" 900
-}
-
-function _unlock {
-	#
-	# Remove the lock only when this process holds it, so that an error path
-	# that did not take the lock cannot free the lock of another process.
-	#
-
-	if [ "$(docker exec "${CONTAINER_NAME}" cat "${LOCK_DIR}/owner" 2> /dev/null)" == "$(hostname) ${$}" ]
-	then
-		docker exec "${CONTAINER_NAME}" rm -f -r "${LOCK_DIR}"
-	fi
 }
 
 function _wait_for {

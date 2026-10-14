@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source "$(dirname "${BASH_SOURCE[0]}")/_batch_import_lock.sh"
+
 set -o errexit
 set -o nounset
 set -o pipefail
@@ -199,6 +201,25 @@ except Exception:
 "
 }
 
+#
+# instance.sh sets LIFERAY_BATCH_IMPORT_LOCK when it seeds a virtual instance
+# on a shared server. Other targets have no lock to take.
+#
+
+function _lock_batch_import {
+	if [ "${LIFERAY_BATCH_IMPORT_LOCK:-false}" == "true" ]
+	then
+		#
+		# Free the lock when errexit ends the script during the import.
+		# _unlock removes only a lock this process holds.
+		#
+
+		trap '_unlock' EXIT
+
+		_lock
+	fi
+}
+
 function _log {
 	echo "${@}"
 }
@@ -293,6 +314,13 @@ function _require_local_seed_target {
 	_warn "The seed creates persona users whose password is \"test\". Set LIFERAY_SEED_REMOTE=true to seed it anyway."
 
 	exit 1
+}
+
+function _unlock_batch_import {
+	if [ "${LIFERAY_BATCH_IMPORT_LOCK:-false}" == "true" ]
+	then
+		_unlock
+	fi
 }
 
 function _warn {

@@ -92,6 +92,8 @@ function _import {
 		url="${BATCH_ENGINE_URL}/${encoded_class_name}?createStrategy=${create_strategy}&importStrategy=${import_strategy}&taskItemDelegateName=${task_item_delegate_name}"
 	fi
 
+	_lock_batch_import
+
 	local import_task_id
 
 	import_task_id=$(_read_items "${file}" | _curl \
@@ -102,12 +104,20 @@ function _import {
 
 	if [[ -z ${import_task_id} ]]
 	then
+		_unlock_batch_import
+
 		echo "Unable to start import for ${file}." >&2
 
 		return 1
 	fi
 
-	_wait_for_import "${import_task_id}" "${file}"
+	local status=0
+
+	_wait_for_import "${import_task_id}" "${file}" || status=${?}
+
+	_unlock_batch_import
+
+	return "${status}"
 }
 
 function _wait_for_import {
