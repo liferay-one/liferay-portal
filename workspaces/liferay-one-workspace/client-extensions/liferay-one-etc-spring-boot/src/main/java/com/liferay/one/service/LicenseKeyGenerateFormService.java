@@ -566,6 +566,7 @@ public class LicenseKeyGenerateFormService {
 
 			entitledProducts.add(
 				new EntitledProduct(
+					CommerceProductUtil.isApp(product),
 					disasterRecoveryExternalReferenceCodes.contains(
 						externalReferenceCode),
 					entitlement, externalReferenceCode,
@@ -922,6 +923,8 @@ public class LicenseKeyGenerateFormService {
 
 		return new JSONObject(
 		).put(
+			"app", entitledProduct.isApp()
+		).put(
 			"availableCount",
 			Math.max(0, getTotalCount(entitlement) - usedCount)
 		).put(
@@ -1054,10 +1057,11 @@ public class LicenseKeyGenerateFormService {
 	private static class EntitledProduct {
 
 		public EntitledProduct(
-			boolean disasterRecovery, Entitlement entitlement,
+			boolean app, boolean disasterRecovery, Entitlement entitlement,
 			String externalReferenceCode, boolean generatesActivationKey,
 			String licenseKeyFamily, String name) {
 
+			_app = app;
 			_disasterRecovery = disasterRecovery;
 			_entitlement = entitlement;
 			_externalReferenceCode = externalReferenceCode;
@@ -1082,6 +1086,10 @@ public class LicenseKeyGenerateFormService {
 			return _name;
 		}
 
+		public boolean isApp() {
+			return _app;
+		}
+
 		public boolean isDisasterRecovery() {
 			return _disasterRecovery;
 		}
@@ -1090,6 +1098,7 @@ public class LicenseKeyGenerateFormService {
 			return _generatesActivationKey;
 		}
 
+		private final boolean _app;
 		private final boolean _disasterRecovery;
 		private final Entitlement _entitlement;
 		private final String _externalReferenceCode;

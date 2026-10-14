@@ -8,6 +8,8 @@ package com.liferay.one.util;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Category;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.one.constants.ProductSpecificationConstants;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -91,6 +93,13 @@ public class CommerceProductUtil {
 		}
 
 		return null;
+	}
+
+	public static boolean isApp(Product product) {
+		return StringUtil.equalsIgnoreCase(
+			getSpecificationValue(
+				product, ProductSpecificationConstants.KEY_PROJECT_ITEM_TYPE),
+			ProductSpecificationConstants.PROJECT_ITEM_TYPE_APPLICATION);
 	}
 
 }

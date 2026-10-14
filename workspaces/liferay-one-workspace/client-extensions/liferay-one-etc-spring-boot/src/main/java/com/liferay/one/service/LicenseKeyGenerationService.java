@@ -19,6 +19,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.ServerInfoUtil;
 import com.liferay.one.util.comparator.VersionComparator;
@@ -718,6 +719,14 @@ public class LicenseKeyGenerationService {
 					StringBundler.concat(
 						"No product backs entitlement ", bundleEntitlementId,
 						" selected for this bundle"));
+			}
+
+			if (CommerceProductUtil.isApp(product)) {
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"Entitlement ", bundleEntitlementId,
+						" is for a Marketplace app and cannot be bundled with ",
+						"a developer key"));
 			}
 
 			String bundleProductName =
