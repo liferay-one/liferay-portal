@@ -58,4 +58,4 @@ The plan under `tests/plan/` tracks every route, hook, client, module, endpoint,
 
 ## 4. Verify and Conform
 
-Run the new test with the `one-test` skill and confirm that it passes. For a regression guard, also confirm that it fails when the behavior is broken. Then run the `format-source` skill so the new files match Liferay's coding standards before you commit.
+Run the new test with the `one-test` skill and confirm that it passes. For a regression guard, also confirm that it fails when the behavior is broken. Then run the `format-source` skill so the new files match Liferay's coding standards before you commit. Commit the test separately from the code that it covers, as `rules/pr-hygiene.md` → "Tests Go in Their Own Commit" requires.
