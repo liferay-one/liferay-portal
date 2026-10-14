@@ -14,6 +14,7 @@ import com.liferay.one.service.AccountInvitationAcceptanceService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
@@ -320,6 +321,9 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 			accountInvitationAcceptanceService, "_accountService",
 			_accountService);
 		ReflectionTestUtils.setField(
+			accountInvitationAcceptanceService, "_projectContactRoleService",
+			_projectContactRoleService);
+		ReflectionTestUtils.setField(
 			accountInvitationAcceptanceService, "_projectService",
 			_projectService);
 		ReflectionTestUtils.setField(
@@ -454,6 +458,8 @@ public class ObjectActionAccountInvitationAcceptedRestControllerTest {
 		AccountRoleService.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final ProjectContactRoleService _projectContactRoleService =
+		Mockito.mock(ProjectContactRoleService.class);
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(

@@ -11,6 +11,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.model.AccountInvitation;
 import com.liferay.one.model.Project;
 
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -48,6 +50,9 @@ public class AccountInvitationAcceptanceServiceTest {
 		ReflectionTestUtils.setField(
 			_accountInvitationAcceptanceService, "_accountService",
 			_accountService);
+		ReflectionTestUtils.setField(
+			_accountInvitationAcceptanceService, "_projectContactRoleService",
+			_projectContactRoleService);
 		ReflectionTestUtils.setField(
 			_accountInvitationAcceptanceService, "_projectService",
 			_projectService);
@@ -118,6 +123,93 @@ public class AccountInvitationAcceptanceServiceTest {
 		);
 
 		Mockito.verifyNoInteractions(_projectService);
+	}
+
+	@Test
+	public void testProvisionAccountInvitationAssignsContactRolesOnTheAccountWithoutAProject()
+		throws Exception {
+
+		_whenFetchUserAccount(_userAccount);
+
+		AccountRole criticalIncidentContactAccountRole = new AccountRole();
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			criticalIncidentContactAccountRole
+		);
+
+		_accountInvitationAcceptanceService.provisionAccountInvitation(
+			_createAccountInvitation(
+				null, _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			_account, criticalIncidentContactAccountRole, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testProvisionAccountInvitationAssignsProjectContactRolesOnTheProject()
+		throws Exception {
+
+		_whenFetchUserAccount(_userAccount);
+
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", "PRJCT-1"
+			).put(
+				"id", 5
+			));
+
+		Mockito.when(
+			_projectService.fetchProject("PRJCT-1")
+		).thenReturn(
+			project
+		);
+
+		_setUpProjectContactRoles("PRJCT-1");
+
+		_accountInvitationAcceptanceService.provisionAccountInvitation(
+			_createAccountInvitation(
+				"PRJCT-1", _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE,
+				"ROLE_MEMBER"));
+
+		InOrder inOrder = Mockito.inOrder(_userAssignmentService);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, "PROJECT_ROLE_MEMBER", _USER_ID
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			_account, _memberAccountRole, _USER_ID
+		);
+
+		Mockito.verify(
+			_accountRoleService, Mockito.never()
+		).fetchAccountRoleByExternalReferenceCode(
+			_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	@Test
@@ -229,6 +321,39 @@ public class AccountInvitationAcceptanceServiceTest {
 		);
 	}
 
+	@Test
+	public void testProvisionAccountInvitationSkipsTheContactRolesOfAMissingProject()
+		throws Exception {
+
+		_whenFetchUserAccount(_userAccount);
+
+		_setUpProjectContactRoles("PRJCT-404");
+
+		_accountInvitationAcceptanceService.provisionAccountInvitation(
+			_createAccountInvitation(
+				"PRJCT-404", _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE,
+				"ROLE_MEMBER"));
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignAccountRole(
+			_account, _memberAccountRole, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_accountRoleService, Mockito.never()
+		).fetchAccountRoleByExternalReferenceCode(
+			_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
 	private AccountInvitation _createAccountInvitation(
 		String projectExternalReferenceCode,
 		String... roleExternalReferenceCodes) {
@@ -261,6 +386,17 @@ public class AccountInvitationAcceptanceServiceTest {
 		return new AccountInvitation(jsonObject);
 	}
 
+	private void _setUpProjectContactRoles(String projectExternalReferenceCode)
+		throws Exception {
+
+		Mockito.when(
+			_projectContactRoleService.getContactRoleExternalReferenceCodes(
+				projectExternalReferenceCode)
+		).thenReturn(
+			List.of(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE)
+		);
+	}
+
 	private void _whenFetchUserAccount(UserAccount userAccount)
 		throws Exception {
 
@@ -272,6 +408,9 @@ public class AccountInvitationAcceptanceServiceTest {
 	}
 
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-1";
+
+	private static final String _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE =
+		"C_CRITICAL_INCIDENT_CONTACT";
 
 	private static final String _EMAIL_ADDRESS = "jane.doe@example.com";
 
@@ -286,6 +425,8 @@ public class AccountInvitationAcceptanceServiceTest {
 		AccountService.class);
 	private final AccountRole _adminAccountRole = new AccountRole();
 	private final AccountRole _memberAccountRole = new AccountRole();
+	private final ProjectContactRoleService _projectContactRoleService =
+		Mockito.mock(ProjectContactRoleService.class);
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
 	private final UserAccount _userAccount = new UserAccount();

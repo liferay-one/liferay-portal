@@ -102,6 +102,9 @@ function setDefaultResponses() {
 					membership(3, 'PRJ-A', 12, 'C_UNKNOWN_ROLE'),
 					membership(4, 'PRJ-A', 13, 'C_PROJECT_REQUESTER'),
 					membership(5, 'PRJ-B', 10, 'C_PROJECT_USER'),
+					membership(6, 'PRJ-A', 10, 'ROLE_TECH'),
+					membership(7, 'PRJ-A', 11, 'ROLE_BILLING'),
+					membership(8, 'PRJ-B', 10, 'ROLE_TECH'),
 				],
 			},
 		},
@@ -163,24 +166,21 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		expect(result.current.accountMemberOptions).toEqual([]);
 	});
 
-	it('exposes account member options with the role IDs of the current account', () => {
+	it('exposes the account members as options', () => {
 		const {result} = renderHook(() => useProjectMembers());
 
 		expect(result.current.accountMemberOptions).toEqual([
 			{
-				accountRoleIds: [1, 2],
 				email: 'Zoe@example.com',
 				name: 'Zoe',
 				userId: 10,
 			},
 			{
-				accountRoleIds: [3],
 				email: 'Adam@example.com',
 				name: 'Adam',
 				userId: 11,
 			},
 			{
-				accountRoleIds: [],
 				email: 'unnamed@example.com',
 				name: '',
 				userId: 13,
@@ -217,14 +217,77 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		expect(gamma.members).toEqual([]);
 	});
 
-	it('lists available designations per project from the contact role names', () => {
+	it('lists available designations per project from the contact roles', () => {
 		const {result} = renderHook(() => useProjectMembers());
 
 		expect(
 			result.current.rows.map(
 				({availableDesignations}) => availableDesignations
 			)
-		).toEqual([['Technical Contact'], ['Billing Contact'], []]);
+		).toEqual([
+			[
+				{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
+				{
+					externalReferenceCode: 'ROLE_BILLING',
+					name: 'Billing Contact',
+				},
+			],
+			[
+				{
+					externalReferenceCode: 'ROLE_BILLING',
+					name: 'Billing Contact',
+				},
+				{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
+			],
+			[],
+		]);
+	});
+
+	it('keeps a designation that the project no longer offers so that it can be removed', () => {
+		mocks.contactRoles = {
+			contactRoleExternalReferenceCodesByProjectId: new Map([[100, []]]),
+			loading: false,
+		};
+		mocks.fetchResponses[MEMBERSHIPS_URL].data = {
+			items: [
+				membership(1, 'PRJ-A', 10, 'C_PROJECT_USER'),
+				membership(2, 'PRJ-A', 10, 'ROLE_TECH'),
+				membership(3, 'PRJ-A', 12, 'ROLE_BILLING'),
+			],
+		};
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		const [alpha] = result.current.rows;
+
+		expect(alpha.availableDesignations).toEqual([
+			{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
+		]);
+		expect(alpha.members[0].designations).toEqual(['ROLE_TECH']);
+	});
+
+	it('reads designations from the memberships of each project only', () => {
+		mocks.contactRoles = {
+			contactRoleExternalReferenceCodesByProjectId: new Map([
+				[100, ['ROLE_TECH']],
+				[200, ['ROLE_TECH']],
+			]),
+			loading: false,
+		};
+		mocks.fetchResponses[MEMBERSHIPS_URL].data = {
+			items: [
+				membership(1, 'PRJ-A', 10, 'C_PROJECT_USER'),
+				membership(2, 'PRJ-A', 10, 'ROLE_TECH'),
+				membership(3, 'PRJ-B', 10, 'C_PROJECT_USER'),
+			],
+		};
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		const [alpha, beta] = result.current.rows;
+
+		expect(alpha.members[0].designations).toEqual(['ROLE_TECH']);
+		expect(beta.members[0].designations).toEqual([]);
 	});
 
 	it('reports loading when any query is loading', () => {
@@ -248,13 +311,12 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		expect(result.current.loading).toBe(false);
 	});
 
-	it('resolves member details and lists designations only for contact role names', () => {
+	it('resolves member details and lists the designations each member holds on the project', () => {
 		const {result} = renderHook(() => useProjectMembers());
 
 		expect(result.current.rows[0].members).toEqual([
 			{
-				accountRoleIds: [3],
-				designations: ['Billing Contact'],
+				designations: ['ROLE_BILLING'],
 				email: 'Adam@example.com',
 				membershipId: 2,
 				name: 'Adam',
@@ -262,8 +324,7 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 				userId: 11,
 			},
 			{
-				accountRoleIds: [1, 2],
-				designations: ['Technical Contact'],
+				designations: ['ROLE_TECH'],
 				email: 'Zoe@example.com',
 				membershipId: 1,
 				name: 'Zoe',
@@ -271,7 +332,6 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 				userId: 10,
 			},
 			{
-				accountRoleIds: [],
 				designations: [],
 				email: 'unnamed@example.com',
 				membershipId: 4,
@@ -279,6 +339,9 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 				roleExternalReferenceCode: 'C_PROJECT_REQUESTER',
 				userId: 13,
 			},
+		]);
+		expect(result.current.rows[1].members[0].designations).toEqual([
+			'ROLE_TECH',
 		]);
 	});
 

@@ -10,8 +10,10 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ContractConstants;
 import com.liferay.one.exception.AmbiguousContractChainException;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.petra.function.transform.TransformUtil;
 
 import java.net.URI;
 
@@ -62,6 +64,33 @@ public class ContractServiceTest {
 		).thenReturn(
 			new Account()
 		);
+	}
+
+	@Test
+	public void testGetProjectContractsFiltersByTheProject() throws Exception {
+		_testContractService.getFunction = uri -> {
+			if (_isChainQuery(
+					uri, "r_projectToContract_c_projectERC eq 'PRJ''1'")) {
+
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"id", 77
+					),
+					new JSONObject(
+					).put(
+						"id", 78
+					));
+			}
+
+			return null;
+		};
+
+		Assertions.assertEquals(
+			List.of(77L, 78L),
+			TransformUtil.transform(
+				_testContractService.getProjectContracts("PRJ'1"),
+				Contract::getId));
 	}
 
 	@Test

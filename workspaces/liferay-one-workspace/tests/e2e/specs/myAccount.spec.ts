@@ -9,6 +9,7 @@ import {expect, oneTest as test} from '../fixtures/oneTest';
 import HeadlessAPI, {HeadlessPage} from '../utils/HeadlessAPI';
 import {
 	ACCOUNT_ERC,
+	CLOUD_CONTACTS_ACCOUNT_ERC,
 	SSA_ACCOUNT_ERC,
 	SWITCH_ACCOUNT_ERC,
 	UNASSIGNED_PROJECT_NAME,
@@ -31,6 +32,21 @@ import {
 const LAST_ADMIN_ACCOUNT_ERC = process.env.ONE_LAST_ADMIN_ACCOUNT_ERC?.trim()
 	? process.env.ONE_LAST_ADMIN_ACCOUNT_ERC.trim()
 	: 'ACCNT-028';
+
+async function deleteCriticalIncidentContacts(
+	accountExternalReferenceCode: string,
+	adminAPI: HeadlessAPI
+) {
+	const {items} = await adminAPI.get<HeadlessPage<{id: number}>>(
+		`/o/c/projectmemberships?filter=${encodeURIComponent(
+			`r_accountEntryToProjectMembership_accountEntryERC eq '${accountExternalReferenceCode}' and roleExternalReferenceCode eq 'C_CRITICAL_INCIDENT_CONTACT'`
+		)}`
+	);
+
+	for (const {id} of items) {
+		await adminAPI.deleteIfExists(`/o/c/projectmemberships/${id}`);
+	}
+}
 
 async function deleteInvitations(adminAPI: HeadlessAPI, emailAddress: string) {
 	const {items} = await adminAPI.get<HeadlessPage<{id: number}>>(
@@ -899,6 +915,79 @@ test.describe('[FLOW-PROJECT-MEMBERSHIP] project permissions', () => {
 		}
 		finally {
 			await deleteTemporaryMember(adminAPI, member);
+		}
+	});
+
+	test('[FLOW-PROJECT-MEMBERSHIP] [ROUTE-MY-ACCOUNT-PROJECT-MEMBERS] keeps a cloud contact designation on the project it was given on', async ({
+		adminAPI,
+		page,
+		signIn,
+	}) => {
+		const designation = 'Customer Member · Critical Incident Contact';
+
+		const designatedRow = tableRow(page, 'PaaS Experience Project');
+		const otherRow = tableRow(page, 'Mixed Business Plan And PaaS Project');
+
+		const toggleDesignation = async () => {
+			await designatedRow
+				.getByRole('button', {name: 'Manage project options'})
+				.click();
+
+			await page
+				.getByRole('menuitem', {name: 'Edit Project Permissions'})
+				.click();
+
+			const form = page.locator('#edit-project-permissions');
+
+			await expect(form).toBeVisible();
+
+			await form
+				.locator('.project-permissions-grid-row')
+				.filter({
+					has: page.locator('.project-permissions-member-box', {
+						hasText: /^Customer Member$/,
+					}),
+				})
+				.locator('.project-permissions-role-trigger')
+				.click();
+
+			await page
+				.locator('.dropdown-menu.show')
+				.getByLabel('Critical Incident Contact', {exact: true})
+				.click();
+
+			await page.keyboard.press('Escape');
+
+			await page.getByRole('button', {name: 'Save Changes'}).click();
+
+			await expectToast(page, 'Project members successfully updated.');
+		};
+
+		try {
+			await signIn('ADMINISTRATOR');
+
+			await gotoMyAccount(
+				page,
+				`${CLOUD_CONTACTS_ACCOUNT_ERC}/project-members`
+			);
+
+			await expect(otherRow).not.toContainText(designation);
+
+			await toggleDesignation();
+
+			await expect(designatedRow).toContainText(designation);
+			await expect(otherRow).not.toContainText(designation);
+
+			await toggleDesignation();
+
+			await expect(designatedRow).not.toContainText(designation);
+			await expect(otherRow).not.toContainText(designation);
+		}
+		finally {
+			await deleteCriticalIncidentContacts(
+				CLOUD_CONTACTS_ACCOUNT_ERC,
+				adminAPI
+			);
 		}
 	});
 

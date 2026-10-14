@@ -97,7 +97,7 @@ describe('[HOOK-BUSINESSEVENTS-USEHASALLEVENTSPERMISSIONS] useHasAllEventsPermis
 				{
 					params: {
 						fields: 'roleExternalReferenceCode',
-						filter: "r_projectToProjectMembership_c_projectERC eq 'PRJ' and r_userToProjectMembership_userId eq '42'",
+						filter: "r_projectToProjectMembership_c_projectERC eq 'PRJ' and r_userToProjectMembership_userId eq '42' and roleExternalReferenceCode in ('C_PROJECT_ADMIN','C_PROJECT_REQUESTER')",
 						pageSize: 1,
 					},
 				}

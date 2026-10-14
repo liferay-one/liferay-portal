@@ -29,16 +29,19 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,6 +86,9 @@ public class ProjectRestControllerTest {
 			_dataOpsUsageService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_projectContactRoleService",
+			_projectContactRoleService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectMembershipService",
 			_projectMembershipService);
@@ -161,6 +167,123 @@ public class ProjectRestControllerTest {
 			PrincipalException.class, this::_deleteProjectMemberships);
 
 		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testDeleteProjectMembershipsKeepsContactRolesWhileAProjectRoleRemains()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER))
+		);
+
+		_deleteProjectMemberships();
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).unassignProjectRole(
+			Mockito.any(), Mockito.eq(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testDeleteProjectMembershipsUnassignsContactRolesOfAFormerMember()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE))
+		);
+
+		_deleteProjectMemberships();
+
+		Mockito.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_USER_ID)
+		);
+	}
+
+	@Test
+	public void testDeleteUserAccountsContactRolesRejectsAProjectRole() {
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.deleteUserAccountsContactRoles(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+					RoleConstants.ERC_PROJECT_ADMIN));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testDeleteUserAccountsContactRolesUnassignsAContactRoleTheProjectNoLongerOffers()
+		throws Exception {
+
+		_projectRestController.deleteUserAccountsContactRoles(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			"C_DATA_BREACH_CONTACT");
+
+		Mockito.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq("C_DATA_BREACH_CONTACT"), Mockito.eq(_USER_ID)
+		);
+
+		Mockito.verifyNoInteractions(_projectContactRoleService);
+	}
+
+	@Test
+	public void testDeleteUserAccountsContactRolesUnassignsTheContactRoleOnTheProject()
+		throws Exception {
+
+		_projectRestController.deleteUserAccountsContactRoles(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		InOrder inOrder = Mockito.inOrder(
+			_projectPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_USER_ID)
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).unassignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
 	}
 
 	@Test
@@ -1324,6 +1447,143 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testPostUserAccountsContactRolesAssignsTheContactRoleOnTheProject()
+		throws Exception {
+
+		_setUpProjectContactRoles(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER))
+		);
+
+		_projectRestController.postUserAccountsContactRoles(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		InOrder inOrder = Mockito.inOrder(
+			_projectPermission, _userAssignmentService);
+
+		inOrder.verify(
+			_projectPermission
+		).check(
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		inOrder.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			Mockito.argThat(
+				project -> _PROJECT_EXTERNAL_REFERENCE_CODE.equals(
+					project.getExternalReferenceCode())),
+			Mockito.eq(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_USER_ID)
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testPostUserAccountsContactRolesDoesNotAssignWhenPermissionIsDenied()
+		throws Exception {
+
+		_denyAssignMembersPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.postUserAccountsContactRoles(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+				_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPostUserAccountsContactRolesRejectsAContactRoleTheProjectDoesNotOffer()
+		throws Exception {
+
+		_setUpProjectContactRoles(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.postUserAccountsContactRoles(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+					"C_SECURITY_BREACH_CONTACT"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertEquals(
+			StringBundler.concat(
+				"Unable to find contact role C_SECURITY_BREACH_CONTACT for ",
+				"project ", _PROJECT_EXTERNAL_REFERENCE_CODE),
+			responseStatusException.getReason());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPostUserAccountsContactRolesRejectsANonmember()
+		throws Exception {
+
+		_setUpProjectContactRoles(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.postUserAccountsContactRoles(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+					_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+		Assertions.assertEquals(
+			StringBundler.concat(
+				"User ", _USER_ID, " does not have a role in project ",
+				_PROJECT_EXTERNAL_REFERENCE_CODE),
+			responseStatusException.getReason());
+
+		Mockito.verifyNoInteractions(_userAssignmentService);
+	}
+
+	@Test
+	public void testPutProjectMembershipsKeepsContactRoles() throws Exception {
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID)
+		).thenReturn(
+			Arrays.asList(
+				_createProjectMembership(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+				_createProjectMembership(RoleConstants.ERC_PROJECT_USER))
+		);
+
+		_projectRestController.putProjectMemberships(
+			null, _PROJECT_EXTERNAL_REFERENCE_CODE, _USER_ID,
+			RoleConstants.ERC_PROJECT_ADMIN);
+
+		Mockito.verify(
+			_userAssignmentService
+		).unassignProjectRole(
+			Mockito.any(), Mockito.eq(RoleConstants.ERC_PROJECT_USER),
+			Mockito.eq(_USER_ID)
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).unassignProjectRole(
+			Mockito.any(), Mockito.eq(_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE),
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPutProjectMembershipsRejectsNonprojectRole() {
 		ResponseStatusException responseStatusException =
 			Assertions.assertThrows(
@@ -1704,6 +1964,18 @@ public class ProjectRestControllerTest {
 		);
 	}
 
+	private void _setUpProjectContactRoles(
+			String... contactRoleExternalReferenceCodes)
+		throws Exception {
+
+		Mockito.when(
+			_projectContactRoleService.getContactRoleExternalReferenceCodes(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(contactRoleExternalReferenceCodes)
+		);
+	}
+
 	private void _setUpUtilizationProfile(String utilizationProfile)
 		throws Exception {
 
@@ -1719,6 +1991,9 @@ public class ProjectRestControllerTest {
 		"0015Y00002ABCDEabc";
 
 	private static final long _ACCOUNT_ID = 40001;
+
+	private static final String _CONTACT_ROLE_EXTERNAL_REFERENCE_CODE =
+		"C_CRITICAL_INCIDENT_CONTACT";
 
 	private static final String _END_DATE = "2026-07-28";
 
@@ -1764,6 +2039,8 @@ public class ProjectRestControllerTest {
 		DataOpsUsageService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
+	private final ProjectContactRoleService _projectContactRoleService =
+		Mockito.mock(ProjectContactRoleService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private final ProjectPermission _projectPermission = Mockito.mock(

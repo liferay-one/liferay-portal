@@ -12,6 +12,11 @@ export const ACCOUNT_ERC = value('ONE_ACCOUNT_ERC', 'ACCNT-001');
 export const BACKEND =
 	value('ONE_E2E_BACKEND', 'stub') === 'live' ? 'live' : 'stub';
 
+export const CLOUD_CONTACTS_ACCOUNT_ERC = value(
+	'ONE_CLOUD_CONTACTS_ACCOUNT_ERC',
+	'ACCNT-004'
+);
+
 export const IS_STUBBED = BACKEND === 'stub';
 
 export const PROJECT_ERC = value('ONE_PROJECT_ERC', 'PRJCT-001');
