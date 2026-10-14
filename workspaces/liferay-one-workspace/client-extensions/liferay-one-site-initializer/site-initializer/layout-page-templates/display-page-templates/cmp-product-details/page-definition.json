@@ -383,9 +383,6 @@
 																	}
 																}
 															],
-															"fragmentStyle": {
-																"hidden": true
-															},
 															"indexed": true
 														},
 														"id": "d96a2843-41d4-d3f6-42bd-07980d83a984",
@@ -422,6 +419,9 @@
 																	}
 																}
 															],
+															"fragmentStyle": {
+																"hidden": true
+															},
 															"indexed": true
 														},
 														"id": "78770b82-a4fb-370e-0d43-d97e7c589081",
