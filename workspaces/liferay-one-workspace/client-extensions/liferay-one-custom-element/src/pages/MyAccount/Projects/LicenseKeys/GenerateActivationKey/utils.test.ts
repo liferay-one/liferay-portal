@@ -39,8 +39,13 @@ import type {
 	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
 
-function toBundleProduct(externalReferenceCode: string, licenseKeyFamily = '') {
+function toBundleProduct(
+	app: boolean,
+	externalReferenceCode: string,
+	licenseKeyFamily = ''
+) {
 	return {
+		app,
 		externalReferenceCode,
 		licenseKeyFamily,
 	} as GenerateFormBundleProduct;
@@ -62,11 +67,12 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	describe('getBundleProducts', () => {
 		const generateForm = {
 			bundleProducts: [
-				toBundleProduct('marketplace-product-1', 'Cloud Native'),
-				toBundleProduct('marketplace-product-2', 'DXP'),
-				toBundleProduct('marketplace-product-3', 'Portal'),
-				toBundleProduct('PRDCT-SEARCH'),
-				toBundleProduct('PRDCT-COMMERCE', 'CMP'),
+				toBundleProduct(false, 'marketplace-product-1', 'Cloud Native'),
+				toBundleProduct(false, 'marketplace-product-2', 'DXP'),
+				toBundleProduct(false, 'marketplace-product-3', 'Portal'),
+				toBundleProduct(false, 'PRDCT-SEARCH'),
+				toBundleProduct(false, 'PRDCT-COMMERCE', 'CMP'),
+				toBundleProduct(true, 'PRDCT-TEST-APP'),
 			],
 			products: [
 				toProduct('marketplace-product-2', 'DXP'),
@@ -76,9 +82,26 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 		it('returns the chosen product plus the non leading bundle products', () => {
 			expect(
-				getBundleProducts(generateForm, 'marketplace-product-2').map(
-					({externalReferenceCode}) => externalReferenceCode
-				)
+				getBundleProducts(
+					false,
+					generateForm,
+					'marketplace-product-2'
+				).map(({externalReferenceCode}) => externalReferenceCode)
+			).toEqual([
+				'marketplace-product-2',
+				'PRDCT-SEARCH',
+				'PRDCT-COMMERCE',
+				'PRDCT-TEST-APP',
+			]);
+		});
+
+		it('leaves out the Marketplace apps for a developer key', () => {
+			expect(
+				getBundleProducts(
+					true,
+					generateForm,
+					'marketplace-product-2'
+				).map(({externalReferenceCode}) => externalReferenceCode)
 			).toEqual([
 				'marketplace-product-2',
 				'PRDCT-SEARCH',
@@ -87,9 +110,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 		});
 
 		it('returns an empty list when the product is unknown', () => {
-			expect(getBundleProducts(generateForm, 'PRDCT-UNKNOWN')).toEqual(
-				[]
-			);
+			expect(
+				getBundleProducts(false, generateForm, 'PRDCT-UNKNOWN')
+			).toEqual([]);
 		});
 	});
 
@@ -295,6 +318,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 	describe('isLicensedForVersion', () => {
 		const bundleProduct = {
+			app: false,
 			availableCount: 1,
 			disasterRecovery: false,
 			entitlementId: 1,

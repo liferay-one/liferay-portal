@@ -64,6 +64,7 @@ export function buildEmptyServer(): GenerateActivationKeyServer {
 }
 
 export function getBundleProducts(
+	developer: boolean,
 	generateForm: GenerateForm,
 	productExternalReferenceCode: string
 ): GenerateFormBundleProduct[] {
@@ -78,11 +79,12 @@ export function getBundleProducts(
 
 	return generateForm.bundleProducts.filter(
 		(bundleProduct) =>
-			bundleProduct.externalReferenceCode ===
+			(!developer || !bundleProduct.app) &&
+			(bundleProduct.externalReferenceCode ===
 				product.externalReferenceCode ||
-			!LEADING_LICENSE_KEY_FAMILIES.includes(
-				bundleProduct.licenseKeyFamily
-			)
+				!LEADING_LICENSE_KEY_FAMILIES.includes(
+					bundleProduct.licenseKeyFamily
+				))
 	);
 }
 
