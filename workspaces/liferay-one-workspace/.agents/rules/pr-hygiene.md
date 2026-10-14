@@ -31,3 +31,33 @@ Valid prefixes: `BLADE`, `CLDSVCS`, `COMMERCE`, `IDE`, `ISOPS`, `ISSD`, `ISSUP`,
 ## One Ticket Per PR
 
 PRs should address a single Jira ticket. If your fix actually addresses a different problem from the stated ticket, use the correct ticket or create a new one.
+
+## Tests Go in Their Own Commit
+
+A branch that changes behavior has at least two commits. The first commit holds the code. The next commit holds the tests for that code. Do not put a test file in the code commit, and do not put a source file in the test commit.
+
+A test file is one of these:
+
+- A Vitest file, `*.test.ts` or `*.test.tsx`, in a client extension.
+- A JUnit file under `src/test/` in a client extension.
+- Any file under `tests/`, which includes the Playwright specs, their utilities, and the `tests/plan/*.md` rows.
+
+The `specs/` files are requirements, not tests. Put a `specs/` change in the code commit.
+
+Title the test commit for the behavior that it proves, for example `LPD-12345 Test that a cloud contact designation stays on its own project`. A test commit has no body unless the title does not explain the change.
+
+Run this check before you send the PR. It prints each commit that mixes test files and other files:
+
+```bash
+for SHA in $(git rev-list liferay-one/master-temp..HEAD); do
+	FILES=$(git show --format= --name-only --relative "${SHA}")
+	TESTS=$(echo "${FILES}" | grep --count --extended-regexp '\.test\.tsx?$|/src/test/|^tests/')
+	TOTAL=$(echo "${FILES}" | grep --count .)
+
+	if [[ ${TESTS} -gt 0 && ${TESTS} -lt ${TOTAL} ]]; then
+		git log --format='%h %s' -1 "${SHA}"
+	fi
+done
+```
+
+To split a mixed commit, reset it with `git reset --soft HEAD~1`. Unstage the test files and commit the code with the original message. Then stage only the test files and commit them. Stage files by name, not with `git add -A`, because the working tree can hold edits that do not belong to either commit.

@@ -24,6 +24,8 @@ Before creating the PR, verify these Brian-enforced requirements:
 
 **Commit messages:** Confirm every commit on the branch has a valid Jira ticket prefix (`LPD-`, `LRSD-`, `LCD-`, etc.). The CI bot auto-closes PRs missing a ticket reference.
 
+**Test commits:** Run the check in `rules/pr-hygiene.md` → "Tests Go in Their Own Commit". When a commit mixes test files and other files, abort and offer to split it. Do not open the PR until the code and the tests are in separate commits.
+
 **Merge conflicts:** Confirm the branch is rebased on top of `liferay-one/master-temp` with no conflicts. Run `git merge-base --is-ancestor liferay-one/master-temp HEAD` — if the branch is behind, offer to run `/one-rebase` first.
 
 **Code review:** Report what review the branch has, recommend one when it is missing, and let the author decide. This check pauses for a question; it never holds the pull request against an answer.
