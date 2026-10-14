@@ -90,6 +90,7 @@ License keys and activation keys on the Activation page belong to [Licensing and
 | REQ-PROJECTS-056 | An application always gets the basic details. A product uses its details profile, else the environment instance details when it is in the Platform category, else the basic details. | P1 | LPD-88252 | `MOD-MYACCOUNT-PROJECTS-RESOLVEDETAILSPROFILE` |
 | REQ-PROJECTS-057 | The Help and Support tab shows when the product has a Learn URL. It also shows for an application that has at least one support link specification. | P2 | LPD-92999 | `MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG` |
 | REQ-PROJECTS-058 | The Environment tab follows one of 6 environment profiles, and the Utilization tab follows one of 5 utilization profiles. Any other value hides the tab. | P1 | LPD-90056 | `MOD-MYACCOUNT-PROJECTS-RESOLVEENVIRONMENTPROFILE`, `MOD-MYACCOUNT-PROJECTS-RESOLVEUTILIZATIONPROFILE` |
+| REQ-PROJECTS-065 | The header of a product detail page shows the icon, the name, the publisher, and the status of the product. It does not show the product description. | P2 | LPD-109801 | `FLOW-PROJECT-ITEM-HEADER` |
 
 ## Projects in JSM
 

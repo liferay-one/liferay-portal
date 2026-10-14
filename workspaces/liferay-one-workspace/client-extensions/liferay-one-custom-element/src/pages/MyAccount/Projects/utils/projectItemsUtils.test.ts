@@ -112,7 +112,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		);
 
 		expect(itemsByType.application.get('PRDCT-APP')).toEqual({
-			description: 'PRDCT-APP description',
 			externalReferenceCode: 'PRDCT-APP',
 			id: '1',
 			name: 'PRDCT-APP',

@@ -32,7 +32,6 @@ function toProjectProduct(
 	product: DeliveryProduct
 ): ProjectProduct {
 	return {
-		description: product.description,
 		externalReferenceCode: product.externalReferenceCode,
 		id: String(product.productId ?? product.id),
 		name: product.name,
