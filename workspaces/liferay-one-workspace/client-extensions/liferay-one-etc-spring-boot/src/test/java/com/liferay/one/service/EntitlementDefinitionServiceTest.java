@@ -419,6 +419,35 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementDefinitionSkipsSkuWithManualDefinitionLinkedBySku()
+		throws Exception {
+
+		_setUpProduct(
+			_createSku("SKU-LARGE", true, "Large"),
+			_createSku("SKU-SMALL", true, "Small"));
+
+		JSONObject manualJSONObject = _createEntitlementDefinitionJSONObject(
+			true, "MANUAL", "Manual", "");
+
+		_setUpExistingEntitlementDefinitions(manualJSONObject);
+
+		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
+		).put(
+			_createEntitlementDefinitionSkuJSONObject(
+				manualJSONObject, "SKU-LARGE")
+		);
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertEquals(
+			List.of("SKU-SMALL"),
+			_getExternalReferenceCodes(_entitlementDefinitionService.putURIs));
+		Assertions.assertTrue(
+			_entitlementDefinitionService.patchBodies.isEmpty());
+	}
+
+	@Test
 	public void testGenerateEntitlementDefinitionSkipsSkuWithoutLicenseUsageType()
 		throws Exception {
 

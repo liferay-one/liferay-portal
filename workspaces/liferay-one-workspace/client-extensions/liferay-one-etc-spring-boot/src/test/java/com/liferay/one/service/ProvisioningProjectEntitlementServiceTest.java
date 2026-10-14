@@ -18,8 +18,11 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -91,15 +94,33 @@ public class ProvisioningProjectEntitlementServiceTest {
 		);
 
 		Mockito.when(
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				Mockito.anyString())
-		).thenReturn(
-			List.of(
-				new EntitlementDefinition(
-					new JSONObject(
-					).put(
-						"id", 1L
-					)))
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				Mockito.anyCollection())
+		).thenAnswer(
+			invocation -> {
+				Map<String, List<EntitlementDefinition>>
+					entitlementDefinitionsMap = new HashMap<>();
+
+				Collection<String> skuExternalReferenceCodes =
+					invocation.getArgument(0);
+
+				for (String skuExternalReferenceCode :
+						skuExternalReferenceCodes) {
+
+					entitlementDefinitionsMap.put(
+						skuExternalReferenceCode,
+						List.of(
+							new EntitlementDefinition(
+								new JSONObject(
+								).put(
+									"active", true
+								).put(
+									"id", 1L
+								))));
+				}
+
+				return entitlementDefinitionsMap;
+			}
 		);
 
 		Order newOrder = new Order();
@@ -555,11 +576,19 @@ public class ProvisioningProjectEntitlementServiceTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				"(skuExternalReferenceCode eq '" + _PRODUCT_2_ID_2 +
-					"') and (active eq true)")
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				Set.of(_PRODUCT_2_ID_2))
 		).thenReturn(
-			new ArrayList<>()
+			Map.of(
+				_PRODUCT_2_ID_2,
+				List.of(
+					new EntitlementDefinition(
+						new JSONObject(
+						).put(
+							"active", false
+						).put(
+							"id", 2L
+						))))
 		);
 
 		List<String> warningMessages = new ArrayList<>();

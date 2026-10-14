@@ -26,6 +26,7 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 
 		expect(url).toBe('/o/c/entitlementdefinitions');
 		expect(params.filter).toBe("name eq 'aiTokenBlock' and active eq true");
+		expect(params.nestedFields).toBe('entitlementDefinitionToSku');
 	});
 
 	it('maps each SKU to its default quantity and drops a missing or zero quantity', () => {
@@ -43,6 +44,39 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 		const {result} = renderHook(() => useAITokenBlockSizes());
 
 		expect([...result.current.tokenBlockSizes]).toEqual([['SKU-5K', 5000]]);
+	});
+
+	it('maps every SKU linked to a definition, as well as the SKU field of the definition', () => {
+		useFetchMock.mockReturnValue({
+			data: {
+				items: [
+					{
+						defaultQuantity: 5000,
+						entitlementDefinitionToSku: [
+							{skuExternalReferenceCode: 'SKU-5K-RENEWAL'},
+							{skuExternalReferenceCode: 'SKU-5K'},
+						],
+						skuExternalReferenceCode: 'SKU-5K',
+					},
+					{
+						defaultQuantity: 10000,
+						entitlementDefinitionToSku: [
+							{skuExternalReferenceCode: 'SKU-10K'},
+						],
+						skuExternalReferenceCode: '',
+					},
+				],
+			},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() => useAITokenBlockSizes());
+
+		expect(Object.fromEntries(result.current.tokenBlockSizes)).toEqual({
+			'SKU-10K': 10000,
+			'SKU-5K': 5000,
+			'SKU-5K-RENEWAL': 5000,
+		});
 	});
 
 	it('passes the loading and error states through', () => {

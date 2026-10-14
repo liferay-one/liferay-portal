@@ -460,10 +460,13 @@ public class EntitlementDefinitionService extends OneBaseService {
 
 		String skuExternalReferenceCode = sku.getExternalReferenceCode();
 
+		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
+			getEntitlementDefinitionsMap(
+				Collections.singleton(skuExternalReferenceCode));
+
 		List<EntitlementDefinition> entitlementDefinitions =
-			getEntitlementDefinitions(
-				"skuExternalReferenceCode eq '" +
-					escapeODataString(skuExternalReferenceCode) + "'");
+			entitlementDefinitionsMap.getOrDefault(
+				skuExternalReferenceCode, Collections.emptyList());
 
 		String name = StringBundler.concat(productName, " - ", sku.getSku());
 

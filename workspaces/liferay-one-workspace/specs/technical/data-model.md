@@ -317,7 +317,7 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 |---|---|---|
 | PK `entitlementDefinitionId` | long | |
 | `externalReferenceCode` | string | e.g. `dxp-cloud-standard-database-size` |
-| `skuExternalReferenceCode` | string | Legacy single SKU link (Salesforce `Product2.Id`). A definition is a definition of this SKU and of every SKU an EntitlementDefinitionSku entry links to it. Remains until the definition data moves to EntitlementDefinitionSku |
+| `skuExternalReferenceCode` | string | Optional legacy single SKU link (Salesforce `Product2.Id`). A definition is a definition of this SKU and of every SKU an EntitlementDefinitionSku entry links to it. A definition that several SKUs share leaves it empty |
 | `name` | string | e.g. `database-size`, `vcpu`, `maxServers`, `licenseGeneration` |
 | `displayName` | string | Human-readable, e.g. `Database Storage`, `License Generation` |
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |

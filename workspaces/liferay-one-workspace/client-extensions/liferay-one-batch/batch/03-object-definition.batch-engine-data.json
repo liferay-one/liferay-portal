@@ -2845,7 +2845,7 @@
 					"name": "skuExternalReferenceCode",
 					"objectFieldSettings": [
 					],
-					"required": true,
+					"required": false,
 					"state": false,
 					"system": false,
 					"type": "String"

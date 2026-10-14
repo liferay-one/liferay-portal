@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -487,13 +488,17 @@ public class ProvisioningProjectEntitlementService {
 					" on project entitlement ", projectEntitlementId));
 		}
 
-		List<EntitlementDefinition> entitlementDefinitions =
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				StringBundler.concat(
-					"(skuExternalReferenceCode eq '", product2Id,
-					"') and (active eq true)"));
+		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				Collections.singleton(product2Id));
 
-		if (entitlementDefinitions.isEmpty()) {
+		List<EntitlementDefinition> entitlementDefinitions =
+			entitlementDefinitionsMap.getOrDefault(
+				product2Id, Collections.emptyList());
+
+		if (!ListUtil.exists(
+				entitlementDefinitions, EntitlementDefinition::isActive)) {
+
 			_addWarning(
 				warningMessages,
 				StringBundler.concat(
