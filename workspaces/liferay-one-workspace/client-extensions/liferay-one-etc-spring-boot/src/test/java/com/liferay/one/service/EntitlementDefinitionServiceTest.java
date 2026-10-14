@@ -22,8 +22,10 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -939,6 +941,41 @@ public class EntitlementDefinitionServiceTest {
 		private JSONArray _filterItemsJSONArray(
 			JSONArray jsonArray, String query) {
 
+			String skuExternalReferenceCode = _getSkuFilterValue(query);
+
+			if (skuExternalReferenceCode != null) {
+				Set<Long> entitlementDefinitionIds = new HashSet<>();
+
+				for (int i = 0; i < skuItemsJSONArray.length(); i++) {
+					JSONObject jsonObject = skuItemsJSONArray.getJSONObject(i);
+
+					if (skuExternalReferenceCode.equals(
+							jsonObject.getString("skuExternalReferenceCode"))) {
+
+						entitlementDefinitionIds.add(
+							jsonObject.getLong(
+								"r_entitlementDefinitionToSku_c_" +
+									"entitlementDefinitionId"));
+					}
+				}
+
+				JSONArray filteredJSONArray = new JSONArray();
+
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+					if (entitlementDefinitionIds.contains(
+							jsonObject.getLong("id")) ||
+						skuExternalReferenceCode.equals(
+							jsonObject.optString("skuExternalReferenceCode"))) {
+
+						filteredJSONArray.put(jsonObject);
+					}
+				}
+
+				return filteredJSONArray;
+			}
+
 			for (String fieldName :
 					new String[] {
 						"externalReferenceCode", "id",
@@ -1014,6 +1051,20 @@ public class EntitlementDefinitionServiceTest {
 			}
 
 			return values;
+		}
+
+		private String _getSkuFilterValue(String query) {
+			String prefix =
+				"filter=(entitlementDefinitionToSku/skuExternalReferenceCode " +
+					"eq '";
+
+			if ((query == null) || !query.contains(prefix)) {
+				return null;
+			}
+
+			int startIndex = query.indexOf(prefix) + prefix.length();
+
+			return query.substring(startIndex, query.indexOf('\'', startIndex));
 		}
 
 	}

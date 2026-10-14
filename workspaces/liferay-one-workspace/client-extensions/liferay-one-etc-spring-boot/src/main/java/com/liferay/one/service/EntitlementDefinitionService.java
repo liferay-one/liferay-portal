@@ -19,9 +19,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -128,51 +126,15 @@ public class EntitlementDefinitionService extends OneBaseService {
 			return Collections.emptyList();
 		}
 
-		String filterString =
-			"skuExternalReferenceCode eq '" +
-				escapeODataString(skuExternalReferenceCode) + "'";
+		String escapedSkuExternalReferenceCode = escapeODataString(
+			skuExternalReferenceCode);
 
-		List<Long> entitlementDefinitionIds = new ArrayList<>();
-
-		for (JSONObject jsonObject :
-				getAllItems(
-					"/o/c/entitlementdefinitionskus", filterString,
-					jsonObject -> jsonObject)) {
-
-			long entitlementDefinitionId = jsonObject.optLong(
-				"r_entitlementDefinitionToSku_c_entitlementDefinitionId");
-
-			if (entitlementDefinitionId > 0) {
-				entitlementDefinitionIds.add(entitlementDefinitionId);
-			}
-		}
-
-		Map<Long, EntitlementDefinition> entitlementDefinitions =
-			new LinkedHashMap<>();
-
-		if (!entitlementDefinitionIds.isEmpty()) {
-			String entitlementDefinitionIdsString = StringUtil.merge(
-				entitlementDefinitionIds, "','");
-
-			for (EntitlementDefinition entitlementDefinition :
-					getEntitlementDefinitions(
-						"id in ('" + entitlementDefinitionIdsString + "')")) {
-
-				entitlementDefinitions.put(
-					entitlementDefinition.getEntitlementDefinitionId(),
-					entitlementDefinition);
-			}
-		}
-
-		for (EntitlementDefinition entitlementDefinition :
-				getEntitlementDefinitions(filterString)) {
-
-			entitlementDefinitions.putIfAbsent(
-				entitlementDefinition.getEntitlementDefinitionId(),
-				entitlementDefinition);
-		}
-
-		return new ArrayList<>(entitlementDefinitions.values());
+		return getEntitlementDefinitions(
+			StringBundler.concat(
+				"(entitlementDefinitionToSku/skuExternalReferenceCode eq '",
+				escapedSkuExternalReferenceCode,
+				"') or (skuExternalReferenceCode eq '",
+				escapedSkuExternalReferenceCode, "')"));
 	}
 
 	@Scheduled(cron = "${liferay.one.entitlement.definition.reconcile.cron}")
