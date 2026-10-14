@@ -11,6 +11,8 @@ import {
 	SUPPORT_ADMINISTRATOR,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {useActivationKeyScope} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeyScope';
+import {useActivationKeySummary} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
@@ -105,7 +107,7 @@ export function useHasLicenseKeyPermission(
 
 	const unassigned = isUnassignedProject(projectExternalReferenceCode);
 
-	return useProjectAdminPermission(
+	const activationPermission = useProjectAdminPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
 				userAccountModel?.canManageAllAccounts ||
@@ -118,6 +120,22 @@ export function useHasLicenseKeyPermission(
 		),
 		unassigned ? '' : projectExternalReferenceCode
 	);
+
+	const scope = useActivationKeyScope();
+
+	const {loading: summaryLoading, summary} = useActivationKeySummary(
+		scope,
+		activationPermission.hasActivationPermission
+	);
+
+	if (!activationPermission.hasActivationPermission) {
+		return activationPermission;
+	}
+
+	return {
+		hasActivationPermission: summary?.provisionable !== false,
+		loading: activationPermission.loading || summaryLoading,
+	};
 }
 
 export default useHasActivationPermission;

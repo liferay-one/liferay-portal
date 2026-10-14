@@ -64,6 +64,7 @@ export type ActivationKeySummaryKeyType = {
 export type ActivationKeySummary = {
 	cloudNativeKeyTypes: ActivationKeySummaryKeyType[];
 	generatable: boolean;
+	provisionable: boolean;
 };
 
 export type GenerateServer = {

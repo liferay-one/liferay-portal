@@ -13,6 +13,7 @@ import {
 	SUPPORT_ADMINISTRATOR,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {useActivationKeySummary} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 
 import {
@@ -28,6 +29,22 @@ vi.mock('~/hooks/useFetch', () => ({
 	useFetch: vi.fn(),
 }));
 
+vi.mock(
+	'~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeyScope',
+	() => ({
+		useActivationKeyScope: () => ({
+			projectExternalReferenceCode: 'PRJCT-1',
+		}),
+	})
+);
+
+vi.mock(
+	'~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary',
+	() => ({
+		useActivationKeySummary: vi.fn(),
+	})
+);
+
 vi.mock('~/services/liferay/liferay', () => ({
 	Liferay: {
 		ThemeDisplay: {
@@ -36,6 +53,7 @@ vi.mock('~/services/liferay/liferay', () => ({
 	},
 }));
 
+const mockedUseActivationKeySummary = vi.mocked(useActivationKeySummary);
 const mockedUseFetch = vi.mocked(useFetch);
 const mockedUseOneContext = vi.mocked(useOneContext);
 
@@ -71,6 +89,23 @@ function mockMembership({
 			: {items: []},
 		isLoading,
 	} as unknown as ReturnType<typeof useFetch>);
+}
+
+function mockSummary({
+	loading = false,
+	provisionable,
+}: {
+	loading?: boolean;
+	provisionable?: boolean;
+}) {
+	mockedUseActivationKeySummary.mockReturnValue({
+		error: undefined,
+		loading,
+		summary:
+			provisionable === undefined
+				? undefined
+				: {cloudNativeKeyTypes: [], generatable: true, provisionable},
+	} as unknown as ReturnType<typeof useActivationKeySummary>);
 }
 
 function getRequestedURL() {
@@ -200,9 +235,11 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 
 describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyPermission', () => {
 	beforeEach(() => {
+		mockedUseActivationKeySummary.mockReset();
 		mockedUseFetch.mockReset();
 		mockedUseOneContext.mockReset();
 		mockMembership({});
+		mockSummary({provisionable: true});
 	});
 
 	it('grants access to the partner manager account role without a membership request', () => {
@@ -273,5 +310,59 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 
 		expect(getRequestedURL()).toBeNull();
 		expect(result.current.hasActivationPermission).toBe(false);
+	});
+
+	it('denies access when the account does not allow self provisioning', () => {
+		mockContext({accountRoleNames: [PARTNER_MANAGER]});
+		mockSummary({provisionable: false});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission('PRJCT-1')
+		);
+
+		expect(mockedUseActivationKeySummary).toHaveBeenCalledWith(
+			{projectExternalReferenceCode: 'PRJCT-1'},
+			true
+		);
+		expect(result.current).toEqual({
+			hasActivationPermission: false,
+			loading: false,
+		});
+	});
+
+	it('holds loading until the summary loads', () => {
+		mockContext({accountRoleNames: [PARTNER_MANAGER]});
+		mockSummary({loading: true});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission('PRJCT-1')
+		);
+
+		expect(result.current.loading).toBe(true);
+	});
+
+	it('keeps access when the summary does not load', () => {
+		mockContext({accountRoleNames: [PARTNER_MANAGER]});
+		mockSummary({});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission('PRJCT-1')
+		);
+
+		expect(result.current).toEqual({
+			hasActivationPermission: true,
+			loading: false,
+		});
+	});
+
+	it('skips the summary for users without activation permission', () => {
+		mockContext({accountRoleNames: ['Account Member']});
+
+		renderHook(() => useHasLicenseKeyPermission('PRJCT-1'));
+
+		expect(mockedUseActivationKeySummary).toHaveBeenCalledWith(
+			{projectExternalReferenceCode: 'PRJCT-1'},
+			false
+		);
 	});
 });
