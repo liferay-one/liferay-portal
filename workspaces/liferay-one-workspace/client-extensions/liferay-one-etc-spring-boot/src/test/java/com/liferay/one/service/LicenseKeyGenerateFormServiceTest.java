@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.one.constants.EntitlementConstants;
@@ -171,6 +172,51 @@ public class LicenseKeyGenerateFormServiceTest {
 			entitledProducts.get(0), "getName");
 
 		Assertions.assertEquals("Content Marketing Platform", name);
+	}
+
+	@Test
+	public void testGetEntitledProductsMarksAnApp() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				"PRDCT-TEST-APP",
+				HashMapBuilder.put(
+					"TEST-APP-SKU", _toSku(1L, null)
+				).build());
+
+		CommerceProductService commerceProductService =
+			(CommerceProductService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_commerceProductService");
+
+		Product product = commerceProductService.fetchProduct(1L);
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey("project-item-type");
+		productSpecification.setValue(
+			HashMapBuilder.put(
+				"en_US", "application"
+			).build());
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {productSpecification});
+
+		List<Object> entitledProducts = _getEntitledProducts(
+			Collections.singletonList(
+				_toLicenseGenerationEntitlement(
+					1L, true, null, null, "TEST-APP-SKU")),
+			licenseKeyGenerateFormService);
+
+		boolean app = ReflectionTestUtils.invokeMethod(
+			entitledProducts.get(0), "isApp");
+
+		Assertions.assertTrue(app);
+
+		JSONObject bundleProductJSONObject = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toBundleProductJSONObject",
+			entitledProducts.get(0), true, Collections.emptyMap(),
+			new JSONArray());
+
+		Assertions.assertTrue(bundleProductJSONObject.getBoolean("app"));
 	}
 
 	@Test

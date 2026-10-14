@@ -18,6 +18,8 @@ public class ProductSpecificationConstants {
 
 	public static final String KEY_PRICE_MODEL = "price-model";
 
+	public static final String KEY_PROJECT_ITEM_TYPE = "project-item-type";
+
 	public static final String KEY_PROJECT_UTILIZATION_PROFILE =
 		"project-utilization-profile";
 
@@ -26,6 +28,8 @@ public class ProductSpecificationConstants {
 	public static final String KEY_TYPE = "type";
 
 	public static final String PRICE_MODEL_PAID = "Paid";
+
+	public static final String PROJECT_ITEM_TYPE_APPLICATION = "application";
 
 	public static final String SOLUTION_TYPE_CMP = "cmp";
 

@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
@@ -1415,6 +1416,54 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"Search is not licensed for version 7.4"
 			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsAnApp() throws Exception {
+		_stubEntitlements(
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-TEST-APP"));
+
+		_stubLicensedProducts();
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode("PRDCT-TEST-APP");
+		product.setName(
+			HashMapBuilder.put(
+				"en_US", "Test App"
+			).build());
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey("project-item-type");
+		productSpecification.setValue(
+			HashMapBuilder.put(
+				"en_US", "application"
+			).build());
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {productSpecification});
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement -> entitlement.getEntitlementId() == 2L))
+		).thenReturn(
+			product
+		);
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Arrays.asList(1L, 2L), "developer", "Liferay DXP",
+					_toProject(), "7.4"));
+
+		Assertions.assertEquals(
+			"Entitlement 2 is for a Marketplace app and cannot be bundled " +
+				"with a developer key",
+			licenseKeyEntitlementException.getMessage());
 	}
 
 	@Test

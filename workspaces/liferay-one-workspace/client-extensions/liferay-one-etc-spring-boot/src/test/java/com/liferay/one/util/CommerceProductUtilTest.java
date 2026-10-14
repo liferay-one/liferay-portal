@@ -117,6 +117,30 @@ public class CommerceProductUtilTest {
 			CommerceProductUtil.getSpecificationValue(product, "type"));
 	}
 
+	@Test
+	public void testIsAppWithAProduct() {
+		Assertions.assertFalse(
+			CommerceProductUtil.isApp(
+				_createProduct(
+					_createProductSpecification(
+						"project-item-type", Map.of("en_US", "product")))));
+	}
+
+	@Test
+	public void testIsAppWithAnApplication() {
+		Assertions.assertTrue(
+			CommerceProductUtil.isApp(
+				_createProduct(
+					_createProductSpecification(
+						"project-item-type", Map.of("en_US", "Application")))));
+	}
+
+	@Test
+	public void testIsAppWithoutAProjectItemType() {
+		Assertions.assertFalse(CommerceProductUtil.isApp(new Product()));
+		Assertions.assertFalse(CommerceProductUtil.isApp(null));
+	}
+
 	private Category _createCategory(String externalReferenceCode) {
 		Category category = new Category();
 
