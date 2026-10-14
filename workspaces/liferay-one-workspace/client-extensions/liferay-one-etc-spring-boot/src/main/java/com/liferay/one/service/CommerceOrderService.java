@@ -1108,41 +1108,10 @@ public class CommerceOrderService extends OneBaseService {
 			return null;
 		}
 
-		Set<String> skuExternalReferenceCodes = new TreeSet<>();
-
-		for (OrderItem orderItem : orderItems) {
-			if (Validator.isNotNull(orderItem.getSkuExternalReferenceCode())) {
-				skuExternalReferenceCodes.add(
-					orderItem.getSkuExternalReferenceCode());
-			}
-		}
-
-		Map<String, Double> tokenBlockSizes = new HashMap<>();
-
-		for (Map.Entry<String, List<EntitlementDefinition>> entry :
-				_entitlementDefinitionService.getEntitlementDefinitionsMap(
-					skuExternalReferenceCodes
-				).entrySet()) {
-
-			for (EntitlementDefinition entitlementDefinition :
-					entry.getValue()) {
-
-				if (entitlementDefinition.isActive() &&
-					Objects.equals(
-						EntitlementConstants.NAME_AI_TOKEN_BLOCK,
-						entitlementDefinition.getName())) {
-
-					tokenBlockSizes.put(
-						entry.getKey(),
-						entitlementDefinition.getDefaultQuantity());
-				}
-			}
-		}
-
 		long quotaBlockSize = 0;
 
 		for (OrderItem orderItem : orderItems) {
-			Double tokenBlockSize = tokenBlockSizes.get(
+			Double tokenBlockSize = _getAIHubTokenBlockSize(
 				orderItem.getSkuExternalReferenceCode());
 
 			if (tokenBlockSize == null) {
@@ -1172,6 +1141,25 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return quotaBlockSize;
+	}
+
+	private Double _getAIHubTokenBlockSize(String skuExternalReferenceCode)
+		throws Exception {
+
+		for (EntitlementDefinition entitlementDefinition :
+				_entitlementDefinitionService.getSkuEntitlementDefinitions(
+					skuExternalReferenceCode)) {
+
+			if (entitlementDefinition.isActive() &&
+				Objects.equals(
+					EntitlementConstants.NAME_AI_TOKEN_BLOCK,
+					entitlementDefinition.getName())) {
+
+				return entitlementDefinition.getDefaultQuantity();
+			}
+		}
+
+		return null;
 	}
 
 	private String _getAddressCountry(Long defaultBillingAddressId)

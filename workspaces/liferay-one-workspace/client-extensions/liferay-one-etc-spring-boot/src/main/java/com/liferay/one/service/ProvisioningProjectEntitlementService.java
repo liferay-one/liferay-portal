@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -488,13 +487,9 @@ public class ProvisioningProjectEntitlementService {
 					" on project entitlement ", projectEntitlementId));
 		}
 
-		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
-			_entitlementDefinitionService.getEntitlementDefinitionsMap(
-				Collections.singleton(product2Id));
-
 		List<EntitlementDefinition> entitlementDefinitions =
-			entitlementDefinitionsMap.getOrDefault(
-				product2Id, Collections.emptyList());
+			_entitlementDefinitionService.getSkuEntitlementDefinitions(
+				product2Id);
 
 		if (!ListUtil.exists(
 				entitlementDefinitions, EntitlementDefinition::isActive)) {

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -556,13 +555,16 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
-	public void testGetEntitlementDefinitionsMapGroupsSharedDefinitionBySku()
+	public void testGetSkuEntitlementDefinitionsIncludesSharedAndInactiveDefinitions()
 		throws Exception {
 
 		JSONObject sharedJSONObject = _createEntitlementDefinitionJSONObject(
 			true, "DEF-SHARED", "Shared", "SKU-A");
 
-		_setUpExistingEntitlementDefinitions(sharedJSONObject);
+		_setUpExistingEntitlementDefinitions(
+			sharedJSONObject,
+			_createEntitlementDefinitionJSONObject(
+				false, "DEF-INACTIVE", "Inactive", "SKU-A"));
 
 		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
 		).put(
@@ -571,24 +573,15 @@ public class EntitlementDefinitionServiceTest {
 			_createEntitlementDefinitionSkuJSONObject(sharedJSONObject, "SKU-B")
 		);
 
-		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
-			_entitlementDefinitionService.getEntitlementDefinitionsMap(
-				List.of("SKU-A", "SKU-B", "SKU-C"));
-
 		Assertions.assertEquals(
-			Set.of("SKU-A", "SKU-B"), entitlementDefinitionsMap.keySet());
-
-		for (List<EntitlementDefinition> entitlementDefinitions :
-				entitlementDefinitionsMap.values()) {
-
-			Assertions.assertEquals(1, entitlementDefinitions.size());
-
-			EntitlementDefinition entitlementDefinition =
-				entitlementDefinitions.get(0);
-
-			Assertions.assertEquals(
-				"DEF-SHARED", entitlementDefinition.getExternalReferenceCode());
-		}
+			List.of("DEF-SHARED", "DEF-INACTIVE"),
+			_getEntitlementDefinitionExternalReferenceCodes("SKU-A"));
+		Assertions.assertEquals(
+			List.of("DEF-SHARED"),
+			_getEntitlementDefinitionExternalReferenceCodes("SKU-B"));
+		Assertions.assertEquals(
+			List.of(),
+			_getEntitlementDefinitionExternalReferenceCodes("SKU-C"));
 	}
 
 	@Test
@@ -802,6 +795,23 @@ public class EntitlementDefinitionServiceTest {
 		}
 
 		return skuDTO;
+	}
+
+	private List<String> _getEntitlementDefinitionExternalReferenceCodes(
+			String skuExternalReferenceCode)
+		throws Exception {
+
+		List<String> externalReferenceCodes = new ArrayList<>();
+
+		for (EntitlementDefinition entitlementDefinition :
+				_entitlementDefinitionService.getSkuEntitlementDefinitions(
+					skuExternalReferenceCode)) {
+
+			externalReferenceCodes.add(
+				entitlementDefinition.getExternalReferenceCode());
+		}
+
+		return externalReferenceCodes;
 	}
 
 	private List<String> _getExternalReferenceCodes(List<String> uris) {
