@@ -134,14 +134,19 @@ export function useAccountMemberActions({
 			return;
 		}
 
-		const projectNames = memberships
-			.map(
-				(membership) =>
-					projectNamesByExternalReferenceCode[
-						membership.r_projectToProjectMembership_c_projectERC
-					]
-			)
-			.filter(Boolean);
+		const projectNames = [
+			...new Set(
+				memberships
+					.map(
+						(membership) =>
+							projectNamesByExternalReferenceCode[
+								membership
+									.r_projectToProjectMembership_c_projectERC
+							]
+					)
+					.filter(Boolean)
+			),
+		];
 
 		openModal({
 			body: projectNames.length ? (

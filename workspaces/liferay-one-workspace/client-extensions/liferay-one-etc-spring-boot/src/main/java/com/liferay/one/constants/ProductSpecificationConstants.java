@@ -18,6 +18,9 @@ public class ProductSpecificationConstants {
 
 	public static final String KEY_PRICE_MODEL = "price-model";
 
+	public static final String KEY_PROJECT_CONTACTS_ROLE_ERCS =
+		"project-contacts-role-ercs";
+
 	public static final String KEY_PROJECT_ITEM_TYPE = "project-item-type";
 
 	public static final String KEY_PROJECT_UTILIZATION_PROFILE =

@@ -19,6 +19,7 @@ import {useProjectMemberActions} from '~/pages/MyAccount/ProjectMembers/hooks/us
 import {useProjectMembers} from '~/pages/MyAccount/ProjectMembers/hooks/useProjectMembers';
 import {
 	PROJECT_ADMIN_ERC,
+	getDesignationNames,
 	getProjectRoleLabel,
 } from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {useHasProject} from '~/pages/MyAccount/Projects/hooks/useHasProject';
@@ -261,7 +262,10 @@ export default function ProjectMembers() {
 																	<span className="project-members-chip-detail">
 																		{' '}
 																		&middot;{' '}
-																		{member.designations.join(
+																		{getDesignationNames(
+																			project.availableDesignations,
+																			member.designations
+																		).join(
 																			', '
 																		)}
 																	</span>

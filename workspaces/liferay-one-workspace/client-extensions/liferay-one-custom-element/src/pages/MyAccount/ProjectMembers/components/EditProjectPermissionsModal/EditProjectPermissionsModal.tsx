@@ -9,9 +9,8 @@ import ClayIcon from '@clayui/icon';
 import {useRef, useState} from 'react';
 import {translate} from '~/i18n';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
-import HeadlessAdminUser from '~/services/headless/HeadlessAdminUser';
+import {getContactRoleChanges} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {Liferay} from '~/services/liferay/liferay';
-import Accounts from '~/services/spring-boot/Accounts';
 import Projects from '~/services/spring-boot/Projects';
 
 import '../../ProjectMembers.css';
@@ -66,7 +65,6 @@ const MemberDropDown = ({
 };
 
 type WorkingMember = {
-	accountRoleIds: number[];
 	designations: string[];
 	email: string;
 	isNew: boolean;
@@ -80,7 +78,6 @@ type WorkingMember = {
 };
 
 type EditProjectPermissionsModalProps = {
-	accountExternalReferenceCode: string;
 	accountMemberOptions: AccountMemberOption[];
 	mutate: () => Promise<unknown>;
 	onClose: () => void;
@@ -88,7 +85,6 @@ type EditProjectPermissionsModalProps = {
 };
 
 const EditProjectPermissionsModal = ({
-	accountExternalReferenceCode,
 	accountMemberOptions,
 	mutate,
 	onClose,
@@ -98,7 +94,6 @@ const EditProjectPermissionsModal = ({
 
 	const [members, setMembers] = useState<WorkingMember[]>(
 		project.members.map((member) => ({
-			accountRoleIds: member.accountRoleIds,
 			designations: member.designations,
 			email: member.email,
 			isNew: false,
@@ -122,19 +117,27 @@ const EditProjectPermissionsModal = ({
 			)
 		);
 
-	const toggleDesignation = (index: number, designation: string) =>
+	const toggleDesignation = (
+		index: number,
+		designationExternalReferenceCode: string
+	) =>
 		setMembers((previous) =>
 			previous.map((member, memberIndex) =>
 				memberIndex === index
 					? {
 							...member,
 							designations: member.designations.includes(
-								designation
+								designationExternalReferenceCode
 							)
 								? member.designations.filter(
-										(value) => value !== designation
+										(value) =>
+											value !==
+											designationExternalReferenceCode
 									)
-								: [...member.designations, designation],
+								: [
+										...member.designations,
+										designationExternalReferenceCode,
+									],
 						}
 					: member
 			)
@@ -207,58 +210,22 @@ const EditProjectPermissionsModal = ({
 				})
 			);
 
-			const designationMembers = members.filter(
-				(member) =>
-					!member.removed &&
-					member.userId &&
-					availableDesignations.some(
-						(designation) =>
-							member.designations.includes(designation) !==
-							member.originalDesignations.includes(designation)
-					)
+			await Promise.all(
+				getContactRoleChanges(availableDesignations, members).map(
+					({assigned, contactRoleExternalReferenceCode, userId}) =>
+						assigned
+							? Projects.postContactRole(
+									project.externalReferenceCode,
+									userId,
+									contactRoleExternalReferenceCode
+								)
+							: Projects.deleteContactRole(
+									project.externalReferenceCode,
+									userId,
+									contactRoleExternalReferenceCode
+								)
+				)
 			);
-
-			if (designationMembers.length) {
-				const {items: accountRoles} =
-					await HeadlessAdminUser.getAccountRoles(
-						accountExternalReferenceCode
-					);
-
-				const accountRoleIdsByName = new Map(
-					accountRoles.map((accountRole) => [
-						accountRole.name,
-						accountRole.id,
-					])
-				);
-
-				await Promise.all(
-					designationMembers.map((member) => {
-						const accountRoleIds = new Set(member.accountRoleIds);
-
-						availableDesignations.forEach((designation) => {
-							const accountRoleId =
-								accountRoleIdsByName.get(designation);
-
-							if (!accountRoleId) {
-								return;
-							}
-
-							if (member.designations.includes(designation)) {
-								accountRoleIds.add(accountRoleId);
-							}
-							else {
-								accountRoleIds.delete(accountRoleId);
-							}
-						});
-
-						return Accounts.putUserAccountsAccountRoles(
-							accountExternalReferenceCode,
-							member.userId,
-							[...accountRoleIds]
-						);
-					})
-				);
-			}
 
 			await mutate();
 
@@ -311,8 +278,6 @@ const EditProjectPermissionsModal = ({
 									)}
 									onChange={(option) =>
 										updateMember(index, {
-											accountRoleIds:
-												option.accountRoleIds,
 											email: option.email,
 											name: option.name,
 											userId: option.userId,
@@ -334,8 +299,13 @@ const EditProjectPermissionsModal = ({
 										roleExternalReferenceCode,
 									})
 								}
-								onToggleDesignation={(designation) =>
-									toggleDesignation(index, designation)
+								onToggleDesignation={(
+									designationExternalReferenceCode
+								) =>
+									toggleDesignation(
+										index,
+										designationExternalReferenceCode
+									)
 								}
 								roleExternalReferenceCode={
 									member.roleExternalReferenceCode
@@ -363,7 +333,6 @@ const EditProjectPermissionsModal = ({
 					setMembers((previous) => [
 						...previous,
 						{
-							accountRoleIds: [],
 							designations: [],
 							email: '',
 							isNew: true,

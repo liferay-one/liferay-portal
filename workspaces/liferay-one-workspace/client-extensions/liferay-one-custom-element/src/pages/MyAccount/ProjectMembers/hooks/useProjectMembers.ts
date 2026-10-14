@@ -33,8 +33,6 @@ type ProjectMembershipItem = {
 };
 
 type UserInfo = {
-	accountRoleIds: number[];
-	designations: string[];
 	email: string;
 	name: string;
 };
@@ -105,64 +103,27 @@ export function useProjectMembers() {
 		return map;
 	}, [accountRoleData]);
 
-	const contactDesignationNames = useMemo(() => {
-		const names = new Set<string>();
-
-		contactRoleExternalReferenceCodesByProjectId.forEach(
-			(externalReferenceCodes) =>
-				externalReferenceCodes.forEach((externalReferenceCode) => {
-					const name = contactRoleNameByExternalReferenceCode.get(
-						externalReferenceCode
-					);
-
-					if (name) {
-						names.add(name);
-					}
-				})
-		);
-
-		return names;
-	}, [
-		contactRoleExternalReferenceCodesByProjectId,
-		contactRoleNameByExternalReferenceCode,
-	]);
-
 	const userInfoById = useMemo(() => {
 		const map = new Map<number, UserInfo>();
 
 		(userAccountData?.items ?? []).forEach((userAccount) => {
-			const accountRoleBriefs =
-				userAccount.accountBriefs?.find(
-					(accountBrief) => accountBrief.id === accountId
-				)?.roleBriefs ?? [];
-
 			map.set(userAccount.id, {
-				accountRoleIds: accountRoleBriefs.map(({id}) => id),
-				designations: accountRoleBriefs
-					.map((roleBrief) => roleBrief.name)
-					.filter((roleName) =>
-						contactDesignationNames.has(roleName)
-					),
 				email: userAccount.emailAddress,
 				name: userAccount.name,
 			});
 		});
 
 		return map;
-	}, [accountId, contactDesignationNames, userAccountData]);
+	}, [userAccountData]);
 
 	const accountMemberOptions = useMemo<AccountMemberOption[]>(
 		() =>
 			(userAccountData?.items ?? []).map((userAccount) => ({
-				accountRoleIds:
-					userAccount.accountBriefs
-						?.find((accountBrief) => accountBrief.id === accountId)
-						?.roleBriefs.map(({id}) => id) ?? [],
 				email: userAccount.emailAddress,
 				name: userAccount.name,
 				userId: userAccount.id,
 			})),
-		[accountId, userAccountData]
+		[userAccountData]
 	);
 
 	const rows = useMemo<ProjectMembersRow[]>(() => {
@@ -184,6 +145,67 @@ export function useProjectMembers() {
 			const memberships =
 				membershipsByProject.get(project.externalReferenceCode) ?? [];
 
+			const projectMemberUserIds = new Set(
+				memberships
+					.filter((membership) =>
+						PROJECT_ROLE_ERCS.includes(
+							membership.roleExternalReferenceCode
+						)
+					)
+					.map(
+						(membership) =>
+							membership.r_userToProjectMembership_userId
+					)
+			);
+
+			const heldContactRoleExternalReferenceCodes = memberships
+				.filter(
+					(membership) =>
+						!PROJECT_ROLE_ERCS.includes(
+							membership.roleExternalReferenceCode
+						) &&
+						projectMemberUserIds.has(
+							membership.r_userToProjectMembership_userId
+						)
+				)
+				.map((membership) => membership.roleExternalReferenceCode);
+
+			const availableDesignations = [
+				...new Set([
+					...(contactRoleExternalReferenceCodesByProjectId.get(
+						project.id
+					) ?? []),
+					...heldContactRoleExternalReferenceCodes,
+				]),
+			].flatMap((externalReferenceCode) => {
+				const name = contactRoleNameByExternalReferenceCode.get(
+					externalReferenceCode
+				);
+
+				return name ? [{externalReferenceCode, name}] : [];
+			});
+
+			const designationsByUserId = new Map<number, string[]>();
+
+			memberships.forEach((membership) => {
+				if (
+					!availableDesignations.some(
+						({externalReferenceCode}) =>
+							externalReferenceCode ===
+							membership.roleExternalReferenceCode
+					)
+				) {
+					return;
+				}
+
+				const userId = membership.r_userToProjectMembership_userId;
+
+				designationsByUserId.set(userId, [
+					...(designationsByUserId.get(userId) ?? []),
+					membership.roleExternalReferenceCode,
+				]);
+			});
+
 			const members = memberships
 				.filter((membership) =>
 					PROJECT_ROLE_ERCS.includes(
@@ -196,8 +218,7 @@ export function useProjectMembers() {
 					const userInfo = userInfoById.get(userId);
 
 					return {
-						accountRoleIds: userInfo?.accountRoleIds ?? [],
-						designations: userInfo?.designations ?? [],
+						designations: designationsByUserId.get(userId) ?? [],
 						email: userInfo?.email ?? '',
 						membershipId: membership.id,
 						name: userInfo?.name ?? '',
@@ -220,17 +241,7 @@ export function useProjectMembers() {
 			});
 
 			return {
-				availableDesignations: (
-					contactRoleExternalReferenceCodesByProjectId.get(
-						project.id
-					) ?? []
-				)
-					.map((externalReferenceCode) =>
-						contactRoleNameByExternalReferenceCode.get(
-							externalReferenceCode
-						)
-					)
-					.filter((name): name is string => Boolean(name)),
+				availableDesignations,
 				externalReferenceCode: project.externalReferenceCode,
 				hasProjectAdmin: members.some(
 					(member) =>

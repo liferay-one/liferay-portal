@@ -153,6 +153,17 @@ public class ContractService extends OneBaseService {
 		return new Contract(jsonArray.getJSONObject(0));
 	}
 
+	public List<Contract> getProjectContracts(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getAllItems(
+			"/o/c/contracts",
+			"r_projectToContract_c_projectERC eq '" +
+				escapeODataString(projectExternalReferenceCode) + "'",
+			Contract::new);
+	}
+
 	public void reconcileOpportunityContract(String opportunityId)
 		throws Exception {
 

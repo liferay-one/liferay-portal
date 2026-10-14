@@ -7,10 +7,6 @@ import {ClayInput} from '@clayui/form';
 import {useRef, useState} from 'react';
 import {FieldBase} from '~/components/FieldBase/FieldBase';
 import {translate} from '~/i18n';
-import {
-	fetchRoleExternalReferenceCodesByName,
-	getRoleExternalReferenceCodes,
-} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
@@ -48,11 +44,13 @@ const InviteProjectMemberModal = ({
 
 	const submittingRef = useRef(false);
 
-	const toggleDesignation = (designation: string) =>
+	const toggleDesignation = (designationExternalReferenceCode: string) =>
 		setSelectedDesignations((previous) =>
-			previous.includes(designation)
-				? previous.filter((value) => value !== designation)
-				: [...previous, designation]
+			previous.includes(designationExternalReferenceCode)
+				? previous.filter(
+						(value) => value !== designationExternalReferenceCode
+					)
+				: [...previous, designationExternalReferenceCode]
 		);
 
 	const onSubmit = async (event: React.FormEvent) => {
@@ -95,26 +93,13 @@ const InviteProjectMemberModal = ({
 		submittingRef.current = true;
 
 		try {
-			const roleExternalReferenceCodes = selectedDesignations.length
-				? getRoleExternalReferenceCodes(
-						selectedDesignations,
-						await fetchRoleExternalReferenceCodesByName(
-							accountExternalReferenceCode
-						)
-					)
-				: [];
-
-			if (!roleExternalReferenceCodes) {
-				throw new Error('Unable to find the selected account roles');
-			}
-
 			await Accounts.postInvitations(accountExternalReferenceCode, {
 				emailAddress: trimmedEmail,
 				familyName: trimmedFamilyName,
 				givenName: trimmedGivenName,
 				projectExternalReferenceCode: project.externalReferenceCode,
 				projectRoleExternalReferenceCode: roleExternalReferenceCode,
-				roleExternalReferenceCodes,
+				roleExternalReferenceCodes: selectedDesignations,
 			});
 
 			await mutate();

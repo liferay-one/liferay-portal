@@ -10,16 +10,19 @@ import {useRef, useState} from 'react';
 import {translate} from '~/i18n';
 import {
 	PROJECT_ROLE_ERCS,
+	getDesignationNames,
 	getProjectRoleLabel,
 } from '~/pages/MyAccount/ProjectMembers/projectRoles';
 
 import '~/pages/MyAccount/ProjectMembers/ProjectMembers.css';
 
+import type {Designation} from '~/pages/MyAccount/ProjectMembers/types';
+
 type PermissionsSelectProps = {
-	availableDesignations: string[];
+	availableDesignations: Designation[];
 	designations: string[];
 	onRoleChange: (roleExternalReferenceCode: string) => void;
-	onToggleDesignation: (designation: string) => void;
+	onToggleDesignation: (designationExternalReferenceCode: string) => void;
 	roleExternalReferenceCode: string;
 };
 
@@ -38,7 +41,7 @@ const PermissionsSelect = ({
 		roleExternalReferenceCode
 			? getProjectRoleLabel(roleExternalReferenceCode)
 			: null,
-		...designations,
+		...getDesignationNames(availableDesignations, designations),
 	]
 		.filter(Boolean)
 		.join(', ');
@@ -109,19 +112,25 @@ const PermissionsSelect = ({
 								{translate('cloud-contacts')}
 							</li>
 
-							{availableDesignations.map((designation) => (
-								<ClayDropDown.Item key={designation}>
-									<ClayCheckbox
-										checked={designations.includes(
-											designation
-										)}
-										label={designation}
-										onChange={() =>
-											onToggleDesignation(designation)
-										}
-									/>
-								</ClayDropDown.Item>
-							))}
+							{availableDesignations.map(
+								({externalReferenceCode, name}) => (
+									<ClayDropDown.Item
+										key={externalReferenceCode}
+									>
+										<ClayCheckbox
+											checked={designations.includes(
+												externalReferenceCode
+											)}
+											label={name}
+											onChange={() =>
+												onToggleDesignation(
+													externalReferenceCode
+												)
+											}
+										/>
+									</ClayDropDown.Item>
+								)
+							)}
 						</>
 					)}
 				</ClayDropDown.ItemList>

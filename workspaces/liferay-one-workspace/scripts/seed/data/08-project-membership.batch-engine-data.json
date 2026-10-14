@@ -130,6 +130,13 @@
 			"roleExternalReferenceCode": "C_PROJECT_ADMIN"
 		},
 		{
+			"externalReferenceCode": "C_PM_CUST_ADMIN_ERC_013_CRITICAL_INCIDENT_CONTACT",
+			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-013",
+			"r_projectToProjectMembership_c_projectERC": "PRJCT-013",
+			"r_userToProjectMembership_userERC": "USER_CUSTOMER_ADMIN",
+			"roleExternalReferenceCode": "C_CRITICAL_INCIDENT_CONTACT"
+		},
+		{
 			"externalReferenceCode": "C_PM_CUST_ADMIN_ERC_014",
 			"r_accountEntryToProjectMembership_accountEntryERC": "ACCNT-014",
 			"r_projectToProjectMembership_c_projectERC": "PRJCT-014",

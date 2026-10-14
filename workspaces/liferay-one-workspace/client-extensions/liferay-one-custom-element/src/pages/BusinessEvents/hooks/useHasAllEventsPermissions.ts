@@ -5,7 +5,9 @@
 
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
+import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
+import escapeODataString from '~/utils/escapeODataString';
 
 import type {APIResponse} from '~/types/api';
 
@@ -30,6 +32,23 @@ export default function useHasAllEventsPermissions(projectERC?: string): {
 			userAccountModel?.isAccountAdministrator
 	);
 
+	const projectTicketRoleExternalReferenceCodes = [
+		PROJECT_ADMIN_ROLE_ERC,
+		PROJECT_REQUESTER_ROLE_ERC,
+	];
+
+	const filter = [
+		SearchBuilder.eq(
+			'r_projectToProjectMembership_c_projectERC',
+			escapeODataString(projectERC ?? '')
+		),
+		SearchBuilder.eq('r_userToProjectMembership_userId', userId),
+		SearchBuilder.in(
+			'roleExternalReferenceCode',
+			projectTicketRoleExternalReferenceCodes
+		),
+	].join(' and ');
+
 	const {data: membershipData, isLoading: membershipLoading} = useFetch<
 		APIResponse<ProjectMembershipAPIItem>
 	>(
@@ -39,7 +58,7 @@ export default function useHasAllEventsPermissions(projectERC?: string): {
 		{
 			params: {
 				fields: 'roleExternalReferenceCode',
-				filter: `r_projectToProjectMembership_c_projectERC eq '${projectERC}' and r_userToProjectMembership_userId eq '${userId}'`,
+				filter,
 				pageSize: 1,
 			},
 		}
@@ -56,10 +75,10 @@ export default function useHasAllEventsPermissions(projectERC?: string): {
 	const membershipRoleExternalReferenceCode =
 		membershipData?.items?.[0]?.roleExternalReferenceCode;
 
-	const hasProjectTicketRole = [
-		PROJECT_ADMIN_ROLE_ERC,
-		PROJECT_REQUESTER_ROLE_ERC,
-	].includes(membershipRoleExternalReferenceCode ?? '');
+	const hasProjectTicketRole =
+		projectTicketRoleExternalReferenceCodes.includes(
+			membershipRoleExternalReferenceCode ?? ''
+		);
 
 	return {
 		hasAllEventsPermissions: hasProjectTicketRole,

@@ -30,6 +30,7 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
@@ -91,8 +92,49 @@ public class ProjectRestController extends OneBaseRestController {
 
 		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
 
+		Project project = _getProject(projectId);
+
 		_userAssignmentService.unassignProjectRole(
-			_getProject(projectId), accountRoleExternalReferenceCode, userId);
+			project, accountRoleExternalReferenceCode, userId);
+
+		List<ProjectMembership> projectMemberships =
+			_projectMembershipService.getProjectMemberships(projectId, userId);
+
+		if (_hasProjectRole(projectMemberships)) {
+			return;
+		}
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			_userAssignmentService.unassignProjectRole(
+				project, projectMembership.getRoleExternalReferenceCode(),
+				userId);
+		}
+	}
+
+	@DeleteMapping(
+		"/{projectId}/user-accounts/{userId}/contact-roles" +
+			"/{contactRoleExternalReferenceCode}"
+	)
+	public void deleteUserAccountsContactRoles(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable String projectId,
+			@PathVariable long userId,
+			@PathVariable String contactRoleExternalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
+
+		if (RoleConstants.ercsSupportProject.contains(
+				contactRoleExternalReferenceCode)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				StringBundler.concat(
+					"Unable to unassign project role ",
+					contactRoleExternalReferenceCode, " as a contact role"));
+		}
+
+		_userAssignmentService.unassignProjectRole(
+			_getProject(projectId), contactRoleExternalReferenceCode, userId);
 	}
 
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
@@ -254,6 +296,38 @@ public class ProjectRestController extends OneBaseRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	@PostMapping(
+		"/{projectId}/user-accounts/{userId}/contact-roles" +
+			"/{contactRoleExternalReferenceCode}"
+	)
+	public void postUserAccountsContactRoles(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable String projectId,
+			@PathVariable long userId,
+			@PathVariable String contactRoleExternalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.ASSIGN_MEMBERS, jwt, projectId);
+
+		_validateProjectContactRole(
+			contactRoleExternalReferenceCode, projectId);
+
+		Project project = _getProject(projectId);
+
+		if (!_hasProjectRole(
+				_projectMembershipService.getProjectMemberships(
+					projectId, userId))) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				StringBundler.concat(
+					"User ", userId, " does not have a role in project ",
+					projectId));
+		}
+
+		_userAssignmentService.assignProjectRole(
+			project, contactRoleExternalReferenceCode, userId);
+	}
+
 	@PutMapping(
 		"/{projectId}/user-accounts/{userId}/account-roles" +
 			"/{accountRoleExternalReferenceCode}"
@@ -280,7 +354,9 @@ public class ProjectRestController extends OneBaseRestController {
 			String roleExternalReferenceCode =
 				projectMembership.getRoleExternalReferenceCode();
 
-			if (!roleExternalReferenceCode.equals(
+			if (RoleConstants.ercsSupportProject.contains(
+					roleExternalReferenceCode) &&
+				!roleExternalReferenceCode.equals(
 					accountRoleExternalReferenceCode)) {
 
 				_userAssignmentService.unassignProjectRole(
@@ -534,6 +610,20 @@ public class ProjectRestController extends OneBaseRestController {
 			utilizationProfile);
 	}
 
+	private boolean _hasProjectRole(
+		List<ProjectMembership> projectMemberships) {
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			if (RoleConstants.ercsSupportProject.contains(
+					projectMembership.getRoleExternalReferenceCode())) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isUsageDashboardEntitlement(
 			Entitlement entitlement, String utilizationProfile)
 		throws Exception {
@@ -645,6 +735,26 @@ public class ProjectRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _validateProjectContactRole(
+			String contactRoleExternalReferenceCode, String projectId)
+		throws Exception {
+
+		List<String> contactRoleExternalReferenceCodes =
+			_projectContactRoleService.getContactRoleExternalReferenceCodes(
+				projectId);
+
+		if (!contactRoleExternalReferenceCodes.contains(
+				contactRoleExternalReferenceCode)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				StringBundler.concat(
+					"Unable to find contact role ",
+					contactRoleExternalReferenceCode, " for project ",
+					projectId));
+		}
+	}
+
 	private void _validateProjectRole(String accountRoleExternalReferenceCode) {
 		if (!RoleConstants.ercsSupportProject.contains(
 				accountRoleExternalReferenceCode)) {
@@ -687,6 +797,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private ProjectContactRoleService _projectContactRoleService;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;

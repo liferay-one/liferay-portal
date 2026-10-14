@@ -66,7 +66,6 @@ export function useProjectMemberActions({
 		modalContext.onOpenModal({
 			body: (
 				<EditProjectPermissionsModal
-					accountExternalReferenceCode={accountExternalReferenceCode}
 					accountMemberOptions={accountMemberOptions}
 					mutate={mutate}
 					onClose={modalContext.onClose}

@@ -227,10 +227,18 @@ public class ProvisioningEmailService extends OneBaseService {
 
 		List<Project> projects = new ArrayList<>();
 
+		Set<String> projectExternalReferenceCodes = new HashSet<>();
+
 		List<ProjectMembership> projectMemberships =
 			_projectMembershipService.getProjectMemberships(accountId, userId);
 
 		for (ProjectMembership projectMembership : projectMemberships) {
+			if (!projectExternalReferenceCodes.add(
+					projectMembership.getProjectExternalReferenceCode())) {
+
+				continue;
+			}
+
 			Project project = _projectService.fetchProject(
 				projectMembership.getProjectExternalReferenceCode());
 
