@@ -17,12 +17,6 @@ const SETTLE_TIMEOUT = 60000;
 
 const USER_ACCOUNTS_PATH = '/o/headless-admin-user/v1.0/user-accounts';
 
-/**
- * Opens a My Account route. Navigating to `#/{accountERC}/...` makes the SPA
- * switch the commerce account to that ERC and reload, so this waits for the
- * loading indicators to clear after the reload before a spec asserts.
- */
-
 export async function gotoMyAccount(page: Page, hashPath: string) {
 	await gotoAndExpectRender(page, `${sitePath('/my-account')}#/${hashPath}`);
 
@@ -43,18 +37,6 @@ export async function expectSettled(page: Page) {
 		myAccount.locator('.loading-animation, .loading-page, .loading-overlay')
 	).toHaveCount(0, {timeout: SETTLE_TIMEOUT});
 }
-
-/**
- * Selects an item in an account role picker by clicking the item beside its
- * checkbox.
- *
- * The role pickers toggle a role from both the item's click handler and the
- * checkbox's change handler. A click on the checkbox toggles the role twice
- * and leaves it unchanged, and a click on the label can do the same. A click
- * on the item's empty edge reaches only the item handler, so it is the one
- * click that selects a role reliably. The specs that cover that defect click
- * the checkbox on purpose.
- */
 
 export async function clickDropdownItemBesideCheckbox(item: Locator) {
 	const box = await item.boundingBox();
@@ -80,14 +62,6 @@ export type TemporaryMember = {
 	password: string;
 	userId: number;
 };
-
-/**
- * Creates a user the test owns outright: a member of each given account with
- * no account role, in the Customers and Everyone user groups like a seeded
- * customer. A journey that grants it a role, adds it to a project, or switches
- * its current account changes nothing that another spec, or a parallel
- * worker, reads through a shared persona. `deleteTemporaryMember` removes it.
- */
 
 export async function createTemporaryMember(
 	adminAPI: HeadlessAPI,
@@ -137,16 +111,6 @@ export async function createTemporaryMember(
 	}
 }
 
-/**
- * Creates a temporary member with the access of the seeded administrator: the
- * Administrator and Marketplace Publisher regular roles, and Account
- * Administrator on each given account. My Account and the publisher dashboard
- * switch the current account of whoever opens them, and the current account
- * is stored per user, so a journey that runs there as the shared
- * administrator persona switches the account under every parallel test that
- * also signs in as it. `deleteTemporaryMember` removes it.
- */
-
 export async function createTemporaryAdministrator(
 	adminAPI: HeadlessAPI,
 	accountERCs: string[]
@@ -195,12 +159,6 @@ export async function createTemporaryAdministrator(
 		throw error;
 	}
 }
-
-/**
- * Deletes the project memberships of a temporary member, then the member. A
- * membership left behind points at a deleted user and renders as an unknown
- * member chip on Project Permissions.
- */
 
 export async function deleteTemporaryMember(
 	adminAPI: HeadlessAPI,

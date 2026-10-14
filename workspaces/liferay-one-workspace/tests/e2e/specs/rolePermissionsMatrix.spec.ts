@@ -3,21 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-/**
- * Enforces the account-level and project-level permission matrices (LPD-95398).
- *
- * Every row signs in as its own persona from `getPersona.ts`, which defaults to
- * the users `scripts/seed` provisions on ACCNT-001 and PRJCT-001. Nothing here
- * falls back to the administrator, because an administrator session turns a
- * denial row into a pass for the wrong reason.
- *
- * Each cell asserts the access the matrix requires. A cell the application
- * does not honor yet is listed in `KNOWN_DEFECTS` with what it does instead;
- * it runs as an expected failure, so the suite stays green while the defect is
- * open and fails as soon as the defect is fixed, which is the signal to delete
- * the entry.
- */
-
 import {Locator, Page} from '@playwright/test';
 
 import {expect, oneTest as test} from '../fixtures/oneTest';
@@ -51,11 +36,6 @@ const LOADING_INDICATOR = '.loading-animation';
 const NO_ACCESS_TEXT = 'You do not have access to this page.';
 
 const RENDER_TIMEOUT = 30000;
-
-/**
- * Matrix cells the application does not honor yet, keyed by
- * `<persona label> — <feature name>`, with what happens instead.
- */
 
 const PLACED_ORDERS_404 =
 	'GET /o/headless-commerce-delivery-order/v1.0/channels/{channelId}/accounts/{accountId}/placed-orders answers 404 for every role but Account Administrator, so the page shows "An error occurred while fetching the data."';
@@ -95,14 +75,6 @@ const KNOWN_DEFECTS: Record<string, string> = {
 function myAccountPath(path: string) {
 	return sitePath(`/my-account#/${ACCOUNT_ERC}${path}`);
 }
-
-/**
- * Waits for the SPA to finish rendering. gotoAndExpectRender already proves the
- * custom element mounted and painted its first visible content; this adds the
- * loading indicators clearing, so an absence assertion made afterwards is about
- * content the app decided not to render rather than content it had not reached
- * yet.
- */
 
 async function expectSettled(page: Page): Promise<void> {
 	await expect(
@@ -162,12 +134,6 @@ async function assertAccess(page: Page, feature: Feature, access: Access) {
 	}
 }
 
-/**
- * Pins the persona's current account to the matrix account. The current
- * account is stored per user on the server, so another test may have left a
- * different one selected.
- */
-
 async function signInOnAccount(
 	page: Page,
 	signIn: (key: PersonaKey) => Promise<unknown>,
@@ -211,12 +177,6 @@ const ACCOUNT_ORDERS: Feature = {
 	goto: (page) => gotoAndExpectRender(page, myAccountPath('/orders')),
 	name: 'Account Orders',
 };
-
-/**
- * An account administrator reaches every project on the account, including
- * one they are not a member of, so the open project selector offers the
- * unassigned project; a member reaches only the projects they belong to.
- */
 
 const PROJECTS: Feature = {
 	action: (page) =>

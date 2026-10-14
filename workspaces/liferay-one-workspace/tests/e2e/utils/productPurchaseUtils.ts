@@ -23,12 +23,6 @@ const CHANNEL_ERC = 'LIFERAY_ONE_CHANNEL';
 
 const USER_ACCOUNTS_PATH = '/o/headless-admin-user/v1.0/user-accounts';
 
-/**
- * The user groups a seeded customer belongs to. Customers grants the Customer
- * regular role and Everyone the permissions every signed in user carries;
- * without them the buyer cannot write the order custom fields checkout sets.
- */
-
 const CUSTOMER_USER_GROUP_ERCS = ['C_CUSTOMERS', 'C_EVERYONE'];
 
 export type TemporaryAccount = {
@@ -43,15 +37,6 @@ export type TemporaryBuyer = {
 	password: string;
 	userId: number;
 };
-
-/**
- * A buyer the test owns outright: a new customer user who belongs to a new
- * business account, as its Account Administrator unless `accountRole` names
- * another account role (or `null` for none). A purchase writes carts, orders, postal addresses, and the
- * account's default billing address and tax ID, so running it against a
- * shared seed account would leave other specs (and parallel workers) reading
- * state this spec changed. `deleteTemporaryBuyer` removes everything again.
- */
 
 export async function createTemporaryBuyer(
 	adminAPI: HeadlessAPI,
@@ -125,14 +110,6 @@ export async function createTemporaryBuyer(
 	}
 }
 
-/**
- * Deletes every order placed on the temporary account, then the account and
- * the user. An order is deleted first because the account cannot be removed
- * while orders reference it. The account and the user are each deleted even
- * when an earlier step fails, so a failed cleanup leaves as little behind as
- * the portal allows.
- */
-
 export async function deleteTemporaryBuyer(
 	adminAPI: HeadlessAPI,
 	buyer: TemporaryBuyer | undefined
@@ -158,12 +135,6 @@ export async function deleteTemporaryBuyer(
 	}
 }
 
-/**
- * Deletes the entitlements generated for an account's order items. Deleting an
- * order leaves its entitlements behind, and the account relationship prevents
- * the account from being deleted while any remain.
- */
-
 export async function deleteAccountEntitlements(
 	adminAPI: HeadlessAPI,
 	accountId: number
@@ -178,12 +149,6 @@ export async function deleteAccountEntitlements(
 		await adminAPI.deleteIfExists(`/o/c/entitlements/${id}`);
 	}
 }
-
-/**
- * Deletes the custom object entries a journey creates on an account (projects,
- * DXP connections, and free activation key requests), so the account itself
- * can be deleted.
- */
 
 export async function deleteAccountObjectEntries(
 	adminAPI: HeadlessAPI,
@@ -202,10 +167,6 @@ export async function deleteAccountObjectEntries(
 	}
 }
 
-/**
- * Deletes the orders and open carts on an account.
- */
-
 export async function deleteAccountOrders(
 	adminAPI: HeadlessAPI,
 	accountId: number
@@ -214,13 +175,6 @@ export async function deleteAccountOrders(
 		await adminAPI.deleteIfExists(`${ADMIN_ORDERS_PATH}/${id}`);
 	}
 }
-
-/**
- * Returns every order on an account, placed or still an open cart, as the
- * admin order API describes it. The admin order API refuses a filter on the
- * account, so the order IDs come from the account scoped delivery endpoints,
- * page by page, and each order is then read by its ID.
- */
 
 export async function getAccountOrders<
 	T extends {accountId: number; id: number} = {
@@ -270,11 +224,6 @@ async function _addAccountMember(
 	email: string,
 	accountRoleName: null | string
 ): Promise<void> {
-
-	// The account role association endpoints answer 404 when the account is
-	// addressed by numeric ID, so every call here addresses it by external
-	// reference code
-
 	const accountPath = `${ACCOUNTS_PATH}/by-external-reference-code/${account.externalReferenceCode}`;
 
 	await adminAPI.post(

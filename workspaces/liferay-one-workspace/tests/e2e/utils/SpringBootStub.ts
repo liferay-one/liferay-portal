@@ -34,26 +34,6 @@ type StubRoute = {
 	patternText: string;
 };
 
-/**
- * Answers the browser's calls to the Spring Boot client extension for the
- * endpoints that proxy an external system, while every other call still
- * reaches the real client extension.
- *
- * Register a handler per endpoint with `on`, using `:name` segments for path
- * parameters. A handler that holds state (a list it appends to on POST and
- * returns on GET) lets one test body run unchanged against the stub locally
- * and against the real system with `ONE_E2E_BACKEND=live`, where `on` does
- * nothing. Assert on what the journey wrote, not on canned values, when the
- * test must also pass live.
- *
- * Match the content type of the real endpoint. The portal's OAuth2 client
- * resolves an `application/json` response to the parsed body but any other
- * response to the `Response` itself, and the services in the custom element
- * are written against whichever the endpoint really sends. A controller that
- * returns `ResponseEntity<String>` sends `text/plain`, which is the default
- * here; pass `contentType: 'application/json'` for one that returns a DTO.
- */
-
 export default class SpringBootStub {
 	readonly calls: Array<{body: unknown; method: string; path: string}> = [];
 
@@ -96,11 +76,6 @@ export default class SpringBootStub {
 
 		await this._install();
 	}
-
-	/**
-	 * Returns the calls the browser made to the stubbed endpoints whose path
-	 * matches, for asserting what a journey sent.
-	 */
 
 	callsTo(method: string, path: RegExp | string) {
 		return this.calls.filter(
@@ -153,11 +128,7 @@ export default class SpringBootStub {
 		try {
 			body = request.postDataJSON();
 		}
-		catch {
-
-			// Leave a non JSON body (a multipart upload) as text
-
-		}
+		catch {}
 
 		this.calls.push({body, method: request.method(), path: url.pathname});
 

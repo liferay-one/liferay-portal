@@ -7,22 +7,6 @@ import {expect, oneTest as test} from '../fixtures/oneTest';
 import SpringBootStub from '../utils/SpringBootStub';
 import {adminApp, gotoAdmin, rowWithText, toast} from '../utils/adminUtils';
 
-/**
- * The provisioning tools of the admin dashboard, run as the Provisioning
- * Administrator persona.
- *
- * Pub/Sub dispatches a message straight into a Salesforce or Okta subscriber
- * on the Spring Boot client extension, which writes to Liferay and to the
- * external system behind it. Every test that submits a message therefore runs
- * only against the stub, which records what the page sent; nothing here ever
- * dispatches for real.
- *
- * Activation key uploads store a parsed license file. A local environment has
- * no license file the signer accepts, so the upload, download, and delete
- * journey runs against a stub that keeps the uploaded keys in memory and
- * answers a duplicate the way the real controller does: a 409 ProblemDetail.
- */
-
 const COMMON_LICENSE_KEYS_PATH = '/common-license-keys';
 
 const NO_EXTERNAL_DISPATCH =
@@ -138,13 +122,6 @@ function licenseFile(name: string) {
 		name,
 	};
 }
-
-/**
- * A page with a Spring Boot stub loads without the HTTP cache (Playwright
- * disables it while a route is registered), so under parallel load its first
- * render can need the one reload gotoAdmin allows. The longer timeout leaves
- * room for that reload.
- */
 
 test.describe.configure({timeout: 240 * 1000});
 

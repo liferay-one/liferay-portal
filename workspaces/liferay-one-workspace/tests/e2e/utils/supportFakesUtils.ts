@@ -7,17 +7,6 @@ import {Page} from '@playwright/test';
 
 import SpringBootStub from './SpringBootStub';
 
-/**
- * Stateful stand ins for the Jira and Google Cloud Storage backends behind the
- * Spring Boot client extension's support endpoints. Each fake answers with the
- * JSON shape and the `text/plain` content type the real controllers send
- * (`BusinessEventsRestController`, `JiraRestController`,
- * `ProjectRestController`, `TicketAttachmentsRestController`, and
- * `TicketsTicketAttachmentsRestController` all return `ResponseEntity<String>`).
- * Writes change the fake's state, so a journey that creates a record sees it on
- * the next read exactly as it would against Jira.
- */
-
 export const EVENT_TYPES = ['Go Live', 'Migration', 'Other Event', 'Upgrade'];
 
 export const PRODUCT_VERSIONS = [
@@ -266,12 +255,6 @@ export class FakeJira {
 	private _nextID = 90001;
 }
 
-/**
- * Answers the Spring Boot ticket attachment endpoints and the resumable Google
- * Cloud Storage session the uploader writes to. `accessError` makes the upload
- * and download access checks return the error code the real controllers send.
- */
-
 export class FakeTicketAttachmentBackend {
 	accessError:
 		| ''
@@ -286,11 +269,6 @@ export class FakeTicketAttachmentBackend {
 
 	static readonly SESSION_URL =
 		'https://storage.googleapis.com/one-e2e-fake/upload-session';
-
-	/**
-	 * `deleteRecord` removes the Liferay record behind a deleted attachment,
-	 * which the real controller does once the storage object is gone.
-	 */
 
 	constructor(
 		private readonly page: Page,

@@ -15,22 +15,6 @@ import {
 } from '../utils/environmentUtils';
 import {dismissCookieBanner} from '../utils/loginUtils';
 
-/**
- * The header fragment, its primary navigation menu, and the account selector
- * custom element it hosts are on every page of the One site, so a regression
- * here strands the user on whatever page they land on.
- *
- * The My Account menu items are URL items written as `/my-account/#/...`,
- * which resolve only under the site's virtual host (`one.localhost` locally),
- * so the test checks where they point and then opens the same routes through
- * the site path, which works on either host.
- *
- * The account switching journey signs in as a user with many accounts and no
- * account role (`member@customer.com` in the seed), because the current
- * account is stored per user on the server and switching it as a persona that
- * other specs sign in as would change their starting account.
- */
-
 const HOME_PATH = sitePath('/home');
 
 function accountMenu(page: Page) {

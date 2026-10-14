@@ -10,12 +10,6 @@ import {gotoAndExpectRender} from '../utils/customElementUtils';
 import {sitePath, uniqueName} from '../utils/environmentUtils';
 import {deletePublisherAccountRequests} from '../utils/publisherUtils';
 
-/**
- * A user asks to become a Marketplace publisher, and an administrator reviews
- * the request. The request is a PublisherAccountRequest object entry; every
- * test deletes the entries it created.
- */
-
 const BECOME_A_PUBLISHER_PATH = sitePath('/marketplace/become-a-publisher');
 
 const PUBLISHER_REQUESTS_PATH = sitePath('/admin#/publisher-requests');

@@ -28,13 +28,6 @@ import {
 	tableRow,
 } from '../utils/myAccountUtils';
 
-/**
- * The My Account account level journeys: orders, account details, account
- * members, and project permissions, each signed in as the persona the
- * behavior belongs to. Every write a test makes is undone through the UI and
- * again through the headless APIs in cleanup, so the seed stays as it was.
- */
-
 const LAST_ADMIN_ACCOUNT_ERC = process.env.ONE_LAST_ADMIN_ACCOUNT_ERC?.trim()
 	? process.env.ONE_LAST_ADMIN_ACCOUNT_ERC.trim()
 	: 'ACCNT-028';
@@ -268,13 +261,6 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account access', () => {
 		adminAPI,
 		page,
 	}) => {
-
-		/**
-		 * The current account is stored per user on the server, so the switch
-		 * runs as a throwaway member of both accounts rather than a persona
-		 * that other specs sign in as.
-		 */
-
 		let member: TemporaryMember | undefined;
 
 		try {

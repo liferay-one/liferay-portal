@@ -17,22 +17,6 @@ import {
 } from '../utils/productPurchaseUtils';
 import {CHECKOUT_TIMEOUT, PORTAL_TIMEOUT} from '../utils/timeoutConstants';
 
-/**
- * The product purchase wizard (`/web/one/product-purchase?productId=`), from
- * the product display page that enters it to the order it places.
- *
- * Every journey that writes (a cart, an order, a postal address, the account's
- * billing address and tax ID) runs as a temporary buyer: a new customer user
- * on a new business account, created through the headless APIs and deleted
- * afterwards with everything the purchase left on it. A temporary buyer
- * belongs to one account, so the wizard skips the account step for them. The
- * journeys that need the account step sign in as the seeded Account Admin,
- * who belongs to every seed account, and never write.
- *
- * The products are looked up by external reference code at runtime, because
- * the product IDs the wizard takes are generated per environment.
- */
-
 const BANK_TRANSFER_COMPLETED_PATTERN =
 	/#\/bank-transfer-completed\?orderId=(\d+)/;
 
@@ -74,10 +58,6 @@ function stepTitle(page: Page, name: string) {
 	return page.getByRole('heading', {exact: true, name});
 }
 
-/**
- * Waits for Purchase Completed and returns the order ID the page shows.
- */
-
 async function expectPurchaseCompleted(page: Page): Promise<number> {
 	await expect(page).toHaveURL(PURCHASE_COMPLETED_PATTERN, {
 		timeout: CHECKOUT_TIMEOUT,
@@ -99,11 +79,6 @@ async function expectPurchaseCompleted(page: Page): Promise<number> {
 
 	return orderId;
 }
-
-/**
- * Asserts the order left Open (2). A checkout the portal refused leaves the
- * order Open, and an Open order never becomes a placed order the buyer sees.
- */
 
 async function expectOrderPlaced(
 	adminAPI: HeadlessAPI,
@@ -132,11 +107,6 @@ async function expectOrderPlaced(
 async function signInAsBuyer(page: Page, buyer: TemporaryBuyer) {
 	await liferayLogin(page, buyer.email, buyer.password);
 }
-
-/**
- * Drives a paid app from License Selection to Summary with a new billing
- * address and the chosen payment method, asserting each step on the way.
- */
 
 type BillingAddress = {
 	city: string;

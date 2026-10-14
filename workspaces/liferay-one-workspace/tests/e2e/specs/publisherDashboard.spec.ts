@@ -19,18 +19,6 @@ import {
 	gotoPublisherDashboard,
 } from '../utils/publisherUtils';
 
-/**
- * The Publisher Dashboard for a publisher whose account owns a seeded catalog.
- * The dashboard resolves the catalog from the commerce current account, so
- * each test selects the publisher account (Test Supplier, ACCNT-021) first.
- *
- * The journeys run as a temporary administrator with the Marketplace
- * Publisher role and Account Administrator on Test Supplier, because selecting
- * the account as the shared administrator persona would switch it under every
- * parallel test signed in as that persona. The seeded publisher persona holds
- * the same roles but cannot read the catalog; the first test pins that gap.
- */
-
 const SEEDED_APPS = [
 	'Test App',
 	'Test Supplier Slack Connector',

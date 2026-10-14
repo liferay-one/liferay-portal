@@ -3,18 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-/**
- * The records and the backend mode the e2e suite runs against. Every default
- * points at the local seed (`scripts/seed`), and every value can be overridden
- * from `.env` so the same specs run against UAT.
- *
- * `ONE_E2E_BACKEND` selects how the Spring Boot client extension's external
- * systems (Jira, Google Cloud Storage, Liferay Cloud Console, PayPal) are
- * reached. `stub` (the default) answers those calls in the browser with
- * Playwright route handlers, because a local environment has no credentials
- * for them. `live` installs no stubs, so the calls reach the real systems.
- */
-
 function value(name: string, defaultValue: string): string {
 	return process.env[name]?.trim() || defaultValue;
 }
@@ -64,11 +52,6 @@ export const UNASSIGNED_PROJECT_NAME = value(
 export function sitePath(path: string): string {
 	return `${SITE_PATH}${path}`;
 }
-
-/**
- * Returns a name no other run produces, so a record a test creates never
- * collides with seed data or with a parallel worker, and cleanup can find it.
- */
 
 export function uniqueName(prefix: string): string {
 	return `${prefix} E2E ${Date.now().toString(36)}${Math.random()

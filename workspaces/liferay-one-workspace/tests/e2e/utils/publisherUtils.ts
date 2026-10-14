@@ -15,21 +15,12 @@ export const PUBLISHER_DASHBOARD_PATH = sitePath(
 	'/my-account/publisher-dashboard'
 );
 
-/**
- * Opens a Publisher Dashboard route. `route` is the hash path without the
- * leading `#/`, such as `published-apps`.
- */
-
 export async function gotoPublisherDashboard(
 	page: Page,
 	route: string
 ): Promise<void> {
 	await gotoAndExpectRender(page, `${PUBLISHER_DASHBOARD_PATH}#/${route}`);
 }
-
-/**
- * A 1 by 1 PNG, small enough for every image dropzone in the publish flows.
- */
 
 export const PNG_FILE = {
 	buffer: Buffer.from(
@@ -40,23 +31,11 @@ export const PNG_FILE = {
 	name: 'e2e-image.png',
 };
 
-/**
- * An empty ZIP archive, which the app build step accepts as a package.
- */
-
 export const ZIP_FILE = {
 	buffer: Buffer.from('504b0506000000000000000000000000000000000000', 'hex'),
 	mimeType: 'application/zip',
 	name: 'e2e-package.zip',
 };
-
-/**
- * Finds the catalog products named exactly `productName`. The admin catalog
- * finds a product by `search`, which reads the search index, and a product
- * submitted moments ago may not be indexed yet. When the journey reached a
- * successful submission, the lookup therefore polls until the product appears
- * and fails if it never does, so a submitted product cannot leak silently.
- */
 
 async function findProductsByName(
 	adminAPI: HeadlessAPI,
@@ -98,13 +77,6 @@ async function findProductsByName(
 	return products;
 }
 
-/**
- * Deletes every publisher account request whose description matches, which
- * is how a test finds the requests it submitted through the browser. The value
- * is quoted as an OData string literal, so a quote in it cannot change the
- * filter, and every page of matches is read.
- */
-
 export async function deletePublisherAccountRequests(
 	adminAPI: HeadlessAPI,
 	requestDescription: string
@@ -136,12 +108,6 @@ export async function deletePublisherAccountRequests(
 		await adminAPI.deleteIfExists(`/o/c/publisheraccountrequests/${id}`);
 	}
 }
-
-/**
- * Removes a product a publish flow submitted, with every record the
- * submission created beside it: the publisher assets and their attachments,
- * and the Documents and Media folder that holds the uploaded packages.
- */
 
 export async function deleteSubmittedProduct(
 	adminAPI: HeadlessAPI,
@@ -206,11 +172,6 @@ export async function deleteSubmittedProduct(
 		);
 	}
 }
-
-/**
- * Picks the first suggestion of a Clay multiselect, such as the Area and Tags
- * fields of the publish flows.
- */
 
 export async function pickFirstMultiSelectOption(
 	page: Page,

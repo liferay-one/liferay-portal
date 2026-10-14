@@ -18,14 +18,6 @@ export type HeadlessPage<T> = {
 	totalCount: number;
 };
 
-/**
- * Administrator access to the portal's headless APIs for e2e setup and
- * cleanup. A spec uses it to look up the environment specific ID behind a seed
- * external reference code, to create the record a journey needs, and to remove
- * what the journey created. The journey itself always runs through the
- * browser.
- */
-
 export default class HeadlessAPI {
 	constructor(readonly request: APIRequestContext) {}
 
@@ -36,11 +28,6 @@ export default class HeadlessAPI {
 
 		await this._expectOK(response, 'DELETE', path);
 	}
-
-	/**
-	 * Deletes a record during cleanup, and tolerates a record that is already
-	 * gone, so a cleanup step never fails a test whose journey deleted it.
-	 */
 
 	async deleteIfExists(path: string): Promise<void> {
 		const response = await this.request.delete(path, {
@@ -69,12 +56,6 @@ export default class HeadlessAPI {
 			`/o/headless-admin-user/v1.0/accounts/by-external-reference-code/${externalReferenceCode}`
 		);
 	}
-
-	/**
-	 * Returns the admin catalog product behind a seed external reference code.
-	 * `productId` is the CProduct ID the purchase flow and the display pages
-	 * use; `id` is the CPDefinition ID.
-	 */
 
 	async getProductByERC<
 		T = {id: number; name: {en_US: string}; productId: number},

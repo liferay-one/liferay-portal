@@ -23,15 +23,6 @@ import {
 	pickFirstMultiSelectOption,
 } from '../utils/publisherUtils';
 
-/**
- * A publisher creates an app and a solution through the publish flows of the
- * Publisher Dashboard and submits them for review. The journeys run as a
- * temporary administrator on the Test Supplier publisher account (see
- * publisherDashboard.spec.ts for why, and for why the seeded publisher
- * persona cannot).
- * Every product a test submits is removed with the records created beside it.
- */
-
 function stepHeading(page: Page, name: string) {
 	return page.getByRole('heading', {level: 1, name});
 }

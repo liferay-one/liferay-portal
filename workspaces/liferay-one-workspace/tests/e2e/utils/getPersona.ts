@@ -8,17 +8,6 @@ import {
 	DEFAULT_ADMIN_PASSWORD,
 } from '../../utils/constants';
 
-/**
- * One user per role the e2e suite signs in as. The defaults are the users that
- * `scripts/seed` provisions on ACCNT-001 (password `test`). Override any of
- * them with `ONE_<KEY>_EMAIL` and `ONE_<KEY>_PASSWORD` to run against another
- * environment, or set `ONE_PERSONA_PASSWORD` once for every persona.
- *
- * A persona never falls back to the administrator. An administrator session
- * passes every check that expects a denial, so a gated test that silently ran
- * as the administrator would prove nothing.
- */
-
 export type PersonaKey =
 	| 'ACCOUNT_ADMIN'
 	| 'ACCOUNT_BUYER'

@@ -9,14 +9,6 @@ import {gotoAndExpectRender} from '../utils/customElementUtils';
 import {ACCOUNT_ERC, sitePath} from '../utils/environmentUtils';
 import {expectSettled} from '../utils/myAccountUtils';
 
-/**
- * The custom element reads the language from the page, and the portal sets
- * it from the language prefix of the URL. Each language the custom element
- * ships is opened under its full locale prefix, and the labels of two page
- * groups must render in that language. The administrator reads both groups,
- * so one persona covers them.
- */
-
 const LANGUAGES = [
 	{
 		accountDetails: 'Main Information',

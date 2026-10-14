@@ -13,21 +13,6 @@ import {
 } from '../utils/adminUtils';
 import {sitePath} from '../utils/environmentUtils';
 
-/**
- * The Admin page group is gated twice. The portal grants VIEW on the hidden
- * /admin page only to Finance Administrator, Liferay Staff, and Provisioning
- * Administrator (and implicitly to the portal administrator). Inside the page,
- * the SPA removes every route the user's roles do not reach, from the side
- * navigation and from the router, and sends a forbidden hash to the first
- * route the user may open.
- *
- * The Liferay Staff and SSA User personas reach the page only through the
- * Employees user group, which is meant to carry the Liferay Staff role. The
- * seed does not apply that user group role binding today, so both personas
- * get the portal's 404 rather than the SPA. Their rows assert the intended
- * behavior and are expected to fail until the binding is fixed.
- */
-
 const SEED_GROUP_ROLE_DEFECT =
 	'The Employees user group does not carry the Liferay Staff role in the ' +
 	'seeded environment (role/has-user-role with inheritance returns false), ' +

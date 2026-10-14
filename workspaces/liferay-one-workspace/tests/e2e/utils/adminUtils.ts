@@ -8,14 +8,6 @@ import {Locator, Page, expect, test} from '@playwright/test';
 import {gotoAndExpectRender} from './customElementUtils';
 import {sitePath} from './environmentUtils';
 
-/**
- * Helpers for the Admin page group (`/web/one/admin`). Admin page titles
- * render as Clay text, not as headings, so a spec asserts them with
- * `getByText`. Most lists on these pages are a `ListView`: its row menu is the
- * kebab button labelled `actions` (`Actions` on the few plain tables), its filters live in the hash as `?filter=`
- * JSON next to `page` and `pageSize`, and its rows are table rows.
- */
-
 export const ADMIN_NAV_ITEMS = [
 	'Marketplace Summary',
 	'Marketplace Orders',
@@ -42,22 +34,6 @@ export function adminNavLinks(page: Page): Locator {
 }
 
 const ADMIN_LOADING_INDICATOR = '.loading-animation, .loading-page';
-
-/**
- * Opens an admin route and waits for the SPA to render it and for every
- * loading indicator to clear. Pass `ready` to also wait for the element the
- * test needs first (a row, a heading, a button).
- *
- * Under parallel load the admin page occasionally never finishes its first
- * render: it keeps a loading indicator, or it clears the indicator while a
- * list request never returns. This happens most often on a page with a Spring
- * Boot stub, which loads without the HTTP cache. When the page is not ready in
- * time it is reloaded once, and the retry is recorded as an
- * `admin-load-retry` annotation so the stall stays visible in the report
- * rather than hidden. Both waits are a share of the running test's timeout,
- * capped at 45 and 60 seconds, so the first render, the wait, the reload, and
- * the second wait together always fit the test's budget.
- */
 
 export async function gotoAdmin(
 	page: Page,
@@ -126,11 +102,6 @@ export async function expectAdminSettled(
 	).toHaveCount(0, {timeout});
 }
 
-/**
- * Returns the data rows of the first table in the admin content area, which
- * excludes the header row.
- */
-
 export function tableRows(page: Page): Locator {
 	return adminApp(page).locator('main table tbody tr');
 }
@@ -147,11 +118,6 @@ export async function clickRowAction(
 
 	await row.page().getByRole('menuitem', {name: actionName}).click();
 }
-
-/**
- * Applies one option of a checkbox filter through the toolbar: Filter, the
- * field, the option, then Add Filter.
- */
 
 export async function applyCheckboxFilter(
 	page: Page,
@@ -185,11 +151,6 @@ export async function searchList(page: Page, text: string): Promise<void> {
 export function toast(page: Page, text: RegExp | string): Locator {
 	return page.locator('.alert-container .alert').filter({hasText: text});
 }
-
-/**
- * Reads the visible text of the first cell of every data row, which on every
- * admin order list is the order ID.
- */
 
 export async function firstColumnValues(page: Page): Promise<string[]> {
 	return (

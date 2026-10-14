@@ -22,17 +22,6 @@ import {
 	deleteTemporaryBuyer,
 } from '../utils/productPurchaseUtils';
 
-/**
- * The finance side of the Marketplace admin dashboard, run as the Finance
- * Administrator persona so the specs also prove that role reaches it.
- *
- * Marking an order as paid writes to the order, so each test creates its own
- * unpaid order on a throwaway buyer account and deletes the buyer afterwards;
- * no seeded record changes. Marking a publisher payout as paid writes to a seeded
- * publisher sales summary, so those tests record its payment fields first and
- * write them back afterwards.
- */
-
 const LIFERAY_SUPPLIER_ACCOUNT_ERC = 'ACCNT-020';
 
 const ORDERS_PATH = '/o/headless-commerce-admin-order/v1.0/orders';
@@ -53,12 +42,6 @@ type SalesSummary = {
 	quarter: string;
 	r_accountEntryToPublisherSalesSummary_accountEntryERC: string;
 };
-
-/**
- * Places an unpaid order on a throwaway buyer account, so marking it as paid
- * changes no seeded record. Delete it with `deleteTemporaryBuyer`, which also
- * removes the entitlements the order generates.
- */
 
 async function createUnpaidOrder(
 	adminAPI: HeadlessAPI
@@ -102,13 +85,6 @@ async function createUnpaidOrder(
 		throw error;
 	}
 }
-
-/**
- * Returns the seeded sales summary of a publisher account for a quarter. The
- * payments table shows the summary's own publisher name ("Liferay Supplier
- * Account"), which differs from the account name, so the summary is matched
- * by the account external reference code instead.
- */
 
 async function getSalesSummary(
 	adminAPI: HeadlessAPI,

@@ -19,17 +19,6 @@ import {
 	tableRows,
 } from '../utils/adminUtils';
 
-/**
- * The Marketplace administrator dashboard: the summary, the orders, apps,
- * solutions, and publishers lists, and the read side of publisher requests.
- * Everything here reads Liferay headless APIs only, so it runs the same
- * against the local seed and against UAT. Order counts are matched by shape,
- * not by value, because other specs place orders while this one runs.
- *
- * Approving and declining a publisher request belongs to the publisher
- * journey (FLOW-ADMIN-PUBLISHER-REQUESTS); this spec only reads the list.
- */
-
 const PAGINATION_RESULTS = /Showing (\d+) to (\d+) of (\d+)/;
 
 function columnHeader(page: Page, name: string) {
@@ -204,9 +193,6 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace orders', () => {
 		await gotoAdmin(page, 'mp-orders');
 
 		const createdAtHeader = columnHeader(page, 'Created At');
-
-		// The first click applies the default newest first order again, so
-		// the second click is the one that reverses it
 
 		await createdAtHeader.click();
 		await createdAtHeader.click();

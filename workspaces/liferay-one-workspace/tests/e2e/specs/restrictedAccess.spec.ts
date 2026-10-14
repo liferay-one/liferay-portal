@@ -11,14 +11,6 @@ import {sitePath} from '../utils/environmentUtils';
 import getPersona from '../utils/getPersona';
 import {liferayLogin} from '../utils/loginUtils';
 
-/**
- * The pages that mount the custom element are gated twice: the portal refuses
- * a page the user lacks VIEW on, and the custom element then decides what an
- * allowed user may see. These tests prove the first gate as a guest and as a
- * signed in customer, so a page permission dropped from the site initializer
- * fails here rather than exposing the page.
- */
-
 const SIGN_IN_PAGES = [
 	{name: 'Admin', path: '/admin', route: 'admin'},
 	{name: 'My Account', path: '/my-account', route: 'my-account'},
@@ -40,22 +32,11 @@ const SIGN_IN_PAGES = [
 	},
 ];
 
-/**
- * The master page mounts the account selector on every page, so a gated page
- * is proven absent by the route of its own custom element.
- */
-
 function pageCustomElement(page: Page, route: string) {
 	return page.locator(`liferay-one-custom-element[route="${route}"]`);
 }
 
 const LOGIN_PORTLET = 'com_liferay_login_web_portlet_LoginPortlet';
-
-/**
- * The portal answers a guest with the sign in portlet, maximized on the home
- * page, and carries the page the guest asked for in the portlet's redirect
- * parameter.
- */
 
 async function expectSignInFor(page: Page, path: string) {
 	await expect(page).toHaveURL(new RegExp(`p_p_id=${LOGIN_PORTLET}`));

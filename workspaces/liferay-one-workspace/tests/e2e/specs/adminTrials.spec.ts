@@ -23,19 +23,6 @@ import {
 	uniqueName,
 } from '../utils/environmentUtils';
 
-/**
- * The trial tools of the admin dashboard: the 7 day trials and the SSA SaaS
- * demos.
- *
- * Provisioning, extending, expiring, and deleting a trial all go through the
- * Spring Boot client extension to the provisioning backend, which a local
- * environment does not have. Those journeys run against the stub, which
- * records what the page sent, and skip when ONE_E2E_BACKEND=live so a spec
- * never extends or expires a real customer trial. The Liferay side of each
- * journey (the commerce order, the trial extension request, the account
- * roles) is real, and each test removes what it created.
- */
-
 const DAY = 24 * 60 * 60 * 1000;
 
 const ORDERS_PATH = '/o/headless-commerce-admin-order/v1.0/orders';
@@ -58,13 +45,6 @@ type TrialExtensionRequest = {
 	id: number;
 	r_orderToTrialExtensionRequest_commerceOrderId: number;
 };
-
-/**
- * Records the ID of every extension request the browser creates, so cleanup
- * deletes exactly what the test made rather than reading the whole company
- * collection. The order relationship cannot be filtered on (the object API
- * answers 400), so the requests are tracked from their creation responses.
- */
 
 function trackTrialExtensionRequests(page: Page): number[] {
 	const ids: number[] = [];
@@ -116,13 +96,6 @@ async function deleteTrialExtensionRequests(
 	}
 }
 
-/**
- * Creates an SSA trial order the test owns: in progress, so the list shows it
- * as Active and offers its actions, and ending a week from now. The seeded
- * trials carry fixed dates, and the Spring Boot trial cron completes every
- * trial whose end date has passed, so a seeded trial cannot stay active.
- */
-
 async function createActiveSSATrial(
 	adminAPI: HeadlessAPI
 ): Promise<{orderId: number; projectId: string}> {
@@ -157,13 +130,6 @@ async function createActiveSSATrial(
 
 	return {orderId: order.id, projectId};
 }
-
-/**
- * A page with a Spring Boot stub loads without the HTTP cache (Playwright
- * disables it while a route is registered), so under parallel load its first
- * render can need the one reload gotoAdmin allows. The longer timeout leaves
- * room for that reload.
- */
 
 test.describe.configure({timeout: 240 * 1000});
 
@@ -376,12 +342,6 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] 7 day trials', () => {
 });
 
 test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA SaaS demos', () => {
-
-	// Each test adds a trial to the same SSA account, and the list shows the
-	// newest first, so a trial created by a parallel test moves the rows. The
-	// table keys its rows by index, so an open row action menu then belongs to
-	// another trial. The tests run one at a time to keep the rows still.
-
 	test.describe.configure({mode: 'default'});
 
 	let trial: {orderId: number; projectId: string};
@@ -708,12 +668,6 @@ test.describe('[FLOW-ADMIN-SSA-TRIALS] SSA users', () => {
 		};
 
 		try {
-
-			// Removing every role from the last SSA Administrator is refused
-			// with 409 ("At least one account manager is required"), so a second
-			// administrator keeps the account managed while the journey removes
-			// the first one's roles
-
 			await createSSAMember('SSA Administrator');
 
 			const {emailAddress, user} = await createSSAMember('SSA User');

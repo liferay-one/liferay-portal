@@ -50,14 +50,6 @@ export async function liferayLogin(
 	await dismissCookieBanner(page);
 }
 
-/**
- * Records cookie consent in the browser context before the first page loads,
- * so the consent banner never covers the bottom of the viewport. The portal
- * deletes USER_CONSENT_CONFIGURED on the next request unless every optional
- * consent type is present (CookiesPreAction), which is why declining the
- * banner does not keep it away.
- */
-
 export async function presetCookieConsent(page: Page) {
 	const url = new URL(page.url().startsWith('http') ? page.url() : BASE_URL);
 
@@ -76,11 +68,6 @@ export async function presetCookieConsent(page: Page) {
 		}))
 	);
 }
-
-/**
- * Accepts the cookie consent banner when it renders anyway, which
- * presetCookieConsent normally prevents.
- */
 
 export async function dismissCookieBanner(page: Page) {
 	const acceptButton = page.getByRole('button', {name: 'Accept All'});

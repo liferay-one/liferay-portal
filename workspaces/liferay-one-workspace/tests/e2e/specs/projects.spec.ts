@@ -15,13 +15,6 @@ import {
 } from '../utils/environmentUtils';
 import {expectSettled, gotoMyAccount, tableRow} from '../utils/myAccountUtils';
 
-/**
- * The project scoped My Account journeys: switching projects, the products
- * and applications a project holds, and the detail tabs each item shows. The
- * Utilization tab reads usage from DataOps through the Spring Boot client
- * extension, so its data is stubbed locally.
- */
-
 const PROJECT_PATH = `${ACCOUNT_ERC}/project/${PROJECT_ERC}`;
 
 function escapeRegExp(value: string): string {

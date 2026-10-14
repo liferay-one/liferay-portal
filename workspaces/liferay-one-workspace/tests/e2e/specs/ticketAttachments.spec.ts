@@ -21,14 +21,6 @@ import {
 	FakeTicketAttachmentBackend,
 } from '../utils/supportFakesUtils';
 
-/**
- * Ticket attachments are Liferay object entries whose files live in Google
- * Cloud Storage and whose tickets live in Jira, both reached through the
- * Spring Boot client extension. The list reads the object entries directly, so
- * the specs seed real rows. The upload, download, and delete calls go to
- * `FakeTicketAttachmentBackend` and `FakeJira` locally.
- */
-
 const ATTACHMENTS_PATH = sitePath('/support/ticket-attachments');
 
 type SeededAttachment = {

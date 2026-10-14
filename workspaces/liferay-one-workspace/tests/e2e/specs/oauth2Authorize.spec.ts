@@ -17,22 +17,6 @@ import {
 } from '../utils/productPurchaseUtils';
 import {PORTAL_TIMEOUT} from '../utils/timeoutConstants';
 
-/**
- * Connecting a Liferay DXP to Liferay One (`/web/one/authorize`). The DXP
- * opens the page in a popup with an authorization `code` and a `state` that
- * names its origin; the user picks an account, a cloud project, and an
- * environment, and the page hands the code and the chosen settings back to
- * the DXP with `window.opener.postMessage`.
- *
- * Project Selection reads the user's cloud projects from Liferay Cloud
- * Console through `GET /console/projects-usage` on the Spring Boot client
- * extension, which is stubbed here. The popup's opener is replaced with a
- * recorder so the handoff can be asserted.
- *
- * The full journey runs as a temporary buyer whose single business account
- * has a default billing address, which is the account the page preselects.
- */
-
 const DXP_ORIGIN = 'https://dxp.e2e.example.com';
 
 const AUTHORIZATION_CODE = 'e2e-authorization-code';
@@ -109,11 +93,6 @@ function expectAccountFilterIssue() {
 function heading(page: Page, name: string) {
 	return page.getByRole('heading', {name});
 }
-
-/**
- * Replaces the popup's opener with a recorder before the page loads, so the
- * message the page posts back to the DXP lands where the test can read it.
- */
 
 async function recordOpenerMessages(page: Page) {
 	await page.addInitScript(() => {

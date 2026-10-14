@@ -10,13 +10,6 @@ import HeadlessAPI from '../utils/HeadlessAPI';
 import {ACCOUNT_ERC, PROJECT_ERC} from '../utils/environmentUtils';
 import {expectSettled, gotoMyAccount, tableRow} from '../utils/myAccountUtils';
 
-/**
- * The project Activation section: the activation and license keys a project
- * holds, who may generate and manage them, and the per key actions. The
- * journeys act on the license keys `scripts/seed` provisions on the project
- * (07-license-key), and restore any key they deactivate.
- */
-
 const ACTIVATION_PATH = `${ACCOUNT_ERC}/project/${PROJECT_ERC}/activation`;
 
 const LICENSE_KEY_ERC =
@@ -69,12 +62,6 @@ async function restoreLicenseKey(adminAPI: HeadlessAPI, active: boolean) {
 }
 
 test.describe('[FLOW-ACTIVATION-KEYS] activation keys', () => {
-
-	/**
-	 * Every test reads or toggles the same seeded license key, so they run in
-	 * order on one worker; a parallel deactivation would fail the reads.
-	 */
-
 	test.describe.configure({mode: 'default'});
 
 	test('[FLOW-ACTIVATION-KEYS] [ROUTE-MY-ACCOUNT-ACTIVATION] lists the project keys and offers New Key to an account admin', async ({

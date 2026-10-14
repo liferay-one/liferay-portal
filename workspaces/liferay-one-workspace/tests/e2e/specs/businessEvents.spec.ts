@@ -16,16 +16,6 @@ import {
 } from '../utils/environmentUtils';
 import {FakeJira} from '../utils/supportFakesUtils';
 
-/**
- * Business events are Jira Assets objects that the Spring Boot client
- * extension reads and writes. Locally `FakeJira` answers those calls. With
- * `ONE_E2E_BACKEND=live` the lifecycle journey creates a real event and always
- * cancels it before the test ends, even when a step fails, because Jira offers
- * no delete; recording the actual date would complete the real event, so that
- * step runs only against the stub. The tests that need seeded or broken Jira
- * data skip in live mode, and each skip states why.
- */
-
 const LIST_PATH = sitePath(
 	`/support/business-events#/${PROJECT_ERC}/business-events`
 );
@@ -72,12 +62,6 @@ async function openRowAction(page: Page, eventName: string, action: string) {
 
 	await page.getByRole('menuitem', {name: action}).click();
 }
-
-/**
- * Applies one filter value. The filter menu reopens on the category it last
- * showed, where the only category button is the one that leads back to the
- * category list, so the helper goes back first when it lands there.
- */
 
 async function applyFilter(page: Page, category: string, value: string) {
 	await page.getByRole('button', {name: 'Filters'}).click();

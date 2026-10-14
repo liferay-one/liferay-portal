@@ -40,15 +40,6 @@ async function readSelectedProjectName(
 	return lines.includes(projectName);
 }
 
-/**
- * Makes an account the signed in user's current commerce account, the way the
- * account selector does. The current account lives on the server, per user,
- * so a previous test, or a parallel worker signed in as the same persona, may
- * have left a different one selected. The call runs from a page of the site,
- * because the endpoint scopes the selection to the page's group, and the page
- * is reloaded until the portal reports the new account.
- */
-
 export async function selectCurrentAccount(
 	page: Page,
 	accountExternalReferenceCode: string = ACCOUNT_ERC
@@ -104,13 +95,6 @@ export async function selectCurrentAccount(
 		)
 		.toBe(result.accountId);
 }
-
-/**
- * Picks a project in the project selector that the support pages render. A
- * user with one project gets a read only label instead of a selector, which
- * already shows that project. Names are matched exactly, because one seeded
- * project name is the prefix of another.
- */
 
 export async function selectProject(
 	page: Page,
