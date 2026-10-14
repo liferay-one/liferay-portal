@@ -7,7 +7,7 @@ The actors are a customer user, a project member, the global administrator roles
 Terms used in this file:
 
 - **Entitlement**: one grant of a product capability to an account, and optionally to a project and a contract. An entitlement has a name, a quantity, a grant type, a start date, and an end date.
-- **Entitlement definition**: the template that says which entitlements one SKU grants. A definition links to its SKU by the SKU external reference code.
+- **Entitlement definition**: the template for one capability that a purchase grants. A definition links to each SKU that sells the capability by the SKU external reference code.
 - **Order item**: one line of a commerce order. Its custom fields carry the start date, the end date, and the effective end date of the purchase.
 - **Effective end date**: an earlier end date that a renewal, an amendment, or a deletion in Salesforce sets on an order item. The original end date stays as it was.
 - **Account level entitlement**: an entitlement that belongs to an account and to no project.
@@ -17,7 +17,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ENTITLEMENTS-001 | When a commerce order item is created, the system creates one entitlement for each active entitlement definition of the SKU of that order item. | P0 | LPD-89424, LPD-103716 | `REST-POST-OBJECT-ACTION-COMMERCE-ORDER-ITEM-ENTITLEMENT-GENERATION`, `SVC-ENTITLEMENTSERVICE`, `FLOW-ENTITLEMENT-GENERATION`, `FLOW-CHECKOUT-FREE` |
+| REQ-ENTITLEMENTS-001 | When a commerce order item is created, the system creates one entitlement for each active entitlement definition of the SKU of that order item. | P0 | LPD-89424, LPD-103716, LPD-109991 | `REST-POST-OBJECT-ACTION-COMMERCE-ORDER-ITEM-ENTITLEMENT-GENERATION`, `SVC-ENTITLEMENTSERVICE`, `FLOW-ENTITLEMENT-GENERATION`, `FLOW-CHECKOUT-FREE` |
 | REQ-ENTITLEMENTS-002 | A definition that names product options applies only to an order item with the same value for each of those options. The system compares option keys without regard to case. | P0 | LPD-89424 | `SVC-ENTITLEMENTSERVICE`, `CLS-ENTITLEMENTDEFINITION`, `CLS-COMMERCEORDERITEMUTIL` |
 | REQ-ENTITLEMENTS-003 | The system creates no entitlement for a canceled order item, for an order item that does not exist, or for a SKU that has no active definition. | P0 | LPD-89424 | `SVC-ENTITLEMENTSERVICE`, `REST-POST-ENTITLEMENTS-GENERATE`, `CLS-COMMERCEORDERITEMUTIL` |
 | REQ-ENTITLEMENTS-004 | Generation is safe to repeat. The external reference code of an entitlement is the order item ID and the definition ID. The system refuses a second entitlement for the same order item and definition. | P0 | LPD-89274 | `SVC-ENTITLEMENTSERVICE`, `FLOW-ENTITLEMENT-GENERATION` |
@@ -39,6 +39,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-015 | When an amendment changes the dates of an approved order item in the same opportunity family, the system sets the effective end date to the amended end date. It never moves an effective end date later. It adds a warning when the amended end date differs from the original end date. | P0 | LPD-89686 | `SVC-PROVISIONINGORDERSERVICE` |
 | REQ-ENTITLEMENTS-016 | When Salesforce deletes a project entitlement or one of its line items, the system ends the matching order items at the current time. It does not move an effective end date that is already in the past. | P0 | LPD-102591 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
 | REQ-ENTITLEMENTS-017 | An update of an order item changes only the entitlements of that order item. It never changes an entitlement of another order item, such as a project entitlement order item of the same deal. | P0 | LPD-107900 | `SVC-ENTITLEMENTSERVICE` |
+| REQ-ENTITLEMENTS-018 | An entitlement keeps the SKU external reference code of the order item that granted it. Logic that reads the SKU of an entitlement uses this value, and uses the SKU of the definition only when the entitlement has no SKU. | P1 | LPD-109991 | `SVC-ENTITLEMENTSERVICE`, `CLS-ENTITLEMENT`, `CLS-USAGEALLOTMENT` |
 
 ## Entitlement State
 
@@ -54,13 +55,14 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ENTITLEMENTS-030 | An entitlement definition links to its SKU by the SKU external reference code, never by the product. The product code differs in each environment, but the SKU code does not. | P0 | LPD-103716 | `CLS-ENTITLEMENTDEFINITION`, `SVC-ENTITLEMENTSERVICE` |
+| REQ-ENTITLEMENTS-030 | An entitlement definition links to a SKU by the SKU external reference code, never by the product. The product code differs in each environment, but the SKU code does not. | P0 | LPD-103716, LPD-109991 | `CLS-ENTITLEMENTDEFINITION`, `SVC-ENTITLEMENTSERVICE` |
 | REQ-ENTITLEMENTS-031 | An inactive definition grants no new entitlements. The entitlements that it granted before stay as they are. | P0 | LPD-89424 | `SVC-ENTITLEMENTSERVICE` |
-| REQ-ENTITLEMENTS-032 | For each approved paid marketplace app, the system keeps one generated definition for each published SKU that has a license usage type option. The name of the definition is the product name and the SKU. The external reference code of the definition is the SKU external reference code. A generated definition for a SKU whose license usage type is trial has a license key duration of 30 days. The reconciliation sets it on such a definition that has no duration and never changes a duration that is set. | P1 | LPD-99898, LPD-106163, LPD-108684 | `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE`, `CRON-RECONCILEENTITLEMENTDEFINITIONS`, `CLS-COMMERCESKUUTIL` |
+| REQ-ENTITLEMENTS-032 | For each approved paid marketplace app, the system keeps one generated definition for each published SKU that has a license usage type option. The name of the definition is the product name and the SKU. The external reference code of the definition is the SKU external reference code, and an EntitlementDefinitionSku entry links the definition to that SKU. A generated definition for a SKU whose license usage type is trial has a license key duration of 30 days. The reconciliation sets it on such a definition that has no duration and never changes a duration that is set. | P1 | LPD-99898, LPD-106163, LPD-108684, LPD-109991 | `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE`, `CRON-RECONCILEENTITLEMENTDEFINITIONS`, `CLS-COMMERCESKUUTIL` |
 | REQ-ENTITLEMENTS-033 | When a person already created a definition for a SKU, the system does not generate a second definition for that SKU. | P1 | LPD-99898 | `CRON-RECONCILEENTITLEMENTDEFINITIONS` |
 | REQ-ENTITLEMENTS-034 | The system deactivates a generated definition when its SKU is not published or no longer exists. It activates the definition again when the SKU is published again. The system never deletes a definition. | P0 | LPD-99898 | `CRON-RECONCILEENTITLEMENTDEFINITIONS`, `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE` |
 | REQ-ENTITLEMENTS-035 | Each day at 03:00, the system reconciles the definitions of every approved product. Only one reconciliation runs at a time. A failure for one product does not stop the other products. | P1 | LPD-99898, LPD-106163 | `CRON-RECONCILEENTITLEMENTDEFINITIONS` |
 | REQ-ENTITLEMENTS-036 | A change to a catalog product generates definitions only when the product is approved. An event without the product data changes nothing and logs a warning. | P2 | LPD-106163 | `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE` |
+| REQ-ENTITLEMENTS-037 | One entitlement definition can link to many SKUs, and one SKU can link to many definitions. An EntitlementDefinitionSku entry holds each link. A definition is the definition of a SKU when an entry links the two, or when the SKU field of the definition holds that SKU. | P0 | LPD-109991 | `SVC-ENTITLEMENTDEFINITIONSERVICE`, `SVC-COMMERCEORDERSERVICE` |
 
 ## Entitlement Names
 

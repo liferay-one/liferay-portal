@@ -189,7 +189,7 @@ The sellable unit. A product has one or more SKUs; each SKU maps one to one to a
 | `sku` | string | SKU code |
 | `skuOptions` | list | Plan, sizing, and license options that distinguish SKUs of one product |
 
-Liferay Commerce has no system object definition for CPInstance, so custom objects cannot hold an object relationship to a SKU. They store `skuExternalReferenceCode` as a text field instead.
+Liferay Commerce has no system object definition for CPInstance, so custom objects cannot hold an object relationship to a SKU. They store `skuExternalReferenceCode` as a text field instead. EntitlementDefinitionSku holds that text field to link a definition to many SKUs.
 
 **Options (SKU-contributing)**
 
@@ -299,6 +299,7 @@ Materialized grant records derived from CommerceOrderItems via EntitlementDefini
 | `maxQuantity` | double | Hard cap — blocks at this level |
 | `overageRate` | double | Price of one overage bucket, copied from the definition at grant time |
 | `overageSkuExternalReferenceCode` | string | Overage bucket SKU, copied from the definition at grant time |
+| `skuExternalReferenceCode` | string | SKU of the order item that granted this entitlement. Empty on entitlements granted before LPD-109991; readers then use the SKU of the definition |
 | `startDate` | datetime | |
 | `endDate` | datetime | |
 
@@ -310,13 +311,13 @@ The `endDate` is the grant's effective end. After a realignment amendment it may
 
 **system:** `false`
 
-SKU-level entitlement template. One SKU → many EntitlementDefinitions. When a CommerceOrderItem is created for a SKU, one Entitlement is auto-generated per active EntitlementDefinition for that SKU.
+Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions, through EntitlementDefinitionSku. When a CommerceOrderItem is created for a SKU, one Entitlement is auto-generated per active EntitlementDefinition for that SKU.
 
 | Field | Type | Notes |
 |---|---|---|
 | PK `entitlementDefinitionId` | long | |
 | `externalReferenceCode` | string | e.g. `dxp-cloud-standard-database-size` |
-| `skuExternalReferenceCode` | string | ERC of the granting SKU (Salesforce `Product2.Id`); a text field because CPInstance has no system object definition |
+| `skuExternalReferenceCode` | string | Legacy single SKU link (Salesforce `Product2.Id`). A definition is a definition of this SKU and of every SKU an EntitlementDefinitionSku entry links to it. Remains until the definition data moves to EntitlementDefinitionSku |
 | `name` | string | e.g. `database-size`, `vcpu`, `maxServers`, `licenseGeneration` |
 | `displayName` | string | Human-readable, e.g. `Database Storage`, `License Generation` |
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |
@@ -533,6 +534,21 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `value` | string | e.g. `12345-abcde` |
 | `metadataJson` | text | JSON metadata blob |
 
+---
+
+#### EntitlementDefinitionSku (`C_ENTITLEMENT_DEFINITION_SKU`)
+
+**system:** `false`
+
+One link between an EntitlementDefinition and a SKU that sells it. Before this object, one capability existed as one definition per SKU, so a renewal sold under a new SKU landed on a different definition. With it, one definition can carry every SKU that sells its capability.
+
+| Field | Type | Notes |
+|---|---|---|
+| PK `entitlementDefinitionSkuId` | long | |
+| FK `entitlementDefinitionId` | long | Parent definition (`entitlementDefinitionToSku`, cascade delete) |
+| `externalReferenceCode` | string | `<definition ERC>_<SKU ERC>` |
+| `skuExternalReferenceCode` | string | ERC of the SKU |
+
 > External system references (formerly `ExternalLink`) are stored as Property rows: `name = '{domain}:{entityName}'`, `value = entityId`.
 
 ---
@@ -545,6 +561,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `Contract` | `C_CONTRACT` | `cpct` |
 | `Entitlement` | `C_ENTITLEMENT` | `cpen` |
 | `EntitlementDefinition` | `C_ENTITLEMENT_DEFINITION` | `cped` |
+| `EntitlementDefinitionSku` | `C_ENTITLEMENT_DEFINITION_SKU` | `l` |
 | `Environment` | `C_ENVIRONMENT` | `cpdp` |
 | `EnvironmentAdmin` | `C_ENVIRONMENT_ADMIN` | `l` |
 | `LicenseKey` | `C_LICENSE_KEY` | `cplk` |

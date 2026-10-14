@@ -38,7 +38,6 @@ import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
@@ -1114,26 +1113,29 @@ public class CommerceOrderService extends OneBaseService {
 		for (OrderItem orderItem : orderItems) {
 			if (Validator.isNotNull(orderItem.getSkuExternalReferenceCode())) {
 				skuExternalReferenceCodes.add(
-					escapeODataString(orderItem.getSkuExternalReferenceCode()));
+					orderItem.getSkuExternalReferenceCode());
 			}
 		}
 
 		Map<String, Double> tokenBlockSizes = new HashMap<>();
 
-		if (!skuExternalReferenceCodes.isEmpty()) {
-			for (EntitlementDefinition entitlementDefinition :
-					_entitlementDefinitionService.getEntitlementDefinitions(
-						StringBundler.concat(
-							"(name eq '",
-							EntitlementConstants.NAME_AI_TOKEN_BLOCK,
-							"') and (active eq true) and ",
-							"(skuExternalReferenceCode in ('",
-							StringUtil.merge(skuExternalReferenceCodes, "','"),
-							"'))"))) {
+		for (Map.Entry<String, List<EntitlementDefinition>> entry :
+				_entitlementDefinitionService.getEntitlementDefinitionsMap(
+					skuExternalReferenceCodes
+				).entrySet()) {
 
-				tokenBlockSizes.put(
-					entitlementDefinition.getSkuExternalReferenceCode(),
-					entitlementDefinition.getDefaultQuantity());
+			for (EntitlementDefinition entitlementDefinition :
+					entry.getValue()) {
+
+				if (entitlementDefinition.isActive() &&
+					Objects.equals(
+						EntitlementConstants.NAME_AI_TOKEN_BLOCK,
+						entitlementDefinition.getName())) {
+
+					tokenBlockSizes.put(
+						entry.getKey(),
+						entitlementDefinition.getDefaultQuantity());
+				}
 			}
 		}
 

@@ -180,7 +180,7 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		String skuExternalReferenceCode =
-			entitlementDefinition.getSkuExternalReferenceCode();
+			entitlement.getSkuExternalReferenceCode();
 
 		return _fetchProduct(
 			entitlement, _commerceSkuService.fetchSku(skuExternalReferenceCode),
@@ -513,7 +513,7 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			String skuExternalReferenceCode =
-				entitlementDefinition.getSkuExternalReferenceCode();
+				entitlement.getSkuExternalReferenceCode();
 
 			Product product = _fetchProduct(
 				entitlement,
@@ -795,11 +795,8 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
-
 			String skuExternalReferenceCode =
-				entitlementDefinition.getSkuExternalReferenceCode();
+				entitlement.getSkuExternalReferenceCode();
 
 			ResolvedProduct resolvedProduct = null;
 

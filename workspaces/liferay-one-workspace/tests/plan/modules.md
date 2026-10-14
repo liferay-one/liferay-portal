@@ -2,7 +2,7 @@
 
 Every React context provider and every logic module (utils, schemas, and resolvers) in the custom element. A provider or module with logic worth proving is `planned`, and a Vitest test covers it next to the source file. A module that only holds a static table is kept `n/a`. Components and pages are not listed here: the route rows in routes.md and the journeys in flows.md cover them.
 
-> Autoscaffolded from the code surface (95 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (96 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 ### Contexts
 
@@ -91,6 +91,7 @@ Every React context provider and every logic module (utils, schemas, and resolve
 | MOD-FORMATADDRESS | Address display — a dash for an empty or missing address, otherwise street, city, region, zip, and the country name localized with Intl.DisplayNames, joined by commas with empty parts dropped. | unit | P2 | planned | module:utils/formatAddress |
 | MOD-FORMATCURRENCY | Currency format — uses Intl.NumberFormat with USD and en US defaults, normalizes an underscore locale to a dash, and respects the currency code (JPY without decimals). | unit | P0 | planned | module:utils/formatCurrency |
 | MOD-GETACCOUNTIMAGE | Account image fallback — returns the placeholder for a missing URL or one containing img_id equals 0, otherwise the URL. | unit | P2 | planned | module:utils/getAccountImage |
+| MOD-GETENTITLEMENTSKUEXTERNALREFERENCECODE | Entitlement SKU — returns the SKU stored on the entitlement, and falls back to the SKU of its entitlement definition when the entitlement has none. | unit | P1 | planned | module:utils/getEntitlementSkuExternalReferenceCode |
 | MOD-GETKEBABCASE | Kebab case conversion — splits camel case, acronyms, and digits into lowercase dash words, passes through an empty string, and returns undefined when no tokens match. | unit | P2 | planned | module:utils/getKebabCase |
 | MOD-GETPRODUCTORDERTYPES | Order type lookup — maps each known product type specification (case insensitive) to its order type ERC and returns NOTYPE for unknown values. | unit | P1 | planned | module:utils/getProductOrderTypes |
 | MOD-GETTAXONOMYCATEGORYLABEL | One line wrapper over i18n.translate with a cast and no logic of its own. | unit | P2 | n/a | module:utils/getTaxonomyCategoryLabel |

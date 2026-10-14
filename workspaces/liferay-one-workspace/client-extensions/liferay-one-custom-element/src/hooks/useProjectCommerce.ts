@@ -19,6 +19,7 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
+import {getEntitlementSkuExternalReferenceCode} from '~/utils/getEntitlementSkuExternalReferenceCode';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {
@@ -119,6 +120,7 @@ type EntitlementNode = {
 	externalReferenceCode: string;
 	name: string;
 	r_contractToEntitlement_c_contractId?: number;
+	skuExternalReferenceCode?: string;
 };
 
 type ContractNode = {
@@ -229,8 +231,7 @@ function toProductEntitlements(
 		.map((entitlement) => ({
 			endDate: entitlement.endDate,
 			skuExternalReferenceCode:
-				entitlement.entitlementDefinitionToEntitlement
-					?.skuExternalReferenceCode,
+				getEntitlementSkuExternalReferenceCode(entitlement),
 		}))
 		.filter((entitlement) => entitlement.skuExternalReferenceCode);
 }
@@ -445,7 +446,7 @@ export function projectEntitlementsQuery(
 			fetchAllPages((page) =>
 				fetcher<APIResponse<EntitlementNode>>(
 					`/o/c/entitlements?${new URLSearchParams({
-						fields: 'entitlementDefinitionToEntitlement.skuExternalReferenceCode,externalReferenceCode,r_contractToEntitlement_c_contractId',
+						fields: 'entitlementDefinitionToEntitlement.skuExternalReferenceCode,externalReferenceCode,r_contractToEntitlement_c_contractId,skuExternalReferenceCode',
 						filter: SearchBuilder.eq(
 							'r_projectToEntitlement_c_projectERC',
 							projectExternalReferenceCode

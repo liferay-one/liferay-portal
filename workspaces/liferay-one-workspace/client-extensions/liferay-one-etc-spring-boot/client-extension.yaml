@@ -28,6 +28,7 @@ liferay-one-etc-spring-boot-oahs:
         -   c_contract.everything
         -   c_entitlement.everything
         -   c_entitlementdefinition.everything
+        -   c_entitlementdefinitionsku.everything
         -   c_environment.everything
         -   c_environmentadmin.everything
         -   c_licensekey.everything

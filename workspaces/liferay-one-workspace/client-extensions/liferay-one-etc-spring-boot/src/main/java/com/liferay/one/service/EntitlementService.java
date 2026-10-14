@@ -58,7 +58,7 @@ public class EntitlementService extends OneBaseService {
 			Double maxQuantity, String name, OveragePricing overagePricing,
 			Map<String, String> productOptions,
 			String projectExternalReferenceCode, Double quantity,
-			String startDate)
+			String skuExternalReferenceCode, String startDate)
 		throws Exception {
 
 		Entitlement entitlement = fetchEntitlement(
@@ -93,6 +93,8 @@ public class EntitlementService extends OneBaseService {
 		).put(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
 			entitlementDefinitionId
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
 		).put(
 			"startDate", startDate
 		);
@@ -187,10 +189,7 @@ public class EntitlementService extends OneBaseService {
 
 		List<EntitlementDefinition> entitlementDefinitions =
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				StringBundler.concat(
-					"(skuExternalReferenceCode eq '", skuExternalReferenceCode,
-					"') and (active eq true)"),
-				productOptions);
+				productOptions, skuExternalReferenceCode);
 
 		if (entitlementDefinitions.isEmpty()) {
 			if (_log.isInfoEnabled()) {
@@ -246,7 +245,7 @@ public class EntitlementService extends OneBaseService {
 					_multiply(
 						orderItemQuantity,
 						entitlementDefinition.getDefaultQuantity()),
-					startDate);
+					skuExternalReferenceCode, startDate);
 
 				if (_log.isInfoEnabled()) {
 					_log.info(

@@ -19,10 +19,16 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -94,6 +100,27 @@ public class EntitlementDefinitionService extends OneBaseService {
 	}
 
 	public List<EntitlementDefinition> getEntitlementDefinitions(
+			Map<String, String> productOptions, String skuExternalReferenceCode)
+		throws Exception {
+
+		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
+			getEntitlementDefinitionsMap(
+				Collections.singleton(skuExternalReferenceCode));
+
+		List<EntitlementDefinition> entitlementDefinitions = new ArrayList<>(
+			entitlementDefinitionsMap.getOrDefault(
+				skuExternalReferenceCode, Collections.emptyList()));
+
+		entitlementDefinitions.removeIf(
+			entitlementDefinition ->
+				!entitlementDefinition.isActive() ||
+				!_matches(
+					entitlementDefinition.getProductOptions(), productOptions));
+
+		return entitlementDefinitions;
+	}
+
+	public List<EntitlementDefinition> getEntitlementDefinitions(
 			String filterString)
 		throws Exception {
 
@@ -102,28 +129,94 @@ public class EntitlementDefinitionService extends OneBaseService {
 			EntitlementDefinition::new);
 	}
 
-	public List<EntitlementDefinition> getEntitlementDefinitions(
-			String filterString, Map<String, String> productOptions)
+	public Map<String, List<EntitlementDefinition>>
+			getEntitlementDefinitionsMap(
+				Collection<String> skuExternalReferenceCodes)
 		throws Exception {
 
-		List<EntitlementDefinition> entitlementDefinitions =
-			getEntitlementDefinitions(filterString);
+		List<String> escapedSkuExternalReferenceCodes = new ArrayList<>();
 
-		Iterator<EntitlementDefinition> iterator =
-			entitlementDefinitions.iterator();
-
-		while (iterator.hasNext()) {
-			EntitlementDefinition entitlementDefinition = iterator.next();
-
-			if (!_matches(
-					entitlementDefinition.getProductOptions(),
-					productOptions)) {
-
-				iterator.remove();
+		for (String skuExternalReferenceCode : skuExternalReferenceCodes) {
+			if (Validator.isNotNull(skuExternalReferenceCode)) {
+				escapedSkuExternalReferenceCodes.add(
+					escapeODataString(skuExternalReferenceCode));
 			}
 		}
 
-		return entitlementDefinitions;
+		if (escapedSkuExternalReferenceCodes.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		String filterString = StringBundler.concat(
+			"skuExternalReferenceCode in ('",
+			StringUtil.merge(escapedSkuExternalReferenceCodes, "','"), "')");
+
+		Map<Long, Set<String>> skuExternalReferenceCodesMap = new HashMap<>();
+
+		for (JSONObject jsonObject :
+				getAllItems(
+					"/o/c/entitlementdefinitionskus", filterString,
+					jsonObject -> jsonObject)) {
+
+			long entitlementDefinitionId = jsonObject.optLong(
+				"r_entitlementDefinitionToSku_c_entitlementDefinitionId");
+
+			if (entitlementDefinitionId > 0) {
+				Set<String> entitlementDefinitionSkuExternalReferenceCodes =
+					skuExternalReferenceCodesMap.computeIfAbsent(
+						entitlementDefinitionId, key -> new TreeSet<>());
+
+				entitlementDefinitionSkuExternalReferenceCodes.add(
+					jsonObject.getString("skuExternalReferenceCode"));
+			}
+		}
+
+		Map<String, Map<Long, EntitlementDefinition>>
+			entitlementDefinitionsMap = new HashMap<>();
+
+		if (!skuExternalReferenceCodesMap.isEmpty()) {
+			String entitlementDefinitionIds = StringUtil.merge(
+				skuExternalReferenceCodesMap.keySet(), "','");
+
+			for (EntitlementDefinition entitlementDefinition :
+					getEntitlementDefinitions(
+						"id in ('" + entitlementDefinitionIds + "')")) {
+
+				for (String skuExternalReferenceCode :
+						skuExternalReferenceCodesMap.get(
+							entitlementDefinition.
+								getEntitlementDefinitionId())) {
+
+					_putEntitlementDefinition(
+						entitlementDefinition, entitlementDefinitionsMap,
+						skuExternalReferenceCode);
+				}
+			}
+		}
+
+		for (EntitlementDefinition entitlementDefinition :
+				getEntitlementDefinitions(filterString)) {
+
+			_putEntitlementDefinition(
+				entitlementDefinition, entitlementDefinitionsMap,
+				entitlementDefinition.getSkuExternalReferenceCode());
+		}
+
+		Map<String, List<EntitlementDefinition>> entitlementDefinitionsLists =
+			new HashMap<>();
+
+		for (Map.Entry<String, Map<Long, EntitlementDefinition>> entry :
+				entitlementDefinitionsMap.entrySet()) {
+
+			Map<Long, EntitlementDefinition> entitlementDefinitions =
+				entry.getValue();
+
+			entitlementDefinitionsLists.put(
+				entry.getKey(),
+				new ArrayList<>(entitlementDefinitions.values()));
+		}
+
+		return entitlementDefinitionsLists;
 	}
 
 	@Scheduled(cron = "${liferay.one.entitlement.definition.reconcile.cron}")
@@ -215,6 +308,32 @@ public class EntitlementDefinitionService extends OneBaseService {
 					"Generated the entitlement definition \"", name,
 					"\" for SKU ", skuExternalReferenceCode));
 		}
+	}
+
+	private void _addEntitlementDefinitionSku(
+			String entitlementDefinitionExternalReferenceCode,
+			String skuExternalReferenceCode)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC",
+			entitlementDefinitionExternalReferenceCode
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
+		);
+
+		put(
+			getAuthorization(), jsonObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/entitlementdefinitionskus/by-external-reference-code" +
+					"/{externalReferenceCode}"
+			).encode(
+			).buildAndExpand(
+				StringBundler.concat(
+					entitlementDefinitionExternalReferenceCode, "_",
+					skuExternalReferenceCode)
+			).toUri());
 	}
 
 	private void _deactivateOrphanedEntitlementDefinitions() throws Exception {
@@ -322,6 +441,20 @@ public class EntitlementDefinitionService extends OneBaseService {
 			).toUri());
 	}
 
+	private void _putEntitlementDefinition(
+		EntitlementDefinition entitlementDefinition,
+		Map<String, Map<Long, EntitlementDefinition>> entitlementDefinitionsMap,
+		String skuExternalReferenceCode) {
+
+		Map<Long, EntitlementDefinition> entitlementDefinitions =
+			entitlementDefinitionsMap.computeIfAbsent(
+				skuExternalReferenceCode, key -> new LinkedHashMap<>());
+
+		entitlementDefinitions.putIfAbsent(
+			entitlementDefinition.getEntitlementDefinitionId(),
+			entitlementDefinition);
+	}
+
 	private void _syncEntitlementDefinition(String productName, Sku sku)
 		throws Exception {
 
@@ -372,8 +505,17 @@ public class EntitlementDefinitionService extends OneBaseService {
 			}
 
 			_addEntitlementDefinition(name, skuExternalReferenceCode, trial);
+			_addEntitlementDefinitionSku(
+				skuExternalReferenceCode, skuExternalReferenceCode);
+
+			return;
 		}
-		else if (published && !generatedEntitlementDefinition.isActive()) {
+
+		_addEntitlementDefinitionSku(
+			generatedEntitlementDefinition.getExternalReferenceCode(),
+			skuExternalReferenceCode);
+
+		if (published && !generatedEntitlementDefinition.isActive()) {
 			_patchEntitlementDefinition(
 				new JSONObject(
 				).put(

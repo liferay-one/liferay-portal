@@ -100,7 +100,7 @@ public class EntitlementServiceTest {
 
 		Mockito.when(
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				Mockito.anyString(), Mockito.anyMap())
+				Mockito.anyMap(), Mockito.anyString())
 		).thenReturn(
 			List.of(entitlementDefinition)
 		);
@@ -113,7 +113,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -125,7 +125,8 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(),
 			Mockito.eq(entitlementDefinition.getOveragePricing()),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 	}
 
@@ -152,7 +153,7 @@ public class EntitlementServiceTest {
 
 		Mockito.when(
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				Mockito.anyString(), Mockito.anyMap())
+				Mockito.anyMap(), Mockito.anyString())
 		).thenReturn(
 			List.of(entitlementDefinition)
 		);
@@ -165,7 +166,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -179,7 +180,8 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), overagePricingArgumentCaptor.capture(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 
 		OveragePricing overagePricing = overagePricingArgumentCaptor.getValue();
@@ -198,11 +200,7 @@ public class EntitlementServiceTest {
 
 		Mockito.when(
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				Mockito.eq(
-					"(skuExternalReferenceCode eq '" +
-						_SKU_EXTERNAL_REFERENCE_CODE +
-							"') and (active eq true)"),
-				Mockito.anyMap())
+				Mockito.anyMap(), Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE))
 		).thenReturn(
 			List.of(_createEntitlementDefinition(100.0, 1, "storage"))
 		);
@@ -229,7 +227,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -242,7 +240,7 @@ public class EntitlementServiceTest {
 			Mockito.eq("fixed"), Mockito.isNull(), Mockito.eq("storage"),
 			Mockito.isNull(), Mockito.eq(Map.of()),
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.eq(200.0),
-			Mockito.isNull()
+			Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE), Mockito.isNull()
 		);
 	}
 
@@ -276,10 +274,7 @@ public class EntitlementServiceTest {
 		Mockito.verify(
 			_entitlementDefinitionService
 		).getEntitlementDefinitions(
-			Mockito.eq(
-				"(skuExternalReferenceCode eq '" +
-					_SKU_EXTERNAL_REFERENCE_CODE + "') and (active eq true)"),
-			Mockito.eq(Map.of("machinetype", "small"))
+			Map.of("machinetype", "small"), _SKU_EXTERNAL_REFERENCE_CODE
 		);
 	}
 
@@ -316,7 +311,7 @@ public class EntitlementServiceTest {
 
 		Mockito.when(
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				Mockito.anyString(), Mockito.anyMap())
+				Mockito.anyMap(), Mockito.anyString())
 		).thenReturn(
 			new ArrayList<>()
 		);
@@ -330,7 +325,7 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 

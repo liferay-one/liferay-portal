@@ -879,14 +879,7 @@ public class LicenseKeyGenerationService {
 	}
 
 	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return null;
-		}
-
-		return entitlementDefinition.getSkuExternalReferenceCode();
+		return entitlement.getSkuExternalReferenceCode();
 	}
 
 	private boolean _isComplimentary(GenerateRequest generateRequest) {

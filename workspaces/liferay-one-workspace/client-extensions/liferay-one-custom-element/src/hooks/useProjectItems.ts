@@ -17,6 +17,7 @@ import {
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
+import {getEntitlementSkuExternalReferenceCode} from '~/utils/getEntitlementSkuExternalReferenceCode';
 
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {PlacedOrder} from '~/types/orders';
@@ -152,8 +153,7 @@ export function useProjectContractItems() {
 
 		for (const entitlement of entitlements) {
 			const externalReferenceCode = productExternalReferenceCodes.get(
-				entitlement.entitlementDefinitionToEntitlement
-					?.skuExternalReferenceCode ?? ''
+				getEntitlementSkuExternalReferenceCode(entitlement) ?? ''
 			);
 
 			if (!externalReferenceCode) {

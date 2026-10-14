@@ -941,13 +941,13 @@ public class CloudRestController extends OneBaseRestController {
 		}
 
 		Long productId = _commerceSkuService.fetchProductId(
-			entitlementDefinition.getSkuExternalReferenceCode());
+			entitlement.getSkuExternalReferenceCode());
 
 		if (productId == null) {
 			_log.error(
 				StringBundler.concat(
 					"No SKU exists with external reference code ",
-					entitlementDefinition.getSkuExternalReferenceCode(),
+					entitlement.getSkuExternalReferenceCode(),
 					" for entitlement definition ",
 					entitlementDefinition.getExternalReferenceCode()));
 

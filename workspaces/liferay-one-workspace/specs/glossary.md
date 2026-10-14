@@ -24,7 +24,7 @@ Use one term for one thing. Do not call a project a workspace, or an entitlement
 - **Account level entitlement**: an entitlement that belongs to an account and to no project. Area: `entitlements.md`.
 - **Effective end date**: an earlier end date that a renewal, an amendment, or a deletion in Salesforce sets on an order item. The original end date stays as it was. Area: `entitlements.md`.
 - **Entitlement**: one grant of a product to an account, and optionally to a project and a contract. An entitlement has a name, a quantity, a grant type, a start date, and an end date. For licensing, the quantity is the number of activations. Area: `entitlements.md`.
-- **Entitlement definition**: the template that says which entitlements one SKU grants. A definition links to its SKU by the SKU external reference code. Area: `entitlements.md`.
+- **Entitlement definition**: the template for one capability that a purchase grants. A definition links to each SKU that sells the capability by the SKU external reference code. Area: `entitlements.md`.
 - **One Time Purchases**: the pseudo project and pseudo contract that hold the orders and entitlements that no project or project contract owns. Area: `projects.md`.
 - **Project**: a unit of work inside an account. Contracts, entitlements, orders, environments, and members attach to a project. Area: `projects.md`.
 - **Project item**: a product or an application that a project bought. The `project-item-type` product specification says which of the two it is. Area: `projects.md`.

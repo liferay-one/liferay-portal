@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -133,22 +134,26 @@ public class CommerceOrderServiceTest {
 		);
 
 		Mockito.when(
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				ArgumentMatchers.anyString())
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				ArgumentMatchers.anyCollection())
 		).thenReturn(
-			List.of(
-				new EntitlementDefinition(
-					new JSONObject(
-					).put(
-						"defaultQuantity", 5000000
-					).put(
-						"id", 1L
-					).put(
-						"name", EntitlementConstants.NAME_AI_TOKEN_BLOCK
-					).put(
-						"skuExternalReferenceCode",
-						_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK
-					)))
+			Map.of(
+				_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK,
+				List.of(
+					new EntitlementDefinition(
+						new JSONObject(
+						).put(
+							"active", true
+						).put(
+							"defaultQuantity", 5000000
+						).put(
+							"id", 1L
+						).put(
+							"name", EntitlementConstants.NAME_AI_TOKEN_BLOCK
+						).put(
+							"skuExternalReferenceCode",
+							_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK
+						))))
 		);
 
 		Mockito.doNothing(
@@ -828,10 +833,10 @@ public class CommerceOrderServiceTest {
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
 		Mockito.when(
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				ArgumentMatchers.anyString())
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				ArgumentMatchers.anyCollection())
 		).thenReturn(
-			List.of()
+			Map.of()
 		);
 
 		Mockito.doReturn(
@@ -847,23 +852,11 @@ public class CommerceOrderServiceTest {
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
-		ArgumentCaptor<String> filterStringArgumentCaptor =
-			ArgumentCaptor.forClass(String.class);
-
 		Mockito.verify(
 			_entitlementDefinitionService
-		).getEntitlementDefinitions(
-			filterStringArgumentCaptor.capture()
+		).getEntitlementDefinitionsMap(
+			Set.of(_SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK)
 		);
-
-		String filterString = filterStringArgumentCaptor.getValue();
-
-		Assertions.assertTrue(
-			filterString.contains(
-				"'" + _SKU_EXTERNAL_REFERENCE_CODE_AI_TOKEN_BLOCK + "'"));
-		Assertions.assertTrue(
-			filterString.contains(
-				"name eq '" + EntitlementConstants.NAME_AI_TOKEN_BLOCK + "'"));
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()

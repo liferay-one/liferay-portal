@@ -636,7 +636,7 @@ public class ProjectRestController extends OneBaseRestController {
 		}
 
 		Long productId = _commerceSkuService.fetchProductId(
-			entitlementDefinition.getSkuExternalReferenceCode());
+			entitlement.getSkuExternalReferenceCode());
 
 		if (productId == null) {
 			return true;

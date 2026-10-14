@@ -10,7 +10,6 @@ import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.OveragePricing;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageAllotment;
@@ -593,15 +592,8 @@ public class UsageReportGenerator {
 	}
 
 	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return null;
-		}
-
 		String skuExternalReferenceCode =
-			entitlementDefinition.getSkuExternalReferenceCode();
+			entitlement.getSkuExternalReferenceCode();
 
 		if (Validator.isNull(skuExternalReferenceCode)) {
 			return null;

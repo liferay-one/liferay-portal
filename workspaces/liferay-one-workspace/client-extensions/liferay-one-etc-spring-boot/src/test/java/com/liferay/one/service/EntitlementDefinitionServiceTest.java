@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,6 +55,50 @@ public class EntitlementDefinitionServiceTest {
 		ReflectionTestUtils.setField(
 			_entitlementDefinitionService, "_commerceSkuService",
 			_commerceSkuService);
+	}
+
+	@Test
+	public void testGenerateEntitlementDefinitionAddsSkuForExistingDefinition()
+		throws Exception {
+
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-LARGE", "Test App - Large", "SKU-LARGE"));
+
+		_setUpProduct(_createSku("SKU-LARGE", true, "Large"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertEquals(
+			List.of("SKU-LARGE_SKU-LARGE"),
+			_getExternalReferenceCodes(
+				_entitlementDefinitionService.skuPutURIs));
+	}
+
+	@Test
+	public void testGenerateEntitlementDefinitionAddsSkuForNewDefinition()
+		throws Exception {
+
+		_setUpProduct(_createSku("SKU-LARGE", true, "Large"));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertEquals(
+			List.of("SKU-LARGE_SKU-LARGE"),
+			_getExternalReferenceCodes(
+				_entitlementDefinitionService.skuPutURIs));
+
+		JSONObject jsonObject = new JSONObject(
+			_entitlementDefinitionService.skuPutBodies.get(0));
+
+		Assertions.assertEquals(
+			"SKU-LARGE",
+			jsonObject.getString(
+				"r_entitlementDefinitionToSku_c_entitlementDefinitionERC"));
+		Assertions.assertEquals(
+			"SKU-LARGE", jsonObject.getString("skuExternalReferenceCode"));
 	}
 
 	@Test
@@ -404,6 +449,43 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGetEntitlementDefinitionsCombinesSkusAndLegacyField()
+		throws Exception {
+
+		JSONObject sharedJSONObject = _createEntitlementDefinitionJSONObject(
+			true, "DEF-SHARED", "Shared", "SKU-OLD");
+		JSONObject legacyJSONObject = _createEntitlementDefinitionJSONObject(
+			true, "DEF-LEGACY", "Legacy", "SKU-NEW");
+		JSONObject inactiveJSONObject = _createEntitlementDefinitionJSONObject(
+			false, "DEF-INACTIVE", "Inactive", "SKU-NEW");
+
+		_setUpExistingEntitlementDefinitions(
+			sharedJSONObject, legacyJSONObject, inactiveJSONObject);
+
+		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
+		).put(
+			_createEntitlementDefinitionSkuJSONObject(
+				sharedJSONObject, "SKU-NEW")
+		).put(
+			_createEntitlementDefinitionSkuJSONObject(
+				legacyJSONObject, "SKU-NEW")
+		);
+
+		List<String> externalReferenceCodes = new ArrayList<>();
+
+		for (EntitlementDefinition entitlementDefinition :
+				_entitlementDefinitionService.getEntitlementDefinitions(
+					Map.of(), "SKU-NEW")) {
+
+			externalReferenceCodes.add(
+				entitlementDefinition.getExternalReferenceCode());
+		}
+
+		Assertions.assertEquals(
+			List.of("DEF-SHARED", "DEF-LEGACY"), externalReferenceCodes);
+	}
+
+	@Test
 	public void testGetEntitlementDefinitionsFiltersByProductOptions()
 		throws Exception {
 
@@ -433,7 +515,7 @@ public class EntitlementDefinitionServiceTest {
 
 		List<EntitlementDefinition> entitlementDefinitions =
 			_entitlementDefinitionService.getEntitlementDefinitions(
-				null, Map.of("machinetype", "small"));
+				Map.of("machinetype", "small"), "SKU-1");
 
 		Assertions.assertEquals(1, entitlementDefinitions.size());
 
@@ -442,6 +524,42 @@ public class EntitlementDefinitionServiceTest {
 
 		Assertions.assertEquals(
 			"DEF-SMALL", entitlementDefinition.getExternalReferenceCode());
+	}
+
+	@Test
+	public void testGetEntitlementDefinitionsMapGroupsSharedDefinitionBySku()
+		throws Exception {
+
+		JSONObject sharedJSONObject = _createEntitlementDefinitionJSONObject(
+			true, "DEF-SHARED", "Shared", "SKU-A");
+
+		_setUpExistingEntitlementDefinitions(sharedJSONObject);
+
+		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
+		).put(
+			_createEntitlementDefinitionSkuJSONObject(sharedJSONObject, "SKU-A")
+		).put(
+			_createEntitlementDefinitionSkuJSONObject(sharedJSONObject, "SKU-B")
+		);
+
+		Map<String, List<EntitlementDefinition>> entitlementDefinitionsMap =
+			_entitlementDefinitionService.getEntitlementDefinitionsMap(
+				List.of("SKU-A", "SKU-B", "SKU-C"));
+
+		Assertions.assertEquals(
+			Set.of("SKU-A", "SKU-B"), entitlementDefinitionsMap.keySet());
+
+		for (List<EntitlementDefinition> entitlementDefinitions :
+				entitlementDefinitionsMap.values()) {
+
+			Assertions.assertEquals(1, entitlementDefinitions.size());
+
+			EntitlementDefinition entitlementDefinition =
+				entitlementDefinitions.get(0);
+
+			Assertions.assertEquals(
+				"DEF-SHARED", entitlementDefinition.getExternalReferenceCode());
+		}
 	}
 
 	@Test
@@ -575,6 +693,19 @@ public class EntitlementDefinitionServiceTest {
 			active, externalReferenceCode, 0, name, skuExternalReferenceCode);
 	}
 
+	private JSONObject _createEntitlementDefinitionSkuJSONObject(
+		JSONObject entitlementDefinitionJSONObject,
+		String skuExternalReferenceCode) {
+
+		return new JSONObject(
+		).put(
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionId",
+			entitlementDefinitionJSONObject.getLong("id")
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
+		);
+	}
+
 	private Product _createProduct(String name, String priceModel) {
 		return _createProduct(
 			TaxonomyCategoryConstants.EXTERNAL_REFERENCE_CODE_APP, name,
@@ -702,6 +833,9 @@ public class EntitlementDefinitionServiceTest {
 		public JSONArray productsJSONArray = new JSONArray();
 		public final List<String> putBodies = new ArrayList<>();
 		public final List<String> putURIs = new ArrayList<>();
+		public JSONArray skuItemsJSONArray = new JSONArray();
+		public final List<String> skuPutBodies = new ArrayList<>();
+		public final List<String> skuPutURIs = new ArrayList<>();
 
 		@Override
 		protected String get(String authorization, URI uri) {
@@ -709,12 +843,15 @@ public class EntitlementDefinitionServiceTest {
 
 			JSONArray responseJSONArray = productsJSONArray;
 
-			if (!uri.getPath(
-				).contains(
-					"/products"
-				)) {
+			String path = uri.getPath();
 
-				responseJSONArray = _filterItemsJSONArray(uri.getQuery());
+			if (path.contains("/entitlementdefinitionskus")) {
+				responseJSONArray = _filterItemsJSONArray(
+					skuItemsJSONArray, uri.getQuery());
+			}
+			else if (!path.contains("/products")) {
+				responseJSONArray = _filterItemsJSONArray(
+					itemsJSONArray, uri.getQuery());
 			}
 
 			return new JSONObject(
@@ -743,56 +880,101 @@ public class EntitlementDefinitionServiceTest {
 
 		@Override
 		protected String put(String authorization, String body, URI uri) {
+			if (uri.getPath(
+				).contains(
+					"/entitlementdefinitionskus/"
+				)) {
+
+				skuPutBodies.add(body);
+				skuPutURIs.add(uri.toString());
+
+				return "{}";
+			}
+
 			putBodies.add(body);
 			putURIs.add(uri.toString());
 
 			return null;
 		}
 
-		private JSONArray _filterItemsJSONArray(String query) {
-			String fieldName = "externalReferenceCode";
+		private JSONArray _filterItemsJSONArray(
+			JSONArray jsonArray, String query) {
 
-			String value = _getFilterValue(fieldName, query);
+			for (String fieldName :
+					new String[] {
+						"externalReferenceCode", "id",
+						"skuExternalReferenceCode"
+					}) {
 
-			if (value == null) {
-				fieldName = "skuExternalReferenceCode";
+				List<String> values = _getFilterValues(fieldName, query);
 
-				value = _getFilterValue(fieldName, query);
-			}
-
-			if (value == null) {
-				return itemsJSONArray;
-			}
-
-			JSONArray filteredItemsJSONArray = new JSONArray();
-
-			for (int i = 0; i < itemsJSONArray.length(); i++) {
-				JSONObject jsonObject = itemsJSONArray.getJSONObject(i);
-
-				if (value.equals(jsonObject.optString(fieldName))) {
-					filteredItemsJSONArray.put(jsonObject);
+				if (values == null) {
+					continue;
 				}
+
+				JSONArray filteredJSONArray = new JSONArray();
+
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+					if (values.contains(jsonObject.optString(fieldName))) {
+						filteredJSONArray.put(jsonObject);
+					}
+				}
+
+				return filteredJSONArray;
 			}
 
-			return filteredItemsJSONArray;
+			return jsonArray;
 		}
 
-		private String _getFilterValue(String fieldName, String query) {
+		private List<String> _getFilterValues(String fieldName, String query) {
 			if (query == null) {
 				return null;
 			}
 
-			String prefix = "filter=" + fieldName + " eq '";
+			String equalsPrefix = "filter=" + fieldName + " eq '";
 
-			int index = query.indexOf(prefix);
+			int index = query.indexOf(equalsPrefix);
+
+			if (index >= 0) {
+				int startIndex = index + equalsPrefix.length();
+
+				return List.of(
+					query.substring(
+						startIndex, query.indexOf('\'', startIndex)));
+			}
+
+			String inPrefix = "filter=" + fieldName + " in (";
+
+			index = query.indexOf(inPrefix);
 
 			if (index < 0) {
 				return null;
 			}
 
-			int startIndex = index + prefix.length();
+			int startIndex = index + inPrefix.length();
 
-			return query.substring(startIndex, query.indexOf('\'', startIndex));
+			List<String> values = new ArrayList<>();
+
+			for (String value :
+					query.substring(
+						startIndex, query.indexOf(')', startIndex)
+					).split(
+						","
+					)) {
+
+				value = value.trim();
+
+				if (!value.startsWith("'") || !value.endsWith("'")) {
+					throw new IllegalArgumentException(
+						"Liferay rejects the unquoted filter value " + value);
+				}
+
+				values.add(value.substring(1, value.length() - 1));
+			}
+
+			return values;
 		}
 
 	}

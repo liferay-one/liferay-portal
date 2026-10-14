@@ -34,6 +34,8 @@ public final class Entitlement {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToEntitlement_c_projectERC");
 		_quantity = jsonObject.optDoubleObject("quantity", null);
+		_skuExternalReferenceCode = jsonObject.optString(
+			"skuExternalReferenceCode");
 		_terminationStatus = jsonObject.optString("terminationStatus");
 
 		JSONObject entitlementDefinitionJSONObject = jsonObject.optJSONObject(
@@ -118,6 +120,18 @@ public final class Entitlement {
 		return _quantity;
 	}
 
+	public String getSkuExternalReferenceCode() {
+		if (Validator.isNotNull(_skuExternalReferenceCode)) {
+			return _skuExternalReferenceCode;
+		}
+
+		if (_entitlementDefinition == null) {
+			return null;
+		}
+
+		return _entitlementDefinition.getSkuExternalReferenceCode();
+	}
+
 	public Instant getStartDateInstant() {
 		return _startDateInstant;
 	}
@@ -151,6 +165,7 @@ public final class Entitlement {
 	private final OveragePricing _overagePricing;
 	private final String _projectExternalReferenceCode;
 	private final Double _quantity;
+	private final String _skuExternalReferenceCode;
 	private final Instant _startDateInstant;
 	private final String _terminationStatus;
 

@@ -272,7 +272,7 @@ public class AppLicenseKeyGenerationService {
 			}
 
 			String skuExternalReferenceCode =
-				entitlementDefinition.getSkuExternalReferenceCode();
+				entitlement.getSkuExternalReferenceCode();
 
 			if (Validator.isNull(skuExternalReferenceCode)) {
 				continue;
