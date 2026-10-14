@@ -11,7 +11,6 @@ import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 type DetailHeaderProps = {
 	actions?: ReactNode;
 	banner?: ReactNode;
-	description?: string;
 	icon?: string;
 	logoColor: string;
 	logoSrc?: string;
@@ -24,7 +23,6 @@ type DetailHeaderProps = {
 export default function DetailHeader({
 	actions,
 	banner,
-	description,
 	icon,
 	logoColor,
 	logoSrc,
@@ -129,18 +127,6 @@ export default function DetailHeader({
 
 				{actions && <div className="flex-shrink-0">{actions}</div>}
 			</div>
-
-			{description && (
-				<p
-					className="mb-0 mt-3"
-					style={{
-						color: 'var(--color-neutral-8)',
-						maxWidth: '52rem',
-					}}
-				>
-					{description}
-				</p>
-			)}
 
 			{banner}
 		</div>

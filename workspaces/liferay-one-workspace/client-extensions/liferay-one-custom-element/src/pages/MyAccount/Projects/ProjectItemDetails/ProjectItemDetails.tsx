@@ -50,7 +50,6 @@ import {
 	getProductSpecificationValues,
 } from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
-import {removeHTMLTags} from '~/utils/stringUtils';
 
 type ProjectItemDetailsProps = {
 	itemType: ProjectItemType;
@@ -223,11 +222,6 @@ export default function ProjectItemDetails({
 						) : undefined
 					}
 					banner={isAIHub ? <AIHubAlert /> : undefined}
-					description={
-						itemType === 'product'
-							? removeHTMLTags(product.description ?? '')
-							: undefined
-					}
 					icon={
 						itemType === 'product'
 							? getProductIcon(iconCategory)
