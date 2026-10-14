@@ -504,9 +504,10 @@ public class LicenseKeyGenerateFormServiceTest {
 		);
 
 		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
-			false, project);
+			false, project, false);
 
 		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
 
 		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
 

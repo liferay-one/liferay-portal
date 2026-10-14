@@ -102,7 +102,9 @@ public class AppLicenseKeyGenerationService {
 		);
 	}
 
-	public JSONObject getSummary(long accountEntryId) throws Exception {
+	public JSONObject getSummary(long accountEntryId, boolean provisionable)
+		throws Exception {
+
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
 				accountEntryId);
@@ -124,6 +126,8 @@ public class AppLicenseKeyGenerationService {
 			"cloudNativeKeyTypes", new JSONArray()
 		).put(
 			"generatable", generatable
+		).put(
+			"provisionable", provisionable
 		);
 	}
 

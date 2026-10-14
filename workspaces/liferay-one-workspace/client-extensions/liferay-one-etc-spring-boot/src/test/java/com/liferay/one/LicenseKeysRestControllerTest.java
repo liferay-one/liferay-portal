@@ -114,6 +114,44 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetLicenseKeysDeveloperDownloadChecksSelfProvisioning()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			project.getAccountId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_environmentActivationPermission
+		).checkSelfProvisioning(
+			_ACCOUNT_ID, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.getLicenseKeysDeveloperDownload(
+				null, null, "developer", "DXP", _PROJECT_ERC, "7.4"));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
 	public void testGetLicenseKeysDeveloperDownloadThrowsWhenNoProject()
 		throws Exception {
 
@@ -575,7 +613,13 @@ public class LicenseKeysRestControllerTest {
 			false, 1L
 		);
 
-		Mockito.verifyNoInteractions(_environmentActivationPermission);
+		Mockito.verify(
+			_environmentActivationPermission
+		).checkSelfProvisioning(
+			_ACCOUNT_ID, null
+		);
+
+		Mockito.verifyNoMoreInteractions(_environmentActivationPermission);
 	}
 
 	@Test
@@ -614,6 +658,35 @@ public class LicenseKeysRestControllerTest {
 			_licenseKeyService
 		).updateLicenseKeyActive(
 			true, 1L
+		);
+	}
+
+	@Test
+	public void testPatchLicenseKeysActiveChecksSelfProvisioning()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_mockGetLicenseKey(_createLicenseKey(1L));
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_environmentActivationPermission
+		).checkSelfProvisioning(
+			_ACCOUNT_ID, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.patchLicenseKeysActive(
+				null, 1L, "{\"active\": false}"));
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.never()
+		).updateLicenseKeyActive(
+			Mockito.anyBoolean(), Mockito.anyLong()
 		);
 	}
 

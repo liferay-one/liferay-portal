@@ -435,7 +435,7 @@ public class AppLicenseKeyGenerationServiceTest {
 
 		Assertions.assertTrue(
 			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID
+				_ACCOUNT_ID, true
 			).getBoolean(
 				"generatable"
 			));
@@ -444,9 +444,28 @@ public class AppLicenseKeyGenerationServiceTest {
 
 		Assertions.assertFalse(
 			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID
+				_ACCOUNT_ID, true
 			).getBoolean(
 				"generatable"
+			));
+	}
+
+	@Test
+	public void testGetSummaryReportsProvisionable() throws Exception {
+		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		Assertions.assertFalse(
+			_appLicenseKeyGenerationService.getSummary(
+				_ACCOUNT_ID, false
+			).getBoolean(
+				"provisionable"
+			));
+		Assertions.assertTrue(
+			_appLicenseKeyGenerationService.getSummary(
+				_ACCOUNT_ID, true
+			).getBoolean(
+				"provisionable"
 			));
 	}
 

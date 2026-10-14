@@ -99,6 +99,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
 
+		_environmentActivationPermission.checkSelfProvisioning(
+			project.getAccountId(), jwt);
+
 		String licenseXML =
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
 				(bundleEntitlementIds == null) ? Collections.emptyList() :
@@ -231,6 +234,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			_environmentActivationPermission.checkLicenseKeyActivation(
 				jwt, projectExternalReferenceCode);
 		}
+
+		_environmentActivationPermission.checkSelfProvisioning(
+			licenseKey.getAccountEntryId(), jwt);
 
 		JSONObject jsonObject = new JSONObject(json);
 

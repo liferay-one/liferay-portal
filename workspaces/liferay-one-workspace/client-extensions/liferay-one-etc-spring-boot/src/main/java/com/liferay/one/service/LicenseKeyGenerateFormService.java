@@ -315,7 +315,8 @@ public class LicenseKeyGenerateFormService {
 	 * products, bundle products, versions and license entry types the form
 	 * also carries.
 	 */
-	public JSONObject getSummary(boolean admin, Project project)
+	public JSONObject getSummary(
+			boolean admin, Project project, boolean provisionable)
 		throws Exception {
 
 		JSONObject generateFormJSONObject = getGenerateForm(
@@ -327,6 +328,8 @@ public class LicenseKeyGenerateFormService {
 			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
 		).put(
 			"generatable", _isGeneratable(generateFormJSONObject)
+		).put(
+			"provisionable", provisionable
 		);
 	}
 

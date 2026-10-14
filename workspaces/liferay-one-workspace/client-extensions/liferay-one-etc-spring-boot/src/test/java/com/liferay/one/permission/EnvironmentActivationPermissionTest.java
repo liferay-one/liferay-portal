@@ -5,6 +5,8 @@
 
 package com.liferay.one.permission;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
@@ -348,6 +350,24 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
+	public void testCheckSelfProvisioningThrowsWhenDisabled() throws Exception {
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", false));
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> environmentActivationPermission.checkSelfProvisioning(
+				_ACCOUNT_ID, null));
+	}
+
+	@Test
 	public void testCheckThrowsForNullAccountBriefs() throws Exception {
 		UserAccount userAccount = _createUserAccount(
 			new String[0], null, new String[0]);
@@ -403,6 +423,113 @@ public class EnvironmentActivationPermissionTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> environmentActivationPermission.check(null, _PROJECT_ERC));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningAllowsMissingAccount()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), null,
+				null);
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsSelfProvisioning(
+				_ACCOUNT_ID, null));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningAllowsMissingCustomField()
+		throws Exception {
+
+		_stubAccountCustomFields();
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), null,
+				null);
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsSelfProvisioning(
+				_ACCOUNT_ID, null));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningAllowsWhenEnabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", true));
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), null,
+				null);
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsSelfProvisioning(
+				_ACCOUNT_ID, null));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningDeniesWhenDisabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", false));
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertFalse(
+			environmentActivationPermission.containsSelfProvisioning(
+				_ACCOUNT_ID, null));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningGrantsGlobalRolesWhenDisabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", false));
+
+		for (String roleName :
+				new String[] {
+					RoleConstants.NAME_ADMINISTRATOR,
+					RoleConstants.NAME_LIFERAY_STAFF,
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR
+				}) {
+
+			EnvironmentActivationPermission environmentActivationPermission =
+				_createPermission(
+					_createUserAccount(
+						new String[] {roleName}, null, new String[0]),
+					null, null);
+
+			Assertions.assertTrue(
+				environmentActivationPermission.containsSelfProvisioning(
+					_ACCOUNT_ID, null),
+				roleName);
+		}
+	}
+
+	private CustomField _createCustomField(String name, Object data) {
+		CustomField customField = new CustomField();
+
+		customField.setName(() -> name);
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(() -> data);
+
+		customField.setCustomValue(() -> customValue);
+
+		return customField;
 	}
 
 	private EnvironmentActivationPermission _createPermission(
@@ -572,6 +699,24 @@ public class EnvironmentActivationPermissionTest {
 		);
 
 		return userAccount;
+	}
+
+	private void _stubAccountCustomFields(CustomField... customFields)
+		throws Exception {
+
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			account.getCustomFields()
+		).thenReturn(
+			customFields
+		);
+
+		Mockito.when(
+			_accountService.fetchAccount(_ACCOUNT_ID)
+		).thenReturn(
+			account
+		);
 	}
 
 	private static final String _ACCOUNT_ERC = "ACCOUNT-1";

@@ -197,7 +197,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				MediaType.APPLICATION_JSON
 			).body(
 				_appLicenseKeyGenerationService.getSummary(
-					account.getId()
+					account.getId(),
+					_environmentActivationPermission.containsSelfProvisioning(
+						account.getId(), jwt)
 				).toString()
 			);
 		}
@@ -215,7 +217,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			MediaType.APPLICATION_JSON
 		).body(
 			_licenseKeyGenerateFormService.getSummary(
-				_adminPermission.contains(jwt), project
+				_adminPermission.contains(jwt), project,
+				_environmentActivationPermission.containsSelfProvisioning(
+					project.getAccountId(), jwt)
 			).toString()
 		);
 	}
@@ -271,6 +275,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				jwt, projectExternalReferenceCode);
 		}
 
+		_environmentActivationPermission.checkSelfProvisioning(
+			activationKey.getAccountEntryId(), jwt);
+
 		JSONObject jsonObject = new JSONObject(json);
 
 		boolean active = getRequiredBoolean(jsonObject, "active");
@@ -302,6 +309,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			Account account = _getAccount(
 				jsonObject.optString("accountExternalReferenceCode"), jwt);
 
+			_environmentActivationPermission.checkSelfProvisioning(
+				account.getId(), jwt);
+
 			_checkKeyType(jsonObject.optString("keyType"), jwt);
 
 			UserAccount userAccount = getMyUserAccount(jwt);
@@ -319,6 +329,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		if (project == null) {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
+
+		_environmentActivationPermission.checkSelfProvisioning(
+			project.getAccountId(), jwt);
 
 		_checkKeyType(jsonObject.optString("keyType"), jwt);
 

@@ -16,6 +16,7 @@ import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.FindUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -74,6 +75,33 @@ public class EnvironmentActivationPermission {
 		throws Exception {
 
 		return _check(true, jwt, projectExternalReferenceCode);
+	}
+
+	public void checkSelfProvisioning(long accountEntryId, Jwt jwt)
+		throws Exception {
+
+		if (!containsSelfProvisioning(accountEntryId, jwt)) {
+			throw new PrincipalException(
+				"Account " + accountEntryId +
+					" does not allow self provisioning");
+		}
+	}
+
+	public boolean containsSelfProvisioning(long accountEntryId, Jwt jwt)
+		throws Exception {
+
+		if (_hasGlobalRole(_userAccountService.getMyUserAccount(jwt))) {
+			return true;
+		}
+
+		Account account = _accountService.fetchAccount(accountEntryId);
+
+		if (account == null) {
+			return true;
+		}
+
+		return AccountUtil.getCustomFieldBoolean(
+			account, "allowSelfProvisioning", true);
 	}
 
 	private Project _check(
