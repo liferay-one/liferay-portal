@@ -254,6 +254,16 @@ export function getOrderStatusLabel(order: PlacedOrder) {
 		);
 	}
 
+	if (
+		APP_ORDER_TYPES.includes(
+			order.orderTypeExternalReferenceCode as OrderTypes
+		)
+	) {
+		return order.orderStatusInfo?.code === OrderWorkflowStatusCode.COMPLETED
+			? 'Completed'
+			: 'Pending';
+	}
+
 	if (order.orderTypeExternalReferenceCode === 'AI_HUB') {
 		return (
 			{
