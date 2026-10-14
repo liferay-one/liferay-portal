@@ -16,7 +16,6 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.CommerceProductUtil;
@@ -297,23 +296,13 @@ public class LicenseKeyGenerationService {
 		String productName = licensedProduct._getProductName();
 		String version = generateRequest.getVersion();
 
-		long entitlementDefinitionId = 0;
-
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition != null) {
-			entitlementDefinitionId =
-				entitlementDefinition.getEntitlementDefinitionId();
-		}
-
 		return _licenseKeyService.addLicenseKey(
 			project.getAccountId(), project.getName(),
 			activationKey.getActivationKeyId(), true,
 			_getAdditionalInfo(generateRequest),
 			licensedProduct._getExternalReferenceCode(), complimentary,
 			generateRequest.getDataCenterLocation(), description,
-			StringPool.BLANK, entitlementDefinitionId,
+			StringPool.BLANK, entitlement.getEntitlementDefinitionId(),
 			entitlement.getEntitlementId(), expirationDate,
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),

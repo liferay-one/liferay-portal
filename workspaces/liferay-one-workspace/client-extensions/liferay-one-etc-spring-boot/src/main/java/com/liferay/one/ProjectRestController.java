@@ -17,7 +17,6 @@ import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.model.BaseUsageStrategy;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ExperienceUsageStrategy;
 import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
@@ -627,13 +626,6 @@ public class ProjectRestController extends OneBaseRestController {
 	private boolean _isUsageDashboardEntitlement(
 			Entitlement entitlement, String utilizationProfile)
 		throws Exception {
-
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return true;
-		}
 
 		Long productId = _commerceSkuService.fetchProductId(
 			entitlement.getSkuExternalReferenceCode());

@@ -30,7 +30,6 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.model.Project;
@@ -933,23 +932,18 @@ public class CloudRestController extends OneBaseRestController {
 	}
 
 	private Product _fetchProduct(Entitlement entitlement) throws Exception {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return null;
-		}
+		String skuExternalReferenceCode =
+			entitlement.getSkuExternalReferenceCode();
 
 		Long productId = _commerceSkuService.fetchProductId(
-			entitlement.getSkuExternalReferenceCode());
+			skuExternalReferenceCode);
 
 		if (productId == null) {
 			_log.error(
 				StringBundler.concat(
 					"No SKU exists with external reference code ",
-					entitlement.getSkuExternalReferenceCode(),
-					" for entitlement definition ",
-					entitlementDefinition.getExternalReferenceCode()));
+					skuExternalReferenceCode, " for entitlement ",
+					entitlement.getEntitlementId()));
 
 			return null;
 		}
@@ -960,8 +954,7 @@ public class CloudRestController extends OneBaseRestController {
 			_log.error(
 				StringBundler.concat(
 					"No product exists for commerce product ID ", productId,
-					" of entitlement definition ",
-					entitlementDefinition.getExternalReferenceCode()));
+					" of entitlement ", entitlement.getEntitlementId()));
 		}
 
 		return product;

@@ -172,13 +172,6 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public Product fetchProduct(Entitlement entitlement) throws Exception {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return null;
-		}
-
 		String skuExternalReferenceCode =
 			entitlement.getSkuExternalReferenceCode();
 
@@ -501,11 +494,7 @@ public class LicenseKeyGenerateFormService {
 		Set<String> externalReferenceCodes = new HashSet<>();
 
 		for (Entitlement entitlement : entitlements) {
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
-
-			if ((entitlementDefinition == null) ||
-				!Objects.equals(
+			if (!Objects.equals(
 					EntitlementConstants.NAME_DISASTER_RECOVERY,
 					entitlement.getName())) {
 
