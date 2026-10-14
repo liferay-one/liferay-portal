@@ -99,7 +99,6 @@ export type ProjectContract = {
 };
 
 export type ProjectProduct = {
-	description: string;
 	externalReferenceCode: string;
 	id: string;
 	name: string;

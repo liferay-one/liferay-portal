@@ -37,8 +37,10 @@ vi.mock('~/hooks/useProjectCommerce', () => ({
 
 vi.mock('~/hooks/useProjectItems', () => ({useProjectItems: vi.fn()}));
 
-vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
-	...(await importOriginal<typeof import('~/hooks/useProjectOrders')>()),
+vi.mock('~/hooks/useProjectOrders', () => ({
+	getProductOrder: vi.fn(),
+	getProductOrderInfo: vi.fn(() => ({status: 'active'})),
+	getProductVirtualItems: vi.fn(() => []),
 	useProjectOrders: vi.fn(),
 }));
 
@@ -55,7 +57,7 @@ vi.mock('~/pages/MyAccount/Projects/utils/resolveProductTabConfig', () => ({
 
 const PRODUCT_DESCRIPTION = 'A description that no longer makes sense.';
 
-describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] ProjectItemDetails', () => {
+describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 	beforeEach(() => {
 		vi.mocked(useParams).mockReturnValue({productERC: 'PRDCT-1'});
 
@@ -108,7 +110,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] ProjectItemDetails', () => {
 		} as unknown as ReturnType<typeof resolveProductTabConfig>);
 	});
 
-	it('renders the product name without the product description', () => {
+	it('shows the product name and omits the product description in the header', () => {
 		render(<ProjectItemDetails itemType="product" />);
 
 		expect(screen.getByText('Liferay DXP')).toBeTruthy();
