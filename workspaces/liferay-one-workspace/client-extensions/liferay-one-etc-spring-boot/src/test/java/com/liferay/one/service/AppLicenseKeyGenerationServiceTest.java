@@ -537,8 +537,7 @@ public class AppLicenseKeyGenerationServiceTest {
 					entitlement ->
 						(entitlement != null) &&
 						skuExternalReferenceCode.equals(
-							entitlement.getEntitlementDefinition(
-							).getSkuExternalReferenceCode())))
+							entitlement.getSkuExternalReferenceCode())))
 		).thenReturn(
 			product
 		);
@@ -576,8 +575,6 @@ public class AppLicenseKeyGenerationServiceTest {
 				"licenseKeyFamily", licenseKeyFamily
 			).put(
 				"licenseKeyType", licenseKeyType
-			).put(
-				"skuExternalReferenceCode", skuExternalReferenceCode
 			)
 		).put(
 			"id", entitlementId
@@ -588,6 +585,8 @@ public class AppLicenseKeyGenerationServiceTest {
 		).put(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
 			100 + entitlementId
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
 		).put(
 			"startDate", startDate
 		);

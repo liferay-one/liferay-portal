@@ -265,10 +265,11 @@ public class UsageAllotmentTest {
 				).put(
 					"id", 1L
 				).put(
-					"skuExternalReferenceCode", skuExternalReferenceCode
-				).put(
 					"unit", unit
-				));
+				)
+			).put(
+				"skuExternalReferenceCode", skuExternalReferenceCode
+			);
 		}
 
 		return jsonObject;

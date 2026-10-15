@@ -33,9 +33,23 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 		useFetchMock.mockReturnValue({
 			data: {
 				items: [
-					{defaultQuantity: 5000, skuExternalReferenceCode: 'SKU-5K'},
-					{defaultQuantity: 0, skuExternalReferenceCode: 'SKU-ZERO'},
-					{skuExternalReferenceCode: 'SKU-MISSING'},
+					{
+						defaultQuantity: 5000,
+						entitlementDefinitionToSku: [
+							{skuExternalReferenceCode: 'SKU-5K'},
+						],
+					},
+					{
+						defaultQuantity: 0,
+						entitlementDefinitionToSku: [
+							{skuExternalReferenceCode: 'SKU-ZERO'},
+						],
+					},
+					{
+						entitlementDefinitionToSku: [
+							{skuExternalReferenceCode: 'SKU-MISSING'},
+						],
+					},
 				],
 			},
 			isLoading: false,
@@ -46,7 +60,7 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 		expect([...result.current.tokenBlockSizes]).toEqual([['SKU-5K', 5000]]);
 	});
 
-	it('maps every SKU linked to a definition, as well as the SKU field of the definition', () => {
+	it('maps every SKU linked to a definition', () => {
 		useFetchMock.mockReturnValue({
 			data: {
 				items: [
@@ -56,14 +70,12 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 							{skuExternalReferenceCode: 'SKU-5K-RENEWAL'},
 							{skuExternalReferenceCode: 'SKU-5K'},
 						],
-						skuExternalReferenceCode: 'SKU-5K',
 					},
 					{
 						defaultQuantity: 10000,
 						entitlementDefinitionToSku: [
 							{skuExternalReferenceCode: 'SKU-10K'},
 						],
-						skuExternalReferenceCode: '',
 					},
 				],
 			},
@@ -73,9 +85,9 @@ describe('[HOOK-USEAITOKENBLOCKSIZES] useAITokenBlockSizes', () => {
 		const {result} = renderHook(() => useAITokenBlockSizes());
 
 		expect(Object.fromEntries(result.current.tokenBlockSizes)).toEqual({
-			'SKU-10K': 10000,
 			'SKU-5K': 5000,
 			'SKU-5K-RENEWAL': 5000,
+			'SKU-10K': 10000,
 		});
 	});
 

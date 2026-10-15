@@ -305,6 +305,7 @@ def _check_chain(report, scope):
 
 
 def _check_coverage(report, scope):
+	definition_skus = scope["definition_skus"]
 	definitions = scope["definitions"]
 	entitlements = scope["entitlements"]
 	license_keys = scope["license_keys"]
@@ -314,12 +315,22 @@ def _check_coverage(report, scope):
 	usage_definitions = scope["usage_definitions"]
 	usage_events = scope["usage_events"]
 
+	active_definitions = {
+		definition["externalReferenceCode"]
+		for definition in definitions
+		if definition.get("active")
+	}
+
 	definitions_by_sku = defaultdict(list)
 
-	for definition in definitions:
-		if definition.get("active"):
-			definitions_by_sku[definition.get("skuExternalReferenceCode")].append(
-				definition["externalReferenceCode"]
+	for definition_sku in definition_skus:
+		definition = definition_sku.get(
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC"
+		)
+
+		if definition in active_definitions:
+			definitions_by_sku[definition_sku.get("skuExternalReferenceCode")].append(
+				definition
 			)
 
 	entitled = {
@@ -716,10 +727,16 @@ def _check_references(report, universes, scope):
 		"license key",
 	)
 	check(
-		scope["definitions"],
+		scope["definition_skus"],
+		"r_entitlementDefinitionToSku_c_entitlementDefinitionERC",
+		"entitlement definition",
+		"entitlement definition SKU",
+	)
+	check(
+		scope["definition_skus"],
 		"skuExternalReferenceCode",
 		"SKU",
-		"entitlement definition",
+		"entitlement definition SKU",
 	)
 	check(
 		scope["definitions"],
@@ -862,6 +879,7 @@ def _check_unique(report, scope):
 		("DXP authorization", "dxp_authorizations"),
 		("entitlement", "entitlements"),
 		("entitlement definition", "definitions"),
+		("entitlement definition SKU", "definition_skus"),
 		("environment", "environments"),
 		("license key", "license_keys"),
 		("order", "orders"),
@@ -923,6 +941,7 @@ def main():
 	environments = items("14-environment.batch-engine-data.json")
 	definitions = items("15-entitlement-definition.batch-engine-data.json")
 	dxp_authorizations = items("16-oauth2-dxp-authorization.batch-engine-data.json")
+	definition_skus = items("17-entitlement-definition-sku.batch-engine-data.json")
 
 	batch = os.path.join(
 		WORKSPACE_ROOT, "client-extensions", "liferay-one-batch", "batch"

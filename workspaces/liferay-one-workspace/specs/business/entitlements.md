@@ -39,7 +39,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-015 | When an amendment changes the dates of an approved order item in the same opportunity family, the system sets the effective end date to the amended end date. It never moves an effective end date later. It adds a warning when the amended end date differs from the original end date. | P0 | LPD-89686 | `SVC-PROVISIONINGORDERSERVICE` |
 | REQ-ENTITLEMENTS-016 | When Salesforce deletes a project entitlement or one of its line items, the system ends the matching order items at the current time. It does not move an effective end date that is already in the past. | P0 | LPD-102591 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
 | REQ-ENTITLEMENTS-017 | An update of an order item changes only the entitlements of that order item. It never changes an entitlement of another order item, such as a project entitlement order item of the same deal. | P0 | LPD-107900 | `SVC-ENTITLEMENTSERVICE` |
-| REQ-ENTITLEMENTS-018 | An entitlement keeps the SKU external reference code of the order item that granted it. Logic that reads the SKU of an entitlement uses this value, and uses the SKU of the definition only when the entitlement has no SKU. | P1 | LPD-109991 | `SVC-ENTITLEMENTSERVICE`, `CLS-ENTITLEMENT`, `CLS-USAGEALLOTMENT` |
+| REQ-ENTITLEMENTS-018 | An entitlement keeps the SKU external reference code of the order item that granted it. Logic that reads the SKU of an entitlement uses this value. | P1 | LPD-109991 | `SVC-ENTITLEMENTSERVICE`, `CLS-ENTITLEMENT`, `CLS-USAGEALLOTMENT` |
 
 ## Entitlement State
 
@@ -62,7 +62,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-034 | The system deactivates a generated definition when its SKU is not published or no longer exists. It activates the definition again when the SKU is published again. The system never deletes a definition. | P0 | LPD-99898 | `CRON-RECONCILEENTITLEMENTDEFINITIONS`, `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE` |
 | REQ-ENTITLEMENTS-035 | Each day at 03:00, the system reconciles the definitions of every approved product. Only one reconciliation runs at a time. A failure for one product does not stop the other products. | P1 | LPD-99898, LPD-106163 | `CRON-RECONCILEENTITLEMENTDEFINITIONS` |
 | REQ-ENTITLEMENTS-036 | A change to a catalog product generates definitions only when the product is approved. An event without the product data changes nothing and logs a warning. | P2 | LPD-106163 | `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE` |
-| REQ-ENTITLEMENTS-037 | One entitlement definition can link to many SKUs, and one SKU can link to many definitions. An EntitlementDefinitionSku entry holds each link. A definition is the definition of a SKU when an entry links the two, or when the SKU field of the definition holds that SKU. | P0 | LPD-109991 | `SVC-ENTITLEMENTDEFINITIONSERVICE`, `SVC-COMMERCEORDERSERVICE` |
+| REQ-ENTITLEMENTS-037 | One entitlement definition can link to many SKUs, and one SKU can link to many definitions. An EntitlementDefinitionSku entry holds each link. A definition is the definition of a SKU only when an entry links the two. A definition has no SKU field of its own. | P0 | LPD-109991 | `SVC-ENTITLEMENTDEFINITIONSERVICE`, `SVC-COMMERCEORDERSERVICE` |
 
 ## Entitlement Names
 

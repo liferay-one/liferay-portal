@@ -38,8 +38,6 @@ public final class EntitlementDefinition {
 		_name = jsonObject.optString("name");
 		_overagePricing = OveragePricing.of(jsonObject);
 		_productOptions = _getProductOptions(jsonObject);
-		_skuExternalReferenceCode = jsonObject.optString(
-			"skuExternalReferenceCode");
 		_unit = jsonObject.optString("unit");
 		_usageDefinitionExternalReferenceCode = jsonObject.optString(
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC");
@@ -91,10 +89,6 @@ public final class EntitlementDefinition {
 
 	public Map<String, String> getProductOptions() {
 		return _productOptions;
-	}
-
-	public String getSkuExternalReferenceCode() {
-		return _skuExternalReferenceCode;
 	}
 
 	public String getUnit() {
@@ -156,7 +150,6 @@ public final class EntitlementDefinition {
 	private final String _name;
 	private final OveragePricing _overagePricing;
 	private final Map<String, String> _productOptions;
-	private final String _skuExternalReferenceCode;
 	private final String _unit;
 	private final String _usageDefinitionExternalReferenceCode;
 

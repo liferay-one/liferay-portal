@@ -121,22 +121,11 @@ public final class Entitlement {
 	}
 
 	public String getSkuExternalReferenceCode() {
-		if (Validator.isNotNull(_skuExternalReferenceCode)) {
-			return _skuExternalReferenceCode;
-		}
-
-		if (_entitlementDefinition == null) {
+		if (Validator.isNull(_skuExternalReferenceCode)) {
 			return null;
 		}
 
-		String skuExternalReferenceCode =
-			_entitlementDefinition.getSkuExternalReferenceCode();
-
-		if (Validator.isNull(skuExternalReferenceCode)) {
-			return null;
-		}
-
-		return skuExternalReferenceCode;
+		return _skuExternalReferenceCode;
 	}
 
 	public Instant getStartDateInstant() {

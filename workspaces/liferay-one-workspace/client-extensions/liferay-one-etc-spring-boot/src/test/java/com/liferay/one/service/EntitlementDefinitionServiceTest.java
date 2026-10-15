@@ -14,6 +14,7 @@ import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.constants.TaxonomyCategoryConstants;
 import com.liferay.one.exception.NoSuchProductException;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
 import java.net.URLDecoder;
@@ -141,8 +142,7 @@ public class EntitlementDefinitionServiceTest {
 			"Test App - Large", jsonObject.getString("name"));
 		Assertions.assertFalse(jsonObject.has("licenseKeyDurationDays"));
 		Assertions.assertFalse(jsonObject.has("productOptions"));
-		Assertions.assertEquals(
-			"SKU-LARGE", jsonObject.getString("skuExternalReferenceCode"));
+		Assertions.assertFalse(jsonObject.has("skuExternalReferenceCode"));
 	}
 
 	@Test
@@ -432,11 +432,9 @@ public class EntitlementDefinitionServiceTest {
 
 		_setUpExistingEntitlementDefinitions(manualJSONObject);
 
-		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
-		).put(
+		_entitlementDefinitionService.skuItemsJSONArray.put(
 			_createEntitlementDefinitionSkuJSONObject(
-				manualJSONObject, "SKU-LARGE")
-		);
+				manualJSONObject, "SKU-LARGE"));
 
 		_entitlementDefinitionService.generateEntitlementDefinition(
 			_C_PRODUCT_ID);
@@ -476,43 +474,6 @@ public class EntitlementDefinitionServiceTest {
 			_entitlementDefinitionService.putBodies.isEmpty());
 		Assertions.assertTrue(
 			_entitlementDefinitionService.patchBodies.isEmpty());
-	}
-
-	@Test
-	public void testGetEntitlementDefinitionsCombinesSkusAndLegacyField()
-		throws Exception {
-
-		JSONObject sharedJSONObject = _createEntitlementDefinitionJSONObject(
-			true, "DEF-SHARED", "Shared", "SKU-OLD");
-		JSONObject legacyJSONObject = _createEntitlementDefinitionJSONObject(
-			true, "DEF-LEGACY", "Legacy", "SKU-NEW");
-		JSONObject inactiveJSONObject = _createEntitlementDefinitionJSONObject(
-			false, "DEF-INACTIVE", "Inactive", "SKU-NEW");
-
-		_setUpExistingEntitlementDefinitions(
-			sharedJSONObject, legacyJSONObject, inactiveJSONObject);
-
-		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
-		).put(
-			_createEntitlementDefinitionSkuJSONObject(
-				sharedJSONObject, "SKU-NEW")
-		).put(
-			_createEntitlementDefinitionSkuJSONObject(
-				legacyJSONObject, "SKU-NEW")
-		);
-
-		List<String> externalReferenceCodes = new ArrayList<>();
-
-		for (EntitlementDefinition entitlementDefinition :
-				_entitlementDefinitionService.getEntitlementDefinitions(
-					Map.of(), "SKU-NEW")) {
-
-			externalReferenceCodes.add(
-				entitlementDefinition.getExternalReferenceCode());
-		}
-
-		Assertions.assertEquals(
-			List.of("DEF-SHARED", "DEF-LEGACY"), externalReferenceCodes);
 	}
 
 	@Test
@@ -557,6 +518,37 @@ public class EntitlementDefinitionServiceTest {
 	}
 
 	@Test
+	public void testGetEntitlementDefinitionsReadsEveryLinkedSku()
+		throws Exception {
+
+		JSONObject sharedJSONObject = _createEntitlementDefinitionJSONObject(
+			true, "DEF-SHARED", "Shared", "SKU-OLD");
+
+		_setUpExistingEntitlementDefinitions(
+			sharedJSONObject,
+			_createEntitlementDefinitionJSONObject(
+				true, "DEF-OTHER", "Other", "SKU-OTHER"),
+			_createEntitlementDefinitionJSONObject(
+				false, "DEF-INACTIVE", "Inactive", "SKU-NEW"));
+
+		_entitlementDefinitionService.skuItemsJSONArray.put(
+			_createEntitlementDefinitionSkuJSONObject(
+				sharedJSONObject, "SKU-NEW"));
+
+		List<String> externalReferenceCodes = new ArrayList<>();
+
+		for (EntitlementDefinition entitlementDefinition :
+				_entitlementDefinitionService.getEntitlementDefinitions(
+					Map.of(), "SKU-NEW")) {
+
+			externalReferenceCodes.add(
+				entitlementDefinition.getExternalReferenceCode());
+		}
+
+		Assertions.assertEquals(List.of("DEF-SHARED"), externalReferenceCodes);
+	}
+
+	@Test
 	public void testGetSkuEntitlementDefinitionsIncludesSharedAndInactiveDefinitions()
 		throws Exception {
 
@@ -568,12 +560,9 @@ public class EntitlementDefinitionServiceTest {
 			_createEntitlementDefinitionJSONObject(
 				false, "DEF-INACTIVE", "Inactive", "SKU-A"));
 
-		_entitlementDefinitionService.skuItemsJSONArray = new JSONArray(
-		).put(
-			_createEntitlementDefinitionSkuJSONObject(sharedJSONObject, "SKU-A")
-		).put(
-			_createEntitlementDefinitionSkuJSONObject(sharedJSONObject, "SKU-B")
-		);
+		_entitlementDefinitionService.skuItemsJSONArray.put(
+			_createEntitlementDefinitionSkuJSONObject(
+				sharedJSONObject, "SKU-B"));
 
 		Assertions.assertEquals(
 			List.of("DEF-SHARED", "DEF-INACTIVE"),
@@ -693,7 +682,7 @@ public class EntitlementDefinitionServiceTest {
 		int licenseKeyDurationDays, String name,
 		String skuExternalReferenceCode) {
 
-		return new JSONObject(
+		JSONObject jsonObject = new JSONObject(
 		).put(
 			"active", active
 		).put(
@@ -704,9 +693,15 @@ public class EntitlementDefinitionServiceTest {
 			"licenseKeyDurationDays", licenseKeyDurationDays
 		).put(
 			"name", name
-		).put(
-			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
+
+		if (Validator.isNotNull(skuExternalReferenceCode)) {
+			_entitlementDefinitionService.skuItemsJSONArray.put(
+				_createEntitlementDefinitionSkuJSONObject(
+					jsonObject, skuExternalReferenceCode));
+		}
+
+		return jsonObject;
 	}
 
 	private JSONObject _createEntitlementDefinitionJSONObject(
@@ -722,6 +717,9 @@ public class EntitlementDefinitionServiceTest {
 		String skuExternalReferenceCode) {
 
 		return new JSONObject(
+		).put(
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC",
+			entitlementDefinitionJSONObject.getString("externalReferenceCode")
 		).put(
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionId",
 			entitlementDefinitionJSONObject.getLong("id")
@@ -965,9 +963,7 @@ public class EntitlementDefinitionServiceTest {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 
 					if (entitlementDefinitionIds.contains(
-							jsonObject.getLong("id")) ||
-						skuExternalReferenceCode.equals(
-							jsonObject.optString("skuExternalReferenceCode"))) {
+							jsonObject.getLong("id"))) {
 
 						filteredJSONArray.put(jsonObject);
 					}
@@ -1055,7 +1051,7 @@ public class EntitlementDefinitionServiceTest {
 
 		private String _getSkuFilterValue(String query) {
 			String prefix =
-				"filter=(entitlementDefinitionToSku/skuExternalReferenceCode " +
+				"filter=entitlementDefinitionToSku/skuExternalReferenceCode " +
 					"eq '";
 
 			if ((query == null) || !query.contains(prefix)) {

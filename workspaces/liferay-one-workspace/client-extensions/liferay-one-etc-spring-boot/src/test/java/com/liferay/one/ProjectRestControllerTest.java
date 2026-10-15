@@ -1680,8 +1680,6 @@ public class ProjectRestControllerTest {
 				"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC",
 				"events-monthly"
 			).put(
-				"skuExternalReferenceCode", skuExternalReferenceCode
-			).put(
 				"unit", unit
 			)
 		).put(
@@ -1691,6 +1689,8 @@ public class ProjectRestControllerTest {
 		).put(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
 			entitlementDefinitionId
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 
 		if (grantType != null) {

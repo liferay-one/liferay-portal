@@ -118,8 +118,6 @@ public class EntitlementDefinitionTest {
 				"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC",
 				"UD_ERC"
 			).put(
-				"skuExternalReferenceCode", "SKU_ERC"
-			).put(
 				"unit", "vCPU"
 			));
 
@@ -138,8 +136,6 @@ public class EntitlementDefinitionTest {
 		Assertions.assertEquals(
 			"production", entitlementDefinition.getLicenseKeyType());
 		Assertions.assertEquals("Name", entitlementDefinition.getName());
-		Assertions.assertEquals(
-			"SKU_ERC", entitlementDefinition.getSkuExternalReferenceCode());
 		Assertions.assertEquals("vCPU", entitlementDefinition.getUnit());
 		Assertions.assertEquals(
 			"UD_ERC",

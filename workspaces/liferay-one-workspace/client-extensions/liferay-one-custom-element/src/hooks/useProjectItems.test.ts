@@ -115,8 +115,8 @@ function mockEntitlements(entitlements: unknown[]) {
 
 function toEntitlement(skuExternalReferenceCode: string, contractId?: number) {
 	return {
-		entitlementDefinitionToEntitlement: {skuExternalReferenceCode},
 		r_contractToEntitlement_c_contractId: contractId,
+		skuExternalReferenceCode,
 	};
 }
 

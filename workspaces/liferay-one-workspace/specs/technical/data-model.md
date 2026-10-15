@@ -299,7 +299,7 @@ Materialized grant records derived from CommerceOrderItems via EntitlementDefini
 | `maxQuantity` | double | Hard cap — blocks at this level |
 | `overageRate` | double | Price of one overage bucket, copied from the definition at grant time |
 | `overageSkuExternalReferenceCode` | string | Overage bucket SKU, copied from the definition at grant time |
-| `skuExternalReferenceCode` | string | SKU of the order item that granted this entitlement. Empty on entitlements granted before LPD-109991; readers then use the SKU of the definition |
+| `skuExternalReferenceCode` | string | SKU of the order item that granted this entitlement |
 | `startDate` | datetime | |
 | `endDate` | datetime | |
 
@@ -317,7 +317,6 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 |---|---|---|
 | PK `entitlementDefinitionId` | long | |
 | `externalReferenceCode` | string | e.g. `dxp-cloud-standard-database-size` |
-| `skuExternalReferenceCode` | string | Optional legacy single SKU link (Salesforce `Product2.Id`). A definition is a definition of this SKU and of every SKU an EntitlementDefinitionSku entry links to it. A definition that several SKUs share leaves it empty |
 | `name` | string | e.g. `database-size`, `vcpu`, `maxServers`, `licenseGeneration` |
 | `displayName` | string | Human-readable, e.g. `Database Storage`, `License Generation` |
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |

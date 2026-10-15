@@ -14,7 +14,6 @@ const ENTITLEMENT_NAME_AI_TOKEN_BLOCK = 'aiTokenBlock';
 type EntitlementDefinitionNode = {
 	defaultQuantity?: number;
 	entitlementDefinitionToSku?: {skuExternalReferenceCode: string}[];
-	skuExternalReferenceCode?: string;
 };
 
 export function useAITokenBlockSizes() {
@@ -22,7 +21,7 @@ export function useAITokenBlockSizes() {
 		APIResponse<EntitlementDefinitionNode>
 	>('/o/c/entitlementdefinitions', {
 		params: {
-			fields: 'defaultQuantity,entitlementDefinitionToSku.skuExternalReferenceCode,skuExternalReferenceCode',
+			fields: 'defaultQuantity,entitlementDefinitionToSku.skuExternalReferenceCode',
 			filter: new SearchBuilder()
 				.eq('name', ENTITLEMENT_NAME_AI_TOKEN_BLOCK)
 				.and()
@@ -39,21 +38,14 @@ export function useAITokenBlockSizes() {
 		for (const {
 			defaultQuantity,
 			entitlementDefinitionToSku = [],
-			skuExternalReferenceCode,
 		} of data?.items ?? []) {
 			if (!defaultQuantity || defaultQuantity <= 0) {
 				continue;
 			}
 
-			const skuExternalReferenceCodes = [
+			for (const {
 				skuExternalReferenceCode,
-				...entitlementDefinitionToSku.map(
-					(entitlementDefinitionSku) =>
-						entitlementDefinitionSku.skuExternalReferenceCode
-				),
-			];
-
-			for (const skuExternalReferenceCode of skuExternalReferenceCodes) {
+			} of entitlementDefinitionToSku) {
 				if (skuExternalReferenceCode) {
 					tokenBlockSizes.set(
 						skuExternalReferenceCode,

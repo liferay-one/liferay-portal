@@ -20,9 +20,11 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -126,15 +128,10 @@ public class EntitlementDefinitionService extends OneBaseService {
 			return Collections.emptyList();
 		}
 
-		String escapedSkuExternalReferenceCode = escapeODataString(
-			skuExternalReferenceCode);
-
 		return getEntitlementDefinitions(
 			StringBundler.concat(
-				"(entitlementDefinitionToSku/skuExternalReferenceCode eq '",
-				escapedSkuExternalReferenceCode,
-				"') or (skuExternalReferenceCode eq '",
-				escapedSkuExternalReferenceCode, "')"));
+				"entitlementDefinitionToSku/skuExternalReferenceCode eq '",
+				escapeODataString(skuExternalReferenceCode), "'"));
 	}
 
 	@Scheduled(cron = "${liferay.one.entitlement.definition.reconcile.cron}")
@@ -201,8 +198,6 @@ public class EntitlementDefinitionService extends OneBaseService {
 			"displayName", name
 		).put(
 			"name", name
-		).put(
-			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 
 		if (trial) {
@@ -255,17 +250,38 @@ public class EntitlementDefinitionService extends OneBaseService {
 	}
 
 	private void _deactivateOrphanedEntitlementDefinitions() throws Exception {
+
+		// A definition that the sync generated for a SKU has the external
+		// reference code of that SKU and an entitlement definition SKU that
+		// links it to that SKU
+
+		Set<String> skuExternalReferenceCodes = new HashSet<>(
+			getAllItems(
+				"/o/c/entitlementdefinitionskus", null,
+				jsonObject -> {
+					String skuExternalReferenceCode = jsonObject.optString(
+						"skuExternalReferenceCode");
+
+					if (Validator.isNull(skuExternalReferenceCode) ||
+						!Objects.equals(
+							jsonObject.optString(
+								"r_entitlementDefinitionToSku_c_" +
+									"entitlementDefinitionERC"),
+							skuExternalReferenceCode)) {
+
+						return null;
+					}
+
+					return skuExternalReferenceCode;
+				}));
+
 		for (EntitlementDefinition entitlementDefinition :
 				getEntitlementDefinitions("active eq true")) {
 
 			String skuExternalReferenceCode =
-				entitlementDefinition.getSkuExternalReferenceCode();
+				entitlementDefinition.getExternalReferenceCode();
 
-			if (Validator.isNull(skuExternalReferenceCode) ||
-				!Objects.equals(
-					entitlementDefinition.getExternalReferenceCode(),
-					skuExternalReferenceCode)) {
-
+			if (!skuExternalReferenceCodes.contains(skuExternalReferenceCode)) {
 				continue;
 			}
 

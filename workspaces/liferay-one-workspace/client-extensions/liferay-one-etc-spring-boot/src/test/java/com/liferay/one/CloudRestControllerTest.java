@@ -2056,13 +2056,13 @@ public class CloudRestControllerTest {
 				new JSONObject(
 				).put(
 					"id", entitlementId
-				).put(
-					"skuExternalReferenceCode", skuExternalReferenceCode
 				)
 			).put(
 				"id", entitlementId
 			).put(
 				"r_contractToEntitlement_c_contractId", contractId
+			).put(
+				"skuExternalReferenceCode", skuExternalReferenceCode
 			).put(
 				"terminationStatus", terminationStatus
 			));

@@ -19,7 +19,6 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
-import {getEntitlementSkuExternalReferenceCode} from '~/utils/getEntitlementSkuExternalReferenceCode';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {
@@ -113,10 +112,6 @@ export type ProjectProduct = {
 
 type EntitlementNode = {
 	endDate?: string;
-	entitlementDefinitionToEntitlement?: {
-		displayName?: string;
-		skuExternalReferenceCode?: string;
-	};
 	externalReferenceCode: string;
 	name: string;
 	r_contractToEntitlement_c_contractId?: number;
@@ -230,8 +225,7 @@ function toProductEntitlements(
 	return (entitlementNodes ?? [])
 		.map((entitlement) => ({
 			endDate: entitlement.endDate,
-			skuExternalReferenceCode:
-				getEntitlementSkuExternalReferenceCode(entitlement),
+			skuExternalReferenceCode: entitlement.skuExternalReferenceCode,
 		}))
 		.filter((entitlement) => entitlement.skuExternalReferenceCode);
 }
@@ -446,13 +440,11 @@ export function projectEntitlementsQuery(
 			fetchAllPages((page) =>
 				fetcher<APIResponse<EntitlementNode>>(
 					`/o/c/entitlements?${new URLSearchParams({
-						fields: 'entitlementDefinitionToEntitlement.skuExternalReferenceCode,externalReferenceCode,r_contractToEntitlement_c_contractId,skuExternalReferenceCode',
+						fields: 'externalReferenceCode,r_contractToEntitlement_c_contractId,skuExternalReferenceCode',
 						filter: SearchBuilder.eq(
 							'r_projectToEntitlement_c_projectERC',
 							projectExternalReferenceCode
 						),
-						nestedFields: 'entitlementDefinitionToEntitlement',
-						nestedFieldsDepth: '1',
 						page: page.toString(),
 						pageSize: PAGE_SIZE.toString(),
 					})}`
@@ -557,9 +549,7 @@ function useAccountContractsWithEntitlements() {
 		() =>
 			fetchAllPages((page) =>
 				getAccountContractsPage(accountId, page, {
-					nestedFields:
-						'contractToEntitlement,entitlementDefinitionToEntitlement',
-					nestedFieldsDepth: '2',
+					nestedFields: 'contractToEntitlement',
 				})
 			)
 	);

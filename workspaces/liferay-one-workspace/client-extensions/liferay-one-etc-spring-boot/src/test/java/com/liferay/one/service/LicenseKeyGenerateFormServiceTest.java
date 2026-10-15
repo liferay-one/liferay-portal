@@ -246,13 +246,13 @@ public class LicenseKeyGenerateFormServiceTest {
 						"id", 2L
 					).put(
 						"name", EntitlementConstants.NAME_DISASTER_RECOVERY
-					).put(
-						"skuExternalReferenceCode", "DISASTER-RECOVERY"
 					)
 				).put(
 					"id", 2L
 				).put(
 					"name", EntitlementConstants.NAME_DISASTER_RECOVERY
+				).put(
+					"skuExternalReferenceCode", "DISASTER-RECOVERY"
 				)));
 
 		List<Object> entitledProducts = _getEntitledProducts(
@@ -1049,11 +1049,11 @@ public class LicenseKeyGenerateFormServiceTest {
 					"name",
 					LicenseKeyGenerationConstants.
 						ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION
-				).put(
-					"skuExternalReferenceCode", skuExternalReferenceCode
 				)
 			).put(
 				"id", entitlementId
+			).put(
+				"skuExternalReferenceCode", skuExternalReferenceCode
 			));
 	}
 

@@ -375,9 +375,6 @@ public class EntitlementServiceTest {
 
 		Assertions.assertEquals(
 			1, entitlementDefinition.getEntitlementDefinitionId());
-		Assertions.assertEquals(
-			_SKU_EXTERNAL_REFERENCE_CODE,
-			entitlementDefinition.getSkuExternalReferenceCode());
 		Assertions.assertEquals("TiB", entitlementDefinition.getUnit());
 	}
 
@@ -604,8 +601,6 @@ public class EntitlementServiceTest {
 			).put(
 				"id", entitlementDefinitionId
 			).put(
-				"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
-			).put(
 				"unit", "TiB"
 			));
 
@@ -627,8 +622,6 @@ public class EntitlementServiceTest {
 				"id", entitlementDefinitionId
 			).put(
 				"name", name
-			).put(
-				"skuExternalReferenceCode", _SKU_EXTERNAL_REFERENCE_CODE
 			));
 	}
 

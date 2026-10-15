@@ -2003,8 +2003,6 @@ public class LicenseKeyGenerationServiceTest {
 		).put(
 			"licenseKeyFamily",
 			_licenseKeyFamilies.get(skuExternalReferenceCode)
-		).put(
-			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 
 		if (licenseKeyType != null) {
@@ -2020,6 +2018,8 @@ public class LicenseKeyGenerationServiceTest {
 			"id", entitlementId
 		).put(
 			"name", "Entitlement " + entitlementId
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 
 		if (endDate != null) {

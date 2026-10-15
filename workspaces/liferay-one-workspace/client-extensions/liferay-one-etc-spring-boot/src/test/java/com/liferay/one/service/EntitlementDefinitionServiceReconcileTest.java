@@ -59,6 +59,15 @@ public class EntitlementDefinitionServiceReconcileTest {
 			Collections.emptyList()
 		).when(
 			_entitlementDefinitionService
+		).getAllItems(
+			ArgumentMatchers.eq(_ENTITLEMENT_DEFINITION_SKUS_PATH),
+			ArgumentMatchers.isNull(), ArgumentMatchers.any()
+		);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementDefinitionService
 		).getEntitlementDefinitions(
 			"active eq true"
 		);
@@ -179,6 +188,9 @@ public class EntitlementDefinitionServiceReconcileTest {
 			"productStatus", productStatus
 		);
 	}
+
+	private static final String _ENTITLEMENT_DEFINITION_SKUS_PATH =
+		"/o/c/entitlementdefinitionskus";
 
 	private static final String _PRODUCTS_PATH =
 		"/o/headless-commerce-admin-catalog/v1.0/products";

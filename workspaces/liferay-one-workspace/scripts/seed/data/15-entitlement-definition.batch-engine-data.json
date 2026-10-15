@@ -18,7 +18,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "productRecommendations",
-			"skuExternalReferenceCode": "01tVO000007m14DYAQ",
 			"unit": "boolean"
 		},
 		{
@@ -29,7 +28,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "disasterRecovery",
-			"skuExternalReferenceCode": "01tVO00000F8DYvYAN",
 			"unit": "boolean"
 		},
 		{
@@ -41,7 +39,6 @@
 			"maxQuantity": 100,
 			"name": "storage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
-			"skuExternalReferenceCode": "01t4u00000f7jPBAAY",
 			"unit": "GB"
 		},
 		{
@@ -53,7 +50,6 @@
 			"maxQuantity": 4,
 			"name": "vcpu",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkfYAD",
 			"unit": "vCPU"
 		},
 		{
@@ -65,7 +61,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 			"unit": "boolean"
 		},
 		{
@@ -77,7 +72,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000TVrljYAD",
 			"unit": "boolean"
 		},
 		{
@@ -89,7 +83,6 @@
 			"maxQuantity": 50000000,
 			"name": "aiTokens",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
-			"skuExternalReferenceCode": "01tVO00000TVrljYAD",
 			"unit": "tokens"
 		},
 		{
@@ -101,7 +94,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UlE1RYAV",
 			"unit": "boolean"
 		},
 		{
@@ -113,7 +105,6 @@
 			"maxQuantity": 50000000,
 			"name": "aiTokens",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
-			"skuExternalReferenceCode": "01tVO00000UlE1RYAV",
 			"unit": "tokens"
 		},
 		{
@@ -125,7 +116,6 @@
 			"maxQuantity": 50000000,
 			"name": "aiTokens",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
-			"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 			"unit": "tokens"
 		},
 		{
@@ -137,7 +127,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000fKEejAAG",
 			"unit": "boolean"
 		},
 		{
@@ -148,7 +137,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-APP",
 			"unit": "boolean"
 		},
 		{
@@ -160,7 +148,6 @@
 			"licenseKeyFamily": "Cloud Native",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "boolean"
 		},
 		{
@@ -173,7 +160,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "boolean"
 		},
 		{
@@ -183,7 +169,6 @@
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION",
 			"grantType": "unlimited",
 			"name": "non-production-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "count"
 		},
 		{
@@ -194,7 +179,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "production-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "count"
 		},
 		{
@@ -205,7 +189,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "uat-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "count"
 		},
 		{
@@ -218,7 +201,6 @@
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "boolean"
 		},
 		{
@@ -229,7 +211,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 5,
 			"name": "production-pods",
-			"skuExternalReferenceCode": "01tVO00000QYrkwYAD",
 			"unit": "count"
 		},
 		{
@@ -242,7 +223,6 @@
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "boolean"
 		},
 		{
@@ -255,7 +235,6 @@
 			"licenseKeyType": "uat",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD",
 			"unit": "boolean"
 		},
 		{
@@ -266,7 +245,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dIUqlAAG",
 			"unit": "boolean"
 		},
 		{
@@ -277,7 +255,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dchPtAAI",
 			"unit": "boolean"
 		},
 		{
@@ -290,7 +267,6 @@
 			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -304,7 +280,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -318,7 +293,6 @@
 			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -330,7 +304,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -341,7 +314,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 25,
 			"name": "active-batch-segments",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "count"
 		},
 		{
@@ -352,7 +324,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 10,
 			"name": "active-real-time-segments",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "count"
 		},
 		{
@@ -364,7 +335,6 @@
 			"maxQuantity": 500000,
 			"name": "api-requests",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "api-requests-monthly",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "count"
 		},
 		{
@@ -375,7 +345,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 10,
 			"name": "connectors",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "count"
 		},
 		{
@@ -389,7 +358,6 @@
 			"overageRate": 20,
 			"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
 			"unit": "count"
 		},
 		{
@@ -401,7 +369,6 @@
 			"maxQuantity": 1,
 			"name": "events-add-on-bucket",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
-			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
 			"unit": "count"
 		},
 		{
@@ -413,7 +380,6 @@
 			"maxQuantity": 1,
 			"name": "events-overage-bucket",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
-			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
 			"unit": "count"
 		},
 		{
@@ -426,7 +392,6 @@
 			"licenseKeyFamily": "DSR",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNyYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -440,7 +405,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000UccNyYAJ",
 			"unit": "boolean"
 		},
 		{
@@ -453,7 +417,6 @@
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -467,7 +430,6 @@
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -482,7 +444,6 @@
 			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -496,7 +457,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -510,7 +470,6 @@
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -524,7 +483,6 @@
 			"licenseKeyType": "free",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -538,7 +496,6 @@
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -552,7 +509,6 @@
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -566,7 +522,6 @@
 			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-DXP",
 			"unit": "boolean"
 		},
 		{
@@ -577,7 +532,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dIUt6AAG",
 			"unit": "boolean"
 		},
 		{
@@ -588,7 +542,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000aN0VrAAK",
 			"unit": "boolean"
 		},
 		{
@@ -599,7 +552,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-OPENSEARCH",
 			"unit": "boolean"
 		},
 		{
@@ -610,7 +562,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "boolean"
 		},
 		{
@@ -624,7 +575,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
 		{
@@ -636,7 +586,6 @@
 			"maxQuantity": 1,
 			"name": "database-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -650,7 +599,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
 		{
@@ -662,7 +610,6 @@
 			"maxQuantity": 1,
 			"name": "extensions-ram-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -676,7 +623,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "vCPU"
 		},
 		{
@@ -688,7 +634,6 @@
 			"maxQuantity": 1,
 			"name": "extensions-vcpus-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -699,7 +644,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dIUryAAG",
 			"unit": "boolean"
 		},
 		{
@@ -713,7 +657,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "GiB"
 		},
 		{
@@ -725,7 +668,6 @@
 			"maxQuantity": 1,
 			"name": "logs-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -739,7 +681,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "TiB"
 		},
 		{
@@ -751,7 +692,6 @@
 			"maxQuantity": 1,
 			"name": "storage-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -765,7 +705,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkpYAD",
 			"unit": "TiB"
 		},
 		{
@@ -777,7 +716,6 @@
 			"maxQuantity": 1,
 			"name": "traffic-networking-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"skuExternalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -788,7 +726,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t7000000Py0lQAAR",
 			"unit": "boolean"
 		},
 		{
@@ -799,7 +736,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t7000000Py0lGAAR",
 			"unit": "boolean"
 		},
 		{
@@ -810,7 +746,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dZ1xZAAS",
 			"unit": "boolean"
 		},
 		{
@@ -821,7 +756,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000001AeqPAAS",
 			"unit": "boolean"
 		},
 		{
@@ -832,7 +766,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002lsiNAAQ",
 			"unit": "boolean"
 		},
 		{
@@ -843,7 +776,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t7000000HvFTkAAN",
 			"unit": "boolean"
 		},
 		{
@@ -854,7 +786,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t7000000Py0tgAAB",
 			"unit": "boolean"
 		},
 		{
@@ -867,7 +798,6 @@
 			"licenseKeyFamily": "Portal",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -881,7 +811,6 @@
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -895,7 +824,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -909,7 +837,6 @@
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -920,7 +847,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002mUasAAE",
 			"unit": "boolean"
 		},
 		{
@@ -934,7 +860,6 @@
 			"licenseKeyType": "free",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -948,7 +873,6 @@
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -962,7 +886,6 @@
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -976,7 +899,6 @@
 			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t70000002ljneAAA",
 			"unit": "boolean"
 		},
 		{
@@ -987,7 +909,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dkXqyAAE",
 			"unit": "boolean"
 		},
 		{
@@ -998,7 +919,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "boolean"
 		},
 		{
@@ -1009,8 +929,7 @@
 			"grantType": "fixed",
 			"maxQuantity": 1000000,
 			"name": "apv",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "page-views-monthly",
-			"skuExternalReferenceCode": "01t4u00000f7jQnAAI"
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "page-views-monthly"
 		},
 		{
 			"active": true,
@@ -1021,7 +940,6 @@
 			"maxQuantity": 100,
 			"name": "document-library-size",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "GB"
 		},
 		{
@@ -1032,7 +950,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-saas-business",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "boolean"
 		},
 		{
@@ -1043,7 +960,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "boolean"
 		},
 		{
@@ -1054,7 +970,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 4,
 			"name": "ram",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "GB"
 		},
 		{
@@ -1065,7 +980,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 15,
 			"name": "sites",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "count"
 		},
 		{
@@ -1076,7 +990,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 8,
 			"name": "vcpu",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI",
 			"unit": "vCPU"
 		},
 		{
@@ -1090,7 +1003,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
 		{
@@ -1102,7 +1014,6 @@
 			"maxQuantity": 1,
 			"name": "database-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1114,7 +1025,6 @@
 			"maxQuantity": 300,
 			"name": "document-library-size",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "GB"
 		},
 		{
@@ -1125,7 +1035,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-saas-enterprise",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "boolean"
 		},
 		{
@@ -1136,7 +1045,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "boolean"
 		},
 		{
@@ -1147,7 +1055,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 6,
 			"name": "ram",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "GB"
 		},
 		{
@@ -1157,7 +1064,6 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_SITES",
 			"grantType": "unlimited",
 			"name": "sites",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "count"
 		},
 		{
@@ -1168,7 +1074,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 12,
 			"name": "vcpu",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI",
 			"unit": "vCPU"
 		},
 		{
@@ -1182,7 +1087,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
 		{
@@ -1194,7 +1098,6 @@
 			"maxQuantity": 1,
 			"name": "extensions-ram-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1208,7 +1111,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "vCPU"
 		},
 		{
@@ -1220,7 +1122,6 @@
 			"maxQuantity": 1,
 			"name": "extensions-vcpus-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1232,7 +1133,6 @@
 			"maxQuantity": 100,
 			"name": "document-library-size",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
-			"skuExternalReferenceCode": "01t4u00000dZBxHAAW",
 			"unit": "GB"
 		},
 		{
@@ -1243,7 +1143,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t4u00000dZBxAAAW",
 			"unit": "boolean"
 		},
 		{
@@ -1257,7 +1156,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "GiB"
 		},
 		{
@@ -1269,7 +1167,6 @@
 			"maxQuantity": 1,
 			"name": "logs-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1279,8 +1176,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_MALU_5000",
 			"grantType": "fixed",
 			"maxQuantity": 5000,
-			"name": "malu",
-			"skuExternalReferenceCode": "01t4u00000f7jPfAAI"
+			"name": "malu"
 		},
 		{
 			"active": true,
@@ -1291,7 +1187,6 @@
 			"maxQuantity": 50,
 			"name": "document-library-size",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI",
 			"unit": "GB"
 		},
 		{
@@ -1302,7 +1197,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-saas-pro",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI",
 			"unit": "boolean"
 		},
 		{
@@ -1313,7 +1207,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "ram",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI",
 			"unit": "GB"
 		},
 		{
@@ -1324,7 +1217,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 2,
 			"name": "sites",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI",
 			"unit": "count"
 		},
 		{
@@ -1335,7 +1227,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "vcpu",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI",
 			"unit": "vCPU"
 		},
 		{
@@ -1349,7 +1240,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "TiB"
 		},
 		{
@@ -1361,7 +1251,6 @@
 			"maxQuantity": 1,
 			"name": "storage-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1375,7 +1264,6 @@
 			"overageSkuExternalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"skuExternalReferenceCode": "01tVO00000QYrkoYAD",
 			"unit": "TiB"
 		},
 		{
@@ -1387,7 +1275,6 @@
 			"maxQuantity": 1,
 			"name": "traffic-networking-overage",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"skuExternalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
 			"unit": "count"
 		},
 		{
@@ -1398,7 +1285,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-SAMPLE-APP",
 			"unit": "boolean"
 		},
 		{
@@ -1409,7 +1295,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-SAMPLE-CLOUD-APP",
 			"unit": "boolean"
 		},
 		{
@@ -1420,7 +1305,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01tVO000000jLLGYA2",
 			"unit": "boolean"
 		},
 		{
@@ -1432,7 +1316,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-APP",
 			"unit": "boolean"
 		},
 		{
@@ -1443,7 +1326,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-CLIENT-EXTENSION",
 			"unit": "boolean"
 		},
 		{
@@ -1454,7 +1336,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-COMPOSITE-APP",
 			"unit": "boolean"
 		},
 		{
@@ -1466,7 +1347,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-CRM-ACCELERATOR",
 			"unit": "boolean"
 		},
 		{
@@ -1477,7 +1357,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-LOW-CODE-CONFIGURATION",
 			"unit": "boolean"
 		},
 		{
@@ -1489,7 +1368,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-PARTNER-PORTAL",
 			"unit": "boolean"
 		},
 		{
@@ -1501,7 +1379,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-SLACK-CONNECTOR",
 			"unit": "boolean"
 		},
 		{
@@ -1513,7 +1390,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-TEST-THEME-PACK",
 			"unit": "boolean"
 		},
 		{
@@ -1524,7 +1400,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "PRDCT-ZENDESK",
 			"unit": "boolean"
 		},
 		{
@@ -1535,7 +1410,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 5000,
 			"name": "aiTokenBlock",
-			"skuExternalReferenceCode": "01tVO00000TVrlkYAD",
 			"unit": "tokens"
 		},
 		{
@@ -1546,7 +1420,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 20000,
 			"name": "aiTokenBlock",
-			"skuExternalReferenceCode": "01tVO00000TVrllYAD",
 			"unit": "tokens"
 		},
 		{
@@ -1557,7 +1430,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 50000,
 			"name": "aiTokenBlock",
-			"skuExternalReferenceCode": "01tVO00000TVrlmYAD",
 			"unit": "tokens"
 		},
 		{
@@ -1570,7 +1442,6 @@
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1584,7 +1455,6 @@
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1599,7 +1469,6 @@
 			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1613,7 +1482,6 @@
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1627,7 +1495,6 @@
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1641,7 +1508,6 @@
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1655,7 +1521,6 @@
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1669,7 +1534,6 @@
 			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY",
 			"unit": "boolean"
 		},
 		{
@@ -1680,7 +1544,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-enterprise-solution",
-			"skuExternalReferenceCode": "01t0g00000c8fFiAAI",
 			"unit": "boolean"
 		},
 		{
@@ -1691,7 +1554,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
-			"skuExternalReferenceCode": "01t7000000QIzKyAAL",
 			"unit": "boolean"
 		},
 		{
@@ -1702,7 +1564,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-paas-business-solution-bundle",
-			"skuExternalReferenceCode": "01t4u00000dchPoAAI",
 			"unit": "boolean"
 		},
 		{
@@ -1713,7 +1574,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "dynatrace-for-liferay-paas-s",
-			"skuExternalReferenceCode": "01t0g00000UvVqAAAV",
 			"unit": "boolean"
 		},
 		{
@@ -1724,7 +1584,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-saas-malu-overage-fee",
-			"skuExternalReferenceCode": "01t4u00000f7jyBAAQ",
 			"unit": "boolean"
 		},
 		{
@@ -1735,7 +1594,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "liferay-saas-apv-overage-fee",
-			"skuExternalReferenceCode": "01t4u00000f7jyGAAQ",
 			"unit": "boolean"
 		},
 		{
@@ -1746,7 +1604,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "managed-services-base-package",
-			"skuExternalReferenceCode": "01tVO000005Hh2TYAS",
 			"unit": "boolean"
 		},
 		{
@@ -1757,7 +1614,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "managed-services-additional-uat-environment",
-			"skuExternalReferenceCode": "01tVO000005HfYYYA0",
 			"unit": "boolean"
 		},
 		{
@@ -1768,7 +1624,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "consulting-architect",
-			"skuExternalReferenceCode": "01t0g00000OM9MlAAL",
 			"unit": "boolean"
 		},
 		{
@@ -1779,7 +1634,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "consulting-pre-paid-consulting",
-			"skuExternalReferenceCode": "01t0g00000OLxDvAAL",
 			"unit": "boolean"
 		},
 		{
@@ -1790,7 +1644,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "disasterRecovery",
-			"skuExternalReferenceCode": "01tVO00000QYrkdYAD",
 			"unit": "boolean"
 		},
 		{
@@ -1801,7 +1654,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "disasterRecovery",
-			"skuExternalReferenceCode": "01t4u00000dIUs3AAG",
 			"unit": "boolean"
 		},
 		{
@@ -1812,7 +1664,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 100,
 			"name": "storage",
-			"skuExternalReferenceCode": "01t4u00000dkhiXAAQ",
 			"unit": "GB"
 		}
 	]

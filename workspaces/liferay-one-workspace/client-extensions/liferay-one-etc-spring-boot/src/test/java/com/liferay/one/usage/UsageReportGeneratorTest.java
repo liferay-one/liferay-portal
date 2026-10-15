@@ -639,8 +639,6 @@ public class UsageReportGeneratorTest {
 				"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC",
 				_USAGE_DEFINITION_EXTERNAL_REFERENCE_CODE
 			).put(
-				"skuExternalReferenceCode", skuExternalReferenceCode
-			).put(
 				"unit", unit
 			)
 		).put(
@@ -653,6 +651,8 @@ public class UsageReportGeneratorTest {
 			"r_contractToEntitlement_c_contractId", _CONTRACT_ID
 		).put(
 			"r_projectToEntitlement_c_projectERC", projectExternalReferenceCode
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 
 		if (quantity != null) {

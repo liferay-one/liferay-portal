@@ -1,0 +1,759 @@
+{
+	"configuration": {
+		"className": "com.liferay.object.model.ObjectDefinition#C_ENTITLEMENT_DEFINITION_SKU",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "DEFAULT",
+			"updateStrategy": "UPDATE"
+		}
+	},
+	"items": [
+		{
+			"externalReferenceCode": "C_ENT_DEF_ADDON_COMMERCE_RECOMMENDATIONS_01tVO000007m14DYAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_COMMERCE_RECOMMENDATIONS",
+			"skuExternalReferenceCode": "01tVO000007m14DYAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ADDON_DISASTER_RECOVERY_01tVO00000F8DYvYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
+			"skuExternalReferenceCode": "01tVO00000F8DYvYAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ADDON_STORAGE_01t4u00000f7jPBAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_STORAGE",
+			"skuExternalReferenceCode": "01t4u00000f7jPBAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ADDON_VCPU_01tVO00000QYrkfYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ADDON_VCPU",
+			"skuExternalReferenceCode": "01tVO00000QYrkfYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_01tVO00000TVrlhYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB",
+			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_01tVO00000TVrljYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE",
+			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS_01tVO00000TVrljYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_01tVO00000UlE1RYAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_STUDIO",
+			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS_01tVO00000UlE1RYAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_STUDIO_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_TOKENS_01tVO00000TVrlhYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD_01t4u00000fKEejAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ANALYTICS_CLOUD",
+			"skuExternalReferenceCode": "01t4u00000fKEejAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_APP_PRDCT-APP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_APP",
+			"skuExternalReferenceCode": "PRDCT-APP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_DEVELOPER_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_PRODUCTION_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_PRODUCTION",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_UAT_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_ENV_UAT",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PODS_01tVO00000QYrkwYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_PODS",
+			"skuExternalReferenceCode": "01tVO00000QYrkwYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PRODUCTION_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_PRODUCTION",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_UAT_01tVO00000QYrl1YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CLOUD_NATIVE_UAT",
+			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_COMMERCE_01t4u00000dIUqlAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_COMMERCE",
+			"skuExternalReferenceCode": "01t4u00000dIUqlAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_COMMERCE_CLOUD_01t4u00000dchPtAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_COMMERCE_CLOUD",
+			"skuExternalReferenceCode": "01t4u00000dchPtAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_ARCHITECT_01t0g00000OM9MlAAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONSULTING_ARCHITECT",
+			"skuExternalReferenceCode": "01t0g00000OM9MlAAL"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_PREPAID_01t0g00000OLxDvAAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONSULTING_PREPAID",
+			"skuExternalReferenceCode": "01t0g00000OLxDvAAL"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_01tVO00000UccNzYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING",
+			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER_01tVO00000UccNzYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_PRODUCTION_01tVO00000UccNzYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_PRODUCTION",
+			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_BATCH_SEGMENTS_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_BATCH_SEGMENTS",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_REAL_TIME_SEGMENTS_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_REAL_TIME_SEGMENTS",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_API_REQUESTS_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_API_REQUESTS",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_CONNECTORS_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_CONNECTORS",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET_PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET",
+			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET_PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET",
+			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DSR_01tVO00000UccNyYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR",
+			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DSR_DEVELOPER_01tVO00000UccNyYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_BACKUP_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_BACKUP",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_COMPLIMENTARY_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_COMPLIMENTARY",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_FREE_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_FREE",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_NON_PRODUCTION_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_NON_PRODUCTION",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_PRODUCTION_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_PRODUCTION",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER_PRDCT-DXP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER",
+			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S_01t0g00000UvVqAAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"skuExternalReferenceCode": "01t0g00000UvVqAAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1_01t7000000QIzKyAAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
+			"skuExternalReferenceCode": "01t7000000QIzKyAAL"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH_01t4u00000dIUt6AAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ENTERPRISE_SEARCH",
+			"skuExternalReferenceCode": "01t4u00000dIUt6AAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD_01t0g00000aN0VrAAK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD",
+			"skuExternalReferenceCode": "01t0g00000aN0VrAAK"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY_01tVO00000QYrkdYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
+			"skuExternalReferenceCode": "01tVO00000QYrkdYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS_01t4u00000dchPoAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"skuExternalReferenceCode": "01t4u00000dchPoAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000_01tVO00000TVrllYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_20000",
+			"skuExternalReferenceCode": "01tVO00000TVrllYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000_01tVO00000TVrlmYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_50000",
+			"skuExternalReferenceCode": "01tVO00000TVrlmYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000_01tVO00000TVrlkYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_5000",
+			"skuExternalReferenceCode": "01tVO00000TVrlkYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_BASE_01tVO000005Hh2TYAS",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_MANAGED_SERVICES_BASE",
+			"skuExternalReferenceCode": "01tVO000005Hh2TYAS"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_UAT_01tVO000005HfYYYA0",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_MANAGED_SERVICES_UAT",
+			"skuExternalReferenceCode": "01tVO000005HfYYYA0"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_OPENSEARCH_PRDCT-OPENSEARCH",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_OPENSEARCH",
+			"skuExternalReferenceCode": "PRDCT-OPENSEARCH"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_APV_01t4u00000f7jyGAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_APV",
+			"skuExternalReferenceCode": "01t4u00000f7jyGAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_MALU_01t4u00000f7jyBAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_OVERAGE_MALU",
+			"skuExternalReferenceCode": "01t4u00000f7jyBAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_ADDON_STORAGE_01t4u00000dkhiXAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_ADDON_STORAGE",
+			"skuExternalReferenceCode": "01t4u00000dkhiXAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DATABASE",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE_OVERAGE_PRDCT-PAAS-DATABASE-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DATABASE_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DISASTER_RECOVERY_01t4u00000dIUs3AAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
+			"skuExternalReferenceCode": "01t4u00000dIUs3AAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_RAM",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_OVERAGE_PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_OVERAGE_PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_LEGACY_01t4u00000dIUryAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_LEGACY",
+			"skuExternalReferenceCode": "01t4u00000dIUryAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_LOGS_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_LOGS",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_LOGS_OVERAGE_PRDCT-PAAS-LOGS-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_LOGS_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_STORAGE",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE_OVERAGE_PRDCT-PAAS-STORAGE-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_STORAGE_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_OVERAGE_PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER_01t7000000Py0lQAAR",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER",
+			"skuExternalReferenceCode": "01t7000000Py0lQAAR"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION_01t7000000Py0lGAAR",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION",
+			"skuExternalReferenceCode": "01t7000000Py0lGAAR"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_RESELLER_01t4u00000dZ1xZAAS",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_RESELLER",
+			"skuExternalReferenceCode": "01t4u00000dZ1xZAAS"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SERVICE_01t70000001AeqPAAS",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_SERVICE",
+			"skuExternalReferenceCode": "01t70000001AeqPAAS"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER_01t70000002lsiNAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
+			"skuExternalReferenceCode": "01t70000002lsiNAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TRAINING_01t7000000HvFTkAAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_TRAINING",
+			"skuExternalReferenceCode": "01t7000000HvFTkAAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_VAR_01t7000000Py0tgAAB",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_VAR",
+			"skuExternalReferenceCode": "01t7000000Py0tgAAB"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_BACKUP_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_BACKUP",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_DEVELOPER",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA_01t70000002mUasAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_EWSA",
+			"skuExternalReferenceCode": "01t70000002mUasAAE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_FREE_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_FREE",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_NON_PRODUCTION_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_NON_PRODUCTION",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_PRODUCTION_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_PRODUCTION",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT_01t4u00000dkXqyAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT",
+			"skuExternalReferenceCode": "01t4u00000dkXqyAAE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_APV_1M_01t4u00000f7jQnAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_APV_1M",
+			"skuExternalReferenceCode": "01t4u00000f7jQnAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_DOCUMENT_LIBRARY_SIZE_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_DOCUMENT_LIBRARY_SIZE",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_MARKER_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_MARKER",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_PLAN_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_PLAN",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_RAM_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_RAM",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_SITES_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_SITES",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_VCPU_01t4u00000f7jP1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_BUSINESS_VCPU",
+			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_DATABASE_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_DATABASE",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_DATABASE_OVERAGE_PRDCT-SAAS-DATABASE-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_DATABASE_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_DOCUMENT_LIBRARY_SIZE_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_DOCUMENT_LIBRARY_SIZE",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_MARKER_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_MARKER",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_PLAN_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_PLAN",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_RAM_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_RAM",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_SITES_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_SITES",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_VCPU_01t4u00000f7jP6AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_VCPU",
+			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_RAM",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_OVERAGE_PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_OVERAGE_PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTRA_STORAGE_DL_01t4u00000dZBxHAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTRA_STORAGE_DL",
+			"skuExternalReferenceCode": "01t4u00000dZBxHAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_LEGACY_01t4u00000dZBxAAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_LEGACY",
+			"skuExternalReferenceCode": "01t4u00000dZBxAAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_LOGS",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS_OVERAGE_PRDCT-SAAS-LOGS-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_LOGS_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_MALU_5000_01t4u00000f7jPfAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_MALU_5000",
+			"skuExternalReferenceCode": "01t4u00000f7jPfAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_DOCUMENT_LIBRARY_SIZE_01t4u00000f7jOwAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_PRO_DOCUMENT_LIBRARY_SIZE",
+			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_MARKER_01t4u00000f7jOwAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_PRO_MARKER",
+			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_RAM_01t4u00000f7jOwAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_PRO_RAM",
+			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_SITES_01t4u00000f7jOwAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_PRO_SITES",
+			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_VCPU_01t4u00000f7jOwAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_PRO_VCPU",
+			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_STORAGE_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_STORAGE",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_STORAGE_OVERAGE_PRDCT-SAAS-STORAGE-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_STORAGE_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_OVERAGE_PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_OVERAGE",
+			"skuExternalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAMPLE_APP_PRDCT-SAMPLE-APP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAMPLE_APP",
+			"skuExternalReferenceCode": "PRDCT-SAMPLE-APP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SAMPLE_CLOUD_APP_PRDCT-SAMPLE-CLOUD-APP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAMPLE_CLOUD_APP",
+			"skuExternalReferenceCode": "PRDCT-SAMPLE-CLOUD-APP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_BACKUP_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_BACKUP",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_COMPLIMENTARY_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_COMPLIMENTARY",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE_01t0g00000c8fFiAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
+			"skuExternalReferenceCode": "01t0g00000c8fFiAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_NON_PRODUCTION_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_NON_PRODUCTION",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_PRODUCTION_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_PRODUCTION",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL_01tVO000000jLLGYA2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SSA_TRIAL",
+			"skuExternalReferenceCode": "01tVO000000jLLGYA2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_APP_PRDCT-TEST-APP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_APP",
+			"skuExternalReferenceCode": "PRDCT-TEST-APP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_CLIENT_EXTENSION_PRDCT-TEST-CLIENT-EXTENSION",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CLIENT_EXTENSION",
+			"skuExternalReferenceCode": "PRDCT-TEST-CLIENT-EXTENSION"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_COMPOSITE_APP_PRDCT-TEST-COMPOSITE-APP",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_COMPOSITE_APP",
+			"skuExternalReferenceCode": "PRDCT-TEST-COMPOSITE-APP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_CRM_ACCELERATOR_PRDCT-TEST-CRM-ACCELERATOR",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
+			"skuExternalReferenceCode": "PRDCT-TEST-CRM-ACCELERATOR"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION_PRDCT-TEST-LOW-CODE-CONFIGURATION",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION",
+			"skuExternalReferenceCode": "PRDCT-TEST-LOW-CODE-CONFIGURATION"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_PARTNER_PORTAL_PRDCT-TEST-PARTNER-PORTAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_PARTNER_PORTAL",
+			"skuExternalReferenceCode": "PRDCT-TEST-PARTNER-PORTAL"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_SLACK_CONNECTOR_PRDCT-TEST-SLACK-CONNECTOR",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
+			"skuExternalReferenceCode": "PRDCT-TEST-SLACK-CONNECTOR"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_TEST_THEME_PACK_PRDCT-TEST-THEME-PACK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_THEME_PACK",
+			"skuExternalReferenceCode": "PRDCT-TEST-THEME-PACK"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_ZENDESK_PRDCT-ZENDESK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ZENDESK",
+			"skuExternalReferenceCode": "PRDCT-ZENDESK"
+		}
+	]
+}
