@@ -188,7 +188,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public JSONObject getGenerateForm(
-			boolean admin, Project project,
+			boolean admin, Project project, boolean provisionable,
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
@@ -252,7 +252,7 @@ public class LicenseKeyGenerateFormService {
 				admin, allowComplimentary, hasComplimentaryActivationKey,
 				hasLicenseEntries, licenseKeyCounts,
 				entitledProduct.getLicenseKeyFamily(),
-				licenseKeyTypeEntitlements, productVersions);
+				licenseKeyTypeEntitlements, productVersions, provisionable);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -320,14 +320,15 @@ public class LicenseKeyGenerateFormService {
 		throws Exception {
 
 		JSONObject generateFormJSONObject = getGenerateForm(
-			admin, project, null);
+			admin, project, true, null);
 
 		return new JSONObject(
 		).put(
 			"cloudNativeKeyTypes",
 			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
 		).put(
-			"generatable", _isGeneratable(generateFormJSONObject)
+			"generatable",
+			_isGeneratable(generateFormJSONObject, provisionable)
 		).put(
 			"provisionable", provisionable
 		);
@@ -607,7 +608,7 @@ public class LicenseKeyGenerateFormService {
 		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
 		Map<Long, Integer> licenseKeyCounts, String licenseKeyFamily,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
-		List<ProductVersion> productVersions) {
+		List<ProductVersion> productVersions, boolean provisionable) {
 
 		JSONArray jsonArray = new JSONArray();
 
@@ -622,6 +623,10 @@ public class LicenseKeyGenerateFormService {
 				_licenseKeyTypeService.getLicenseKeyTypes()) {
 
 			if (!admin && _licenseKeyTypeService.isAdminType(licenseKeyType)) {
+				continue;
+			}
+
+			if (!provisionable && !_isDownloadable(licenseKeyType.getKey())) {
 				continue;
 			}
 
@@ -860,7 +865,14 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private boolean _isGeneratable(JSONObject generateFormJSONObject) {
+	private boolean _isDownloadable(String keyType) {
+		return LicenseKeyGenerationConstants.downloadableKeyTypes.contains(
+			keyType);
+	}
+
+	private boolean _isGeneratable(
+		JSONObject generateFormJSONObject, boolean provisionable) {
+
 		JSONArray productsJSONArray = generateFormJSONObject.getJSONArray(
 			"products");
 
@@ -873,6 +885,12 @@ public class LicenseKeyGenerateFormService {
 			for (int j = 0; j < keyTypesJSONArray.length(); j++) {
 				JSONObject keyTypeJSONObject = keyTypesJSONArray.getJSONObject(
 					j);
+
+				if (!provisionable &&
+					!_isDownloadable(keyTypeJSONObject.optString("key"))) {
+
+					continue;
+				}
 
 				JSONArray subscriptionsJSONArray =
 					keyTypeJSONObject.getJSONArray("subscriptions");

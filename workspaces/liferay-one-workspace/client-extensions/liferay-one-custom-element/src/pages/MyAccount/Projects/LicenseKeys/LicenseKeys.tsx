@@ -285,10 +285,11 @@ export default function LicenseKeys() {
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {environments, loading: loadingEnvironments} =
 		useProjectEnvironments();
-	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
+	const {hasActivationPermission, hasGeneratePermission} =
+		useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
 	const scope = useActivationKeyScope();
-	const {summary} = useActivationKeySummary(scope, hasActivationPermission);
+	const {summary} = useActivationKeySummary(scope, hasGeneratePermission);
 
 	const cloudNativeKeyTypes = useMemo(
 		() => summary?.cloudNativeKeyTypes ?? [],
@@ -505,7 +506,7 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					hasActivationPermission && summary?.generatable ? (
+					hasGeneratePermission && summary?.generatable ? (
 						<Button
 							displayType="primary"
 							onClick={() => handleNewKey()}

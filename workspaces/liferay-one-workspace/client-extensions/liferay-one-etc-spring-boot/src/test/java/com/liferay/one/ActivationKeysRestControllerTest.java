@@ -250,7 +250,14 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(false, project, null)
+			_environmentActivationPermission.containsSelfProvisioning(0L, null)
+		).thenReturn(
+			false
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, project, false, null)
 		).thenReturn(
 			new JSONObject(
 			).put(

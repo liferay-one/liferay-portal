@@ -25,6 +25,10 @@ type ActivationPermission = {
 	loading: boolean;
 };
 
+type LicenseKeyPermission = ActivationPermission & {
+	hasGeneratePermission: boolean;
+};
+
 type ProjectMembershipAPIItem = {
 	roleExternalReferenceCode: string;
 };
@@ -102,7 +106,7 @@ export function useHasActivationPermission(
 
 export function useHasLicenseKeyPermission(
 	projectExternalReferenceCode: string
-): ActivationPermission {
+): LicenseKeyPermission {
 	const {userAccountModel} = useOneContext();
 
 	const unassigned = isUnassignedProject(projectExternalReferenceCode);
@@ -129,11 +133,12 @@ export function useHasLicenseKeyPermission(
 	);
 
 	if (!activationPermission.hasActivationPermission) {
-		return activationPermission;
+		return {...activationPermission, hasGeneratePermission: false};
 	}
 
 	return {
 		hasActivationPermission: summary?.provisionable !== false,
+		hasGeneratePermission: true,
 		loading: activationPermission.loading || summaryLoading,
 	};
 }

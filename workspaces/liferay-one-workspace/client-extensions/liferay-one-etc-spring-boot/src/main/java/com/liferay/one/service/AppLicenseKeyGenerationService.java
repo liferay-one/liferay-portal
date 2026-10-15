@@ -105,19 +105,21 @@ public class AppLicenseKeyGenerationService {
 	public JSONObject getSummary(long accountEntryId, boolean provisionable)
 		throws Exception {
 
-		Map<Long, Integer> licenseKeyCounts =
-			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
-				accountEntryId);
-
 		boolean generatable = false;
 
-		for (AppEntitlement appEntitlement :
-				_getAppEntitlements(accountEntryId)) {
+		if (provisionable) {
+			Map<Long, Integer> licenseKeyCounts =
+				_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+					accountEntryId);
 
-			if (_getAvailableCount(appEntitlement, licenseKeyCounts) > 0) {
-				generatable = true;
+			for (AppEntitlement appEntitlement :
+					_getAppEntitlements(accountEntryId)) {
 
-				break;
+				if (_getAvailableCount(appEntitlement, licenseKeyCounts) > 0) {
+					generatable = true;
+
+					break;
+				}
 			}
 		}
 

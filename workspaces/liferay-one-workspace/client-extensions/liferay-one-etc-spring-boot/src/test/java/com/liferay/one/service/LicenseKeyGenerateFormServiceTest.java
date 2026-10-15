@@ -426,7 +426,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
-			"DXP", licenseKeyTypeEntitlements, Collections.emptyList());
+			"DXP", licenseKeyTypeEntitlements, Collections.emptyList(), true);
 
 		Assertions.assertEquals(1, jsonArray.length());
 
@@ -443,6 +443,62 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			0, subscriptionJSONObject.getInt("availableCount"));
 		Assertions.assertEquals(5, subscriptionJSONObject.getInt("totalCount"));
+	}
+
+	@Test
+	public void testGetKeyTypesWithoutSelfProvisioning() {
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Arrays.asList(
+				LicenseKeyType.PRODUCTION, LicenseKeyType.DEVELOPER,
+				LicenseKeyType.DEVELOPER_CLUSTER)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		Entitlement entitlement = _toEntitlement(5.0);
+
+		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+			HashMapBuilder.<String, Map<String, Entitlement>>put(
+				"DXP",
+				(Map<String, Entitlement>)HashMapBuilder.put(
+					"developer", entitlement
+				).put(
+					"developer-cluster", entitlement
+				).put(
+					"production", entitlement
+				).build()
+			).build();
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			false, false, Collections.emptyMap(), "DXP",
+			licenseKeyTypeEntitlements, Collections.emptyList(), false);
+
+		Assertions.assertEquals(2, jsonArray.length());
+		Assertions.assertEquals(
+			"developer",
+			jsonArray.getJSONObject(
+				0
+			).getString(
+				"key"
+			));
+		Assertions.assertEquals(
+			"developer-cluster",
+			jsonArray.getJSONObject(
+				1
+			).getString(
+				"key"
+			));
 	}
 
 	@Test
@@ -546,14 +602,14 @@ public class LicenseKeyGenerateFormServiceTest {
 		).when(
 			licenseKeyGenerateFormService
 		).getGenerateForm(
-			false, project, null
+			false, project, true, null
 		);
 
 		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
-			false, project, false);
+			false, project, true);
 
 		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
-		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
+		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
 
 		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
 
@@ -568,6 +624,39 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertFalse(jsonObject.has("products"));
 		Assertions.assertFalse(jsonObject.has("bundleProducts"));
+	}
+
+	@Test
+	public void testGetSummaryWithoutSelfProvisioningCountsOnlyDeveloperKeys()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			Mockito.spy(new LicenseKeyGenerateFormService());
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.doReturn(
+			_toGenerateFormJSONObject(
+				_toProductJSONObject(
+					"Cloud Native",
+					_toKeyTypeJSONObject(
+						"production", 3, "2026-12-31T00:00:00Z",
+						"2026-01-01T00:00:00Z")))
+		).when(
+			licenseKeyGenerateFormService
+		).getGenerateForm(
+			false, project, true, null
+		);
+
+		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
+			false, project, false);
+
+		Assertions.assertFalse(jsonObject.getBoolean("generatable"));
+		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
+
+		JSONArray jsonArray = jsonObject.getJSONArray("cloudNativeKeyTypes");
+
+		Assertions.assertEquals(1, jsonArray.length());
 	}
 
 	@Test
@@ -623,6 +712,7 @@ public class LicenseKeyGenerateFormServiceTest {
 	public void testIsGeneratableWithAnAvailableSubscription() {
 		Assertions.assertTrue(
 			_isGeneratable(
+				true,
 				_toProductJSONObject(
 					"DXP", _toKeyTypeJSONObject("production", 0, null, null),
 					_toKeyTypeJSONObject("developer", 2, null, null))));
@@ -632,13 +722,29 @@ public class LicenseKeyGenerateFormServiceTest {
 	public void testIsGeneratableWithEverySubscriptionSpent() {
 		Assertions.assertFalse(
 			_isGeneratable(
+				true,
 				_toProductJSONObject(
 					"DXP", _toKeyTypeJSONObject("production", 0, null, null))));
 	}
 
 	@Test
 	public void testIsGeneratableWithoutProducts() {
-		Assertions.assertFalse(_isGeneratable());
+		Assertions.assertFalse(_isGeneratable(true));
+	}
+
+	@Test
+	public void testIsGeneratableWithoutSelfProvisioning() {
+		Assertions.assertFalse(
+			_isGeneratable(
+				false,
+				_toProductJSONObject(
+					"DXP", _toKeyTypeJSONObject("production", 2, null, null))));
+		Assertions.assertTrue(
+			_isGeneratable(
+				false,
+				_toProductJSONObject(
+					"DXP", _toKeyTypeJSONObject("production", 2, null, null),
+					_toKeyTypeJSONObject("developer", 2, null, null))));
 	}
 
 	@Test
@@ -733,7 +839,7 @@ public class LicenseKeyGenerateFormServiceTest {
 					"complimentary", entitlement
 				).build()
 			).build(),
-			Collections.emptyList());
+			Collections.emptyList(), true);
 	}
 
 	private List<Object> _getEntitledProducts(
@@ -755,10 +861,12 @@ public class LicenseKeyGenerateFormServiceTest {
 			resolvedProducts);
 	}
 
-	private boolean _isGeneratable(JSONObject... productJSONObjects) {
+	private boolean _isGeneratable(
+		boolean provisionable, JSONObject... productJSONObjects) {
+
 		Boolean generatable = ReflectionTestUtils.invokeMethod(
 			new LicenseKeyGenerateFormService(), "_isGeneratable",
-			_toGenerateFormJSONObject(productJSONObjects));
+			_toGenerateFormJSONObject(productJSONObjects), provisionable);
 
 		return Boolean.TRUE.equals(generatable);
 	}

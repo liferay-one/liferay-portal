@@ -114,7 +114,7 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetLicenseKeysDeveloperDownloadChecksSelfProvisioning()
+	public void testGetLicenseKeysDeveloperDownloadSkipsSelfProvisioning()
 		throws Exception {
 
 		LicenseKeysRestController licenseKeysRestController =
@@ -143,12 +143,18 @@ public class LicenseKeysRestControllerTest {
 			_ACCOUNT_ID, null
 		);
 
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> licenseKeysRestController.getLicenseKeysDeveloperDownload(
-				null, null, "developer", "DXP", _PROJECT_ERC, "7.4"));
+		Mockito.when(
+			_licenseKeyGenerationService.generateDeveloperLicenseXML(
+				Collections.emptyList(), "developer", "DXP", project, "7.4")
+		).thenReturn(
+			"<license />"
+		);
 
-		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+		ResponseEntity<String> responseEntity =
+			licenseKeysRestController.getLicenseKeysDeveloperDownload(
+				null, null, "developer", "DXP", _PROJECT_ERC, "7.4");
+
+		Assertions.assertEquals("<license />", responseEntity.getBody());
 	}
 
 	@Test

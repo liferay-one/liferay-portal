@@ -171,6 +171,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		).body(
 			_licenseKeyGenerateFormService.getGenerateForm(
 				_adminPermission.contains(jwt), project,
+				_environmentActivationPermission.containsSelfProvisioning(
+					project.getAccountId(), jwt),
 				renewedActivationKeyExternalReferenceCode
 			).toString()
 		);

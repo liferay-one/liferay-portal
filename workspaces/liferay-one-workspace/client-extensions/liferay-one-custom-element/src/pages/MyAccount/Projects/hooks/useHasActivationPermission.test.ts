@@ -252,6 +252,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		expect(getRequestedURL()).toBeNull();
 		expect(result.current).toEqual({
 			hasActivationPermission: true,
+			hasGeneratePermission: true,
 			loading: false,
 		});
 	});
@@ -275,6 +276,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		);
 
 		expect(result.current.hasActivationPermission).toBe(false);
+		expect(result.current.hasGeneratePermission).toBe(false);
 	});
 
 	it('grants access to a license key manager account role on One Time Purchases without a membership request', () => {
@@ -287,6 +289,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		expect(getRequestedURL()).toBeNull();
 		expect(result.current).toEqual({
 			hasActivationPermission: true,
+			hasGeneratePermission: true,
 			loading: false,
 		});
 	});
@@ -312,7 +315,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		expect(result.current.hasActivationPermission).toBe(false);
 	});
 
-	it('denies access when the account does not allow self provisioning', () => {
+	it('keeps only generate access when the account does not allow self provisioning', () => {
 		mockContext({accountRoleNames: [PARTNER_MANAGER]});
 		mockSummary({provisionable: false});
 
@@ -326,6 +329,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		);
 		expect(result.current).toEqual({
 			hasActivationPermission: false,
+			hasGeneratePermission: true,
 			loading: false,
 		});
 	});
@@ -351,6 +355,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 
 		expect(result.current).toEqual({
 			hasActivationPermission: true,
+			hasGeneratePermission: true,
 			loading: false,
 		});
 	});

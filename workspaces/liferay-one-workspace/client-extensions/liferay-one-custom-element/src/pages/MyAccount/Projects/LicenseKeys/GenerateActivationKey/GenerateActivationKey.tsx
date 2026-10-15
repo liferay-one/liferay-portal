@@ -82,7 +82,7 @@ export default function GenerateActivationKey() {
 		scope,
 		renewExternalReferenceCode
 	);
-	const {hasActivationPermission, loading: permissionLoading} =
+	const {hasGeneratePermission, loading: permissionLoading} =
 		useHasLicenseKeyPermission(projectId);
 	const {hasWorkspace} = useHasWorkspace(projectId);
 	const {loading: renewLoading, renewSource} = useRenewSource(
@@ -633,7 +633,7 @@ export default function GenerateActivationKey() {
 		return <Loading />;
 	}
 
-	if (!hasActivationPermission) {
+	if (!hasGeneratePermission) {
 		return <Navigate replace to=".." />;
 	}
 

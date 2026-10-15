@@ -451,6 +451,21 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGetSummaryIsNotGeneratableWithoutSelfProvisioning()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		Assertions.assertFalse(
+			_appLicenseKeyGenerationService.getSummary(
+				_ACCOUNT_ID, false
+			).getBoolean(
+				"generatable"
+			));
+	}
+
+	@Test
 	public void testGetSummaryReportsProvisionable() throws Exception {
 		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
 		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));

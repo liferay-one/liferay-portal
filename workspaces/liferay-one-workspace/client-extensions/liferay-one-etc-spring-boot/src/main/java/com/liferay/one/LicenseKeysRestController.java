@@ -99,9 +99,6 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
 
-		_environmentActivationPermission.checkSelfProvisioning(
-			project.getAccountId(), jwt);
-
 		String licenseXML =
 			_licenseKeyGenerationService.generateDeveloperLicenseXML(
 				(bundleEntitlementIds == null) ? Collections.emptyList() :
