@@ -25,6 +25,7 @@ import {
 	isLDPProduct,
 	isLRTokensProduct,
 	isSEOStudioProduct,
+	isSelfServiceTrialProduct,
 	isTrialSKU,
 } from './productUtils';
 
@@ -251,6 +252,23 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 			expect(
 				isContactSalesProduct(toProduct([['solution-type', 'ai-hub']]))
 			).toBe(false);
+		});
+
+		it('routes the CMP and DSR trials to self service, not contact sales', () => {
+			for (const solutionType of ['cmp-trial', 'dsr-trial']) {
+				const product = toProduct([['solution-type', solutionType]]);
+
+				expect(isContactSalesProduct(product)).toBe(false);
+				expect(isSelfServiceTrialProduct(product)).toBe(true);
+			}
+
+			for (const solutionType of ['cmp', 'dsr', 'dxp']) {
+				expect(
+					isSelfServiceTrialProduct(
+						toProduct([['solution-type', solutionType]])
+					)
+				).toBe(false);
+			}
 		});
 
 		it('detects LDP and SEO Studio products', () => {
