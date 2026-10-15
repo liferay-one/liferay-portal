@@ -158,3 +158,16 @@ export function canAccessOrders(userAccountModel?: UserAccountModel | null) {
 		hasAnyAccountRole(userAccountModel)
 	);
 }
+
+export function canViewAllAccountProjects(
+	userAccountModel?: UserAccountModel | null
+) {
+	return Boolean(
+		userAccountModel?.isAccountAdministrator ||
+			userAccountModel?.isAccountMember ||
+			userAccountModel?.canManageAllAccounts ||
+			PARTNER_ACCOUNT_ROLES.some((roleName) =>
+				userAccountModel?.hasAccountRoleName(roleName)
+			)
+	);
+}

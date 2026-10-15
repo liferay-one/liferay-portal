@@ -9,6 +9,7 @@ import {
 	canAccessAccountMembers,
 	canAccessOrders,
 	canEditAccountDetails,
+	canViewAllAccountProjects,
 	getMembershipRoleNames,
 	getRoleExternalReferenceCodes,
 	hasAdministratorRole,
@@ -26,6 +27,7 @@ function toUserAccountModel(roleNames: string[], canManageAllAccounts = false) {
 	return {
 		canManageAllAccounts,
 		hasAccountRoleName: (roleName: string) => roleNames.includes(roleName),
+		isAccountMember: roleNames.includes('Account Member'),
 	} as unknown as UserAccountModel;
 }
 
@@ -190,6 +192,31 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 				canAccessOrders(toUserAccountModel(['Account Requester']))
 			).toBe(false);
 			expect(canAccessOrders(undefined)).toBe(false);
+		});
+	});
+
+	describe('canViewAllAccountProjects', () => {
+		it('allows an account member, a partner role, and the platform admin', () => {
+			expect(
+				canViewAllAccountProjects(
+					toUserAccountModel(['Account Member'])
+				)
+			).toBe(true);
+			expect(
+				canViewAllAccountProjects(
+					toUserAccountModel(['Partner Member'])
+				)
+			).toBe(true);
+			expect(
+				canViewAllAccountProjects(toUserAccountModel([], true))
+			).toBe(true);
+		});
+
+		it('denies a user without an account role', () => {
+			expect(canViewAllAccountProjects(toUserAccountModel([]))).toBe(
+				false
+			);
+			expect(canViewAllAccountProjects(null)).toBe(false);
 		});
 	});
 
