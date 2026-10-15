@@ -944,17 +944,19 @@ public class LicenseKeyGenerationService {
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
-			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0,
+			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
+			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
+			expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0, 0,
-			0, 0, _SIZING_DEFAULT, description, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, startDate, expirationDate);
+			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0,
+			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
+			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
+			expirationDate);
 	}
 
 	private String _toLicenseXML(
