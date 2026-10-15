@@ -15,6 +15,7 @@ import {
 	isContactSalesProduct,
 	isDXPFreeTierProduct,
 	isLDPProduct,
+	isSelfServiceTrialProduct,
 } from '~/utils/productUtils';
 import {AppRoute, toRouteObjects} from '~/utils/routeUtils';
 
@@ -42,7 +43,8 @@ const PurchaseCompleted = lazy(
 const ProductPurchaseRoutes = ({product}: {product: DeliveryProduct}) => {
 	const {isPaidApp} = getProductPriceModel(product);
 	const steps = getProductPurchaseSteps({
-		isDXPFreeOnly: isDXPFreeTierProduct(product),
+		isDXPFreeOnly:
+			isDXPFreeTierProduct(product) || isSelfServiceTrialProduct(product),
 		isLDP: isLDPProduct(product),
 		isPaidApp,
 		product,

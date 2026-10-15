@@ -25,6 +25,7 @@ import {
 	getProductPriceModel,
 	getProductType,
 	isDXPFreeTierProduct,
+	isSelfServiceTrialProduct,
 } from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
@@ -156,14 +157,17 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 		: 'continue-to-download';
 
 	const isDXPFree = isDXPFreeTierProduct(product);
+	const isSelfServiceTrial = isSelfServiceTrialProduct(product);
+
+	const isActivationKeyProduct = isDXPFree || isSelfServiceTrial;
 
 	const projectURL = `${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}`;
 
-	const myItemsURL = isDXPFree
+	const myItemsURL = isActivationKeyProduct
 		? `${projectURL}/products`
 		: `${projectURL}/applications`;
 
-	const itemDetailURL = isDXPFree
+	const itemDetailURL = isActivationKeyProduct
 		? `${projectURL}/products/${product.externalReferenceCode}?tab=activation`
 		: `${projectURL}/applications/${product.externalReferenceCode}?tab=${installTab}`;
 
@@ -187,11 +191,15 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 			</div>
 
 			<h1 className="mt-4 product-purchase-shell-title text-center">
-				{isDXPFree
+				{isSelfServiceTrial
 					? i18n.translate(
-							'your-free-activation-key-has-been-generated'
+							'your-trial-activation-key-has-been-generated'
 						)
-					: i18n.translate('purchase-completed')}
+					: isDXPFree
+						? i18n.translate(
+								'your-free-activation-key-has-been-generated'
+							)
+						: i18n.translate('purchase-completed')}
 			</h1>
 
 			<p
@@ -218,7 +226,9 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 					displayType="secondary"
 					onClick={() => Liferay.Util.navigate(myItemsURL)}
 				>
-					{i18n.translate(isDXPFree ? 'products' : 'go-to-my-apps')}
+					{i18n.translate(
+						isActivationKeyProduct ? 'products' : 'go-to-my-apps'
+					)}
 				</ClayButton>
 
 				<ClayButton
@@ -226,7 +236,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 					onClick={() => Liferay.Util.navigate(itemDetailURL)}
 				>
 					{i18n.translate(
-						isDXPFree ? 'activation-key' : installLabel
+						isActivationKeyProduct ? 'activation-key' : installLabel
 					)}
 				</ClayButton>
 			</div>
