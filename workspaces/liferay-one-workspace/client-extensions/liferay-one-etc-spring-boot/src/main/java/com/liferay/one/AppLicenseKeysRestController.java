@@ -126,8 +126,8 @@ public class AppLicenseKeysRestController extends OneBaseRestController {
 
 		return _licenseKeyService.addLicenseKey(
 			entitlement.getAccountEntryId(), StringPool.BLANK, 0, true,
-			StringPool.BLANK, null, false, null, description, StringPool.BLANK,
-			0, entitlementId,
+			StringPool.BLANK, false, null, description, StringPool.BLANK, 0,
+			entitlementId,
 			Date.from(Instant.parse(jsonObject.getString("expirationDate"))),
 			jsonObject.optString("hostName"),
 			jsonObject.optString("ipAddresses"), null, StringPool.BLANK,

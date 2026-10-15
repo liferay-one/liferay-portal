@@ -143,25 +143,24 @@ public class AppLicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(_ACCOUNT_ID, arguments[0]);
 		Assertions.assertEquals("Acme", arguments[1]);
 		Assertions.assertEquals(_ACTIVATION_KEY_ID, arguments[2]);
-		Assertions.assertEquals("PRDCT-APP", arguments[5]);
-		Assertions.assertEquals(false, arguments[6]);
-		Assertions.assertEquals("Staging", arguments[8]);
-		Assertions.assertEquals(1L, arguments[11]);
-		Assertions.assertEquals(expirationDate, arguments[12]);
-		Assertions.assertEquals("host-0", arguments[13]);
-		Assertions.assertNull(arguments[15]);
-		Assertions.assertEquals(StringPool.BLANK, arguments[16]);
-		Assertions.assertEquals("production", arguments[18]);
-		Assertions.assertEquals(3, arguments[19]);
-		Assertions.assertEquals("Staging", arguments[26]);
-		Assertions.assertEquals("owner@liferay.com", arguments[28]);
-		Assertions.assertEquals("app-uuid-1", arguments[29]);
-		Assertions.assertEquals("Acme App", arguments[30]);
-		Assertions.assertEquals("2.1.0", arguments[31]);
-		Assertions.assertNull(arguments[32]);
-		Assertions.assertEquals(startDate, arguments[35]);
+		Assertions.assertEquals(false, arguments[5]);
+		Assertions.assertEquals("Staging", arguments[7]);
+		Assertions.assertEquals(1L, arguments[10]);
+		Assertions.assertEquals(expirationDate, arguments[11]);
+		Assertions.assertEquals("host-0", arguments[12]);
+		Assertions.assertNull(arguments[14]);
+		Assertions.assertEquals(StringPool.BLANK, arguments[15]);
+		Assertions.assertEquals("production", arguments[17]);
+		Assertions.assertEquals(3, arguments[18]);
+		Assertions.assertEquals("Staging", arguments[25]);
+		Assertions.assertEquals("owner@liferay.com", arguments[27]);
+		Assertions.assertEquals("app-uuid-1", arguments[28]);
+		Assertions.assertEquals("Acme App", arguments[29]);
+		Assertions.assertEquals("2.1.0", arguments[30]);
+		Assertions.assertNull(arguments[31]);
+		Assertions.assertEquals(startDate, arguments[34]);
 
-		Assertions.assertEquals("host-1", addLicenseKeyArguments.get(1)[13]);
+		Assertions.assertEquals("host-1", addLicenseKeyArguments.get(1)[12]);
 	}
 
 	@Test
@@ -174,16 +173,16 @@ public class AppLicenseKeyGenerationServiceTest {
 		Mockito.when(
 			_licenseKeyService.addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
-				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.anyBoolean(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
+				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
-				Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
-				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
+				Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+				Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any())
 		).thenThrow(
 			new IllegalStateException()
 		);
@@ -216,8 +215,8 @@ public class AppLicenseKeyGenerationServiceTest {
 
 		Object[] arguments = _getAddLicenseKeyArguments().get(0);
 
-		Assertions.assertEquals("PRDCT-APP", arguments[29]);
-		Assertions.assertEquals("1", arguments[31]);
+		Assertions.assertEquals("PRDCT-APP", arguments[28]);
+		Assertions.assertEquals("1", arguments[30]);
 	}
 
 	@Test

@@ -846,8 +846,7 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyService.addLicenseKeyTypeFree(
-				_ACCOUNT_ID, _C_PRODUCT_ID, "example.com", "999",
-				"owner@example.com")
+				_ACCOUNT_ID, "example.com", "999", "owner@example.com")
 		).thenReturn(
 			licenseKey
 		);
@@ -943,8 +942,8 @@ public class LicenseKeysRestControllerTest {
 		Mockito.verify(
 			_licenseKeyService, Mockito.never()
 		).addLicenseKeyTypeFree(
-			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyString(),
-			Mockito.anyString(), Mockito.anyString()
+			Mockito.anyLong(), Mockito.anyString(), Mockito.anyString(),
+			Mockito.anyString()
 		);
 	}
 

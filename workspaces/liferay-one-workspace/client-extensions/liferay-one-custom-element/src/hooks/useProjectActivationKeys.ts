@@ -86,7 +86,6 @@ const PROJECT_LICENSE_KEY_FIELDS = [
 	'productName',
 	'productVersion',
 	'r_activationKeyToLicenseKey_c_activationKeyId',
-	'r_commerceProductToLicenseKey_CProductERC',
 	'startDate',
 ].join(',');
 

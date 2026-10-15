@@ -56,8 +56,7 @@ public class LicenseKeyService extends OneBaseService {
 
 	public LicenseKey addLicenseKey(
 			long accountEntryId, String accountName, long activationKeyId,
-			boolean active, String additionalInfo,
-			String commerceProductExternalReferenceCode, boolean complimentary,
+			boolean active, String additionalInfo, boolean complimentary,
 			String dataCenterLocation, String description, String domains,
 			long entitlementDefinitionId, long entitlementId,
 			Date expirationDate, String hostName, String ipAddresses,
@@ -153,9 +152,6 @@ public class LicenseKeyService extends OneBaseService {
 		).put(
 			"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
 		).put(
-			"r_commerceProductToLicenseKey_CProductERC",
-			commerceProductExternalReferenceCode
-		).put(
 			"r_projectToLicenseKey_c_projectERC", projectExternalReferenceCode
 		).put(
 			"serverId", serverId
@@ -180,8 +176,7 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public LicenseKey addLicenseKeyTypeFree(
-			long accountEntryId, long cProductId, String domains,
-			String orderId, String owner)
+			long accountEntryId, String domains, String orderId, String owner)
 		throws Exception {
 
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
@@ -242,8 +237,6 @@ public class LicenseKeyService extends OneBaseService {
 			"productVersion", productVersion
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
-		).put(
-			"r_commerceProductToLicenseKey_CProductId", cProductId
 		).put(
 			"startDate", _toISO8601(startDate)
 		);
@@ -758,11 +751,9 @@ public class LicenseKeyService extends OneBaseService {
 		return addLicenseKey(
 			licenseKey.getAccountEntryId(), licenseKey.getAccountName(),
 			licenseKey.getActivationKeyId(), true,
-			licenseKey.getAdditionalInfo(),
-			licenseKey.getCommerceProductExternalReferenceCode(),
-			licenseKey.isComplimentary(), licenseKey.getDataCenterLocation(),
-			licenseKey.getDescription(), licenseKey.getDomains(),
-			licenseKey.getEntitlementDefinitionId(),
+			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
+			licenseKey.getDataCenterLocation(), licenseKey.getDescription(),
+			licenseKey.getDomains(), licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
 			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
 			licenseKey.getLicenseKeyFamily(), licenseKey.getLicenseName(),

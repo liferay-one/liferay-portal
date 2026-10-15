@@ -8,7 +8,6 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
-import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
@@ -264,20 +263,16 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		Order order = _commerceOrderService.getCommerceOrder(orderId);
 
-		OrderItem[] orderItems = order.getOrderItems();
-
-		if (ArrayUtil.isEmpty(orderItems)) {
+		if (ArrayUtil.isEmpty(order.getOrderItems())) {
 			throw new ResponseStatusException(
 				HttpStatus.BAD_REQUEST,
 				"Order " + orderId + " has no order items");
 		}
 
 		Account account = order.getAccount();
-		OrderItem orderItem = orderItems[0];
 
 		LicenseKey licenseKey = _licenseKeyService.addLicenseKeyTypeFree(
-			account.getId(), orderItem.getProductId(), domains,
-			String.valueOf(orderId), owner);
+			account.getId(), domains, String.valueOf(orderId), owner);
 
 		Integer orderStatus = order.getOrderStatus();
 

@@ -721,12 +721,6 @@ def _check_references(report, universes, scope):
 		"license key",
 	)
 	check(
-		scope["license_keys"],
-		"r_commerceProductToLicenseKey_CProductERC",
-		"product",
-		"license key",
-	)
-	check(
 		scope["definition_skus"],
 		"r_entitlementDefinitionToSku_c_entitlementDefinitionERC",
 		"entitlement definition",

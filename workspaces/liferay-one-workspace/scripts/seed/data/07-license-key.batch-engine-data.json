@@ -27,7 +27,6 @@
 			"productName": "Test Application",
 			"productVersion": "7.4",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-APP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "16",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -49,7 +48,6 @@
 			"productName": "Test Application",
 			"productVersion": "2024.Q3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-APP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "8",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -72,7 +70,6 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "7.4",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "4",
 			"startDate": "2025-06-11T00:00:00Z"
@@ -95,7 +92,6 @@
 			"productName": "Content Marketing Platform",
 			"productVersion": "7.3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-027",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-CONTENT-MARKETING",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-027",
 			"sizing": "16",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -118,7 +114,6 @@
 			"productName": "Content Marketing Platform",
 			"productVersion": "2024.Q2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-027",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-CONTENT-MARKETING",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-027",
 			"sizing": "8",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -141,7 +136,6 @@
 			"productName": "Content Marketing Platform",
 			"productVersion": "2024.Q2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-027",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-CONTENT-MARKETING",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-027",
 			"sizing": "4",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -164,7 +158,6 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "2024.Q3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-010",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-LIFERAY-SAAS",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-010",
 			"sizing": "16",
 			"startDate": "2026-08-09T00:00:00Z"
@@ -187,7 +180,6 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "7.4",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "8",
 			"startDate": "2028-02-20T00:00:00Z"
@@ -209,7 +201,6 @@
 			"productName": "Liferay Data Platform",
 			"productVersion": "7.4",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-028",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DATA-PLATFORM",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-028",
 			"sizing": "4",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -231,7 +222,6 @@
 			"productName": "Liferay Data Platform",
 			"productVersion": "2024.Q1",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-028",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DATA-PLATFORM",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-028",
 			"sizing": "16",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -254,7 +244,6 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "7.4",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "8",
 			"startDate": "2028-01-12T00:00:00Z"
@@ -276,7 +265,6 @@
 			"productName": "Liferay DXP",
 			"productVersion": "2025.Q3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-001",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-001",
 			"sizing": "4",
 			"startDate": "2026-01-01T00:00:00Z"
@@ -298,7 +286,6 @@
 			"productName": "Liferay DXP",
 			"productVersion": "2025.Q2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-001",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-001",
 			"sizing": "2",
 			"startDate": "2025-01-01T00:00:00Z"
@@ -321,7 +308,6 @@
 			"productName": "Portal EE 6.x License (Production)",
 			"productVersion": "6.2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-015",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-PORTAL",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-015",
 			"sizing": "4",
 			"startDate": "2025-01-15T00:00:00Z"
@@ -344,7 +330,6 @@
 			"productName": "Portal EE 6.x License (Production)",
 			"productVersion": "6.2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-015",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-PORTAL",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-015",
 			"sizing": "16",
 			"startDate": "2025-08-23T00:00:00Z"
@@ -367,7 +352,6 @@
 			"productName": "Portal EE 6.x License (Production)",
 			"productVersion": "6.2",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-015",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-PORTAL",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-015",
 			"sizing": "8",
 			"startDate": "2026-01-05T00:00:00Z"
@@ -390,7 +374,6 @@
 			"productName": "Liferay DXP - Free Tier",
 			"productVersion": "2024.Q3",
 			"r_accountEntryToLicenseKey_accountEntryERC": "ACCNT-006",
-			"r_commerceProductToLicenseKey_CProductERC": "PRDCT-DXP",
 			"r_projectToLicenseKey_c_projectERC": "PRJCT-006",
 			"sizing": "4",
 			"startDate": "2027-02-27T00:00:00Z"

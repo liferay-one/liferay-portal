@@ -70,7 +70,6 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				name: '',
 				orderId: '',
 				owner: '',
-				productExternalReferenceCode: '',
 				productName: '',
 				productVersion: '',
 				sizing: '',
@@ -90,7 +89,6 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				id: 42,
 				name: 'Key',
 				r_activationKeyToLicenseKey_c_activationKeyId: 11,
-				r_commerceProductToLicenseKey_CProductERC: 'PRDCT-1',
 				startDate: '2026-01-01',
 			});
 
@@ -103,7 +101,6 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				externalReferenceCode: 'LK-1',
 				licenseKeyId: '42',
 				name: 'Key',
-				productExternalReferenceCode: 'PRDCT-1',
 				startDate: '2026-01-01',
 			});
 		});

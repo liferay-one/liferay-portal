@@ -488,13 +488,12 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic 鈥
 | FK `entitlementId` | long | |
 | `orderId` | long | FK to CommerceOrderItem via `assetReceiptLicenseUuid` |
 | `entitlementName` | string | Name of the attached entitlement |
-| FK `CProductId` | long | |
 | `accountEntryCode` | string | Denormalized |
 | `accountEntryName` | string | Denormalized |
 | `licenseName` | string | Hard-coded from LicenseEntry on migration |
 | `licenseType` | string | `production` 路 `cluster` 路 `developer` 路 `enterprise` 路 `oem` 路 `per-user` 路 `limited` 路 `virtual-cluster` 路 `free` 路 `developer-cluster` |
 | `licenseVersion` | int | |
-| `productName` | string | Denormalized from CProduct |
+| `productName` | string | Copied from the legacy key on migration. A generated key uses the license key family name for DXP, Portal, and Cloud Native, and the commerce product name otherwise. A free tier key uses `Liferay DXP - Free Tier` |
 | `productExternalId` | string | UUID-format product ID |
 | `productVersion` | string | e.g. `7.4`, `2026.Q1` |
 | `productVersionLabel` | string | Human-readable version label |

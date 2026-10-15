@@ -70,7 +70,7 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testAddLicenseKeyTypeFreeLinksTheOrderProductById()
+	public void testAddLicenseKeyTypeFreeLinksTheAccountAndTheOrder()
 		throws Exception {
 
 		List<String> bodies = new ArrayList<>();
@@ -122,15 +122,14 @@ public class LicenseKeyServiceTest {
 			licenseKeyService, "_productVersionService", productVersionService);
 
 		licenseKeyService.addLicenseKeyTypeFree(
-			555L, 35729766L, "example.com", "999", "owner@example.com");
+			555L, "example.com", "999", "owner@example.com");
 
 		JSONObject jsonObject = new JSONObject(bodies.get(0));
 
-		Assertions.assertEquals(
-			35729766L,
-			jsonObject.getLong("r_commerceProductToLicenseKey_CProductId"));
 		Assertions.assertFalse(
 			jsonObject.has("r_commerceProductToLicenseKey_CProductERC"));
+		Assertions.assertFalse(
+			jsonObject.has("r_commerceProductToLicenseKey_CProductId"));
 		Assertions.assertEquals(
 			555L,
 			jsonObject.getLong("r_accountEntryToLicenseKey_accountEntryId"));

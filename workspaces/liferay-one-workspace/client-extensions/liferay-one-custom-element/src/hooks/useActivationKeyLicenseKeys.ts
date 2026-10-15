@@ -32,7 +32,6 @@ export type ActivationKeyLicenseKey = {
 	name: string;
 	orderId: string;
 	owner: string;
-	productExternalReferenceCode: string;
 	productName: string;
 	productVersion: string;
 	sizing: string;
@@ -66,7 +65,6 @@ export type LicenseKeyNode = {
 	productName?: string;
 	productVersion?: string;
 	r_activationKeyToLicenseKey_c_activationKeyId?: number;
-	r_commerceProductToLicenseKey_CProductERC?: string;
 	sizing?: string;
 	startDate?: string;
 	workspaceName?: string;
@@ -110,8 +108,6 @@ export function toActivationKeyLicenseKey(
 		name: node.name ?? '',
 		orderId: node.orderId ?? '',
 		owner: node.owner ?? '',
-		productExternalReferenceCode:
-			node.r_commerceProductToLicenseKey_CProductERC ?? '',
 		productName: node.productName ?? '',
 		productVersion: node.productVersion ?? '',
 		sizing: node.sizing ?? '',

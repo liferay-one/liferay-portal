@@ -227,8 +227,7 @@ public class AppLicenseKeyGenerationService {
 
 				_licenseKeyService.addLicenseKey(
 					accountEntryId, account.getName(),
-					activationKey.getActivationKeyId(), true, null,
-					appEntitlement._getExternalReferenceCode(), false, null,
+					activationKey.getActivationKeyId(), true, null, false, null,
 					description, StringPool.BLANK,
 					entitlement.getEntitlementDefinitionId(),
 					entitlement.getEntitlementId(), expirationDate,

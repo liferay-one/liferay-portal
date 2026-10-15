@@ -296,7 +296,6 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 					name: 'Staging',
 					productName: 'Acme App',
 					r_activationKeyToLicenseKey_c_activationKeyId: 1,
-					r_commerceProductToLicenseKey_CProductERC: 'PRDCT-APP',
 				},
 			],
 		});

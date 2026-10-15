@@ -299,8 +299,7 @@ public class LicenseKeyGenerationService {
 		return _licenseKeyService.addLicenseKey(
 			project.getAccountId(), project.getName(),
 			activationKey.getActivationKeyId(), true,
-			_getAdditionalInfo(generateRequest),
-			licensedProduct._getExternalReferenceCode(), complimentary,
+			_getAdditionalInfo(generateRequest), complimentary,
 			generateRequest.getDataCenterLocation(), description,
 			StringPool.BLANK, entitlement.getEntitlementDefinitionId(),
 			entitlement.getEntitlementId(), expirationDate,
@@ -851,9 +850,7 @@ public class LicenseKeyGenerationService {
 
 			licensedProducts.put(
 				entitlement.getEntitlementId(),
-				new LicensedProduct(
-					product.getExternalReferenceCode(), licenseEntry,
-					productName));
+				new LicensedProduct(licenseEntry, productName));
 		}
 
 		return licensedProducts;
@@ -1022,17 +1019,9 @@ public class LicenseKeyGenerationService {
 
 	private static class LicensedProduct {
 
-		private LicensedProduct(
-			String externalReferenceCode, LicenseEntry licenseEntry,
-			String productName) {
-
-			_externalReferenceCode = externalReferenceCode;
+		private LicensedProduct(LicenseEntry licenseEntry, String productName) {
 			_licenseEntry = licenseEntry;
 			_productName = productName;
-		}
-
-		private String _getExternalReferenceCode() {
-			return _externalReferenceCode;
 		}
 
 		private LicenseEntry _getLicenseEntry() {
@@ -1043,7 +1032,6 @@ public class LicenseKeyGenerationService {
 			return _productName;
 		}
 
-		private final String _externalReferenceCode;
 		private final LicenseEntry _licenseEntry;
 		private final String _productName;
 

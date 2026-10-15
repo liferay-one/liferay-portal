@@ -34,8 +34,6 @@ public final class LicenseKey {
 		_active = jsonObject.optBoolean("active");
 		_additionalInfo = jsonObject.optString("additionalInfo");
 		_clusterId = jsonObject.optLong("clusterId");
-		_commerceProductExternalReferenceCode = jsonObject.optString(
-			"r_commerceProductToLicenseKey_CProductERC");
 		_complimentary = jsonObject.optBoolean("complimentary");
 		_dataCenterLocation = jsonObject.optString("dataCenterLocation");
 		_customExpirationDateInstant = _toInstant(
@@ -93,10 +91,6 @@ public final class LicenseKey {
 
 	public long getClusterId() {
 		return _clusterId;
-	}
-
-	public String getCommerceProductExternalReferenceCode() {
-		return _commerceProductExternalReferenceCode;
 	}
 
 	public Instant getCustomExpirationDateInstant() {
@@ -280,7 +274,6 @@ public final class LicenseKey {
 	private final boolean _active;
 	private final String _additionalInfo;
 	private final long _clusterId;
-	private final String _commerceProductExternalReferenceCode;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
 	private final String _dataCenterLocation;

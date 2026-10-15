@@ -219,17 +219,6 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_COMMERCE_PRODUCT_TO_LICENSE_KEY",
-			"label": {
-				"en_US": "Commerce Product to License Key"
-			},
-			"name": "commerceProductToLicenseKey",
-			"objectDefinitionExternalReferenceCode1": "L_COMMERCE_PRODUCT_DEFINITION",
-			"objectDefinitionExternalReferenceCode2": "C_LICENSE_KEY",
-			"type": "oneToMany"
-		},
-		{
 			"deletionType": "cascade",
 			"externalReferenceCode": "R_CONTRACT_TO_ENTITLEMENT",
 			"label": {
