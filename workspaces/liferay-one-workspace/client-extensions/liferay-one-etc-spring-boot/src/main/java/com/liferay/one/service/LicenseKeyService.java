@@ -10,6 +10,7 @@ import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
+import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.petra.string.StringBundler;
@@ -249,6 +250,22 @@ public class LicenseKeyService extends OneBaseService {
 			).toUri());
 
 		return new LicenseKey(new JSONObject(response));
+	}
+
+	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			ActivationKeyScope activationKeyScope,
+			List<Entitlement> entitlements,
+			Collection<Long> excludedActivationKeyIds)
+		throws Exception {
+
+		if (activationKeyScope.isProject()) {
+			return getActiveLicenseKeyCounts(
+				entitlements, excludedActivationKeyIds,
+				activationKeyScope.getProjectExternalReferenceCode());
+		}
+
+		return getActiveUnassignedLicenseKeyCounts(
+			activationKeyScope.getAccountId());
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(

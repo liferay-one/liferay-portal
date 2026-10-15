@@ -15,6 +15,7 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.ActivationKey;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
@@ -25,6 +26,7 @@ import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ActivationKeyService;
 import com.liferay.one.service.AppLicenseKeyGenerationService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
@@ -40,6 +42,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -150,8 +155,10 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			).contentType(
 				MediaType.APPLICATION_JSON
 			).body(
-				_appLicenseKeyGenerationService.getGenerateForm(
-					account.getId()
+				_toGenerateFormJSONObject(
+					_appLicenseKeyGenerationService.getGenerateForm(
+						account.getId()),
+					_fetchSelfServiceTrialGenerateFormJSONObject(account, jwt)
 				).toString()
 			);
 		}
@@ -190,14 +197,19 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		if (Validator.isNull(projectExternalReferenceCode)) {
 			Account account = _getAccount(accountExternalReferenceCode, jwt);
 
+			boolean provisionable =
+				_environmentActivationPermission.containsSelfProvisioning(
+					account.getId(), jwt);
+
 			return ResponseEntity.ok(
 			).contentType(
 				MediaType.APPLICATION_JSON
 			).body(
-				_appLicenseKeyGenerationService.getSummary(
-					account.getId(),
-					_environmentActivationPermission.containsSelfProvisioning(
-						account.getId(), jwt)
+				_toSummaryJSONObject(
+					_appLicenseKeyGenerationService.getSummary(
+						account.getId(), provisionable),
+					_fetchSelfServiceTrialSummaryJSONObject(
+						account, jwt, provisionable)
 				).toString()
 			);
 		}
@@ -306,12 +318,22 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 			_checkKeyType(jsonObject.optString("keyType"), jwt);
 
+			LicenseKeyGenerationService.GenerateRequest generateRequest =
+				_toGenerateRequest(jsonObject, null);
+
+			if (_isSelfServiceTrialEntitlement(
+					account, generateRequest.getSubscriptionEntitlementId())) {
+
+				return _toResponseEntity(
+					_licenseKeyGenerationService.generateActivationKey(
+						account, generateRequest));
+			}
+
 			UserAccount userAccount = getMyUserAccount(jwt);
 
 			return _toResponseEntity(
 				_appLicenseKeyGenerationService.generateActivationKey(
-					account, _toGenerateRequest(jsonObject, null),
-					userAccount.getEmailAddress()));
+					account, generateRequest, userAccount.getEmailAddress()));
 		}
 
 		Project project =
@@ -401,6 +423,46 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	/**
+	 * Returns the generate form of the self service trial entitlements, or
+	 * <code>null</code> when it cannot be read, so the app keys of the account
+	 * stay available while the trial entitlements are not.
+	 */
+	private JSONObject _fetchSelfServiceTrialGenerateFormJSONObject(
+		Account account, Jwt jwt) {
+
+		try {
+			return _licenseKeyGenerateFormService.getGenerateForm(
+				_adminPermission.contains(jwt), account,
+				_environmentActivationPermission.containsSelfProvisioning(
+					account.getId(), jwt));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get the trial generate form of account " +
+					account.getId(),
+				exception);
+
+			return null;
+		}
+	}
+
+	private JSONObject _fetchSelfServiceTrialSummaryJSONObject(
+		Account account, Jwt jwt, boolean provisionable) {
+
+		try {
+			return _licenseKeyGenerateFormService.getSummary(
+				_adminPermission.contains(jwt), account, provisionable);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get the trial summary of account " + account.getId(),
+				exception);
+
+			return null;
+		}
+	}
+
 	private Account _getAccount(String accountExternalReferenceCode, Jwt jwt)
 		throws Exception {
 
@@ -464,6 +526,35 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		return project;
 	}
 
+	private boolean _isSelfServiceTrialEntitlement(
+			Account account, long entitlementId)
+		throws Exception {
+
+		if (entitlementId <= 0) {
+			return false;
+		}
+
+		Entitlement entitlement = null;
+
+		try {
+			entitlement = _entitlementService.fetchEntitlement(entitlementId);
+		}
+		catch (Exception exception) {
+			_log.error("Unable to get entitlement " + entitlementId, exception);
+
+			return false;
+		}
+
+		if ((entitlement != null) &&
+			Objects.equals(entitlement.getAccountEntryId(), account.getId()) &&
+			entitlement.isSelfServiceTrial()) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private Date _toDate(JSONObject jsonObject, String key) {
 		if (jsonObject.isNull(key)) {
 			return null;
@@ -476,6 +567,36 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			throw new ResponseStatusException(
 				HttpStatus.BAD_REQUEST, "Invalid \"" + key + "\"", exception);
 		}
+	}
+
+	private JSONObject _toGenerateFormJSONObject(
+		JSONObject appGenerateFormJSONObject,
+		JSONObject licenseKeyGenerateFormJSONObject) {
+
+		JSONArray productsJSONArray = new JSONArray();
+
+		productsJSONArray.putAll(
+			appGenerateFormJSONObject.getJSONArray("products"));
+
+		if (licenseKeyGenerateFormJSONObject == null) {
+			return new JSONObject(
+			).put(
+				"bundleProducts", new JSONArray()
+			).put(
+				"products", productsJSONArray
+			);
+		}
+
+		productsJSONArray.putAll(
+			licenseKeyGenerateFormJSONObject.getJSONArray("products"));
+
+		return new JSONObject(
+		).put(
+			"bundleProducts",
+			licenseKeyGenerateFormJSONObject.getJSONArray("bundleProducts")
+		).put(
+			"products", productsJSONArray
+		);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
@@ -552,6 +673,38 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		return servers;
 	}
 
+	private JSONObject _toSummaryJSONObject(
+		JSONObject appSummaryJSONObject,
+		JSONObject licenseKeySummaryJSONObject) {
+
+		if (licenseKeySummaryJSONObject == null) {
+			return new JSONObject(
+			).put(
+				"cloudNativeKeyTypes", new JSONArray()
+			).put(
+				"generatable", appSummaryJSONObject.getBoolean("generatable")
+			).put(
+				"provisionable",
+				appSummaryJSONObject.getBoolean("provisionable")
+			);
+		}
+
+		return new JSONObject(
+		).put(
+			"cloudNativeKeyTypes",
+			licenseKeySummaryJSONObject.getJSONArray("cloudNativeKeyTypes")
+		).put(
+			"generatable",
+			appSummaryJSONObject.getBoolean("generatable") ||
+			licenseKeySummaryJSONObject.getBoolean("generatable")
+		).put(
+			"provisionable", appSummaryJSONObject.getBoolean("provisionable")
+		);
+	}
+
+	private static final Log _log = LogFactory.getLog(
+		ActivationKeysRestController.class);
+
 	@Autowired
 	private AccountService _accountService;
 
@@ -563,6 +716,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private AppLicenseKeyGenerationService _appLicenseKeyGenerationService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;

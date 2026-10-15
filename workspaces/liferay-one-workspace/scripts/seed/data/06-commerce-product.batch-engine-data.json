@@ -1544,7 +1544,7 @@
 			},
 			"externalReferenceCode": "PRDCT-CONTENT-MARKETING-TRIAL",
 			"name": {
-				"en_US": "Content Marketing Platform - Trial"
+				"en_US": "Content Marketing Platform Trial"
 			},
 			"productConfiguration": {
 				"allowBackOrder": true,
@@ -2184,7 +2184,7 @@
 			},
 			"externalReferenceCode": "PRDCT-DSR-TRIAL",
 			"name": {
-				"en_US": "Digital Sales Room - Trial"
+				"en_US": "Digital Sales Room Trial"
 			},
 			"productConfiguration": {
 				"allowBackOrder": true,
@@ -2626,6 +2626,131 @@
 					"published": true,
 					"purchasable": true,
 					"sku": "PRDCT-DXP"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
+				"en_US": "The Liferay DXP subscription that a Content Marketing Platform or Digital Sales Room self service trial runs on."
+			},
+			"externalReferenceCode": "PRDCT-DXP-TRIAL",
+			"name": {
+				"en_US": "Liferay DXP Trial"
+			},
+			"productConfiguration": {
+				"allowBackOrder": true,
+				"displayAvailability": true,
+				"displayStockQuantity": true
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "app-documentation-url",
+					"value": {
+						"en_US": "https://learn.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "app-usage-terms-url",
+					"value": {
+						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "developer-name",
+					"value": {
+						"en_US": "Liferay"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Free"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "keys-list"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "basic"
+					}
+				},
+				{
+					"specificationKey": "project-download-profile",
+					"value": {
+						"en_US": "bundle"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-learn-url",
+					"value": {
+						"en_US": "https://learn.liferay.com/dxp"
+					}
+				}
+			],
+			"productType": "virtual",
+			"productVirtualSettings": {
+				"activationStatus": 0,
+				"duration": 0,
+				"maxUsages": 0,
+				"termsOfUseRequired": false,
+				"useSample": false
+			},
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-DXP-TRIAL",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "PRDCT-DXP-TRIAL"
 				}
 			]
 		},

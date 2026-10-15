@@ -9,6 +9,8 @@ import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.pagination.Page;
+import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
@@ -57,6 +59,32 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			throw problemException;
 		}
+	}
+
+	public List<OrderItem> getCommerceOrderItems(long orderId)
+		throws Exception {
+
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		OrderItemResource orderItemResource = _buildOrderItemResource();
+
+		int page = 1;
+
+		while (true) {
+			Page<OrderItem> orderItemsPage =
+				orderItemResource.getOrderIdOrderItemsPage(
+					orderId, Pagination.of(page, _PAGE_SIZE));
+
+			orderItems.addAll(orderItemsPage.getItems());
+
+			if (page >= orderItemsPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return orderItems;
 	}
 
 	public void patchOrderItem(Long orderItemId, OrderItem orderItem)
@@ -314,6 +342,8 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		return customFields;
 	}
+
+	private static final int _PAGE_SIZE = 500;
 
 	private static final Log _log = LogFactory.getLog(
 		CommerceOrderItemService.class);

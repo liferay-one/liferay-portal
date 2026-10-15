@@ -7,18 +7,21 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.EntitlementConstants;
-import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.exception.NoSuchEntitlementException;
+import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.OveragePricing;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -42,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -56,8 +60,8 @@ public class EntitlementService extends OneBaseService {
 	public Entitlement addEntitlement(
 			long accountEntryId, long commerceOrderItemId, long contractId,
 			long entitlementDefinitionId, String endDate, String grantType,
-			Double maxQuantity, String name, OveragePricing overagePricing,
-			Map<String, String> productOptions,
+			int licenseKeyDurationDays, Double maxQuantity, String name,
+			OveragePricing overagePricing, Map<String, String> productOptions,
 			String projectExternalReferenceCode, Double quantity,
 			String skuExternalReferenceCode, String startDate)
 		throws Exception {
@@ -110,6 +114,11 @@ public class EntitlementService extends OneBaseService {
 				"r_contractToEntitlement_c_contractId", contractId);
 		}
 
+		if (licenseKeyDurationDays > 0) {
+			entitlementJSONObject.put(
+				"licenseKeyDurationDays", licenseKeyDurationDays);
+		}
+
 		if (overagePricing != null) {
 			JSONObject overagePricingJSONObject = overagePricing.toJSONObject();
 
@@ -139,6 +148,30 @@ public class EntitlementService extends OneBaseService {
 			).toUri());
 
 		return new Entitlement(new JSONObject(response));
+	}
+
+	public Entitlement fetchEntitlement(long entitlementId) throws Exception {
+		try {
+			String response = get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/c/entitlements/{id}"
+				).buildAndExpand(
+					entitlementId
+				).toUri());
+
+			return new Entitlement(new JSONObject(response));
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				return null;
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public Entitlement fetchEntitlement(
@@ -212,59 +245,43 @@ public class EntitlementService extends OneBaseService {
 		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
 			order);
 
-		Instant endDateInstant = CommerceOrderItemUtil.getEndDateInstant(
-			orderItem);
-		Instant startDateInstant = CommerceOrderItemUtil.getStartDateInstant(
-			orderItem);
+		String endDate = _toString(
+			CommerceOrderItemUtil.getEndDateInstant(orderItem));
+		String startDate = _toString(
+			CommerceOrderItemUtil.getStartDateInstant(orderItem));
 
-		String endDate = null;
+		if (!_isSelfServiceTrial(order)) {
+			_addEntitlements(
+				accountEntryId, commerceOrderItemId, contractId, endDate,
+				entitlementDefinitions, orderItem.getQuantity(), productOptions,
+				projectExternalReferenceCode, false, skuExternalReferenceCode,
+				startDate);
 
-		if (endDateInstant != null) {
-			endDate = endDateInstant.toString();
+			return;
 		}
 
-		String startDate = null;
+		_keyedLock.withLock(
+			_LOCK_KEY_PREFIX_SELF_SERVICE_TRIAL + accountEntryId,
+			() -> {
+				if (_hasEarlierSelfServiceTrialOrder(accountEntryId, order)) {
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							StringBundler.concat(
+								"Skipping order item ", commerceOrderItemId,
+								" because account ", accountEntryId,
+								" already started a trial of order type ",
+								order.getOrderTypeExternalReferenceCode()));
+					}
 
-		if (startDateInstant != null) {
-			startDate = startDateInstant.toString();
-		}
-
-		BigDecimal orderItemQuantity = orderItem.getQuantity();
-
-		for (EntitlementDefinition entitlementDefinition :
-				entitlementDefinitions) {
-
-			try {
-				Entitlement entitlement = addEntitlement(
-					accountEntryId, commerceOrderItemId, contractId,
-					entitlementDefinition.getEntitlementDefinitionId(), endDate,
-					entitlementDefinition.getGrantType(),
-					entitlementDefinition.getMaxQuantity(),
-					entitlementDefinition.getName(),
-					entitlementDefinition.getOveragePricing(), productOptions,
-					projectExternalReferenceCode,
-					_multiply(
-						orderItemQuantity,
-						entitlementDefinition.getDefaultQuantity()),
-					skuExternalReferenceCode, startDate);
-
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						StringBundler.concat(
-							"Created entitlement ",
-							entitlement.getEntitlementId(), " for order item ",
-							commerceOrderItemId));
+					return;
 				}
-			}
-			catch (Exception exception) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to create entitlement for order item ",
-						commerceOrderItemId, " and entitlement definition ",
-						entitlementDefinition.getEntitlementDefinitionId()),
-					exception);
-			}
-		}
+
+				_addEntitlements(
+					accountEntryId, commerceOrderItemId, contractId, endDate,
+					entitlementDefinitions, BigDecimal.ONE, productOptions,
+					projectExternalReferenceCode, true,
+					skuExternalReferenceCode, startDate);
+			});
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
@@ -276,19 +293,35 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
-			long accountEntryId)
-		throws Exception {
-
-		return _getEntitlementDefinitions(
-			getActiveEntitlements(accountEntryId));
-	}
-
-	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
 			String projectExternalReferenceCode)
 		throws Exception {
 
 		return _getEntitlementDefinitions(
 			getActiveEntitlements(projectExternalReferenceCode));
+	}
+
+	public List<EntitlementDefinition>
+			getActiveEntitlementDefinitionsExcludingSelfServiceTrials(
+				long accountEntryId)
+		throws Exception {
+
+		return _getEntitlementDefinitions(
+			ListUtil.filter(
+				getActiveEntitlements(accountEntryId),
+				entitlement -> !entitlement.isSelfServiceTrial()));
+	}
+
+	public List<Entitlement> getActiveEntitlements(
+			ActivationKeyScope activationKeyScope)
+		throws Exception {
+
+		if (activationKeyScope.isProject()) {
+			return getActiveEntitlements(
+				activationKeyScope.getProjectExternalReferenceCode());
+		}
+
+		return getActiveSelfServiceTrialEntitlements(
+			activationKeyScope.getAccountId());
 	}
 
 	public List<Entitlement> getActiveEntitlements(
@@ -376,6 +409,20 @@ public class EntitlementService extends OneBaseService {
 			Entitlement::new);
 	}
 
+	public List<Entitlement> getActiveSelfServiceTrialEntitlements(
+			long accountEntryId)
+		throws Exception {
+
+		return ListUtil.filter(
+			_getActiveEntitlements(
+				StringBundler.concat(
+					"(r_accountEntryToEntitlement_accountEntryId eq '",
+					accountEntryId,
+					"') and (r_contractToEntitlement_c_contractId eq '0') and ",
+					"(r_projectToEntitlement_c_projectId eq '0')")),
+			Entitlement::isSelfServiceTrial);
+	}
+
 	public List<Entitlement> getActiveUnassignedEntitlements(
 			long accountEntryId)
 		throws Exception {
@@ -406,28 +453,14 @@ public class EntitlementService extends OneBaseService {
 	}
 
 	public Entitlement getEntitlement(long entitlementId) throws Exception {
-		try {
-			String response = get(
-				getAuthorization(),
-				UriComponentsBuilder.fromPath(
-					"/o/c/entitlements/{id}"
-				).buildAndExpand(
-					entitlementId
-				).toUri());
+		Entitlement entitlement = fetchEntitlement(entitlementId);
 
-			return new Entitlement(new JSONObject(response));
+		if (entitlement == null) {
+			throw new NoSuchEntitlementException(
+				"No entitlement exists with ID " + entitlementId);
 		}
-		catch (WebClientResponseException webClientResponseException) {
-			int statusCode = webClientResponseException.getStatusCode(
-			).value();
 
-			if (statusCode == HttpStatus.NOT_FOUND.value()) {
-				throw new NoSuchEntitlementException(
-					"No entitlement exists with ID " + entitlementId);
-			}
-
-			throw webClientResponseException;
-		}
+		return entitlement;
 	}
 
 	public List<Entitlement> getEntitlements(
@@ -475,35 +508,6 @@ public class EntitlementService extends OneBaseService {
 		return getAllItems(
 			"/o/c/entitlements", filterString, Entitlement::new,
 			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
-	}
-
-	public int getSelfServiceTrialDurationDays(long accountEntryId)
-		throws Exception {
-
-		Instant instant = Instant.now(
-		).truncatedTo(
-			ChronoUnit.MILLIS
-		);
-
-		List<Entitlement> entitlements = getEntitlements(
-			StringBundler.concat(
-				"(endDate eq null or endDate ge ", instant,
-				") and (r_accountEntryToEntitlement_accountEntryId eq '",
-				accountEntryId, "')"));
-
-		for (Entitlement entitlement : entitlements) {
-			if ((entitlement.getContractId() > 0) &&
-				!Objects.equals(
-					entitlement.getTerminationStatus(),
-					EntitlementConstants.TERMINATION_STATUS_TERMINATED)) {
-
-				return LicenseKeyGenerationConstants.
-					SELF_SERVICE_TRIAL_DURATION_DAYS_CUSTOMER;
-			}
-		}
-
-		return LicenseKeyGenerationConstants.
-			SELF_SERVICE_TRIAL_DURATION_DAYS_PROSPECT;
 	}
 
 	public String getSubscriptionState(long accountEntryId) throws Exception {
@@ -598,6 +602,34 @@ public class EntitlementService extends OneBaseService {
 			Arrays.asList(entitlementNames));
 	}
 
+	public boolean isCustomer(long accountEntryId) throws Exception {
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		for (Entitlement entitlement :
+				getAllProjectedItems(
+					"/o/c/entitlements", _FIELDS_CUSTOMER,
+					StringBundler.concat(
+						"(endDate eq null or endDate ge ", instant,
+						") and (r_accountEntryToEntitlement_accountEntryId eq ",
+						"'", accountEntryId,
+						"') and (r_contractToEntitlement_c_contractId ne '0')"),
+					Entitlement::new)) {
+
+			if ((entitlement.getContractId() > 0) &&
+				!Objects.equals(
+					entitlement.getTerminationStatus(),
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public void updateEntitlementContract(long entitlementId, long contractId)
 		throws Exception {
 
@@ -606,6 +638,21 @@ public class EntitlementService extends OneBaseService {
 			new JSONObject(
 			).put(
 				"r_contractToEntitlement_c_contractId", contractId
+			));
+	}
+
+	public void updateEntitlementDates(
+			Instant endDateInstant, long entitlementId,
+			Instant startDateInstant)
+		throws Exception {
+
+		_patchEntitlement(
+			entitlementId,
+			new JSONObject(
+			).put(
+				"endDate", _toJSONValue(endDateInstant)
+			).put(
+				"startDate", _toJSONValue(startDateInstant)
 			));
 	}
 
@@ -692,6 +739,65 @@ public class EntitlementService extends OneBaseService {
 		}
 	}
 
+	private void _addEntitlements(
+			long accountEntryId, long commerceOrderItemId, long contractId,
+			String endDate, List<EntitlementDefinition> entitlementDefinitions,
+			BigDecimal orderItemQuantity, Map<String, String> productOptions,
+			String projectExternalReferenceCode, boolean selfServiceTrial,
+			String skuExternalReferenceCode, String startDate)
+		throws Exception {
+
+		boolean selfServiceTrialCustomer = false;
+
+		if (selfServiceTrial &&
+			_hasLicenseKeyDuration(entitlementDefinitions)) {
+
+			selfServiceTrialCustomer = isCustomer(accountEntryId);
+		}
+
+		for (EntitlementDefinition entitlementDefinition :
+				entitlementDefinitions) {
+
+			try {
+				Entitlement entitlement = addEntitlement(
+					accountEntryId, commerceOrderItemId, contractId,
+					entitlementDefinition.getEntitlementDefinitionId(), endDate,
+					entitlementDefinition.getGrantType(),
+					_getLicenseKeyDurationDays(
+						entitlementDefinition, selfServiceTrial,
+						selfServiceTrialCustomer),
+					entitlementDefinition.getMaxQuantity(),
+					entitlementDefinition.getName(),
+					entitlementDefinition.getOveragePricing(), productOptions,
+					projectExternalReferenceCode,
+					_multiply(
+						orderItemQuantity,
+						entitlementDefinition.getDefaultQuantity()),
+					skuExternalReferenceCode, startDate);
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Created entitlement ",
+							entitlement.getEntitlementId(), " for order item ",
+							commerceOrderItemId));
+				}
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to create entitlement for order item ",
+						commerceOrderItemId, " and entitlement definition ",
+						entitlementDefinition.getEntitlementDefinitionId()),
+					exception);
+
+				if (selfServiceTrial) {
+					throw exception;
+				}
+			}
+		}
+	}
+
 	private long _getAccountEntryId(Order order) {
 		if (order == null) {
 			return 0;
@@ -728,6 +834,17 @@ public class EntitlementService extends OneBaseService {
 		return entitlements;
 	}
 
+	private String _getActiveFilterString(String filterString) {
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		return StringBundler.concat(
+			"(endDate eq null or endDate ge ", instant, ") and (", filterString,
+			") and (startDate eq null or startDate le ", instant, ")");
+	}
+
 	private long _getContractId(Order order) {
 		if (order == null) {
 			return 0;
@@ -761,17 +878,6 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return new ArrayList<>(entitlementDefinitions.values());
-	}
-
-	private String _getActiveFilterString(String filterString) {
-		Instant instant = Instant.now(
-		).truncatedTo(
-			ChronoUnit.MILLIS
-		);
-
-		return StringBundler.concat(
-			"(endDate eq null or endDate ge ", instant, ") and (", filterString,
-			") and (startDate eq null or startDate le ", instant, ")");
 	}
 
 	private String _getEntitlementNamesFilterString(
@@ -826,6 +932,26 @@ public class EntitlementService extends OneBaseService {
 		return endDateInstant;
 	}
 
+	private int _getLicenseKeyDurationDays(
+		EntitlementDefinition entitlementDefinition, boolean selfServiceTrial,
+		boolean selfServiceTrialCustomer) {
+
+		int licenseKeyDurationDays =
+			entitlementDefinition.getLicenseKeyDurationDays();
+
+		if (!selfServiceTrial || (licenseKeyDurationDays <= 0)) {
+			return 0;
+		}
+
+		if (selfServiceTrialCustomer) {
+			return Math.max(
+				licenseKeyDurationDays,
+				_selfServiceTrialCustomerLicenseKeyDurationDays);
+		}
+
+		return licenseKeyDurationDays;
+	}
+
 	private String _getProjectExternalReferenceCode(Order order) {
 		if (order == null) {
 			return null;
@@ -857,6 +983,31 @@ public class EntitlementService extends OneBaseService {
 		return 0;
 	}
 
+	private boolean _hasEarlierSelfServiceTrialOrder(
+			long accountEntryId, Order order)
+		throws Exception {
+
+		for (Order accountOrder :
+				_commerceOrderService.getOrders(
+					StringBundler.concat(
+						"accountId/any(x:x eq ", accountEntryId,
+						") and orderTypeExternalReferenceCode eq '",
+						escapeODataString(
+							order.getOrderTypeExternalReferenceCode()),
+						"'"))) {
+
+			if ((accountOrder.getId() < order.getId()) &&
+				!Objects.equals(
+					accountOrder.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_CANCELLED)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _hasEntitlement(
 			String filterString, List<String> entitlementNames)
 		throws Exception {
@@ -872,6 +1023,32 @@ public class EntitlementService extends OneBaseService {
 			if (!entitlement.isExpired()) {
 				return true;
 			}
+		}
+
+		return false;
+	}
+
+	private boolean _hasLicenseKeyDuration(
+		List<EntitlementDefinition> entitlementDefinitions) {
+
+		for (EntitlementDefinition entitlementDefinition :
+				entitlementDefinitions) {
+
+			if (entitlementDefinition.getLicenseKeyDurationDays() > 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isSelfServiceTrial(Order order) {
+		if ((order != null) &&
+			CommerceOrderConstants.
+				selfServiceTrialOrderTypeExternalReferenceCodes.contains(
+					order.getOrderTypeExternalReferenceCode())) {
+
+			return true;
 		}
 
 		return false;
@@ -897,11 +1074,33 @@ public class EntitlementService extends OneBaseService {
 			).toUri());
 	}
 
+	private Object _toJSONValue(Instant instant) {
+		if (instant == null) {
+			return JSONObject.NULL;
+		}
+
+		return instant.toString();
+	}
+
+	private String _toString(Instant instant) {
+		if (instant == null) {
+			return null;
+		}
+
+		return instant.toString();
+	}
+
 	private static final String _FIELDS_ACTIVE_ENTITLEMENTS_BY_NAMES =
 		"id,name,r_accountEntryToEntitlement_accountEntryId," +
 			"r_projectToEntitlement_c_projectERC";
 
+	private static final String _FIELDS_CUSTOMER =
+		"id,r_contractToEntitlement_c_contractId,terminationStatus";
+
 	private static final int _FILTER_BATCH_SIZE = 100;
+
+	private static final String _LOCK_KEY_PREFIX_SELF_SERVICE_TRIAL =
+		"self-service-trial-account-";
 
 	private static final String _NESTED_FIELDS_ENTITLEMENT_DEFINITION =
 		"entitlementDefinitionToEntitlement";
@@ -916,5 +1115,13 @@ public class EntitlementService extends OneBaseService {
 
 	@Autowired
 	private EntitlementDefinitionService _entitlementDefinitionService;
+
+	@Autowired
+	private KeyedLock _keyedLock;
+
+	@Value(
+		"${liferay.one.self.service.trial.customer.license.key.duration.days}"
+	)
+	private int _selfServiceTrialCustomerLicenseKeyDurationDays;
 
 }

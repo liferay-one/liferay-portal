@@ -28,6 +28,7 @@ public final class Entitlement {
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId");
 		_entitlementId = jsonObject.getLong("id");
 		_grantType = jsonObject.optString("grantType");
+		_licenseKeyDurationDays = jsonObject.optInt("licenseKeyDurationDays");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
 		_overagePricing = OveragePricing.of(jsonObject);
@@ -100,6 +101,10 @@ public final class Entitlement {
 		return _grantType;
 	}
 
+	public int getLicenseKeyDurationDays() {
+		return _licenseKeyDurationDays;
+	}
+
 	public Double getMaxQuantity() {
 		return _maxQuantity;
 	}
@@ -148,6 +153,16 @@ public final class Entitlement {
 		return _endDateInstant.isBefore(Instant.now());
 	}
 
+	public boolean isSelfServiceTrial() {
+		if ((_contractId == 0) && (_licenseKeyDurationDays > 0) &&
+			Validator.isNull(_projectExternalReferenceCode)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private final long _accountEntryId;
 	private final long _commerceOrderItemId;
 	private final long _contractId;
@@ -156,6 +171,7 @@ public final class Entitlement {
 	private final long _entitlementDefinitionId;
 	private final long _entitlementId;
 	private final String _grantType;
+	private final int _licenseKeyDurationDays;
 	private final Double _maxQuantity;
 	private final String _name;
 	private final OveragePricing _overagePricing;
