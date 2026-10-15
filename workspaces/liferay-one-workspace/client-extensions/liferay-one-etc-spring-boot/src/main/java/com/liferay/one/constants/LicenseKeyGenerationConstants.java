@@ -21,6 +21,8 @@ public class LicenseKeyGenerationConstants {
 
 	public static final int DEVELOPER_MAJOR_VERSION_COUNT = 2;
 
+	public static final int DEVELOPER_MAX_HTTP_SESSIONS = 5;
+
 	public static final String ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION =
 		"licenseGeneration";
 
