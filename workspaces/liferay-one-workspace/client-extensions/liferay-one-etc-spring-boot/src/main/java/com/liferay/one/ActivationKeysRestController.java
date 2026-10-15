@@ -21,12 +21,14 @@ import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ActivationKeyService;
 import com.liferay.one.service.AppLicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -154,13 +156,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			);
 		}
 
-		Project project =
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
-
-		if (project == null) {
-			throw new ProjectNotFoundException(projectExternalReferenceCode);
-		}
+		Project project = _getProject(jwt, projectExternalReferenceCode);
 
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
@@ -171,8 +167,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		).body(
 			_licenseKeyGenerateFormService.getGenerateForm(
 				_adminPermission.contains(jwt), project,
-				_environmentActivationPermission.containsSelfProvisioning(
-					project.getAccountId(), jwt),
+				_environmentActivationPermission.containsProvisioning(
+					jwt, project),
 				renewedActivationKeyExternalReferenceCode
 			).toString()
 		);
@@ -206,13 +202,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			);
 		}
 
-		Project project =
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
-
-		if (project == null) {
-			throw new ProjectNotFoundException(projectExternalReferenceCode);
-		}
+		Project project = _getProject(jwt, projectExternalReferenceCode);
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -220,8 +210,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		).body(
 			_licenseKeyGenerateFormService.getSummary(
 				_adminPermission.contains(jwt), project,
-				_environmentActivationPermission.containsSelfProvisioning(
-					project.getAccountId(), jwt)
+				_environmentActivationPermission.containsProvisioning(
+					jwt, project)
 			).toString()
 		);
 	}
@@ -458,6 +448,22 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		return licenseKeys;
 	}
 
+	private Project _getProject(Jwt jwt, String projectExternalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(
+			ActionKeys.VIEW, jwt, projectExternalReferenceCode);
+
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			throw new ProjectNotFoundException(projectExternalReferenceCode);
+		}
+
+		return project;
+	}
+
 	private Date _toDate(JSONObject jsonObject, String key) {
 		if (jsonObject.isNull(key)) {
 			return null;
@@ -578,6 +584,12 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyTypeService _licenseKeyTypeService;
+
+	@Autowired
+	private ProjectPermission _projectPermission;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	@Autowired
 	private SubscriptionEntryService _subscriptionEntryService;

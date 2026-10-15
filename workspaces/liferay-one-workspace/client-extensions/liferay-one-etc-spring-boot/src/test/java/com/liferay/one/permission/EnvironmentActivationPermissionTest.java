@@ -426,6 +426,63 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
+	public void testContainsProvisioningDeniesProjectAdminWhenDisabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", false));
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), project,
+				_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN));
+
+		Assertions.assertFalse(
+			environmentActivationPermission.containsProvisioning(
+				null, project));
+	}
+
+	@Test
+	public void testContainsProvisioningDeniesProjectMemberWhenEnabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", true));
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), project,
+				_createProjectMembership(RoleConstants.ERC_PROJECT_REQUESTER));
+
+		Assertions.assertFalse(
+			environmentActivationPermission.containsProvisioning(
+				null, project));
+	}
+
+	@Test
+	public void testContainsProvisioningGrantsProjectAdminWhenEnabled()
+		throws Exception {
+
+		_stubAccountCustomFields(
+			_createCustomField("allowSelfProvisioning", true));
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], null, new String[0]), project,
+				_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN));
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsProvisioning(
+				null, project));
+	}
+
+	@Test
 	public void testContainsSelfProvisioningAllowsMissingAccount()
 		throws Exception {
 
@@ -607,6 +664,8 @@ public class EnvironmentActivationPermissionTest {
 			).put(
 				"r_accountEntryToProject_accountEntryERC",
 				accountExternalReferenceCode
+			).put(
+				"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
 			));
 	}
 

@@ -268,7 +268,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		expect(result.current.hasActivationPermission).toBe(true);
 	});
 
-	it('denies access to other users', () => {
+	it('denies activation access but keeps generate access for other users on a project', () => {
 		mockContext({accountRoleNames: ['Account Member']});
 
 		const {result} = renderHook(() =>
@@ -276,7 +276,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		);
 
 		expect(result.current.hasActivationPermission).toBe(false);
-		expect(result.current.hasGeneratePermission).toBe(false);
+		expect(result.current.hasGeneratePermission).toBe(true);
 	});
 
 	it('grants access to a license key manager account role on One Time Purchases without a membership request', () => {
@@ -313,6 +313,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 
 		expect(getRequestedURL()).toBeNull();
 		expect(result.current.hasActivationPermission).toBe(false);
+		expect(result.current.hasGeneratePermission).toBe(false);
 	});
 
 	it('keeps only generate access when the account does not allow self provisioning', () => {

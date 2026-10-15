@@ -87,6 +87,18 @@ public class EnvironmentActivationPermission {
 		}
 	}
 
+	public boolean containsProvisioning(Jwt jwt, Project project)
+		throws Exception {
+
+		if (!_contains(
+				true, jwt, project, project.getExternalReferenceCode())) {
+
+			return false;
+		}
+
+		return containsSelfProvisioning(project.getAccountId(), jwt);
+	}
+
 	public boolean containsSelfProvisioning(long accountEntryId, Jwt jwt)
 		throws Exception {
 

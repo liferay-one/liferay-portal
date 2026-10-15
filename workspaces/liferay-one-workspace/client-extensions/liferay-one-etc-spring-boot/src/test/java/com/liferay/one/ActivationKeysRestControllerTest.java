@@ -22,12 +22,14 @@ import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ActivationKeyService;
 import com.liferay.one.service.AppLicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -243,14 +245,13 @@ public class ActivationKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(0L, null)
+			_environmentActivationPermission.containsProvisioning(null, project)
 		).thenReturn(
 			false
 		);
@@ -287,11 +288,12 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
 
-		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
-		).thenThrow(
+		Mockito.doThrow(
 			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
 		);
 
 		Assertions.assertThrows(
@@ -318,8 +320,7 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -450,8 +451,7 @@ public class ActivationKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -490,11 +490,12 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
 
-		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
-		).thenThrow(
+		Mockito.doThrow(
 			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
 		);
 
 		Assertions.assertThrows(
@@ -552,15 +553,13 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null)
+			_environmentActivationPermission.containsProvisioning(null, project)
 		).thenReturn(
 			false
 		);
@@ -1197,6 +1196,13 @@ public class ActivationKeysRestControllerTest {
 			_licenseKeyTypeService);
 
 		ReflectionTestUtils.setField(
+			activationKeysRestController, "_projectPermission",
+			_projectPermission);
+
+		ReflectionTestUtils.setField(
+			activationKeysRestController, "_projectService", _projectService);
+
+		ReflectionTestUtils.setField(
 			activationKeysRestController, "_environmentActivationPermission",
 			_environmentActivationPermission);
 
@@ -1371,6 +1377,10 @@ public class ActivationKeysRestControllerTest {
 		LicenseKeyService.class);
 	private final LicenseKeyTypeService _licenseKeyTypeService = Mockito.mock(
 		LicenseKeyTypeService.class);
+	private final ProjectPermission _projectPermission = Mockito.mock(
+		ProjectPermission.class);
+	private final ProjectService _projectService = Mockito.mock(
+		ProjectService.class);
 	private final SubscriptionEntryService _subscriptionEntryService =
 		Mockito.mock(SubscriptionEntryService.class);
 

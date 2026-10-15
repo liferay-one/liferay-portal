@@ -446,62 +446,6 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesWithoutSelfProvisioning() {
-		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
-			LicenseKeyTypeService.class);
-
-		Mockito.when(
-			licenseKeyTypeService.getLicenseKeyTypes()
-		).thenReturn(
-			Arrays.asList(
-				LicenseKeyType.PRODUCTION, LicenseKeyType.DEVELOPER,
-				LicenseKeyType.DEVELOPER_CLUSTER)
-		);
-
-		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			new LicenseKeyGenerateFormService();
-
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_licenseKeyTypeService",
-			licenseKeyTypeService);
-
-		Entitlement entitlement = _toEntitlement(5.0);
-
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
-			HashMapBuilder.<String, Map<String, Entitlement>>put(
-				"DXP",
-				(Map<String, Entitlement>)HashMapBuilder.put(
-					"developer", entitlement
-				).put(
-					"developer-cluster", entitlement
-				).put(
-					"production", entitlement
-				).build()
-			).build();
-
-		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, Collections.emptyMap(), "DXP",
-			licenseKeyTypeEntitlements, Collections.emptyList(), false);
-
-		Assertions.assertEquals(2, jsonArray.length());
-		Assertions.assertEquals(
-			"developer",
-			jsonArray.getJSONObject(
-				0
-			).getString(
-				"key"
-			));
-		Assertions.assertEquals(
-			"developer-cluster",
-			jsonArray.getJSONObject(
-				1
-			).getString(
-				"key"
-			));
-	}
-
-	@Test
 	public void testGetKeyTypesOffersComplimentaryWhenTheProjectHasNone() {
 		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, false);
 
@@ -534,6 +478,58 @@ public class LicenseKeyGenerateFormServiceTest {
 		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, true);
 
 		Assertions.assertEquals(0, jsonArray.length());
+	}
+
+	@Test
+	public void testGetKeyTypesWithoutSelfProvisioning() {
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Arrays.asList(
+				LicenseKeyType.PRODUCTION, LicenseKeyType.DEVELOPER,
+				LicenseKeyType.DEVELOPER_CLUSTER)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			false, false, Collections.emptyMap(), "DXP",
+			HashMapBuilder.<String, Map<String, Entitlement>>put(
+				"DXP",
+				(Map<String, Entitlement>)HashMapBuilder.put(
+					"developer", _toEntitlement(5.0)
+				).put(
+					"developer-cluster", _toEntitlement(5.0)
+				).put(
+					"production", _toEntitlement(5.0)
+				).build()
+			).build(),
+			Collections.emptyList(), false);
+
+		Assertions.assertEquals(2, jsonArray.length());
+		Assertions.assertEquals(
+			"developer",
+			jsonArray.getJSONObject(
+				0
+			).getString(
+				"key"
+			));
+		Assertions.assertEquals(
+			"developer-cluster",
+			jsonArray.getJSONObject(
+				1
+			).getString(
+				"key"
+			));
 	}
 
 	@Test

@@ -327,8 +327,7 @@ public class LicenseKeyGenerateFormService {
 			"cloudNativeKeyTypes",
 			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
 		).put(
-			"generatable",
-			_isGeneratable(generateFormJSONObject, provisionable)
+			"generatable", _isGeneratable(generateFormJSONObject, provisionable)
 		).put(
 			"provisionable", provisionable
 		);

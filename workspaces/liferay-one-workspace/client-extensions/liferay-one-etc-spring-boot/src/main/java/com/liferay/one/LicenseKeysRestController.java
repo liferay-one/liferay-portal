@@ -20,9 +20,11 @@ import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -91,9 +93,11 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			@RequestParam("version") String version)
 		throws Exception {
 
-		Project project =
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
+		_projectPermission.check(
+			ActionKeys.VIEW, jwt, projectExternalReferenceCode);
+
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
 
 		if (project == null) {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
@@ -424,6 +428,12 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
+
+	@Autowired
+	private ProjectPermission _projectPermission;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	@Autowired
 	private SubscriptionEntryService _subscriptionEntryService;

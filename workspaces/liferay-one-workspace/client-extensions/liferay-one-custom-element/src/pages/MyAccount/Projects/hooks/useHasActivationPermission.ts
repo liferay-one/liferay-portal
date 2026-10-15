@@ -133,7 +133,7 @@ export function useHasLicenseKeyPermission(
 	);
 
 	if (!activationPermission.hasActivationPermission) {
-		return {...activationPermission, hasGeneratePermission: false};
+		return {...activationPermission, hasGeneratePermission: !unassigned};
 	}
 
 	return {

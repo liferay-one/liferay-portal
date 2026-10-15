@@ -21,9 +21,11 @@ import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -79,8 +81,7 @@ public class LicenseKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -114,6 +115,29 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetLicenseKeysDeveloperDownloadChecksProjectViewPermission()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.getLicenseKeysDeveloperDownload(
+				null, null, "developer", "DXP", _PROJECT_ERC, "7.4"));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
 	public void testGetLicenseKeysDeveloperDownloadSkipsSelfProvisioning()
 		throws Exception {
 
@@ -129,8 +153,7 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
+			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
 		);
@@ -163,13 +186,6 @@ public class LicenseKeysRestControllerTest {
 
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
-
-		Mockito.when(
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				null, _PROJECT_ERC)
-		).thenReturn(
-			null
-		);
 
 		Assertions.assertThrows(
 			ProjectNotFoundException.class,
@@ -1074,6 +1090,13 @@ public class LicenseKeysRestControllerTest {
 			_licenseKeyService);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_projectPermission",
+			_projectPermission);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_projectService", _projectService);
+
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_subscriptionEntryService",
 			_subscriptionEntryService);
 
@@ -1153,6 +1176,10 @@ public class LicenseKeysRestControllerTest {
 		LicenseKeyPermission.class);
 	private final LicenseKeyService _licenseKeyService = Mockito.mock(
 		LicenseKeyService.class);
+	private final ProjectPermission _projectPermission = Mockito.mock(
+		ProjectPermission.class);
+	private final ProjectService _projectService = Mockito.mock(
+		ProjectService.class);
 	private final SubscriptionEntryService _subscriptionEntryService =
 		Mockito.mock(SubscriptionEntryService.class);
 
