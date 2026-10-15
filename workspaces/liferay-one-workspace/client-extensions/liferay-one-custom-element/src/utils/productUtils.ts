@@ -238,6 +238,11 @@ const CONTACT_SALES_SOLUTION_TYPES: string[] = [
 	SolutionTypes.LIFERAY_DATA_PLATFORM,
 ];
 
+const SELF_SERVICE_TRIAL_SOLUTION_TYPES: string[] = [
+	SolutionTypes.CMP_TRIAL,
+	SolutionTypes.DSR_TRIAL,
+];
+
 export function isContactSalesProduct(product: DeliveryProduct) {
 	return CONTACT_SALES_SOLUTION_TYPES.includes(
 		getProductSpecificationValue(
@@ -275,6 +280,15 @@ export function isDXPFreeTierProduct(product: DeliveryProduct) {
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
 		) === SolutionTypes.DXP
+	);
+}
+
+export function isSelfServiceTrialProduct(product: DeliveryProduct) {
+	return SELF_SERVICE_TRIAL_SOLUTION_TYPES.includes(
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		)
 	);
 }
 

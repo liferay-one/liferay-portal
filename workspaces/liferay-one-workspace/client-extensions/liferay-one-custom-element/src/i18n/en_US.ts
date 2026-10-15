@@ -2094,6 +2094,8 @@ export default {
 		'Your request completed successfully',
 	'your-tokens-will-be-credited-to-your-ai-hub-account-shortly-we-will-notify-you-by-email-once-they-are-available':
 		'Your tokens will be credited to your AI Hub account shortly. We will notify you by email once they are available.',
+	'your-trial-activation-key-has-been-generated':
+		'Your trial activation key has been generated!',
 	'your-trial-is-provisioned-by-liferay':
 		'Your trial is provisioned by Liferay.',
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
