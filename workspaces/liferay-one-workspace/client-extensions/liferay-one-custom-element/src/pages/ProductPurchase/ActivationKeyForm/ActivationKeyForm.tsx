@@ -82,6 +82,8 @@ const ActivationKeyForm = () => {
 
 	const [active, setActive] = useState(false);
 
+	const selfServiceTrial = isSelfServiceTrialProduct(product);
+
 	const {data: regionsResponse} = useCommerceRegions();
 
 	const {
@@ -109,7 +111,11 @@ const ActivationKeyForm = () => {
 		},
 		mode: 'all',
 		reValidateMode: 'onChange',
-		resolver: zodResolver(commerceSchemas.activationKey),
+		resolver: zodResolver(
+			selfServiceTrial
+				? commerceSchemas.activationKey.omit({domain: true})
+				: commerceSchemas.activationKey
+		),
 	});
 
 	const countries = regionsResponse?.items ?? [];
@@ -151,23 +157,57 @@ const ActivationKeyForm = () => {
 		});
 	};
 
-	const selfServiceTrial = isSelfServiceTrialProduct(product);
+	const onSubmitSelfServiceTrial = async (
+		formFields: ActivationKeyFormData
+	) => {
+		const productPurchaseSelfServiceTrial =
+			new ProductPurchaseSelfServiceTrial(selectedAccount, product);
+
+		try {
+			const [hasTrialOrder] = await Promise.all([
+				productPurchaseSelfServiceTrial.hasTrialOrder(),
+				productPurchaseSelfServiceTrial.loadDXPTrialProduct(),
+			]);
+
+			if (hasTrialOrder) {
+				Liferay.Util.openToast({
+					message: i18n.translate(
+						'this-account-has-already-started-a-trial-of-this-product'
+					),
+					type: 'danger',
+				});
+
+				return;
+			}
+		}
+		catch (error) {
+			console.error(error);
+
+			Liferay.Util.openToast({
+				message: i18n.translate('an-unexpected-error-occurred'),
+				type: 'danger',
+			});
+
+			return;
+		}
+
+		await submitMarketoForm(formFields);
+
+		await handlePurchase(productPurchaseSelfServiceTrial);
+	};
 
 	const onSubmit = async (formFields: ActivationKeyFormData) => {
+		if (selfServiceTrial) {
+			await onSubmitSelfServiceTrial(formFields);
+
+			return;
+		}
+
 		try {
-			if (selfServiceTrial) {
-				await LicenseKeys.licenseKeyTypeTrialDomainsCheck({
-					domains: formFields.domain,
-					owner: formFields.businessEmailAddress,
-					productId: product.productId,
-				});
-			}
-			else {
-				await LicenseKeys.licenseKeyTypeFreeDomainsCheck({
-					domains: formFields.domain,
-					owner: formFields.businessEmailAddress,
-				});
-			}
+			await LicenseKeys.licenseKeyTypeFreeDomainsCheck({
+				domains: formFields.domain,
+				owner: formFields.businessEmailAddress,
+			});
 		}
 		catch (error) {
 			if (error instanceof FetcherError && error.status === 409) {
@@ -186,17 +226,7 @@ const ActivationKeyForm = () => {
 		await submitMarketoForm(formFields);
 
 		await handlePurchase(
-			selfServiceTrial
-				? new ProductPurchaseSelfServiceTrial(
-						selectedAccount,
-						product,
-						formFields
-					)
-				: new ProductPurchaseDXPFree(
-						selectedAccount,
-						product,
-						formFields
-					)
+			new ProductPurchaseDXPFree(selectedAccount, product, formFields)
 		);
 	};
 
@@ -467,27 +497,33 @@ const ActivationKeyForm = () => {
 					</a>
 				</p>
 
-				<p className="h4">
-					{i18n.translate('activation-key-server-details')}
-				</p>
+				{!selfServiceTrial && (
+					<>
+						<p className="h4">
+							{i18n.translate('activation-key-server-details')}
+						</p>
 
-				<hr className="mb-5 mt-3" />
+						<hr className="mb-5 mt-3" />
 
-				<ClayInput.Group>
-					<ClayInput.GroupItem>
-						<Input
-							{...register('domain')}
-							className="w-100"
-							errorMessage={errors.domain?.message}
-							helpMessage={i18n.translate(
-								'input-one-domain-name-per-instance'
-							)}
-							label={i18n.translate('domain')}
-							placeholder={i18n.translate('enter-domain-here')}
-							required
-						/>
-					</ClayInput.GroupItem>
-				</ClayInput.Group>
+						<ClayInput.Group>
+							<ClayInput.GroupItem>
+								<Input
+									{...register('domain')}
+									className="w-100"
+									errorMessage={errors.domain?.message}
+									helpMessage={i18n.translate(
+										'input-one-domain-name-per-instance'
+									)}
+									label={i18n.translate('domain')}
+									placeholder={i18n.translate(
+										'enter-domain-here'
+									)}
+									required
+								/>
+							</ClayInput.GroupItem>
+						</ClayInput.Group>
+					</>
+				)}
 
 				<p className="activation-key-form-agreements-text">
 					<span>

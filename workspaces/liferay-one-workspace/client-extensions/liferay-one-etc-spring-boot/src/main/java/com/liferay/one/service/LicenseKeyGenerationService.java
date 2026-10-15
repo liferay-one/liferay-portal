@@ -5,7 +5,9 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.exception.LicenseKeyDateException;
@@ -15,6 +17,7 @@ import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.ActivationKey;
+import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
@@ -35,6 +38,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -42,6 +46,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -54,26 +61,33 @@ import org.springframework.stereotype.Component;
 @Component
 public class LicenseKeyGenerationService {
 
+	public ActivationKey generateActivationKey(
+			Account account, GenerateRequest generateRequest)
+		throws Exception {
+
+		if (_isComplimentary(generateRequest)) {
+			throw new LicenseKeyEntitlementException(
+				"A complimentary key requires a project");
+		}
+
+		if (Validator.isNotNull(
+				generateRequest.
+					getRenewedActivationKeyExternalReferenceCode())) {
+
+			throw new LicenseKeyEntitlementException(
+				"An activation key without a project cannot be renewed");
+		}
+
+		return _generateActivationKey(
+			ActivationKeyScope.of(account), generateRequest);
+	}
+
 	public ActivationKey generateActivationKey(GenerateRequest generateRequest)
 		throws Exception {
 
-		if (!_isComplimentary(generateRequest) &&
-			ListUtil.isEmpty(generateRequest.getBundleEntitlementIds())) {
-
-			throw new LicenseKeyEntitlementException(
-				"No product was selected for this bundle");
-		}
-
-		if (ListUtil.isEmpty(generateRequest.getServers())) {
-			throw new LicenseKeyEntitlementException(
-				"No server was given for the activation keys");
-		}
-
-		Project project = generateRequest.getProject();
-
-		return _keyedLock.withLock(
-			project.getExternalReferenceCode(),
-			() -> _generateActivationKey(generateRequest, project));
+		return _generateActivationKey(
+			ActivationKeyScope.of(generateRequest.getProject()),
+			generateRequest);
 	}
 
 	public String generateDeveloperLicenseXML(
@@ -277,21 +291,24 @@ public class LicenseKeyGenerationService {
 	}
 
 	private ActivationKey _addActivationKey(
-			Date expirationDate, GenerateRequest generateRequest,
-			String licenseKeyFamily, Project project, Date startDate)
+			ActivationKeyScope activationKeyScope, Date expirationDate,
+			GenerateRequest generateRequest, String licenseKeyFamily,
+			Date startDate)
 		throws Exception {
 
 		return _activationKeyService.addActivationKey(
-			project.getAccountId(), true, expirationDate, licenseKeyFamily,
-			project.getExternalReferenceCode(), startDate,
+			activationKeyScope.getAccountId(), true, expirationDate,
+			licenseKeyFamily,
+			activationKeyScope.getProjectExternalReferenceCode(), startDate,
 			generateRequest.getKeyType());
 	}
 
 	private LicenseKey _addLicenseKey(
-			ActivationKey activationKey, boolean complimentary,
-			String description, Entitlement entitlement, Date expirationDate,
-			GenerateRequest generateRequest, LicensedProduct licensedProduct,
-			Project project, GenerateRequest.Server server, Date startDate)
+			ActivationKey activationKey, ActivationKeyScope activationKeyScope,
+			boolean complimentary, String description, Entitlement entitlement,
+			Date expirationDate, GenerateRequest generateRequest,
+			LicensedProduct licensedProduct, GenerateRequest.Server server,
+			Date startDate)
 		throws Exception {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
@@ -299,7 +316,7 @@ public class LicenseKeyGenerationService {
 		String version = generateRequest.getVersion();
 
 		return _licenseKeyService.addLicenseKey(
-			project.getAccountId(), project.getName(),
+			activationKeyScope.getAccountId(), activationKeyScope.getName(),
 			activationKey.getActivationKeyId(), true,
 			_getAdditionalInfo(generateRequest), complimentary,
 			generateRequest.getDataCenterLocation(), description,
@@ -308,8 +325,8 @@ public class LicenseKeyGenerationService {
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),
 			_toLicenseXML(
-				description, expirationDate, generateRequest, licensedProduct,
-				project, server, startDate),
+				activationKeyScope, description, expirationDate,
+				generateRequest, licensedProduct, server, startDate),
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			licenseEntry.getName(), licenseEntry.getType(),
 			LicenseVersion.getLicenseVersion(productName, version),
@@ -317,15 +334,17 @@ public class LicenseKeyGenerationService {
 			0, 0, generateRequest.getEnvironmentName(), null,
 			generateRequest.getEnvironmentName(),
 			LicenseConstants.PRODUCT_ID_PORTAL, productName, version,
-			project.getExternalReferenceCode(), StringPool.BLANK,
-			_getSizing(generateRequest), startDate,
+			activationKeyScope.getProjectExternalReferenceCode(),
+			StringPool.BLANK, _getSizing(generateRequest), startDate,
 			generateRequest.getWorkspaceName(),
 			generateRequest.getWorkspaceOwnerEmail());
 	}
 
-	private void _checkComplimentary(Project project) throws Exception {
+	private void _checkComplimentary(ActivationKeyScope activationKeyScope)
+		throws Exception {
+
 		if (!_licenseKeyGenerateFormService.isAllowComplimentary(
-				project.getAccountId())) {
+				activationKeyScope.getAccountId())) {
 
 			throw new LicenseKeyEntitlementException(
 				"The account is not allowed to generate a complimentary key");
@@ -333,7 +352,7 @@ public class LicenseKeyGenerationService {
 
 		int complimentaryActivationKeysCount =
 			_activationKeyService.getActivationKeysCount(
-				true, project.getExternalReferenceCode(),
+				true, activationKeyScope.getProjectExternalReferenceCode(),
 				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
 
 		if (complimentaryActivationKeysCount > 0) {
@@ -393,9 +412,9 @@ public class LicenseKeyGenerationService {
 	}
 
 	private void _checkQuota(
+			ActivationKeyScope activationKeyScope,
 			List<Entitlement> bundleEntitlements,
-			List<Entitlement> entitlements, GenerateRequest generateRequest,
-			Project project)
+			List<Entitlement> entitlements, GenerateRequest generateRequest)
 		throws Exception {
 
 		List<GenerateRequest.Server> servers = generateRequest.getServers();
@@ -404,8 +423,8 @@ public class LicenseKeyGenerationService {
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				entitlements, _getRenewedActivationKeyIds(generateRequest),
-				project.getExternalReferenceCode());
+				activationKeyScope, entitlements,
+				_getRenewedActivationKeyIds(generateRequest));
 
 		for (Entitlement entitlement : bundleEntitlements) {
 			int totalCount = LicenseKeyGenerateFormService.getTotalCount(
@@ -496,6 +515,28 @@ public class LicenseKeyGenerationService {
 		return activationKey;
 	}
 
+	private Entitlement _fetchStartedEntitlement(
+		List<Entitlement> entitlements) {
+
+		Entitlement startedEntitlement = null;
+
+		for (Entitlement entitlement : entitlements) {
+			Instant endDateInstant = entitlement.getEndDateInstant();
+
+			if (!entitlement.isSelfServiceTrial() || (endDateInstant == null) ||
+				((startedEntitlement != null) &&
+				 !endDateInstant.isBefore(
+					 startedEntitlement.getEndDateInstant()))) {
+
+				continue;
+			}
+
+			startedEntitlement = entitlement;
+		}
+
+		return startedEntitlement;
+	}
+
 	private Entitlement _findEntitlement(
 		long entitlementId, List<Entitlement> entitlements) {
 
@@ -509,19 +550,54 @@ public class LicenseKeyGenerationService {
 	}
 
 	private ActivationKey _generateActivationKey(
-			GenerateRequest generateRequest, Project project)
+			ActivationKeyScope activationKeyScope,
+			GenerateRequest generateRequest)
+		throws Exception {
+
+		if (!_isComplimentary(generateRequest) &&
+			ListUtil.isEmpty(generateRequest.getBundleEntitlementIds())) {
+
+			throw new LicenseKeyEntitlementException(
+				"No product was selected for this bundle");
+		}
+
+		if (ListUtil.isEmpty(generateRequest.getServers())) {
+			throw new LicenseKeyEntitlementException(
+				"No server was given for the activation keys");
+		}
+
+		return _keyedLock.withLock(
+			activationKeyScope.getLockKey(),
+			() -> _generateActivationKeyInLock(
+				activationKeyScope, generateRequest));
+	}
+
+	private ActivationKey _generateActivationKeyInLock(
+			ActivationKeyScope activationKeyScope,
+			GenerateRequest generateRequest)
 		throws Exception {
 
 		List<Entitlement> entitlements =
-			_entitlementService.getActiveEntitlements(
-				project.getExternalReferenceCode());
+			_entitlementService.getActiveEntitlements(activationKeyScope);
 
 		Entitlement subscriptionEntitlement = _findEntitlement(
 			generateRequest.getSubscriptionEntitlementId(), entitlements);
 
 		if (subscriptionEntitlement == null) {
 			throw new LicenseKeyEntitlementException(
-				"The project is not entitled to the selected subscription");
+				StringBundler.concat(
+					"The ", activationKeyScope.getType(),
+					" is not entitled to the selected subscription"));
+		}
+
+		List<Entitlement> bundleEntitlements = _getBundleEntitlements(
+			activationKeyScope, generateRequest.getBundleEntitlementIds(),
+			entitlements);
+
+		if (!activationKeyScope.isProject()) {
+			subscriptionEntitlement =
+				_getSelfServiceTrialSubscriptionEntitlement(
+					bundleEntitlements, entitlements, subscriptionEntitlement);
 		}
 
 		boolean complimentary = _isComplimentary(generateRequest);
@@ -530,11 +606,10 @@ public class LicenseKeyGenerationService {
 			subscriptionEntitlement.getEndDateInstant());
 		Date startDate = _toDate(subscriptionEntitlement.getStartDateInstant());
 
-		List<Entitlement> bundleEntitlements = _getBundleEntitlements(
-			generateRequest.getBundleEntitlementIds(), entitlements);
+		boolean startsLicenseKeyDuration = false;
 
 		if (complimentary) {
-			_checkComplimentary(project);
+			_checkComplimentary(activationKeyScope);
 			_checkComplimentaryEntitlement(true, subscriptionEntitlement);
 			_checkComplimentaryRequest(generateRequest);
 
@@ -585,24 +660,66 @@ public class LicenseKeyGenerationService {
 			for (Entitlement entitlement : bundleEntitlements) {
 				_checkComplimentaryEntitlement(false, entitlement);
 			}
+
+			startsLicenseKeyDuration = _startsLicenseKeyDuration(
+				bundleEntitlements);
+
+			if (startsLicenseKeyDuration) {
+				Calendar calendar = Calendar.getInstance(
+					TimeZone.getTimeZone("UTC"));
+
+				calendar.set(Calendar.MILLISECOND, 0);
+
+				startDate = calendar.getTime();
+
+				Entitlement startedEntitlement = _fetchStartedEntitlement(
+					bundleEntitlements);
+
+				if (startedEntitlement == null) {
+					calendar.add(
+						Calendar.DATE,
+						LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
+							subscriptionEntitlement));
+
+					expirationDate = calendar.getTime();
+				}
+				else {
+					expirationDate = _toDate(
+						startedEntitlement.getEndDateInstant());
+
+					if (startedEntitlement.getStartDateInstant() != null) {
+						startDate = _toDate(
+							startedEntitlement.getStartDateInstant());
+					}
+				}
+			}
 		}
 
-		_checkQuota(bundleEntitlements, entitlements, generateRequest, project);
+		_checkQuota(
+			activationKeyScope, bundleEntitlements, entitlements,
+			generateRequest);
 
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
 			bundleEntitlements, generateRequest, subscriptionEntitlement);
 
-		if (!complimentary) {
+		if (!complimentary && !startsLicenseKeyDuration) {
 			LicensedProduct licensedProduct = licensedProducts.get(
 				subscriptionEntitlement.getEntitlementId());
 
 			LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
 
+			boolean allowPermanentLicenses = false;
+
+			if (activationKeyScope.isProject()) {
+				allowPermanentLicenses =
+					_licenseKeyGenerateFormService.isAllowPermanentLicenses(
+						activationKeyScope.getAccountId());
+			}
+
 			expirationDate = _toDate(
 				LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
-					_licenseKeyGenerateFormService.isAllowPermanentLicenses(
-						project.getAccountId()),
-					subscriptionEntitlement, licenseEntry.getType()));
+					allowPermanentLicenses, subscriptionEntitlement,
+					licenseEntry.getType()));
 		}
 
 		String description = generateRequest.getDescription();
@@ -612,20 +729,29 @@ public class LicenseKeyGenerationService {
 		}
 
 		ActivationKey activationKey = _addActivationKey(
-			expirationDate, generateRequest,
+			activationKeyScope, expirationDate, generateRequest,
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(
 				subscriptionEntitlement),
-			project, startDate);
+			startDate);
+
+		List<Entitlement> startedEntitlements = new ArrayList<>();
 
 		try {
 			for (GenerateRequest.Server server : generateRequest.getServers()) {
 				for (Entitlement entitlement : bundleEntitlements) {
 					_addLicenseKey(
-						activationKey, complimentary, description, entitlement,
-						expirationDate, generateRequest,
+						activationKey, activationKeyScope, complimentary,
+						description, entitlement, expirationDate,
+						generateRequest,
 						licensedProducts.get(entitlement.getEntitlementId()),
-						project, server, startDate);
+						server, startDate);
 				}
+			}
+
+			if (startsLicenseKeyDuration) {
+				_startLicenseKeyDuration(
+					bundleEntitlements, expirationDate, startDate,
+					startedEntitlements, subscriptionEntitlement);
 			}
 
 			ActivationKey renewedActivationKey = _fetchRenewedActivationKey(
@@ -638,6 +764,8 @@ public class LicenseKeyGenerationService {
 		}
 		catch (Exception exception) {
 			_activationKeyService.deactivatePartialActivationKey(activationKey);
+
+			_restoreEntitlementDates(startedEntitlements);
 
 			throw exception;
 		}
@@ -657,6 +785,7 @@ public class LicenseKeyGenerationService {
 	}
 
 	private List<Entitlement> _getBundleEntitlements(
+			ActivationKeyScope activationKeyScope,
 			List<Long> bundleEntitlementIds, List<Entitlement> entitlements)
 		throws Exception {
 
@@ -671,8 +800,9 @@ public class LicenseKeyGenerationService {
 			if (entitlement == null) {
 				throw new LicenseKeyEntitlementException(
 					StringBundler.concat(
-						"The project is not entitled to entitlement ",
-						entitlementId, " selected for this bundle"));
+						"The ", activationKeyScope.getType(),
+						" is not entitled to entitlement ", entitlementId,
+						" selected for this bundle"));
 			}
 
 			bundleEntitlements.add(entitlement);
@@ -875,6 +1005,88 @@ public class LicenseKeyGenerationService {
 		return Collections.singletonList(activationKey.getActivationKeyId());
 	}
 
+	/**
+	 * Returns the subscription entitlement that the order of the add-on
+	 * entitlements in the bundle created. An account that holds more than one
+	 * trial holds more than one DXP trial entitlement, and the form offers
+	 * only one of them, so a key for the add-on of one trial would otherwise
+	 * start the DXP trial of another.
+	 */
+	private Entitlement _getSelfServiceTrialSubscriptionEntitlement(
+			List<Entitlement> bundleEntitlements,
+			List<Entitlement> entitlements, Entitlement subscriptionEntitlement)
+		throws Exception {
+
+		String skuExternalReferenceCode = _getSkuExternalReferenceCode(
+			subscriptionEntitlement);
+
+		if (Validator.isNull(skuExternalReferenceCode)) {
+			return subscriptionEntitlement;
+		}
+
+		Entitlement addOnEntitlement = null;
+
+		for (Entitlement bundleEntitlement : bundleEntitlements) {
+			if (!skuExternalReferenceCode.equals(
+					_getSkuExternalReferenceCode(bundleEntitlement))) {
+
+				addOnEntitlement = bundleEntitlement;
+
+				break;
+			}
+		}
+
+		if ((addOnEntitlement == null) ||
+			(addOnEntitlement.getCommerceOrderItemId() == 0)) {
+
+			return subscriptionEntitlement;
+		}
+
+		OrderItem addOnOrderItem =
+			_commerceOrderItemService.fetchCommerceOrderItem(
+				addOnEntitlement.getCommerceOrderItemId());
+
+		if (addOnOrderItem == null) {
+			return subscriptionEntitlement;
+		}
+
+		Set<Long> orderItemIds = new HashSet<>();
+
+		for (OrderItem orderItem :
+				_commerceOrderItemService.getCommerceOrderItems(
+					addOnOrderItem.getOrderId())) {
+
+			orderItemIds.add(orderItem.getId());
+		}
+
+		if (orderItemIds.contains(
+				subscriptionEntitlement.getCommerceOrderItemId())) {
+
+			return subscriptionEntitlement;
+		}
+
+		for (Entitlement entitlement : entitlements) {
+			if (skuExternalReferenceCode.equals(
+					_getSkuExternalReferenceCode(entitlement)) &&
+				orderItemIds.contains(entitlement.getCommerceOrderItemId())) {
+
+				return entitlement;
+			}
+		}
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(
+				StringBundler.concat(
+					"Unable to find the subscription entitlement of order ",
+					addOnOrderItem.getOrderId(), " so entitlement ",
+					subscriptionEntitlement.getEntitlementId(),
+					" starts with the add-on entitlement ",
+					addOnEntitlement.getEntitlementId()));
+		}
+
+		return subscriptionEntitlement;
+	}
+
 	private String _getSizing(GenerateRequest generateRequest) {
 		if (_isComplimentary(generateRequest)) {
 			return _SIZING_COMPLIMENTARY;
@@ -891,6 +1103,80 @@ public class LicenseKeyGenerationService {
 		return Objects.equals(
 			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
 			generateRequest.getKeyType());
+	}
+
+	/**
+	 * Restores the dates that a failed key generation wrote, so the trial
+	 * window starts again with the next key instead of running without one.
+	 */
+	private void _restoreEntitlementDates(
+		List<Entitlement> startedEntitlements) {
+
+		for (Entitlement entitlement : startedEntitlements) {
+			try {
+				_entitlementService.updateEntitlementDates(
+					entitlement.getEndDateInstant(),
+					entitlement.getEntitlementId(),
+					entitlement.getStartDateInstant());
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to restore the dates of entitlement " +
+						entitlement.getEntitlementId(),
+					exception);
+			}
+		}
+	}
+
+	private void _startLicenseKeyDuration(
+			List<Entitlement> bundleEntitlements, Date expirationDate,
+			Date startDate, List<Entitlement> startedEntitlements,
+			Entitlement subscriptionEntitlement)
+		throws Exception {
+
+		for (Entitlement entitlement : bundleEntitlements) {
+			if ((entitlement.getEntitlementId() ==
+					subscriptionEntitlement.getEntitlementId()) ||
+				!_startsLicenseKeyDuration(entitlement)) {
+
+				continue;
+			}
+
+			_entitlementService.updateEntitlementDates(
+				expirationDate.toInstant(), entitlement.getEntitlementId(),
+				startDate.toInstant());
+
+			startedEntitlements.add(entitlement);
+		}
+
+		if (_startsLicenseKeyDuration(subscriptionEntitlement)) {
+			_entitlementService.updateEntitlementDates(
+				expirationDate.toInstant(),
+				subscriptionEntitlement.getEntitlementId(),
+				startDate.toInstant());
+
+			startedEntitlements.add(subscriptionEntitlement);
+		}
+	}
+
+	private boolean _startsLicenseKeyDuration(Entitlement entitlement) {
+		if (entitlement.isSelfServiceTrial() &&
+			(entitlement.getEndDateInstant() == null)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _startsLicenseKeyDuration(List<Entitlement> entitlements) {
+		for (Entitlement entitlement : entitlements) {
+			if (_startsLicenseKeyDuration(entitlement)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private List<Entitlement> _toBundleEntitlements(
@@ -970,16 +1256,17 @@ public class LicenseKeyGenerationService {
 	}
 
 	private String _toLicenseXML(
-			String description, Date expirationDate,
-			GenerateRequest generateRequest, LicensedProduct licensedProduct,
-			Project project, GenerateRequest.Server server, Date startDate)
+			ActivationKeyScope activationKeyScope, String description,
+			Date expirationDate, GenerateRequest generateRequest,
+			LicensedProduct licensedProduct, GenerateRequest.Server server,
+			Date startDate)
 		throws Exception {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
 
 		String productName = licensedProduct._getProductName();
 
-		String accountName = project.getName();
+		String accountName = activationKeyScope.getName();
 		String environmentName = generateRequest.getEnvironmentName();
 		String hostName = ServerInfoUtil.toCommaSeparated(server.getHostName());
 		String ipAddresses = ServerInfoUtil.toCommaSeparated(
@@ -1010,8 +1297,14 @@ public class LicenseKeyGenerationService {
 
 	private static final String _SIZING_DEFAULT = "Sizing 1";
 
+	private static final Log _log = LogFactory.getLog(
+		LicenseKeyGenerationService.class);
+
 	@Autowired
 	private ActivationKeyService _activationKeyService;
+
+	@Autowired
+	private CommerceOrderItemService _commerceOrderItemService;
 
 	@Autowired
 	private EntitlementService _entitlementService;

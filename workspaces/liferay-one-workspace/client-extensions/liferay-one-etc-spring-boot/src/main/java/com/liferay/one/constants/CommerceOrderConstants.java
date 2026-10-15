@@ -40,5 +40,9 @@ public class CommerceOrderConstants {
 
 	public static final List<String> cloudAppOrderTypeExternalReferenceCodes =
 		Collections.unmodifiableList(Arrays.asList("CLOUDAPP", "CLOUD_APP"));
+	public static final List<String>
+		selfServiceTrialOrderTypeExternalReferenceCodes =
+			Collections.unmodifiableList(
+				Arrays.asList("CMP_TRIAL", "DSR_TRIAL"));
 
 }

@@ -1715,6 +1715,8 @@ export default {
 		'There are no subscriptions entitled to this environment.',
 	'there-was-an-unexpected-error-while-attempting-to-deactivate-the-key-please-try-again-in-a-few-moments':
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
+	'this-account-has-already-started-a-trial-of-this-product':
+		'This account has already started a trial of this product.',
 	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
 		'This account has no default billing address, so a connected DXP cannot install products for it.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
@@ -2094,10 +2096,10 @@ export default {
 		'Your request completed successfully',
 	'your-tokens-will-be-credited-to-your-ai-hub-account-shortly-we-will-notify-you-by-email-once-they-are-available':
 		'Your tokens will be credited to your AI Hub account shortly. We will notify you by email once they are available.',
-	'your-trial-activation-key-has-been-generated':
-		'Your trial activation key has been generated!',
 	'your-trial-is-provisioned-by-liferay':
 		'Your trial is provisioned by Liferay.',
+	'your-trial-is-still-being-prepared-refresh-the-page-in-a-few-minutes-if-it-is-not-listed':
+		'Your trial is still being prepared. Refresh the page in a few minutes if it is not listed.',
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'yyyy-mm-dd': 'YYYY-MM-DD',

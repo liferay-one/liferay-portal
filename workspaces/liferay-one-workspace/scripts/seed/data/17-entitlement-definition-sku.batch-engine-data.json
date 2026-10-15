@@ -151,6 +151,11 @@
 			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_TRIAL_PRDCT-CONTENT-MARKETING-TRIAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_TRIAL",
+			"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING-TRIAL"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_01tVO00000UccNxYAJ",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM",
 			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
@@ -201,6 +206,11 @@
 			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_DSR_TRIAL_PRDCT-DSR-TRIAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR_TRIAL",
+			"skuExternalReferenceCode": "PRDCT-DSR-TRIAL"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_DXP_BACKUP_PRDCT-DXP",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_BACKUP",
 			"skuExternalReferenceCode": "PRDCT-DXP"
@@ -239,6 +249,11 @@
 			"externalReferenceCode": "C_ENT_DEF_DXP_PRODUCTION_PRDCT-DXP",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_PRODUCTION",
 			"skuExternalReferenceCode": "PRDCT-DXP"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_TRIAL_PRDCT-DXP-TRIAL",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_TRIAL",
+			"skuExternalReferenceCode": "PRDCT-DXP-TRIAL"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER_PRDCT-DXP",

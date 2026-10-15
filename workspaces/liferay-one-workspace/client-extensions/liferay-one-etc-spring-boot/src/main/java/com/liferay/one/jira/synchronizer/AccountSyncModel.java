@@ -83,8 +83,10 @@ public class AccountSyncModel {
 			() -> userAccountService.getAccountUserAccounts(account.getId()));
 		_activeEntitlementDefinitions = new MemoizedValue<>(
 			"entitlements for account " + externalReferenceCode, _log,
-			() -> entitlementService.getActiveEntitlementDefinitions(
-				account.getId()));
+			() ->
+				entitlementService.
+					getActiveEntitlementDefinitionsExcludingSelfServiceTrials(
+						account.getId()));
 		_businessEventsFieldValue = new MemoizedValue<>(
 			"business events for account " + externalReferenceCode, _log,
 			this::_toBusinessEventsFieldValue);

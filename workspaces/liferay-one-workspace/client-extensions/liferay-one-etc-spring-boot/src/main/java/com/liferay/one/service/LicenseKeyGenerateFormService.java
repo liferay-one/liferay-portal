@@ -15,6 +15,7 @@ import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.ActivationKey;
+import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.ProductVersion;
@@ -36,6 +37,7 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +61,10 @@ import org.springframework.stereotype.Component;
 public class LicenseKeyGenerateFormService {
 
 	public static int getLicenseKeyDurationDays(Entitlement entitlement) {
+		if (entitlement.getLicenseKeyDurationDays() > 0) {
+			return entitlement.getLicenseKeyDurationDays();
+		}
+
 		EntitlementDefinition entitlementDefinition =
 			entitlement.getEntitlementDefinition();
 
@@ -232,127 +238,21 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public JSONObject getGenerateForm(
+			boolean admin, Account account, boolean provisionable)
+		throws Exception {
+
+		return _getGenerateFormJSONObject(
+			admin, ActivationKeyScope.of(account), provisionable, null);
+	}
+
+	public JSONObject getGenerateForm(
 			boolean admin, Project project, boolean provisionable,
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
-		String projectExternalReferenceCode =
-			project.getExternalReferenceCode();
-
-		List<Entitlement> entitlements =
-			_entitlementService.getActiveEntitlements(
-				projectExternalReferenceCode);
-
-		Map<Long, ResolvedProduct> resolvedProducts = _getResolvedProducts(
-			entitlements);
-
-		List<EntitledProduct> entitledProducts = _getEntitledProducts(
-			_getDisasterRecoveryExternalReferenceCodes(entitlements),
-			entitlements, resolvedProducts);
-
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
-			_getLicenseKeyTypeEntitlements(entitlements, resolvedProducts);
-
-		Map<Long, Integer> licenseKeyCounts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				entitlements,
-				_getRenewedActivationKeyIds(
-					renewedActivationKeyExternalReferenceCode),
-				projectExternalReferenceCode);
-
-		List<ProductVersion> productVersions = _getProductVersions();
-
-		Account account = _accountService.getAccount(project.getAccountId());
-
-		boolean allowComplimentary = _isAllowComplimentary(account);
-		boolean allowPermanentLicenses = _isAllowPermanentLicenses(account);
-
-		boolean hasComplimentaryActivationKey = false;
-
-		if (allowComplimentary) {
-			int complimentaryActivationKeysCount =
-				_activationKeyService.getActivationKeysCount(
-					true, projectExternalReferenceCode,
-					LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
-
-			if (complimentaryActivationKeysCount > 0) {
-				hasComplimentaryActivationKey = true;
-			}
-		}
-
-		JSONArray bundleProductsJSONArray = new JSONArray();
-		JSONArray cloudNativeDeveloperVersionsJSONArray =
-			_toCloudNativeDeveloperVersionsJSONArray(
-				productVersions, Year.now(ZoneOffset.UTC));
-		JSONArray productsJSONArray = new JSONArray();
-		JSONArray developerVersionsJSONArray = _toDeveloperVersionsJSONArray(
-			productVersions);
-		JSONArray versionsJSONArray = _toVersionsJSONArray(productVersions);
-
-		for (EntitledProduct entitledProduct : entitledProducts) {
-			JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
-				entitledProduct.getLicenseKeyFamily(), productVersions);
-
-			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
-
-			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				admin, allowComplimentary, allowPermanentLicenses,
-				hasComplimentaryActivationKey, hasLicenseEntries,
-				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
-				licenseKeyTypeEntitlements, productVersions, provisionable);
-
-			if (entitledProduct.isGeneratesActivationKey()) {
-				bundleProductsJSONArray.put(
-					_toBundleProductJSONObject(
-						entitledProduct,
-						(keyTypesJSONArray.length() > 0) || !hasLicenseEntries,
-						licenseKeyCounts, licensedVersionsJSONArray));
-			}
-
-			if (keyTypesJSONArray.length() == 0) {
-				continue;
-			}
-
-			JSONArray productDeveloperVersionsJSONArray =
-				developerVersionsJSONArray;
-
-			if (Objects.equals(
-					LicenseKeyGenerationConstants.
-						LICENSE_KEY_FAMILY_CLOUD_NATIVE,
-					entitledProduct.getLicenseKeyFamily())) {
-
-				productDeveloperVersionsJSONArray =
-					cloudNativeDeveloperVersionsJSONArray;
-			}
-
-			productsJSONArray.put(
-				new JSONObject(
-				).put(
-					"developerVersions", productDeveloperVersionsJSONArray
-				).put(
-					"entitlementId",
-					entitledProduct.getEntitlement(
-					).getEntitlementId()
-				).put(
-					"externalReferenceCode",
-					entitledProduct.getExternalReferenceCode()
-				).put(
-					"keyTypes", keyTypesJSONArray
-				).put(
-					"licenseKeyFamily", entitledProduct.getLicenseKeyFamily()
-				).put(
-					"name", entitledProduct.getName()
-				).put(
-					"versions", versionsJSONArray
-				));
-		}
-
-		return new JSONObject(
-		).put(
-			"bundleProducts", bundleProductsJSONArray
-		).put(
-			"products", productsJSONArray
-		);
+		return _getGenerateFormJSONObject(
+			admin, ActivationKeyScope.of(project), provisionable,
+			renewedActivationKeyExternalReferenceCode);
 	}
 
 	/**
@@ -363,21 +263,19 @@ public class LicenseKeyGenerateFormService {
 	 * also carries.
 	 */
 	public JSONObject getSummary(
+			boolean admin, Account account, boolean provisionable)
+		throws Exception {
+
+		return _toSummaryJSONObject(
+			getGenerateForm(admin, account, true), provisionable);
+	}
+
+	public JSONObject getSummary(
 			boolean admin, Project project, boolean provisionable)
 		throws Exception {
 
-		JSONObject generateFormJSONObject = getGenerateForm(
-			admin, project, true, null);
-
-		return new JSONObject(
-		).put(
-			"cloudNativeKeyTypes",
-			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
-		).put(
-			"generatable", _isGeneratable(generateFormJSONObject, provisionable)
-		).put(
-			"provisionable", provisionable
-		);
+		return _toSummaryJSONObject(
+			getGenerateForm(admin, project, true, null), provisionable);
 	}
 
 	public boolean grantsLicense(Entitlement entitlement) {
@@ -622,6 +520,145 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return entitledProducts;
+	}
+
+	private JSONObject _getGenerateFormJSONObject(
+			boolean admin, ActivationKeyScope activationKeyScope,
+			boolean provisionable,
+			String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(activationKeyScope);
+
+		if (entitlements.isEmpty()) {
+			return new JSONObject(
+			).put(
+				"bundleProducts", new JSONArray()
+			).put(
+				"products", new JSONArray()
+			);
+		}
+
+		if (!activationKeyScope.isProject()) {
+			entitlements = _orderByUnstartedLicenseKeyDuration(entitlements);
+		}
+
+		Map<Long, ResolvedProduct> resolvedProducts = _getResolvedProducts(
+			entitlements);
+
+		List<EntitledProduct> entitledProducts = _getEntitledProducts(
+			_getDisasterRecoveryExternalReferenceCodes(entitlements),
+			entitlements, resolvedProducts);
+
+		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+			_getLicenseKeyTypeEntitlements(entitlements, resolvedProducts);
+
+		Map<Long, Integer> licenseKeyCounts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				activationKeyScope, entitlements,
+				_getRenewedActivationKeyIds(
+					renewedActivationKeyExternalReferenceCode));
+
+		List<ProductVersion> productVersions = _getProductVersions();
+
+		boolean allowComplimentary = false;
+		boolean allowPermanentLicenses = false;
+
+		if (activationKeyScope.isProject()) {
+			Account account = _accountService.getAccount(
+				activationKeyScope.getAccountId());
+
+			allowComplimentary = _isAllowComplimentary(account);
+			allowPermanentLicenses = _isAllowPermanentLicenses(account);
+		}
+
+		boolean hasComplimentaryActivationKey = false;
+
+		if (allowComplimentary) {
+			int complimentaryActivationKeysCount =
+				_activationKeyService.getActivationKeysCount(
+					true, activationKeyScope.getProjectExternalReferenceCode(),
+					LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
+
+			if (complimentaryActivationKeysCount > 0) {
+				hasComplimentaryActivationKey = true;
+			}
+		}
+
+		JSONArray bundleProductsJSONArray = new JSONArray();
+		JSONArray cloudNativeDeveloperVersionsJSONArray =
+			_toCloudNativeDeveloperVersionsJSONArray(
+				productVersions, Year.now(ZoneOffset.UTC));
+		JSONArray productsJSONArray = new JSONArray();
+		JSONArray developerVersionsJSONArray = _toDeveloperVersionsJSONArray(
+			productVersions);
+		JSONArray versionsJSONArray = _toVersionsJSONArray(productVersions);
+
+		for (EntitledProduct entitledProduct : entitledProducts) {
+			JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
+				entitledProduct.getLicenseKeyFamily(), productVersions);
+
+			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
+
+			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
+				admin, allowComplimentary, allowPermanentLicenses,
+				hasComplimentaryActivationKey, hasLicenseEntries,
+				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
+				licenseKeyTypeEntitlements, productVersions, provisionable);
+
+			if (entitledProduct.isGeneratesActivationKey()) {
+				bundleProductsJSONArray.put(
+					_toBundleProductJSONObject(
+						entitledProduct,
+						(keyTypesJSONArray.length() > 0) || !hasLicenseEntries,
+						licenseKeyCounts, licensedVersionsJSONArray));
+			}
+
+			if (keyTypesJSONArray.length() == 0) {
+				continue;
+			}
+
+			JSONArray productDeveloperVersionsJSONArray =
+				developerVersionsJSONArray;
+
+			if (Objects.equals(
+					LicenseKeyGenerationConstants.
+						LICENSE_KEY_FAMILY_CLOUD_NATIVE,
+					entitledProduct.getLicenseKeyFamily())) {
+
+				productDeveloperVersionsJSONArray =
+					cloudNativeDeveloperVersionsJSONArray;
+			}
+
+			productsJSONArray.put(
+				new JSONObject(
+				).put(
+					"developerVersions", productDeveloperVersionsJSONArray
+				).put(
+					"entitlementId",
+					entitledProduct.getEntitlement(
+					).getEntitlementId()
+				).put(
+					"externalReferenceCode",
+					entitledProduct.getExternalReferenceCode()
+				).put(
+					"keyTypes", keyTypesJSONArray
+				).put(
+					"licenseKeyFamily", entitledProduct.getLicenseKeyFamily()
+				).put(
+					"name", entitledProduct.getName()
+				).put(
+					"versions", versionsJSONArray
+				));
+		}
+
+		return new JSONObject(
+		).put(
+			"bundleProducts", bundleProductsJSONArray
+		).put(
+			"products", productsJSONArray
+		);
 	}
 
 	private Set<String> _getGeneratesActivationKeyExternalReferenceCodes(
@@ -999,6 +1036,18 @@ public class LicenseKeyGenerateFormService {
 		return orderedEntitlements;
 	}
 
+	private List<Entitlement> _orderByUnstartedLicenseKeyDuration(
+		List<Entitlement> entitlements) {
+
+		List<Entitlement> orderedEntitlements = new ArrayList<>(entitlements);
+
+		orderedEntitlements.sort(
+			Comparator.comparing(
+				entitlement -> entitlement.getEndDateInstant() != null));
+
+		return orderedEntitlements;
+	}
+
 	private JSONObject _toBundleProductJSONObject(
 		EntitledProduct entitledProduct, boolean licensable,
 		Map<Long, Integer> licenseKeyCounts,
@@ -1093,6 +1142,20 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return jsonArray;
+	}
+
+	private JSONObject _toSummaryJSONObject(
+		JSONObject generateFormJSONObject, boolean provisionable) {
+
+		return new JSONObject(
+		).put(
+			"cloudNativeKeyTypes",
+			_getCloudNativeKeyTypesJSONArray(generateFormJSONObject)
+		).put(
+			"generatable", _isGeneratable(generateFormJSONObject, provisionable)
+		).put(
+			"provisionable", provisionable
+		);
 	}
 
 	private JSONArray _toVersionsJSONArray(

@@ -19,11 +19,6 @@ export type LicenseKey = {
 	startDate: string;
 };
 
-export type TrialActivationKey = {
-	activationKeyId: number;
-	externalReferenceCode: string;
-};
-
 class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 	createLicenseKeyTypeFree({
 		domains,
@@ -35,18 +30,6 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		owner: string;
 	}): Promise<LicenseKey> {
 		return this.post('/type-free', {domains, orderId, owner});
-	}
-
-	createLicenseKeyTypeTrial({
-		domains,
-		orderId,
-		owner,
-	}: {
-		domains: string;
-		orderId: string;
-		owner: string;
-	}): Promise<TrialActivationKey> {
-		return this.post('/type-trial', {domains, orderId, owner});
 	}
 
 	async downloadLicenseKey(licenseKeyId: string, name: string) {
@@ -125,22 +108,6 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		owner: string;
 	}) {
 		await this.post('/type-free-domains-check', {domains, owner});
-	}
-
-	async licenseKeyTypeTrialDomainsCheck({
-		domains,
-		owner,
-		productId,
-	}: {
-		domains: string;
-		owner: string;
-		productId: number;
-	}) {
-		await this.post('/type-trial-domains-check', {
-			domains,
-			owner,
-			productId,
-		});
 	}
 }
 

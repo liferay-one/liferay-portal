@@ -32,10 +32,6 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String LICENSE_KEY_FAMILY_CLOUD_NATIVE = "Cloud Native";
 
-	public static final String LICENSE_KEY_FAMILY_CMP = "CMP";
-
-	public static final String LICENSE_KEY_FAMILY_DSR = "DSR";
-
 	public static final String LICENSE_KEY_FAMILY_DXP = "DXP";
 
 	public static final String LICENSE_KEY_FAMILY_PORTAL = "Portal";
@@ -47,10 +43,6 @@ public class LicenseKeyGenerationConstants {
 	public static final int PERMANENT_LICENSE_KEY_MIN_YEARS = 80;
 
 	public static final String PRODUCT_GROUP_DXP = "dxp";
-
-	public static final int SELF_SERVICE_TRIAL_DURATION_DAYS_CUSTOMER = 90;
-
-	public static final int SELF_SERVICE_TRIAL_DURATION_DAYS_PROSPECT = 30;
 
 	public static final int TERMED_LICENSE_KEY_EXTENSION_DAYS = 180;
 

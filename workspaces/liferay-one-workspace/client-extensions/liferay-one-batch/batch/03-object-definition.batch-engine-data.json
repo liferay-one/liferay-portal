@@ -2221,6 +2221,24 @@
 					"type": "String"
 				},
 				{
+					"DBType": "Integer",
+					"businessType": "Integer",
+					"externalReferenceCode": "C_ENTITLEMENT_LICENSE_KEY_DURATION_DAYS",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "License Key Duration Days"
+					},
+					"name": "licenseKeyDurationDays",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Integer"
+				},
+				{
 					"DBType": "Double",
 					"businessType": "Decimal",
 					"externalReferenceCode": "C_ENTITLEMENT_MAX_QUANTITY",
@@ -2391,6 +2409,19 @@
 			"objectRelationships": [
 			],
 			"objectValidationRules": [
+				{
+					"active": true,
+					"engine": "ddm",
+					"errorLabel": {
+						"en_US": "License Key Duration Days cannot be negative. Leave it empty for a key that expires with its entitlement."
+					},
+					"externalReferenceCode": "C_ENTITLEMENT_LICENSE_KEY_DURATION_RANGE",
+					"name": {
+						"en_US": "Entitlement License Key Duration Range"
+					},
+					"outputType": "fullValidation",
+					"script": "licenseKeyDurationDays >= 0"
+				},
 				{
 					"active": true,
 					"engine": "ddm",

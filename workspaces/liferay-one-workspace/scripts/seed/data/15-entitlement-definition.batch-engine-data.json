@@ -298,6 +298,19 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Content Marketing Platform Trial",
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_TRIAL",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyDurationDays": 30,
+			"licenseKeyFamily": "CMP",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Liferay Data Platform",
 			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM",
 			"generatesActivationKey": true,
@@ -410,6 +423,19 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Digital Sales Room Trial",
+			"externalReferenceCode": "C_ENT_DEF_DSR_TRIAL",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyDurationDays": 30,
+			"licenseKeyFamily": "DSR",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Liferay DXP",
 			"externalReferenceCode": "C_ENT_DEF_DXP",
 			"generatesActivationKey": true,
@@ -508,6 +534,20 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay DXP Trial",
+			"externalReferenceCode": "C_ENT_DEF_DXP_TRIAL",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyDurationDays": 30,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
