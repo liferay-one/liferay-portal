@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -433,6 +434,39 @@ public class AccountService extends OneBaseService {
 		}
 	}
 
+	/**
+	 * Returns the licensing custom fields that a new account starts with,
+	 * following the legacy provisioning system. The values are stored
+	 * explicitly, because the default value of a custom field applies only
+	 * where the site initializer set it. After the account is created, only
+	 * an administrator changes them.
+	 */
+	private List<CustomField> _getDefaultLicensingCustomFields(
+		String billingCountry, String soldBy) {
+
+		boolean allowComplimentary = true;
+
+		if (Objects.equals(billingCountry, "Ireland") ||
+			Objects.equals(billingCountry, "United Kingdom")) {
+
+			allowComplimentary = false;
+		}
+
+		boolean allowPermanentLicenses = true;
+
+		if (Objects.equals(soldBy, "Liferay Brazil") ||
+			Objects.equals(soldBy, "Liferay China") ||
+			Objects.equals(soldBy, "Liferay India")) {
+
+			allowPermanentLicenses = false;
+		}
+
+		return Arrays.asList(
+			_toCustomField("allowComplimentary", allowComplimentary),
+			_toCustomField("allowPermanentLicenses", allowPermanentLicenses),
+			_toCustomField("allowSelfProvisioning", true));
+	}
+
 	private void _setAccountContactInformation(
 		Account account, SalesforceAccount salesforceAccount) {
 
@@ -532,25 +566,8 @@ public class AccountService extends OneBaseService {
 			Account account, String billingCountry, String soldBy)
 		throws Exception {
 
-		List<CustomField> customFields = new ArrayList<>();
-
-		if (Validator.isNull(billingCountry) ||
-			(!billingCountry.equals("Ireland") &&
-			 !billingCountry.equals("United Kingdom"))) {
-
-			customFields.add(_toCustomField("allowComplimentary", true));
-		}
-
-		if (Objects.equals(soldBy, "Liferay Brazil") ||
-			Objects.equals(soldBy, "Liferay China") ||
-			Objects.equals(soldBy, "Liferay India")) {
-
-			customFields.add(_toCustomField("allowPermanentLicenses", false));
-		}
-
-		if (customFields.isEmpty()) {
-			return;
-		}
+		List<CustomField> customFields = _getDefaultLicensingCustomFields(
+			billingCountry, soldBy);
 
 		AccountResource accountResource = AccountResource.builder(
 		).endpoint(

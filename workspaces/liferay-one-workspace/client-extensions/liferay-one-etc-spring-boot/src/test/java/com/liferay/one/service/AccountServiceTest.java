@@ -5,9 +5,15 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.util.KeyedLock;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -81,6 +87,45 @@ public class AccountServiceTest {
 			duplicateAccountException.getMessage());
 	}
 
+	@Test
+	public void testGetDefaultLicensingCustomFields() {
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", true, "allowPermanentLicenses", true,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("Spain", "Liferay Inc."));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", true, "allowPermanentLicenses", true,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields(null, null));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", false, "allowPermanentLicenses", true,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("Ireland", "Liferay Inc."));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", false, "allowPermanentLicenses", true,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("United Kingdom", "Liferay Inc."));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", true, "allowPermanentLicenses", false,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("Brazil", "Liferay Brazil"));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", true, "allowPermanentLicenses", false,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("China", "Liferay China"));
+		Assertions.assertEquals(
+			Map.of(
+				"allowComplimentary", true, "allowPermanentLicenses", false,
+				"allowSelfProvisioning", true),
+			_getDefaultLicensingCustomFields("India", "Liferay India"));
+	}
+
 	private AccountService _createAccountService() {
 		AccountService accountService = Mockito.spy(new AccountService());
 
@@ -88,6 +133,24 @@ public class AccountServiceTest {
 			accountService, "_keyedLock", new KeyedLock());
 
 		return accountService;
+	}
+
+	private Map<String, Object> _getDefaultLicensingCustomFields(
+		String billingCountry, String soldBy) {
+
+		Map<String, Object> values = new HashMap<>();
+
+		List<CustomField> customFields = ReflectionTestUtils.invokeMethod(
+			new AccountService(), "_getDefaultLicensingCustomFields",
+			billingCountry, soldBy);
+
+		for (CustomField customField : customFields) {
+			CustomValue customValue = customField.getCustomValue();
+
+			values.put(customField.getName(), customValue.getData());
+		}
+
+		return values;
 	}
 
 }
