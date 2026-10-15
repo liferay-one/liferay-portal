@@ -15,19 +15,26 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -128,6 +135,48 @@ public class UserGroupService extends OneBaseService {
 			userGroupExternalReferenceCodes, userGroupResource, userId);
 	}
 
+	@Scheduled(cron = "${liferay.one.user.group.sync.cron}")
+	public void syncUserGroups() {
+		if (!_syncing.compareAndSet(false, true)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping user group sync because another sync is in " +
+						"progress");
+			}
+
+			return;
+		}
+
+		try {
+			Instant endInstant = Instant.now(
+			).truncatedTo(
+				ChronoUnit.MILLIS
+			);
+
+			Instant startInstant = endInstant.minus(
+				_LOOK_BACK_MINUTES, ChronoUnit.MINUTES);
+
+			for (long userId :
+					_getChangedEntitlementUserIds(endInstant, startInstant)) {
+
+				try {
+					syncUserAccountUserGroups(userId);
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to sync user groups for user " + userId,
+						exception);
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error("Unable to sync user groups", exception);
+		}
+		finally {
+			_syncing.set(false);
+		}
+	}
+
 	private UserGroupResource _buildUserGroupResource() {
 		return UserGroupResource.builder(
 		).endpoint(
@@ -135,6 +184,50 @@ public class UserGroupService extends OneBaseService {
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).build();
+	}
+
+	private Set<Long> _getChangedEntitlementUserIds(
+			Instant endInstant, Instant startInstant)
+		throws Exception {
+
+		Set<Long> accountEntryIds = new LinkedHashSet<>();
+		Set<String> projectExternalReferenceCodes = new LinkedHashSet<>();
+
+		for (Entitlement entitlement :
+				_entitlementService.getChangedEntitlements(
+					endInstant, _entitlementNames, startInstant)) {
+
+			if (entitlement.getAccountEntryId() > 0) {
+				accountEntryIds.add(entitlement.getAccountEntryId());
+			}
+
+			if (Validator.isNotNull(
+					entitlement.getProjectExternalReferenceCode())) {
+
+				projectExternalReferenceCodes.add(
+					entitlement.getProjectExternalReferenceCode());
+			}
+		}
+
+		Set<Long> userIds = new LinkedHashSet<>();
+
+		for (long accountEntryId : accountEntryIds) {
+			for (UserAccount userAccount :
+					_userAccountService.getAccountUserAccounts(
+						accountEntryId)) {
+
+				userIds.add(userAccount.getId());
+			}
+		}
+
+		for (ProjectMembership projectMembership :
+				_projectMembershipService.getProjectMemberships(
+					projectExternalReferenceCodes)) {
+
+			userIds.add(projectMembership.getUserId());
+		}
+
+		return userIds;
 	}
 
 	private void _updateUserGroupUserAccount(
@@ -176,6 +269,8 @@ public class UserGroupService extends OneBaseService {
 	private static final String _EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS =
 		"C_SUPPORT_CUSTOMERS";
 
+	private static final long _LOOK_BACK_MINUTES = 15;
+
 	private static final Log _log = LogFactory.getLog(UserGroupService.class);
 
 	private static final List<String> _entitlementNames;
@@ -194,6 +289,8 @@ public class UserGroupService extends OneBaseService {
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;
+
+	private final AtomicBoolean _syncing = new AtomicBoolean();
 
 	@Autowired
 	private UserAccountService _userAccountService;

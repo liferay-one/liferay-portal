@@ -368,6 +368,24 @@ public class EntitlementService extends OneBaseService {
 				"') and (r_projectToEntitlement_c_projectId eq '0')"));
 	}
 
+	public List<Entitlement> getChangedEntitlements(
+			Instant endInstant, List<String> names, Instant startInstant)
+		throws Exception {
+
+		if (names.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return getEntitlements(
+			_getEntitlementNamesFilterString(
+				StringBundler.concat(
+					"dateModified ge ", startInstant, " or (endDate ge ",
+					startInstant, " and endDate le ", endInstant,
+					") or (startDate ge ", startInstant, " and startDate le ",
+					endInstant, ")"),
+				names));
+	}
+
 	public Entitlement getEntitlement(long entitlementId) throws Exception {
 		try {
 			String response = get(

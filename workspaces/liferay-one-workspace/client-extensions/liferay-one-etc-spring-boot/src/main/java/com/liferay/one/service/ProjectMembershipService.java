@@ -7,10 +7,14 @@ package com.liferay.one.service;
 
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -69,10 +73,6 @@ public class ProjectMembershipService extends OneBaseService {
 			).toUri());
 	}
 
-	/**
-	 * @return <code>true</code> if at least one project membership was deleted;
-	 *         <code>false</code> if none matched
-	 */
 	public boolean deleteProjectMembership(
 			String projectExternalReferenceCode,
 			String roleExternalReferenceCode, long userId)
@@ -150,6 +150,33 @@ public class ProjectMembershipService extends OneBaseService {
 	}
 
 	public List<ProjectMembership> getProjectMemberships(
+			Collection<String> projectExternalReferenceCodes)
+		throws Exception {
+
+		List<ProjectMembership> projectMemberships = new ArrayList<>();
+
+		List<String> values = TransformUtil.transform(
+			projectExternalReferenceCodes,
+			projectExternalReferenceCode -> escapeODataString(
+				projectExternalReferenceCode));
+
+		for (int i = 0; i < values.size(); i += _FILTER_BATCH_SIZE) {
+			List<String> batchValues = values.subList(
+				i, Math.min(i + _FILTER_BATCH_SIZE, values.size()));
+
+			projectMemberships.addAll(
+				getAllItems(
+					"/o/c/projectmemberships",
+					StringBundler.concat(
+						"r_projectToProjectMembership_c_projectERC in ('",
+						StringUtil.merge(batchValues, "','"), "')"),
+					ProjectMembership::new));
+		}
+
+		return projectMemberships;
+	}
+
+	public List<ProjectMembership> getProjectMemberships(
 			long accountId, long userId)
 		throws Exception {
 
@@ -210,6 +237,8 @@ public class ProjectMembershipService extends OneBaseService {
 			"/o/c/projectmemberships", filterString, ProjectMembership::new,
 			jwt);
 	}
+
+	private static final int _FILTER_BATCH_SIZE = 100;
 
 	@Autowired
 	private ProjectService _projectService;
