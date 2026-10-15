@@ -30,6 +30,10 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String LICENSE_KEY_FAMILY_CLOUD_NATIVE = "Cloud Native";
 
+	public static final String LICENSE_KEY_FAMILY_CMP = "CMP";
+
+	public static final String LICENSE_KEY_FAMILY_DSR = "DSR";
+
 	public static final String LICENSE_KEY_FAMILY_DXP = "DXP";
 
 	public static final String LICENSE_KEY_FAMILY_PORTAL = "Portal";
