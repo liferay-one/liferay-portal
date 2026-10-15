@@ -23,7 +23,7 @@ const CHANNEL_ERC = 'LIFERAY_ONE_CHANNEL';
 
 const USER_ACCOUNTS_PATH = '/o/headless-admin-user/v1.0/user-accounts';
 
-const CUSTOMER_USER_GROUP_ERCS = ['C_CUSTOMERS', 'C_EVERYONE'];
+const CUSTOMER_USER_GROUP_ERCS = ['C_SUPPORT_CUSTOMERS', 'C_EVERYONE'];
 
 export type TemporaryAccount = {
 	externalReferenceCode: string;

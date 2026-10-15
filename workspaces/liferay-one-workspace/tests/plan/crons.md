@@ -2,7 +2,7 @@
 
 Every scheduled background task in liferay-one-etc-spring-boot. A unit test at the handler level (JUnit + Mockito) covers each task. When a task has a rerun rule, its row states it. The plan tracks real integration coverage as journeys in flows.md.
 
-> Autoscaffolded from the code surface (15 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (16 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |

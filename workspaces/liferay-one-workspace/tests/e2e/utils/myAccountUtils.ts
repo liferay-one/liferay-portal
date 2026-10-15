@@ -88,7 +88,7 @@ export async function createTemporaryMember(
 	const member = {email, name: user.name, password, userId: user.id};
 
 	try {
-		for (const userGroupERC of ['C_CUSTOMERS', 'C_EVERYONE']) {
+		for (const userGroupERC of ['C_SUPPORT_CUSTOMERS', 'C_EVERYONE']) {
 			await adminAPI.post(
 				`/o/headless-admin-user/v1.0/user-groups/by-external-reference-code/${userGroupERC}/user-group-users`,
 				[user.id]
