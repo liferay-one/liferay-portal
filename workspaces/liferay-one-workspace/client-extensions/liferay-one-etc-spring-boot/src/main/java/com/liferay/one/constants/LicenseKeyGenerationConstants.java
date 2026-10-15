@@ -44,6 +44,10 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String PRODUCT_GROUP_DXP = "dxp";
 
+	public static final int SELF_SERVICE_TRIAL_DURATION_DAYS_CUSTOMER = 90;
+
+	public static final int SELF_SERVICE_TRIAL_DURATION_DAYS_PROSPECT = 30;
+
 	public static final int TERMED_LICENSE_KEY_EXTENSION_DAYS = 180;
 
 	public static final List<String> downloadableKeyTypes =
