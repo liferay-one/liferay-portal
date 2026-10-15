@@ -8,6 +8,9 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserGroupBrief;
+import com.liferay.headless.admin.user.client.pagination.Page;
+import com.liferay.headless.admin.user.client.pagination.Pagination;
+import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
 import com.liferay.headless.admin.user.client.resource.v1_0.UserGroupResource;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
@@ -21,12 +24,14 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
@@ -43,7 +48,125 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserGroupService extends OneBaseService {
 
+	@Scheduled(cron = "${liferay.one.user.group.reconcile.cron}")
+	public void reconcileUserGroups() {
+		if (!_reconciling.compareAndSet(false, true)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping user group reconcile because another reconcile " +
+						"is in progress");
+			}
+
+			return;
+		}
+
+		try {
+			long startTime = System.currentTimeMillis();
+
+			_syncedUserIds.clear();
+
+			Set<Long> customerAccountIds = new LinkedHashSet<>();
+			Set<String> customerProjectExternalReferenceCodes =
+				new LinkedHashSet<>();
+			Set<Long> partnerAccountIds = new LinkedHashSet<>();
+
+			for (Entitlement entitlement :
+					_entitlementService.getActiveEntitlementsByNames(
+						_entitlementNames)) {
+
+				if (EntitlementConstants.namesSLAs.contains(
+						entitlement.getName())) {
+
+					if (entitlement.getAccountEntryId() > 0) {
+						customerAccountIds.add(entitlement.getAccountEntryId());
+					}
+
+					if (Validator.isNotNull(
+							entitlement.getProjectExternalReferenceCode())) {
+
+						customerProjectExternalReferenceCodes.add(
+							entitlement.getProjectExternalReferenceCode());
+					}
+				}
+				else if (Objects.equals(
+							entitlement.getName(),
+							EntitlementConstants.NAME_PARTNER) &&
+						 (entitlement.getAccountEntryId() > 0)) {
+
+					partnerAccountIds.add(entitlement.getAccountEntryId());
+				}
+			}
+
+			Set<Long> accountEntryIds = new LinkedHashSet<>(customerAccountIds);
+
+			accountEntryIds.addAll(partnerAccountIds);
+
+			Set<Long> customerUserIds = new HashSet<>();
+			Set<Long> partnerUserIds = new HashSet<>();
+
+			for (long accountEntryId : accountEntryIds) {
+				for (UserAccount userAccount :
+						_userAccountService.getAccountUserAccounts(
+							accountEntryId)) {
+
+					if (customerAccountIds.contains(accountEntryId) &&
+						UserAccountUtil.hasAccountRole(
+							userAccount, accountEntryId,
+							RoleConstants.namesCustomerAccountRoles)) {
+
+						customerUserIds.add(userAccount.getId());
+					}
+
+					if (partnerAccountIds.contains(accountEntryId) &&
+						UserAccountUtil.hasAccountRole(
+							userAccount, accountEntryId,
+							RoleConstants.namesPartnerAccountRoles)) {
+
+						partnerUserIds.add(userAccount.getId());
+					}
+				}
+			}
+
+			for (ProjectMembership projectMembership :
+					_projectMembershipService.getProjectMemberships(
+						customerProjectExternalReferenceCodes)) {
+
+				customerUserIds.add(projectMembership.getUserId());
+			}
+
+			Set<Long> currentCustomerUserIds = _getUserGroupUserIds(
+				_EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS);
+			Set<Long> currentPartnerUserIds = _getUserGroupUserIds(
+				_EXTERNAL_REFERENCE_CODE_PARTNERS);
+
+			UserGroupResource userGroupResource = _buildUserGroupResource();
+
+			_reconcileUserGroup(
+				currentCustomerUserIds,
+				_EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS, customerUserIds,
+				userGroupResource);
+			_reconcileUserGroup(
+				currentPartnerUserIds, _EXTERNAL_REFERENCE_CODE_PARTNERS,
+				partnerUserIds, userGroupResource);
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Reconciled user groups in ",
+						System.currentTimeMillis() - startTime, " ms"));
+			}
+		}
+		catch (Exception exception) {
+			_log.error("Unable to reconcile user groups", exception);
+		}
+		finally {
+			_reconciling.set(false);
+		}
+	}
+
 	public void syncUserAccountUserGroups(long userId) throws Exception {
+		_syncedUserIds.add(userId);
+
 		UserAccount userAccount = _userAccountService.getUserAccount(userId);
 
 		Set<Long> customerAccountIds = new HashSet<>();
@@ -177,6 +300,52 @@ public class UserGroupService extends OneBaseService {
 		}
 	}
 
+	private void _addUserGroupUserAccounts(
+		String externalReferenceCode, UserGroupResource userGroupResource,
+		Set<Long> userIds) {
+
+		List<Long> userIdsList = new ArrayList<>(userIds);
+
+		int count = 0;
+
+		for (int i = 0; i < userIdsList.size(); i += _WRITE_BATCH_SIZE) {
+			List<Long> batchUserIds = userIdsList.subList(
+				i, Math.min(i + _WRITE_BATCH_SIZE, userIdsList.size()));
+
+			try {
+				userGroupResource.postUserGroupByExternalReferenceCodeUsers(
+					externalReferenceCode, batchUserIds.toArray(new Long[0]));
+
+				count += batchUserIds.size();
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to add ", batchUserIds.size(),
+						" users to user group ", externalReferenceCode),
+					exception);
+			}
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Added ", count, " users to user group ",
+					externalReferenceCode));
+		}
+	}
+
+	private UserAccountResource _buildUserAccountResource() {
+		return UserAccountResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"fields", "alternateName,id"
+		).build();
+	}
+
 	private UserGroupResource _buildUserGroupResource() {
 		return UserGroupResource.builder(
 		).endpoint(
@@ -230,6 +399,97 @@ public class UserGroupService extends OneBaseService {
 		return userIds;
 	}
 
+	private Set<Long> _getUserGroupUserIds(String externalReferenceCode)
+		throws Exception {
+
+		UserAccountResource userAccountResource = _buildUserAccountResource();
+
+		Set<Long> userIds = new HashSet<>();
+
+		String filterString = null;
+
+		while (true) {
+			Page<UserAccount> page =
+				userAccountResource.
+					getUserGroupByExternalReferenceCodeUsersPage(
+						externalReferenceCode, null, filterString,
+						Pagination.of(1, _PAGE_SIZE), "alternateName:asc");
+
+			Collection<UserAccount> userAccounts = page.getItems();
+
+			String lastAlternateName = null;
+
+			for (UserAccount userAccount : userAccounts) {
+				userIds.add(userAccount.getId());
+
+				lastAlternateName = userAccount.getAlternateName();
+			}
+
+			if (userAccounts.size() < _PAGE_SIZE) {
+				return userIds;
+			}
+
+			filterString = StringBundler.concat(
+				"alternateName gt '", escapeODataString(lastAlternateName),
+				"'");
+		}
+	}
+
+	private void _reconcileUserGroup(
+		Set<Long> currentUserIds, String externalReferenceCode,
+		Set<Long> targetUserIds, UserGroupResource userGroupResource) {
+
+		Set<Long> addUserIds = new HashSet<>(targetUserIds);
+
+		addUserIds.removeAll(currentUserIds);
+		addUserIds.removeAll(_syncedUserIds);
+
+		Set<Long> removeUserIds = new HashSet<>(currentUserIds);
+
+		removeUserIds.removeAll(targetUserIds);
+		removeUserIds.removeAll(_syncedUserIds);
+
+		_addUserGroupUserAccounts(
+			externalReferenceCode, userGroupResource, addUserIds);
+		_removeUserGroupUserAccounts(
+			externalReferenceCode, userGroupResource, removeUserIds);
+	}
+
+	private void _removeUserGroupUserAccounts(
+		String externalReferenceCode, UserGroupResource userGroupResource,
+		Set<Long> userIds) {
+
+		List<Long> userIdsList = new ArrayList<>(userIds);
+
+		int count = 0;
+
+		for (int i = 0; i < userIdsList.size(); i += _WRITE_BATCH_SIZE) {
+			List<Long> batchUserIds = userIdsList.subList(
+				i, Math.min(i + _WRITE_BATCH_SIZE, userIdsList.size()));
+
+			try {
+				userGroupResource.deleteUserGroupByExternalReferenceCodeUsers(
+					externalReferenceCode, batchUserIds.toArray(new Long[0]));
+
+				count += batchUserIds.size();
+			}
+			catch (Exception exception) {
+				_log.error(
+					StringBundler.concat(
+						"Unable to remove ", batchUserIds.size(),
+						" users from user group ", externalReferenceCode),
+					exception);
+			}
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Removed ", count, " users from user group ",
+					externalReferenceCode));
+		}
+	}
+
 	private void _updateUserGroupUserAccount(
 			String externalReferenceCode, boolean member,
 			Set<String> userGroupExternalReferenceCodes,
@@ -271,6 +531,10 @@ public class UserGroupService extends OneBaseService {
 
 	private static final long _LOOK_BACK_MINUTES = 15;
 
+	private static final int _PAGE_SIZE = 500;
+
+	private static final int _WRITE_BATCH_SIZE = 100;
+
 	private static final Log _log = LogFactory.getLog(UserGroupService.class);
 
 	private static final List<String> _entitlementNames;
@@ -290,6 +554,8 @@ public class UserGroupService extends OneBaseService {
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;
 
+	private final AtomicBoolean _reconciling = new AtomicBoolean();
+	private final Set<Long> _syncedUserIds = ConcurrentHashMap.newKeySet();
 	private final AtomicBoolean _syncing = new AtomicBoolean();
 
 	@Autowired

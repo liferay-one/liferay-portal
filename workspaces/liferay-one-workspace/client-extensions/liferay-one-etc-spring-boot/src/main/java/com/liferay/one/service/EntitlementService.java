@@ -357,6 +357,20 @@ public class EntitlementService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode) + "'");
 	}
 
+	public List<Entitlement> getActiveEntitlementsByNames(List<String> names)
+		throws Exception {
+
+		if (names.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		return _getActiveEntitlements(
+			StringUtil.merge(
+				TransformUtil.transform(
+					names, name -> "name eq '" + escapeODataString(name) + "'"),
+				" or "));
+	}
+
 	public List<Entitlement> getActiveUnassignedEntitlements(
 			long accountEntryId)
 		throws Exception {
