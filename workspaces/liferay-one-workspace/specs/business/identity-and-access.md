@@ -12,6 +12,8 @@ Terms used in this file:
 - **Shared organization**: an organization that a user belongs to and that an account is also linked to.
 - **Trusted application**: one of the six OAuth2 applications whose access tokens the Spring Boot service accepts.
 - **Okta group**: a group in Okta that an organization is linked to through an organization property.
+- **Support Customers group**: the user group `C_SUPPORT_CUSTOMERS`. It holds the users who have access to a support level agreement.
+- **Partners group**: the user group `C_PARTNERS`. It holds the users who have access to a partner entitlement.
 
 ## Sign In
 
@@ -129,6 +131,15 @@ Terms used in this file:
 | REQ-ACCESS-101 | A guest can view the Become a Publisher page. | P2 | — | — |
 | REQ-ACCESS-102 | Every signed in user can read the entitlement definitions, the environments, the product versions, the usage definitions, the usage events, and the publisher details of the company. | P0 | — | — |
 | REQ-ACCESS-103 | Every signed in user can submit a Digital Sales Room request and a free DXP activation key request. | P1 | — | — |
+
+## Support Customer and Partner Groups
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-ACCESS-120 | An entitlement is active when its start date is not after the current time and its end date is not before the current time. An entitlement without a start date or an end date has no limit on that side. | P0 | LPD-108683 | `SVC-ENTITLEMENTSERVICE` |
+| REQ-ACCESS-121 | A user is in the Support Customers group when the user holds an account role from the customer roles on an account with an active support level agreement, or has a project membership on a project with an active support level agreement. The rule uses the roles Account Administrator, Account Member, Account Requester, and Support Administrator. | P0 | LPD-108683 | `SVC-USERGROUPSERVICE` |
+| REQ-ACCESS-122 | A user is in the Partners group when the user holds a partner account role on an account with an active Partner entitlement. The partner account roles are Partner Manager, Partner Marketing User, Partner Member, Partner Sales User, and Partner Technical User. A customer role on an account that has a Partner entitlement and no support level agreement does not add the user to the Support Customers group. | P0 | LPD-108683 | `SVC-USERGROUPSERVICE` |
+| REQ-ACCESS-123 | Each account assignment, account role assignment, and project role assignment, and each unassignment of the same, evaluates the user again and adds the user to or removes the user from both groups. When this evaluation fails, the system logs the failure and the assignment still succeeds. | P0 | LPD-108683 | `SVC-USERASSIGNMENTSERVICE`, `SVC-USERGROUPSERVICE` |
 
 ## Not Yet Built
 

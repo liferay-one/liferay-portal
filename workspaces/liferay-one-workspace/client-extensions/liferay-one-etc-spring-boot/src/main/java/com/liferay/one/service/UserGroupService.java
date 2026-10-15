@@ -1,0 +1,201 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.one.service;
+
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.admin.user.client.dto.v1_0.UserGroupBrief;
+import com.liferay.headless.admin.user.client.resource.v1_0.UserGroupResource;
+import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.util.UserAccountUtil;
+import com.liferay.petra.string.StringBundler;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author Felipe Franca
+ */
+@Component
+public class UserGroupService extends OneBaseService {
+
+	public void syncUserAccountUserGroups(long userId) throws Exception {
+		UserAccount userAccount = _userAccountService.getUserAccount(userId);
+
+		Set<Long> customerAccountIds = new HashSet<>();
+		Set<Long> partnerAccountIds = new HashSet<>();
+
+		AccountBrief[] accountBriefs = userAccount.getAccountBriefs();
+
+		if (accountBriefs != null) {
+			for (AccountBrief accountBrief : accountBriefs) {
+				long accountId = accountBrief.getId();
+
+				if (UserAccountUtil.hasAccountRole(
+						userAccount, accountId,
+						RoleConstants.namesCustomerAccountRoles)) {
+
+					customerAccountIds.add(accountId);
+				}
+
+				if (UserAccountUtil.hasAccountRole(
+						userAccount, accountId,
+						RoleConstants.namesPartnerAccountRoles)) {
+
+					partnerAccountIds.add(accountId);
+				}
+			}
+		}
+
+		Set<String> projectExternalReferenceCodes = new HashSet<>();
+
+		for (ProjectMembership projectMembership :
+				_projectMembershipService.getProjectMembershipsByUserId(
+					userId)) {
+
+			projectExternalReferenceCodes.add(
+				projectMembership.getProjectExternalReferenceCode());
+		}
+
+		Set<Long> accountEntryIds = new HashSet<>(customerAccountIds);
+
+		accountEntryIds.addAll(partnerAccountIds);
+
+		boolean customer = false;
+		boolean partner = false;
+
+		for (Entitlement entitlement :
+				_entitlementService.getActiveEntitlements(
+					accountEntryIds, _entitlementNames,
+					projectExternalReferenceCodes)) {
+
+			if (EntitlementConstants.namesSLAs.contains(
+					entitlement.getName())) {
+
+				if (customerAccountIds.contains(
+						entitlement.getAccountEntryId()) ||
+					projectExternalReferenceCodes.contains(
+						entitlement.getProjectExternalReferenceCode())) {
+
+					customer = true;
+				}
+			}
+			else if (Objects.equals(
+						entitlement.getName(),
+						EntitlementConstants.NAME_PARTNER) &&
+					 partnerAccountIds.contains(
+						 entitlement.getAccountEntryId())) {
+
+				partner = true;
+			}
+		}
+
+		Set<String> userGroupExternalReferenceCodes = new HashSet<>();
+
+		UserGroupBrief[] userGroupBriefs = userAccount.getUserGroupBriefs();
+
+		if (userGroupBriefs != null) {
+			for (UserGroupBrief userGroupBrief : userGroupBriefs) {
+				userGroupExternalReferenceCodes.add(
+					userGroupBrief.getExternalReferenceCode());
+			}
+		}
+
+		UserGroupResource userGroupResource = _buildUserGroupResource();
+
+		_updateUserGroupUserAccount(
+			_EXTERNAL_REFERENCE_CODE_PARTNERS, partner,
+			userGroupExternalReferenceCodes, userGroupResource, userId);
+		_updateUserGroupUserAccount(
+			_EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS, customer,
+			userGroupExternalReferenceCodes, userGroupResource, userId);
+	}
+
+	private UserGroupResource _buildUserGroupResource() {
+		return UserGroupResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+	}
+
+	private void _updateUserGroupUserAccount(
+			String externalReferenceCode, boolean member,
+			Set<String> userGroupExternalReferenceCodes,
+			UserGroupResource userGroupResource, long userId)
+		throws Exception {
+
+		boolean present = userGroupExternalReferenceCodes.contains(
+			externalReferenceCode);
+
+		if (member && !present) {
+			userGroupResource.postUserGroupByExternalReferenceCodeUsers(
+				externalReferenceCode, new Long[] {userId});
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Added user ", userId, " to user group ",
+						externalReferenceCode));
+			}
+		}
+		else if (!member && present) {
+			userGroupResource.deleteUserGroupByExternalReferenceCodeUsers(
+				externalReferenceCode, new Long[] {userId});
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Removed user ", userId, " from user group ",
+						externalReferenceCode));
+			}
+		}
+	}
+
+	private static final String _EXTERNAL_REFERENCE_CODE_PARTNERS =
+		"C_PARTNERS";
+
+	private static final String _EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS =
+		"C_SUPPORT_CUSTOMERS";
+
+	private static final Log _log = LogFactory.getLog(UserGroupService.class);
+
+	private static final List<String> _entitlementNames;
+
+	static {
+		List<String> entitlementNames = new ArrayList<>(
+			EntitlementConstants.namesSLAs);
+
+		entitlementNames.add(EntitlementConstants.NAME_PARTNER);
+
+		_entitlementNames = Collections.unmodifiableList(entitlementNames);
+	}
+
+	@Autowired
+	private EntitlementService _entitlementService;
+
+	@Autowired
+	private ProjectMembershipService _projectMembershipService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
+
+}

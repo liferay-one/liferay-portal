@@ -62,6 +62,8 @@ public class UserAssignmentService {
 
 		_syncAccountMembershipToJSM(account, userId);
 
+		_syncUserGroups(userId);
+
 		return true;
 	}
 
@@ -96,6 +98,8 @@ public class UserAssignmentService {
 
 		_syncCloudNativeOktaApplication(
 			account, accountRole.getName(), true, userAccount);
+
+		_syncUserGroups(userId);
 	}
 
 	public void assignCloudNativeOktaApplication(
@@ -190,6 +194,8 @@ public class UserAssignmentService {
 
 		_syncProjectMembershipToJSM(
 			true, project, projectRoleExternalReferenceCode, userId);
+
+		_syncUserGroups(userId);
 	}
 
 	public void syncOktaGroupOrganizations(long userId) throws Exception {
@@ -283,6 +289,8 @@ public class UserAssignmentService {
 			account.getId(), userId);
 
 		_syncAccountMembershipToJSM(account, userId);
+
+		_syncUserGroups(userId);
 	}
 
 	public void unassignAccountRole(
@@ -311,6 +319,8 @@ public class UserAssignmentService {
 
 		_syncCloudNativeOktaApplication(
 			account, accountRole.getName(), false, userAccount);
+
+		_syncUserGroups(userId);
 	}
 
 	public void unassignOrganization(long organizationId, long userId)
@@ -358,6 +368,8 @@ public class UserAssignmentService {
 
 		_syncProjectMembershipToJSM(
 			false, project, projectRoleExternalReferenceCode, userId);
+
+		_syncUserGroups(userId);
 	}
 
 	private boolean _hasOrganization(
@@ -612,6 +624,16 @@ public class UserAssignmentService {
 		}
 	}
 
+	private void _syncUserGroups(long userId) {
+		try {
+			_userGroupService.syncUserAccountUserGroups(userId);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to sync user groups for user " + userId, exception);
+		}
+	}
+
 	private static final String _ROLE_ACTION_ASSIGNED = "Assigned";
 
 	private static final String _ROLE_ACTION_UNASSIGNED = "Unassigned";
@@ -672,5 +694,8 @@ public class UserAssignmentService {
 
 	@Autowired
 	private UserAccountSynchronizer _userAccountSynchronizer;
+
+	@Autowired
+	private UserGroupService _userGroupService;
 
 }

@@ -4,27 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 
 source ../_common.sh
 
-# Attaches the seeded persona users to their accounts and grants the account
-# roles a few of them need. The memberships come from the accountBriefs already
-# declared in 02-user-account.batch-engine-data.json, which the headless
-# UserAccount import ignores in the same way it ignores userGroupBriefs and
-# roleBriefs -- the users are created, but none of the declared accounts are
-# attached -- so that document stays the single source of truth for who belongs
-# where and this step applies it.
-#
-# Account roles cannot be expressed in that document at all, so the handful that
-# personas need are listed here. test@liferay.com is the default portal
-# administrator rather than a seeded persona, so its memberships are listed here
-# too. Membership is granted before the role because the account-role endpoint
-# does not enrol a user that is not already a member. Every endpoint used is
-# idempotent, so re-runs are safe. Account role IDs are generated per
-# environment, so they are resolved by name at runtime.
-
 USER_ACCOUNT_DATA="data/02-user-account.batch-engine-data.json"
-
-# Each entry is "<account external reference code>=<email address>=<account role
-# name>". An empty role name grants account membership with no account role.
-# Sorted by account external reference code, then email address.
 
 ROLE_ASSIGNMENTS=(
 	"ACCNT-001=accountmember@customer.com=Account Member"
@@ -39,6 +19,8 @@ ROLE_ASSIGNMENTS=(
 	"ACCNT-001=projectadmin@customer.com=Account Member"
 	"ACCNT-001=requester@customer.com=Account Member"
 	"ACCNT-001=test@liferay.com=Account Administrator"
+	"ACCNT-016=admin@partner.com=Partner Manager"
+	"ACCNT-016=member@partner.com=Partner Member"
 	"ACCNT-021=admin@publisher.com=Account Administrator"
 	"ACCNT-021=test@liferay.com=Account Administrator"
 	"ACCNT-028=admin@customer.com=Account Administrator"

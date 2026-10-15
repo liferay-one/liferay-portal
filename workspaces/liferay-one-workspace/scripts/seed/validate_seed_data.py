@@ -1,25 +1,5 @@
 #!/usr/bin/env python3
 
-"""Validates the seed data before it is imported.
-
-Every seed import runs with ON_ERROR_CONTINUE, and the scoped object batch
-endpoints silently drop an entry whose relationship points at something that does
-not exist. A dangling reference therefore costs nothing at import time and shows
-up much later as an empty tab or a missing row, so the whole data set is checked
-here instead, against the model it is supposed to describe:
-
-    Account > Project > Contract > Order > Order Item > Entitlement > License Key
-
-with entitlement definitions attached to products to say which entitlements an
-order generates, and usage events recording consumption of an entitlement against
-a usage definition.
-
-Errors are defects that make the seed data describe something impossible, and
-they fail the run. Warnings are coverage gaps -- a product nothing orders, a
-definition nothing grants -- which are worth reporting but are a legitimate state
-for a data set to be in.
-"""
-
 import datetime
 import glob
 import json
@@ -37,22 +17,9 @@ WORKSPACE_ROOT = os.path.dirname(os.path.dirname(SEED_DIR))
 
 GRANT_TYPE_UNLIMITED = "unlimited"
 
-# Custom fields the entitlement generator reads off an order item. Without them a
-# regeneration would produce dateless entitlements and treat the item as
-# unapproved, so seeded items that lack them are a defect rather than a gap.
-
 REQUIRED_ORDER_ITEM_CUSTOM_FIELDS = ("customStatus", "endDate", "startDate")
 
-# An order deliberately authored to grant nothing, so it is exempt from the check
-# that an order item whose product defines entitlements grants them.
-
 NO_ENTITLEMENT_ORDERS = {"C_ORDER_SAAS_EXPERIENCE_NO_ENTITLEMENTS.json"}
-
-# The overage orders are placed after the EntitlementGeneration object action is
-# re-enabled, so their entitlements are produced by the runtime rather than seeded
-# alongside the order. They are exempt from the same check, but everything else --
-# their references, their chain, their order item custom fields -- is checked like
-# any other order, because the generator reads those fields.
 
 RUNTIME_ENTITLEMENT_ORDERS = set()
 
@@ -294,7 +261,9 @@ def _check_chain(report, scope):
 				% (erc, definition, definition_skus[definition], order_item, sku),
 			)
 
-	for (order_item, definition), count in sorted(pairs.items()):
+	for (order_item, definition), count in sorted(
+		pairs.items(), key=lambda pair: (pair[0][0], pair[0][1] or "")
+	):
 		if count > 1:
 			report.error(
 				"Duplicate entitlement",
@@ -523,19 +492,6 @@ def _check_fields(report, definitions, entitlements, order_items):
 		if not definition:
 			continue
 
-		# EntitlementService.generateEntitlements copies the definition's name onto
-		# the entitlement, so seeded and generated entitlements only agree when the
-		# two match. They deliberately do not always match here, because the runtime
-		# itself is of two minds about what this field holds: the SaaS, LDP, and
-		# Experience usage strategies match a capacity entitlement against machine
-		# keys (apv, document-library-size, vcpu), while CloudRestController and the
-		# SLA checks in AccountsRestController and ProvisioningEmailService match
-		# against display labels ("Up to 5 Production Pods", "Gold Support").
-		#
-		# No single spelling satisfies both, so this is reported rather than failed.
-		# Resolving it means settling on one convention in EntitlementConstants and
-		# renaming the definitions to match, which is a runtime change.
-
 		if entitlement["name"] != definition.get("name"):
 			report.warning(
 				"Entitlement name differs from what the generator would write",
@@ -564,10 +520,6 @@ def _check_fields(report, definitions, entitlements, order_items):
 				),
 			)
 
-		# EntitlementService.generateEntitlements copies the definition's ceiling
-		# onto the entitlement untouched, so a seeded ceiling the definition does
-		# not carry is one a regeneration would drop.
-
 		if entitlement.get("maxQuantity") != definition.get("maxQuantity"):
 			report.error(
 				"Entitlement disagrees with its definition",
@@ -579,10 +531,6 @@ def _check_fields(report, definitions, entitlements, order_items):
 					definition.get("maxQuantity"),
 				),
 			)
-
-		# LPD-100375 scales the granted quantity by how many of the SKU were
-		# ordered, so the only quantity a regeneration can produce is the order
-		# item's quantity times the definition's default.
 
 		order_item_quantity = order_item_quantities.get(
 			entitlement.get("r_commerceOrderItemToEntitlement_commerceOrderItemERC")
@@ -607,9 +555,6 @@ def _check_fields(report, definitions, entitlements, order_items):
 						expected,
 					),
 				)
-
-		# An unlimited grant is measured by its grant type, so a quantity would be
-		# meaningless; anything else needs one.
 
 		if entitlement.get("grantType") != GRANT_TYPE_UNLIMITED and (
 			entitlement.get("quantity") is None

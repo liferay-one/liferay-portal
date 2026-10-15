@@ -307,6 +307,39 @@ public class EntitlementService extends OneBaseService {
 		return _getActiveEntitlements(StringUtil.merge(statements, " or "));
 	}
 
+	public List<Entitlement> getActiveEntitlements(
+			Collection<Long> accountEntryIds, List<String> names,
+			Collection<String> projectExternalReferenceCodes)
+		throws Exception {
+
+		if (names.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Entitlement> entitlements = new ArrayList<>(
+			_getActiveEntitlements(
+				"r_accountEntryToEntitlement_accountEntryId", names,
+				TransformUtil.transform(
+					accountEntryIds,
+					accountEntryId -> String.valueOf(accountEntryId))));
+
+		entitlements.addAll(
+			_getActiveEntitlements(
+				"r_projectToEntitlement_c_projectERC", names,
+				TransformUtil.transform(
+					projectExternalReferenceCodes,
+					projectExternalReferenceCode -> escapeODataString(
+						projectExternalReferenceCode))));
+
+		Map<Long, Entitlement> entitlementsMap = new LinkedHashMap<>();
+
+		for (Entitlement entitlement : entitlements) {
+			entitlementsMap.put(entitlement.getEntitlementId(), entitlement);
+		}
+
+		return new ArrayList<>(entitlementsMap.values());
+	}
+
 	public List<Entitlement> getActiveEntitlements(long accountEntryId)
 		throws Exception {
 
@@ -425,10 +458,6 @@ public class EntitlementService extends OneBaseService {
 		return state;
 	}
 
-	/**
-	 * Returns the entitlements granted from any entitlement definition that
-	 * meters the usage definition and that overlap the given period.
-	 */
 	public List<Entitlement> getUsageDefinitionEntitlements(
 			Instant endInstant, Instant startInstant,
 			String usageDefinitionExternalReferenceCode)
@@ -620,6 +649,28 @@ public class EntitlementService extends OneBaseService {
 				instant, ")"));
 	}
 
+	private List<Entitlement> _getActiveEntitlements(
+			String fieldName, List<String> names, List<String> values)
+		throws Exception {
+
+		List<Entitlement> entitlements = new ArrayList<>();
+
+		for (int i = 0; i < values.size(); i += _FILTER_BATCH_SIZE) {
+			List<String> batchValues = values.subList(
+				i, Math.min(i + _FILTER_BATCH_SIZE, values.size()));
+
+			entitlements.addAll(
+				_getActiveEntitlements(
+					_getEntitlementNamesFilterString(
+						StringBundler.concat(
+							fieldName, " in ('",
+							StringUtil.merge(batchValues, "','"), "')"),
+						names)));
+		}
+
+		return entitlements;
+	}
+
 	private long _getContractId(Order order) {
 		if (order == null) {
 			return 0;
@@ -777,6 +828,8 @@ public class EntitlementService extends OneBaseService {
 			).build(
 			).toUri());
 	}
+
+	private static final int _FILTER_BATCH_SIZE = 100;
 
 	private static final String _NESTED_FIELDS_ENTITLEMENT_DEFINITION =
 		"entitlementDefinitionToEntitlement";
