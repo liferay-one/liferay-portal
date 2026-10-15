@@ -132,6 +132,64 @@ public class EntitlementServiceDateRangeTest {
 	}
 
 	@Test
+	public void testActiveEntitlementsByNamesFilterIsActiveAndMatchesTheNames()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		entitlementService.getActiveEntitlementsByNames(
+			Arrays.asList("gold-support", "O'partner"));
+
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			entitlementService
+		).getEntitlements(
+			argumentCaptor.capture()
+		);
+
+		String filterString = argumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			filterString.startsWith("(endDate eq null or endDate ge "),
+			filterString);
+		Assertions.assertTrue(
+			filterString.contains(
+				") and (name eq 'gold-support' or name eq 'O''partner') and " +
+					"(startDate eq null or startDate le "),
+			filterString);
+	}
+
+	@Test
+	public void testActiveEntitlementsByNamesWithoutNamesMeansNoQuery()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Assertions.assertTrue(
+			entitlementService.getActiveEntitlementsByNames(
+				Collections.emptyList()
+			).isEmpty());
+
+		Mockito.verify(
+			entitlementService, Mockito.never()
+		).getEntitlements(
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testActiveEntitlementsDeduplicateByEntitlementId()
 		throws Exception {
 
