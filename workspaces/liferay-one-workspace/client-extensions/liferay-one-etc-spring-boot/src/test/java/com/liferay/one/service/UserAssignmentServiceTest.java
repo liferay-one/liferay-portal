@@ -96,6 +96,8 @@ public class UserAssignmentServiceTest {
 		ReflectionTestUtils.setField(
 			_userAssignmentService, "_userAccountSynchronizer",
 			_userAccountSynchronizer);
+		ReflectionTestUtils.setField(
+			_userAssignmentService, "_userGroupService", _userGroupService);
 
 		_account = new Account();
 
@@ -264,7 +266,7 @@ public class UserAssignmentServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_accountService, _accountUserAccountSynchronizer, _oktaService,
-			_provisioningEmailService);
+			_provisioningEmailService, _userGroupService);
 	}
 
 	@Test
@@ -327,6 +329,18 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testAssignAccountRoleSyncsUserGroups() throws Exception {
+		_userAssignmentService.assignAccountRole(
+			_account, _createAccountRole("Support Administrator"), _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
+	}
+
+	@Test
 	public void testAssignAccountSkipsExistingMember() throws Exception {
 		Mockito.when(
 			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
@@ -338,7 +352,8 @@ public class UserAssignmentServiceTest {
 			_userAssignmentService.assignAccount(_account, _USER_ID));
 
 		Mockito.verifyNoInteractions(
-			_accountService, _accountUserAccountSynchronizer, _oktaService);
+			_accountService, _accountUserAccountSynchronizer, _oktaService,
+			_userGroupService);
 	}
 
 	@Test
@@ -353,6 +368,34 @@ public class UserAssignmentServiceTest {
 
 		Assertions.assertTrue(
 			_userAssignmentService.assignAccount(_account, _USER_ID));
+	}
+
+	@Test
+	public void testAssignAccountSwallowsUserGroupSyncFailure()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to reach DXP")
+		).when(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
+
+		Assertions.assertTrue(
+			_userAssignmentService.assignAccount(_account, _USER_ID));
+	}
+
+	@Test
+	public void testAssignAccountSyncsUserGroups() throws Exception {
+		Assertions.assertTrue(
+			_userAssignmentService.assignAccount(_account, _USER_ID));
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
 	}
 
 	@Test
@@ -618,7 +661,20 @@ public class UserAssignmentServiceTest {
 		);
 
 		Mockito.verifyNoInteractions(
-			_accountService, _accountSynchronizer, _oktaService);
+			_accountService, _accountSynchronizer, _oktaService,
+			_userGroupService);
+	}
+
+	@Test
+	public void testAssignProjectRoleSyncsUserGroups() throws Exception {
+		_userAssignmentService.assignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
 	}
 
 	@Test
@@ -794,7 +850,21 @@ public class UserAssignmentServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_accountService, _accountUserAccountRoleSynchronizer,
-			_accountUserAccountSynchronizer);
+			_accountUserAccountSynchronizer, _userGroupService);
+	}
+
+	@Test
+	public void testUnassignAccountRoleSyncsUserGroups() throws Exception {
+		_addAccountBrief("Support Administrator");
+
+		_userAssignmentService.unassignAccountRole(
+			_account, _createAccountRole("Support Administrator"), _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
 	}
 
 	@Test
@@ -803,7 +873,21 @@ public class UserAssignmentServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_accountService, _accountUserAccountSynchronizer,
-			_projectMembershipService, _subscriptionEntryService);
+			_projectMembershipService, _subscriptionEntryService,
+			_userGroupService);
+	}
+
+	@Test
+	public void testUnassignAccountSyncsUserGroups() throws Exception {
+		_addAccountBrief("Account Member");
+
+		_userAssignmentService.unassignAccount(_account, _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
 	}
 
 	@Test
@@ -889,7 +973,37 @@ public class UserAssignmentServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_accountSynchronizer, _accountUserAccountRoleSynchronizer,
-			_userAccountSynchronizer);
+			_userAccountSynchronizer, _userGroupService);
+	}
+
+	@Test
+	public void testUnassignProjectRoleSwallowsUserGroupSyncFailure()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.ERC_PROJECT_ADMIN, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to reach DXP")
+		).when(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
+
+		_userAssignmentService.unassignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
+		);
 	}
 
 	@Test
@@ -916,6 +1030,26 @@ public class UserAssignmentServiceTest {
 		).syncUnassignRole(
 			RoleConstants.ERC_PROJECT_ADMIN, _USER_EXTERNAL_REFERENCE_CODE,
 			_PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	@Test
+	public void testUnassignProjectRoleSyncsUserGroups() throws Exception {
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.ERC_PROJECT_ADMIN, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		_userAssignmentService.unassignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_userGroupService
+		).syncUserAccountUserGroups(
+			_USER_ID
 		);
 	}
 
@@ -1126,5 +1260,7 @@ public class UserAssignmentServiceTest {
 	private final UserAccountSynchronizer _userAccountSynchronizer =
 		Mockito.mock(UserAccountSynchronizer.class);
 	private UserAssignmentService _userAssignmentService;
+	private final UserGroupService _userGroupService = Mockito.mock(
+		UserGroupService.class);
 
 }

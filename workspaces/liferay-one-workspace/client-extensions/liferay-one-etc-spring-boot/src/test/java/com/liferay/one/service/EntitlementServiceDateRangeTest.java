@@ -6,11 +6,18 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.model.Entitlement;
+import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.string.StringBundler;
 
 import java.time.Instant;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -22,6 +29,204 @@ import org.mockito.Mockito;
  * @author Drew Brokke
  */
 public class EntitlementServiceDateRangeTest {
+
+	@Test
+	public void testActiveEntitlementsAccountsAndProjectsMakeOneRequestEach()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		entitlementService.getActiveEntitlements(
+			Collections.singletonList(7L),
+			Arrays.asList("gold-support", "partner"),
+			Collections.singletonList("PRJCT'1"));
+
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			entitlementService, Mockito.times(2)
+		).getEntitlements(
+			argumentCaptor.capture()
+		);
+
+		List<String> filterStrings = argumentCaptor.getAllValues();
+
+		Assertions.assertTrue(
+			filterStrings.get(
+				0
+			).contains(
+				StringBundler.concat(
+					") and ((r_accountEntryToEntitlement_accountEntryId in ",
+					"('7')) and (name eq 'gold-support' or name eq ",
+					"'partner')) and (startDate eq null or startDate le ")
+			),
+			filterStrings.get(0));
+		Assertions.assertTrue(
+			filterStrings.get(
+				1
+			).contains(
+				StringBundler.concat(
+					") and ((r_projectToEntitlement_c_projectERC in ",
+					"('PRJCT''1')) and (name eq 'gold-support' or name eq ",
+					"'partner')) and (startDate eq null or startDate le ")
+			),
+			filterStrings.get(1));
+	}
+
+	@Test
+	public void testActiveEntitlementsAccountsOnlyBatchByHundred()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		List<Long> accountEntryIds = new ArrayList<>();
+
+		for (long i = 1; i <= 101; i++) {
+			accountEntryIds.add(i);
+		}
+
+		entitlementService.getActiveEntitlements(
+			accountEntryIds, Collections.singletonList("partner"),
+			Collections.emptyList());
+
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			entitlementService, Mockito.times(2)
+		).getEntitlements(
+			argumentCaptor.capture()
+		);
+
+		List<String> filterStrings = argumentCaptor.getAllValues();
+
+		Assertions.assertEquals(
+			100,
+			_countValues(
+				filterStrings.get(0),
+				"r_accountEntryToEntitlement_accountEntryId in ('"));
+		Assertions.assertEquals(
+			1,
+			_countValues(
+				filterStrings.get(1),
+				"r_accountEntryToEntitlement_accountEntryId in ('"));
+	}
+
+	@Test
+	public void testActiveEntitlementsDeduplicateByEntitlementId()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Arrays.asList(_createEntitlement(1), _createEntitlement(2))
+		).doReturn(
+			Arrays.asList(_createEntitlement(2), _createEntitlement(3))
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		List<Entitlement> entitlements =
+			entitlementService.getActiveEntitlements(
+				Collections.singletonList(7L),
+				Collections.singletonList("partner"),
+				Collections.singletonList("PRJCT-1"));
+
+		Assertions.assertEquals(
+			Arrays.asList(1L, 2L, 3L),
+			TransformUtil.transform(
+				entitlements, Entitlement::getEntitlementId));
+	}
+
+	@Test
+	public void testActiveEntitlementsProjectsOnlyBatchByHundred()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		List<String> projectExternalReferenceCodes = new ArrayList<>();
+
+		for (int i = 1; i <= 101; i++) {
+			projectExternalReferenceCodes.add("PRJCT-" + i);
+		}
+
+		entitlementService.getActiveEntitlements(
+			Collections.emptyList(), Collections.singletonList("partner"),
+			projectExternalReferenceCodes);
+
+		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			entitlementService, Mockito.times(2)
+		).getEntitlements(
+			argumentCaptor.capture()
+		);
+
+		List<String> filterStrings = argumentCaptor.getAllValues();
+
+		Assertions.assertEquals(
+			100,
+			_countValues(
+				filterStrings.get(0),
+				"r_projectToEntitlement_c_projectERC in ('"));
+		Assertions.assertEquals(
+			1,
+			_countValues(
+				filterStrings.get(1),
+				"r_projectToEntitlement_c_projectERC in ('"));
+	}
+
+	@Test
+	public void testActiveEntitlementsWithoutNamesMeansNoQuery()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Assertions.assertTrue(
+			entitlementService.getActiveEntitlements(
+				Collections.singletonList(7L), Collections.emptyList(),
+				Collections.singletonList("PRJCT-1")
+			).isEmpty());
+
+		Mockito.verify(
+			entitlementService, Mockito.never()
+		).getEntitlements(
+			Mockito.anyString()
+		);
+	}
 
 	@Test
 	public void testFilterMatchesNamesOverlappingTheRange() throws Exception {
@@ -77,6 +282,28 @@ public class EntitlementServiceDateRangeTest {
 		).getEntitlements(
 			Mockito.anyString()
 		);
+	}
+
+	private int _countValues(String filterString, String prefix) {
+		int start = filterString.indexOf(prefix);
+
+		Assertions.assertTrue(start >= 0, filterString);
+
+		start += prefix.length();
+
+		return filterString.substring(
+			start, filterString.indexOf("')", start)
+		).split(
+			"','"
+		).length;
+	}
+
+	private Entitlement _createEntitlement(long entitlementId) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			));
 	}
 
 }
