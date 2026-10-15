@@ -591,6 +591,19 @@ public class LicenseKeyGenerationService {
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
 			bundleEntitlements, generateRequest, subscriptionEntitlement);
 
+		if (!complimentary) {
+			LicensedProduct licensedProduct = licensedProducts.get(
+				subscriptionEntitlement.getEntitlementId());
+
+			LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
+
+			expirationDate = _toDate(
+				LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+					_licenseKeyGenerateFormService.isAllowPermanentLicenses(
+						project.getAccountId()),
+					subscriptionEntitlement, licenseEntry.getType()));
+		}
+
 		String description = generateRequest.getDescription();
 
 		if (Validator.isNull(description)) {

@@ -19,10 +19,13 @@ import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
+import java.time.Instant;
 import java.time.Year;
 
 import java.util.Arrays;
@@ -422,7 +425,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false,
+			false, false, false,
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
@@ -502,7 +505,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, Collections.emptyMap(), "DXP",
+			false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, Entitlement>>put(
 				"DXP",
 				(Map<String, Entitlement>)HashMapBuilder.put(
@@ -530,6 +533,64 @@ public class LicenseKeyGenerateFormServiceTest {
 			).getString(
 				"key"
 			));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantEndsCloudNativeKeysWithTheSubscription() {
+		Assertions.assertEquals(
+			Instant.parse("2027-01-01T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.
+						LICENSE_KEY_FAMILY_CLOUD_NATIVE),
+				LicenseConstants.TYPE_PRODUCTION));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantEndsKeysWithTheSubscriptionWithoutPermanentLicenses() {
+		Assertions.assertEquals(
+			Instant.parse("2027-01-01T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				false,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_PRODUCTION));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantExtendsOtherKeysBeyondTheSubscription() {
+		Assertions.assertEquals(
+			Instant.parse("2027-06-30T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_VIRTUAL_CLUSTER));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantMakesProductionKeysPermanent() {
+		Instant instant =
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(Instant.parse("2125-12-08T00:00:00Z"), instant);
+
+		LicenseKey licenseKey = new LicenseKey(
+			new JSONObject(
+			).put(
+				"customExpirationDate", instant.toString()
+			).put(
+				"id", 1L
+			).put(
+				"startDate", "2026-01-01T00:00:00Z"
+			));
+
+		Assertions.assertTrue(licenseKey.isPermanent());
 	}
 
 	@Test
@@ -705,6 +766,41 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testIsAllowPermanentLicenses() throws Exception {
+		AccountService accountService = Mockito.mock(AccountService.class);
+
+		Account deniedAccount = new Account();
+
+		deniedAccount.setCustomFields(
+			() -> new CustomField[] {
+				_toCustomField("allowPermanentLicenses", false)
+			});
+
+		Mockito.when(
+			accountService.getAccount(1L)
+		).thenReturn(
+			deniedAccount
+		);
+
+		Mockito.when(
+			accountService.getAccount(2L)
+		).thenReturn(
+			new Account()
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_accountService", accountService);
+
+		Assertions.assertFalse(
+			licenseKeyGenerateFormService.isAllowPermanentLicenses(1L));
+		Assertions.assertTrue(
+			licenseKeyGenerateFormService.isAllowPermanentLicenses(2L));
+	}
+
+	@Test
 	public void testIsGeneratableWithAnAvailableSubscription() {
 		Assertions.assertTrue(
 			_isGeneratable(
@@ -827,7 +923,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			allowComplimentary, hasComplimentaryActivationKey, false,
+			allowComplimentary, false, hasComplimentaryActivationKey, false,
 			Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, Entitlement>>put(
 				"DXP",
@@ -1048,6 +1144,26 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return sku;
+	}
+
+	private Entitlement _toSubscriptionEntitlement(String licenseKeyFamily) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"endDate", "2027-01-01T00:00:00Z"
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", 1L
+				).put(
+					"licenseKeyFamily", licenseKeyFamily
+				)
+			).put(
+				"id", 1L
+			).put(
+				"startDate", "2026-01-01T00:00:00Z"
+			));
 	}
 
 }

@@ -53,6 +53,7 @@
 	},
 	{
 		"dataType": 1,
+		"defaultValue": true,
 		"modelResource": "com.liferay.account.model.AccountEntry",
 		"name": "allowPermanentLicenses",
 		"properties": {

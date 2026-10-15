@@ -30,8 +30,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -262,10 +264,16 @@ public class LicenseKeyService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
+		Set<Long> entitlementIds = new HashSet<>();
+
+		for (Entitlement entitlement : entitlements) {
+			entitlementIds.add(entitlement.getEntitlementId());
+		}
+
 		Map<Long, Integer> permanentLicenseKeyCounts = new HashMap<>();
 
 		Map<Long, Integer> counts = _getActiveLicenseKeyCounts(
-			excludedActivationKeyIds,
+			entitlementIds, excludedActivationKeyIds,
 			_getProjectFilterString(projectExternalReferenceCode),
 			permanentLicenseKeyCounts);
 
@@ -284,7 +292,7 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return _getActiveLicenseKeyCounts(
-			Collections.emptyList(),
+			Collections.emptySet(), Collections.emptyList(),
 			_getProjectFilterString(projectExternalReferenceCode), null);
 	}
 
@@ -293,7 +301,7 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return _getActiveLicenseKeyCounts(
-			Collections.emptyList(),
+			Collections.emptySet(), Collections.emptyList(),
 			StringBundler.concat(
 				"(r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId,
@@ -771,8 +779,8 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(
-			Collection<Long> excludedActivationKeyIds, String filterString,
-			Map<Long, Integer> permanentLicenseKeyCounts)
+			Set<Long> entitlementIds, Collection<Long> excludedActivationKeyIds,
+			String filterString, Map<Long, Integer> permanentLicenseKeyCounts)
 		throws Exception {
 
 		Map<Long, Integer> counts = new HashMap<>();
@@ -784,8 +792,10 @@ public class LicenseKeyService extends OneBaseService {
 		// loop, so the tally stays right whatever the query returns. Only the
 		// fields the tally reads are projected, since a project can hold
 		// thousands of keys and each one otherwise serializes thirty five
-		// fields plus its action envelope. A permanent key that no entitlement
-		// granted is tallied by its definition instead, when the caller asks.
+		// fields plus its action envelope. When the caller asks, a permanent
+		// key is tallied by its definition instead if no active entitlement in
+		// the caller's list granted it. That covers a migrated key that no
+		// entitlement granted, and a generated key whose subscription ended.
 
 		for (LicenseKey licenseKey :
 				getAllProjectedItems(
@@ -800,22 +810,23 @@ public class LicenseKeyService extends OneBaseService {
 				continue;
 			}
 
+			long entitlementDefinitionId =
+				licenseKey.getEntitlementDefinitionId();
 			long entitlementId = licenseKey.getEntitlementId();
 
-			if (entitlementId > 0) {
-				counts.merge(entitlementId, 1, Integer::sum);
+			if ((permanentLicenseKeyCounts != null) &&
+				(entitlementDefinitionId > 0) &&
+				!entitlementIds.contains(entitlementId) &&
+				licenseKey.isPermanent()) {
+
+				permanentLicenseKeyCounts.merge(
+					entitlementDefinitionId, 1, Integer::sum);
 
 				continue;
 			}
 
-			long entitlementDefinitionId =
-				licenseKey.getEntitlementDefinitionId();
-
-			if ((permanentLicenseKeyCounts != null) &&
-				(entitlementDefinitionId > 0) && licenseKey.isPermanent()) {
-
-				permanentLicenseKeyCounts.merge(
-					entitlementDefinitionId, 1, Integer::sum);
+			if (entitlementId > 0) {
+				counts.merge(entitlementId, 1, Integer::sum);
 			}
 		}
 

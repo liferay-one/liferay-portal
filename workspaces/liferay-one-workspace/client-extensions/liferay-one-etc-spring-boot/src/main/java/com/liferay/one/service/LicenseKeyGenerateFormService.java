@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.EntitlementConstants;
@@ -25,11 +26,13 @@ import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
 import java.time.Year;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +67,54 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return entitlementDefinition.getLicenseKeyDurationDays();
+	}
+
+	/**
+	 * Returns when a key generated against the subscription entitlement
+	 * expires, following the rules of the legacy provisioning system. An
+	 * account that does not allow permanent licenses gets keys that end with
+	 * the subscription. An account that allows them gets a permanent key for a
+	 * license entry of the production type, which covers the production,
+	 * nonproduction, and backup keys, and a key that ends 180 days after the
+	 * subscription for every other type. Cloud Native keys always end with the
+	 * subscription, since the legacy system never issued them.
+	 */
+	public static Instant getLicenseKeyExpirationInstant(
+		boolean allowPermanentLicenses, Entitlement entitlement,
+		String licenseEntryType) {
+
+		Instant endDateInstant = entitlement.getEndDateInstant();
+
+		if (!allowPermanentLicenses ||
+			Objects.equals(
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_CLOUD_NATIVE,
+				getLicenseKeyFamily(entitlement))) {
+
+			return endDateInstant;
+		}
+
+		if (Objects.equals(
+				LicenseConstants.TYPE_PRODUCTION, licenseEntryType)) {
+
+			Instant startDateInstant = entitlement.getStartDateInstant();
+
+			if (startDateInstant == null) {
+				startDateInstant = Instant.now();
+			}
+
+			return startDateInstant.plus(
+				LicenseKeyGenerationConstants.
+					PERMANENT_LICENSE_KEY_DURATION_DAYS,
+				ChronoUnit.DAYS);
+		}
+
+		if (endDateInstant == null) {
+			return null;
+		}
+
+		return endDateInstant.plus(
+			LicenseKeyGenerationConstants.TERMED_LICENSE_KEY_EXTENSION_DAYS,
+			ChronoUnit.DAYS);
 	}
 
 	public static String getLicenseKeyFamily(Entitlement entitlement) {
@@ -211,8 +262,10 @@ public class LicenseKeyGenerateFormService {
 
 		List<ProductVersion> productVersions = _getProductVersions();
 
-		boolean allowComplimentary = isAllowComplimentary(
-			project.getAccountId());
+		Account account = _accountService.getAccount(project.getAccountId());
+
+		boolean allowComplimentary = _isAllowComplimentary(account);
+		boolean allowPermanentLicenses = _isAllowPermanentLicenses(account);
 
 		boolean hasComplimentaryActivationKey = false;
 
@@ -243,9 +296,9 @@ public class LicenseKeyGenerateFormService {
 			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
-				admin, allowComplimentary, hasComplimentaryActivationKey,
-				hasLicenseEntries, licenseKeyCounts,
-				entitledProduct.getLicenseKeyFamily(),
+				admin, allowComplimentary, allowPermanentLicenses,
+				hasComplimentaryActivationKey, hasLicenseEntries,
+				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
 				licenseKeyTypeEntitlements, productVersions, provisionable);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
@@ -342,8 +395,11 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public boolean isAllowComplimentary(long accountId) throws Exception {
-		return AccountUtil.getCustomFieldBoolean(
-			_accountService.getAccount(accountId), "allowComplimentary", false);
+		return _isAllowComplimentary(_accountService.getAccount(accountId));
+	}
+
+	public boolean isAllowPermanentLicenses(long accountId) throws Exception {
+		return _isAllowPermanentLicenses(_accountService.getAccount(accountId));
 	}
 
 	public boolean isLicensedForVersion(String licenseKeyFamily, String version)
@@ -594,8 +650,9 @@ public class LicenseKeyGenerateFormService {
 
 	private JSONArray _getKeyTypesJSONArray(
 		boolean admin, boolean allowComplimentary,
-		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
-		Map<Long, Integer> licenseKeyCounts, String licenseKeyFamily,
+		boolean allowPermanentLicenses, boolean hasComplimentaryActivationKey,
+		boolean hasLicenseEntries, Map<Long, Integer> licenseKeyCounts,
+		String licenseKeyFamily,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions, boolean provisionable) {
 
@@ -646,8 +703,15 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
+			String licenseEntryType = StringPool.BLANK;
+
+			if (licenseEntry != null) {
+				licenseEntryType = licenseEntry.getType();
+			}
+
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
-				entitlement, licenseKeyCounts);
+				allowPermanentLicenses && !complimentary, entitlement,
+				licenseEntryType, licenseKeyCounts);
 
 			jsonArray.put(
 				new JSONObject(
@@ -819,7 +883,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getSubscriptionsJSONArray(
-		Entitlement entitlement, Map<Long, Integer> licenseKeyCounts) {
+		boolean allowPermanentLicenses, Entitlement entitlement,
+		String licenseEntryType, Map<Long, Integer> licenseKeyCounts) {
 
 		JSONArray jsonArray = new JSONArray();
 
@@ -843,12 +908,31 @@ public class LicenseKeyGenerateFormService {
 			).put(
 				"licenseKeyDurationDays", getLicenseKeyDurationDays(entitlement)
 			).put(
+				"licenseKeyExpirationDate",
+				toISO8601(
+					getLicenseKeyExpirationInstant(
+						allowPermanentLicenses, entitlement, licenseEntryType))
+			).put(
 				"startDate", toISO8601(entitlement.getStartDateInstant())
 			).put(
 				"totalCount", totalCount
 			));
 
 		return jsonArray;
+	}
+
+	private boolean _isAllowComplimentary(Account account) {
+		return AccountUtil.getCustomFieldBoolean(
+			account, "allowComplimentary", false);
+	}
+
+	private boolean _isAllowPermanentLicenses(Account account) {
+
+		// The legacy provisioning system allows permanent licenses unless the
+		// account turns them off, so an account without a value allows them
+
+		return AccountUtil.getCustomFieldBoolean(
+			account, "allowPermanentLicenses", true);
 	}
 
 	private boolean _isDownloadable(String keyType) {

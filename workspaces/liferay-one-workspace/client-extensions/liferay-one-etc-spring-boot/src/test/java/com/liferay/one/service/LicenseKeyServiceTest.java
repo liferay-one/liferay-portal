@@ -183,12 +183,30 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsCountsPermanentKeyAgainstItsActiveEntitlement()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 5L, 10L, 1L));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(5L, "2026-12-31", 10L, 2D),
+					_createEntitlement(5L, "2027-12-31", 20L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+		Assertions.assertNull(counts.get(20L));
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsCountsPermanentKeyAgainstItsDefinition()
 		throws Exception {
 
 		_whenGetAllProjectedItems(
 			_createLicenseKey(1L, true, false, 10L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 2L));
+			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -199,13 +217,29 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsCountsPermanentKeyOfAnEndedEntitlementAgainstItsDefinition()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 5L, 7L, 1L));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(_createEntitlement(5L, "2027-12-31", 20L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertNull(counts.get(7L));
+		Assertions.assertEquals(1, counts.get(20L));
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsCountsPermanentKeysAgainstTheLatestEndingEntitlementFirst()
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 2L),
-			_createPermanentLicenseKey(3L, true, 5L, 3L));
+			_createPermanentLicenseKey(1L, true, 5L, 0L, 1L),
+			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L),
+			_createPermanentLicenseKey(3L, true, 5L, 0L, 3L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -226,9 +260,9 @@ public class LicenseKeyServiceTest {
 		// the surplus lands on one entitlement rather than being dropped.
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 2L),
-			_createPermanentLicenseKey(3L, true, 5L, 3L));
+			_createPermanentLicenseKey(1L, true, 5L, 0L, 1L),
+			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L),
+			_createPermanentLicenseKey(3L, true, 5L, 0L, 3L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -289,8 +323,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, false, 5L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 2L));
+			_createPermanentLicenseKey(1L, false, 5L, 0L, 1L),
+			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -325,7 +359,8 @@ public class LicenseKeyServiceTest {
 	public void testGetActiveLicenseKeyCountsSkipsPermanentKeysOfADefinitionWithoutAnEntitlement()
 		throws Exception {
 
-		_whenGetAllProjectedItems(_createPermanentLicenseKey(1L, true, 6L, 1L));
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 6L, 0L, 1L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -366,7 +401,8 @@ public class LicenseKeyServiceTest {
 	public void testGetActiveLicenseKeyCountsWithoutEntitlementsSkipsPermanentKeys()
 		throws Exception {
 
-		_whenGetAllProjectedItems(_createPermanentLicenseKey(1L, true, 5L, 1L));
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 5L, 0L, 1L));
 
 		Assertions.assertTrue(
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -619,7 +655,7 @@ public class LicenseKeyServiceTest {
 
 	private LicenseKey _createPermanentLicenseKey(
 		long activationKeyId, boolean active, long entitlementDefinitionId,
-		long licenseKeyId) {
+		long entitlementId, long licenseKeyId) {
 
 		return new LicenseKey(
 			new JSONObject(
@@ -629,6 +665,8 @@ public class LicenseKeyServiceTest {
 				"customExpirationDate", "2120-01-01T00:00:00Z"
 			).put(
 				"entitlementDefinitionId", entitlementDefinitionId
+			).put(
+				"entitlementId", entitlementId
 			).put(
 				"id", licenseKeyId
 			).put(

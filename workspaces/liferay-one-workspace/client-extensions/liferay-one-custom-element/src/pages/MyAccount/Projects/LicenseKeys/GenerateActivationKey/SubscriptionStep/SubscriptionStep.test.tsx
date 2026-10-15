@@ -18,48 +18,65 @@ const COMPLIMENTARY_ENTITLEMENT_ID = 2;
 
 const PRODUCTION_ENTITLEMENT_ID = 1;
 
-function toSubscription(entitlementId: number): GenerateFormSubscription {
+function toSubscription(
+	entitlementId: number,
+	licenseKeyExpirationDate?: string
+): GenerateFormSubscription {
 	return {
 		availableCount: 1,
 		endDate: '2027-01-01T00:00:00Z',
 		entitlementId,
 		instanceSize: 1,
 		licenseKeyDurationDays: 365,
+		licenseKeyExpirationDate,
 		startDate: '2026-01-01T00:00:00Z',
 		totalCount: 1,
 	};
 }
 
-const GENERATE_FORM: GenerateForm = {
-	bundleProducts: [],
-	products: [
-		{
-			developerVersions: [],
-			entitlementId: PRODUCTION_ENTITLEMENT_ID,
-			externalReferenceCode: 'DXP',
-			keyTypes: [
-				{
-					entitlementId: PRODUCTION_ENTITLEMENT_ID,
-					key: 'production',
-					licenseEntryType: '',
-					productKey: '',
-					subscriptions: [toSubscription(PRODUCTION_ENTITLEMENT_ID)],
-				},
-				{
-					entitlementId: COMPLIMENTARY_ENTITLEMENT_ID,
-					key: 'complimentary',
-					licenseEntryType: '',
-					productKey: '',
-					subscriptions: [
-						toSubscription(COMPLIMENTARY_ENTITLEMENT_ID),
-					],
-				},
-			],
-			licenseKeyFamily: 'dxp',
-			name: 'Liferay DXP',
-			versions: [],
-		},
-	],
+function toGenerateForm(licenseKeyExpirationDate?: string): GenerateForm {
+	return {
+		bundleProducts: [],
+		products: [
+			{
+				developerVersions: [],
+				entitlementId: PRODUCTION_ENTITLEMENT_ID,
+				externalReferenceCode: 'DXP',
+				keyTypes: [
+					{
+						entitlementId: PRODUCTION_ENTITLEMENT_ID,
+						key: 'production',
+						licenseEntryType: '',
+						productKey: '',
+						subscriptions: [
+							toSubscription(
+								PRODUCTION_ENTITLEMENT_ID,
+								licenseKeyExpirationDate
+							),
+						],
+					},
+					{
+						entitlementId: COMPLIMENTARY_ENTITLEMENT_ID,
+						key: 'complimentary',
+						licenseEntryType: '',
+						productKey: '',
+						subscriptions: [
+							toSubscription(COMPLIMENTARY_ENTITLEMENT_ID),
+						],
+					},
+				],
+				licenseKeyFamily: 'dxp',
+				name: 'Liferay DXP',
+				versions: [],
+			},
+		],
+	};
+}
+
+const PRODUCTION_DEFAULT_VALUES: Partial<GenerateActivationKeyForm> = {
+	keyType: 'production',
+	productExternalReferenceCode: 'DXP',
+	subscriptionEntitlementId: PRODUCTION_ENTITLEMENT_ID,
 };
 
 function SubscriptionStepWrapper({
@@ -105,12 +122,8 @@ describe('SubscriptionStep', () => {
 
 		render(
 			<SubscriptionStepWrapper
-				defaultValues={{
-					keyType: 'production',
-					productExternalReferenceCode: 'DXP',
-					subscriptionEntitlementId: PRODUCTION_ENTITLEMENT_ID,
-				}}
-				generateForm={GENERATE_FORM}
+				defaultValues={PRODUCTION_DEFAULT_VALUES}
+				generateForm={toGenerateForm()}
 				onForm={(current) => {
 					form = current;
 				}}
@@ -124,5 +137,28 @@ describe('SubscriptionStep', () => {
 		expect(form?.getValues('subscriptionEntitlementId')).toBe(
 			COMPLIMENTARY_ENTITLEMENT_ID
 		);
+	});
+
+	it('shows that a permanent activation key does not expire', () => {
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={PRODUCTION_DEFAULT_VALUES}
+				generateForm={toGenerateForm('2125-12-08T00:00:00Z')}
+			/>
+		);
+
+		expect(screen.getByText(/Does Not Expire/)).toBeInTheDocument();
+	});
+
+	it('shows when the activation key expires after the subscription ends', () => {
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={PRODUCTION_DEFAULT_VALUES}
+				generateForm={toGenerateForm('2027-06-30T00:00:00Z')}
+			/>
+		);
+
+		expect(screen.getByText(/2027/)).toHaveTextContent(/Jun/);
+		expect(screen.queryByText(/Does Not Expire/)).not.toBeInTheDocument();
 	});
 });

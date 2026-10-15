@@ -9,6 +9,7 @@ import {useEffect, useMemo} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import RadioCardList from '~/components/RadioCardList/RadioCardList';
 import {Word, sub, translate} from '~/i18n';
+import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
 import {
 	GenerateForm,
@@ -136,6 +137,15 @@ export default function SubscriptionStep({
 	const selectedSubscription = subscriptions.find(
 		(subscription) =>
 			subscription.entitlementId === subscriptionEntitlementId
+	);
+
+	const selectedSubscriptionKeyExpirationDate =
+		selectedSubscription?.licenseKeyExpirationDate ??
+		selectedSubscription?.endDate;
+
+	const selectedSubscriptionKeyPermanent = isPermanentKey(
+		selectedSubscriptionKeyExpirationDate,
+		selectedSubscription?.startDate
 	);
 
 	function toContentListItem(subscription: GenerateFormSubscription) {
@@ -384,9 +394,13 @@ export default function SubscriptionStep({
 							<strong>
 								{`${formatDate(
 									selectedSubscription.startDate
-								)} - ${formatDate(
-									selectedSubscription.endDate
-								)}`}
+								)} - ${
+									selectedSubscriptionKeyPermanent
+										? translate('does-not-expire')
+										: formatDate(
+												selectedSubscriptionKeyExpirationDate
+											)
+								}`}
 							</strong>
 						</ClayAlert>
 					)}

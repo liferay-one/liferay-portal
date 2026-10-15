@@ -1027,6 +1027,40 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyMakesAProductionKeyPermanent()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.isAllowPermanentLicenses(
+				Mockito.anyLong())
+		).thenReturn(
+			true
+		);
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L), 1L, 1));
+
+		Date expirationDate = (Date)_getInvocationArguments(
+			_activationKeyService, "addActivationKey", 2
+		).get(
+			0
+		);
+
+		Assertions.assertTrue(expirationDate.after(_toDateDaysFromNow(36499)));
+
+		Assertions.assertEquals(
+			Collections.singletonList(expirationDate),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 12));
+	}
+
+	@Test
 	public void testGenerateActivationKeyRejectsAComplimentaryBundleEntitlement()
 		throws Exception {
 
@@ -1237,6 +1271,27 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"has 0 activations left"
 			));
+	}
+
+	@Test
+	public void testGenerateActivationKeyWithoutPermanentLicensesEndsWithTheSubscription()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L), 1L, 1));
+
+		Assertions.assertEquals(
+			Collections.singletonList(
+				Date.from(Instant.parse("2027-08-09T00:00:00Z"))),
+			_getInvocationArguments(
+				_activationKeyService, "addActivationKey", 2));
 	}
 
 	@Test
