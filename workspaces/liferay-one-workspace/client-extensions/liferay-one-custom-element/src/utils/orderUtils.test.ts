@@ -79,6 +79,15 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
+		it('remaps statuses for the self service trials', () => {
+			expect(getOrderStatusLabel(toPlacedOrder('CMP_TRIAL', 0))).toBe(
+				'Active'
+			);
+			expect(getOrderStatusLabel(toPlacedOrder('DSR_TRIAL', 8))).toBe(
+				'Expired'
+			);
+		});
+
 		it('remaps only the pending statuses for AI Hub', () => {
 			expect(getOrderStatusLabel(toPlacedOrder('AI_HUB', 20))).toBe(
 				'Pending'
