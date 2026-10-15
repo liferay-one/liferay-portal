@@ -5525,6 +5525,28 @@
 				"en_US": "Project Membership"
 			},
 			"name": "ProjectMembership",
+			"objectActions": [
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to update the member's Support Customers and Partners user groups when a project membership is created.",
+					"externalReferenceCode": "OA_PROJECT_MEMBERSHIP_USER_GROUP_ADD",
+					"name": "UserGroupAdd",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-project-membership-user-group-add",
+					"objectActionTriggerKey": "onAfterAdd",
+					"parameters": {
+					}
+				},
+				{
+					"active": true,
+					"description": "Triggers Spring Boot CX to update the member's Support Customers and Partners user groups when a project membership is deleted. Skips users that no longer exist.",
+					"externalReferenceCode": "OA_PROJECT_MEMBERSHIP_USER_GROUP_REMOVE",
+					"name": "UserGroupRemove",
+					"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-project-membership-user-group-remove",
+					"objectActionTriggerKey": "onAfterDelete",
+					"parameters": {
+					}
+				}
+			],
 			"objectFields": [
 				{
 					"DBType": "String",

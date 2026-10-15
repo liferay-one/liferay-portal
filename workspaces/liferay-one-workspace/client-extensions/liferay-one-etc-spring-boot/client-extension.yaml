@@ -121,6 +121,16 @@ liferay-one-etc-spring-boot-object-action-postal-address-create:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/postal/address/create
     type: objectAction
+liferay-one-etc-spring-boot-object-action-project-membership-user-group-add:
+    name: Liferay One Etc Spring Boot Object Action Project Membership User Group Add
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/project/membership/user/group/add
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-project-membership-user-group-remove:
+    name: Liferay One Etc Spring Boot Object Action Project Membership User Group Remove
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/project/membership/user/group/remove
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-user-create:
     name: Liferay One Etc Spring Boot Object Action User Create
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
