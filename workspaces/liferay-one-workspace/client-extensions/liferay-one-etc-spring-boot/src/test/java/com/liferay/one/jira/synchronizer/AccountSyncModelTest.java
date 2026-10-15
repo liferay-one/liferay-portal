@@ -85,8 +85,9 @@ public class AccountSyncModelTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlementDefinitions(
-				Mockito.anyLong())
+			_entitlementService.
+				getActiveEntitlementDefinitionsExcludingSelfServiceTrials(
+					Mockito.anyLong())
 		).thenThrow(
 			new RuntimeException()
 		);

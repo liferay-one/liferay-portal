@@ -149,25 +149,4 @@ describe('[ROUTE-PRODUCT-PURCHASE-COMPLETED] PurchaseCompleted', () => {
 			'/web/one/my-account#/project/one-time-purchases/products/PRDCT-TEST?tab=activation'
 		);
 	});
-
-	it('sends a CMP or DSR trial to its activation key', () => {
-		const navigate = vi.spyOn(Liferay.Util, 'navigate');
-
-		renderPurchaseCompleted(
-			getProduct([
-				['price-model', 'Free'],
-				['solution-type', 'cmp-trial'],
-			])
-		);
-
-		expect(
-			screen.getByText('Your trial activation key has been generated!')
-		).toBeTruthy();
-
-		fireEvent.click(screen.getByRole('button', {name: 'Activation Key'}));
-
-		expect(navigate).toHaveBeenCalledWith(
-			'/web/one/my-account#/project/one-time-purchases/products/PRDCT-TEST?tab=activation'
-		);
-	});
 });
