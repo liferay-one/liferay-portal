@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.OveragePricing;
@@ -446,6 +447,97 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGetSelfServiceTrialDurationDaysFiltersUnexpiredAccountEntitlements()
+		throws Exception {
+
+		ArgumentCaptor<String> filterCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getEntitlements(
+			filterCaptor.capture()
+		);
+
+		_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID);
+
+		String filter = filterCaptor.getValue();
+
+		Assertions.assertTrue(
+			filter.contains(
+				"(r_accountEntryToEntitlement_accountEntryId eq '" +
+					_ACCOUNT_ID + "')"),
+			filter);
+		Assertions.assertTrue(filter.contains("endDate eq null"), filter);
+		Assertions.assertFalse(filter.contains("startDate"), filter);
+	}
+
+	@Test
+	public void testGetSelfServiceTrialDurationDaysIsCustomerWithContract()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(0, null),
+			_createEntitlementWithContract(_CONTRACT_ID, null));
+
+		Assertions.assertEquals(
+			90,
+			_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID));
+	}
+
+	@Test
+	public void testGetSelfServiceTrialDurationDaysIsCustomerWithSuspendedContract()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(
+				_CONTRACT_ID,
+				EntitlementConstants.TERMINATION_STATUS_SUSPENDED));
+
+		Assertions.assertEquals(
+			90,
+			_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID));
+	}
+
+	@Test
+	public void testGetSelfServiceTrialDurationDaysIsProspectWithoutContract()
+		throws Exception {
+
+		_setUpEntitlements(_createEntitlementWithContract(0, null));
+
+		Assertions.assertEquals(
+			30,
+			_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID));
+	}
+
+	@Test
+	public void testGetSelfServiceTrialDurationDaysIsProspectWithoutEntitlements()
+		throws Exception {
+
+		_setUpEntitlements();
+
+		Assertions.assertEquals(
+			30,
+			_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID));
+	}
+
+	@Test
+	public void testGetSelfServiceTrialDurationDaysIsProspectWithTerminatedContract()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(
+				_CONTRACT_ID,
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED));
+
+		Assertions.assertEquals(
+			30,
+			_entitlementService.getSelfServiceTrialDurationDays(_ACCOUNT_ID));
+	}
+
+	@Test
 	public void testUpdateEntitlementsKeepsQuantityWithoutDefinition()
 		throws Exception {
 
@@ -637,6 +729,25 @@ public class EntitlementServiceTest {
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
 			entitlementDefinitionId
 		);
+	}
+
+	private Entitlement _createEntitlementWithContract(
+		long contractId, String terminationStatus) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"id", contractId + 1
+		).put(
+			"r_accountEntryToEntitlement_accountEntryId", _ACCOUNT_ID
+		).put(
+			"r_contractToEntitlement_c_contractId", contractId
+		);
+
+		if (terminationStatus != null) {
+			jsonObject.put("terminationStatus", terminationStatus);
+		}
+
+		return new Entitlement(jsonObject);
 	}
 
 	private Entitlement _createEntitlementWithDates(
