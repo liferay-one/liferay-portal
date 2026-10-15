@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.model.ActivationKey;
@@ -136,6 +137,9 @@ public class SelfServiceTrialLicenseKeyServiceTest {
 		Assertions.assertEquals(endDate, dxpArguments[12]);
 		Assertions.assertEquals("DXP", dxpArguments[16]);
 		Assertions.assertEquals("developer", dxpArguments[18]);
+		Assertions.assertEquals(
+			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS,
+			dxpArguments[23]);
 		Assertions.assertEquals("Liferay DXP Trial", dxpArguments[26]);
 		Assertions.assertEquals("9001", dxpArguments[27]);
 		Assertions.assertEquals("owner@acme.com", dxpArguments[28]);
@@ -148,6 +152,9 @@ public class SelfServiceTrialLicenseKeyServiceTest {
 		Assertions.assertEquals(endDate, addOnArguments[12]);
 		Assertions.assertEquals("CMP", addOnArguments[16]);
 		Assertions.assertEquals("developer", addOnArguments[18]);
+		Assertions.assertEquals(
+			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS,
+			addOnArguments[23]);
 		Assertions.assertEquals(
 			"Content Marketing Platform Trial", addOnArguments[26]);
 		Assertions.assertEquals(
