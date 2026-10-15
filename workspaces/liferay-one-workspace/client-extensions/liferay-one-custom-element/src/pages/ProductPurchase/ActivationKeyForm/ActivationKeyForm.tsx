@@ -23,11 +23,13 @@ import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurc
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
 import commerceSchemas from '~/schemas/commerceSchemas';
 import ProductPurchaseDXPFree from '~/services/commerce/ProductPurchaseDXPFree';
+import ProductPurchaseSelfServiceTrial from '~/services/commerce/ProductPurchaseSelfServiceTrial';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import phones from '~/utils/phones';
 import {productAgreements} from '~/utils/productAgreements';
+import {isSelfServiceTrialProduct} from '~/utils/productUtils';
 
 import './ActivationKeyForm.css';
 
@@ -149,12 +151,23 @@ const ActivationKeyForm = () => {
 		});
 	};
 
+	const selfServiceTrial = isSelfServiceTrialProduct(product);
+
 	const onSubmit = async (formFields: ActivationKeyFormData) => {
 		try {
-			await LicenseKeys.licenseKeyTypeFreeDomainsCheck({
-				domains: formFields.domain,
-				owner: formFields.businessEmailAddress,
-			});
+			if (selfServiceTrial) {
+				await LicenseKeys.licenseKeyTypeTrialDomainsCheck({
+					domains: formFields.domain,
+					owner: formFields.businessEmailAddress,
+					productId: product.productId,
+				});
+			}
+			else {
+				await LicenseKeys.licenseKeyTypeFreeDomainsCheck({
+					domains: formFields.domain,
+					owner: formFields.businessEmailAddress,
+				});
+			}
 		}
 		catch (error) {
 			if (error instanceof FetcherError && error.status === 409) {
@@ -173,7 +186,17 @@ const ActivationKeyForm = () => {
 		await submitMarketoForm(formFields);
 
 		await handlePurchase(
-			new ProductPurchaseDXPFree(selectedAccount, product, formFields)
+			selfServiceTrial
+				? new ProductPurchaseSelfServiceTrial(
+						selectedAccount,
+						product,
+						formFields
+					)
+				: new ProductPurchaseDXPFree(
+						selectedAccount,
+						product,
+						formFields
+					)
 		);
 	};
 

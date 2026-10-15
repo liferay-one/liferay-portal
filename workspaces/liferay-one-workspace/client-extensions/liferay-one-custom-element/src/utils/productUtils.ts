@@ -12,6 +12,7 @@ import {
 	SolutionTypes,
 } from '~/enums/Product';
 import i18n from '~/i18n';
+import {OrderTypes} from '~/types/orders';
 
 import {isLicenseUsageTypeSKUOptionKey} from './licenseTierUtils';
 import {getSiteURL} from './siteUtils';
@@ -238,6 +239,11 @@ const CONTACT_SALES_SOLUTION_TYPES: string[] = [
 	SolutionTypes.LIFERAY_DATA_PLATFORM,
 ];
 
+const SELF_SERVICE_TRIAL_ORDER_TYPES: Partial<Record<string, OrderTypes>> = {
+	[SolutionTypes.CMP_TRIAL]: OrderTypes.CMP_TRIAL,
+	[SolutionTypes.DSR_TRIAL]: OrderTypes.DSR_TRIAL,
+};
+
 export function isContactSalesProduct(product: DeliveryProduct) {
 	return CONTACT_SALES_SOLUTION_TYPES.includes(
 		getProductSpecificationValue(
@@ -276,6 +282,21 @@ export function isDXPFreeTierProduct(product: DeliveryProduct) {
 			product
 		) === SolutionTypes.DXP
 	);
+}
+
+export function getSelfServiceTrialOrderType(
+	product: DeliveryProduct
+): OrderTypes | undefined {
+	return SELF_SERVICE_TRIAL_ORDER_TYPES[
+		getProductSpecificationValue(
+			ProductSpecificationKey.SOLUTION_TYPE,
+			product
+		)
+	];
+}
+
+export function isSelfServiceTrialProduct(product: DeliveryProduct) {
+	return !!getSelfServiceTrialOrderType(product);
 }
 
 export function isLRTokensProduct(product: DeliveryProduct) {
