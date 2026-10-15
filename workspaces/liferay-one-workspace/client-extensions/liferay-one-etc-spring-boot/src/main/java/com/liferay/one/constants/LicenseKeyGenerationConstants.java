@@ -38,6 +38,8 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
 
+	public static final int PERMANENT_LICENSE_KEY_MIN_YEARS = 80;
+
 	public static final String PRODUCT_GROUP_DXP = "dxp";
 
 	public static final List<String> downloadableKeyTypes =

@@ -7,9 +7,12 @@ package com.liferay.one.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 
 import org.apache.commons.logging.Log;
@@ -235,6 +238,22 @@ public final class LicenseKey {
 
 	public boolean isComplimentary() {
 		return _complimentary;
+	}
+
+	public boolean isPermanent() {
+		if ((_customExpirationDateInstant == null) ||
+			(_startDateInstant == null)) {
+
+			return false;
+		}
+
+		ZonedDateTime startDateZonedDateTime = ZonedDateTime.ofInstant(
+			_startDateInstant, ZoneOffset.UTC);
+
+		return _customExpirationDateInstant.isAfter(
+			startDateZonedDateTime.plusYears(
+				LicenseKeyGenerationConstants.PERMANENT_LICENSE_KEY_MIN_YEARS
+			).toInstant());
 	}
 
 	private Instant _toInstant(String value) {

@@ -204,6 +204,7 @@ public class LicenseKeyGenerateFormService {
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
+				entitlements,
 				_getRenewedActivationKeyIds(
 					renewedActivationKeyExternalReferenceCode),
 				projectExternalReferenceCode);

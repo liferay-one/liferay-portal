@@ -10,6 +10,7 @@ import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -255,22 +257,35 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
+			List<Entitlement> entitlements,
 			Collection<Long> excludedActivationKeyIds,
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return _getActiveLicenseKeyCounts(
+		Map<Long, Integer> permanentLicenseKeyCounts = new HashMap<>();
+
+		Map<Long, Integer> counts = _getActiveLicenseKeyCounts(
 			excludedActivationKeyIds,
-			"r_projectToLicenseKey_c_projectERC eq '" +
-				escapeODataString(projectExternalReferenceCode) + "'");
+			_getProjectFilterString(projectExternalReferenceCode),
+			permanentLicenseKeyCounts);
+
+		for (Map.Entry<Long, Integer> entry :
+				permanentLicenseKeyCounts.entrySet()) {
+
+			_addPermanentLicenseKeyCount(
+				counts, entitlements, entry.getKey(), entry.getValue());
+		}
+
+		return counts;
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return getActiveLicenseKeyCounts(
-			Collections.emptyList(), projectExternalReferenceCode);
+		return _getActiveLicenseKeyCounts(
+			Collections.emptyList(),
+			_getProjectFilterString(projectExternalReferenceCode), null);
 	}
 
 	public Map<Long, Integer> getActiveUnassignedLicenseKeyCounts(
@@ -282,7 +297,8 @@ public class LicenseKeyService extends OneBaseService {
 			StringBundler.concat(
 				"(r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId,
-				"') and (r_projectToLicenseKey_c_projectId eq '0')"));
+				"') and (r_projectToLicenseKey_c_projectId eq '0')"),
+			null);
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(
@@ -613,6 +629,57 @@ public class LicenseKeyService extends OneBaseService {
 		return new LicenseKey(new JSONObject(response));
 	}
 
+	private void _addPermanentLicenseKeyCount(
+		Map<Long, Integer> counts, List<Entitlement> entitlements,
+		long entitlementDefinitionId, int permanentLicenseKeyCount) {
+
+		List<Entitlement> definitionEntitlements = new ArrayList<>();
+
+		for (Entitlement entitlement : entitlements) {
+			if (entitlement.getEntitlementDefinitionId() ==
+					entitlementDefinitionId) {
+
+				definitionEntitlements.add(entitlement);
+			}
+		}
+
+		if (definitionEntitlements.isEmpty()) {
+			return;
+		}
+
+		definitionEntitlements.sort(
+			Comparator.comparing(
+				Entitlement::getEndDateInstant,
+				Comparator.nullsFirst(Comparator.reverseOrder())));
+
+		int remainingCount = permanentLicenseKeyCount;
+
+		for (Entitlement entitlement : definitionEntitlements) {
+			long entitlementId = entitlement.getEntitlementId();
+
+			int availableCount =
+				LicenseKeyGenerateFormService.getTotalCount(entitlement) -
+					counts.getOrDefault(entitlementId, 0);
+
+			int count = Math.min(remainingCount, Math.max(0, availableCount));
+
+			if (count > 0) {
+				counts.merge(entitlementId, count, Integer::sum);
+
+				remainingCount -= count;
+			}
+
+			if (remainingCount == 0) {
+				return;
+			}
+		}
+
+		Entitlement latestEntitlement = definitionEntitlements.get(0);
+
+		counts.merge(
+			latestEntitlement.getEntitlementId(), remainingCount, Integer::sum);
+	}
+
 	private String _buildSearchFilter(
 		Boolean active, String description, String hostName, String ipAddress,
 		String licenseType, String macAddress, String owner,
@@ -704,7 +771,8 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(
-			Collection<Long> excludedActivationKeyIds, String filterString)
+			Collection<Long> excludedActivationKeyIds, String filterString,
+			Map<Long, Integer> permanentLicenseKeyCounts)
 		throws Exception {
 
 		Map<Long, Integer> counts = new HashMap<>();
@@ -716,7 +784,8 @@ public class LicenseKeyService extends OneBaseService {
 		// loop, so the tally stays right whatever the query returns. Only the
 		// fields the tally reads are projected, since a project can hold
 		// thousands of keys and each one otherwise serializes thirty five
-		// fields plus its action envelope.
+		// fields plus its action envelope. A permanent key that no entitlement
+		// granted is tallied by its definition instead, when the caller asks.
 
 		for (LicenseKey licenseKey :
 				getAllProjectedItems(
@@ -724,16 +793,30 @@ public class LicenseKeyService extends OneBaseService {
 					"(active eq true) and (" + filterString + ")",
 					LicenseKey::new)) {
 
-			long entitlementId = licenseKey.getEntitlementId();
-
-			if ((entitlementId <= 0) || !licenseKey.isActive() ||
+			if (!licenseKey.isActive() ||
 				excludedActivationKeyIds.contains(
 					licenseKey.getActivationKeyId())) {
 
 				continue;
 			}
 
-			counts.merge(entitlementId, 1, Integer::sum);
+			long entitlementId = licenseKey.getEntitlementId();
+
+			if (entitlementId > 0) {
+				counts.merge(entitlementId, 1, Integer::sum);
+
+				continue;
+			}
+
+			long entitlementDefinitionId =
+				licenseKey.getEntitlementDefinitionId();
+
+			if ((permanentLicenseKeyCounts != null) &&
+				(entitlementDefinitionId > 0) && licenseKey.isPermanent()) {
+
+				permanentLicenseKeyCounts.merge(
+					entitlementDefinitionId, 1, Integer::sum);
+			}
 		}
 
 		return counts;
@@ -767,6 +850,13 @@ public class LicenseKeyService extends OneBaseService {
 		return jsonObject.optInt("totalCount");
 	}
 
+	private String _getProjectFilterString(
+		String projectExternalReferenceCode) {
+
+		return "r_projectToLicenseKey_c_projectERC eq '" +
+			escapeODataString(projectExternalReferenceCode) + "'";
+	}
+
 	private String _toISO8601(Date date) {
 		if (date == null) {
 			return null;
@@ -797,7 +887,8 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private static final String _FIELDS_ACTIVE_LICENSE_KEY_COUNT =
-		"active,entitlementId,id,r_activationKeyToLicenseKey_c_activationKeyId";
+		"active,customExpirationDate,entitlementDefinitionId,entitlementId," +
+			"id,r_activationKeyToLicenseKey_c_activationKeyId,startDate";
 
 	private static final int _FREE_TIER_DURATION_MONTHS = 12;
 

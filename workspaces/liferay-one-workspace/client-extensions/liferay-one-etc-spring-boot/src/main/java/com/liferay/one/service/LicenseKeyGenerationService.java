@@ -393,7 +393,8 @@ public class LicenseKeyGenerationService {
 
 	private void _checkQuota(
 			List<Entitlement> bundleEntitlements,
-			GenerateRequest generateRequest, Project project)
+			List<Entitlement> entitlements, GenerateRequest generateRequest,
+			Project project)
 		throws Exception {
 
 		List<GenerateRequest.Server> servers = generateRequest.getServers();
@@ -402,7 +403,7 @@ public class LicenseKeyGenerationService {
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				_getRenewedActivationKeyIds(generateRequest),
+				entitlements, _getRenewedActivationKeyIds(generateRequest),
 				project.getExternalReferenceCode());
 
 		for (Entitlement entitlement : bundleEntitlements) {
@@ -585,7 +586,7 @@ public class LicenseKeyGenerationService {
 			}
 		}
 
-		_checkQuota(bundleEntitlements, generateRequest, project);
+		_checkQuota(bundleEntitlements, entitlements, generateRequest, project);
 
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
 			bundleEntitlements, generateRequest, subscriptionEntitlement);

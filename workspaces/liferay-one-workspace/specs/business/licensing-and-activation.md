@@ -35,6 +35,7 @@ Terms used in this file:
 | REQ-LICENSING-016 | DXP 7.3 and later run without an activation key. Versions 7.2 and earlier need one. | P0 | — | `MOD-MYACCOUNT-PROJECTS-REQUIRESACTIVATIONKEY` |
 | REQ-LICENSING-017 | The generate form offers only the products, the key types, and the versions that the project is entitled to, with the activations left for each. An error on the form names the cause. | P1 | — | `ROUTE-MY-ACCOUNT-GENERATE`, `REST-GET-ACTIVATION-KEYS-SUMMARY`, `HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATEACTIVATIONKEYFORM`, `SVC-LICENSEENTRYSERVICE`, `MOD-MYACCOUNT-PROJECTS-TOERRORMESSAGEKEY` |
 | REQ-LICENSING-018 | A license key file holds the product, the key type, the start and end dates, the servers, and the limits that its license type allows. A production key never uses a nonproduction license entry. | P0 | — | `CLS-LICENSEKEYGENERATOR`, `CLS-LICENSEKEYEXPORTER`, `CLS-LICENSEKEYTYPE`, `CLS-SERVERINFOUTIL`, `CLS-DOCUMENT`, `CLS-ELEMENT`, `CLS-SAXREADERUTIL`, `FLOW-LICENSE-GENERATION` |
+| REQ-LICENSING-019 | A permanent license key that no entitlement granted still uses one activation while it is active. It uses an activation of the active entitlements in its project that have its entitlement definition, and the system takes the activation from the entitlement that ends last first. A permanent key whose definition has no active entitlement in the project uses no activation. A key is permanent when it expires 80 years or more after it starts. | P0 | LPD-109991 | `SVC-LICENSEKEYSERVICE` |
 
 ## Renewal
 

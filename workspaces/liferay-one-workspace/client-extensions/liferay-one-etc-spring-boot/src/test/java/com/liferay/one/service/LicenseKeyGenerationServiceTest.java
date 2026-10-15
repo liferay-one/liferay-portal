@@ -96,7 +96,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				Mockito.anyCollection(), Mockito.anyString())
+				Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString())
 		).thenReturn(
 			new HashMap<>()
 		);
@@ -862,7 +862,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				Mockito.anyCollection(), Mockito.anyString())
+				Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString())
 		).thenReturn(
 			HashMapBuilder.put(
 				1L, 1
@@ -1110,7 +1110,8 @@ public class LicenseKeyGenerationServiceTest {
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
 		).getActiveLicenseKeyCounts(
-			Collections.singletonList(99L), "PROJ-1"
+			Mockito.anyList(), Mockito.eq(Collections.singletonList(99L)),
+			Mockito.eq("PROJ-1")
 		);
 
 		Mockito.verify(
@@ -1203,7 +1204,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				Mockito.anyCollection(), Mockito.anyString())
+				Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString())
 		).thenReturn(
 			licenseKeyCounts
 		);
