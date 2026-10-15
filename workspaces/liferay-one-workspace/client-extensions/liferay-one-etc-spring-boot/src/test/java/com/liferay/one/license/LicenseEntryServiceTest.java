@@ -70,6 +70,30 @@ public class LicenseEntryServiceTest {
 	}
 
 	@Test
+	public void testGetLicenseEntryProductNameDropsTheQualifier() {
+		List<LicenseEntry> licenseEntries =
+			_licenseEntryService.getLicenseEntriesByNameVersion(
+				"DXP Production%", "7.4");
+
+		for (LicenseEntry licenseEntry : licenseEntries) {
+			Assertions.assertEquals(
+				"DXP Production", licenseEntry.getProductName());
+		}
+
+		Assertions.assertEquals(
+			"DXP Development",
+			new LicenseEntry(
+				"KOR-1", "DXP Development", "developer", "7.4", ""
+			).getProductName());
+		Assertions.assertEquals(
+			"Portal Backup",
+			new LicenseEntry(
+				"KOR-1", "Portal Backup (Additional JVM)", "production", "6.2",
+				""
+			).getProductName());
+	}
+
+	@Test
 	public void testGetLicenseEntryReturnsNullWhenUnknown() {
 		Assertions.assertNull(
 			_licenseEntryService.getLicenseEntry("KOR-00000", "production"));

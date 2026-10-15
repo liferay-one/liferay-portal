@@ -29,6 +29,22 @@ public class LicenseEntry {
 		return _productKey;
 	}
 
+	/**
+	 * Returns the name of the entry without the qualifier in parentheses that
+	 * some entries end with, such as "DXP Production" for "DXP Production
+	 * (Virtual Cluster)". The legacy provisioning system used this name as the
+	 * product name of a key.
+	 */
+	public String getProductName() {
+		int index = _name.lastIndexOf(" (");
+
+		if ((index > 0) && _name.endsWith(")")) {
+			return _name.substring(0, index);
+		}
+
+		return _name;
+	}
+
 	public String getType() {
 		return _type;
 	}

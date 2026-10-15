@@ -493,7 +493,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic 鈥
 | `licenseName` | string | Hard-coded from LicenseEntry on migration |
 | `licenseType` | string | `production` 路 `cluster` 路 `developer` 路 `enterprise` 路 `oem` 路 `per-user` 路 `limited` 路 `virtual-cluster` 路 `free` 路 `developer-cluster` |
 | `licenseVersion` | int | |
-| `productName` | string | Copied from the legacy key on migration. A generated key uses the license key family name for DXP, Portal, and Cloud Native, and the commerce product name otherwise. A free tier key uses `Liferay DXP - Free Tier` |
+| `productName` | string | Copied from the legacy key on migration. A generated key uses the name of its license entry without the qualifier in parentheses, such as `DXP Production` for `DXP Production (Virtual Cluster)`, and an add-on without a license entry of its own uses its commerce product name. A free tier key uses `Liferay DXP - Free Tier` |
 | `productExternalId` | string | UUID-format product ID |
 | `productVersion` | string | e.g. `7.4`, `2026.Q1` |
 | `productVersionLabel` | string | Human-readable version label |

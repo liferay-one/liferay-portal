@@ -211,7 +211,7 @@ public class LicenseKeyGenerationServiceTest {
 			licenseEntryNameArgumentCaptor.getAllValues());
 
 		Assertions.assertEquals(
-			Arrays.asList("Liferay DXP", "Digital Sales Room"),
+			Arrays.asList("DXP Backup", "Digital Sales Room"),
 			productNameArgumentCaptor.getAllValues());
 
 		Assertions.assertEquals(
@@ -1321,6 +1321,21 @@ public class LicenseKeyGenerationServiceTest {
 
 		_stubLicensedProducts();
 
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				Mockito.any(), Mockito.any(), Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				if (!Objects.equals(invocation.getArgument(1), "DXP")) {
+					return null;
+				}
+
+				return new LicenseEntry(
+					"portal", "DXP Development (Cluster)", "developer", "7.4",
+					"7.4");
+			}
+		);
+
 		Product product = new Product();
 
 		product.setExternalReferenceCode("PRDCT-SEARCH");
@@ -1357,7 +1372,10 @@ public class LicenseKeyGenerationServiceTest {
 				"7.4"));
 
 		Assertions.assertEquals(
-			Arrays.asList("Liferay DXP", "Search"),
+			Arrays.asList("DXP Development (Cluster)", "Search Developer"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 2));
+		Assertions.assertEquals(
+			Arrays.asList("DXP Development", "Search"),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
 
 		Mockito.verify(

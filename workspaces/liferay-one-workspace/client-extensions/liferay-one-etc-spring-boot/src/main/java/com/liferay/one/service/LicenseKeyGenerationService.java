@@ -35,6 +35,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -124,17 +125,18 @@ public class LicenseKeyGenerationService {
 
 		licenseXMLs.add(
 			_toDeveloperLicenseXML(
-				expirationDate, keyType, productName, project, startDate,
-				version));
+				entitlement, expirationDate, keyType, productName, project,
+				startDate, version));
 
-		for (String bundleProductName :
-				_getDeveloperBundleProductNames(
-					bundleEntitlementIds, entitlements, productName, version)) {
+		for (Map.Entry<String, Entitlement> entry :
+				_getDeveloperBundleEntitlements(
+					bundleEntitlementIds, entitlements, productName, version
+				).entrySet()) {
 
 			licenseXMLs.add(
 				_toDeveloperLicenseXML(
-					expirationDate, keyType, bundleProductName, project,
-					startDate, version));
+					entry.getValue(), expirationDate, keyType, entry.getKey(),
+					project, startDate, version));
 		}
 
 		if (licenseXMLs.size() == 1) {
@@ -691,12 +693,12 @@ public class LicenseKeyGenerationService {
 		return LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS;
 	}
 
-	private Set<String> _getDeveloperBundleProductNames(
+	private Map<String, Entitlement> _getDeveloperBundleEntitlements(
 			List<Long> bundleEntitlementIds, List<Entitlement> entitlements,
 			String productName, String version)
 		throws Exception {
 
-		Set<String> bundleProductNames = new LinkedHashSet<>();
+		Map<String, Entitlement> bundleEntitlements = new LinkedHashMap<>();
 
 		for (long bundleEntitlementId :
 				new LinkedHashSet<>(bundleEntitlementIds)) {
@@ -761,10 +763,10 @@ public class LicenseKeyGenerationService {
 						" is not licensed for version ", version));
 			}
 
-			bundleProductNames.add(bundleProductName);
+			bundleEntitlements.putIfAbsent(bundleProductName, entitlement);
 		}
 
-		return bundleProductNames;
+		return bundleEntitlements;
 	}
 
 	private String _getDeveloperLabel(String keyType) {
@@ -835,7 +837,10 @@ public class LicenseKeyGenerationService {
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
 				generateRequest, entitlement);
 
-			if (licenseEntry == null) {
+			if (licenseEntry != null) {
+				productName = licenseEntry.getProductName();
+			}
+			else {
 				licenseEntry = leadingLicenseEntry;
 			}
 
@@ -925,13 +930,25 @@ public class LicenseKeyGenerationService {
 	}
 
 	private String _toDeveloperLicenseXML(
-			Date expirationDate, String keyType, String productName,
-			Project project, Date startDate, String version)
+			Entitlement entitlement, Date expirationDate, String keyType,
+			String productName, Project project, Date startDate, String version)
 		throws Exception {
 
 		String accountName = project.getName();
 		String description = StringBundler.concat(
 			productName, StringPool.SPACE, _getDeveloperLabel(keyType));
+
+		LicenseEntry licenseEntry =
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				keyType,
+				LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
+				version);
+
+		if (licenseEntry != null) {
+			description = licenseEntry.getName();
+			productName = licenseEntry.getProductName();
+		}
+
 		int licenseVersion = LicenseVersion.getLicenseVersion(
 			productName, version);
 
