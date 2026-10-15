@@ -14,6 +14,7 @@ import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
@@ -24,6 +25,7 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.SelfServiceTrialLicenseKeyService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -304,6 +306,61 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	@PostMapping("/type-trial")
+	public ActivationKey postLicenseKeysTypeTrial(@RequestBody String json)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		long orderId = jsonObject.optLong("orderId");
+
+		Order order = _commerceOrderService.getCommerceOrder(orderId);
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Order " + orderId + " has no order items");
+		}
+
+		String domains = jsonObject.optString("domains");
+		OrderItem orderItem = orderItems[0];
+		String owner = jsonObject.optString("owner");
+
+		_checkSelfServiceTrialDomains(domains, orderItem.getProductId(), owner);
+
+		Account account = order.getAccount();
+
+		ActivationKey activationKey =
+			_selfServiceTrialLicenseKeyService.addActivationKey(
+				account.getId(), account.getName(), orderItem.getProductId(),
+				domains, String.valueOf(orderId), owner);
+
+		Integer orderStatus = order.getOrderStatus();
+
+		if ((orderStatus == null) ||
+			(orderStatus != CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+
+			_commerceOrderService.completeOrder(
+				order.getId(),
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+		}
+
+		return activationKey;
+	}
+
+	@PostMapping("/type-trial-domains-check")
+	public void postLicenseKeysTypeTrialDomainsCheck(@RequestBody String json)
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		_checkSelfServiceTrialDomains(
+			jsonObject.optString("domains"), jsonObject.optLong("productId"),
+			jsonObject.optString("owner"));
+	}
+
 	@PutMapping("/subscriptions")
 	public void putSubscriptions(
 			@AuthenticationPrincipal Jwt jwt,
@@ -348,6 +405,20 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				HttpStatus.BAD_REQUEST,
 				"No more than " + _MAX_LICENSE_KEY_IDS +
 					" license keys may be requested at once");
+		}
+	}
+
+	private void _checkSelfServiceTrialDomains(
+			String domains, long cProductId, String owner)
+		throws Exception {
+
+		if (_selfServiceTrialLicenseKeyService.hasValidActivationKey(
+				cProductId, domains, owner)) {
+
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"A trial license key was already provisioned for the owner " +
+					"with this domain");
 		}
 	}
 
@@ -429,6 +500,10 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private SelfServiceTrialLicenseKeyService
+		_selfServiceTrialLicenseKeyService;
 
 	@Autowired
 	private SubscriptionEntryService _subscriptionEntryService;
