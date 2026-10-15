@@ -36,7 +36,11 @@ public class ProductSpecificationConstants {
 
 	public static final String SOLUTION_TYPE_CMP = "cmp";
 
+	public static final String SOLUTION_TYPE_CMP_TRIAL = "cmp-trial";
+
 	public static final String SOLUTION_TYPE_DSR = "dsr";
+
+	public static final String SOLUTION_TYPE_DSR_TRIAL = "dsr-trial";
 
 	public static final String SOLUTION_TYPE_LIFERAY_DATA_PLATFORM =
 		"liferay-data-platform";
