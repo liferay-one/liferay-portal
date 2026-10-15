@@ -179,13 +179,7 @@ public class ProjectContactRoleServiceTest {
 
 		if (skuExternalReferenceCode != null) {
 			jsonObject.put(
-				"entitlementDefinitionToEntitlement",
-				new JSONObject(
-				).put(
-					"id", id
-				).put(
-					"skuExternalReferenceCode", skuExternalReferenceCode
-				));
+				"skuExternalReferenceCode", skuExternalReferenceCode);
 		}
 
 		return new Entitlement(jsonObject);

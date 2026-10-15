@@ -9,7 +9,6 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -52,15 +51,15 @@ public class ProjectContactRoleService {
 				_entitlementService.getEntitlements(
 					StringUtil.merge(statements, " or "))) {
 
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
+			String skuExternalReferenceCode =
+				entitlement.getSkuExternalReferenceCode();
 
-			if (entitlementDefinition == null) {
+			if (Validator.isNull(skuExternalReferenceCode)) {
 				continue;
 			}
 
 			Long productId = _commerceSkuService.fetchProductId(
-				entitlementDefinition.getSkuExternalReferenceCode());
+				skuExternalReferenceCode);
 
 			if (productId != null) {
 				productIds.add(productId);
