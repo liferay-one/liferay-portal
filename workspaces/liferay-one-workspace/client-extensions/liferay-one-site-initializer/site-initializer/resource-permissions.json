@@ -321,6 +321,25 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Account Buyer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"VIEW",
 			"VIEW_ADDRESSES"
 		],
@@ -331,12 +350,70 @@
 	},
 	{
 		"actionIds": [
+			"MANAGE_ADDRESSES",
 			"MANAGE_USERS",
-			"VIEW_ACCOUNT_ROLES"
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_ORGANIZATIONS",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Account Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"MANAGE_USERS",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_USERS"
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
 		"roleName": "Partner Manager",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Marketing User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Sales User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Technical User",
 		"scope": "3"
 	},
 	{
@@ -366,6 +443,24 @@
 		"resourceName": "com.liferay.account.model.AccountEntry",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Partner Account Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Partner Manager",
+		"scope": "3"
 	},
 	{
 		"actionIds": [
