@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
@@ -1342,6 +1343,28 @@ public class LicenseKeyGenerationServiceTest {
 			Collections.singletonList(
 				Date.from(Instant.parse("2027-08-09T00:00:00Z"))),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 21));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLGivesHTTPSessions()
+		throws Exception {
+
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Liferay DXP", _toProject(),
+			"7.4");
+
+		Assertions.assertEquals(
+			Collections.singletonList(
+				LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 10));
+		Assertions.assertEquals(
+			Collections.singletonList(
+				LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 11));
 	}
 
 	@Test
