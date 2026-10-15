@@ -2,7 +2,7 @@
 
 Every scheduled background task in liferay-one-etc-spring-boot. A unit test at the handler level (JUnit + Mockito) covers each task. When a task has a rerun rule, its row states it. The plan tracks real integration coverage as journeys in flows.md.
 
-> Autoscaffolded from the code surface (14 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (15 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -20,3 +20,4 @@ Every scheduled background task in liferay-one-etc-spring-boot. A unit test at t
 | CRON-SYNCORGANIZATIONROLES | Mirrors every organization role to JSM on the schedule and at application-ready; a per-role failure is logged and the loop continues; idempotent re-sync (E15, LPD-88258) | unit | P1 | planned | cron:syncOrganizationRoles |
 | CRON-SYNCPRODUCTVERSIONS | Refreshes the product version cache from the releases feed on the schedule and at application-ready; an HTTP or parse failure is logged without clobbering the last good cache (E11, LPD-88254); each patch version links to the bundle.url value of its release properties, a major version has no link, and a patch version whose release properties cannot be read or have no bundle.url value is skipped, so its stored row stays unchanged, a new version gets no row, and the sync still writes the other versions (LPD-108730) | unit | P2 | planned | cron:syncProductVersions |
 | CRON-SYNCTEAMROLES | Keeps the first-line support team role asset object resolved, recreating it under the named lock when the lookup comes back null, and caches the resulting object id | unit | P1 | planned | cron:syncTeamRoles |
+| CRON-SYNCUSERGROUPS | Every 5 minutes, evaluates again every member of the accounts and projects of the support level agreements and Partner entitlements that changed, or whose start date or end date passed, in the last 15 minutes. Each run reads the changes of the last 15 minutes. A failure for one user is logged and the loop continues. A user on several accounts is evaluated once. An AtomicBoolean guard skips a concurrent run and is released after each run. | unit | P0 | planned | cron:syncUserGroups |

@@ -11,6 +11,7 @@ import com.liferay.one.model.ProjectMembership;
 import java.net.URI;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -193,6 +194,71 @@ public class ProjectMembershipServiceTest {
 	}
 
 	@Test
+	public void testGetProjectMembershipsByProjectsBatchByHundred()
+		throws Exception {
+
+		List<String> projectExternalReferenceCodes = new ArrayList<>();
+
+		for (int i = 1; i <= 101; i++) {
+			projectExternalReferenceCodes.add("PRJ-" + i);
+		}
+
+		_testProjectMembershipService.getProjectMemberships(
+			projectExternalReferenceCodes);
+
+		List<String> filterStrings =
+			_testProjectMembershipService.filterStrings;
+
+		Assertions.assertEquals(2, filterStrings.size());
+		Assertions.assertEquals(
+			100,
+			filterStrings.get(
+				0
+			).split(
+				"','"
+			).length);
+		Assertions.assertEquals(
+			1,
+			filterStrings.get(
+				1
+			).split(
+				"','"
+			).length);
+	}
+
+	@Test
+	public void testGetProjectMembershipsByProjectsBuildsInFilter()
+		throws Exception {
+
+		_testProjectMembershipService.items.add(
+			_createProjectMembershipJSONObject("PM-1"));
+
+		List<ProjectMembership> projectMemberships =
+			_testProjectMembershipService.getProjectMemberships(
+				List.of("PRJ'1", "PRJ-2"));
+
+		Assertions.assertEquals(1, projectMemberships.size());
+
+		Assertions.assertEquals(
+			List.of(
+				"r_projectToProjectMembership_c_projectERC in " +
+					"('PRJ''1','PRJ-2')"),
+			_testProjectMembershipService.filterStrings);
+	}
+
+	@Test
+	public void testGetProjectMembershipsByProjectsWithoutProjectsMeansNoQuery()
+		throws Exception {
+
+		Assertions.assertTrue(
+			_testProjectMembershipService.getProjectMemberships(
+				Collections.<String>emptyList()
+			).isEmpty());
+		Assertions.assertTrue(
+			_testProjectMembershipService.filterStrings.isEmpty());
+	}
+
+	@Test
 	public void testGetProjectMembershipsOmitsRoleFilter() throws Exception {
 		_testProjectMembershipService.items.add(
 			_createProjectMembershipJSONObject("PM-1"));
@@ -259,6 +325,14 @@ public class ProjectMembershipServiceTest {
 			getURI = uri;
 
 			return getResponse;
+		}
+
+		@Override
+		protected <T> List<T> getAllItems(
+			String path, String filterString,
+			Function<JSONObject, T> function) {
+
+			return getAllItems(path, filterString, function, (Jwt)null);
 		}
 
 		@Override

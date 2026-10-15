@@ -229,6 +229,57 @@ public class EntitlementServiceDateRangeTest {
 	}
 
 	@Test
+	public void testChangedEntitlementsFilterMatchesDatesAndModificationInTheWindow()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		entitlementService.getChangedEntitlements(
+			Instant.parse("2026-09-01T00:00:00Z"),
+			Arrays.asList("gold-support", "partner"),
+			Instant.parse("2026-08-01T00:00:00Z"));
+
+		Mockito.verify(
+			entitlementService
+		).getEntitlements(
+			StringBundler.concat(
+				"(dateModified ge 2026-08-01T00:00:00Z or (endDate ge ",
+				"2026-08-01T00:00:00Z and endDate le 2026-09-01T00:00:00Z) or ",
+				"(startDate ge 2026-08-01T00:00:00Z and startDate le ",
+				"2026-09-01T00:00:00Z)) and (name eq 'gold-support' or name ",
+				"eq 'partner')")
+		);
+	}
+
+	@Test
+	public void testChangedEntitlementsWithoutNamesMeansNoQuery()
+		throws Exception {
+
+		EntitlementService entitlementService = Mockito.spy(
+			new EntitlementService());
+
+		Assertions.assertTrue(
+			entitlementService.getChangedEntitlements(
+				Instant.now(), Collections.emptyList(), Instant.now()
+			).isEmpty());
+
+		Mockito.verify(
+			entitlementService, Mockito.never()
+		).getEntitlements(
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testFilterMatchesNamesOverlappingTheRange() throws Exception {
 		EntitlementService entitlementService = Mockito.spy(
 			new EntitlementService());
