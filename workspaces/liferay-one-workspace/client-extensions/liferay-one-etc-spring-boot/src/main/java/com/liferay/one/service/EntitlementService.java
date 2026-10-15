@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.DuplicateEntitlementException;
 import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.model.Entitlement;
@@ -474,6 +475,35 @@ public class EntitlementService extends OneBaseService {
 		return getAllItems(
 			"/o/c/entitlements", filterString, Entitlement::new,
 			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
+	}
+
+	public int getSelfServiceTrialDurationDays(long accountEntryId)
+		throws Exception {
+
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		List<Entitlement> entitlements = getEntitlements(
+			StringBundler.concat(
+				"(endDate eq null or endDate ge ", instant,
+				") and (r_accountEntryToEntitlement_accountEntryId eq '",
+				accountEntryId, "')"));
+
+		for (Entitlement entitlement : entitlements) {
+			if ((entitlement.getContractId() > 0) &&
+				!Objects.equals(
+					entitlement.getTerminationStatus(),
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED)) {
+
+				return LicenseKeyGenerationConstants.
+					SELF_SERVICE_TRIAL_DURATION_DAYS_CUSTOMER;
+			}
+		}
+
+		return LicenseKeyGenerationConstants.
+			SELF_SERVICE_TRIAL_DURATION_DAYS_PROSPECT;
 	}
 
 	public String getSubscriptionState(long accountEntryId) throws Exception {
