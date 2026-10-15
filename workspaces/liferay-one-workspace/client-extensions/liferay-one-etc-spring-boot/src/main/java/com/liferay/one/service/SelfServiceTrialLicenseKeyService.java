@@ -159,9 +159,10 @@ public class SelfServiceTrialLicenseKeyService {
 			domains, 0, 0, expirationDate, null, null, null, licenseKeyFamily,
 			name, LicenseConstants.TYPE_DEVELOPER,
 			LicenseVersion.getLicenseVersion(productName, productVersion), null,
-			0, 0, 0, 0, 0, name, orderId, owner,
-			LicenseConstants.PRODUCT_ID_PORTAL, productName, productVersion,
-			null, null, StringPool.BLANK, startDate, null, null);
+			0, 0, LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0,
+			0, name, orderId, owner, LicenseConstants.PRODUCT_ID_PORTAL,
+			productName, productVersion, null, null, StringPool.BLANK,
+			startDate, null, null);
 	}
 
 	private String _getLicenseName(String licenseKeyFamily) {
