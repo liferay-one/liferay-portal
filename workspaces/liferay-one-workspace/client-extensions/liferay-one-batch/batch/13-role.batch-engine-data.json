@@ -101,11 +101,6 @@
 			"roleType": "regular"
 		},
 		{
-			"externalReferenceCode": "C_MEMBER",
-			"name": "Member",
-			"roleType": "account"
-		},
-		{
 			"externalReferenceCode": "C_PAAS_USER",
 			"name": "PaaS User",
 			"roleType": "account"
