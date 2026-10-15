@@ -4,8 +4,10 @@
  */
 
 import {useMemo} from 'react';
+import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
 import {useAccountProjectContactRoles} from '~/hooks/useProjectCommerce';
+import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {
 	PROJECT_ADMIN_ERC,
 	PROJECT_ROLE_ERCS,
@@ -41,6 +43,11 @@ type UserInfo = {
 
 export function useProjectMembers() {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
+	const userId = Number(Liferay.ThemeDisplay.getUserId());
+
+	const {userAccountModel} = useOneContext();
+
+	const showAllAccountProjects = canViewAllAccountProjects(userAccountModel);
 
 	const {data: projectData, isLoading: projectsLoading} = useFetch<
 		APIResponse<ProjectItem>
@@ -180,7 +187,19 @@ export function useProjectMembers() {
 			membershipsByProject.set(projectExternalReferenceCode, memberships);
 		});
 
-		return (projectData?.items ?? []).map((project) => {
+		const projects = (projectData?.items ?? []).filter(
+			(project) =>
+				showAllAccountProjects ||
+				membershipsByProject
+					.get(project.externalReferenceCode)
+					?.some(
+						(membership) =>
+							membership.r_userToProjectMembership_userId ===
+							userId
+					)
+		);
+
+		return projects.map((project) => {
 			const memberships =
 				membershipsByProject.get(project.externalReferenceCode) ?? [];
 
@@ -246,6 +265,8 @@ export function useProjectMembers() {
 		contactRoleNameByExternalReferenceCode,
 		membershipData,
 		projectData,
+		showAllAccountProjects,
+		userId,
 		userInfoById,
 	]);
 

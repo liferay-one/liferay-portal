@@ -24,8 +24,21 @@ const mocks = vi.hoisted(() => ({
 		CommerceContext: {
 			account: {accountId: 7 as number | null},
 		},
+		ThemeDisplay: {
+			getUserId: () => '10',
+		},
+	},
+	oneContext: {
+		userAccountModel: {
+			hasAccountRoleName: () => false,
+			isAccountMember: true,
+		},
 	},
 	useFetch: vi.fn(),
+}));
+
+vi.mock('~/context/OneContextProvider', () => ({
+	useOneContext: () => mocks.oneContext,
 }));
 
 vi.mock('~/hooks/useFetch', () => ({
@@ -132,6 +145,7 @@ function setDefaultResponses() {
 describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', () => {
 	beforeEach(() => {
 		mocks.liferay.CommerceContext.account.accountId = 7;
+		mocks.oneContext.userAccountModel.isAccountMember = true;
 		mocks.contactRoles = {
 			contactRoleExternalReferenceCodesByProjectId: new Map([
 				[100, ['ROLE_TECH', 'ROLE_MISSING']],
@@ -215,6 +229,18 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		]);
 		expect(beta.members.map(({userId}) => userId)).toEqual([10]);
 		expect(gamma.members).toEqual([]);
+	});
+
+	it('lists only the projects of the current user without an account role', () => {
+		mocks.oneContext.userAccountModel.isAccountMember = false;
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		expect(
+			result.current.rows.map(
+				({externalReferenceCode}) => externalReferenceCode
+			)
+		).toEqual(['PRJ-A', 'PRJ-B']);
 	});
 
 	it('lists available designations per project from the contact role names', () => {

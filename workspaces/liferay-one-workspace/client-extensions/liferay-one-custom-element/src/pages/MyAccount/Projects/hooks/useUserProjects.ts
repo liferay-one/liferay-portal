@@ -6,7 +6,7 @@
 import {useOneContext} from '~/context/OneContextProvider';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
-import {PARTNER_ACCOUNT_ROLES} from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -48,14 +48,7 @@ export function useUserProjects(): {
 
 	const {userAccountModel} = useOneContext();
 
-	const showAllAccountProjects = Boolean(
-		userAccountModel?.isAccountAdministrator ||
-			userAccountModel?.isAccountMember ||
-			userAccountModel?.canManageAllAccounts ||
-			PARTNER_ACCOUNT_ROLES.some((roleName) =>
-				userAccountModel?.hasAccountRoleName(roleName)
-			)
-	);
+	const showAllAccountProjects = canViewAllAccountProjects(userAccountModel);
 
 	const enabled = Boolean(accountId && userId);
 
