@@ -275,7 +275,7 @@ public class AccountsRestController extends OneBaseRestController {
 			() -> ArrayUtil.filter(
 				requestAccount.getCustomFields(),
 				customField -> Objects.equals(
-					customField.getName(), "Contact Email")));
+					customField.getName(), "contactEmail")));
 		account.setName(requestAccount::getName);
 		account.setPostalAddresses(requestAccount::getPostalAddresses);
 		account.setTaxId(requestAccount::getTaxId);

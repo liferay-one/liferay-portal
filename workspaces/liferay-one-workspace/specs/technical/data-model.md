@@ -30,7 +30,7 @@
 | `availableCredit` | decimal | |
 | `creditStatus`, `holdReason` | string | |
 
-**Custom fields:** `accountTier` (text: Platinum / Gold / Silver / Bronze / Trial / Community; not the `LT_ACCOUNT_TIER` picklist), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary` (boolean), `allowPermanentLicenses` (boolean), `allowSelfProvisioning` (boolean), `AccountType`, `Contact Email`, `Industry`, `Okta SSO`, `Password Policy`, `Two-Factor Authentication`
+**Custom fields:** `accountTier` (text: Platinum / Gold / Silver / Bronze / Trial / Community; not the `LT_ACCOUNT_TIER` picklist), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary` (boolean), `allowPermanentLicenses` (boolean), `allowSelfProvisioning` (boolean), `AccountType`, `contactEmail`, `industry`, `oktaSSO`, `passwordPolicy`, `twoFactorAuthentication`
 
 **Object actions:** `AccountCreate`, `AccountUpdate`, and `AccountDelete` call `liferay-one-etc-spring-boot`.
 

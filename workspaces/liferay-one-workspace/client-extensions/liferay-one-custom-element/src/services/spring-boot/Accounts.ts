@@ -56,7 +56,7 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 				customFields: [
 					{
 						customValue: {data: account.emailAddress},
-						name: 'Contact Email',
+						name: 'contactEmail',
 					},
 				],
 				name: account.accountName,

@@ -569,11 +569,11 @@ Liferay system object `AccountEntry`.
 | `allowComplimentary` | Boolean | custom field |
 | `allowPermanentLicenses` | Boolean | custom field |
 | `allowSelfProvisioning` | Boolean | custom field |
-| `Contact Email` | Text | custom field |
-| `Industry` | Text | custom field |
-| `Okta SSO` | Text | custom field |
-| `Password Policy` | Text | custom field |
-| `Two-Factor Authentication` | Text | custom field |
+| `contactEmail` | Text | custom field |
+| `industry` | Text | custom field |
+| `oktaSSO` | Text | custom field |
+| `passwordPolicy` | Text | custom field |
+| `twoFactorAuthentication` | Text | custom field |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
