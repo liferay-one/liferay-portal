@@ -48,7 +48,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class EntitlementServiceTest {
 
 	@BeforeEach
-	public void setUp() {
+	public void setUp() throws Exception {
 		_entitlementService = Mockito.spy(
 			new EntitlementService() {
 
@@ -83,6 +83,17 @@ public class EntitlementServiceTest {
 		ReflectionTestUtils.setField(
 			_entitlementService,
 			"_selfServiceTrialCustomerLicenseKeyDurationDays", 90);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getAllItems(
+			Mockito.anyString(), Mockito.anyString(), Mockito.any(),
+			Mockito.anyString()
+		);
+
+		_setUpOrder(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 	}
 
 	@Test
@@ -447,6 +458,7 @@ public class EntitlementServiceTest {
 			Map.of(
 				"contractId", _CONTRACT_ID, "salesforceProjectId",
 				_PROJECT_EXTERNAL_REFERENCE_CODE));
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
 		Mockito.when(
 			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
@@ -547,6 +559,7 @@ public class EntitlementServiceTest {
 			Map.of(
 				"contractId", _CONTRACT_ID, "salesforceProjectId",
 				_PROJECT_EXTERNAL_REFERENCE_CODE));
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
 		Mockito.when(
 			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
@@ -620,7 +633,72 @@ public class EntitlementServiceTest {
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
 
 		Mockito.verifyNoInteractions(_entitlementDefinitionService);
-		Mockito.verifyNoInteractions(_commerceOrderService);
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).getEntitlements(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testGenerateEntitlementsSkipsDefinitionTheOrderItemAlreadyHas()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyMap(), Mockito.anyString())
+		).thenReturn(
+			List.of(
+				_createEntitlementDefinition(100.0, 1, "storage"),
+				_createEntitlementDefinition(100.0, 2, "sites"))
+		);
+
+		_setUpEntitlements(
+			new Entitlement(
+				new JSONObject(
+				).put(
+					"id", 1
+				).put(
+					"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+					_ORDER_ITEM_ID
+				).put(
+					"r_entitlementDefinitionToEntitlement_c_" +
+						"entitlementDefinitionId",
+					1
+				)));
+
+		Mockito.doReturn(
+			_createEntitlement(1, "storage")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID), Mockito.anyLong(),
+			Mockito.eq(2L), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -653,6 +731,30 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementsSkipsOrderItemOfOpenOrder()
+		throws Exception {
+
+		_testGenerateEntitlementsSkipsOrderItemOfIncompleteOrder(
+			CommerceOrderConstants.ORDER_STATUS_OPEN);
+	}
+
+	@Test
+	public void testGenerateEntitlementsSkipsOrderItemOfPendingOrder()
+		throws Exception {
+
+		_testGenerateEntitlementsSkipsOrderItemOfIncompleteOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+	}
+
+	@Test
+	public void testGenerateEntitlementsSkipsOrderItemOfProcessingOrder()
+		throws Exception {
+
+		_testGenerateEntitlementsSkipsOrderItemOfIncompleteOrder(
+			CommerceOrderConstants.ORDER_STATUS_PROCESSING);
+	}
+
+	@Test
 	public void testGenerateEntitlementsSkipsOrderItemWithoutDefinitions()
 		throws Exception {
 
@@ -667,7 +769,6 @@ public class EntitlementServiceTest {
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
 
-		Mockito.verifyNoInteractions(_commerceOrderService);
 		Mockito.verify(
 			_entitlementService, Mockito.never()
 		).addEntitlement(
@@ -697,6 +798,74 @@ public class EntitlementServiceTest {
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
 
 		_verifyAddEntitlement(90);
+	}
+
+	@Test
+	public void testGenerateOrderEntitlementsGeneratesEachOrderItem()
+		throws Exception {
+
+		OrderItem orderItem1 = _createOrderItem();
+
+		OrderItem orderItem2 = _createOrderItem();
+
+		orderItem2.setId(_ORDER_ITEM_ID + 1);
+
+		Mockito.when(
+			_commerceOrderItemService.getCommerceOrderItems(_ORDER_ID)
+		).thenReturn(
+			List.of(orderItem1, orderItem2)
+		);
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyMap(), Mockito.anyString())
+		).thenReturn(
+			List.of(_createEntitlementDefinition(100.0, 1, "storage"))
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "storage")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateOrderEntitlements(_ORDER_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID), Mockito.anyLong(),
+			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID + 1),
+			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
+			Mockito.anyInt(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testGenerateOrderEntitlementsSkipsProcessingOrder()
+		throws Exception {
+
+		_setUpOrder(CommerceOrderConstants.ORDER_STATUS_PROCESSING);
+
+		_entitlementService.generateOrderEntitlements(_ORDER_ID);
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		Mockito.verifyNoInteractions(_entitlementDefinitionService);
 	}
 
 	@Test
@@ -1428,6 +1597,7 @@ public class EntitlementServiceTest {
 
 		order.setAccountId(_ACCOUNT_ID);
 		order.setId(_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 		order.setOrderTypeExternalReferenceCode(orderTypeExternalReferenceCode);
 
 		Mockito.when(
@@ -1445,6 +1615,20 @@ public class EntitlementServiceTest {
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	private void _setUpOrder(int orderStatus) throws Exception {
+		Order order = new Order();
+
+		order.setAccountId(_ACCOUNT_ID);
+		order.setId(_ORDER_ID);
+		order.setOrderStatus(orderStatus);
+
+		Mockito.when(
+			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
+		).thenReturn(
+			order
 		);
 	}
 
@@ -1472,6 +1656,26 @@ public class EntitlementServiceTest {
 				Mockito.contains("'" + orderTypeExternalReferenceCode + "'"))
 		).thenReturn(
 			List.of(order)
+		);
+	}
+
+	private void _testGenerateEntitlementsSkipsOrderItemOfIncompleteOrder(
+			int orderStatus)
+		throws Exception {
+
+		_setUpOrder(orderStatus);
+		_setUpOrderItem(_createOrderItem());
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verifyNoInteractions(_entitlementDefinitionService);
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 

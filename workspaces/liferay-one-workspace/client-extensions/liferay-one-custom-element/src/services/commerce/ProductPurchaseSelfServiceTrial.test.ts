@@ -327,7 +327,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		);
 	});
 
-	it('links to the activation key generator with a warning after the wait for the trial entitlements runs out', async () => {
+	it('completes the settled order before it waits for the trial entitlements, and links to the activation key generator with a warning after the wait runs out', async () => {
 		vi.useFakeTimers();
 
 		const openToastSpy = vi.spyOn(Liferay.Util, 'openToast');
@@ -349,7 +349,14 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		);
 
 		expect(ActivationKeys.getGenerateForm).toHaveBeenCalledTimes(10);
-		expect(CommerceOrders.completeSettled).not.toHaveBeenCalled();
+		expect(CommerceOrders.completeSettled).toHaveBeenCalledWith(5);
+		expect(
+			vi.mocked(CommerceOrders.completeSettled).mock
+				.invocationCallOrder[0]
+		).toBeLessThan(
+			vi.mocked(ActivationKeys.getGenerateForm).mock
+				.invocationCallOrder[0]
+		);
 		expect(openToastSpy).toHaveBeenCalledWith(
 			expect.objectContaining({type: 'warning'})
 		);
