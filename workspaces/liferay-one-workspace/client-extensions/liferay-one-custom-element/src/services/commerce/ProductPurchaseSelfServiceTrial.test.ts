@@ -43,7 +43,7 @@ vi.mock('~/services/headless/HeadlessCommerceDeliveryOrder', () => ({
 }));
 
 vi.mock('~/services/spring-boot/ActivationKeys', () => ({
-	default: {getGenerateForm: vi.fn()},
+	default: {generateActivationKey: vi.fn(), getGenerateForm: vi.fn()},
 }));
 
 vi.mock('~/services/liferay/Analytics', () => ({
@@ -55,6 +55,46 @@ vi.mock('~/utils/siteUtils', () => ({
 }));
 
 const account = {externalReferenceCode: 'ACCNT-1', id: 1} as Account;
+
+const PROJECT_LINK = `${window.location.origin}/web/one/my-account#/ACCNT-1/project/one-time-purchases`;
+
+const TRIAL_GENERATE_FORM = {
+	bundleProducts: [
+		{
+			availableCount: 0,
+			entitlementId: 101,
+			externalReferenceCode: 'PRDCT-OTHER-TRIAL',
+			licensable: true,
+		},
+		{
+			availableCount: 1,
+			entitlementId: 102,
+			externalReferenceCode: 'PRDCT-TRIAL',
+			licensable: true,
+		},
+	],
+	products: [
+		{
+			externalReferenceCode: 'PRDCT-DXP-TRIAL',
+			keyTypes: [
+				{
+					key: 'non-production',
+					subscriptions: [
+						{availableCount: 0, entitlementId: 201},
+						{availableCount: 1, entitlementId: 202},
+					],
+				},
+			],
+			versions: ['2026.q2', '2026.q1'],
+		},
+	],
+};
+
+const TRIAL_SERVER = {
+	environmentName: ' E2E Trial ',
+	serverField: 'ipAddresses',
+	serverValue: '10.0.0.1\n10.0.0.2 ',
+} as const;
 
 function getCreatedCart() {
 	return vi.mocked(HeadlessCommerceDeliveryCart.createCart).mock
@@ -174,39 +214,82 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		).toHaveBeenCalledTimes(1);
 	});
 
-	it('links to the activation key generator once the trial entitlements exist', async () => {
+	it('generates the trial key from the server details once the trial entitlements exist and links to the trial product', async () => {
 		vi.useFakeTimers();
 
 		const openToastSpy = vi.spyOn(Liferay.Util, 'openToast');
 
+		vi.mocked(ActivationKeys.generateActivationKey).mockResolvedValue({
+			activationKeyId: 1,
+			externalReferenceCode: 'KEY-1',
+		});
 		vi.mocked(ActivationKeys.getGenerateForm)
 			.mockResolvedValueOnce({
 				bundleProducts: [],
 				products: [{externalReferenceCode: 'PRDCT-DXP-TRIAL'}],
 			} as never)
-			.mockResolvedValueOnce({
-				bundleProducts: [{externalReferenceCode: 'PRDCT-TRIAL'}],
-				products: [{externalReferenceCode: 'PRDCT-DXP-TRIAL'}],
-			} as never);
+			.mockResolvedValueOnce(TRIAL_GENERATE_FORM as never);
 
 		const nextStepsLinkPromise = new ProductPurchaseSelfServiceTrial(
 			account,
-			getProduct('cmp-trial')
+			getProduct('cmp-trial'),
+			TRIAL_SERVER
 		).getNextStepsLink();
 
 		await vi.runAllTimersAsync();
 
 		await expect(nextStepsLinkPromise).resolves.toBe(
-			`${window.location.origin}/web/one/my-account#/ACCNT-1/project/one-time-purchases/activation/generate?new=PRDCT-DXP-TRIAL`
+			`${PROJECT_LINK}/products/PRDCT-TRIAL`
 		);
 
 		expect(ActivationKeys.getGenerateForm).toHaveBeenCalledTimes(2);
 		expect(ActivationKeys.getGenerateForm).toHaveBeenCalledWith({
 			accountExternalReferenceCode: 'ACCNT-1',
 		});
+		expect(ActivationKeys.generateActivationKey).toHaveBeenCalledWith({
+			accountExternalReferenceCode: 'ACCNT-1',
+			bundleEntitlementIds: [102],
+			environmentName: 'E2E Trial',
+			keyType: 'non-production',
+			servers: [
+				{
+					hostName: '',
+					ipAddresses: '10.0.0.1\n10.0.0.2',
+					macAddresses: '',
+				},
+			],
+			subscriptionEntitlementId: 202,
+			version: '2026.q2',
+		});
 		expect(openToastSpy).not.toHaveBeenCalled();
 
 		vi.useRealTimers();
+	});
+
+	it('links to the activation key generator with a warning when the trial key cannot be generated', async () => {
+		const openToastSpy = vi.spyOn(Liferay.Util, 'openToast');
+
+		vi.mocked(ActivationKeys.generateActivationKey).mockRejectedValue(
+			new Error('Unavailable')
+		);
+		vi.mocked(ActivationKeys.getGenerateForm).mockResolvedValue(
+			TRIAL_GENERATE_FORM as never
+		);
+		vi.spyOn(console, 'error').mockImplementation(() => {});
+
+		await expect(
+			new ProductPurchaseSelfServiceTrial(
+				account,
+				getProduct('cmp-trial'),
+				TRIAL_SERVER
+			).getNextStepsLink()
+		).resolves.toBe(
+			`${PROJECT_LINK}/activation/generate?new=PRDCT-DXP-TRIAL`
+		);
+
+		expect(openToastSpy).toHaveBeenCalledWith(
+			expect.objectContaining({type: 'warning'})
+		);
 	});
 
 	it('links to the activation key generator with a warning after the wait for the trial entitlements runs out', async () => {
