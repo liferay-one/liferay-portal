@@ -116,7 +116,10 @@ export default class ProductPurchase {
 			HeadlessCommerceDeliveryCart.checkoutCart(newCart.id),
 		]);
 
-		if (checkedOutCart.valid === false) {
+		if (
+			checkedOutCart.valid === false ||
+			checkedOutCart.errorMessages?.length
+		) {
 			throw new Error(
 				checkedOutCart.errorMessages?.join(', ') ||
 					`Unable to check out cart ${newCart.id}`
