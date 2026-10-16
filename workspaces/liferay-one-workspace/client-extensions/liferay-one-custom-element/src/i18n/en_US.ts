@@ -2100,6 +2100,8 @@ export default {
 		'Your trial is provisioned by Liferay.',
 	'your-trial-is-still-being-prepared-refresh-the-page-in-a-few-minutes-if-it-is-not-listed':
 		'Your trial is still being prepared. Refresh the page in a few minutes if it is not listed.',
+	'your-trial-started-but-its-activation-key-could-not-be-generated-generate-it-from-the-activation-page':
+		'Your trial started, but its activation key could not be generated. Generate it from the Activation page.',
 	'your-use-of-liferay-dxp-is-subject-to-these-terms-and-the-liferay-end-user-license-agreement-set-forth-at':
 		'Your use of Liferay DXP is subject to these terms and the Liferay End User License Agreement set forth at',
 	'yyyy-mm-dd': 'YYYY-MM-DD',

@@ -6,6 +6,66 @@
 import {z} from 'zod';
 import i18n from '~/i18n';
 import {billingAddress, rootProjectPlanUsage} from '~/utils/schemaUtils';
+import {
+	validateIPAddresses,
+	validateMACAddresses,
+} from '~/utils/serverAddressUtils';
+
+import type {ActivationKeyServerField} from '~/services/spring-boot/ActivationKeys';
+
+const SERVER_ADDRESS_VALIDATORS: Record<
+	ActivationKeyServerField,
+	(value: string) => string | true
+> = {
+	hostName: () => true,
+	ipAddresses: validateIPAddresses,
+	macAddresses: validateMACAddresses,
+};
+
+const activationKey = z.object({
+	businessEmailAddress: z
+		.string()
+		.email(i18n.translate('please-fill-in-a-valid-email')),
+	companyName: z.string().min(3, {message: 'Company name is required'}),
+	country: z
+		.string()
+		.min(2, {message: 'Please select the country to continue'}),
+	domain: z.string().min(3, {message: 'Domain is required'}),
+	extension: z.string().optional(),
+	fullName: z.string().min(3, {message: 'Full name is required'}),
+	intlCode: z.object({code: z.string(), flag: z.string()}).optional(),
+	jobTitle: z.string().optional().or(z.literal('')),
+	notifyMeAboutProducts: z.boolean().optional(),
+	phoneNumber: z.string().optional(),
+	purpose: z.string().min(3, {message: 'Purpose is required'}),
+	termsAndConditions: z.boolean().refine((value) => value === true),
+	userAgreement: z.boolean().refine((value) => value === true),
+});
+
+const selfServiceTrialActivationKey = activationKey
+	.omit({domain: true})
+	.extend({
+		environmentName: z
+			.string()
+			.trim()
+			.min(1, {message: i18n.translate('this-field-is-required')}),
+		serverField: z.enum(['hostName', 'ipAddresses', 'macAddresses']),
+		serverValue: z
+			.string()
+			.trim()
+			.min(1, {message: i18n.translate('this-field-is-required')}),
+	})
+	.superRefine(({serverField, serverValue}, context) => {
+		const validation = SERVER_ADDRESS_VALIDATORS[serverField](serverValue);
+
+		if (validation !== true) {
+			context.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: validation,
+				path: ['serverValue'],
+			});
+		}
+	});
 
 export const commerceSchemas = {
 	accountCreator: z.object({
@@ -44,25 +104,7 @@ export const commerceSchemas = {
 			.string()
 			.min(1, {message: 'Please enter a Tax/VAT number to continue'}),
 	}),
-	activationKey: z.object({
-		businessEmailAddress: z
-			.string()
-			.email(i18n.translate('please-fill-in-a-valid-email')),
-		companyName: z.string().min(3, {message: 'Company name is required'}),
-		country: z
-			.string()
-			.min(2, {message: 'Please select the country to continue'}),
-		domain: z.string().min(3, {message: 'Domain is required'}),
-		extension: z.string().optional(),
-		fullName: z.string().min(3, {message: 'Full name is required'}),
-		intlCode: z.object({code: z.string(), flag: z.string()}).optional(),
-		jobTitle: z.string().optional().or(z.literal('')),
-		notifyMeAboutProducts: z.boolean().optional(),
-		phoneNumber: z.string().optional(),
-		purpose: z.string().min(3, {message: 'Purpose is required'}),
-		termsAndConditions: z.boolean().refine((value) => value === true),
-		userAgreement: z.boolean().refine((value) => value === true),
-	}),
+	activationKey,
 	billingAddress,
 	contactSales: z.object({
 		accountName: z
@@ -133,6 +175,7 @@ export const commerceSchemas = {
 		suggestionImprovements: z.string().optional(),
 		suggestionSatisfaction: z.string().optional(),
 	}),
+	selfServiceTrialActivationKey,
 	trialForm: z.object({
 		accountId: z.string().optional(),
 		consoleInviteEmailAddresses: z.array(z.string().email()),

@@ -7,12 +7,15 @@ import {UseFormRegister} from 'react-hook-form';
 import Button from '~/components/Button/Button';
 import {Input} from '~/components/Input/Input';
 import {translate} from '~/i18n';
+import {
+	validateIPAddresses,
+	validateMACAddresses,
+} from '~/utils/serverAddressUtils';
 
 import {
 	GenerateActivationKeyForm,
 	GenerateActivationKeyServerField,
 } from '../../types';
-import {validateIPAddresses, validateMACAddresses} from '../../utils';
 
 type ServerFieldGroupProps = {
 	disabled?: boolean;
