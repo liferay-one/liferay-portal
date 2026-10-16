@@ -13,6 +13,7 @@ import {
 	TemporaryBuyer,
 	createTemporaryBuyer,
 	deleteTemporaryBuyer,
+	expectAccountOrdersCompleted,
 	getAccountOrders,
 } from '../utils/productPurchaseUtils';
 import {CHECKOUT_TIMEOUT, PORTAL_TIMEOUT} from '../utils/timeoutConstants';
@@ -442,15 +443,6 @@ test.describe('[FLOW-CHECKOUT-FREE] free app checkout', () => {
 		adminAPI,
 		page,
 	}) => {
-		const issue =
-			'The checkout answers 200 with {"valid":true,"errorMessages":' +
-			'["Invalid billing address"]} and leaves the order Open, while ' +
-			'ProductPurchase.createOrder only rejects valid === false (the ' +
-			'LPD-108267 fix). The wizard shows Purchase Completed for an order ' +
-			'that was never placed, and placed-orders answers 404 for it.';
-
-		test.info().annotations.push({description: issue, type: 'issue'});
-
 		const productId = await getProductId(adminAPI, PRODUCT_ERCS.sampleApp);
 
 		buyer = await createTemporaryBuyer(adminAPI, {
@@ -466,8 +458,6 @@ test.describe('[FLOW-CHECKOUT-FREE] free app checkout', () => {
 		});
 
 		await page.getByRole('checkbox').check();
-
-		test.fail(true, issue);
 
 		await page.getByRole('button', {name: 'Get App'}).click();
 
@@ -760,7 +750,10 @@ test.describe('[FLOW-PRODUCT-PURCHASE-ENTRY] product specific steps', () => {
 			PRODUCT_ERCS.dxpFreeTier
 		);
 
-		buyer = await createTemporaryBuyer(adminAPI, {label: 'DXP Free'});
+		buyer = await createTemporaryBuyer(adminAPI, {
+			billingAddress: true,
+			label: 'DXP Free',
+		});
 
 		await signInAsBuyer(page, buyer);
 
@@ -819,6 +812,87 @@ test.describe('[FLOW-PRODUCT-PURCHASE-ENTRY] product specific steps', () => {
 
 		await expect(page.getByText('Full name is required')).toHaveCount(0);
 		await expect(page.getByText('Company name is required')).toHaveCount(0);
+	});
+
+	test('[FLOW-PRODUCT-PURCHASE-ENTRY] [ROUTE-PRODUCT-PURCHASE-ACTIVATION-KEY-FORM] the DXP free tier generates the key and completes the order for an account without a billing address', async ({
+		adminAPI,
+		page,
+	}) => {
+		const {name, productId} = await adminAPI.getProductByERC(
+			PRODUCT_ERCS.dxpFreeTier
+		);
+
+		buyer = await createTemporaryBuyer(adminAPI, {label: 'DXP Free Key'});
+
+		await signInAsBuyer(page, buyer);
+
+		await page.goto(purchasePath(productId));
+
+		await expect(page).toHaveURL(/#\/activation-key-form/, {
+			timeout: PORTAL_TIMEOUT,
+		});
+
+		await expect(stepTitle(page, 'Activation Key Creation')).toBeVisible();
+
+		await page.getByPlaceholder('Enter your full name').fill('E2E Buyer');
+		await page.locator('#companyName').fill('E2E Company');
+
+		await page
+			.locator('select[name="country"]')
+			.selectOption('United States');
+
+		await page.locator('.activation-key-form-select-input').click();
+
+		await page
+			.locator('.dropdown-menu-purpose')
+			.getByText('Proof of Concept (POC)')
+			.click();
+
+		await page
+			.getByPlaceholder('Enter domain here')
+			.fill(`e2e-${buyer.account.id}.example.com`);
+
+		await page.locator('#terms-and-conditions').check();
+		await page.locator('#user-agreement').check();
+
+		const getKeyButton = page.getByRole('button', {
+			name: 'Get Activation Key',
+		});
+
+		await expect(getKeyButton).toBeEnabled();
+
+		await getKeyButton.click();
+
+		await expect(page).toHaveURL(PURCHASE_COMPLETED_PATTERN, {
+			timeout: CHECKOUT_TIMEOUT,
+		});
+
+		await expect(
+			page.getByText('Your free activation key has been generated!')
+		).toBeVisible({timeout: PORTAL_TIMEOUT});
+
+		await expectAccountOrdersCompleted(adminAPI, buyer.account.id, 'DXP');
+
+		const {items: licenseKeys} = await adminAPI.get<{
+			items: {id: number}[];
+		}>(
+			`/o/c/licensekeys?filter=${encodeURIComponent(
+				`r_accountEntryToLicenseKey_accountEntryId eq '${buyer.account.id}'`
+			)}`
+		);
+
+		expect(licenseKeys).toHaveLength(1);
+
+		await page.getByRole('button', {exact: true, name: 'Products'}).click();
+
+		await expect(page).toHaveURL(
+			/\/project\/one-time-purchases\/products$/,
+			{timeout: PORTAL_TIMEOUT}
+		);
+
+		await expect(page.getByText(name.en_US, {exact: true})).toBeVisible({
+			timeout: PORTAL_TIMEOUT,
+		});
 	});
 
 	test('[FLOW-PRODUCT-PURCHASE-ENTRY] [ROUTE-PRODUCT-PURCHASE-PROJECT] AI Hub holds a buyer with no project on Project Selection', async ({

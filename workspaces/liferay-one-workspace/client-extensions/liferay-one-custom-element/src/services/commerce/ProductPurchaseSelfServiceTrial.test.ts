@@ -10,6 +10,7 @@ import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerc
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
+import CommerceOrders from '~/services/spring-boot/CommerceOrders';
 
 import ProductPurchaseSelfServiceTrial from './ProductPurchaseSelfServiceTrial';
 
@@ -44,6 +45,10 @@ vi.mock('~/services/headless/HeadlessCommerceDeliveryOrder', () => ({
 
 vi.mock('~/services/spring-boot/ActivationKeys', () => ({
 	default: {generateActivationKey: vi.fn(), getGenerateForm: vi.fn()},
+}));
+
+vi.mock('~/services/spring-boot/CommerceOrders', () => ({
+	default: {completeSettled: vi.fn()},
 }));
 
 vi.mock('~/services/liferay/Analytics', () => ({
@@ -126,6 +131,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		vi.mocked(
 			HeadlessCommerceAdminAccount.getAccountAddresses
 		).mockResolvedValue({items: []} as never);
+		vi.mocked(CommerceOrders.completeSettled).mockResolvedValue();
 		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
 			valid: true,
 		} as Cart);
@@ -171,6 +177,34 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		expect(searchParams?.get('filter')).toBe(
 			"externalReferenceCode eq 'PRDCT-DXP-TRIAL'"
 		);
+	});
+
+	it('places the trial order when the checkout only reports a missing billing address', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			valid: true,
+		} as Cart);
+
+		await expect(
+			new ProductPurchaseSelfServiceTrial(
+				account,
+				getProduct('cmp-trial')
+			).createOrder()
+		).resolves.toEqual({id: 5});
+	});
+
+	it('fails the trial order on any other checkout error', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address', 'Invalid price'],
+			valid: true,
+		} as Cart);
+
+		await expect(
+			new ProductPurchaseSelfServiceTrial(
+				account,
+				getProduct('cmp-trial')
+			).createOrder()
+		).rejects.toThrow('Invalid price');
 	});
 
 	it('places the DSR trial order with its own order type', async () => {
@@ -234,7 +268,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 			account,
 			getProduct('cmp-trial'),
 			TRIAL_SERVER
-		).getNextStepsLink();
+		).getNextStepsLink({id: 5} as Cart);
 
 		await vi.runAllTimersAsync();
 
@@ -261,6 +295,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 			subscriptionEntitlementId: 202,
 			version: '2026.q2',
 		});
+		expect(CommerceOrders.completeSettled).toHaveBeenCalledWith(5);
 		expect(openToastSpy).not.toHaveBeenCalled();
 
 		vi.useRealTimers();
@@ -282,7 +317,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 				account,
 				getProduct('cmp-trial'),
 				TRIAL_SERVER
-			).getNextStepsLink()
+			).getNextStepsLink({id: 5} as Cart)
 		).resolves.toBe(
 			`${PROJECT_LINK}/activation/generate?new=PRDCT-DXP-TRIAL`
 		);
@@ -305,7 +340,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		const nextStepsLinkPromise = new ProductPurchaseSelfServiceTrial(
 			account,
 			getProduct('cmp-trial')
-		).getNextStepsLink();
+		).getNextStepsLink({id: 5} as Cart);
 
 		await vi.runAllTimersAsync();
 
@@ -314,6 +349,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		);
 
 		expect(ActivationKeys.getGenerateForm).toHaveBeenCalledTimes(10);
+		expect(CommerceOrders.completeSettled).not.toHaveBeenCalled();
 		expect(openToastSpy).toHaveBeenCalledWith(
 			expect.objectContaining({type: 'warning'})
 		);

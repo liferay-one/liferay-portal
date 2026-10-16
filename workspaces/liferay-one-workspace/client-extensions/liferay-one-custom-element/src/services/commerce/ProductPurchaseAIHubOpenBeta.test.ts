@@ -117,6 +117,24 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA] ProductPurchaseAIHubOpe
 		expect(cart.purchaseOrderNumber).toBe('PO-1');
 	});
 
+	it('creates the order when the checkout only reports a missing billing address', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			valid: true,
+		} as Cart);
+
+		const productPurchase = new ProductPurchaseAIHubOpenBeta(
+			account,
+			product
+		);
+
+		productPurchase.setForm(form);
+
+		await expect(
+			productPurchase.createOrder({} as Cart, {})
+		).resolves.toEqual({id: 5});
+	});
+
 	it('resolves next steps through the payment URL', async () => {
 		vi.mocked(
 			HeadlessCommerceDeliveryCart.getPaymentMethodURL

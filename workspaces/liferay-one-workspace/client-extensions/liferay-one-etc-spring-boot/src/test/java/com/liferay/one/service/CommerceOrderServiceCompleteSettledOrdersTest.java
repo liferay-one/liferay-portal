@@ -8,12 +8,15 @@ package com.liferay.one.service;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -42,6 +45,14 @@ public class CommerceOrderServiceCompleteSettledOrdersTest {
 			_commerceOrderService
 		).getOrders(
 			ArgumentMatchers.anyString()
+		);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.startsWith("(createDate lt ")
 		);
 
 		Mockito.doReturn(
@@ -79,6 +90,139 @@ public class CommerceOrderServiceCompleteSettledOrdersTest {
 			_commerceOrderService
 		).completeOrder(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderCompletesOpenSelfServiceTrialOrder()
+		throws Exception {
+
+		Order order = _createOrder(
+			3L, CommerceOrderConstants.ORDER_STATUS_OPEN,
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderTypeExternalReferenceCode("CMP_TRIAL");
+		order.setTotalAmount(0D);
+
+		_commerceOrderService.completeSettledOrder(order);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			3L, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsCanceledSelfServiceTrialOrder()
+		throws Exception {
+
+		Order order = _createOrder(
+			3L, CommerceOrderConstants.ORDER_STATUS_CANCELLED,
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderTypeExternalReferenceCode("CMP_TRIAL");
+		order.setTotalAmount(0D);
+
+		_commerceOrderService.completeSettledOrder(order);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsCompletedSelfServiceTrialOrder()
+		throws Exception {
+
+		Order order = _createOrder(
+			3L, CommerceOrderConstants.ORDER_STATUS_COMPLETED,
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+
+		order.setOrderTypeExternalReferenceCode("DSR_TRIAL");
+
+		_commerceOrderService.completeSettledOrder(order);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsSelfServiceTrialOrderWithTotal()
+		throws Exception {
+
+		Order order = _createOrder(
+			3L, CommerceOrderConstants.ORDER_STATUS_OPEN,
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderTypeExternalReferenceCode("DSR_TRIAL");
+		order.setTotalAmount(100D);
+
+		_commerceOrderService.completeSettledOrder(order);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
+		);
+	}
+
+	@Test
+	public void testCompleteSettledOrdersCompletesAbandonedSelfServiceTrialOrder()
+		throws Exception {
+
+		Order order = _createOrder(
+			3L, CommerceOrderConstants.ORDER_STATUS_OPEN,
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderTypeExternalReferenceCode("CMP_TRIAL");
+		order.setTotalAmount(0D);
+
+		ArgumentCaptor<String> filterCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.doReturn(
+			List.of(order)
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.startsWith("(createDate lt ")
+		);
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			3L
+		);
+
+		_commerceOrderService.completeSettledOrders();
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.times(2)
+		).getOrders(
+			filterCaptor.capture()
+		);
+
+		String filter = filterCaptor.getValue();
+
+		Assertions.assertTrue(
+			filter.endsWith(
+				") and (orderStatus/any(x:x eq 2)) and " +
+					"(orderTypeExternalReferenceCode eq 'CMP_TRIAL' or " +
+						"orderTypeExternalReferenceCode eq 'DSR_TRIAL')"),
+			filter);
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			3L, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
 		);
 	}
 
