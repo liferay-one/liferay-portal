@@ -32,7 +32,6 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
@@ -433,9 +432,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 				LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
 
-				return _dataOpsUsageService.fetchComposableAccountUsage(
-					_propertyService.getDataOpsAccountKey(project),
-					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER));
+				return _dataOpsUsageService.fetchComposableProjectUsage(
+					localDate.format(_BILLING_PERIOD_DATE_TIME_FORMATTER),
+					projectExternalReferenceCode);
 			}
 
 			if (utilizationProfile.equals(
@@ -446,8 +445,8 @@ public class ProjectRestController extends OneBaseRestController {
 					projectExternalReferenceCode);
 			}
 
-			return _dataOpsUsageService.fetchCustomerAccountUsage(
-				_propertyService.getDataOpsAccountKey(project));
+			return _dataOpsUsageService.fetchCustomerProjectUsage(
+				projectExternalReferenceCode);
 		}
 		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_logUnavailableUsage(
@@ -801,9 +800,6 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private ProjectService _projectService;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 	@Autowired
 	private UsageDefinitionService _usageDefinitionService;

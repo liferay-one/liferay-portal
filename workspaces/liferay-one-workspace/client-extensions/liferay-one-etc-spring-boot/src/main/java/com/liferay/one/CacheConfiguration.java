@@ -70,7 +70,7 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
-			"composableAccountUsage",
+			"composableProjectUsage",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)
@@ -88,7 +88,7 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
-			"customerAccountUsage",
+			"customerProjectUsage",
 			Caffeine.newBuilder(
 			).expireAfterWrite(
 				Duration.ofHours(1)

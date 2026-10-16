@@ -8,7 +8,6 @@ package com.liferay.one;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.one.constants.ProductSpecificationConstants;
-import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
@@ -32,7 +31,6 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
@@ -97,8 +95,6 @@ public class ProjectRestControllerTest {
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
-			_projectRestController, "_propertyService", _propertyService);
-		ReflectionTestUtils.setField(
 			_projectRestController, "_usageDefinitionService",
 			_usageDefinitionService);
 		ReflectionTestUtils.setField(
@@ -112,10 +108,6 @@ public class ProjectRestControllerTest {
 		).thenReturn(
 			_createProject()
 		);
-
-		Mockito.when(
-			_propertyService.getDataOpsAccountKey(Mockito.any(Project.class))
-		).thenCallRealMethod();
 
 		Mockito.when(
 			_usageDefinitionService.fetchUsageDefinition(Mockito.anyString())
@@ -775,6 +767,24 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testGetUsageExperienceProfileReadsUsageByProject()
+		throws Exception {
+
+		_setUpEntitlements();
+
+		_setUpComposableUsage();
+
+		_getMetricsJSONObject(_UTILIZATION_PROFILE_EXPERIENCE_DASHBOARD);
+
+		Mockito.verify(
+			_dataOpsUsageService
+		).fetchComposableProjectUsage(
+			Mockito.matches("\\d{4}-\\d{2}"),
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		);
+	}
+
+	@Test
 	public void testGetUsageExperienceProfileReturnsExperienceMetrics()
 		throws Exception {
 
@@ -1031,51 +1041,13 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
-	public void testGetUsageResolvesAccountKeyFromExternalReferenceCode()
-		throws Exception {
-
-		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
-
-		_getUsage();
-
-		Mockito.verify(
-			_dataOpsUsageService
-		).fetchComposableAccountUsage(
-			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE),
-			Mockito.matches("\\d{4}-\\d{2}")
-		);
-	}
-
-	@Test
-	public void testGetUsageResolvesAccountKeyFromOwnAccount()
-		throws Exception {
-
-		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
-
-		Mockito.when(
-			_propertyService.getPropertyValue(
-				_ACCOUNT_ID, PropertyConstants.NAME_KORONEIKI_ACCOUNT_KEY)
-		).thenReturn(
-			_KORONEIKI_ACCOUNT_KEY
-		);
-
-		_getUsage();
-
-		Mockito.verify(
-			_dataOpsUsageService
-		).fetchComposableAccountUsage(
-			Mockito.eq(_KORONEIKI_ACCOUNT_KEY), Mockito.matches("\\d{4}-\\d{2}")
-		);
-	}
-
-	@Test
 	public void testGetUsageReturnsEntitlementsWhenComposableUsageIsAbsent()
 		throws Exception {
 
 		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
 
 		Mockito.when(
-			_dataOpsUsageService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableProjectUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			new JSONObject(
@@ -1107,7 +1079,7 @@ public class ProjectRestControllerTest {
 		_setUpEntitlements(_createEntitlement(1, null, "logs", 300.0));
 
 		Mockito.when(
-			_dataOpsUsageService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableProjectUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenThrow(
 			new DataOpsUnavailableException()
@@ -1235,6 +1207,23 @@ public class ProjectRestControllerTest {
 				).intValue(),
 				metricName);
 		}
+	}
+
+	@Test
+	public void testGetUsageSaaSPlanProfileReadsUsageByProject()
+		throws Exception {
+
+		_setUpEntitlements();
+
+		_setUpCustomerUsage();
+
+		_getMetricsJSONObject(_UTILIZATION_PROFILE_SAAS_PLAN_DASHBOARD);
+
+		Mockito.verify(
+			_dataOpsUsageService
+		).fetchCustomerProjectUsage(
+			_PROJECT_EXTERNAL_REFERENCE_CODE
+		);
 	}
 
 	@Test
@@ -1914,7 +1903,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpComposableUsage() throws Exception {
 		Mockito.when(
-			_dataOpsUsageService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableProjectUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			_createComposableUsage()
@@ -1923,7 +1912,7 @@ public class ProjectRestControllerTest {
 
 	private void _setUpCustomerUsage() throws Exception {
 		Mockito.when(
-			_dataOpsUsageService.fetchCustomerAccountUsage(Mockito.anyString())
+			_dataOpsUsageService.fetchCustomerProjectUsage(Mockito.anyString())
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -1997,8 +1986,6 @@ public class ProjectRestControllerTest {
 
 	private static final String _END_DATE = "2026-07-28";
 
-	private static final String _KORONEIKI_ACCOUNT_KEY = "abc-123-def";
-
 	private static final String _PRODUCT_EXTERNAL_REFERENCE_CODE = "PRDCT-PAAS";
 
 	private static final long _PRODUCT_ID_SAAS = 2;
@@ -2048,8 +2035,6 @@ public class ProjectRestControllerTest {
 	private ProjectRestController _projectRestController;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
-	private final PropertyService _propertyService = Mockito.mock(
-		PropertyService.class);
 	private final UsageDefinitionService _usageDefinitionService = Mockito.mock(
 		UsageDefinitionService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(

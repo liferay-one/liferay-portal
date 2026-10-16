@@ -9,7 +9,6 @@ import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.service.DataOpsUsageService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.YearMonth;
@@ -45,9 +44,8 @@ public class ComposableAccountUsageSource implements UsageSource {
 		String response = null;
 
 		try {
-			response = _dataOpsUsageService.fetchComposableAccountUsage(
-				_propertyService.getDataOpsAccountKey(project),
-				yearMonth.toString());
+			response = _dataOpsUsageService.fetchComposableProjectUsage(
+				yearMonth.toString(), project.getExternalReferenceCode());
 		}
 		catch (DataOpsUnavailableException dataOpsUnavailableException) {
 			_log.error(
@@ -82,18 +80,10 @@ public class ComposableAccountUsageSource implements UsageSource {
 		return KEY;
 	}
 
-	@Override
-	public boolean isKeyedByAccount() {
-		return true;
-	}
-
 	private static final Log _log = LogFactory.getLog(
 		ComposableAccountUsageSource.class);
 
 	@Autowired
 	private DataOpsUsageService _dataOpsUsageService;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 }

@@ -39,37 +39,38 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class DataOpsUsageService extends BaseService {
 
-	@Cacheable("composableAccountUsage")
-	public String fetchComposableAccountUsage(String accountKey, String month)
+	@Cacheable("composableProjectUsage")
+	public String fetchComposableProjectUsage(
+			String month, String salesforceProjectId)
 		throws Exception {
 
 		return _handleRequest(
 			_gcfBaseURL + _FUNCTION_PATH_COMPOSABLE_USAGE_API,
-			_composableServiceAccount, "account " + accountKey,
+			_composableServiceAccount, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
 				_gcfBaseURL
 			).path(
 				_FUNCTION_PATH_COMPOSABLE_USAGE_API +
-					"/api/v1/accounts/{accountKey}/usage/month/{month}"
+					"/api/v2/projects/{salesforceProjectId}/usage/month/{month}"
 			).buildAndExpand(
-				accountKey, month
+				salesforceProjectId, month
 			).toUri());
 	}
 
-	@Cacheable("customerAccountUsage")
-	public String fetchCustomerAccountUsage(String accountKey)
+	@Cacheable("customerProjectUsage")
+	public String fetchCustomerProjectUsage(String salesforceProjectId)
 		throws Exception {
 
 		return _handleRequest(
 			_gcfBaseURL + _FUNCTION_PATH_CUSTOMER_USAGE_API,
-			_customerServiceAccount, "account " + accountKey,
+			_customerServiceAccount, "project " + salesforceProjectId,
 			UriComponentsBuilder.fromUriString(
 				_gcfBaseURL
 			).path(
 				_FUNCTION_PATH_CUSTOMER_USAGE_API +
-					"/api/v1/customer/usage/accounts/{accountKey}"
+					"/api/v2/customer/usage/projects/{salesforceProjectId}"
 			).buildAndExpand(
-				accountKey
+				salesforceProjectId
 			).toUri());
 	}
 

@@ -5,14 +5,11 @@
 
 package com.liferay.one.service;
 
-import com.liferay.one.constants.PropertyConstants;
-import com.liferay.one.model.Project;
 import com.liferay.one.model.Property;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 
@@ -84,26 +81,6 @@ public class PropertyService extends OneBaseService {
 			StringBundler.concat(
 				"(r_accountEntryToProperty_accountEntryId eq '", accountId,
 				"') and (name eq '", name, "')"));
-	}
-
-	/**
-	 * Returns the key the DataOps usage APIs know the project's account by,
-	 * which is the account's Koroneiki account key, or the account's external
-	 * reference code when the account has no such key.
-	 */
-	public String getDataOpsAccountKey(Project project) throws Exception {
-		long accountId = project.getAccountId();
-
-		if (accountId > 0) {
-			String value = getPropertyValue(
-				accountId, PropertyConstants.NAME_KORONEIKI_ACCOUNT_KEY);
-
-			if (Validator.isNotNull(value)) {
-				return value;
-			}
-		}
-
-		return project.getAccountExternalReferenceCode();
 	}
 
 	public List<Property> getOrganizationProperties(long organizationId)

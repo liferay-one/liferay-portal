@@ -9,7 +9,6 @@ import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.service.DataOpsUsageService;
-import com.liferay.one.service.PropertyService;
 
 import java.time.YearMonth;
 
@@ -37,19 +36,10 @@ public class ComposableAccountUsageSourceTest {
 		ReflectionTestUtils.setField(
 			_composableAccountUsageSource, "_dataOpsUsageService",
 			_dataOpsUsageService);
-		ReflectionTestUtils.setField(
-			_composableAccountUsageSource, "_propertyService",
-			_propertyService);
-
-		Mockito.when(
-			_propertyService.getDataOpsAccountKey(Mockito.any(Project.class))
-		).thenReturn(
-			_ACCOUNT_KEY
-		);
 	}
 
 	@Test
-	public void testAsksForTheAccountAndMonth() throws Exception {
+	public void testAsksForTheProjectAndMonth() throws Exception {
 		_setUpUsage(_createUsage(_METRIC_KEY, 1.5));
 
 		_composableAccountUsageSource.fetchUsage(
@@ -57,14 +47,15 @@ public class ComposableAccountUsageSourceTest {
 
 		Mockito.verify(
 			_dataOpsUsageService
-		).fetchComposableAccountUsage(
-			_ACCOUNT_KEY, "2026-02"
+		).fetchComposableProjectUsage(
+			"2026-02", _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 	}
 
 	@Test
-	public void testIsKeyedByAccount() {
-		Assertions.assertTrue(_composableAccountUsageSource.isKeyedByAccount());
+	public void testIsKeyedByProject() {
+		Assertions.assertFalse(
+			_composableAccountUsageSource.isKeyedByAccount());
 	}
 
 	@Test
@@ -106,7 +97,7 @@ public class ComposableAccountUsageSourceTest {
 	@Test
 	public void testUnavailableDataOpsIsNull() throws Exception {
 		Mockito.when(
-			_dataOpsUsageService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableProjectUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenThrow(
 			new DataOpsUnavailableException("Unable to reach DataOps", null)
@@ -162,14 +153,12 @@ public class ComposableAccountUsageSourceTest {
 
 	private void _setUpUsage(String response) throws Exception {
 		Mockito.when(
-			_dataOpsUsageService.fetchComposableAccountUsage(
+			_dataOpsUsageService.fetchComposableProjectUsage(
 				Mockito.anyString(), Mockito.anyString())
 		).thenReturn(
 			response
 		);
 	}
-
-	private static final String _ACCOUNT_KEY = "abc-123-def";
 
 	private static final String _METRIC_KEY = "clientExtensionsCPU";
 
@@ -180,7 +169,5 @@ public class ComposableAccountUsageSourceTest {
 	private ComposableAccountUsageSource _composableAccountUsageSource;
 	private final DataOpsUsageService _dataOpsUsageService = Mockito.mock(
 		DataOpsUsageService.class);
-	private final PropertyService _propertyService = Mockito.mock(
-		PropertyService.class);
 
 }

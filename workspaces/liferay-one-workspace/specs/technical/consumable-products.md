@@ -93,7 +93,7 @@ Adapters that exist:
 
 | Key | Class | API | Keyed By |
 | --- | --- | --- | --- |
-| `composable-account-usage` | `ComposableAccountUsageSource` | Composable usage API, one month of an account | The DataOps account key of the project's account |
+| `composable-account-usage` | `ComposableAccountUsageSource` | Composable usage API, one month of a project | The project's Salesforce project ID |
 | `ldp-event-summary` | `LDPEventSummaryUsageSource` | Liferay Data Platform Metrics API event summary | The project |
 
 ## How the Generator Reads It
@@ -140,7 +140,7 @@ Then reseed, place an order for the product against a project, and trigger a com
 
 SaaS Experience and PaaS Experience each sell six metrics: client extension RAM, client extension vCPUs, storage, database, traffic, and logs. The Utilization tab already read them from the composable usage API, so the monthly reports needed these pieces and no change to the generator:
 
-1. One adapter, `ComposableAccountUsageSource`. It reads the field that the metric key names under `usage`, for the month and the DataOps account key of the project's account.
+1. One adapter, `ComposableAccountUsageSource`. It reads the field that the metric key names under `usage`, for the month and the project's Salesforce project ID.
 
 1. Six usage definitions, `experience-database-monthly`, `experience-extensions-ram-monthly`, `experience-extensions-vcpus-monthly`, `experience-logs-monthly`, `experience-storage-monthly`, and `experience-traffic-networking-monthly`. The byte metrics have `usageSourceUnit` `bytes` and `unit` `GiB`. vCPUs are `vCPU` on both sides.
 
