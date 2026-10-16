@@ -204,6 +204,19 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		expect(Analytics.track).not.toHaveBeenCalled();
 	});
 
+	it('rejects when the portal reports a checkout error on a valid cart', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			id: 5,
+			valid: true,
+		} as Cart);
+
+		await expect(
+			new ProductPurchase(account, product).createOrder()
+		).rejects.toThrow('Invalid billing address');
+		expect(Analytics.track).not.toHaveBeenCalled();
+	});
+
 	it('falls back to the payment callback when no payment URL returns', async () => {
 		vi.mocked(
 			HeadlessCommerceDeliveryCart.getPaymentMethodURL
