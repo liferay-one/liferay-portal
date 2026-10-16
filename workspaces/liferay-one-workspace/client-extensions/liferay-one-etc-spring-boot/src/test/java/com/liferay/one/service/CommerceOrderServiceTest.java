@@ -3354,7 +3354,7 @@ public class CommerceOrderServiceTest {
 			);
 
 			if (lineItemsJSONArray != null) {
-				dataJSONObject.put("lineItems", lineItemsJSONArray);
+				dataJSONObject.put("opportunityLineItems", lineItemsJSONArray);
 			}
 
 			salesforceOpportunityJSONObject = new JSONObject(
