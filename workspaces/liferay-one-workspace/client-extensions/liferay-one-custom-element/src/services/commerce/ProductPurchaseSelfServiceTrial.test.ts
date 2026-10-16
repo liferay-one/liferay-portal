@@ -248,7 +248,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		).toHaveBeenCalledTimes(1);
 	});
 
-	it('generates the trial key from the server details once the trial entitlements exist and links to the trial product', async () => {
+	it('generates the trial key from the server details once the trial entitlements exist and links to the project activation keys', async () => {
 		vi.useFakeTimers();
 
 		const openToastSpy = vi.spyOn(Liferay.Util, 'openToast');
@@ -273,7 +273,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await vi.runAllTimersAsync();
 
 		await expect(nextStepsLinkPromise).resolves.toBe(
-			`${PROJECT_LINK}/products/PRDCT-TRIAL`
+			`${PROJECT_LINK}/activation`
 		);
 
 		expect(ActivationKeys.getGenerateForm).toHaveBeenCalledTimes(2);

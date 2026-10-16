@@ -132,7 +132,7 @@ describe('[ROUTE-PRODUCT-PURCHASE-COMPLETED] PurchaseCompleted', () => {
 		}
 	);
 
-	it('keeps sending the free DXP tier to its activation key', () => {
+	it('sends the free DXP tier to the project activation keys', () => {
 		const navigate = vi.spyOn(Liferay.Util, 'navigate');
 
 		renderPurchaseCompleted(
@@ -143,10 +143,12 @@ describe('[ROUTE-PRODUCT-PURCHASE-COMPLETED] PurchaseCompleted', () => {
 			])
 		);
 
-		fireEvent.click(screen.getByRole('button', {name: 'Activation Key'}));
+		fireEvent.click(
+			screen.getByRole('button', {name: 'View Activation Key'})
+		);
 
 		expect(navigate).toHaveBeenCalledWith(
-			'/web/one/my-account#/project/one-time-purchases/products/PRDCT-TEST?tab=activation'
+			'/web/one/my-account#/project/one-time-purchases/activation'
 		);
 	});
 });
