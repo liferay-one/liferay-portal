@@ -21,6 +21,7 @@ import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.Environment;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -69,6 +70,7 @@ public class CommerceOrderServiceTest {
 		_countryService = Mockito.mock(CountryService.class);
 		_entitlementDefinitionService = Mockito.mock(
 			EntitlementDefinitionService.class);
+		_environmentService = Mockito.mock(EnvironmentService.class);
 		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 		_salesforceService = Mockito.mock(SalesforceService.class);
@@ -99,6 +101,8 @@ public class CommerceOrderServiceTest {
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_entitlementDefinitionService",
 			_entitlementDefinitionService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_environmentService", _environmentService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_postalAddressService",
 			_postalAddressService);
@@ -275,16 +279,7 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			"AI-HUB-ACCNT-TEST"
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		_whenPostSalesforceOpportunity("006TEST");
 
@@ -330,86 +325,17 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(order);
 
-		Mockito.doReturn(
-			List.of(
-				_createProvisionedAIHubOrder(5678L, 2000L, "a1tTEST"),
-				_createProvisionedAIHubOrder(9999L, 3000L, "a1tOTHER"))
-		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
-		);
+		_whenFetchAIHubEnvironment("5678");
 
 		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
 		Mockito.verify(
-			_aiHubService
-		).purchaseQuotaPrepaidBlock(
-			ArgumentMatchers.eq(5678L), ArgumentMatchers.any()
+			_environmentService
+		).fetchEnvironmentByExternalReferenceCode(
+			"AI-HUB-a1tTEST"
 		);
-
-		Mockito.verify(
-			_aiHubService, Mockito.never()
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
-	}
-
-	@Test
-	public void testCompleteSettledOrderCompletesAIHubTokenOrderForLegacyProject()
-		throws Exception {
-
-		_whenFetchCommerceOrder(_createAIHubTokenOrder());
-
-		Mockito.doReturn(
-			List.of(
-				_createProvisionedAIHubOrder(0L, 2000L, "a1tTEST"),
-				_createProvisionedAIHubOrder(9999L, 3000L, "a1tOTHER"))
-		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
-		);
-
-		_whenGetAIHubApplication(2000L);
-
-		_whenPostSalesforceOpportunity("006TEST");
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_aiHubService
-		).purchaseQuotaPrepaidBlock(
-			ArgumentMatchers.eq(4321L), ArgumentMatchers.any()
-		);
-	}
-
-	@Test
-	public void testCompleteSettledOrderCompletesAIHubTokenOrderPastMalformedMetadata()
-		throws Exception {
-
-		_whenFetchCommerceOrder(_createAIHubTokenOrder());
-
-		Order malformedAIHubOrder = _createAIHubOrder(
-			"{malformed", CommerceOrderConstants.ORDER_STATUS_COMPLETED);
-
-		malformedAIHubOrder.setId(1500L);
-
-		Mockito.doReturn(
-			List.of(
-				malformedAIHubOrder,
-				_createProvisionedAIHubOrder(5678L, 2000L, "a1tTEST"))
-		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
-		);
-
-		_whenPostSalesforceOpportunity("006TEST");
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
 		Mockito.verify(
 			_aiHubService
@@ -429,14 +355,11 @@ public class CommerceOrderServiceTest {
 		_whenFetchCommerceOrder(order);
 
 		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
+			_createAIHubEnvironment(_ACCOUNT_ID, "4321", "AI-HUB-ACCNT-TEST")
 		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
+			_environmentService
+		).fetchEnvironmentByExternalReferenceCode(
+			"AI-HUB-ACCNT-TEST"
 		);
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
@@ -525,16 +448,7 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(order);
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		_whenPostSalesforceOpportunity("006TEST");
 
@@ -627,16 +541,7 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			"AI-HUB-ACCNT-TEST"
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		Mockito.doThrow(
 			new IllegalStateException()
@@ -661,27 +566,22 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithPendingAIHubOrder()
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithAIHubEnvironmentOfAnotherAccount()
 		throws Exception {
 
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
-		Order aiHubOrder = _createAIHubOrder(
-			"{\"aiHubAccountEntryId\": 9999, \"salesforceProjectId\": " +
-				"\"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PENDING);
-
-		aiHubOrder.setId(2000L);
-
 		Mockito.doReturn(
-			List.of(aiHubOrder)
+			_createAIHubEnvironment(_ACCOUNT_ID + 1, "4321", "AI-HUB-a1tTEST")
 		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
+			_environmentService
+		).fetchEnvironmentByExternalReferenceCode(
+			"AI-HUB-a1tTEST"
 		);
 
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
@@ -693,22 +593,14 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
-	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAIHubForProject()
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutAIHubEnvironment()
 		throws Exception {
 
 		_whenFetchCommerceOrder(_createAIHubTokenOrder());
 
-		Mockito.doReturn(
-			List.of(_createProvisionedAIHubOrder(0L, 2000L, "a1tOTHER"))
-		).when(
-			_commerceOrderService
-		).getOrders(
-			ArgumentMatchers.anyString()
-		);
-
-		_whenGetAIHubApplication(2000L);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
@@ -729,45 +621,11 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(order);
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		Assertions.assertThrows(
 			IllegalStateException.class,
 			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
-
-		_verifyNeverCompleted();
-	}
-
-	@Test
-	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutApplication()
-		throws Exception {
-
-		_whenFetchCommerceOrder(_createAIHubTokenOrder());
-
-		Mockito.doReturn(
-			null
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
-
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
-
-		Mockito.verify(
-			_aiHubService, Mockito.never()
-		).purchaseQuotaPrepaidBlock(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
-		);
 
 		_verifyNeverCompleted();
 	}
@@ -782,15 +640,30 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(order);
 
-		Mockito.doReturn(
-			null
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
 
-		_commerceOrderService.completeSettledOrder(_ORDER_ID);
+		_verifyNeverCompleted();
+	}
+
+	@Test
+	public void testCompleteSettledOrderSkipsAIHubTokenOrderWithoutExternalEnvironmentId()
+		throws Exception {
+
+		_whenFetchCommerceOrder(_createAIHubTokenOrder());
+
+		_whenFetchAIHubEnvironment("");
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> _commerceOrderService.completeSettledOrder(_ORDER_ID));
+
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).purchaseQuotaPrepaidBlock(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
 
 		_verifyNeverCompleted();
 	}
@@ -836,16 +709,7 @@ public class CommerceOrderServiceTest {
 			List.of()
 		);
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
@@ -878,16 +742,7 @@ public class CommerceOrderServiceTest {
 
 		_whenFetchCommerceOrder(order);
 
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			ArgumentMatchers.anyString()
-		);
+		_whenFetchAIHubEnvironment("4321");
 
 		_commerceOrderService.completeSettledOrder(_ORDER_ID);
 
@@ -1858,7 +1713,7 @@ public class CommerceOrderServiceTest {
 			ArgumentMatchers.contains("'AI_HUB'")
 		);
 
-		_whenGetAIHubApplication(aiHubOrder.getId());
+		_whenFetchAIHubEnvironment("4321");
 
 		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
 
@@ -2516,6 +2371,103 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testProvisionAIHubKeepsAIHubAccountWhenContractLookupFails()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_contractService
+		).fetchContractByExternalReferenceCode(
+			ArgumentMatchers.anyString()
+		);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<Map<String, String>> mapArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_ORDER_ID), mapArgumentCaptor.capture()
+		);
+
+		Map<String, String> customFields = mapArgumentCaptor.getValue();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.get("order-metadata"));
+
+		Assertions.assertEquals(
+			4321L, orderMetadataJSONObject.getLong("aiHubAccountEntryId"));
+	}
+
+	@Test
+	public void testProvisionAIHubKeepsAIHubAccountWhenEnvironmentIsNotSaved()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		_whenFetchContract("a1tTEST");
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Mockito.doReturn(
+			null
+		).when(
+			_aiHubService
+		).putAIHubEnvironment(
+			ArgumentMatchers.anyString(), ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<Map<String, String>> mapArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_ORDER_ID), mapArgumentCaptor.capture()
+		);
+
+		Map<String, String> customFields = mapArgumentCaptor.getValue();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.get("order-metadata"));
+
+		Assertions.assertEquals(
+			4321L, orderMetadataJSONObject.getLong("aiHubAccountEntryId"));
+	}
+
+	@Test
 	public void testProvisionAIHubPutsAIHubEnvironment() throws Exception {
 		Order order = _createProvisionableAIHubOrder();
 
@@ -2568,6 +2520,15 @@ public class CommerceOrderServiceTest {
 
 		Assertions.assertEquals(
 			"active", jsonObject.getString("activationStatus"));
+		Assertions.assertEquals(
+			"admin@liferay.com", jsonObject.getString("adminEmailAddress"));
+		Assertions.assertEquals(
+			"AI Hub", jsonObject.getString("adminFirstName"));
+		Assertions.assertEquals(
+			"Administrator", jsonObject.getString("adminLastName"));
+		Assertions.assertEquals(
+			"4321", jsonObject.getString("externalEnvironmentId"));
+		Assertions.assertEquals("Test", jsonObject.getString("name"));
 		Assertions.assertEquals("AI Hub", jsonObject.getString("offering"));
 		Assertions.assertEquals(
 			"admin@liferay.com", jsonObject.getString("ownerEmailAddress"));
@@ -2580,6 +2541,110 @@ public class CommerceOrderServiceTest {
 		Assertions.assertEquals(
 			"a1tTEST",
 			jsonObject.getString("r_projectToEnvironment_c_projectERC"));
+	}
+
+	@Test
+	public void testProvisionAIHubPutsAIHubEnvironmentWhenOrderMetadataIsNotSaved()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		_whenFetchContract("a1tTEST");
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).putAIHubEnvironment(
+			ArgumentMatchers.eq("AI-HUB-a1tTEST"),
+			jsonObjectArgumentCaptor.capture()
+		);
+
+		JSONObject jsonObject = jsonObjectArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"4321", jsonObject.getString("externalEnvironmentId"));
+	}
+
+	@Test
+	public void testProvisionAIHubPutsAIHubEnvironmentWithoutProject()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		_setAIHubOrderFields(
+			order,
+			new JSONObject(
+			).put(
+				"aiHubForm",
+				new JSONObject(
+				).put(
+					"administratorEmailAddress", "admin@liferay.com"
+				).put(
+					"aiHubAccountName", "Test"
+				)
+			).toString());
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).putAIHubEnvironment(
+			ArgumentMatchers.eq("AI-HUB-ACCNT-TEST"),
+			jsonObjectArgumentCaptor.capture()
+		);
+
+		JSONObject jsonObject = jsonObjectArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"4321", jsonObject.getString("externalEnvironmentId"));
+		Assertions.assertEquals("Test", jsonObject.getString("name"));
+		Assertions.assertEquals(
+			_ACCOUNT_ID,
+			jsonObject.getLong("r_accountEntryToEnvironment_accountEntryId"));
+		Assertions.assertFalse(
+			jsonObject.has("r_contractToEnvironment_c_contractERC"));
+		Assertions.assertFalse(
+			jsonObject.has("r_projectToEnvironment_c_projectERC"));
 	}
 
 	@Test
@@ -2775,6 +2840,23 @@ public class CommerceOrderServiceTest {
 		return orderResource;
 	}
 
+	private Environment _createAIHubEnvironment(
+		long accountEntryId, String externalEnvironmentId,
+		String externalReferenceCode) {
+
+		return new Environment(
+			new JSONObject(
+			).put(
+				"externalEnvironmentId", externalEnvironmentId
+			).put(
+				"externalReferenceCode", externalReferenceCode
+			).put(
+				"id", 1L
+			).put(
+				"r_accountEntryToEnvironment_accountEntryId", accountEntryId
+			));
+	}
+
 	private Order _createAIHubOrder(String orderMetadata, int orderStatus) {
 		Order order = _createOrder(
 			orderStatus, "AI_HUB", _PAYMENT_STATUS_PENDING);
@@ -2877,23 +2959,6 @@ public class CommerceOrderServiceTest {
 		account.setExternalReferenceCode("ACCNT-TEST");
 
 		order.setAccount(account);
-
-		return order;
-	}
-
-	private Order _createProvisionedAIHubOrder(
-		long aiHubAccountEntryId, long orderId, String salesforceProjectId) {
-
-		Order order = _createAIHubOrder(
-			new JSONObject(
-			).put(
-				"aiHubAccountEntryId", aiHubAccountEntryId
-			).put(
-				"salesforceProjectId", salesforceProjectId
-			).toString(),
-			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
-
-		order.setId(orderId);
 
 		return order;
 	}
@@ -3248,6 +3313,19 @@ public class CommerceOrderServiceTest {
 		Assertions.assertTrue(orderItem.getPriceManuallyAdjusted());
 	}
 
+	private void _whenFetchAIHubEnvironment(String externalEnvironmentId)
+		throws Exception {
+
+		Mockito.doReturn(
+			_createAIHubEnvironment(
+				_ACCOUNT_ID, externalEnvironmentId, "AI-HUB-a1tTEST")
+		).when(
+			_environmentService
+		).fetchEnvironmentByExternalReferenceCode(
+			"AI-HUB-a1tTEST"
+		);
+	}
+
 	private void _whenFetchCommerceOrder(Order order) throws Exception {
 		Mockito.doReturn(
 			order
@@ -3288,21 +3366,6 @@ public class CommerceOrderServiceTest {
 			_projectService
 		).fetchProject(
 			"a1tTEST"
-		);
-	}
-
-	private void _whenGetAIHubApplication(long commerceOrderId) {
-		Mockito.doReturn(
-			new JSONObject(
-			).put(
-				"accountEntryId", 4321L
-			).put(
-				"r_orderToAIHubApplication_commerceOrderId", commerceOrderId
-			)
-		).when(
-			_aiHubService
-		).getAIHubApplicationJSONObject(
-			"AI-HUB-ACCNT-TEST"
 		);
 	}
 
@@ -3412,6 +3475,7 @@ public class CommerceOrderServiceTest {
 	private ContractService _contractService;
 	private CountryService _countryService;
 	private EntitlementDefinitionService _entitlementDefinitionService;
+	private EnvironmentService _environmentService;
 	private PostalAddressService _postalAddressService;
 	private ProjectService _projectService;
 	private SalesforceService _salesforceService;
