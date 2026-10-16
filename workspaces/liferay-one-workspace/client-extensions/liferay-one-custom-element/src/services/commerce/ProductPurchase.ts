@@ -15,8 +15,11 @@ import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
+export const INVALID_BILLING_ADDRESS_ERROR_MESSAGE = 'Invalid billing address';
+
 export default class ProductPurchase {
 	protected orderTypeExternalReferenceCode?: OrderTypes;
+	protected toleratedCheckoutErrorMessages: string[] = [];
 	protected HeadlessCommerceDeliveryCart = HeadlessCommerceDeliveryCart;
 
 	constructor(
@@ -116,12 +119,16 @@ export default class ProductPurchase {
 			HeadlessCommerceDeliveryCart.checkoutCart(newCart.id),
 		]);
 
-		if (
-			checkedOutCart.valid === false ||
-			checkedOutCart.errorMessages?.length
-		) {
+		const checkoutErrorMessages = (
+			checkedOutCart.errorMessages ?? []
+		).filter(
+			(errorMessage) =>
+				!this.toleratedCheckoutErrorMessages.includes(errorMessage)
+		);
+
+		if (checkedOutCart.valid === false || checkoutErrorMessages.length) {
 			throw new Error(
-				checkedOutCart.errorMessages?.join(', ') ||
+				checkoutErrorMessages.join(', ') ||
 					`Unable to check out cart ${newCart.id}`
 			);
 		}

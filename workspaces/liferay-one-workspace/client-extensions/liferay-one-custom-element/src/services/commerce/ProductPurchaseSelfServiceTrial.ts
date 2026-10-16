@@ -10,10 +10,13 @@ import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerc
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
+import CommerceOrders from '~/services/spring-boot/CommerceOrders';
 import {getSelfServiceTrialOrderType} from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
-import ProductPurchase from './ProductPurchase';
+import ProductPurchase, {
+	INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+} from './ProductPurchase';
 
 import type {
 	ActivationKeyServer,
@@ -39,6 +42,9 @@ const TRIAL_ENTITLEMENTS_POLL_INTERVAL = 1000;
 
 export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	protected orderTypeExternalReferenceCode: OrderTypes;
+	protected toleratedCheckoutErrorMessages = [
+		INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+	];
 	private dxpTrialProduct?: DeliveryProduct;
 
 	constructor(
@@ -66,7 +72,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 		return super.createOrder(cart);
 	}
 
-	public async getNextStepsLink() {
+	public async getNextStepsLink(cart: Cart) {
 		const generateForm = await this.waitForTrialGenerateForm();
 
 		if (!generateForm) {
@@ -79,6 +85,8 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 			return this.getGenerateActivationKeyLink();
 		}
+
+		await CommerceOrders.completeSettled(cart.id).catch(console.error);
 
 		const generateActivationKeyRequest =
 			this.getGenerateActivationKeyRequest(generateForm);

@@ -8,7 +8,9 @@ import commerceSchemas from '~/schemas/commerceSchemas';
 import DXPFreeActivationKeyRequests from '~/services/objects/DXPFreeActivationKeyRequests';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 
-import ProductPurchase from './ProductPurchase';
+import ProductPurchase, {
+	INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+} from './ProductPurchase';
 
 import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
@@ -20,6 +22,9 @@ export type ActivationKeyFormData = z.infer<
 
 export default class ProductPurchaseDXPFree extends ProductPurchase {
 	protected orderTypeExternalReferenceCode: OrderTypes = 'DXP';
+	protected toleratedCheckoutErrorMessages = [
+		INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+	];
 
 	constructor(
 		account: Account,

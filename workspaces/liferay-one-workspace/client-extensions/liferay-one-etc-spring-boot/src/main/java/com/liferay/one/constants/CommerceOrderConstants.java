@@ -34,7 +34,13 @@ public class CommerceOrderConstants {
 
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP = "CMP";
 
+	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP_TRIAL =
+		"CMP_TRIAL";
+
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR = "DSR";
+
+	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR_TRIAL =
+		"DSR_TRIAL";
 
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_LDP = "LDP";
 
@@ -43,6 +49,8 @@ public class CommerceOrderConstants {
 	public static final List<String>
 		selfServiceTrialOrderTypeExternalReferenceCodes =
 			Collections.unmodifiableList(
-				Arrays.asList("CMP_TRIAL", "DSR_TRIAL"));
+				Arrays.asList(
+					ORDER_TYPE_EXTERNAL_REFERENCE_CODE_CMP_TRIAL,
+					ORDER_TYPE_EXTERNAL_REFERENCE_CODE_DSR_TRIAL));
 
 }

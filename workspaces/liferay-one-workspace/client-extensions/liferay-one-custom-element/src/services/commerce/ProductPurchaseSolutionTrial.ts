@@ -5,7 +5,9 @@
 
 import trialOAuth2 from '~/services/spring-boot/Trial';
 
-import ProductPurchase from './ProductPurchase';
+import ProductPurchase, {
+	INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+} from './ProductPurchase';
 
 import type {Cart, OrderTypes} from '~/types/orders';
 
@@ -13,6 +15,9 @@ export default class ProductPurchaseSolutionTrial extends ProductPurchase {
 	public provisioning?: Promise<void>;
 
 	protected orderTypeExternalReferenceCode: OrderTypes = 'SOLUTIONS7';
+	protected toleratedCheckoutErrorMessages = [
+		INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+	];
 
 	public async createOrder(cart?: Cart): Promise<Cart> {
 		const order = await super.createOrder(cart);
