@@ -75,7 +75,7 @@ describe('[CLIENT-SPRING-BOOT-ACCOUNTS] Accounts', () => {
 			customFields: [
 				{
 					customValue: {data: 'contact@acme.com'},
-					name: 'Contact Email',
+					name: 'contactEmail',
 				},
 			],
 			name: 'Acme',
