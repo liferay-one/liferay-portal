@@ -36,13 +36,18 @@ import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.math.BigDecimal;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -172,6 +177,20 @@ public class CommerceOrderService extends OneBaseService {
 			String orderTypeExternalReferenceCode =
 				order.getOrderTypeExternalReferenceCode();
 
+			if (CommerceOrderConstants.
+					selfServiceTrialOrderTypeExternalReferenceCodes.contains(
+						orderTypeExternalReferenceCode)) {
+
+				if (_isCompletableSelfServiceTrialOrder(order)) {
+					completeOrder(
+						orderId,
+						CommerceOrderConstants.
+							ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+				}
+
+				return;
+			}
+
 			if ((orderTypeExternalReferenceCode == null) ||
 				!_completableOrderTypeExternalReferenceCodes.contains(
 					orderTypeExternalReferenceCode)) {
@@ -210,17 +229,22 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Scheduled(cron = "0 0 0 * * *")
 	public void completeSettledOrders() throws Exception {
-		List<Order> orders = getOrders(
-			StringBundler.concat(
-				"(orderStatus/any(x:x eq ",
-				CommerceOrderConstants.ORDER_STATUS_PENDING,
-				") or orderStatus/any(x:x eq ",
-				CommerceOrderConstants.ORDER_STATUS_PROCESSING,
-				")) and ((paymentStatus eq ",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED,
-				") or (paymentStatus eq ",
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED,
-				"))"));
+		List<Order> orders = new ArrayList<>();
+
+		orders.addAll(
+			getOrders(
+				StringBundler.concat(
+					"(orderStatus/any(x:x eq ",
+					CommerceOrderConstants.ORDER_STATUS_PENDING,
+					") or orderStatus/any(x:x eq ",
+					CommerceOrderConstants.ORDER_STATUS_PROCESSING,
+					")) and ((paymentStatus eq ",
+					CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED,
+					") or (paymentStatus eq ",
+					CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED,
+					"))")));
+
+		orders.addAll(_getAbandonedSelfServiceTrialOrders());
 
 		for (Order order : orders) {
 			try {
@@ -1112,6 +1136,33 @@ public class CommerceOrderService extends OneBaseService {
 		return null;
 	}
 
+	/**
+	 * Returns the self service trial orders that stayed Open for more than an
+	 * hour. The browser completes a trial order once its entitlements exist,
+	 * so an order whose buyer closed the page first is completed here.
+	 */
+	private List<Order> _getAbandonedSelfServiceTrialOrders() throws Exception {
+		List<String> statements = TransformUtil.transform(
+			CommerceOrderConstants.
+				selfServiceTrialOrderTypeExternalReferenceCodes,
+			orderTypeExternalReferenceCode ->
+				"orderTypeExternalReferenceCode eq '" +
+					orderTypeExternalReferenceCode + "'");
+
+		Instant instant = Instant.now(
+		).minus(
+			1, ChronoUnit.HOURS
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		return getOrders(
+			StringBundler.concat(
+				"(createDate lt ", instant, ") and (orderStatus/any(x:x eq ",
+				CommerceOrderConstants.ORDER_STATUS_OPEN, ")) and (",
+				StringUtil.merge(statements, " or "), ")"));
+	}
+
 	private String _getAddressCountry(Long defaultBillingAddressId)
 		throws Exception {
 
@@ -1549,6 +1600,45 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether a self service trial order may complete without a
+	 * payment. The checkout of a trial for an account with no billing address
+	 * leaves the order Open, so an Open order completes as well as a Pending or
+	 * Processing one. A canceled order stays canceled, and an order that costs
+	 * anything goes through payment like any other order.
+	 */
+	private boolean _isCompletableSelfServiceTrialOrder(Order order) {
+		Integer orderStatus = order.getOrderStatus();
+
+		if (!_isCompletableOrderStatus(order) &&
+			!Objects.equals(
+				orderStatus, CommerceOrderConstants.ORDER_STATUS_OPEN)) {
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping self service trial order ", order.getId(),
+						" with order status ", orderStatus));
+			}
+
+			return false;
+		}
+
+		Double totalAmount = order.getTotalAmount();
+
+		if ((totalAmount == null) || (totalAmount != 0)) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to complete self service trial order ",
+					order.getId(), " with total ", totalAmount,
+					" without a payment"));
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private boolean _isTaxApplicable(

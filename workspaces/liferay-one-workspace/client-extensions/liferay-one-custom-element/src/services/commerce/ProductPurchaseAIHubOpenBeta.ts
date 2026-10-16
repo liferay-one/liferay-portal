@@ -7,7 +7,9 @@ import {z} from 'zod';
 import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
 import {OrderCustomFields} from '~/utils/orderUtils';
 
-import ProductPurchase from './ProductPurchase';
+import ProductPurchase, {
+	INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+} from './ProductPurchase';
 
 import type {Cart, OrderTypes} from '~/types/orders';
 import type {SalesforceContract} from '~/types/salesforceContract';
@@ -22,6 +24,9 @@ export class ProductPurchaseAIHubOpenBeta extends ProductPurchase {
 	private salesforceContract?: SalesforceContract;
 	private skuId?: number;
 	private tier?: string;
+	protected toleratedCheckoutErrorMessages = [
+		INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+	];
 
 	setForm(form: AIHubOpenBetaForm) {
 		this.form = form;
