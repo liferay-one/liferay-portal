@@ -1,10 +1,17 @@
-[#assign publisherName = "" /]
+[#assign
+	catalogId = ""
+	publisherName = ""
+/]
 
 [#assign infoItem = request.getAttribute("INFO_ITEM")! /]
 
 [#if infoItem?has_content]
 	[#attempt]
-		[#assign publisherName = (infoItem.getValues()["publisherName"])!"" /]
+		[#assign values = infoItem.getValues() /]
+		[#assign
+			catalogId = (values["catalogId"])!""
+			publisherName = (values["publisherName"])!""
+		/]
 	[#recover]
 	[/#attempt]
 [/#if]
@@ -46,8 +53,10 @@
 [/#function]
 
 <div class="publisher-profile-apps-fragment">
-	[#if publisherName?has_content && channelId?has_content]
-		[#assign response = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&pageSize=100") /]
+	[#if catalogId?has_content && channelId?has_content]
+		[#assign response = restClient.get(
+			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&filter=catalogId eq " + catalogId
+		) /]
 		[#assign publisherProducts = (response.items![])?filter(product -> getPublisherName(product) == publisherName) /]
 
 		[#if publisherProducts?has_content]
