@@ -795,7 +795,7 @@ public class AccountsRestControllerTest {
 						"data", _EMAIL_ADDRESS
 					)
 				).put(
-					"name", "Contact Email"
+					"name", "contactEmail"
 				)
 			).put(
 				new JSONObject(
@@ -838,7 +838,7 @@ public class AccountsRestControllerTest {
 		CustomField[] customFields = capturedAccount.getCustomFields();
 
 		Assertions.assertEquals(1, customFields.length);
-		Assertions.assertEquals("Contact Email", customFields[0].getName());
+		Assertions.assertEquals("contactEmail", customFields[0].getName());
 
 		Assertions.assertEquals("Acme", capturedAccount.getName());
 		Assertions.assertNull(capturedAccount.getOrganizationIds());
