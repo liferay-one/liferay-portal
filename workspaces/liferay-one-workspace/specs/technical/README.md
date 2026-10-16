@@ -33,6 +33,15 @@ These files are prose. `plan:check` does not read them, so they can become stale
 | --- | --- |
 | [`workspace.md`](./workspace.md) | The shell layout, the client extensions, and the naming conventions |
 | [`data-model.md`](./data-model.md) | The entity index, the ERC and friendly URL registry, and the field mappings |
+| [`object-model.md`](./object-model.md) | Every object, relationship, and soft link, with a diagram and the 2026-10-15 audit |
 | [`consumable-products.md`](./consumable-products.md) | How a metered product joins the monthly usage reports, and the seed data that a new one needs |
+| [`events-and-jobs.md`](./events-and-jobs.md) | Every object action, scheduled job, Pub/Sub subscriber, and notification template, and the chains between them |
+| [`licensing.md`](./licensing.md) | The key types and families, how each key is generated and validated, and the licensing objects |
+| [`order-to-entitlement.md`](./order-to-entitlement.md) | How each kind of order is created and turns into entitlements, keys, and environments |
+| [`permissions.md`](./permissions.md) | The roles, the object permission matrix, guest access, the frontend gates, and the checks on each sidecar endpoint |
+| [`provisioning.md`](./provisioning.md) | How an environment is built from zero, the batch file dependencies, which layer owns each kind of data, and what each reset rebuilds |
+| [`route-api-map.md`](./route-api-map.md) | Each page and route of the custom element, the endpoints it calls, and the callers of each sidecar endpoint |
+| [`salesforce-data-flow.md`](./salesforce-data-flow.md) | Each Salesforce message, its field mapping to Liferay objects, and the matching, retry, and null rules |
+| [`system-context.md`](./system-context.md) | The users, the containers, every external system, how each connection authenticates, and the deployment topology |
 
-For the API surface and the page and route map, read the code: the Spring Boot controllers under `client-extensions/liferay-one-etc-spring-boot`, and the service layer and `src/pages/` under `client-extensions/liferay-one-custom-element`.
+A script generated the tables in `events-and-jobs.md`, `permissions.md`, `provisioning.md`, `route-api-map.md`, and `salesforce-data-flow.md` on 2026-10-16. When the code changes, these tables become stale, the same as the prose. For the current API surface and route map, read the code: the Spring Boot controllers under `client-extensions/liferay-one-etc-spring-boot`, and the service layer and `src/pages/` under `client-extensions/liferay-one-custom-element`.

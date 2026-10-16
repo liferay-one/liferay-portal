@@ -30,7 +30,11 @@
 | `availableCredit` | decimal | |
 | `creditStatus`, `holdReason` | string | |
 
-**Custom fields:** `accountTier` (Platinum / Gold / Silver / Bronze / Trial / Community), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary` (boolean), `allowPermanentLicenses` (boolean), `allowSelfProvisioning` (boolean), `AccountType`
+**Custom fields:** `accountTier` (text: Platinum / Gold / Silver / Bronze / Trial / Community; not the `LT_ACCOUNT_TIER` picklist), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary` (boolean), `allowPermanentLicenses` (boolean), `allowSelfProvisioning` (boolean), `AccountType`, `Contact Email`, `Industry`, `Okta SSO`, `Password Policy`, `Two-Factor Authentication`
+
+**Object actions:** `AccountCreate`, `AccountUpdate`, and `AccountDelete` call `liferay-one-etc-spring-boot`.
+
+**Relationships:** the account is the parent of 16 custom objects. See [`object-model.md`](./object-model.md) for the full list and the deletion type of each.
 
 ---
 
@@ -43,21 +47,20 @@
 | PK `accountNoteId` | long | |
 | `uuid` | string | Preserved from Koroneiki for cross-system traceability |
 | `externalReferenceCode` | string | Migrated Koroneiki `accountNoteKey` |
-| FK `accountEntryId` | long | |
-| `summary` | string | |
-| `content` | Clob | |
-| `format` | picklist | |
-| `type` | picklist | |
-| `priority` | picklist | |
-| `status` | picklist | |
+| FK `accountEntryId` | long | `accountEntryToAccountNote`, cascade. Account restricted |
+| `content` | longtext | |
+| `format` | string | |
+| `type` | picklist | `LT_ACCOUNT_NOTE_TYPE`: `general` · `sales` |
+| `priority` | picklist | `LT_ACCOUNT_NOTE_PRIORITY`: `normal` · `pinned` |
+| `customStatus` | picklist | `LT_ACCOUNT_NOTE_STATUS`: `approved` · `archived`. Named `customStatus` because `status` is reserved |
 | `createDate` | datetime | |
-| `createdByUserId` | long | FK to User |
+| `createdByUserId` | long | User ID; a plain field, not a relationship |
 | `createdByUserName` | string | Frozen at creation; do not overwrite on edit |
 | `modifiedDate` | datetime | |
-| `modifiedByUserId` | long | FK to User |
+| `modifiedByUserId` | long | User ID; a plain field, not a relationship |
 | `modifiedByUserName` | string | |
 | `koroneikiAccountKey` | string | Parent Koroneiki accountKey; migration traceability |
-| `projectId` | long | FK to Project |
+| `koroneikiProjectName` | string | Koroneiki project name; migration traceability. A note has no link to a Project |
 
 ---
 
@@ -226,7 +229,13 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 | `userId` | long | |
 | `createDate`, `modifiedDate` | datetime | |
 
-**Custom fields:** `contractId` (FK to Contract), `marketplaceOrderType`, `projectName`, `cloudProjectName`, `ldpWorkspaceName`
+**Custom fields (links):** `projectName` (text) and `contractId` (long) are the only link from an order to its Project and Contract. LPD-92222 removed the `projectToCommerceOrder` and `contractToCommerceOrder` relationships, because the commerce order API returns custom fields but not relationship fields. The project link is the project **name**, so a project rename breaks it.
+
+**Custom fields (other):** `accountOwnerEmailAddress`, `accountOwnerFirstName`, `accountOwnerLastName`, `cloud-provisioning`, `cloudProjectName`, `dossieraProjectKey`, `dsrAnalyticsCloudProject`, `dsrError`, `dsrErrorDate`, `dsrSettings`, `dsrWorkspaceName`, `gsInvolved`, `ldpAnalyticsCloudProject`, `ldpError`, `ldpErrorDate`, `ldpSettings`, `ldpWorkspaceName`, `marketplaceOrderType`, `order-metadata`, `opportunityProductFamily`, `opportunitySoldBy`, `opportunityStageName`, `opportunityTerritory`, `opportunityType`, `parentOpportunityId`, `partnerAccount`, `partnerFirstLineSupport`, `projectDescription`, `projectKey`, `projectSolution`, `renewal`, `salesforceOpportunityId`, `salesforcePricebookId`, `salesforceProjectId`, `trial-end-date`, `trial-error`, `trial-error-date`, `trial-notify-end-date`, `trial-settings`, `trial-start-date`, `trial-virtual-host`. The source is `liferay-one-site-initializer/site-initializer/expando-columns.json`.
+
+**Relationships:** parent of LicenseKey (`commerceOrderToLicenseKey`, disassociate), AIHubApplication (disassociate), and the request objects AIHubBetaPrivateAccessRequest, DSRRequest, DXPFreeActivationKeyRequest, ProductFeedback, and TrialExtensionRequest (cascade). Child of PublisherSalesSummary (`publisherToCommerceOrder`, disassociate).
+
+**Object actions:** `CommerceOrderUpdate` (onAfterUpdate), from the site initializer.
 
 ---
 
@@ -252,7 +261,11 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 | `userId` | long | |
 | `createDate`, `modifiedDate` | datetime | |
 
-**Custom fields:** `cloudRegion` (e.g. `us-central1`), `machineType` (`Standard` · `High`), `orderType` (`New Business` · `Renewal`), `sizing` (int), `startDate`, `endDate`, `effectiveEndDate` (endDate + 30-day grace period), `status` (`Approved` · `Canceled` · `On Hold`), `spendLimit` (double; per-product spend cap), `opportunitySoldBy`
+**Custom fields:** `cloudRegion` (e.g. `us-central1`), `machineType` (`Standard` · `High`), `orderType` (`New Business` · `Renewal`), `sizing` (int), `startDate`, `endDate`, `effectiveEndDate` (endDate + 30-day grace period), `customStatus` (`Approved` · `Canceled` · `On Hold`), `spendLimit` (double; per-product spend cap), `opportunitySoldBy`
+
+**Relationships:** parent of Entitlement (`commerceOrderItemToEntitlement`, disassociate).
+
+**Object actions:** `EntitlementGeneration` (onAfterAdd) creates one Entitlement for each active EntitlementDefinition of the SKU. `EntitlementUpdate` and `CommerceOrderItemUpdate` run on update.
 
 ---
 
@@ -266,16 +279,22 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 |---|---|---|
 | PK `contractId` | long | |
 | `externalReferenceCode` | string | Salesforce Contract.Id (18-char) |
-| FK `accountEntryId` | long | |
+| FK `accountEntryId` | long | `accountEntryToContract`, prevent. Account restricted |
+| FK `projectId` | long | `projectToContract`, disassociate. Empty for an account level contract that spans several projects |
+| FK `originalContractId` | long | `originalContractToContract`, disassociate. Set on a renewal; points to the contract it renews |
+| `contractType` | picklist | `LT_CONTRACT_TYPE`: `initial` · `renewal` |
+| `opportunityId` | string | Salesforce Opportunity.Id |
+| `renewalOpportunityId` | string | Salesforce Opportunity.Id of the renewal |
 | `startDate` | datetime | |
 | `endDate` | datetime | |
 | `contractTerm` | int | Term in months, e.g. 12 |
 | `contractBillingCadence` | int | e.g. 12 (months) |
 | `overageBillingCadence` | int | e.g. 3 (months) |
 | `ownerEmailAddress` | string | Resolved from Salesforce Contract owner |
-| `status` | string | Computed from CommerceOrderItem statuses |
 | `renewalState` | string | |
 | `spendLimit` | double | Account-level spend cap from Salesforce |
+
+The contract has no status field. Its children are Entitlements (`contractToEntitlement`) and Environments (`contractToEnvironment`), both `disassociate`: deleting a contract keeps them. A Commerce Order links to its contract only through the order's `contractId` custom field.
 
 ---
 
@@ -288,20 +307,24 @@ Materialized grant records derived from CommerceOrderItems via EntitlementDefini
 | Field | Type | Notes |
 |---|---|---|
 | PK `entitlementId` | long | |
-| FK `entitlementDefinitionId` | long | |
-| FK `orderItemId` | long | Parent CommerceOrderItem that grants this entitlement |
-| FK `contractId` | long | Denormalized for fast lookup |
+| FK `accountEntryId` | long | `accountEntryToEntitlement`, prevent. Account restricted |
+| FK `entitlementDefinitionId` | long | `entitlementDefinitionToEntitlement`, prevent: a definition with entitlements cannot be deleted. Set `active: false` instead |
+| FK `orderItemId` | long | `commerceOrderItemToEntitlement`, disassociate. Parent CommerceOrderItem that grants this entitlement |
+| FK `contractId` | long | `contractToEntitlement`, disassociate |
 | FK `projectId` | long | Project scoping the grant (`projectToEntitlement`), from the order's `salesforceProjectId` custom field; empty for project-less orders |
-| FK `usageDefinitionId` | long | For metered entitlements |
 | `name` | string | e.g. `database-size` · `vcpu` · `maxServers` · `licenseGeneration` |
 | `grantType` | string | `fixed` · `rollover` · `prepaid` · `metered` |
 | `quantity` | double | Soft cap — alerts at this level; overridden by `sizing` where applicable |
 | `maxQuantity` | double | Hard cap — blocks at this level |
 | `overageRate` | double | Price of one overage bucket, copied from the definition at grant time |
 | `overageSkuExternalReferenceCode` | string | Overage bucket SKU, copied from the definition at grant time |
+| `productOptions` | longtext | SKU option map, copied from the definition at grant time |
 | `skuExternalReferenceCode` | string | SKU of the order item that granted this entitlement |
+| `terminationStatus` | string | Returned to the cloud console with the entitlement |
 | `startDate` | datetime | |
 | `endDate` | datetime | |
+
+An Entitlement reaches its UsageDefinition through its EntitlementDefinition; it has no direct link. It is the parent of LicenseKey (`entitlementToLicenseKey`, disassociate) and UsageEvent (`entitlementToUsageEvent`, cascade).
 
 The `endDate` is the grant's effective end. After a realignment amendment it may be earlier than the granting CommerceOrderItem's frozen `endDate`, in which case it equals that item's `effectiveEndDate`. Realignment expresses supersession through dates only; no status transition occurs at processing time.
 
@@ -379,9 +402,9 @@ Overage rate and SKU live on the EntitlementDefinition; see **Bucket priced over
 | Field | Type | Notes |
 |---|---|---|
 | PK `usageEventId` | long | |
-| FK `environmentId` | long | |
-| FK `subscriptionId` | long | |
-| FK `usageDefinitionId` | long | |
+| FK `environmentId` | long | `environmentToUsageEvent`, cascade |
+| FK `entitlementId` | long | `entitlementToUsageEvent`, cascade |
+| FK `usageDefinitionId` | long | `usageDefinitionToUsageEvent`, disassociate |
 | `eventTimestamp` | datetime | |
 | `quantity` | double | |
 | `dedupeKey` | string | Idempotent; client-assigned |
@@ -430,18 +453,32 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 
 **system:** `false`
 
+Not account restricted: `accountEntryToEnvironment` is `disassociate`, and Liferay restricts an object only through a relationship that is not `disassociate`.
+
 | Field | Type | Notes |
 |---|---|---|
 | PK `environmentId` | long | |
-| FK `subscriptionId` | long | FK to Contract |
+| FK `accountEntryId` | long | `accountEntryToEnvironment`, disassociate |
+| FK `contractId` | long | `contractToEnvironment`, disassociate |
+| FK `projectId` (relationship) | long | `projectToEnvironment`, disassociate |
+| `projectId` | string | The Liferay Cloud project ID the customer types on the PaaS or SaaS activation form, e.g. `acme` in `https://acme.liferay.net`. Not the Liferay Project; that link is `projectToEnvironment` |
 | `name` | string | Reported by the environment on activation |
 | `offering` | string | `AI Hub` · `Analytics Cloud` · `Cloud Native` · `DSR` · `LDP` · `On-Prem` · `PaaS` · `SaaS` |
 | `type` | string | `non-production` · `production` · `uat`; cloud only |
 | `region` | string | Cloud only; blank for on-prem |
 | `disasterRecoveryRegion` | string | Cloud only; secondary region for disaster recovery, alongside `region` |
 | `ownerEmailAddress` | string | Cloud only; workspace owner collected on activation. On SaaS this is the Analytics Cloud workspace owner, mirroring Customer Portal's `lxc.analyticsCloudOwnersEmailAddress` |
+| `adminEmailAddress`, `adminFirstName`, `adminLastName`, `githubUsername` | string | The first EnvironmentAdmin, denormalized |
+| `allowedEmailDomains` | string | |
+| `workspaceName`, `friendlyURL`, `timeZone` | string | Cloud workspace settings collected on activation |
+| `aiHubURL` | string | AI Hub only; the home page link |
+| `tokenMonthlyAllowance` | string | AI Hub only; shown on the environment card |
 | `activationMode` | string | `license-key` · `offline` · `online` |
-| `status` | string | `active` · `deactivated` · `expired` |
+| `activationCode` | string | One time code; reuse throws `ActivationCodeAlreadyUsedException` |
+| `activationStatus` | string | `active` · `deactivated` · `expired`. Named `activationStatus` because `status` is reserved |
+| `publicKey` | longtext | Registered by the environment on activation |
+| `requestedVersion` | string | Product version the environment asked for |
+| `bundledEntitlementIds` | longtext | Entitlement IDs the environment consumes, set by `CloudRestController` |
 | `lastHeartbeatAt` | datetime | Cloud only |
 | `currentEntitlementHash` | string | Identity hash; enables change detection on heartbeat |
 | `hostName` | string | On-prem only |
@@ -449,6 +486,8 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `ipAddresses` | longtext | On-prem only |
 | `macAddresses` | longtext | On-prem only |
 | `serverId` | longtext | On-prem only |
+
+Children: EnvironmentAdmin and UsageEvent, both `cascade`.
 
 ---
 
@@ -477,19 +516,18 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 |---|---|---|
 | PK `licenseKeyId` | long | |
 | `uuid` | string | Preserved from Provisioning for cross-system traceability |
-| `createdByUserId` | long | FK to User |
-| `createdByUserName` | string | Denormalized |
-| `createDate` | datetime | |
-| `modifiedByUserId` | long | FK to User |
-| `modifiedByUserName` | string | Denormalized |
-| `modifiedDate` | datetime | |
-| FK `accountEntryId` | long | |
-| FK `projectId` | long | Nullable; set when the key is scoped to a project, else account-only |
-| FK `entitlementId` | long | |
-| `orderId` | long | FK to CommerceOrderItem via `assetReceiptLicenseUuid` |
-| `entitlementName` | string | Name of the attached entitlement |
-| `accountEntryCode` | string | Denormalized |
-| `accountEntryName` | string | Denormalized |
+| FK `createdByUserId` | long | `createdByUser` relationship to User, disassociate |
+| FK `modifiedByUserId` | long | `modifiedByUser` relationship to User, disassociate |
+| FK `accountEntryId` | long | `accountEntryToLicenseKey`, prevent. Account restricted |
+| FK `projectId` | long | `projectToLicenseKey`, disassociate. Nullable; set when the key is scoped to a project, else account-only |
+| FK `entitlementId` (relationship) | long | `entitlementToLicenseKey`, disassociate |
+| FK `commerceOrderId` | long | `commerceOrderToLicenseKey`, disassociate |
+| FK `activationKeyId` | long | `activationKeyToLicenseKey`, disassociate |
+| `entitlementId` | long | The entitlement the key was generated from. Key generation writes it, and active key counts and renewals read it. Seed data sets `entitlementToLicenseKey` instead and leaves this field `0` |
+| `entitlementDefinitionId` | long | EntitlementDefinition ID; a plain field, not a relationship |
+| `orderId` | string | Commerce order ID as text, set by the DXP Free and app license key endpoints. `commerceOrderToLicenseKey` exists but no code uses it |
+| `accountName` | string | Denormalized |
+| `licenseKeyFamily` | string | LCS license entry family, e.g. `DXP`, `Portal`, `Cloud Native`. Stored since LPD-102841; older keys have none |
 | `licenseName` | string | Hard-coded from LicenseEntry on migration |
 | `licenseType` | string | `production` · `cluster` · `developer` · `enterprise` · `oem` · `per-user` · `limited` · `virtual-cluster` · `free` · `developer-cluster` |
 | `licenseVersion` | int | |
@@ -507,7 +545,9 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `sizing` | string | Copied from CommerceOrderItem for license generation convenience |
 | `name` | string | |
 | `description` | string | |
-| `licenseKey` | longtext | The actual license XML/key payload |
+| `key` | longtext | The actual license XML/key payload |
+| `hostName`, `domains`, `ipAddresses`, `macAddresses`, `serverId` | string, longtext | The server the key is bound to |
+| `dataCenterLocation`, `workspaceName`, `workspaceOwnerEmail` | string | Cloud keys |
 | `startDate` | datetime | |
 | `customExpirationDate` | datetime | |
 | `additionalInfo` | longtext | |
@@ -524,7 +564,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 
 | Field | Type | Notes |
 |---|---|---|
-| `accountEntryId` | long | |
+| FK `accountEntryId` | long | `accountEntryToProperty`, cascade. Not account restricted |
 | `classNameId` | long | e.g. classNameId of CommerceOrderItem, AccountEntry |
 | `className` | string | Denormalized, e.g. `CommerceOrderItem` |
 | `classPK` | long | PK of the target entity instance |
@@ -551,19 +591,183 @@ One link between an EntitlementDefinition and a SKU that sells it. Before this o
 
 ---
 
+### Projects and Membership
+
+The full field lists for the objects below are in [`object-model.md`](./object-model.md). This section records what each object is for and how it links.
+
+#### Project (`C_PROJECT`)
+
+**system:** `false`
+
+A customer project inside an account, such as one DXP or cloud workspace. Most customer data is a child of both the account and a project.
+
+| Field | Type | Notes |
+|---|---|---|
+| FK `accountEntryId` | long | `accountEntryToProject`, cascade. Account restricted |
+| FK `organizationId` | long | `organizationToProject`, disassociate. The first line support organization, if any |
+| `name` | string | Required. Commerce Orders link to a project by this value (`projectName` custom field), so a rename breaks that link |
+| `aiHubAccountName`, `allowedEmailDomains`, `dataCenterLocation`, `friendlyWorkspaceURL`, `liferayVersion`, `securityContactEmailAddress` | string | |
+
+Parent of ActivationKey, Contract, Entitlement, Environment, and LicenseKey (all `disassociate`), and of ProjectMembership and UsageReport (both `cascade`).
+
+#### ProjectMembership (`C_PROJECT_MEMBERSHIP`)
+
+**system:** `false`
+
+One row per user, project, and project role. Formerly `UserProjectAssociation`.
+
+| Field | Type | Notes |
+|---|---|---|
+| FK `accountEntryId` | long | `accountEntryToProjectMembership`, cascade. Account restricted |
+| FK `projectId` | long | `projectToProjectMembership`, cascade |
+| FK `userId` | long | `userToProjectMembership`, cascade |
+| `roleExternalReferenceCode` | string | Required. The project role ERC |
+
+The `C_PROJECT_MEMBERSHIP_UNIQUE` composite key rule (project, role, user) rejects a duplicate membership.
+
+#### AccountInvitation (`C_ACCOUNT_INVITATION`)
+
+**system:** `false`
+
+A pending invitation to join an account. It has no relationships: it names the account, the project, and the roles by ERC in text fields (`accountExternalReferenceCode`, `projectExternalReferenceCode`, `projectRoleExternalReferenceCode`, `roleExternalReferenceCodes`). When `accepted` changes to true, the `AccountInvitationAccepted` action creates the user, adds the user to the account with the roles, and adds the ProjectMembership.
+
+#### TicketAttachment (`C_TICKET_ATTACHMENT`)
+
+**system:** `false`
+
+A file attached to a support ticket. The file is in Google Cloud Storage (`gcsBucketName`, `storageProvider`), and the ticket is in Jira (`jiraIssueKey`, `projectKey`). Child of the account (`accountEntryToTicketAttachment`, cascade); account restricted. See [`integrations/gcs.md`](./integrations/gcs.md).
+
+#### OAuth2DxpAuthorization (`C_OAUTH2_DXP_AUTHORIZATION`)
+
+**system:** `false`
+
+Records that a customer's DXP instance connected to Liferay One over OAuth 2. `connectionSource` is the origin of the instance. Child of the account (cascade); account restricted. The project DXP Connections tab lists these rows.
+
+#### SubscriptionEntry (`C_SUBSCRIPTION_ENTRY`)
+
+**system:** `false`
+
+A user's subscription to notifications about one record. The target is polymorphic (`className`, `classPK`), for example an ActivationKey, and `customUserId` is the subscriber. It has no relationships, so nothing deletes a row when its target or user is deleted.
+
+---
+
+### Licensing
+
+#### ActivationKey (`C_ACTIVATION_KEY`)
+
+**system:** `false`
+
+The key a licensable purchase leads with. An EntitlementDefinition with `generatesActivationKey`, or a SKU with a `*-license-usage-type` option, leads one. Child of the account (`accountEntryToActivationKey`, prevent; account restricted) and of the project (`projectToActivationKey`, disassociate). Parent of its LicenseKeys (`activationKeyToLicenseKey`, disassociate).
+
+#### CommonLicenseKey (`C_COMMON_LICENSE_KEY`)
+
+**system:** `false`
+
+A license key file that Liferay uploads once and shares with every entitled customer, selected by `productFamily`, `productVersion`, and `environmentType`. It has no relationships. Served by `CommonLicenseKeysRestController` (`/common-license-keys`).
+
+#### ProductVersion (`C_PRODUCT_VERSION`)
+
+**system:** `false`
+
+A released product version (`productGroup`, `productGroupVersion`, `productVersion`), with its `type`, `versionLevel`, `supported` flag, and `bundleURL` for the download. Reference data; it has no relationships.
+
+---
+
+### Marketplace and Publishers
+
+#### PublisherDetail (`C_PUBLISHER_DETAILS`)
+
+**system:** `false`
+
+The public profile of a Marketplace publisher account: name, contact addresses, website, and the publisher's catalog (`catalogId`, `catalogExternalId`). Child of the account (cascade); not account restricted.
+
+#### PublisherSalesSummary (`C_PUBLISHER_SALES_SUMMARY`)
+
+**system:** `false`
+
+One payout period for a publisher (`quarter`, `paymentStatus`, `paidDate`). Child of the account (`accountEntryToPublisherSalesSummary`, cascade); not account restricted. Parent of the Commerce Orders it pays out (`publisherToCommerceOrder`, disassociate: deleting a summary keeps the orders).
+
+#### PublisherAsset (`C_PUBLISHER_ASSET`)
+
+**system:** `false`
+
+One uploaded version of a publisher's app. Child of the account (cascade; account restricted) and of the Commerce Product (`productEntryToPublisherAsset`, cascade). Parent of PublisherAssetAttachment (cascade), which holds the uploaded file and its `publisherAssetAttachmentType` (`lpkg` · `package` · `sourceCode`).
+
+#### AIHubApplication (`C_AI_HUB_APPLICATION`)
+
+**system:** `false`
+
+An AI Hub tenant bought by an account. Child of the account (`accountToAIHubApplication`, cascade; account restricted) and of the order (`orderToAIHubApplication`, disassociate). `accountEntryId` is the account ID in the external AI Hub, returned by AI Hub provisioning and used to buy quota blocks. It is not the Liferay account.
+
+#### GetAppInformation (`C_GET_APP_INFORMATION`)
+
+**system:** `false`
+
+A log row the Marketplace checkout posts after an app purchase (`orderId`, `productName`, `dashboardLink`). It has no relationships; `orderId` is text.
+
+#### Report (`C_REPORT`)
+
+**system:** `false`
+
+A precomputed admin report stored as a name and a JSON value. The Marketplace summary page reads it for its most purchased section.
+
+---
+
+### Requests
+
+Form submissions, in the Requests object folder. Most of them are children of the Commerce Order that the form placed, with `cascade`.
+
+| Object | ERC | Links |
+|---|---|---|
+| AIHubBetaPrivateAccessRequest | `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` | Child of the order. No code in this workspace reads or writes it |
+| DSRRequest | `C_DSR_REQUEST` | Child of the order |
+| DXPFreeActivationKeyRequest | `C_DXP_FREE_ACTIVATION_KEY_REQUEST` | Child of the order |
+| ProductFeedback | `C_PRODUCT_FEEDBACK` | Child of the order and of the Commerce Product |
+| PublisherAccountRequest | `C_PUBLISHER_ACCOUNT_REQUEST` | No relationships. `requestStatus` is `open` · `completed` · `rejected` |
+| SalesRequest | `C_SALES_REQUEST` | No relationships. No code in this workspace reads or writes it |
+| TrialExtensionRequest | `C_TRIAL_EXTENSION_REQUEST` | Child of the account (account restricted) and of the order. `projectId` is a required text field with no relationship. `dueStatus` is a state picklist |
+
+
+---
+
 ## ERC and FriendlyURL Registry
+
+Generated from `03-object-definition.batch-engine-data.json` on 2026-10-15.
 
 | Object | ERC | Separator |
 |---|---|---|
+| `AIHubApplication` | `C_AI_HUB_APPLICATION` | `l` |
+| `AIHubBetaPrivateAccessRequest` | `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` | `l` |
+| `AccountInvitation` | `C_ACCOUNT_INVITATION` | `l` |
 | `AccountNote` | `C_ACCOUNT_NOTE` | `l` |
-| `Contract` | `C_CONTRACT` | `cpct` |
-| `Entitlement` | `C_ENTITLEMENT` | `cpen` |
-| `EntitlementDefinition` | `C_ENTITLEMENT_DEFINITION` | `cped` |
+| `ActivationKey` | `C_ACTIVATION_KEY` | `l` |
+| `CommonLicenseKey` | `C_COMMON_LICENSE_KEY` | `l` |
+| `Contract` | `C_CONTRACT` | `l` |
+| `DSRRequest` | `C_DSR_REQUEST` | `l` |
+| `DXPFreeActivationKeyRequest` | `C_DXP_FREE_ACTIVATION_KEY_REQUEST` | `l` |
+| `Entitlement` | `C_ENTITLEMENT` | `l` |
+| `EntitlementDefinition` | `C_ENTITLEMENT_DEFINITION` | `l` |
 | `EntitlementDefinitionSku` | `C_ENTITLEMENT_DEFINITION_SKU` | `l` |
 | `Environment` | `C_ENVIRONMENT` | `cpdp` |
 | `EnvironmentAdmin` | `C_ENVIRONMENT_ADMIN` | `l` |
-| `LicenseKey` | `C_LICENSE_KEY` | `cplk` |
-| `Property` | `C_PROPERTY` | `cppr` |
+| `GetAppInformation` | `C_GET_APP_INFORMATION` | `l` |
+| `LicenseKey` | `C_LICENSE_KEY` | `l` |
+| `OAuth2DxpAuthorization` | `C_OAUTH2_DXP_AUTHORIZATION` | `l` |
+| `ProductFeedback` | `C_PRODUCT_FEEDBACK` | `l` |
+| `ProductVersion` | `C_PRODUCT_VERSION` | not set |
+| `Project` | `C_PROJECT` | `l` |
+| `ProjectMembership` | `C_PROJECT_MEMBERSHIP` | `l` |
+| `Property` | `C_PROPERTY` | `l` |
+| `PublisherAccountRequest` | `C_PUBLISHER_ACCOUNT_REQUEST` | `l` |
+| `PublisherAsset` | `C_PUBLISHER_ASSET` | not set |
+| `PublisherAssetAttachment` | `C_PUBLISHER_ASSET_ATTACHMENT` | not set |
+| `PublisherDetail` | `C_PUBLISHER_DETAILS` | not set |
+| `PublisherSalesSummary` | `C_PUBLISHER_SALES_SUMMARY` | `l` |
+| `Report` | `C_REPORT` | `l` |
+| `SalesRequest` | `C_SALES_REQUEST` | `l` |
+| `SubscriptionEntry` | `C_SUBSCRIPTION_ENTRY` | `l` |
+| `TicketAttachment` | `C_TICKET_ATTACHMENT` | `l` |
+| `TrialExtensionRequest` | `C_TRIAL_EXTENSION_REQUEST` | `l` |
 | `UsageDefinition` | `C_USAGE_DEFINITION` | `cpud` |
 | `UsageEvent` | `C_USAGE_EVENT` | `cpue` |
 | `UsageReport` | `C_USAGE_REPORT` | `cpur` |
@@ -572,4 +776,5 @@ One link between an EntitlementDefinition and a SKU that sells it. Before this o
 
 ## See Also
 
+- [`object-model.md`](./object-model.md) — every object, relationship, and soft link, with a diagram
 - [`workspace.md`](./workspace.md) — workspace layout and client extensions
