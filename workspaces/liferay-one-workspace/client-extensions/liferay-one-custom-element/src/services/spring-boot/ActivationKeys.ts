@@ -53,6 +53,14 @@ export type GenerateForm = {
 	products: GenerateFormProduct[];
 };
 
+export type ActivationKeyServer = {
+	hostName: string;
+	ipAddresses: string;
+	macAddresses: string;
+};
+
+export type ActivationKeyServerField = keyof ActivationKeyServer;
+
 export type ActivationKeyScope =
 	| {accountExternalReferenceCode: string}
 	| {projectExternalReferenceCode: string};
@@ -69,12 +77,6 @@ export type ActivationKeySummary = {
 	provisionable: boolean;
 };
 
-export type GenerateServer = {
-	hostName: string;
-	ipAddresses: string;
-	macAddresses: string;
-};
-
 export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	bundleEntitlementIds: number[];
 	dataCenterLocation?: string;
@@ -83,7 +85,7 @@ export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	keyType: string;
 	purpose?: string;
 	renewedActivationKeyExternalReferenceCode?: string;
-	servers: GenerateServer[];
+	servers: ActivationKeyServer[];
 	startDate?: string;
 	subscriptionEntitlementId: number;
 	version: string;

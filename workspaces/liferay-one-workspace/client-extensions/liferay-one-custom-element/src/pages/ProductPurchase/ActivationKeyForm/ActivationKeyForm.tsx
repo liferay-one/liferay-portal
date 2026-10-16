@@ -20,6 +20,7 @@ import useMarketoForm from '~/hooks/useMarketoForm';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
 import ProductPurchaseShell from '~/pages/ProductPurchase/components/ProductPurchaseShell/ProductPurchaseShell';
+import TrialServerDetails from '~/pages/ProductPurchase/components/TrialServerDetails/TrialServerDetails';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
 import commerceSchemas from '~/schemas/commerceSchemas';
 import ProductPurchaseDXPFree from '~/services/commerce/ProductPurchaseDXPFree';
@@ -34,6 +35,10 @@ import {isSelfServiceTrialProduct} from '~/utils/productUtils';
 import './ActivationKeyForm.css';
 
 import type {ActivationKeyFormData} from '~/services/commerce/ProductPurchaseDXPFree';
+import type {SelfServiceTrialServer} from '~/services/commerce/ProductPurchaseSelfServiceTrial';
+
+export type ActivationKeyFormValues = ActivationKeyFormData &
+	SelfServiceTrialServer;
 
 const DATA_PROTECTION_EMAIL_ADDRESS = 'dataprotection@liferay.com';
 
@@ -86,19 +91,13 @@ const ActivationKeyForm = () => {
 
 	const {data: regionsResponse} = useCommerceRegions();
 
-	const {
-		formState: {errors, isSubmitting, isValid},
-		handleSubmit,
-		register,
-		setError,
-		setValue,
-		watch,
-	} = useForm<ActivationKeyFormData>({
+	const form = useForm<ActivationKeyFormValues>({
 		defaultValues: {
 			businessEmailAddress: Liferay.ThemeDisplay.getUserEmailAddress(),
 			companyName: '',
 			country: '',
 			domain: '',
+			environmentName: '',
 			extension: '',
 			fullName: Liferay.ThemeDisplay.getUserName(),
 			intlCode: {code: '+1', flag: 'en-us'},
@@ -106,6 +105,8 @@ const ActivationKeyForm = () => {
 			notifyMeAboutProducts: false,
 			phoneNumber: '',
 			purpose: '',
+			serverField: 'hostName',
+			serverValue: '',
 			termsAndConditions: false,
 			userAgreement: false,
 		},
@@ -113,10 +114,19 @@ const ActivationKeyForm = () => {
 		reValidateMode: 'onChange',
 		resolver: zodResolver(
 			selfServiceTrial
-				? commerceSchemas.activationKey.omit({domain: true})
+				? commerceSchemas.selfServiceTrialActivationKey
 				: commerceSchemas.activationKey
 		),
 	});
+
+	const {
+		formState: {errors, isSubmitting, isValid},
+		handleSubmit,
+		register,
+		setError,
+		setValue,
+		watch,
+	} = form;
 
 	const countries = regionsResponse?.items ?? [];
 
@@ -158,10 +168,14 @@ const ActivationKeyForm = () => {
 	};
 
 	const onSubmitSelfServiceTrial = async (
-		formFields: ActivationKeyFormData
+		formFields: ActivationKeyFormValues
 	) => {
 		const productPurchaseSelfServiceTrial =
-			new ProductPurchaseSelfServiceTrial(selectedAccount, product);
+			new ProductPurchaseSelfServiceTrial(selectedAccount, product, {
+				environmentName: formFields.environmentName,
+				serverField: formFields.serverField,
+				serverValue: formFields.serverValue,
+			});
 
 		try {
 			const [hasTrialOrder] = await Promise.all([
@@ -196,7 +210,7 @@ const ActivationKeyForm = () => {
 		await handlePurchase(productPurchaseSelfServiceTrial);
 	};
 
-	const onSubmit = async (formFields: ActivationKeyFormData) => {
+	const onSubmit = async (formFields: ActivationKeyFormValues) => {
 		if (selfServiceTrial) {
 			await onSubmitSelfServiceTrial(formFields);
 
@@ -497,32 +511,32 @@ const ActivationKeyForm = () => {
 					</a>
 				</p>
 
-				{!selfServiceTrial && (
-					<>
-						<p className="h4">
-							{i18n.translate('activation-key-server-details')}
-						</p>
+				<p className="h4">
+					{i18n.translate('activation-key-server-details')}
+				</p>
 
-						<hr className="mb-5 mt-3" />
+				<hr className="mb-5 mt-3" />
 
-						<ClayInput.Group>
-							<ClayInput.GroupItem>
-								<Input
-									{...register('domain')}
-									className="w-100"
-									errorMessage={errors.domain?.message}
-									helpMessage={i18n.translate(
-										'input-one-domain-name-per-instance'
-									)}
-									label={i18n.translate('domain')}
-									placeholder={i18n.translate(
-										'enter-domain-here'
-									)}
-									required
-								/>
-							</ClayInput.GroupItem>
-						</ClayInput.Group>
-					</>
+				{selfServiceTrial ? (
+					<TrialServerDetails form={form} />
+				) : (
+					<ClayInput.Group>
+						<ClayInput.GroupItem>
+							<Input
+								{...register('domain')}
+								className="w-100"
+								errorMessage={errors.domain?.message}
+								helpMessage={i18n.translate(
+									'input-one-domain-name-per-instance'
+								)}
+								label={i18n.translate('domain')}
+								placeholder={i18n.translate(
+									'enter-domain-here'
+								)}
+								required
+							/>
+						</ClayInput.GroupItem>
+					</ClayInput.Group>
 				)}
 
 				<p className="activation-key-form-agreements-text">

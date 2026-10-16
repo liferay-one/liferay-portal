@@ -15,11 +15,23 @@ import {getSiteURL} from '~/utils/siteUtils';
 
 import ProductPurchase from './ProductPurchase';
 
+import type {
+	ActivationKeyServer,
+	ActivationKeyServerField,
+	GenerateActivationKeyRequest,
+	GenerateForm,
+} from '~/services/spring-boot/ActivationKeys';
 import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 export const DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-DXP-TRIAL';
+
+export type SelfServiceTrialServer = {
+	environmentName: string;
+	serverField: ActivationKeyServerField;
+	serverValue: string;
+};
 
 const TRIAL_ENTITLEMENTS_POLL_ATTEMPTS = 10;
 
@@ -29,7 +41,11 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	protected orderTypeExternalReferenceCode: OrderTypes;
 	private dxpTrialProduct?: DeliveryProduct;
 
-	constructor(account: Account, product: DeliveryProduct) {
+	constructor(
+		account: Account,
+		product: DeliveryProduct,
+		private readonly server?: SelfServiceTrialServer
+	) {
 		super(account, product);
 
 		const orderTypeExternalReferenceCode =
@@ -51,16 +67,45 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	}
 
 	public async getNextStepsLink() {
-		if (!(await this.waitForTrialEntitlements())) {
+		const generateForm = await this.waitForTrialGenerateForm();
+
+		if (!generateForm) {
 			Liferay.Util.openToast({
 				message: i18n.translate(
 					'your-trial-is-still-being-prepared-refresh-the-page-in-a-few-minutes-if-it-is-not-listed'
 				),
 				type: 'warning',
 			});
+
+			return this.getGenerateActivationKeyLink();
 		}
 
-		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${ONE_TIME_PURCHASES}/activation/generate?new=${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`;
+		const generateActivationKeyRequest =
+			this.getGenerateActivationKeyRequest(generateForm);
+
+		if (!generateActivationKeyRequest) {
+			return this.getGenerateActivationKeyLink();
+		}
+
+		try {
+			await ActivationKeys.generateActivationKey(
+				generateActivationKeyRequest
+			);
+		}
+		catch (error) {
+			console.error(error);
+
+			Liferay.Util.openToast({
+				message: i18n.translate(
+					'your-trial-started-but-its-activation-key-could-not-be-generated-generate-it-from-the-activation-page'
+				),
+				type: 'warning',
+			});
+
+			return this.getGenerateActivationKeyLink();
+		}
+
+		return `${this.getProjectLink()}/products/${this.product.externalReferenceCode}`;
 	}
 
 	public async hasTrialOrder() {
@@ -131,42 +176,104 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 		return dxpTrialProduct;
 	}
 
-	private async hasTrialEntitlements() {
+	private getGenerateActivationKeyLink() {
+		return `${this.getProjectLink()}/activation/generate?new=${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`;
+	}
+
+	private getGenerateActivationKeyRequest(
+		generateForm: GenerateForm
+	): GenerateActivationKeyRequest | undefined {
+		if (!this.server) {
+			return;
+		}
+
+		const dxpTrialProduct = generateForm.products.find(
+			({externalReferenceCode}) =>
+				externalReferenceCode ===
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE
+		);
+
+		const [version] = dxpTrialProduct?.versions ?? [];
+
+		const keyType = dxpTrialProduct?.keyTypes.find(({subscriptions}) =>
+			subscriptions.some(({availableCount}) => availableCount > 0)
+		);
+
+		const subscription = keyType?.subscriptions.find(
+			({availableCount}) => availableCount > 0
+		);
+
+		if (!keyType || !subscription || !version) {
+			return;
+		}
+
+		const server: ActivationKeyServer = {
+			hostName: '',
+			ipAddresses: '',
+			macAddresses: '',
+			[this.server.serverField]: this.server.serverValue.trim(),
+		};
+
+		return {
+			accountExternalReferenceCode: this.account.externalReferenceCode,
+			bundleEntitlementIds: generateForm.bundleProducts
+				.filter(
+					({availableCount, externalReferenceCode, licensable}) =>
+						availableCount > 0 &&
+						externalReferenceCode ===
+							this.product.externalReferenceCode &&
+						licensable
+				)
+				.map(({entitlementId}) => entitlementId),
+			environmentName: this.server.environmentName.trim(),
+			keyType: keyType.key,
+			servers: [server],
+			subscriptionEntitlementId: subscription.entitlementId,
+			version,
+		};
+	}
+
+	private getProjectLink() {
+		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${ONE_TIME_PURCHASES}`;
+	}
+
+	private async getTrialGenerateForm() {
 		try {
-			const {bundleProducts, products} =
-				await ActivationKeys.getGenerateForm({
-					accountExternalReferenceCode:
-						this.account.externalReferenceCode,
-				});
+			const generateForm = await ActivationKeys.getGenerateForm({
+				accountExternalReferenceCode:
+					this.account.externalReferenceCode,
+			});
 
 			const externalReferenceCodes = new Set(
-				[...bundleProducts, ...products].map(
+				[...generateForm.bundleProducts, ...generateForm.products].map(
 					({externalReferenceCode}) => externalReferenceCode
 				)
 			);
 
-			return (
+			if (
 				externalReferenceCodes.has(
 					DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE
 				) &&
 				externalReferenceCodes.has(this.product.externalReferenceCode)
-			);
+			) {
+				return generateForm;
+			}
 		}
 		catch (error) {
 			console.error(error);
-
-			return false;
 		}
 	}
 
-	private async waitForTrialEntitlements() {
+	private async waitForTrialGenerateForm() {
 		for (
 			let attempt = 1;
 			attempt <= TRIAL_ENTITLEMENTS_POLL_ATTEMPTS;
 			attempt++
 		) {
-			if (await this.hasTrialEntitlements()) {
-				return true;
+			const generateForm = await this.getTrialGenerateForm();
+
+			if (generateForm) {
+				return generateForm;
 			}
 
 			if (attempt < TRIAL_ENTITLEMENTS_POLL_ATTEMPTS) {
@@ -175,7 +282,5 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 				);
 			}
 		}
-
-		return false;
 	}
 }

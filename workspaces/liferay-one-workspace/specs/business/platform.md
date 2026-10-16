@@ -29,7 +29,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-PLATFORM-030 | A form checks email addresses, domains, IPv4 addresses, and MAC addresses before it sends them. Each line of a multiline field is checked alone. | P1 | — | `MOD-FORMVALIDATIONUTILS`, `MOD-SCHEMAUTILS` |
+| REQ-PLATFORM-030 | A form checks email addresses, domains, IPv4 addresses, and MAC addresses before it sends them. Each line of a multiline field is checked alone. | P1 | — | `MOD-FORMVALIDATIONUTILS`, `MOD-SCHEMAUTILS`, `MOD-SERVERADDRESSUTILS` |
 | REQ-PLATFORM-031 | A missing or invalid date shows a fallback value, not an error. A typed date that does not exist on the calendar is refused. | P1 | — | `MOD-DATEUTILS` |
 | REQ-PLATFORM-032 | An address shows the street, the city, the region, the postal code, and the country name in the language of the user. An empty address shows a dash. | P2 | — | `MOD-FORMATADDRESS` |
 | REQ-PLATFORM-033 | A marketing form reports success or failure within 8 seconds. | P2 | — | `HOOK-USEMARKETOFORM` |
