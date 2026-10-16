@@ -16,6 +16,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.OveragePricing;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
@@ -34,10 +35,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -205,83 +208,42 @@ public class EntitlementService extends OneBaseService {
 			return;
 		}
 
-		if (CommerceOrderItemUtil.isCanceled(orderItem)) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Skipping entitlement generation for canceled order item " +
-						commerceOrderItemId);
-			}
-
-			return;
-		}
-
-		Map<String, String> productOptions =
-			CommerceOrderItemUtil.getProductOptions(orderItem);
-
-		String skuExternalReferenceCode =
-			orderItem.getSkuExternalReferenceCode();
-
-		List<EntitlementDefinition> entitlementDefinitions =
-			_entitlementDefinitionService.getEntitlementDefinitions(
-				productOptions, skuExternalReferenceCode);
-
-		if (entitlementDefinitions.isEmpty()) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					StringBundler.concat(
-						"Skipping order item ", commerceOrderItemId,
-						" because no active entitlement definitions matched ",
-						"SKU ", skuExternalReferenceCode));
-			}
-
-			return;
-		}
-
 		Order order = _commerceOrderService.fetchCommerceOrder(
 			orderItem.getOrderId());
 
-		long accountEntryId = _getAccountEntryId(order);
-		long contractId = _getContractId(order);
-		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
-			order);
-
-		String endDate = _toString(
-			CommerceOrderItemUtil.getEndDateInstant(orderItem));
-		String startDate = _toString(
-			CommerceOrderItemUtil.getStartDateInstant(orderItem));
-
-		if (!_isSelfServiceTrial(order)) {
-			_addEntitlements(
-				accountEntryId, commerceOrderItemId, contractId, endDate,
-				entitlementDefinitions, orderItem.getQuantity(), productOptions,
-				projectExternalReferenceCode, false, skuExternalReferenceCode,
-				startDate);
+		if (!CommerceOrderUtil.isCompleted(order)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping entitlement generation for order item ",
+						commerceOrderItemId, " because order ",
+						orderItem.getOrderId(), " is not completed"));
+			}
 
 			return;
 		}
 
-		_keyedLock.withLock(
-			_LOCK_KEY_PREFIX_SELF_SERVICE_TRIAL + accountEntryId,
-			() -> {
-				if (_hasEarlierSelfServiceTrialOrder(accountEntryId, order)) {
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							StringBundler.concat(
-								"Skipping order item ", commerceOrderItemId,
-								" because account ", accountEntryId,
-								" already started a trial of order type ",
-								order.getOrderTypeExternalReferenceCode()));
-					}
+		_generateEntitlements(order, orderItem);
+	}
 
-					return;
-				}
+	public void generateOrderEntitlements(long commerceOrderId)
+		throws Exception {
 
-				_addEntitlements(
-					accountEntryId, commerceOrderItemId, contractId, endDate,
-					entitlementDefinitions, BigDecimal.ONE, productOptions,
-					projectExternalReferenceCode, true,
-					skuExternalReferenceCode, startDate);
-			});
+		Order order = _commerceOrderService.fetchCommerceOrder(commerceOrderId);
+
+		if (!CommerceOrderUtil.isCompleted(order)) {
+			return;
+		}
+
+		// Each order item has its own SKU and options, so each order item
+		// needs its own entitlement definitions lookup
+
+		for (OrderItem orderItem :
+				_commerceOrderItemService.getCommerceOrderItems(
+					commerceOrderId)) {
+
+			_generateEntitlements(order, orderItem);
+		}
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions(
@@ -811,6 +773,104 @@ public class EntitlementService extends OneBaseService {
 		}
 	}
 
+	private void _generateEntitlements(Order order, OrderItem orderItem)
+		throws Exception {
+
+		long commerceOrderItemId = orderItem.getId();
+
+		if (CommerceOrderItemUtil.isCanceled(orderItem)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping entitlement generation for canceled order item " +
+						commerceOrderItemId);
+			}
+
+			return;
+		}
+
+		Map<String, String> productOptions =
+			CommerceOrderItemUtil.getProductOptions(orderItem);
+
+		String skuExternalReferenceCode =
+			orderItem.getSkuExternalReferenceCode();
+
+		List<EntitlementDefinition> entitlementDefinitions =
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				productOptions, skuExternalReferenceCode);
+
+		if (entitlementDefinitions.isEmpty()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping order item ", commerceOrderItemId,
+						" because no active entitlement definitions matched ",
+						"SKU ", skuExternalReferenceCode));
+			}
+
+			return;
+		}
+
+		long accountEntryId = _getAccountEntryId(order);
+		long contractId = _getContractId(order);
+		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
+			order);
+
+		String endDate = _toString(
+			CommerceOrderItemUtil.getEndDateInstant(orderItem));
+		String startDate = _toString(
+			CommerceOrderItemUtil.getStartDateInstant(orderItem));
+
+		boolean selfServiceTrial = _isSelfServiceTrial(order);
+
+		String lockKey = _LOCK_KEY_PREFIX_ORDER + order.getId();
+
+		if (selfServiceTrial) {
+			lockKey = _LOCK_KEY_PREFIX_SELF_SERVICE_TRIAL + accountEntryId;
+		}
+
+		_keyedLock.withLock(
+			lockKey,
+			() -> {
+				List<EntitlementDefinition> missingEntitlementDefinitions =
+					_getMissingEntitlementDefinitions(
+						commerceOrderItemId, entitlementDefinitions);
+
+				if (missingEntitlementDefinitions.isEmpty()) {
+					return;
+				}
+
+				if (!selfServiceTrial) {
+					_addEntitlements(
+						accountEntryId, commerceOrderItemId, contractId,
+						endDate, missingEntitlementDefinitions,
+						orderItem.getQuantity(), productOptions,
+						projectExternalReferenceCode, false,
+						skuExternalReferenceCode, startDate);
+
+					return;
+				}
+
+				if (_hasEarlierSelfServiceTrialOrder(accountEntryId, order)) {
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							StringBundler.concat(
+								"Skipping order item ", commerceOrderItemId,
+								" because account ", accountEntryId,
+								" already started a trial of order type ",
+								order.getOrderTypeExternalReferenceCode()));
+					}
+
+					return;
+				}
+
+				_addEntitlements(
+					accountEntryId, commerceOrderItemId, contractId, endDate,
+					missingEntitlementDefinitions, BigDecimal.ONE,
+					productOptions, projectExternalReferenceCode, true,
+					skuExternalReferenceCode, startDate);
+			});
+	}
+
 	private long _getAccountEntryId(Order order) {
 		if (order == null) {
 			return 0;
@@ -965,6 +1025,24 @@ public class EntitlementService extends OneBaseService {
 		return licenseKeyDurationDays;
 	}
 
+	private List<EntitlementDefinition> _getMissingEntitlementDefinitions(
+			long commerceOrderItemId,
+			List<EntitlementDefinition> entitlementDefinitions)
+		throws Exception {
+
+		Set<Long> entitlementDefinitionIds = new HashSet<>();
+
+		for (Entitlement entitlement : getEntitlements(commerceOrderItemId)) {
+			entitlementDefinitionIds.add(
+				entitlement.getEntitlementDefinitionId());
+		}
+
+		return ListUtil.filter(
+			entitlementDefinitions,
+			entitlementDefinition -> !entitlementDefinitionIds.contains(
+				entitlementDefinition.getEntitlementDefinitionId()));
+	}
+
 	private String _getProjectExternalReferenceCode(Order order) {
 		if (order == null) {
 			return null;
@@ -1111,6 +1189,8 @@ public class EntitlementService extends OneBaseService {
 		"id,r_contractToEntitlement_c_contractId,terminationStatus";
 
 	private static final int _FILTER_BATCH_SIZE = 100;
+
+	private static final String _LOCK_KEY_PREFIX_ORDER = "order-";
 
 	private static final String _LOCK_KEY_PREFIX_SELF_SERVICE_TRIAL =
 		"self-service-trial-account-";

@@ -265,7 +265,7 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 
 **Relationships:** parent of Entitlement (`commerceOrderItemToEntitlement`, disassociate).
 
-**Object actions:** `EntitlementGeneration` (onAfterAdd) creates one Entitlement for each active EntitlementDefinition of the SKU. `EntitlementUpdate` and `CommerceOrderItemUpdate` run on update.
+**Object actions:** `EntitlementGeneration` (onAfterAdd) creates one Entitlement for each active EntitlementDefinition of the SKU when the order is completed. The CommerceOrder `CommerceOrderUpdate` action generates them for every item when the order becomes completed. `EntitlementUpdate` and `CommerceOrderItemUpdate` run on update.
 
 ---
 

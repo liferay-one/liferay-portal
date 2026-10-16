@@ -6,6 +6,10 @@
 package com.liferay.one;
 
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.json.JSONObject;
 
@@ -27,11 +31,27 @@ public class ObjectActionCommerceOrderUpdateRestController
 	public void post(@RequestBody String json) throws Exception {
 		JSONObject jsonObject = new JSONObject(json);
 
-		_commerceOrderService.dispatchOrderUpdate(
-			jsonObject.getLong("classPK"));
+		long orderId = jsonObject.getLong("classPK");
+
+		try {
+			_entitlementService.generateOrderEntitlements(orderId);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to generate entitlements for order " + orderId,
+				exception);
+		}
+
+		_commerceOrderService.dispatchOrderUpdate(orderId);
 	}
+
+	private static final Log _log = LogFactory.getLog(
+		ObjectActionCommerceOrderUpdateRestController.class);
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
 
 }

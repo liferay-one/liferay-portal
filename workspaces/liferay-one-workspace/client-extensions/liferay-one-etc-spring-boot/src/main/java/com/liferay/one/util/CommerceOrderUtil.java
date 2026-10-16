@@ -7,12 +7,14 @@ package com.liferay.one.util;
 
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.time.ZonedDateTime;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -96,6 +98,18 @@ public class CommerceOrderUtil {
 		}
 
 		return null;
+	}
+
+	public static boolean isCompleted(Order order) {
+		if ((order != null) &&
+			Objects.equals(
+				order.getOrderStatus(),
+				CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

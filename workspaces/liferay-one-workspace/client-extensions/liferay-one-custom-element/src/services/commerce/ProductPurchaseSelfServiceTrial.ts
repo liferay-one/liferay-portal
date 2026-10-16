@@ -73,6 +73,8 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	}
 
 	public async getNextStepsLink(cart: Cart) {
+		await CommerceOrders.completeSettled(cart.id).catch(console.error);
+
 		const generateForm = await this.waitForTrialGenerateForm();
 
 		if (!generateForm) {
@@ -85,8 +87,6 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 			return this.getGenerateActivationKeyLink();
 		}
-
-		await CommerceOrders.completeSettled(cart.id).catch(console.error);
 
 		const generateActivationKeyRequest =
 			this.getGenerateActivationKeyRequest(generateForm);

@@ -32,7 +32,7 @@ When this file and the code disagree, the code is correct. All paths below are r
 
 ## How To Read This File
 
-Each source has its own section with a sequence diagram. All four sources end at the same place: a `CommerceOrderItem` is added, and the `EntitlementGeneration` action runs. That shared step is in [The Shared Tail](#the-shared-tail). The sections after it cover what the entitlements unlock, how an order is attributed to a project and a contract, where the custom element reads each record, the state of each record, and what happens on a retry or a failure.
+Each source has its own section with a sequence diagram. All four sources end at the same place: an order item belongs to a completed order, and entitlement generation runs for it. Generation runs when the item is added to an order that is already completed, and again for every item when the order becomes completed. A pending or processing order is not paid or not closed yet (a bank transfer, or an `AI_HUB` order that waits for Salesforce), so it gets no entitlements. That shared step is in [The Shared Tail](#the-shared-tail). The sections after it cover what the entitlements unlock, how an order is attributed to a project and a contract, where the custom element reads each record, the state of each record, and what happens on a retry or a failure.
 
 Three terms recur:
 
@@ -153,7 +153,7 @@ sequenceDiagram
 
     U->>CE: choose product and SKU
     CE->>LR: create cart with cartItems
-    LR-->>OA: onAfterAdd per order item (EntitlementGeneration)
+    Note over OA: onAfterAdd per order item (EntitlementGeneration) skips the item, because the cart is open
     U->>CE: billing address on the Payment Method step
     CE->>SB: POST /commerce-orders/{id}/calculate-tax
     SB->>LR: PATCH order total and each order item price
@@ -171,6 +171,8 @@ sequenceDiagram
         Note over SB: nightly completeSettledOrders completes it once payment is marked completed
     end
     SB->>LR: order status pending, then processing, then completed
+    LR-->>OA: onAfterUpdate on order (CommerceOrderUpdate)
+    OA->>SB: generateOrderEntitlements creates the entitlements, because the order is completed
 ```
 
 | Purchase class | Order type | Extra custom fields | Follow up call |
@@ -205,7 +207,6 @@ sequenceDiagram
 
     U->>CE: start solution trial (SOLUTIONS7) or SSA trial (SSA_SAAS)
     CE->>LR: create cart, checkout
-    LR-->>SB: onAfterAdd per order item (EntitlementGeneration)
     CE->>SB: POST /trial/provisioning/{orderId}
     alt seat limit reached
         SB->>LR: order status on hold (20)
@@ -226,6 +227,7 @@ sequenceDiagram
     end
     Note over SB: every 6 hours, in progress trials past trial-end-date expire
     SB->>LR: status pending, processing, completed (payment not required)
+    Note over SB: the completed status makes CommerceOrderUpdate generate the entitlements of the trial SKU, if it has definitions
     SB->>CON: delete project and portal instance
 ```
 
@@ -279,9 +281,9 @@ Every source ends when an order item is added or changed. The object actions are
 | Action | Object | Trigger | Condition | Handler path | What it changes |
 | --- | --- | --- | --- | --- | --- |
 | `CommerceOrderItemUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/update` | When a PaaS Experience item becomes Canceled and the account has no other active PaaS Experience item, deletes the account's Okta application and its property (`…/one/ObjectActionCommerceOrderItemUpdateRestController.java`). Nothing else. |
-| `CommerceOrderUpdate` | `L_COMMERCE_ORDER` | `onAfterUpdate` | None | `/object/action/commerce/order/update` | Sets the default currency. `AI_HUB` in pending: creates the Salesforce opportunity. `SEO_STUDIO`: provisions SEO Studio. Other types: `completeSettledOrder` (`CommerceOrderService.java:340`). |
+| `CommerceOrderUpdate` | `L_COMMERCE_ORDER` | `onAfterUpdate` | None | `/object/action/commerce/order/update` | When the order is completed, generates the missing entitlements of every order item (`EntitlementService.generateOrderEntitlements`). A failure is logged and does not stop the rest. Then sets the default currency. `AI_HUB` in pending: creates the Salesforce opportunity. `SEO_STUDIO`: provisions SEO Studio. Other types: `completeSettledOrder` (`CommerceOrderService.java:340`). |
 | `CommerceProductDefinitionUpdate` | `L_COMMERCE_PRODUCT_DEFINITION` | `onAfterUpdate` | `status == 0` | `/object/action/commerce/product/definition/update` | For an approved paid App product, upserts one entitlement definition per SKU that has a license usage type option (`EntitlementDefinitionService.generateEntitlementDefinition`). |
-| `EntitlementGeneration` | `L_COMMERCE_ORDER_ITEM` | `onAfterAdd` | None | `/object/action/commerce/order/item/entitlement/generation` | Creates one entitlement for each active matching entitlement definition. |
+| `EntitlementGeneration` | `L_COMMERCE_ORDER_ITEM` | `onAfterAdd` | None | `/object/action/commerce/order/item/entitlement/generation` | When the order is completed, creates one entitlement for each active matching entitlement definition that the item does not have yet. Skips an item of an order in any other status. |
 | `EntitlementUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/entitlement/update` | Updates start date, end date, quantity, and max quantity of the item's existing entitlements. |
 | `UsageReportApproved` | `C_USAGE_REPORT` | `onAfterUpdate` | None | No client extension and no controller | Nothing. See Findings. |
 
@@ -300,6 +302,10 @@ sequenceDiagram
     ES->>LR: GET order item with custom fields
     alt item missing
         ES-->>C: log error, return
+    end
+    ES->>LR: GET order (orderStatus, accountId, contractId, salesforceProjectId)
+    alt order is not completed
+        ES-->>C: log info, return
     else customStatus is Canceled
         ES-->>C: log info, return
     end
@@ -309,8 +315,10 @@ sequenceDiagram
     alt none
         ES-->>C: log info, return
     end
-    ES->>LR: GET order (accountId, contractId, salesforceProjectId)
-    loop each definition
+    ES->>ES: lock the order, or the account for a self service trial
+    ES->>LR: GET entitlements of the order item
+    ES->>ES: keep the definitions that the item does not have yet
+    loop each remaining definition
         ES->>LR: GET entitlement by order item and definition
         alt exists
             ES->>ES: DuplicateEntitlementException, logged
@@ -463,7 +471,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 | Opportunity message | Upserts by ERC. The order is found by opportunity ID and items by line item ID, so a resend changes the existing records. Welcome emails go only to newly assigned contacts. | Every exception is caught and logged, and a Jira provisioning issue is filed. The message is acknowledged, so Pub/Sub does not redeliver it (`SalesforceOpportunityPubsubSubscriber.java:93`, `:104`). |
 | Salesforce object message (contract, project entitlement) | Upserts by ERC | One failed record makes the message throw, so it is not acknowledged and Pub/Sub redelivers it until the dead letter topic (`SalesforceObjectPubsubSubscriber.java:121`, `BasePubsubSubscriber.java:100`, `:110`). The records that succeeded run again. |
 | Order item with an unknown SKU | Skipped with a warning | The order completes without that item |
-| `EntitlementGeneration` on the same item twice | The check by order item and definition, and the unique ERC `<orderItemId>-<definitionId>`, stop a duplicate | Each definition is in its own `try`. An error is logged and that entitlement is never created. Nothing retries it. |
+| `EntitlementGeneration` or `CommerceOrderUpdate` on the same item twice | Generation skips each definition that the item already has. A lock on the order, or on the account for a self service trial, makes concurrent runs wait. The check by order item and definition, and the unique ERC `<orderItemId>-<definitionId>`, stop a duplicate. | Each definition is in its own `try`. An error is logged, and the next update of the order tries again. |
 | `EntitlementGeneration` with no `classPK` | Not applicable | `getLong("classPK")` throws, and the controller answers 500 |
 | `EntitlementGeneration` with no matching definition | Not applicable | Skipped with an info log. A definition created later does not reach the existing items. |
 | `EntitlementGeneration` on a deleted item | Not applicable | Logged and skipped |
@@ -472,7 +480,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 | Entitlement definition reconcile | Daily. Upserts by SKU ERC. Deactivates generated definitions whose SKU no longer exists. | Each product and SKU is in its own `try` |
 | Settled order completion | Daily, and on each order update. An in memory set stops two threads from completing the same order. | Each order is in its own `try` |
 | Usage report generation | Skips a report whose ERC exists | Each project is in its own `try` |
-| Self service checkout | A second click is blocked in the page. A cart that fails checkout throws. | Order items already exist, so their entitlements already exist |
+| Self service checkout | A second click is blocked in the page. A cart that fails checkout throws. | The order stays open, so its items have no entitlements |
 
 ## Hints Checked
 
@@ -491,7 +499,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 1. **High. An approved usage report creates nothing.** `C_USAGE_REPORT` has the action `UsageReportApproved` with executor `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8072`). `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` declares no such client extension, and no controller handles a usage report path. Overage orders exist only in seed data (`scripts/seed/populate_overages.sh`).
 
-2. **High. Entitlement generation does not check the order status or the payment.** `EntitlementService.generateEntitlements` (`…/one/service/EntitlementService.java:161`) skips only Canceled items. A self service cart creates its order items before checkout and before payment (`ProductPurchase.ts:109`), so an unpaid or abandoned cart that has a matching definition gets entitlements, provided Liferay sends the `onAfterAdd` payload (see Open Questions).
+2. **Resolved by LPD-110003. Entitlement generation now checks the order status.** Generation runs only for a completed order, so an open cart, an unpaid PayPal order (in progress), and a pending bank transfer order get no entitlements. Entitlements that carts created before this change stay in place, including the ones whose order item was removed (order item ID 0).
 
 3. **High. Self service entitlements have no dates.** Self service order items carry no `startDate` or `endDate` custom fields, and generation copies those fields as they are (`EntitlementService.java:214`). The entitlement then never expires (`EntitlementService._getActiveEntitlements`, `:608`).
 

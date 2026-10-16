@@ -27,7 +27,7 @@ The commerce chain creates the customer's rights:
 
 1. Salesforce events create a **Commerce Order** and its **Commerce Order Items**.
 
-1. The `EntitlementGeneration` action on each new order item finds every active **Entitlement Definition** for the item's SKU and creates one **Entitlement** for each.
+1. When the order is completed, entitlement generation finds every active **Entitlement Definition** for each order item's SKU and creates one **Entitlement** for each. The `EntitlementGeneration` action runs it for an item added to a completed order, and the `CommerceOrderUpdate` action runs it for every item when the order becomes completed.
 
 1. Entitlements lead to **License Keys**, **Activation Keys**, and **Environments**, and metered entitlements collect **Usage Events**.
 
