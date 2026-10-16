@@ -9,6 +9,7 @@ import {expect, oneTest as test} from '../fixtures/oneTest';
 import HeadlessAPI from '../utils/HeadlessAPI';
 import {sitePath} from '../utils/environmentUtils';
 import {liferayLogin} from '../utils/loginUtils';
+import {expectSettled, tableRow} from '../utils/myAccountUtils';
 import {
 	TemporaryBuyer,
 	createTemporaryBuyer,
@@ -42,11 +43,13 @@ type LicenseKey = {
 type TrialProduct = {
 	externalReferenceCode: string;
 	solutionType: 'cmp' | 'dsr';
+	trialExternalReferenceCode: string;
 };
 
 const CMP_TRIAL: TrialProduct = {
 	externalReferenceCode: 'PRDCT-CONTENT-MARKETING',
 	solutionType: 'cmp',
+	trialExternalReferenceCode: 'PRDCT-CONTENT-MARKETING-TRIAL',
 };
 
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
@@ -54,13 +57,8 @@ const DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
 const DSR_TRIAL: TrialProduct = {
 	externalReferenceCode: 'PRDCT-DSR',
 	solutionType: 'dsr',
+	trialExternalReferenceCode: 'PRDCT-DSR-TRIAL',
 };
-
-const DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-DXP-TRIAL';
-
-const GENERATE_PATTERN = new RegExp(
-	`/project/one-time-purchases/activation/generate\\?new=${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`
-);
 
 const PROSPECT_LICENSE_KEY_DURATION_DAYS = 30;
 
@@ -90,43 +88,38 @@ async function deleteAccountKeys(
 	}
 }
 
-async function generateTrialKey(page: Page, trialProduct: TrialProduct) {
-	await expect(
-		page.getByRole('heading', {name: 'Generate Activation Key'})
-	).toBeVisible({timeout: PORTAL_TIMEOUT});
-
-	await expect(
-		page.locator('select[name="productExternalReferenceCode"]')
-	).toHaveValue(DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE);
-
-	await expect(page.locator('select[name="keyType"]')).toHaveValue(
-		'non-production'
+async function expectTrialKeyListed(
+	adminAPI: HeadlessAPI,
+	page: Page,
+	trialProduct: TrialProduct
+) {
+	await expect(page).toHaveURL(
+		new RegExp(
+			`/project/one-time-purchases/products/${trialProduct.trialExternalReferenceCode}$`
+		),
+		{timeout: CHECKOUT_TIMEOUT}
 	);
 
-	await page.locator('input[type="radio"]').first().check();
+	await expectSettled(page);
 
-	await page.getByRole('button', {exact: true, name: 'Next'}).click();
+	const {name} = await adminAPI.getProductByERC(
+		trialProduct.trialExternalReferenceCode
+	);
+
+	await expect(
+		page.getByRole('heading', {exact: true, level: 1, name: name.en_US})
+	).toBeVisible({timeout: PORTAL_TIMEOUT});
 
 	await page
-		.locator('input[name="environmentName"]')
-		.fill(`E2E ${trialProduct.solutionType.toUpperCase()} Trial`);
-	await page
-		.locator('[name="servers.0.hostName"]')
-		.fill('e2e-trial.example.com');
+		.getByRole('link', {name: /Activation/})
+		.first()
+		.click();
 
-	await page
-		.getByRole('checkbox', {name: /Receive Expiration Notifications/})
-		.uncheck();
+	await expect(page).toHaveURL(/\/project\/one-time-purchases\/activation$/);
 
-	const downloadPromise = page.waitForEvent('download', {
-		timeout: CHECKOUT_TIMEOUT,
-	});
+	await expectSettled(page);
 
-	await page.getByRole('button', {exact: true, name: 'Generate Key'}).click();
-
-	await downloadPromise;
-
-	await expect(page).toHaveURL(/\/project\/one-time-purchases\/activation$/, {
+	await expect(tableRow(page, getEnvironmentName(trialProduct))).toBeVisible({
 		timeout: PORTAL_TIMEOUT,
 	});
 }
@@ -170,6 +163,10 @@ async function getActivationKeyLicenseKeys(
 	return items;
 }
 
+function getEnvironmentName(trialProduct: TrialProduct) {
+	return `E2E ${trialProduct.solutionType.toUpperCase()} Trial`;
+}
+
 function getDurationDays(activationKey: ActivationKey): number {
 	return Math.round(
 		(Date.parse(activationKey.endDate) -
@@ -199,10 +196,10 @@ async function startTrial(
 		timeout: PORTAL_TIMEOUT,
 	});
 
-	await submitActivationKeyForm(page);
+	await submitActivationKeyForm(page, trialProduct);
 }
 
-async function submitActivationKeyForm(page: Page) {
+async function submitActivationKeyForm(page: Page, trialProduct: TrialProduct) {
 	await expect(
 		page.getByRole('heading', {
 			exact: true,
@@ -223,6 +220,22 @@ async function submitActivationKeyForm(page: Page) {
 		.locator('.dropdown-menu-purpose')
 		.getByText('Proof of Concept (POC)')
 		.click();
+
+	await page
+		.locator('#environmentName')
+		.fill(getEnvironmentName(trialProduct));
+
+	await page.getByRole('button', {name: 'IP Addresses'}).click();
+
+	await page.locator('#serverValue').fill('not an ip');
+
+	await expect(
+		page.getByText('Enter a valid IP address on each line.')
+	).toBeVisible();
+
+	await page.getByRole('button', {name: 'Host Name'}).click();
+
+	await page.locator('#serverValue').fill('e2e-trial.example.com');
 
 	await page.locator('#terms-and-conditions').check();
 	await page.locator('#user-agreement').check();
@@ -263,11 +276,7 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 
 		await startTrial(adminAPI, page, CMP_TRIAL);
 
-		await expect(page).toHaveURL(GENERATE_PATTERN, {
-			timeout: CHECKOUT_TIMEOUT,
-		});
-
-		await generateTrialKey(page, CMP_TRIAL);
+		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
 
 		const [activationKey] = await getAccountActivationKeys(adminAPI, buyer);
 
@@ -308,19 +317,11 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 
 		await startTrial(adminAPI, page, CMP_TRIAL);
 
-		await expect(page).toHaveURL(GENERATE_PATTERN, {
-			timeout: CHECKOUT_TIMEOUT,
-		});
-
-		await generateTrialKey(page, CMP_TRIAL);
+		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
 
 		await startTrial(adminAPI, page, DSR_TRIAL);
 
-		await expect(page).toHaveURL(GENERATE_PATTERN, {
-			timeout: CHECKOUT_TIMEOUT,
-		});
-
-		await generateTrialKey(page, DSR_TRIAL);
+		await expectTrialKeyListed(adminAPI, page, DSR_TRIAL);
 
 		const activationKeys = await getAccountActivationKeys(adminAPI, buyer);
 
@@ -375,9 +376,7 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 
 		await startTrial(adminAPI, page, CMP_TRIAL);
 
-		await expect(page).toHaveURL(GENERATE_PATTERN, {
-			timeout: CHECKOUT_TIMEOUT,
-		});
+		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
 
 		await expect
 			.poll(

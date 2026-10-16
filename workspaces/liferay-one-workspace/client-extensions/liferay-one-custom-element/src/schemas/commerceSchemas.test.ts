@@ -226,6 +226,47 @@ describe('[MOD-SCHEMAS-COMMERCESCHEMAS] commerceSchemas', () => {
 		);
 	});
 
+	it('selfServiceTrialActivationKey takes a server instead of a domain and validates it by its field', () => {
+		const schema = commerceSchemas.selfServiceTrialActivationKey;
+		const {domain: _domain, ...trialActivationKey} = {
+			...activationKey,
+			environmentName: 'Production',
+			serverField: 'ipAddresses',
+			serverValue: '10.0.0.1\n10.0.0.2',
+		};
+
+		expect(schema.safeParse(trialActivationKey).success).toBe(true);
+		expect(
+			schema.safeParse({...trialActivationKey, environmentName: ' '})
+				.success
+		).toBe(false);
+		expect(
+			schema.safeParse({...trialActivationKey, serverValue: ''}).success
+		).toBe(false);
+
+		const result = schema.safeParse({
+			...trialActivationKey,
+			serverValue: '10.0.0.1\nnot-an-ip',
+		});
+
+		expect(result.success).toBe(false);
+		expect(result.error?.issues[0].path).toEqual(['serverValue']);
+		expect(
+			schema.safeParse({
+				...trialActivationKey,
+				serverField: 'macAddresses',
+				serverValue: '10.0.0.1',
+			}).success
+		).toBe(false);
+		expect(
+			schema.safeParse({
+				...trialActivationKey,
+				serverField: 'hostName',
+				serverValue: 'any host',
+			}).success
+		).toBe(true);
+	});
+
 	it('trialForm requires a product and valid invite emails', () => {
 		const schema = commerceSchemas.trialForm;
 		const trial = {
