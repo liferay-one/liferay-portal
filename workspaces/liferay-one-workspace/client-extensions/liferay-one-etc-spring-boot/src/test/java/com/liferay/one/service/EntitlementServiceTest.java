@@ -480,6 +480,56 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementsMultipliesMaxQuantityByOrderItemQuantity()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
+			new JSONObject(
+			).put(
+				"defaultQuantity", 1.0
+			).put(
+				"grantType", "licenseGeneration"
+			).put(
+				"id", 1L
+			).put(
+				"maxQuantity", 1.0
+			).put(
+				"name", "liferay-self-hosted-non-prod-sizing-1"
+			));
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyMap(), Mockito.anyString())
+		).thenReturn(
+			List.of(entitlementDefinition)
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "liferay-self-hosted-non-prod-sizing-1")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.eq(2.0), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.eq(2.0), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGenerateEntitlementsPassesTheOrderItemOptions()
 		throws Exception {
 
@@ -1041,6 +1091,32 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpdateEntitlementsSyncsMaxQuantity() throws Exception {
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithMaxQuantity(11, 1.0, 1.0),
+				_createEntitlementWithMaxQuantity(12, 1.0, 2.0))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertEquals(
+			List.of(URI.create("/o/c/entitlements/11")), _patchURIs);
+		Assertions.assertEquals(1, _patchBodies.size());
+
+		JSONObject jsonObject = new JSONObject(_patchBodies.get(0));
+
+		Assertions.assertEquals(2.0, jsonObject.getDouble("maxQuantity"));
+		Assertions.assertEquals(1, jsonObject.length());
+	}
+
+	@Test
 	public void testUpdateEntitlementsSyncsQuantity() throws Exception {
 		_setUpOrderItem(_createOrderItem());
 
@@ -1201,6 +1277,29 @@ public class EntitlementServiceTest {
 		}
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _createEntitlementWithMaxQuantity(
+		long entitlementId, Double definitionMaxQuantity, Double maxQuantity) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", 1
+				).put(
+					"maxQuantity", definitionMaxQuantity
+				)
+			).put(
+				"id", entitlementId
+			).put(
+				"maxQuantity", maxQuantity
+			).put(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+				_ORDER_ITEM_ID
+			));
 	}
 
 	private Entitlement _createEntitlementWithOrderItem(
