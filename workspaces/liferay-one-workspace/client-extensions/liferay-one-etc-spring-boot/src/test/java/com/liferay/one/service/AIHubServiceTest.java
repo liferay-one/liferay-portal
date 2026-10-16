@@ -86,24 +86,6 @@ public class AIHubServiceTest {
 	}
 
 	@Test
-	public void testGetAIHubApplicationJSONObjectReturnsNullOnException() {
-		_testAIHubService.runtimeException = new IllegalStateException();
-
-		Assertions.assertNull(
-			_testAIHubService.getAIHubApplicationJSONObject("AIHUB-1"));
-	}
-
-	@Test
-	public void testGetAIHubApplicationJSONObjectReturnsResponse() {
-		_testAIHubService.response = "{\"id\": 7}";
-
-		JSONObject jsonObject = _testAIHubService.getAIHubApplicationJSONObject(
-			"AIHUB-1");
-
-		Assertions.assertEquals(7, jsonObject.getInt("id"));
-	}
-
-	@Test
 	public void testProvisionPostsToAIHub() {
 		_testAIHubService.response = "{\"status\": \"provisioned\"}";
 
@@ -151,14 +133,6 @@ public class AIHubServiceTest {
 			IllegalStateException.class,
 			() -> _testAIHubService.purchaseQuotaPrepaidBlock(
 				5, new JSONObject()));
-	}
-
-	@Test
-	public void testPutAIHubApplicationReturnsNullOnException() {
-		_testAIHubService.runtimeException = new IllegalStateException();
-
-		Assertions.assertNull(
-			_testAIHubService.putAIHubApplication("AIHUB-1", new JSONObject()));
 	}
 
 	@Test
@@ -300,11 +274,6 @@ public class AIHubServiceTest {
 		public String response;
 		public RuntimeException runtimeException;
 		public final List<URI> uris = new ArrayList<>();
-
-		@Override
-		protected String get(String authorization, URI uri) {
-			return _respond(authorization, null, uri);
-		}
 
 		@Override
 		protected String getAuthorization() {
