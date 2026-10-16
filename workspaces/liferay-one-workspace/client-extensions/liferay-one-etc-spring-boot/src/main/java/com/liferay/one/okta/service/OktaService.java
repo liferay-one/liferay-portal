@@ -82,6 +82,23 @@ public class OktaService {
 				"okta-user-update"));
 	}
 
+	public void addUserToGroup(String emailAddress, String groupName)
+		throws Exception {
+
+		_oktaPubsubPublisher.publish(
+			new Message(
+				null,
+				new JSONObject(
+				).put(
+					"action", "ADD"
+				).put(
+					"groupName", groupName
+				).put(
+					"login", emailAddress
+				).toString(),
+				"okta-user-group-update"));
+	}
+
 	public void assignUserToApplication(String appId, String emailAddress)
 		throws Exception {
 
@@ -300,6 +317,23 @@ public class OktaService {
 		}
 
 		return oktaUsers;
+	}
+
+	public void removeUserFromGroup(String emailAddress, String groupName)
+		throws Exception {
+
+		_oktaPubsubPublisher.publish(
+			new Message(
+				null,
+				new JSONObject(
+				).put(
+					"action", "REMOVE"
+				).put(
+					"groupName", groupName
+				).put(
+					"login", emailAddress
+				).toString(),
+				"okta-user-group-update"));
 	}
 
 	public OktaUser syncContact(UserAccount userAccount) throws Exception {

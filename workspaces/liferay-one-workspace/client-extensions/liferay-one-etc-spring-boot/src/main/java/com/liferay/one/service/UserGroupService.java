@@ -16,6 +16,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
@@ -26,9 +27,11 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -139,15 +142,41 @@ public class UserGroupService extends OneBaseService {
 			Set<Long> currentPartnerUserIds = _getUserGroupUserIds(
 				_EXTERNAL_REFERENCE_CODE_PARTNERS);
 
+			Set<Long> addCustomerUserIds = _getUnsyncedUserIds(
+				currentCustomerUserIds, customerUserIds);
+			Set<Long> addPartnerUserIds = _getUnsyncedUserIds(
+				currentPartnerUserIds, partnerUserIds);
+			Set<Long> removeCustomerUserIds = _getUnsyncedUserIds(
+				customerUserIds, currentCustomerUserIds);
+			Set<Long> removePartnerUserIds = _getUnsyncedUserIds(
+				partnerUserIds, currentPartnerUserIds);
+
+			Set<Long> userIds = new HashSet<>(addCustomerUserIds);
+
+			userIds.addAll(addPartnerUserIds);
+			userIds.addAll(removeCustomerUserIds);
+			userIds.addAll(removePartnerUserIds);
+
+			Map<Long, String> emailAddresses = _getEmailAddresses(userIds);
+
 			UserGroupResource userGroupResource = _buildUserGroupResource();
 
-			_reconcileUserGroup(
-				currentCustomerUserIds,
-				_EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS, customerUserIds,
-				userGroupResource);
-			_reconcileUserGroup(
-				currentPartnerUserIds, _EXTERNAL_REFERENCE_CODE_PARTNERS,
-				partnerUserIds, userGroupResource);
+			_addUserGroupUserAccounts(
+				emailAddresses, _EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS,
+				_OKTA_GROUP_NAME_CUSTOMERS, userGroupResource,
+				addCustomerUserIds);
+			_removeUserGroupUserAccounts(
+				emailAddresses, _EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS,
+				_OKTA_GROUP_NAME_CUSTOMERS, userGroupResource,
+				removeCustomerUserIds);
+			_addUserGroupUserAccounts(
+				emailAddresses, _EXTERNAL_REFERENCE_CODE_PARTNERS,
+				_OKTA_GROUP_NAME_PARTNERS, userGroupResource,
+				addPartnerUserIds);
+			_removeUserGroupUserAccounts(
+				emailAddresses, _EXTERNAL_REFERENCE_CODE_PARTNERS,
+				_OKTA_GROUP_NAME_PARTNERS, userGroupResource,
+				removePartnerUserIds);
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -251,11 +280,14 @@ public class UserGroupService extends OneBaseService {
 		UserGroupResource userGroupResource = _buildUserGroupResource();
 
 		_updateUserGroupUserAccount(
-			_EXTERNAL_REFERENCE_CODE_PARTNERS, partner,
-			userGroupExternalReferenceCodes, userGroupResource, userId);
+			userAccount.getEmailAddress(), _EXTERNAL_REFERENCE_CODE_PARTNERS,
+			partner, _OKTA_GROUP_NAME_PARTNERS, userGroupExternalReferenceCodes,
+			userGroupResource, userId);
 		_updateUserGroupUserAccount(
+			userAccount.getEmailAddress(),
 			_EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS, customer,
-			userGroupExternalReferenceCodes, userGroupResource, userId);
+			_OKTA_GROUP_NAME_CUSTOMERS, userGroupExternalReferenceCodes,
+			userGroupResource, userId);
 	}
 
 	@Scheduled(cron = "${liferay.one.user.group.sync.cron}")
@@ -300,8 +332,24 @@ public class UserGroupService extends OneBaseService {
 		}
 	}
 
+	private void _addOktaUserGroup(
+		String emailAddress, String groupName, long userId) {
+
+		try {
+			_oktaService.addUserToGroup(emailAddress, groupName);
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to add user ", userId, " to Okta group \"",
+					groupName, "\""),
+				exception);
+		}
+	}
+
 	private void _addUserGroupUserAccounts(
-		String externalReferenceCode, UserGroupResource userGroupResource,
+		Map<Long, String> emailAddresses, String externalReferenceCode,
+		String oktaGroupName, UserGroupResource userGroupResource,
 		Set<Long> userIds) {
 
 		List<Long> userIdsList = new ArrayList<>(userIds);
@@ -317,6 +365,11 @@ public class UserGroupService extends OneBaseService {
 					externalReferenceCode, batchUserIds.toArray(new Long[0]));
 
 				count += batchUserIds.size();
+
+				for (long userId : batchUserIds) {
+					_addOktaUserGroup(
+						emailAddresses.get(userId), oktaGroupName, userId);
+				}
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -399,6 +452,33 @@ public class UserGroupService extends OneBaseService {
 		return userIds;
 	}
 
+	private Map<Long, String> _getEmailAddresses(Set<Long> userIds)
+		throws Exception {
+
+		Map<Long, String> emailAddresses = new HashMap<>();
+
+		for (UserAccount userAccount :
+				_userAccountService.getUserAccounts(
+					userIds, _FIELDS_EMAIL_ADDRESS)) {
+
+			emailAddresses.put(
+				userAccount.getId(), userAccount.getEmailAddress());
+		}
+
+		return emailAddresses;
+	}
+
+	private Set<Long> _getUnsyncedUserIds(
+		Set<Long> excludedUserIds, Set<Long> userIds) {
+
+		Set<Long> unsyncedUserIds = new HashSet<>(userIds);
+
+		unsyncedUserIds.removeAll(excludedUserIds);
+		unsyncedUserIds.removeAll(_syncedUserIds);
+
+		return unsyncedUserIds;
+	}
+
 	private Set<Long> _getUserGroupUserIds(String externalReferenceCode)
 		throws Exception {
 
@@ -435,28 +515,24 @@ public class UserGroupService extends OneBaseService {
 		}
 	}
 
-	private void _reconcileUserGroup(
-		Set<Long> currentUserIds, String externalReferenceCode,
-		Set<Long> targetUserIds, UserGroupResource userGroupResource) {
+	private void _removeOktaUserGroup(
+		String emailAddress, String groupName, long userId) {
 
-		Set<Long> addUserIds = new HashSet<>(targetUserIds);
-
-		addUserIds.removeAll(currentUserIds);
-		addUserIds.removeAll(_syncedUserIds);
-
-		Set<Long> removeUserIds = new HashSet<>(currentUserIds);
-
-		removeUserIds.removeAll(targetUserIds);
-		removeUserIds.removeAll(_syncedUserIds);
-
-		_addUserGroupUserAccounts(
-			externalReferenceCode, userGroupResource, addUserIds);
-		_removeUserGroupUserAccounts(
-			externalReferenceCode, userGroupResource, removeUserIds);
+		try {
+			_oktaService.removeUserFromGroup(emailAddress, groupName);
+		}
+		catch (Exception exception) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to remove user ", userId, " from Okta group \"",
+					groupName, "\""),
+				exception);
+		}
 	}
 
 	private void _removeUserGroupUserAccounts(
-		String externalReferenceCode, UserGroupResource userGroupResource,
+		Map<Long, String> emailAddresses, String externalReferenceCode,
+		String oktaGroupName, UserGroupResource userGroupResource,
 		Set<Long> userIds) {
 
 		List<Long> userIdsList = new ArrayList<>(userIds);
@@ -472,6 +548,11 @@ public class UserGroupService extends OneBaseService {
 					externalReferenceCode, batchUserIds.toArray(new Long[0]));
 
 				count += batchUserIds.size();
+
+				for (long userId : batchUserIds) {
+					_removeOktaUserGroup(
+						emailAddresses.get(userId), oktaGroupName, userId);
+				}
 			}
 			catch (Exception exception) {
 				_log.error(
@@ -491,8 +572,8 @@ public class UserGroupService extends OneBaseService {
 	}
 
 	private void _updateUserGroupUserAccount(
-			String externalReferenceCode, boolean member,
-			Set<String> userGroupExternalReferenceCodes,
+			String emailAddress, String externalReferenceCode, boolean member,
+			String oktaGroupName, Set<String> userGroupExternalReferenceCodes,
 			UserGroupResource userGroupResource, long userId)
 		throws Exception {
 
@@ -509,6 +590,8 @@ public class UserGroupService extends OneBaseService {
 						"Added user ", userId, " to user group ",
 						externalReferenceCode));
 			}
+
+			_addOktaUserGroup(emailAddress, oktaGroupName, userId);
 		}
 		else if (!member && present) {
 			userGroupResource.deleteUserGroupByExternalReferenceCodeUsers(
@@ -520,6 +603,8 @@ public class UserGroupService extends OneBaseService {
 						"Removed user ", userId, " from user group ",
 						externalReferenceCode));
 			}
+
+			_removeOktaUserGroup(emailAddress, oktaGroupName, userId);
 		}
 	}
 
@@ -532,7 +617,13 @@ public class UserGroupService extends OneBaseService {
 	private static final String _FIELDS_ACCOUNT_USER_ACCOUNTS =
 		"accountBriefs,id";
 
+	private static final String _FIELDS_EMAIL_ADDRESS = "emailAddress,id";
+
 	private static final long _LOOK_BACK_MINUTES = 30;
+
+	private static final String _OKTA_GROUP_NAME_CUSTOMERS = "Customers";
+
+	private static final String _OKTA_GROUP_NAME_PARTNERS = "Partners";
 
 	private static final int _PAGE_SIZE = 500;
 
@@ -553,6 +644,9 @@ public class UserGroupService extends OneBaseService {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private OktaService _oktaService;
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;

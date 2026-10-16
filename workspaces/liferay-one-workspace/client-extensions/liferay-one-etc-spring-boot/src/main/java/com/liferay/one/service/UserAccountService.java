@@ -179,34 +179,16 @@ public class UserAccountService extends OneBaseService {
 	public List<UserAccount> getUserAccounts(Collection<Long> userIds)
 		throws Exception {
 
-		if ((userIds == null) || userIds.isEmpty()) {
-			return Collections.emptyList();
-		}
+		return _getUserAccounts(
+			_buildUserAccountResource("nestedFields", "customFields"), userIds);
+	}
 
-		UserAccountResource userAccountResource = _buildUserAccountResource(
-			"nestedFields", "customFields");
+	public List<UserAccount> getUserAccounts(
+			Collection<Long> userIds, String fields)
+		throws Exception {
 
-		List<Long> uniqueUserIds = new ArrayList<>(
-			new LinkedHashSet<>(userIds));
-
-		List<UserAccount> userAccounts = new ArrayList<>();
-
-		for (int i = 0; i < uniqueUserIds.size(); i += _FILTER_BATCH_SIZE) {
-			List<Long> batchUserIds = uniqueUserIds.subList(
-				i, Math.min(i + _FILTER_BATCH_SIZE, uniqueUserIds.size()));
-
-			Page<UserAccount> userAccountsPage =
-				userAccountResource.getUserAccountsPage(
-					null,
-					StringBundler.concat(
-						"id in ('", StringUtil.merge(batchUserIds, "','"),
-						"')"),
-					Pagination.of(1, batchUserIds.size()), null);
-
-			userAccounts.addAll(userAccountsPage.getItems());
-		}
-
-		return userAccounts;
+		return _getUserAccounts(
+			_buildUserAccountResource("fields", fields), userIds);
 	}
 
 	public boolean hasAccountUserAccount(long accountId, long userId)
@@ -337,6 +319,37 @@ public class UserAccountService extends OneBaseService {
 			}
 
 			page++;
+		}
+
+		return userAccounts;
+	}
+
+	private List<UserAccount> _getUserAccounts(
+			UserAccountResource userAccountResource, Collection<Long> userIds)
+		throws Exception {
+
+		if ((userIds == null) || userIds.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		List<Long> uniqueUserIds = new ArrayList<>(
+			new LinkedHashSet<>(userIds));
+
+		List<UserAccount> userAccounts = new ArrayList<>();
+
+		for (int i = 0; i < uniqueUserIds.size(); i += _FILTER_BATCH_SIZE) {
+			List<Long> batchUserIds = uniqueUserIds.subList(
+				i, Math.min(i + _FILTER_BATCH_SIZE, uniqueUserIds.size()));
+
+			Page<UserAccount> userAccountsPage =
+				userAccountResource.getUserAccountsPage(
+					null,
+					StringBundler.concat(
+						"id in ('", StringUtil.merge(batchUserIds, "','"),
+						"')"),
+					Pagination.of(1, batchUserIds.size()), null);
+
+			userAccounts.addAll(userAccountsPage.getItems());
 		}
 
 		return userAccounts;
