@@ -142,23 +142,32 @@ public class EntitlementServiceDateRangeTest {
 			Collections.emptyList()
 		).when(
 			entitlementService
-		).getEntitlements(
-			Mockito.anyString()
+		).getAllProjectedItems(
+			Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+			Mockito.any()
 		);
 
 		entitlementService.getActiveEntitlementsByNames(
 			Arrays.asList("gold-support", "O'partner"));
 
-		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
+		ArgumentCaptor<String> fieldsArgumentCaptor = ArgumentCaptor.forClass(
 			String.class);
+		ArgumentCaptor<String> filterStringArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
 
 		Mockito.verify(
 			entitlementService
-		).getEntitlements(
-			argumentCaptor.capture()
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/entitlements"), fieldsArgumentCaptor.capture(),
+			filterStringArgumentCaptor.capture(), Mockito.any()
 		);
 
-		String filterString = argumentCaptor.getValue();
+		Assertions.assertEquals(
+			"id,name,r_accountEntryToEntitlement_accountEntryId," +
+				"r_projectToEntitlement_c_projectERC",
+			fieldsArgumentCaptor.getValue());
+
+		String filterString = filterStringArgumentCaptor.getValue();
 
 		Assertions.assertTrue(
 			filterString.startsWith("(endDate eq null or endDate ge "),
@@ -184,8 +193,9 @@ public class EntitlementServiceDateRangeTest {
 
 		Mockito.verify(
 			entitlementService, Mockito.never()
-		).getEntitlements(
-			Mockito.anyString()
+		).getAllProjectedItems(
+			Mockito.anyString(), Mockito.anyString(), Mockito.anyString(),
+			Mockito.any()
 		);
 	}
 

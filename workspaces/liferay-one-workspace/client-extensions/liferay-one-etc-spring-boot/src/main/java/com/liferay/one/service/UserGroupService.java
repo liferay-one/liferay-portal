@@ -107,7 +107,7 @@ public class UserGroupService extends OneBaseService {
 			for (long accountEntryId : accountEntryIds) {
 				for (UserAccount userAccount :
 						_userAccountService.getAccountUserAccounts(
-							accountEntryId)) {
+							accountEntryId, _FIELDS_ACCOUNT_USER_ACCOUNTS)) {
 
 					if (customerAccountIds.contains(accountEntryId) &&
 						UserAccountUtil.hasAccountRole(
@@ -529,7 +529,10 @@ public class UserGroupService extends OneBaseService {
 	private static final String _EXTERNAL_REFERENCE_CODE_SUPPORT_CUSTOMERS =
 		"C_SUPPORT_CUSTOMERS";
 
-	private static final long _LOOK_BACK_MINUTES = 15;
+	private static final String _FIELDS_ACCOUNT_USER_ACCOUNTS =
+		"accountBriefs,id";
+
+	private static final long _LOOK_BACK_MINUTES = 30;
 
 	private static final int _PAGE_SIZE = 500;
 

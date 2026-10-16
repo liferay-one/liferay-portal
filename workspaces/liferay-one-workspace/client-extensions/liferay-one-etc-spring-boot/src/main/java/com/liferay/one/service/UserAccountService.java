@@ -115,29 +115,17 @@ public class UserAccountService extends OneBaseService {
 	public List<UserAccount> getAccountUserAccounts(long accountId)
 		throws Exception {
 
-		UserAccountResource userAccountResource = _buildUserAccountResource(
-			"nestedFields", "customFields");
+		return _getAccountUserAccounts(
+			accountId,
+			_buildUserAccountResource("nestedFields", "customFields"));
+	}
 
-		List<UserAccount> userAccounts = new ArrayList<>();
+	public List<UserAccount> getAccountUserAccounts(
+			long accountId, String fields)
+		throws Exception {
 
-		int page = 1;
-
-		while (true) {
-			Page<UserAccount> userAccountsPage =
-				userAccountResource.getAccountUserAccountsPage(
-					accountId, null, null, Pagination.of(page, _PAGE_SIZE),
-					null);
-
-			userAccounts.addAll(userAccountsPage.getItems());
-
-			if (page >= userAccountsPage.getLastPage()) {
-				break;
-			}
-
-			page++;
-		}
-
-		return userAccounts;
+		return _getAccountUserAccounts(
+			accountId, _buildUserAccountResource("fields", fields));
 	}
 
 	public UserAccount getMyUserAccount(Jwt jwt) throws Exception {
@@ -326,6 +314,32 @@ public class UserAccountService extends OneBaseService {
 		).parameters(
 			parameters
 		).build();
+	}
+
+	private List<UserAccount> _getAccountUserAccounts(
+			long accountId, UserAccountResource userAccountResource)
+		throws Exception {
+
+		List<UserAccount> userAccounts = new ArrayList<>();
+
+		int page = 1;
+
+		while (true) {
+			Page<UserAccount> userAccountsPage =
+				userAccountResource.getAccountUserAccountsPage(
+					accountId, null, null, Pagination.of(page, _PAGE_SIZE),
+					null);
+
+			userAccounts.addAll(userAccountsPage.getItems());
+
+			if (page >= userAccountsPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return userAccounts;
 	}
 
 	private static final int _FILTER_BATCH_SIZE = 100;

@@ -364,11 +364,15 @@ public class EntitlementService extends OneBaseService {
 			return Collections.emptyList();
 		}
 
-		return _getActiveEntitlements(
-			StringUtil.merge(
-				TransformUtil.transform(
-					names, name -> "name eq '" + escapeODataString(name) + "'"),
-				" or "));
+		return getAllProjectedItems(
+			"/o/c/entitlements", _FIELDS_ACTIVE_ENTITLEMENTS_BY_NAMES,
+			_getActiveFilterString(
+				StringUtil.merge(
+					TransformUtil.transform(
+						names,
+						name -> "name eq '" + escapeODataString(name) + "'"),
+					" or ")),
+			Entitlement::new);
 	}
 
 	public List<Entitlement> getActiveUnassignedEntitlements(
@@ -669,16 +673,7 @@ public class EntitlementService extends OneBaseService {
 	private List<Entitlement> _getActiveEntitlements(String filterString)
 		throws Exception {
 
-		Instant instant = Instant.now(
-		).truncatedTo(
-			ChronoUnit.MILLIS
-		);
-
-		return getEntitlements(
-			StringBundler.concat(
-				"(endDate eq null or endDate ge ", instant, ") and (",
-				filterString, ") and (startDate eq null or startDate le ",
-				instant, ")"));
+		return getEntitlements(_getActiveFilterString(filterString));
 	}
 
 	private List<Entitlement> _getActiveEntitlements(
@@ -736,6 +731,17 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return new ArrayList<>(entitlementDefinitions.values());
+	}
+
+	private String _getActiveFilterString(String filterString) {
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		return StringBundler.concat(
+			"(endDate eq null or endDate ge ", instant, ") and (", filterString,
+			") and (startDate eq null or startDate le ", instant, ")");
 	}
 
 	private String _getEntitlementNamesFilterString(
@@ -860,6 +866,10 @@ public class EntitlementService extends OneBaseService {
 			).build(
 			).toUri());
 	}
+
+	private static final String _FIELDS_ACTIVE_ENTITLEMENTS_BY_NAMES =
+		"id,name,r_accountEntryToEntitlement_accountEntryId," +
+			"r_projectToEntitlement_c_projectERC";
 
 	private static final int _FILTER_BATCH_SIZE = 100;
 

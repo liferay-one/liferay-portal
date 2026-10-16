@@ -209,7 +209,7 @@ public class UserGroupServiceReconcileTest {
 		Mockito.verify(
 			_userAccountService, Mockito.never()
 		).getAccountUserAccounts(
-			Mockito.anyLong()
+			Mockito.anyLong(), Mockito.anyString()
 		);
 
 		Mockito.verify(
@@ -372,7 +372,7 @@ public class UserGroupServiceReconcileTest {
 		Mockito.verify(
 			_userAccountService
 		).getAccountUserAccounts(
-			_CUSTOMER_ACCOUNT_ID
+			_CUSTOMER_ACCOUNT_ID, "accountBriefs,id"
 		);
 
 		Mockito.verify(
@@ -631,7 +631,8 @@ public class UserGroupServiceReconcileTest {
 		throws Exception {
 
 		Mockito.when(
-			_userAccountService.getAccountUserAccounts(accountEntryId)
+			_userAccountService.getAccountUserAccounts(
+				accountEntryId, "accountBriefs,id")
 		).thenReturn(
 			Arrays.asList(userAccounts)
 		);

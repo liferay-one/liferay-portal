@@ -106,7 +106,7 @@ public class UserGroupServiceSyncTest {
 	}
 
 	@Test
-	public void testSyncUserGroupsLooksBackFifteenMinutesOnEveryRun()
+	public void testSyncUserGroupsLooksBackThirtyMinutesOnEveryRun()
 		throws Exception {
 
 		_userGroupService.syncUserGroups();
@@ -334,7 +334,7 @@ public class UserGroupServiceSyncTest {
 
 	private static final long _ACCOUNT_ID = 11111;
 
-	private static final Duration _LOOK_BACK = Duration.ofMinutes(15);
+	private static final Duration _LOOK_BACK = Duration.ofMinutes(30);
 
 	private static final long _OTHER_ACCOUNT_ID = 11112;
 
