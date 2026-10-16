@@ -79,7 +79,7 @@ const PaymentDetails = () => {
 	);
 
 	const emailAddress = account?.customFields?.find(
-		(customField) => customField.name === 'Contact Email'
+		(customField) => customField.name === 'contactEmail'
 	)?.customValue?.data;
 
 	const paymentStatus = publisherSalesSummary?.paymentStatus.key;

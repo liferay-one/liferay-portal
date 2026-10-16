@@ -141,7 +141,7 @@ export default function AccountDetails() {
 							{
 								title: i18n.translate('industry'),
 								value: textWrapper(
-									getCustomFieldValue(account, 'Industry')
+									getCustomFieldValue(account, 'industry')
 								),
 							},
 							{
@@ -204,14 +204,14 @@ export default function AccountDetails() {
 									value: textWrapper(
 										getCustomFieldValue(
 											account,
-											'Password Policy'
+											'passwordPolicy'
 										)
 									),
 								},
 								{
 									title: i18n.translate('okta-sso'),
 									value: textWrapper(
-										getCustomFieldValue(account, 'Okta SSO')
+										getCustomFieldValue(account, 'oktaSSO')
 									),
 								},
 								{
@@ -221,7 +221,7 @@ export default function AccountDetails() {
 									value: textWrapper(
 										getCustomFieldValue(
 											account,
-											'Two-Factor Authentication'
+											'twoFactorAuthentication'
 										)
 									),
 								},

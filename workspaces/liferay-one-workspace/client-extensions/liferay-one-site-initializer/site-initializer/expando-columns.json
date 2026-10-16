@@ -82,7 +82,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
-		"name": "Contact Email",
+		"name": "contactEmail",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -95,7 +95,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
-		"name": "Industry",
+		"name": "industry",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -108,7 +108,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
-		"name": "Okta SSO",
+		"name": "oktaSSO",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -121,7 +121,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
-		"name": "Password Policy",
+		"name": "passwordPolicy",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -134,7 +134,7 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.account.model.AccountEntry",
-		"name": "Two-Factor Authentication",
+		"name": "twoFactorAuthentication",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
