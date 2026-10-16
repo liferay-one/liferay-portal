@@ -1634,7 +1634,8 @@ public class CommerceOrderService extends OneBaseService {
 			JSONObject dataJSONObject, Order order)
 		throws Exception {
 
-		JSONArray lineItemsJSONArray = dataJSONObject.optJSONArray("lineItems");
+		JSONArray lineItemsJSONArray = dataJSONObject.optJSONArray(
+			"opportunityLineItems");
 
 		if ((lineItemsJSONArray == null) ||
 			(lineItemsJSONArray.length() == 0)) {
