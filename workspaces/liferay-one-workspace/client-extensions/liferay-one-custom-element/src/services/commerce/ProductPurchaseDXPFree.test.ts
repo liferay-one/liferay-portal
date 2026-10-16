@@ -153,6 +153,19 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEDXPFREE] ProductPurchaseDXPFree', () =
 		expect(licenseKeyOrder).toBeLessThan(requestOrder);
 	});
 
+	it('creates the free license key when the checkout only reports a missing billing address', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			valid: true,
+		} as Cart);
+
+		await expect(
+			new ProductPurchaseDXPFree(account, product, form).createOrder()
+		).resolves.toEqual({id: 5});
+
+		expect(LicenseKeys.createLicenseKeyTypeFree).toHaveBeenCalled();
+	});
+
 	it('links to purchase completed', async () => {
 		await expect(
 			new ProductPurchaseDXPFree(account, product, form).getNextStepsLink(

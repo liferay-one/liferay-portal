@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {expect} from '@playwright/test';
+
 import HeadlessAPI, {HeadlessPage} from './HeadlessAPI';
+import {PORTAL_TIMEOUT} from './timeoutConstants';
 
 const ACCOUNTS_PATH = '/o/headless-admin-user/v1.0/accounts';
 
@@ -12,6 +15,8 @@ const ADMIN_CHANNELS_PATH = '/o/headless-commerce-admin-channel/v1.0/channels';
 const ADMIN_ORDERS_PATH = '/o/headless-commerce-admin-order/v1.0/orders';
 
 const ACCOUNT_OBJECT_ENTRY_PATHS = [
+	['/o/c/licensekeys', 'r_accountEntryToLicenseKey_accountEntryId'],
+	['/o/c/activationkeys', 'r_accountEntryToActivationKey_accountEntryId'],
 	[
 		'/o/c/oauth2dxpauthorizations',
 		'r_accountEntryToOAuth2DxpAuthorization_accountEntryId',
@@ -20,6 +25,8 @@ const ACCOUNT_OBJECT_ENTRY_PATHS = [
 ];
 
 const CHANNEL_ERC = 'LIFERAY_ONE_CHANNEL';
+
+const ORDER_STATUS_COMPLETED = 0;
 
 const USER_ACCOUNTS_PATH = '/o/headless-admin-user/v1.0/user-accounts';
 
@@ -174,6 +181,37 @@ export async function deleteAccountOrders(
 	for (const {id} of await getAccountOrders(adminAPI, accountId)) {
 		await adminAPI.deleteIfExists(`${ADMIN_ORDERS_PATH}/${id}`);
 	}
+}
+
+export async function expectAccountOrdersCompleted(
+	adminAPI: HeadlessAPI,
+	accountId: number,
+	orderTypeExternalReferenceCode: string,
+	count = 1
+): Promise<void> {
+	await expect
+		.poll(
+			async () =>
+				(
+					await getAccountOrders<{
+						accountId: number;
+						id: number;
+						orderStatus: number;
+						orderTypeExternalReferenceCode: string;
+					}>(adminAPI, accountId)
+				)
+					.filter(
+						(order) =>
+							order.orderTypeExternalReferenceCode ===
+							orderTypeExternalReferenceCode
+					)
+					.map(({orderStatus}) => orderStatus),
+			{
+				message: `expected ${count} completed ${orderTypeExternalReferenceCode} orders`,
+				timeout: PORTAL_TIMEOUT,
+			}
+		)
+		.toEqual(Array(count).fill(ORDER_STATUS_COMPLETED));
 }
 
 export async function getAccountOrders<

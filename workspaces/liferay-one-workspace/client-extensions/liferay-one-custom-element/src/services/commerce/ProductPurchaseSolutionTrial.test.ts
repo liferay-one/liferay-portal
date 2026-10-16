@@ -122,6 +122,20 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESOLUTIONTRIAL] ProductPurchaseSolution
 		expect(checkoutOrder).toBeLessThan(provisioningOrder);
 	});
 
+	it('creates the order when the checkout only reports a missing billing address', async () => {
+		vi.mocked(HeadlessCommerceDeliveryCart.checkoutCart).mockResolvedValue({
+			errorMessages: ['Invalid billing address'],
+			valid: true,
+		} as Cart);
+		vi.mocked(Trial.provisioningTrial).mockResolvedValue();
+
+		await expect(
+			new ProductPurchaseSolutionTrial(account, product).createOrder()
+		).resolves.toEqual({id: 5});
+
+		expect(Trial.provisioningTrial).toHaveBeenCalledWith(5);
+	});
+
 	it('does not hold when trials are available', async () => {
 		mockAvailability(2, false);
 

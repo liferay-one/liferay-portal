@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.math.BigDecimal;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -856,6 +857,14 @@ public class CommerceOrderServiceTest {
 			ArgumentMatchers.anyString()
 		);
 
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.startsWith("(createDate lt ")
+		);
+
 		Mockito.doNothing(
 		).when(
 			_commerceOrderService
@@ -900,6 +909,14 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).getOrders(
 			ArgumentMatchers.anyString()
+		);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.startsWith("(createDate lt ")
 		);
 
 		Mockito.doNothing(
@@ -953,6 +970,14 @@ public class CommerceOrderServiceTest {
 			_commerceOrderService
 		).getOrders(
 			ArgumentMatchers.anyString()
+		);
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_commerceOrderService
+		).getOrders(
+			ArgumentMatchers.startsWith("(createDate lt ")
 		);
 
 		Mockito.doThrow(

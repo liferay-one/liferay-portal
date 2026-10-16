@@ -14,6 +14,7 @@ import {
 	TemporaryBuyer,
 	createTemporaryBuyer,
 	deleteTemporaryBuyer,
+	expectAccountOrdersCompleted,
 } from '../utils/productPurchaseUtils';
 import {CHECKOUT_TIMEOUT, PORTAL_TIMEOUT} from '../utils/timeoutConstants';
 
@@ -64,30 +65,6 @@ const PROSPECT_LICENSE_KEY_DURATION_DAYS = 30;
 
 const TRIAL_TIMEOUT = 5 * 60 * 1000;
 
-async function deleteAccountKeys(
-	adminAPI: HeadlessAPI,
-	buyer: TemporaryBuyer | undefined
-) {
-	if (!buyer) {
-		return;
-	}
-
-	for (const [path, relationshipField] of [
-		['/o/c/licensekeys', 'r_accountEntryToLicenseKey_accountEntryId'],
-		['/o/c/activationkeys', 'r_accountEntryToActivationKey_accountEntryId'],
-	]) {
-		const {items} = await adminAPI.get<HeadlessPage<{id: number}>>(
-			`${path}?filter=${encodeURIComponent(
-				`${relationshipField} eq '${buyer.account.id}'`
-			)}&pageSize=100`
-		);
-
-		for (const {id} of items) {
-			await adminAPI.deleteIfExists(`${path}/${id}`);
-		}
-	}
-}
-
 async function expectTrialKeyListed(
 	adminAPI: HeadlessAPI,
 	page: Page,
@@ -120,6 +97,19 @@ async function expectTrialKeyListed(
 	await expectSettled(page);
 
 	await expect(tableRow(page, getEnvironmentName(trialProduct))).toBeVisible({
+		timeout: PORTAL_TIMEOUT,
+	});
+
+	await page
+		.getByRole('link', {name: /Products/})
+		.first()
+		.click();
+
+	await expect(page).toHaveURL(/\/project\/one-time-purchases\/products$/);
+
+	await expectSettled(page);
+
+	await expect(page.getByText(name.en_US, {exact: true})).toBeVisible({
 		timeout: PORTAL_TIMEOUT,
 	});
 }
@@ -240,6 +230,10 @@ async function submitActivationKeyForm(page: Page, trialProduct: TrialProduct) {
 	await page.locator('#terms-and-conditions').check();
 	await page.locator('#user-agreement').check();
 
+	await expect(page.getByText('Billing Address', {exact: true})).toHaveCount(
+		0
+	);
+
 	await page.getByRole('button', {name: 'Get Activation Key'}).click();
 }
 
@@ -251,14 +245,9 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 	});
 
 	test.afterEach(async ({adminAPI}) => {
-		try {
-			await deleteAccountKeys(adminAPI, buyer);
-		}
-		finally {
-			await deleteTemporaryBuyer(adminAPI, buyer);
+		await deleteTemporaryBuyer(adminAPI, buyer);
 
-			buyer = undefined;
-		}
+		buyer = undefined;
 	});
 
 	test('[FLOW-SELF-SERVICE-TRIAL] a prospect starts a CMP trial from the product page and generates a 30 day DXP key', async ({
@@ -277,6 +266,12 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 		await startTrial(adminAPI, page, CMP_TRIAL);
 
 		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
+
+		await expectAccountOrdersCompleted(
+			adminAPI,
+			buyer.account.id,
+			'CMP_TRIAL'
+		);
 
 		const [activationKey] = await getAccountActivationKeys(adminAPI, buyer);
 
@@ -302,6 +297,31 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 		}
 	});
 
+	test('[FLOW-SELF-SERVICE-TRIAL] a prospect whose account has no billing address starts a CMP trial without being asked for one', async ({
+		adminAPI,
+		page,
+	}) => {
+		test.setTimeout(TRIAL_TIMEOUT);
+
+		buyer = await createTemporaryBuyer(adminAPI, {
+			label: 'CMP Trial Without Address',
+		});
+
+		await liferayLogin(page, buyer.email, buyer.password);
+
+		await startTrial(adminAPI, page, CMP_TRIAL);
+
+		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
+
+		await expectAccountOrdersCompleted(
+			adminAPI,
+			buyer.account.id,
+			'CMP_TRIAL'
+		);
+
+		expect(await getAccountActivationKeys(adminAPI, buyer)).toHaveLength(1);
+	});
+
 	test('[FLOW-SELF-SERVICE-TRIAL] an account that started a CMP trial starts a DSR trial and gets its own DXP key', async ({
 		adminAPI,
 		page,
@@ -319,9 +339,21 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 
 		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
 
+		await expectAccountOrdersCompleted(
+			adminAPI,
+			buyer.account.id,
+			'CMP_TRIAL'
+		);
+
 		await startTrial(adminAPI, page, DSR_TRIAL);
 
 		await expectTrialKeyListed(adminAPI, page, DSR_TRIAL);
+
+		await expectAccountOrdersCompleted(
+			adminAPI,
+			buyer.account.id,
+			'DSR_TRIAL'
+		);
 
 		const activationKeys = await getAccountActivationKeys(adminAPI, buyer);
 
@@ -377,6 +409,12 @@ test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () =>
 		await startTrial(adminAPI, page, CMP_TRIAL);
 
 		await expectTrialKeyListed(adminAPI, page, CMP_TRIAL);
+
+		await expectAccountOrdersCompleted(
+			adminAPI,
+			secondTrialBuyer.account.id,
+			'CMP_TRIAL'
+		);
 
 		await expect
 			.poll(
