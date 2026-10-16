@@ -126,7 +126,7 @@ The hint that UAT once showed no New Key because its definitions lacked `license
 
 A user who cannot provision (`provisionable` false) still sees the button when a developer key type has activations left, because `_isGeneratable` keeps the downloadable types (`sb/service/LicenseKeyGenerateFormService.java:959`). The hook gives `hasGeneratePermission` to every user of an assigned project (`ce/pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:136`), so such a user can open the form and download only a developer key.
 
-For an account without a project (One Time Purchases), the summary comes from `AppLicenseKeyGenerationService.getSummary` (`sb/service/AppLicenseKeyGenerationService.java:105`). It is generatable when a paid, licensable app entitlement has activations left and the account allows self provisioning.
+For an account without a project (One Time Purchases), the summary comes from `AppLicenseKeyGenerationService.getSummary` (`sb/service/AppLicenseKeyGenerationService.java:105`). It is generatable when a paid, licensable app entitlement has activations left and the account allows self provisioning, or when a self service trial entitlement has activations left. The trial part ignores the self provisioning setting, and the generate form leaves out the app products when the account does not allow self provisioning.
 
 ### (b) Server Side Generation
 
@@ -345,7 +345,7 @@ These are the checks that the server applies before it issues a key. "Project pa
 | The expiration date is not before the start date | Every stored key | `sb/license/LicenseKeyValidator.java:43` |
 | IP and MAC addresses are well formed and unique, and a backup, limited, per user, or production key names a server | Every stored key | `sb/license/LicenseKeyValidator.java:85`, `:139` |
 | A virtual cluster key has at least one cluster node | Every stored key | `sb/license/LicenseKeyValidator.java:77` |
-| The account allows self provisioning (`allowSelfProvisioning`, default true). A global role skips this check. | Generate, activate, deactivate | `sb/permission/EnvironmentActivationPermission.java:102` |
+| The account allows self provisioning (`allowSelfProvisioning`, default true). A global role skips this check, and so does a key generated from a self service trial entitlement. | Generate, activate, deactivate | `sb/permission/EnvironmentActivationPermission.java:102` |
 | Expiration: when the account does not allow permanent licenses (`allowPermanentLicenses`, default true) or the family is Cloud Native, the key ends with the subscription. A production type entry gets 36,500 days. Any other type gets 180 days after the subscription. | Project path | `sb/service/LicenseKeyGenerateFormService.java:82` |
 
 ## Entity Diagram
@@ -424,7 +424,7 @@ erDiagram
 | `GET /license-keys/developer-download` | `ProjectPermission` VIEW | Yes, by project. No self provisioning check and no quota, by design (REQ-LICENSING-004, REQ-LICENSING-060). |
 | `PATCH /activation-keys/{id}/active` | Project: account administrator, Partner Manager, project administrator, or global role. No project: account administrator, Partner Manager, or an account role that manages license keys. Plus self provisioning. A complimentary key needs an administrator. | Yes, but no quota check. See Finding 5. |
 | `PATCH /license-keys/{id}/active` | Refused for a key under an activation key. Otherwise the same as above, or `LicenseKeyPermission` UPDATE. | Yes, but no quota check |
-| `POST /activation-keys/generate` | `checkLicenseKeyActivation` (project) or `checkAccountLicenseKeyActivation` (account), self provisioning, admin key types | Yes. Entitlements are read from the project or the account, so a caller cannot name another project's entitlement. |
+| `POST /activation-keys/generate` | `checkLicenseKeyActivation` (project) or `checkAccountLicenseKeyActivation` (account), self provisioning (not for a self service trial entitlement), admin key types | Yes. Entitlements are read from the project or the account, so a caller cannot name another project's entitlement. |
 | `POST /cloud/environments/{id}/activation` | None (no OAuth). The activation code and a self signed JWT. | No. See Finding 1. |
 | `POST /cloud/environments/{id}/manifest`, `POST /cloud/products/{erc}/virtual-entry/{id}/download` | None (no OAuth). A JWT signed by the stored environment key. | Yes, by the stored key |
 | `POST /common-license-keys` | Administrator or Provisioning Administrator | Not applicable |

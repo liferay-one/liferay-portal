@@ -151,13 +151,22 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		if (Validator.isNull(projectExternalReferenceCode)) {
 			Account account = _getAccount(accountExternalReferenceCode, jwt);
 
+			JSONObject appGenerateFormJSONObject = null;
+
+			if (_environmentActivationPermission.containsSelfProvisioning(
+					account.getId(), jwt)) {
+
+				appGenerateFormJSONObject =
+					_appLicenseKeyGenerationService.getGenerateForm(
+						account.getId());
+			}
+
 			return ResponseEntity.ok(
 			).contentType(
 				MediaType.APPLICATION_JSON
 			).body(
 				_toGenerateFormJSONObject(
-					_appLicenseKeyGenerationService.getGenerateForm(
-						account.getId()),
+					appGenerateFormJSONObject,
 					_fetchSelfServiceTrialGenerateFormJSONObject(account, jwt)
 				).toString()
 			);
@@ -208,8 +217,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				_toSummaryJSONObject(
 					_appLicenseKeyGenerationService.getSummary(
 						account.getId(), provisionable),
-					_fetchSelfServiceTrialSummaryJSONObject(
-						account, jwt, provisionable)
+					_fetchSelfServiceTrialSummaryJSONObject(account, jwt)
 				).toString()
 			);
 		}
@@ -313,9 +321,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			Account account = _getAccount(
 				jsonObject.optString("accountExternalReferenceCode"), jwt);
 
-			_environmentActivationPermission.checkSelfProvisioning(
-				account.getId(), jwt);
-
 			_checkKeyType(jsonObject.optString("keyType"), jwt);
 
 			LicenseKeyGenerationService.GenerateRequest generateRequest =
@@ -328,6 +333,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 					_licenseKeyGenerationService.generateActivationKey(
 						account, generateRequest));
 			}
+
+			_environmentActivationPermission.checkSelfProvisioning(
+				account.getId(), jwt);
 
 			UserAccount userAccount = getMyUserAccount(jwt);
 
@@ -426,16 +434,16 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	/**
 	 * Returns the generate form of the self service trial entitlements, or
 	 * <code>null</code> when it cannot be read, so the app keys of the account
-	 * stay available while the trial entitlements are not.
+	 * stay available while the trial entitlements are not. A trial is self
+	 * service by design, so the account's self provisioning setting does not
+	 * apply to its keys.
 	 */
 	private JSONObject _fetchSelfServiceTrialGenerateFormJSONObject(
 		Account account, Jwt jwt) {
 
 		try {
 			return _licenseKeyGenerateFormService.getGenerateForm(
-				_adminPermission.contains(jwt), account,
-				_environmentActivationPermission.containsSelfProvisioning(
-					account.getId(), jwt));
+				_adminPermission.contains(jwt), account, true);
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -448,11 +456,11 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private JSONObject _fetchSelfServiceTrialSummaryJSONObject(
-		Account account, Jwt jwt, boolean provisionable) {
+		Account account, Jwt jwt) {
 
 		try {
 			return _licenseKeyGenerateFormService.getSummary(
-				_adminPermission.contains(jwt), account, provisionable);
+				_adminPermission.contains(jwt), account, true);
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -575,8 +583,10 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 		JSONArray productsJSONArray = new JSONArray();
 
-		productsJSONArray.putAll(
-			appGenerateFormJSONObject.getJSONArray("products"));
+		if (appGenerateFormJSONObject != null) {
+			productsJSONArray.putAll(
+				appGenerateFormJSONObject.getJSONArray("products"));
+		}
 
 		if (licenseKeyGenerateFormJSONObject == null) {
 			return new JSONObject(
