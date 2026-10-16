@@ -105,6 +105,21 @@ public class OktaServiceTest {
 	}
 
 	@Test
+	public void testAddUserToGroupPublishesAnAddMessage() throws Exception {
+		OktaService oktaService = _createOktaService(
+			_getContactBody("Jane", "Doe", "ACTIVE"), HttpStatus.OK);
+
+		oktaService.addUserToGroup(_EMAIL_ADDRESS, "Customers");
+
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-group-update");
+
+		Assertions.assertEquals("ADD", jsonObject.getString("action"));
+		Assertions.assertEquals("Customers", jsonObject.getString("groupName"));
+		Assertions.assertEquals(_EMAIL_ADDRESS, jsonObject.getString("login"));
+	}
+
+	@Test
 	public void testCreateContactPublishesUserAccountDetails()
 		throws Exception {
 
@@ -237,6 +252,23 @@ public class OktaServiceTest {
 		Assertions.assertEquals(
 			List.of("00g-account-access-us", "00g-everyone"),
 			oktaService.getContactGroupIds(_EMAIL_ADDRESS));
+	}
+
+	@Test
+	public void testRemoveUserFromGroupPublishesARemoveMessage()
+		throws Exception {
+
+		OktaService oktaService = _createOktaService(
+			_getContactBody("Jane", "Doe", "ACTIVE"), HttpStatus.OK);
+
+		oktaService.removeUserFromGroup(_EMAIL_ADDRESS, "Partners");
+
+		JSONObject jsonObject = _getPublishedPayloadJSONObject(
+			"okta-user-group-update");
+
+		Assertions.assertEquals("REMOVE", jsonObject.getString("action"));
+		Assertions.assertEquals("Partners", jsonObject.getString("groupName"));
+		Assertions.assertEquals(_EMAIL_ADDRESS, jsonObject.getString("login"));
 	}
 
 	@Test

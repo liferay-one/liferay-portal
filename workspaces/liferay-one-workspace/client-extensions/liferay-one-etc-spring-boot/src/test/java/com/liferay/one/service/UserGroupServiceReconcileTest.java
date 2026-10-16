@@ -16,12 +16,14 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.okta.service.OktaService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -112,8 +114,32 @@ public class UserGroupServiceReconcileTest {
 			builder
 		);
 
+		Mockito.when(
+			_userAccountService.getUserAccounts(
+				Mockito.anyCollection(), Mockito.eq("emailAddress,id"))
+		).thenAnswer(
+			invocation -> {
+				List<UserAccount> userAccounts = new ArrayList<>();
+
+				Collection<Long> userIds = invocation.getArgument(0);
+
+				for (long userId : userIds) {
+					UserAccount userAccount = new UserAccount();
+
+					userAccount.setEmailAddress(_getEmailAddress(userId));
+					userAccount.setId(userId);
+
+					userAccounts.add(userAccount);
+				}
+
+				return userAccounts;
+			}
+		);
+
 		ReflectionTestUtils.setField(
 			_userGroupService, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
+			_userGroupService, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(
 			_userGroupService, "_projectMembershipService",
 			_projectMembershipService);
@@ -344,6 +370,69 @@ public class UserGroupServiceReconcileTest {
 	}
 
 	@Test
+	public void testReconcileUserGroupsPublishesOneOktaMessageForEachChangedUser()
+		throws Exception {
+
+		_mockEntitlements(
+			_createEntitlement(
+				_CUSTOMER_ACCOUNT_ID, EntitlementConstants.NAME_GOLD_SUPPORT,
+				null),
+			_createEntitlement(
+				_PARTNER_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER, null));
+		_mockAccountUserAccounts(
+			_CUSTOMER_ACCOUNT_ID,
+			_createUserAccount(
+				_CUSTOMER_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_MEMBER, 10));
+		_mockAccountUserAccounts(
+			_PARTNER_ACCOUNT_ID,
+			_createUserAccount(
+				_PARTNER_ACCOUNT_ID, RoleConstants.NAME_PARTNER_MEMBER, 12));
+		_mockUserGroupUsers(_SUPPORT_CUSTOMERS, 14);
+		_mockUserGroupUsers(_PARTNERS, 15);
+
+		_userGroupService.reconcileUserGroups();
+
+		ArgumentCaptor<Collection<Long>> userIdsCaptor =
+			ArgumentCaptor.forClass(Collection.class);
+
+		Mockito.verify(
+			_userAccountService
+		).getUserAccounts(
+			userIdsCaptor.capture(), Mockito.eq("emailAddress,id")
+		);
+
+		Assertions.assertEquals(
+			new HashSet<>(Arrays.asList(10L, 12L, 14L, 15L)),
+			new HashSet<>(userIdsCaptor.getValue()));
+
+		Mockito.verify(
+			_oktaService
+		).addUserToGroup(
+			_getEmailAddress(10), "Customers"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).addUserToGroup(
+			_getEmailAddress(12), "Partners"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).removeUserFromGroup(
+			_getEmailAddress(14), "Customers"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).removeUserFromGroup(
+			_getEmailAddress(15), "Partners"
+		);
+
+		Mockito.verifyNoMoreInteractions(_oktaService);
+	}
+
+	@Test
 	public void testReconcileUserGroupsReadsAnAccountThatIsBothSupportAndPartnerOnce()
 		throws Exception {
 
@@ -424,6 +513,36 @@ public class UserGroupServiceReconcileTest {
 	}
 
 	@Test
+	public void testReconcileUserGroupsSkipsOktaForAFailedBatch()
+		throws Exception {
+
+		_mockEntitlements(
+			_createEntitlement(
+				0, EntitlementConstants.NAME_GOLD_SUPPORT,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+		_mockProjectMemberships(_createUserIds(150));
+
+		Mockito.doThrow(
+			new IllegalStateException("Unable to add the users")
+		).doNothing(
+		).when(
+			_userGroupResource
+		).postUserGroupByExternalReferenceCodeUsers(
+			Mockito.eq(_SUPPORT_CUSTOMERS), Mockito.any(Long[].class)
+		);
+
+		_userGroupService.reconcileUserGroups();
+
+		Mockito.verify(
+			_oktaService, Mockito.times(50)
+		).addUserToGroup(
+			Mockito.anyString(), Mockito.eq("Customers")
+		);
+
+		Mockito.verifyNoMoreInteractions(_oktaService);
+	}
+
+	@Test
 	public void testReconcileUserGroupsSkipsTheUsersSyncedDuringTheRun()
 		throws Exception {
 
@@ -462,6 +581,20 @@ public class UserGroupServiceReconcileTest {
 		);
 
 		Mockito.verifyNoMoreInteractions(_userGroupResource);
+
+		Mockito.verify(
+			_oktaService
+		).addUserToGroup(
+			_getEmailAddress(11), "Customers"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).removeUserFromGroup(
+			_getEmailAddress(15), "Customers"
+		);
+
+		Mockito.verifyNoMoreInteractions(_oktaService);
 	}
 
 	@Test
@@ -524,6 +657,29 @@ public class UserGroupServiceReconcileTest {
 		_userGroupService.reconcileUserGroups();
 
 		Mockito.verifyNoInteractions(_userGroupResource);
+	}
+
+	@Test
+	public void testReconcileUserGroupsWritesNothingWhenTheEmailAddressReadFails()
+		throws Exception {
+
+		_mockEntitlements(
+			_createEntitlement(
+				0, EntitlementConstants.NAME_GOLD_SUPPORT,
+				_PROJECT_EXTERNAL_REFERENCE_CODE));
+		_mockProjectMemberships(10);
+		_mockUserGroupUsers(_PARTNERS, 15);
+
+		Mockito.when(
+			_userAccountService.getUserAccounts(
+				Mockito.anyCollection(), Mockito.eq("emailAddress,id"))
+		).thenThrow(
+			new IllegalStateException("Unable to get the users")
+		);
+
+		_userGroupService.reconcileUserGroups();
+
+		Mockito.verifyNoInteractions(_oktaService, _userGroupResource);
 	}
 
 	private Entitlement _createEntitlement(
@@ -626,6 +782,10 @@ public class UserGroupServiceReconcileTest {
 		return userIds;
 	}
 
+	private String _getEmailAddress(long userId) {
+		return "user-" + userId + "@example.com";
+	}
+
 	private void _mockAccountUserAccounts(
 			long accountEntryId, UserAccount... userAccounts)
 		throws Exception {
@@ -700,6 +860,7 @@ public class UserGroupServiceReconcileTest {
 		EntitlementService.class);
 	private String _failedReadExternalReferenceCode;
 	private long _nextEntitlementId = 1;
+	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private final UserAccountResource _userAccountResource = Mockito.mock(

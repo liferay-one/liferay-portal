@@ -14,6 +14,7 @@ import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.okta.service.OktaService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,8 @@ public class UserGroupServiceTest {
 		ReflectionTestUtils.setField(
 			_userGroupService, "_entitlementService", _entitlementService);
 		ReflectionTestUtils.setField(
+			_userGroupService, "_oktaService", _oktaService);
+		ReflectionTestUtils.setField(
 			_userGroupService, "_projectMembershipService",
 			_projectMembershipService);
 		ReflectionTestUtils.setField(
@@ -72,6 +75,7 @@ public class UserGroupServiceTest {
 
 		_userAccount = new UserAccount();
 
+		_userAccount.setEmailAddress(_EMAIL_ADDRESS);
 		_userAccount.setId(_USER_ID);
 
 		Mockito.when(
@@ -181,6 +185,39 @@ public class UserGroupServiceTest {
 	}
 
 	@Test
+	public void testSyncAddsTheUserToTheOktaGroupsOfTheGroupsItJoins()
+		throws Exception {
+
+		_addAccountBrief(
+			_CUSTOMER_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_MEMBER);
+		_addAccountBrief(
+			_PARTNER_ACCOUNT_ID, RoleConstants.NAME_PARTNER_MANAGER);
+
+		_mockEntitlements(
+			_createEntitlement(
+				_CUSTOMER_ACCOUNT_ID, EntitlementConstants.NAME_GOLD_SUPPORT,
+				null),
+			_createEntitlement(
+				_PARTNER_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER, null));
+
+		_userGroupService.syncUserAccountUserGroups(_USER_ID);
+
+		Mockito.verify(
+			_oktaService
+		).addUserToGroup(
+			_EMAIL_ADDRESS, "Customers"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).addUserToGroup(
+			_EMAIL_ADDRESS, "Partners"
+		);
+
+		Mockito.verifyNoMoreInteractions(_oktaService);
+	}
+
+	@Test
 	public void testSyncGivesNeitherGroupForACustomerRoleOnAPartnerOnlyAccount()
 		throws Exception {
 
@@ -194,6 +231,32 @@ public class UserGroupServiceTest {
 		_userGroupService.syncUserAccountUserGroups(_USER_ID);
 
 		_assertWrites(Collections.emptyList(), Collections.emptyList());
+	}
+
+	@Test
+	public void testSyncKeepsTheLiferayChangeWhenTheOktaPublishFails()
+		throws Exception {
+
+		_addAccountBrief(
+			_CUSTOMER_ACCOUNT_ID, RoleConstants.NAME_ACCOUNT_MEMBER);
+
+		_mockEntitlements(
+			_createEntitlement(
+				_CUSTOMER_ACCOUNT_ID, EntitlementConstants.NAME_GOLD_SUPPORT,
+				null));
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to publish")
+		).when(
+			_oktaService
+		).addUserToGroup(
+			Mockito.anyString(), Mockito.anyString()
+		);
+
+		_userGroupService.syncUserAccountUserGroups(_USER_ID);
+
+		_assertWrites(
+			Arrays.asList("C_SUPPORT_CUSTOMERS"), Collections.emptyList());
 	}
 
 	@Test
@@ -252,6 +315,48 @@ public class UserGroupServiceTest {
 	}
 
 	@Test
+	public void testSyncRemovesTheUserFromTheOktaGroupsOfTheGroupsItLeaves()
+		throws Exception {
+
+		_mockUserGroups("C_EVERYONE", "C_PARTNERS", "C_SUPPORT_CUSTOMERS");
+
+		_userGroupService.syncUserAccountUserGroups(_USER_ID);
+
+		Mockito.verify(
+			_oktaService
+		).removeUserFromGroup(
+			_EMAIL_ADDRESS, "Customers"
+		);
+
+		Mockito.verify(
+			_oktaService
+		).removeUserFromGroup(
+			_EMAIL_ADDRESS, "Partners"
+		);
+
+		Mockito.verifyNoMoreInteractions(_oktaService);
+	}
+
+	@Test
+	public void testSyncSkipsOktaWhenTheLiferayWriteFails() throws Exception {
+		_mockUserGroups("C_EVERYONE", "C_PARTNERS");
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to remove")
+		).when(
+			_userGroupResource
+		).deleteUserGroupByExternalReferenceCodeUsers(
+			Mockito.eq("C_PARTNERS"), Mockito.any(Long[].class)
+		);
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _userGroupService.syncUserAccountUserGroups(_USER_ID));
+
+		Mockito.verifyNoInteractions(_oktaService);
+	}
+
+	@Test
 	public void testSyncSkipsTheWritesWhenTheGroupsAlreadyMatch()
 		throws Exception {
 
@@ -267,6 +372,8 @@ public class UserGroupServiceTest {
 		_userGroupService.syncUserAccountUserGroups(_USER_ID);
 
 		_assertWrites(Collections.emptyList(), Collections.emptyList());
+
+		Mockito.verifyNoInteractions(_oktaService);
 	}
 
 	private void _addAccountBrief(long accountId, String accountRoleName) {
@@ -394,6 +501,8 @@ public class UserGroupServiceTest {
 
 	private static final long _CUSTOMER_ACCOUNT_ID = 11111;
 
+	private static final String _EMAIL_ADDRESS = "user@example.com";
+
 	private static final long _OTHER_ACCOUNT_ID = 11113;
 
 	private static final long _PARTNER_ACCOUNT_ID = 11112;
@@ -405,6 +514,7 @@ public class UserGroupServiceTest {
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private long _nextEntitlementId = 1;
+	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private final ProjectMembershipService _projectMembershipService =
 		Mockito.mock(ProjectMembershipService.class);
 	private UserAccount _userAccount;
