@@ -175,17 +175,6 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "cascade",
-			"externalReferenceCode": "R_ACCOUNT_TO_AI_HUB_APPLICATION",
-			"label": {
-				"en_US": "Account to AI Hub Application"
-			},
-			"name": "accountToAIHubApplication",
-			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
-			"objectDefinitionExternalReferenceCode2": "C_AI_HUB_APPLICATION",
-			"type": "oneToMany"
-		},
-		{
 			"deletionType": "disassociate",
 			"externalReferenceCode": "R_ACTIVATION_KEY_TO_LICENSE_KEY",
 			"label": {
@@ -304,17 +293,6 @@
 			"name": "environmentToUsageEvent",
 			"objectDefinitionExternalReferenceCode1": "C_ENVIRONMENT",
 			"objectDefinitionExternalReferenceCode2": "C_USAGE_EVENT",
-			"type": "oneToMany"
-		},
-		{
-			"deletionType": "disassociate",
-			"externalReferenceCode": "R_ORDER_TO_AI_HUB_APPLICATION",
-			"label": {
-				"en_US": "Order to AI Hub Application"
-			},
-			"name": "orderToAIHubApplication",
-			"objectDefinitionExternalReferenceCode1": "L_COMMERCE_ORDER",
-			"objectDefinitionExternalReferenceCode2": "C_AI_HUB_APPLICATION",
 			"type": "oneToMany"
 		},
 		{

@@ -27,6 +27,7 @@ import com.liferay.one.exception.SEOStudioEligibilityException;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.Environment;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -37,6 +38,7 @@ import com.liferay.one.util.SupportLanguageUtil;
 import com.liferay.one.util.SupportRegionUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -865,15 +867,6 @@ public class CommerceOrderService extends OneBaseService {
 				order,
 				orderMetadataJSONObject.optString("salesforceProjectId"));
 
-			if (accountEntryId <= 0) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to complete order ", orderId,
-						" because no AI Hub was provisioned for its project"));
-
-				return;
-			}
-
 			Long quotaBlockSize = _getAIHubQuotaBlockSize(order);
 
 			if (quotaBlockSize == null) {
@@ -961,92 +954,49 @@ public class CommerceOrderService extends OneBaseService {
 			Order order, String salesforceProjectId)
 		throws Exception {
 
-		List<Order> aiHubOrders = getOrders(
-			StringBundler.concat(
-				"accountId/any(x:x eq ", order.getAccountId(),
-				") and orderStatus/any(x:x eq ",
-				CommerceOrderConstants.ORDER_STATUS_COMPLETED,
-				") and orderTypeExternalReferenceCode eq 'AI_HUB'"));
+		String externalReferenceCode =
+			_getAIHubEnvironmentExternalReferenceCode(
+				order, salesforceProjectId);
 
-		boolean accountRecordsAIHub = false;
-		long accountEntryId = 0;
-		long aiHubOrderId = 0;
-		Map<Long, String> salesforceProjectIds = new HashMap<>();
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				externalReferenceCode);
 
-		for (Order aiHubOrder : aiHubOrders) {
-			if (!Objects.equals(
-					aiHubOrder.getOrderStatus(),
-					CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+		if ((environment == null) ||
+			!Objects.equals(
+				environment.getAccountEntryId(), order.getAccountId())) {
 
-				continue;
-			}
-
-			JSONObject orderMetadataJSONObject = null;
-
-			try {
-				orderMetadataJSONObject =
-					CommerceOrderUtil.getOrderMetadataJSONObject(aiHubOrder);
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to read the order metadata of order " +
-						aiHubOrder.getId(),
-					exception);
-
-				continue;
-			}
-
-			String aiHubOrderSalesforceProjectId =
-				orderMetadataJSONObject.optString("salesforceProjectId");
-
-			salesforceProjectIds.put(
-				aiHubOrder.getId(), aiHubOrderSalesforceProjectId);
-
-			long aiHubAccountEntryId = orderMetadataJSONObject.optLong(
-				"aiHubAccountEntryId");
-
-			if (aiHubAccountEntryId <= 0) {
-				continue;
-			}
-
-			accountRecordsAIHub = true;
-
-			if (Objects.equals(
-					aiHubOrderSalesforceProjectId, salesforceProjectId) &&
-				(aiHubOrder.getId() > aiHubOrderId)) {
-
-				accountEntryId = aiHubAccountEntryId;
-				aiHubOrderId = aiHubOrder.getId();
-			}
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to complete order ", order.getId(),
+					" because no AI Hub environment ", externalReferenceCode,
+					" exists for account ",
+					order.getAccountExternalReferenceCode()));
 		}
 
-		if (accountEntryId > 0) {
-			return accountEntryId;
+		long accountEntryId = GetterUtil.getLong(
+			environment.getExternalEnvironmentId());
+
+		if (accountEntryId <= 0) {
+			throw new IllegalStateException(
+				StringBundler.concat(
+					"Unable to complete order ", order.getId(),
+					" because AI Hub environment ",
+					environment.getExternalReferenceCode(),
+					" has no external environment ID"));
 		}
 
-		JSONObject aiHubApplicationJSONObject =
-			_aiHubService.getAIHubApplicationJSONObject(
-				"AI-HUB-" + order.getAccountExternalReferenceCode());
+		return accountEntryId;
+	}
 
-		if (aiHubApplicationJSONObject == null) {
-			return 0;
+	private String _getAIHubEnvironmentExternalReferenceCode(
+		Order order, String salesforceProjectId) {
+
+		if (Validator.isNull(salesforceProjectId)) {
+			return "AI-HUB-" + order.getAccountExternalReferenceCode();
 		}
 
-		String applicationSalesforceProjectId = salesforceProjectIds.get(
-			aiHubApplicationJSONObject.optLong(
-				"r_orderToAIHubApplication_commerceOrderId"));
-
-		boolean applicationMatchesProject = Objects.equals(
-			applicationSalesforceProjectId, salesforceProjectId);
-		boolean applicationPredatesRecordedAIHubs =
-			!accountRecordsAIHub &&
-			Validator.isNull(applicationSalesforceProjectId);
-
-		if (applicationMatchesProject || applicationPredatesRecordedAIHubs) {
-			return aiHubApplicationJSONObject.getLong("accountEntryId");
-		}
-
-		return 0;
+		return "AI-HUB-" + salesforceProjectId;
 	}
 
 	private JSONObject _getAIHubOrderMetadataJSONObject(
@@ -1812,8 +1762,8 @@ public class CommerceOrderService extends OneBaseService {
 			JSONObject aiHubFormJSONObject =
 				orderMetadataJSONObject.getJSONObject("aiHubForm");
 
-			String emailAddress = aiHubFormJSONObject.getString(
-				"administratorEmailAddress");
+			JSONObject userAccountJSONObject = _getUserAccountJSONObject(
+				aiHubFormJSONObject.getString("administratorEmailAddress"));
 
 			JSONObject provisionJSONObject = new JSONObject(
 			).put(
@@ -1825,7 +1775,7 @@ public class CommerceOrderService extends OneBaseService {
 				"userAccounts",
 				new JSONArray(
 				).put(
-					_getUserAccountJSONObject(emailAddress)
+					userAccountJSONObject
 				)
 			);
 
@@ -1866,26 +1816,18 @@ public class CommerceOrderService extends OneBaseService {
 			if (aiHubJSONObject != null) {
 				long accountEntryId = aiHubJSONObject.getLong("accountEntryId");
 
-				_aiHubService.putAIHubApplication(
-					"AI-HUB-" + order.getAccountExternalReferenceCode(),
-					new JSONObject(
-					).put(
-						"accountEntryId", accountEntryId
-					).put(
-						"accountName",
-						aiHubFormJSONObject.getString("aiHubAccountName")
-					).put(
-						"administratorEmailAddress",
-						aiHubFormJSONObject.getString(
-							"administratorEmailAddress")
-					).put(
-						"r_accountToAIHubApplication_accountEntryERC",
-						order.getAccount(
-						).getExternalReferenceCode()
-					).put(
-						"r_orderToAIHubApplication_commerceOrderERC",
-						order.getExternalReferenceCode()
-					));
+				try {
+					_putAIHubEnvironment(
+						accountEntryId, aiHubFormJSONObject, order,
+						orderMetadataJSONObject, userAccountJSONObject);
+				}
+				catch (Exception exception) {
+					_log.error(
+						StringBundler.concat(
+							"Unable to record AI Hub account ", accountEntryId,
+							" of order ", order.getId()),
+						exception);
+				}
 
 				orderMetadataJSONObject.put(
 					"aiHubAccountEntryId", accountEntryId);
@@ -1894,54 +1836,82 @@ public class CommerceOrderService extends OneBaseService {
 					order.getId(),
 					Map.of(
 						"order-metadata", orderMetadataJSONObject.toString()));
-
-				if (Validator.isNotNull(salesforceProjectId)) {
-					JSONObject environmentJSONObject = new JSONObject(
-					).put(
-						"activationStatus",
-						EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
-					).put(
-						"offering", EnvironmentConstants.OFFERING_AI_HUB
-					).put(
-						"ownerEmailAddress", emailAddress
-					).put(
-						"r_accountEntryToEnvironment_accountEntryId",
-						order.getAccountId()
-					).put(
-						"r_projectToEnvironment_c_projectERC",
-						salesforceProjectId
-					);
-
-					String salesforceContractId =
-						orderMetadataJSONObject.optString(
-							"salesforceContractId");
-
-					if (Validator.isNotNull(salesforceContractId)) {
-						Contract contract =
-							_contractService.
-								fetchContractByExternalReferenceCode(
-									salesforceContractId);
-
-						if ((contract != null) &&
-							Objects.equals(
-								contract.getProjectExternalReferenceCode(),
-								salesforceProjectId)) {
-
-							environmentJSONObject.put(
-								"r_contractToEnvironment_c_contractERC",
-								salesforceContractId);
-						}
-					}
-
-					_aiHubService.putAIHubEnvironment(
-						"AI-HUB-" + salesforceProjectId, environmentJSONObject);
-				}
 			}
 		}
 		catch (Exception exception) {
 			_log.error(
 				"Unable to provision AI Hub for order: " + order.getId(),
 				exception);
+		}
+	}
+
+	private void _putAIHubEnvironment(
+			long accountEntryId, JSONObject aiHubFormJSONObject, Order order,
+			JSONObject orderMetadataJSONObject,
+			JSONObject userAccountJSONObject)
+		throws Exception {
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+		).put(
+			"adminEmailAddress", userAccountJSONObject.getString("emailAddress")
+		).put(
+			"adminFirstName", userAccountJSONObject.getString("firstName")
+		).put(
+			"adminLastName", userAccountJSONObject.getString("lastName")
+		).put(
+			"externalEnvironmentId", String.valueOf(accountEntryId)
+		).put(
+			"name", aiHubFormJSONObject.getString("aiHubAccountName")
+		).put(
+			"offering", EnvironmentConstants.OFFERING_AI_HUB
+		).put(
+			"ownerEmailAddress", userAccountJSONObject.getString("emailAddress")
+		).put(
+			"r_accountEntryToEnvironment_accountEntryId", order.getAccountId()
+		);
+
+		String salesforceProjectId = orderMetadataJSONObject.optString(
+			"salesforceProjectId");
+
+		if (Validator.isNotNull(salesforceProjectId)) {
+			environmentJSONObject.put(
+				"r_projectToEnvironment_c_projectERC", salesforceProjectId);
+
+			String salesforceContractId = orderMetadataJSONObject.optString(
+				"salesforceContractId");
+
+			if (Validator.isNotNull(salesforceContractId)) {
+				Contract contract =
+					_contractService.fetchContractByExternalReferenceCode(
+						salesforceContractId);
+
+				if ((contract != null) &&
+					Objects.equals(
+						contract.getProjectExternalReferenceCode(),
+						salesforceProjectId)) {
+
+					environmentJSONObject.put(
+						"r_contractToEnvironment_c_contractERC",
+						salesforceContractId);
+				}
+			}
+		}
+
+		String externalReferenceCode =
+			_getAIHubEnvironmentExternalReferenceCode(
+				order, salesforceProjectId);
+
+		JSONObject jsonObject = _aiHubService.putAIHubEnvironment(
+			externalReferenceCode, environmentJSONObject);
+
+		if (jsonObject == null) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to record AI Hub account ", accountEntryId,
+					" of order ", order.getId(), " on environment ",
+					externalReferenceCode));
 		}
 	}
 
@@ -2027,6 +1997,9 @@ public class CommerceOrderService extends OneBaseService {
 
 	@Autowired
 	private EntitlementDefinitionService _entitlementDefinitionService;
+
+	@Autowired
+	private EnvironmentService _environmentService;
 
 	private final Set<Long> _inFlightAIHubOpportunityOrderIds =
 		ConcurrentHashMap.newKeySet();

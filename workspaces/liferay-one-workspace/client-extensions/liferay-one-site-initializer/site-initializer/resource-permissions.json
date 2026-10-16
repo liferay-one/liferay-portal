@@ -12,15 +12,6 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AIHubApplication$]",
-		"roleName": "Provisioning Administrator",
-		"scope": "1"
-	},
-	{
-		"actionIds": [
-			"VIEW"
-		],
-		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountInvitation$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"

@@ -23,7 +23,6 @@ liferay-one-etc-spring-boot-oahs:
         -   Liferay.Notification.REST.everything
         -   c_accountinvitation.everything
         -   c_activationkey.everything
-        -   c_aihubapplication.everything
         -   c_commonlicensekey.everything
         -   c_contract.everything
         -   c_entitlement.everything
