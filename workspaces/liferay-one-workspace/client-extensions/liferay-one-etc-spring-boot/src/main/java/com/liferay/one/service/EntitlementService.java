@@ -719,6 +719,17 @@ public class EntitlementService extends OneBaseService {
 				entitlement.getEntitlementDefinition();
 
 			if (entitlementDefinition != null) {
+				Double maxQuantity = _multiply(
+					orderItem.getQuantity(),
+					entitlementDefinition.getMaxQuantity());
+
+				if ((maxQuantity != null) &&
+					!Objects.equals(
+						entitlement.getMaxQuantity(), maxQuantity)) {
+
+					entitlementJSONObject.put("maxQuantity", maxQuantity);
+				}
+
 				Double quantity = _multiply(
 					orderItem.getQuantity(),
 					entitlementDefinition.getDefaultQuantity());
@@ -766,7 +777,9 @@ public class EntitlementService extends OneBaseService {
 					_getLicenseKeyDurationDays(
 						entitlementDefinition, selfServiceTrial,
 						selfServiceTrialCustomer),
-					entitlementDefinition.getMaxQuantity(),
+					_multiply(
+						orderItemQuantity,
+						entitlementDefinition.getMaxQuantity()),
 					entitlementDefinition.getName(),
 					entitlementDefinition.getOveragePricing(), productOptions,
 					projectExternalReferenceCode,

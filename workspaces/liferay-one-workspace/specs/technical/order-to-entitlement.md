@@ -282,7 +282,7 @@ Every source ends when an order item is added or changed. The object actions are
 | `CommerceOrderUpdate` | `L_COMMERCE_ORDER` | `onAfterUpdate` | None | `/object/action/commerce/order/update` | Sets the default currency. `AI_HUB` in pending: creates the Salesforce opportunity. `SEO_STUDIO`: provisions SEO Studio. Other types: `completeSettledOrder` (`CommerceOrderService.java:340`). |
 | `CommerceProductDefinitionUpdate` | `L_COMMERCE_PRODUCT_DEFINITION` | `onAfterUpdate` | `status == 0` | `/object/action/commerce/product/definition/update` | For an approved paid App product, upserts one entitlement definition per SKU that has a license usage type option (`EntitlementDefinitionService.generateEntitlementDefinition`). |
 | `EntitlementGeneration` | `L_COMMERCE_ORDER_ITEM` | `onAfterAdd` | None | `/object/action/commerce/order/item/entitlement/generation` | Creates one entitlement for each active matching entitlement definition. |
-| `EntitlementUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/entitlement/update` | Updates start date, end date, and quantity of the item's existing entitlements. |
+| `EntitlementUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/entitlement/update` | Updates start date, end date, quantity, and max quantity of the item's existing entitlements. |
 | `UsageReportApproved` | `C_USAGE_REPORT` | `onAfterUpdate` | None | No client extension and no controller | Nothing. See Findings. |
 
 ### Entitlement Generation
@@ -327,7 +327,8 @@ Each new entitlement gets these values (`…/one/service/EntitlementService.java
 | `externalReferenceCode` | `<orderItemId>-<entitlementDefinitionId>` |
 | `name` | Definition `name` |
 | `quantity` | Definition `defaultQuantity` × order item quantity |
-| `maxQuantity`, `grantType`, overage pricing | From the definition |
+| `maxQuantity` | Definition `maxQuantity` × order item quantity. This sets the activations of a license entitlement. |
+| `grantType`, overage pricing | From the definition |
 | `startDate` | Order item `startDate`, or empty |
 | `endDate` | Order item `endDate`, or empty. The `effectiveEndDate` is not used here. |
 | `skuExternalReferenceCode` | Order item SKU |
@@ -347,6 +348,7 @@ The SKU join is the `C_ENTITLEMENT_DEFINITION_SKU` object: one row per SKU, link
 - `startDate` from the item `startDate`.
 - `endDate` from the earlier of the item `endDate` and `effectiveEndDate`, but never before the start date.
 - `quantity` from definition `defaultQuantity` × item quantity.
+- `maxQuantity` from definition `maxQuantity` × item quantity.
 
 It does not look at `customStatus`. A Canceled item keeps its entitlements until its `effectiveEndDate` moves. Renewals, realignments, and deleted project entitlements use exactly that: they move `effectiveEndDate` earlier, and `EntitlementUpdate` shortens the entitlement.
 
