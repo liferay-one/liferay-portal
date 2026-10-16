@@ -1809,6 +1809,7 @@ export default {
 	'video-description': '動画の説明',
 	'video-url': '動画URL',
 	'view': '参照',
+	'view-activation-key': 'アクティベーションキーを表示',
 	'view-all': 'すべてを表示',
 	'view-all-account-orders': 'すべてのアカウント注文を表示',
 	'view-app-in-cloud': 'Cloudでアプリを表示',

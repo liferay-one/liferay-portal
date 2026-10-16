@@ -113,7 +113,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 			return this.getGenerateActivationKeyLink();
 		}
 
-		return `${this.getProjectLink()}/products/${this.product.externalReferenceCode}`;
+		return `${this.getProjectLink()}/activation`;
 	}
 
 	public async hasTrialOrder() {
