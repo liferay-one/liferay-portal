@@ -6,6 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router';
+import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {useProjectContractItems} from '~/hooks/useProjectItems';
 import i18n from '~/i18n';
@@ -19,6 +20,7 @@ import ProductListPage, {
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
+import {isFreeActivationKeyProduct} from '~/pages/MyAccount/Projects/utils/isFreeActivationKeyProduct';
 
 export default function Products() {
 	const navigate = useNavigate();
@@ -39,6 +41,16 @@ export default function Products() {
 			statusFilter(products),
 		];
 	}, [products]);
+
+	const renderExtraActions = (product: ProjectProduct): RowAction[] =>
+		isFreeActivationKeyProduct(product.specifications)
+			? [
+					{
+						label: 'view-activation-key',
+						onClick: () => navigate('../activation'),
+					},
+				]
+			: [];
 
 	const columns: ListColumn<ProjectProduct>[] = [
 		{
@@ -92,6 +104,7 @@ export default function Products() {
 			items={products}
 			loading={loading}
 			onItemClick={(product) => navigate(product.externalReferenceCode)}
+			renderExtraActions={renderExtraActions}
 			title="products"
 		/>
 	);

@@ -1827,6 +1827,7 @@ export default {
 	'video-description': 'Descrição do vídeo',
 	'video-url': 'URL do vídeo',
 	'view': 'Visualizar',
+	'view-activation-key': 'Ver chave de ativação',
 	'view-all': 'Ver Tudo',
 	'view-all-account-orders': 'Ver todos os pedidos da conta',
 	'view-app-in-cloud': 'Ver aplicativo na Cloud',

@@ -164,7 +164,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 		: `${projectURL}/applications`;
 
 	const itemDetailURL = isDXPFree
-		? `${projectURL}/products/${product.externalReferenceCode}?tab=activation`
+		? `${projectURL}/activation`
 		: `${projectURL}/applications/${product.externalReferenceCode}?tab=${installTab}`;
 
 	const showCardIcon = !isFreeApp && hasVatId;
@@ -226,7 +226,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 					onClick={() => Liferay.Util.navigate(itemDetailURL)}
 				>
 					{i18n.translate(
-						isDXPFree ? 'activation-key' : installLabel
+						isDXPFree ? 'view-activation-key' : installLabel
 					)}
 				</ClayButton>
 			</div>
