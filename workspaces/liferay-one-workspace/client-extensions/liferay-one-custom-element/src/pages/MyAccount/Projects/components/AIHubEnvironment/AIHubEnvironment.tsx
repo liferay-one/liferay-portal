@@ -6,7 +6,6 @@
 import {ReactNode} from 'react';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import i18n from '~/i18n';
-import {Liferay} from '~/services/liferay/liferay';
 
 import './AIHubEnvironment.css';
 
@@ -22,17 +21,15 @@ type Cell = {
 };
 
 export default function AIHubEnvironment({environment}: AIHubEnvironmentProps) {
-	const accountName = Liferay.CommerceContext.account?.accountName ?? '';
-
 	const aiHubURL = environment.aiHubURL;
 
 	const href = aiHubURL.startsWith('http') ? aiHubURL : `https://${aiHubURL}`;
 
 	const cells: Cell[] = [
-		{label: i18n.translate('ai-hub-account-name'), value: accountName},
+		{label: i18n.translate('ai-hub-account-name'), value: environment.name},
 		{
 			label: i18n.translate('administration-email'),
-			value: environment.ownerEmailAddress,
+			value: environment.adminEmailAddress,
 		},
 		{
 			label: i18n.translate('token-monthly-allowance'),

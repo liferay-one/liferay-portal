@@ -30,29 +30,6 @@ import reactor.util.retry.Retry;
 @Component
 public class AIHubService extends OneBaseService {
 
-	public JSONObject getAIHubApplicationJSONObject(
-		String externalReferenceCode) {
-
-		try {
-			return new JSONObject(
-				get(
-					getAuthorization(),
-					UriComponentsBuilder.fromPath(
-						"/o/c/aihubapplications/by-external-reference-code/" +
-							externalReferenceCode +
-								"?nestedFields=orderToAIHubApplication"
-					).build(
-					).toUri()));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to get AI Hub Application " + externalReferenceCode,
-				exception);
-
-			return null;
-		}
-	}
-
 	public JSONObject provision(JSONObject jsonObject) {
 		try {
 			String response = post(
@@ -110,28 +87,6 @@ public class AIHubService extends OneBaseService {
 				StringBundler.concat(
 					"AI Hub prepaid block ", jsonObject, " for account ",
 					accountEntryId, " returned ", response));
-		}
-	}
-
-	public JSONObject putAIHubApplication(
-		String externalReferenceCode, JSONObject jsonObject) {
-
-		try {
-			return new JSONObject(
-				put(
-					getAuthorization(), jsonObject.toString(),
-					UriComponentsBuilder.fromPath(
-						"/o/c/aihubapplications/by-external-reference-code/" +
-							externalReferenceCode
-					).build(
-					).toUri()));
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unable to put AI Hub Application " + externalReferenceCode,
-				exception);
-
-			return null;
 		}
 	}
 
