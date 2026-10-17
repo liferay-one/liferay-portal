@@ -233,9 +233,11 @@ public class EntitlementDefinitionServiceTest {
 		for (String uri : _entitlementDefinitionService.getURIs) {
 			String decodedURI = URLDecoder.decode(uri, StandardCharsets.UTF_8);
 
-			if (decodedURI.contains("SKU-O''BRIEN")) {
-				escaped = true;
+			if (!decodedURI.contains("SKU-O''BRIEN")) {
+				continue;
 			}
+
+			escaped = true;
 		}
 
 		Assertions.assertTrue(escaped);
@@ -947,14 +949,16 @@ public class EntitlementDefinitionServiceTest {
 				for (int i = 0; i < skuItemsJSONArray.length(); i++) {
 					JSONObject jsonObject = skuItemsJSONArray.getJSONObject(i);
 
-					if (skuExternalReferenceCode.equals(
+					if (!skuExternalReferenceCode.equals(
 							jsonObject.getString("skuExternalReferenceCode"))) {
 
-						entitlementDefinitionIds.add(
-							jsonObject.getLong(
-								"r_entitlementDefinitionToSku_c_" +
-									"entitlementDefinitionId"));
+						continue;
 					}
+
+					entitlementDefinitionIds.add(
+						jsonObject.getLong(
+							"r_entitlementDefinitionToSku_c_" +
+								"entitlementDefinitionId"));
 				}
 
 				JSONArray filteredJSONArray = new JSONArray();
@@ -962,11 +966,13 @@ public class EntitlementDefinitionServiceTest {
 				for (int i = 0; i < jsonArray.length(); i++) {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-					if (entitlementDefinitionIds.contains(
+					if (!entitlementDefinitionIds.contains(
 							jsonObject.getLong("id"))) {
 
-						filteredJSONArray.put(jsonObject);
+						continue;
 					}
+
+					filteredJSONArray.put(jsonObject);
 				}
 
 				return filteredJSONArray;
@@ -989,9 +995,11 @@ public class EntitlementDefinitionServiceTest {
 				for (int i = 0; i < jsonArray.length(); i++) {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-					if (values.contains(jsonObject.optString(fieldName))) {
-						filteredJSONArray.put(jsonObject);
+					if (!values.contains(jsonObject.optString(fieldName))) {
+						continue;
 					}
+
+					filteredJSONArray.put(jsonObject);
 				}
 
 				return filteredJSONArray;

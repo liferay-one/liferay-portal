@@ -290,9 +290,11 @@ public class ProjectMembershipServiceTest {
 		String query = uri.getQuery();
 
 		for (String parameter : query.split("&")) {
-			if (parameter.startsWith(name + "=")) {
-				queryParam = parameter.substring(name.length() + 1);
+			if (!parameter.startsWith(name + "=")) {
+				continue;
 			}
+
+			queryParam = parameter.substring(name.length() + 1);
 		}
 
 		return queryParam;

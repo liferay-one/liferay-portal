@@ -2382,9 +2382,11 @@ public class LicenseKeyGenerationServiceTest {
 
 			Method method = invocation.getMethod();
 
-			if (methodName.equals(method.getName())) {
-				arguments.add(invocation.getArgument(index));
+			if (!methodName.equals(method.getName())) {
+				continue;
 			}
+
+			arguments.add(invocation.getArgument(index));
 		}
 
 		return arguments;

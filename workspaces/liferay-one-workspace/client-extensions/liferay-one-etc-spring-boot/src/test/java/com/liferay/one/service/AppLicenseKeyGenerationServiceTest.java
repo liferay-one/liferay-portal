@@ -509,9 +509,11 @@ public class AppLicenseKeyGenerationServiceTest {
 
 			Method method = invocation.getMethod();
 
-			if (Objects.equals(method.getName(), "addLicenseKey")) {
-				argumentsList.add(invocation.getArguments());
+			if (!Objects.equals(method.getName(), "addLicenseKey")) {
+				continue;
 			}
+
+			argumentsList.add(invocation.getArguments());
 		}
 
 		return argumentsList;

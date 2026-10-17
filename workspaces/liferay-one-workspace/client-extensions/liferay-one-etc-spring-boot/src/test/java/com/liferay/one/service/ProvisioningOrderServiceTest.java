@@ -141,9 +141,11 @@ public class ProvisioningOrderServiceTest {
 		boolean hasMismatchWarning = false;
 
 		for (String warningMessage : warningMessages) {
-			if (warningMessage.contains("End date mismatch")) {
-				hasMismatchWarning = true;
+			if (!warningMessage.contains("End date mismatch")) {
+				continue;
 			}
+
+			hasMismatchWarning = true;
 		}
 
 		Assertions.assertTrue(hasMismatchWarning);

@@ -53,15 +53,17 @@ public class LicenseKeyTypeTest {
 		Map<String, Object> source = new HashMap<>();
 
 		for (String name : properties.stringPropertyNames()) {
-			if (name.startsWith("liferay.one.license.key.types")) {
-				source.put(
-					name,
-					properties.getProperty(
-						name
-					).replaceAll(
-						"\\$\\{[^:]+:(.*)\\}", "$1"
-					));
+			if (!name.startsWith("liferay.one.license.key.types")) {
+				continue;
 			}
+
+			source.put(
+				name,
+				properties.getProperty(
+					name
+				).replaceAll(
+					"\\$\\{[^:]+:(.*)\\}", "$1"
+				));
 		}
 
 		Assertions.assertFalse(source.isEmpty());

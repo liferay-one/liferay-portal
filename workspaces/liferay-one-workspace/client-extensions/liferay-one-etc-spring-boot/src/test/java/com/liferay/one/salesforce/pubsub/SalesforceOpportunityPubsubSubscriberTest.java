@@ -2117,9 +2117,11 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		boolean hasProductWarning = false;
 
 		for (String warningMessage : warningMessagesArgumentCaptor.getValue()) {
-			if (warningMessage.contains("Widget")) {
-				hasProductWarning = true;
+			if (!warningMessage.contains("Widget")) {
+				continue;
 			}
+
+			hasProductWarning = true;
 		}
 
 		Assertions.assertTrue(hasProductWarning);

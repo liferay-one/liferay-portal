@@ -217,13 +217,15 @@ public class ConsoleServiceTest {
 			int loginCount = 0;
 
 			for (Request request : _requests) {
-				if (request._uri.getPath(
+				if (!request._uri.getPath(
 					).endsWith(
 						"/login"
 					)) {
 
-					loginCount++;
+					continue;
 				}
+
+				loginCount++;
 			}
 
 			return loginCount;
