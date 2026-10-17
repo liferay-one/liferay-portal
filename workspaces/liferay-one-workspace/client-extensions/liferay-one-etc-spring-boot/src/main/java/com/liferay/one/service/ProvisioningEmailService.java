@@ -86,15 +86,17 @@ public class ProvisioningEmailService extends OneBaseService {
 			_userAccountService.getAccountUserAccounts(account.getId());
 
 		for (UserAccount userAccount : userAccounts) {
-			if (UserAccountUtil.hasAccountRole(
+			if (!UserAccountUtil.hasAccountRole(
 					userAccount, account.getId(),
-					RoleConstants.namesCustomerAccountRoles) &&
-				UserAccountUtil.isVerified(userAccount)) {
+					RoleConstants.namesCustomerAccountRoles) ||
+				!UserAccountUtil.isVerified(userAccount)) {
 
-				_sendWelcomeEmail(
-					userAccount, List.of(account),
-					_getProjects(account.getId(), userAccount.getId()));
+				continue;
 			}
+
+			_sendWelcomeEmail(
+				userAccount, List.of(account),
+				_getProjects(account.getId(), userAccount.getId()));
 		}
 	}
 
@@ -242,9 +244,11 @@ public class ProvisioningEmailService extends OneBaseService {
 			Project project = _projectService.fetchProject(
 				projectMembership.getProjectExternalReferenceCode());
 
-			if (project != null) {
-				projects.add(project);
+			if (project == null) {
+				continue;
 			}
+
+			projects.add(project);
 		}
 
 		return projects;
@@ -404,23 +408,27 @@ public class ProvisioningEmailService extends OneBaseService {
 				continue;
 			}
 
-			if ((UserAccountUtil.hasAccountRole(
+			if ((!UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					RoleConstants.namesCustomerAccountRoles) &&
-				 _entitlementService.hasEntitlement(
-					 accountId, EntitlementConstants.namesSLAs)) ||
-				(UserAccountUtil.hasAccountRole(
+					RoleConstants.namesCustomerAccountRoles) ||
+				 !_entitlementService.hasEntitlement(
+					 accountId, EntitlementConstants.namesSLAs)) &&
+				(!UserAccountUtil.hasAccountRole(
 					userAccount, accountId,
-					RoleConstants.namesPartnerAccountRoles) &&
-				 _entitlementService.hasEntitlement(
+					RoleConstants.namesPartnerAccountRoles) ||
+				 !_entitlementService.hasEntitlement(
 					 accountId, EntitlementConstants.NAME_PARTNER))) {
 
-				Account account = _accountService.fetchAccount(accountId);
-
-				if (account != null) {
-					accounts.add(account);
-				}
+				continue;
 			}
+
+			Account account = _accountService.fetchAccount(accountId);
+
+			if (account == null) {
+				continue;
+			}
+
+			accounts.add(account);
 		}
 
 		return accounts;

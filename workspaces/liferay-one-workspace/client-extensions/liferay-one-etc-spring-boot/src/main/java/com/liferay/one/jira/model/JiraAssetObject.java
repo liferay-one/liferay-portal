@@ -104,9 +104,11 @@ public class JiraAssetObject {
 			List<Object> validValues = new ArrayList<>();
 
 			for (Object object : collection) {
-				if (_isValidOption(attributeName, object)) {
-					validValues.add(object);
+				if (!_isValidOption(attributeName, object)) {
+					continue;
 				}
+
+				validValues.add(object);
 			}
 
 			_values.put(attributeId, validValues);

@@ -164,9 +164,11 @@ public class OrphanedAssignmentReconciler {
 				String externalKey = jiraAssetObject.getAttributeValue(
 					assignmentReference.getExternalKeyAttributeName());
 
-				if (Validator.isNotNull(externalKey)) {
-					externalKeys.add(externalKey);
+				if (Validator.isNull(externalKey)) {
+					continue;
 				}
+
+				externalKeys.add(externalKey);
 			}
 
 			Map<String, String> externalKeyToObjectIdMap =

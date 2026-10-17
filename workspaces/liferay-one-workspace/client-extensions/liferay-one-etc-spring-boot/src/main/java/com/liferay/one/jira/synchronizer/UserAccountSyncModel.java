@@ -117,9 +117,11 @@ public class UserAccountSyncModel {
 			_userAccount.getId());
 
 		for (Property property : properties) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				externalLinkProperties.add(property);
+			if (!_externalLinkConverter.isExternalLinkProperty(property)) {
+				continue;
 			}
+
+			externalLinkProperties.add(property);
 		}
 
 		return externalLinkProperties;
@@ -131,18 +133,22 @@ public class UserAccountSyncModel {
 		for (AccountBrief accountBrief : _accountBriefs) {
 			RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
 
-			if (accountRoleBriefs != null) {
-				Collections.addAll(roleBriefs, accountRoleBriefs);
+			if (accountRoleBriefs == null) {
+				continue;
 			}
+
+			Collections.addAll(roleBriefs, accountRoleBriefs);
 		}
 
 		for (OrganizationBrief organizationBrief : _organizationBriefs) {
 			RoleBrief[] organizationRoleBriefs =
 				organizationBrief.getRoleBriefs();
 
-			if (organizationRoleBriefs != null) {
-				Collections.addAll(roleBriefs, organizationRoleBriefs);
+			if (organizationRoleBriefs == null) {
+				continue;
 			}
+
+			Collections.addAll(roleBriefs, organizationRoleBriefs);
 		}
 
 		return roleBriefs;

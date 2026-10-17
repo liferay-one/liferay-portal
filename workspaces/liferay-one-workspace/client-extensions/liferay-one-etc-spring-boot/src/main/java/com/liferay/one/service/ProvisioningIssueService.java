@@ -193,12 +193,14 @@ public class ProvisioningIssueService {
 			for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
 					salesforceOpportunityLineItems) {
 
-				if (Validator.isNotNull(
+				if (Validator.isNull(
 						salesforceOpportunityLineItem.getProductType())) {
 
-					productTypes.add(
-						salesforceOpportunityLineItem.getProductType());
+					continue;
 				}
+
+				productTypes.add(
+					salesforceOpportunityLineItem.getProductType());
 			}
 
 			if (!productTypes.isEmpty()) {

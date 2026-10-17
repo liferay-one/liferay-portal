@@ -274,9 +274,11 @@ public class OktaService {
 
 			String id = jsonObject.optString("id");
 
-			if (Validator.isNotNull(id)) {
-				groupIds.add(id);
+			if (Validator.isNull(id)) {
+				continue;
 			}
+
+			groupIds.add(id);
 		}
 
 		return groupIds;

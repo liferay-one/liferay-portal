@@ -79,9 +79,11 @@ public class OrganizationSyncModel {
 			_getId());
 
 		for (Property property : properties) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				externalLinkProperties.add(property);
+			if (!_externalLinkConverter.isExternalLinkProperty(property)) {
+				continue;
 			}
+
+			externalLinkProperties.add(property);
 		}
 
 		return externalLinkProperties;

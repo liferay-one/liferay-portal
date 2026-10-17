@@ -26,9 +26,11 @@ public class ServerInfoUtil {
 		for (String line : value.split("\\R")) {
 			String trimmedLine = line.trim();
 
-			if (!trimmedLine.isEmpty()) {
-				lines.add(trimmedLine);
+			if (trimmedLine.isEmpty()) {
+				continue;
 			}
+
+			lines.add(trimmedLine);
 		}
 
 		return String.join(StringPool.COMMA, lines);

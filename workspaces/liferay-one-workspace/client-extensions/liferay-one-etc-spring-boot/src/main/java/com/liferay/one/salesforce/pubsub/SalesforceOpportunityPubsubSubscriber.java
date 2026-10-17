@@ -545,21 +545,23 @@ public class SalesforceOpportunityPubsubSubscriber
 					provisionableSalesforceOpportunityLineItem :
 						provisionableSalesforceOpportunityLineItems) {
 
-				if (!Objects.equals(
+				if (Objects.equals(
 						provisionableSalesforceOpportunityLineItem.
 							getEndDateInstant(),
 						contract.getEndDateInstant())) {
 
-					_addWarning(
-						warningMessages,
-						StringBundler.concat(
-							"The end date of line ",
-							provisionableSalesforceOpportunityLineItem.
-								getProductName(),
-							" differs from the end date of contract ",
-							contract.getExternalReferenceCode()),
-						null);
+					continue;
 				}
+
+				_addWarning(
+					warningMessages,
+					StringBundler.concat(
+						"The end date of line ",
+						provisionableSalesforceOpportunityLineItem.
+							getProductName(),
+						" differs from the end date of contract ",
+						contract.getExternalReferenceCode()),
+					null);
 			}
 		}
 

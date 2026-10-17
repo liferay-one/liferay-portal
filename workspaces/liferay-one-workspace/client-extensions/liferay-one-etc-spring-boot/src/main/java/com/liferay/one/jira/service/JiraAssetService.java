@@ -113,9 +113,11 @@ public class JiraAssetService {
 
 			String externalKey = externalKeyFunction.apply(entity);
 
-			if (Validator.isNotNull(externalKey)) {
-				externalKeys.add(externalKey);
+			if (Validator.isNull(externalKey)) {
+				continue;
 			}
+
+			externalKeys.add(externalKey);
 		}
 
 		return _resolveToObjectIds(converter, externalKeys, null);
@@ -196,9 +198,11 @@ public class JiraAssetService {
 
 			String externalKey = externalKeyFunction.apply(entity);
 
-			if (Validator.isNotNull(externalKey)) {
-				entitiesMap.putIfAbsent(externalKey, entity);
+			if (Validator.isNull(externalKey)) {
+				continue;
 			}
+
+			entitiesMap.putIfAbsent(externalKey, entity);
 		}
 
 		return _resolveToObjectIds(
@@ -562,9 +566,11 @@ public class JiraAssetService {
 		Set<String> uniqueExternalKeys = new LinkedHashSet<>();
 
 		for (String externalKey : externalKeys) {
-			if (Validator.isNotNull(externalKey)) {
-				uniqueExternalKeys.add(externalKey);
+			if (Validator.isNull(externalKey)) {
+				continue;
 			}
+
+			uniqueExternalKeys.add(externalKey);
 		}
 
 		if (uniqueExternalKeys.isEmpty()) {

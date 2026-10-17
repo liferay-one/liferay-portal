@@ -89,10 +89,12 @@ public class CommerceProductVirtualSettingsService extends OneBaseService {
 			int compareTo = curVersion.compareTo(
 				latestProductVirtualSettingsFileEntry.getVersion());
 
-			if (compareTo > 0) {
-				latestProductVirtualSettingsFileEntry =
-					productVirtualSettingsFileEntry;
+			if (compareTo <= 0) {
+				continue;
 			}
+
+			latestProductVirtualSettingsFileEntry =
+				productVirtualSettingsFileEntry;
 		}
 
 		return latestProductVirtualSettingsFileEntry;

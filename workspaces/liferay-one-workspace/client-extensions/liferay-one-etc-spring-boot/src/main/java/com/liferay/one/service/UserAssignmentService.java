@@ -215,9 +215,11 @@ public class UserAssignmentService {
 
 			linkedOrganizationIds.add(property.getClassPK());
 
-			if (groupIds.contains(property.getValue())) {
-				groupOrganizationIds.add(property.getClassPK());
+			if (!groupIds.contains(property.getValue())) {
+				continue;
 			}
+
+			groupOrganizationIds.add(property.getClassPK());
 		}
 
 		for (long organizationId : groupOrganizationIds) {
@@ -234,11 +236,13 @@ public class UserAssignmentService {
 		for (OrganizationBrief organizationBrief : organizationBriefs) {
 			long organizationId = organizationBrief.getId();
 
-			if (linkedOrganizationIds.contains(organizationId) &&
-				!groupOrganizationIds.contains(organizationId)) {
+			if (!linkedOrganizationIds.contains(organizationId) ||
+				groupOrganizationIds.contains(organizationId)) {
 
-				unassignOrganization(organizationId, userId);
+				continue;
 			}
+
+			unassignOrganization(organizationId, userId);
 		}
 	}
 
@@ -261,11 +265,13 @@ public class UserAssignmentService {
 			Project project = _projectService.fetchProject(
 				projectMembership.getProjectExternalReferenceCode());
 
-			if (project != null) {
-				unassignProjectRole(
-					project, projectMembership.getRoleExternalReferenceCode(),
-					userId);
+			if (project == null) {
+				continue;
 			}
+
+			unassignProjectRole(
+				project, projectMembership.getRoleExternalReferenceCode(),
+				userId);
 		}
 
 		_accountService.removeAccountUserAccount(account.getId(), userId);

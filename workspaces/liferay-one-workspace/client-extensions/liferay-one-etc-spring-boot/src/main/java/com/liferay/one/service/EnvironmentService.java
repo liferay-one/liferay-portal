@@ -287,10 +287,12 @@ public class EnvironmentService extends OneBaseService {
 		}
 
 		for (String fieldName : _ACTIVATION_FIELD_NAMES) {
-			if (fieldsJSONObject.has(fieldName)) {
-				environmentJSONObject.put(
-					fieldName, fieldsJSONObject.optString(fieldName));
+			if (!fieldsJSONObject.has(fieldName)) {
+				continue;
 			}
+
+			environmentJSONObject.put(
+				fieldName, fieldsJSONObject.optString(fieldName));
 		}
 
 		String response = post(

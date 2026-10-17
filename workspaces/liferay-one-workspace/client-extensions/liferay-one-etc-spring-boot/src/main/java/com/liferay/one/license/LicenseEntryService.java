@@ -33,9 +33,11 @@ public class LicenseEntryService {
 		List<LicenseEntry> licenseEntries = new ArrayList<>();
 
 		for (LicenseEntry licenseEntry : _licenseEntries) {
-			if (Objects.equals(licenseEntry.getProductKey(), productKey)) {
-				licenseEntries.add(licenseEntry);
+			if (!Objects.equals(licenseEntry.getProductKey(), productKey)) {
+				continue;
 			}
+
+			licenseEntries.add(licenseEntry);
 		}
 
 		return licenseEntries;
@@ -57,9 +59,11 @@ public class LicenseEntryService {
 		List<LicenseEntry> licenseEntries = new ArrayList<>();
 
 		for (LicenseEntry licenseEntry : _licenseEntries) {
-			if (Objects.equals(licenseEntry.getType(), type)) {
-				licenseEntries.add(licenseEntry);
+			if (!Objects.equals(licenseEntry.getType(), type)) {
+				continue;
 			}
+
+			licenseEntries.add(licenseEntry);
 		}
 
 		return licenseEntries;
@@ -87,13 +91,15 @@ public class LicenseEntryService {
 		}
 
 		for (LicenseEntry licenseEntry : licenseEntries) {
-			if ((Validator.isNull(licenseEntry.getVersionMin()) ||
-				 _isLessThan(licenseEntry.getVersionMin(), version)) &&
-				(Validator.isNull(licenseEntry.getVersionMax()) ||
-				 _isLessThan(version, licenseEntry.getVersionMax()))) {
+			if ((Validator.isNotNull(licenseEntry.getVersionMin()) &&
+				 !_isLessThan(licenseEntry.getVersionMin(), version)) ||
+				(Validator.isNotNull(licenseEntry.getVersionMax()) &&
+				 !_isLessThan(version, licenseEntry.getVersionMax()))) {
 
-				filteredLicenseEntries.add(licenseEntry);
+				continue;
 			}
+
+			filteredLicenseEntries.add(licenseEntry);
 		}
 
 		return filteredLicenseEntries;
@@ -105,12 +111,14 @@ public class LicenseEntryService {
 		List<LicenseEntry> licenseEntries = new ArrayList<>();
 
 		for (LicenseEntry licenseEntry : _licenseEntries) {
-			if (pattern.matcher(
+			if (!pattern.matcher(
 					licenseEntry.getName()
 				).matches()) {
 
-				licenseEntries.add(licenseEntry);
+				continue;
 			}
+
+			licenseEntries.add(licenseEntry);
 		}
 
 		return licenseEntries;
@@ -138,9 +146,11 @@ public class LicenseEntryService {
 				sb.append(".*");
 			}
 
-			if (Validator.isNotNull(segments[i])) {
-				sb.append(Pattern.quote(segments[i]));
+			if (Validator.isNull(segments[i])) {
+				continue;
 			}
+
+			sb.append(Pattern.quote(segments[i]));
 		}
 
 		return Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);

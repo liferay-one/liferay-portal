@@ -589,10 +589,12 @@ public class AccountsRestController extends OneBaseRestController {
 			AccountRole accountRole = _accountRoleService.fetchAccountRole(
 				roleBrief.getId());
 
-			if (accountRole != null) {
-				_userAssignmentService.unassignAccountRole(
-					account, accountRole, userId);
+			if (accountRole == null) {
+				continue;
 			}
+
+			_userAssignmentService.unassignAccountRole(
+				account, accountRole, userId);
 		}
 	}
 
@@ -806,9 +808,11 @@ public class AccountsRestController extends OneBaseRestController {
 				_accountRoleService.fetchAccountRoleByExternalReferenceCode(
 					roleExternalReferenceCode);
 
-			if (accountRole != null) {
-				roleNamesJSONArray.put(accountRole.getName());
+			if (accountRole == null) {
+				continue;
 			}
+
+			roleNamesJSONArray.put(accountRole.getName());
 		}
 
 		Instant customExpirationDateInstant =

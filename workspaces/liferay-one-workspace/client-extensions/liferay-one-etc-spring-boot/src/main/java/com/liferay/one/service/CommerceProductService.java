@@ -447,12 +447,14 @@ public class CommerceProductService extends OneBaseService {
 
 		if (sku.getSkuOptions() != null) {
 			for (SkuOption skuOption : sku.getSkuOptions()) {
-				if (!Objects.equals(
+				if (Objects.equals(
 						CommerceProductConstants.OPTION_KEY_SALESFORCE_PRODUCT,
 						skuOption.getKey())) {
 
-					skuOptions.add(skuOption);
+					continue;
 				}
+
+				skuOptions.add(skuOption);
 			}
 		}
 

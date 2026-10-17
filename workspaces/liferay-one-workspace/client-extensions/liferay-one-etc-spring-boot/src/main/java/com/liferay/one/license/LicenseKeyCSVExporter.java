@@ -104,9 +104,11 @@ public class LicenseKeyCSVExporter {
 			sb.append(_escapeCSVValue(objects[i]));
 			sb.append(StringPool.QUOTE);
 
-			if (i < (objects.length - 1)) {
-				sb.append(StringPool.COMMA);
+			if (i >= (objects.length - 1)) {
+				continue;
 			}
+
+			sb.append(StringPool.COMMA);
 		}
 
 		sb.append(StringPool.NEW_LINE);

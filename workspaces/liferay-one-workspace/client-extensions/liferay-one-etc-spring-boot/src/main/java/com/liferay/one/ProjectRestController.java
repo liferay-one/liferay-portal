@@ -352,14 +352,16 @@ public class ProjectRestController extends OneBaseRestController {
 			String roleExternalReferenceCode =
 				projectMembership.getRoleExternalReferenceCode();
 
-			if (RoleConstants.ercsSupportProject.contains(
-					roleExternalReferenceCode) &&
-				!roleExternalReferenceCode.equals(
+			if (!RoleConstants.ercsSupportProject.contains(
+					roleExternalReferenceCode) ||
+				roleExternalReferenceCode.equals(
 					accountRoleExternalReferenceCode)) {
 
-				_userAssignmentService.unassignProjectRole(
-					project, roleExternalReferenceCode, userId);
+				continue;
 			}
+
+			_userAssignmentService.unassignProjectRole(
+				project, roleExternalReferenceCode, userId);
 		}
 	}
 
@@ -552,9 +554,13 @@ public class ProjectRestController extends OneBaseRestController {
 		for (Entitlement entitlement :
 				_getActiveEntitlements(projectExternalReferenceCode)) {
 
-			if (_isUsageDashboardEntitlement(entitlement, utilizationProfile)) {
-				usageDashboardEntitlements.add(entitlement);
+			if (!_isUsageDashboardEntitlement(
+					entitlement, utilizationProfile)) {
+
+				continue;
 			}
+
+			usageDashboardEntitlements.add(entitlement);
 		}
 
 		return usageDashboardEntitlements;

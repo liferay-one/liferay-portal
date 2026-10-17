@@ -106,45 +106,50 @@ public class ProvisioningOrderService {
 						CommerceOrderItemUtil.getEffectiveEndDateInstant(
 							parentOrderItem);
 
-					if ((orderItemEffectiveEndDateInstant == null) ||
-						orderItemEffectiveEndDateInstant.isAfter(
+					if ((orderItemEffectiveEndDateInstant != null) &&
+						!orderItemEffectiveEndDateInstant.isAfter(
 							effectiveEndDateInstant)) {
 
-						_commerceOrderItemService.patchOrderItemCustomFields(
-							parentOrderItem.getId(),
-							Map.of(
-								"effectiveEndDate",
-								effectiveEndDateInstant.toString()));
-
-						if ((endDateInstant != null) &&
-							!Objects.equals(
-								CommerceOrderItemUtil.getEndDateInstant(
-									parentOrderItem),
-								endDateInstant)) {
-
-							_addWarning(
-								warningMessages,
-								StringBundler.concat(
-									"End date mismatch for order item ",
-									parentOrderItem.getExternalReferenceCode(),
-									". Amended date: ", endDateInstant,
-									", original date: ",
-									CommerceOrderItemUtil.getEndDateInstant(
-										parentOrderItem)));
-						}
+						continue;
 					}
+
+					_commerceOrderItemService.patchOrderItemCustomFields(
+						parentOrderItem.getId(),
+						Map.of(
+							"effectiveEndDate",
+							effectiveEndDateInstant.toString()));
+
+					if ((endDateInstant == null) ||
+						Objects.equals(
+							CommerceOrderItemUtil.getEndDateInstant(
+								parentOrderItem),
+							endDateInstant)) {
+
+						continue;
+					}
+
+					_addWarning(
+						warningMessages,
+						StringBundler.concat(
+							"End date mismatch for order item ",
+							parentOrderItem.getExternalReferenceCode(),
+							". Amended date: ", endDateInstant,
+							", original date: ",
+							CommerceOrderItemUtil.getEndDateInstant(
+								parentOrderItem)));
 				}
 			}
 
-			if (!matched) {
-				String productName =
-					realignmentSalesforceOpportunityLineItem.getProductName();
-
-				_addWarning(
-					warningMessages,
-					"Unable to find an order item for amended line " +
-						productName);
+			if (matched) {
+				continue;
 			}
+
+			String productName =
+				realignmentSalesforceOpportunityLineItem.getProductName();
+
+			_addWarning(
+				warningMessages,
+				"Unable to find an order item for amended line " + productName);
 		}
 	}
 
@@ -211,16 +216,18 @@ public class ProvisioningOrderService {
 						CommerceOrderItemUtil.getEffectiveEndDateInstant(
 							orderItem);
 
-					if ((effectiveEndDateInstant != null) &&
-						renewalStartDateInstant.isBefore(
+					if ((effectiveEndDateInstant == null) ||
+						!renewalStartDateInstant.isBefore(
 							effectiveEndDateInstant)) {
 
-						_commerceOrderItemService.patchOrderItemCustomFields(
-							orderItem.getId(),
-							Map.of(
-								"effectiveEndDate",
-								renewalStartDateInstant.toString()));
+						continue;
 					}
+
+					_commerceOrderItemService.patchOrderItemCustomFields(
+						orderItem.getId(),
+						Map.of(
+							"effectiveEndDate",
+							renewalStartDateInstant.toString()));
 				}
 			}
 		}

@@ -464,9 +464,11 @@ public class LicenseKeyGenerateFormService {
 				_commerceSkuService.fetchSku(skuExternalReferenceCode),
 				skuExternalReferenceCode);
 
-			if (product != null) {
-				externalReferenceCodes.add(product.getExternalReferenceCode());
+			if (product == null) {
+				continue;
 			}
+
+			externalReferenceCodes.add(product.getExternalReferenceCode());
 		}
 
 		return externalReferenceCodes;
@@ -842,9 +844,11 @@ public class LicenseKeyGenerateFormService {
 			List<LicenseEntry> licenseEntries = _getLicenseEntries(
 				licenseKeyFamily, productVersion.getVersion());
 
-			if (!licenseEntries.isEmpty()) {
-				jsonArray.put(productVersion.getVersion());
+			if (licenseEntries.isEmpty()) {
+				continue;
 			}
+
+			jsonArray.put(productVersion.getVersion());
 		}
 
 		return jsonArray;
@@ -910,10 +914,12 @@ public class LicenseKeyGenerateFormService {
 					skuExternalReferenceCode);
 			}
 
-			if (resolvedProduct != null) {
-				resolvedProducts.put(
-					entitlement.getEntitlementId(), resolvedProduct);
+			if (resolvedProduct == null) {
+				continue;
 			}
+
+			resolvedProducts.put(
+				entitlement.getEntitlementId(), resolvedProduct);
 		}
 
 		return resolvedProducts;
@@ -1022,15 +1028,19 @@ public class LicenseKeyGenerateFormService {
 		List<Entitlement> orderedEntitlements = new ArrayList<>();
 
 		for (Entitlement entitlement : entitlements) {
-			if (Validator.isNull(getLicenseKeyType(entitlement))) {
-				orderedEntitlements.add(entitlement);
+			if (Validator.isNotNull(getLicenseKeyType(entitlement))) {
+				continue;
 			}
+
+			orderedEntitlements.add(entitlement);
 		}
 
 		for (Entitlement entitlement : entitlements) {
-			if (Validator.isNotNull(getLicenseKeyType(entitlement))) {
-				orderedEntitlements.add(entitlement);
+			if (Validator.isNull(getLicenseKeyType(entitlement))) {
+				continue;
 			}
+
+			orderedEntitlements.add(entitlement);
 		}
 
 		return orderedEntitlements;
@@ -1092,17 +1102,17 @@ public class LicenseKeyGenerateFormService {
 			String productGroupVersion =
 				productVersion.getProductGroupVersion();
 
-			if (Validator.isNull(productGroupVersion)) {
+			if (Validator.isNull(productGroupVersion) ||
+				(!productGroupVersion.startsWith(quarterlyPrefix) &&
+				 !Objects.equals(
+					 productGroupVersion,
+					 LicenseKeyGenerationConstants.
+						 MINIMUM_DEVELOPER_VERSION))) {
+
 				continue;
 			}
 
-			if (productGroupVersion.startsWith(quarterlyPrefix) ||
-				Objects.equals(
-					productGroupVersion,
-					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION)) {
-
-				jsonArray.put(productVersion.getVersion());
-			}
+			jsonArray.put(productVersion.getVersion());
 		}
 
 		return jsonArray;
@@ -1132,13 +1142,15 @@ public class LicenseKeyGenerateFormService {
 		JSONArray jsonArray = new JSONArray();
 
 		for (String version : versions) {
-			if (latestVersions.contains(version) ||
-				Objects.equals(
+			if (!latestVersions.contains(version) &&
+				!Objects.equals(
 					toComparableVersion(version),
 					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION)) {
 
-				jsonArray.put(version);
+				continue;
 			}
+
+			jsonArray.put(version);
 		}
 
 		return jsonArray;

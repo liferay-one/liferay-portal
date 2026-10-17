@@ -61,9 +61,11 @@ public class ProjectContactRoleService {
 			Long productId = _commerceSkuService.fetchProductId(
 				skuExternalReferenceCode);
 
-			if (productId != null) {
-				productIds.add(productId);
+			if (productId == null) {
+				continue;
 			}
+
+			productIds.add(productId);
 		}
 
 		Set<String> contactRoleExternalReferenceCodes = new LinkedHashSet<>();
@@ -85,12 +87,12 @@ public class ProjectContactRoleService {
 				String trimmedContactRoleExternalReferenceCode =
 					contactRoleExternalReferenceCode.trim();
 
-				if (Validator.isNotNull(
-						trimmedContactRoleExternalReferenceCode)) {
-
-					contactRoleExternalReferenceCodes.add(
-						trimmedContactRoleExternalReferenceCode);
+				if (Validator.isNull(trimmedContactRoleExternalReferenceCode)) {
+					continue;
 				}
+
+				contactRoleExternalReferenceCodes.add(
+					trimmedContactRoleExternalReferenceCode);
 			}
 		}
 

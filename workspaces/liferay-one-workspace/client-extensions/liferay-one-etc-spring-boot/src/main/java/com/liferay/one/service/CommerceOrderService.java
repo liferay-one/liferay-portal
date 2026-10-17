@@ -1053,16 +1053,18 @@ public class CommerceOrderService extends OneBaseService {
 				continue;
 			}
 
-			if (orderMetadataJSONObject.has("aiHubForm") &&
-				(orderMetadataJSONObject.optLong("aiHubAccountEntryId") > 0) &&
-				Objects.equals(
+			if (!orderMetadataJSONObject.has("aiHubForm") ||
+				(orderMetadataJSONObject.optLong("aiHubAccountEntryId") <= 0) ||
+				!Objects.equals(
 					orderMetadataJSONObject.optString("salesforceProjectId"),
-					salesforceProjectId) &&
-				(aiHubOrder.getId() > aiHubOrderId)) {
+					salesforceProjectId) ||
+				(aiHubOrder.getId() <= aiHubOrderId)) {
 
-				aiHubOrderMetadataJSONObject = orderMetadataJSONObject;
-				aiHubOrderId = aiHubOrder.getId();
+				continue;
 			}
+
+			aiHubOrderMetadataJSONObject = orderMetadataJSONObject;
+			aiHubOrderId = aiHubOrder.getId();
 		}
 
 		return aiHubOrderMetadataJSONObject;
@@ -1354,10 +1356,11 @@ public class CommerceOrderService extends OneBaseService {
 			String orderTypeExternalReferenceCode =
 				_orderTypeExternalReferenceCodes.get(solutionType);
 
-			if (orderTypeExternalReferenceCode != null) {
-				orderTypeExternalReferenceCodes.add(
-					orderTypeExternalReferenceCode);
+			if (orderTypeExternalReferenceCode == null) {
+				continue;
 			}
+
+			orderTypeExternalReferenceCodes.add(orderTypeExternalReferenceCode);
 		}
 
 		if (orderTypeExternalReferenceCodes.size() == 1) {

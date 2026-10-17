@@ -577,13 +577,15 @@ public class ContractService extends OneBaseService {
 
 			Map<String, ?> customFields = order.getCustomFields();
 
-			if ((customFields != null) &&
-				Objects.equals(
+			if ((customFields == null) ||
+				!Objects.equals(
 					customFields.get("salesforceOpportunityId"),
 					opportunityOrder.getExternalReferenceCode())) {
 
-				orders.add(order);
+				continue;
 			}
+
+			orders.add(order);
 		}
 
 		return orders;
@@ -642,14 +644,16 @@ public class ContractService extends OneBaseService {
 						entitlement.getEntitlementId(), contract.getId());
 				}
 
-				if (Validator.isNotNull(projectExternalReferenceCode) &&
-					Validator.isNull(
+				if (Validator.isNull(projectExternalReferenceCode) ||
+					Validator.isNotNull(
 						entitlement.getProjectExternalReferenceCode())) {
 
-					_entitlementService.updateEntitlementProject(
-						entitlement.getEntitlementId(),
-						projectExternalReferenceCode);
+					continue;
 				}
+
+				_entitlementService.updateEntitlementProject(
+					entitlement.getEntitlementId(),
+					projectExternalReferenceCode);
 			}
 		}
 	}

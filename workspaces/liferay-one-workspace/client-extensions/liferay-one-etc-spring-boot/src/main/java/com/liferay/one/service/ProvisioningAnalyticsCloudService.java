@@ -96,9 +96,11 @@ public class ProvisioningAnalyticsCloudService {
 				StringUtil.split(
 					salesforceProject.getSecurityContactEmailAddress())) {
 
-			if (Validator.isNotNull(emailAddress)) {
-				incidentReportEmailAddressesJSONArray.put(emailAddress.trim());
+			if (Validator.isNull(emailAddress)) {
+				continue;
 			}
+
+			incidentReportEmailAddressesJSONArray.put(emailAddress.trim());
 		}
 
 		JSONObject jsonObject = new JSONObject(

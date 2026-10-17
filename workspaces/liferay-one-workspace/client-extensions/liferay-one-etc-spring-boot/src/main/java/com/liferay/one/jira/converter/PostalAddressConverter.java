@@ -96,9 +96,11 @@ public class PostalAddressConverter extends BaseJiraAssetObjectConverter {
 					postalAddress.getPostalCode()
 				}) {
 
-			if (Validator.isNotNull(part)) {
-				parts.add(part);
+			if (Validator.isNull(part)) {
+				continue;
 			}
+
+			parts.add(part);
 		}
 
 		return StringUtil.merge(parts, ", ");

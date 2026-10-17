@@ -115,12 +115,14 @@ public class EnvironmentQuotaService {
 			// Generating an activation code does not spend the entitlement.
 			// Only an environment that registered against the code does.
 
-			if (Objects.equals(
+			if (!Objects.equals(
 					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
 					environment.getActivationStatus())) {
 
-				usedCount++;
+				continue;
 			}
+
+			usedCount++;
 		}
 
 		return new EnvironmentQuota(

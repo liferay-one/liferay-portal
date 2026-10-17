@@ -99,9 +99,11 @@ public class ProductVersionService extends OneBaseService {
 			int compareTo = versionComparator.compare(
 				productGroupVersion, latestProductGroupVersion);
 
-			if (compareTo > 0) {
-				latestProductGroupVersion = productGroupVersion;
+			if (compareTo <= 0) {
+				continue;
 			}
+
+			latestProductGroupVersion = productGroupVersion;
 		}
 
 		return latestProductGroupVersion;

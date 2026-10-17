@@ -654,11 +654,13 @@ public class LicenseKeyService extends OneBaseService {
 		List<Entitlement> definitionEntitlements = new ArrayList<>();
 
 		for (Entitlement entitlement : entitlements) {
-			if (entitlement.getEntitlementDefinitionId() ==
+			if (entitlement.getEntitlementDefinitionId() !=
 					entitlementDefinitionId) {
 
-				definitionEntitlements.add(entitlement);
+				continue;
 			}
+
+			definitionEntitlements.add(entitlement);
 		}
 
 		if (definitionEntitlements.isEmpty()) {
@@ -833,9 +835,11 @@ public class LicenseKeyService extends OneBaseService {
 				continue;
 			}
 
-			if (entitlementId > 0) {
-				counts.merge(entitlementId, 1, Integer::sum);
+			if (entitlementId <= 0) {
+				continue;
 			}
+
+			counts.merge(entitlementId, 1, Integer::sum);
 		}
 
 		return counts;

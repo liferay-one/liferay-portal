@@ -482,9 +482,11 @@ public class EntitlementService extends OneBaseService {
 		for (Entitlement entitlement : entitlements) {
 			String curState = _getEntitlementState(entitlement);
 
-			if (_getStateRank(curState) > _getStateRank(state)) {
-				state = curState;
+			if (_getStateRank(curState) <= _getStateRank(state)) {
+				continue;
 			}
+
+			state = curState;
 		}
 
 		return state;
@@ -943,11 +945,13 @@ public class EntitlementService extends OneBaseService {
 			EntitlementDefinition entitlementDefinition =
 				entitlement.getEntitlementDefinition();
 
-			if (entitlementDefinition != null) {
-				entitlementDefinitions.put(
-					entitlementDefinition.getEntitlementDefinitionId(),
-					entitlementDefinition);
+			if (entitlementDefinition == null) {
+				continue;
 			}
+
+			entitlementDefinitions.put(
+				entitlementDefinition.getEntitlementDefinitionId(),
+				entitlementDefinition);
 		}
 
 		return new ArrayList<>(entitlementDefinitions.values());

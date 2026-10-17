@@ -861,9 +861,11 @@ public class CloudRestController extends OneBaseRestController {
 
 			long contractId = entitlement.getContractId();
 
-			if (contractId > 0) {
-				contractIds.add(contractId);
+			if (contractId <= 0) {
+				continue;
 			}
+
+			contractIds.add(contractId);
 		}
 
 		if (!entitled) {
@@ -970,9 +972,11 @@ public class CloudRestController extends OneBaseRestController {
 		List<Entitlement> filteredEntitlements = new ArrayList<>();
 
 		for (Entitlement entitlement : entitlements) {
-			if (entitlementIds.contains(entitlement.getEntitlementId())) {
-				filteredEntitlements.add(entitlement);
+			if (!entitlementIds.contains(entitlement.getEntitlementId())) {
+				continue;
 			}
+
+			filteredEntitlements.add(entitlement);
 		}
 
 		return filteredEntitlements;

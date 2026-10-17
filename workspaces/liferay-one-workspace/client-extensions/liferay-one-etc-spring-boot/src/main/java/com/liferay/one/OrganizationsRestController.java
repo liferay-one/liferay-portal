@@ -118,9 +118,11 @@ public class OrganizationsRestController extends OneBaseRestController {
 		for (OktaUser oktaUser : _oktaService.getGroupContacts(oktaGroupId)) {
 			String emailAddress = oktaUser.getEmail();
 
-			if (Validator.isNotNull(emailAddress)) {
-				oktaEmailAddresses.add(StringUtil.toLowerCase(emailAddress));
+			if (Validator.isNull(emailAddress)) {
+				continue;
 			}
+
+			oktaEmailAddresses.add(StringUtil.toLowerCase(emailAddress));
 		}
 
 		Map<String, UserAccount> organizationUserAccounts =
@@ -132,10 +134,12 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 			String emailAddress = userAccount.getEmailAddress();
 
-			if (Validator.isNotNull(emailAddress)) {
-				organizationUserAccounts.put(
-					StringUtil.toLowerCase(emailAddress), userAccount);
+			if (Validator.isNull(emailAddress)) {
+				continue;
 			}
+
+			organizationUserAccounts.put(
+				StringUtil.toLowerCase(emailAddress), userAccount);
 		}
 
 		for (String emailAddress : oktaEmailAddresses) {

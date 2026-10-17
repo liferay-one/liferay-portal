@@ -131,9 +131,11 @@ public final class AccountInvitation {
 			for (int i = 0; i < jsonArray.length(); i++) {
 				String roleExternalReferenceCode = jsonArray.getString(i);
 
-				if (Validator.isNotNull(roleExternalReferenceCode)) {
-					roleExternalReferenceCodes.add(roleExternalReferenceCode);
+				if (Validator.isNull(roleExternalReferenceCode)) {
+					continue;
 				}
+
+				roleExternalReferenceCodes.add(roleExternalReferenceCode);
 			}
 
 			return roleExternalReferenceCodes;
@@ -150,10 +152,11 @@ public final class AccountInvitation {
 			String trimmedRoleExternalReferenceCode =
 				roleExternalReferenceCode.trim();
 
-			if (Validator.isNotNull(trimmedRoleExternalReferenceCode)) {
-				roleExternalReferenceCodes.add(
-					trimmedRoleExternalReferenceCode);
+			if (Validator.isNull(trimmedRoleExternalReferenceCode)) {
+				continue;
 			}
+
+			roleExternalReferenceCodes.add(trimmedRoleExternalReferenceCode);
 		}
 
 		return roleExternalReferenceCodes;

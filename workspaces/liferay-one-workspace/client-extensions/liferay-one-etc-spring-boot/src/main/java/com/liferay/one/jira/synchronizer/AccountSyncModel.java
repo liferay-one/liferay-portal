@@ -254,9 +254,11 @@ public class AccountSyncModel {
 		for (JiraBusinessEvent jiraBusinessEvent : jiraBusinessEvents) {
 			String part = _toBusinessEventFieldValuePart(jiraBusinessEvent);
 
-			if (Validator.isNotNull(part)) {
-				parts.add(part);
+			if (Validator.isNull(part)) {
+				continue;
 			}
+
+			parts.add(part);
 		}
 
 		return StringUtil.merge(parts, "\n\n");
@@ -269,9 +271,11 @@ public class AccountSyncModel {
 			_account.getId());
 
 		for (Property property : properties) {
-			if (_externalLinkConverter.isExternalLinkProperty(property)) {
-				externalLinkProperties.add(property);
+			if (!_externalLinkConverter.isExternalLinkProperty(property)) {
+				continue;
 			}
+
+			externalLinkProperties.add(property);
 		}
 
 		return externalLinkProperties;

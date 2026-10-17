@@ -42,9 +42,11 @@ public class ClusterNodesUtil {
 
 			int curMaxClusterNodes = quantity.intValue();
 
-			if (curMaxClusterNodes > maxClusterNodes) {
-				maxClusterNodes = curMaxClusterNodes;
+			if (curMaxClusterNodes <= maxClusterNodes) {
+				continue;
 			}
+
+			maxClusterNodes = curMaxClusterNodes;
 		}
 
 		return maxClusterNodes;

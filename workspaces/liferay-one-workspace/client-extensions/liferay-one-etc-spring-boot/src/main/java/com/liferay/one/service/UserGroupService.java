@@ -120,13 +120,15 @@ public class UserGroupService extends OneBaseService {
 						customerUserIds.add(userAccount.getId());
 					}
 
-					if (partnerAccountIds.contains(accountEntryId) &&
-						UserAccountUtil.hasAccountRole(
+					if (!partnerAccountIds.contains(accountEntryId) ||
+						!UserAccountUtil.hasAccountRole(
 							userAccount, accountEntryId,
 							RoleConstants.namesPartnerAccountRoles)) {
 
-						partnerUserIds.add(userAccount.getId());
+						continue;
 					}
+
+					partnerUserIds.add(userAccount.getId());
 				}
 			}
 
@@ -214,12 +216,14 @@ public class UserGroupService extends OneBaseService {
 					customerAccountIds.add(accountId);
 				}
 
-				if (UserAccountUtil.hasAccountRole(
+				if (!UserAccountUtil.hasAccountRole(
 						userAccount, accountId,
 						RoleConstants.namesPartnerAccountRoles)) {
 
-					partnerAccountIds.add(accountId);
+					continue;
 				}
+
+				partnerAccountIds.add(accountId);
 			}
 		}
 
@@ -423,12 +427,14 @@ public class UserGroupService extends OneBaseService {
 				accountEntryIds.add(entitlement.getAccountEntryId());
 			}
 
-			if (Validator.isNotNull(
+			if (Validator.isNull(
 					entitlement.getProjectExternalReferenceCode())) {
 
-				projectExternalReferenceCodes.add(
-					entitlement.getProjectExternalReferenceCode());
+				continue;
 			}
+
+			projectExternalReferenceCodes.add(
+				entitlement.getProjectExternalReferenceCode());
 		}
 
 		Set<Long> userIds = new LinkedHashSet<>();
