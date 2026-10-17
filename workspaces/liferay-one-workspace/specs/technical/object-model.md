@@ -290,7 +290,7 @@ Object name `TrialExtensionRequest`. REST `/o/c/trialextensionrequests`. Title f
 | `dueStatus` | Picklist | required, picklist `LT_TRIAL_EXTENSION_REQUEST_STATUS` |
 | `duration` | Integer | required |
 | `projectId` | Text | required, soft link to `C_PROJECT` |
-| `reason` | Text |  |
+| `reason` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -304,15 +304,15 @@ Object name `DXPFreeActivationKeyRequest`. REST `/o/c/dxpfreeactivationkeyreques
 | Field | Type | Notes |
 | --- | --- | --- |
 | `businessEmailAddress` | Text | required |
-| `companyName` | Text |  |
+| `companyName` | Text | |
 | `country` | Text | required |
 | `domain` | Text | required |
-| `extension` | Text |  |
+| `extension` | Text | |
 | `fullName` | Text | required |
-| `intlCode` | Text |  |
-| `jobTitle` | Text |  |
-| `notifyMe` | Boolean |  |
-| `phoneNumber` | Text |  |
+| `intlCode` | Text | |
+| `jobTitle` | Text | |
+| `notifyMe` | Boolean | |
+| `phoneNumber` | Text | |
 | `purpose` | Text | required |
 
 | Relationship | Direction | Other side | Deletion |
@@ -328,13 +328,13 @@ Object name `AIHubBetaPrivateAccessRequest`. REST `/o/c/aihubbetaprivateaccessre
 | `administratorEmailAddress` | Text | required |
 | `aiHubAccountName` | Text | required |
 | `businessEmailAddress` | Text | required |
-| `companyName` | Text |  |
+| `companyName` | Text | |
 | `country` | Text | required |
-| `extension` | Text |  |
+| `extension` | Text | |
 | `fullName` | Text | required |
-| `intlCode` | Text |  |
-| `jobTitle` | Text |  |
-| `phoneNumber` | Text |  |
+| `intlCode` | Text | |
+| `jobTitle` | Text | |
+| `phoneNumber` | Text | |
 | `purpose` | Text | required |
 
 | Relationship | Direction | Other side | Deletion |
@@ -347,20 +347,20 @@ Object name `DSRRequest`. REST `/o/c/dsrrequests`. Title field `name`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `acceptEulaAgreement` | Boolean |  |
-| `acceptTermsAndConditions` | Boolean |  |
-| `corpProjectName` | Text |  |
-| `corpProjectUuid` | Text |  |
-| `dataCenterLocation` | Text |  |
-| `hostName` | Text |  |
-| `incidentReportEmailAddresses` | Text |  |
-| `ipAddresses` | Text |  |
-| `macAddresses` | Text |  |
-| `name` | Text |  |
-| `ownerEmailAddress` | Text |  |
-| `serverLocation` | Text |  |
-| `workspaceName` | Text |  |
-| `workspaceOwnerEmail` | Text |  |
+| `acceptEulaAgreement` | Boolean | |
+| `acceptTermsAndConditions` | Boolean | |
+| `corpProjectName` | Text | |
+| `corpProjectUuid` | Text | |
+| `dataCenterLocation` | Text | |
+| `hostName` | Text | |
+| `incidentReportEmailAddresses` | Text | |
+| `ipAddresses` | Text | |
+| `macAddresses` | Text | |
+| `name` | Text | |
+| `ownerEmailAddress` | Text | |
+| `serverLocation` | Text | |
+| `workspaceName` | Text | |
+| `workspaceOwnerEmail` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -372,18 +372,18 @@ Object name `ProductFeedback`. REST `/o/c/productfeedbacks`. Title field `fullNa
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `companyName` | Text |  |
+| `companyName` | Text | |
 | `emailAddress` | Text | required |
 | `fullName` | Text | required |
-| `jobTitle` | Text |  |
-| `notify` | Boolean |  |
-| `orderType` | Text |  |
-| `ratingEaseOfUse` | Integer |  |
-| `ratingSatisfaction` | Integer |  |
-| `ratingUsefulness` | Integer |  |
-| `suggestionFeatures` | Text |  |
-| `suggestionImprovements` | Text |  |
-| `suggestionSatisfaction` | LongText |  |
+| `jobTitle` | Text | |
+| `notify` | Boolean | |
+| `orderType` | Text | |
+| `ratingEaseOfUse` | Integer | |
+| `ratingSatisfaction` | Integer | |
+| `ratingUsefulness` | Integer | |
+| `suggestionFeatures` | Text | |
+| `suggestionImprovements` | Text | |
+| `suggestionSatisfaction` | LongText | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -396,14 +396,14 @@ Object name `PublisherAccountRequest`. REST `/o/c/publisheraccountrequests`. Tit
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `emailAddress` | Text |  |
-| `extension` | Text |  |
-| `firstName` | Text |  |
-| `intlCode` | Text |  |
-| `lastName` | Text |  |
-| `phoneNumber` | Text |  |
+| `emailAddress` | Text | |
+| `extension` | Text | |
+| `firstName` | Text | |
+| `intlCode` | Text | |
+| `lastName` | Text | |
+| `phoneNumber` | Text | |
 | `publisherType` | MultiselectPicklist | picklist `LT_PUBLISHER_TYPE` |
-| `requestDescription` | LongText |  |
+| `requestDescription` | LongText | |
 | `requestStatus` | Picklist | picklist `LT_REQUEST_STATUS` |
 
 #### Sales Request (`C_SALES_REQUEST`)
@@ -412,11 +412,11 @@ Object name `SalesRequest`. REST `/o/c/salesrequests`. Title field `email`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `accountName` | Text |  |
-| `additionalAppsRequested` | LongText |  |
-| `comments` | LongText |  |
-| `email` | Text |  |
-| `name` | Text |  |
+| `accountName` | Text | |
+| `additionalAppsRequested` | LongText | |
+| `comments` | LongText | |
+| `email` | Text | |
+| `name` | Text | |
 
 ### Commerce (Liferay)
 
@@ -629,13 +629,13 @@ Object name `Project`. REST `/o/c/projects`. Title field `name`. Account restric
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `aiHubAccountName` | Text |  |
-| `allowedEmailDomains` | Text |  |
-| `dataCenterLocation` | Text |  |
-| `friendlyWorkspaceURL` | Text |  |
-| `liferayVersion` | Text |  |
+| `aiHubAccountName` | Text | |
+| `allowedEmailDomains` | Text | |
+| `dataCenterLocation` | Text | |
+| `friendlyWorkspaceURL` | Text | |
+| `liferayVersion` | Text | |
 | `name` | Text | required |
-| `securityContactEmailAddress` | Text |  |
+| `securityContactEmailAddress` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -669,16 +669,16 @@ Object name `AccountInvitation`. REST `/o/c/accountinvitations`. Title field `em
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `accepted` | Boolean |  |
+| `accepted` | Boolean | |
 | `accountExternalReferenceCode` | Text | soft link to `L_ACCOUNT` |
-| `customExpirationDate` | DateTime |  |
-| `emailAddress` | Text |  |
-| `familyName` | Text |  |
-| `givenName` | Text |  |
+| `customExpirationDate` | DateTime | |
+| `emailAddress` | Text | |
+| `familyName` | Text | |
+| `givenName` | Text | |
 | `projectExternalReferenceCode` | Text | soft link to `C_PROJECT` |
-| `projectRoleExternalReferenceCode` | Text |  |
+| `projectRoleExternalReferenceCode` | Text | |
 | `roleExternalReferenceCodes` | Text | soft link to `X_ROLE` |
-| `token` | Text |  |
+| `token` | Text | |
 
 Object actions: `AccountInvitationAccepted` (onAfterUpdate).
 
@@ -688,15 +688,15 @@ Object name `AccountNote`. REST `/o/c/accountnotes`. Title field `content`. Acco
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `content` | LongText |  |
+| `content` | LongText | |
 | `createdByUserId` | LongInteger | soft link to `L_USER` |
-| `createdByUserName` | Text |  |
+| `createdByUserName` | Text | |
 | `customStatus` | Picklist | picklist `LT_ACCOUNT_NOTE_STATUS` |
-| `format` | Text |  |
-| `koroneikiAccountKey` | Text |  |
-| `koroneikiProjectName` | Text |  |
-| `modifiedByUserId` | LongInteger |  |
-| `modifiedByUserName` | Text |  |
+| `format` | Text | |
+| `koroneikiAccountKey` | Text | |
+| `koroneikiProjectName` | Text | |
+| `modifiedByUserId` | LongInteger | |
+| `modifiedByUserName` | Text | |
 | `priority` | Picklist | picklist `LT_ACCOUNT_NOTE_PRIORITY` |
 | `type` | Picklist | picklist `LT_ACCOUNT_NOTE_TYPE` |
 
@@ -711,16 +711,16 @@ Object name `TicketAttachment`. REST `/o/c/ticketattachments`. Title field `file
 | Field | Type | Notes |
 | --- | --- | --- |
 | `accountKey` | Text | required |
-| `draftCommentBody` | LongText |  |
+| `draftCommentBody` | LongText | |
 | `fileName` | Text | required |
 | `fileSize` | Text | required |
 | `gcsBucketName` | Text | required |
-| `jiraIssueKey` | Text |  |
-| `md5Checksum` | Text |  |
-| `projectKey` | Text |  |
-| `state` | LongInteger |  |
+| `jiraIssueKey` | Text | |
+| `md5Checksum` | Text | |
+| `projectKey` | Text | |
+| `state` | LongInteger | |
 | `storageProvider` | Text | required |
-| `type` | Text |  |
+| `type` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -732,7 +732,7 @@ Object name `OAuth2DxpAuthorization`. REST `/o/c/oauth2dxpauthorizations`. Title
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `connectionSource` | Text |  |
+| `connectionSource` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -744,12 +744,12 @@ Object name `Property`. REST `/o/c/properties`. Title field `name`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `className` | Text |  |
-| `classNameId` | LongInteger |  |
-| `classPK` | LongInteger |  |
-| `metadataJson` | LongText |  |
+| `className` | Text | |
+| `classNameId` | LongInteger | |
+| `classPK` | LongInteger | |
+| `metadataJson` | LongText | |
 | `name` | Text | required |
-| `value` | Text |  |
+| `value` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -773,17 +773,17 @@ Object name `Contract`. REST `/o/c/contracts`. Title field `ownerEmailAddress`. 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `contractBillingCadence` | Integer |  |
-| `contractTerm` | Integer |  |
+| `contractBillingCadence` | Integer | |
+| `contractTerm` | Integer | |
 | `contractType` | Picklist | picklist `LT_CONTRACT_TYPE` |
-| `endDate` | DateTime |  |
-| `opportunityId` | Text |  |
-| `overageBillingCadence` | Integer |  |
-| `ownerEmailAddress` | Text |  |
-| `renewalOpportunityId` | Text |  |
-| `renewalState` | Text |  |
-| `spendLimit` | Decimal |  |
-| `startDate` | DateTime |  |
+| `endDate` | DateTime | |
+| `opportunityId` | Text | |
+| `overageBillingCadence` | Integer | |
+| `ownerEmailAddress` | Text | |
+| `renewalOpportunityId` | Text | |
+| `renewalState` | Text | |
+| `spendLimit` | Decimal | |
+| `startDate` | DateTime | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -800,21 +800,21 @@ Object name `EntitlementDefinition`. REST `/o/c/entitlementdefinitions`. Title f
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `active` | Boolean |  |
-| `defaultQuantity` | Decimal |  |
-| `displayName` | Text |  |
-| `generatesActivationKey` | Boolean |  |
-| `grantType` | Text |  |
-| `licenseKeyDurationDays` | Integer |  |
-| `licenseKeyFamily` | Text |  |
-| `licenseKeyType` | Text |  |
-| `maxQuantity` | Decimal |  |
+| `active` | Boolean | |
+| `defaultQuantity` | Decimal | |
+| `displayName` | Text | |
+| `generatesActivationKey` | Boolean | |
+| `grantType` | Text | |
+| `licenseKeyDurationDays` | Integer | |
+| `licenseKeyFamily` | Text | |
+| `licenseKeyType` | Text | |
+| `maxQuantity` | Decimal | |
 | `name` | Text | required |
-| `overageRate` | Decimal |  |
-| `overageSkuExternalReferenceCode` | Text |  |
-| `productOptions` | LongText |  |
+| `overageRate` | Decimal | |
+| `overageSkuExternalReferenceCode` | Text | |
+| `productOptions` | LongText | |
 | `skuExternalReferenceCode` | Text | required, soft link to `X_CP_INSTANCE` |
-| `unit` | Text |  |
+| `unit` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -827,16 +827,16 @@ Object name `Entitlement`. REST `/o/c/entitlements`. Title field `name`. Account
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `endDate` | DateTime |  |
-| `grantType` | Text |  |
-| `maxQuantity` | Decimal |  |
+| `endDate` | DateTime | |
+| `grantType` | Text | |
+| `maxQuantity` | Decimal | |
 | `name` | Text | required |
-| `overageRate` | Decimal |  |
+| `overageRate` | Decimal | |
 | `overageSkuExternalReferenceCode` | Text | soft link to `X_CP_INSTANCE` |
-| `productOptions` | LongText |  |
-| `quantity` | Decimal |  |
-| `startDate` | DateTime |  |
-| `terminationStatus` | Text |  |
+| `productOptions` | LongText | |
+| `quantity` | Decimal | |
+| `startDate` | DateTime | |
+| `terminationStatus` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -854,13 +854,13 @@ Object name `UsageDefinition`. REST `/o/c/usagedefinitions`. Title field `unit`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `aggregationType` | Text |  |
-| `overageBucketSize` | Decimal |  |
-| `period` | Text |  |
-| `unit` | Text |  |
-| `usageSource` | Text |  |
-| `usageSourceMetricKey` | Text |  |
-| `usageSourceUnit` | Text |  |
+| `aggregationType` | Text | |
+| `overageBucketSize` | Decimal | |
+| `period` | Text | |
+| `unit` | Text | |
+| `usageSource` | Text | |
+| `usageSourceMetricKey` | Text | |
+| `usageSourceUnit` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -874,9 +874,9 @@ Object name `UsageEvent`. REST `/o/c/usageevents`. Title field `dedupeKey`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `dedupeKey` | Text |  |
-| `eventTimestamp` | DateTime |  |
-| `quantity` | Decimal |  |
+| `dedupeKey` | Text | |
+| `eventTimestamp` | DateTime | |
+| `quantity` | Decimal | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -891,25 +891,25 @@ Object name `UsageReport`. REST `/o/c/usagereports`. Title field `generatorClass
 | Field | Type | Notes |
 | --- | --- | --- |
 | `accountExternalReferenceCode` | Text | soft link to `L_ACCOUNT` |
-| `aggregateQuantity` | Decimal |  |
+| `aggregateQuantity` | Decimal | |
 | `commerceOrderId` | LongInteger | soft link to `L_COMMERCE_ORDER` |
 | `contractExternalReferenceCode` | Text | soft link to `C_CONTRACT` |
-| `dateFrom` | DateTime |  |
-| `dateTo` | DateTime |  |
-| `entitledQuantity` | Decimal |  |
-| `generatedAt` | DateTime |  |
-| `generatorClassName` | Text |  |
-| `overageAmount` | Decimal |  |
-| `overageCurrency` | Text |  |
-| `overageQuantity` | Decimal |  |
-| `overageSkuQuantity` | Decimal |  |
+| `dateFrom` | DateTime | |
+| `dateTo` | DateTime | |
+| `entitledQuantity` | Decimal | |
+| `generatedAt` | DateTime | |
+| `generatorClassName` | Text | |
+| `overageAmount` | Decimal | |
+| `overageCurrency` | Text | |
+| `overageQuantity` | Decimal | |
+| `overageSkuQuantity` | Decimal | |
 | `productExternalReferenceCode` | Text | soft link to `L_COMMERCE_PRODUCT_DEFINITION` |
-| `productName` | Text |  |
+| `productName` | Text | |
 | `reviewStatus` | Picklist | required, state field, picklist `LT_USAGE_REPORT_REVIEW_STATUS` |
 | `skuExternalReferenceCode` | Text | soft link to `X_CP_INSTANCE` |
-| `targetClassName` | Text |  |
-| `targetPK` | LongInteger |  |
-| `targetType` | Text |  |
+| `targetClassName` | Text | |
+| `targetPK` | LongInteger | |
+| `targetType` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -924,8 +924,8 @@ Object name `Report`. REST `/o/c/reports`. Title field `name`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | Text |  |
-| `value` | LongText |  |
+| `name` | Text | |
+| `value` | LongText | |
 
 ### Environments and Licensing
 
@@ -935,36 +935,36 @@ Object name `Environment`. REST `/o/c/environments`. Title field `hostName`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `activationCode` | Text |  |
-| `activationMode` | Text |  |
-| `activationStatus` | Text |  |
-| `adminEmailAddress` | Text |  |
-| `adminFirstName` | Text |  |
-| `adminLastName` | Text |  |
-| `aiHubURL` | Text |  |
-| `allowedEmailDomains` | Text |  |
-| `bundledEntitlementIds` | LongText |  |
-| `currentEntitlementHash` | Text |  |
-| `disasterRecoveryRegion` | Text |  |
-| `domains` | Text |  |
-| `friendlyURL` | Text |  |
-| `githubUsername` | Text |  |
-| `hostName` | Text |  |
-| `ipAddresses` | LongText |  |
-| `lastHeartbeatAt` | DateTime |  |
-| `macAddresses` | LongText |  |
-| `name` | Text |  |
-| `offering` | Text |  |
-| `ownerEmailAddress` | Text |  |
-| `projectId` | Text |  |
-| `publicKey` | LongText |  |
-| `region` | Text |  |
-| `requestedVersion` | Text |  |
-| `serverId` | LongText |  |
-| `timeZone` | Text |  |
-| `tokenMonthlyAllowance` | Text |  |
-| `type` | Text |  |
-| `workspaceName` | Text |  |
+| `activationCode` | Text | |
+| `activationMode` | Text | |
+| `activationStatus` | Text | |
+| `adminEmailAddress` | Text | |
+| `adminFirstName` | Text | |
+| `adminLastName` | Text | |
+| `aiHubURL` | Text | |
+| `allowedEmailDomains` | Text | |
+| `bundledEntitlementIds` | LongText | |
+| `currentEntitlementHash` | Text | |
+| `disasterRecoveryRegion` | Text | |
+| `domains` | Text | |
+| `friendlyURL` | Text | |
+| `githubUsername` | Text | |
+| `hostName` | Text | |
+| `ipAddresses` | LongText | |
+| `lastHeartbeatAt` | DateTime | |
+| `macAddresses` | LongText | |
+| `name` | Text | |
+| `offering` | Text | |
+| `ownerEmailAddress` | Text | |
+| `projectId` | Text | |
+| `publicKey` | LongText | |
+| `region` | Text | |
+| `requestedVersion` | Text | |
+| `serverId` | LongText | |
+| `timeZone` | Text | |
+| `tokenMonthlyAllowance` | Text | |
+| `type` | Text | |
+| `workspaceName` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -980,10 +980,10 @@ Object name `EnvironmentAdmin`. REST `/o/c/environmentadmins`. Title field `emai
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `emailAddress` | Text |  |
-| `firstName` | Text |  |
-| `githubUsername` | Text |  |
-| `lastName` | Text |  |
+| `emailAddress` | Text | |
+| `firstName` | Text | |
+| `githubUsername` | Text | |
+| `lastName` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -995,11 +995,11 @@ Object name `ActivationKey`. REST `/o/c/activationkeys`. Title field `name`. Acc
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `active` | Boolean |  |
-| `endDate` | DateTime |  |
-| `licenseKeyFamily` | Text |  |
-| `startDate` | DateTime |  |
-| `type` | Text |  |
+| `active` | Boolean | |
+| `endDate` | DateTime | |
+| `licenseKeyFamily` | Text | |
+| `startDate` | DateTime | |
+| `type` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -1013,42 +1013,42 @@ Object name `LicenseKey`. REST `/o/c/licensekeys`. Title field `name`. Account r
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `accountName` | Text |  |
-| `active` | Boolean |  |
-| `additionalInfo` | LongText |  |
-| `clusterId` | LongInteger |  |
-| `complimentary` | Boolean |  |
-| `customExpirationDate` | DateTime |  |
-| `dataCenterLocation` | Text |  |
-| `description` | Text |  |
-| `domains` | LongText |  |
+| `accountName` | Text | |
+| `active` | Boolean | |
+| `additionalInfo` | LongText | |
+| `clusterId` | LongInteger | |
+| `complimentary` | Boolean | |
+| `customExpirationDate` | DateTime | |
+| `dataCenterLocation` | Text | |
+| `description` | Text | |
+| `domains` | LongText | |
 | `entitlementDefinitionId` | LongInteger | soft link to `C_ENTITLEMENT_DEFINITION` |
 | `entitlementId` | LongInteger | soft link to `C_ENTITLEMENT` |
-| `hostName` | Text |  |
-| `ipAddresses` | LongText |  |
-| `key` | LongText |  |
-| `licenseKeyFamily` | Text |  |
-| `licenseName` | Text |  |
-| `licenseType` | Text |  |
-| `licenseVersion` | Integer |  |
-| `macAddresses` | LongText |  |
-| `maxClusterNodes` | Integer |  |
-| `maxConcurrentUsers` | LongInteger |  |
-| `maxHttpSessions` | Integer |  |
-| `maxServers` | Integer |  |
-| `maxUsers` | LongInteger |  |
-| `name` | Text |  |
+| `hostName` | Text | |
+| `ipAddresses` | LongText | |
+| `key` | LongText | |
+| `licenseKeyFamily` | Text | |
+| `licenseName` | Text | |
+| `licenseType` | Text | |
+| `licenseVersion` | Integer | |
+| `macAddresses` | LongText | |
+| `maxClusterNodes` | Integer | |
+| `maxConcurrentUsers` | LongInteger | |
+| `maxHttpSessions` | Integer | |
+| `maxServers` | Integer | |
+| `maxUsers` | LongInteger | |
+| `name` | Text | |
 | `orderId` | Text | soft link to `L_COMMERCE_ORDER` |
-| `owner` | Text |  |
-| `productExternalId` | Text |  |
-| `productName` | Text |  |
-| `productVersion` | Text |  |
-| `productVersionLabel` | Text |  |
-| `serverId` | LongText |  |
-| `sizing` | Text |  |
-| `startDate` | DateTime |  |
-| `workspaceName` | Text |  |
-| `workspaceOwnerEmail` | Text |  |
+| `owner` | Text | |
+| `productExternalId` | Text | |
+| `productName` | Text | |
+| `productVersion` | Text | |
+| `productVersionLabel` | Text | |
+| `serverId` | LongText | |
+| `sizing` | Text | |
+| `startDate` | DateTime | |
+| `workspaceName` | Text | |
+| `workspaceOwnerEmail` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -1067,14 +1067,14 @@ Object name `CommonLicenseKey`. REST `/o/c/commonlicensekeys`. Title field `file
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `endDate` | DateTime |  |
+| `endDate` | DateTime | |
 | `environmentType` | Picklist | picklist `LT_ENVIRONMENT_TYPE` |
-| `fileContent` | LongText |  |
-| `fileName` | Text |  |
-| `fileSize` | LongInteger |  |
+| `fileContent` | LongText | |
+| `fileName` | Text | |
+| `fileSize` | LongInteger | |
 | `productFamily` | Picklist | picklist `LT_PRODUCT_FAMILY` |
-| `productVersion` | Text |  |
-| `startDate` | DateTime |  |
+| `productVersion` | Text | |
+| `startDate` | DateTime | |
 
 #### Product Version (`C_PRODUCT_VERSION`)
 
@@ -1082,11 +1082,11 @@ Object name `ProductVersion`. REST `/o/c/productversions`. Title field `productV
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `bundleURL` | Text |  |
+| `bundleURL` | Text | |
 | `productGroup` | Text | required |
 | `productGroupVersion` | Text | required |
 | `productVersion` | Text | required |
-| `supported` | Boolean |  |
+| `supported` | Boolean | |
 | `type` | Picklist | picklist `LT_PRODUCT_VERSION_TYPE` |
 | `versionLevel` | Picklist | picklist `LT_PRODUCT_VERSION_LEVEL` |
 
@@ -1098,23 +1098,23 @@ Object name `PublisherDetail`. REST `/o/c/publisherdetails`. Title field `catalo
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `catalogExternalId` | Text |  |
-| `catalogId` | LongInteger |  |
-| `description` | RichText |  |
-| `email` | Text |  |
-| `fullName` | Text |  |
-| `location` | Text |  |
-| `paypalAccount` | Text |  |
-| `phone` | Text |  |
-| `privateEmail` | Text |  |
-| `publisherName` | Text |  |
-| `publisherProfileImageURL` | LongText |  |
-| `role` | Text |  |
-| `salesEmail` | Text |  |
-| `showContactForm` | Boolean |  |
-| `showOnHomePage` | Boolean |  |
-| `supportEmail` | Text |  |
-| `websiteURL` | LongText |  |
+| `catalogExternalId` | Text | |
+| `catalogId` | LongInteger | |
+| `description` | RichText | |
+| `email` | Text | |
+| `fullName` | Text | |
+| `location` | Text | |
+| `paypalAccount` | Text | |
+| `phone` | Text | |
+| `privateEmail` | Text | |
+| `publisherName` | Text | |
+| `publisherProfileImageURL` | LongText | |
+| `role` | Text | |
+| `salesEmail` | Text | |
+| `showContactForm` | Boolean | |
+| `showOnHomePage` | Boolean | |
+| `supportEmail` | Text | |
+| `websiteURL` | LongText | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -1126,8 +1126,8 @@ Object name `PublisherSalesSummary`. REST `/o/c/publishersalessummaries`. Title 
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `paidBy` | Text |  |
-| `paidDate` | Text |  |
+| `paidBy` | Text | |
+| `paidDate` | Text | |
 | `paymentStatus` | Picklist | required, picklist `LT_PAYMENT_STATUS` |
 | `publisherName` | Text | required |
 | `quarter` | Text | required |
@@ -1143,7 +1143,7 @@ Object name `PublisherAsset`. REST `/o/c/publisherassets`. Title field `version`
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `version` | Text |  |
+| `version` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -1157,8 +1157,8 @@ Object name `PublisherAssetAttachment`. REST `/o/c/publisherassetattachments`. T
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `name` | Text |  |
-| `processed` | Boolean |  |
+| `name` | Text | |
+| `processed` | Boolean | |
 | `publisherAssetAttachmentType` | Picklist | picklist `LT_PUBLISHER_ASSET_ATTACHMENT_TYPE` |
 | `sourceCode` | Attachment | required |
 
@@ -1172,9 +1172,9 @@ Object name `AIHubApplication`. REST `/o/c/aihubapplications`. Title field `acco
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `accountEntryId` | LongInteger |  |
-| `accountName` | Text |  |
-| `administratorEmailAddress` | Text |  |
+| `accountEntryId` | LongInteger | |
+| `accountName` | Text | |
+| `administratorEmailAddress` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -1187,8 +1187,8 @@ Object name `GetAppInformation`. REST `/o/c/getappinformation`. Title field `ord
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `dashboardLink` | Text |  |
-| `orderId` | Text |  |
-| `priceModel` | Text |  |
-| `productName` | Text |  |
-| `productType` | Text |  |
+| `dashboardLink` | Text | |
+| `orderId` | Text | |
+| `priceModel` | Text | |
+| `productName` | Text | |
+| `productType` | Text | |

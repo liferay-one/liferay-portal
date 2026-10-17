@@ -165,47 +165,47 @@ Rows are the 35 custom objects and the 6 system objects that the batch extends. 
 
 | Object | Restricted By | Account Administrator | Account Member | Finance Administrator | Guest | Organization User | Project Admin | Project Requester | Provisioning Administrator | Provisioning Member | User |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| AccountInvitation (`C_ACCOUNT_INVITATION`) | — |  |  |  |  |  |  |  | V s1 L19 |  |  |
-| AccountNote (`C_ACCOUNT_NOTE`) | `r_accountEntryToAccountNote_accountEntryId` |  |  |  |  |  |  |  | V s1 L28 |  |  |
-| ActivationKey (`C_ACTIVATION_KEY`) | `r_accountEntryToActivationKey_accountEntryId` |  |  |  |  |  |  |  | V s1 L37 |  |  |
-| AIHubApplication (`C_AI_HUB_APPLICATION`) | `r_accountToAIHubApplication_accountEntryId` |  |  |  |  |  |  |  | V s1 L10 |  |  |
-| AIHubBetaPrivateAccessRequest (`C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST`) | — |  |  |  |  |  |  |  |  |  |  |
-| CommonLicenseKey (`C_COMMON_LICENSE_KEY`) | — |  |  |  |  |  |  |  | V s1 L46 |  |  |
-| Contract (`C_CONTRACT`) | `r_accountEntryToContract_accountEntryId` |  |  |  |  |  |  |  | V s1 L55 |  |  |
-| DSRRequest (`C_DSR_REQUEST`) | — |  |  |  |  |  |  |  |  |  | A s1 L955 |
-| DXPFreeActivationKeyRequest (`C_DXP_FREE_ACTIVATION_KEY_REQUEST`) | — |  |  |  |  |  |  |  |  |  | A s1 L964 |
-| Entitlement (`C_ENTITLEMENT`) | `r_accountEntryToEntitlement_accountEntryId` |  |  |  |  |  |  |  | V s1 L64 |  |  |
-| EntitlementDefinition (`C_ENTITLEMENT_DEFINITION`) | — |  |  |  |  |  |  |  | V s1 L73 |  | V s1 L82 |
-| EntitlementDefinitionSku (`C_ENTITLEMENT_DEFINITION_SKU`) | — |  |  |  |  |  |  |  |  |  |  |
-| Environment (`C_ENVIRONMENT`) | — |  |  |  |  |  |  |  | V s1 L91 |  | V s1 L100 |
-| EnvironmentAdmin (`C_ENVIRONMENT_ADMIN`) | — |  |  |  |  |  |  |  |  |  |  |
-| GetAppInformation (`C_GET_APP_INFORMATION`) | — |  |  |  |  |  |  |  |  |  |  |
-| LicenseKey (`C_LICENSE_KEY`) | `r_accountEntryToLicenseKey_accountEntryId` |  |  |  |  |  |  |  | V s1 L109 |  |  |
-| OAuth2DxpAuthorization (`C_OAUTH2_DXP_AUTHORIZATION`) | `r_accountEntryToOAuth2DxpAuthorization_accountEntryId` | A s3 L973 | A s3 L982 |  |  | A s3 L991 | A s3 L1000 | A s3 L1009 |  |  |  |
-| ProductFeedback (`C_PRODUCT_FEEDBACK`) | — |  |  |  |  |  |  |  |  |  |  |
-| ProductVersion (`C_PRODUCT_VERSION`) | — |  |  |  |  |  |  |  | V s1 L118 |  | V s1 L127 |
-| Project (`C_PROJECT`) | `r_accountEntryToProject_accountEntryId` |  |  |  |  |  |  |  | V s1 L136 |  |  |
-| ProjectMembership (`C_PROJECT_MEMBERSHIP`) | `r_accountEntryToProjectMembership_accountEntryId` |  |  |  |  |  |  |  | V s1 L145 |  |  |
-| Property (`C_PROPERTY`) | — |  |  |  |  |  |  |  | V s1 L154 |  |  |
-| PublisherAccountRequest (`C_PUBLISHER_ACCOUNT_REQUEST`) | — |  |  |  |  |  |  |  |  |  |  |
-| PublisherAsset (`C_PUBLISHER_ASSET`) | `r_accountEntryToPublisherAsset_accountEntryId` |  |  |  |  |  |  |  |  |  |  |
-| PublisherAssetAttachment (`C_PUBLISHER_ASSET_ATTACHMENT`) | — |  |  |  |  |  |  |  |  |  |  |
-| PublisherDetail (`C_PUBLISHER_DETAILS`) | — |  |  |  | V s1 L163 |  |  |  |  |  | V s1 L172 |
-| PublisherSalesSummary (`C_PUBLISHER_SALES_SUMMARY`) | — |  |  | VU s1 L181 |  |  |  |  |  |  |  |
-| Report (`C_REPORT`) | — |  |  |  |  |  |  |  |  |  |  |
-| SalesRequest (`C_SALES_REQUEST`) | — |  |  |  |  |  |  |  |  |  |  |
-| SubscriptionEntry (`C_SUBSCRIPTION_ENTRY`) | — |  |  |  |  |  |  |  | V s1 L191 |  |  |
-| TicketAttachment (`C_TICKET_ATTACHMENT`) | `r_accountEntryToTicketAttachment_accountEntryId` | A s3 L1018 |  |  |  | A s3 L1027 | A s3 L1036 | A s3 L1045 | V s1 L200 | VUD s1 L209<br>A s1 L1054 |  |
-| TrialExtensionRequest (`C_TRIAL_EXTENSION_REQUEST`) | `r_accountEntryToTrialExtensionRequest_accountEntryId` |  |  |  |  |  |  |  | V s1 L220 |  |  |
-| UsageDefinition (`C_USAGE_DEFINITION`) | — |  |  |  |  |  |  |  | V s1 L229 |  | V s1 L238 |
-| UsageEvent (`C_USAGE_EVENT`) | — |  |  |  |  |  |  |  | V s1 L247 |  | V s1 L256 |
-| UsageReport (`C_USAGE_REPORT`) | — |  |  |  |  |  |  |  | V s1 L265 |  |  |
-| AccountEntry (`L_ACCOUNT`) | — | See the system grants below |  |  |  |  |  |  |  |  |  |
-| Address (`L_POSTAL_ADDRESS`) | — |  |  |  |  |  |  |  |  |  |  |
-| CommerceOrderItem (`L_COMMERCE_ORDER_ITEM`) | — |  |  |  |  |  |  |  |  |  |  |
-| CPDefinition (`L_COMMERCE_PRODUCT_DEFINITION`) | — |  |  |  |  |  |  |  |  |  |  |
-| Organization (`L_ORGANIZATION`) | — |  |  |  |  |  |  |  |  |  |  |
-| User (`L_USER`) | — |  |  |  |  |  |  |  |  |  |  |
+| AccountInvitation (`C_ACCOUNT_INVITATION`) | — | | | | | | | | V s1 L19 | | |
+| AccountNote (`C_ACCOUNT_NOTE`) | `r_accountEntryToAccountNote_accountEntryId` | | | | | | | | V s1 L28 | | |
+| ActivationKey (`C_ACTIVATION_KEY`) | `r_accountEntryToActivationKey_accountEntryId` | | | | | | | | V s1 L37 | | |
+| AIHubApplication (`C_AI_HUB_APPLICATION`) | `r_accountToAIHubApplication_accountEntryId` | | | | | | | | V s1 L10 | | |
+| AIHubBetaPrivateAccessRequest (`C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST`) | — | | | | | | | | | | |
+| CommonLicenseKey (`C_COMMON_LICENSE_KEY`) | — | | | | | | | | V s1 L46 | | |
+| Contract (`C_CONTRACT`) | `r_accountEntryToContract_accountEntryId` | | | | | | | | V s1 L55 | | |
+| DSRRequest (`C_DSR_REQUEST`) | — | | | | | | | | | | A s1 L955 |
+| DXPFreeActivationKeyRequest (`C_DXP_FREE_ACTIVATION_KEY_REQUEST`) | — | | | | | | | | | | A s1 L964 |
+| Entitlement (`C_ENTITLEMENT`) | `r_accountEntryToEntitlement_accountEntryId` | | | | | | | | V s1 L64 | | |
+| EntitlementDefinition (`C_ENTITLEMENT_DEFINITION`) | — | | | | | | | | V s1 L73 | | V s1 L82 |
+| EntitlementDefinitionSku (`C_ENTITLEMENT_DEFINITION_SKU`) | — | | | | | | | | | | |
+| Environment (`C_ENVIRONMENT`) | — | | | | | | | | V s1 L91 | | V s1 L100 |
+| EnvironmentAdmin (`C_ENVIRONMENT_ADMIN`) | — | | | | | | | | | | |
+| GetAppInformation (`C_GET_APP_INFORMATION`) | — | | | | | | | | | | |
+| LicenseKey (`C_LICENSE_KEY`) | `r_accountEntryToLicenseKey_accountEntryId` | | | | | | | | V s1 L109 | | |
+| OAuth2DxpAuthorization (`C_OAUTH2_DXP_AUTHORIZATION`) | `r_accountEntryToOAuth2DxpAuthorization_accountEntryId` | A s3 L973 | A s3 L982 | | | A s3 L991 | A s3 L1000 | A s3 L1009 | | | |
+| ProductFeedback (`C_PRODUCT_FEEDBACK`) | — | | | | | | | | | | |
+| ProductVersion (`C_PRODUCT_VERSION`) | — | | | | | | | | V s1 L118 | | V s1 L127 |
+| Project (`C_PROJECT`) | `r_accountEntryToProject_accountEntryId` | | | | | | | | V s1 L136 | | |
+| ProjectMembership (`C_PROJECT_MEMBERSHIP`) | `r_accountEntryToProjectMembership_accountEntryId` | | | | | | | | V s1 L145 | | |
+| Property (`C_PROPERTY`) | — | | | | | | | | V s1 L154 | | |
+| PublisherAccountRequest (`C_PUBLISHER_ACCOUNT_REQUEST`) | — | | | | | | | | | | |
+| PublisherAsset (`C_PUBLISHER_ASSET`) | `r_accountEntryToPublisherAsset_accountEntryId` | | | | | | | | | | |
+| PublisherAssetAttachment (`C_PUBLISHER_ASSET_ATTACHMENT`) | — | | | | | | | | | | |
+| PublisherDetail (`C_PUBLISHER_DETAILS`) | — | | | | V s1 L163 | | | | | | V s1 L172 |
+| PublisherSalesSummary (`C_PUBLISHER_SALES_SUMMARY`) | — | | | VU s1 L181 | | | | | | | |
+| Report (`C_REPORT`) | — | | | | | | | | | | |
+| SalesRequest (`C_SALES_REQUEST`) | — | | | | | | | | | | |
+| SubscriptionEntry (`C_SUBSCRIPTION_ENTRY`) | — | | | | | | | | V s1 L191 | | |
+| TicketAttachment (`C_TICKET_ATTACHMENT`) | `r_accountEntryToTicketAttachment_accountEntryId` | A s3 L1018 | | | | A s3 L1027 | A s3 L1036 | A s3 L1045 | V s1 L200 | VUD s1 L209<br>A s1 L1054 | |
+| TrialExtensionRequest (`C_TRIAL_EXTENSION_REQUEST`) | `r_accountEntryToTrialExtensionRequest_accountEntryId` | | | | | | | | V s1 L220 | | |
+| UsageDefinition (`C_USAGE_DEFINITION`) | — | | | | | | | | V s1 L229 | | V s1 L238 |
+| UsageEvent (`C_USAGE_EVENT`) | — | | | | | | | | V s1 L247 | | V s1 L256 |
+| UsageReport (`C_USAGE_REPORT`) | — | | | | | | | | V s1 L265 | | |
+| AccountEntry (`L_ACCOUNT`) | — | See the system grants below | | | | | | | | | |
+| Address (`L_POSTAL_ADDRESS`) | — | | | | | | | | | | |
+| CommerceOrderItem (`L_COMMERCE_ORDER_ITEM`) | — | | | | | | | | | | |
+| CPDefinition (`L_COMMERCE_PRODUCT_DEFINITION`) | — | | | | | | | | | | |
+| Organization (`L_ORGANIZATION`) | — | | | | | | | | | | |
+| User (`L_USER`) | — | | | | | | | | | | |
 
 Two further grants open the object admin portlets of ActivationKey (`L274`) and LicenseKey (`L284`) to the Provisioning Administrator.
 

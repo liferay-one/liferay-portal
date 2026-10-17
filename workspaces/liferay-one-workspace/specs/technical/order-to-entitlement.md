@@ -499,42 +499,42 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 1. **High. An approved usage report creates nothing.** `C_USAGE_REPORT` has the action `UsageReportApproved` with executor `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8072`). `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` declares no such client extension, and no controller handles a usage report path. Overage orders exist only in seed data (`scripts/seed/populate_overages.sh`).
 
-2. **Resolved by LPD-110003. Entitlement generation now checks the order status.** Generation runs only for a completed order, so an open cart, an unpaid PayPal order (in progress), and a pending bank transfer order get no entitlements. Entitlements that carts created before this change stay in place, including the ones whose order item was removed (order item ID 0).
+1. **Resolved by LPD-110003. Entitlement generation now checks the order status.** Generation runs only for a completed order, so an open cart, an unpaid PayPal order (in progress), and a pending bank transfer order get no entitlements. Entitlements that carts created before this change stay in place, including the ones whose order item was removed (order item ID 0).
 
-3. **High. Self service entitlements have no dates.** Self service order items carry no `startDate` or `endDate` custom fields, and generation copies those fields as they are (`EntitlementService.java:214`). The entitlement then never expires (`EntitlementService._getActiveEntitlements`, `:608`).
+1. **High. Self service entitlements have no dates.** Self service order items carry no `startDate` or `endDate` custom fields, and generation copies those fields as they are (`EntitlementService.java:214`). The entitlement then never expires (`EntitlementService._getActiveEntitlements`, `:608`).
 
-4. **Medium. The sidecar and the custom element disagree on the project of a self service order.** `ProductPurchaseApp`, `ProductPurchaseAIHub`, and `ProductPurchaseAIHubOpenBeta` write the project to `order-metadata.salesforceProjectId`. `EntitlementService._getProjectExternalReferenceCode` (`:710`) reads only the `salesforceProjectId` custom field. The custom element shows the order under the project (`useProjectOrders.ts:110`), but its entitlements have no project, so the Products list contract filter and the Utilization tab do not see them. `createAIHubOpportunity` copies the field for `AI_HUB` orders only, and only after the items exist (`CommerceOrderService.java:329`).
+1. **Medium. The sidecar and the custom element disagree on the project of a self service order.** `ProductPurchaseApp`, `ProductPurchaseAIHub`, and `ProductPurchaseAIHubOpenBeta` write the project to `order-metadata.salesforceProjectId`. `EntitlementService._getProjectExternalReferenceCode` (`:710`) reads only the `salesforceProjectId` custom field. The custom element shows the order under the project (`useProjectOrders.ts:110`), but its entitlements have no project, so the Products list contract filter and the Utilization tab do not see them. `createAIHubOpportunity` copies the field for `AI_HUB` orders only, and only after the items exist (`CommerceOrderService.java:329`).
 
-5. **Medium. Nothing repairs a missing entitlement.** A failed `POST /o/c/entitlements`, a definition created after the order, or a definition that becomes active later leaves the order item without its entitlement. Contract reconcile fixes only the contract and project links (`…/one/service/ContractService.java:602`).
+1. **Medium. Nothing repairs a missing entitlement.** A failed `POST /o/c/entitlements`, a definition created after the order, or a definition that becomes active later leaves the order item without its entitlement. Contract reconcile fixes only the contract and project links (`…/one/service/ContractService.java:602`).
 
-6. **Medium. `EntitlementUpdate` ignores cancellation.** A Salesforce item that changes to Canceled keeps its entitlements at full length unless something also moves `effectiveEndDate` (`EntitlementService.java:530`).
+1. **Medium. `EntitlementUpdate` ignores cancellation.** A Salesforce item that changes to Canceled keeps its entitlements at full length unless something also moves `effectiveEndDate` (`EntitlementService.java:530`).
 
-7. **Low. Generation and update use different end dates.** Generation uses `endDate` (`EntitlementService.java:214`). Update uses the earlier of `endDate` and `effectiveEndDate` (`CommerceOrderItemUtil.getEntitlementEndDateInstant`). An item whose `effectiveEndDate` was trimmed before its entitlements were created starts with the longer date until the next update.
+1. **Low. Generation and update use different end dates.** Generation uses `endDate` (`EntitlementService.java:214`). Update uses the earlier of `endDate` and `effectiveEndDate` (`CommerceOrderItemUtil.getEntitlementEndDateInstant`). An item whose `effectiveEndDate` was trimmed before its entitlements were created starts with the longer date until the next update.
 
-8. **Low. `calculateTax` PATCHes order items without their ERC.** `CommerceOrderService.java:109` to `:120` sends a body with prices only. If the ERC hint holds, each self service order item gets a new ERC at the Payment Method step.
+1. **Low. `calculateTax` PATCHes order items without their ERC.** `CommerceOrderService.java:109` to `:120` sends a body with prices only. If the ERC hint holds, each self service order item gets a new ERC at the Payment Method step.
 
-9. **Low. The custom element reads a custom field that does not exist.** `getProjectName` falls back to `koroneiki-project` (`useProjectOrders.ts:140`), and `expando-columns.json` defines no such column on `CommerceOrder`.
+1. **Low. The custom element reads a custom field that does not exist.** `getProjectName` falls back to `koroneiki-project` (`useProjectOrders.ts:140`), and `expando-columns.json` defines no such column on `CommerceOrder`.
 
-10. **Low. Usage events have readers and no runtime writer.** `useProjectUsage.ts:158` reads `/o/c/usageevents` in one page of 500. Only `scripts/seed/populate_orders.sh` writes them.
+1. **Low. Usage events have readers and no runtime writer.** `useProjectUsage.ts:158` reads `/o/c/usageevents` in one page of 500. Only `scripts/seed/populate_orders.sh` writes them.
 
-11. **Low. `terminationStatus` is read and never written.** `CloudRestController.java:1098` and `:1344` read it. No code or script sets it.
+1. **Low. `terminationStatus` is read and never written.** `CloudRestController.java:1098` and `:1344` read it. No code or script sets it.
 
-12. **Low. `object-model.md` is stale on the SKU link.** It lists a soft link `CPInstance → EntitlementDefinition` on `skuExternalReferenceCode`. Commit `5cf8a2e974a12` moved the link to `C_ENTITLEMENT_DEFINITION_SKU`.
+1. **Low. `object-model.md` is stale on the SKU link.** It lists a soft link `CPInstance → EntitlementDefinition` on `skuExternalReferenceCode`. Commit `5cf8a2e974a12` moved the link to `C_ENTITLEMENT_DEFINITION_SKU`.
 
 ## Open Questions
 
 1. **Does Liferay send a payload for `onAfterAdd` on a commerce order item?** `scripts/seed/populate_orders.sh:49` says that the add of a system object sends a null payload and logs a PortalCatapult error for every order item, and the script turns the action off while it seeds. If this is true for every add, `EntitlementGeneration` never runs at runtime, and entitlements come only from the seed and from manual work. Test with one Salesforce order item on a live instance.
 
-2. Does Liferay retry a function object action whose endpoint answers 500? The code assumes no retry for generation.
+1. Does Liferay retry a function object action whose endpoint answers 500? The code assumes no retry for generation.
 
-3. Does Liferay write the order item custom fields before it fires `onAfterAdd`? The Source 1 item is added through an order PATCH that carries the custom fields. If the fields come later, generation sees no dates, and only a later update fixes them.
+1. Does Liferay write the order item custom fields before it fires `onAfterAdd`? The Source 1 item is added through an order PATCH that carries the custom fields. If the fields come later, generation sees no dates, and only a later update fixes them.
 
-4. Does a batch import accept the `UsageReportApproved` action when its executor key names an undeclared client extension, or does it fail on the `C_USAGE_REPORT` definition?
+1. Does a batch import accept the `UsageReportApproved` action when its executor key names an undeclared client extension, or does it fail on the `C_USAGE_REPORT` definition?
 
-5. Is entitlement creation for an open cart intended (Finding 2), for example so that the next steps page can show the grant before payment completes?
+1. Is entitlement creation for an open cart intended (Finding 2), for example so that the next steps page can show the grant before payment completes?
 
-6. Which code writes `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` and `C_PRODUCT_FEEDBACK`, and do they hang off orders in practice?
+1. Which code writes `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` and `C_PRODUCT_FEEDBACK`, and do they hang off orders in practice?
 
-7. Does an order item PATCH regenerate the ERC (Hints Checked)? The code is written as if it does. This file did not test it.
+1. Does an order item PATCH regenerate the ERC (Hints Checked)? The code is written as if it does. This file did not test it.
 
-8. What is the Liferay status of an order right after cart checkout for each payment method? The code treats pending (1) as the usual next status, but this file did not test it.
+1. What is the Liferay status of an order right after cart checkout for each payment method? The code treats pending (1) as the usual next status, but this file did not test it.
