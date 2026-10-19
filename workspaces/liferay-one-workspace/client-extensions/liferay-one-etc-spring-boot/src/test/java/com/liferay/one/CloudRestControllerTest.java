@@ -72,7 +72,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -862,7 +861,8 @@ public class CloudRestControllerTest {
 	@Test
 	public void testPostEnvironmentsActivation() throws Exception {
 		Mockito.when(
-			_environmentService.fetchEnvironment(Mockito.anyString())
+			_environmentService.fetchCloudNativeEnvironmentByActivationCode(
+				Mockito.anyString())
 		).thenReturn(
 			_createCloudNativeEnvironment(
 				EnvironmentConstants.ACTIVATION_STATUS_PENDING, "CNE-PENDING",
@@ -881,20 +881,11 @@ public class CloudRestControllerTest {
 			Mockito.any(SignedJWT.class)
 		);
 
-		ArgumentCaptor<String> argumentCaptor = ArgumentCaptor.forClass(
-			String.class);
-
 		Mockito.verify(
 			_environmentService
-		).fetchEnvironment(
-			argumentCaptor.capture()
+		).fetchCloudNativeEnvironmentByActivationCode(
+			_ACTIVATION_CODE
 		);
-
-		String filterString = argumentCaptor.getValue();
-
-		Assertions.assertTrue(filterString.contains(_ACTIVATION_CODE));
-		Assertions.assertTrue(
-			filterString.contains(EnvironmentConstants.OFFERING_CLOUD_NATIVE));
 
 		Mockito.verify(
 			_environmentService
@@ -977,7 +968,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_environmentService.fetchEnvironment(Mockito.anyString())
+			_environmentService.fetchCloudNativeEnvironmentByActivationCode(
+				Mockito.anyString())
 		).thenReturn(
 			_createCloudNativeEnvironment(
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, "CNE-ACTIVE",
@@ -1481,7 +1473,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentService.fetchEnvironment(Mockito.anyString())
+			_environmentService.fetchCloudNativeEnvironmentByActivationCode(
+				Mockito.anyString())
 		).thenReturn(
 			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)
 		);
