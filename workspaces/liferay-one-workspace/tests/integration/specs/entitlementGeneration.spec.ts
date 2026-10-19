@@ -8,9 +8,9 @@ import {expect} from '@playwright/test';
 import {apiTest as test} from '../fixtures/apiTest';
 import {APIHelpers, HeadlessPage} from '../helpers/APIHelpers';
 
-const commerceOrderItemId = Number(
-	process.env.ONE_COMMERCE_ORDER_ITEM_ID ?? '0'
-);
+const SEEDED_COMMERCE_ORDER_ITEM_ERC = 'C_ORDER_ITEM_CLOUD_NATIVE';
+
+let commerceOrderItemId = Number(process.env.ONE_COMMERCE_ORDER_ITEM_ID ?? '0');
 
 interface IEntitlement {
 	externalReferenceCode: string;
@@ -28,6 +28,18 @@ function entitlementsForItem(
 }
 
 test.describe('[FLOW-ENTITLEMENT-GENERATION] commerce order item entitlement generation', () => {
+	test.beforeEach(async ({api}) => {
+		if (commerceOrderItemId) {
+			return;
+		}
+
+		const {id} = await api.get<{id: number}>(
+			`/o/headless-commerce-admin-order/v1.0/orderItems/by-externalReferenceCode/${SEEDED_COMMERCE_ORDER_ITEM_ERC}`
+		);
+
+		commerceOrderItemId = id;
+	});
+
 	test('[FLOW-ENTITLEMENT-GENERATION] [REST-POST-ENTITLEMENTS-GENERATE] generates one entitlement per definition', async ({
 		api,
 	}) => {
