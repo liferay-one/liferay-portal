@@ -10,7 +10,7 @@ import {Liferay} from '~/services/liferay/liferay';
 import {useCartContext} from '../context/CartContext';
 
 import type {ChannelCurrency} from '~/types/commerce';
-import type {CartItem} from '~/types/orders';
+import type {Cart, CartItem} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 const useProductPurchaseCart = (
@@ -43,6 +43,24 @@ const useProductPurchaseCart = (
 
 	cartIdRef.current = cartId;
 
+	const cartWriteRef = useRef<Promise<unknown>>(Promise.resolve());
+
+	const queueCartWrite = useCallback(<T>(write: () => Promise<T>) => {
+		const queuedWrite = cartWriteRef.current.then(write);
+
+		cartWriteRef.current = queuedWrite.catch(() => undefined);
+
+		return queuedWrite;
+	}, []);
+
+	const updateCart = useCallback(
+		(id: number | string, data: Partial<Cart>) =>
+			queueCartWrite(() =>
+				HeadlessCommerceDeliveryCart.updateCart(id, data)
+			),
+		[queueCartWrite]
+	);
+
 	const updateBillingAddress = useCallback(
 		async (newBillingAddressId?: number) => {
 			const updatedCartId = cartIdRef.current;
@@ -54,11 +72,9 @@ const useProductPurchaseCart = (
 			setUpdatingBillingAddress(true);
 
 			try {
-				const updatedCart =
-					await HeadlessCommerceDeliveryCart.updateCart(
-						updatedCartId,
-						{billingAddressId: newBillingAddressId}
-					);
+				const updatedCart = await updateCart(updatedCartId, {
+					billingAddressId: newBillingAddressId,
+				});
 
 				if (updatedCart && cartIdRef.current === updatedCartId) {
 					setCart(updatedCart);
@@ -74,7 +90,7 @@ const useProductPurchaseCart = (
 				setUpdatingBillingAddress(false);
 			}
 		},
-		[setCart]
+		[setCart, updateCart]
 	);
 
 	const addCart = async (productId: number, skuId: number) => {
@@ -255,9 +271,7 @@ const useProductPurchaseCart = (
 		reset,
 		setCart,
 		updateBillingAddress,
-		updateCart: HeadlessCommerceDeliveryCart.updateCart.bind(
-			HeadlessCommerceDeliveryCart
-		),
+		updateCart,
 	};
 };
 
