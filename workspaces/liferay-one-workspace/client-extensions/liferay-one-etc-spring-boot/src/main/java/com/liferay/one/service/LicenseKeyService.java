@@ -79,6 +79,9 @@ public class LicenseKeyService extends OneBaseService {
 			expirationDate, hostName, ipAddresses, licenseType, macAddresses,
 			startDate);
 
+		maxServers = LicenseKeyGenerationConstants.getMaxServers(
+			licenseType, maxServers);
+
 		if (Validator.isNull(key)) {
 			key = _licenseKeyGenerator.generateKey(
 				accountName, licenseName, licenseType, licenseVersion,

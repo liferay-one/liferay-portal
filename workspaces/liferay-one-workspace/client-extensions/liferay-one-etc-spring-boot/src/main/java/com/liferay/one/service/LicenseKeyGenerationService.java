@@ -1275,21 +1275,23 @@ public class LicenseKeyGenerationService {
 			productName, generateRequest.getVersion());
 		String macAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getMacAddresses());
+		int maxServers = LicenseKeyGenerationConstants.getMaxServers(
+			licenseEntry.getType(), 0);
 		String sizing = _getSizing(generateRequest);
 		String version = generateRequest.getVersion();
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, 0, 0, 0, 0, sizing, description,
-			StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			version, environmentName, 0, maxServers, 0, 0, 0, sizing,
+			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
 			StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, 0, 0, 0, 0, sizing, description,
-			StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			version, environmentName, 0, maxServers, 0, 0, 0, sizing,
+			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
 			StringPool.BLANK, startDate, expirationDate);
 	}
 

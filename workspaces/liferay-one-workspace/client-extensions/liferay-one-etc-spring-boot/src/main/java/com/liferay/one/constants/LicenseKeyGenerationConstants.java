@@ -5,10 +5,13 @@
 
 package com.liferay.one.constants;
 
+import com.liferay.portal.ee.license.shared.LicenseConstants;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author Pedro Oliveira
@@ -54,5 +57,13 @@ public class LicenseKeyGenerationConstants {
 			LICENSE_KEY_FAMILY_CLOUD_NATIVE, "Cloud Native",
 			LICENSE_KEY_FAMILY_DXP, "Liferay DXP", LICENSE_KEY_FAMILY_PORTAL,
 			"Liferay Portal");
+
+	public static int getMaxServers(String licenseType, int maxServers) {
+		if (Objects.equals(licenseType, LicenseConstants.TYPE_CLUSTER)) {
+			return maxServers;
+		}
+
+		return 1;
+	}
 
 }
