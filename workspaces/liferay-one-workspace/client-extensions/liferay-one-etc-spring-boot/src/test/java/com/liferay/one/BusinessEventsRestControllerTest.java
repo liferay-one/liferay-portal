@@ -64,6 +64,12 @@ public class BusinessEventsRestControllerTest {
 		).thenReturn(
 			userAccount
 		);
+
+		Mockito.when(
+			_jiraBusinessEventService.hasJiraBusinessEvent("42", _PROJECT_ERC)
+		).thenReturn(
+			true
+		);
 	}
 
 	@Test
@@ -105,6 +111,22 @@ public class BusinessEventsRestControllerTest {
 			IllegalStateException.class,
 			() -> _businessEventsRestController.deleteProjectsBusinessEvents(
 				null, _PROJECT_ERC, "42"));
+	}
+
+	@Test
+	public void testDeleteProjectsBusinessEventsRejectsEventOfAnotherProject()
+		throws Exception {
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _businessEventsRestController.deleteProjectsBusinessEvents(
+				null, _PROJECT_ERC, "43"));
+
+		Mockito.verify(
+			_jiraBusinessEventService, Mockito.never()
+		).deleteJiraBusinessEvent(
+			Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -229,6 +251,22 @@ public class BusinessEventsRestControllerTest {
 	}
 
 	@Test
+	public void testGetProjectsBusinessEventsByIdRejectsEventOfAnotherProject()
+		throws Exception {
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _businessEventsRestController.getProjectsBusinessEvents(
+				null, _PROJECT_ERC, "43"));
+
+		Mockito.verify(
+			_jiraBusinessEventService, Mockito.never()
+		).getJiraBusinessEvent(
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testGetProjectsBusinessEventsByIdWithoutPermission()
 		throws Exception {
 
@@ -328,6 +366,23 @@ public class BusinessEventsRestControllerTest {
 			).getString(
 				"comment"
 			));
+	}
+
+	@Test
+	public void testGetProjectsBusinessEventsVersionsRejectsEventOfAnotherProject()
+		throws Exception {
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				_businessEventsRestController.getProjectsBusinessEventsVersions(
+					null, _PROJECT_ERC, "43"));
+
+		Mockito.verify(
+			_jiraBusinessEventService, Mockito.never()
+		).getJiraBusinessEventVersions(
+			Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -436,7 +491,11 @@ public class BusinessEventsRestControllerTest {
 			() -> _businessEventsRestController.putProjectsBusinessEvents(
 				null, _PROJECT_ERC, "42", "not json"));
 
-		Mockito.verifyNoInteractions(_jiraBusinessEventService);
+		Mockito.verify(
+			_jiraBusinessEventService, Mockito.never()
+		).updateJiraBusinessEvent(
+			Mockito.any(), Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -454,6 +513,22 @@ public class BusinessEventsRestControllerTest {
 			IllegalStateException.class,
 			() -> _businessEventsRestController.putProjectsBusinessEvents(
 				null, _PROJECT_ERC, "42", "{\"name\": \"Upgrade\"}"));
+	}
+
+	@Test
+	public void testPutProjectsBusinessEventsRejectsEventOfAnotherProject()
+		throws Exception {
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _businessEventsRestController.putProjectsBusinessEvents(
+				null, _PROJECT_ERC, "43", "{\"name\": \"Upgrade\"}"));
+
+		Mockito.verify(
+			_jiraBusinessEventService, Mockito.never()
+		).updateJiraBusinessEvent(
+			Mockito.any(), Mockito.anyString()
+		);
 	}
 
 	@Test

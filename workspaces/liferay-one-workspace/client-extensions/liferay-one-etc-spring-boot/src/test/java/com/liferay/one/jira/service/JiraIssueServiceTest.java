@@ -256,12 +256,28 @@ public class JiraIssueServiceTest {
 		Assertions.assertTrue(
 			jql.startsWith(
 				"Organization in aqlFunction('\\\"External Key\\\" = " +
-					"\\\"PRJ-1\\\"') and (status not in ('Closed','"),
+					"\\\"PRJ-1\\\"') and ((status not in ('Closed','"),
 			jql);
 		Assertions.assertTrue(
-			jql.contains("')) and cf[200] = 'General Request'"), jql);
+			jql.contains("') and cf[200] = 'General Request')"), jql);
 		Assertions.assertTrue(
-			jql.endsWith(" or key in ('LRHC-1','LRHC-2')"), jql);
+			jql.endsWith(" or key in ('LRHC-1','LRHC-2'))"), jql);
+	}
+
+	@Test
+	public void testGetJiraSupportIssuesDropsMalformedIssueKeys()
+		throws Exception {
+
+		_testJiraIssueService.getResponses.add(_createSearchResponse(null));
+
+		_testJiraIssueService.getJiraSupportIssues(
+			"PRJ-1",
+			new String[] {"LRHC-1", "LRHC-2') or project = 'OTHER", null});
+
+		String jql = _getQueryParam(_testJiraIssueService.uris.get(0), "jql");
+
+		Assertions.assertTrue(jql.endsWith(" or key in ('LRHC-1'))"), jql);
+		Assertions.assertFalse(jql.contains("OTHER"), jql);
 	}
 
 	@Test
@@ -272,7 +288,7 @@ public class JiraIssueServiceTest {
 
 		String jql = _getQueryParam(_testJiraIssueService.uris.get(0), "jql");
 
-		Assertions.assertTrue(jql.endsWith("= 'General Request'"), jql);
+		Assertions.assertTrue(jql.endsWith("= 'General Request'))"), jql);
 	}
 
 	@Test
