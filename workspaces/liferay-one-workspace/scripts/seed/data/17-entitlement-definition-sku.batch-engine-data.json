@@ -221,11 +221,6 @@
 			"skuExternalReferenceCode": "PRDCT-DXP"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER_PRDCT-DXP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER",
-			"skuExternalReferenceCode": "PRDCT-DXP"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_PRDCT-DXP",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER",
 			"skuExternalReferenceCode": "PRDCT-DXP"
@@ -461,11 +456,6 @@
 			"skuExternalReferenceCode": "01t70000002ljneAAA"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER_01t70000002ljneAAA",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER",
-			"skuExternalReferenceCode": "01t70000002ljneAAA"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA_01t70000002mUasAAE",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_EWSA",
 			"skuExternalReferenceCode": "01t70000002mUasAAE"
@@ -693,11 +683,6 @@
 		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8fFYAAY",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER_01t0g00000c8fFYAAY",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER",
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{
