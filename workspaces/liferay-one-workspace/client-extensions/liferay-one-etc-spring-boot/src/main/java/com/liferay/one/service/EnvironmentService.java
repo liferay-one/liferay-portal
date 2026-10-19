@@ -120,6 +120,17 @@ public class EnvironmentService extends OneBaseService {
 				"') and (type eq '", escapeODataString(type), "')"));
 	}
 
+	public Environment fetchCloudNativeEnvironmentByActivationCode(
+			String activationCode)
+		throws Exception {
+
+		return fetchEnvironment(
+			StringBundler.concat(
+				"(activationCode eq '", escapeODataString(activationCode),
+				"') and (offering eq '",
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE, "')"));
+	}
+
 	public Environment fetchEnvironment(String filterString) throws Exception {
 		String response = get(
 			getAuthorization(),

@@ -786,10 +786,9 @@ public class CloudRestController extends OneBaseRestController {
 			throw new EnvironmentAlreadyActivatedException(environmentId);
 		}
 
-		Environment environment = _environmentService.fetchEnvironment(
-			StringBundler.concat(
-				"(activationCode eq '", activationCode, "') and (offering eq '",
-				EnvironmentConstants.OFFERING_CLOUD_NATIVE, "')"));
+		Environment environment =
+			_environmentService.fetchCloudNativeEnvironmentByActivationCode(
+				activationCode);
 
 		if (environment == null) {
 			throw new NoSuchActivationCodeException(activationCode);
