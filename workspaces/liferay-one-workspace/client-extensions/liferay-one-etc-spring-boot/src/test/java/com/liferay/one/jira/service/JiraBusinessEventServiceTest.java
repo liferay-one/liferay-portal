@@ -33,6 +33,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Ryan Schuhler
@@ -327,6 +328,145 @@ public class JiraBusinessEventServiceTest {
 	}
 
 	@Test
+	public void testHasJiraBusinessEventMatchesTheProjectAccount()
+		throws Exception {
+
+		_whenFetchAccount("A-1");
+
+		Mockito.when(
+			_jiraAssetPersistence.getObject("42")
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"objectType",
+				new JSONObject(
+				).put(
+					"id", "OT-1"
+				)
+			)
+		);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("Account")
+		).thenReturn(
+			"A-1"
+		);
+
+		Mockito.when(
+			_jiraBusinessEventConverter.toJiraAssetObject(
+				ArgumentMatchers.any(JSONObject.class))
+		).thenReturn(
+			jiraAssetObject
+		);
+
+		Assertions.assertTrue(
+			_jiraBusinessEventService.hasJiraBusinessEvent("42", "PRJ-1"));
+	}
+
+	@Test
+	public void testHasJiraBusinessEventRejectsAnotherObjectType()
+		throws Exception {
+
+		_whenFetchAccount("A-1");
+
+		Mockito.when(
+			_jiraAssetPersistence.getObject("42")
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"objectType",
+				new JSONObject(
+				).put(
+					"id", "OT-9"
+				)
+			)
+		);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("Account")
+		).thenReturn(
+			"A-1"
+		);
+
+		Mockito.when(
+			_jiraBusinessEventConverter.toJiraAssetObject(
+				ArgumentMatchers.any(JSONObject.class))
+		).thenReturn(
+			jiraAssetObject
+		);
+
+		Assertions.assertFalse(
+			_jiraBusinessEventService.hasJiraBusinessEvent("42", "PRJ-1"));
+	}
+
+	@Test
+	public void testHasJiraBusinessEventRejectsEventOfAnotherAccount()
+		throws Exception {
+
+		_whenFetchAccount("A-1");
+
+		Mockito.when(
+			_jiraAssetPersistence.getObject("42")
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"objectType",
+				new JSONObject(
+				).put(
+					"id", "OT-1"
+				)
+			)
+		);
+
+		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue("Account")
+		).thenReturn(
+			"A-2"
+		);
+
+		Mockito.when(
+			_jiraBusinessEventConverter.toJiraAssetObject(
+				ArgumentMatchers.any(JSONObject.class))
+		).thenReturn(
+			jiraAssetObject
+		);
+
+		Assertions.assertFalse(
+			_jiraBusinessEventService.hasJiraBusinessEvent("42", "PRJ-1"));
+	}
+
+	@Test
+	public void testHasJiraBusinessEventReturnsFalseForUnknownObject()
+		throws Exception {
+
+		_whenFetchAccount("A-1");
+
+		Mockito.when(
+			_jiraAssetPersistence.getObject("42")
+		).thenThrow(
+			WebClientResponseException.create(
+				404, "Not Found", null, null, null)
+		);
+
+		Assertions.assertFalse(
+			_jiraBusinessEventService.hasJiraBusinessEvent("42", "PRJ-1"));
+	}
+
+	@Test
+	public void testHasJiraBusinessEventSkipsNonnumericId() throws Exception {
+		Assertions.assertFalse(
+			_jiraBusinessEventService.hasJiraBusinessEvent("abc", "PRJ-1"));
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
+	}
+
+	@Test
 	public void testUpdateJiraBusinessEvent() throws Exception {
 		JiraAssetObject jiraAssetObject = Mockito.mock(JiraAssetObject.class);
 		JiraBusinessEvent jiraBusinessEvent = Mockito.mock(
@@ -386,6 +526,24 @@ public class JiraBusinessEventServiceTest {
 		);
 
 		return aqlArgumentCaptor.getValue();
+	}
+
+	private void _whenFetchAccount(String objectId) {
+		JiraAssetObject accountJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Mockito.when(
+			accountJiraAssetObject.getObjectId()
+		).thenReturn(
+			objectId
+		);
+
+		Mockito.when(
+			_accountAssetService.fetchAccountJiraAssetObjectByExternalKey(
+				"PRJ-1")
+		).thenReturn(
+			accountJiraAssetObject
+		);
 	}
 
 	private void _whenGetObjectTypeAttributes(JSONObject... jsonObjects) {
