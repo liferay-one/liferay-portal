@@ -340,7 +340,8 @@ public class LicenseKeyGenerateFormService {
 		for (ProductVersion productVersion : productVersions) {
 			for (LicenseEntry licenseEntry :
 					_getLicenseEntries(
-						licenseKeyFamily, productVersion.getVersion())) {
+						licenseKeyFamily,
+						productVersion.getProductGroupVersion())) {
 
 				if (licenseKeyType.matches(licenseEntry)) {
 					return licenseEntry;
@@ -842,21 +843,29 @@ public class LicenseKeyGenerateFormService {
 
 		for (ProductVersion productVersion : productVersions) {
 			List<LicenseEntry> licenseEntries = _getLicenseEntries(
-				licenseKeyFamily, productVersion.getVersion());
+				licenseKeyFamily, productVersion.getProductGroupVersion());
 
 			if (licenseEntries.isEmpty()) {
 				continue;
 			}
 
-			jsonArray.put(productVersion.getVersion());
+			jsonArray.put(productVersion.getProductGroupVersion());
 		}
 
 		return jsonArray;
 	}
 
 	private List<ProductVersion> _getProductVersions() throws Exception {
-		return _productVersionService.getProductVersions(
-			LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true);
+		List<ProductVersion> productVersions = new ArrayList<>(
+			_productVersionService.getProductVersions(
+				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true));
+
+		productVersions.sort(
+			Comparator.comparing(
+				ProductVersion::getProductGroupVersion,
+				Comparator.nullsLast(new VersionComparator(false))));
+
+		return productVersions;
 	}
 
 	private List<Long> _getRenewedActivationKeyIds(
@@ -1112,7 +1121,7 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			jsonArray.put(productVersion.getVersion());
+			jsonArray.put(productGroupVersion);
 		}
 
 		return jsonArray;
@@ -1124,7 +1133,7 @@ public class LicenseKeyGenerateFormService {
 		List<String> versions = new ArrayList<>();
 
 		for (ProductVersion productVersion : productVersions) {
-			versions.add(productVersion.getVersion());
+			versions.add(productVersion.getProductGroupVersion());
 		}
 
 		List<String> latestVersions = new ArrayList<>(versions);
@@ -1176,7 +1185,7 @@ public class LicenseKeyGenerateFormService {
 		JSONArray jsonArray = new JSONArray();
 
 		for (ProductVersion productVersion : productVersions) {
-			jsonArray.put(productVersion.getVersion());
+			jsonArray.put(productVersion.getProductGroupVersion());
 		}
 
 		return jsonArray;
