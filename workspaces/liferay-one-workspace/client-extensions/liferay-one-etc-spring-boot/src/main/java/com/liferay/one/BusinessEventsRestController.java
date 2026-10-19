@@ -13,6 +13,7 @@ import com.liferay.one.jira.model.JiraBusinessEventVersion;
 import com.liferay.one.jira.model.JiraProductVersion;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.permission.ProjectPermission;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
 import org.apache.commons.logging.Log;
@@ -48,6 +49,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		throws Exception {
 
 		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
+
+		_checkBusinessEvent(externalReferenceCode, id);
 
 		_businessEventService.deleteJiraBusinessEvent(id);
 
@@ -93,6 +96,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
 
+		_checkBusinessEvent(externalReferenceCode, id);
+
 		JiraBusinessEvent jiraBusinessEvent =
 			_businessEventService.getJiraBusinessEvent(id);
 
@@ -112,6 +117,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		throws Exception {
 
 		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		_checkBusinessEvent(externalReferenceCode, id);
 
 		return getResponseEntity(
 			_businessEventService.getJiraBusinessEventVersions(id),
@@ -151,6 +158,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
+		_checkBusinessEvent(externalReferenceCode, id);
+
 		UserAccount userAccount = getMyUserAccount(jwt);
 
 		JiraBusinessEvent jiraBusinessEvent =
@@ -164,6 +173,16 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			jiraBusinessEvent.toJSONObject(
 			).toString(),
 			HttpStatus.OK);
+	}
+
+	private void _checkBusinessEvent(String externalReferenceCode, String id)
+		throws Exception {
+
+		if (!_businessEventService.hasJiraBusinessEvent(
+				id, externalReferenceCode)) {
+
+			throw new PrincipalException();
+		}
 	}
 
 	private static final Log _log = LogFactory.getLog(
