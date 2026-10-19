@@ -70,35 +70,19 @@ async function expectTrialKeyListed(
 	page: Page,
 	trialProduct: TrialProduct
 ) {
-	await expect(page).toHaveURL(
-		new RegExp(
-			`/project/one-time-purchases/products/${trialProduct.trialExternalReferenceCode}$`
-		),
-		{timeout: CHECKOUT_TIMEOUT}
-	);
-
-	await expectSettled(page);
-
-	const {name} = await adminAPI.getProductByERC(
-		trialProduct.trialExternalReferenceCode
-	);
-
-	await expect(
-		page.getByRole('heading', {exact: true, level: 1, name: name.en_US})
-	).toBeVisible({timeout: PORTAL_TIMEOUT});
-
-	await page
-		.getByRole('link', {name: /Activation/})
-		.first()
-		.click();
-
-	await expect(page).toHaveURL(/\/project\/one-time-purchases\/activation$/);
+	await expect(page).toHaveURL(/\/project\/one-time-purchases\/activation$/, {
+		timeout: CHECKOUT_TIMEOUT,
+	});
 
 	await expectSettled(page);
 
 	await expect(tableRow(page, getEnvironmentName(trialProduct))).toBeVisible({
 		timeout: PORTAL_TIMEOUT,
 	});
+
+	const {name} = await adminAPI.getProductByERC(
+		trialProduct.trialExternalReferenceCode
+	);
 
 	await page
 		.getByRole('link', {name: /Products/})
