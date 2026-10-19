@@ -37,6 +37,7 @@ Terms used in this file:
 | REQ-ACCESS-015 | The readiness probe answers `READY` without a token, so that the hosting platform can check the service. | P2 | — | `AUTH-UNAUTHENTICATED` |
 | REQ-ACCESS-016 | The pages call the Spring Boot service with the access token of the signed in user. When the service refuses a call, the page receives the status and the problem detail of the refusal. | P0 | — | `CLIENT-SPRING-BOOT-OAUTH2CLIENT` |
 | REQ-ACCESS-017 | A user reads the environments and the usage events of their own accounts only. The objects are account restricted, so a direct read through the object API returns no entry of another account. | P0 | LPD-88277 | `AUTH-ACCOUNT-RESTRICTED-READS` |
+| REQ-ACCESS-018 | A token that the portal issued to the external DXP application reaches only the `/dxp` endpoints, which the DXP Marketplace calls. The service refuses it on every other endpoint with status 403. | P0 | LPD-88277 | `CLS-EXTERNALDXPPATHINTERCEPTOR` |
 
 ## DXP Connection Authorization
 
