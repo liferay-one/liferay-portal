@@ -91,14 +91,14 @@ public class TrialScheduledProcessTrialsTest {
 		Mockito.doNothing(
 		).when(
 			_trialRestController
-		).postExpire(
+		).expireTrial(
 			ArgumentMatchers.anyLong()
 		);
 
 		Mockito.doNothing(
 		).when(
 			_trialRestController
-		).postProvisioningOrder(
+		).provisionTrial(
 			ArgumentMatchers.anyLong()
 		);
 
@@ -124,7 +124,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController
-		).postProvisioningOrder(
+		).provisionTrial(
 			1L
 		);
 	}
@@ -139,7 +139,7 @@ public class TrialScheduledProcessTrialsTest {
 			new RuntimeException("Unable to provision")
 		).when(
 			_trialRestController
-		).postProvisioningOrder(
+		).provisionTrial(
 			1L
 		);
 
@@ -147,7 +147,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController
-		).postProvisioningOrder(
+		).provisionTrial(
 			2L
 		);
 	}
@@ -179,7 +179,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController
-		).postExpire(
+		).expireTrial(
 			1L
 		);
 	}
@@ -267,13 +267,13 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController
-		).postExpire(
+		).expireTrial(
 			1L
 		);
 
 		Mockito.verify(
 			_trialRestController, Mockito.never()
-		).postExpire(
+		).expireTrial(
 			2L
 		);
 
@@ -374,7 +374,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController, Mockito.never()
-		).postExpire(
+		).expireTrial(
 			ArgumentMatchers.anyLong()
 		);
 	}
@@ -389,13 +389,13 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController
-		).postProvisioningOrder(
+		).provisionTrial(
 			1L
 		);
 
 		Mockito.verify(
 			_trialRestController, Mockito.never()
-		).postProvisioningOrder(
+		).provisionTrial(
 			2L
 		);
 	}
@@ -416,7 +416,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController, Mockito.never()
-		).postExpire(
+		).expireTrial(
 			ArgumentMatchers.anyLong()
 		);
 
@@ -442,7 +442,7 @@ public class TrialScheduledProcessTrialsTest {
 
 		Mockito.verify(
 			_trialRestController, Mockito.never()
-		).postProvisioningOrder(
+		).provisionTrial(
 			ArgumentMatchers.anyLong()
 		);
 	}

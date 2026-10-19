@@ -7,8 +7,10 @@ package com.liferay.one;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Map;
@@ -25,6 +27,7 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -54,6 +57,9 @@ public class DigitalSalesRoomRestControllerTest {
 			_digitalSalesRoomRestController, "_analyticsCloudService",
 			_analyticsCloudService);
 		ReflectionTestUtils.setField(
+			_digitalSalesRoomRestController, "_commerceOrderPermission",
+			_commerceOrderPermission);
+		ReflectionTestUtils.setField(
 			_digitalSalesRoomRestController, "_commerceOrderService",
 			_commerceOrderService);
 	}
@@ -78,7 +84,7 @@ public class DigitalSalesRoomRestControllerTest {
 		Assertions.assertThrows(
 			IllegalStateException.class,
 			() -> _digitalSalesRoomRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 
 		Map<String, ?> customFields = _captureCancelledCustomFields();
 
@@ -95,7 +101,8 @@ public class DigitalSalesRoomRestControllerTest {
 				_DSR_SETTINGS));
 
 		ResponseEntity<Void> responseEntity =
-			_digitalSalesRoomRestController.postProvisioningOrder(_ORDER_ID);
+			_digitalSalesRoomRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -137,7 +144,7 @@ public class DigitalSalesRoomRestControllerTest {
 				"DSR", CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED,
 				"{\"workspaceName\": \"Acme Sales Room\"}"));
 
-		_digitalSalesRoomRestController.postProvisioningOrder(_ORDER_ID);
+		_digitalSalesRoomRestController.postProvisioningOrder(_jwt, _ORDER_ID);
 
 		ArgumentCaptor<JSONObject> argumentCaptor = ArgumentCaptor.forClass(
 			JSONObject.class);
@@ -160,12 +167,37 @@ public class DigitalSalesRoomRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisioningOrderRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			_ORDER_ID, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _digitalSalesRoomRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).fetchCommerceOrder(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPostProvisioningOrderSkipsUnpaidOrder() throws Exception {
 		_whenFetchCommerceOrder(
 			_createOrder("DSR", _ORDER_PAYMENT_STATUS_PENDING, _DSR_SETTINGS));
 
 		ResponseEntity<Void> responseEntity =
-			_digitalSalesRoomRestController.postProvisioningOrder(_ORDER_ID);
+			_digitalSalesRoomRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID);
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseEntity.getStatusCode());
@@ -185,7 +217,7 @@ public class DigitalSalesRoomRestControllerTest {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
 			() -> _digitalSalesRoomRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 	}
 
 	@Test
@@ -195,7 +227,7 @@ public class DigitalSalesRoomRestControllerTest {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
 			() -> _digitalSalesRoomRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 	}
 
 	@Test
@@ -210,7 +242,7 @@ public class DigitalSalesRoomRestControllerTest {
 		Assertions.assertThrows(
 			IllegalStateException.class,
 			() -> _digitalSalesRoomRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 	}
 
 	private Map<String, ?> _captureCancelledCustomFields() throws Exception {
@@ -285,7 +317,10 @@ public class DigitalSalesRoomRestControllerTest {
 	private static final int _ORDER_PAYMENT_STATUS_PENDING = 1;
 
 	private AnalyticsCloudService _analyticsCloudService;
+	private final CommerceOrderPermission _commerceOrderPermission =
+		Mockito.mock(CommerceOrderPermission.class);
 	private CommerceOrderService _commerceOrderService;
 	private DigitalSalesRoomRestController _digitalSalesRoomRestController;
+	private final Jwt _jwt = Mockito.mock(Jwt.class);
 
 }

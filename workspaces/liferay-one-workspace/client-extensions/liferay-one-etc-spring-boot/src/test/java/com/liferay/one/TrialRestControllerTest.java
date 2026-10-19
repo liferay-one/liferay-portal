@@ -13,11 +13,14 @@ import com.liferay.headless.portal.instances.client.pagination.Page;
 import com.liferay.headless.portal.instances.client.problem.Problem;
 import com.liferay.headless.portal.instances.client.resource.v1_0.PortalInstanceResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.ConsoleService;
 import com.liferay.one.service.NotificationQueueEntryService;
 import com.liferay.one.service.NotificationTemplateService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.net.URI;
@@ -41,6 +44,7 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -84,6 +88,11 @@ public class TrialRestControllerTest {
 
 		};
 
+		ReflectionTestUtils.setField(
+			_trialRestController, "_adminPermission", _adminPermission);
+		ReflectionTestUtils.setField(
+			_trialRestController, "_commerceOrderPermission",
+			_commerceOrderPermission);
 		ReflectionTestUtils.setField(
 			_trialRestController, "_commerceOrderService",
 			_commerceOrderService);
@@ -177,7 +186,7 @@ public class TrialRestControllerTest {
 				_createPortalInstance("other." + _TRIAL_DXP_DOMAIN),
 				_createPortalInstance(_VIRTUAL_HOST)));
 
-		_trialRestController.deleteTrial(_ORDER_ID);
+		_trialRestController.deleteTrial(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_consoleService
@@ -217,7 +226,7 @@ public class TrialRestControllerTest {
 			"trial-ext" + _ORDER_ID
 		);
 
-		_trialRestController.deleteTrial(_ORDER_ID);
+		_trialRestController.deleteTrial(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_portalInstanceResource
@@ -244,9 +253,30 @@ public class TrialRestControllerTest {
 
 		Assertions.assertThrows(
 			WebClientResponseException.class,
-			() -> _trialRestController.deleteTrial(_ORDER_ID));
+			() -> _trialRestController.deleteTrial(_jwt, _ORDER_ID));
 
 		Mockito.verifyNoInteractions(_portalInstanceResource);
+	}
+
+	@Test
+	public void testDeleteTrialRequiresAnAdministrator() throws Exception {
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			_jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _trialRestController.deleteTrial(_jwt, _ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).fetchCommerceOrder(
+			Mockito.anyLong()
+		);
 	}
 
 	@Test
@@ -256,7 +286,7 @@ public class TrialRestControllerTest {
 		_mockOrder(
 			CommerceOrderConstants.ORDER_STATUS_IN_PROGRESS, "SOLUTIONS7");
 
-		_trialRestController.deleteTrial(_ORDER_ID);
+		_trialRestController.deleteTrial(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_consoleService
@@ -271,7 +301,7 @@ public class TrialRestControllerTest {
 	public void testDeleteTrialThrowsWhenOrderDoesNotExist() throws Exception {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
-			() -> _trialRestController.deleteTrial(_ORDER_ID));
+			() -> _trialRestController.deleteTrial(_jwt, _ORDER_ID));
 
 		Mockito.verifyNoInteractions(_consoleService, _portalInstanceResource);
 	}
@@ -344,7 +374,7 @@ public class TrialRestControllerTest {
 		_mockPortalInstancesPage(
 			1, List.of(_createPortalInstance(_VIRTUAL_HOST)));
 
-		_trialRestController.postExpire(_ORDER_ID);
+		_trialRestController.postExpire(_jwt, _ORDER_ID);
 
 		InOrder inOrder = Mockito.inOrder(
 			_commerceOrderService, _consoleService, _portalInstanceResource);
@@ -369,10 +399,33 @@ public class TrialRestControllerTest {
 	}
 
 	@Test
+	public void testPostExpireRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			_ORDER_ID, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _trialRestController.postExpire(_jwt, _ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+	}
+
+	@Test
 	public void testPostExpireThrowsWhenOrderDoesNotExist() throws Exception {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
-			() -> _trialRestController.postExpire(_ORDER_ID));
+			() -> _trialRestController.postExpire(_jwt, _ORDER_ID));
 
 		Mockito.verifyNoInteractions(_consoleService);
 	}
@@ -393,7 +446,7 @@ public class TrialRestControllerTest {
 			_trialExtensionRequestJSONObject = _createTrialExtensionRequest(
 				dueStatus);
 
-			_trialRestController.postExtend(_TRIAL_EXTENSION_REQUEST_ID);
+			_trialRestController.postExtend(_jwt, _TRIAL_EXTENSION_REQUEST_ID);
 
 			ArgumentCaptor<Map<String, ?>> argumentCaptor =
 				_mapArgumentCaptor();
@@ -413,11 +466,38 @@ public class TrialRestControllerTest {
 	}
 
 	@Test
+	public void testPostExtendRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		_trialExtensionRequestJSONObject = _createTrialExtensionRequest(
+			"approved");
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			_ORDER_ID, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _trialRestController.postExtend(
+				_jwt, _TRIAL_EXTENSION_REQUEST_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateOrder(
+			Mockito.any(), Mockito.anyLong(), Mockito.anyInt()
+		);
+	}
+
+	@Test
 	public void testPostExtendSkipsRequestThatIsNotApproved() throws Exception {
 		_trialExtensionRequestJSONObject = _createTrialExtensionRequest(
 			"denied");
 
-		_trialRestController.postExtend(_TRIAL_EXTENSION_REQUEST_ID);
+		_trialRestController.postExtend(_jwt, _TRIAL_EXTENSION_REQUEST_ID);
 
 		Mockito.verifyNoInteractions(_commerceOrderService);
 	}
@@ -434,7 +514,8 @@ public class TrialRestControllerTest {
 
 		Assertions.assertThrows(
 			IllegalStateException.class,
-			() -> _trialRestController.postExtend(_TRIAL_EXTENSION_REQUEST_ID));
+			() -> _trialRestController.postExtend(
+				_jwt, _TRIAL_EXTENSION_REQUEST_ID));
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
@@ -447,7 +528,7 @@ public class TrialRestControllerTest {
 	public void testPostProvisioningOrder() throws Exception {
 		_mockOrder(CommerceOrderConstants.ORDER_STATUS_OPEN, "SOLUTIONS7");
 
-		_trialRestController.postProvisioningOrder(_ORDER_ID);
+		_trialRestController.postProvisioningOrder(_jwt, _ORDER_ID);
 
 		InOrder inOrder = Mockito.inOrder(
 			_commerceOrderService, _consoleService);
@@ -532,7 +613,7 @@ public class TrialRestControllerTest {
 
 		Assertions.assertThrows(
 			Problem.ProblemException.class,
-			() -> _trialRestController.postProvisioningOrder(_ORDER_ID));
+			() -> _trialRestController.postProvisioningOrder(_jwt, _ORDER_ID));
 
 		Mockito.verify(
 			_commerceOrderService
@@ -558,7 +639,7 @@ public class TrialRestControllerTest {
 
 		_mockPortalInstancesPage(_TRIAL_MAX_INSTANCES, Collections.emptyList());
 
-		_trialRestController.postProvisioningOrder(_ORDER_ID);
+		_trialRestController.postProvisioningOrder(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_commerceOrderService
@@ -583,6 +664,29 @@ public class TrialRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisioningOrderRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			_ORDER_ID, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _trialRestController.postProvisioningOrder(_jwt, _ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).fetchCommerceOrder(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPostProvisioningOrderRejectsUnsupportedOrderType()
 		throws Exception {
 
@@ -590,7 +694,7 @@ public class TrialRestControllerTest {
 
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
-			() -> _trialRestController.postProvisioningOrder(_ORDER_ID));
+			() -> _trialRestController.postProvisioningOrder(_jwt, _ORDER_ID));
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
@@ -607,7 +711,7 @@ public class TrialRestControllerTest {
 
 		_mockOrder(CommerceOrderConstants.ORDER_STATUS_ON_HOLD, "SOLUTIONS7");
 
-		_trialRestController.postProvisioningOrder(_ORDER_ID);
+		_trialRestController.postProvisioningOrder(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
@@ -645,7 +749,7 @@ public class TrialRestControllerTest {
 
 		_mockPortalInstancesPage(1, List.of(portalInstance));
 
-		_trialRestController.postProvisioningOrder(_ORDER_ID);
+		_trialRestController.postProvisioningOrder(_jwt, _ORDER_ID);
 
 		Mockito.verify(
 			_consoleService
@@ -689,7 +793,7 @@ public class TrialRestControllerTest {
 
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
-			() -> _trialRestController.postProvisioningOrder(_ORDER_ID));
+			() -> _trialRestController.postProvisioningOrder(_jwt, _ORDER_ID));
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
@@ -788,10 +892,15 @@ public class TrialRestControllerTest {
 	private static final String _VIRTUAL_HOST =
 		_ORDER_ID + "." + _TRIAL_DXP_DOMAIN;
 
+	private final AdminPermission _adminPermission = Mockito.mock(
+		AdminPermission.class);
+	private final CommerceOrderPermission _commerceOrderPermission =
+		Mockito.mock(CommerceOrderPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
 	private final ConsoleService _consoleService = Mockito.mock(
 		ConsoleService.class);
+	private final Jwt _jwt = Mockito.mock(Jwt.class);
 	private final LiferayOAuth2AccessTokenManager
 		_liferayOAuth2AccessTokenManager = Mockito.mock(
 			LiferayOAuth2AccessTokenManager.class);
