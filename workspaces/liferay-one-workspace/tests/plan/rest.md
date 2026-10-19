@@ -2,7 +2,7 @@
 
 Every liferay-one-etc-spring-boot REST endpoint. A unit test at the controller level (JUnit MockMvc) covers the contract, status codes, validation, and error handling of each endpoint. The plan tracks real integration coverage as journeys in flows.md. These journeys run through the OAuth2 proxy and against external systems.
 
-> Autoscaffolded from the code surface (131 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (130 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -41,11 +41,11 @@ Every liferay-one-etc-spring-boot REST endpoint. A unit test at the controller l
 | REST-GET-CONTACTS-CONTACTEMAILADDRESS-VALIDATE | Answers whether an email address is usable as a contact, returning false rather than raising when validation rejects it | unit | P2 | planned | rest:GET:/contacts/{contactEmailAddress}/validate |
 | REST-GET-DXP-PROJECT-USAGE | Returns Console usage only when a Console project of the caller contains that project ID; 404 otherwise | unit | P0 | planned | rest:GET:/dxp/project-usage |
 | REST-GET-INVITATIONS-ACCEPT | Accepts an invitation from its token without authentication, answering with one of invalid, accepted, or expired; a malformed, unknown, or already-consumed token is invalid, and a failure mid-acceptance answers error rather than half-enrolling the user | unit | P0 | planned | rest:GET:/invitations/accept |
-| REST-GET-JIRA-BUSINESS-EVENTS-FIELDS-FIELDNAME-OPTIONS | Returns the option list for a business event field; read-only lookup, no auth branch | unit | P2 | planned | rest:GET:/jira/business-events/fields/{fieldName}/options |
-| REST-GET-JIRA-PRODUCT-VERSIONS | Returns all product versions; read-only lookup, no auth branch | unit | P2 | planned | rest:GET:/jira/product-versions |
 | REST-GET-JIRA-PROJECTS-EXTERNALREFERENCECODE-BUSINESS-EVENTS | Lists a project's business events after enforcing VIEW permission (403); read-only lookup | unit | P2 | planned | rest:GET:/jira/projects/{externalReferenceCode}/business-events |
+| REST-GET-JIRA-BUSINESS-EVENTS-FIELDS-FIELDNAME-OPTIONS | Returns the option list for a business event field after enforcing project VIEW permission (403); read-only lookup | unit | P2 | planned | rest:GET:/jira/projects/{externalReferenceCode}/business-events/fields/{fieldName}/options |
 | REST-GET-JIRA-PROJECTS-EXTERNALREFERENCECODE-BUSINESS-EVENTS-ID | Returns a single business event after enforcing VIEW permission (403); unknown id propagates as an error | unit | P2 | planned | rest:GET:/jira/projects/{externalReferenceCode}/business-events/{id} |
 | REST-GET-JIRA-PROJECTS-EXTERNALREFERENCECODE-BUSINESS-EVENTS-ID-VERSIONS | Returns the version history of a business event after enforcing VIEW permission (403); read-only lookup | unit | P2 | planned | rest:GET:/jira/projects/{externalReferenceCode}/business-events/{id}/versions |
+| REST-GET-JIRA-PRODUCT-VERSIONS | Returns all product versions after enforcing project VIEW permission (403); read-only lookup | unit | P2 | planned | rest:GET:/jira/projects/{externalReferenceCode}/product-versions |
 | REST-GET-JIRA-PROJECTS-EXTERNALREFERENCECODE-TICKETS | Lists a project's Jira tickets after enforcing VIEW permission (403); read-only lookup | unit | P0 | planned | rest:GET:/jira/projects/{externalReferenceCode}/tickets |
 | REST-GET-LICENSE-KEYS-DEVELOPER-DOWNLOAD | Streams a developer key for a project after the license key activation permission check; only developer and developer cluster types, only version 7.4 and later, and only for a product the project holds an active entitlement to | unit | P1 | planned | rest:GET:/license-keys/developer-download |
 | REST-GET-LICENSE-KEYS-DOWNLOAD | Streams the selected license keys as a single XML document, enforcing VIEW on each and answering 404 when none resolve | unit | P0 | planned | rest:GET:/license-keys/download |

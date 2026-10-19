@@ -144,69 +144,6 @@ public class BusinessEventsRestControllerTest {
 	}
 
 	@Test
-	public void testGetBusinessEventsFieldsOptions() throws Exception {
-		Mockito.when(
-			_jiraBusinessEventService.getFieldOptions("Event Type")
-		).thenReturn(
-			Arrays.asList(
-				new JiraAssetObjectFieldOption("Upgrade", "upgrade"),
-				new JiraAssetObjectFieldOption("Launch", "launch"))
-		);
-
-		ResponseEntity<String> responseEntity =
-			_businessEventsRestController.getBusinessEventsFieldsOptions(
-				"Event Type");
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		JSONArray itemsJSONArray = _getItemsJSONArray(responseEntity);
-
-		Assertions.assertEquals(2, itemsJSONArray.length());
-		Assertions.assertEquals(
-			new JiraAssetObjectFieldOption(
-				"Upgrade", "upgrade"
-			).toJSONObject(
-			).toString(),
-			itemsJSONArray.getJSONObject(
-				0
-			).toString());
-
-		Mockito.verifyNoInteractions(_projectPermission);
-	}
-
-	@Test
-	public void testGetProductVersions() throws Exception {
-		Mockito.when(
-			_jiraBusinessEventService.getJiraProductVersions()
-		).thenReturn(
-			Collections.singletonList(
-				new JiraProductVersion(
-					new JSONObject(
-					).put(
-						"id", "10001"
-					).put(
-						"name", "2025.Q1"
-					)))
-		);
-
-		ResponseEntity<String> responseEntity =
-			_businessEventsRestController.getProductVersions();
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		JSONArray itemsJSONArray = _getItemsJSONArray(responseEntity);
-
-		Assertions.assertEquals(1, itemsJSONArray.length());
-
-		JSONObject itemJSONObject = itemsJSONArray.getJSONObject(0);
-
-		Assertions.assertEquals("10001", itemJSONObject.getString("id"));
-		Assertions.assertEquals("2025.Q1", itemJSONObject.getString("name"));
-
-		Mockito.verifyNoInteractions(_projectPermission);
-	}
-
-	@Test
 	public void testGetProjectsBusinessEventsById() throws Exception {
 
 		// [REST-GET-JIRA-PROJECTS-EXTERNALREFERENCECODE-BUSINESS-EVENTS-ID]
@@ -276,6 +213,58 @@ public class BusinessEventsRestControllerTest {
 			PrincipalException.class,
 			() -> _businessEventsRestController.getProjectsBusinessEvents(
 				null, _PROJECT_ERC, "42"));
+
+		Mockito.verifyNoInteractions(_jiraBusinessEventService);
+	}
+
+	@Test
+	public void testGetProjectsBusinessEventsFieldsOptions() throws Exception {
+		Mockito.when(
+			_jiraBusinessEventService.getFieldOptions("Event Type")
+		).thenReturn(
+			Arrays.asList(
+				new JiraAssetObjectFieldOption("Upgrade", "upgrade"),
+				new JiraAssetObjectFieldOption("Launch", "launch"))
+		);
+
+		ResponseEntity<String> responseEntity =
+			_businessEventsRestController.
+				getProjectsBusinessEventsFieldsOptions(
+					null, _PROJECT_ERC, "Event Type");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONArray itemsJSONArray = _getItemsJSONArray(responseEntity);
+
+		Assertions.assertEquals(2, itemsJSONArray.length());
+		Assertions.assertEquals(
+			new JiraAssetObjectFieldOption(
+				"Upgrade", "upgrade"
+			).toJSONObject(
+			).toString(),
+			itemsJSONArray.getJSONObject(
+				0
+			).toString());
+
+		Mockito.verify(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+	}
+
+	@Test
+	public void testGetProjectsBusinessEventsFieldsOptionsWithoutPermission()
+		throws Exception {
+
+		_denyPermission(ActionKeys.VIEW);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				_businessEventsRestController.
+					getProjectsBusinessEventsFieldsOptions(
+						null, _PROJECT_ERC, "Event Type"));
 
 		Mockito.verifyNoInteractions(_jiraBusinessEventService);
 	}
@@ -396,6 +385,57 @@ public class BusinessEventsRestControllerTest {
 			() ->
 				_businessEventsRestController.getProjectsBusinessEventsVersions(
 					null, _PROJECT_ERC, "42"));
+
+		Mockito.verifyNoInteractions(_jiraBusinessEventService);
+	}
+
+	@Test
+	public void testGetProjectsProductVersions() throws Exception {
+		Mockito.when(
+			_jiraBusinessEventService.getJiraProductVersions()
+		).thenReturn(
+			Collections.singletonList(
+				new JiraProductVersion(
+					new JSONObject(
+					).put(
+						"id", "10001"
+					).put(
+						"name", "2025.Q1"
+					)))
+		);
+
+		ResponseEntity<String> responseEntity =
+			_businessEventsRestController.getProjectsProductVersions(
+				null, _PROJECT_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONArray itemsJSONArray = _getItemsJSONArray(responseEntity);
+
+		Assertions.assertEquals(1, itemsJSONArray.length());
+
+		JSONObject itemJSONObject = itemsJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals("10001", itemJSONObject.getString("id"));
+		Assertions.assertEquals("2025.Q1", itemJSONObject.getString("name"));
+
+		Mockito.verify(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+	}
+
+	@Test
+	public void testGetProjectsProductVersionsWithoutPermission()
+		throws Exception {
+
+		_denyPermission(ActionKeys.VIEW);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _businessEventsRestController.getProjectsProductVersions(
+				null, _PROJECT_ERC));
 
 		Mockito.verifyNoInteractions(_jiraBusinessEventService);
 	}

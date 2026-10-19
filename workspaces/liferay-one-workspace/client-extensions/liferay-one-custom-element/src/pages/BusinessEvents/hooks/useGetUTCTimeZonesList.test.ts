@@ -26,11 +26,14 @@ describe('[HOOK-BUSINESSEVENTS-USEGETUTCTIMEZONESLIST] useGetUTCTimeZonesList', 
 			],
 		});
 
-		const {result} = renderHook(() => useGetUTCTimeZonesList());
+		const {result} = renderHook(() => useGetUTCTimeZonesList('PRJCT-1'));
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
-		expect(getBusinessEventFieldOptions).toHaveBeenCalledWith('Time Zone');
+		expect(getBusinessEventFieldOptions).toHaveBeenCalledWith(
+			'Time Zone',
+			'PRJCT-1'
+		);
 		expect(result.current).toEqual({
 			error: false,
 			loading: false,
@@ -46,7 +49,7 @@ describe('[HOOK-BUSINESSEVENTS-USEGETUTCTIMEZONESLIST] useGetUTCTimeZonesList', 
 			new Error('failed')
 		);
 
-		const {result} = renderHook(() => useGetUTCTimeZonesList());
+		const {result} = renderHook(() => useGetUTCTimeZonesList('PRJCT-1'));
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -55,5 +58,11 @@ describe('[HOOK-BUSINESSEVENTS-USEGETUTCTIMEZONESLIST] useGetUTCTimeZonesList', 
 			loading: false,
 			utcTimeZonesList: [],
 		});
+	});
+
+	it('does not fetch without a project', () => {
+		renderHook(() => useGetUTCTimeZonesList());
+
+		expect(getBusinessEventFieldOptions).not.toHaveBeenCalled();
 	});
 });

@@ -26,11 +26,16 @@ describe('[HOOK-BUSINESSEVENTS-USEGETBUSINESSEVENTTYPESLIST] useGetBusinessEvent
 			],
 		});
 
-		const {result} = renderHook(() => useGetBusinessEventTypesList());
+		const {result} = renderHook(() =>
+			useGetBusinessEventTypesList('PRJCT-1')
+		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
-		expect(getBusinessEventFieldOptions).toHaveBeenCalledWith('Event Type');
+		expect(getBusinessEventFieldOptions).toHaveBeenCalledWith(
+			'Event Type',
+			'PRJCT-1'
+		);
 		expect(result.current).toEqual({
 			businessEventTypesList: [
 				{label: 'Go Live', value: 'go-live'},
@@ -46,7 +51,9 @@ describe('[HOOK-BUSINESSEVENTS-USEGETBUSINESSEVENTTYPESLIST] useGetBusinessEvent
 			new Error('failed')
 		);
 
-		const {result} = renderHook(() => useGetBusinessEventTypesList());
+		const {result} = renderHook(() =>
+			useGetBusinessEventTypesList('PRJCT-1')
+		);
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -55,5 +62,11 @@ describe('[HOOK-BUSINESSEVENTS-USEGETBUSINESSEVENTTYPESLIST] useGetBusinessEvent
 			error: true,
 			loading: false,
 		});
+	});
+
+	it('does not fetch without a project', () => {
+		renderHook(() => useGetBusinessEventTypesList());
+
+		expect(getBusinessEventFieldOptions).not.toHaveBeenCalled();
 	});
 });
