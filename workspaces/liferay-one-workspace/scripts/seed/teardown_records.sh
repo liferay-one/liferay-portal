@@ -9,6 +9,7 @@ function main {
 	_delete_usage_reports
 	_delete_entitlements
 	_delete_license_keys
+	_delete_environments
 	_delete_contracts
 	_delete_project_memberships
 	_delete_projects
@@ -44,6 +45,12 @@ function _delete_entitlements {
 	_log "Deleting entitlements..."
 
 	_delete_object_entries "C_ENTITLEMENT"
+}
+
+function _delete_environments {
+	_log "Deleting environments..."
+
+	_delete_object_entries "C_ENVIRONMENT"
 }
 
 function _delete_license_keys {

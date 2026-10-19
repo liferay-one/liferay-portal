@@ -13,7 +13,7 @@
 		"title": "LicenseKey entitlement link is split between a field and a relationship"
 	},
 	{
-		"body": "publisherToCommerceOrder is cascade. Set it to disassociate. The 2026-10-15 fix was lost before it was committed (Go-Live Tasks D1, T2.1).",
+		"body": "publisherToCommerceOrder is disassociate, so deleting a Publisher Sales Summary keeps its Commerce Orders (Go-Live Tasks D1, T2.1).",
 		"edges": [
 			"publisherToCommerceOrder"
 		],
@@ -21,7 +21,7 @@
 			"C_PUBLISHER_SALES_SUMMARY",
 			"L_COMMERCE_ORDER"
 		],
-		"sev": "high",
+		"sev": "fixed",
 		"title": "Deleting a Publisher Sales Summary deletes its Commerce Orders",
 		"verify": {
 			"deletion": {
@@ -30,7 +30,7 @@
 		}
 	},
 	{
-		"body": "entitlementDefinitionToEntitlement is cascade. Set it to prevent, and set active: false to retire a definition. The 2026-10-15 fix was lost (Go-Live Tasks D2, T2.1).",
+		"body": "entitlementDefinitionToEntitlement is prevent, so a definition with entitlements cannot be deleted. Set active: false to retire a definition (Go-Live Tasks D2, T2.1).",
 		"edges": [
 			"entitlementDefinitionToEntitlement"
 		],
@@ -38,7 +38,7 @@
 			"C_ENTITLEMENT_DEFINITION",
 			"C_ENTITLEMENT"
 		],
-		"sev": "high",
+		"sev": "fixed",
 		"title": "Deleting an Entitlement Definition deletes its entitlements",
 		"verify": {
 			"deletion": {
@@ -47,7 +47,7 @@
 		}
 	},
 	{
-		"body": "contractToEnvironment and contractToEntitlement are cascade, while the account and project links are disassociate. Set both to disassociate and make teardown_records.sh delete environments itself. The 2026-10-15 fix was lost (Go-Live Tasks D3, T2.1).",
+		"body": "contractToEnvironment and contractToEntitlement are disassociate, like the account and project links, and teardown_records.sh deletes environments itself (Go-Live Tasks D3, T2.1).",
 		"edges": [
 			"contractToEnvironment",
 			"contractToEntitlement"
@@ -57,7 +57,7 @@
 			"C_ENVIRONMENT",
 			"C_ENTITLEMENT"
 		],
-		"sev": "high",
+		"sev": "fixed",
 		"title": "Deleting a Contract deletes its Environments and Entitlements",
 		"verify": {
 			"deletion": {
