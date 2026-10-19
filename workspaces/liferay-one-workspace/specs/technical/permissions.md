@@ -432,14 +432,14 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `POST /dxp/provisioning/{orderId}` | CommerceOrderPermission | yes | `DXPRestController.java:74` |
 | `POST /entitlements/generate` | None | no | `EntitlementsRestController.java:23` |
 | `GET /invitations/accept` | None. Public path. The invitation token is the check. | no | `AccountInvitationsRestController.java:33` |
-| `GET /jira/business-events/fields/{fieldName}/options` | None. Reads Jira field options. | no | `BusinessEventsRestController.java:57` |
-| `GET /jira/product-versions` | None. Reads Jira product versions. | no | `BusinessEventsRestController.java:67` |
 | `GET /jira/projects/{externalReferenceCode}/business-events` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:74` |
 | `POST /jira/projects/{externalReferenceCode}/business-events` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:121` |
 | `DELETE /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:43` |
 | `GET /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:87` |
 | `PUT /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:141` |
 | `GET /jira/projects/{externalReferenceCode}/business-events/{id}/versions` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:105` |
+| `GET /jira/projects/{externalReferenceCode}/business-events/fields/{fieldName}/options` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:93` |
+| `GET /jira/projects/{externalReferenceCode}/product-versions` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:127` |
 | `GET /jira/projects/{externalReferenceCode}/tickets` | ProjectPermission (VIEW) | yes | `JiraRestController.java:31` |
 | `GET /license-keys/developer-download` | ProjectPermission (VIEW) | yes | `LicenseKeysRestController.java:82` |
 | `GET /license-keys/download` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:153` |
