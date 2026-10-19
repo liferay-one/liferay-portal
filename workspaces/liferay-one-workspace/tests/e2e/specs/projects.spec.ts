@@ -106,7 +106,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] project navigation', () => {
 		page,
 		signIn,
 	}) => {
-		await signIn('PROJECT_USER');
+		await signIn('NULL_PROJECT_MEMBER');
 
 		await gotoMyAccount(
 			page,
@@ -376,17 +376,6 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 		await expect(page).toHaveURL(
 			/activation\/generate\?new=PRDCT-TEST-CLIENT-EXTENSION/
 		);
-
-		test.fail(
-			true,
-			'Create License Key on a One-Time Purchases application opens the generate wizard for the pseudo project, which the generate form endpoint refuses.'
-		);
-
-		test.info().annotations.push({
-			description:
-				'GET /activation-keys/generate-form?projectExternalReferenceCode=one-time-purchases returns 403, so the wizard renders "An unexpected error occurred."',
-			type: 'issue',
-		});
 
 		await expect(
 			page.getByText('An unexpected error occurred.')

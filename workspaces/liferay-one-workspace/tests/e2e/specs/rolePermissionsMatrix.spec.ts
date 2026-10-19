@@ -48,21 +48,13 @@ const KNOWN_DEFECTS: Record<string, string> = {
 		'An Account Buyer with no project membership lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
 		PLACED_ORDERS_404,
 	'Account Member — Account Orders': PLACED_ORDERS_404,
-	'No Role (null) — Account Members list':
-		'The page loads the invitations from the Spring Boot client extension first, which refuses a user without an account role, so the page shows "An error occurred while fetching the data. Forbidden" instead of the member list.',
 	'No Role (null) — Projects':
 		'A user without an account role or project lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
 		PLACED_ORDERS_404,
-	'No Role (null) — no project membership':
-		'The Account Members list shows "An error occurred while fetching the data. Forbidden" for a user without an account role (see the No Role (null) — Account Members list cell).',
 	'No Role (null), project member — assigned project': `The assigned project opens, but its Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Partner Account Admin — Account Details':
 		'Account Details renders no edit control for any role, so a partner administrator cannot change the account details the matrix grants them.',
-	'Partner Account Admin — Account Members list':
-		'The Spring Boot invitations read refuses a Partner Account Admin, so the page shows "An error occurred while fetching the data. Forbidden" and no Invite Member action.',
 	'Partner Account Admin — Account Orders': PLACED_ORDERS_404,
-	'Partner Account Admin — Projects':
-		'A Partner Account Admin is not treated as an account manager, sees none of the account projects, and lands on the One-Time Purchases pseudo-project with "An error occurred while fetching the data."',
 	'Project Admin — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Project Requester — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Project User — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
@@ -234,7 +226,7 @@ const ACCOUNT_LEVEL_MATRIX: Array<{
 		access: {
 			'Account Admin': 'full',
 			'Account Buyer': 'none',
-			'Account Member': 'view',
+			'Account Member': 'full',
 			'No Role (null)': 'none',
 			'Partner Account Admin': 'full',
 		},
