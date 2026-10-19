@@ -19,6 +19,7 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
@@ -44,6 +45,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -854,6 +856,7 @@ public class LicenseKeysRestControllerTest {
 		Assertions.assertSame(
 			licenseKey,
 			licenseKeysRestController.postLicenseKeysTypeFree(
+				_jwt,
 				"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
 					"\"owner\": \"owner@example.com\"}"));
 
@@ -909,6 +912,31 @@ public class LicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostLicenseKeysTypeFreeRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			999L, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> licenseKeysRestController.postLicenseKeysTypeFree(
+				_jwt,
+				"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
+					"\"owner\": \"owner@example.com\"}"));
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
 	public void testPostLicenseKeysTypeFreeRejectsOrderWithoutItems()
 		throws Exception {
 
@@ -933,6 +961,7 @@ public class LicenseKeysRestControllerTest {
 			Assertions.assertThrows(
 				ResponseStatusException.class,
 				() -> licenseKeysRestController.postLicenseKeysTypeFree(
+					_jwt,
 					"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
 						"\"owner\": \"owner@example.com\"}"));
 
@@ -1065,6 +1094,9 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_commerceOrderPermission",
+			_commerceOrderPermission);
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_commerceOrderService",
 			_commerceOrderService);
 
@@ -1162,11 +1194,14 @@ public class LicenseKeysRestControllerTest {
 
 	private static final long _USER_ID = 123L;
 
+	private final CommerceOrderPermission _commerceOrderPermission =
+		Mockito.mock(CommerceOrderPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);
+	private final Jwt _jwt = Mockito.mock(Jwt.class);
 	private final LicenseKeyExporter _licenseKeyExporter = Mockito.mock(
 		LicenseKeyExporter.class);
 	private final LicenseKeyGenerationService _licenseKeyGenerationService =

@@ -5,7 +5,9 @@
 
 package com.liferay.one;
 
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
 
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -25,13 +28,16 @@ public class EntitlementsRestControllerTest {
 		_entitlementsRestController = new EntitlementsRestController();
 
 		ReflectionTestUtils.setField(
+			_entitlementsRestController, "_adminPermission", _adminPermission);
+		ReflectionTestUtils.setField(
 			_entitlementsRestController, "_entitlementService",
 			_entitlementService);
 	}
 
 	@Test
 	public void testPostEntitlementsGenerate() throws Exception {
-		_entitlementsRestController.postEntitlementsGenerate(_ORDER_ITEM_ID);
+		_entitlementsRestController.postEntitlementsGenerate(
+			_jwt, _ORDER_ITEM_ID);
 
 		Mockito.verify(
 			_entitlementService
@@ -60,13 +66,36 @@ public class EntitlementsRestControllerTest {
 			Assertions.assertThrows(
 				IllegalArgumentException.class,
 				() -> _entitlementsRestController.postEntitlementsGenerate(
-					_ORDER_ITEM_ID)));
+					_jwt, _ORDER_ITEM_ID)));
+	}
+
+	@Test
+	public void testPostEntitlementsGenerateRequiresAnAdministrator()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			_jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _entitlementsRestController.postEntitlementsGenerate(
+				_jwt, _ORDER_ITEM_ID));
+
+		Mockito.verifyNoInteractions(_entitlementService);
 	}
 
 	private static final long _ORDER_ITEM_ID = 3000L;
 
+	private final AdminPermission _adminPermission = Mockito.mock(
+		AdminPermission.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private EntitlementsRestController _entitlementsRestController;
+	private final Jwt _jwt = Mockito.mock(Jwt.class);
 
 }

@@ -7,8 +7,10 @@ package com.liferay.one;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Map;
@@ -24,6 +26,7 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -39,6 +42,9 @@ public class LiferayDataPlatformRestControllerTest {
 		ReflectionTestUtils.setField(
 			_liferayDataPlatformRestController, "_analyticsCloudService",
 			_analyticsCloudService);
+		ReflectionTestUtils.setField(
+			_liferayDataPlatformRestController, "_commerceOrderPermission",
+			_commerceOrderPermission);
 		ReflectionTestUtils.setField(
 			_liferayDataPlatformRestController, "_commerceOrderService",
 			_commerceOrderService);
@@ -61,7 +67,7 @@ public class LiferayDataPlatformRestControllerTest {
 		Assertions.assertThrows(
 			IllegalStateException.class,
 			() -> _liferayDataPlatformRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 
 		Mockito.verify(
 			_commerceOrderService
@@ -77,7 +83,8 @@ public class LiferayDataPlatformRestControllerTest {
 
 		_setUpOrder(_createOrder("  //acme  "));
 
-		_liferayDataPlatformRestController.postProvisioningOrder(_ORDER_ID);
+		_liferayDataPlatformRestController.postProvisioningOrder(
+			_jwt, _ORDER_ID);
 
 		ArgumentCaptor<JSONObject> argumentCaptor = ArgumentCaptor.forClass(
 			JSONObject.class);
@@ -102,7 +109,8 @@ public class LiferayDataPlatformRestControllerTest {
 		_setUpOrder(_createOrder(null));
 
 		ResponseEntity<Void> responseEntity =
-			_liferayDataPlatformRestController.postProvisioningOrder(_ORDER_ID);
+			_liferayDataPlatformRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -123,6 +131,30 @@ public class LiferayDataPlatformRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisioningOrderRejectsCallerWithoutOrderPermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_commerceOrderPermission
+		).check(
+			_ORDER_ID, _jwt
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _liferayDataPlatformRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).fetchCommerceOrder(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testPostProvisioningOrderReusesExistingWorkspace()
 		throws Exception {
 
@@ -139,7 +171,8 @@ public class LiferayDataPlatformRestControllerTest {
 		);
 
 		ResponseEntity<Void> responseEntity =
-			_liferayDataPlatformRestController.postProvisioningOrder(_ORDER_ID);
+			_liferayDataPlatformRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -168,7 +201,8 @@ public class LiferayDataPlatformRestControllerTest {
 		_setUpOrder(order);
 
 		ResponseEntity<Void> responseEntity =
-			_liferayDataPlatformRestController.postProvisioningOrder(_ORDER_ID);
+			_liferayDataPlatformRestController.postProvisioningOrder(
+				_jwt, _ORDER_ID);
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseEntity.getStatusCode());
@@ -189,7 +223,7 @@ public class LiferayDataPlatformRestControllerTest {
 		Assertions.assertThrows(
 			IllegalArgumentException.class,
 			() -> _liferayDataPlatformRestController.postProvisioningOrder(
-				_ORDER_ID));
+				_jwt, _ORDER_ID));
 	}
 
 	private Map<String, String> _createCustomFields(
@@ -260,8 +294,11 @@ public class LiferayDataPlatformRestControllerTest {
 
 	private final AnalyticsCloudService _analyticsCloudService = Mockito.mock(
 		AnalyticsCloudService.class);
+	private final CommerceOrderPermission _commerceOrderPermission =
+		Mockito.mock(CommerceOrderPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
+	private final Jwt _jwt = Mockito.mock(Jwt.class);
 	private LiferayDataPlatformRestController
 		_liferayDataPlatformRestController;
 
