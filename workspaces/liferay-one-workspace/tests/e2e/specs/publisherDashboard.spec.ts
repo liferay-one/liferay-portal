@@ -221,14 +221,6 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 
 			await gotoPublisherDashboard(page, 'publisher-profile');
 
-			test.info().annotations.push({
-				description:
-					'services/objects/PublisherDetails.ts reads /o/c/publisherdetails, which returns 404; the object is served at /o/c/publisherdetailses, so every field renders "-".',
-				type: 'issue',
-			});
-
-			test.fail();
-
 			await expect(page.getByText('3 Apps · 2 Solutions')).toBeVisible();
 
 			await expect(
@@ -252,7 +244,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 			const {items} = await adminAPI.get<{
 				items: Array<{id: number; phone: string}>;
 			}>(
-				`/o/c/publisherdetailses?filter=${encodeURIComponent(
+				`/o/c/publisherdetails?filter=${encodeURIComponent(
 					"publisherName eq 'Test Supplier'"
 				)}`
 			);
@@ -279,14 +271,6 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 
 				await page.locator('#publisher-phone').fill(phone);
 
-				test.info().annotations.push({
-					description:
-						'The edit page reads and PATCHes /o/c/publisherdetails, which returns 404, so Save shows "There is no publisher profile to update".',
-					type: 'issue',
-				});
-
-				test.fail();
-
 				await page.getByRole('button', {name: 'Save'}).click();
 
 				await expect(page).toHaveURL(/#\/publisher-profile$/);
@@ -295,7 +279,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 			}
 			finally {
 				await adminAPI.patch(
-					`/o/c/publisherdetailses/${publisherDetails.id}`,
+					`/o/c/publisherdetails/${publisherDetails.id}`,
 					{phone: publisherDetails.phone}
 				);
 			}
