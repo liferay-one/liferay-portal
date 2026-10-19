@@ -1585,6 +1585,28 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyLimitsAProductionKeyToOneServer()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlement(1L, 5.0, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L), 1L, 1));
+
+		Assertions.assertEquals(
+			Collections.singletonList(1),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 10));
+		Assertions.assertEquals(
+			Collections.singletonList(1),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 9));
+	}
+
+	@Test
 	public void testGenerateActivationKeyMakesAProductionKeyPermanent()
 		throws Exception {
 
