@@ -70,7 +70,7 @@ describe('[CLIENT-SPRING-BOOT-JIRA] Jira', () => {
 		);
 
 		await getBusinessEvents('PRJCT-1');
-		await getProductVersions();
+		await getProductVersions('PRJCT-1');
 
 		expect(fromUserAgentApplication).toHaveBeenCalledTimes(2);
 		expect(fromUserAgentApplication).toHaveBeenCalledWith(
@@ -99,32 +99,37 @@ describe('[CLIENT-SPRING-BOOT-JIRA] Jira', () => {
 			Promise.resolve(jsonResponse({items: [{id: 1}]}))
 		);
 
-		await expect(getBusinessEventFieldOptions('priority')).resolves.toEqual(
-			{items: [{id: 1}]}
-		);
+		await expect(
+			getBusinessEventFieldOptions('priority', 'PRJCT-1')
+		).resolves.toEqual({items: [{id: 1}]});
 		await expect(getBusinessEvents('PRJCT-1')).resolves.toEqual({
 			items: [{id: 1}],
 		});
-		await expect(getProductVersions()).resolves.toEqual({
+		await expect(getProductVersions('PRJCT-1')).resolves.toEqual({
 			items: [{id: 1}],
 		});
 		expect(oAuth2Fetch.mock.calls).toEqual([
-			['/jira/business-events/fields/priority/options', undefined],
+			[
+				'/jira/projects/PRJCT-1/business-events/fields/priority/options',
+				undefined,
+			],
 			['/jira/projects/PRJCT-1/business-events', undefined],
-			['/jira/product-versions', undefined],
+			['/jira/projects/PRJCT-1/product-versions', undefined],
 		]);
 	});
 
 	it('returns empty items for the list getters on a non ok response', async () => {
 		oAuth2Fetch.mockImplementation(() => Promise.resolve(errorResponse()));
 
-		await expect(getBusinessEventFieldOptions('priority')).resolves.toEqual(
-			{items: []}
-		);
+		await expect(
+			getBusinessEventFieldOptions('priority', 'PRJCT-1')
+		).resolves.toEqual({items: []});
 		await expect(getBusinessEvents('PRJCT-1')).resolves.toEqual({
 			items: [],
 		});
-		await expect(getProductVersions()).resolves.toEqual({items: []});
+		await expect(getProductVersions('PRJCT-1')).resolves.toEqual({
+			items: [],
+		});
 	});
 
 	it('sends no query string when there are no ticket IDs', async () => {
