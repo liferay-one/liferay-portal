@@ -15,6 +15,8 @@ import java.net.URI;
 
 import java.nio.charset.StandardCharsets;
 
+import java.time.Instant;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -38,6 +40,8 @@ import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import reactor.core.publisher.Mono;
 
 /**
  * @author Amos Fong
@@ -139,14 +143,29 @@ public abstract class OneBaseService extends BaseService {
 		).andThen(
 			(clientRequest, exchangeFunction) -> exchangeFunction.exchange(
 				clientRequest
-			).doOnNext(
+			).flatMap(
 				clientResponse -> {
 					int statusCode = clientResponse.statusCode(
 					).value();
 
-					if (statusCode == 403) {
-						_logForbidden(clientRequest);
+					if (statusCode != 403) {
+						return Mono.just(clientResponse);
 					}
+
+					return clientResponse.bodyToMono(
+						String.class
+					).defaultIfEmpty(
+						""
+					).map(
+						body -> {
+							_logForbidden(body, clientRequest);
+
+							return clientResponse.mutate(
+							).body(
+								body
+							).build();
+						}
+					);
 				}
 			)
 		);
@@ -251,9 +270,9 @@ public abstract class OneBaseService extends BaseService {
 		return "c_" + objectName;
 	}
 
-	private String _getTokenScope(String authorization) {
+	private JSONObject _getTokenClaimsJSONObject(String authorization) {
 		if ((authorization == null) || !authorization.startsWith("Bearer ")) {
-			return "";
+			return new JSONObject();
 		}
 
 		try {
@@ -264,7 +283,7 @@ public abstract class OneBaseService extends BaseService {
 			int secondIndex = token.indexOf('.', firstIndex + 1);
 
 			if ((firstIndex < 0) || (secondIndex < 0)) {
-				return "";
+				return new JSONObject();
 			}
 
 			String payload = new String(
@@ -274,47 +293,56 @@ public abstract class OneBaseService extends BaseService {
 				),
 				StandardCharsets.UTF_8);
 
-			JSONObject jsonObject = new JSONObject(payload);
-
-			return jsonObject.optString("scope");
+			return new JSONObject(payload);
 		}
 		catch (RuntimeException runtimeException) {
 			if (_log.isDebugEnabled()) {
-				_log.debug("Unable to read the token scope", runtimeException);
+				_log.debug("Unable to read the token claims", runtimeException);
 			}
 
-			return "";
+			return new JSONObject();
 		}
 	}
 
-	private void _logForbidden(ClientRequest clientRequest) {
+	private void _logForbidden(String body, ClientRequest clientRequest) {
 		if (!_log.isWarnEnabled()) {
 			return;
 		}
 
 		URI uri = clientRequest.url();
 
-		String tokenScope = _getTokenScope(
+		JSONObject tokenClaimsJSONObject = _getTokenClaimsJSONObject(
 			clientRequest.headers(
 			).getFirst(
 				HttpHeaders.AUTHORIZATION
 			));
 
+		String tokenScope = tokenClaimsJSONObject.optString("scope");
+
 		String objectScope = _getObjectScope(uri);
 
+		String message = null;
+
 		if ((objectScope != null) && !tokenScope.contains(objectScope)) {
-			_log.warn(
-				StringBundler.concat(
-					"Received a 403 from ", uri,
-					". The service account token is missing the ", objectScope,
-					" scope. The token scopes are ", tokenScope));
+			message = StringBundler.concat(
+				"Received a 403 from ", uri,
+				". The service account token is missing the ", objectScope,
+				" scope.");
 		}
 		else {
-			_log.warn(
-				StringBundler.concat(
-					"Received a 403 from ", uri, ". The token scopes are ",
-					tokenScope));
+			message = StringBundler.concat("Received a 403 from ", uri, ".");
 		}
+
+		_log.warn(
+			StringBundler.concat(
+				message, " The token client ID is ",
+				tokenClaimsJSONObject.optString("client_id"),
+				", the subject is ", tokenClaimsJSONObject.optString("sub"),
+				", the issuer is ", tokenClaimsJSONObject.optString("iss"),
+				", and the token was issued at ",
+				Instant.ofEpochSecond(tokenClaimsJSONObject.optLong("iat")),
+				". The response body is ", StringUtil.shorten(body, 1000),
+				". The token scopes are ", tokenScope));
 	}
 
 	private static final int _PAGE_SIZE = 500;
