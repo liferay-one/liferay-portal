@@ -1,0 +1,42 @@
+[
+	{
+		"match": "liferay-marketplace-etc-spring-boot-marketplace-product-submit",
+		"reason": "Not in the audit yet. The executor may be deployed from another workspace. Confirm, then fix or record it",
+		"visual": "events"
+	},
+	{
+		"match": "liferay-one-etc-spring-boot-object-action-usage-report-approved",
+		"reason": "Go-Live Tasks I5",
+		"visual": "events"
+	},
+	{
+		"match": "gives User scope 1 VIEW on Environment,",
+		"reason": "Go-Live Tasks S6",
+		"visual": "permission-matrix"
+	},
+	{
+		"match": "gives User scope 1 VIEW on UsageEvent,",
+		"reason": "Go-Live Tasks S6",
+		"visual": "permission-matrix"
+	},
+	{
+		"match": "GET /contacts/{contactEmailAddress}/validate (",
+		"reason": "Not in the audit yet. Any caller learns whether an email address has an Okta user. Decide whether it needs a Jwt, then fix it or record it as public",
+		"visual": "apis"
+	},
+	{
+		"match": "GET /jira/business-events/fields/{fieldName}/options (",
+		"reason": "Not in the audit yet. Reads Jira field options with the sidecar's Jira credentials for any caller. Decide whether it needs a Jwt, then fix it or record it as public",
+		"visual": "apis"
+	},
+	{
+		"match": "GET /jira/product-versions (",
+		"reason": "Not in the audit yet. Reads the Jira product versions with the sidecar's Jira credentials for any caller. Decide whether it needs a Jwt, then fix it or record it as public",
+		"visual": "apis"
+	},
+	{
+		"match": "GET /orders/export",
+		"reason": "Go-Live Tasks I6",
+		"visual": "apis"
+	}
+]

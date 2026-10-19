@@ -37,7 +37,13 @@
 		"test:report": "yarn workspace @liferay/liferay-one-workspace-tests test:report",
 		"test:ui": "yarn workspace @liferay/liferay-one-workspace-tests test:ui",
 		"test:unit": "yarn workspace @liferay/liferay-one-custom-element test",
-		"typecheck": "yarn workspace @liferay/liferay-one-workspace-tests typecheck"
+		"typecheck": "yarn workspace @liferay/liferay-one-workspace-tests typecheck",
+		"viz": "node tools/visuals/build.ts",
+		"viz:check": "node tools/visuals/build.ts --check",
+		"viz:deps": "node tools/visuals/workspace-health/fetch-dependencies.ts",
+		"viz:diff": "node tools/visuals/diff.ts",
+		"viz:env": "node --use-system-ca tools/visuals/environment-drift/fetch.ts",
+		"viz:tests": "node tools/visuals/workspace-health/fetch-tests.ts"
 	},
 	"workspaces": {
 		"packages": [

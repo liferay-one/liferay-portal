@@ -1,0 +1,416 @@
+<title>Object Model</title>
+
+<style>
+/* Layout: a schema sheet. Header and counts, then a full width pannable diagram beside an inspector. */
+
+:root {
+	--wrap-width: 1680px;
+	--cascade: var(--critical);
+	--prevent: var(--medium);
+	--disassociate: var(--quiet);
+	--soft: #7b4fb8;
+	--fixed: var(--ok);
+	--d-marketplace: #a35a2a;
+	--d-commerce: #2f6fb0;
+	--d-requests: #8a6d00;
+	--d-core: #0f6e63;
+	--d-project: #6a52a8;
+	--d-subscription: #a33b63;
+	--d-environment: #3c7f3a;
+	--d-unassigned: var(--muted);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) { --soft: #b493ea; --d-marketplace: #e0925c; --d-commerce: #6ea8e6; --d-requests: #d6b84a; --d-core: #4cc2b0; --d-project: #a993e6; --d-subscription: #e57ba3; --d-environment: #7cc479; }
+}
+:root[data-theme="dark"] { --soft: #b493ea; --d-marketplace: #e0925c; --d-commerce: #6ea8e6; --d-requests: #d6b84a; --d-core: #4cc2b0; --d-project: #a993e6; --d-subscription: #e57ba3; --d-environment: #7cc479; }
+.workbench { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .workbench { grid-template-columns: minmax(0, 1fr); } }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-bottom: none; border-radius: 10px 10px 0 0; }
+.toolbar .sep { width: 1px; height: 22px; background: var(--line); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; font-size: 12.5px; cursor: pointer; }
+.chip[aria-pressed="false"] { opacity: 0.45; }
+.chip:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swatch { width: 18px; height: 0; border-top: 2.5px solid currentColor; }
+.swatch.dash { border-top-style: dashed; }
+#search { flex: 1 1 160px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; font-size: 13px; }
+.canvas { position: relative; height: 560px; background: var(--surface); border: 1px solid var(--line); border-radius: 0 0 10px 10px; overflow: hidden; }
+.canvas svg { width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; user-select: none; }
+.canvas svg.dragging { cursor: grabbing; }
+.hint { position: absolute; left: 10px; bottom: 8px; font-size: 11.5px; color: var(--muted); pointer-events: none; }
+
+.dom-title { font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+.dom-bg { fill: var(--surface-2); opacity: 0.55; }
+.node rect.card { fill: var(--surface); stroke: var(--line); stroke-width: 1; }
+.node.system rect.card { stroke-dasharray: 5 3; }
+.node.virtual rect.card { stroke-dasharray: 2 3; fill: var(--surface-2); }
+.node .lbl { font-family: var(--font-body); font-size: 13px; font-weight: 600; fill: var(--fg); }
+.node .sub { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); }
+.node .cnt { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); text-anchor: end; }
+.node { cursor: pointer; }
+.node:hover rect.card, .node.sel rect.card { stroke: var(--accent); stroke-width: 2; }
+.edge path.hit { stroke: transparent; stroke-width: 12; fill: none; cursor: pointer; }
+.edge path.vis { fill: none; stroke-width: 1.4; opacity: 0.55; }
+.edge.cascade path.vis { stroke: var(--cascade); }
+.edge.prevent path.vis { stroke: var(--prevent); }
+.edge.disassociate path.vis { stroke: var(--disassociate); }
+.edge.soft path.vis { stroke: var(--soft); stroke-dasharray: 5 4; }
+.edge text { font-family: var(--font-mono); font-size: 10.5px; fill: var(--fg); paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; display: none; }
+svg.focus .node:not(.on) { opacity: 0.22; }
+svg.focus .edge:not(.on) { opacity: 0.06; }
+svg.focus .edge.on path.vis { opacity: 1; stroke-width: 2.2; }
+svg.focus .edge.on text { display: block; }
+svg.focus .dom-title { opacity: 0.5; }
+.hidden-kind { display: none; }
+
+aside.inspector { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; max-height: 80vh; overflow: auto; min-width: 0; }
+.inspector .empty { color: var(--muted); }
+.inspector .empty ul { padding-left: 18px; margin: 8px 0 0; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; background: var(--surface-2); color: var(--muted); margin: 1px 2px 1px 0; white-space: nowrap; }
+.tag.soft { color: var(--soft); }
+.tag.req { color: var(--accent); }
+.del { font-family: var(--font-mono); font-size: 11.5px; font-weight: 500; }
+.del.cascade { color: var(--cascade); } .del.prevent { color: var(--prevent); } .del.disassociate { color: var(--disassociate); } .del.soft { color: var(--soft); }
+.dom-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.dom-pill i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+.legend-note { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+@media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity 120ms ease; } }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">batch CE files 00 to 05 · <span id="generated"></span></div>
+
+		<h1>Object Model</h1>
+
+		<p>Every object, relationship, and soft link that the batch client extension defines. Select an object to see its fields and links.</p>
+
+		<div class="counts" id="counts"></div>
+	</header>
+
+	<div class="workbench">
+		<div style="min-width:0">
+			<div aria-label="Diagram filters" class="toolbar" role="toolbar">
+				<button class="chip" id="k-cascade" aria-pressed="true" style="color:var(--cascade)"><span class="swatch"></span><span style="color:var(--fg)">cascade</span></button>
+				<button class="chip" id="k-prevent" aria-pressed="true" style="color:var(--prevent)"><span class="swatch"></span><span style="color:var(--fg)">prevent</span></button>
+				<button class="chip" id="k-disassociate" aria-pressed="true" style="color:var(--disassociate)"><span class="swatch"></span><span style="color:var(--fg)">disassociate</span></button>
+				<button class="chip" id="k-soft" aria-pressed="true" style="color:var(--soft)"><span class="swatch dash"></span><span style="color:var(--fg)">soft link</span></button>
+
+				<span class="sep"></span>
+
+				<input aria-label="Find an object or field" id="search" placeholder="Find an object or field" type="search" />
+
+				<button class="btn" id="zin" aria-label="Zoom in">+</button>
+				<button class="btn" id="zout" aria-label="Zoom out">−</button>
+				<button class="btn" id="fit">Fit</button>
+			</div>
+
+			<div class="canvas">
+				<svg aria-label="Object relationship diagram" id="svg" role="img"></svg>
+
+				<div class="hint">Drag to pan. Pinch or Ctrl and scroll to zoom. Esc clears the selection.</div>
+			</div>
+		</div>
+
+		<aside aria-live="polite" class="inspector" id="inspector"></aside>
+	</div>
+
+	<footer>Generated from <code>client-extensions/liferay-one-batch/batch/</code> and <code>liferay-one-site-initializer/site-initializer/expando-columns.json</code>. Card borders: solid is a custom object, dashed is a Liferay system object, dotted is a Liferay entity with no object definition.</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const LAYOUT = DATA.domains.map(d => [d.id, d.members]);
+
+document.getElementById("generated").textContent = DATA.generated;
+
+const NS = "http://www.w3.org/2000/svg";
+const N = DATA.nodes;
+const CW = 236, CH = 52, ROW = 70, COLP = 296, TOP = 56, PADX = 30;
+const svg = document.getElementById("svg");
+const inspector = document.getElementById("inspector");
+const domLabel = Object.fromEntries(DATA.domains.map(d => [d.id, d.label]));
+
+function el(tag, attrs = {}, parent) {
+	const e = document.createElementNS(NS, tag);
+	for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+	if (parent) parent.appendChild(e);
+	return e;
+}
+
+const maxRows = Math.max(...LAYOUT.map(([, m]) => m.length));
+const H = TOP + maxRows * ROW + 20;
+const W = PADX * 2 + LAYOUT.length * COLP - (COLP - CW);
+const pos = {};
+LAYOUT.forEach(([dom, members], c) => {
+	const x = PADX + c * COLP;
+	const offset = (maxRows - members.length) * ROW / 2;
+	members.forEach((erc, r) => { pos[erc] = {x, y: TOP + offset + r * ROW, col: c}; });
+});
+
+const root = el("g", {}, svg);
+const gDom = el("g", {}, root);
+const gEdges = el("g", {}, root);
+const gNodes = el("g", {}, root);
+
+LAYOUT.forEach(([dom, members], c) => {
+	const x = PADX + c * COLP;
+	const ys = members.map(m => pos[m].y);
+	el("rect", {class: "dom-bg", x: x - 14, y: Math.min(...ys) - 34, width: CW + 28, height: Math.max(...ys) - Math.min(...ys) + CH + 48, rx: 12}, gDom);
+	const t = el("text", {class: "dom-title", x: x, y: Math.min(...ys) - 14, fill: `var(--d-${dom})`}, gDom);
+	t.textContent = domLabel[dom];
+});
+
+function fit(textEl, max) {
+	let s = textEl.textContent;
+	if (textEl.getComputedTextLength() <= max) return;
+	while (s.length > 4 && textEl.getComputedTextLength() > max) { s = s.slice(0, -1); textEl.textContent = s + "…"; }
+}
+
+const nodeEls = {};
+for (const erc of Object.keys(pos)) {
+	const n = N[erc], p = pos[erc];
+	const g = el("g", {class: `node ${n.kind}`, transform: `translate(${p.x},${p.y})`, tabindex: "0", role: "button", "aria-label": n.label}, gNodes);
+	el("rect", {class: "card", width: CW, height: CH, rx: 7}, g);
+	el("rect", {x: 0, y: 8, width: 3, height: CH - 16, rx: 1.5, fill: `var(--d-${n.domain})`}, g);
+	const fc = el("text", {class: "cnt", x: CW - 10, y: 20}, g);
+	fc.textContent = n.fields.length ? `${n.fields.length} f` : "";
+	const l = el("text", {class: "lbl", x: 13, y: 21}, g);
+	l.textContent = n.label;
+	const s = el("text", {class: "sub", x: 13, y: 39}, g);
+	s.textContent = n.erc.startsWith("X_") ? "no object definition" : n.erc;
+	let bx = CW - 10;
+	if (n.restricted) {
+		const lock = el("g", {transform: `translate(${bx - 9},29)`}, g);
+		el("rect", {x: 0, y: 5, width: 9, height: 7, rx: 1.5, fill: "var(--accent)"}, lock);
+		el("path", {d: "M2 5 V3.2 a2.5 2.5 0 0 1 5 0 V5", fill: "none", stroke: "var(--accent)", "stroke-width": 1.4}, lock);
+		lock.appendChild(document.createElementNS(NS, "title")).textContent = "Account restricted";
+		bx -= 14;
+	}
+	nodeEls[erc] = {g, l, s, fc, bx};
+	g.addEventListener("mouseenter", () => { if (!selection) highlight(new Set([erc]), neighborsEdges(erc)); });
+	g.addEventListener("mouseleave", () => { if (!selection) clearHighlight(); });
+	g.addEventListener("click", ev => { ev.stopPropagation(); selectNode(erc); });
+	g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(erc); } });
+}
+requestAnimationFrame(() => {
+	for (const erc in nodeEls) {
+		const {l, s, fc, bx} = nodeEls[erc];
+		fit(l, CW - 13 - (fc.textContent ? 40 : 10));
+		fit(s, bx - 13 - 8);
+	}
+});
+
+const relCount = {};
+const edgeEls = {};
+DATA.edges.forEach(e => {
+	const a = pos[e.from], b = pos[e.to];
+	const key = [e.from, e.to].sort().join("|");
+	const k = relCount[key] = (relCount[key] || 0) + 1;
+	const spread = (k - 1) * 7;
+	let d, mx, my;
+	if (e.from === e.to) {
+		const x = a.x + CW, y = a.y + CH / 2;
+		d = `M${x} ${y - 10} C${x + 60} ${y - 40}, ${x + 60} ${y + 40}, ${x} ${y + 10}`;
+		mx = x + 48; my = y;
+	} else if (a.col === b.col) {
+		const x = a.x + CW, y1 = a.y + CH / 2 + spread, y2 = b.y + CH / 2 + spread;
+		const bulge = 40 + Math.abs(y2 - y1) * 0.18;
+		d = `M${x} ${y1} C${x + bulge} ${y1}, ${x + bulge} ${y2}, ${x} ${y2}`;
+		mx = x + bulge * 0.75; my = (y1 + y2) / 2;
+	} else {
+		const right = b.col > a.col;
+		const x1 = right ? a.x + CW : a.x, x2 = right ? b.x : b.x + CW;
+		const y1 = a.y + CH / 2 + spread - 3, y2 = b.y + CH / 2 + spread - 3;
+		const dx = Math.max(50, Math.abs(x2 - x1) * 0.45) * (right ? 1 : -1);
+		d = `M${x1} ${y1} C${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+		mx = (x1 + x2) / 2; my = (y1 + y2) / 2;
+	}
+	const kind = e.kind === "soft" ? "soft" : e.deletion;
+	const g = el("g", {class: `edge ${kind}`}, gEdges);
+	el("path", {class: "vis", d, "marker-end": `url(#m-${kind})`}, g);
+	el("path", {class: "hit", d}, g);
+	const t = el("text", {x: mx, y: my - 4, "text-anchor": "middle"}, g);
+	t.textContent = e.name;
+	edgeEls[e.id] = {g, e};
+	g.addEventListener("click", ev => { ev.stopPropagation(); selectEdge(e.id); });
+});
+
+const defs = el("defs", {}, svg);
+["cascade", "prevent", "disassociate", "soft"].forEach(k => {
+	const m = el("marker", {id: `m-${k}`, viewBox: "0 0 12 12", refX: 11, refY: 6, markerWidth: 9, markerHeight: 9, orient: "auto-start-reverse", markerUnits: "userSpaceOnUse"}, defs);
+	el("path", {d: "M0 1 L11 6 L0 11 M11 1 L11 11", fill: "none", stroke: `var(--${k})`, "stroke-width": 1.4}, m);
+});
+
+function neighborsEdges(erc) { return new Set(DATA.edges.filter(e => e.from === erc || e.to === erc).map(e => e.id)); }
+
+let selection = null;
+function highlight(nodes, edges) {
+	edges.forEach(id => { const e = edgeEls[id].e; nodes.add(e.from); nodes.add(e.to); });
+	svg.classList.add("focus");
+	for (const erc in nodeEls) nodeEls[erc].g.classList.toggle("on", nodes.has(erc));
+	for (const id in edgeEls) edgeEls[id].g.classList.toggle("on", edges.has(id));
+}
+function clearHighlight() {
+	svg.classList.remove("focus");
+	for (const erc in nodeEls) nodeEls[erc].g.classList.remove("on", "sel");
+	for (const id in edgeEls) edgeEls[id].g.classList.remove("on");
+}
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const jump = erc => `<button class="jump" data-node="${erc}">${esc(N[erc].label)}</button>`;
+
+function selectNode(erc) {
+	selection = {node: erc};
+	highlight(new Set([erc]), neighborsEdges(erc));
+	nodeEls[erc].g.classList.add("sel");
+	const n = N[erc];
+	const out = DATA.edges.filter(e => e.from === erc), inc = DATA.edges.filter(e => e.to === erc && e.from !== erc);
+	const softByField = Object.fromEntries(out.filter(e => e.kind === "soft").map(e => [e.name, e]));
+	const kindText = {custom: "Custom object", system: "Liferay system object", virtual: "Liferay entity, no object definition"}[n.kind];
+	let h = `<div class="dom-pill"><i style="background:var(--d-${n.domain})"></i>${esc(domLabel[n.domain])}</div>
+		<h3 style="font-family:var(--font-display);font-size:20px">${esc(n.label)}</h3>
+
+		<dl class="kv"><dt>Type</dt><dd>${kindText}</dd>
+		<dt>Name</dt><dd><code>${esc(n.name)}</code></dd>
+		${n.kind !== "virtual" ? `<dt>ERC</dt><dd><code>${esc(n.erc)}</code></dd>` : ""}
+		${n.plural ? `<dt>REST</dt><dd><code>/o/c/${esc(n.plural.replace(/ /g, "").toLowerCase())}</code></dd>` : ""}
+		${n.title ? `<dt>Title field</dt><dd><code>${esc(n.title)}</code></dd>` : ""}
+		<dt>Account</dt><dd>${n.restricted ? `restricted by <code>${esc(n.restricted)}</code>` : "not restricted"}</dd></dl>`;
+	const rels = [...out.map(e => ({e, other: e.to, dir: "parent of"})), ...inc.map(e => ({e, other: e.from, dir: "child of"}))].filter(r => r.e.kind === "relationship" || r.dir === "child of");
+	if (rels.length) {
+		h += `<div><div class="eyebrow">Links (${rels.length})</div><table><thead><tr><th>Link</th><th>Other side</th><th>Delete</th></tr></thead><tbody>` +
+			rels.map(({e, other, dir}) => `<tr><td><code>${esc(e.name)}</code>${e.kind === "soft" ? ` <span class="tag soft">soft</span>` : ""}</td><td>${e.from === e.to ? "itself" : `${dir} ${jump(other)}`}</td><td><span class="del ${e.kind === "soft" ? "soft" : e.deletion}">${e.kind === "soft" ? "none" : e.deletion}</span></td></tr>`).join("") + `</tbody></table></div>`;
+	}
+	if (n.fields.length) {
+		h += `<div><div class="eyebrow">Fields (${n.fields.length})</div><table><thead><tr><th>Field</th><th>Type</th></tr></thead><tbody>` +
+			n.fields.map(f => `<tr><td><code>${esc(f.name)}</code> ${f.required ? `<span class="tag req">required</span>` : ""}${f.state ? `<span class="tag">state</span>` : ""}${f.origin ? `<span class="tag">${esc(f.origin)}</span>` : ""}${softByField[f.name] ? `<span class="tag soft">→ ${esc(N[softByField[f.name].to].label)}</span>` : ""}</td><td>${esc(f.type)}${f.picklist ? `<br /><code style="font-size:11px;color:var(--muted)">${esc(f.picklist)}</code>` : ""}</td></tr>`).join("") + `</tbody></table></div>`;
+	}
+	if (n.actions.length) {
+		h += `<div><div class="eyebrow">Object actions</div><table><tbody>` + n.actions.map(a => `<tr><td><code>${esc(a.name)}</code></td><td>${esc(a.trigger)}<br /><span style="color:var(--muted);font-size:11.5px">${esc(a.executor)}</span></td></tr>`).join("") + `</tbody></table></div>`;
+	}
+	inspector.innerHTML = h;
+}
+
+function selectEdge(id) {
+	const e = edgeEls[id].e;
+	selection = {edge: id};
+	highlight(new Set(), new Set([id]));
+	const kind = e.kind === "soft" ? "soft" : e.deletion;
+	inspector.innerHTML = `<div class="eyebrow">${e.kind === "soft" ? "Soft link" : "Relationship, one to many"}</div>
+		<h3 style="font-family:var(--font-display);font-size:20px;overflow-wrap:anywhere">${esc(e.name)}</h3>
+
+		<dl class="kv"><dt>${e.kind === "soft" ? "Field on" : "Parent"}</dt><dd>${jump(e.from)}</dd>
+		<dt>${e.kind === "soft" ? "Points to" : "Child"}</dt><dd>${jump(e.to)}</dd>
+		<dt>On delete</dt><dd><span class="del ${kind}">${e.kind === "soft" ? "nothing happens; the value stays" : e.deletion}</span></dd>
+		${e.kind === "relationship" ? `<dt>ERC</dt><dd><code>${esc(e.id)}</code></dd><dt>Child field</dt><dd><code>r_${esc(e.name)}_${N[e.from].kind === "custom" ? "c_" + esc(N[e.from].name.charAt(0).toLowerCase() + N[e.from].name.slice(1)) + "Id" : esc(N[e.from].name.charAt(0).toLowerCase() + N[e.from].name.slice(1)) + "Id"}</code></dd>` : `<dt>Note</dt><dd>${esc(e.note)}</dd>`}</dl>`;
+}
+
+function emptyInspector() {
+	const restricted = Object.values(N).filter(n => n.restricted).length;
+	inspector.innerHTML = `<div class="empty"><h3 style="color:var(--fg)">Select an object</h3>
+		<p style="margin:6px 0 0">The Account has 16 relationships and is the center of the model. Most customer data is a child of the Account and of a Project.</p>
+
+		<ul><li>Arrows point from parent to child.</li><li>Line color is the deletion type.</li><li>The lock marks the ${restricted} account restricted objects.</li></ul></div>`;
+}
+
+inspector.addEventListener("click", ev => {
+	const b = ev.target.closest("[data-node]");
+	if (!b) return;
+	selectNode(b.dataset.node);
+	centerOn(b.dataset.node);
+});
+
+// Kind filters
+["cascade", "prevent", "disassociate", "soft"].forEach(k => {
+	const b = document.getElementById(`k-${k}`);
+	b.addEventListener("click", () => {
+		const on = b.getAttribute("aria-pressed") !== "true";
+		b.setAttribute("aria-pressed", on);
+		gEdges.querySelectorAll(`.edge.${k}`).forEach(g => g.classList.toggle("hidden-kind", !on));
+	});
+});
+
+// Search
+const search = document.getElementById("search");
+search.addEventListener("input", () => {
+	const q = search.value.trim().toLowerCase();
+	if (!q) { selection = null; clearHighlight(); emptyInspector(); return; }
+	const hits = new Set(Object.keys(pos).filter(erc => {
+		const n = N[erc];
+		return n.label.toLowerCase().includes(q) || n.erc.toLowerCase().includes(q) || n.name.toLowerCase().includes(q) || n.fields.some(f => f.name.toLowerCase().includes(q));
+	}));
+	selection = {search: q};
+	svg.classList.add("focus");
+	for (const erc in nodeEls) nodeEls[erc].g.classList.toggle("on", hits.has(erc));
+	for (const id in edgeEls) edgeEls[id].g.classList.remove("on");
+	if (hits.size === 1) { const [only] = hits; selectNode(only); centerOn(only); }
+});
+
+// Pan and zoom
+let vb = {x: 0, y: 0, w: W, h: H};
+const setVB = () => svg.setAttribute("viewBox", `${vb.x} ${vb.y} ${vb.w} ${vb.h}`);
+function fitAll() { vb = {x: -10, y: 0, w: W + 20, h: H}; setVB(); }
+function zoom(f, cx = vb.x + vb.w / 2, cy = vb.y + vb.h / 2) {
+	const nw = Math.min(Math.max(vb.w * f, 300), W * 2.5);
+	const r = nw / vb.w;
+	vb = {x: cx - (cx - vb.x) * r, y: cy - (cy - vb.y) * r, w: nw, h: vb.h * r};
+	setVB();
+}
+function centerOn(erc) {
+	const p = pos[erc];
+	const w = Math.min(vb.w, 1300), h = vb.h * (w / vb.w);
+	vb = {x: p.x + CW / 2 - w / 2, y: p.y + CH / 2 - h / 2, w, h};
+	setVB();
+}
+document.getElementById("fit").onclick = fitAll;
+document.getElementById("zin").onclick = () => zoom(0.8);
+document.getElementById("zout").onclick = () => zoom(1.25);
+svg.addEventListener("wheel", ev => {
+	if (!ev.ctrlKey && !ev.metaKey) return;
+	ev.preventDefault();
+	const r = svg.getBoundingClientRect();
+	const s = vb.w / r.width;
+	const sx = Math.max(s, vb.h / r.height);
+	const cx = vb.x + (ev.clientX - r.left) * sx, cy = vb.y + (ev.clientY - r.top) * sx;
+	zoom(ev.deltaY > 0 ? 1.1 : 0.9, cx, cy);
+}, {passive: false});
+let drag = null;
+svg.addEventListener("pointerdown", ev => { if (ev.target.closest(".node,.edge")) return; drag = {x: ev.clientX, y: ev.clientY, vb: {...vb}, moved: false}; svg.setPointerCapture(ev.pointerId); svg.classList.add("dragging"); });
+svg.addEventListener("pointermove", ev => {
+	if (!drag) return;
+	const r = svg.getBoundingClientRect();
+	const s = Math.max(vb.w / r.width, vb.h / r.height);
+	const dx = ev.clientX - drag.x, dy = ev.clientY - drag.y;
+	if (Math.abs(dx) + Math.abs(dy) > 3) drag.moved = true;
+	vb = {...drag.vb, x: drag.vb.x - dx * s, y: drag.vb.y - dy * s};
+	setVB();
+});
+svg.addEventListener("pointerup", ev => {
+	if (drag && !drag.moved) { selection = null; clearHighlight(); emptyInspector(); }
+	drag = null; svg.classList.remove("dragging");
+});
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") { selection = null; search.value = ""; clearHighlight(); emptyInspector(); } });
+
+// Counts
+const custom = Object.values(N).filter(n => n.kind === "custom").length;
+const rels = DATA.edges.filter(e => e.kind === "relationship");
+const soft = DATA.edges.filter(e => e.kind === "soft").length;
+const unused = DATA.picklists.filter(p => !p.used).length;
+document.getElementById("counts").innerHTML = [
+	[custom, "custom objects"], [Object.values(N).filter(n => n.kind === "system").length, "system objects"], [rels.length, "relationships"],
+	[rels.filter(e => e.deletion === "cascade").length, "cascade"], [soft, "soft links"],
+	[Object.values(N).filter(n => n.restricted).length, "account restricted"], [`${unused}/${DATA.picklists.length}`, "picklists unused"],
+].map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
+
+const canvas = svg.parentElement;
+function sizeCanvas() {
+	const w = canvas.clientWidth;
+	canvas.style.height = Math.round(Math.min(Math.max(w * H / (W + 20) + 8, 360), innerHeight * 0.8)) + "px";
+}
+sizeCanvas();
+addEventListener("resize", () => { sizeCanvas(); if (!selection) fitAll(); });
+fitAll();
+emptyInspector();
+</script>

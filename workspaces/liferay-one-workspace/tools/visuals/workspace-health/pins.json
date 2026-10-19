@@ -1,0 +1,3 @@
+{
+	"eslint-plugin-sort-destructure-keys": "Version 1.6.0 needs ESLint 8.40 or later. The workspace uses ESLint 7.32.0, and with 1.6.0 every lint run fails with a getScope TypeError."
+}

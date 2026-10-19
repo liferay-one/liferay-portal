@@ -1,0 +1,230 @@
+[
+	{
+		"body": "Key generation writes the entitlementId field, and active key counts, the account entitlement filter, and renewals read only that field. Seed data sets only entitlementToLicenseKey, so seeded keys have entitlementId 0 and those features skip them.",
+		"edges": [
+			"entitlementToLicenseKey",
+			"SOFT_C_LICENSE_KEY_entitlementId"
+		],
+		"nodes": [
+			"C_LICENSE_KEY",
+			"C_ENTITLEMENT"
+		],
+		"sev": "high",
+		"title": "LicenseKey entitlement link is split between a field and a relationship"
+	},
+	{
+		"body": "publisherToCommerceOrder is cascade. Set it to disassociate. The 2026-10-15 fix was lost before it was committed (Go-Live Tasks D1, T2.1).",
+		"edges": [
+			"publisherToCommerceOrder"
+		],
+		"nodes": [
+			"C_PUBLISHER_SALES_SUMMARY",
+			"L_COMMERCE_ORDER"
+		],
+		"sev": "high",
+		"title": "Deleting a Publisher Sales Summary deletes its Commerce Orders",
+		"verify": {
+			"deletion": {
+				"publisherToCommerceOrder": "disassociate"
+			}
+		}
+	},
+	{
+		"body": "entitlementDefinitionToEntitlement is cascade. Set it to prevent, and set active: false to retire a definition. The 2026-10-15 fix was lost (Go-Live Tasks D2, T2.1).",
+		"edges": [
+			"entitlementDefinitionToEntitlement"
+		],
+		"nodes": [
+			"C_ENTITLEMENT_DEFINITION",
+			"C_ENTITLEMENT"
+		],
+		"sev": "high",
+		"title": "Deleting an Entitlement Definition deletes its entitlements",
+		"verify": {
+			"deletion": {
+				"entitlementDefinitionToEntitlement": "prevent"
+			}
+		}
+	},
+	{
+		"body": "contractToEnvironment and contractToEntitlement are cascade, while the account and project links are disassociate. Set both to disassociate and make teardown_records.sh delete environments itself. The 2026-10-15 fix was lost (Go-Live Tasks D3, T2.1).",
+		"edges": [
+			"contractToEnvironment",
+			"contractToEntitlement"
+		],
+		"nodes": [
+			"C_CONTRACT",
+			"C_ENVIRONMENT",
+			"C_ENTITLEMENT"
+		],
+		"sev": "high",
+		"title": "Deleting a Contract deletes its Environments and Entitlements",
+		"verify": {
+			"deletion": {
+				"contractToEntitlement": "disassociate",
+				"contractToEnvironment": "disassociate"
+			}
+		}
+	},
+	{
+		"body": "The code stores the order in the text field LicenseKey.orderId and never writes or reads the relationship. Remove the relationship or move the order link to it.",
+		"edges": [
+			"commerceOrderToLicenseKey",
+			"SOFT_C_LICENSE_KEY_orderId"
+		],
+		"nodes": [
+			"C_LICENSE_KEY",
+			"L_COMMERCE_ORDER"
+		],
+		"sev": "medium",
+		"title": "commerceOrderToLicenseKey is unused"
+	},
+	{
+		"body": "Since LPD-92222 the order to project link is the projectName custom field, and the contract link is contractId. A project rename breaks the link with no error.",
+		"edges": [
+			"SOFT_L_COMMERCE_ORDER_projectName",
+			"SOFT_L_COMMERCE_ORDER_contractId"
+		],
+		"nodes": [
+			"L_COMMERCE_ORDER",
+			"C_PROJECT",
+			"C_CONTRACT"
+		],
+		"sev": "medium",
+		"title": "Orders find their project by project name"
+	},
+	{
+		"body": "TrialExtensionRequest.projectId, LicenseKey.entitlementDefinitionId, the AccountInvitation ERC fields, UsageReport.contractExternalReferenceCode, and the AccountNote user IDs point to objects that can hold a relationship.",
+		"edges": [
+			"SOFT_C_TRIAL_EXTENSION_REQUEST_projectId",
+			"SOFT_C_LICENSE_KEY_entitlementDefinitionId",
+			"SOFT_C_ACCOUNT_INVITATION_accountExternalReferenceCode",
+			"SOFT_C_ACCOUNT_INVITATION_projectExternalReferenceCode",
+			"SOFT_C_USAGE_REPORT_contractExternalReferenceCode",
+			"SOFT_C_ACCOUNT_NOTE_createdByUserId"
+		],
+		"nodes": [
+			"C_TRIAL_EXTENSION_REQUEST",
+			"C_LICENSE_KEY",
+			"C_ACCOUNT_INVITATION",
+			"C_USAGE_REPORT",
+			"C_ACCOUNT_NOTE",
+			"C_PROJECT",
+			"C_ENTITLEMENT_DEFINITION",
+			"L_ACCOUNT",
+			"C_CONTRACT",
+			"L_USER"
+		],
+		"sev": "medium",
+		"title": "Soft links where a relationship is possible"
+	},
+	{
+		"body": "Property, SubscriptionEntry, and UsageReport point to any record with a class name and a primary key. Nothing deletes them when the target is deleted.",
+		"edges": [
+		],
+		"nodes": [
+			"C_PROPERTY",
+			"C_SUBSCRIPTION_ENTRY",
+			"C_USAGE_REPORT"
+		],
+		"sev": "medium",
+		"title": "Polymorphic targets have no clean up"
+	},
+	{
+		"body": "Environment, Property, PublisherDetail, and PublisherSalesSummary are children of the account, but only role permissions control who reads them. Environment cannot be restricted while its account link is disassociate.",
+		"edges": [
+			"accountEntryToEnvironment",
+			"accountEntryToProperty",
+			"accountEntryToPublisherDetails",
+			"accountEntryToPublisherSalesSummary"
+		],
+		"nodes": [
+			"C_ENVIRONMENT",
+			"C_PROPERTY",
+			"C_PUBLISHER_DETAILS",
+			"C_PUBLISHER_SALES_SUMMARY",
+			"L_ACCOUNT"
+		],
+		"sev": "medium",
+		"title": "Four account children are not account restricted"
+	},
+	{
+		"body": "LT_ACCOUNT_FLAG_CODE, LT_ACCOUNT_FLAG_VALUE, LT_ACCOUNT_REGION, LT_ACCOUNT_STATUS, LT_ACCOUNT_TIER, LT_ENTITLEMENT_RULE_TYPE, LT_ENTITLEMENT_STATUS, LT_ENVIRONMENT_PRIMARY_REGION, and LT_PRODUCT_TYPE. The accountTier custom field is plain text.",
+		"edges": [
+		],
+		"nodes": [
+			"L_ACCOUNT"
+		],
+		"sev": "low",
+		"title": "9 picklists are not used by a field"
+	},
+	{
+		"body": "No code reads or writes AIHubBetaPrivateAccessRequest or SalesRequest. AccountNote appears only in resource-permissions.json. The sibling scripts checkout was not searched.",
+		"edges": [
+		],
+		"nodes": [
+			"C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST",
+			"C_SALES_REQUEST",
+			"C_ACCOUNT_NOTE"
+		],
+		"sev": "low",
+		"title": "2 objects have no reference in this workspace"
+	},
+	{
+		"body": "grantType, unit, Environment type, offering, activationMode, activationStatus, aggregationType, period, and targetType accept any text, so a typo saves with no error.",
+		"edges": [
+		],
+		"nodes": [
+			"C_ENTITLEMENT",
+			"C_ENTITLEMENT_DEFINITION",
+			"C_ENVIRONMENT",
+			"C_USAGE_DEFINITION",
+			"C_USAGE_REPORT"
+		],
+		"sev": "low",
+		"title": "Fixed value text fields have no picklist"
+	},
+	{
+		"body": "orderTo and commerceOrderTo, productEntryTo, and createdByUser and modifiedByUser. A rename breaks REST callers, so apply one pattern to new relationships only.",
+		"edges": [
+			"commerceOrderToLicenseKey",
+			"orderToProductFeedback",
+			"productEntryToProductFeedback",
+			"createdByUser",
+			"modifiedByUser"
+		],
+		"nodes": [
+			"L_COMMERCE_ORDER",
+			"L_COMMERCE_PRODUCT_DEFINITION",
+			"L_USER"
+		],
+		"sev": "low",
+		"title": "Relationship names use three patterns"
+	},
+	{
+		"body": "It is a system object field in 02-system-object-field and a custom field in expando-columns.json. Keep one.",
+		"edges": [
+			"SOFT_L_ORGANIZATION_accountEntryId"
+		],
+		"nodes": [
+			"L_ORGANIZATION",
+			"L_ACCOUNT"
+		],
+		"sev": "low",
+		"title": "Organization.accountEntryId has two definitions"
+	},
+	{
+		"body": "Wrong fields corrected, the 20 missing objects described, and the ERC and friendly URL table regenerated.",
+		"edges": [
+		],
+		"nodes": [
+			"C_ACCOUNT_NOTE",
+			"C_CONTRACT",
+			"C_ENVIRONMENT",
+			"C_USAGE_EVENT",
+			"C_LICENSE_KEY"
+		],
+		"sev": "fixed",
+		"title": "data-model.md matches the batch files"
+	}
+]

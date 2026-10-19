@@ -9,6 +9,8 @@
 /poshi/poshi-ext.properties
 /poshi/test-results
 /poshi/tests
+/tools/visuals/workspace-health/snapshots
+/tools/visuals/environment-drift/snapshots
 @vite/*
 TEST-frontend-js.xml
 bin

@@ -1,0 +1,213 @@
+{
+	"domains": [
+		{
+			"id": "marketplace",
+			"label": "Marketplace and Publishers",
+			"members": [
+				"C_PUBLISHER_DETAILS",
+				"C_PUBLISHER_ASSET",
+				"C_PUBLISHER_ASSET_ATTACHMENT",
+				"C_PUBLISHER_SALES_SUMMARY",
+				"C_GET_APP_INFORMATION"
+			]
+		},
+		{
+			"id": "commerce",
+			"label": "Commerce (Liferay)",
+			"members": [
+				"L_COMMERCE_PRODUCT_DEFINITION",
+				"X_CP_INSTANCE",
+				"L_COMMERCE_ORDER",
+				"L_COMMERCE_ORDER_ITEM",
+				"L_POSTAL_ADDRESS"
+			]
+		},
+		{
+			"id": "requests",
+			"label": "Requests",
+			"members": [
+				"C_PRODUCT_FEEDBACK",
+				"C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST",
+				"C_DSR_REQUEST",
+				"C_DXP_FREE_ACTIVATION_KEY_REQUEST",
+				"C_TRIAL_EXTENSION_REQUEST",
+				"C_PUBLISHER_ACCOUNT_REQUEST",
+				"C_SALES_REQUEST"
+			]
+		},
+		{
+			"id": "core",
+			"label": "Accounts and Users (Liferay)",
+			"members": [
+				"L_ORGANIZATION",
+				"L_ACCOUNT",
+				"L_USER",
+				"X_ROLE"
+			]
+		},
+		{
+			"id": "project",
+			"label": "Projects and Membership",
+			"members": [
+				"C_PROJECT",
+				"C_PROJECT_MEMBERSHIP",
+				"C_ACCOUNT_INVITATION",
+				"C_ACCOUNT_NOTE",
+				"C_TICKET_ATTACHMENT",
+				"C_OAUTH2_DXP_AUTHORIZATION",
+				"C_PROPERTY",
+				"C_SUBSCRIPTION_ENTRY"
+			]
+		},
+		{
+			"id": "subscription",
+			"label": "Contracts, Entitlements, Usage",
+			"members": [
+				"C_USAGE_DEFINITION",
+				"C_ENTITLEMENT_DEFINITION",
+				"C_ENTITLEMENT_DEFINITION_SKU",
+				"C_CONTRACT",
+				"C_ENTITLEMENT",
+				"C_USAGE_EVENT",
+				"C_USAGE_REPORT",
+				"C_REPORT"
+			]
+		},
+		{
+			"id": "environment",
+			"label": "Environments and Licensing",
+			"members": [
+				"C_ENVIRONMENT",
+				"C_ENVIRONMENT_ADMIN",
+				"C_ACTIVATION_KEY",
+				"C_LICENSE_KEY",
+				"C_COMMON_LICENSE_KEY",
+				"C_PRODUCT_VERSION"
+			]
+		}
+	],
+	"softLinks": [
+		{
+			"field": "projectName",
+			"from": "L_COMMERCE_ORDER",
+			"note": "Project name, not a key. The order to project link since LPD-92222.",
+			"to": "C_PROJECT"
+		},
+		{
+			"field": "contractId",
+			"from": "L_COMMERCE_ORDER",
+			"note": "Contract ID. The order to contract link since LPD-92222.",
+			"to": "C_CONTRACT"
+		},
+		{
+			"field": "accountEntryId",
+			"from": "L_ORGANIZATION",
+			"note": "Required: Liferay forbids a relationship between two system objects.",
+			"to": "L_ACCOUNT"
+		},
+		{
+			"field": "skuExternalReferenceCode",
+			"from": "C_ENTITLEMENT_DEFINITION_SKU",
+			"note": "Required: a SKU has no system object definition. Since LPD-109991 one definition links many SKUs through entitlementDefinitionToSku.",
+			"to": "X_CP_INSTANCE"
+		},
+		{
+			"field": "overageSkuExternalReferenceCode",
+			"from": "C_ENTITLEMENT",
+			"note": "Required: a SKU has no system object definition.",
+			"to": "X_CP_INSTANCE"
+		},
+		{
+			"duplicates": "entitlementToLicenseKey",
+			"field": "entitlementId",
+			"from": "C_LICENSE_KEY",
+			"note": "Runtime code writes and reads only this field; seed data writes only entitlementToLicenseKey. They are never set together.",
+			"to": "C_ENTITLEMENT"
+		},
+		{
+			"duplicates": "commerceOrderToLicenseKey",
+			"field": "orderId",
+			"from": "C_LICENSE_KEY",
+			"note": "The only order reference in use. No code reads or writes commerceOrderToLicenseKey.",
+			"to": "L_COMMERCE_ORDER"
+		},
+		{
+			"field": "entitlementDefinitionId",
+			"from": "C_LICENSE_KEY",
+			"note": "No relationship exists.",
+			"to": "C_ENTITLEMENT_DEFINITION"
+		},
+		{
+			"field": "projectId",
+			"from": "C_TRIAL_EXTENSION_REQUEST",
+			"note": "No relationship exists.",
+			"to": "C_PROJECT"
+		},
+		{
+			"field": "accountExternalReferenceCode",
+			"from": "C_ACCOUNT_INVITATION",
+			"note": "No relationship exists.",
+			"to": "L_ACCOUNT"
+		},
+		{
+			"field": "projectExternalReferenceCode",
+			"from": "C_ACCOUNT_INVITATION",
+			"note": "No relationship exists.",
+			"to": "C_PROJECT"
+		},
+		{
+			"field": "roleExternalReferenceCodes",
+			"from": "C_ACCOUNT_INVITATION",
+			"note": "A list of role ERCs in one text field.",
+			"to": "X_ROLE"
+		},
+		{
+			"field": "roleExternalReferenceCode",
+			"from": "C_PROJECT_MEMBERSHIP",
+			"note": "Role ERC.",
+			"to": "X_ROLE"
+		},
+		{
+			"field": "createdByUserId",
+			"from": "C_ACCOUNT_NOTE",
+			"note": "LicenseKey uses relationships for the same data.",
+			"to": "L_USER"
+		},
+		{
+			"field": "accountExternalReferenceCode",
+			"from": "C_USAGE_REPORT",
+			"note": "Denormalized input for the approved action.",
+			"to": "L_ACCOUNT"
+		},
+		{
+			"field": "contractExternalReferenceCode",
+			"from": "C_USAGE_REPORT",
+			"note": "Denormalized input for the approved action.",
+			"to": "C_CONTRACT"
+		},
+		{
+			"field": "commerceOrderId",
+			"from": "C_USAGE_REPORT",
+			"note": "The generated overage order.",
+			"to": "L_COMMERCE_ORDER"
+		},
+		{
+			"field": "productExternalReferenceCode",
+			"from": "C_USAGE_REPORT",
+			"note": "Denormalized.",
+			"to": "L_COMMERCE_PRODUCT_DEFINITION"
+		},
+		{
+			"field": "skuExternalReferenceCode",
+			"from": "C_USAGE_REPORT",
+			"note": "Overage bucket SKU.",
+			"to": "X_CP_INSTANCE"
+		},
+		{
+			"field": "customUserId",
+			"from": "C_SUBSCRIPTION_ENTRY",
+			"note": "Subscriber. The target is polymorphic (className, classPK).",
+			"to": "L_USER"
+		}
+	]
+}

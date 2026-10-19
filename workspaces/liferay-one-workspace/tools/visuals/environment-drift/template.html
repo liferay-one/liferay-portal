@@ -1,0 +1,200 @@
+<title>Environment Drift</title>
+
+<style>
+/* Layout: one row per difference, grouped by the object that owns it. The batch value sits beside the value in each environment, so a column that disagrees with its neighbors is the environment that drifted. */
+
+:root {
+	--wrap-width: 1400px;
+	--missing: var(--critical);
+	--collision: #a63fa0;
+	--value: var(--medium);
+	--extra: var(--info);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) { --collision: #e08ad9; }
+}
+:root[data-theme="dark"] { --collision: #e08ad9; }
+.envs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.env { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; min-width: 0; }
+.env .url { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.tally { display: flex; flex-wrap: wrap; gap: 6px 14px; font-variant-numeric: tabular-nums; font-size: 13px; }
+.tally b { font-size: 18px; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: 1px; }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#search { flex: 1 1 220px; min-width: 0; padding: 7px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: inherit; font-size: 13.5px; }
+label.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+
+.table-wrap { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+thead th { position: sticky; top: 0; background: var(--surface-2); font-size: 11.5px; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tr.group th { background: var(--surface-2); font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
+tr.group th span { color: var(--muted); font-family: var(--font-body); font-weight: 400; margin-left: 8px; }
+td.subject { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; min-width: 160px; }
+td.attr { color: var(--muted); white-space: nowrap; }
+td.val { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; min-width: 110px; }
+td.val.same { color: var(--ok); }
+td.val.absent { color: var(--missing); }
+td.val.drift { background: color-mix(in srgb, var(--value) 12%, transparent); }
+td.val.drift.extra { background: color-mix(in srgb, var(--extra) 12%, transparent); }
+td.val.accepted { background: none; color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; line-height: 18px; white-space: nowrap; border: 1px solid currentColor; }
+.tag.missing { color: var(--missing); } .tag.collision { color: var(--collision); } .tag.value { color: var(--value); } .tag.extra { color: var(--extra); }
+.tag.all { color: var(--muted); border-style: dashed; }
+.note { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; font-family: var(--font-body); }
+.empty { padding: 28px 16px; color: var(--muted); text-align: center; }
+.empty code { color: var(--fg); }
+
+section.config { display: grid; gap: 12px; }
+section.config > p { margin: 0; max-width: 90ch; }
+.config-grid { display: grid; gap: 12px; }
+.config-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 8px; min-width: 0; }
+.config-card td.name { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.yes { color: var(--ok); } .no { color: var(--quiet); }
+.muted { color: var(--muted); }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">liferay-one-batch → running environments · <span id="generated"></span></div>
+
+		<h1>Environment Drift</h1>
+
+		<p>Each place where an environment's object model differs from the batch client extension, and the configuration that each environment needs. A difference in every environment usually means that the batch file and the server disagree. A difference in one environment means that the environment drifted.</p>
+	</header>
+
+	<section aria-label="Environments" class="envs" id="envs"></section>
+
+	<div class="toolbar">
+		<input aria-label="Find an object, field, or relationship" id="search" placeholder="Find an object, field, or relationship" type="search" />
+
+		<div aria-label="Difference type" class="seg" id="types" role="group"></div>
+
+		<div aria-label="Kind" class="seg" id="kinds" role="group"></div>
+
+		<label class="check"><input id="show-accepted" type="checkbox" /> Show accepted</label>
+	</div>
+
+	<div class="table-wrap" id="table"></div>
+
+	<section aria-label="Configuration" class="config" id="config-section">
+		<h2>Configuration</h2>
+
+		<p class="muted">What the workspace needs, and which file in the repository sets it. UAT and production set their variables and flags in the Liferay Cloud console, which the repository cannot see. Only the names in <code>.env</code> and <code>.env.local</code> are read, never the values.</p>
+
+		<div class="config-grid">
+			<div class="config-card" id="variables-card"><h3>Sidecar Variables</h3><div class="table-wrap" id="variables"></div></div>
+			<div class="config-card" id="properties-card"><h3>Feature Flags and Portal Properties</h3><div class="table-wrap" id="properties"></div></div>
+			<div class="config-card"><h3>OSGi Configurations</h3><div class="table-wrap" id="osgi"></div></div>
+			<div class="config-card" id="hosts-card"><h3>Hosts in Production Configuration</h3><div class="table-wrap" id="hosts"></div></div>
+		</div>
+	</section>
+
+	<footer>
+		<p>Generated by <code>tools/visuals/environment-drift</code> from <code>liferay-one-batch/batch/00</code> to <code>05</code> and the snapshots that <code>yarn viz:env &lt;name&gt;</code> writes. A snapshot holds the schema only, not record data, and it is not committed, so the page shows the environments that the person who built it read.</p>
+		<p>The comparison reads a fixed set of attributes. The server adds many attributes that the batch never sends, and those are not compared. A <b>collision</b> blocks a batch import: the import matches by external reference code and cannot rename a field or adopt a relationship that has a different code. An entry in <code>environment-drift/accepted.json</code> marks a difference that the team keeps, with the reason.</p>
+	</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const TYPE_LABEL = {missing: "Missing", collision: "Collision", value: "Different", extra: "Only in environment"};
+const TYPE_ORDER = ["missing", "collision", "value", "extra"];
+const KIND_LABEL = {object: "Objects", field: "Fields", relationship: "Relationships", picklist: "Picklists"};
+const KIND_ORDER = ["object", "field", "relationship", "picklist"];
+
+const envs = DATA.environments;
+const accepted = DATA.accepted;
+const state = {search: "", types: new Set(TYPE_ORDER), kinds: new Set(KIND_ORDER), showAccepted: false};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
+const shown = v => v === "" ? "(empty)" : v;
+
+$("generated").textContent = DATA.generated;
+
+function acceptedFor(d, env) { return accepted.find(a => a.environment === env && a.id === d.id); }
+
+function openIn(d) { return envs.map(e => e.name).filter(n => n in d.values && !acceptedFor(d, n)); }
+
+// Environment cards.
+if (!envs.length) {
+	$("envs").innerHTML = "";
+} else {
+	$("envs").innerHTML = envs.map(e => {
+		const rows = DATA.drifts.filter(d => openIn(d).includes(e.name));
+		const tally = TYPE_ORDER.map(t => [t, rows.filter(d => d.type === t).length]).filter(([, n]) => n);
+		return `<div class="env"><div class="eyebrow">${esc(e.name)} · read ${esc(e.fetched.slice(0, 10))}</div><div class="url">${esc(e.url)}</div><div class="tally">${tally.map(([t, n]) => `<span><span class="dot" style="background:var(--${t})"></span><b>${n}</b> ${esc(TYPE_LABEL[t].toLowerCase())}</span>`).join("") || "<span>Matches the batch.</span>"}</div><div class="url">${e.objects} objects · ${e.picklists} picklists</div></div>`;
+	}).join("");
+}
+
+$("types").innerHTML = TYPE_ORDER.map(t => `<button type="button" data-type="${t}" aria-pressed="true">${TYPE_LABEL[t]}</button>`).join("");
+$("kinds").innerHTML = KIND_ORDER.map(k => `<button type="button" data-kind="${k}" aria-pressed="true">${KIND_LABEL[k]}</button>`).join("");
+
+function cell(d, env) {
+	if (!(env in d.values)) return `<td class="val same">matches</td>`;
+	const a = acceptedFor(d, env);
+	const v = d.values[env];
+	if (a) return `<td class="val accepted" title="Accepted: ${esc(a.reason)}">${esc(v === null ? "absent" : shown(v))}</td>`;
+	if (v === null) return `<td class="val absent">absent</td>`;
+	return `<td class="val drift ${d.type}">${esc(shown(v))}</td>`;
+}
+
+function render() {
+	document.querySelectorAll("#types button").forEach(b => b.setAttribute("aria-pressed", state.types.has(b.dataset.type)));
+	document.querySelectorAll("#kinds button").forEach(b => b.setAttribute("aria-pressed", state.kinds.has(b.dataset.kind)));
+
+	if (!envs.length) {
+		$("table").innerHTML = `<div class="empty">No environment snapshot. Run <code>yarn viz:env ${esc(DATA.known.join(" "))}</code>, or <code>yarn viz:env &lt;name&gt;=&lt;url&gt;</code> for another instance, then <code>yarn viz environment-drift</code>.</div>`;
+		return;
+	}
+
+	const rows = DATA.drifts.filter(d =>
+		state.types.has(d.type) && state.kinds.has(d.kind) &&
+		(state.showAccepted || openIn(d).length) &&
+		(!state.search || `${d.owner} ${d.subject} ${d.attribute} ${d.expected ?? ""} ${Object.values(d.values).join(" ")}`.toLowerCase().includes(state.search)));
+
+	if (!rows.length) {
+		$("table").innerHTML = `<div class="empty">No difference matches.</div>`;
+		return;
+	}
+
+	const head = `<thead><tr><th>Item</th><th>Attribute</th><th>Batch</th>${envs.map(e => `<th>${esc(e.name)}</th>`).join("")}</tr></thead>`;
+	const body = [];
+	let owner = null;
+	for (const d of rows) {
+		if (d.owner !== owner) {
+			owner = d.owner;
+			const n = rows.filter(r => r.owner === owner).length;
+			body.push(`<tr class="group"><th colspan="${3 + envs.length}">${esc(owner)}<span>${n} ${n === 1 ? "difference" : "differences"}</span></th></tr>`);
+		}
+		const everywhere = envs.length > 1 && envs.every(e => e.name in d.values) && new Set(Object.values(d.values)).size === 1;
+		const tags = `<span class="tag ${d.type}">${esc(TYPE_LABEL[d.type])}</span>${everywhere ? ` <span class="tag all" title="Every environment has the same value">every environment</span>` : ""}`;
+		const notes = [d.note, ...envs.map(e => acceptedFor(d, e.name)).filter(Boolean).map(a => `Accepted on ${a.environment}: ${a.reason}`)].filter(Boolean);
+		body.push(`<tr><td class="subject">${esc(d.subject)}<br />${tags}${notes.map(n => `<span class="note">${esc(n)}</span>`).join("")}</td><td class="attr">${esc(d.type === "missing" || d.type === "extra" ? "—" : d.attribute)}</td><td class="val">${esc(d.expected === null ? "absent" : shown(d.expected))}</td>${envs.map(e => cell(d, e.name)).join("")}</tr>`);
+	}
+	$("table").innerHTML = `<table>${head}<tbody>${body.join("")}</tbody></table>`;
+}
+
+document.addEventListener("click", ev => {
+	const t = ev.target.closest("[data-type],[data-kind]");
+	if (!t) return;
+	const set = t.dataset.type ? state.types : state.kinds;
+	const key = t.dataset.type ?? t.dataset.kind;
+	set.has(key) ? set.delete(key) : set.add(key);
+	render();
+});
+$("search").addEventListener("input", ev => { state.search = ev.target.value.trim().toLowerCase(); render(); });
+$("show-accepted").addEventListener("change", ev => { state.showAccepted = ev.target.checked; render(); });
+
+// Configuration.
+const C = DATA.config;
+const mark = v => v ? `<span class="yes">set</span>` : `<span class="no">—</span>`;
+$("variables").innerHTML = `${C.localEnv ? "" : `<p class="muted" style="margin:0 0 8px">This checkout has no <code>.env</code>, so the local columns show only <code>docker-compose.yaml</code> and <code>LCP.json</code>.</p>`}<table><thead><tr><th>Variable</th><th>Default</th>${C.sources.map(s => `<th>${esc(s)}</th>`).join("")}<th>Read by code</th></tr></thead><tbody>${C.variables.map(v => `<tr><td class="name">${esc(v.variable)}<br /><span class="muted">${esc(v.property)}</span></td><td class="name">${v.required ? `<span class="tag">required</span>` : esc(v.default === "" ? "(empty)" : v.default)}</td>${C.sources.map(s => `<td>${mark(v.setIn.includes(s))}</td>`).join("")}<td>${v.used ? `<span class="yes">yes</span>` : `<span class="tag value">unused</span>`}</td></tr>`).join("")}</tbody></table>`;
+const folders = [...new Set([...C.flags, ...C.properties].flatMap(p => p.folders))].sort();
+$("properties").innerHTML = `<table><thead><tr><th>Key</th>${folders.map(f => `<th>configs/${esc(f)}</th>`).join("")}</tr></thead><tbody>${[...C.flags, ...C.properties].map(p => `<tr><td class="name">${esc(p.key)}</td>${folders.map(f => `<td>${mark(p.folders.includes(f))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+$("hosts").innerHTML = C.crossEnvironment.length ? `<table><thead><tr><th>UAT Host</th><th>File</th></tr></thead><tbody>${C.crossEnvironment.map(h => `<tr><td class="name">${esc(h.host)}</td><td class="name">${esc(h.file)}:${h.line}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">No client extension that deploys to production names a UAT host.</p>`;
+$("osgi").innerHTML = C.osgi.length ? `<table><thead><tr><th>PID</th><th>Folder</th></tr></thead><tbody>${C.osgi.map(o => `<tr><td class="name">${esc(o.pid)}</td><td>configs/${esc(o.folder)}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">None.</p>`;
+
+render();
+</script>
