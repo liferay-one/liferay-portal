@@ -1,0 +1,93 @@
+{
+	"flags": [
+		{
+			"method": "DELETE",
+			"path": "/trial/{orderId}",
+			"reason": "Takes no Jwt and checks no permission. It acts through the sidecar service account, so any holder of a token for the user agent application can delete any trial by order ID.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "GET",
+			"path": "/trial/availability",
+			"reason": "Takes no Jwt and checks no permission.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "GET",
+			"path": "/trial/domain-availability/{projectPrefix}",
+			"reason": "Takes no Jwt and checks no permission.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/trial/expire/{orderId}",
+			"reason": "Takes no Jwt and checks no permission. Any caller can expire any trial by order ID.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/trial/extend/{id}",
+			"reason": "Takes no Jwt and checks no permission. Any caller can extend any trial.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/trial/provisioning/{orderId}",
+			"reason": "Takes no Jwt. It checks the order type and the payment status, but not the caller.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/license-keys/type-free",
+			"reason": "Reads orderId and owner from the body and does not check that the caller owns the order. It issues a free key for any order ID and marks the order complete.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/license-keys/type-free-domains-check",
+			"reason": "Same gap as type-free: no Jwt and no ownership check.",
+			"severity": "high",
+			"source": "route-api-map.md"
+		},
+		{
+			"method": "POST",
+			"path": "/entitlements/generate",
+			"reason": "Does not check the caller and acts with the sidecar token.",
+			"severity": "high",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/digital-sales-room/provisioning/{orderId}",
+			"reason": "Takes no Jwt. It checks the order type and the payment status, but not the caller.",
+			"severity": "medium",
+			"source": "Go-Live Tasks S2"
+		},
+		{
+			"method": "POST",
+			"path": "/liferay-data-platform/provisioning/{orderId}",
+			"reason": "Takes no Jwt. It checks the order type and the payment status, but not the caller.",
+			"severity": "medium",
+			"source": "Go-Live Tasks S2"
+		}
+	],
+	"public": [
+		{
+			"method": "GET",
+			"path": "/invitations/accept",
+			"reason": "The invitation link calls it before the invitee signs in. The token in the query is the proof, and the handler rejects a token that it cannot find."
+		},
+		{
+			"method": "GET",
+			"path": "/ready",
+			"reason": "The readiness probe. It returns a constant and reads no data."
+		}
+	]
+}

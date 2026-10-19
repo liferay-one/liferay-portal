@@ -1,0 +1,368 @@
+/* The shared look of every visual. It names system fonts only, because the source formatter does not allow Google Fonts. build.ts inlines this file before each template's own <style>, so a template defines only what is specific to its page: its layout, its components, and the colors of its own categories. */
+
+* {
+	box-sizing: border-box;
+}
+
+a.jump, button.jump {
+	background: none;
+	border: 0;
+	color: var(--accent);
+	cursor: pointer;
+	font: inherit;
+	overflow-wrap: anywhere;
+	padding: 0;
+	text-align: left;
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 2px;
+}
+
+body {
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--font-body);
+	font-size: 14px;
+	line-height: 1.5;
+	padding-block: 28px 56px;
+	padding-inline: 16px;
+}
+
+code, .mono {
+	font-family: var(--font-mono);
+	font-size: 0.88em;
+}
+
+footer {
+	color: var(--muted);
+	font-size: 12.5px;
+	max-width: 110ch;
+}
+
+footer p {
+	margin: 0;
+}
+
+footer p + p {
+	margin-top: 6px;
+}
+
+h1 {
+	font-size: clamp(28px, 3.4vw, 38px);
+	font-weight: 800;
+}
+
+h1, h2, h3 {
+	font-family: var(--font-display);
+	letter-spacing: -0.01em;
+	margin: 0;
+	text-wrap: balance;
+}
+
+h2 {
+	font-size: 19px;
+	font-weight: 800;
+}
+
+h3 {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+header {
+	display: grid;
+	gap: 10px;
+}
+
+header p {
+	color: var(--muted);
+	margin: 0;
+	max-width: 78ch;
+}
+
+select, .btn {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	color: var(--fg);
+	font: inherit;
+	font-size: 13px;
+	padding: 6px 10px;
+}
+
+table {
+	border-collapse: collapse;
+	font-size: 13px;
+	width: 100%;
+}
+
+td, th {
+	border-bottom: 1px solid var(--line);
+	padding: 6px 8px;
+	text-align: left;
+	vertical-align: top;
+}
+
+th, thead th {
+	color: var(--muted);
+	font-size: 11.5px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+}
+
+#search {
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	color: var(--fg);
+	flex: 1 1 220px;
+	font: inherit;
+	font-size: 13.5px;
+	min-width: 0;
+	padding: 7px 11px;
+}
+
+.btn {
+	cursor: pointer;
+}
+
+.counts {
+	display: flex;
+	flex-wrap: wrap;
+	font-variant-numeric: tabular-nums;
+	gap: 8px 26px;
+}
+
+.counts b {
+	font-family: var(--font-display);
+	font-size: 24px;
+	font-weight: 800;
+}
+
+.counts div {
+	align-items: baseline;
+	display: flex;
+	gap: 6px;
+}
+
+.counts span {
+	color: var(--muted);
+	font-size: 13px;
+}
+
+.eyebrow {
+	color: var(--muted);
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.kv {
+	display: grid;
+	font-size: 13px;
+	gap: 4px 12px;
+	grid-template-columns: max-content minmax(0, 1fr);
+	margin: 0;
+}
+
+.kv dd {
+	margin: 0;
+	overflow-wrap: anywhere;
+}
+
+.kv dt {
+	color: var(--muted);
+}
+
+.note {
+	background: var(--surface-2);
+	border-radius: 6px;
+	font-size: 13px;
+	padding: 10px 12px;
+}
+
+.seg {
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	display: inline-flex;
+	flex-wrap: wrap;
+	overflow: hidden;
+}
+
+.seg button {
+	background: var(--surface);
+	border: 0;
+	border-right: 1px solid var(--line);
+	color: var(--muted);
+	cursor: pointer;
+	font: inherit;
+	font-size: 12.5px;
+	padding: 6px 10px;
+}
+
+.seg button:last-child {
+	border-right: 0;
+}
+
+.seg button[aria-pressed="true"] {
+	background: var(--accent-soft);
+	color: var(--fg);
+}
+
+.tag {
+	background: var(--surface-2);
+	border-radius: 4px;
+	color: var(--muted);
+	display: inline-block;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	line-height: 18px;
+	padding: 0 6px;
+	white-space: nowrap;
+}
+
+.tile {
+	align-content: start;
+	background: var(--surface);
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	display: grid;
+	gap: 2px;
+	padding: 12px 14px;
+}
+
+.tile b {
+	font-family: var(--font-display);
+	font-size: 26px;
+	font-variant-numeric: tabular-nums;
+	font-weight: 800;
+	line-height: 1.1;
+}
+
+.tile span {
+	color: var(--muted);
+	font-size: 12.5px;
+}
+
+.tiles {
+	display: grid;
+	gap: 10px;
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+}
+
+.toolbar {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.viz-hit {
+	background-color: var(--accent-soft) !important;
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+	scroll-margin: 80px;
+}
+
+.wrap {
+	display: grid;
+	gap: 22px;
+	margin-inline: auto;
+	max-width: var(--wrap-width, 1280px);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+:root {
+	--accent: #0d6a6a;
+	--accent-ink: #ffffff;
+	--accent-soft: #d9eeec;
+	--bg: #eef1f4;
+	--critical: #b42318;
+	--critical-soft: #fbe9e7;
+	--fg: #16202a;
+	--font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	--font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Menlo, Consolas, monospace;
+	--high: #c2540a;
+	--high-soft: #fdefe3;
+	--info: #1f5fbf;
+	--info-soft: #e3ebf8;
+	--line: #d6dce2;
+	--low: #66727e;
+	--low-soft: #eceff2;
+	--medium: #8f7300;
+	--medium-soft: #f8f1d6;
+	--muted: #5a6672;
+	--ok: #1d7a3e;
+	--ok-soft: #e2f2e7;
+	--quiet: #8a949e;
+	--sunk: #f6f8fa;
+	--surface: #ffffff;
+	--surface-2: #e7ecf0;
+}
+
+:root[data-theme="dark"] {
+	--accent: #3cb0a6;
+	--accent-ink: #06201e;
+	--accent-soft: #15302e;
+	--bg: #0e1317;
+	--critical: #f2786b;
+	--critical-soft: #3a1d1a;
+	--fg: #e4e9ee;
+	--high: #f0a05a;
+	--high-soft: #3a2614;
+	--info: #7aa9f0;
+	--info-soft: #172840;
+	--line: #26313a;
+	--low: #9aa6b2;
+	--low-soft: #1f272e;
+	--medium: #d9be4a;
+	--medium-soft: #332c12;
+	--muted: #94a1ad;
+	--ok: #5cc483;
+	--ok-soft: #16301f;
+	--quiet: #6f7c88;
+	--sunk: #11171c;
+	--surface: #151c22;
+	--surface-2: #1c252c;
+	color-scheme: dark;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--accent: #3cb0a6;
+		--accent-ink: #06201e;
+		--accent-soft: #15302e;
+		--bg: #0e1317;
+		--critical: #f2786b;
+		--critical-soft: #3a1d1a;
+		--fg: #e4e9ee;
+		--high: #f0a05a;
+		--high-soft: #3a2614;
+		--info: #7aa9f0;
+		--info-soft: #172840;
+		--line: #26313a;
+		--low: #9aa6b2;
+		--low-soft: #1f272e;
+		--medium: #d9be4a;
+		--medium-soft: #332c12;
+		--muted: #94a1ad;
+		--ok: #5cc483;
+		--ok-soft: #16301f;
+		--quiet: #6f7c88;
+		--sunk: #11171c;
+		--surface: #151c22;
+		--surface-2: #1c252c;
+		color-scheme: dark;
+	}
+}

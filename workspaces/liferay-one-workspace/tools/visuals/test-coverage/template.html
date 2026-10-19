@@ -1,0 +1,344 @@
+<title>Test Coverage</title>
+<style>
+/* Layout: a coverage ledger. Summary tiles, then a grouped status bar list beside a drill down, then the tier breakdown. */
+:root {
+	--wrap-width: 1440px;
+	--real: var(--ok);
+	--pending: var(--medium);
+	--uncovered: var(--critical);
+	--deferred: var(--quiet);
+}
+.meter { display: flex; gap: 2px; height: 10px; border-radius: 5px; overflow: hidden; background: var(--surface-2); margin-top: 6px; }
+.meter i { display: block; height: 100%; min-width: 0; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.key { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.k-real { background: var(--real); } .k-pending { background: var(--pending); } .k-uncovered { background: var(--uncovered); }
+.k-deferred { background: repeating-linear-gradient(135deg, var(--deferred) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--deferred); }
+.k-verified { background: var(--real); } .k-partial { background: var(--pending); } .k-unverified { background: var(--uncovered); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.group > .eyebrow { margin-right: 2px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="false"] { opacity: 0.45; }
+.chip[aria-pressed="false"] .key { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+#search { flex: 1 1 180px; min-width: 0; padding: 5px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--fg); font: inherit; font-size: 14px; }
+button:focus-visible, input:focus-visible, .row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.bench { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 520px); gap: 16px; align-items: start; }
+@media (max-width: 1040px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.panel-head { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; justify-content: space-between; }
+.panel-head p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+.rows { display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: minmax(0, 210px) minmax(0, 1fr) 92px; gap: 12px; align-items: center; padding: 6px 8px; border-radius: 7px; cursor: pointer; border: 1px solid transparent; }
+.row:hover { background: var(--surface-2); }
+.row.sel { border-color: var(--accent); background: var(--surface-2); }
+.row .name { min-width: 0; display: grid; }
+.row .name b { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .name small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .gap { text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted); }
+.row .gap b { color: var(--fg); font-weight: 600; }
+.track { position: relative; height: 14px; }
+.bar { display: flex; gap: 2px; height: 100%; }
+.bar i { display: block; height: 100%; min-width: 2px; }
+.bar i:first-child { border-radius: 4px 0 0 4px; }
+.bar i:last-child { border-radius: 0 4px 4px 0; }
+.bar i:only-child { border-radius: 4px; }
+.s-real, .s-verified { background: var(--real); }
+.s-pending, .s-partial { background: var(--pending); }
+.s-uncovered, .s-unverified { background: var(--uncovered); }
+.s-deferred { background: repeating-linear-gradient(135deg, var(--deferred) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px var(--deferred); }
+@media (max-width: 560px) { .row { grid-template-columns: minmax(0, 1fr) 80px; } .row .track { grid-column: 1 / -1; grid-row: 2; } }
+
+#tip { position: fixed; z-index: 10; pointer-events: none; background: var(--fg); color: var(--bg); font-size: 12.5px; padding: 6px 9px; border-radius: 6px; max-width: 280px; line-height: 1.4; }
+
+.drill { max-height: 78vh; overflow: auto; }
+.list { display: grid; gap: 0; }
+.entry { display: grid; gap: 4px; padding: 10px 0; border-top: 1px solid var(--line); min-width: 0; }
+.entry:first-child { border-top: 0; }
+.entry-top { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.entry p { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.entry .meta { font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 1px 8px 1px 6px; border-radius: 999px; background: var(--surface-2); color: var(--fg); white-space: nowrap; }
+.pill .key { width: 9px; height: 9px; border-radius: 2px; }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11.5px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.cites { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.cites span { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11.5px; }
+.cites .key { width: 8px; height: 8px; border-radius: 2px; }
+.empty { color: var(--muted); font-size: 14px; }
+
+.tiers { display: grid; gap: 4px; }
+.tiers .row { grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 130px; cursor: default; }
+.tiers .row:hover { background: transparent; }
+@media (max-width: 560px) { .tiers .row { grid-template-columns: minmax(0, 1fr) 120px; } }
+@media (prefers-reduced-motion: no-preference) { .row { transition: background-color 120ms ease; } }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">tests/plan and specs · <span id="generated"></span></div>
+		<h1>Test Coverage</h1>
+		<p>How much of the test plan has a real test, and which requirements those tests verify. A plan item is <b>real</b> when a test that is not a stub covers it, <b>pending</b> when only a failing stub covers it, and <b>uncovered</b> when no test does. <b>Deferred</b> items are out of go-live scope. The numbers match <code>yarn plan:report</code>.</p>
+	</header>
+
+	<section class="tiles" id="tiles" aria-label="Summary"></section>
+
+	<div class="toolbar" role="toolbar" aria-label="Grouping and filters">
+		<div class="group">
+			<span class="eyebrow">Group by</span>
+			<div class="seg" id="mode">
+				<button id="m-area" data-mode="area" aria-pressed="true">Requirement area</button>
+				<button id="m-epic" data-mode="epic" aria-pressed="false">Epic</button>
+				<button id="m-file" data-mode="file" aria-pressed="false">Plan file</button>
+			</div>
+		</div>
+		<div class="group" id="status-chips"></div>
+		<div class="group" id="tier-chips"></div>
+		<input id="search" type="search" placeholder="Find an ID or text" aria-label="Find an ID or text">
+	</div>
+
+	<div class="bench">
+		<section class="panel" aria-labelledby="chart-title">
+			<div class="panel-head">
+				<h2 id="chart-title"></h2>
+				<p id="chart-note"></p>
+			</div>
+			<div class="legend" id="legend"></div>
+			<div class="rows" id="rows" role="listbox" aria-labelledby="chart-title"></div>
+		</section>
+		<aside class="panel drill" id="drill" aria-live="polite"></aside>
+	</div>
+
+	<section class="panel" aria-labelledby="tier-title">
+		<div class="panel-head">
+			<h2 id="tier-title">By Tier</h2>
+			<p>Plan items per test runner, at one scale. Deferred items sit at the end of each bar.</p>
+		</div>
+		<div class="tiers" id="tiers"></div>
+	</section>
+
+	<footer>Generated from <code>tests/plan/*.md</code>, <code>specs/business</code>, <code>specs/technical</code>, and the test tags indexed by <code>tests/scripts/lib</code>. Epics come from the E numbers in a plan item's requirement text, so most unit rows have no epic. A test file marked * was matched by naming convention, not by a plan ID tag.</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const DATA = __DATA__;
+
+const KLASSES = ["real", "pending", "uncovered", "deferred"];
+const REQ_KLASSES = ["verified", "partial", "unverified"];
+const MARK = {real: "✓", pending: "⏳", uncovered: "✗", deferred: "⊘", verified: "✓", partial: "◐", unverified: "✗"};
+const LABEL = {real: "Real", pending: "Pending", uncovered: "Uncovered", deferred: "Deferred", verified: "Verified", partial: "Partial", unverified: "Unverified"};
+const TIERS = [["junit", "JUnit"], ["vitest", "Vitest"], ["integration", "Playwright integration"], ["e2e", "Playwright e2e"]];
+const TIER_LABEL = Object.fromEntries(TIERS);
+const NO_EPIC = "No epic";
+
+const itemById = new Map(DATA.items.map(i => [i.id, i]));
+const state = {mode: "area", status: new Set(KLASSES), reqStatus: new Set(REQ_KLASSES), tiers: new Set(TIERS.map(t => t[0])), query: "", selected: null};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"})[c]);
+const pct = (a, b) => b ? `${Math.round(a / b * 1000) / 10}%` : "0%";
+const pill = k => `<span class="pill"><i class="key k-${k}"></i>${MARK[k]} ${LABEL[k]}</span>`;
+
+$("generated").textContent = DATA.generated;
+
+function tiles() {
+	const planned = DATA.items.filter(i => i.klass !== "deferred");
+	const real = planned.filter(i => i.klass === "real").length;
+	const count = k => DATA.items.filter(i => i.klass === k).length;
+	const verified = DATA.requirements.filter(r => r.klass === "verified").length;
+	const traceable = DATA.items.filter(i => i.traceable);
+	const traced = traceable.filter(i => i.requirements.length).length;
+	const meter = (parts, total) => `<div class="meter" aria-hidden="true">${parts.map(([k, n]) => n ? `<i class="s-${k}" style="flex:${n}"></i>` : "").join("")}</div>`;
+	$("tiles").innerHTML = [
+		`<div class="tile"><span>Go-live coverage</span><b>${pct(real, planned.length)}</b><span>${real} of ${planned.length} planned items have a real test</span>${meter([["real", count("real")], ["pending", count("pending")], ["uncovered", count("uncovered")]])}</div>`,
+		`<div class="tile"><span>Requirements verified</span><b>${pct(verified, DATA.requirements.length)}</b><span>${verified} of ${DATA.requirements.length} have a real test for every item they cite</span>${meter(REQ_KLASSES.map(k => [k, DATA.requirements.filter(r => r.klass === k).length]))}</div>`,
+		`<div class="tile"><span>Traced to a requirement</span><b>${pct(traced, traceable.length)}</b><span>${traced} of ${traceable.length} plan items are cited by a requirement</span></div>`,
+		`<div class="tile"><span>Plan items by status</span><b>${DATA.items.length}</b><span>${KLASSES.map(k => `${MARK[k]} ${count(k)} ${LABEL[k].toLowerCase()}`).join(" · ")}</span></div>`,
+	].join("");
+}
+
+function chips() {
+	const statusSet = state.mode === "area" ? REQ_KLASSES : KLASSES;
+	const active = state.mode === "area" ? state.reqStatus : state.status;
+	$("status-chips").innerHTML = `<span class="eyebrow">Status</span>` + statusSet.map(k => `<button class="chip" id="st-${k}" data-status="${k}" aria-pressed="${active.has(k)}"><i class="key k-${k}"></i>${LABEL[k]}</button>`).join("");
+	$("tier-chips").innerHTML = `<span class="eyebrow">Tier</span>` + TIERS.map(([k, l]) => `<button class="chip" id="ti-${k}" data-tier="${k}" aria-pressed="${state.tiers.has(k)}">${l}</button>`).join("");
+	$("legend").innerHTML = statusSet.map(k => `<span><i class="key k-${k}"></i>${MARK[k]} ${LABEL[k]}</span>`).join("");
+}
+
+function matches(text) {
+	return !state.query || text.toLowerCase().includes(state.query);
+}
+
+function visibleItems() {
+	return DATA.items.filter(i => state.status.has(i.klass) && state.tiers.has(i.tier) && matches(`${i.id} ${i.requirement}`));
+}
+
+function visibleRequirements() {
+	return DATA.requirements.filter(r => {
+		if (!state.reqStatus.has(r.klass) || !matches(`${r.id} ${r.text}`)) return false;
+		const cited = r.verifiedBy.map(id => itemById.get(id)).filter(Boolean);
+		return !cited.length || cited.some(i => state.tiers.has(i.tier));
+	});
+}
+
+function groups() {
+	const map = new Map();
+	const add = (key, sub, x) => {
+		if (!map.has(key)) map.set(key, {key, sub, members: []});
+		map.get(key).members.push(x);
+	};
+	if (state.mode === "area") {
+		for (const r of visibleRequirements()) add(r.area, r.kind === "technical" ? "Technical" : "Business", r);
+	} else {
+		for (const i of visibleItems()) {
+			if (state.mode === "file") add(i.file, "", i);
+			else if (i.epics.length) i.epics.forEach(e => add(e, DATA.epicNames[e] || "", i));
+			else add(NO_EPIC, "Unit rows and flows with no epic", i);
+		}
+	}
+	const keys = state.mode === "area" ? REQ_KLASSES : KLASSES;
+	const gapKeys = state.mode === "area" ? ["partial", "unverified"] : ["pending", "uncovered"];
+	const list = [...map.values()].map(g => {
+		g.counts = Object.fromEntries(keys.map(k => [k, g.members.filter(m => m.klass === k).length]));
+		g.gap = gapKeys.reduce((s, k) => s + g.counts[k], 0);
+		g.total = g.members.length;
+		return g;
+	});
+	return list.sort((a, b) => (a.key === NO_EPIC) - (b.key === NO_EPIC) || b.gap - a.gap || b.total - a.total || a.key.localeCompare(b.key));
+}
+
+function render() {
+	const list = groups();
+	const keys = state.mode === "area" ? REQ_KLASSES : KLASSES;
+	const noun = state.mode === "area" ? "requirements" : "plan items";
+	$("chart-title").textContent = {epic: "Plan items by epic", area: "Requirements by area", file: "Plan items by plan file"}[state.mode];
+	$("chart-note").textContent = `Each bar is the share of its ${noun}, sorted by the number not yet ${state.mode === "area" ? "verified" : "real"}.`;
+	if (!list.find(g => g.key === state.selected)) state.selected = list[0]?.key ?? null;
+	$("rows").innerHTML = list.length ? list.map(g => {
+		const segs = keys.filter(k => g.counts[k]).map(k => `<i class="s-${k}" style="flex:${g.counts[k]}" data-tip="${esc(`${g.key}: ${MARK[k]} ${g.counts[k]} ${LABEL[k].toLowerCase()} of ${g.total} ${noun}`)}"></i>`).join("");
+		return `<div class="row${g.key === state.selected ? " sel" : ""}" role="option" tabindex="0" aria-selected="${g.key === state.selected}" data-key="${esc(g.key)}">
+			<div class="name"><b>${esc(g.key)}</b><small>${esc(g.sub || `${g.total} ${noun}`)}</small></div>
+			<div class="track"><div class="bar">${segs}</div></div>
+			<div class="gap"><b>${g.gap}</b> open of ${g.total}</div>
+		</div>`;
+	}).join("") : `<p class="empty">Nothing matches these filters. Turn a status or tier back on, or clear the search.</p>`;
+	drill(list.find(g => g.key === state.selected));
+	tiers();
+}
+
+function tests(i) {
+	if (!i.tests.length) return "No covering test";
+	return i.tests.map(t => `<span title="${esc(t.file)}">${esc(t.file.split("/").pop())}${t.inferred ? " *" : ""}</span>`).join(", ");
+}
+
+function drill(g) {
+	if (!g) {
+		$("drill").innerHTML = `<p class="empty">Select a bar to list what it holds.</p>`;
+		return;
+	}
+	const head = `<div class="panel-head"><h3>${esc(g.key)}${g.sub ? ` <span class="tag">${esc(g.sub)}</span>` : ""}</h3><p>${g.gap} open of ${g.total}</p></div>`;
+	const rank = {uncovered: 0, pending: 1, real: 2, deferred: 3, unverified: 0, partial: 1, verified: 2};
+	const members = [...g.members].sort((a, b) => rank[a.klass] - rank[b.klass] || a.id.localeCompare(b.id));
+	const body = state.mode === "area"
+		? members.map(r => `<div class="entry">
+			<div class="entry-top">${pill(r.klass)}<code>${esc(r.id)}</code><span class="tag">${esc(r.priority)}</span>${r.tickets ? `<span class="tag">${esc(r.tickets)}</span>` : ""}</div>
+			<p>${esc(r.text)}</p>
+			<div class="cites">${r.verifiedBy.length ? r.verifiedBy.map(id => { const i = itemById.get(id); return `<span title="${esc(i ? `${LABEL[i.klass]} · ${TIER_LABEL[i.tier]} · ${i.requirement}` : "Not a plan item")}"><i class="key k-${i ? i.klass : "deferred"}"></i>${esc(id)}</span>`; }).join("") : `<span class="empty">Cites no plan item</span>`}</div>
+			<div class="meta">${r.real} of ${r.verifiedBy.length} cited items real · ${esc(r.file)}</div>
+		</div>`).join("")
+		: members.map(i => `<div class="entry">
+			<div class="entry-top">${pill(i.klass)}<code>${esc(i.id)}</code><span class="tag">${esc(TIER_LABEL[i.tier])}</span><span class="tag">${esc(i.priority)}</span></div>
+			<p>${esc(i.requirement)}</p>
+			<div class="meta">${tests(i)}</div>
+			<div class="meta">${i.requirements.length ? `Cited by ${i.requirements.map(esc).join(", ")}` : (i.traceable ? "No requirement cites it" : "")} · tests/plan/${esc(i.file)}.md:${i.line}</div>
+		</div>`).join("");
+	$("drill").innerHTML = head + `<div class="list">${body}</div>`;
+}
+
+function tiers() {
+	const items = DATA.items.filter(i => matches(`${i.id} ${i.requirement}`));
+	const rows = TIERS.map(([k, l]) => {
+		const inTier = items.filter(i => i.tier === k);
+		const counts = Object.fromEntries(KLASSES.map(c => [c, inTier.filter(i => i.klass === c).length]));
+		return {k, l, counts, total: inTier.length, planned: inTier.length - counts.deferred};
+	});
+	const max = Math.max(1, ...rows.map(r => r.total));
+	$("tiers").innerHTML = rows.map(r => `<div class="row">
+		<div class="name"><b>${esc(r.l)}</b><small>${r.total} plan items</small></div>
+		<div class="track"><div class="bar" style="width:${r.total / max * 100}%">${KLASSES.filter(c => r.counts[c]).map(c => `<i class="s-${c}" style="flex:${r.counts[c]}" data-tip="${esc(`${r.l}: ${MARK[c]} ${r.counts[c]} ${LABEL[c].toLowerCase()}`)}"></i>`).join("")}</div></div>
+		<div class="gap"><b>${pct(r.counts.real, r.planned)}</b> real · ${r.counts.deferred} deferred</div>
+	</div>`).join("");
+}
+
+$("mode").addEventListener("click", e => {
+	const b = e.target.closest("button");
+	if (!b) return;
+	state.mode = b.dataset.mode;
+	state.selected = null;
+	for (const x of $("mode").querySelectorAll("button")) x.setAttribute("aria-pressed", String(x === b));
+	chips();
+	render();
+});
+
+document.addEventListener("click", e => {
+	const s = e.target.closest("[data-status]");
+	const t = e.target.closest("[data-tier]");
+	if (s) {
+		const set = state.mode === "area" ? state.reqStatus : state.status;
+		set.has(s.dataset.status) ? set.delete(s.dataset.status) : set.add(s.dataset.status);
+		s.setAttribute("aria-pressed", String(set.has(s.dataset.status)));
+		render();
+	}
+	if (t) {
+		state.tiers.has(t.dataset.tier) ? state.tiers.delete(t.dataset.tier) : state.tiers.add(t.dataset.tier);
+		t.setAttribute("aria-pressed", String(state.tiers.has(t.dataset.tier)));
+		render();
+	}
+});
+
+function select(row) {
+	state.selected = row.dataset.key;
+	for (const r of $("rows").querySelectorAll(".row")) {
+		r.classList.toggle("sel", r === row);
+		r.setAttribute("aria-selected", String(r === row));
+	}
+	drill(groups().find(g => g.key === state.selected));
+	if (matchMedia("(max-width: 1040px)").matches) $("drill").scrollIntoView({block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+}
+
+$("rows").addEventListener("click", e => { const r = e.target.closest(".row"); if (r) select(r); });
+$("rows").addEventListener("keydown", e => {
+	const r = e.target.closest(".row");
+	if (!r) return;
+	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(r); }
+	if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); (e.key === "ArrowDown" ? r.nextElementSibling : r.previousElementSibling)?.focus(); }
+});
+
+let searchTimer;
+$("search").addEventListener("input", e => {
+	clearTimeout(searchTimer);
+	searchTimer = setTimeout(() => { state.query = e.target.value.trim().toLowerCase(); render(); }, 120);
+});
+
+const tip = $("tip");
+document.addEventListener("pointermove", e => {
+	const seg = e.target.closest("[data-tip]");
+	if (!seg) { tip.hidden = true; return; }
+	tip.textContent = seg.dataset.tip;
+	tip.hidden = false;
+	const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8);
+	const y = e.clientY + 18 + tip.offsetHeight > innerHeight ? e.clientY - tip.offsetHeight - 10 : e.clientY + 18;
+	tip.style.left = `${Math.max(8, x)}px`;
+	tip.style.top = `${y}px`;
+});
+document.addEventListener("pointerleave", () => { tip.hidden = true; });
+
+tiles();
+chips();
+render();
+</script>

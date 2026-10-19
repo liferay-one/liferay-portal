@@ -1,0 +1,384 @@
+<title>Workspace Health</title>
+
+<style>
+/* Layout: a front desk. An overview with one card per layer and the triage queue, then one tab of actions for each layer, and a workspace tab for what spans the layers. */
+:root {
+	--wrap-width: 1280px;
+	--done: var(--ok);
+}
+p { margin: 0; }
+.muted { color: var(--muted); }
+
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); }
+.tabs button { border: 0; border-bottom: 2px solid transparent; background: none; color: var(--muted); font: inherit; font-weight: 600; padding: 8px 12px; cursor: pointer; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.tabs button span { font-weight: 400; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+section.panel { display: grid; gap: 20px; }
+section.panel[hidden] { display: none; }
+.tile.warn { box-shadow: inset 3px 0 0 var(--high); }
+.tile.good { box-shadow: inset 3px 0 0 var(--done); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: baseline; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 12px; align-items: start; }
+.table-wrap { overflow-x: auto; }
+td.text { min-width: 280px; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.id { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+.pill { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11.5px; line-height: 19px; white-space: nowrap; border: 1px solid currentColor; }
+.sev-Critical { color: var(--critical); } .sev-High { color: var(--high); } .sev-Medium { color: var(--medium); } .sev-Low { color: var(--low); }
+.sev-other { color: var(--info); }
+.empty { padding: 18px; color: var(--muted); text-align: center; }
+.empty code { color: var(--fg); }
+details summary { cursor: pointer; color: var(--accent); font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; font-family: var(--font-mono); font-size: 11.5px; }
+.chips span { background: var(--surface-2); border-radius: 4px; padding: 1px 6px; overflow-wrap: anywhere; }
+
+.specs { display: grid; gap: 10px; }
+.spec { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.spec > summary { cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: baseline; list-style: none; padding: 12px 14px; }
+.spec > summary::-webkit-details-marker { display: none; }
+.spec .name { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
+.spec .score { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; white-space: nowrap; }
+.spec .score b { color: var(--critical); }
+.spec.clean .score b { color: var(--ok); }
+.refs { border-top: 1px solid var(--line); overflow-x: auto; }
+.refs td.where { color: var(--muted); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; width: 1%; }
+.refs td.ref { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.refs tr.missing td.ref { color: var(--critical); }
+
+.layer-cards { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.layer-card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; gap: 8px; padding: 14px; }
+.layer-card .counts { gap: 4px 16px; }
+.layer-card .counts b { font-size: 20px; }
+.layer-card .links { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; }
+.status-dot { border-radius: 50%; display: inline-block; height: 10px; margin-right: 6px; width: 10px; }
+.fresh { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.fresh b { color: var(--fg); font-weight: 600; }
+.fresh .stale { color: var(--medium); }
+.copy { background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; padding: 2px 8px; }
+.pill.new { color: var(--info); }
+.untracked { color: var(--medium); font-size: 12px; }
+.ws-nav { margin-bottom: 4px; }
+a.src { color: var(--accent); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">Actions by layer · <span id="generated"></span></div>
+
+		<h1>Workspace Health</h1>
+
+		<p>Everything to act on in the workspace. The Model, View, and Controller pages show what the code is. Each problem, known defect, and finding that they report comes here, sorted by layer, with the actions that span the layers: the dependencies, the tests, the change hotspots, and the specs. An action that no ticket or audit ID tracks is in the triage queue.</p>
+	</header>
+
+	<div aria-label="Sections" class="tabs" id="tabs" role="tablist"></div>
+
+	<section class="panel" id="panel-overview" role="tabpanel"></section>
+	<section class="panel" hidden id="panel-model" role="tabpanel"></section>
+	<section class="panel" hidden id="panel-view" role="tabpanel"></section>
+	<section class="panel" hidden id="panel-controller" role="tabpanel"></section>
+	<section class="panel" hidden id="panel-workspace" role="tabpanel">
+		<div aria-label="Workspace sections" class="seg ws-nav" id="ws-nav" role="group"></div>
+		<div id="ws-actions"></div>
+		<div hidden id="ws-dependencies" style="display:grid;gap:20px"></div>
+		<div hidden id="ws-tests" style="display:grid;gap:20px"></div>
+		<div hidden id="ws-changes" style="display:grid;gap:20px"></div>
+		<div hidden id="ws-specs" style="display:grid;gap:20px"></div>
+	</section>
+
+	<footer>
+		<p>Generated by <code>tools/visuals/workspace-health</code>. A problem fails <code>yarn viz:check</code>. A known defect is listed in <code>known-defects.json</code> with its ticket or audit ID. A finding comes from a visual's own input or scan. An action is tracked when a known defect gives its reason, or when its text names a ticket or a Go-Live Tasks ID.</p>
+		<p>The dependency section reads the <code>package.json</code> files, <code>yarn.lock</code>, and the <code>build.gradle</code> of each client extension, and the snapshot that <code>yarn viz:deps</code> writes. The tests section reads the test sources and the run history that <code>yarn viz:tests</code> records. The changes section reads <code>git log</code>. The specs section checks the names in backticks in <code>specs/</code> against the code. <code>yarn viz:diff</code> marks the actions that the current branch adds to its base.</p>
+	</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
+const md = s => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+const kb = n => n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(2)} MB` : `${(n / 1024).toFixed(1)} KB`;
+const days = iso => iso ? Math.max(0, Math.floor((Date.parse(DATA.generated) - Date.parse(iso.slice(0, 10))) / 86400000)) : null;
+// A version whose first number is a date, such as 20231013, has no major version to count.
+const major = v => { const m = /^(\d+)/.exec(String(v ?? "")); return m && m[1].length < 5 ? Number(m[1]) : null; };
+
+$("generated").textContent = DATA.generated;
+
+const deps = DATA.dependencies;
+const snap = deps.snapshot;
+
+const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"];
+const SEVERITY_CLASS = {critical: "sev-Critical", high: "sev-High", medium: "sev-Medium", low: "sev-Low"};
+const KIND_LABEL = {problem: "Problem", defect: "Known defect", finding: "Finding"};
+const LAYERS = [
+	{id: "model", label: "Model"},
+	{id: "view", label: "View"},
+	{id: "controller", label: "Controller"},
+	{id: "workspace", label: "Workspace"},
+];
+
+const keyOf = a => `${a.visual}\u0000${a.title.replace(/\d+/g, "#")}`;
+const added = new Set(DATA.diff?.added ?? []);
+const ACTIONS = DATA.actions
+	.map(a => ({...a, isNew: added.has(keyOf(a))}))
+	.sort((a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity) || a.visual.localeCompare(b.visual) || a.title.localeCompare(b.title));
+const open = a => a.severity !== "info";
+const triage = ACTIONS.filter(a => open(a) && !a.tracked);
+
+// Where an action came from, as a link to the generated page, tab, and
+// section that show it. Links stay among the generated pages.
+const WS_SECTION = a => /vulnerab|Gradle|latest\.release/.test(a.title) ? "dependencies" : /test/i.test(a.title) ? "tests" : /\.md is out of date/.test(a.title) ? "specs" : "actions";
+function placeLink(a) {
+	if (a.visual === "workspace-health" || DATA.places[a.visual]?.page === "workspace-health") {
+		const section = WS_SECTION(a);
+		const item = a.item ?? (section === "actions" ? a.title.replace(/`/g, "") : "");
+		return `<a class="jump" data-item="${esc(item)}" data-tab="workspace" data-ws="${section}">Workspace · ${section[0].toUpperCase() + section.slice(1)}</a>`;
+	}
+	const place = a.visual === "rules" ? {page: a.layer, tab: "rules", title: `${LAYERS.find(l => l.id === a.layer)?.label ?? a.layer} · Rules`} : DATA.places[a.visual];
+	if (!place) return esc(a.visual);
+	const hash = place.tab ? `#${place.tab}${a.anchor ? "." + a.anchor : ""}${a.item ? "~" + vizEncode(a.item) : ""}` : "";
+	return `<a href="${esc(place.page)}.html${esc(hash)}" style="color:var(--accent)">${esc(place.title)}</a>`;
+}
+
+// A link to the code an action names, on GitHub.
+function sourceLink(source) {
+	if (!source) return "";
+	const m = /^([\w./@-]+\.\w+)(?::(\d+))?$/.exec(source.trim());
+	if (!m || !DATA.github) return `<div class="muted mono" style="margin-top:4px;overflow-wrap:anywhere">${esc(source)}</div>`;
+	return `<div style="margin-top:4px"><a class="src" href="${esc(DATA.github + m[1])}${m[2] ? "#L" + m[2] : ""}" rel="noopener" target="_blank">${esc(source)}</a></div>`;
+}
+
+function markdown(list) {
+	return list.map(a => [
+		`- **[${a.severity}] ${a.title}**`,
+		a.detail ? ` ${a.detail}` : "",
+		` From: ${a.visual === "rules" ? a.layer + " rules" : DATA.places[a.visual]?.title ?? a.visual}`,
+		a.source ? ` Source: ${a.source}` : "",
+		` Tracked: ${a.tracked ?? "not tracked"}`,
+	].filter(Boolean).join("\n")).join("\n");
+}
+
+async function copy(text, button) {
+	const label = button.textContent;
+	try { await navigator.clipboard.writeText(text); button.textContent = "Copied"; }
+	catch { const area = document.createElement("textarea"); area.value = text; button.after(area); area.select(); button.textContent = "Selected, press copy"; setTimeout(() => area.remove(), 6000); }
+	setTimeout(() => { button.textContent = label; }, 2000);
+}
+
+const filters = {};
+function filterOf(layer) {
+	return filters[layer] ??= {kind: new Set(["problem", "defect", "finding"]), tracked: "all", fresh: false, query: ""};
+}
+
+function actionTable(layer) {
+	const f = filterOf(layer);
+	const shown = ACTIONS.filter(a => a.layer === layer && f.kind.has(a.kind)
+		&& (f.tracked === "all" || (f.tracked === "untracked" ? !a.tracked && open(a) : Boolean(a.tracked)))
+		&& (!f.fresh || a.isNew)
+		&& (!f.query || `${a.title} ${a.detail ?? ""} ${a.source ?? ""}`.toLowerCase().includes(f.query)));
+	window.__shown = window.__shown || {};
+	window.__shown[layer] = shown;
+	return `<div class="card">
+		<div class="card-head"><h3>Actions</h3>
+			<div class="toolbar">
+				<div aria-label="Kind" class="seg" role="group">${Object.entries(KIND_LABEL).map(([k, l]) => `<button aria-pressed="${f.kind.has(k)}" data-kind="${k}" data-layer="${layer}" type="button">${l}</button>`).join("")}</div>
+				<div aria-label="Tracking" class="seg" role="group">${[["all", "All"], ["untracked", "Triage"], ["tracked", "Tracked"]].map(([k, l]) => `<button aria-pressed="${f.tracked === k}" data-tracked="${k}" data-layer="${layer}" type="button">${l}</button>`).join("")}</div>
+				${DATA.diff ? `<div class="seg" role="group"><button aria-pressed="${f.fresh}" data-fresh data-layer="${layer}" type="button">New on this branch</button></div>` : ""}
+				<input aria-label="Find an action" data-query data-layer="${layer}" placeholder="Find an action" type="search" value="${esc(f.query)}" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px" />
+
+				<button class="btn" data-copy-all="${layer}" type="button">Copy ${shown.length} as Markdown</button>
+			</div>
+		</div>
+		${shown.length ? `<div class="table-wrap"><table><thead><tr><th>Severity</th><th>Action</th><th>From</th><th>Tracked</th><th></th></tr></thead><tbody>${shown.map((a, i) => `<tr>
+			<td><span class="pill ${SEVERITY_CLASS[a.severity] ?? "sev-other"}">${esc(a.severity)}</span>${a.isNew ? `<br /><span class="pill new" style="margin-top:4px">new</span>` : ""}</td>
+			<td class="text"><b>${md(a.title)}</b>${a.detail ? `<div class="muted" style="margin-top:4px">${md(a.detail)}</div>` : ""}${sourceLink(a.source)}<div class="muted" style="font-size:12px;margin-top:4px">${KIND_LABEL[a.kind]}</div></td>
+			<td>${placeLink(a)}</td>
+			<td>${a.tracked ? esc(a.tracked) : open(a) ? `<span class="untracked">not tracked</span>` : "—"}</td>
+			<td><button class="copy" data-copy-one="${layer}:${i}" type="button">Copy</button></td>
+		</tr>`).join("")}</tbody></table></div>` : `<p class="muted">Nothing matches.</p>`}
+	</div>`;
+}
+
+const PAGE_FOR = {model: "model", view: "view", controller: "controller"};
+
+function renderOverview() {
+	const staleDays = 7;
+	const fresh = DATA.freshness.map(s => {
+		const age = s.date ? days(s.date) : null;
+		return `<span>${esc(s.name)}: ${age === null ? `<span class="stale">never read</span>` : `<b class="${age > staleDays ? "stale" : ""}">${age === 0 ? "today" : age + " d ago"}</b>`}${age === null || age > staleDays ? ` · <code>${esc(s.command)}</code>` : ""}</span>`;
+	}).join("");
+	const cards = LAYERS.map(l => {
+		const list = ACTIONS.filter(a => a.layer === l.id && open(a));
+		const severe = list.filter(a => a.severity === "critical" || a.severity === "high").length;
+		const color = list.some(a => a.kind === "problem") || severe ? "var(--critical)" : list.length ? "var(--medium)" : "var(--ok)";
+		const page = PAGE_FOR[l.id];
+		const url = page ? `${page}.html` : null;
+		return `<div class="layer-card">
+			<h3><span class="status-dot" style="background:${color}"></span>${l.label}</h3>
+
+			<div class="counts"><div><b>${severe}</b><span>critical or high</span></div><div><b>${list.filter(a => a.severity === "medium").length}</b><span>medium</span></div><div><b>${list.filter(a => a.severity === "low").length}</b><span>low</span></div></div>
+			<div class="muted" style="font-size:13px">${list.filter(a => !a.tracked).length} not tracked${DATA.diff ? ` · ${list.filter(a => a.isNew).length} new on this branch` : ""}</div>
+			<div class="links"><a class="jump" data-tab="${l.id}">Open the ${l.label.toLowerCase()} actions</a>${url ? `<a href="${esc(url)}" style="color:var(--accent)">${l.label} page</a>` : ""}</div>
+		</div>`;
+	}).join("");
+	$("panel-overview").innerHTML = `
+		<div class="fresh">${fresh}</div>
+		${DATA.diff ? `<div class="card"><h3>This Branch</h3><p class="muted" style="margin:0">Compared with <code>${esc(DATA.diff.base)}</code> on ${esc(DATA.diff.date.slice(0, 10))}: <b>${DATA.diff.added.length}</b> new actions and <b>${DATA.diff.resolved.length}</b> resolved. Use the New on this branch filter on a layer tab to see the new ones.</p>${DATA.diff.resolved.length ? `<details><summary>Resolved</summary><ul>${DATA.diff.resolved.map(r => `<li>${esc(r)}</li>`).join("")}</ul></details>` : ""}</div>` : ""}
+		<div class="layer-cards">${cards}</div>
+		<div class="card"><div class="card-head"><h3>Triage Queue</h3><button class="btn" data-copy-triage type="button">Copy ${triage.length} as Markdown</button></div>
+			<p class="muted" style="margin:0">Open actions that no ticket, audit ID, or known defect tracks. File a ticket for each one, add it to known-defects.json with its ID, or fix it.</p>
+
+			<div class="table-wrap"><table><tbody>${triage.slice(0, 15).map(a => `<tr><td><span class="pill ${SEVERITY_CLASS[a.severity] ?? "sev-other"}">${esc(a.severity)}</span></td><td class="text">${md(a.title)}</td><td>${placeLink(a)}</td></tr>`).join("")}</tbody></table></div>
+			${triage.length > 15 ? `<p class="muted" style="margin:0">${triage.length - 15} more on the layer tabs, with the Triage filter.</p>` : ""}
+		</div>`;
+}
+
+// Workspace tab: its actions, then the dependencies, the tests, the change hotspots, and the specs.
+const WS = [["actions", "Actions"], ["dependencies", "Dependencies"], ["tests", "Tests"], ["changes", "Changes"], ["specs", "Specs"]];
+let ws = "actions";
+
+// Dependencies tab.
+function renderDependencies() {
+	const list = deps.dependencies.map(d => {
+		const latest = snap?.latest[`${d.ecosystem}:${d.name}`] ?? null;
+		const current = d.version ?? (/^\D*(\d[\w.-]*)/.exec(d.declared)?.[1] ?? null);
+		const behind = latest && major(current) !== null && major(latest) !== null ? major(latest) - major(current) : null;
+		const newer = behind === null && latest && current && latest !== current && major(current) === null;
+		return {...d, latest, behind, newer, floating: /^latest\./.test(d.declared)};
+	});
+	const majorsBehind = list.filter(d => d.behind > 0);
+	const floating = list.filter(d => d.floating);
+	const vulns = snap?.vulnerabilities ?? [];
+	const sevCount = s => vulns.filter(v => (v.severity ?? "").toUpperCase() === s).length;
+
+	const tiles = snap ? [
+		[vulns.length, "known vulnerabilities in locked versions", vulns.length ? "warn" : "good"],
+		[sevCount("CRITICAL") + sevCount("HIGH"), "critical or high", ""],
+		[majorsBehind.length, "dependencies a major version behind", majorsBehind.length ? "warn" : "good"],
+	] : [["—", "no snapshot: run yarn viz:deps", "warn"]];
+	tiles.push(
+		[floating.length, "Gradle dependencies on latest.release, so a build is not repeatable", floating.length ? "warn" : ""],
+		[deps.duplicates.length, `packages locked at more than one version, of ${deps.locked}`, ""],
+		[deps.resolutions.length, "pinned resolutions", ""],
+	);
+	if (deps.product) tiles.push([deps.product.behind ?? "—", `quarterly releases since ${deps.product.product}, the bundle that Gradle downloads`, deps.product.behind > 4 ? "warn" : ""]);
+
+	const vulnRows = vulns.slice().sort((a, b) => ["CRITICAL", "HIGH", "MODERATE", "LOW"].indexOf((a.severity ?? "").toUpperCase()) - ["CRITICAL", "HIGH", "MODERATE", "LOW"].indexOf((b.severity ?? "").toUpperCase()))
+		.map(v => `<tr><td class="id"><a href="https://osv.dev/vulnerability/${esc(v.id)}" style="color:var(--accent)">${esc(v.id)}</a></td><td><span class="pill ${({CRITICAL: "sev-Critical", HIGH: "sev-High", MODERATE: "sev-Medium", LOW: "sev-Low"})[(v.severity ?? "").toUpperCase()] ?? "sev-other"}">${esc(v.severity ?? "unrated")}</span></td><td class="id">${esc(v.packages.join(", "))}</td><td>${esc(v.summary)}</td></tr>`).join("");
+
+	const depRows = list.slice().sort((a, b) => (b.behind ?? -1) - (a.behind ?? -1) || a.name.localeCompare(b.name))
+		.map(d => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(d.name)}</td><td>${esc(d.ecosystem)}</td><td>${esc(d.kind)}</td><td class="id">${esc(d.declared)}${d.version && d.version !== d.declared ? `<br /><span class="muted">locked ${esc(d.version)}</span>` : ""}</td><td class="id">${esc(d.latest ?? "—")}</td><td class="num">${d.behind > 0 ? `<span class="pill sev-${d.behind > 1 ? "High" : "Medium"}">${d.behind} major</span>` : d.floating ? `<span class="pill sev-other">floating</span>` : d.newer ? `<span class="pill sev-other">newer release</span>` : ""}</td></tr>`).join("");
+
+	$("ws-dependencies").innerHTML = `
+		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+		${snap ? `<p class="muted">Snapshot read ${esc(snap.fetched.slice(0, 10))}, ${days(snap.fetched) ? `${days(snap.fetched)} days before this build.` : "the same day as this build."}</p>` : `<div class="card empty">No dependency snapshot. Run <code>yarn viz:deps</code>, then <code>yarn viz workspace-health</code>, to add the latest versions and the known vulnerabilities.</div>`}
+		${vulns.length ? `<div class="card"><h3>Known Vulnerabilities</h3><div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>Package</th><th>Summary</th></tr></thead><tbody>${vulnRows}</tbody></table></div></div>` : ""}
+		<div class="two">
+			<div class="card"><h3>Pinned Resolutions</h3>${deps.resolutions.length ? `<div class="table-wrap"><table><tbody>${deps.resolutions.map(r => `<tr><td class="id">${esc(r.name)}<br /><span class="muted">${esc(r.version)}</span></td><td>${md(r.reason ?? "No reason given.")}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted">None.</p>`}</div>
+			<div class="card"><h3>Locked at More Than One Version</h3><div class="table-wrap"><table><tbody>${deps.duplicates.slice(0, 12).map(d => `<tr><td class="id">${esc(d.name)}</td><td class="id">${esc(d.versions.join(", "))}</td></tr>`).join("")}</tbody></table></div>${deps.duplicates.length > 12 ? `<p class="muted">${deps.duplicates.length - 12} more.</p>` : ""}</div>
+		</div>
+
+		<div class="card"><h3>Declared Dependencies</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Ecosystem</th><th>Kind</th><th>Declared</th><th>Latest</th><th></th></tr></thead><tbody>${depRows}</tbody></table></div></div>`;
+}
+
+// Changes tab.
+function renderChanges() {
+	const h = DATA.hotspots;
+	$("ws-changes").innerHTML = `
+		<p class="muted" style="max-width:80ch">The source files that changed most in the last ${h.days} days, weighted by their size. A large file that many commits touch is where a change most often breaks something, and where a review needs the most care. Tests and language files are left out.</p>
+
+		<div class="card"><div class="table-wrap"><table><thead><tr><th>File</th><th style="text-align:right">Commits</th><th style="text-align:right">Authors</th><th style="text-align:right">Lines</th></tr></thead><tbody>${h.files.map(f => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(f.file.replace("client-extensions/", ""))}</td><td class="num">${f.commits}</td><td class="num">${f.authors}</td><td class="num">${f.lines}</td></tr>`).join("") || `<tr><td class="muted">No history.</td></tr>`}</tbody></table></div></div>`;
+}
+
+// Tests tab.
+function renderTests() {
+	const t = DATA.tests;
+	const count = k => t.markers.filter(m => m.kind === k).length;
+	const tiles = [
+		[t.files, "test files"],
+		[count("only"), "focused with .only", count("only") ? "warn" : "good"],
+		[count("skip"), "skipped or disabled", count("skip") ? "warn" : ""],
+		[count("conditional"), "skipped only in some environments", ""],
+		[t.flaky.length, "flaky in the recorded runs", t.flaky.length ? "warn" : ""],
+		[t.runs.length, "recorded runs", ""],
+	];
+	const markers = t.markers.filter(m => m.kind !== "conditional");
+	$("ws-tests").innerHTML = `
+		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c || ""}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+		${t.runs.length ? "" : `<div class="card empty">No recorded runs. After a test run, run <code>yarn viz:tests</code> to add its JUnit results to the history, then <code>yarn viz workspace-health</code>. A flaky test shows up once the history has a run where it passed and one where it failed.</div>`}
+		${markers.length ? `<div class="card"><h3>Skipped and Focused Tests</h3><div class="table-wrap"><table><tbody>${markers.map(m => `<tr><td><span class="pill ${m.kind === "only" ? "sev-High" : "sev-Low"}">${esc(m.kind)}</span></td><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(m.file)}:${m.line}</td><td class="id" style="white-space:normal">${esc(m.text)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+		${t.flaky.length ? `<div class="card"><h3>Flaky Tests</h3><div class="table-wrap"><table><thead><tr><th>Test</th><th>Suite</th><th style="text-align:right">Failed</th></tr></thead><tbody>${t.flaky.map(c => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(c.id)}</td><td>${esc(c.suite)}</td><td class="num">${c.failures} of ${c.runs}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+		${t.slowest.length ? `<div class="card"><h3>Slowest Tests</h3><div class="table-wrap"><table><thead><tr><th>Test</th><th>Suite</th><th style="text-align:right">Median</th></tr></thead><tbody>${t.slowest.map(c => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(c.id)}</td><td>${esc(c.suite)}</td><td class="num">${c.median.toFixed(1)} s</td></tr>`).join("")}</tbody></table></div></div>` : ""}`;
+}
+
+// Specs section.
+function renderSpecs() {
+	const all = DATA.specs.flatMap(s => s.references);
+	const KIND = {erc: "External reference codes", endpoint: "Endpoints", file: "Files", class: "Classes"};
+	const stale = DATA.specs.filter(s => s.references.some(r => !r.ok));
+	$("ws-specs").innerHTML = `
+		<p class="muted" style="max-width:80ch;margin:0">Each name that a spec puts in backticks and that the code no longer has: external reference codes, sidecar endpoints and object REST paths, files, and sidecar classes. A stale spec describes old code.</p>
+
+		<div class="tiles">${[[`${stale.length}/${DATA.specs.length}`, "stale specs"], [all.filter(r => !r.ok).length, `missing names of ${all.length}`], ...Object.entries(KIND).map(([k, l]) => [`${all.filter(r => r.kind === k && !r.ok).length}/${all.filter(r => r.kind === k).length}`, l.toLowerCase() + " missing"])].map(([n, l]) => `<div class="tile"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+		<div class="specs">${stale.map(s => `<details class="spec" open><summary><span class="name">${esc(s.file)}</span><span class="score"><b>${s.references.filter(r => !r.ok).length}</b> missing of ${s.references.length}</span></summary><div class="refs"><table><tbody>${s.references.filter(r => !r.ok).map(r => `<tr class="missing"><td class="where">line ${r.line}</td><td class="ref">${esc(r.name)}</td><td class="muted" style="width:1%;white-space:nowrap">${esc(KIND[r.kind])}</td></tr>`).join("")}</tbody></table></div></details>`).join("") || `<p class="muted">Every checked name exists in the code.</p>`}</div>`;
+}
+
+function renderWorkspace() {
+	$("ws-nav").innerHTML = WS.map(([k, l]) => `<button aria-pressed="${ws === k}" data-ws="${k}" type="button">${l}</button>`).join("");
+	for (const [k] of WS) $("ws-" + k).hidden = ws !== k;
+	if (ws === "actions") $("ws-actions").innerHTML = actionTable("workspace");
+	if (ws === "dependencies") renderDependencies();
+	if (ws === "tests") renderTests();
+	if (ws === "changes") renderChanges();
+	if (ws === "specs") renderSpecs();
+}
+
+// Tabs.
+const TABS = [
+	{id: "overview", label: "Overview", n: null},
+	...LAYERS.map(l => ({id: l.id, label: l.label, n: ACTIONS.filter(a => a.layer === l.id && open(a)).length})),
+];
+let tab = "overview";
+try { tab = localStorage.getItem("workspace-health-tab") || tab; } catch {}
+if (!TABS.some(t => t.id === tab)) tab = "overview";
+
+function render() {
+	$("tabs").innerHTML = TABS.map(t => `<button aria-selected="${t.id === tab}" data-tab="${t.id}" role="tab" type="button">${t.label}${t.n !== null ? `<span>${t.n}</span>` : ""}</button>`).join("");
+	for (const t of TABS) $("panel-" + t.id).hidden = t.id !== tab;
+	if (tab === "overview") renderOverview();
+	else if (tab === "workspace") renderWorkspace();
+	else $("panel-" + tab).innerHTML = actionTable(tab);
+}
+
+document.addEventListener("click", ev => {
+	const t = ev.target.closest("[data-tab],[data-ws],[data-kind],[data-tracked],[data-fresh],[data-copy-all],[data-copy-one],[data-copy-triage]");
+	if (!t) return;
+	if (t.dataset.copyAll) { copy(markdown(window.__shown[t.dataset.copyAll] ?? []), t); return; }
+	if (t.dataset.copyOne) { const [layer, i] = t.dataset.copyOne.split(":"); copy(markdown([window.__shown[layer][Number(i)]]), t); return; }
+	if (t.dataset.copyTriage !== undefined) { copy(markdown(triage), t); return; }
+	ev.preventDefault();
+	if (t.dataset.tab) { tab = t.dataset.tab; if (t.dataset.ws) ws = t.dataset.ws; try { localStorage.setItem("workspace-health-tab", tab); } catch {} }
+	else if (t.dataset.ws) ws = t.dataset.ws;
+	else {
+		const f = filterOf(t.dataset.layer);
+		if (t.dataset.kind) f.kind.has(t.dataset.kind) ? f.kind.delete(t.dataset.kind) : f.kind.add(t.dataset.kind);
+		if (t.dataset.tracked) f.tracked = t.dataset.tracked;
+		if (t.dataset.fresh !== undefined) f.fresh = !f.fresh;
+	}
+	render();
+	if (t.dataset.item) vizHighlight($("ws-" + ws), t.dataset.item);
+});
+document.addEventListener("input", ev => {
+	const t = ev.target.closest("[data-query]");
+	if (!t) return;
+	filterOf(t.dataset.layer).query = t.value.trim().toLowerCase();
+	render();
+	const input = document.querySelector(`[data-query][data-layer="${t.dataset.layer}"]`);
+	if (input) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+});
+
+render();
+</script>

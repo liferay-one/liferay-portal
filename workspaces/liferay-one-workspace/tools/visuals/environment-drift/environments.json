@@ -1,0 +1,14 @@
+{
+	"local": {
+		"auth": "basic",
+		"url": "http://localhost:8080"
+	},
+	"stack": {
+		"auth": "basic",
+		"url": "https://one.stack"
+	},
+	"uat": {
+		"auth": "oauth",
+		"url": "https://one-uat.liferay.com"
+	}
+}

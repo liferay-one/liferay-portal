@@ -1,0 +1,92 @@
+{
+	"controller": {
+		"description": "How requests are handled: every sidecar endpoint and the routes that call it, the OAuth2 scopes, the event handlers, and the rule checks on the sidecar.",
+		"icon": "api",
+		"layer": "controller",
+		"tabs": [
+			{
+				"id": "apis",
+				"label": "APIs",
+				"visual": "apis"
+			},
+			{
+				"id": "events",
+				"label": "Events",
+				"visual": "events"
+			},
+			{
+				"id": "rules",
+				"label": "Rules",
+				"params": {
+					"layer": "controller"
+				},
+				"visual": "rules"
+			}
+		],
+		"title": "Controller",
+		"url": "https://claude.ai/artifact/9LEKd9nA8cUKpMoStJHPcP"
+	},
+	"model": {
+		"description": "The data: every object and relationship, who can read and write each one, and how each environment and its configuration differ from the batch files.",
+		"icon": "diagram",
+		"layer": "model",
+		"tabs": [
+			{
+				"id": "objects",
+				"label": "Objects",
+				"visual": "object-model"
+			},
+			{
+				"id": "access",
+				"label": "Access",
+				"visual": "permission-matrix"
+			},
+			{
+				"id": "environments",
+				"label": "Environments",
+				"visual": "environment-drift"
+			}
+		],
+		"title": "Model",
+		"url": "https://claude.ai/artifact/2E8MZ4P5ixN2DoWz8RkYda"
+	},
+	"test-coverage": {
+		"description": "Requirement and test plan coverage for each epic, from specs/ and tests/plan.",
+		"icon": "chart",
+		"title": "Test Coverage",
+		"url": "https://claude.ai/artifact/HniATosv7uP2tG4ovV6yMQ"
+	},
+	"view": {
+		"description": "What a visitor sees: the pages, menus, and fragments, the weight and dead code of the custom element, and the rule checks on it.",
+		"icon": "layout",
+		"layer": "view",
+		"tabs": [
+			{
+				"id": "pages",
+				"label": "Pages",
+				"visual": "pages"
+			},
+			{
+				"id": "front-end",
+				"label": "Front End",
+				"visual": "frontend"
+			},
+			{
+				"id": "rules",
+				"label": "Rules",
+				"params": {
+					"layer": "view"
+				},
+				"visual": "rules"
+			}
+		],
+		"title": "View",
+		"url": "https://claude.ai/artifact/TsikE3vn5tx1eGKZxdiz1t"
+	},
+	"workspace-health": {
+		"description": "Everything to act on, by layer, with the triage queue, the dependencies, the tests, the change hotspots, and the specs.",
+		"icon": "checklist",
+		"title": "Workspace Health",
+		"url": "https://claude.ai/artifact/DDdL84zazbK3HrQiq5wjGR"
+	}
+}

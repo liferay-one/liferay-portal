@@ -1,0 +1,369 @@
+<title>Permissions</title>
+
+<style>
+/* Layout: an access ledger. Counts, then a roles by resources grid beside a detail panel. */
+:root {
+	--wrap-width: 1680px;
+	--t-regular: #2450a6;
+	--t-account: #1d7a5f;
+	--t-site: #8a4fa0;
+	--t-organization: #a35b1c;
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) { --t-regular: #84a7ef; --t-account: #5fc7a2; --t-site: #c899dc; --t-organization: #e3a36a; }
+}
+:root[data-theme="dark"] { --t-regular: #84a7ef; --t-account: #5fc7a2; --t-site: #c899dc; --t-organization: #e3a36a; }
+
+.workbench { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+@media (max-width: 1100px) { .workbench { grid-template-columns: minmax(0, 1fr); } }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-bottom: none; border-radius: 10px 10px 0 0; font-size: 13.5px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="false"] { opacity: 0.45; }
+.chip i { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.toolbar label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.toolbar select, #search { font: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); }
+#search { flex: 1 1 160px; min-width: 0; }
+.sep { width: 1px; height: 22px; background: var(--line); }
+.chip:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.matrix-wrap { overflow: auto; max-height: 72vh; background: var(--surface); border: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+table.matrix { border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.matrix th, .matrix td { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); padding: 0; background: var(--surface); }
+.matrix thead th { position: sticky; top: 0; z-index: 2; vertical-align: bottom; }
+.matrix thead th.corner { left: 0; z-index: 3; text-align: left; padding: 8px 10px; min-width: min(340px, 55vw); font-weight: 400; color: var(--muted); font-size: 12.5px; }
+.matrix th.role { height: 170px; width: 34px; min-width: 34px; cursor: pointer; border-top: 3px solid var(--t-regular); }
+.matrix th.role.account { border-top-color: var(--t-account); }
+.matrix th.role.site { border-top-color: var(--t-site); }
+.matrix th.role.organization { border-top-color: var(--t-organization); }
+.matrix th.role span { writing-mode: vertical-rl; transform: rotate(180deg); display: inline-block; padding: 8px 0; white-space: nowrap; font-weight: 600; font-size: 12.5px; }
+.matrix th.role.broad span::after { content: " ●"; color: var(--high); }
+.matrix th.role.sel, .matrix td.colsel { background: var(--accent-soft); }
+.matrix tbody th { position: sticky; left: 0; z-index: 1; text-align: left; font-weight: 400; padding: 5px 10px; cursor: pointer; min-width: min(340px, 55vw); }
+.matrix tbody th .rl { display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; white-space: nowrap; }
+@media (max-width: 700px) { .matrix tbody th .rl { flex-wrap: wrap; white-space: normal; } }
+.matrix tbody th .nm { font-weight: 600; }
+.matrix tbody tr.sel th { background: var(--accent-soft); }
+.matrix tr.grp th { background: var(--surface-2); font-family: var(--font-display); font-stretch: 85%; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11.5px; font-weight: 700; color: var(--muted); padding: 6px 10px; cursor: default; }
+.matrix tr.grp td { background: var(--surface-2); }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; background: var(--surface-2); color: var(--muted); white-space: nowrap; font-weight: 400; }
+.tag.restricted { color: var(--t-account); }
+.tag.open { color: var(--medium); }
+.tag.none { color: var(--info); border: 1px dashed var(--line); background: none; }
+
+.cell { width: 34px; height: 30px; display: grid; place-items: center; font: inherit; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--fg); background: none; border: 0; cursor: pointer; position: relative; }
+.cell:hover { background: var(--accent-soft); }
+.cell.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
+.cell .g { display: inline-flex; align-items: center; gap: 2px; }
+.mark { width: 9px; height: 9px; display: inline-block; flex: none; }
+.mark.s1 { background: var(--fg); }
+.mark.s2 { background: linear-gradient(135deg, var(--fg) 50%, transparent 50%); border: 1.5px solid var(--fg); }
+.mark.s3 { border: 1.5px dashed var(--fg); }
+.mark.s4 { width: 6px; height: 6px; border-radius: 50%; background: var(--fg); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted); padding: 8px 2px 0; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+aside.detail { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; max-height: 80vh; overflow: auto; min-width: 0; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 1100px) { aside.detail { position: static; max-height: none; } }
+.detail h3 { font-family: var(--font-display); font-stretch: 85%; font-size: 18px; font-weight: 700; margin: 0; overflow-wrap: anywhere; }
+.detail p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.detail table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.detail th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--line); padding: 4px 6px 4px 0; }
+.detail td { border-bottom: 1px solid var(--line); padding: 5px 6px 5px 0; vertical-align: top; overflow-wrap: anywhere; }
+.acts { display: flex; flex-wrap: wrap; gap: 3px; }
+.acts code { background: var(--surface-2); padding: 0 5px; border-radius: 4px; font-size: 11px; }
+.note { border-left: 3px solid var(--info); padding: 6px 10px; background: var(--surface-2); border-radius: 0 6px 6px 0; font-size: 13px; }
+.note.high { border-left-color: var(--high); background: var(--high-soft); }
+.note.medium { border-left-color: var(--medium); background: var(--medium-soft); }
+a.jump, button.jump { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; background: none; border: 0; padding: 0; font: inherit; text-align: left; }
+.empty ul { padding-left: 18px; margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
+@media (prefers-reduced-motion: no-preference) { .cell { transition: background-color 120ms ease; } }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">site initializer and role batch · <span id="generated"></span></div>
+
+		<h1>Permissions</h1>
+
+		<p>Every role grant that the site initializer applies, by role and resource. Select a cell for its actions and scope, a role for everything it holds, or a resource for everyone who can act on it.</p>
+
+		<div class="counts" id="counts"></div>
+	</header>
+
+	<div class="workbench">
+		<div style="min-width:0">
+			<div aria-label="Matrix filters" class="toolbar" role="toolbar">
+				<span id="types"></span>
+				<span class="sep"></span>
+
+				<select aria-label="Show grants with this action" id="action"></select>
+
+				<label><input type="checkbox" id="objects-only" /> Objects only</label>
+				<label><input type="checkbox" id="all-roles" /> All roles</label>
+				<label><input type="checkbox" id="empty-rows" /> Empty object rows</label>
+
+				<input aria-label="Find a role or resource" id="search" placeholder="Find a role or resource" type="search" />
+			</div>
+
+			<div class="matrix-wrap" id="matrix-wrap">
+				<table class="matrix" id="matrix"></table>
+			</div>
+
+			<div class="legend">
+				<span><i class="mark s1"></i>Company (1)</span>
+				<span><i class="mark s2"></i>Site (2)</span>
+				<span><i class="mark s3"></i>Group template (3)</span>
+				<span><i class="mark s4"></i>One record (4)</span>
+				<span>V view · A add entries · U update · D delete · P permissions · a number counts the actions</span>
+				<span><b style="color:var(--high)">●</b> a role every user holds</span>
+			</div>
+		</div>
+
+		<aside aria-live="polite" class="detail" id="detail"></aside>
+	</div>
+
+	<footer id="footer"></footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const SCOPE = {
+	"1": ["Company", "Applies to every entry in the company, existing and future."],
+	"2": ["Site", "Applies to every entry in the site."],
+	"3": ["Group template", "For an account, site, or organization role, applies inside each account, site, or organization the user holds the role in. For a regular role, it is only a default for entries created later."],
+	"4": ["One record", "Applies to the one record named by the primary key."]
+};
+const KIND = {
+	"object-entry": "entries",
+	"object-portlet": "add entries",
+	"object-admin": "admin portlet",
+	"model": "model",
+	"portlet": "portlet",
+	"resource": "resource"
+};
+const KIND_TEXT = {
+	"object-entry": "The object's entries. VIEW, UPDATE, DELETE, and PERMISSIONS act on entries.",
+	"object-portlet": "The object's portlet resource. ADD_OBJECT_ENTRY lives here, not on the entries.",
+	"object-admin": "The object's admin portlet in the Control Panel.",
+	"model": "A Liferay model resource.",
+	"portlet": "A Liferay portlet.",
+	"resource": "A Liferay top level resource, which holds the add and admin actions of an application."
+};
+const ABBR = {VIEW: "V", ADD_OBJECT_ENTRY: "A", UPDATE: "U", DELETE: "D", PERMISSIONS: "P"};
+const TYPES = ["regular", "account", "site", "organization"];
+
+const roles = Object.fromEntries(DATA.roles.map(r => [r.name, r]));
+const resources = Object.fromEntries(DATA.resources.map(r => [r.id, r]));
+const objects = Object.fromEntries(DATA.objects.map(o => [o.name, o]));
+// An object that no role other than an administrator can act on.
+const noGrant = new Set(DATA.objects.filter(o => !DATA.grants.some(g => resources[g.resource]?.object === o.name && !roles[g.role]?.admin)).map(o => o.name));
+const byCell = {};
+DATA.grants.forEach(g => (byCell[g.resource + "\u0000" + g.role] ||= []).push(g));
+
+const state = {types: new Set(TYPES), action: "", objectsOnly: false, allRoles: false, emptyRows: false, q: ""};
+let selection = null;
+
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const $ = id => document.getElementById(id);
+$("generated").textContent = DATA.generated;
+
+function visibleGrants() {
+	return DATA.grants.filter(g => {
+		const role = roles[g.role], res = resources[g.resource];
+		if (!state.types.has(role.type)) return false;
+		if (state.action && !g.actions.includes(state.action)) return false;
+		if (state.objectsOnly && res.group !== "Objects") return false;
+		return true;
+	});
+}
+
+function matches(text) { return !state.q || text.toLowerCase().includes(state.q); }
+
+function render() {
+	const grants = visibleGrants();
+	const rowSet = new Set(grants.map(g => g.resource));
+	const colSet = new Set(grants.map(g => g.role));
+	let rows = DATA.resources.filter(r => {
+		if (state.objectsOnly && r.group !== "Objects") return false;
+		if (!rowSet.has(r.id) && !(state.emptyRows && r.group === "Objects" && r.kind !== "object-admin" && !state.action)) return false;
+		return true;
+	});
+	let cols = DATA.roles.filter(r => state.types.has(r.type) && (state.allRoles || colSet.has(r.name)));
+	cols.sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type) || Number(b.broad) - Number(a.broad) || a.name.localeCompare(b.name));
+	if (state.q) {
+		const roleHits = cols.filter(r => matches(r.name));
+		const rowHits = rows.filter(r => matches(r.label + " " + r.raw + " " + (r.object || "")));
+		if (roleHits.length && !rowHits.length) {
+			cols = roleHits;
+			const names = new Set(cols.map(c => c.name));
+			rows = rows.filter(r => grants.some(g => g.resource === r.id && names.has(g.role)));
+		} else {
+			rows = rowHits;
+		}
+	}
+	const visible = new Set(grants.map(g => g.id));
+
+	let h = `<thead><tr><th class="corner" scope="col">${rows.length} resources · ${cols.length} roles</th>`;
+	for (const r of cols) {
+		const sel = selection?.type === "role" && selection.role === r.name || selection?.type === "cell" && selection.role === r.name;
+		h += `<th class="role ${r.type}${r.broad ? " broad" : ""}${sel ? " sel" : ""}" scope="col" data-role="${esc(r.name)}" title="${esc(r.name)} · ${r.type} role${r.broad ? " · every user holds it" : ""}"><span>${esc(r.name)}</span></th>`;
+	}
+	h += "</tr></thead><tbody>";
+	let group = null;
+	for (const res of rows) {
+		if (res.group !== group) {
+			group = res.group;
+			h += `<tr class="grp"><th scope="rowgroup">${esc(group)}</th>${cols.map(() => "<td></td>").join("")}</tr>`;
+		}
+		const obj = res.object ? objects[res.object] : null;
+		const rowSel = selection?.type === "resource" && selection.resource === res.id || selection?.type === "cell" && selection.resource === res.id;
+		let tags = `<span class="tag">${KIND[res.kind]}</span>`;
+		if (obj && res.kind === "object-entry") tags += obj.restricted ? `<span class="tag restricted">account restricted</span>` : `<span class="tag open">not restricted</span>`;
+		if (obj && noGrant.has(obj.name) && res.kind === "object-entry") tags += `<span class="tag none">no grants</span>`;
+		h += `<tr class="${rowSel ? "sel" : ""}"><th scope="row" data-resource="${esc(res.id)}"><div class="rl"><span class="nm">${esc(res.label)}</span>${tags}</div></th>`;
+		for (const role of cols) {
+			const list = (byCell[res.id + "\u0000" + role.name] || []).filter(g => visible.has(g.id));
+			const colSel = selection?.type === "role" && selection.role === role.name;
+			if (!list.length) { h += `<td class="${colSel ? "colsel" : ""}"></td>`; continue; }
+			const actions = [...new Set(list.flatMap(g => g.actions))];
+			const label = actions.length === 1 ? (ABBR[actions[0]] || actions[0].slice(0, 1)) : actions.length;
+			const scopes = [...new Set(list.map(g => g.scope))];
+			const sel = selection?.type === "cell" && selection.role === role.name && selection.resource === res.id;
+			const title = `${role.name} on ${res.label} (${KIND[res.kind]}): ${actions.join(", ")} · ${scopes.map(s => SCOPE[s][0]).join(", ")} scope`;
+			h += `<td class="${colSel ? "colsel" : ""}"><button class="cell${sel ? " sel" : ""}" data-cell="${esc(res.id)}" data-role="${esc(role.name)}" title="${esc(title)}" aria-label="${esc(title)}"><span class="g">${scopes.map(s => `<i class="mark s${s}"></i>`).join("")}${label}</span></button></td>`;
+		}
+		h += "</tr>";
+	}
+	if (!rows.length) h += `<tr><th scope="row" style="color:var(--muted)">No grants match these filters.</th></tr>`;
+	h += "</tbody>";
+	$("matrix").innerHTML = h;
+}
+
+function grantRows(list, show) {
+	return `<table><thead><tr>${show.map(c => `<th>${c}</th>`).join("")}</tr></thead><tbody>${list.map(g => {
+		const res = resources[g.resource];
+		const cells = {
+			Role: `<button class="jump" data-goto-role="${esc(g.role)}">${esc(g.role)}</button>`,
+			Resource: `<button class="jump" data-goto-resource="${esc(g.resource)}">${esc(res.label)}</button> <span class="tag">${KIND[res.kind]}</span>`,
+			Actions: `<div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}</div>`,
+			Scope: `<span style="display:inline-flex;gap:5px;align-items:center"><i class="mark s${g.scope}"></i>${SCOPE[g.scope][0]}</span>`
+		};
+		return `<tr>${show.map(c => `<td>${cells[c]}</td>`).join("")}</tr>`;
+	}).join("")}</tbody></table>`;
+}
+
+function renderDetail() {
+	const d = $("detail");
+	if (!selection) {
+		const regular = DATA.roles.filter(r => r.type === "regular").length;
+		d.innerHTML = `<div class="empty"><div class="eyebrow">Detail</div><h3>Nothing selected</h3><p>Select a cell, a role name, a resource, or an item under Needs Attention.</p><ul><li>${DATA.roles.length} roles: ${regular} regular, ${DATA.roles.filter(r => r.type === "account").length} account, ${DATA.roles.filter(r => r.type === "site").length} site, ${DATA.roles.filter(r => r.type === "organization").length} organization.</li><li>A filled square is company scope. A dashed square is group template scope.</li><li>A red dot after a role name marks a role that every user or visitor holds.</li></ul></div>`;
+		return;
+	}
+	if (selection.type === "cell") {
+		const res = resources[selection.resource], role = roles[selection.role];
+		const list = byCell[res.id + "\u0000" + role.name] || [];
+		d.innerHTML = `<div><div class="eyebrow">Grant</div><h3>${esc(role.name)} on ${esc(res.label)}</h3></div>
+			${list.map(g => `<dl class="kv"><dt>Actions</dt><dd><div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}</div></dd><dt>Scope</dt><dd><b>${g.scope} · ${SCOPE[g.scope][0]}.</b> ${SCOPE[g.scope][1]}</dd>${g.primKey ? `<dt>Record</dt><dd class="mono">${esc(g.primKey)}</dd>` : ""}<dt>Resource</dt><dd class="mono">${esc(res.raw)}</dd><dt>Source</dt><dd class="mono">${esc(g.source)}</dd></dl>`).join("")}
+			<p><button class="jump" data-goto-role="${esc(role.name)}">Everything ${esc(role.name)} holds</button> · <button class="jump" data-goto-resource="${esc(res.id)}">Every role on ${esc(res.label)}</button></p>`;
+		return;
+	}
+	if (selection.type === "role") {
+		const role = roles[selection.role];
+		const list = DATA.grants.filter(g => g.role === role.name);
+		d.innerHTML = `<div><div class="eyebrow">Role</div><h3>${esc(role.name)}</h3></div>
+			<dl class="kv"><dt>Type</dt><dd>${role.type}${role.builtin ? ", Liferay built in" : ""}</dd>${role.erc ? `<dt>ERC</dt><dd class="mono">${esc(role.erc)}</dd>` : ""}<dt>Held by</dt><dd>${role.broad ? "Every user or visitor" : role.admin ? "Administrators" : "Users assigned the role"}</dd><dt>Grants</dt><dd>${list.length}</dd></dl>
+			${list.length ? grantRows(list, ["Resource", "Actions", "Scope"]) : `<p>The site initializer grants this role nothing. Its permissions, if any, come from somewhere else, such as the role definition in the Control Panel.</p>`}`;
+		return;
+	}
+	const res = resources[selection.resource];
+	const obj = res.object ? objects[res.object] : null;
+	const list = DATA.grants.filter(g => g.resource === res.id);
+	const siblings = obj ? DATA.resources.filter(r => r.object === obj.name && r.id !== res.id) : [];
+	d.innerHTML = `<div><div class="eyebrow">${esc(res.group)} · ${KIND[res.kind]}</div><h3>${esc(res.label)}</h3></div>
+		<p>${KIND_TEXT[res.kind]}</p>
+
+		<dl class="kv"><dt>Resource</dt><dd class="mono">${esc(res.raw)}</dd>${obj ? `<dt>Object</dt><dd class="mono">${esc(obj.erc)}</dd><dt>Account</dt><dd>${obj.restricted ? "Restricted. A user reads only the entries of accounts they belong to." : "Not restricted. A company scope VIEW reads every account's entries."}</dd>` : ""}</dl>
+		${list.length ? grantRows(list, ["Role", "Actions", "Scope"]) : `<p>No role holds a permission on this resource.</p>`}
+		${siblings.length ? `<p>Also: ${siblings.map(s => `<button class="jump" data-goto-resource="${esc(s.id)}">${KIND[s.kind]}</button>`).join(" · ")}</p>` : ""}`;
+}
+
+function select(sel, scroll) {
+	selection = sel;
+	render();
+	renderDetail();
+	if (scroll) {
+		const target = sel?.type === "cell" ? document.querySelector(`.cell[data-cell="${CSS.escape(sel.resource)}"][data-role="${CSS.escape(sel.role)}"]`)
+			: sel?.type === "resource" ? document.querySelector(`th[data-resource="${CSS.escape(sel.resource)}"]`)
+			: sel?.type === "role" ? document.querySelector(`th.role[data-role="${CSS.escape(sel.role)}"]`) : null;
+		target?.scrollIntoView({block: "center", inline: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+	}
+}
+
+function ensureVisible(roleName, resourceId) {
+	const role = roleName && roles[roleName], res = resourceId && resources[resourceId];
+	if (role) state.types.add(role.type);
+	if (res && res.group !== "Objects") state.objectsOnly = false;
+	if (res && res.group === "Objects" && !DATA.grants.some(g => g.resource === res.id)) state.emptyRows = true;
+	state.action = ""; state.q = "";
+	syncControls();
+}
+
+function syncControls() {
+	document.querySelectorAll("#types .chip").forEach(c => c.setAttribute("aria-pressed", String(state.types.has(c.dataset.type))));
+	$("action").value = state.action;
+	$("objects-only").checked = state.objectsOnly;
+	$("all-roles").checked = state.allRoles;
+	$("empty-rows").checked = state.emptyRows;
+	$("search").value = state.q;
+}
+
+function setup() {
+	const usedRoles = new Set(DATA.grants.map(g => g.role));
+	const restricted = DATA.objects.filter(o => o.restricted).length;
+	$("counts").innerHTML = [
+		[DATA.grants.length, "grants"],
+		[usedRoles.size, `of ${DATA.roles.length} roles hold a grant`],
+		[new Set(DATA.grants.map(g => g.resource)).size, "resources"],
+		[`${restricted}/${DATA.objects.length}`, "objects account restricted"],
+		[noGrant.size, "objects with no grants"]
+	].map(([n, l, c]) => `<div class="${c || ""}"><b>${n}</b><span>${l}</span></div>`).join("");
+
+	$("types").innerHTML = TYPES.filter(t => DATA.roles.some(r => r.type === t)).map(t => `<button class="chip" data-type="${t}" aria-pressed="true"><i style="background:var(--t-${t})"></i>${t[0].toUpperCase() + t.slice(1)}</button>`).join(" ");
+	const actions = [...new Set(DATA.grants.flatMap(g => g.actions))].sort();
+	$("action").innerHTML = `<option value="">All actions</option>` + actions.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
+	$("footer").innerHTML = `Generated from ${DATA.sources.map(s => `<code>${esc(s)}</code>`).join(", ")} and the <code>13-role</code>, <code>03-object-definition</code>, and <code>05-object-definition-account-entry-restricted</code> batch files. Page permissions in <code>layouts/*/page.json</code> and account role permissions set elsewhere are not included. Roles that every user holds and the objects marked as reference data are set in <code>tools/visuals/permission-matrix/config.json</code>.`;
+
+	document.addEventListener("click", e => {
+		const t = e.target.closest(".cell, th.role, tbody th[data-resource], [data-goto-role], [data-goto-resource], #types .chip");
+		if (!t) return;
+		if (t.matches("#types .chip")) {
+			const ty = t.dataset.type;
+			state.types.has(ty) ? state.types.delete(ty) : state.types.add(ty);
+			syncControls(); render(); return;
+		}
+		if (t.dataset.gotoRole) { ensureVisible(t.dataset.gotoRole); select({type: "role", role: t.dataset.gotoRole}, true); return; }
+		if (t.dataset.gotoResource) { ensureVisible(null, t.dataset.gotoResource); select({type: "resource", resource: t.dataset.gotoResource}, true); return; }
+		if (t.matches(".cell")) { select({type: "cell", role: t.dataset.role, resource: t.dataset.cell}); return; }
+		if (t.matches("th.role")) { select(selection?.type === "role" && selection.role === t.dataset.role ? null : {type: "role", role: t.dataset.role}); return; }
+		select(selection?.type === "resource" && selection.resource === t.dataset.resource ? null : {type: "resource", resource: t.dataset.resource});
+	});
+	$("action").addEventListener("change", e => { state.action = e.target.value; render(); });
+	$("objects-only").addEventListener("change", e => { state.objectsOnly = e.target.checked; render(); });
+	$("all-roles").addEventListener("change", e => { state.allRoles = e.target.checked; render(); });
+	$("empty-rows").addEventListener("change", e => { state.emptyRows = e.target.checked; render(); });
+	$("search").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); render(); });
+	document.addEventListener("keydown", e => { if (e.key === "Escape") select(null); });
+
+	// A link from Workspace Health names an object that a filter can hide.
+	// Show its row and select it, so the highlight can find it.
+	document.addEventListener("viz-find", e => {
+		const res = Object.values(resources).find(r => r.label === e.detail);
+		if (res) { ensureVisible(null, res.id); select({type: "resource", resource: res.id}, true); }
+	});
+	render();
+	renderDetail();
+}
+
+setup();
+</script>

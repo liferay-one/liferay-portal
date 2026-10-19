@@ -1,0 +1,440 @@
+<title>APIs</title>
+
+<style>
+/* Layout: a patch bay. Three racks (routes, the modules that send the calls, the endpoints that answer) side by side, an inspector beside them, and an attention strip on top for what is broken or unguarded. */
+
+:root {
+	--wrap-width: 1760px;
+	--missing: var(--critical);
+	--get: var(--ok);
+	--post: var(--info);
+	--put: #8a4fc2;
+	--patch: var(--medium);
+	--delete: var(--critical);
+}
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) { --put: #c79cf2; }
+}
+:root[data-theme="dark"] { --put: #c79cf2; }
+.attention { display: flex; flex-wrap: wrap; gap: 8px; }
+.alert { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); font: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+.alert b { font-variant-numeric: tabular-nums; }
+.alert i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.alert[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+#search { flex: 1 1 220px; min-width: 0; padding: 7px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: inherit; font-size: 13.5px; }
+
+.bay { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr) minmax(0, 1.15fr) 380px; gap: 12px; align-items: start; }
+@media (max-width: 1400px) { .bay { grid-template-columns: repeat(3, minmax(0, 1fr)); } .inspector { grid-column: 1 / -1; } }
+@media (max-width: 860px) { .bay { grid-template-columns: minmax(0, 1fr); } }
+.rack { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; display: flex; flex-direction: column; max-height: 74vh; }
+@media (max-width: 860px) { .rack { max-height: 56vh; } }
+.rack-head { padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rack-head .eyebrow b { color: var(--fg); }
+.rack-body { overflow: auto; padding: 4px 0 8px; }
+.grp { position: sticky; top: 0; z-index: 1; background: var(--surface-2); padding: 5px 12px; font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
+.grp span:last-child { font-family: var(--font-mono); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; width: 100%; padding: 6px 12px 6px 14px; border: 0; border-left: 3px solid transparent; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.row:hover { background: var(--surface-2); }
+.row.sel { background: var(--accent-soft); border-left-color: var(--accent); }
+.row.rel { border-left-color: var(--accent); }
+.row.dim { opacity: 0.32; }
+.row .main { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.row .sub { grid-column: 1 / -1; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.row .badges { display: flex; gap: 4px; align-items: center; justify-content: end; flex-wrap: wrap; }
+.row.missing .main { color: var(--missing); }
+.row.flag-high { border-left-color: var(--high); }
+.row.sel.flag-high { border-left-color: var(--accent); }
+.row.unreached .main { color: var(--quiet); }
+.m { display: inline-block; min-width: 46px; font-family: var(--font-mono); font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; margin-right: 6px; }
+.m.GET { color: var(--get); } .m.POST { color: var(--post); } .m.PUT { color: var(--put); } .m.PATCH { color: var(--patch); } .m.DELETE { color: var(--delete); } .m.ANY { color: var(--muted); }
+.tag { display: inline-block; padding: 0 6px; border-radius: 4px; font-size: 11px; line-height: 18px; background: var(--surface-2); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tag.missing { color: var(--missing); }
+.tag.high { color: var(--high); }
+.tag.medium { color: var(--medium); }
+.tag.gate { color: var(--accent); }
+.tag.quiet { background: none; border: 1px dashed var(--line); color: var(--quiet); }
+.empty-note { padding: 14px 12px; color: var(--muted); font-size: 13px; }
+
+aside.inspector { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; max-height: 74vh; overflow: auto; min-width: 0; align-content: start; }
+.inspector .intro { color: var(--muted); display: grid; gap: 10px; }
+.inspector .intro ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.calls { display: grid; gap: 8px; }
+.call { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.call .path { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.call .where { font-family: var(--font-mono); font-size: 11px; color: var(--muted); overflow-wrap: anywhere; }
+.call.missing { border-color: var(--missing); }
+.note { padding: 10px 12px; border-radius: 8px; background: var(--surface-2); font-size: 13px; }
+.note.high { box-shadow: inset 3px 0 0 var(--high); }
+.note.medium { box-shadow: inset 3px 0 0 var(--medium); }
+.note.missing { box-shadow: inset 3px 0 0 var(--missing); }
+.list { display: grid; gap: 4px; font-size: 13px; }
+section.scopes { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.scopes-head { display: grid; gap: 4px; }
+.scopes-head p { margin: 0; color: var(--muted); max-width: 80ch; }
+.table-wrap { overflow-x: auto; }
+td.scope { font-family: var(--font-mono); font-size: 12.5px; overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { .row { transition: opacity 120ms ease, background 120ms ease; } }
+</style>
+
+<div class="wrap">
+	<header>
+		<div class="eyebrow">liferay-one-custom-element → Liferay and liferay-one-etc-spring-boot · <span id="generated"></span></div>
+
+		<h1>APIs</h1>
+
+		<p>Each route of the custom element, the modules whose calls it reaches, and the endpoint that answers each call. Select a route to see what it calls. Select an endpoint to see every route that calls it.</p>
+
+		<div class="counts" id="counts"></div>
+	</header>
+
+	<div aria-label="Needs attention" class="attention" id="attention" role="group"></div>
+
+	<div class="toolbar">
+		<input aria-label="Find a route, file, path, or controller" id="search" placeholder="Find a route, file, path, or controller" type="search" />
+
+		<select aria-label="Route group" id="group"></select>
+
+		<div aria-label="Endpoint kinds" class="seg" id="kinds" role="group"></div>
+
+		<button class="btn" id="clear" type="button">Clear selection</button>
+	</div>
+
+	<div class="bay">
+		<section aria-label="Routes" class="rack">
+			<div class="rack-head"><div class="eyebrow">Routes <b id="n-routes"></b></div><span class="eyebrow">calls</span></div>
+			<div class="rack-body" id="routes"></div>
+		</section>
+
+		<section aria-label="Modules" class="rack">
+			<div class="rack-head"><div class="eyebrow">Modules that send calls <b id="n-modules"></b></div><span class="eyebrow">calls</span></div>
+			<div class="rack-body" id="modules"></div>
+		</section>
+
+		<section aria-label="Endpoints" class="rack" id="endpoints-section">
+			<div class="rack-head"><div class="eyebrow">Endpoints <b id="n-endpoints"></b></div><span class="eyebrow">routes</span></div>
+			<div class="rack-body" id="endpoints"></div>
+		</section>
+
+		<aside aria-live="polite" class="inspector" id="inspector"></aside>
+	</div>
+
+	<section aria-label="OAuth2 scopes" class="scopes" id="scopes-section">
+		<div class="scopes-head"><h2>OAuth2 Scopes</h2><p>Each Liferay API that the sidecar calls, the scope it needs, and the sidecar OAuth2 application that declares it. A scope that no call needs is listed as unused.</p></div>
+
+		<div class="table-wrap" id="scopes"></div>
+	</section>
+
+	<footer>
+		<p>Generated by <code>tools/visuals/apis</code> from <code>liferay-one-custom-element/src</code>, the <code>route=</code> placements in <code>liferay-one-site-initializer</code>, and the mapping annotations in <code>liferay-one-etc-spring-boot</code>.</p>
+		<p>The scopes come from every <code>client-extension.yaml</code> and from the <code>/o/</code> paths and generated headless clients in the sidecar source. A scope that ends in <code>.read</code> covers reads only, and the scan does not check whether a call writes. It also cannot tell which token a call uses, so a scope counts as declared when any sidecar application declares it.</p>
+		<p>The caller check is what the handler reaches: a <code>com.liferay.one.permission</code> class, a signature validator, <code>hasAccountMembership</code>, or a <code>PrincipalException</code>, in the handler or in a private method of its class. It shows that a check runs, not that the check is correct. A check of the wrong ID, or a check that trusts a forged token, still reads as a check. Those defects are in the Go-Live Tasks artifact.</p>
+		<p>The scan is static. A route reaches a declaration when code it already reaches names it, and a class method when any reached code names the method, so a common method name can add a call that the route never makes. Calls inside packages, fragments, and <code>liferay-one-etc-cron</code> are not read. A listed call can run from the route, for example from a button. It does not run on every page load.</p>
+	</footer>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+const KIND_LABEL = {sidecar: "Sidecar", missing: "No controller", liferay: "Liferay headless", object: "Object entries"};
+const KIND_ORDER = ["missing", "sidecar", "liferay", "object"];
+const SHELL = "app-shell";
+
+const calls = DATA.calls;
+const routes = DATA.routes;
+const endpoints = DATA.endpoints;
+const endpointByKey = Object.fromEntries(endpoints.map(e => [e.key, e]));
+const modules = DATA.modules.map(m => ({...m, calls: calls.filter(c => c.module === m.file).map(c => c.id)}));
+const moduleByFile = Object.fromEntries(modules.map(m => [m.file, m]));
+
+// Indexes: which routes reach each call, and the calls for each endpoint.
+const callRoutes = calls.map(() => []);
+routes.forEach(r => r.calls.forEach(c => callRoutes[c].push(r.id)));
+endpoints.forEach(e => { e.calls = calls.filter(c => c.endpoint === e.key).map(c => c.id); e.routes = [...new Set(e.calls.flatMap(c => callRoutes[c]))]; });
+routes.forEach(r => {
+	const eps = new Set(r.calls.map(c => calls[c].endpoint));
+	r.missing = [...eps].some(k => endpointByKey[k]?.kind === "missing");
+	r.unchecked = [...eps].some(k => { const e = endpointByKey[k]; return e?.kind === "sidecar" && e.category !== "objectAction" && e.auth.kind === "none" && !e.public; });
+	r.sidecar = r.calls.filter(c => calls[c].target === "sidecar").length;
+	r.liferay = r.calls.length - r.sidecar;
+});
+const groupInfo = Object.fromEntries(DATA.groups.map(g => [g.id, g]));
+
+const state = {sel: null, search: "", group: "", kinds: new Set(KIND_ORDER), focus: null};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
+const method = m => `<span class="m ${esc(m)}">${esc(m)}</span>`;
+const base = f => f.split("/").pop();
+const dir = f => f.split("/").slice(0, -1).join("/");
+
+$("generated").textContent = DATA.generated;
+
+// Summary counts.
+const sidecarEndpoints = endpoints.filter(e => e.kind === "sidecar");
+const noCaller = sidecarEndpoints.filter(e => !e.routes.length && e.category !== "objectAction");
+const objectActions = sidecarEndpoints.filter(e => e.category === "objectAction");
+const missing = endpoints.filter(e => e.kind === "missing");
+const routeEndpoints = sidecarEndpoints.filter(e => e.category !== "objectAction");
+const unchecked = routeEndpoints.filter(e => e.auth.kind === "none" && !e.public);
+const jwtOnly = routeEndpoints.filter(e => e.auth.kind === "caller");
+const unreachedCalls = calls.filter(c => !c.reached);
+const pageRoutes = routes.filter(r => r.group !== SHELL);
+$("counts").innerHTML = [
+	[pageRoutes.length, `routes in ${DATA.groups.length - 1} groups`],
+	[calls.length, "calls in the source"],
+	[sidecarEndpoints.length, "sidecar endpoints"],
+	[endpoints.filter(e => e.kind === "liferay").length, "Liferay headless endpoints"],
+	[endpoints.filter(e => e.kind === "object").length, "object entry endpoints"],
+].map(([n, l]) => `<div><b>${n}</b><span>${l}</span></div>`).join("");
+
+// Attention strip. Each alert focuses the racks on one set.
+const ALERTS = [
+	{id: "missing", color: "var(--missing)", n: missing.length, label: missing.length === 1 ? "call goes to a path no controller maps" : "calls go to paths no controller maps"},
+	{id: "unchecked", color: "var(--high)", n: unchecked.length, label: "endpoints that take no Jwt and reach no permission check"},
+	{id: "jwt", color: "var(--medium)", n: jwtOnly.length, label: "endpoints that take the Jwt but reach no permission check"},
+	{id: "nocaller", color: "var(--quiet)", n: noCaller.length, label: "sidecar endpoints with no caller in the custom element"},
+	{id: "unreached", color: "var(--quiet)", n: unreachedCalls.length, label: "calls that no route reaches"},
+];
+function renderAlerts() {
+	$("attention").innerHTML = ALERTS.filter(a => a.n).map(a => `<button class="alert" type="button" data-alert="${a.id}" aria-pressed="${state.focus === a.id}"><i style="background:${a.color}"></i><b>${a.n}</b> ${esc(a.label)}</button>`).join("");
+}
+
+// Toolbar.
+$("group").innerHTML = `<option value="">All route groups</option>` + DATA.groups.map(g => `<option value="${esc(g.id)}">${esc(g.id === SHELL ? "element bootstrap" : g.id)}</option>`).join("");
+$("kinds").innerHTML = KIND_ORDER.map(k => `<button type="button" data-kind="${k}" aria-pressed="true">${KIND_LABEL[k]}</button>`).join("");
+
+function matches(text) { return !state.search || text.toLowerCase().includes(state.search); }
+
+// What the selection relates to, as sets of route, module, and endpoint IDs.
+function related() {
+	const s = state.sel;
+	if (!s) return null;
+	let callIds = [];
+	if (s.type === "route") callIds = routes[s.id].calls;
+	if (s.type === "module") callIds = moduleByFile[s.id].calls;
+	if (s.type === "endpoint") callIds = endpointByKey[s.id].calls;
+	const rel = {routes: new Set(), modules: new Set(), endpoints: new Set()};
+	callIds.forEach(c => {
+		rel.modules.add(calls[c].module);
+		rel.endpoints.add(calls[c].endpoint);
+		if (s.type !== "route") callRoutes[c].forEach(r => rel.routes.add(r));
+	});
+	if (s.type === "route") rel.routes.add(s.id);
+	return rel;
+}
+
+function focusFilter() {
+	switch (state.focus) {
+		case "missing": return {endpoint: e => e.kind === "missing", call: c => endpointByKey[c.endpoint]?.kind === "missing"};
+		case "unchecked": return {endpoint: e => unchecked.includes(e), call: c => unchecked.includes(endpointByKey[c.endpoint])};
+		case "jwt": return {endpoint: e => jwtOnly.includes(e), call: c => jwtOnly.includes(endpointByKey[c.endpoint])};
+		case "nocaller": return {endpoint: e => noCaller.includes(e), call: () => false};
+		case "unreached": return {endpoint: e => e.calls.some(c => !calls[c].reached), call: c => !c.reached};
+		default: return null;
+	}
+}
+
+function render() {
+	const rel = related();
+	const focus = focusFilter();
+	renderAlerts();
+
+	// Routes.
+	const routeHTML = [];
+	let shown = 0;
+	for (const g of DATA.groups) {
+		if (state.group && state.group !== g.id) continue;
+		let list = routes.filter(r => r.group === g.id);
+		list = list.filter(r => matches(`${g.id} ${r.path} ${r.components.map(c => c.name + " " + c.file).join(" ")}`));
+		if (focus) list = list.filter(r => r.calls.some(c => focus.call(calls[c])));
+		if (rel && state.sel.type !== "route") list.sort((a, b) => rel.routes.has(b.id) - rel.routes.has(a.id));
+		if (!list.length) continue;
+		const where = g.id === SHELL ? "every placement" : (g.pages.map(p => p.url).filter(Boolean).join(", ") || "not placed on a page");
+		routeHTML.push(`<div class="grp"><span>${esc(g.id === SHELL ? "element bootstrap" : g.id)}</span><span title="${esc(where)}">${esc(where)}</span></div>`);
+		for (const r of list) {
+			shown++;
+			const cls = ["row"];
+			if (state.sel?.type === "route" && state.sel.id === r.id) cls.push("sel");
+			else if (rel) cls.push(rel.routes.has(r.id) ? "rel" : "dim");
+			const badges = [];
+			if (r.missing) badges.push(`<span class="tag missing" title="Reaches a call with no controller">no controller</span>`);
+			if (r.unchecked) badges.push(`<span class="tag high" title="Reaches an endpoint that takes no Jwt and reaches no permission check">unchecked</span>`);
+			badges.push(`<span class="tag" title="${r.sidecar} sidecar, ${r.liferay} Liferay">${r.calls.length}</span>`);
+			routeHTML.push(`<button class="${cls.join(" ")}" type="button" data-route="${r.id}"><span class="main">${esc(r.path)}</span><span class="badges">${badges.join("")}</span><span class="sub">${esc(r.components.map(c => c.name).join(", "))}${r.gate ? ` · <span class="tag gate">${esc(r.gate)}</span>` : ""}</span></button>`);
+		}
+	}
+	$("routes").innerHTML = routeHTML.join("") || `<div class="empty-note">No route matches.</div>`;
+	$("n-routes").textContent = shown;
+
+	// Modules.
+	const kinds = ["service", "hook", "context", "page", "component", "other"];
+	const kindLabel = {service: "services", hook: "hooks", context: "contexts", page: "pages", component: "components", other: "other"};
+	const groupRoutes = state.group ? new Set(routes.filter(r => r.group === state.group).flatMap(r => r.calls)) : null;
+	const modHTML = [];
+	let modShown = 0;
+	for (const k of kinds) {
+		let list = modules.filter(m => m.kind === k && matches(m.file));
+		if (groupRoutes) list = list.filter(m => m.calls.some(c => groupRoutes.has(c)));
+		if (focus) list = list.filter(m => m.calls.some(c => focus.call(calls[c])));
+		if (rel) list.sort((a, b) => rel.modules.has(b.file) - rel.modules.has(a.file));
+		if (!list.length) continue;
+		modHTML.push(`<div class="grp"><span>${kindLabel[k]}</span><span>${list.length}</span></div>`);
+		for (const m of list) {
+			modShown++;
+			const cls = ["row"];
+			if (state.sel?.type === "module" && state.sel.id === m.file) cls.push("sel");
+			else if (rel) cls.push(rel.modules.has(m.file) ? "rel" : "dim");
+			const reached = m.calls.some(c => calls[c].reached);
+			if (!reached) cls.push("unreached");
+			const miss = m.calls.some(c => endpointByKey[calls[c].endpoint]?.kind === "missing");
+			const badges = [];
+			if (miss) badges.push(`<span class="tag missing">no controller</span>`);
+			if (!reached) badges.push(`<span class="tag quiet">no route</span>`);
+			badges.push(`<span class="tag">${m.calls.length}</span>`);
+			modHTML.push(`<button class="${cls.join(" ")}" type="button" data-module="${esc(m.file)}"><span class="main">${esc(base(m.file))}</span><span class="badges">${badges.join("")}</span><span class="sub mono">${esc(dir(m.file))}</span></button>`);
+		}
+	}
+	$("modules").innerHTML = modHTML.join("") || `<div class="empty-note">No module matches.</div>`;
+	$("n-modules").textContent = modShown;
+
+	// Endpoints.
+	const epHTML = [];
+	let epShown = 0;
+	for (const k of KIND_ORDER) {
+		if (!state.kinds.has(k)) continue;
+		let list = endpoints.filter(e => e.kind === k && matches(`${e.method} ${e.path} ${e.controller ?? ""} ${e.handler ?? ""} ${e.auth?.checks.join(" ") ?? ""}`));
+		if (groupRoutes) list = list.filter(e => e.calls.some(c => groupRoutes.has(c)));
+		if (focus) list = list.filter(focus.endpoint);
+		if (!list.length) continue;
+		// Group sidecar endpoints by controller and Liferay endpoints by API.
+		const sub = {};
+		list.forEach(e => { const key = k === "sidecar" ? e.controller.replace(/RestController$/, "") : k === "liferay" ? e.api : k === "object" ? "/o/c" : "no controller"; (sub[key] ||= []).push(e); });
+		const keys = Object.keys(sub).sort();
+		if (rel) keys.sort((a, b) => sub[b].some(e => rel.endpoints.has(e.key)) - sub[a].some(e => rel.endpoints.has(e.key)));
+		for (const key of keys) {
+			const items = sub[key];
+			if (rel) items.sort((a, b) => rel.endpoints.has(b.key) - rel.endpoints.has(a.key));
+			epHTML.push(`<div class="grp"><span>${esc(KIND_LABEL[k])}</span><span>${esc(key)}</span></div>`);
+			for (const e of items) {
+				epShown++;
+				const cls = ["row"];
+				if (state.sel?.type === "endpoint" && state.sel.id === e.key) cls.push("sel");
+				else if (rel) cls.push(rel.endpoints.has(e.key) ? "rel" : "dim");
+				if (e.kind === "missing") cls.push("missing");
+				if (unchecked.includes(e)) cls.push("flag-high");
+				const badges = [];
+				if (unchecked.includes(e)) badges.push(`<span class="tag high" title="Takes no Jwt and reaches no permission check">unchecked</span>`);
+				else if (e.public) badges.push(`<span class="tag quiet" title="${esc(e.public)}">public</span>`);
+				else if (jwtOnly.includes(e)) badges.push(`<span class="tag medium" title="Takes the Jwt and reaches no permission check">Jwt only</span>`);
+				if (e.kind === "sidecar" && !e.routes.length) badges.push(e.category === "objectAction" ? `<span class="tag quiet">object action</span>` : `<span class="tag quiet">no route calls it</span>`);
+				if (e.routes.length) badges.push(`<span class="tag">${e.routes.length}</span>`);
+				const subline = e.kind === "sidecar" ? `${e.controller}.${e.handler}` : e.kind === "missing" ? "No sidecar controller maps this path" : "";
+				epHTML.push(`<button class="${cls.join(" ")}" type="button" data-endpoint="${esc(e.key)}"><span class="main">${method(e.method)}${esc(e.path)}</span><span class="badges">${badges.join("")}</span>${subline ? `<span class="sub">${esc(subline)}</span>` : ""}</button>`);
+			}
+		}
+	}
+	$("endpoints").innerHTML = epHTML.join("") || `<div class="empty-note">No endpoint matches.</div>`;
+	$("n-endpoints").textContent = epShown;
+
+	document.querySelectorAll("#kinds button").forEach(b => b.setAttribute("aria-pressed", state.kinds.has(b.dataset.kind)));
+	renderInspector();
+}
+
+function callCard(c, opts = {}) {
+	const e = endpointByKey[c.endpoint];
+	const miss = e?.kind === "missing";
+	const target = e?.kind === "sidecar" ? `<a class="jump" data-endpoint="${esc(e.key)}">${esc(e.controller)}.${esc(e.handler)}</a>` : miss ? `<span style="color:var(--missing)">No controller maps this path${e.otherMethods?.length ? `. The path takes ${esc(e.otherMethods.join(", "))}` : ""}.</span>` : "";
+	return `<div class="call${miss ? " missing" : ""}"><div class="path">${method(c.method)}${esc(c.path ?? c.raw)}${c.methodKnown ? "" : ` <span class="tag" title="The method was not written at the call; GET is assumed">GET assumed</span>`}</div>${target ? `<div class="where">${target}</div>` : ""}${opts.where !== false ? `<div class="where"><a class="jump" data-module="${esc(c.module)}">${esc(c.module)}</a>:${c.line}</div>` : `<div class="where">line ${c.line}${c.reached ? "" : " · no route reaches this call"}</div>`}</div>`;
+}
+
+function routeLink(id) {
+	const r = routes[id];
+	return `<a class="jump" data-route="${id}">${esc(r.group === SHELL ? "element bootstrap" : r.group)} ${esc(r.path)}</a>`;
+}
+
+function renderInspector() {
+	const s = state.sel;
+	const box = $("inspector");
+	if (!s) {
+		box.innerHTML = `<div class="intro"><h3>Inspector</h3><p>Select a row in any rack.</p><ul><li>A route lists every call it can make and the endpoint behind it.</li><li>A module lists its calls by line, including calls that no route reaches.</li><li>An endpoint lists the routes and files that call it, and the caller check that its handler reaches.</li></ul><p>A route also reaches the calls of its layouts and of its group's router. The element bootstrap row holds the calls that run on every placement.</p></div>`;
+		return;
+	}
+	if (s.type === "route") {
+		const r = routes[s.id];
+		const g = groupInfo[r.group];
+		const byKind = KIND_ORDER.map(k => [k, r.calls.filter(c => endpointByKey[calls[c].endpoint]?.kind === k)]).filter(([, l]) => l.length);
+		box.innerHTML = `<div><div class="eyebrow">Route · ${esc(r.group === SHELL ? "element bootstrap" : r.group)}</div><h3 class="mono" style="overflow-wrap:anywhere">${esc(r.path)}</h3></div>
+			<dl class="kv">
+				<dt>Rendered by</dt><dd>${r.components.map(c => `${esc(c.name)} <span class="mono" style="color:var(--muted)">${esc(c.file)}:${c.line}</span>`).join("<br>")}</dd>
+				${r.layouts.length ? `<dt>Inside</dt><dd>${esc(r.layouts.join(" › "))}</dd>` : ""}
+				${r.gate ? `<dt>Gate</dt><dd><span class="mono">${esc(r.gate)}</span>. It hides the page. It does not protect the endpoints.</dd>` : ""}
+				${g?.pages?.length ? `<dt>Placed on</dt><dd>${g.pages.map(p => `<span class="mono">${esc(p.url)}</span>${p.view.length ? ` <span style="color:var(--muted)">(${esc(p.view.join(", "))})</span>` : ""}`).join("<br>")}</dd>` : ""}
+				<dt>Defined in</dt><dd class="mono">${esc(r.source)}:${r.line}</dd>
+			</dl>
+			${byKind.map(([k, l]) => `<div class="calls"><div class="eyebrow">${KIND_LABEL[k]} · ${l.length}</div>${l.map(c => callCard(calls[c])).join("")}</div>`).join("") || `<p class="intro">This route makes no HTTP call that the scan can see.</p>`}`;
+		return;
+	}
+	if (s.type === "module") {
+		const m = moduleByFile[s.id];
+		const rs = [...new Set(m.calls.flatMap(c => callRoutes[c]))];
+		box.innerHTML = `<div><div class="eyebrow">Module · ${esc(m.kind)}</div><h3 class="mono" style="overflow-wrap:anywhere">${esc(m.file)}</h3></div>
+			<div class="calls"><div class="eyebrow">Calls · ${m.calls.length}</div>${m.calls.map(c => callCard(calls[c], {where: false})).join("")}</div>
+			<div class="list"><div class="eyebrow">Routes that reach it · ${rs.length}</div>${rs.map(routeLink).join("") || `<span style="color:var(--muted)">No route reaches these calls.</span>`}</div>`;
+		return;
+	}
+	const e = endpointByKey[s.id];
+	const missNote = e.kind === "missing" ? `<div class="note missing"><b>No controller maps this path.</b> The call fails with 404${e.otherMethods?.length ? `, or 405 because the path takes ${esc(e.otherMethods.join(", "))}` : ""}.</div>` : "";
+	const noCallerNote = e.kind === "sidecar" && !e.routes.length ? `<div class="note">${e.category === "objectAction" ? "Liferay calls this endpoint when an object action fires." : "No route in the custom element calls this endpoint. Another system, a fragment, or a script can still call it."}</div>` : "";
+	box.innerHTML = `<div><div class="eyebrow">${esc(KIND_LABEL[e.kind])} endpoint</div><h3 class="mono" style="overflow-wrap:anywhere">${method(e.method)}${esc(e.path)}</h3></div>
+		${missNote}${noCallerNote}
+		${e.kind === "sidecar" ? `<dl class="kv"><dt>Handler</dt><dd>${esc(e.controller)}.${esc(e.handler)}</dd>${e.category === "objectAction" ? "" : `<dt>Caller check</dt><dd>${authText(e)}</dd>`}<dt>Source</dt><dd class="mono">${esc(e.file.replace("client-extensions/liferay-one-etc-spring-boot/src/main/java/", ""))}:${e.line}</dd></dl>` : ""}
+		<div class="list"><div class="eyebrow">Routes that call it · ${e.routes.length}</div>${e.routes.map(routeLink).join("") || `<span style="color:var(--muted)">None.</span>`}</div>
+		${e.calls.length ? `<div class="calls"><div class="eyebrow">Call sites · ${e.calls.length}</div>${e.calls.map(c => callCard(calls[c])).join("")}</div>` : ""}`;
+}
+
+function authText(e) {
+	if (e.auth.kind === "checked") return e.auth.checks.map(c => `<span class="mono">${esc(c)}</span>`).join("<br>");
+	if (e.public) return `None. Public: ${esc(e.public)}`;
+	if (e.auth.kind === "caller") return `None. The handler takes the caller's Jwt, so only Liferay can refuse the caller, and only for the calls that pass the Jwt on.`;
+	return `<span style="color:var(--high)">None.</span> The handler takes no Jwt and reaches no permission check.`;
+}
+
+function select(sel) {
+	state.sel = sel && state.sel && sel.type === state.sel.type && sel.id === state.sel.id ? null : sel;
+	render();
+}
+
+document.addEventListener("click", ev => {
+	const t = ev.target.closest("[data-route],[data-module],[data-endpoint],[data-alert],[data-kind]");
+	if (!t) return;
+	if (t.dataset.alert) { state.focus = state.focus === t.dataset.alert ? null : t.dataset.alert; render(); return; }
+	if (t.dataset.kind) {
+		const k = t.dataset.kind;
+		state.kinds.has(k) ? state.kinds.delete(k) : state.kinds.add(k);
+		render();
+		return;
+	}
+	if (t.dataset.route !== undefined) select({type: "route", id: Number(t.dataset.route)});
+	else if (t.dataset.module !== undefined) select({type: "module", id: t.dataset.module});
+	else select({type: "endpoint", id: t.dataset.endpoint});
+});
+$("search").addEventListener("input", ev => { state.search = ev.target.value.trim().toLowerCase(); render(); });
+
+// A link from Workspace Health names an endpoint that the search or the route
+// group can hide. Clear both, so the highlight can find it.
+document.addEventListener("viz-find", () => {
+	if (!state.search && !state.group) return;
+	state.search = ""; state.group = ""; $("search").value = ""; $("group").value = "";
+	render();
+});
+$("group").addEventListener("change", ev => { state.group = ev.target.value; render(); });
+$("clear").addEventListener("click", () => { state.sel = null; state.focus = null; render(); });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") { state.sel = null; render(); } });
+
+render();
+
+// OAuth2 scopes.
+$("scopes").innerHTML = `<table><thead><tr><th>Scope</th><th>Status</th><th>Declared by</th><th>Called from</th></tr></thead><tbody>${DATA.scopes.map(r => `<tr><td class="scope">${esc(r.scope)}${r.readOnly && r.status !== "missing" ? ` <span class="tag">read only</span>` : ""}</td><td>${r.status === "covered" ? `<span class="tag">declared</span>` : r.status === "missing" ? `<span class="tag high">not declared</span>` : `<span class="tag quiet">unused</span>`}</td><td class="mono" style="font-size:12px">${r.declaredBy.map(n => `<span title="${esc(n)}">${esc(n.replace("liferay-one-etc-spring-boot-", ""))}</span>`).join(", ") || "—"}</td><td class="mono" style="font-size:12px;overflow-wrap:anywhere">${r.files.map(f => esc(f.split("/").pop())).join(", ") || "—"}</td></tr>`).join("")}</tbody></table>`;
+</script>

@@ -1,0 +1,36 @@
+{
+	"adminRoles": [
+		"Administrator",
+		"Provisioning Administrator"
+	],
+	"broadRoles": [
+		"Guest",
+		"Power User",
+		"Site Member",
+		"User"
+	],
+	"builtinRoles": {
+		"Account Administrator": "account",
+		"Account Manager": "account",
+		"Account Member": "account",
+		"Account Supplier": "account",
+		"Administrator": "regular",
+		"Guest": "regular",
+		"Organization Administrator": "organization",
+		"Organization Owner": "organization",
+		"Organization User": "organization",
+		"Owner": "regular",
+		"Power User": "regular",
+		"Site Administrator": "site",
+		"Site Content Reviewer": "site",
+		"Site Member": "site",
+		"Site Owner": "site",
+		"User": "regular"
+	},
+	"referenceObjects": {
+		"EntitlementDefinition": "Product catalog data that every signed in user reads.",
+		"ProductVersion": "The list of Liferay releases that every signed in user reads.",
+		"PublisherDetail": "Public marketplace publisher profiles.",
+		"UsageDefinition": "Metering definitions shared by every account."
+	}
+}
