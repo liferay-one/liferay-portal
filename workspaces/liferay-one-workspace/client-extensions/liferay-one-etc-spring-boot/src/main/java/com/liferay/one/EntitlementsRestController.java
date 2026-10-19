@@ -5,9 +5,12 @@
 
 package com.liferay.one;
 
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.EntitlementService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,11 +24,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class EntitlementsRestController extends OneBaseRestController {
 
 	@PostMapping("/generate")
-	public void postEntitlementsGenerate(@RequestParam long commerceOrderItemId)
+	public void postEntitlementsGenerate(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam long commerceOrderItemId)
 		throws Exception {
+
+		_adminPermission.check(jwt);
 
 		_entitlementService.generateEntitlements(commerceOrderItemId);
 	}
+
+	@Autowired
+	private AdminPermission _adminPermission;
 
 	@Autowired
 	private EntitlementService _entitlementService;
