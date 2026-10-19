@@ -9,6 +9,7 @@ import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.model.Environment;
 import com.liferay.one.util.KeyedLock;
+import com.liferay.petra.string.StringBundler;
 
 import org.json.JSONObject;
 
@@ -63,6 +64,31 @@ public class EnvironmentServiceTest {
 					_ACCOUNT_ENTRY_ID, _CONTRACT_ID, new JSONObject(),
 					EnvironmentConstants.OFFERING_PAAS, _PROJECT_ERC)
 			).getMessage());
+	}
+
+	@Test
+	public void testFetchCloudNativeEnvironmentByActivationCodeEscapesQuotes()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_environmentService
+		).fetchEnvironment(
+			Mockito.anyString()
+		);
+
+		_environmentService.fetchCloudNativeEnvironmentByActivationCode(
+			"x') or (activationCode ne 'x");
+
+		Mockito.verify(
+			_environmentService
+		).fetchEnvironment(
+			StringBundler.concat(
+				"(activationCode eq 'x'') or (activationCode ne ''x') and ",
+				"(offering eq '", EnvironmentConstants.OFFERING_CLOUD_NATIVE,
+				"')")
+		);
 	}
 
 	private static final long _ACCOUNT_ENTRY_ID = 40001;
