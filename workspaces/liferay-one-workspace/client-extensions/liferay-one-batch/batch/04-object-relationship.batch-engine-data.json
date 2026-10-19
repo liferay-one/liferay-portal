@@ -208,7 +208,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "cascade",
+			"deletionType": "disassociate",
 			"externalReferenceCode": "R_CONTRACT_TO_ENTITLEMENT",
 			"label": {
 				"en_US": "Contract to Entitlement"
@@ -219,7 +219,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "cascade",
+			"deletionType": "disassociate",
 			"externalReferenceCode": "R_CONTRACT_TO_ENVIRONMENT",
 			"label": {
 				"en_US": "Contract to Environment"
@@ -241,7 +241,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "cascade",
+			"deletionType": "prevent",
 			"externalReferenceCode": "R_ENTITLEMENT_DEFINITION_TO_ENTITLEMENT",
 			"label": {
 				"en_US": "Entitlement Definition to Entitlement"
@@ -492,7 +492,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "cascade",
+			"deletionType": "disassociate",
 			"externalReferenceCode": "R_PUBLISHER_TO_COMMERCE_ORDER",
 			"label": {
 				"en_US": "Publisher to Commerce Order"
