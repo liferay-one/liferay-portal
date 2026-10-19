@@ -177,6 +177,7 @@
 			"eventTimestamp": "2026-05-01T00:00:00Z",
 			"externalReferenceCode": "UEV-SAAS_STORAGE-2026-05",
 			"quantity": 0.62,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-002",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_SAAS_STORAGE",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-SAAS-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "storage-gb"
@@ -186,6 +187,7 @@
 			"eventTimestamp": "2026-06-01T00:00:00Z",
 			"externalReferenceCode": "UEV-SAAS_STORAGE-2026-06",
 			"quantity": 0.78,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-002",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_SAAS_STORAGE",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-SAAS-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "storage-gb"
@@ -195,6 +197,7 @@
 			"eventTimestamp": "2026-07-01T00:00:00Z",
 			"externalReferenceCode": "UEV-SAAS_STORAGE-2026-07",
 			"quantity": 0.94,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-002",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_SAAS_STORAGE",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-SAAS-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "storage-gb"

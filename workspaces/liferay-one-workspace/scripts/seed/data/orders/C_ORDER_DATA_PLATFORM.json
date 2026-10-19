@@ -160,6 +160,7 @@
 			"eventTimestamp": "2026-05-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_API_REQUESTS-2026-05",
 			"quantity": 310000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_API_REQUESTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "api-requests-monthly"
@@ -169,6 +170,7 @@
 			"eventTimestamp": "2026-06-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_API_REQUESTS-2026-06",
 			"quantity": 390000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_API_REQUESTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "api-requests-monthly"
@@ -178,6 +180,7 @@
 			"eventTimestamp": "2026-07-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_API_REQUESTS-2026-07",
 			"quantity": 470000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_API_REQUESTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "api-requests-monthly"
@@ -187,6 +190,7 @@
 			"eventTimestamp": "2026-05-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_EVENTS-2026-05",
 			"quantity": 620000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_EVENTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "events-monthly"
@@ -196,6 +200,7 @@
 			"eventTimestamp": "2026-06-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_EVENTS-2026-06",
 			"quantity": 780000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_EVENTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "events-monthly"
@@ -205,6 +210,7 @@
 			"eventTimestamp": "2026-07-01T00:00:00Z",
 			"externalReferenceCode": "UEV-DATA_PLATFORM_EVENTS-2026-07",
 			"quantity": 940000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM_EVENTS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "events-monthly"
@@ -214,6 +220,7 @@
 			"eventTimestamp": "2026-01-05T00:00:00Z",
 			"externalReferenceCode": "UEV-LICENSE-LDP_EXPIRED",
 			"quantity": 1,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "license-generations"
@@ -223,6 +230,7 @@
 			"eventTimestamp": "2026-01-05T00:00:00Z",
 			"externalReferenceCode": "UEV-LICENSE-LDP_PRODUCTION",
 			"quantity": 1,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-028",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_DATA_PLATFORM",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-LDP-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "license-generations"

@@ -54,7 +54,7 @@
 			"type": "oneToMany"
 		},
 		{
-			"deletionType": "disassociate",
+			"deletionType": "prevent",
 			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_ENVIRONMENT",
 			"label": {
 				"en_US": "Account Entry to Environment"
@@ -172,6 +172,17 @@
 			"name": "accountEntryToTrialExtensionRequest",
 			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
 			"objectDefinitionExternalReferenceCode2": "C_TRIAL_EXTENSION_REQUEST",
+			"type": "oneToMany"
+		},
+		{
+			"deletionType": "prevent",
+			"externalReferenceCode": "R_ACCOUNT_ENTRY_TO_USAGE_EVENT",
+			"label": {
+				"en_US": "Account Entry to Usage Event"
+			},
+			"name": "accountEntryToUsageEvent",
+			"objectDefinitionExternalReferenceCode1": "L_ACCOUNT",
+			"objectDefinitionExternalReferenceCode2": "C_USAGE_EVENT",
 			"type": "oneToMany"
 		},
 		{

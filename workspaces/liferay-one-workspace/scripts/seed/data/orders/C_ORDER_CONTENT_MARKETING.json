@@ -62,6 +62,7 @@
 			"eventTimestamp": "2026-01-05T00:00:00Z",
 			"externalReferenceCode": "UEV-LICENSE-CMP_LEGACY",
 			"quantity": 1,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-027",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_CONTENT_MARKETING",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "license-generations"
 		},
@@ -70,6 +71,7 @@
 			"eventTimestamp": "2026-01-05T00:00:00Z",
 			"externalReferenceCode": "UEV-LICENSE-CMP_PRODUCTION",
 			"quantity": 1,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-027",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_CONTENT_MARKETING",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "license-generations"
 		},
@@ -78,6 +80,7 @@
 			"eventTimestamp": "2026-01-05T00:00:00Z",
 			"externalReferenceCode": "UEV-LICENSE-CMP_RENEWAL",
 			"quantity": 1,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-027",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_CONTENT_MARKETING",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "license-generations"
 		}

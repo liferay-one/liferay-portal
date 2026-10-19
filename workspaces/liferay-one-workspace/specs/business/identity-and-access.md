@@ -36,6 +36,7 @@ Terms used in this file:
 | REQ-ACCESS-014 | When the service cannot read the user account of a token, it refuses the request with status 403. It does not answer with a server error. | P0 | — | — |
 | REQ-ACCESS-015 | The readiness probe answers `READY` without a token, so that the hosting platform can check the service. | P2 | — | `AUTH-UNAUTHENTICATED` |
 | REQ-ACCESS-016 | The pages call the Spring Boot service with the access token of the signed in user. When the service refuses a call, the page receives the status and the problem detail of the refusal. | P0 | — | `CLIENT-SPRING-BOOT-OAUTH2CLIENT` |
+| REQ-ACCESS-017 | A user reads the environments and the usage events of their own accounts only. The objects are account restricted, so a direct read through the object API returns no entry of another account. | P0 | LPD-88277 | `AUTH-ACCOUNT-RESTRICTED-READS` |
 
 ## DXP Connection Authorization
 
