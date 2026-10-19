@@ -8,6 +8,7 @@ package com.liferay.one.jira.service;
 import com.liferay.one.jira.constants.JiraBusinessEventConstants;
 import com.liferay.one.jira.converter.JiraBusinessEventConverter;
 import com.liferay.one.jira.converter.JiraBusinessEventVersionConverter;
+import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.model.JiraAssetObjectFieldOption;
 import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.one.jira.model.JiraBusinessEventVersion;
@@ -26,8 +27,11 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Jenny Chen
@@ -140,17 +144,52 @@ public class JiraBusinessEventService {
 			String businessEventId, String projectExternalReferenceCode)
 		throws Exception {
 
-		for (JiraBusinessEvent jiraBusinessEvent :
-				getJiraBusinessEvents(projectExternalReferenceCode)) {
-
-			if (Objects.equals(
-					jiraBusinessEvent.getBusinessEventId(), businessEventId)) {
-
-				return true;
-			}
+		if (!Validator.isNumber(businessEventId)) {
+			return false;
 		}
 
-		return false;
+		JiraAssetObject accountJiraAssetObject =
+			_accountAssetService.fetchAccountJiraAssetObjectByExternalKey(
+				projectExternalReferenceCode);
+
+		if (accountJiraAssetObject == null) {
+			return false;
+		}
+
+		JSONObject jsonObject = null;
+
+		try {
+			jsonObject = _jiraAssetPersistence.getObject(businessEventId);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+				return false;
+			}
+
+			throw webClientResponseException;
+		}
+
+		JSONObject objectTypeJSONObject = jsonObject.optJSONObject(
+			"objectType");
+
+		if ((objectTypeJSONObject == null) ||
+			!Objects.equals(
+				objectTypeJSONObject.optString("id"),
+				_businessEventConverter.getObjectTypeId())) {
+
+			return false;
+		}
+
+		JiraAssetObject jiraAssetObject =
+			_businessEventConverter.toJiraAssetObject(jsonObject);
+
+		return Objects.equals(
+			jiraAssetObject.getAttributeValue(
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT),
+			accountJiraAssetObject.getObjectId());
 	}
 
 	@CacheEvict(
