@@ -57,23 +57,6 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	@GetMapping("/business-events/fields/{fieldName}/options")
-	public ResponseEntity<String> getBusinessEventsFieldsOptions(
-			@PathVariable("fieldName") String fieldName)
-		throws Exception {
-
-		return getResponseEntity(
-			_businessEventService.getFieldOptions(fieldName),
-			JiraAssetObjectFieldOption::toJSONObject);
-	}
-
-	@GetMapping("/product-versions")
-	public ResponseEntity<String> getProductVersions() throws Exception {
-		return getResponseEntity(
-			_businessEventService.getJiraProductVersions(),
-			JiraProductVersion::toJSONObject);
-	}
-
 	@GetMapping("/projects/{externalReferenceCode}/business-events")
 	public ResponseEntity<String> getProjectsBusinessEvents(
 			@AuthenticationPrincipal Jwt jwt,
@@ -108,6 +91,22 @@ public class BusinessEventsRestController extends OneBaseRestController {
 	}
 
 	@GetMapping(
+		"/projects/{externalReferenceCode}/business-events/fields/{fieldName}/options"
+	)
+	public ResponseEntity<String> getProjectsBusinessEventsFieldsOptions(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("fieldName") String fieldName)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		return getResponseEntity(
+			_businessEventService.getFieldOptions(fieldName),
+			JiraAssetObjectFieldOption::toJSONObject);
+	}
+
+	@GetMapping(
 		"/projects/{externalReferenceCode}/business-events/{id}/versions"
 	)
 	public ResponseEntity<String> getProjectsBusinessEventsVersions(
@@ -123,6 +122,19 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		return getResponseEntity(
 			_businessEventService.getJiraBusinessEventVersions(id),
 			JiraBusinessEventVersion::toJSONObject);
+	}
+
+	@GetMapping("/projects/{externalReferenceCode}/product-versions")
+	public ResponseEntity<String> getProjectsProductVersions(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		return getResponseEntity(
+			_businessEventService.getJiraProductVersions(),
+			JiraProductVersion::toJSONObject);
 	}
 
 	@PostMapping("/projects/{externalReferenceCode}/business-events")
