@@ -26,6 +26,8 @@ Before creating the PR, verify these Brian-enforced requirements:
 
 **Test commits:** Run the check in `rules/pr-hygiene.md` → "Tests Go in Their Own Commit". When a commit mixes test files and other files, abort and offer to split it. Do not open the PR until the code and the tests are in separate commits.
 
+**Visuals:** Run `yarn viz:check`. When it fails, follow `rules/pr-hygiene.md` → "Keep the Visuals Current", commit the fix, and run the check again. Do not open the PR while it fails.
+
 **Merge conflicts:** Confirm the branch is rebased on top of `liferay-one/master-temp` with no conflicts. Run `git merge-base --is-ancestor liferay-one/master-temp HEAD` — if the branch is behind, offer to run `/one-rebase` first.
 
 **Code review:** Report what review the branch has, recommend one when it is missing, and let the author decide. This check pauses for a question; it never holds the pull request against an answer.

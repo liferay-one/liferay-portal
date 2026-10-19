@@ -24,7 +24,7 @@ Pure Liferay SaaS client-extension workspace — no OSGi modules, no Ant. Client
 
 The migration and ETL scripts that load this product's data live in a sibling `scripts` checkout — `liferay-one/scripts` on GitHub, conventionally `../../../scripts` from here. Its `one/scripts/migration/` scripts write the objects defined in `client-extensions/liferay-one-batch/batch/`, through the headless APIs and the `liferay-one-etc-spring-boot` endpoints.
 
-Before changing an object ERC, a field name, an endpoint path, or an enum value, grep that checkout for it and record what breaks — a rename here silently breaks a loader there. Repair it in a companion ticket against that repo, never in a workspace PR ([`rules/pr-hygiene.md`](./rules/pr-hygiene.md) — one workspace, one PR).
+Before changing an object ERC, a field name, an endpoint path, or an enum value, grep that checkout for it and record what breaks — a rename here silently breaks a loader there. Inside this workspace, `yarn viz:check` finds the visuals that the rename makes wrong. Repair it in a companion ticket against that repo, never in a workspace PR ([`rules/pr-hygiene.md`](./rules/pr-hygiene.md) — one workspace, one PR).
 
 The `/one-team` skill runs a four-agent team against either repo; see [`skills/one-team/SKILL.md`](./skills/one-team/SKILL.md).
 
@@ -44,6 +44,7 @@ Run from `workspaces/liferay-one-workspace/`.
 - **Pre-commit:** Run format and build first; do not deploy a failing build.
 - **Rebase:** Run the `/one-rebase` skill.
 - PR: Run the `/one-pr` skill.
+- Visuals: Run the `/one-viz` skill to rebuild and publish the interactive pages in `tools/visuals/`. Run `yarn viz:check` to find drift.
 
 ## Rules
 
@@ -70,6 +71,6 @@ Run from `workspaces/liferay-one-workspace/`.
 - [`specs/technical/`](../specs/technical/) — technical requirements by quality attribute, integration contracts, the workspace layout, and the data model
 - [`specs/glossary.md`](../specs/glossary.md) — the shared terms
 
-Requirement rows are checked against the test plan by `yarn plan:check`. The prose files, such as `technical/data-model.md` and `technical/workspace.md`, are not checked. The object definitions in `client-extensions/liferay-one-batch/batch/` and the `liferay-one-etc-spring-boot` controllers are the source of truth for ERCs, fields, list types, and endpoints, and a prose spec that disagrees with them is stale.
+Requirement rows are checked against the test plan by `yarn plan:check`. The interactive pages in `tools/visuals/` (the Model, View, and Controller pages, test coverage, and workspace health) are built from the code by `yarn viz`, and `yarn viz:check` reports where their hand-maintained input no longer matches the code. The prose files, such as `technical/data-model.md` and `technical/workspace.md`, are not checked. The object definitions in `client-extensions/liferay-one-batch/batch/` and the `liferay-one-etc-spring-boot` controllers are the source of truth for ERCs, fields, list types, and endpoints, and a prose spec that disagrees with them is stale.
 
 For the API surface and the page and route map, read the code directly (Spring Boot controllers in `liferay-one-etc-spring-boot`, the service layer and `src/pages/` in `liferay-one-custom-element`). These change too often for a parallel spec to stay accurate.

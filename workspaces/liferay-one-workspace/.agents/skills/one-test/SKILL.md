@@ -61,4 +61,4 @@ If the environment is not up, start it with the `one-env-up` skill. If `8080` re
 
 State which tiers ran and the pass and fail counts. On failure, also state the failing test name and the relevant assertion or stack line. For portal backed failures, check `<bundles>/logs` and the Spring Boot container logs (`docker logs liferay-one-etc-spring-boot`) before you conclude that the test is wrong.
 
-To see which planned routes, endpoints, crons, and subscribers have real tests, run `yarn plan:report`. Run `yarn plan:check` to confirm that the plan still matches the code.
+To see which planned routes, endpoints, crons, and subscribers have real tests, run `yarn plan:report`. Run `yarn plan:check` to confirm that the plan still matches the code. Run `yarn viz test-coverage` and open `tools/visuals/build/test-coverage.html` to see the same coverage by requirement area, epic, and tier.

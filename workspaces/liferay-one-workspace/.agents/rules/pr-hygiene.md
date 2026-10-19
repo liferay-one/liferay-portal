@@ -61,3 +61,20 @@ done
 ```
 
 To split a mixed commit, reset it with `git reset --soft HEAD~1`. Unstage the test files and commit the code with the original message. Then stage only the test files and commit them. Stage files by name, not with `git add -A`, because the working tree can hold edits that do not belong to either commit.
+
+## Keep the Visuals Current
+
+The pages in `tools/visuals/` are built from the code, and some of their input is written by hand: object domains, audit findings, the order to entitlement narrative, and the endpoints flagged by the audit. A change to the code can make that input wrong. `yarn viz:check` finds each place.
+
+Run `yarn viz:check` before you send the PR. It must exit 0. These changes are the usual cause of a problem:
+
+| Change | File to update |
+| --- | --- |
+| Add, rename, or remove an object, field, or relationship in `liferay-one-batch/batch/` | `tools/visuals/object-model/config.json` and `findings.json` |
+| Fix a defect that an object model finding describes | The finding's `sev` in `tools/visuals/object-model/findings.json` |
+| Change a grant in `resource-permissions.json`, or add a role | `tools/visuals/permission-matrix/config.json` |
+| Change a sidecar endpoint path, or a route or service in the custom element | `tools/visuals/apis/config.json` |
+
+A problem can also report a real defect in the code, such as an object action with no handler. Fix the defect, or add it to `tools/visuals/known-defects.json` with its ticket or audit ID. Do not change an extractor to hide a problem. When you fix a known defect, remove its entry, because the check fails on an entry that no longer matches.
+
+Put the visual update in the same commit as the code that caused it. The check needs no running portal.
