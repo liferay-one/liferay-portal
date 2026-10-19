@@ -10,16 +10,6 @@
 		"visual": "events"
 	},
 	{
-		"match": "gives User scope 1 VIEW on Environment,",
-		"reason": "Go-Live Tasks S6",
-		"visual": "permission-matrix"
-	},
-	{
-		"match": "gives User scope 1 VIEW on UsageEvent,",
-		"reason": "Go-Live Tasks S6",
-		"visual": "permission-matrix"
-	},
-	{
 		"match": "GET /contacts/{contactEmailAddress}/validate (",
 		"reason": "Go-Live Tasks S9",
 		"visual": "apis"

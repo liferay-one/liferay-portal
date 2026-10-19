@@ -813,6 +813,7 @@
 			"eventTimestamp": "2026-05-01T00:00:00Z",
 			"externalReferenceCode": "UEV-OMNI_AI_HUB_AITOKENS-2026-05",
 			"quantity": 31000000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-001",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_OMNI_AI_HUB_AITOKENS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-DSR-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "ai-tokens-monthly"
@@ -822,6 +823,7 @@
 			"eventTimestamp": "2026-06-01T00:00:00Z",
 			"externalReferenceCode": "UEV-OMNI_AI_HUB_AITOKENS-2026-06",
 			"quantity": 39000000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-001",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_OMNI_AI_HUB_AITOKENS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-DSR-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "ai-tokens-monthly"
@@ -831,6 +833,7 @@
 			"eventTimestamp": "2026-07-01T00:00:00Z",
 			"externalReferenceCode": "UEV-OMNI_AI_HUB_AITOKENS-2026-07",
 			"quantity": 62500000.0,
+			"r_accountEntryToUsageEvent_accountEntryERC": "ACCNT-001",
 			"r_entitlementToUsageEvent_c_entitlementERC": "C_ENT_OMNI_AI_HUB_AITOKENS",
 			"r_environmentToUsageEvent_c_environmentERC": "ENV-DSR-PROD",
 			"r_usageDefinitionToUsageEvent_c_usageDefinitionERC": "ai-tokens-monthly"

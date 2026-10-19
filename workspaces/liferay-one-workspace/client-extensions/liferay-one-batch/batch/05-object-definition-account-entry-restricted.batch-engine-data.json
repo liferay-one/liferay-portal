@@ -32,6 +32,11 @@
 		},
 		{
 			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountEntryToEnvironment_accountEntryId",
+			"externalReferenceCode": "C_ENVIRONMENT"
+		},
+		{
+			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountEntryToLicenseKey_accountEntryId",
 			"externalReferenceCode": "C_LICENSE_KEY"
 		},
@@ -64,6 +69,11 @@
 			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountEntryToTrialExtensionRequest_accountEntryId",
 			"externalReferenceCode": "C_TRIAL_EXTENSION_REQUEST"
+		},
+		{
+			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountEntryToUsageEvent_accountEntryId",
+			"externalReferenceCode": "C_USAGE_EVENT"
 		}
 	]
 }
