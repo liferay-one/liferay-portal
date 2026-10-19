@@ -14,6 +14,8 @@ import com.liferay.headless.portal.instances.client.dto.v1_0.PortalInstance;
 import com.liferay.headless.portal.instances.client.pagination.Page;
 import com.liferay.headless.portal.instances.client.resource.v1_0.PortalInstanceResource;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.permission.AdminPermission;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.ConsoleService;
 import com.liferay.one.service.NotificationQueueEntryService;
@@ -49,6 +51,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,47 +71,24 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class TrialRestController extends BaseRestController {
 
 	@DeleteMapping("{orderId}")
-	public void deleteTrial(@PathVariable long orderId) throws Exception {
-		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
+	public void deleteTrial(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId)
+		throws Exception {
 
-		if (order == null) {
-			throw new IllegalArgumentException(
-				"No order exists with ID " + orderId);
+		_adminPermission.check(jwt);
+
+		_deleteTrial(orderId);
+	}
+
+	public void expireTrial(long orderId) throws Exception {
+		if (_log.isInfoEnabled()) {
+			_log.info("Expired trial " + orderId);
 		}
 
-		JSONObject trialProvisioningContextJSONObject =
-			_getTrialProvisioningContextJSONObject(order);
+		_commerceOrderService.completeOrder(
+			orderId, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
 
-		String projectId = trialProvisioningContextJSONObject.getString(
-			"projectId");
-
-		try {
-			_consoleService.deleteProject(projectId);
-		}
-		catch (WebClientResponseException webClientResponseException) {
-			HttpStatusCode httpStatusCode =
-				webClientResponseException.getStatusCode();
-
-			if (!httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
-				throw webClientResponseException;
-			}
-
-			if (_log.isInfoEnabled()) {
-				_log.info("Project " + projectId + " no longer exists");
-			}
-		}
-
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		String virtualHost = null;
-
-		if (customFields != null) {
-			virtualHost = customFields.get("trial-virtual-host");
-		}
-
-		_deletePortalInstance(
-			orderId, trialProvisioningContextJSONObject, virtualHost);
+		_deleteTrial(orderId);
 	}
 
 	@GetMapping("availability")
@@ -163,19 +144,20 @@ public class TrialRestController extends BaseRestController {
 	}
 
 	@PostMapping("expire/{orderId}")
-	public void postExpire(@PathVariable long orderId) throws Exception {
-		if (_log.isInfoEnabled()) {
-			_log.info("Expired trial " + orderId);
-		}
+	public void postExpire(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId)
+		throws Exception {
 
-		_commerceOrderService.completeOrder(
-			orderId, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+		_commerceOrderPermission.check(orderId, jwt);
 
-		deleteTrial(orderId);
+		expireTrial(orderId);
 	}
 
 	@PostMapping("extend/{id}")
-	public void postExtend(@PathVariable long id) throws Exception {
+	public void postExtend(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long id)
+		throws Exception {
+
 		if (_log.isInfoEnabled()) {
 			_log.info("Extend trial " + id);
 		}
@@ -202,6 +184,8 @@ public class TrialRestController extends BaseRestController {
 
 		long orderId = trialExtensionRequestJSONObject.getLong(
 			"r_orderToTrialExtensionRequest_commerceOrderId");
+
+		_commerceOrderPermission.check(orderId, jwt);
 
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
@@ -239,9 +223,16 @@ public class TrialRestController extends BaseRestController {
 	}
 
 	@PostMapping("provisioning/{orderId}")
-	public void postProvisioningOrder(@PathVariable long orderId)
+	public void postProvisioningOrder(
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId)
 		throws Exception {
 
+		_commerceOrderPermission.check(orderId, jwt);
+
+		provisionTrial(orderId);
+	}
+
+	public void provisionTrial(long orderId) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info("Provisioning order " + orderId);
 		}
@@ -425,6 +416,49 @@ public class TrialRestController extends BaseRestController {
 		if (_log.isInfoEnabled()) {
 			_log.info("Portal instance deleted for order " + orderId);
 		}
+	}
+
+	private void _deleteTrial(long orderId) throws Exception {
+		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
+
+		if (order == null) {
+			throw new IllegalArgumentException(
+				"No order exists with ID " + orderId);
+		}
+
+		JSONObject trialProvisioningContextJSONObject =
+			_getTrialProvisioningContextJSONObject(order);
+
+		String projectId = trialProvisioningContextJSONObject.getString(
+			"projectId");
+
+		try {
+			_consoleService.deleteProject(projectId);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			HttpStatusCode httpStatusCode =
+				webClientResponseException.getStatusCode();
+
+			if (!httpStatusCode.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+				throw webClientResponseException;
+			}
+
+			if (_log.isInfoEnabled()) {
+				_log.info("Project " + projectId + " no longer exists");
+			}
+		}
+
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		String virtualHost = null;
+
+		if (customFields != null) {
+			virtualHost = customFields.get("trial-virtual-host");
+		}
+
+		_deletePortalInstance(
+			orderId, trialProvisioningContextJSONObject, virtualHost);
 	}
 
 	private Order _getOrder(String orderTypeExternalReferenceCode) {
@@ -679,7 +713,7 @@ public class TrialRestController extends BaseRestController {
 					trialEndDate);
 
 				if (nowZonedDateTime.isAfter(trialEndDateZonedDateTime)) {
-					postExpire(orderId);
+					expireTrial(orderId);
 
 					continue;
 				}
@@ -740,7 +774,7 @@ public class TrialRestController extends BaseRestController {
 					_log.info("Processing on hold order " + orderId);
 				}
 
-				postProvisioningOrder(orderId);
+				provisionTrial(orderId);
 
 				if (_log.isInfoEnabled()) {
 					_log.info("Processed on hold order " + orderId);
@@ -819,6 +853,12 @@ public class TrialRestController extends BaseRestController {
 
 	private static final Log _log = LogFactory.getLog(
 		TrialRestController.class);
+
+	@Autowired
+	private AdminPermission _adminPermission;
+
+	@Autowired
+	private CommerceOrderPermission _commerceOrderPermission;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;

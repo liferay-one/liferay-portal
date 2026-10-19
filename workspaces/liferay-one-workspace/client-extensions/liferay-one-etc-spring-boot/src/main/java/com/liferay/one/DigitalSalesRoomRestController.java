@@ -8,6 +8,7 @@ package com.liferay.one;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.petra.string.StringBundler;
@@ -29,6 +30,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,8 +47,10 @@ public class DigitalSalesRoomRestController extends BaseRestController {
 
 	@PostMapping("provisioning/{orderId}")
 	public ResponseEntity<Void> postProvisioningOrder(
-			@PathVariable long orderId)
+			@AuthenticationPrincipal Jwt jwt, @PathVariable long orderId)
 		throws Exception {
+
+		_commerceOrderPermission.check(orderId, jwt);
 
 		if (_log.isInfoEnabled()) {
 			_log.info("Provisioning order " + orderId);
@@ -210,6 +215,9 @@ public class DigitalSalesRoomRestController extends BaseRestController {
 
 	@Autowired
 	private AnalyticsCloudService _analyticsCloudService;
+
+	@Autowired
+	private CommerceOrderPermission _commerceOrderPermission;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;

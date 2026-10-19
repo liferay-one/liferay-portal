@@ -17,6 +17,7 @@ import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
+import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
@@ -245,7 +246,8 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	}
 
 	@PostMapping("/type-free")
-	public LicenseKey postLicenseKeysTypeFree(@RequestBody String json)
+	public LicenseKey postLicenseKeysTypeFree(
+			@AuthenticationPrincipal Jwt jwt, @RequestBody String json)
 		throws Exception {
 
 		JSONObject jsonObject = new JSONObject(json);
@@ -253,6 +255,8 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		String domains = jsonObject.optString("domains");
 		long orderId = jsonObject.optLong("orderId");
 		String owner = jsonObject.optString("owner");
+
+		_commerceOrderPermission.check(orderId, jwt);
 
 		if (_licenseKeyService.hasValidLicenseKeyTypeFree(domains, owner)) {
 			throw new ResponseStatusException(
@@ -405,6 +409,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 	}
 
 	private static final int _MAX_LICENSE_KEY_IDS = 100;
+
+	@Autowired
+	private CommerceOrderPermission _commerceOrderPermission;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
