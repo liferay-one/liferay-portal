@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -133,6 +134,23 @@ public class JiraBusinessEventService {
 				JiraBusinessEventConstants.OBJECT_SCHEMA_BUSINESS_EVENTS,
 				JiraBusinessEventConstants.OBJECT_TYPE_PRODUCT_VERSION),
 			JiraProductVersion::new);
+	}
+
+	public boolean hasJiraBusinessEvent(
+			String businessEventId, String projectExternalReferenceCode)
+		throws Exception {
+
+		for (JiraBusinessEvent jiraBusinessEvent :
+				getJiraBusinessEvents(projectExternalReferenceCode)) {
+
+			if (Objects.equals(
+					jiraBusinessEvent.getBusinessEventId(), businessEventId)) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@CacheEvict(
