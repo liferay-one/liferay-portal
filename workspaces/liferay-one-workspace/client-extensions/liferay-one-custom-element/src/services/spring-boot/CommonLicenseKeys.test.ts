@@ -37,7 +37,12 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 	});
 
 	it('downloads the blob with earlyReturn', async () => {
-		oAuth2Fetch.mockResolvedValue(new Response('license', {status: 200}));
+		const blob = {} as Blob;
+		const response = new Response(null, {status: 200});
+
+		vi.spyOn(response, 'blob').mockResolvedValue(blob);
+
+		oAuth2Fetch.mockResolvedValue(response);
 
 		await CommonLicenseKeys.downloadCommonLicenseKey('license.xml', 4);
 
@@ -45,12 +50,7 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 			'/common-license-keys/4/download',
 			{earlyReturn: true}
 		);
-		expect(downloadBlob).toHaveBeenCalledTimes(1);
-
-		const [fileName, blob] = vi.mocked(downloadBlob).mock.calls[0];
-
-		expect(fileName).toBe('license.xml');
-		await expect(blob.text()).resolves.toBe('license');
+		expect(downloadBlob).toHaveBeenCalledWith('license.xml', blob);
 	});
 
 	it('lists with page, pageSize, and productGroup', async () => {
