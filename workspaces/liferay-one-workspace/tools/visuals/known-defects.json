@@ -1,7 +1,7 @@
 [
 	{
 		"match": "liferay-marketplace-etc-spring-boot-marketplace-product-submit",
-		"reason": "Not in the audit yet. The executor may be deployed from another workspace. Confirm, then fix or record it",
+		"reason": "Go-Live Tasks I9",
 		"visual": "events"
 	},
 	{
@@ -21,17 +21,17 @@
 	},
 	{
 		"match": "GET /contacts/{contactEmailAddress}/validate (",
-		"reason": "Not in the audit yet. Any caller learns whether an email address has an Okta user. Decide whether it needs a Jwt, then fix it or record it as public",
+		"reason": "Go-Live Tasks S9",
 		"visual": "apis"
 	},
 	{
 		"match": "GET /jira/business-events/fields/{fieldName}/options (",
-		"reason": "Not in the audit yet. Reads Jira field options with the sidecar's Jira credentials for any caller. Decide whether it needs a Jwt, then fix it or record it as public",
+		"reason": "Go-Live Tasks S9",
 		"visual": "apis"
 	},
 	{
 		"match": "GET /jira/product-versions (",
-		"reason": "Not in the audit yet. Reads the Jira product versions with the sidecar's Jira credentials for any caller. Decide whether it needs a Jwt, then fix it or record it as public",
+		"reason": "Go-Live Tasks S9",
 		"visual": "apis"
 	},
 	{
