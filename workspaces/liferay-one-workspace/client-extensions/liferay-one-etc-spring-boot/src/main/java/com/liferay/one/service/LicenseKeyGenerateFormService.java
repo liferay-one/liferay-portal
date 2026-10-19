@@ -634,6 +634,12 @@ public class LicenseKeyGenerateFormService {
 					cloudNativeDeveloperVersionsJSONArray;
 			}
 
+			JSONArray productVersionsJSONArray = versionsJSONArray;
+
+			if (hasLicenseEntries) {
+				productVersionsJSONArray = licensedVersionsJSONArray;
+			}
+
 			productsJSONArray.put(
 				new JSONObject(
 				).put(
@@ -652,7 +658,7 @@ public class LicenseKeyGenerateFormService {
 				).put(
 					"name", entitledProduct.getName()
 				).put(
-					"versions", versionsJSONArray
+					"versions", productVersionsJSONArray
 				));
 		}
 
@@ -859,6 +865,10 @@ public class LicenseKeyGenerateFormService {
 		List<ProductVersion> productVersions = new ArrayList<>(
 			_productVersionService.getProductVersions(
 				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, true));
+
+		productVersions.addAll(
+			_productVersionService.getProductVersions(
+				LicenseKeyGenerationConstants.PRODUCT_GROUP_DXP, false));
 
 		productVersions.sort(
 			Comparator.comparing(
@@ -1111,7 +1121,8 @@ public class LicenseKeyGenerateFormService {
 			String productGroupVersion =
 				productVersion.getProductGroupVersion();
 
-			if (Validator.isNull(productGroupVersion) ||
+			if (!productVersion.isSupported() ||
+				Validator.isNull(productGroupVersion) ||
 				(!productGroupVersion.startsWith(quarterlyPrefix) &&
 				 !Objects.equals(
 					 productGroupVersion,
@@ -1133,6 +1144,10 @@ public class LicenseKeyGenerateFormService {
 		List<String> versions = new ArrayList<>();
 
 		for (ProductVersion productVersion : productVersions) {
+			if (!productVersion.isSupported()) {
+				continue;
+			}
+
 			versions.add(productVersion.getProductGroupVersion());
 		}
 
