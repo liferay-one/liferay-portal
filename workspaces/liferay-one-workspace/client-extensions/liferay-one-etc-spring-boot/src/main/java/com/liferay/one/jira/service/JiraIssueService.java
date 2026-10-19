@@ -12,7 +12,7 @@ import com.liferay.one.jira.model.JiraOrganization;
 import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.util.Validator;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -146,26 +148,43 @@ public class JiraIssueService extends BaseJiraService {
 			String externalReferenceCode, String[] issueKeys)
 		throws Exception {
 
-		StringBundler sb = new StringBundler(12);
+		StringBundler sb = new StringBundler(13);
 
 		sb.append("Organization in aqlFunction('\\\"External Key\\\" = \\\"");
 		sb.append(externalReferenceCode);
-		sb.append("\\\"') and (status not in ('");
+		sb.append("\\\"') and ((status not in ('");
 		sb.append(
 			StringUtil.merge(IssueConstants.statusesSolvedAndClosed, "','"));
-		sb.append("')) and ");
+		sb.append("') and ");
 		sb.append(
 			IssueConstants.toJQLCustomField(
 				_jiraIssueSupportHCFieldRequestType));
 		sb.append(" = '");
 		sb.append(IssueConstants.TYPE_GENERAL_REQUEST);
-		sb.append("'");
+		sb.append("')");
 
-		if (ArrayUtil.isNotEmpty(issueKeys)) {
+		List<String> validIssueKeys = new ArrayList<>();
+
+		if (issueKeys != null) {
+			for (String issueKey : issueKeys) {
+				Matcher matcher = _issueKeyPattern.matcher(
+					GetterUtil.getString(issueKey));
+
+				if (!matcher.matches()) {
+					continue;
+				}
+
+				validIssueKeys.add(issueKey);
+			}
+		}
+
+		if (!validIssueKeys.isEmpty()) {
 			sb.append(" or key in ('");
-			sb.append(StringUtil.merge(issueKeys, "','"));
+			sb.append(StringUtil.merge(validIssueKeys, "','"));
 			sb.append("')");
 		}
+
+		sb.append(")");
 
 		return search(
 			sb.toString(), new String[] {"key", "labels", "status", "summary"});
@@ -284,6 +303,9 @@ public class JiraIssueService extends BaseJiraService {
 	private static final String _URL_REST_API_3 = "/rest/api/3";
 
 	private static final Log _log = LogFactory.getLog(JiraIssueService.class);
+
+	private static final Pattern _issueKeyPattern = Pattern.compile(
+		"[A-Z][A-Z0-9_]*-[0-9]+");
 
 	@Autowired
 	private JiraAssetPersistence _jiraAssetPersistence;
