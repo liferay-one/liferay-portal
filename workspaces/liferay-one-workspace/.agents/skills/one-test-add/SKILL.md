@@ -54,7 +54,7 @@ The plan under `tests/plan/` tracks every route, hook, client, module, endpoint,
 
 - Reference the covered plan ID in the test with a bracketed `[REST-…]` / `[ROUTE-…]` / `[HOOK-…]` / `[CLS-…]` tag in the title or in a comment. A bare ID token also counts, so data driven tables need no extra annotation. One test may list several IDs. Find the ID in the matching `tests/plan/*.md` file.
 - To add a new endpoint, route, cron, or subscriber, run `yarn plan:scaffold` first to generate its row. Then curate the Requirement and Priority.
-- Confirm with `yarn plan:check` (plan covers the code, no orphan tags) and `yarn plan:report` (real versus uncovered).
+- Confirm with `yarn plan:check` (plan covers the code, no orphan tags) and `yarn plan:report` (real versus uncovered). `yarn viz test-coverage` shows the result by requirement area and epic.
 
 ## 4. Verify and Conform
 

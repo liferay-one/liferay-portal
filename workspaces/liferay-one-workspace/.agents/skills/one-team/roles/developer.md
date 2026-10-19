@@ -37,7 +37,7 @@ Before any code, you review `plan.md` as the person who must build it. Check: Ca
 
 1. Before reporting, run the lane's gate:
 
-   Workspace lane: `./gradlew formatSource build` must pass.
+   Workspace lane: `./gradlew formatSource build` must pass, and so must `yarn viz:check`. When the check reports a problem that your change caused, update the configuration that `rules/pr-hygiene.md` → "Keep the Visuals Current" names, in the same commit as the code.
 
    Scripts lane, from `<TARGET>`: `bunx prettier --write <the paths you touched>` then `bun run lint`. Two verified traps — never run `bun run format`, it reformats the entire repo and the repo carries pre-existing formatting drift, so it would pull files the ticket never touched into the diff. `bun run lint` runs `eslint .` and `prettier --check .` repo-wide, so it can fail on that same pre-existing drift in files outside the ticket — when it does, report it as pre-existing and leave those files alone rather than sweeping them in. A repo-wide `bunx tsc --noEmit` in `<TARGET>/one` is already red on master with dozens of pre-existing errors, so it is not a gate; typechecking a touched file is still useful, but only against that baseline — never report it as green or red on its own.
 
