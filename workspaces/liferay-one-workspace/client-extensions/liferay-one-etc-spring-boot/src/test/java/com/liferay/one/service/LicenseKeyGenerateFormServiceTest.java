@@ -866,7 +866,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			"Search", productVersions);
 
 		Assertions.assertEquals(
-			Collections.singletonList("DXP 2026.Q1"), jsonArray.toList());
+			Collections.singletonList("2026.Q1"), jsonArray.toList());
 
 		jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getLicensedVersionsJSONArray",
@@ -1088,8 +1088,7 @@ public class LicenseKeyGenerateFormServiceTest {
 			Year.of(2026));
 
 		Assertions.assertEquals(
-			Arrays.asList("DXP 2026.Q2", "DXP 2026.Q1", "DXP 7.4"),
-			jsonArray.toList());
+			Arrays.asList("2026.Q2", "2026.Q1", "7.4"), jsonArray.toList());
 	}
 
 	@Test
@@ -1126,6 +1125,54 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			"DXP Latest",
 			LicenseKeyGenerateFormService.toComparableVersion("DXP Latest"));
+	}
+
+	@Test
+	public void testToDeveloperVersionsKeepsTheLatestTwoAnd74()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("7.4", "DXP 7.4"),
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("2025.Q1", "DXP 2025.Q1 LTS"),
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"));
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getProductVersions");
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toDeveloperVersionsJSONArray",
+			productVersions);
+
+		Assertions.assertEquals(
+			Arrays.asList("2026.Q3", "2026.Q2", "7.4"), jsonArray.toList());
+	}
+
+	@Test
+	public void testToVersionsSortsTheNewestFirst() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("2024.Q1", "DXP 2024.Q1"),
+				_toProductVersion("2025.Q1", "DXP 2025.Q1 LTS"),
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("2025.Q4", "DXP 2025.Q4"),
+				_toProductVersion("2026.Q1", "DXP 2026.Q1 LTS"),
+				_toProductVersion("7.4", "DXP 7.4"),
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"));
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getProductVersions");
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toVersionsJSONArray",
+			productVersions);
+
+		Assertions.assertEquals(
+			Arrays.asList(
+				"2026.Q3", "2026.Q2", "2026.Q1", "2025.Q4", "2025.Q1",
+				"2024.Q1", "7.4"),
+			jsonArray.toList());
 	}
 
 	private JSONArray _getComplimentaryKeyTypesJSONArray(
@@ -1374,6 +1421,29 @@ public class LicenseKeyGenerateFormServiceTest {
 		ReflectionTestUtils.setField(
 			licenseKeyGenerateFormService, "_commerceSkuService",
 			commerceSkuService);
+
+		return licenseKeyGenerateFormService;
+	}
+
+	private LicenseKeyGenerateFormService _toLicenseKeyGenerateFormService(
+			ProductVersion... productVersions)
+		throws Exception {
+
+		ProductVersionService productVersionService = Mockito.mock(
+			ProductVersionService.class);
+
+		Mockito.when(
+			productVersionService.getProductVersions("dxp", true)
+		).thenReturn(
+			Arrays.asList(productVersions)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_productVersionService",
+			productVersionService);
 
 		return licenseKeyGenerateFormService;
 	}
