@@ -211,6 +211,89 @@ describe('[HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART] useProductPurchaseCart',
 		});
 	});
 
+	describe('updateCart', () => {
+		it('waits for a billing address update on the cart before it writes', async () => {
+			mockCartContext({id: 5});
+
+			let resolveBillingAddressUpdate: (cart: unknown) => void = () => {};
+
+			cartAPI.updateCart
+				.mockReturnValueOnce(
+					new Promise((resolve) => {
+						resolveBillingAddressUpdate = resolve;
+					}) as never
+				)
+				.mockResolvedValueOnce({id: 5} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
+			);
+
+			let billingAddressUpdate: Promise<void> = Promise.resolve();
+			let cartUpdate: Promise<unknown> = Promise.resolve();
+
+			act(() => {
+				billingAddressUpdate = result.current.updateBillingAddress(52);
+				cartUpdate = result.current.updateCart(5, {
+					billingAddressId: 60,
+				});
+			});
+
+			await act(async () => {
+				await Promise.resolve();
+			});
+
+			expect(cartAPI.updateCart).toHaveBeenCalledTimes(1);
+
+			await act(async () => {
+				resolveBillingAddressUpdate({id: 5});
+
+				await billingAddressUpdate;
+				await cartUpdate;
+			});
+
+			expect(cartAPI.updateCart).toHaveBeenNthCalledWith(2, 5, {
+				billingAddressId: 60,
+			});
+		});
+
+		it('still writes after an earlier write fails', async () => {
+			mockCartContext({id: 5});
+
+			cartAPI.updateCart
+				.mockRejectedValueOnce(new Error('conflict'))
+				.mockResolvedValueOnce({id: 5} as never);
+
+			const {result} = renderHook(() =>
+				useProductPurchaseCart(
+					undefined,
+					1,
+					undefined,
+					'DXP',
+					undefined
+				)
+			);
+
+			await act(async () => {
+				await result.current
+					.updateCart(5, {billingAddressId: 52})
+					.catch(() => undefined);
+			});
+
+			await act(async () => {
+				await expect(
+					result.current.updateCart(5, {billingAddressId: 53})
+				).resolves.toEqual({id: 5});
+			});
+		});
+	});
+
 	describe('updateBillingAddress', () => {
 		it('puts the billing address on the cart and reports the update while it runs', async () => {
 			mockCartContext({id: 5});
