@@ -1075,6 +1075,36 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testIsLicensedForVersionWithAnUnsupportedVersion()
+		throws Exception {
+
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.singletonList(
+				new LicenseEntry(
+					"portal", "DXP Production", "production", "7.4", "2026.Q3"))
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("2025.Q2", false, "DXP 2025.Q2"),
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"));
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+
+		Assertions.assertTrue(
+			licenseKeyGenerateFormService.isLicensedForVersion(
+				"DXP", "2025.Q2"));
+	}
+
+	@Test
 	public void testToCloudNativeDeveloperVersionsKeepsTheCurrentYearAnd74() {
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			new LicenseKeyGenerateFormService(),
@@ -1089,6 +1119,21 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertEquals(
 			Arrays.asList("2026.Q2", "2026.Q1", "7.4"), jsonArray.toList());
+	}
+
+	@Test
+	public void testToCloudNativeDeveloperVersionsSkipsUnsupportedVersions() {
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(),
+			"_toCloudNativeDeveloperVersionsJSONArray",
+			Arrays.asList(
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("2026.Q1", false, "DXP 2026.Q1"),
+				_toProductVersion("7.4", "DXP 7.4")),
+			Year.of(2026));
+
+		Assertions.assertEquals(
+			Arrays.asList("2026.Q2", "7.4"), jsonArray.toList());
 	}
 
 	@Test
@@ -1147,6 +1192,50 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertEquals(
 			Arrays.asList("2026.Q3", "2026.Q2", "7.4"), jsonArray.toList());
+	}
+
+	@Test
+	public void testToDeveloperVersionsSkipsUnsupportedVersions()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("2025.Q4", "DXP 2025.Q4"),
+				_toProductVersion("2026.Q2", false, "DXP 2026.Q2"),
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getProductVersions");
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toDeveloperVersionsJSONArray",
+			productVersions);
+
+		Assertions.assertEquals(
+			Arrays.asList("2026.Q3", "2025.Q4", "7.4"), jsonArray.toList());
+	}
+
+	@Test
+	public void testToVersionsIncludesUnsupportedVersions() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("2024.Q3", false, "DXP 2024.Q3"),
+				_toProductVersion("2025.Q2", false, "DXP 2025.Q2"),
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"),
+				_toProductVersion("7.3", false, "DXP 7.3"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getProductVersions");
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toVersionsJSONArray",
+			productVersions);
+
+		Assertions.assertEquals(
+			Arrays.asList("2026.Q3", "2025.Q2", "2024.Q3", "7.4", "7.3"),
+			jsonArray.toList());
 	}
 
 	@Test
@@ -1432,10 +1521,28 @@ public class LicenseKeyGenerateFormServiceTest {
 		ProductVersionService productVersionService = Mockito.mock(
 			ProductVersionService.class);
 
+		List<ProductVersion> supportedProductVersions = new ArrayList<>();
+		List<ProductVersion> unsupportedProductVersions = new ArrayList<>();
+
+		for (ProductVersion productVersion : productVersions) {
+			if (productVersion.isSupported()) {
+				supportedProductVersions.add(productVersion);
+			}
+			else {
+				unsupportedProductVersions.add(productVersion);
+			}
+		}
+
 		Mockito.when(
 			productVersionService.getProductVersions("dxp", true)
 		).thenReturn(
-			Arrays.asList(productVersions)
+			supportedProductVersions
+		);
+
+		Mockito.when(
+			productVersionService.getProductVersions("dxp", false)
+		).thenReturn(
+			unsupportedProductVersions
 		);
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
@@ -1479,7 +1586,7 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private ProductVersion _toProductVersion(
-		String productGroupVersion, String version) {
+		String productGroupVersion, boolean supported, String version) {
 
 		return new ProductVersion(
 			new JSONObject(
@@ -1489,7 +1596,15 @@ public class LicenseKeyGenerateFormServiceTest {
 				"productGroupVersion", productGroupVersion
 			).put(
 				"productVersion", version
+			).put(
+				"supported", supported
 			));
+	}
+
+	private ProductVersion _toProductVersion(
+		String productGroupVersion, String version) {
+
+		return _toProductVersion(productGroupVersion, true, version);
 	}
 
 	private Sku _toSku(Long productId, String skuOptionKey) {
