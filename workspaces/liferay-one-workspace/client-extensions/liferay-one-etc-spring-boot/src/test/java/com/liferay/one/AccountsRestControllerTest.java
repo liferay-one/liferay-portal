@@ -1114,6 +1114,44 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostInvitationsRejectsAccountAdministratorRoleWithoutAccountAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_accountRoleService.fetchAccountRoleByExternalReferenceCode(
+				"L_ACCOUNT_ADMINISTRATOR")
+		).thenReturn(
+			_createAccountRole(_ACCOUNT_ROLE_ID, "Account Administrator")
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).checkAccountRole(
+			_EXTERNAL_REFERENCE_CODE, null,
+			RoleConstants.NAME_ACCOUNT_ADMINISTRATOR
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.postInvitations(
+				null, _EXTERNAL_REFERENCE_CODE,
+				_createInvitationBodyJSON("L_ACCOUNT_ADMINISTRATOR")));
+
+		Mockito.verifyNoInteractions(
+			_accountInvitationEmailService, _accountInvitationService);
+	}
+
+	@Test
 	public void testPostInvitationsRejectsExistingMember() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
