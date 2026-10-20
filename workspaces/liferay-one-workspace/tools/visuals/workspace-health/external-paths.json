@@ -1,0 +1,4 @@
+{
+	"/admin/user-projects-plan-usage": "A path of the Liferay Cloud Console API, which the sidecar calls. It is not a sidecar endpoint.",
+	"/cloud/v1/environments/{id}/activation": "A Kong route on another host, which rewrites it to provisioning-rest. It is not a sidecar endpoint."
+}
