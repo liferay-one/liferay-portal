@@ -159,6 +159,39 @@ public class BasePubsubPublisherTest {
 	}
 
 	@Test
+	public void testPublishResumesOrderingKeyAfterFailure() throws Exception {
+		Mockito.when(
+			_apiFuture.get(ArgumentMatchers.anyLong(), ArgumentMatchers.any())
+		).thenThrow(
+			new ExecutionException(new IllegalStateException())
+		).thenReturn(
+			"message-id"
+		);
+
+		TestPubsubPublisher testPubsubPublisher = new TestPubsubPublisher();
+
+		Assertions.assertThrows(
+			IllegalStateException.class,
+			() -> testPubsubPublisher.publish(_createMessage("orders")));
+
+		Publisher publisher = _publishers.get(0);
+
+		Mockito.verify(
+			publisher
+		).resumePublish(
+			TestPubsubPublisher.class.getName()
+		);
+
+		testPubsubPublisher.publish(_createMessage("orders"));
+
+		Mockito.verify(
+			publisher, Mockito.times(2)
+		).publish(
+			ArgumentMatchers.any(PubsubMessage.class)
+		);
+	}
+
+	@Test
 	public void testPublishReusesCachedPublisherPerTopic() throws Exception {
 		TestPubsubPublisher testPubsubPublisher = new TestPubsubPublisher();
 
