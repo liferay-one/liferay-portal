@@ -523,7 +523,7 @@ Children: EnvironmentAdmin and UsageEvent, both `cascade`.
 | FK `entitlementId` (relationship) | long | `entitlementToLicenseKey`, disassociate |
 | FK `commerceOrderId` | long | `commerceOrderToLicenseKey`, disassociate |
 | FK `activationKeyId` | long | `activationKeyToLicenseKey`, disassociate |
-| `entitlementId` | long | The entitlement the key was generated from. Key generation writes it, and active key counts and renewals read it. Seed data sets `entitlementToLicenseKey` instead and leaves this field `0` |
+| `entitlementId` | long | The entitlement the key was generated from. Key generation writes it, and active key counts and renewals read it. The seed sets it from the `entitlementToLicenseKey` relationship |
 | `entitlementDefinitionId` | long | EntitlementDefinition ID; a plain field, not a relationship |
 | `orderId` | string | Commerce order ID as text, set by the DXP Free and app license key endpoints. `commerceOrderToLicenseKey` exists but no code uses it |
 | `accountName` | string | Denormalized |

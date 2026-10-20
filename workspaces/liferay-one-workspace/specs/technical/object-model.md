@@ -191,7 +191,7 @@ A soft link is a field that holds the ID, ERC, or name of another record. Lifera
 | Organization | `accountEntryId` | AccountEntry | Required: Liferay forbids a relationship between two system objects. |
 | EntitlementDefinition | `skuExternalReferenceCode` | CPInstance | Required: a SKU has no system object definition. |
 | Entitlement | `overageSkuExternalReferenceCode` | CPInstance | Required: a SKU has no system object definition. |
-| LicenseKey | `entitlementId` | Entitlement | Runtime code writes and reads only this field; seed data writes only entitlementToLicenseKey. They are never set together. |
+| LicenseKey | `entitlementId` | Entitlement | Runtime code writes and reads only this field. The seed sets it from entitlementToLicenseKey, so seeded keys carry both. |
 | LicenseKey | `orderId` | CommerceOrder | The only order reference in use. No code reads or writes commerceOrderToLicenseKey. |
 | LicenseKey | `entitlementDefinitionId` | EntitlementDefinition | No relationship exists. |
 | TrialExtensionRequest | `projectId` | Project | No relationship exists. |
@@ -227,7 +227,7 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 ### Medium: Links That Have Two Sources of Truth
 
-1. **LicenseKey has two entitlement links that are never set together.** Key generation writes the `entitlementId` field, and the code reads only that field: active key counts (`LicenseKeyService._getActiveLicenseKeyCounts`), the account entitlement filter (`AccountsRestController`), and renewals (`useRenewSource`). Seed data sets only the `entitlementToLicenseKey` relationship, so every seeded key has `entitlementId` `0` and those three features skip it. Set the field in the seed data, or write both in `LicenseKeyService.addLicenseKey` and read one.
+1. **LicenseKey has two entitlement links.** Key generation writes the `entitlementId` field, and the code reads only that field: active key counts (`LicenseKeyService._getActiveLicenseKeyCounts`), the account entitlement filter (`AccountsRestController`), and renewals (`useRenewSource`). Seed data names the entitlement through the `entitlementToLicenseKey` relationship, and `populate_orders.sh` now resolves that entitlement and sets `entitlementId` too, so seeded keys count again. Fixed on 2026-10-20 (Go-Live Tasks T2.2). A generated key still sets only the field, so the relationship stays unreliable for readers.
 
 1. **`commerceOrderToLicenseKey` is unused.** The code stores the order in the text field `LicenseKey.orderId` and never writes or reads the relationship. Remove the relationship, or move the order link to it.
 

@@ -293,12 +293,14 @@ function _import_entitlements {
 # Imports every order's license keys in one batch. A license key entry carries
 # only the link to its entitlement, so it partial-updates (matching the per-entry
 # PATCH it replaces) to preserve the rest of each existing license key, and it
-# runs after the entitlements it references exist.
+# runs after the entitlements it references exist. Key generation and the license
+# key counts read the entitlementId field, not the relationship, so the import
+# sets both.
 
 function _import_license_keys {
 	local items
 
-	items=$(_collect_items "licenseKeys")
+	items=$(_collect_items "licenseKeys" | _set_license_key_entitlement_ids)
 
 	_run_batch_import "license keys" "/o/c/licensekeys" "PARTIAL_UPDATE" "${items}"
 }
@@ -784,6 +786,60 @@ function _run_batch_import {
 	fi
 
 	_verify_batch_import "${label}" "${rest_context_path}" "${items}"
+}
+
+# Reads a JSON array of license key entries on stdin and writes it back with each
+# entry's entitlementId set to the numeric ID of the entitlement that its
+# entitlementToLicenseKey relationship names. An entitlement that does not resolve
+# leaves its entries without an entitlementId.
+
+function _set_license_key_entitlement_ids {
+	local items
+
+	items=$(cat)
+
+	local entitlement_ids=""
+	local external_reference_code
+
+	for external_reference_code in $(echo "${items}" | python3 -c "
+import json
+import sys
+
+for external_reference_code in sorted({item.get('r_entitlementToLicenseKey_c_entitlementERC', '') for item in json.load(sys.stdin)} - {''}):
+	print(external_reference_code)
+")
+	do
+		local entitlement_id
+
+		entitlement_id=$(_curl "${LIFERAY_URL}/o/c/entitlements/by-external-reference-code/${external_reference_code}" | _read_field "id" || true)
+
+		if [[ -z ${entitlement_id} ]]
+		then
+			echo "Unable to resolve entitlement ${external_reference_code}." >&2
+
+			continue
+		fi
+
+		entitlement_ids+="${external_reference_code}=${entitlement_id}"$'\n'
+	done
+
+	ENTITLEMENT_IDS="${entitlement_ids}" python3 -c "
+import json
+import os
+import sys
+
+entitlement_ids = dict(line.split('=', 1) for line in os.environ['ENTITLEMENT_IDS'].splitlines() if line)
+
+items = json.load(sys.stdin)
+
+for item in items:
+	entitlement_id = entitlement_ids.get(item.get('r_entitlementToLicenseKey_c_entitlementERC'))
+
+	if entitlement_id:
+		item['entitlementId'] = int(entitlement_id)
+
+json.dump(items, sys.stdout)
+" <<< "${items}"
 }
 
 function _set_object_action_active {
