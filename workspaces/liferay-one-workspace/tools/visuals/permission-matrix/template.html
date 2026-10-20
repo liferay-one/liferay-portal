@@ -77,6 +77,26 @@ aside.detail { background: var(--surface); border: 1px solid var(--line); border
 a.jump, button.jump { color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; background: none; border: 0; padding: 0; font: inherit; text-align: left; }
 .empty ul { padding-left: 18px; margin: 6px 0 0; color: var(--muted); font-size: 13.5px; }
 @media (prefers-reduced-motion: no-preference) { .cell { transition: background-color 120ms ease; } }
+
+section.roles { display: grid; gap: 10px; margin-top: 28px; }
+section.roles > p { margin: 0; max-width: 95ch; color: var(--muted); }
+.roles-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.roles-wrap table { min-width: 860px; }
+.roles-wrap tr.grp td { background: var(--surface-2); padding: 8px 10px; }
+.roles-wrap tr.grp b { font-family: var(--font-display); font-stretch: 85%; text-transform: uppercase; letter-spacing: 0.08em; font-size: 11.5px; color: var(--muted); }
+.roles-wrap tr.grp span { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.roles-wrap td.nm { white-space: nowrap; font-weight: 600; }
+.roles-wrap td.nm .erc { display: block; font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--muted); }
+.roles-wrap td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.roles-wrap details summary { cursor: pointer; color: var(--accent); white-space: nowrap; }
+.roles-wrap details ul { margin: 4px 0 0; padding-left: 16px; font-family: var(--font-mono); font-size: 11.5px; overflow-wrap: anywhere; }
+.held { font-weight: 600; }
+.held.project, .held.contact { color: var(--t-site); background: color-mix(in srgb, var(--t-site) 12%, transparent); }
+.held.account { color: var(--t-account); background: color-mix(in srgb, var(--t-account) 12%, transparent); }
+.held.regular { color: var(--t-regular); background: color-mix(in srgb, var(--t-regular) 12%, transparent); }
+.held.organization { color: var(--t-organization); }
+.roles-bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 13.5px; }
+#role-search { font: inherit; font-size: 13px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); flex: 1 1 200px; min-width: 0; }
 </style>
 
 <div class="wrap">
@@ -121,6 +141,20 @@ a.jump, button.jump { color: var(--accent); cursor: pointer; text-decoration: un
 
 		<aside aria-live="polite" class="detail" id="detail"></aside>
 	</div>
+
+	<section aria-label="Roles" class="roles" id="roles-section">
+		<h2>Roles</h2>
+
+		<p>Every role, where a user holds it, what it is for, and where the code reads it. A project role and a contact designation are rows of the ProjectMembership object, so a user holds them on one project. Every other role applies on the whole account, site, or organization, or in the whole company. Salesforce provisioning assigns each <code>Contact_Role__c</code> value as the account role with the same name.</p>
+
+		<div aria-label="Role filters" class="roles-bar" role="toolbar">
+			<span id="held-chips"></span>
+
+			<input aria-label="Find a role" id="role-search" placeholder="Find a role" type="search" />
+		</div>
+
+		<div class="roles-wrap" id="roles"></div>
+	</section>
 
 	<footer id="footer"></footer>
 </div>
@@ -288,6 +322,43 @@ function renderDetail() {
 		${siblings.length ? `<p>Also: ${siblings.map(s => `<button class="jump" data-goto-resource="${esc(s.id)}">${KIND[s.kind]}</button>`).join(" · ")}</p>` : ""}`;
 }
 
+const HELD = {
+	project: ["Project", "A project role, held on one project as a project membership."],
+	contact: ["Project", "A contact designation, held on one project as a project membership."],
+	account: ["Account", "Held on the whole account."],
+	site: ["Site", "Held in the site."],
+	organization: ["Organization", "Held in an organization."],
+	regular: ["Company", "Held in the whole company."]
+};
+const HELD_FILTERS = [["project", "Project"], ["account", "Account"], ["regular", "Company"], ["site", "Site"]];
+const roleState = {held: new Set(HELD_FILTERS.map(([k]) => k)), q: ""};
+const grantCount = {};
+DATA.grants.forEach(g => grantCount[g.role] = (grantCount[g.role] || 0) + 1);
+
+function heldFilter(role) { return role.heldOn === "contact" ? "project" : role.heldOn === "organization" ? "regular" : role.heldOn; }
+
+function renderRoles() {
+	const q = roleState.q;
+	const list = DATA.roles.filter(r => roleState.held.has(heldFilter(r)) && (!q || (r.name + " " + (r.erc || "") + " " + (r.purpose || "")).toLowerCase().includes(q)));
+	let h = `<table><thead><tr><th>Role</th><th>Held On</th><th>Purpose</th><th>Grants</th><th>Products</th><th>Code</th></tr></thead><tbody>`;
+	for (const group of DATA.groups) {
+		const rows = list.filter(r => r.group === group.id).sort((a, b) => a.name.localeCompare(b.name));
+		if (!rows.length) continue;
+		h += `<tr class="grp"><td colspan="6"><b>${esc(group.label)}</b><span>${esc(group.text)}</span></td></tr>`;
+		for (const r of rows) {
+			const [held, heldText] = HELD[r.heldOn];
+			h += `<tr><td class="nm"><button class="jump" data-goto-role="${esc(r.name)}">${esc(r.name)}</button>${r.erc ? `<span class="erc">${esc(r.erc)}</span>` : ""}</td>
+				<td><span class="tag held ${r.heldOn}" title="${esc(heldText)}">${held}</span></td>
+				<td>${esc(r.purpose || "")}</td>
+				<td class="num">${grantCount[r.name] || ""}</td>
+				<td>${r.products.length ? `<details><summary>${r.products.length}</summary><ul>${r.products.map(p => `<li>${esc(p)}</li>`).join("")}</ul></details>` : ""}</td>
+				<td>${r.references.length ? `<details><summary>${r.references.length} ${r.references.length === 1 ? "file" : "files"}</summary><ul>${r.references.map(p => `<li>${esc(p)}</li>`).join("")}</ul></details>` : ""}</td></tr>`;
+		}
+	}
+	if (!list.length) h += `<tr><td colspan="6" style="color:var(--muted)">No role matches these filters.</td></tr>`;
+	$("roles").innerHTML = h + "</tbody></table>";
+}
+
 function select(sel, scroll) {
 	selection = sel;
 	render();
@@ -303,6 +374,7 @@ function select(sel, scroll) {
 function ensureVisible(roleName, resourceId) {
 	const role = roleName && roles[roleName], res = resourceId && resources[resourceId];
 	if (role) state.types.add(role.type);
+	if (role && !DATA.grants.some(g => g.role === role.name)) state.allRoles = true;
 	if (res && res.group !== "Objects") state.objectsOnly = false;
 	if (res && res.group === "Objects" && !DATA.grants.some(g => g.resource === res.id)) state.emptyRows = true;
 	state.action = ""; state.q = "";
@@ -332,7 +404,7 @@ function setup() {
 	$("types").innerHTML = TYPES.filter(t => DATA.roles.some(r => r.type === t)).map(t => `<button class="chip" data-type="${t}" aria-pressed="true"><i style="background:var(--t-${t})"></i>${t[0].toUpperCase() + t.slice(1)}</button>`).join(" ");
 	const actions = [...new Set(DATA.grants.flatMap(g => g.actions))].sort();
 	$("action").innerHTML = `<option value="">All actions</option>` + actions.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("");
-	$("footer").innerHTML = `Generated from ${DATA.sources.map(s => `<code>${esc(s)}</code>`).join(", ")} and the <code>13-role</code>, <code>03-object-definition</code>, and <code>05-object-definition-account-entry-restricted</code> batch files. Page permissions in <code>layouts/*/page.json</code> and account role permissions set elsewhere are not included. Roles that every user holds and the objects marked as reference data are set in <code>tools/visuals/permission-matrix/config.json</code>.`;
+	$("footer").innerHTML = `Generated from ${DATA.sources.map(s => `<code>${esc(s)}</code>`).join(", ")} and the <code>13-role</code>, <code>03-object-definition</code>, and <code>05-object-definition-account-entry-restricted</code> batch files. Page permissions in <code>layouts/*/page.json</code> and account role permissions set elsewhere are not included. Roles that every user holds and the objects marked as reference data are set in <code>tools/visuals/permission-matrix/config.json</code>. The group and the purpose of each role are in <code>roles.json</code>. Where a role is held, its products, and its code come from <code>RoleConstants.java</code>, the <code>project-contacts-role-ercs</code> specification of the seed products, and the sidecar and custom element sources.`;
 
 	document.addEventListener("click", e => {
 		const t = e.target.closest(".cell, th.role, tbody th[data-resource], [data-goto-role], [data-goto-resource], #types .chip");
@@ -353,6 +425,15 @@ function setup() {
 	$("all-roles").addEventListener("change", e => { state.allRoles = e.target.checked; render(); });
 	$("empty-rows").addEventListener("change", e => { state.emptyRows = e.target.checked; render(); });
 	$("search").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); render(); });
+	$("held-chips").innerHTML = HELD_FILTERS.map(([k, label]) => `<button class="chip" data-held="${k}" aria-pressed="true">${label}</button>`).join(" ");
+	$("held-chips").addEventListener("click", e => {
+		const chip = e.target.closest("[data-held]");
+		if (!chip) return;
+		roleState.held.has(chip.dataset.held) ? roleState.held.delete(chip.dataset.held) : roleState.held.add(chip.dataset.held);
+		chip.setAttribute("aria-pressed", String(roleState.held.has(chip.dataset.held)));
+		renderRoles();
+	});
+	$("role-search").addEventListener("input", e => { roleState.q = e.target.value.trim().toLowerCase(); renderRoles(); });
 	document.addEventListener("keydown", e => { if (e.key === "Escape") select(null); });
 
 	// A link from Workspace Health names an object that a filter can hide.
@@ -363,6 +444,7 @@ function setup() {
 	});
 	render();
 	renderDetail();
+	renderRoles();
 }
 
 setup();

@@ -6,7 +6,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {SITE_INITIALIZER_DIR, batchItems, readJSON, relative} from '../lib.ts';
+import {
+	CUSTOM_ELEMENT_DIR,
+	SITE_INITIALIZER_DIR,
+	SPRING_BOOT_DIR,
+	WORKSPACE_ROOT,
+	batchItems,
+	listFiles,
+	readJSON,
+	relative,
+} from '../lib.ts';
 
 import type {IExtraction} from '../lib.ts';
 
@@ -79,9 +88,42 @@ interface IRole {
 	broad: boolean;
 	builtin: boolean;
 	erc: null | string;
+	group: null | string;
+
+	/**
+	 * Where a user holds the role: on a project, as a project role or a
+	 * contact designation, or on the account, site, or organization that its
+	 * type names.
+	 */
+	heldOn: HeldOn;
 	name: string;
+
+	/**
+	 * The products whose project-contacts-role-ercs specification lists the
+	 * role.
+	 */
+	products: string[];
+	purpose: null | string;
+
+	/**
+	 * The sidecar and custom element source files that name the role, or a
+	 * constant that holds its name or its external reference code.
+	 */
+	references: string[];
 	type: RoleType;
 }
+
+interface IRoleCatalog {
+	groups: {id: string; label: string; text: string}[];
+	roles: Record<string, {group: string; purpose: string}>;
+}
+
+interface ISourceFile {
+	path: string;
+	text: string;
+}
+
+type HeldOn = 'contact' | 'project' | RoleType;
 
 type ObjectResourceKind = 'object-admin' | 'object-entry' | 'object-portlet';
 
@@ -145,7 +187,12 @@ export function extract(): IExtraction {
 			broad: config.broadRoles.includes(role.name),
 			builtin: role.externalReferenceCode.startsWith('L_'),
 			erc: role.externalReferenceCode,
+			group: null,
+			heldOn: role.roleType,
 			name: role.name,
+			products: [],
+			purpose: null,
+			references: [],
 			type: role.roleType,
 		});
 	}
@@ -167,7 +214,12 @@ export function extract(): IExtraction {
 				broad: config.broadRoles.includes(name),
 				builtin: true,
 				erc: null,
+				group: null,
+				heldOn: type,
 				name,
+				products: [],
+				purpose: null,
+				references: [],
 				type,
 			});
 		}
@@ -175,6 +227,17 @@ export function extract(): IExtraction {
 
 	const resources = new Map<string, IResource>();
 	const grants: IGrant[] = [];
+
+	const roleCatalog = readJSON<IRoleCatalog>(
+		path.join(import.meta.dirname, 'roles.json')
+	);
+
+	_describeRoles(
+		problems,
+		new Set(rawGrants.map(({grant}) => grant.roleName)),
+		roleCatalog,
+		roles
+	);
 
 	rawGrants.forEach(({grant, source}, index) => {
 		const where = `${source} grant ${index + 1} (${grant.roleName} on ${grant.resourceName})`;
@@ -357,6 +420,7 @@ export function extract(): IExtraction {
 		data: {
 			generated: new Date().toISOString().slice(0, 10),
 			grants,
+			groups: roleCatalog.groups,
 			objects: [...objects.values()],
 			resources: [...resources.values()].sort(_compareResources),
 			roles: [...roles.values()],
@@ -376,6 +440,123 @@ function _compareResources(a: IResource, b: IResource): number {
 		a.label.localeCompare(b.label) ||
 		a.kind.localeCompare(b.kind)
 	);
+}
+
+function _describeRoles(
+	problems: string[],
+	grantedRoleNames: Set<string>,
+	roleCatalog: IRoleCatalog,
+	roles: Map<string, IRole>
+) {
+	const groupIds = new Set(roleCatalog.groups.map((group) => group.id));
+	const productNames = _contactRoleProductNames();
+	const projectRoleERCs = _projectRoleERCs();
+	const sourceFiles = _sourceFiles();
+
+	for (const role of roles.values()) {
+		const description = roleCatalog.roles[role.name];
+
+		if (!description) {
+			problems.push(
+				`The role ${role.name} has no entry in permission-matrix/roles.json. Add its group and its purpose.`
+			);
+		}
+		else if (!groupIds.has(description.group)) {
+			problems.push(
+				`permission-matrix/roles.json puts ${role.name} in the group ${description.group}, which its groups list does not define.`
+			);
+		}
+		else {
+			role.group = description.group;
+			role.purpose = description.purpose;
+		}
+
+		role.products = role.erc ? (productNames.get(role.erc) ?? []) : [];
+		// A Liferay role with no ERC has a common word as its name, such as
+		// User, so a search for the name finds labels, not the role.
+
+		role.references = role.erc
+			? _references([role.name, role.erc], sourceFiles)
+			: [];
+
+		if (role.erc && projectRoleERCs.has(role.erc)) {
+			role.heldOn = 'project';
+		}
+		else if (role.products.length) {
+			role.heldOn = 'contact';
+		}
+
+		if (
+			role.group === 'unused' &&
+			(grantedRoleNames.has(role.name) ||
+				role.products.length ||
+				role.references.length)
+		) {
+			problems.push(
+				`permission-matrix/roles.json lists ${role.name} as not used, but a grant, a product, or ${role.references[0] ?? 'the code'} uses it. Move it to the group that matches its use.`
+			);
+		}
+	}
+
+	for (const name of Object.keys(roleCatalog.roles)) {
+		if (!roles.has(name)) {
+			problems.push(
+				`permission-matrix/roles.json describes the role ${name}, which no batch file or grant defines. Remove its entry.`
+			);
+		}
+	}
+}
+
+/**
+ * Maps each contact role ERC to the products whose project-contacts-role-ercs
+ * specification lists it. The products come from the seed, which is the only
+ * source of the catalog in this workspace.
+ */
+function _contactRoleProductNames(): Map<string, string[]> {
+	const productNames = new Map<string, string[]>();
+
+	const filePath = path.join(
+		WORKSPACE_ROOT,
+		'scripts/seed/data/06-commerce-product.batch-engine-data.json'
+	);
+
+	if (!fs.existsSync(filePath)) {
+		return productNames;
+	}
+
+	for (const product of readJSON<{items: any[]}>(filePath).items) {
+		for (const specification of product.productSpecifications ?? []) {
+			if (
+				specification.specificationKey !== 'project-contacts-role-ercs'
+			) {
+				continue;
+			}
+
+			const value =
+				typeof specification.value === 'string'
+					? specification.value
+					: (specification.value?.en_US ?? '');
+
+			for (const erc of value.split(',')) {
+				const trimmedERC = erc.trim();
+
+				if (!trimmedERC) {
+					continue;
+				}
+
+				productNames.set(trimmedERC, [
+					...(productNames.get(trimmedERC) ?? []),
+					product.name?.en_US ?? product.externalReferenceCode,
+				]);
+			}
+		}
+	}
+
+	return productNames;
+}
+
+function _escapeRegExp(text: string): string {
+	return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function _group(raw: string): string {
@@ -422,6 +603,38 @@ function _objectResource(kind: ObjectResourceKind, object: IObject): IResource {
 	};
 }
 
+/**
+ * Reads the project role ERCs from the ercsSupportProject list of the sidecar
+ * RoleConstants.
+ */
+function _projectRoleERCs(): Set<string> {
+	const filePath = path.join(
+		SPRING_BOOT_DIR,
+		'src/main/java/com/liferay/one/constants/RoleConstants.java'
+	);
+
+	if (!fs.existsSync(filePath)) {
+		return new Set();
+	}
+
+	const text = fs.readFileSync(filePath, 'utf8');
+
+	const constants = new Map(
+		[...text.matchAll(/(\w+)\s*=\s*"([^"]+)"/g)].map(([, name, value]) => [
+			name,
+			value,
+		])
+	);
+
+	const list = /ercsSupportProject\s*=([^;]+);/.exec(text)?.[1] ?? '';
+
+	return new Set(
+		[...list.matchAll(/\b([A-Z][A-Z_]+)\b/g)]
+			.map(([, name]) => constants.get(name))
+			.filter(Boolean) as string[]
+	);
+}
+
 function _rawGrants(): {grant: any; source: string}[] {
 	const rawGrants = readJSON<any[]>(
 		path.join(SITE_INITIALIZER_DIR, 'resource-permissions.json')
@@ -453,6 +666,61 @@ function _rawGrants(): {grant: any; source: string}[] {
 	}
 
 	return rawGrants;
+}
+
+/**
+ * Finds the source files that name a role: a file with the name or the ERC as
+ * a string, and a file that reads a constant that holds it, or a list of such
+ * constants.
+ */
+function _references(literals: string[], sourceFiles: ISourceFile[]): string[] {
+	const literalPattern = new RegExp(
+		`["'](?:${literals.map(_escapeRegExp).join('|')})["']`
+	);
+
+	const declaringFiles = sourceFiles.filter((sourceFile) =>
+		literalPattern.test(sourceFile.text)
+	);
+
+	const identifiers = new Set<string>();
+
+	for (const sourceFile of declaringFiles) {
+		const constantPattern = new RegExp(
+			`(\\w+)\\s*(?::[^=;\\n]*)?=\\s*["'](?:${literals.map(_escapeRegExp).join('|')})["']`,
+			'g'
+		);
+
+		const constants = [...sourceFile.text.matchAll(constantPattern)].map(
+			([, name]) => name
+		);
+
+		constants.forEach((name) => identifiers.add(name));
+
+		for (const [, name, initializer] of sourceFile.text.matchAll(
+			/(?:const|final)\s+(?:[\w<>,\s]+\s+)?(\w+)\s*(?::[^=;\n]*)?=(?!=)\s*([^;]*);/g
+		)) {
+			if (
+				constants.some((constant) =>
+					new RegExp(`\\b${constant}\\b`).test(initializer)
+				) &&
+				!constants.includes(name)
+			) {
+				identifiers.add(name);
+			}
+		}
+	}
+
+	const identifierPattern = identifiers.size
+		? new RegExp(`\\b(?:${[...identifiers].join('|')})\\b`)
+		: null;
+
+	return sourceFiles
+		.filter(
+			(sourceFile) =>
+				declaringFiles.includes(sourceFile) ||
+				identifierPattern?.test(sourceFile.text)
+		)
+		.map((sourceFile) => sourceFile.path);
 }
 
 function _resource(
@@ -523,6 +791,27 @@ function _resource(
 		object: null,
 		raw,
 	};
+}
+
+/**
+ * The sidecar and custom element sources, without tests and translations.
+ */
+function _sourceFiles(): ISourceFile[] {
+	return [
+		...listFiles(path.join(SPRING_BOOT_DIR, 'src/main/java'), (filePath) =>
+			filePath.endsWith('.java')
+		),
+		...listFiles(
+			path.join(CUSTOM_ELEMENT_DIR, 'src'),
+			(filePath) =>
+				/\.tsx?$/.test(filePath) &&
+				!/\.test\.tsx?$/.test(filePath) &&
+				!filePath.includes(`${path.sep}i18n${path.sep}`)
+		),
+	].map((filePath) => ({
+		path: relative(filePath),
+		text: fs.readFileSync(filePath, 'utf8'),
+	}));
 }
 
 function _words(className: string): string {

@@ -1,0 +1,264 @@
+{
+	"groups": [
+		{
+			"id": "project",
+			"label": "Project Roles",
+			"text": "Each project member holds one of these roles, as a project membership. The role decides what the member can do on the project."
+		},
+		{
+			"id": "contact",
+			"label": "Project Contact Designations",
+			"text": "Designations that a member holds on a project in addition to a project role. A product lists the designations that its projects take in the project-contacts-role-ercs specification."
+		},
+		{
+			"id": "customer",
+			"label": "Customer Account Roles",
+			"text": "Roles on a customer account. The sidecar and the custom element read them on the account to decide what a user can do."
+		},
+		{
+			"id": "partner",
+			"label": "Partner Account Roles",
+			"text": "Roles on an account that has the partner entitlement. The partner product specification decides that an account is a partner account."
+		},
+		{
+			"id": "marketplace",
+			"label": "Marketplace Account Roles",
+			"text": "Roles that the marketplace features of the custom element read on the account."
+		},
+		{
+			"id": "integration",
+			"label": "Integration Roles",
+			"text": "Roles that connect a user to an external system."
+		},
+		{
+			"id": "employee",
+			"label": "Liferay Employee Roles",
+			"text": "Roles that a Liferay employee holds on a customer account. The Jira sync sends them to JSM as account workers. Salesforce provisioning skips Liferay email addresses, so Salesforce does not assign them."
+		},
+		{
+			"id": "staff",
+			"label": "Liferay Staff and Administration",
+			"text": "Regular and site roles of Liferay employees, which apply in every account or in the site."
+		},
+		{
+			"id": "portal",
+			"label": "Portal Roles",
+			"text": "Liferay roles that every visitor, every signed in user, or every organization member holds."
+		},
+		{
+			"id": "unused",
+			"label": "Not Used",
+			"text": "The role batch defines these roles, but no code, grant, or product reads them."
+		}
+	],
+	"roles": {
+		"Account Administrator": {
+			"group": "customer",
+			"purpose": "Manages the account: its members, their roles, and invitations. Salesforce provisioning makes the first contact of a new account an Account Administrator when no contact has this role."
+		},
+		"Account Buyer": {
+			"group": "customer",
+			"purpose": "Buys in the commerce store for the account."
+		},
+		"Account Member": {
+			"group": "customer",
+			"purpose": "The basic role of a user in an account. It shows the account and its navigation."
+		},
+		"Account Requester": {
+			"group": "customer",
+			"purpose": "A customer role. It changes which welcome email a new user gets."
+		},
+		"Account Solution Publisher": {
+			"group": "marketplace",
+			"purpose": "Publishes solutions in the marketplace for the account."
+		},
+		"Account Supplier": {
+			"group": "unused",
+			"purpose": "A Liferay commerce role that the workspace does not use."
+		},
+		"Analytics Cloud Owner": {
+			"group": "unused",
+			"purpose": "No code reads it. Analytics Cloud provisioning finds its owner from the Salesforce contact role instead."
+		},
+		"Article Administrator": {
+			"group": "staff",
+			"purpose": "Edits the web content articles of the site."
+		},
+		"Cloud Native Contact": {
+			"group": "integration",
+			"purpose": "Assigning it adds the user to the Cloud Native Okta application of the account, and removing it removes the user. The account has one Okta application, so the role applies to the whole account."
+		},
+		"Critical Incident Contact": {
+			"group": "contact",
+			"purpose": "The contact for a critical incident on the project."
+		},
+		"Customer": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"Customer Experience Manager": {
+			"group": "employee",
+			"purpose": "The Liferay customer experience manager of the account."
+		},
+		"Dashboard Viewer": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"Data Breach Contact": {
+			"group": "contact",
+			"purpose": "The contact for a data breach on the project."
+		},
+		"Documentation Administrator": {
+			"group": "staff",
+			"purpose": "Edits the documentation content, categories, and page templates of the site."
+		},
+		"Finance Administrator": {
+			"group": "staff",
+			"purpose": "Reads and manages orders, payments, the catalog, and the publisher sales summaries."
+		},
+		"Guest": {
+			"group": "portal",
+			"purpose": "Every visitor who is not signed in."
+		},
+		"LDP Administrator": {
+			"group": "integration",
+			"purpose": "No permission check reads it. Analytics Cloud provisioning makes the Salesforce contact with the role name LDP Administrator the owner of the Analytics Cloud project."
+		},
+		"Liferay Sales": {
+			"group": "employee",
+			"purpose": "The Liferay sales representative of the account. It also manages the license keys of the account."
+		},
+		"Liferay Staff": {
+			"group": "staff",
+			"purpose": "A Liferay employee. The sidecar gives it every action on every account."
+		},
+		"Marketplace Account Administrator": {
+			"group": "unused",
+			"purpose": "No code or grant reads it."
+		},
+		"Marketplace Publisher": {
+			"group": "staff",
+			"purpose": "Manages the marketplace publishers."
+		},
+		"Organization User": {
+			"group": "portal",
+			"purpose": "Every member of an organization. A member of an organization that is linked to an account can act on that account."
+		},
+		"PaaS User": {
+			"group": "contact",
+			"purpose": "A user of the PaaS environments of the project."
+		},
+		"Partner": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads. The partner roles are account roles."
+		},
+		"Partner Account Admin": {
+			"group": "partner",
+			"purpose": "Manages a partner account and its members."
+		},
+		"Partner Manager": {
+			"group": "partner",
+			"purpose": "Manages a partner account and its members, manages its license keys, and reads its orders."
+		},
+		"Partner Marketing User": {
+			"group": "partner",
+			"purpose": "A partner user for marketing. It sees the projects of the account."
+		},
+		"Partner Member": {
+			"group": "partner",
+			"purpose": "The basic partner user. It sees the projects and the orders of the account."
+		},
+		"Partner Sales User": {
+			"group": "partner",
+			"purpose": "A partner user for sales. It sees the projects of the account."
+		},
+		"Partner Technical User": {
+			"group": "partner",
+			"purpose": "A partner user for technical work. It sees the projects of the account."
+		},
+		"Primary Contact": {
+			"group": "employee",
+			"purpose": "The main Liferay contact of the account. The Account Details page shows this user."
+		},
+		"Privacy Breach Contact": {
+			"group": "contact",
+			"purpose": "The contact for a privacy breach. No product lists it, so a project cannot take it."
+		},
+		"Project Admin": {
+			"group": "project",
+			"purpose": "Manages the members of the project, opens support tickets, and activates environments."
+		},
+		"Project Requester": {
+			"group": "project",
+			"purpose": "Opens support tickets on the project."
+		},
+		"Project User": {
+			"group": "project",
+			"purpose": "Sees the project and cannot open support tickets. Salesforce provisioning gives it to each new contact on the project of the opportunity."
+		},
+		"Provisioning Administrator": {
+			"group": "staff",
+			"purpose": "Administers provisioning: accounts, orders, license keys, activation keys, and the objects. The sidecar gives it every action on every account."
+		},
+		"Provisioning Contact Worker": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"Provisioning Member": {
+			"group": "staff",
+			"purpose": "A member of the provisioning team. It reads users and ticket attachments."
+		},
+		"Provisioning Subscription Worker": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"Provisioning Watcher": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"Provisioning Worker": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads."
+		},
+		"SSA": {
+			"group": "unused",
+			"purpose": "A regular role that no code or grant reads. The SSA roles are account roles."
+		},
+		"SSA Administrator": {
+			"group": "marketplace",
+			"purpose": "Manages the members of the account, like an Account Administrator, for the marketplace."
+		},
+		"SSA User": {
+			"group": "marketplace",
+			"purpose": "A marketplace user of the account."
+		},
+		"Secondary Contact": {
+			"group": "employee",
+			"purpose": "The second Liferay contact of the account."
+		},
+		"Security Breach Contact": {
+			"group": "contact",
+			"purpose": "The contact for a security breach. No product lists it, so a project cannot take it."
+		},
+		"Security Incident Contact": {
+			"group": "contact",
+			"purpose": "The contact for a security incident on the project."
+		},
+		"Site Content Reviewer": {
+			"group": "staff",
+			"purpose": "Reviews the content of the site before it is published."
+		},
+		"Solution Architect": {
+			"group": "employee",
+			"purpose": "The Liferay solution architect of the account."
+		},
+		"Support Administrator": {
+			"group": "customer",
+			"purpose": "A customer role that manages the license keys of the account. It also changes which welcome email a new user gets."
+		},
+		"User": {
+			"group": "portal",
+			"purpose": "Every signed in user."
+		}
+	}
+}
