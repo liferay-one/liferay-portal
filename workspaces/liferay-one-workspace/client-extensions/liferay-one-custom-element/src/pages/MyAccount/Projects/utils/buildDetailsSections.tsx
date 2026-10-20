@@ -17,11 +17,14 @@ type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
 	orderInfo: {
+		itemName: string;
 		orderDate: string;
 		orderId: string;
 		purchaseNumber: string;
 		purchasedBy: string;
+		quantity: string;
 	};
+	productName: string;
 };
 
 function formatDate(value?: string): string {
@@ -62,12 +65,34 @@ function contractRows(contract?: ProjectContract): DetailsRow[] {
 	];
 }
 
+function purchasedRow(context: DetailsContext): DetailsRow {
+	return {
+		label: i18n.translate('purchased'),
+		value: context.orderInfo.quantity,
+	};
+}
+
+function tierRow(context: DetailsContext): DetailsRow {
+	const {orderInfo, productName} = context;
+
+	return {
+		label: i18n.translate('tier-name'),
+		value: orderInfo.itemName || productName,
+	};
+}
+
 const DETAILS_SECTIONS_BY_PROFILE: Record<
 	DetailsProfile,
 	(context: DetailsContext) => DetailsSection[]
 > = {
 	'analytics': (context) => [
-		{rows: [...orderRows(context), ...contractRows(context.contract)]},
+		{
+			rows: [
+				tierRow(context),
+				purchasedRow(context),
+				...contractRows(context.contract),
+			],
+		},
 	],
 	'basic': (context) => [{rows: orderRows(context)}],
 	'basic-incident': (context) => [{rows: orderRows(context)}],
@@ -79,10 +104,10 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		{rows: [...orderRows(context), ...contractRows(context.contract)]},
 	],
 	'paas': (context) => [
-		{rows: [...orderRows(context), ...contractRows(context.contract)]},
+		{rows: [tierRow(context), ...contractRows(context.contract)]},
 	],
 	'saas': (context) => [
-		{rows: [...orderRows(context), ...contractRows(context.contract)]},
+		{rows: [tierRow(context), ...contractRows(context.contract)]},
 	],
 };
 

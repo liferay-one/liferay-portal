@@ -162,6 +162,7 @@ export default function ProjectItemDetails({
 				<DetailsTab
 					contract={contract}
 					orderInfo={orderInfo}
+					productName={product.name}
 					profile={detailsProfile}
 				/>
 			);
