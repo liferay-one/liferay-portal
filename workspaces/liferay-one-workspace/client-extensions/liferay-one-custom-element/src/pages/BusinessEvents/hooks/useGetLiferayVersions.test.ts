@@ -27,11 +27,10 @@ describe('[HOOK-BUSINESSEVENTS-USEGETLIFERAYVERSIONS] useGetLiferayVersions', ()
 			],
 		});
 
-		const {result} = renderHook(() => useGetLiferayVersions('PRJCT-1'));
+		const {result} = renderHook(() => useGetLiferayVersions());
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
-		expect(getProductVersions).toHaveBeenCalledWith('PRJCT-1');
 		expect(result.current).toEqual({
 			error: false,
 			loading: false,
@@ -46,7 +45,7 @@ describe('[HOOK-BUSINESSEVENTS-USEGETLIFERAYVERSIONS] useGetLiferayVersions', ()
 	it('sets the error flag and clears loading on failure', async () => {
 		vi.mocked(getProductVersions).mockRejectedValue(new Error('failed'));
 
-		const {result} = renderHook(() => useGetLiferayVersions('PRJCT-1'));
+		const {result} = renderHook(() => useGetLiferayVersions());
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
@@ -55,11 +54,5 @@ describe('[HOOK-BUSINESSEVENTS-USEGETLIFERAYVERSIONS] useGetLiferayVersions', ()
 			loading: false,
 			productVersions: [],
 		});
-	});
-
-	it('does not fetch without a project', () => {
-		renderHook(() => useGetLiferayVersions());
-
-		expect(getProductVersions).not.toHaveBeenCalled();
 	});
 });

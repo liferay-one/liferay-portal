@@ -79,7 +79,7 @@ Controller request and response shaping (routing, status codes, validation, body
 | `PUT …/business-events/{id}` | Unit | P1 | Updates fields; unknown id → 404. |
 | `DELETE …/business-events/{id}` | Unit | P1 | Deletes; unknown id → 404; idempotent redelete. |
 | `GET /jira/accounts/{erc}/tickets?ticketIds=` | Unit + Integration | P1 | Returns tickets; filters by id list when provided. |
-| `GET /jira/projects/{erc}/business-events/fields/{field}/options` | Unit | P2 | Returns enumerated options for the asset field; project VIEW enforced. |
+| `GET /jira/business-events/fields/{field}/options` | Unit | P2 | Returns enumerated options for the asset field. |
 | `POST /ticket-attachments/initiate-upload` | Unit | **P0** | Valid → Draft row + resumable session URL; file > 50 MB → 400; closed ticket → 400; disallowed MIME → 400; missing body fields → 400. |
 | `POST /ticket-attachments/{id}/complete-upload` | Unit | **P0** | MD5 matches GCS → state Approved + Jira comment posted; MD5 mismatch → object deleted + error; already Approved → 409; Jira post fails → draft comment stored for retry. |
 | `GET /ticket-attachments/by-id/{id}/download` | Unit + Integration | **P0** | Member → signed URL (≤15 min expiry); nonmember → 403; missing → 404. |
