@@ -28,6 +28,14 @@ import {HISTORY_FILE, readTests} from './tests.ts';
 
 import type {IAction, IExtractContext, IExtraction} from '../lib.ts';
 
+interface IDiff {
+	added: string[];
+	base: string;
+	date: string;
+	head: string;
+	resolved: string[];
+}
+
 const DIFF_FILE = path.join(import.meta.dirname, '..', 'build', 'diff.json');
 
 const ENVIRONMENT_SNAPSHOTS_DIR = path.join(
@@ -74,7 +82,7 @@ export function extract(context?: IExtractContext): IExtraction {
 		data: {
 			actions,
 			dependencies,
-			diff: fs.existsSync(DIFF_FILE) ? readJSON(DIFF_FILE) : null,
+			diff: _diff(),
 			freshness: _freshness(dependencies.snapshot?.fetched ?? null),
 			generated: new Date().toISOString().slice(0, 10),
 			github: _github(),
@@ -133,6 +141,31 @@ function _dependencyActions(
 	}
 
 	return actions;
+}
+
+/**
+ * Returns the comparison that `yarn viz:diff` wrote, when it was made at the
+ * current HEAD. A comparison from another commit names the wrong base and
+ * the wrong new actions, so it is left out.
+ */
+function _diff(): IDiff | null {
+	if (!fs.existsSync(DIFF_FILE)) {
+		return null;
+	}
+
+	const diff = readJSON<IDiff>(DIFF_FILE);
+
+	try {
+		const head = execFileSync('git', ['rev-parse', 'HEAD'], {
+			cwd: WORKSPACE_ROOT,
+			encoding: 'utf8',
+		}).trim();
+
+		return diff.head === head ? diff : null;
+	}
+	catch {
+		return null;
+	}
 }
 
 /**
