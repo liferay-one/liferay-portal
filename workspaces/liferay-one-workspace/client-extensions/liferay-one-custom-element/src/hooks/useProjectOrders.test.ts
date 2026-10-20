@@ -264,7 +264,10 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			id: 11,
 			orderStatusInfo: {code: 0, label: 'Completed'},
 			orderTypeExternalReferenceCode: 'AI_HUB',
-			placedOrderItems: [{productId: 7}],
+			placedOrderItems: [
+				{name: 'Other Product', productId: 9, quantity: 1},
+				{name: 'AI Hub - Business', productId: 7, quantity: 3},
+			],
 			purchaseOrderNumber: 'PO-1',
 		});
 
@@ -274,11 +277,13 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 				ldpDataSourceAccessToken: 'token-1',
 				projectName: 'Alpha',
 			},
+			itemName: 'AI Hub - Business',
 			orderDate: 'Mar 15, 2026',
 			orderId: '11',
 			orderType: 'AI_HUB',
 			purchaseNumber: 'PO-1',
 			purchasedBy: 'Jane Doe',
+			quantity: '3',
 			status: 'completed',
 		});
 	});
@@ -301,11 +306,13 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 				ldpDataSourceAccessToken: '',
 				projectName: '',
 			},
+			itemName: '',
 			orderDate: '',
 			orderId: '',
 			orderType: '',
 			purchaseNumber: '',
 			purchasedBy: '',
+			quantity: '',
 			status: '',
 		});
 	});
