@@ -6,7 +6,8 @@
 /**
  * Reads the health of the test suites: the tests that the source skips or
  * focuses, and, from the run history that `yarn viz:tests` keeps, the tests
- * that both passed and failed across runs and the slowest tests.
+ * that failed in their latest run, the tests that both passed and failed
+ * across runs, and the slowest tests.
  */
 
 import * as fs from 'fs';
@@ -50,6 +51,12 @@ export const RESULT_FILES: Record<string, string> = {
 	'Spring Boot JUnit': path.join(SPRING_BOOT_DIR, 'build/test-results/test'),
 	'Vitest': path.join(CUSTOM_ELEMENT_DIR, 'TEST-frontend-js.xml'),
 };
+
+/**
+ * A test that failed once in two runs may have met a broken environment, so
+ * a test is flaky only after this many runs.
+ */
+const FLAKY_MIN_RUNS = 3;
 
 const MARKERS: [RegExp, string][] = [
 	[/\b(?:describe|it|test)(?:\.describe)?\.only\s*\(/g, 'only'],
@@ -103,14 +110,29 @@ export function readTests() {
 		}
 	}
 
-	const runs = fs.existsSync(HISTORY_FILE)
-		? readJSON<ITestRun[]>(HISTORY_FILE)
-		: [];
+	const runs = (
+		fs.existsSync(HISTORY_FILE) ? readJSON<ITestRun[]>(HISTORY_FILE) : []
+	).sort((a, b) => a.date.localeCompare(b.date));
 
 	const byCase = new Map<
 		string,
 		{suite: string; statuses: string[]; times: number[]}
 	>();
+
+	// A case is failing only when it failed in the latest run of its suite.
+	// A case that failed and was then renamed or deleted is absent from that
+	// run, so it does not stay failing forever.
+
+	const latestStatuses = new Map<string, string>();
+
+	for (const run of new Map(runs.map((run) => [run.suite, run])).values()) {
+		for (const testCase of run.cases) {
+			latestStatuses.set(
+				`${run.suite}\u0000${testCase.id}`,
+				testCase.status
+			);
+		}
+	}
 
 	for (const run of runs) {
 		for (const testCase of run.cases) {
@@ -121,9 +143,8 @@ export function readTests() {
 				times: [],
 			};
 
-			entry.statuses.push(testCase.status);
-
 			if (testCase.status !== 'skipped') {
+				entry.statuses.push(testCase.status);
 				entry.times.push(testCase.time);
 			}
 
@@ -138,6 +159,7 @@ export function readTests() {
 			failures: entry.statuses.filter((status) => status === 'failed')
 				.length,
 			id: key.split('\u0000')[1],
+			latest: latestStatuses.get(key),
 			median: times.length ? times[Math.floor(times.length / 2)] : 0,
 			passes: entry.statuses.filter((status) => status === 'passed')
 				.length,
@@ -147,9 +169,22 @@ export function readTests() {
 	});
 
 	return {
+		failing: cases
+			.filter((testCase) => testCase.latest === 'failed')
+			.sort(
+				(a, b) =>
+					Number(!b.passes) - Number(!a.passes) ||
+					b.failures - a.failures ||
+					a.id.localeCompare(b.id)
+			),
 		files: files.length,
 		flaky: cases
-			.filter((testCase) => testCase.failures && testCase.passes)
+			.filter(
+				(testCase) =>
+					testCase.latest === 'passed' &&
+					testCase.failures &&
+					testCase.runs >= FLAKY_MIN_RUNS
+			)
 			.sort((a, b) => b.failures / b.runs - a.failures / a.runs),
 		markers,
 		runs: runs.map((run) => ({
