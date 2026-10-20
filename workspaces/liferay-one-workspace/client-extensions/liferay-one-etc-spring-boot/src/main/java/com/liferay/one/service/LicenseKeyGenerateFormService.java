@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
@@ -143,6 +144,23 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return entitlementDefinition.getLicenseKeyType();
+	}
+
+	public static String getProductId(
+		Entitlement entitlement, Product product) {
+
+		if (isLeadingLicenseKeyFamily(getLicenseKeyFamily(entitlement))) {
+			return LicenseConstants.PRODUCT_ID_PORTAL;
+		}
+
+		String appEntryUuid = CommerceProductUtil.getSpecificationValue(
+			product, ProductSpecificationConstants.KEY_APP_ENTRY_UUID);
+
+		if (Validator.isNull(appEntryUuid)) {
+			return LicenseConstants.PRODUCT_ID_PORTAL;
+		}
+
+		return appEntryUuid;
 	}
 
 	public static String getProductName(

@@ -355,7 +355,7 @@ public class LicenseKeyGenerationService {
 				licenseEntry.getType(), generateRequest.getMaxClusterNodes()),
 			0, 0, 0, 0, generateRequest.getEnvironmentName(), null,
 			generateRequest.getEnvironmentName(),
-			LicenseConstants.PRODUCT_ID_PORTAL, productName, version,
+			licensedProduct._getProductId(), productName, version,
 			activationKeyScope.getProjectExternalReferenceCode(),
 			StringPool.BLANK, _getSizing(generateRequest), startDate,
 			generateRequest.getWorkspaceName(),
@@ -1023,7 +1023,11 @@ public class LicenseKeyGenerationService {
 
 			licensedProducts.put(
 				entitlement.getEntitlementId(),
-				new LicensedProduct(licenseEntry, productName));
+				new LicensedProduct(
+					licenseEntry,
+					LicenseKeyGenerateFormService.getProductId(
+						entitlement, product),
+					productName));
 		}
 
 		return licensedProducts;
@@ -1133,6 +1137,19 @@ public class LicenseKeyGenerationService {
 		}
 
 		return subscriptionEntitlement;
+	}
+
+	private String _getProductId(Entitlement entitlement) throws Exception {
+		if (LicenseKeyGenerateFormService.isLeadingLicenseKeyFamily(
+				LicenseKeyGenerateFormService.getLicenseKeyFamily(
+					entitlement))) {
+
+			return LicenseConstants.PRODUCT_ID_PORTAL;
+		}
+
+		return LicenseKeyGenerateFormService.getProductId(
+			entitlement,
+			_licenseKeyGenerateFormService.fetchProduct(entitlement));
 	}
 
 	private List<GenerateRequest.Server> _getServers(
@@ -1301,10 +1318,11 @@ public class LicenseKeyGenerationService {
 
 		int licenseVersion = LicenseVersion.getLicenseVersion(
 			productName, version);
+		String productId = _getProductId(entitlement);
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0,
+			productId, version, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
 			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
@@ -1312,7 +1330,7 @@ public class LicenseKeyGenerationService {
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, description, keyType, licenseVersion, productName,
-			LicenseConstants.PRODUCT_ID_PORTAL, version, accountName, 0, 0,
+			productId, version, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
 			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
@@ -1348,14 +1366,14 @@ public class LicenseKeyGenerationService {
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
+			licenseVersion, productName, licensedProduct._getProductId(),
 			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
 			sizing, description, StringPool.BLANK, hostName, ipAddresses,
 			macAddresses, StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
+			licenseVersion, productName, licensedProduct._getProductId(),
 			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
 			sizing, description, StringPool.BLANK, hostName, ipAddresses,
 			macAddresses, StringPool.BLANK, startDate, expirationDate);
@@ -1397,8 +1415,11 @@ public class LicenseKeyGenerationService {
 
 	private static class LicensedProduct {
 
-		private LicensedProduct(LicenseEntry licenseEntry, String productName) {
+		private LicensedProduct(
+			LicenseEntry licenseEntry, String productId, String productName) {
+
 			_licenseEntry = licenseEntry;
+			_productId = productId;
 			_productName = productName;
 		}
 
@@ -1406,11 +1427,16 @@ public class LicenseKeyGenerationService {
 			return _licenseEntry;
 		}
 
+		private String _getProductId() {
+			return _productId;
+		}
+
 		private String _getProductName() {
 			return _productName;
 		}
 
 		private final LicenseEntry _licenseEntry;
+		private final String _productId;
 		private final String _productName;
 
 	}
