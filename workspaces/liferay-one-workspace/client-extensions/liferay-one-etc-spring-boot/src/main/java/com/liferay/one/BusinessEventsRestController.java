@@ -192,11 +192,12 @@ public class BusinessEventsRestController extends OneBaseRestController {
 		}
 	}
 
+	private static final Log _log = LogFactory.getLog(
+		BusinessEventsRestController.class);
+
 	private static final Set<String> _fieldNames = Set.of(
 		JiraBusinessEventConstants.ATTRIBUTE_NAME_EVENT_TYPE,
 		JiraBusinessEventConstants.ATTRIBUTE_NAME_TIME_ZONE);
-	private static final Log _log = LogFactory.getLog(
-		BusinessEventsRestController.class);
 
 	@Autowired
 	private JiraBusinessEventConverter _businessEventConverter;
