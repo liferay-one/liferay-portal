@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.LicenseKeyValidationException;
@@ -23,6 +24,7 @@ import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeSupplier;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.lang.reflect.Method;
@@ -1629,6 +1631,49 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyLicensesAnAddOnUnderItsAppEntryUuid()
+		throws Exception {
+
+		Entitlement leadingEntitlement = _toEntitlement(1L, 5.0, "PRDCT-DXP");
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(leadingEntitlement, addOnEntitlement);
+
+		_stubBundledProducts(addOnEntitlement, leadingEntitlement);
+
+		Mockito.doReturn(
+			_toProduct("Digital Sales Room", "PRDCT-DSR", "dsr-app-entry-uuid")
+		).when(
+			_licenseKeyGenerateFormService
+		).fetchProduct(
+			Mockito.argThat(
+				entitlement ->
+					(entitlement != null) &&
+					(entitlement.getEntitlementId() == 2L))
+		);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L, 2L), 1L));
+
+		List<Object> productIds = Arrays.asList(
+			LicenseConstants.PRODUCT_ID_PORTAL, "dsr-app-entry-uuid");
+
+		Assertions.assertEquals(
+			productIds,
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+		Assertions.assertEquals(
+			productIds,
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 6));
+		Assertions.assertEquals(
+			productIds,
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 28));
+	}
+
+	@Test
 	public void testGenerateActivationKeyLimitsAProductionKeyToOneServer()
 		throws Exception {
 
@@ -2161,6 +2206,48 @@ public class LicenseKeyGenerationServiceTest {
 			Collections.singletonList(
 				LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 11));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesAnAddOnUnderItsAppEntryUuid()
+		throws Exception {
+
+		_stubEntitlements(
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-CONTENT-MARKETING"));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement -> entitlement.getEntitlementId() == 2L))
+		).thenReturn(
+			_toProduct(
+				"Content Marketing Platform", "PRDCT-CONTENT-MARKETING",
+				"cmp-app-entry-uuid")
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.isLicensedForVersion(
+				Mockito.any(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Arrays.asList(1L, 2L), "developer", "Liferay DXP", _toProject(),
+			"7.4");
+
+		List<Object> productIds = Arrays.asList(
+			LicenseConstants.PRODUCT_ID_PORTAL, "cmp-app-entry-uuid");
+
+		Assertions.assertEquals(
+			productIds,
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+		Assertions.assertEquals(
+			productIds,
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 6));
 	}
 
 	@Test
@@ -2908,6 +2995,26 @@ public class LicenseKeyGenerationServiceTest {
 			HashMapBuilder.put(
 				"en_US", name
 			).build());
+
+		return product;
+	}
+
+	private Product _toProduct(
+		String name, String externalReferenceCode, String appEntryUuid) {
+
+		Product product = _toProduct(name, externalReferenceCode);
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(
+			ProductSpecificationConstants.KEY_APP_ENTRY_UUID);
+		productSpecification.setValue(
+			HashMapBuilder.put(
+				"en_US", appEntryUuid
+			).build());
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {productSpecification});
 
 		return product;
 	}
