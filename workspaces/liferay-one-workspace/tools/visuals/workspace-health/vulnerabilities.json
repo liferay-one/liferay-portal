@@ -1,0 +1,3 @@
+{
+	"GHSA-vfj7-8cjw-p6xm": "No fixed version of braces exists, because 3.0.3 is the latest release and the last one affected. braces comes in only through globby, fast-glob, and micromatch, which the lint and build tools use on glob patterns from this repository. No user input reaches them, so the denial of service has no entry point. Remove this entry when braces releases a fix, and upgrade."
+}
