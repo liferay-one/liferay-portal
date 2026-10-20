@@ -106,7 +106,7 @@ export class FakeJira {
 
 		await springBoot.on(
 			'GET',
-			'/jira/projects/:projectERC/business-events/fields/:fieldName/options',
+			'/jira/business-events/fields/:fieldName/options',
 			({params}) => ({
 				body: {
 					items: (params.fieldName === 'Event Type'
@@ -117,13 +117,9 @@ export class FakeJira {
 			})
 		);
 
-		await springBoot.on(
-			'GET',
-			'/jira/projects/:projectERC/product-versions',
-			{
-				body: {items: PRODUCT_VERSIONS},
-			}
-		);
+		await springBoot.on('GET', '/jira/product-versions', {
+			body: {items: PRODUCT_VERSIONS},
+		});
 
 		await springBoot.on(
 			'GET',
