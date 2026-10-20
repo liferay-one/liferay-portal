@@ -14,10 +14,10 @@ In the tables, `…/one/` stands for `client-extensions/liferay-one-etc-spring-b
 
 | Count | Item |
 | --- | --- |
-| 27 | Object actions in the trees |
-| 18 | Object actions that call a function CET |
+| 26 | Object actions in the trees |
+| 17 | Object actions that call a function CET |
 | 9 | Object actions that send a notification |
-| 1 | Object actions whose CET or controller does not exist in this workspace |
+| 0 | Object actions whose CET or controller does not exist in this workspace |
 | 17 | `objectAction` CETs in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` |
 | 17 | `/object/action/*` controllers |
 | 15 | `@Scheduled` jobs in 13 files |
@@ -155,7 +155,6 @@ flowchart LR
 | `L_COMMERCE_ORDER_ITEM` | EntitlementGeneration (`OA_COMMERCE_ORDER_ITEM_ENTITLEMENT_GENERATION`) | `onAfterAdd` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-generation` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:79`) → `/object/action/commerce/order/item/entitlement/generation` → `ObjectActionCommerceOrderItemEntitlementGenerationRestController` (`…/one/ObjectActionCommerceOrderItemEntitlementGenerationRestController.java:28`) | `post` → `EntitlementService.generateEntitlements` | Order Item, Order, active Entitlement Definitions for the SKU and product options | One Entitlement (`C_ENTITLEMENT`) for each matching definition, only when the order is completed | Yes. It skips the definitions that the item already has. The Entitlement ERC is `<orderItemId>-<definitionId>`, and `addEntitlement` checks for that pair first. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:62` |
 | `L_COMMERCE_ORDER_ITEM` | EntitlementUpdate (`OA_COMMERCE_ORDER_ITEM_ENTITLEMENT_UPDATE`) | `onAfterUpdate` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-commerce-order-item-entitlement-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:84`) → `/object/action/commerce/order/item/entitlement/update` → `ObjectActionCommerceOrderItemEntitlementUpdateRestController` (`…/one/ObjectActionCommerceOrderItemEntitlementUpdateRestController.java:28`) | `post` → `EntitlementService.updateEntitlements` | Order Item, its Entitlements and their definitions | Entitlement `startDate`, `endDate`, and `quantity`, only when they differ | Yes. It patches a difference only. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:72` |
 | `L_COMMERCE_ORDER_ITEM` | CommerceOrderItemUpdate (`OA_COMMERCE_ORDER_ITEM_UPDATE`) | `onAfterUpdate` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-commerce-order-item-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:89`) → `/object/action/commerce/order/item/update` → `ObjectActionCommerceOrderItemUpdateRestController` (`…/one/ObjectActionCommerceOrderItemUpdateRestController.java:40`) | `post` | Order Item, every order of the account, the `oktaApplication` Property | Deletes the Okta application and the `oktaApplication` Property when the last active PaaS Experience item is canceled | Yes. The second run finds no Property. If the Okta delete passes and the Property delete fails, the retry deletes an Okta application that is already gone. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:82` |
-| `L_COMMERCE_PRODUCT_DEFINITION` | MarketplaceProductSubmit (`MKT-PRODUCT-SUBMIT-ACTION`) | `onAfterAdd` | None | objectAction CET | `liferay-marketplace-etc-spring-boot-marketplace-product-submit` → **no CET in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml`** | None in this workspace | Unknown | Unknown. The CET `liferay-marketplace-etc-spring-boot-marketplace-product-submit` is not defined in this workspace. | Unclear. | `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/new-app-submitted/notification-template.object-actions.json:5` |
 | `L_COMMERCE_PRODUCT_DEFINITION` | CommerceProductDefinitionUpdate (`OA_COMMERCE_PRODUCT_DEFINITION_UPDATE`) | `onAfterUpdate` | `status == 0` | objectAction CET | `liferay-one-etc-spring-boot-object-action-commerce-product-definition-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:99`) → `/object/action/commerce/product/definition/update` → `ObjectActionCommerceProductDefinitionUpdateRestController` (`…/one/ObjectActionCommerceProductDefinitionUpdateRestController.java:30`) | `post` → `EntitlementDefinitionService.generateEntitlementDefinition` | Product, its SKUs, the Entitlement Definitions for each SKU | Entitlement Definition and Entitlement Definition SKU for each paid SKU with a license usage type option | Yes. The sync matches a generated definition by the SKU ERC. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:104` |
 | `L_ORGANIZATION` | OrganizationCreate (`OA_ORGANIZATION_CREATE`) | `onAfterAdd` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-organization-create` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:104`) → `/object/action/organization/create` → `ObjectActionOrganizationCreateRestController` (`…/one/ObjectActionOrganizationCreateRestController.java:30`) | `post` → `OrganizationSynchronizer.syncOrganization` | Organization | JSM Team asset | Yes. An upsert by external key. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:199` |
 | `L_ORGANIZATION` | OrganizationDelete (`OA_ORGANIZATION_DELETE`) | `onAfterDelete` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-organization-delete` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:109`) → `/object/action/organization/delete` → `ObjectActionOrganizationDeleteRestController` (`…/one/ObjectActionOrganizationDeleteRestController.java:29`) | `post` → `OrganizationSynchronizer.deleteOrganization` | The `modelOrganization` payload only | Deletes the JSM Team asset | Yes. A delete by external key. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:219` |
@@ -346,8 +345,6 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **`OA_COMMERCE_PRODUCT_DEFINITION_UPDATE` runs on every edit of an approved product.** `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:104` uses `status == 0`. The sync is idempotent, so the cost is load only.
 
-1. **`MKT-PRODUCT-SUBMIT-ACTION` calls a CET from another workspace.** `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/new-app-submitted/notification-template.object-actions.json:5` calls `function#liferay-marketplace-etc-spring-boot-marketplace-product-submit`, which no client extension here defines. It fires on every product add. Its directory holds the `MARKETPLACE-PRODUCT-SUBMIT-TEMPLATE` template, which no action sends.
-
 1. **Two templates and two actions share an ERC.** `MARKETPLACE-ACTION-DXP-FREE-EMAIL-TEMPLATE` is in `dxp-free-next-steps-template` and `next-steps-template-free`, and the action ERC `MKT-DXP-FREE-EMAIL` is on `C_DXP_FREE_ACTIVATION_KEY_REQUEST` and `C_GET_APP_INFORMATION`. One template body replaces the other at import.
 
 1. **11 notification templates have no sender.** See Notification Templates.
@@ -358,7 +355,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **`ObjectActionUserRestController` handles only the delete path.** `…/one/ObjectActionUserRestController.java:26` maps `/object/action/user/delete`. The other user controllers name their operation.
 
-1. **`object-model.md` undercounts the actions.** `specs/technical/object-model.md:20` says 17 object actions, all handled by `liferay-one-etc-spring-boot`. The trees hold 27: 18 function actions, of which 2 have no handler here, and 9 notification actions.
+1. **`object-model.md` undercounts the actions.** `specs/technical/object-model.md:20` says 17 object actions, all handled by `liferay-one-etc-spring-boot`. The trees hold 26: 17 function actions and 9 notification actions.
 
 1. **`client-extensions/liferay-one-etc-cron/` holds a stale build.** The directory has no tracked source. If someone deploys `dist/liferay-one-etc-cron.zip`, the old trial job runs beside `TrialRestController.scheduledProcessTrials`.
 
@@ -375,8 +372,6 @@ Each finding names the file and line. The findings are ordered by risk.
 1. Does LXC deploy `liferay-one-etc-spring-boot` with a rolling update or with a recreate? The answer decides whether the in memory guards are enough.
 
 1. Does AI Hub `provision` reject a second request for the same order? If it does, the SEO Studio half of the first Medium finding is safe.
-
-1. Which workspace owns `liferay-marketplace-etc-spring-boot-marketplace-product-submit`, and should the One site initializer still create an action that calls it?
 
 1. Does Liferay retry a `function#` object action when the CET returns an error or times out? If it does, the handlers that are only partly idempotent repeat their external calls.
 
