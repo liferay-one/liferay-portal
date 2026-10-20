@@ -10,7 +10,9 @@
  * classes. A spec that names something that no longer exists is stale.
  *
  * The check reads only names it can classify. A backtick that holds a
- * command, a value, or a field name is not checked.
+ * command, a value, or a field name is not checked. A path that only looks
+ * like a sidecar endpoint, because it belongs to another host, is listed with
+ * its reason in external-paths.json.
  */
 
 import {execFileSync} from 'child_process';
@@ -19,6 +21,7 @@ import * as path from 'path';
 
 import {
 	BATCH_DIR,
+	SITE_INITIALIZER_DIR,
 	SPRING_BOOT_DIR,
 	WORKSPACE_ROOT,
 	listFiles,
@@ -28,7 +31,7 @@ import {
 import {readEndpoints} from '../apis/java.ts';
 
 interface IReference {
-	kind: 'class' | 'endpoint' | 'erc' | 'file';
+	kind: 'class' | 'endpoint' | 'erc' | 'external' | 'file';
 	line: number;
 	name: string;
 	ok: boolean;
@@ -54,6 +57,13 @@ const JDK_CLASSES = new Set([
 	'RuntimeException',
 	'UnsupportedOperationException',
 ]);
+
+/**
+ * The paths that the specs name on other hosts, each with the reason.
+ */
+const EXTERNAL_PATHS = readJSON<Record<string, string>>(
+	path.join(import.meta.dirname, 'external-paths.json')
+);
 
 const FILE = /^[\w./-]+\.(java|json|md|properties|sh|ts|tsx|yaml|yml)$/;
 
@@ -153,31 +163,52 @@ export function readSpecs() {
 		spec.references.some((reference) => !reference.ok)
 	);
 
-	return {
-		actions: stale.map((spec) => {
-			const missing = spec.references.filter(
-				(reference) => !reference.ok
-			);
+	const unusedExternalPaths = Object.keys(EXTERNAL_PATHS).filter(
+		(externalPath) =>
+			!specs.some((spec) =>
+				spec.references.some(
+					(reference) =>
+						reference.kind === 'external' &&
+						reference.name.endsWith(externalPath)
+				)
+			)
+	);
 
-			return {
-				detail: `It names ${missing.length} thing(s) that the code no longer has, such as ${missing
-					.slice(0, 4)
-					.map(
-						(reference) =>
-							`${reference.name} (line ${reference.line})`
-					)
-					.join(
-						', '
-					)}. Correct the spec, or restore the code if the spec is right.`,
-				item: spec.file,
-				severity: (missing.length > 5 ? 'medium' : 'low') as
-					| 'low'
-					| 'medium',
-				source: spec.file,
-				title: `${spec.file} is out of date`,
-			};
-		}),
-		specs: specs.filter((spec) => spec.references.length),
+	return {
+		actions: [
+			...unusedExternalPaths.map((externalPath) => ({
+				detail: `workspace-health/external-paths.json lists ${externalPath}, and no spec names it any more. Remove the entry.`,
+				severity: 'low' as const,
+				source: 'tools/visuals/workspace-health/external-paths.json',
+				title: `${externalPath} is listed as external and no spec names it`,
+			})),
+			...stale.map((spec) => {
+				const missing = spec.references.filter(
+					(reference) => !reference.ok
+				);
+
+				return {
+					detail: `It names ${missing.length === 1 ? '1 thing' : `${missing.length} things`} that the code no longer has, such as ${missing
+						.slice(0, 4)
+						.map(
+							(reference) =>
+								`${reference.name} (line ${reference.line})`
+						)
+						.join(
+							', '
+						)}. Correct the spec, or restore the code if the spec is right.`,
+					item: spec.file,
+					severity: (missing.length > 5 ? 'medium' : 'low') as
+						| 'low'
+						| 'medium',
+					source: spec.file,
+					title: `${spec.file} is out of date`,
+				};
+			}),
+		],
+		specs: specs.filter((spec) =>
+			spec.references.some((reference) => reference.kind !== 'external')
+		),
 	};
 }
 
@@ -209,6 +240,10 @@ function _check(
 	}
 
 	const endpoint = ENDPOINT.exec(name);
+
+	if (endpoint && EXTERNAL_PATHS[endpoint[2]]) {
+		return {kind: 'external', ok: true};
+	}
 
 	if (
 		endpoint &&
@@ -280,8 +315,9 @@ function _check(
 }
 
 /**
- * Collects every external reference code in the batch files, including the
- * fields, relationships, and picklist entries nested in them.
+ * Collects every external reference code in the batch files, the seed data,
+ * and the site initializer, including the fields, relationships, and picklist
+ * entries nested in them. A site named by ERC, such as L_GLOBAL, counts too.
  */
 function _ercs(): Set<string> {
 	const ercs = new Set<string>();
@@ -293,7 +329,8 @@ function _ercs(): Set<string> {
 		else if (value && typeof value === 'object') {
 			for (const [key, child] of Object.entries(value)) {
 				if (
-					/externalReferenceCode\d?$/i.test(key) &&
+					(/externalReferenceCode\d?$/i.test(key) ||
+						(key === 'siteId' && ERC.test(String(child)))) &&
 					typeof child === 'string'
 				) {
 					ercs.add(child);
@@ -309,6 +346,7 @@ function _ercs(): Set<string> {
 		...listFiles(path.join(WORKSPACE_ROOT, 'scripts/seed/data'), (name) =>
 			name.endsWith('.json')
 		),
+		...listFiles(SITE_INITIALIZER_DIR, (name) => name.endsWith('.json')),
 	]) {
 		walk(readJSON(file));
 	}
