@@ -25,7 +25,7 @@ class OrdersOAuth2 extends OneSpringBootOAuth2 {
 		});
 
 		const response = await this.get<Response>(
-			`/export?filters=${searchBuilder}`,
+			`/export?filters=${encodeURIComponent(searchBuilder)}`,
 			{earlyReturn: true}
 		);
 

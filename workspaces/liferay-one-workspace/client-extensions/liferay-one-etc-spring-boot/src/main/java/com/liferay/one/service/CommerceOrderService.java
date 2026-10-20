@@ -52,6 +52,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -484,27 +485,14 @@ public class CommerceOrderService extends OneBaseService {
 		return orderResource.getOrder(commerceOrderId);
 	}
 
+	public List<Order> getLatestOrders(String filterString, int maxCount)
+		throws Exception {
+
+		return _getOrders(filterString, maxCount, "createDate:desc");
+	}
+
 	public List<Order> getOrders(String filterString) throws Exception {
-		List<Order> orders = new ArrayList<>();
-
-		OrderResource orderResource = _buildOrderResource();
-
-		int page = 1;
-
-		while (true) {
-			Page<Order> ordersPage = orderResource.getOrdersPage(
-				null, filterString, Pagination.of(page, _PAGE_SIZE), null);
-
-			orders.addAll(ordersPage.getItems());
-
-			if (page >= ordersPage.getLastPage()) {
-				break;
-			}
-
-			page++;
-		}
-
-		return orders;
+		return _getOrders(filterString, Integer.MAX_VALUE, null);
 	}
 
 	@Async
@@ -1381,6 +1369,55 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return null;
+	}
+
+	private List<Order> _getOrders(
+			String filterString, int maxCount, String sortString)
+		throws Exception {
+
+		Map<Long, Order> orders = new LinkedHashMap<>();
+
+		OrderResource orderResource = _buildOrderResource();
+
+		int page = 1;
+		int pageSize = Math.min(maxCount, _PAGE_SIZE);
+
+		while (true) {
+			Page<Order> ordersPage = orderResource.getOrdersPage(
+				null, filterString, Pagination.of(page, pageSize), sortString);
+
+			// An order created while the pages are read shifts every later
+			// page by one, so the same order can come back twice.
+
+			for (Order order : ordersPage.getItems()) {
+				orders.putIfAbsent(order.getId(), order);
+			}
+
+			if (page >= ordersPage.getLastPage()) {
+				break;
+			}
+
+			if (orders.size() >= maxCount) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Returning the latest ", maxCount, " of ",
+							ordersPage.getTotalCount(), " orders"));
+				}
+
+				break;
+			}
+
+			page++;
+		}
+
+		List<Order> ordersList = new ArrayList<>(orders.values());
+
+		if (ordersList.size() > maxCount) {
+			return ordersList.subList(0, maxCount);
+		}
+
+		return ordersList;
 	}
 
 	private String _getProjectName(Order order, String salesforceProjectId) {

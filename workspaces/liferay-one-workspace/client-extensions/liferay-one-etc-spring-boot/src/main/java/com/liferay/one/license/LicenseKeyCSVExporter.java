@@ -11,7 +11,7 @@ import com.liferay.one.model.LicenseKey;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.EntitlementService;
-import com.liferay.petra.string.CharPool;
+import com.liferay.one.util.CSVUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -59,7 +59,7 @@ public class LicenseKeyCSVExporter {
 			}
 
 			sb.append(
-				_formatCSVFields(
+				CSVUtil.formatFields(
 					licenseKey.getAccountName(),
 					externalReferenceCodes.get(accountEntryId),
 					subscriptionStates.get(accountEntryId),
@@ -73,45 +73,6 @@ public class LicenseKeyCSVExporter {
 					_getStatus(licenseKey), _getMaxServersOrNodes(licenseKey),
 					licenseKey.isComplimentary()));
 		}
-
-		return sb.toString();
-	}
-
-	private String _escapeCSVValue(Object object) {
-		String value = StringUtil.replace(
-			String.valueOf(object), CharPool.QUOTE, "\"\"");
-
-		if (value.isEmpty()) {
-			return value;
-		}
-
-		char c = value.charAt(0);
-
-		if ((c == CharPool.AT) || (c == CharPool.DASH) ||
-			(c == CharPool.EQUAL) || (c == CharPool.PLUS)) {
-
-			return StringPool.APOSTROPHE.concat(value);
-		}
-
-		return value;
-	}
-
-	private String _formatCSVFields(Object... objects) {
-		StringBundler sb = new StringBundler((4 * objects.length) + 1);
-
-		for (int i = 0; i < objects.length; i++) {
-			sb.append(StringPool.QUOTE);
-			sb.append(_escapeCSVValue(objects[i]));
-			sb.append(StringPool.QUOTE);
-
-			if (i >= (objects.length - 1)) {
-				continue;
-			}
-
-			sb.append(StringPool.COMMA);
-		}
-
-		sb.append(StringPool.NEW_LINE);
 
 		return sb.toString();
 	}
