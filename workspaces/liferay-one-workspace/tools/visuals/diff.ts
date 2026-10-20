@@ -11,7 +11,9 @@
  * holds only this workspace, runs the current extractors against it, and
  * compares their actions with the actions of the current checkout. The
  * result goes to build/diff.json, which workspace-health reads to mark the
- * new actions.
+ * new actions. It records HEAD, and workspace-health ignores the file once
+ * HEAD moves, so a comparison from another branch or an older commit never
+ * shows.
  *
  * Usage:
  *
@@ -84,6 +86,7 @@ try {
 				added: [...new Set(added.map(_key))],
 				base,
 				date: new Date().toISOString(),
+				head: git('rev-parse', 'HEAD'),
 				resolved: [
 					...new Set(
 						resolved.map(
