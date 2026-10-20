@@ -11,8 +11,8 @@
  * old each snapshot is, and, after `yarn viz:diff`, which actions the current
  * branch adds.
  *
- * The problems are a pinned resolution with no reason, and a reason with no
- * pin. The counts themselves are data for the page and do not fail
+ * The problems are a pinned resolution with no reason, a reason with no
+ * pin, and an accepted advisory that no locked package has any more. The counts themselves are data for the page and do not fail
  * `yarn viz:check`.
  */
 
@@ -46,6 +46,14 @@ const ENVIRONMENT_SNAPSHOTS_DIR = path.join(
 );
 
 /**
+ * The advisories that the team accepted, each with the reason. An accepted
+ * advisory is not an action.
+ */
+const ACCEPTED_VULNERABILITIES = readJSON<Record<string, string>>(
+	path.join(import.meta.dirname, 'vulnerabilities.json')
+);
+
+/**
  * A ticket key or a Go-Live Tasks ID in the text of an action says where it
  * is tracked.
  */
@@ -55,6 +63,20 @@ export function extract(context?: IExtractContext): IExtraction {
 	const problems: string[] = [];
 
 	const dependencies = readDependencies(problems);
+
+	if (dependencies.snapshot) {
+		for (const id of Object.keys(ACCEPTED_VULNERABILITIES)) {
+			if (
+				!dependencies.snapshot.vulnerabilities.some(
+					(vulnerability) => vulnerability.id === id
+				)
+			) {
+				problems.push(
+					`workspace-health/vulnerabilities.json accepts ${id}, which no locked package has any more. Remove the entry.`
+				);
+			}
+		}
+	}
 	const specs = readSpecs();
 	const tests = readTests();
 
@@ -110,6 +132,7 @@ function _dependencyActions(
 
 	const severe = (dependencies.snapshot?.vulnerabilities ?? []).filter(
 		(vulnerability) =>
+			!ACCEPTED_VULNERABILITIES[vulnerability.id] &&
 			['CRITICAL', 'HIGH'].includes(
 				(vulnerability.severity ?? '').toUpperCase()
 			)
