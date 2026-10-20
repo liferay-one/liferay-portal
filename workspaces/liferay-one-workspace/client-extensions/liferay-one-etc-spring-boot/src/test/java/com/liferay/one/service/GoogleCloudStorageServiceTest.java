@@ -289,23 +289,22 @@ public class GoogleCloudStorageServiceTest {
 			List<ClientRequest> clientRequests, ClientResponse clientResponse)
 		throws Exception {
 
-		WebClient.Builder builder = WebClient.builder();
-
-		WebClient webClient = builder.exchangeFunction(
+		WebClient.Builder builder = WebClient.builder(
+		).exchangeFunction(
 			clientRequest -> {
 				clientRequests.add(clientRequest);
 
 				return Mono.just(clientResponse);
 			}
-		).build();
+		);
 
 		try (MockedStatic<WebClient> webClientMockedStatic = Mockito.mockStatic(
 				WebClient.class)) {
 
 			webClientMockedStatic.when(
-				WebClient::create
+				WebClient::builder
 			).thenReturn(
-				webClient
+				builder
 			);
 
 			return _testGoogleCloudStorageService.getUploadSessionURL(
