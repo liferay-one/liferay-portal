@@ -15,18 +15,21 @@ import type {DetailsProfile} from '~/pages/MyAccount/Projects/utils/resolveDetai
 type DetailsTabProps = {
 	contract?: ProjectContract;
 	orderInfo: ProductOrderInfo;
+	productName: string;
 	profile: DetailsProfile;
 };
 
 export default function DetailsTab({
 	contract,
 	orderInfo,
+	productName,
 	profile,
 }: DetailsTabProps) {
 	const sections = buildDetailsSections(profile, {
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',
 		contract,
 		orderInfo,
+		productName,
 	});
 
 	return <SectionedDetailsCard sections={sections} />;
