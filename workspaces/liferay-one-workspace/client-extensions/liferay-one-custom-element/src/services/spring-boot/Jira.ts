@@ -75,12 +75,9 @@ export async function getBusinessEventById(
 	);
 }
 
-export async function getBusinessEventFieldOptions(
-	fieldName: string,
-	projectExternalReferenceCode: string
-) {
+export async function getBusinessEventFieldOptions(fieldName: string) {
 	const response = await jiraFetch(
-		`/projects/${projectExternalReferenceCode}/business-events/fields/${fieldName}/options`
+		`/business-events/fields/${fieldName}/options`
 	);
 
 	if (!response.ok) {
@@ -111,10 +108,8 @@ export async function getBusinessEventVersions(
 	);
 }
 
-export async function getProductVersions(projectExternalReferenceCode: string) {
-	const response = await jiraFetch(
-		`/projects/${projectExternalReferenceCode}/product-versions`
-	);
+export async function getProductVersions() {
+	const response = await jiraFetch('/product-versions');
 
 	if (!response.ok) {
 		return {items: []};

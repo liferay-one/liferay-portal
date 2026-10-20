@@ -86,7 +86,7 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 	const [reason, setReason] = useState('');
 
 	const {businessEventTypesList, loading: loadingBusinessEventTypesList} =
-		useGetBusinessEventTypesList(projectERC);
+		useGetBusinessEventTypesList();
 
 	const emptyOption = useMemo(
 		() => ({
@@ -129,7 +129,7 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 	);
 
 	const {loading: loadingUTCTimeZonesList, utcTimeZonesList} =
-		useGetUTCTimeZonesList(projectERC);
+		useGetUTCTimeZonesList();
 
 	const navigate = useNavigate();
 
@@ -148,7 +148,7 @@ const BusinessEventsEditPage: React.FC<IProps> = ({originalBusinessEvent}) => {
 		useCanViewTickets(projectERC || '');
 
 	const {loading: loadingLiferayVersions, productVersions} =
-		useGetLiferayVersions(projectERC);
+		useGetLiferayVersions();
 
 	const [newLiferayVersionOptions, setNewLiferayVersionOptions] = useState<
 		IOption[]

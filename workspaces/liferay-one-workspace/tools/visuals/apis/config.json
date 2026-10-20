@@ -8,6 +8,16 @@
 			"reason": "The invitation link calls it before the invitee signs in. The token in the query is the proof, and the handler rejects a token that it cannot find."
 		},
 		{
+			"method": "GET",
+			"path": "/jira/business-events/fields/{fieldName}/options",
+			"reason": "The business event forms read it for their dropdowns. It returns only the allowed values of the Event Type and Time Zone fields, which are the same for every customer, and it rejects any other field name."
+		},
+		{
+			"method": "GET",
+			"path": "/jira/product-versions",
+			"reason": "The business event forms read it for their version dropdown. It returns the global list of Liferay product versions, which is the same for every customer. The sidecar caches it."
+		},
+		{
 			"method": "POST",
 			"path": "/license-keys/type-free-domains-check",
 			"reason": "The free key form calls it before the order exists. It returns only whether the owner already has a free key for the domains, and it changes nothing."

@@ -8,7 +8,7 @@ import {IOption} from '~/pages/BusinessEvents/components/Select/Select';
 import {jsmObjectTypes} from '~/pages/BusinessEvents/utils/constants';
 import {getBusinessEventFieldOptions} from '~/services/spring-boot/Jira';
 
-export default function useGetBusinessEventTypesList(projectERC?: string): {
+export default function useGetBusinessEventTypesList(): {
 	businessEventTypesList: IOption[];
 	error: boolean;
 	loading: boolean;
@@ -21,14 +21,9 @@ export default function useGetBusinessEventTypesList(projectERC?: string): {
 
 	useEffect(() => {
 		const fetchListTypeEntries = async () => {
-			if (!projectERC) {
-				return;
-			}
-
 			try {
 				const response = await getBusinessEventFieldOptions(
-					jsmObjectTypes.eventType,
-					projectERC
+					jsmObjectTypes.eventType
 				);
 
 				setBusinessEventTypesList(
@@ -54,7 +49,7 @@ export default function useGetBusinessEventTypesList(projectERC?: string): {
 		};
 
 		fetchListTypeEntries();
-	}, [projectERC]);
+	}, []);
 
 	return {businessEventTypesList, error, loading};
 }

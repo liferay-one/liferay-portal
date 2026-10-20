@@ -8,7 +8,7 @@ import {IOption} from '~/pages/BusinessEvents/components/Select/Select';
 import {jsmObjectTypes} from '~/pages/BusinessEvents/utils/constants';
 import {getBusinessEventFieldOptions} from '~/services/spring-boot/Jira';
 
-export default function useGetUTCTimeZonesList(projectERC?: string): {
+export default function useGetUTCTimeZonesList(): {
 	error: boolean;
 	loading: boolean;
 	utcTimeZonesList: IOption[];
@@ -19,14 +19,9 @@ export default function useGetUTCTimeZonesList(projectERC?: string): {
 
 	useEffect(() => {
 		const fetchListTypeEntries = async () => {
-			if (!projectERC) {
-				return;
-			}
-
 			try {
 				const response = await getBusinessEventFieldOptions(
-					jsmObjectTypes.timeZone,
-					projectERC
+					jsmObjectTypes.timeZone
 				);
 
 				setUTCTimeZonesList(
@@ -47,7 +42,7 @@ export default function useGetUTCTimeZonesList(projectERC?: string): {
 		};
 
 		fetchListTypeEntries();
-	}, [projectERC]);
+	}, []);
 
 	return {error, loading, utcTimeZonesList};
 }
