@@ -48,7 +48,7 @@ async function findProductsByName(
 		}>(
 			`/o/headless-commerce-admin-catalog/v1.0/products?search=${encodeURIComponent(
 				productName
-			)}&pageSize=20`
+			)}&pageSize=20&sort=createDate:desc`
 		);
 
 		return items.filter(({name}) => name.en_US === productName);
