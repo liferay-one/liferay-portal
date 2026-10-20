@@ -101,8 +101,8 @@ public class LicenseKeyCSVExporterTest {
 
 		Assertions.assertEquals(
 			"\"Acme\",\"ACCNT-1\",\"Active\",\"US\",\"7.4 U100\",\"DXP\"," +
-				"\"12\",\"1.2.3.4\",\"AA:BB\",\"acme.host\",\"4\",\"null\"," +
-					"\"null\",\"Active\",\"9\",\"false\"",
+				"\"12\",\"1.2.3.4\",\"AA:BB\",\"acme.host\",\"4\",\"\"," +
+					"\"\",\"Active\",\"9\",\"false\"",
 			lines.get(1));
 	}
 
@@ -292,7 +292,7 @@ public class LicenseKeyCSVExporterTest {
 
 		Assertions.assertEquals(
 			"\"Acme\",\"\",\"\",\"\",\"7.4 U100\",\"DXP\",\"12\",\"1.2.3.4\"," +
-				"\"AA:BB\",\"acme.host\",\"4\",\"null\",\"null\",\"Active\"," +
+				"\"AA:BB\",\"acme.host\",\"4\",\"\",\"\",\"Active\"," +
 					"\"9\",\"false\"",
 			lines.get(1));
 

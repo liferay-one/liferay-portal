@@ -48,9 +48,24 @@ describe('[CLIENT-SPRING-BOOT-ORDERS] Orders', () => {
 			filterSchema: filterSchema[schemaName],
 		});
 		expect(oAuth2Fetch).toHaveBeenCalledWith(
-			"/orders/export?filters=orderStatus eq 'open'",
+			"/orders/export?filters=orderStatus%20eq%20'open'",
 			{earlyReturn: true}
 		);
 		expect(downloadFile).toHaveBeenCalledWith('orders.csv', response);
+	});
+
+	it('encodes the filter so an ampersand in a value stays in the filter', async () => {
+		oAuth2Fetch.mockResolvedValue(new Response('', {status: 200}));
+
+		vi.spyOn(CreateFilters, 'createFilter').mockReturnValue(
+			"accountName eq 'A&B+C'"
+		);
+
+		await Orders.downloadOrderReport({accountName: 'A&B+C'});
+
+		expect(oAuth2Fetch).toHaveBeenCalledWith(
+			"/orders/export?filters=accountName%20eq%20'A%26B%2BC'",
+			{earlyReturn: true}
+		);
 	});
 });
