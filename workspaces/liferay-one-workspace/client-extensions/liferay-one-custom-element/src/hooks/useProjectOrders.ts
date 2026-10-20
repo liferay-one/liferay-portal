@@ -88,11 +88,13 @@ export type ProjectOrder = {
 
 export type ProductOrderInfo = {
 	environment: ProductEnvironmentInfo;
+	itemName: string;
 	orderDate: string;
 	orderId: string;
 	orderType: string;
 	purchaseNumber: string;
 	purchasedBy: string;
+	quantity: string;
 	status: string;
 };
 
@@ -260,16 +262,22 @@ export function getProductOrderInfo(
 				ldpDataSourceAccessToken: '',
 				projectName: '',
 			},
+			itemName: '',
 			orderDate: '',
 			orderId: '',
 			orderType: '',
 			purchaseNumber: '',
 			purchasedBy: '',
+			quantity: '',
 			status: '',
 		};
 	}
 
 	const customFields = order.customFields ?? {};
+
+	const placedOrderItem = (order.placedOrderItems ?? []).find(
+		(item) => item.productId === productId
+	);
 
 	const ldpAnalyticsCloudProject = safeJSONParse<Partial<AnalyticsProject>>(
 		customFields[OrderCustomFields.LDP_ANALYTICS_CLOUD_PROJECT] ?? null,
@@ -284,11 +292,15 @@ export function getProductOrderInfo(
 				ldpAnalyticsCloudProject.dataSourceAccessToken ?? '',
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
+		itemName: placedOrderItem?.name ?? '',
 		orderDate: formatDate(order.createDate),
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy: order.author ?? '',
+		quantity: placedOrderItem?.quantity
+			? String(placedOrderItem.quantity)
+			: '',
 		status: getOrderStatusToken(order),
 	};
 }
