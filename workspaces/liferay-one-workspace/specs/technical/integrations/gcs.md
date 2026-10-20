@@ -15,8 +15,9 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| TECH-GCS-001 | The service calls the Cloud Storage JSON API at `https://storage.googleapis.com`. It authenticates with a Google service account. The JSON key of that account is the value of `liferay.one.gcs.service.account.key`. | P0 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE` |
-| TECH-GCS-002 | For each upload start and each delete, the service gets a new OAuth2 access token with the `cloud-platform` scope. It does not keep the token between calls. | P1 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE` |
+| TECH-GCS-001 | The service calls the Cloud Storage JSON API at `https://storage.googleapis.com`. It authenticates with the application default credentials. When `liferay.one.gcs.service.account` holds the email of a service account, the service impersonates that account. When `liferay.one.gcs.project.id` has a value, the storage client uses that project. No property holds a JSON key. | P0 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE` |
+| TECH-GCS-002 | The upload start and the delete send an OAuth2 access token with the `cloud-platform` scope. The service keeps the credentials for the life of the service. It uses the same token again, and gets a new token when less than 3 minutes and 45 seconds remain before the token expires. | P1 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE` |
+| TECH-GCS-092 | The upload start stops when the answer gives no data for five minutes, as TECH-RELIABILITY-005 states. The delete goes through BaseService and has no read timeout. Signing a URL does not send a request to storage. | P2 | — | `CLS-HTTPTIMEOUTUTIL` |
 
 ## Bucket and Object Names
 
@@ -39,7 +40,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| TECH-GCS-030 | For a download, the service signs a V4 URL for the object that expires after 15 minutes. It signs with the key of the service account and does not call storage. TECH-SUPPORT-030 records the rule. | P0 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE`, `REST-GET-TICKET-ATTACHMENTS-BY-ID-ID-DOWNLOAD`, `FLOW-TICKET-DOWNLOAD` |
+| TECH-GCS-030 | For a download, the service signs a V4 URL for the object that expires after 15 minutes. It does not call storage to sign. With an impersonated service account, the IAM Credentials API of Google signs the URL. TECH-SUPPORT-030 records the rule. | P0 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE`, `REST-GET-TICKET-ATTACHMENTS-BY-ID-ID-DOWNLOAD`, `FLOW-TICKET-DOWNLOAD` |
 | TECH-GCS-031 | Signing does not confirm that the object exists. The browser gets a missing object error from storage when it opens the URL. A storage error with code 500 or 503 gives `FILE_SERVER_UNAVAILABLE`, and code 404 gives `FILE_NOT_FOUND_IN_STORAGE`. | P2 | LPD-90456 | `SVC-GOOGLECLOUDSTORAGESERVICE`, `REST-GET-TICKET-ATTACHMENTS-BY-ID-ID-DOWNLOAD` |
 
 ## Delete
@@ -56,4 +57,3 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | TECH-GCS-090 | A delete of a file that storage does not have succeeds. Today it fails, so the record stays in the trash and the job emails the support team each hour. | P1 | — | `CRON-SCHEDULEDDELETETICKETATTACHMENT` |
 | TECH-GCS-091 | The retention job deletes the file before the record, and continues with the next attachment after a failure. | P0 | — | `CRON-SCHEDULEDCLEANUP` |
-| TECH-GCS-092 | Each storage call stops after a fixed time limit. Today the upload start and the delete set no response timeout. | P2 | — | — |

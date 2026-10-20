@@ -103,4 +103,4 @@ The usage rules are in [`../../business/usage-and-utilization.md`](../../busines
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| TECH-CONSOLE-080 | Known risk: no request to the Console, Analytics Cloud, DataOps, or the releases feed sets a response timeout. A system that accepts the connection and does not answer holds the calling thread with no limit. | P1 | — | — |
+| TECH-CONSOLE-080 | Each request to the Console, Analytics Cloud, and the releases feed stops when the answer gives no data for five minutes, as TECH-RELIABILITY-005 states. A system that accepts the connection and sends no answer holds the calling thread for five minutes. | P1 | — | `CLS-HTTPTIMEOUTUTIL` |
