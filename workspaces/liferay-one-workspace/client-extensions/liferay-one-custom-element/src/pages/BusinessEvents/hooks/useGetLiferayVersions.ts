@@ -8,7 +8,7 @@ import {IOption} from '~/pages/BusinessEvents/components/Select/Select';
 import sortLiferayVersions from '~/pages/BusinessEvents/utils/sortLiferayVersions';
 import {getProductVersions} from '~/services/spring-boot/Jira';
 
-export default function useGetLiferayVersions(projectERC?: string): {
+export default function useGetLiferayVersions(): {
 	error: boolean;
 	loading: boolean;
 	productVersions: IOption[];
@@ -19,12 +19,8 @@ export default function useGetLiferayVersions(projectERC?: string): {
 
 	useEffect(() => {
 		const fetchLiferayVersions = async () => {
-			if (!projectERC) {
-				return;
-			}
-
 			try {
-				const response = await getProductVersions(projectERC);
+				const response = await getProductVersions();
 
 				setProductVersions(
 					sortLiferayVersions(
@@ -46,7 +42,7 @@ export default function useGetLiferayVersions(projectERC?: string): {
 		};
 
 		fetchLiferayVersions();
-	}, [projectERC]);
+	}, []);
 
 	return {
 		error,

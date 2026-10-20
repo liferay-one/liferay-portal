@@ -71,9 +71,7 @@ const RecordGoLiveEventPage: React.FC<IProps> = ({
 		[]
 	);
 
-	const {utcTimeZonesList} = useGetUTCTimeZonesList(
-		projectExternalReferenceCode
-	);
+	const {utcTimeZonesList} = useGetUTCTimeZonesList();
 	const [utcTimeZonesOptions, setUTCTimeZonesOptions] = useState<IOption[]>(
 		[]
 	);
