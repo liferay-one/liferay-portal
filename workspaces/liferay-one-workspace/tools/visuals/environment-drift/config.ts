@@ -105,7 +105,14 @@ export function readConfig() {
 		flags: _propertySources(/^feature\.flag\./),
 		osgi: _osgiConfigs(),
 		properties: _propertySources(/^(?!feature\.flag\.)/),
-		localEnv: fs.existsSync(path.join(WORKSPACE_ROOT, '.env')),
+
+		// A .env and a .env.local that set none of the sidecar variables were
+		// not pulled, so they say nothing about what the sidecar is missing.
+		// Either file counts, because the sidecar container reads .env.local.
+
+		localEnv: variables.some((variable) =>
+			variable.setIn.some((source) => source.startsWith('.env'))
+		),
 		sources: Object.keys(sources),
 		variables: variables.sort((a, b) =>
 			a.variable.localeCompare(b.variable)
