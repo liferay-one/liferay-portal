@@ -5,6 +5,7 @@
 
 import {format} from 'date-fns';
 import {useMemo} from 'react';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
@@ -154,6 +155,10 @@ export function isProjectOrder(
 	order: OrderWithCustomFields,
 	project: OrderProject
 ): boolean {
+	if (isUnassignedProject(project.externalReferenceCode)) {
+		return !hasProject(order);
+	}
+
 	const projectExternalReferenceCode = getProjectExternalReferenceCode(order);
 
 	if (projectExternalReferenceCode) {

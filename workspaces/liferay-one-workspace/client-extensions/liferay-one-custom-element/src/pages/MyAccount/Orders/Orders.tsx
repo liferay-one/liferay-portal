@@ -175,7 +175,6 @@ export default function Orders() {
 			: null,
 		{
 			params: {
-				nestedFields: 'placedOrderItems',
 				pageSize: 100,
 				sort: 'createDate:desc',
 			},
