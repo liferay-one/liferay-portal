@@ -43,21 +43,25 @@ public class AccountPermission {
 		}
 	}
 
+	public void checkAccountRole(
+			String accountExternalReferenceCode, Jwt jwt, String roleName)
+		throws Exception {
+
+		if (!containsAccountRole(
+				accountExternalReferenceCode, roleName,
+				_userAccountService.getMyUserAccount(jwt))) {
+
+			throw new PrincipalException();
+		}
+	}
+
 	public boolean contains(
 			String accountExternalReferenceCode, String actionId, Jwt jwt,
 			UserAccount userAccount)
 		throws Exception {
 
-		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
-			String roleBriefName = roleBrief.getName();
-
-			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
-				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
-				roleBriefName.equals(
-					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
-
-				return true;
-			}
+		if (_isPortalManager(userAccount)) {
+			return true;
 		}
 
 		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
@@ -119,6 +123,48 @@ public class AccountPermission {
 
 			if (ArrayUtil.contains(
 					account.getOrganizationIds(), organizationBrief.getId())) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean containsAccountRole(
+		String accountExternalReferenceCode, String roleName,
+		UserAccount userAccount) {
+
+		if (_isPortalManager(userAccount)) {
+			return true;
+		}
+
+		for (AccountBrief accountBrief : userAccount.getAccountBriefs()) {
+			if (!Objects.equals(
+					accountExternalReferenceCode,
+					accountBrief.getExternalReferenceCode())) {
+
+				continue;
+			}
+
+			for (RoleBrief roleBrief : accountBrief.getRoleBriefs()) {
+				if (Objects.equals(roleBrief.getName(), roleName)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isPortalManager(UserAccount userAccount) {
+		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
+			String roleBriefName = roleBrief.getName();
+
+			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
+				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
+				roleBriefName.equals(
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
 
 				return true;
 			}

@@ -372,6 +372,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		List<String> roleExternalReferenceCodes =
 			_getRoleExternalReferenceCodes(
+				externalReferenceCode, jwt,
 				jsonObject.optJSONArray("roleExternalReferenceCodes"));
 
 		UserAccount inviterUserAccount = getMyUserAccount(jwt);
@@ -753,6 +754,7 @@ public class AccountsRestController extends OneBaseRestController {
 	}
 
 	private List<String> _getRoleExternalReferenceCodes(
+			String accountExternalReferenceCode, Jwt jwt,
 			JSONArray roleExternalReferenceCodesJSONArray)
 		throws Exception {
 
@@ -776,6 +778,15 @@ public class AccountsRestController extends OneBaseRestController {
 				throw new ResponseStatusException(
 					HttpStatus.BAD_REQUEST,
 					"Unable to find account role " + roleExternalReferenceCode);
+			}
+
+			if (Objects.equals(
+					accountRole.getName(),
+					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)) {
+
+				_accountPermission.checkAccountRole(
+					accountExternalReferenceCode, jwt,
+					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
 			}
 
 			roleExternalReferenceCodes.add(roleExternalReferenceCode);
