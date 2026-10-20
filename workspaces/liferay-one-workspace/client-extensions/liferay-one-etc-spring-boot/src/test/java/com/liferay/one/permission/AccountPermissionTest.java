@@ -44,6 +44,33 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testCheckAccountRoleRejectsPartnerAccountAdmin()
+		throws Exception {
+
+		_mockPartnerEntitlement(true);
+
+		UserAccount userAccount = _createUserAccount(
+			_EXTERNAL_REFERENCE_CODE, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+				userAccount));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _accountPermission.checkAccountRole(
+				_EXTERNAL_REFERENCE_CODE, null,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR));
+	}
+
+	@Test
 	public void testCheckAssignMembersAllowsAccountAdministrator()
 		throws Exception {
 
@@ -73,6 +100,42 @@ public class AccountPermissionTest {
 			PrincipalException.class,
 			() -> _accountPermission.check(
 				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null));
+	}
+
+	@Test
+	public void testContainsAccountRoleAllowsAccountAdministrator() {
+		Assertions.assertTrue(
+			_accountPermission.containsAccountRole(
+				_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR,
+				_createUserAccount(
+					_EXTERNAL_REFERENCE_CODE,
+					RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)));
+	}
+
+	@Test
+	public void testContainsAccountRoleAllowsAdministratorWithoutAccount() {
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_ADMINISTRATOR)
+			});
+
+		Assertions.assertTrue(
+			_accountPermission.containsAccountRole(
+				_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR, userAccount));
+	}
+
+	@Test
+	public void testContainsAccountRoleRejectsAccountAdministratorOfAnotherAccount() {
+		Assertions.assertFalse(
+			_accountPermission.containsAccountRole(
+				_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR,
+				_createUserAccount(
+					"ACC-OTHER", RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)));
 	}
 
 	@Test
