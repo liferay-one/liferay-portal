@@ -23,7 +23,7 @@ body nav.public-sites-navigation {
 	position: fixed;
 	top: 0;
 	width: 100%;
-	z-index: 101;
+	z-index: 970;
 
 	.adt-nav-item {
 		position: static;
@@ -80,6 +80,14 @@ body nav.public-sites-navigation {
 	.utility-nav-container {
 		border-bottom: 1px solid var(--color-neutral-3, #c9c9cf);
 	}
+}
+
+body.has-control-menu:not(.has-edit-mode-menu) .sticky-container-24 {
+	top: 10.5rem;
+}
+
+body:not(.has-edit-mode-menu) .sticky-container-24 {
+	top: 7rem;
 }
 
 .app-card {
