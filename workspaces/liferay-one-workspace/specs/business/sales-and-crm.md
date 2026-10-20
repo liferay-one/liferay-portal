@@ -35,6 +35,7 @@ Terms used in this file:
 | REQ-SALES-012 | The system keeps one price list for each price book and currency, and only for the supported currencies. A deleted price book entry removes its price entry. The system skips an entry with no price book or with a product that has no SKU. | P0 | LPD-99156 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER` |
 | REQ-SALES-013 | A product that Salesforce deletes becomes inactive. The system never deletes it. | P1 | — | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER` |
 | REQ-SALES-014 | When a record of an object message fails, the system still processes the other records. Then it rejects the message, so Pub/Sub delivers it again. | P0 | LPD-88254 | `SUB-SALESFORCEOBJECTPUBSUBSUBSCRIBER`, `CLS-BASEPUBSUBSUBSCRIBER` |
+| REQ-SALES-015 | On a schedule, the system reconciles each opportunity of a contract that changed in the last day. It attaches the latest contract of the opportunity to the account and to the project of the opportunity order when the contract has none. Then it links each order of the opportunity to that contract. A failure on one opportunity does not stop the others. A new run does not start while the previous run is in progress. | P1 | LPD-109804 | `CRON-RECONCILEOPPORTUNITYCONTRACTS` |
 
 ## Message Delivery
 

@@ -61,7 +61,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ORDERS-040 | The checkout currency follows the country of the billing address. When the country has no currency, the checkout uses the session currency, and then USD. | P0 | LPD-94957 | `MOD-CURRENCYUTILS`, `ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD` |
+| REQ-ORDERS-040 | The checkout currency follows the country of the billing address. When the country has no currency, the checkout uses the session currency, and then USD. | P0 | LPD-94957 | `MOD-CURRENCYUTILS`, `ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD`, `HOOK-PRODUCTPURCHASE-USEACCOUNTSKUS` |
 | REQ-ORDERS-041 | When an order changes, the system gives its account a default channel currency from a billing country. It uses the default billing address of the account, or else the billing address of the order. The system sets it only when the account has no channel currency, and never replaces one. | P0 | LPD-94957, LPD-101694 | `SVC-COMMERCEACCOUNTCURRENCYSERVICE`, `REST-POST-OBJECT-ACTION-COMMERCE-ORDER-UPDATE` |
 | REQ-ORDERS-042 | An account currency must be an active currency from this list: AUD, BRL, EUR, GBP, INR, JPY, SGD, or USD. The system refuses any other currency and logs a warning. | P0 | LPD-101694 | `SVC-COMMERCEACCOUNTCURRENCYSERVICE`, `SVC-COMMERCECURRENCYSERVICE`, `SVC-COMMERCECHANNELSERVICE` |
 | REQ-ORDERS-043 | A price shows in the currency of the order. JPY shows and rounds to whole units, and every other currency to two decimals. | P1 | — | `MOD-CURRENCYUTILS`, `MOD-FORMATCURRENCY` |
@@ -169,5 +169,5 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ORDERS-150 | Catalog prices and checkout totals show in the currency of the account, and the order keeps that currency. Only the checkout part exists. | P1 | LPD-88263 | `FLOW-MULTI-CURRENCY-CHECKOUT` |
+| REQ-ORDERS-150 | Catalog prices and checkout totals show in the currency of the account, and the order keeps that currency. Only the checkout part exists. | P1 | LPD-88263 | `FLOW-MULTI-CURRENCY-CHECKOUT`, `HOOK-PRODUCTPURCHASE-USEACCOUNTSKUS` |
 | REQ-ORDERS-151 | The order history page lists the past orders of the account. The page shows only the account ID now. | P2 | — | `ROUTE-MY-ACCOUNT-HISTORY` |

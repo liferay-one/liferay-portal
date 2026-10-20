@@ -68,7 +68,7 @@ Terms used in this file:
 | REQ-CATALOG-041 | The system always lists license tiers in this order: developer, trial, production, standard. | P1 | LPD-102451 | `MOD-LICENSETIERUTILS` |
 | REQ-CATALOG-042 | Each license usage option offers a fixed set of tiers. CMP offers developer, production, and trial. DXP offers developer, standard, and trial. Cloud offers standard and trial. Base offers developer and standard. DSR offers developer. | P1 | LPD-102451 | — |
 | REQ-CATALOG-043 | A SKU is a trial SKU when its name ends in "ts", its name is "trial", or an option value is "trial" or "yes". A buyer cannot select a trial SKU as a license. | P0 | — | `MOD-PRODUCTUTILS`, `CLIENT-MODELS-MARKETPLACEPRODUCT` |
-| REQ-CATALOG-044 | AI Hub offers two tiers, activate and studio, from purchasable SKUs. The system lists them from the lowest price to the highest. It lists token packs from the smallest token count to the largest. | P1 | LPD-102570 | `MOD-PRODUCTUTILS`, `HOOK-USEAIHUBPRODUCT` |
+| REQ-CATALOG-044 | AI Hub offers two tiers, activate and studio, from purchasable SKUs. The system lists them from the lowest price to the highest. It lists token packs from the smallest token count to the largest. | P1 | LPD-102570 | `MOD-PRODUCTUTILS`, `HOOK-USEAIHUBPRODUCT`, `HOOK-USEAITOKENBLOCKSIZES` |
 
 ## Contact Sales Products
 

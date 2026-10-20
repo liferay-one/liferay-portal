@@ -81,9 +81,10 @@ Terms used in this file:
 | REQ-ACCOUNTS-050 | A user who holds Account Buyer and not Account Member cannot open the Account Members page, and its tab is hidden. An account manager can always open it. | P1 | LPD-95398 | `MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES`, `ROUTE-MY-ACCOUNT-ACCOUNT-MEMBERS`, `FLOW-ROLE-ACCOUNT-PERMISSIONS` |
 | REQ-ACCOUNTS-051 | The account section of My Account holds the Account Details, Account Members, and Project Members pages under one set of tabs. A link to one of these pages without an account opens it for the current account. | P1 | LPD-88258 | `ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS`, `ROUTE-MY-ACCOUNT-ACCOUNT-MEMBERS`, `ROUTE-MY-ACCOUNT-PROJECT-MEMBERS`, `ROUTE-MY-ACCOUNT-ACCOUNTERC` |
 | REQ-ACCOUNTS-052 | The Account Details page shows the Sync to JSM action only to a global administrator. | P2 | LPD-89437 | `HOOK-USEHASADMINPERMISSIONS`, `ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS` |
-| REQ-ACCOUNTS-053 | The account selector is hidden for a user who is not signed in or has no current account. It is read only when the user has exactly one account. A search matches account names. | P1 | LPD-88258 | `HOOK-USEACCOUNTS` |
-| REQ-ACCOUNTS-054 | A switch in the account selector makes the selected account current and reloads the page. In My Account, the user stays on the same account page. A project page returns to the start of the new account. | P1 | LPD-92498 | `MOD-SETCURRENTACCOUNT`, `HOOK-USEACCOUNTS` |
+| REQ-ACCOUNTS-053 | The account selector is hidden for a user who is not signed in or has no current account. It is read only when the user has exactly one account. A search matches account names. | P1 | LPD-88258 | `HOOK-USEACCOUNTS`, `FLOW-NAVIGATION` |
+| REQ-ACCOUNTS-054 | A switch in the account selector makes the selected account current and reloads the page. In My Account, the user stays on the same account page. A project page returns to the start of the new account. | P1 | LPD-92498 | `MOD-SETCURRENTACCOUNT`, `HOOK-USEACCOUNTS`, `FLOW-NAVIGATION` |
 | REQ-ACCOUNTS-055 | An account with no logo shows a placeholder image. | P2 | — | `MOD-GETACCOUNTIMAGE` |
+| REQ-ACCOUNTS-056 | The Account Details page shows the name, the email address, and the phone number of the primary contact of the current account. The primary contact is the account user who holds the Primary Contact role on that account. Without a current account, the page does not look for a primary contact. | P2 | LPD-105886 | `HOOK-MYACCOUNT-ACCOUNTDETAILS-USEPRIMARYCONTACT` |
 
 ## Organizations
 

@@ -77,6 +77,7 @@ License keys and activation keys on the Activation page belong to [Licensing and
 | REQ-PROJECTS-042 | The `project-item-type` specification of a product decides whether the product is a product or an application, with no regard to case. An order item with no such type, or with no catalog product, does not show. | P1 | LPD-88252 | `MOD-MYACCOUNT-PROJECTS-RESOLVEPROJECTITEMTYPE`, `MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS` |
 | REQ-PROJECTS-043 | Each product shows once in the list, with the start date and status of the first order that holds it. The status is active when the order has none. | P1 | LPD-88252 | `MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS`, `HOOK-USEPROJECTITEMS` |
 | REQ-PROJECTS-044 | The Orders tab of a project shows the orders that carry the project name. An order with no total shows $0.00. An AI Hub token order does not supply the order details of a product. | P1 | — | `HOOK-USEPROJECTORDERS` |
+| REQ-PROJECTS-045 | The Products list of a project offers the View Activation Key action for a product whose solution type is `cmp-trial`, `dsr-trial`, or `dxp`. The action opens the Activation page of the project. A product with another solution type, or with no solution type, does not offer the action. | P2 | LPD-102704 | `MOD-MYACCOUNT-PROJECTS-ISFREEACTIVATIONKEYPRODUCT` |
 
 ## Project Item Tabs
 

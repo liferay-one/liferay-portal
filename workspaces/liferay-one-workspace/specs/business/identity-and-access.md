@@ -23,7 +23,7 @@ Terms used in this file:
 | REQ-ACCESS-002 | For a signed out visitor, the pages do not request the user account and do not preload account, project, or order data. | P1 | — | `CTX-ONECONTEXTPROVIDER`, `MOD-PRELOADAPPDATA` |
 | REQ-ACCESS-003 | A guest cannot view the My Account, ticket attachments, large file uploader, product purchase, next steps, license agreement, authorize, and admin pages. Every signed in user can view the first seven of these pages. | P0 | LPD-95398 | — |
 | REQ-ACCESS-004 | Only a user with the Marketplace Publisher role can view the Publisher Dashboard page. | P1 | LPD-95398 | — |
-| REQ-ACCESS-005 | The navigation menus show a page only to the users who can view that page. | P1 | LPD-95398 | `FLOW-SPA-RENDER-SMOKE` |
+| REQ-ACCESS-005 | The navigation menus show a page only to the users who can view that page. | P1 | LPD-95398 | `FLOW-SPA-RENDER-SMOKE`, `FLOW-NAVIGATION` |
 
 ## Service Authentication
 
@@ -43,14 +43,15 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ACCESS-020 | The authorization wizard starts only with an authorization code and a connection origin. The origin must be a bare URL origin, with no path and no trailing slash. Without both values, the wizard shows an error and connects nothing. | P0 | LPD-103883 | `MOD-OAUTH2AUTHORIZE`, `ROUTE-OAUTH2-AUTHORIZE-CONGRATULATIONS` |
-| REQ-ACCESS-021 | The wizard shows the origin of the DXP that asks for access. It tells the user to continue only when the user started the connection from that DXP. | P0 | LPD-103883 | `MOD-OAUTH2AUTHORIZE` |
-| REQ-ACCESS-022 | The wizard lists only the accounts that the user is a member of. When the user has exactly one account, the wizard selects it. The user cannot connect a business account that has no default billing address. | P1 | LPD-103883 | — |
-| REQ-ACCESS-023 | The wizard lists the Liferay Cloud projects of the user. The user can select only a project that has an extension environment. When the user has exactly one project and it qualifies, the wizard selects it and goes to the environment step. | P1 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-PROJECT-SELECTION`, `MOD-OAUTH2AUTHORIZE` |
-| REQ-ACCESS-024 | When no project of the user qualifies, the user can connect the account without a project. When a project is selected, the user must select one of its environments before the Connect action is available. | P1 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-PROJECT-SELECTION`, `ROUTE-OAUTH2-AUTHORIZE-ENVIRONMENT-SELECTION` |
+| REQ-ACCESS-020 | The authorization wizard starts only with an authorization code and a connection origin. The origin must be a bare URL origin, with no path and no trailing slash. Without both values, the wizard shows an error and connects nothing. | P0 | LPD-103883 | `MOD-OAUTH2AUTHORIZE`, `ROUTE-OAUTH2-AUTHORIZE-CONGRATULATIONS`, `FLOW-OAUTH2-DXP-CONNECT` |
+| REQ-ACCESS-021 | The wizard shows the origin of the DXP that asks for access. It tells the user to continue only when the user started the connection from that DXP. | P0 | LPD-103883 | `MOD-OAUTH2AUTHORIZE`, `FLOW-OAUTH2-DXP-CONNECT` |
+| REQ-ACCESS-022 | The wizard lists only the accounts that the user is a member of. When the user has exactly one account, the wizard selects it. The user cannot connect a business account that has no default billing address. | P1 | LPD-103883 | `FLOW-OAUTH2-DXP-CONNECT` |
+| REQ-ACCESS-023 | The wizard lists the Liferay Cloud projects of the user. The user can select only a project that has an extension environment. When the user has exactly one project and it qualifies, the wizard selects it and goes to the environment step. | P1 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-PROJECT-SELECTION`, `MOD-OAUTH2AUTHORIZE`, `FLOW-OAUTH2-DXP-CONNECT` |
+| REQ-ACCESS-024 | When no project of the user qualifies, the user can connect the account without a project. When a project is selected, the user must select one of its environments before the Connect action is available. | P1 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-PROJECT-SELECTION`, `ROUTE-OAUTH2-AUTHORIZE-ENVIRONMENT-SELECTION`, `FLOW-OAUTH2-DXP-CONNECT` |
 | REQ-ACCESS-025 | A wizard step that needs an earlier choice sends the user back to the step that makes that choice. | P2 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-ENVIRONMENT-SELECTION`, `ROUTE-OAUTH2-AUTHORIZE-CONGRATULATIONS` |
-| REQ-ACCESS-026 | On connect, the system records which account authorized which DXP origin. Then it sends the code, the service address, the account, the user, the channel, the site, and the cloud project to the DXP window. It sends this data only to the connecting origin, and only once. | P0 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-CONGRATULATIONS` |
+| REQ-ACCESS-026 | On connect, the system records which account authorized which DXP origin. Then it sends the code, the service address, the account, the user, the channel, the site, and the cloud project to the DXP window. It sends this data only to the connecting origin, and only once. | P0 | LPD-103883 | `ROUTE-OAUTH2-AUTHORIZE-CONGRATULATIONS`, `FLOW-OAUTH2-DXP-CONNECT` |
 | REQ-ACCESS-027 | Account Administrators, Account Members, organization users, Project Admins, and Project Requesters can record a DXP authorization. Every signed in user can get a token from a trusted application. | P0 | — | — |
+| REQ-ACCESS-028 | When the environment profile of a product is DXP, the Environment tab of the product lists the DXP connections of the current account. The list shows the 20 newest connections, newest first. Each row gives the user who connected, the source, and the connection date. A connection without a user does not show. When the list cannot load, the tab shows an error and a try again action. | P2 | LPD-105273 | `HOOK-MYACCOUNT-PROJECTS-USEDXPCONNECTIONS` |
 
 ## Okta Identity Sync
 
@@ -123,7 +124,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-ACCESS-090 | When the current account has no project, the account members and project members pages show a restricted feature message instead of their content. | P1 | LPD-92707 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE` |
 | REQ-ACCESS-091 | Every page that needs a project uses one shared condition: the account has at least one project. The condition counts the projects of the account, not the memberships of the user. | P1 | LPD-92706, LPD-92707 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE` |
-| REQ-ACCESS-092 | A route that the role of the user cannot access does not exist for that user. Its address goes back to the start, and the navigation does not show it. | P0 | LPD-107296 | `MOD-ROUTEUTILS`, `FLOW-RESTRICTED-PAGE` |
+| REQ-ACCESS-092 | A route that the role of the user cannot access does not exist for that user. Its address goes back to the start, and the navigation does not show it. | P0 | LPD-107296 | `MOD-ROUTEUTILS`, `FLOW-RESTRICTED-PAGE`, `FLOW-ADMIN-ROUTE-GATING` |
 
 ## Guest Access
 
