@@ -4,16 +4,17 @@
  */
 
 /**
- * The front door of the visuals. The Model, View, and Controller pages show
- * the current state, and every action that they find comes here, sorted by
- * layer. This page adds the actions that span the layers: the dependencies,
- * the tests, and the specs. It also shows where each action is tracked, how
- * old each snapshot is, and, after `yarn viz:diff`, which actions the current
- * branch adds.
+ * The front door of the visuals. Every action that the visuals find comes
+ * here, sorted by layer, and the Model, View, and Controller tabs show the
+ * visuals of their layer after the actions. This page adds the actions that
+ * span the layers: the dependencies, the bundle health of the custom
+ * element, the tests, and the specs. It also shows where each action is
+ * tracked, how old each snapshot is, and, after `yarn viz:diff`, which
+ * actions the current branch adds.
  *
  * The problems are a pinned resolution with no reason, a reason with no
- * pin, and an accepted advisory that no locked package has any more. The counts themselves are data for the page and do not fail
- * `yarn viz:check`.
+ * pin, and an accepted advisory that no locked package has any more. The
+ * counts themselves are data for the page and do not fail `yarn viz:check`.
  */
 
 import {execFileSync} from 'child_process';
@@ -21,6 +22,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {CUSTOM_ELEMENT_DIR, WORKSPACE_ROOT, readJSON} from '../lib.ts';
+import {readBundle} from './bundle.ts';
 import {readDependencies} from './dependencies.ts';
 import {readHotspots} from './hotspots.ts';
 import {readSpecs} from './specs.ts';
@@ -62,6 +64,7 @@ const TRACKING = /\b(Go-Live Tasks [A-Z]\d+|(?:LCD|LPD|LPS|LRCI|LRSD)-\d+)\b/;
 export function extract(context?: IExtractContext): IExtraction {
 	const problems: string[] = [];
 
+	const bundle = readBundle();
 	const dependencies = readDependencies(problems);
 
 	if (dependencies.snapshot) {
@@ -85,11 +88,13 @@ export function extract(context?: IExtractContext): IExtraction {
 			...action,
 			kind: 'finding' as const,
 			layer: 'workspace',
+			section: 'specs',
 			tracked: null,
 			visual: 'workspace-health',
 		})),
-		..._testActions(tests),
+		..._bundleActions(bundle),
 		..._dependencyActions(dependencies),
+		..._testActions(tests),
 	];
 
 	const actions = [...(context?.actions ?? []), ...own].map((action) => ({
@@ -103,6 +108,7 @@ export function extract(context?: IExtractContext): IExtraction {
 	return {
 		data: {
 			actions,
+			bundle,
 			dependencies,
 			diff: _diff(),
 			freshness: _freshness(dependencies.snapshot?.fetched ?? null),
@@ -118,6 +124,56 @@ export function extract(context?: IExtractContext): IExtraction {
 	};
 }
 
+/**
+ * The source files that no import reaches, the files that only a test
+ * reaches, and the language keys with no translation.
+ */
+function _bundleActions(bundle: ReturnType<typeof readBundle>): IAction[] {
+	const actions: IAction[] = [];
+
+	const base = {
+		kind: 'finding' as const,
+		layer: 'workspace',
+		section: 'bundle',
+		tracked: null,
+		visual: 'workspace-health',
+	};
+
+	if (bundle.files.unreachable.length) {
+		actions.push({
+			...base,
+			detail: bundle.files.unreachable.join(', '),
+			severity: 'low',
+			source: 'client-extensions/liferay-one-custom-element/src',
+			title: `${bundle.files.unreachable.length} source files that no import reaches`,
+		});
+	}
+
+	if (bundle.files.testOnly.length) {
+		actions.push({
+			...base,
+			detail: `${bundle.files.testOnly.join(', ')}. Only a test imports these files, so the app does not use them.`,
+			severity: 'low',
+			source: bundle.files.testOnly[0],
+			title: `${bundle.files.testOnly.length} source files that only a test reaches`,
+		});
+	}
+
+	for (const locale of bundle.languageKeys?.locales ?? []) {
+		if (locale.missing) {
+			actions.push({
+				...base,
+				detail: `en_US.ts has ${locale.missing} keys that ${locale.locale}.ts does not translate, so the page shows English to those users.`,
+				severity: 'low',
+				source: `client-extensions/liferay-one-custom-element/src/i18n/${locale.locale}.ts`,
+				title: `${locale.missing} language keys have no ${locale.locale} translation`,
+			});
+		}
+	}
+
+	return actions;
+}
+
 function _dependencyActions(
 	dependencies: ReturnType<typeof readDependencies>
 ): IAction[] {
@@ -126,6 +182,7 @@ function _dependencyActions(
 	const base = {
 		kind: 'finding' as const,
 		layer: 'workspace',
+		section: 'bundle',
 		tracked: null,
 		visual: 'workspace-health',
 	};
@@ -284,6 +341,7 @@ function _testActions(tests: ReturnType<typeof readTests>): IAction[] {
 	const base = {
 		kind: 'finding' as const,
 		layer: 'workspace',
+		section: 'tests',
 		tracked: null,
 		visual: 'workspace-health',
 	};

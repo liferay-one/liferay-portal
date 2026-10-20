@@ -4,18 +4,21 @@
  */
 
 /**
- * Composes several visuals into one page with a tab for each. A visual is
- * written as a standalone page, so composing it needs two kinds of isolation:
+ * Puts visuals inside a page that has its own tabs. A visual is written as a
+ * standalone page, so putting it inside another needs two kinds of
+ * isolation:
  *
- * - Its CSS is scoped to its tab, so that two visuals can both style .row or
- *   .tag. Each selector gets the tab's [data-tab] attribute in front of it.
+ * - Its CSS is scoped to its section, so that two visuals can both style .row
+ *   or .tag. Each selector gets the section's [data-part] attribute in front
+ *   of it.
  * - Its script runs in a function that receives a document scoped to its
- *   tab, so that two visuals can both use the id "search". getElementById
- *   and querySelector look inside the tab, a listener on the document
- *   listens on the tab, and a key listener fires only while the tab shows.
+ *   section, so that two visuals can both use the id "search".
+ *   getElementById and querySelector look inside the section, a listener on
+ *   the document listens on the section, and a key listener fires only while
+ *   the section shows.
  *
- * A tab mounts the first time it opens, so a diagram measures itself while
- * it is visible.
+ * A section mounts the first time it shows, so a diagram measures itself
+ * while it is visible.
  */
 
 export interface IPart {
@@ -26,21 +29,21 @@ export interface IPart {
 	template: string;
 }
 
-const SHELL_STYLE = `
-.layer-tabs { border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 4px; }
-.layer-tabs a { border-bottom: 2px solid transparent; color: var(--muted); font-weight: 600; margin-bottom: -1px; padding: 8px 12px; text-decoration: none; }
-.layer-tabs a[aria-selected="true"] { border-bottom-color: var(--accent); color: var(--fg); }
-.layer-panel { --wrap-width: 1280px; }
-.layer-panel .wrap { padding: 0; }
+const PANEL_STYLE = `
+.layer-panel .wrap { max-width: none; padding: 0; }
 .layer-panel header h1 { font-size: 24px; }
 `;
 
-const SHELL_SCRIPT = `
+/**
+ * Runs the script of a part against its panel. A key listener fires only
+ * while no hidden element holds the panel.
+ */
+const SCOPE_SCRIPT = `
 function scopedDocument(panel) {
 	const overrides = {
 		addEventListener(type, listener, options) {
 			if (type.startsWith("key")) {
-				window.addEventListener(type, event => { if (!panel.hidden) listener(event); }, options);
+				window.addEventListener(type, event => { if (!panel.closest("[hidden]")) listener(event); }, options);
 			}
 			else {
 				panel.addEventListener(type, listener, options);
@@ -60,114 +63,38 @@ function scopedDocument(panel) {
 }
 
 function scopedAddEventListener(panel) {
-	return (type, listener, options) => window.addEventListener(type, event => { if (!panel.hidden) listener(event); }, options);
+	return (type, listener, options) => window.addEventListener(type, event => { if (!panel.closest("[hidden]")) listener(event); }, options);
 }
 
-const mounted = new Set();
-const tabs = [...document.querySelectorAll(".layer-tabs a")];
-let storedTab = null;
-try { storedTab = localStorage.getItem(STORAGE_KEY); } catch {}
-
-// A hash is "tab", "tab.section", or "tab.section~item": the tab to open,
-// the id of a section inside it, and the item in that section to highlight.
-// The item is base64url, because a hash keeps only letters, digits, and
-// a few marks.
-
-function reveal(hash) {
-	const [place, token] = hash.split("~");
-	const [id, anchor] = place.split(".");
-	if (!ids.includes(id)) return false;
-	activate(id);
-	const panel = document.querySelector('.layer-panel[data-tab="' + id + '"]');
-	const section = anchor ? panel.querySelector("#" + CSS.escape(anchor)) : null;
-	const item = token ? vizDecode(token) : "";
-	if (item) vizHighlight(section ?? panel, item).then(found => { if (!found && section) vizHighlight(section, ""); });
-	else if (section) vizHighlight(section, "");
-	try { history.replaceState(null, "", "#" + hash); } catch {}
-	return true;
+function mountPart(id, panel) {
+	try { MOUNTS[id](scopedDocument(panel), scopedAddEventListener(panel)); }
+	catch (error) { panel.insertAdjacentHTML("afterbegin", '<p class="note">This tab failed to load: ' + String(error.message).replace(/[<&]/g, "") + '</p>'); }
 }
-
-function activate(id) {
-	for (const tab of tabs) tab.setAttribute("aria-selected", String(tab.dataset.tab === id));
-	for (const panel of document.querySelectorAll(".layer-panel")) panel.hidden = panel.dataset.tab !== id;
-	if (!mounted.has(id)) {
-		mounted.add(id);
-		const panel = document.querySelector('.layer-panel[data-tab="' + id + '"]');
-		try { MOUNTS[id](scopedDocument(panel), scopedAddEventListener(panel)); }
-		catch (error) { panel.insertAdjacentHTML("afterbegin", '<p class="note">This tab failed to load: ' + String(error.message).replace(/[<&]/g, "") + '</p>'); }
-	}
-	try { localStorage.setItem(STORAGE_KEY, id); } catch {}
-	try { history.replaceState(null, "", "#" + id); } catch {}
-}
-
-for (const tab of tabs) tab.addEventListener("click", event => { event.preventDefault(); activate(tab.dataset.tab); });
-const ids = tabs.map(tab => tab.dataset.tab);
-if (!reveal(location.hash.slice(1))) activate(ids.includes(storedTab) ? storedTab : ids[0]);
-window.addEventListener("hashchange", () => reveal(location.hash.slice(1)));
 `;
 
 /**
- * Returns the page that holds every part as a tab.
+ * Puts groups of parts into a page that has its own tabs. The page marks
+ * where each group goes with <!-- parts:group -->, and where the shared
+ * style and script go with <!-- parts:head -->. Each part is a section with
+ * a data-part attribute and a data-label, hidden until the page shows it,
+ * and the page mounts it with mountPart(id, section) the first time.
  */
-export function compose(
-	name: string,
-	page: {description: string; title: string},
-	parts: IPart[],
-	theme: string
-): string {
-	const panels: string[] = [];
-	const mounts: string[] = [];
-	const styles: string[] = [];
+export function embed(page: string, groups: Record<string, IPart[]>): string {
+	const all = _render(Object.values(groups).flat());
 
-	for (const part of parts) {
-		const template = fill(part.template, part.data, part.params);
+	let html = page.replace(
+		'<!-- parts:head -->',
+		() =>
+			`<style>${PANEL_STYLE}${all.styles}</style>\n<script>\nconst MOUNTS = {${all.mounts}};\n${SCOPE_SCRIPT}</script>`
+	);
 
-		const style = /<style>([\s\S]*?)<\/style>/.exec(template)?.[1] ?? '';
-		const markup = template
-			.slice(
-				template.indexOf('</style>') + '</style>'.length,
-				template.indexOf('<script>')
-			)
-			.trim();
-		const script = /<script>([\s\S]*?)<\/script>/.exec(template)?.[1] ?? '';
-
-		const scope = `[data-tab="${part.id}"]`;
-
-		styles.push(scopeCSS(style, scope));
-		panels.push(
-			`<section class="layer-panel" data-tab="${part.id}" hidden>${markup}</section>`
-		);
-		mounts.push(
-			`${JSON.stringify(part.id)}: function (document, addEventListener) {${script}}`
+	for (const [group, parts] of Object.entries(groups)) {
+		html = html.replace(`<!-- parts:${group} -->`, () =>
+			_render(parts, 'data-part').panels.join('\n\t\t')
 		);
 	}
 
-	return `<title>${page.title}</title>
-${theme}<style>${SHELL_STYLE}${styles.join('\n')}</style>
-
-<div class="wrap" style="--wrap-width:1760px">
-	<header>
-		<div class="eyebrow">${name} · workspace visuals</div>
-		<h1>${page.title}</h1>
-		<p>${page.description}</p>
-	</header>
-
-	<nav aria-label="${page.title}" class="layer-tabs">${parts
-		.map(
-			(part) =>
-				`<a data-tab="${part.id}" href="#${part.id}">${part.label}</a>`
-		)
-		.join('')}</nav>
-
-	${panels.join('\n\t')}
-</div>
-
-<script>
-const STORAGE_KEY = ${JSON.stringify(`visuals-${name}-tab`)};
-const MOUNTS = {${mounts.join(',\n')}};
-${SHELL_SCRIPT}
-</script>
-`;
+	return html;
 }
 
 /**
@@ -311,4 +238,33 @@ function _statements(css: string): string[] {
 	statements.push(css.slice(start));
 
 	return statements;
+}
+
+function _render(parts: IPart[]) {
+	const mounts: string[] = [];
+	const panels: string[] = [];
+	const styles: string[] = [];
+
+	for (const part of parts) {
+		const template = fill(part.template, part.data, part.params);
+
+		const style = /<style>([\s\S]*?)<\/style>/.exec(template)?.[1] ?? '';
+		const markup = template
+			.slice(
+				template.indexOf('</style>') + '</style>'.length,
+				template.indexOf('<script>')
+			)
+			.trim();
+		const script = /<script>([\s\S]*?)<\/script>/.exec(template)?.[1] ?? '';
+
+		styles.push(scopeCSS(style, `[data-part="${part.id}"]`));
+		panels.push(
+			`<section class="layer-panel" data-label="${part.label.replace(/"/g, '&quot;')}" data-part="${part.id}" hidden>${markup}</section>`
+		);
+		mounts.push(
+			`${JSON.stringify(part.id)}: function (document, addEventListener) {${script}}`
+		);
+	}
+
+	return {mounts: mounts.join(',\n'), panels, styles: styles.join('\n')};
 }

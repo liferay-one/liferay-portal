@@ -66,6 +66,12 @@ export interface IAction {
 	item?: string;
 
 	/**
+	 * The section of the Workspace tab that shows the action: bundle, tests,
+	 * or specs. An action with no section shows under Actions.
+	 */
+	section?: string;
+
+	/**
 	 * Where the action names code: a workspace path, with an optional line.
 	 */
 	source?: string;

@@ -27,7 +27,7 @@ const SRC_DIR = path.join(CUSTOM_ELEMENT_DIR, 'src');
 
 const TEST = /\.test\.tsx?$/;
 
-export function readFrontend() {
+export function readBundle() {
 	return {
 		build: _build(),
 		files: _files(),

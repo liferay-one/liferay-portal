@@ -2,34 +2,33 @@
 
 Interactive HTML pages that show the structure of this workspace. Each page is built from the source files, so a rebuild shows the current code.
 
-Five pages: one for each layer of the workspace, the test coverage, and the workspace health. A layer page has a tab for each visual in it.
+One page: Workspace Health. It has a tab for each layer of the workspace. A layer tab starts with the actions of the layer, then has a section for each visual in it.
 
-| Page | Tabs, each a visual in `tools/visuals/<visual>` |
+| Workspace Health Tab | Sections, each a visual in `tools/visuals/<visual>` |
 | --- | --- |
-| Model | Objects (`object-model`), Access (`permission-matrix`), Environments (`environment-drift`), Rules (`rules`, the batch files) |
-| View | Pages (`pages`), Components (`pages`, the fragments), Bundle Health (`frontend`), Rules (`rules`, the custom element) |
-| Controller | APIs (`apis`), Events (`events`), Rules (`rules`, the sidecar) |
-| Test Coverage | `test-coverage` |
-| Workspace Health | Overview, then the actions of each layer, and Workspace: the dependencies, tests, change hotspots, and specs |
+| Overview | The open actions of each layer, the age of each snapshot, and the triage queue |
+| Workspace | Actions, Bundle (the dependencies and the custom element build), Tests (the test runs, then the test plan coverage of `test-coverage`), Changes, and Specs |
+| Model | Actions, Objects (`object-model`), Access (`permission-matrix`), Environments (`environment-drift`), Rules (`rules`, the batch files) |
+| View | Actions, Pages (`pages`), Components (`pages`, the fragments), Rules (`rules`, the custom element) |
+| Controller | Actions, APIs (`apis`), Events (`events`), Rules (`rules`, the sidecar) |
 
 | Visual | Source of Truth |
 | --- | --- |
 | `apis` | The custom element routes and services, and the `liferay-one-etc-spring-boot` controllers and OAuth2 scopes |
 | `environment-drift` | `liferay-one-batch/batch/00` to `05`, the environment snapshots that `yarn viz:env` writes, and the configuration in the sidecar properties, `configs/`, `docker-compose.yaml`, `LCP.json`, and the names in `.env` and `.env.local` |
 | `events` | Object actions in the batch files and the site initializer, every `client-extension.yaml`, and the sidecar scheduled jobs, subscribers, and controllers |
-| `frontend` | The `liferay-one-custom-element` source, its last build, and its language files |
 | `object-model` | `liferay-one-batch/batch/00` to `05`, `expando-columns.json`, and the site initializer object actions |
 | `pages` | The `layouts`, `layout-page-templates`, `fragments`, and `site-navigation-menus.json` of the site initializer, and the custom element routes |
 | `permission-matrix` | `resource-permissions.json` and the role batch |
 | `rules` | `liferay-one-custom-element/src` and the `liferay-one-etc-spring-boot` source, scanned for the rules in `.agents/rules` that a pattern can check |
 | `test-coverage` | `specs/` and `tests/plan/`, read by the parsers in `tests/scripts/lib` |
-| `workspace-health` | The actions of every visual, the `package.json` files, `yarn.lock`, the `build.gradle` files, the test sources and run history, `git log`, and `specs/` |
+| `workspace-health` | The actions of every visual, the `liferay-one-custom-element` source, its last build, and its language files, the `package.json` files, `yarn.lock`, the `build.gradle` files, the test sources and run history, `git log`, and `specs/` |
 
 ## Build
 
 ```bash
 yarn viz                 # Build every visual into tools/visuals/build/
-yarn viz model           # Build one page
+yarn viz model           # Build the page that shows a visual or a layer
 yarn viz:check           # Report drift and exit 1 when there is any
 ```
 
@@ -52,8 +51,8 @@ tools/visuals/
 	lib.ts          Paths and file readers that the extractors share
 	theme.css       The shared look: fonts, colors, and common components
 	highlight.js    Finds and highlights the item that a link names, on every page
-	visuals.json    Each page: its title, description, icon, published URL, and tabs
-	compose.ts      Puts several visuals on one page, a tab each, with their CSS and script scoped to the tab
+	visuals.json    Each page: its title, description, icon, and published URL. A layer names its page in `page`, and its tabs show inside that page
+	compose.ts      Puts each visual inside a page as a section, with its CSS and script scoped to the section
 	diff.ts         Lists the actions that the current branch adds to its base
 	known-defects.json  Code defects that the check reports, each with its ticket or audit ID
 	<name>/
@@ -86,7 +85,7 @@ Run `/one-viz`. It builds every visual, helps fix drift, and publishes each page
 
 The Overview shows each layer's open actions, how old each snapshot is, and the triage queue: the open actions that no ticket, audit ID, or known defect tracks. Each layer tab can filter to the triage queue, copy the actions it shows as Markdown for a ticket, and link to the source of each action on GitHub (`VIZ_GITHUB_REF` sets the branch, `master-temp` by default).
 
-Each action links to the place that shows it. An action can name `anchor`, the id of a section in its tab, and `item`, the text that names the thing inside that section, such as an endpoint, a variable, or an object. The link opens the tab, finds the element that shows the item, scrolls to it, and highlights it. The hash is `#tab.section~item`, with the item in base64url. When a filter on the page hides the item, the page gets a `viz-find` event with the item, and it can clear the filter. The permission matrix and the APIs tab do this. Give an action an `item` whenever one row on the page shows it.
+Each action links to the place that shows it. An action can name `anchor`, the id of a section in its tab, and `item`, the text that names the thing inside that section, such as an endpoint, a variable, or an object. The link opens the layer tab and the section, finds the element that shows the item, scrolls to it, and highlights it. When a filter on the page hides the item, the page gets a `viz-find` event with the item, and it can clear the filter. The permission matrix and the APIs tab do this. Give an action an `item` whenever one row on the page shows it.
 
 Each standalone page has a tab icon: a letter on the color of the page, set in `ICONS` in `build.ts`.
 
