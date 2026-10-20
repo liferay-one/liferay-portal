@@ -117,8 +117,9 @@ function _dependencyActions(
 		});
 	}
 
-	const floating = dependencies.dependencies.filter((dependency) =>
-		/^latest\./.test(dependency.declared)
+	const floating = dependencies.dependencies.filter(
+		(dependency) =>
+			/^latest\./.test(dependency.declared) && !dependency.reason
 	);
 
 	if (floating.length) {

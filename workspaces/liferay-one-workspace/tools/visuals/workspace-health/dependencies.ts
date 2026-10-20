@@ -22,6 +22,7 @@ export interface IDependency {
 	files: string[];
 	kind: string;
 	name: string;
+	reason?: string;
 	version: null | string;
 }
 
@@ -124,14 +125,6 @@ export function readDependencies(problems: string[]) {
 		}
 	}
 
-	for (const name of Object.keys(pins)) {
-		if (!resolutions.some((resolution) => resolution.name === name)) {
-			problems.push(
-				`workspace-health/pins.json gives a reason for pinning ${name}, but no package.json pins it. Remove the entry.`
-			);
-		}
-	}
-
 	for (const buildFile of listFiles(
 		path.join(WORKSPACE_ROOT, 'client-extensions'),
 		(file) => path.basename(file) === 'build.gradle'
@@ -139,14 +132,42 @@ export function readDependencies(problems: string[]) {
 		const text = fs.readFileSync(buildFile, 'utf8');
 
 		for (const match of text.matchAll(GRADLE_DEPENDENCY)) {
+			const floating = /^latest\./.test(match[4]);
+			const name = `${match[2]}:${match[3]}`;
+
 			add({
 				declared: match[4],
 				ecosystem: 'Maven',
 				files: [relative(buildFile)],
 				kind: match[1],
-				name: `${match[2]}:${match[3]}`,
-				version: /^latest\./.test(match[4]) ? null : match[4],
+				name,
+				...(floating && pins[name] ? {reason: pins[name]} : {}),
+				version: floating ? null : match[4],
 			});
+		}
+	}
+
+	for (const name of Object.keys(pins)) {
+		if (name.includes(':')) {
+			if (
+				![...dependencies.values()].some(
+					(dependency) =>
+						dependency.ecosystem === 'Maven' &&
+						dependency.name === name &&
+						/^latest\./.test(dependency.declared)
+				)
+			) {
+				problems.push(
+					`workspace-health/pins.json accepts latest.release for ${name}, but no build.gradle declares it with latest.release. Remove the entry.`
+				);
+			}
+		}
+		else if (
+			!resolutions.some((resolution) => resolution.name === name)
+		) {
+			problems.push(
+				`workspace-health/pins.json gives a reason for pinning ${name}, but no package.json pins it. Remove the entry.`
+			);
 		}
 	}
 

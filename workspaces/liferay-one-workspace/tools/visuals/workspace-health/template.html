@@ -247,7 +247,7 @@ function renderDependencies() {
 		const current = d.version ?? (/^\D*(\d[\w.-]*)/.exec(d.declared)?.[1] ?? null);
 		const behind = latest && major(current) !== null && major(latest) !== null ? major(latest) - major(current) : null;
 		const newer = behind === null && latest && current && latest !== current && major(current) === null;
-		return {...d, latest, behind, newer, floating: /^latest\./.test(d.declared)};
+		return {...d, latest, behind, newer, accepted: /^latest\./.test(d.declared) && !!d.reason, floating: /^latest\./.test(d.declared) && !d.reason};
 	});
 	const majorsBehind = list.filter(d => d.behind > 0);
 	const floating = list.filter(d => d.floating);
@@ -270,7 +270,7 @@ function renderDependencies() {
 		.map(v => `<tr><td class="id"><a href="https://osv.dev/vulnerability/${esc(v.id)}" style="color:var(--accent)">${esc(v.id)}</a></td><td><span class="pill ${({CRITICAL: "sev-Critical", HIGH: "sev-High", MODERATE: "sev-Medium", LOW: "sev-Low"})[(v.severity ?? "").toUpperCase()] ?? "sev-other"}">${esc(v.severity ?? "unrated")}</span></td><td class="id">${esc(v.packages.join(", "))}</td><td>${esc(v.summary)}</td></tr>`).join("");
 
 	const depRows = list.slice().sort((a, b) => (b.behind ?? -1) - (a.behind ?? -1) || a.name.localeCompare(b.name))
-		.map(d => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(d.name)}</td><td>${esc(d.ecosystem)}</td><td>${esc(d.kind)}</td><td class="id">${esc(d.declared)}${d.version && d.version !== d.declared ? `<br /><span class="muted">locked ${esc(d.version)}</span>` : ""}</td><td class="id">${esc(d.latest ?? "—")}</td><td class="num">${d.behind > 0 ? `<span class="pill sev-${d.behind > 1 ? "High" : "Medium"}">${d.behind} major</span>` : d.floating ? `<span class="pill sev-other">floating</span>` : d.newer ? `<span class="pill sev-other">newer release</span>` : ""}</td></tr>`).join("");
+		.map(d => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(d.name)}</td><td>${esc(d.ecosystem)}</td><td>${esc(d.kind)}</td><td class="id">${esc(d.declared)}${d.version && d.version !== d.declared ? `<br /><span class="muted">locked ${esc(d.version)}</span>` : ""}</td><td class="id">${esc(d.latest ?? "—")}</td><td class="num">${d.behind > 0 ? `<span class="pill sev-${d.behind > 1 ? "High" : "Medium"}">${d.behind} major</span>` : d.floating ? `<span class="pill sev-other">floating</span>` : d.accepted ? `<span class="pill sev-other" title="${esc(d.reason)}">accepted latest.release</span>` : d.newer ? `<span class="pill sev-other">newer release</span>` : ""}</td></tr>`).join("");
 
 	$("ws-dependencies").innerHTML = `
 		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
