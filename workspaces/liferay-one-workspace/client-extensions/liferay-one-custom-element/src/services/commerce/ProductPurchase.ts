@@ -107,6 +107,8 @@ export default class ProductPurchase {
 			body.billingAddressId = await this.getAccountBillingAddressId();
 		}
 
+		await CommerceUI.selectAccount(this.account.id);
+
 		const newCart = await (cart?.id
 			? HeadlessCommerceDeliveryCart.updateCart(cart.id, body)
 			: HeadlessCommerceDeliveryCart.createCart(
@@ -114,10 +116,9 @@ export default class ProductPurchase {
 					body
 				));
 
-		const [, checkedOutCart] = await Promise.all([
-			CommerceUI.selectAccount(this.account.id),
-			HeadlessCommerceDeliveryCart.checkoutCart(newCart.id),
-		]);
+		const checkedOutCart = await HeadlessCommerceDeliveryCart.checkoutCart(
+			newCart.id
+		);
 
 		const checkoutErrorMessages = (
 			checkedOutCart.errorMessages ?? []
