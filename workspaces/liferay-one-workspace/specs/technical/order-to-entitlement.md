@@ -22,7 +22,7 @@ When this file and the code disagree, the code is correct. All paths below are r
 | 4 | Ways an order is born: a Salesforce opportunity, a self service checkout, a trial or free key request, and an overage order |
 | 1 | Object action that creates entitlements: `EntitlementGeneration`, `onAfterAdd` on `L_COMMERCE_ORDER_ITEM` |
 | 4 | Other commerce object actions: `EntitlementUpdate`, `CommerceOrderItemUpdate`, `CommerceOrderUpdate`, `CommerceProductDefinitionUpdate` |
-| 1 | Object action with no handler: `UsageReportApproved` on `C_USAGE_REPORT` |
+| 1 | Object action whose handler does not do its work yet: `UsageReportApproved` on `C_USAGE_REPORT` |
 | 2 | Order custom fields that attribute an order to a project: `salesforceProjectId`, then `projectName` |
 | 1 | Order custom field that attributes an order to a contract: `contractId` |
 | 0 | Relationships from an order to a project or a contract (removed by LPD-92222) |
@@ -243,7 +243,7 @@ The free DXP key does not go through entitlements. `addLicenseKeyTypeFree` write
 
 ## Source 4: Monthly Usage and Overage
 
-The usage report generator measures each metered entitlement against what the project consumed. An approved report is meant to create an overage order. **That last step has no handler in the code.**
+The usage report generator measures each metered entitlement against what the project consumed. An approved report is meant to create an overage order. **That last step is not in the code.** The handler for the approved report only logs a warning.
 
 ```mermaid
 sequenceDiagram
@@ -266,7 +266,7 @@ sequenceDiagram
     end
     R->>LR: set reviewStatus to approved in the object UI
     LR-->>OA: onAfterUpdate
-    OA--xLR: executor function#liferay-one-etc-spring-boot-object-action-usage-report-approved is not declared
+    OA->>OA: executor function#liferay-one-etc-spring-boot-object-action-usage-report-approved fetches the report, acts only when reviewStatus is approved, and logs a warning
     Note over LR: no overage order is created at runtime. Seed data creates them with populate_overages.sh.
 ```
 
@@ -285,7 +285,7 @@ Every source ends when an order item is added or changed. The object actions are
 | `CommerceProductDefinitionUpdate` | `L_COMMERCE_PRODUCT_DEFINITION` | `onAfterUpdate` | `status == 0` | `/object/action/commerce/product/definition/update` | For an approved paid App product, upserts one entitlement definition per SKU that has a license usage type option (`EntitlementDefinitionService.generateEntitlementDefinition`). |
 | `EntitlementGeneration` | `L_COMMERCE_ORDER_ITEM` | `onAfterAdd` | None | `/object/action/commerce/order/item/entitlement/generation` | When the order is completed, creates one entitlement for each active matching entitlement definition that the item does not have yet. Skips an item of an order in any other status. |
 | `EntitlementUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/entitlement/update` | Updates start date, end date, quantity, and max quantity of the item's existing entitlements. |
-| `UsageReportApproved` | `C_USAGE_REPORT` | `onAfterUpdate` | None | No client extension and no controller | Nothing. See Findings. |
+| `UsageReportApproved` | `C_USAGE_REPORT` | `onAfterUpdate` | None | `/object/action/usage/report/approved` (`ObjectActionUsageReportApprovedRestController`) | Nothing, only a warning in the log for an approved report. See Findings. |
 
 ### Entitlement Generation
 
@@ -497,7 +497,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 ## Findings
 
-1. **High. An approved usage report creates nothing.** `C_USAGE_REPORT` has the action `UsageReportApproved` with executor `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8072`). `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` declares no such client extension, and no controller handles a usage report path. Overage orders exist only in seed data (`scripts/seed/populate_overages.sh`).
+1. **High. An approved usage report creates no overage order.** `C_USAGE_REPORT` has the action `UsageReportApproved` with executor `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8072`). `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:133` declares the client extension, and `ObjectActionUsageReportApprovedRestController` handles the path. The controller does nothing unless the review status of the usage report is `approved`. For an approved report it only logs the warning "Unable to create an overage order for usage report". It creates no overage order and no Salesforce opportunity. Overage orders exist only in seed data (`scripts/seed/populate_overages.sh`).
 
 1. **Resolved by LPD-110003. Entitlement generation now checks the order status.** Generation runs only for a completed order, so an open cart, an unpaid PayPal order (in progress), and a pending bank transfer order get no entitlements. Entitlements that carts created before this change stay in place, including the ones whose order item was removed (order item ID 0).
 
@@ -528,8 +528,6 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 1. Does Liferay retry a function object action whose endpoint answers 500? The code assumes no retry for generation.
 
 1. Does Liferay write the order item custom fields before it fires `onAfterAdd`? The Source 1 item is added through an order PATCH that carries the custom fields. If the fields come later, generation sees no dates, and only a later update fixes them.
-
-1. Does a batch import accept the `UsageReportApproved` action when its executor key names an undeclared client extension, or does it fail on the `C_USAGE_REPORT` definition?
 
 1. Is entitlement creation for an open cart intended (Finding 2), for example so that the next steps page can show the grant before payment completes?
 

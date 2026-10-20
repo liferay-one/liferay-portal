@@ -130,6 +130,11 @@ liferay-one-etc-spring-boot-object-action-project-membership-user-group-remove:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/project/membership/user/group/remove
     type: objectAction
+liferay-one-etc-spring-boot-object-action-usage-report-approved:
+    name: Liferay One Etc Spring Boot Object Action Usage Report Approved
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/usage/report/approved
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-user-create:
     name: Liferay One Etc Spring Boot Object Action User Create
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua

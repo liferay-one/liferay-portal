@@ -17,9 +17,9 @@ In the tables, `…/one/` stands for `client-extensions/liferay-one-etc-spring-b
 | 27 | Object actions in the trees |
 | 18 | Object actions that call a function CET |
 | 9 | Object actions that send a notification |
-| 2 | Object actions whose CET or controller does not exist in this workspace |
-| 16 | `objectAction` CETs in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` |
-| 16 | `/object/action/*` controllers |
+| 1 | Object actions whose CET or controller does not exist in this workspace |
+| 17 | `objectAction` CETs in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` |
+| 17 | `/object/action/*` controllers |
 | 15 | `@Scheduled` jobs in 13 files |
 | 7 | Startup listeners (`ApplicationReadyEvent`) |
 | 6 | Pub/Sub subscribers |
@@ -43,7 +43,7 @@ No code takes a distributed lock. Every guard is an in memory `AtomicBoolean`, a
 
 ## Diagram
 
-The diagram shows what starts each handler and what the handler writes, grouped by domain. A solid line is a write. A labeled line is an object action. The dotted line is an action with no handler.
+The diagram shows what starts each handler and what the handler writes, grouped by domain. A solid line is a write. A labeled line is an object action. The dotted line is an action whose handler writes nothing.
 
 ```mermaid
 flowchart LR
@@ -76,7 +76,7 @@ flowchart LR
     end
     subgraph USE["Usage"]
         Report["Usage Report"]
-        Nothing["No handler"]
+        Nothing["Logs a warning only"]
     end
     subgraph LIC["Licensing and Email"]
         Keys["License Key and Activation Key"]
@@ -144,7 +144,7 @@ flowchart LR
 | `C_PUBLISHER_ACCOUNT_REQUEST` | PublisherAccountRequestEmailOne (`ONE-PUBLISHER-ACCOUNT-REQUEST-EMAIL`) | `onAfterAdd` | None | notification | Template `MARKETPLACE-ACTION-PUBLISHER-ACCOUNT-REQUEST-EMAIL-TEMPLATE` (`client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/publisher-account-request/notification-template.json`) | Liferay notification executor | The entry that fired the action | One notification queue entry (email) | No. Each run queues one more email. | `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/publisher-account-request/notification-template.object-actions.json:5` |
 | `C_TRIAL_EXTENSION_REQUEST` | extensionRequestEmail (`TRIAL-EXTENSION-REQUEST-EMAIL`) | `onAfterAdd` | `dueStatus != "autoApproved"` | notification | Template `TRIAL-EXTENSION-REQUEST` (`client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/trial-extension-request/notification-template.json`) | Liferay notification executor | The entry that fired the action | One notification queue entry (email) | No. Each run queues one more email. | `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/trial-extension-request/notification-template.object-actions.json:5` |
 | `C_TRIAL_EXTENSION_REQUEST` | adminExtensionResponse (`TRIAL-ADMIN-EXTENSION-RESPONSE-EMAIL`) | `onAfterUpdate` | `dueStatus == "approved" OR dueStatus == "rejected"` | notification | Template `TRIAL-ADMIN-EXTENSION-RESPONSE` (`client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/trial-admin-extension-response/notification-template.json`) | Liferay notification executor | The entry that fired the action | One notification queue entry (email) | No. Each run queues one more email. | `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/trial-admin-extension-response/notification-template.object-actions.json:5` |
-| `C_USAGE_REPORT` | UsageReportApproved (`OA_USAGE_REPORT_APPROVED`) | `onAfterUpdate` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-usage-report-approved` → **no CET in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml`** | None | Nothing | Nothing. No CET and no controller exist. | Not applicable. The action has no handler. | `client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8070` |
+| `C_USAGE_REPORT` | UsageReportApproved (`OA_USAGE_REPORT_APPROVED`) | `onAfterUpdate` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:133`) → `/object/action/usage/report/approved` → `ObjectActionUsageReportApprovedRestController` (`…/one/ObjectActionUsageReportApprovedRestController.java:28`) | `post` | Usage Report | Nothing. A warning in the log says that the overage order is not created. | Yes. The handler writes nothing. | `client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8070` |
 | `L_ACCOUNT` | AccountCreate (`OA_ACCOUNT_CREATE`) | `onAfterAdd` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-account-create` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:59`) → `/object/action/account/create` → `ObjectActionAccountCreateRestController` (`…/one/ObjectActionAccountCreateRestController.java:32`) | `post` → `CommerceAccountCurrencyService.assignDefaultCurrency`, `AccountSynchronizer.syncAccount` | Account, its default billing Postal Address, the account channel currency | Commerce account currency (only when none is set); JSM Customer asset | Yes. The currency write skips an account that has one, and the JSM write is an upsert by external key. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:20` |
 | `L_ACCOUNT` | AccountDelete (`OA_ACCOUNT_DELETE`) | `onAfterDelete` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-account-delete` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:64`) → `/object/action/account/delete` → `ObjectActionAccountDeleteRestController` (`…/one/ObjectActionAccountDeleteRestController.java:29`) | `post` → `AccountSynchronizer.deleteAccount` | The `modelAccountEntry` payload only | Deletes the JSM Customer asset | Yes. A delete by external key. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:40` |
 | `L_ACCOUNT` | AccountUpdate (`OA_ACCOUNT_UPDATE`) | `onAfterUpdate` | None | objectAction CET | `liferay-one-etc-spring-boot-object-action-account-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:74`) → `/object/action/account/update` → `ObjectActionAccountUpdateRestController` (`…/one/ObjectActionAccountUpdateRestController.java:32`) | `post` → `CommerceAccountCurrencyService.assignDefaultCurrency`, `AccountSynchronizer.syncAccount` | Account, its default billing Postal Address, the account channel currency | Commerce account currency (only when none is set); JSM Customer asset | Yes. Same as `OA_ACCOUNT_CREATE`. It runs on every account update, including the updates that other handlers make. | `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json:30` |
@@ -184,7 +184,7 @@ Each `objectAction` CET in `client-extension.yaml`, the controller behind its re
 | `liferay-one-etc-spring-boot-object-action-organization-delete` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:109`) | `/object/action/organization/delete` | `ObjectActionOrganizationDeleteRestController` (`…/one/ObjectActionOrganizationDeleteRestController.java:24`) | Yes |
 | `liferay-one-etc-spring-boot-object-action-organization-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:114`) | `/object/action/organization/update` | `ObjectActionOrganizationUpdateRestController` (`…/one/ObjectActionOrganizationUpdateRestController.java:25`) | Yes |
 | `liferay-one-etc-spring-boot-object-action-postal-address-create` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:119`) | `/object/action/postal/address/create` | `ObjectActionPostalAddressCreateRestController` (`…/one/ObjectActionPostalAddressCreateRestController.java:29`) | Yes |
-| `liferay-one-etc-spring-boot-object-action-usage-report-approved` | **Not defined** | **None** | Yes |
+| `liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:133`) | `/object/action/usage/report/approved` | `ObjectActionUsageReportApprovedRestController` (`…/one/ObjectActionUsageReportApprovedRestController.java:28`) | Yes |
 | `liferay-one-etc-spring-boot-object-action-user-create` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:124`) | `/object/action/user/create` | `ObjectActionUserCreateRestController` (`…/one/ObjectActionUserCreateRestController.java:25`) | Yes |
 | `liferay-one-etc-spring-boot-object-action-user-delete` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:129`) | `/object/action/user/delete` | `ObjectActionUserRestController` (`…/one/ObjectActionUserRestController.java:26`) | Yes |
 | `liferay-one-etc-spring-boot-object-action-user-update` (`client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:134`) | `/object/action/user/update` | `ObjectActionUserUpdateRestController` (`…/one/ObjectActionUserUpdateRestController.java:25`) | Yes |
@@ -318,7 +318,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 ### High
 
-1. **`OA_USAGE_REPORT_APPROVED` has no handler.** The action calls `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8070`). No CET of that name exists in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml`, and no controller exists. An approved usage report creates no overage order and no Salesforce opportunity, so step 4 of the commerce chain in `object-model.md` does not happen. The action also has no condition, so it fires on every update of a usage report. `UsageReportService.REVIEW_STATUS_APPROVED` (`…/one/service/UsageReportService.java:30`) is declared and never read.
+1. **`OA_USAGE_REPORT_APPROVED` does not create the overage order.** The action calls `function#liferay-one-etc-spring-boot-object-action-usage-report-approved` (`client-extensions/liferay-one-batch/batch/03-object-definition.batch-engine-data.json:8070`). The CET and the controller `ObjectActionUsageReportApprovedRestController` exist. The controller does nothing unless the review status of the usage report is `approved`. For an approved report it only logs the warning "Unable to create an overage order for usage report" with the report ERC. It creates no overage order and no Salesforce opportunity, so step 4 of the commerce chain in `object-model.md` does not happen. The action has no condition, so it fires on every update of a usage report, and the controller filters on the review status.
 
 1. **An expiring `SSA_SAAS` trial sends the trial start email again.** See chain 7. `…/one/TrialRestController.java:171` calls `completeOrder`, `…/one/service/CommerceOrderService.java:134` sets `PENDING`, and `client-extensions/liferay-one-site-initializer/site-initializer/notification-templates/trial-admin-notification/notification-template.object-actions.json:4` matches status `1`. Add `oldValue('orderStatus') != 1` to the condition, or skip the `PENDING` step for a trial.
 
