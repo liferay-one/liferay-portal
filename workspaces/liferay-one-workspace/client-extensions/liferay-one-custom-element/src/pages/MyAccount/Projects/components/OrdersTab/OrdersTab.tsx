@@ -6,6 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {Link, useNavigate, useParams} from 'react-router';
+import {PageRenderer} from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
 import {ProjectOrder, useProjectOrders} from '~/hooks/useProjectOrders';
@@ -30,7 +31,7 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 	const {accountERC} = useParams();
 	const navigate = useNavigate();
 
-	const {loading, orders} = useProjectOrders(project, productId);
+	const {error, loading, orders} = useProjectOrders(project, productId);
 
 	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(
@@ -107,29 +108,31 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 	];
 
 	return (
-		<FilterableListCard
-			action={
-				<Link
-					className="align-items-center d-flex font-weight-bold mr-2 text-dark text-decoration-none"
-					to={`/${accountERC}/orders`}
-				>
-					{translate('view-all-account-orders')}
+		<PageRenderer error={orders.length ? undefined : error}>
+			<FilterableListCard
+				action={
+					<Link
+						className="align-items-center d-flex font-weight-bold mr-2 text-dark text-decoration-none"
+						to={`/${accountERC}/orders`}
+					>
+						{translate('view-all-account-orders')}
 
-					<ClayIcon
-						className="ml-1"
-						style={{marginTop: 0}}
-						symbol="shortcut"
-					/>
-				</Link>
-			}
-			columns={columns}
-			emptyLabel="no-orders-yet"
-			filters={filters}
-			items={orders}
-			loading={loading}
-			matchesSearch={matchesSearch}
-			rowKey={(order) => order.id}
-			title="orders-list"
-		/>
+						<ClayIcon
+							className="ml-1"
+							style={{marginTop: 0}}
+							symbol="shortcut"
+						/>
+					</Link>
+				}
+				columns={columns}
+				emptyLabel="no-orders-yet"
+				filters={filters}
+				items={orders}
+				loading={loading}
+				matchesSearch={matchesSearch}
+				rowKey={(order) => order.id}
+				title="orders-list"
+			/>
+		</PageRenderer>
 	);
 }
