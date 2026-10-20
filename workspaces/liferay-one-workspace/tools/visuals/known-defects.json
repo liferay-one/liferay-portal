@@ -8,10 +8,5 @@
 		"match": "liferay-one-etc-spring-boot-object-action-usage-report-approved",
 		"reason": "Go-Live Tasks I5",
 		"visual": "events"
-	},
-	{
-		"match": "GET /orders/export",
-		"reason": "Go-Live Tasks I6",
-		"visual": "apis"
 	}
 ]
