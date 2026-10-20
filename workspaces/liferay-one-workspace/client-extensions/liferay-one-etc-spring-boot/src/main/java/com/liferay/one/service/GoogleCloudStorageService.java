@@ -16,6 +16,7 @@ import com.google.cloud.storage.StorageOptions;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.exception.FileServerUnavailableException;
+import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -100,7 +101,10 @@ public class GoogleCloudStorageService extends BaseService {
 		throws Exception {
 
 		try {
-			ResponseEntity<String> responseEntity = WebClient.create(
+			ResponseEntity<String> responseEntity = WebClient.builder(
+			).filter(
+				HTTPTimeoutUtil.getExchangeFilterFunction()
+			).build(
 			).post(
 			).uri(
 				UriComponentsBuilder.fromUriString(

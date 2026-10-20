@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
+import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.nio.charset.StandardCharsets;
@@ -125,6 +126,8 @@ public class AnalyticsCloudService extends BaseService {
 			).defaultHeader(
 				HttpHeaders.AUTHORIZATION,
 				getAuthorization(analyticsCloudContextJSONObject)
+			).filter(
+				HTTPTimeoutUtil.getExchangeFilterFunction()
 			).build(
 			).post(
 			).uri(

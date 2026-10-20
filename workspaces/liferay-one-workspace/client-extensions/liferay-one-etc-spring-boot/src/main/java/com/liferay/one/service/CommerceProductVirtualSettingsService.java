@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtua
 import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductVirtualSettingsFileEntryResource;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductVirtualSettingsResource;
+import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -103,7 +104,7 @@ public class CommerceProductVirtualSettingsService extends OneBaseService {
 	public HttpResponse<InputStream> getAssetHttpResponse(String assetURL)
 		throws Exception {
 
-		HttpClient httpClient = HttpClient.newHttpClient();
+		HttpClient httpClient = HTTPTimeoutUtil.newHttpClient();
 
 		HttpRequest httpRequest = HttpRequest.newBuilder(
 		).uri(
@@ -112,6 +113,8 @@ public class CommerceProductVirtualSettingsService extends OneBaseService {
 					lxcDXPServerProtocol, "://", lxcDXPMainDomain, assetURL))
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).timeout(
+			HTTPTimeoutUtil.READ_TIMEOUT
 		).GET(
 		).build();
 

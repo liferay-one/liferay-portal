@@ -11,6 +11,7 @@ import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.pubsub.OktaPubsubPublisher;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
@@ -376,6 +377,8 @@ public class OktaService {
 			"https://" + _host
 		).defaultHeader(
 			HttpHeaders.AUTHORIZATION, "SSWS " + _apiToken
+		).filter(
+			HTTPTimeoutUtil.getExchangeFilterFunction()
 		).build();
 	}
 
