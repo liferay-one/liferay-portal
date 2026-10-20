@@ -5,6 +5,7 @@
 
 import {renderHook} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {Liferay} from '~/services/liferay/liferay';
 import {getOrderStatusToken} from '~/utils/orderUtils';
 
@@ -146,6 +147,26 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 	it('matches the project by name when the order has no project external reference code', () => {
 		expect(isProjectOrder(alphaOrder, alphaProject)).toBe(true);
 		expect(isProjectOrder(betaOrder, alphaProject)).toBe(false);
+	});
+
+	it('matches the orders without a project to the one time purchases project', () => {
+		const oneTimePurchasesProject = {
+			externalReferenceCode: ONE_TIME_PURCHASES,
+			name: 'One-Time Purchases',
+		};
+
+		expect(
+			isProjectOrder(placedOrder({id: 3}), oneTimePurchasesProject)
+		).toBe(true);
+		expect(isProjectOrder(alphaOrder, oneTimePurchasesProject)).toBe(false);
+		expect(
+			isProjectOrder(
+				placedOrder({
+					customFields: {salesforceProjectId: 'PRJCT-ALPHA'},
+				}),
+				oneTimePurchasesProject
+			)
+		).toBe(false);
 	});
 
 	it('requests every page of the account orders, and skips the request without an account', () => {
