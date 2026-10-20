@@ -151,6 +151,36 @@ describe('[CLIENT-HEADLESS-HEADLESSCOMMERCEADMINCATALOG] HeadlessCommerceAdminCa
 		);
 	});
 
+	it('sends the tax configuration in the product and in the product configuration when one is given', async () => {
+		vi.mocked(fetcher.post).mockResolvedValueOnce({id: 9});
+
+		const productTaxConfiguration = {
+			id: 30130,
+			taxCategory: 'Tax Category',
+			taxable: true,
+		};
+
+		await HeadlessCommerceAdminCatalog.createVirtualProduct({
+			catalogId: 1,
+			categories: [],
+			description: 'An app',
+			name: 'App',
+			productTaxConfiguration,
+		});
+
+		expect(fetcher.post).toHaveBeenCalledWith(
+			`${BASE_URL}/products?nestedFields=productVirtualSettings`,
+			expect.objectContaining({
+				productConfiguration: {
+					allowBackOrder: true,
+					maxOrderQuantity: 99,
+					productTaxConfiguration,
+				},
+				taxConfiguration: {id: 30130, taxable: true},
+			})
+		);
+	});
+
 	it('reads on fixed URLs with the search parameters', async () => {
 		vi.mocked(fetcher).mockResolvedValue({items: [{id: 1}]});
 

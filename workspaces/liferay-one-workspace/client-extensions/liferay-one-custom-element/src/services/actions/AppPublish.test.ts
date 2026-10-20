@@ -4,8 +4,12 @@
  */
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
+import {
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
+	ProductTaxCategoryName,
+} from '~/enums/Product';
 import HeadlessCommerceAdminCatalog from '~/services/headless/HeadlessCommerceAdminCatalog';
+import HeadlessCommerceAdminChannel from '~/services/headless/HeadlessCommerceAdminChannel';
 import HeadlessCommerceAdminPricing from '~/services/headless/HeadlessCommerceAdminPricing';
 import {
 	ProductSpecificationKey,
@@ -38,6 +42,10 @@ vi.mock('~/services/headless/HeadlessCommerceAdminCatalog', () => ({
 	},
 }));
 
+vi.mock('~/services/headless/HeadlessCommerceAdminChannel', () => ({
+	default: {getTaxCategories: vi.fn()},
+}));
+
 vi.mock('~/services/headless/HeadlessCommerceAdminPricing', () => ({
 	default: {
 		createPriceEntry: vi.fn(),
@@ -65,6 +73,7 @@ vi.mock('./PublisherAsset', () => ({
 }));
 
 const catalog = vi.mocked(HeadlessCommerceAdminCatalog);
+const channel = vi.mocked(HeadlessCommerceAdminChannel);
 const pricing = vi.mocked(HeadlessCommerceAdminPricing);
 
 function createContext(overrides: Record<string, unknown> = {}) {
@@ -96,6 +105,20 @@ function createContext(overrides: Record<string, unknown> = {}) {
 		version: {notes: 'Notes', version: '1.0.0'},
 		...overrides,
 	} as unknown as NewAppInitialState;
+}
+
+function createNewAppContext() {
+	return createContext({
+		_product: undefined,
+		profile: {
+			areas: [],
+			categories: undefined,
+			description: 'New description',
+			file: {},
+			name: 'New name',
+			tags: [],
+		},
+	});
 }
 
 function createProduct(overrides: Partial<Product> = {}) {
@@ -710,6 +733,47 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 			300
 		);
 		expect(pricing.createPriceEntry).not.toHaveBeenCalled();
+	});
+
+	it('creates a new app with the electronic services tax category', async () => {
+		catalog.createVirtualProduct.mockResolvedValue(createProduct());
+		channel.getTaxCategories.mockResolvedValue({
+			items: [
+				{
+					id: 30130,
+					name: {en_US: ProductTaxCategoryName.ELECTRONIC_SERVICES},
+				},
+			],
+		} as never);
+
+		await new AppPublish(createNewAppContext()).syncProfile();
+
+		expect(channel.getTaxCategories).toHaveBeenCalledWith(
+			new URLSearchParams({
+				search: ProductTaxCategoryName.ELECTRONIC_SERVICES,
+			})
+		);
+		expect(catalog.createVirtualProduct).toHaveBeenCalledWith(
+			expect.objectContaining({
+				productTaxConfiguration: {
+					id: 30130,
+					taxCategory: ProductTaxCategoryName.ELECTRONIC_SERVICES,
+					taxable: true,
+				},
+			})
+		);
+	});
+
+	it('does not create a new app when the electronic services tax category does not exist', async () => {
+		channel.getTaxCategories.mockResolvedValue({
+			items: [{id: 30131, name: {en_US: 'Other Tax Category'}}],
+		} as never);
+
+		await expect(
+			new AppPublish(createNewAppContext()).syncProfile()
+		).rejects.toThrow(ProductTaxCategoryName.ELECTRONIC_SERVICES);
+
+		expect(catalog.createVirtualProduct).not.toHaveBeenCalled();
 	});
 
 	it('throws when the product has no product option to create SKUs from', async () => {

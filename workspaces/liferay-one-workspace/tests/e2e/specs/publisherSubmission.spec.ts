@@ -23,6 +23,15 @@ import {
 	pickFirstMultiSelectOption,
 } from '../utils/publisherUtils';
 
+type TaxConfiguration = {
+	id: number;
+	taxCategory: string;
+	taxable: boolean;
+};
+
+const ELECTRONIC_SERVICES_TAX_CATEGORY =
+	'General - Electronically Supplied Services';
+
 function stepHeading(page: Page, name: string) {
 	return page.getByRole('heading', {level: 1, name});
 }
@@ -345,6 +354,72 @@ test.describe('publish flows', () => {
 				await expect(
 					page.getByRole('row').filter({hasText: name})
 				).toContainText('Client Extension');
+			}
+			finally {
+				await deleteSubmittedProduct(adminAPI, name, {submitted});
+			}
+		});
+
+		test('[FLOW-PUBLISHER-APP-SUBMISSION] [ROUTE-PUBLISHER-DASHBOARD-SUBMIT] a submitted app carries the electronic services tax category', async ({
+			adminAPI,
+			page,
+		}) => {
+			test.slow();
+
+			const name = uniqueName('Taxed App');
+
+			let submitted = false;
+
+			try {
+				await submitFreeApp(page, name);
+
+				submitted = true;
+
+				let product:
+					| {
+							name: {en_US: string};
+							productConfiguration: {
+								productTaxConfiguration: TaxConfiguration;
+							};
+							productId: number;
+					  }
+					| undefined;
+
+				await expect
+					.poll(
+						async () => {
+							const {items} = await adminAPI.get<{
+								items: Array<NonNullable<typeof product>>;
+							}>(
+								`/o/headless-commerce-admin-catalog/v1.0/products?nestedFields=productConfiguration&pageSize=20&search=${encodeURIComponent(
+									name
+								)}&sort=createDate:desc`
+							);
+
+							product = items.find(
+								(item) => item.name.en_US === name
+							);
+
+							return product;
+						},
+						{timeout: 60000}
+					)
+					.toBeDefined();
+
+				const expectedTaxConfiguration = {
+					taxCategory: ELECTRONIC_SERVICES_TAX_CATEGORY,
+					taxable: true,
+				};
+
+				expect(
+					product!.productConfiguration.productTaxConfiguration
+				).toMatchObject(expectedTaxConfiguration);
+
+				expect(
+					await adminAPI.get<TaxConfiguration>(
+						`/o/headless-commerce-admin-catalog/v1.0/products/${product!.productId}/taxConfiguration`
+					)
+				).toMatchObject(expectedTaxConfiguration);
 			}
 			finally {
 				await deleteSubmittedProduct(adminAPI, name, {submitted});
