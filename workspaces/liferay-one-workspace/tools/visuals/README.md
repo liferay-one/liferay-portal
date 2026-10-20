@@ -8,7 +8,7 @@ One page: Workspace Health. It has a tab for each layer of the workspace. A laye
 | --- | --- |
 | Overview | The open actions of each layer, the age of each snapshot, and the triage queue |
 | Workspace | Actions, Bundle (the dependencies and the custom element build), Tests (the test runs, then the test plan coverage of `test-coverage`), Changes, and Specs |
-| Model | Actions, Objects (`object-model`), Access (`permission-matrix`), Environments (`environment-drift`), Rules (`rules`, the batch files) |
+| Model | Actions, Objects (`object-model`), Access (`permission-matrix`, the grants and then the roles), Environments (`environment-drift`), Rules (`rules`, the batch files) |
 | View | Actions, Pages (`pages`), Components (`pages`, the fragments), Rules (`rules`, the custom element) |
 | Controller | Actions, APIs (`apis`), Events (`events`), Rules (`rules`, the sidecar) |
 
@@ -19,7 +19,7 @@ One page: Workspace Health. It has a tab for each layer of the workspace. A laye
 | `events` | Object actions in the batch files and the site initializer, every `client-extension.yaml`, and the sidecar scheduled jobs, subscribers, and controllers |
 | `object-model` | `liferay-one-batch/batch/00` to `05`, `expando-columns.json`, and the site initializer object actions |
 | `pages` | The `layouts`, `layout-page-templates`, `fragments`, and `site-navigation-menus.json` of the site initializer, and the custom element routes |
-| `permission-matrix` | `resource-permissions.json` and the role batch |
+| `permission-matrix` | `resource-permissions.json`, the role batch, `RoleConstants.java`, the `project-contacts-role-ercs` specification of the seed products, and the sidecar and custom element sources that name a role |
 | `rules` | `liferay-one-custom-element/src` and the `liferay-one-etc-spring-boot` source, scanned for the rules in `.agents/rules` that a pattern can check |
 | `test-coverage` | `specs/` and `tests/plan/`, read by the parsers in `tests/scripts/lib` |
 | `workspace-health` | The actions of every visual, the `liferay-one-custom-element` source, its last build, and its language files, the `package.json` files, `yarn.lock`, the `build.gradle` files, the test sources and run history, `git log`, and `specs/` |
