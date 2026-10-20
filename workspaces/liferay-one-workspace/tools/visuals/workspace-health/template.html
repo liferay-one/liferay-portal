@@ -302,14 +302,16 @@ function renderTests() {
 		[count("only"), "focused with .only", count("only") ? "warn" : "good"],
 		[count("skip"), "skipped or disabled", count("skip") ? "warn" : ""],
 		[count("conditional"), "skipped only in some environments", ""],
+		[t.failing.length, "failed in their latest run", t.failing.length ? "warn" : "good"],
 		[t.flaky.length, "flaky in the recorded runs", t.flaky.length ? "warn" : ""],
 		[t.runs.length, "recorded runs", ""],
 	];
 	const markers = t.markers.filter(m => m.kind !== "conditional");
 	$("ws-tests").innerHTML = `
 		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c || ""}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
-		${t.runs.length ? "" : `<div class="card empty">No recorded runs. After a test run, run <code>yarn viz:tests</code> to add its JUnit results to the history, then <code>yarn viz workspace-health</code>. A flaky test shows up once the history has a run where it passed and one where it failed.</div>`}
+		${t.runs.length ? "" : `<div class="card empty">No recorded runs. After a test run, run <code>yarn viz:tests</code> to add its JUnit results to the history, then <code>yarn viz workspace-health</code>. A flaky test shows up once the history has at least three runs of it, and it passed in the latest one after a failure.</div>`}
 		${markers.length ? `<div class="card"><h3>Skipped and Focused Tests</h3><div class="table-wrap"><table><tbody>${markers.map(m => `<tr><td><span class="pill ${m.kind === "only" ? "sev-High" : "sev-Low"}">${esc(m.kind)}</span></td><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(m.file)}:${m.line}</td><td class="id" style="white-space:normal">${esc(m.text)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+		${t.failing.length ? `<div class="card"><h3>Failing Tests</h3><div class="table-wrap"><table><thead><tr><th>Test</th><th>Suite</th><th style="text-align:right">Failed</th></tr></thead><tbody>${t.failing.map(c => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(c.id)}</td><td>${esc(c.suite)}</td><td class="num">${c.failures} of ${c.runs}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 		${t.flaky.length ? `<div class="card"><h3>Flaky Tests</h3><div class="table-wrap"><table><thead><tr><th>Test</th><th>Suite</th><th style="text-align:right">Failed</th></tr></thead><tbody>${t.flaky.map(c => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(c.id)}</td><td>${esc(c.suite)}</td><td class="num">${c.failures} of ${c.runs}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
 		${t.slowest.length ? `<div class="card"><h3>Slowest Tests</h3><div class="table-wrap"><table><thead><tr><th>Test</th><th>Suite</th><th style="text-align:right">Median</th></tr></thead><tbody>${t.slowest.map(c => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(c.id)}</td><td>${esc(c.suite)}</td><td class="num">${c.median.toFixed(1)} s</td></tr>`).join("")}</tbody></table></div></div>` : ""}`;
 }

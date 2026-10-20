@@ -234,6 +234,10 @@ function _testActions(tests: ReturnType<typeof readTests>): IAction[] {
 
 	const skipped = tests.markers.filter((marker) => marker.kind === 'skip');
 
+	const failingSuites = [
+		...new Set(tests.failing.map((testCase) => testCase.suite)),
+	];
+
 	return [
 		...tests.markers
 			.filter((marker) => marker.kind === 'only')
@@ -256,6 +260,25 @@ function _testActions(tests: ReturnType<typeof readTests>): IAction[] {
 					},
 				]
 			: []),
+		...failingSuites.map((suite) => {
+			const failing = tests.failing.filter(
+				(testCase) => testCase.suite === suite
+			);
+			const always = failing.filter((testCase) => !testCase.passes);
+
+			return {
+				...base,
+				detail: `${always.length} of them failed in every recorded run, so they are broken, not flaky. ${failing
+					.slice(0, 5)
+					.map((testCase) => testCase.id)
+					.join(
+						'; '
+					)}${failing.length > 5 ? `; and ${failing.length - 5} more` : ''}. Fix each test or the code it covers, or skip it with a ticket.`,
+				item: failing.length === 1 ? failing[0].id : undefined,
+				severity: 'high' as const,
+				title: `${failing.length} ${suite} tests failed in their latest run`,
+			};
+		}),
 		...tests.flaky.slice(0, 10).map((testCase) => ({
 			...base,
 			detail: `Failed ${testCase.failures} of ${testCase.runs} recorded runs of ${testCase.suite}, and passed the others.`,
