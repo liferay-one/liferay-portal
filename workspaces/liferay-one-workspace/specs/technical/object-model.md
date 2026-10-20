@@ -15,7 +15,7 @@ The source of truth is the batch client extension in `client-extensions/liferay-
 | 2 | Liferay entities with no object definition (Commerce SKU, Role). An object cannot hold a relationship to them. |
 | 52 | Object relationships, all one to many |
 | 20 | Soft links: fields that hold another record's ID, ERC, or name with no relationship |
-| 12 | Objects restricted to the account by `accountEntryRestricted` |
+| 13 | Objects restricted to the account by `accountEntryRestricted` |
 | 23 | Picklists, of which 9 are not used by a field |
 | 17 | Object actions, all handled by `liferay-one-etc-spring-boot` |
 
@@ -255,9 +255,13 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 ### Medium: Account Data That Is Not Account Restricted
 
-1. Four objects are children of the account but are not in `05-object-definition-account-entry-restricted`: Environment, Property, PublisherDetail, and PublisherSalesSummary. Only role permissions control who reads them. Environment cannot be restricted while `accountEntryToEnvironment` is `disassociate`. Confirm that each of the four is meant to be readable across accounts.
+1. Three objects are children of the account but are not in `05-object-definition-account-entry-restricted`. Only role permissions control who reads them.
 
-1. UsageReport and UsageEvent have no account relationship. They reach the account only through Project, Entitlement, or Environment, so they also depend on role permissions only.
+	- PublisherDetail is the public profile of a publisher, and the Marketplace site shows it to every visitor. Guest and User have company scope VIEW on purpose. Every field, `privateEmail`, `paypalAccount`, and `phone` included, is public information.
+	- PublisherSalesSummary is for administrators only. Only Finance Administrator has a grant, and a publisher cannot see its own summaries, so an account restriction adds nothing.
+	- Property holds account rows and also Organization and User rows keyed by `className` and `classPK`, which have no account. A restriction opens those rows to every signed in user, because a restricted entry whose account field is 0 grants every action. The rename to AccountProperty and the restriction are a separate task.
+
+1. UsageReport has no account relationship. It reaches the account only through Project or Entitlement, so it depends on role permissions only.
 
 ### Low: Unused and Unreferenced Definitions
 
@@ -870,7 +874,7 @@ Object name `UsageDefinition`. REST `/o/c/usagedefinitions`. Title field `unit`.
 
 #### UsageEvent (`C_USAGE_EVENT`)
 
-Object name `UsageEvent`. REST `/o/c/usageevents`. Title field `dedupeKey`.
+Object name `UsageEvent`. REST `/o/c/usageevents`. Title field `dedupeKey`. Account restricted by `r_accountEntryToUsageEvent_accountEntryId`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -931,7 +935,7 @@ Object name `Report`. REST `/o/c/reports`. Title field `name`.
 
 #### Environment (`C_ENVIRONMENT`)
 
-Object name `Environment`. REST `/o/c/environments`. Title field `hostName`.
+Object name `Environment`. REST `/o/c/environments`. Title field `hostName`. Account restricted by `r_accountEntryToEnvironment_accountEntryId`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
