@@ -142,7 +142,7 @@ The coordinator resolves every checkout once, at kickoff, and writes the results
 | `<CHECKOUT>` | the target repo's **main** checkout — the directory the run was invoked from. In the workspace lane `<TARGET>` and `<CHECKOUT>` are the same path; in every other lane `<TARGET>` is a worktree of `<CHECKOUT>` and the two differ, which is why both are recorded |
 | `<WORKSPACE>` | the Liferay One workspace — `<PORTAL>/workspaces/liferay-one-workspace` |
 | `<PORTAL>` | the `liferay-portal` checkout — `<WORKSPACE>/../..`, or from the scripts lane the sibling checkout that contains `workspaces/liferay-one-workspace` (conventionally `../liferay-portal`) |
-| `<SCRIPTS>` | the `liferay-one/scripts` checkout — a sibling of `<PORTAL>`, conventionally `<PORTAL>/../scripts`; confirm with `git remote -v` naming `liferay-one/scripts` |
+| `<SCRIPTS>` | the `liferay-one/scripts` checkout — a sibling of the main `<PORTAL>` checkout (not of a worktree), named `scripts` or `liferay-one-scripts`; confirm with `git remote -v` naming `liferay-one/scripts`, as the Related Repos section of `AGENTS.md` shows |
 | `<LEGACY_OSB>` | `<PORTAL>/../liferay-portal-7.2.x/modules/dxp/apps/osb/` (the checkout sits on branch `7.2.x-temp`) |
 | `<LEGACY_CUSTOMER>` | `<PORTAL>/../liferay-portal-7.0.x/modules/dxp/apps/osb/osb-customer/` |
 | `<LEGACY_KORONEIKI>`, `<LEGACY_PROVISIONING>` | `<PORTAL>/../lfris-koroneiki`, `<PORTAL>/../lfris-provisioning` |
