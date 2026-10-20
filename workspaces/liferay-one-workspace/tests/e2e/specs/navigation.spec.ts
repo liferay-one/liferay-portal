@@ -17,6 +17,8 @@ import {dismissCookieBanner} from '../utils/loginUtils';
 
 const HOME_PATH = sitePath('/home');
 
+const PRODUCT_PATH = sitePath('/p/content-marketing-platform');
+
 function accountMenu(page: Page) {
 	return page.locator('#account-menu-id');
 }
@@ -226,6 +228,32 @@ test.describe('[FLOW-NAVIGATION] site header and navigation', () => {
 		await openMenuItem(page, 'Marketplace', 'Applications');
 
 		await expect(page).toHaveURL(/\/marketplace\/applications/);
+	});
+
+	test('[FLOW-NAVIGATION] the Support menu opens over the sticky product header', async ({
+		page,
+		signIn,
+	}) => {
+		await signIn('PROJECT_REQUESTER');
+
+		await page.goto(PRODUCT_PATH);
+
+		const navigation = primaryNavigation(page);
+
+		await navigation.getByRole('button', {name: 'Support'}).click();
+
+		await navigation
+			.getByRole('link', {name: /^Business Events/})
+			.first()
+			.click({trial: true});
+
+		await page.goto(PRODUCT_PATH);
+
+		await page.evaluate(() => window.scrollTo(0, 800));
+
+		await openMenuItem(page, 'Support', 'Business Events');
+
+		await expect(page).toHaveURL(/\/support\/business-events/);
 	});
 
 	test('[FLOW-NAVIGATION] only staff with page access see the Admin link', async ({
