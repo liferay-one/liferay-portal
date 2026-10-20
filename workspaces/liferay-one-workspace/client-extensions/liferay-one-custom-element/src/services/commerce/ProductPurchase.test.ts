@@ -102,7 +102,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		vi.clearAllMocks();
 	});
 
-	it('creates a cart with the first SKU at quantity 1, then selects the account, checks out, and tracks', async () => {
+	it('selects the account, creates a cart with the first SKU at quantity 1, checks out, and tracks', async () => {
 		const newCart = await new ProductPurchase(
 			account,
 			product
@@ -129,6 +129,8 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 			productName: 'Product',
 		});
 
+		const [selectAccountOrder] = vi.mocked(CommerceUI.selectAccount).mock
+			.invocationCallOrder;
 		const [createOrder] = vi.mocked(HeadlessCommerceDeliveryCart.createCart)
 			.mock.invocationCallOrder;
 		const [checkoutOrder] = vi.mocked(
@@ -137,6 +139,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		const [trackOrder] = vi.mocked(Analytics.track).mock
 			.invocationCallOrder;
 
+		expect(selectAccountOrder).toBeLessThan(createOrder);
 		expect(createOrder).toBeLessThan(checkoutOrder);
 		expect(checkoutOrder).toBeLessThan(trackOrder);
 	});
@@ -269,10 +272,10 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		).resolves.toBe('https://pay.example.com');
 	});
 
-	it('selects the account and checks out in parallel', async () => {
+	it('selects the account before it writes the cart', async () => {
 		let resolveSelectAccount: (value: Response) => void = () => {};
 
-		vi.mocked(CommerceUI.selectAccount).mockReturnValue(
+		vi.mocked(CommerceUI.selectAccount).mockReturnValueOnce(
 			new Promise((resolve) => {
 				resolveSelectAccount = resolve;
 			})
@@ -284,19 +287,35 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASE] ProductPurchase', () => {
 		).createOrder();
 
 		await vi.waitFor(() => {
-			expect(CommerceUI.selectAccount).toHaveBeenCalled();
+			expect(CommerceUI.selectAccount).toHaveBeenCalledWith(1);
 		});
 
-		expect(HeadlessCommerceDeliveryCart.checkoutCart).toHaveBeenCalledWith(
-			5
-		);
-		expect(Analytics.track).not.toHaveBeenCalled();
+		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
+		expect(
+			HeadlessCommerceDeliveryCart.checkoutCart
+		).not.toHaveBeenCalled();
 
 		resolveSelectAccount(new Response());
 
 		await createOrderPromise;
 
-		expect(Analytics.track).toHaveBeenCalled();
+		expect(HeadlessCommerceDeliveryCart.createCart).toHaveBeenCalled();
+		expect(HeadlessCommerceDeliveryCart.checkoutCart).toHaveBeenCalledWith(
+			5
+		);
+	});
+
+	it('selects the account before it updates the cart', async () => {
+		await new ProductPurchase(account, product).createOrder({
+			id: 6,
+		} as Cart);
+
+		const [selectAccountOrder] = vi.mocked(CommerceUI.selectAccount).mock
+			.invocationCallOrder;
+		const [updateOrder] = vi.mocked(HeadlessCommerceDeliveryCart.updateCart)
+			.mock.invocationCallOrder;
+
+		expect(selectAccountOrder).toBeLessThan(updateOrder);
 	});
 
 	it('updates the cart when the cart has an ID', async () => {
