@@ -13,7 +13,7 @@ The source of truth is the batch client extension in `client-extensions/liferay-
 | 34 | Custom objects (`C_*`), 28 in the Liferay One folder and 6 in the Requests folder |
 | 7 | Liferay system objects that the model extends or links to (`L_*`) |
 | 2 | Liferay entities with no object definition (Commerce SKU, Role). An object cannot hold a relationship to them. |
-| 52 | Object relationships, all one to many |
+| 51 | Object relationships, all one to many |
 | 20 | Soft links: fields that hold another record's ID, ERC, or name with no relationship |
 | 13 | Objects restricted to the account by `accountEntryRestricted` |
 | 23 | Picklists, of which 9 are not used by a field |
@@ -66,7 +66,6 @@ erDiagram
     AccountEntry ||--o{ PublisherSalesSummary : "accountEntryToPublisherSalesSummary (cascade)"
     AccountEntry ||--o{ TicketAttachment : "accountEntryToTicketAttachment (cascade)"
     AccountEntry ||--o{ TrialExtensionRequest : "accountEntryToTrialExtensionRequest (cascade)"
-    AccountEntry ||--o{ AIHubApplication : "accountToAIHubApplication (cascade)"
     ActivationKey ||--o{ LicenseKey : "activationKeyToLicenseKey (disassociate)"
     CommerceOrderItem ||--o{ Entitlement : "commerceOrderItemToEntitlement (disassociate)"
     CommerceOrder ||--o{ LicenseKey : "commerceOrderToLicenseKey (disassociate)"
@@ -78,7 +77,6 @@ erDiagram
     Entitlement ||--o{ UsageEvent : "entitlementToUsageEvent (cascade)"
     Environment ||--o{ EnvironmentAdmin : "environmentToEnvironmentAdmin (cascade)"
     Environment ||--o{ UsageEvent : "environmentToUsageEvent (cascade)"
-    CommerceOrder ||--o{ AIHubApplication : "orderToAIHubApplication (disassociate)"
     CommerceOrder ||--o{ AIHubBetaPrivateAccessRequest : "orderToAIHubBetaPrivateAccessRequest (cascade)"
     CommerceOrder ||--o{ DSRRequest : "orderToDSRRequest (cascade)"
     CommerceOrder ||--o{ DXPFreeActivationKeyRequest : "orderToDXPFreeActivationKeyRequest (cascade)"
@@ -146,7 +144,6 @@ The parent is side 1 and the child is side 2. Every relationship is one to many.
 | `accountEntryToPublisherSalesSummary` | AccountEntry | PublisherSalesSummary | cascade |
 | `accountEntryToTicketAttachment` | AccountEntry | TicketAttachment | cascade |
 | `accountEntryToTrialExtensionRequest` | AccountEntry | TrialExtensionRequest | cascade |
-| `accountToAIHubApplication` | AccountEntry | AIHubApplication | cascade |
 | `activationKeyToLicenseKey` | ActivationKey | LicenseKey | disassociate |
 | `commerceOrderItemToEntitlement` | CommerceOrderItem | Entitlement | disassociate |
 | `commerceOrderToLicenseKey` | CommerceOrder | LicenseKey | disassociate |
@@ -160,7 +157,6 @@ The parent is side 1 and the child is side 2. Every relationship is one to many.
 | `environmentToEnvironmentAdmin` | Environment | EnvironmentAdmin | cascade |
 | `environmentToUsageEvent` | Environment | UsageEvent | cascade |
 | `modifiedByUser` | User | LicenseKey | disassociate |
-| `orderToAIHubApplication` | CommerceOrder | AIHubApplication | disassociate |
 | `orderToAIHubBetaPrivateAccessRequest` | CommerceOrder | AIHubBetaPrivateAccessRequest | cascade |
 | `orderToDSRRequest` | CommerceOrder | DSRRequest | cascade |
 | `orderToDXPFreeActivationKeyRequest` | CommerceOrder | DXPFreeActivationKeyRequest | cascade |
@@ -235,7 +231,7 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 1. **`commerceOrderToLicenseKey` is unused.** The code stores the order in the text field `LicenseKey.orderId` and never writes or reads the relationship. Remove the relationship, or move the order link to it.
 
-1. Two fields looked like duplicates and are not. `Environment.projectId` is the Liferay Cloud project ID typed on the activation form, not the Liferay Project. `AIHubApplication.accountEntryId` is the account ID in the external AI Hub. Both are documented in `data-model.md`.
+1. A field looked like a duplicate and is not. `Environment.projectId` is the Liferay Cloud project ID typed on the activation form, not the Liferay Project. It is documented in `data-model.md`.
 
 1. **The order to project link is a project name.** Since LPD-92222, a Commerce Order finds its project through the `projectName` custom field and its contract through `contractId`. No relationship exists. A project rename breaks the link for every order of that project and no error appears. Store the project ERC beside the name, or read the name only for display.
 
@@ -505,7 +501,6 @@ Liferay system object `CommerceOrder`.
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
 | `commerceOrderToLicenseKey` | parent of many | `C_LICENSE_KEY` | disassociate |
-| `orderToAIHubApplication` | parent of many | `C_AI_HUB_APPLICATION` | disassociate |
 | `orderToAIHubBetaPrivateAccessRequest` | parent of many | `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` | cascade |
 | `orderToDSRRequest` | parent of many | `C_DSR_REQUEST` | cascade |
 | `orderToDXPFreeActivationKeyRequest` | parent of many | `C_DXP_FREE_ACTIVATION_KEY_REQUEST` | cascade |
@@ -596,7 +591,6 @@ Liferay system object `AccountEntry`.
 | `accountEntryToPublisherSalesSummary` | parent of many | `C_PUBLISHER_SALES_SUMMARY` | cascade |
 | `accountEntryToTicketAttachment` | parent of many | `C_TICKET_ATTACHMENT` | cascade |
 | `accountEntryToTrialExtensionRequest` | parent of many | `C_TRIAL_EXTENSION_REQUEST` | cascade |
-| `accountToAIHubApplication` | parent of many | `C_AI_HUB_APPLICATION` | cascade |
 
 Object actions: `AccountCreate` (onAfterAdd); `AccountUpdate` (onAfterUpdate); `AccountDelete` (onAfterDelete).
 
@@ -1170,24 +1164,9 @@ Object name `PublisherAssetAttachment`. REST `/o/c/publisherassetattachments`. T
 | --- | --- | --- | --- |
 | `publisherAssetToAttachment` | child of one | `C_PUBLISHER_ASSET` | cascade |
 
-#### AI Hub Application (`C_AI_HUB_APPLICATION`)
-
-Object name `AIHubApplication`. REST `/o/c/aihubapplications`. Title field `accountName`. Account restricted by `r_accountToAIHubApplication_accountEntryId`.
-
-| Field | Type | Notes |
-| --- | --- | --- |
-| `accountEntryId` | LongInteger | |
-| `accountName` | Text | |
-| `administratorEmailAddress` | Text | |
-
-| Relationship | Direction | Other side | Deletion |
-| --- | --- | --- | --- |
-| `accountToAIHubApplication` | child of one | `L_ACCOUNT` | cascade |
-| `orderToAIHubApplication` | child of one | `L_COMMERCE_ORDER` | disassociate |
-
 #### Get App Information (`C_GET_APP_INFORMATION`)
 
-Object name `GetAppInformation`. REST `/o/c/getappinformation`. Title field `orderId`.
+Object name `GetAppInformation`. REST `/o/c/getappinformations`. Title field `orderId`.
 
 | Field | Type | Notes |
 | --- | --- | --- |

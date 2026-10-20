@@ -558,6 +558,4 @@ No route reaches 40 of the 42 server calls in `utils/apiUtils.ts`. Two of them c
 
 1. Kong routes `/cloud/v1/environments/{id}/activation` and `/manifest` to `provisioning-rest` on another host (`liferay-one-kong/kong/kong.yml`). Does anything still call the sidecar copies, `CloudRestController.postEnvironmentsActivation` and `postEnvironmentsManifest`?
 
-1. [`object-model.md`](./object-model.md) gives the REST path of Get App Information as `/o/c/getappinformation`. The batch file declares `/o/c/getappinformations`, and the custom element calls that path. Is the object model table stale?
-
 1. Is the rule that writes go through the sidecar a target with a ledger, or does each of the 41 direct writes need a ticket?
