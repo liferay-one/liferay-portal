@@ -8,6 +8,7 @@ Terms used in this file:
 
 - **Solution trial**: a 7 day trial of a prebuilt solution that a buyer starts from the Marketplace. Its order type is `SOLUTIONS7`.
 - **SSA trial**: a demonstration trial that Liferay sales staff create from the SSA dashboard. Its order type is `SSA_SAAS`.
+- **Self service trial**: a trial of Content Marketing Platform or Digital Sales Room that a buyer starts from the product page. Its order type is `CMP_TRIAL` or `DSR_TRIAL`.
 - **Seat**: one live trial portal instance. The number of seats has a fixed maximum.
 - **Console project**: a project in Liferay Cloud Console that holds the environments where an app runs.
 - **Deployment**: one install of a cloud app into one Console project.
@@ -55,6 +56,7 @@ Terms used in this file:
 | REQ-PROVISIONING-032 | An SSA trial needs a project ID of 3 or more letters and digits, a duration from 1 to 90 days, and a site initializer. The system refuses a project ID when another trial instance already uses its host name. | P1 | — | `MOD-SCHEMAS-ADMINSCHEMAS`, `REST-GET-TRIAL-DOMAIN-AVAILABILITY-PROJECTPREFIX`, `MOD-SCHEMAS-ZODSCHEMA` |
 | REQ-PROVISIONING-033 | A user can open or expire an SSA trial only while the trial is in progress. | P1 | — | `HOOK-ADMIN-SSADASHBOARD-USESSAACTIONS`, `ROUTE-ADMIN-DETAILS-ORDERID` |
 | REQ-PROVISIONING-034 | An SSA administrator gives each invited SSA user at least one SSA role. When an SSA administrator removes the SSA roles of a user, the user keeps all other roles. | P0 | — | `HOOK-ADMIN-SSADASHBOARD-USEMANAGEUSERACTIONS`, `MOD-SCHEMAS-ADMINSCHEMAS`, `MOD-ADMIN-SSADASHBOARD-GETFILTEREDITEMS` |
+| REQ-PROVISIONING-035 | An SSA trial order has the order type `SSA_SAAS`. The system places the order also when the checkout reports only that the billing address is missing. Any other checkout error stops the order. | P2 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESSATRIAL` |
 
 ## Cloud App Installs
 
@@ -143,3 +145,14 @@ Terms used in this file:
 | REQ-PROVISIONING-102 | A project entitlement order carries the name of its own project. | P1 | LPD-107900 | `SVC-COMMERCEORDERSERVICE`, `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE`, `SUB-SALESFORCEOPPORTUNITYPUBSUBSUBSCRIBER` |
 | REQ-PROVISIONING-103 | A project entitlement line whose SKU has no active entitlement definition still becomes an order item, and the system adds a warning. | P1 | LPD-107900 | `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE` |
 | REQ-PROVISIONING-104 | A renewal ends the earlier order items of each project at the start date of the new line of the same SKU. The renewal of a project entitlement line ends the earlier order items of the project that its header names. | P0 | LPD-107900 | `SVC-PROVISIONINGORDERSERVICE`, `SVC-PROVISIONINGPROJECTENTITLEMENTSERVICE`, `SUB-SALESFORCEOPPORTUNITYPUBSUBSUBSCRIBER` |
+
+## Self Service Trials
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-PROVISIONING-110 | A buyer starts a self service trial from the Start Trial button on the product page. The solution type specification of the product selects the order type: `cmp-trial` gives `CMP_TRIAL`, and `dsr-trial` gives `DSR_TRIAL`. | P1 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL`, `FLOW-SELF-SERVICE-TRIAL` |
+| REQ-PROVISIONING-111 | The activation key form of a self service trial asks for no domain and no billing address. The system places the order also when the checkout reports only that the billing address is missing. | P1 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL`, `FLOW-SELF-SERVICE-TRIAL` |
+| REQ-PROVISIONING-112 | One cart holds the trial SKU of the product and the SKU of the `PRDCT-DXP-TRIAL` product, so that the order creates the entitlements of both products. The system reads the DXP trial product one time. When the catalog has no DXP trial product, the system creates no cart. | P0 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL`, `FLOW-SELF-SERVICE-TRIAL` |
+| REQ-PROVISIONING-113 | An account can start one self service trial of each order type. Before the system places an order, it looks for a placed order of the same order type on the account. When it finds one, the form shows an error and the system places no order. An account that started a CMP trial can still start a DSR trial. | P0 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL`, `FLOW-SELF-SERVICE-TRIAL` |
+| REQ-PROVISIONING-114 | After the order, the system asks to complete the order. Then it checks up to 10 times, 1 second apart, that the activation key generator of One Time Purchases offers the DXP trial product and the trial product. When it offers both, the system generates the DXP trial activation key for the server in the form and opens the One Time Purchases activation page. When it does not offer both, or the generation fails, the system shows a warning and opens the activation key generator of One Time Purchases with the DXP trial selected. | P1 | LPD-102704 | `CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL`, `FLOW-SELF-SERVICE-TRIAL` |
+| REQ-PROVISIONING-115 | The DXP trial activation key holds a license key for DXP and a license key for the trial product. The key lasts 30 days, which is the license key duration of the trial entitlements. Each self service trial of an account gets its own DXP trial activation key. | P1 | LPD-102704 | `FLOW-SELF-SERVICE-TRIAL` |

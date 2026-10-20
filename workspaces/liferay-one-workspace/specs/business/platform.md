@@ -51,6 +51,12 @@ Terms used in this file:
 | REQ-PLATFORM-050 | Data that the browser keeps between visits uses the necessary cookie consent category unless the feature asks for another. A storage failure does not stop the page. | P1 | — | `CLIENT-LIFERAY-MARKETPLACESTORAGE`, `HOOK-USESTORAGE` |
 | REQ-PLATFORM-051 | The browser sends an analytics event only when the analytics script is loaded on the page. | P2 | — | `CLIENT-LIFERAY-ANALYTICS` |
 
+## Startup Checks
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-PLATFORM-060 | When the connectivity check is on, the Spring Boot service checks each Google dependency one time at startup and logs the result. The dependencies are the LDP usage API, the composable and customer usage functions, the Salesforce function, Cloud Storage, and Pub/Sub. A dependency with no URL or no bucket reports that it is not configured. When a service account is set for a dependency, the check impersonates that service account. Otherwise the check uses the application default credentials. When the application default credentials do not resolve, the check logs an error and stops. A failed check does not stop the service. | P2 | LPD-108678 | `CLS-GOOGLECONNECTIVITYCHECK`, `LSN-GOOGLECONNECTIVITYCHECK-CHECKONSTARTUP` |
+
 ## Not Yet Built
 
 | ID | Requirement | Priority | Tickets | Verified By |
