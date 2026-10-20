@@ -4,7 +4,10 @@
  */
 
 import {NewAppInitialState} from '~/context/NewAppContextProvider';
-import {LICENSE_USAGE_TYPE_SKU_OPTION_KEY} from '~/enums/Product';
+import {
+	LICENSE_USAGE_TYPE_SKU_OPTION_KEY,
+	ProductTaxCategoryName,
+} from '~/enums/Product';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Properties} from '~/utils/attributeUtils';
 import {base64ToText, fileToBase64} from '~/utils/fileUtils';
@@ -22,6 +25,7 @@ import {
 } from '~/utils/productUtils';
 
 import HeadlessCommerceAdminCatalogImpl from '../headless/HeadlessCommerceAdminCatalog';
+import HeadlessCommerceAdminChannel from '../headless/HeadlessCommerceAdminChannel';
 import HeadlessCommerceAdminPricing from '../headless/HeadlessCommerceAdminPricing';
 import BaseAppPublish from './BaseAppPublish';
 import PublisherAsset from './PublisherAsset';
@@ -242,6 +246,32 @@ export default class AppPublish extends BaseAppPublish {
 		};
 	}
 
+	private async getProductTaxConfiguration() {
+		const {items: taxCategories} =
+			await HeadlessCommerceAdminChannel.getTaxCategories(
+				new URLSearchParams({
+					search: ProductTaxCategoryName.ELECTRONIC_SERVICES,
+				})
+			);
+
+		const taxCategory = taxCategories.find(
+			({name}) =>
+				name.en_US === ProductTaxCategoryName.ELECTRONIC_SERVICES
+		);
+
+		if (!taxCategory) {
+			throw new Error(
+				`Unable to create the app because the tax category ${ProductTaxCategoryName.ELECTRONIC_SERVICES} does not exist`
+			);
+		}
+
+		return {
+			id: taxCategory.id,
+			taxCategory: taxCategory.name.en_US,
+			taxable: true,
+		};
+	}
+
 	async syncProfile() {
 		const {
 			_product,
@@ -311,6 +341,8 @@ export default class AppPublish extends BaseAppPublish {
 				description,
 				name,
 				...this.getProductStatus(),
+				productTaxConfiguration:
+					await this.getProductTaxConfiguration(),
 			});
 
 		await BaseAppPublish.updateSpecifications(product, [

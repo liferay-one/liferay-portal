@@ -45,3 +45,15 @@ export type CommerceOption = {
 };
 
 export type CurrencyAbbreviation = 'USD';
+
+export type ProductTaxConfiguration = {
+	id: number;
+	taxCategory: string;
+	taxable: boolean;
+};
+
+export type TaxCategory = {
+	description: {[key: string]: string};
+	id: number;
+	name: {[key: string]: string};
+};

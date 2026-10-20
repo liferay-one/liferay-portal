@@ -601,6 +601,15 @@
 	},
 	{
 		"actionIds": [
+			"VIEW_COMMERCE_PRODUCT_TAX_CATEGORIES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.tax",
+		"roleName": "Marketplace Publisher",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW_SITE_ADMINISTRATION"
 		],
 		"primKey": "0",
