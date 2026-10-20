@@ -1,6 +1,6 @@
 [
 	{
-		"body": "Key generation writes the entitlementId field, and active key counts, the account entitlement filter, and renewals read only that field. Seed data sets only entitlementToLicenseKey, so seeded keys have entitlementId 0 and those features skip them.",
+		"body": "Key generation writes the entitlementId field, and active key counts, the account entitlement filter, and renewals read only that field. The seed now sets entitlementId from the entitlementToLicenseKey relationship, so seeded keys count again (Go-Live Tasks D4, T2.2).",
 		"edges": [
 			"entitlementToLicenseKey",
 			"SOFT_C_LICENSE_KEY_entitlementId"
@@ -9,7 +9,7 @@
 			"C_LICENSE_KEY",
 			"C_ENTITLEMENT"
 		],
-		"sev": "high",
+		"sev": "fixed",
 		"title": "LicenseKey entitlement link is split between a field and a relationship"
 	},
 	{
