@@ -61,7 +61,7 @@ function main {
 
 	if [[ -n ${ENTITLEMENT_GENERATION_OBJECT_ACTION_ID} ]]
 	then
-		trap _restore_entitlement_generation_object_action EXIT
+		_add_exit_command "_restore_entitlement_generation_object_action"
 
 		_set_object_action_active "${ENTITLEMENT_GENERATION_OBJECT_ACTION_ID}" "false"
 
