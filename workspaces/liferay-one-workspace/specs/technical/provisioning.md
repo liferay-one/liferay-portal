@@ -6,7 +6,7 @@ The source of truth is the code: the client extensions under `client-extensions/
 
 The claims about Liferay behavior cite the portal source in this repository (`modules/apps/...`). The workspace runs `dxp-2026.q1.2-lts` (`gradle-local.properties`), so the deployed portal can differ from the source in this checkout. Each such claim says so.
 
-The migration scripts are not in this repository. `CLAUDE.md` names the checkout `../../../scripts`, but on this machine it is `../../../liferay-one-scripts`. Paths in this file use `<scripts>/` for its root.
+The migration scripts are not in this repository. The Related Repos section of `CLAUDE.md` shows how to find the `liferay-one/scripts` checkout. Paths in this file use `<scripts>/` for its root.
 
 ## Summary
 

@@ -22,7 +22,18 @@ Pure Liferay SaaS client-extension workspace — no OSGi modules, no Ant. Client
 
 ## Related Repos
 
-The migration and ETL scripts that load this product's data live in a sibling `scripts` checkout — `liferay-one/scripts` on GitHub, conventionally `../../../scripts` from here. Its `one/scripts/migration/` scripts write the objects defined in `client-extensions/liferay-one-batch/batch/`, through the headless APIs and the `liferay-one-etc-spring-boot` endpoints.
+The migration and ETL scripts that load this product's data live in a separate checkout of `liferay-one/scripts` on GitHub. It sits next to the main `liferay-portal` checkout, as `scripts` or `liferay-one-scripts`. A relative path from this workspace is wrong in a worktree, so find the checkout from the main checkout and confirm it by its remote:
+
+```bash
+PORTAL="$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")"
+
+for SCRIPTS in "${PORTAL}/../scripts" "${PORTAL}/../liferay-one-scripts"
+do
+	git -C "${SCRIPTS}" remote -v 2> /dev/null | grep --quiet "liferay-one/scripts" && realpath "${SCRIPTS}" && break
+done
+```
+
+Its `one/scripts/migration/` scripts write the objects defined in `client-extensions/liferay-one-batch/batch/`, through the headless APIs and the `liferay-one-etc-spring-boot` endpoints.
 
 Before changing an object ERC, a field name, an endpoint path, or an enum value, grep that checkout for it and record what breaks — a rename here silently breaks a loader there. Inside this workspace, `yarn viz:check` finds the visuals that the rename makes wrong. Repair it in a companion ticket against that repo, never in a workspace PR ([`rules/pr-hygiene.md`](./rules/pr-hygiene.md) — one workspace, one PR).
 
