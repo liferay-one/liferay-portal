@@ -73,6 +73,25 @@ aside.inspector { background: var(--surface); border: 1px solid var(--line); bor
 .dom-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
 .dom-pill i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
 
+.picker { position: relative; }
+.picker > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.picker > summary::-webkit-details-marker { display: none; }
+.picker > summary::after { content: "▾"; color: var(--muted); font-size: 11px; }
+.picker-panel { position: absolute; z-index: 5; top: calc(100% + 6px); left: 0; width: min(340px, calc(100vw - 32px)); max-height: min(70vh, 520px); display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 8px; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / 0.16); }
+.picker-panel input[type="search"] { width: 100%; padding: 5px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; font-size: 13px; }
+.picker-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.picker-actions .btn { padding: 3px 9px; font-size: 12.5px; }
+.picker-list { overflow: auto; display: grid; gap: 10px; padding-right: 2px; }
+.picker-list fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 2px; }
+.picker-list legend { padding: 0; margin-bottom: 2px; }
+.picker-list label { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 3px 4px; border-radius: 4px; cursor: pointer; min-width: 0; }
+.picker-list label:hover { background: var(--surface-2); }
+.picker-list label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-list label.dom { font-size: 11.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.picker-list label.obj { padding-left: 22px; }
+.picker-list input[type="checkbox"] { accent-color: var(--accent); margin: 0; flex: none; }
+.picker-empty { color: var(--muted); font-size: 13px; padding: 8px 4px; }
+.canvas .none { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; }
 .legend-note { font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
 @media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity 120ms ease; } }
 </style>
@@ -91,6 +110,24 @@ aside.inspector { background: var(--surface); border: 1px solid var(--line); bor
 	<div class="workbench">
 		<div style="min-width:0">
 			<div aria-label="Diagram filters" class="toolbar" role="toolbar">
+				<details class="picker" id="picker">
+					<summary class="btn" id="picker-summary">Objects</summary>
+
+					<div class="picker-panel" role="group" aria-label="Choose the objects to show">
+						<input aria-label="Filter the object list" id="picker-filter" placeholder="Filter objects" type="search" />
+
+						<div class="picker-actions">
+							<button class="btn" id="pick-all" type="button">All</button>
+							<button class="btn" id="pick-none" type="button">None</button>
+							<button class="btn" id="pick-linked" title="Also show every object linked to the ones shown" type="button">Add linked</button>
+						</div>
+
+						<div class="picker-list" id="picker-list"></div>
+					</div>
+				</details>
+
+				<span class="sep"></span>
+
 				<button class="chip" id="k-cascade" aria-pressed="true" style="color:var(--cascade)"><span class="swatch"></span><span style="color:var(--fg)">cascade</span></button>
 				<button class="chip" id="k-prevent" aria-pressed="true" style="color:var(--prevent)"><span class="swatch"></span><span style="color:var(--fg)">prevent</span></button>
 				<button class="chip" id="k-disassociate" aria-pressed="true" style="color:var(--disassociate)"><span class="swatch"></span><span style="color:var(--fg)">disassociate</span></button>
@@ -107,6 +144,8 @@ aside.inspector { background: var(--surface); border: 1px solid var(--line); bor
 
 			<div class="canvas">
 				<svg aria-label="Object relationship diagram" id="svg" role="img"></svg>
+
+				<div class="none" hidden id="none">No objects are selected. Choose some under Objects.</div>
 
 				<div class="hint">Drag to pan. Pinch or Ctrl and scroll to zoom. Esc clears the selection.</div>
 			</div>
@@ -139,27 +178,27 @@ function el(tag, attrs = {}, parent) {
 	return e;
 }
 
-const maxRows = Math.max(...LAYOUT.map(([, m]) => m.length));
-const H = TOP + maxRows * ROW + 20;
-const W = PADX * 2 + LAYOUT.length * COLP - (COLP - CW);
-const pos = {};
-LAYOUT.forEach(([dom, members], c) => {
-	const x = PADX + c * COLP;
-	const offset = (maxRows - members.length) * ROW / 2;
-	members.forEach((erc, r) => { pos[erc] = {x, y: TOP + offset + r * ROW, col: c}; });
-});
+const ALL = LAYOUT.flatMap(([, members]) => members);
+const STORE_KEY = "object-model-visible-v1";
+let visible = new Set(ALL);
+try {
+	const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+	if (Array.isArray(saved)) visible = new Set(saved.filter(erc => N[erc]));
+} catch (e) {}
+
+let W = 0, H = 0, pos = {};
+const nodeEls = {};
+const edgeEls = {};
 
 const root = el("g", {}, svg);
 const gDom = el("g", {}, root);
 const gEdges = el("g", {}, root);
 const gNodes = el("g", {}, root);
 
-LAYOUT.forEach(([dom, members], c) => {
-	const x = PADX + c * COLP;
-	const ys = members.map(m => pos[m].y);
-	el("rect", {class: "dom-bg", x: x - 14, y: Math.min(...ys) - 34, width: CW + 28, height: Math.max(...ys) - Math.min(...ys) + CH + 48, rx: 12}, gDom);
-	const t = el("text", {class: "dom-title", x: x, y: Math.min(...ys) - 14, fill: `var(--d-${dom})`}, gDom);
-	t.textContent = domLabel[dom];
+const defs = el("defs", {}, svg);
+["cascade", "prevent", "disassociate", "soft"].forEach(k => {
+	const m = el("marker", {id: `m-${k}`, viewBox: "0 0 12 12", refX: 11, refY: 6, markerWidth: 9, markerHeight: 9, orient: "auto-start-reverse", markerUnits: "userSpaceOnUse"}, defs);
+	el("path", {d: "M0 1 L11 6 L0 11 M11 1 L11 11", fill: "none", stroke: `var(--${k})`, "stroke-width": 1.4}, m);
 });
 
 function fit(textEl, max) {
@@ -168,86 +207,110 @@ function fit(textEl, max) {
 	while (s.length > 4 && textEl.getComputedTextLength() > max) { s = s.slice(0, -1); textEl.textContent = s + "…"; }
 }
 
-const nodeEls = {};
-for (const erc of Object.keys(pos)) {
-	const n = N[erc], p = pos[erc];
-	const g = el("g", {class: `node ${n.kind}`, transform: `translate(${p.x},${p.y})`, tabindex: "0", role: "button", "aria-label": n.label}, gNodes);
-	el("rect", {class: "card", width: CW, height: CH, rx: 7}, g);
-	el("rect", {x: 0, y: 8, width: 3, height: CH - 16, rx: 1.5, fill: `var(--d-${n.domain})`}, g);
-	const fc = el("text", {class: "cnt", x: CW - 10, y: 20}, g);
-	fc.textContent = n.fields.length ? `${n.fields.length} f` : "";
-	const l = el("text", {class: "lbl", x: 13, y: 21}, g);
-	l.textContent = n.label;
-	const s = el("text", {class: "sub", x: 13, y: 39}, g);
-	s.textContent = n.erc.startsWith("X_") ? "no object definition" : n.erc;
-	let bx = CW - 10;
-	if (n.restricted) {
-		const lock = el("g", {transform: `translate(${bx - 9},29)`}, g);
-		el("rect", {x: 0, y: 5, width: 9, height: 7, rx: 1.5, fill: "var(--accent)"}, lock);
-		el("path", {d: "M2 5 V3.2 a2.5 2.5 0 0 1 5 0 V5", fill: "none", stroke: "var(--accent)", "stroke-width": 1.4}, lock);
-		lock.appendChild(document.createElementNS(NS, "title")).textContent = "Account restricted";
-		bx -= 14;
+const kindOn = k => document.getElementById(`k-${k}`).getAttribute("aria-pressed") === "true";
+
+function draw() {
+	const layout = LAYOUT.map(([dom, members]) => [dom, members.filter(erc => visible.has(erc))]).filter(([, members]) => members.length);
+	gDom.replaceChildren();
+	gEdges.replaceChildren();
+	gNodes.replaceChildren();
+	for (const k in nodeEls) delete nodeEls[k];
+	for (const k in edgeEls) delete edgeEls[k];
+	pos = {};
+	document.getElementById("none").hidden = layout.length > 0;
+	if (!layout.length) { W = CW + PADX * 2; H = TOP + ROW; return; }
+
+	const maxRows = Math.max(...layout.map(([, m]) => m.length));
+	H = TOP + maxRows * ROW + 20;
+	W = PADX * 2 + layout.length * COLP - (COLP - CW);
+	layout.forEach(([dom, members], c) => {
+		const x = PADX + c * COLP;
+		const offset = (maxRows - members.length) * ROW / 2;
+		members.forEach((erc, r) => { pos[erc] = {x, y: TOP + offset + r * ROW, col: c}; });
+	});
+
+	layout.forEach(([dom, members], c) => {
+		const x = PADX + c * COLP;
+		const ys = members.map(m => pos[m].y);
+		el("rect", {class: "dom-bg", x: x - 14, y: Math.min(...ys) - 34, width: CW + 28, height: Math.max(...ys) - Math.min(...ys) + CH + 48, rx: 12}, gDom);
+		const t = el("text", {class: "dom-title", x: x, y: Math.min(...ys) - 14, fill: `var(--d-${dom})`}, gDom);
+		t.textContent = domLabel[dom];
+	});
+
+	for (const erc of Object.keys(pos)) {
+		const n = N[erc], p = pos[erc];
+		const g = el("g", {class: `node ${n.kind}`, transform: `translate(${p.x},${p.y})`, tabindex: "0", role: "button", "aria-label": n.label}, gNodes);
+		el("rect", {class: "card", width: CW, height: CH, rx: 7}, g);
+		el("rect", {x: 0, y: 8, width: 3, height: CH - 16, rx: 1.5, fill: `var(--d-${n.domain})`}, g);
+		const fc = el("text", {class: "cnt", x: CW - 10, y: 20}, g);
+		fc.textContent = n.fields.length ? `${n.fields.length} f` : "";
+		const l = el("text", {class: "lbl", x: 13, y: 21}, g);
+		l.textContent = n.label;
+		const s = el("text", {class: "sub", x: 13, y: 39}, g);
+		s.textContent = n.erc.startsWith("X_") ? "no object definition" : n.erc;
+		let bx = CW - 10;
+		if (n.restricted) {
+			const lock = el("g", {transform: `translate(${bx - 9},29)`}, g);
+			el("rect", {x: 0, y: 5, width: 9, height: 7, rx: 1.5, fill: "var(--accent)"}, lock);
+			el("path", {d: "M2 5 V3.2 a2.5 2.5 0 0 1 5 0 V5", fill: "none", stroke: "var(--accent)", "stroke-width": 1.4}, lock);
+			lock.appendChild(document.createElementNS(NS, "title")).textContent = "Account restricted";
+			bx -= 14;
+		}
+		nodeEls[erc] = {g, l, s, fc, bx};
+		g.addEventListener("mouseenter", () => { if (!selection) highlight(new Set([erc]), neighborsEdges(erc)); });
+		g.addEventListener("mouseleave", () => { if (!selection) clearHighlight(); });
+		g.addEventListener("click", ev => { ev.stopPropagation(); selectNode(erc); });
+		g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(erc); } });
 	}
-	nodeEls[erc] = {g, l, s, fc, bx};
-	g.addEventListener("mouseenter", () => { if (!selection) highlight(new Set([erc]), neighborsEdges(erc)); });
-	g.addEventListener("mouseleave", () => { if (!selection) clearHighlight(); });
-	g.addEventListener("click", ev => { ev.stopPropagation(); selectNode(erc); });
-	g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(erc); } });
+	requestAnimationFrame(() => {
+		for (const erc in nodeEls) {
+			const {l, s, fc, bx} = nodeEls[erc];
+			fit(l, CW - 13 - (fc.textContent ? 40 : 10));
+			fit(s, bx - 13 - 8);
+		}
+	});
+
+	const relCount = {};
+	DATA.edges.forEach(e => {
+		const a = pos[e.from], b = pos[e.to];
+		if (!a || !b) return;
+		const key = [e.from, e.to].sort().join("|");
+		const k = relCount[key] = (relCount[key] || 0) + 1;
+		const spread = (k - 1) * 7;
+		let d, mx, my;
+		if (e.from === e.to) {
+			const x = a.x + CW, y = a.y + CH / 2;
+			d = `M${x} ${y - 10} C${x + 60} ${y - 40}, ${x + 60} ${y + 40}, ${x} ${y + 10}`;
+			mx = x + 48; my = y;
+		} else if (a.col === b.col) {
+			const x = a.x + CW, y1 = a.y + CH / 2 + spread, y2 = b.y + CH / 2 + spread;
+			const bulge = 40 + Math.abs(y2 - y1) * 0.18;
+			d = `M${x} ${y1} C${x + bulge} ${y1}, ${x + bulge} ${y2}, ${x} ${y2}`;
+			mx = x + bulge * 0.75; my = (y1 + y2) / 2;
+		} else {
+			const right = b.col > a.col;
+			const x1 = right ? a.x + CW : a.x, x2 = right ? b.x : b.x + CW;
+			const y1 = a.y + CH / 2 + spread - 3, y2 = b.y + CH / 2 + spread - 3;
+			const dx = Math.max(50, Math.abs(x2 - x1) * 0.45) * (right ? 1 : -1);
+			d = `M${x1} ${y1} C${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
+			mx = (x1 + x2) / 2; my = (y1 + y2) / 2;
+		}
+		const kind = e.kind === "soft" ? "soft" : e.deletion;
+		const g = el("g", {class: `edge ${kind}${kindOn(kind) ? "" : " hidden-kind"}`}, gEdges);
+		el("path", {class: "vis", d, "marker-end": `url(#m-${kind})`}, g);
+		el("path", {class: "hit", d}, g);
+		const t = el("text", {x: mx, y: my - 4, "text-anchor": "middle"}, g);
+		t.textContent = e.name;
+		edgeEls[e.id] = {g, e};
+		g.addEventListener("click", ev => { ev.stopPropagation(); selectEdge(e.id); });
+	});
 }
-requestAnimationFrame(() => {
-	for (const erc in nodeEls) {
-		const {l, s, fc, bx} = nodeEls[erc];
-		fit(l, CW - 13 - (fc.textContent ? 40 : 10));
-		fit(s, bx - 13 - 8);
-	}
-});
 
-const relCount = {};
-const edgeEls = {};
-DATA.edges.forEach(e => {
-	const a = pos[e.from], b = pos[e.to];
-	const key = [e.from, e.to].sort().join("|");
-	const k = relCount[key] = (relCount[key] || 0) + 1;
-	const spread = (k - 1) * 7;
-	let d, mx, my;
-	if (e.from === e.to) {
-		const x = a.x + CW, y = a.y + CH / 2;
-		d = `M${x} ${y - 10} C${x + 60} ${y - 40}, ${x + 60} ${y + 40}, ${x} ${y + 10}`;
-		mx = x + 48; my = y;
-	} else if (a.col === b.col) {
-		const x = a.x + CW, y1 = a.y + CH / 2 + spread, y2 = b.y + CH / 2 + spread;
-		const bulge = 40 + Math.abs(y2 - y1) * 0.18;
-		d = `M${x} ${y1} C${x + bulge} ${y1}, ${x + bulge} ${y2}, ${x} ${y2}`;
-		mx = x + bulge * 0.75; my = (y1 + y2) / 2;
-	} else {
-		const right = b.col > a.col;
-		const x1 = right ? a.x + CW : a.x, x2 = right ? b.x : b.x + CW;
-		const y1 = a.y + CH / 2 + spread - 3, y2 = b.y + CH / 2 + spread - 3;
-		const dx = Math.max(50, Math.abs(x2 - x1) * 0.45) * (right ? 1 : -1);
-		d = `M${x1} ${y1} C${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
-		mx = (x1 + x2) / 2; my = (y1 + y2) / 2;
-	}
-	const kind = e.kind === "soft" ? "soft" : e.deletion;
-	const g = el("g", {class: `edge ${kind}`}, gEdges);
-	el("path", {class: "vis", d, "marker-end": `url(#m-${kind})`}, g);
-	el("path", {class: "hit", d}, g);
-	const t = el("text", {x: mx, y: my - 4, "text-anchor": "middle"}, g);
-	t.textContent = e.name;
-	edgeEls[e.id] = {g, e};
-	g.addEventListener("click", ev => { ev.stopPropagation(); selectEdge(e.id); });
-});
-
-const defs = el("defs", {}, svg);
-["cascade", "prevent", "disassociate", "soft"].forEach(k => {
-	const m = el("marker", {id: `m-${k}`, viewBox: "0 0 12 12", refX: 11, refY: 6, markerWidth: 9, markerHeight: 9, orient: "auto-start-reverse", markerUnits: "userSpaceOnUse"}, defs);
-	el("path", {d: "M0 1 L11 6 L0 11 M11 1 L11 11", fill: "none", stroke: `var(--${k})`, "stroke-width": 1.4}, m);
-});
-
-function neighborsEdges(erc) { return new Set(DATA.edges.filter(e => e.from === erc || e.to === erc).map(e => e.id)); }
+function neighborsEdges(erc) { return new Set(DATA.edges.filter(e => (e.from === erc || e.to === erc) && edgeEls[e.id]).map(e => e.id)); }
 
 let selection = null;
 function highlight(nodes, edges) {
-	edges.forEach(id => { const e = edgeEls[id].e; nodes.add(e.from); nodes.add(e.to); });
+	edges.forEach(id => { if (!edgeEls[id]) return; const e = edgeEls[id].e; nodes.add(e.from); nodes.add(e.to); });
 	svg.classList.add("focus");
 	for (const erc in nodeEls) nodeEls[erc].g.classList.toggle("on", nodes.has(erc));
 	for (const id in edgeEls) edgeEls[id].g.classList.toggle("on", edges.has(id));
@@ -264,7 +327,7 @@ const jump = erc => `<button class="jump" data-node="${erc}">${esc(N[erc].label)
 function selectNode(erc) {
 	selection = {node: erc};
 	highlight(new Set([erc]), neighborsEdges(erc));
-	nodeEls[erc].g.classList.add("sel");
+	if (nodeEls[erc]) nodeEls[erc].g.classList.add("sel");
 	const n = N[erc];
 	const out = DATA.edges.filter(e => e.from === erc), inc = DATA.edges.filter(e => e.to === erc && e.from !== erc);
 	const softByField = Object.fromEntries(out.filter(e => e.kind === "soft").map(e => [e.name, e]));
@@ -294,6 +357,7 @@ function selectNode(erc) {
 }
 
 function selectEdge(id) {
+	if (!edgeEls[id]) return;
 	const e = edgeEls[id].e;
 	selection = {edge: id};
 	highlight(new Set(), new Set([id]));
@@ -318,6 +382,7 @@ function emptyInspector() {
 inspector.addEventListener("click", ev => {
 	const b = ev.target.closest("[data-node]");
 	if (!b) return;
+	if (!visible.has(b.dataset.node)) { visible.add(b.dataset.node); applyVisible(); }
 	selectNode(b.dataset.node);
 	centerOn(b.dataset.node);
 });
@@ -360,6 +425,7 @@ function zoom(f, cx = vb.x + vb.w / 2, cy = vb.y + vb.h / 2) {
 }
 function centerOn(erc) {
 	const p = pos[erc];
+	if (!p) return;
 	const w = Math.min(vb.w, 1300), h = vb.h * (w / vb.w);
 	vb = {x: p.x + CW / 2 - w / 2, y: p.y + CH / 2 - h / 2, w, h};
 	setVB();
@@ -393,6 +459,59 @@ svg.addEventListener("pointerup", ev => {
 });
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") { selection = null; search.value = ""; clearHighlight(); emptyInspector(); } });
 
+// Object picker
+const picker = document.getElementById("picker");
+const pickerList = document.getElementById("picker-list");
+const pickerFilter = document.getElementById("picker-filter");
+const pickerSummary = document.getElementById("picker-summary");
+
+function renderPicker() {
+	const q = pickerFilter.value.trim().toLowerCase();
+	const match = erc => !q || [N[erc].label, N[erc].erc, N[erc].name].some(v => v.toLowerCase().includes(q));
+	const groups = LAYOUT.map(([dom, members]) => [dom, members.filter(match)]).filter(([, members]) => members.length);
+	pickerList.innerHTML = groups.length ? groups.map(([dom, members]) => {
+		const all = LAYOUT.find(([d]) => d === dom)[1];
+		const on = all.filter(erc => visible.has(erc)).length;
+		return `<fieldset>
+			<label class="dom" style="color:var(--d-${dom})"><input data-dom="${dom}" type="checkbox" ${on === all.length ? "checked" : ""} ${on && on < all.length ? 'data-mixed="1"' : ""} /><span>${esc(domLabel[dom])} · ${on}/${all.length}</span></label>
+			${members.map(erc => `<label class="obj"><input data-erc="${erc}" type="checkbox" ${visible.has(erc) ? "checked" : ""} /><span title="${esc(N[erc].erc)}">${esc(N[erc].label)}</span></label>`).join("")}
+		</fieldset>`;
+	}).join("") : `<div class="picker-empty">No object matches.</div>`;
+	pickerList.querySelectorAll("[data-mixed]").forEach(i => { i.indeterminate = true; });
+	pickerSummary.textContent = visible.size === ALL.length ? `Objects: all ${ALL.length}` : `Objects: ${visible.size} of ${ALL.length}`;
+}
+
+function applyVisible() {
+	try { localStorage.setItem(STORE_KEY, JSON.stringify([...visible])); } catch (e) {}
+	selection = null;
+	draw();
+	clearHighlight();
+	emptyInspector();
+	sizeCanvas();
+	fitAll();
+	renderPicker();
+}
+
+pickerList.addEventListener("change", ev => {
+	const i = ev.target;
+	if (i.dataset.erc) i.checked ? visible.add(i.dataset.erc) : visible.delete(i.dataset.erc);
+	if (i.dataset.dom) LAYOUT.find(([d]) => d === i.dataset.dom)[1].forEach(erc => i.checked ? visible.add(erc) : visible.delete(erc));
+	applyVisible();
+});
+pickerFilter.addEventListener("input", renderPicker);
+document.getElementById("pick-all").addEventListener("click", () => { visible = new Set(ALL); applyVisible(); });
+document.getElementById("pick-none").addEventListener("click", () => { visible = new Set(); applyVisible(); });
+document.getElementById("pick-linked").addEventListener("click", () => {
+	const shown = new Set(visible);
+	DATA.edges.forEach(e => {
+		if (shown.has(e.from)) visible.add(e.to);
+		if (shown.has(e.to)) visible.add(e.from);
+	});
+	applyVisible();
+});
+document.addEventListener("click", ev => { if (picker.open && !picker.contains(ev.target)) picker.open = false; });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && picker.open) { picker.open = false; pickerSummary.focus(); } });
+
 // Counts
 const custom = Object.values(N).filter(n => n.kind === "custom").length;
 const rels = DATA.edges.filter(e => e.kind === "relationship");
@@ -403,6 +522,9 @@ document.getElementById("counts").innerHTML = [
 	[rels.filter(e => e.deletion === "cascade").length, "cascade"], [soft, "soft links"],
 	[Object.values(N).filter(n => n.restricted).length, "account restricted"], [`${unused}/${DATA.picklists.length}`, "picklists unused"],
 ].map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join("");
+
+draw();
+renderPicker();
 
 const canvas = svg.parentElement;
 function sizeCanvas() {

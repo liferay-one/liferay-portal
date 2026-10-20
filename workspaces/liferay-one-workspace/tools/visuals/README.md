@@ -6,8 +6,8 @@ Five pages: one for each layer of the workspace, the test coverage, and the work
 
 | Page | Tabs, each a visual in `tools/visuals/<visual>` |
 | --- | --- |
-| Model | Objects (`object-model`), Access (`permission-matrix`), Environments (`environment-drift`) |
-| View | Pages (`pages`), Front End (`frontend`), Rules (`rules`, the custom element) |
+| Model | Objects (`object-model`), Access (`permission-matrix`), Environments (`environment-drift`), Rules (`rules`, the batch files) |
+| View | Pages (`pages`), Components (`pages`, the fragments), Bundle Health (`frontend`), Rules (`rules`, the custom element) |
 | Controller | APIs (`apis`), Events (`events`), Rules (`rules`, the sidecar) |
 | Test Coverage | `test-coverage` |
 | Workspace Health | Overview, then the actions of each layer, and Workspace: the dependencies, tests, change hotspots, and specs |

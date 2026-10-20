@@ -1,7 +1,7 @@
 <title>Pages</title>
 
 <style>
-/* Layout: a site map. Counts, then the pages as one table, then the menus, the custom element route groups, and the fragments that the pages use. */
+/* Layout: a site map. The Pages view shows counts, the pages as one table, the menus, and the custom element route groups. The Components view shows the fragments and the pages that use them. */
 :root {
 	--wrap-width: 1400px;
 }
@@ -25,9 +25,9 @@ td.list { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted);
 	<header>
 		<div class="eyebrow">liferay-one-site-initializer · <span id="generated"></span></div>
 
-		<h1>Pages</h1>
+		<h1 id="title">Pages</h1>
 
-		<p>Every page that the site initializer creates, who can view it, and what it shows: its master page, its fragments, and the custom element route groups placed on it. Then the menus that link to the pages, the route groups, and the fragments.</p>
+		<p id="lede">Every page that the site initializer creates, who can view it, and what it shows: its master page, its fragments, and the custom element route groups placed on it. Then the menus that link to the pages and the route groups.</p>
 
 		<div class="tiles" id="tiles"></div>
 	</header>
@@ -36,7 +36,7 @@ td.list { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted);
 		<section class="box wide" id="pages-section"><h2>Pages</h2><div class="table-wrap" id="pages"></div></section>
 		<section class="box wide" id="menus-section"><h2>Menus</h2><div class="table-wrap" id="menus"></div></section>
 		<section class="box" id="groups-section"><h2>Route Groups</h2><div class="table-wrap" id="groups"></div></section>
-		<section class="box" id="fragments-section"><h2>Fragments</h2><div class="table-wrap" id="fragments"></div></section>
+		<section class="box wide" id="fragments-section"><h2>Fragments</h2><div class="table-wrap" id="fragments"></div></section>
 	</div>
 
 	<footer>
@@ -46,22 +46,36 @@ td.list { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted);
 
 <script>
 const DATA = __DATA__;
+const PARAMS = __PARAMS__;
+const COMPONENTS = PARAMS.view === "components";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[ch]));
 
 $("generated").textContent = DATA.generated;
 
+if (COMPONENTS) {
+	$("title").textContent = "Components";
+	$("lede").textContent = "Every fragment that the site initializer defines, its collection, and the pages that place it.";
+}
+
+["pages-section", "menus-section", "groups-section"].forEach(id => { $(id).hidden = COMPONENTS; });
+$("fragments-section").hidden = !COMPONENTS;
+
 const unplaced = DATA.groups.filter(g => !g.placed);
 const brokenItems = DATA.menus.flatMap(m => m.items.filter(i => !i.resolves));
 const unused = DATA.fragments.filter(f => !f.usedBy.length);
-$("tiles").innerHTML = [
+const collections = new Set(DATA.fragments.map(f => f.collection));
+$("tiles").innerHTML = (COMPONENTS ? [
+	[DATA.fragments.length, `fragments in ${collections.size} collections`],
+	[`${DATA.fragments.length - unused.length}/${DATA.fragments.length}`, "fragments in use"],
+	[unused.length, "fragments no page uses", unused.length ? "warn" : "good"],
+] : [
 	[DATA.pages.length, `pages, ${DATA.pages.filter(p => p.hidden).length} hidden from navigation`],
 	[DATA.pages.filter(p => p.guest).length, "pages that Guest can view"],
 	[DATA.groups.length - unplaced.length + "/" + DATA.groups.length, "route groups placed on a page"],
 	[brokenItems.length, "menu items with no page", brokenItems.length ? "warn" : "good"],
-	[`${DATA.fragments.length - unused.length}/${DATA.fragments.length}`, "fragments in use"],
-].map(([n, l, c]) => `<div class="tile ${c || ""}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("");
+]).map(([n, l, c]) => `<div class="tile ${c || ""}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("");
 
 $("pages").innerHTML = `<table><thead><tr><th>Page</th><th>Who can view</th><th>Route groups</th><th>Fragments</th><th>Menus</th></tr></thead><tbody>${DATA.pages.map(p => `<tr>
 	<td class="url">${esc(p.url)}<div class="muted" style="font-family:var(--font-body);font-size:12px">${esc(p.name)}${p.master ? ` · master ${esc(p.master)}` : ""}</div></td>

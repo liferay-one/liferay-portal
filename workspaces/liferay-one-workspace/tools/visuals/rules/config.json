@@ -1,0 +1,12 @@
+{
+	"accountChildrenShared": [
+		{
+			"externalReferenceCode": "C_PUBLISHER_DETAILS",
+			"reason": "The public profile of a publisher. The Marketplace site shows it to every visitor, and every field is public information."
+		},
+		{
+			"externalReferenceCode": "C_PUBLISHER_SALES_SUMMARY",
+			"reason": "For administrators only. Only Finance Administrator has a grant, so an account restriction adds nothing."
+		}
+	]
+}

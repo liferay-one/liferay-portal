@@ -8,21 +8,31 @@
  * find. Each check is a heuristic: it reports a place to read, not a proven
  * defect. The page lists every hit by rule, and each rule with hits becomes
  * one action in workspace-health.
+ *
+ * The model rules read the batch client extension instead of code. They
+ * check the object definitions against the naming rules and against the
+ * constraints that Liferay enforces only when the batch is imported, so a
+ * violation shows here before it aborts an import.
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
 
 import {
+	BATCH_DIR,
 	CUSTOM_ELEMENT_DIR,
 	SPRING_BOOT_DIR,
+	batchItems,
 	listFiles,
+	readJSON,
 	relative,
 } from '../lib.ts';
 
+type Layer = 'controller' | 'model' | 'view';
+
 interface IHit {
 	file: string;
-	layer: 'controller' | 'view';
+	layer: Layer;
 	line: number;
 	text: string;
 }
@@ -31,10 +41,11 @@ interface IRule {
 	description: string;
 
 	/**
-	 * The layers whose code the rule can apply to: the custom element is the
-	 * view, and the sidecar is the controller.
+	 * The layers whose code the rule can apply to: the batch client extension
+	 * is the model, the custom element is the view, and the sidecar is the
+	 * controller.
 	 */
-	layers: ('controller' | 'view')[];
+	layers: Layer[];
 	hits: IHit[];
 	id: string;
 	rule: string;
@@ -59,8 +70,92 @@ const TS_FILES = listFiles(path.join(CUSTOM_ELEMENT_DIR, 'src'), (file) =>
 	/\.tsx?$/.test(file)
 ).filter((file) => !/\.test\.tsx?$|\.d\.ts$|testSetup\.ts$/.test(file));
 
+/**
+ * The custom field names that Liferay rejects with
+ * ObjectFieldNameException.MustNotBeReserved. The list is _reservedNames in
+ * ObjectFieldLocalServiceImpl, and the check ignores case.
+ */
+const RESERVED_FIELD_NAMES = new Set([
+	'actions',
+	'companyid',
+	'createdate',
+	'creator',
+	'currentdate',
+	'datecreated',
+	'datemodified',
+	'displaydate',
+	'expirationdate',
+	'externalreferencecode',
+	'groupid',
+	'id',
+	'keywords',
+	'lastpublishdate',
+	'modifieddate',
+	'reviewdate',
+	'status',
+	'statusbyuserid',
+	'statusbyusername',
+	'statusdate',
+	'taxonomycategoryids',
+	'userid',
+	'username',
+]);
+
 export function extract() {
+	const model = _model();
+
 	const rules: IRule[] = [
+		{
+			description:
+				'An object ERC is C_ and uppercase words, 40 characters or fewer. Its className is com.liferay.object.model.ObjectDefinition#<ERC>, its name is PascalCase, and its scope is company. A field name is camelCase and shorter than 41 characters, and a field ERC is the object ERC followed by the field name in uppercase words, 75 characters or fewer.',
+			hits: model.naming,
+			id: 'model-object-naming',
+			layers: ['model'],
+			rule: 'object-naming.md',
+			severity: 'low',
+			title: 'Object naming',
+		},
+		{
+			description:
+				'Liferay rejects a custom field whose name is reserved, such as status, id, creator, or keywords. The rejection aborts the whole object import, and the instance keeps broken draft definitions.',
+			hits: model.reserved,
+			id: 'model-reserved-field-name',
+			layers: ['model'],
+			rule: 'site-initializer-format.md',
+			severity: 'high',
+			title: 'Reserved field name',
+		},
+		{
+			description:
+				'The import matches a relationship by its ERC only. A relationship without one is added again on the next import and fails as a duplicate.',
+			hits: model.relationshipERC,
+			id: 'model-relationship-erc',
+			layers: ['model'],
+			rule: 'site-initializer-format.md',
+			severity: 'medium',
+			title: 'Relationship without an ERC',
+		},
+		{
+			description:
+				'An account restricted object needs the field that its Account relationship adds, named r_<relationship>_accountEntryId, and that relationship cannot be disassociate. Liferay refuses the restriction otherwise, so the import fails.',
+			hits: model.restrictedLink,
+			id: 'model-restricted-account-link',
+			layers: ['model'],
+			rule: 'guest-access.md',
+			severity: 'high',
+			title: 'Account restriction that Liferay refuses',
+		},
+		{
+			description:
+				'An object that is a child of Account holds the data of one account. Unless it is account restricted, a user who can view one entry can view the entries of every account. Restrict it in batch 05, or record why it is shared in rules/config.json.',
+			hits: model.unrestricted,
+			id: 'model-account-child-restricted',
+			layers: ['model'],
+			rule: 'Go-Live Tasks audit',
+			severity: 'medium',
+			title: 'Account child that is not restricted',
+			tracked: 'Go-Live Tasks D7',
+		},
 		{
 			description:
 				'A loop that calls a service per item turns one round trip into one per item. Fetch the set with one filtered call, or use a batch endpoint.',
@@ -200,7 +295,7 @@ export function extract() {
 			generated: new Date().toISOString().slice(0, 10),
 			rules,
 		},
-		problems: [],
+		problems: model.problems,
 	};
 }
 
@@ -259,7 +354,11 @@ function _hit(file: string, text: string, index: number): IHit {
 
 	return {
 		file: relative(file),
-		layer: file.endsWith('.java') ? 'controller' : 'view',
+		layer: file.endsWith('.java')
+			? 'controller'
+			: file.startsWith(BATCH_DIR)
+				? 'model'
+				: 'view',
 		line,
 		text: text.split('\n')[line - 1].trim().slice(0, 160),
 	};
@@ -486,4 +585,282 @@ function _filterConcatenations(): IHit[] {
 	}
 
 	return hits;
+}
+
+/**
+ * Checks the object definitions, relationships, and account restrictions in
+ * the batch client extension. A hit points at the line of the item's ERC.
+ */
+function _model() {
+	const definitionsFile = path.join(
+		BATCH_DIR,
+		'03-object-definition.batch-engine-data.json'
+	);
+	const relationshipsFile = path.join(
+		BATCH_DIR,
+		'04-object-relationship.batch-engine-data.json'
+	);
+	const restrictionsFile = path.join(
+		BATCH_DIR,
+		'05-object-definition-account-entry-restricted.batch-engine-data.json'
+	);
+	const systemFieldsFile = path.join(
+		BATCH_DIR,
+		'02-system-object-field.batch-engine-data.json'
+	);
+
+	const config = readJSON<{
+		accountChildrenShared: {
+			externalReferenceCode: string;
+			reason: string;
+		}[];
+	}>(path.join(import.meta.dirname, 'config.json'));
+
+	const definitions = batchItems(path.basename(definitionsFile));
+	const relationships = batchItems(path.basename(relationshipsFile));
+	const restrictions = batchItems(path.basename(restrictionsFile));
+	const systemDefinitions = batchItems(path.basename(systemFieldsFile));
+
+	const naming: IHit[] = [];
+	const problems: string[] = [];
+	const relationshipERC: IHit[] = [];
+	const reserved: IHit[] = [];
+	const restrictedLink: IHit[] = [];
+	const unrestricted: IHit[] = [];
+
+	// A field name such as status repeats across objects, so a search can
+	// start after the object that holds the field.
+
+	const at = (
+		file: string,
+		search: string,
+		text: string,
+		after?: string
+	): IHit => {
+		const source = fs.readFileSync(file, 'utf8');
+		const index = source.indexOf(
+			search,
+			after ? Math.max(source.indexOf(after), 0) : 0
+		);
+
+		return {
+			..._hit(file, source, Math.max(index, 0)),
+			text,
+		};
+	};
+
+	const ercAt = (file: string, erc: string, text: string) =>
+		at(file, `"externalReferenceCode": "${erc}"`, text);
+
+	const upperWords = (name: string) =>
+		name
+			.replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+			.replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+			.toUpperCase();
+
+	for (const definition of definitions) {
+		const erc: string = definition.externalReferenceCode ?? '';
+
+		const issues: string[] = [];
+
+		if (!/^C_[A-Z0-9]+(?:_[A-Z0-9]+)*$/.test(erc) || erc.length > 40) {
+			issues.push(`ERC ${erc || '(none)'}`);
+		}
+
+		if (
+			definition.className &&
+			definition.className !==
+				`com.liferay.object.model.ObjectDefinition#${erc}`
+		) {
+			issues.push(`className ${definition.className}`);
+		}
+
+		if (!/^[A-Z][A-Za-z0-9]*$/.test(definition.name ?? '')) {
+			issues.push(`name ${definition.name}`);
+		}
+
+		if (definition.scope && definition.scope !== 'company') {
+			issues.push(`scope ${definition.scope}`);
+		}
+
+		if (issues.length) {
+			naming.push(
+				ercAt(definitionsFile, erc, `${erc}: ${issues.join(', ')}`)
+			);
+		}
+
+		for (const field of definition.objectFields ?? []) {
+			if (field.system) {
+				continue;
+			}
+
+			const name: string = field.name ?? '';
+
+			if (RESERVED_FIELD_NAMES.has(name.toLowerCase())) {
+				reserved.push(
+					at(
+						definitionsFile,
+						`"name": "${name}"`,
+						`${erc}.${name} is a reserved field name`,
+						`"externalReferenceCode": "${erc}"`
+					)
+				);
+			}
+
+			const fieldIssues: string[] = [];
+
+			if (!/^[a-z][A-Za-z0-9]*$/.test(name) || name.length > 40) {
+				fieldIssues.push('name');
+			}
+
+			const fieldERC: string | undefined = field.externalReferenceCode;
+
+			if (
+				fieldERC &&
+				(fieldERC.length > 75 ||
+					!fieldERC.startsWith(`${erc}_`) ||
+					fieldERC !== `${erc}_${upperWords(name)}`)
+			) {
+				fieldIssues.push(`ERC ${fieldERC}`);
+			}
+
+			if (fieldIssues.length) {
+				naming.push(
+					ercAt(
+						definitionsFile,
+						fieldERC ?? erc,
+						`${erc}.${name}: ${fieldIssues.join(', ')}`
+					)
+				);
+			}
+		}
+	}
+
+	for (const definition of systemDefinitions) {
+		for (const field of definition.objectFields ?? []) {
+			if (
+				!field.system &&
+				RESERVED_FIELD_NAMES.has(String(field.name).toLowerCase())
+			) {
+				reserved.push(
+					at(
+						systemFieldsFile,
+						`"name": "${field.name}"`,
+						`${definition.externalReferenceCode}.${field.name} is a reserved field name`,
+						`"externalReferenceCode": "${definition.externalReferenceCode}"`
+					)
+				);
+			}
+		}
+	}
+
+	for (const relationship of relationships) {
+		if (!relationship.externalReferenceCode) {
+			relationshipERC.push(
+				at(
+					relationshipsFile,
+					`"name": "${relationship.name}"`,
+					`${relationship.name} has no externalReferenceCode`
+				)
+			);
+		}
+	}
+
+	const accountRelationships = relationships.filter(
+		(relationship) =>
+			relationship.objectDefinitionExternalReferenceCode1 ===
+				'L_ACCOUNT' && relationship.type === 'oneToMany'
+	);
+
+	const restricted = new Map<string, any>(
+		restrictions
+			.filter((restriction) => restriction.accountEntryRestricted)
+			.map((restriction) => [
+				restriction.externalReferenceCode,
+				restriction,
+			])
+	);
+
+	for (const [erc, restriction] of restricted) {
+		const fieldName: string =
+			restriction.accountEntryRestrictedObjectFieldName ?? '';
+
+		const relationship = accountRelationships.find(
+			(accountRelationship) =>
+				accountRelationship.objectDefinitionExternalReferenceCode2 ===
+					erc &&
+				fieldName === `r_${accountRelationship.name}_accountEntryId`
+		);
+
+		if (!relationship) {
+			restrictedLink.push(
+				ercAt(
+					restrictionsFile,
+					erc,
+					`${erc} is restricted by ${fieldName || '(no field)'}, which no Account relationship adds`
+				)
+			);
+		}
+		else if (relationship.deletionType === 'disassociate') {
+			restrictedLink.push(
+				ercAt(
+					relationshipsFile,
+					relationship.externalReferenceCode,
+					`${relationship.name} is disassociate, but ${erc} is restricted by it`
+				)
+			);
+		}
+	}
+
+	const shared = new Map(
+		config.accountChildrenShared.map((entry) => [
+			entry.externalReferenceCode,
+			entry.reason,
+		])
+	);
+
+	const children = new Set<string>();
+
+	for (const relationship of accountRelationships) {
+		const child: string =
+			relationship.objectDefinitionExternalReferenceCode2;
+
+		if (!child.startsWith('C_') || children.has(child)) {
+			continue;
+		}
+
+		children.add(child);
+
+		if (!restricted.has(child) && !shared.has(child)) {
+			unrestricted.push(
+				ercAt(
+					relationshipsFile,
+					relationship.externalReferenceCode,
+					`${child} is a child of Account through ${relationship.name} and is not account restricted`
+				)
+			);
+		}
+	}
+
+	for (const erc of shared.keys()) {
+		if (!children.has(erc)) {
+			problems.push(
+				`rules/config.json lists ${erc} as a shared account child, but no Account relationship has it as a child. Remove the entry.`
+			);
+		}
+		else if (restricted.has(erc)) {
+			problems.push(
+				`rules/config.json lists ${erc} as a shared account child, but batch 05 restricts it. Remove the entry.`
+			);
+		}
+	}
+
+	return {
+		naming,
+		problems,
+		relationshipERC,
+		reserved,
+		restrictedLink,
+		unrestricted,
+	};
 }
