@@ -62,7 +62,7 @@ function renderPurchaseCompleted(product: DeliveryProduct) {
 	);
 }
 
-describe('[ROUTE-PRODUCT-PURCHASE-COMPLETED] PurchaseCompleted', () => {
+describe('[ROUTE-PRODUCT-PURCHASE-PURCHASE-COMPLETED] PurchaseCompleted', () => {
 	beforeEach(() => {
 		mocks.completeCloudApp.mockResolvedValue(undefined);
 		mocks.useSWR.mockReturnValue({data: {taxId: ''}, isLoading: false});
