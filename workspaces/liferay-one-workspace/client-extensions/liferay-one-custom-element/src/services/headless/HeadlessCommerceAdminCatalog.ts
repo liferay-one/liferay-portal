@@ -8,7 +8,11 @@ import fetcher from '~/services/fetcher/fetcher';
 import GraphQL from './GraphQL';
 
 import type {APIResponse} from '~/types/api';
-import type {Catalog, CommerceOption} from '~/types/commerce';
+import type {
+	Catalog,
+	CommerceOption,
+	ProductTaxConfiguration,
+} from '~/types/commerce';
 import type {
 	Product,
 	ProductCategories,
@@ -49,6 +53,7 @@ export default class HeadlessCommerceAdminCatalog {
 		name,
 		productSpecifications,
 		productStatus,
+		productTaxConfiguration,
 		workflowStatusInfo,
 	}: {
 		catalogId: number;
@@ -57,6 +62,7 @@ export default class HeadlessCommerceAdminCatalog {
 		name: string;
 		productSpecifications?: ProductSpecification[];
 		productStatus?: number;
+		productTaxConfiguration?: ProductTaxConfiguration;
 		workflowStatusInfo?: number;
 	}) {
 		return fetcher.post<Product>(
@@ -70,11 +76,18 @@ export default class HeadlessCommerceAdminCatalog {
 				productConfiguration: {
 					allowBackOrder: true,
 					maxOrderQuantity: 99,
+					...(productTaxConfiguration && {productTaxConfiguration}),
 				},
 				productSpecifications,
 				productStatus,
 				productType: 'virtual',
 				productVirtualSettings: {},
+				...(productTaxConfiguration && {
+					taxConfiguration: {
+						id: productTaxConfiguration.id,
+						taxable: productTaxConfiguration.taxable,
+					},
+				}),
 				workflowStatusInfo,
 			}
 		);

@@ -125,6 +125,13 @@ export const ProductTags = {
 
 export type ProductTags = (typeof ProductTags)[keyof typeof ProductTags];
 
+export const ProductTaxCategoryName = {
+	ELECTRONIC_SERVICES: 'General - Electronically Supplied Services',
+} as const;
+
+export type ProductTaxCategoryName =
+	(typeof ProductTaxCategoryName)[keyof typeof ProductTaxCategoryName];
+
 export const ProductType = {
 	AI_HUB: 'ai-hub',
 	ANALYTICS_CLOUD: 'analytics-cloud',
