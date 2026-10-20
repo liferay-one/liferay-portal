@@ -534,7 +534,9 @@ function _fieldTypes(text: string): Map<string, string> {
  * system. A generated headless client or an HTTP client always does. A
  * sidecar method does when its body makes an HTTP call, calls an inherited
  * method of BaseService, or calls another method that reaches a remote
- * system. A method name counts as remote when any of its overloads does.
+ * system. A method name counts as remote when any of its overloads does. A
+ * @Cacheable method makes its round trip once for each cache entry, not once
+ * for each call, so it does not count.
  */
 function _isRemoteCall(type: string | undefined, method: string): boolean {
 	if (!type) {
@@ -562,6 +564,8 @@ function _remoteMethods(): Set<string> {
 		}
 	>();
 
+	const cached = new Set<string>();
+
 	for (const file of JAVA_FILES) {
 		const text = fs.readFileSync(file, 'utf8');
 		const masked = _mask(text);
@@ -586,6 +590,19 @@ function _remoteMethods(): Set<string> {
 			}
 
 			const start = end + brace;
+
+			const annotations = masked.slice(
+				Math.max(
+					masked.lastIndexOf('}', match.index),
+					masked.lastIndexOf(';', match.index),
+					masked.lastIndexOf('{', match.index)
+				) + 1,
+				match.index
+			);
+
+			if (annotations.includes('@Cacheable')) {
+				cached.add(`${name}#${match[1]}`);
+			}
 
 			methods.set(match[1], [
 				...(methods.get(match[1]) ?? []),
@@ -695,6 +712,7 @@ function _remoteMethods(): Set<string> {
 				const key = `${name}#${method}`;
 
 				if (
+					!cached.has(key) &&
 					!remote.has(key) &&
 					bodies.some((body) => isRemote(name, body))
 				) {
