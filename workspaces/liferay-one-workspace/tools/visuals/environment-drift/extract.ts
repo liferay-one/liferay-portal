@@ -194,14 +194,24 @@ export function extract(): IExtraction {
 					},
 				]
 			: []),
-		...unsetVariables.map((variable) => ({
-			anchor: 'variables-card',
-			detail: `The sidecar requires ${variable.variable}, and neither .env, .env.local, docker-compose.yaml, nor LCP.json sets it in this checkout. Run /one-env-pull, or add it to .env.local.`,
-			item: variable.variable,
-			severity: 'medium' as const,
-			source: variable.property,
-			title: `${variable.variable} is not set locally`,
-		})),
+		...(unsetVariables.length
+			? [
+					{
+						anchor: 'variables-card',
+						detail: `The sidecar requires ${unsetVariables.map((variable) => variable.variable).join(', ')}, and neither .env, .env.local, docker-compose.yaml, nor LCP.json sets them in this checkout. Run /one-env-pull, or add them to .env.local.`,
+						item:
+							unsetVariables.length === 1
+								? unsetVariables[0].variable
+								: undefined,
+						severity: 'medium' as const,
+						source: unsetVariables[0].property,
+						title:
+							unsetVariables.length === 1
+								? '1 required sidecar variable is not set locally'
+								: `${unsetVariables.length} required sidecar variables are not set locally`,
+					},
+				]
+			: []),
 	];
 
 	return {

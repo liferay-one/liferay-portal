@@ -315,22 +315,45 @@ export function extract(): IExtraction {
 
 	// A broad read that config.json marks as reference data is a decision,
 	// not something to act on, so it is not an action. Any other broad read
-	// is already a problem, so it is not an action twice.
+	// is already a problem, so it is not an action twice. The objects with no
+	// grant share one cause and one check, so they are one action.
+
+	const ungranted = risks.filter((risk) => risk.type === 'no-grant');
 
 	return {
-		actions: risks
-			.filter(
-				(risk) =>
-					risk.level !== 'intended' && risk.type !== 'broad-view'
-			)
-			.map((risk) => ({
-				anchor: 'matrix-wrap',
-				detail: risk.text,
-				item: risk.object ? objects.get(risk.object)?.label : undefined,
-				severity: risk.level as 'high' | 'info' | 'medium',
-				source: risk.resource ?? risk.object ?? undefined,
-				title: risk.title,
-			})),
+		actions: [
+			...risks
+				.filter(
+					(risk) =>
+						risk.level !== 'intended' &&
+						risk.type !== 'broad-view' &&
+						risk.type !== 'no-grant'
+				)
+				.map((risk) => ({
+					anchor: 'matrix-wrap',
+					detail: risk.text,
+					item: risk.object
+						? objects.get(risk.object)?.label
+						: undefined,
+					severity: risk.level as 'high' | 'info' | 'medium',
+					source: risk.resource ?? risk.object ?? undefined,
+					title: risk.title,
+				})),
+			...(ungranted.length
+				? [
+						{
+							anchor: 'matrix-wrap',
+							detail: `No role other than ${config.adminRoles.join(' and ')} holds a permission on ${ungranted.map((risk) => objects.get(risk.object!)!.label).join(', ')}. Only the owner of an entry, an administrator, or a service account can read them. Confirm that each one is meant to be private.`,
+							severity: 'info' as const,
+							source: 'resource-permissions.json',
+							title:
+								ungranted.length === 1
+									? '1 object has no grants'
+									: `${ungranted.length} objects have no grants`,
+						},
+					]
+				: []),
+		],
 		data: {
 			generated: new Date().toISOString().slice(0, 10),
 			grants,
