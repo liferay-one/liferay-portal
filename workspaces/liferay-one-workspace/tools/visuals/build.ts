@@ -161,15 +161,17 @@ const loudVisuals = new Set(pageNames.flatMap(visualsOf));
 if (!check) {
 	fs.mkdirSync(path.join(BUILD_DIR, 'artifact'), {recursive: true});
 
-	// A page that visuals.json no longer lists stays in build/ and can be
-	// linked to by mistake, so remove it.
+	// A page or a visual that visuals.json no longer lists stays in build/
+	// and can be linked to or read by mistake, so remove it.
 
 	for (const dir of [BUILD_DIR, path.join(BUILD_DIR, 'artifact')]) {
 		for (const file of fs.readdirSync(dir)) {
 			if (
-				file.endsWith('.html') &&
-				file !== 'index.html' &&
-				!registry[file.replace(/\.html$/, '')]
+				(file.endsWith('.html') &&
+					file !== 'index.html' &&
+					!registry[file.replace(/\.html$/, '')]) ||
+				(file.endsWith('.data.json') &&
+					!places.has(file.replace(/\.data\.json$/, '')))
 			) {
 				fs.rmSync(path.join(dir, file));
 			}
