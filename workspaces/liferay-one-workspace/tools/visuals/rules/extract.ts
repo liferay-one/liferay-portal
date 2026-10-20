@@ -278,12 +278,9 @@ export function extract() {
 				.filter(({hits}) => hits.length)
 				.map(({hits, layer}) => ({
 					anchor: `rule-${rule.id}`,
-					detail: `${rule.description} ${hits.length} place(s), such as ${hits
-						.slice(0, 3)
-						.map((hit) => `${path.basename(hit.file)}:${hit.line}`)
-						.join(
-							', '
-						)}. The rule is ${rule.rule.endsWith('.md') ? `.agents/rules/${rule.rule}` : rule.rule}.`,
+					detail: `${rule.description} ${hits.length} place(s) in ${new Set(hits.map((hit) => hit.file)).size} file(s), most in ${_topFiles(
+						hits
+					)}. The rule is ${rule.rule.endsWith('.md') ? `.agents/rules/${rule.rule}` : rule.rule}.`,
 					layer,
 					severity: rule.severity,
 					source: `${hits[0].file}:${hits[0].line}`,
@@ -297,6 +294,24 @@ export function extract() {
 		},
 		problems: model.problems,
 	};
+}
+
+/**
+ * Names the three files with the most hits, so that an action starts with
+ * the place that clears the most of it.
+ */
+function _topFiles(hits: IHit[]): string {
+	const counts = new Map<string, number>();
+
+	for (const hit of hits) {
+		counts.set(hit.file, (counts.get(hit.file) ?? 0) + 1);
+	}
+
+	return [...counts.entries()]
+		.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+		.slice(0, 3)
+		.map(([file, count]) => `${path.basename(file)} (${count})`)
+		.join(', ');
 }
 
 /**
@@ -394,6 +409,15 @@ function _loopCalls(files: string[], language: 'java' | 'ts'): IHit[] {
 						.filter(Boolean)
 				: [];
 
+		// A Java call counts only when the method it calls reaches a remote
+		// system, so a call to an in-memory helper such as
+		// LicenseKeyTypeService.isAdminType is not a round trip.
+
+		const fieldTypes =
+			language === 'java'
+				? _classFieldTypes(text)
+				: new Map<string, string>();
+
 		const call =
 			language === 'ts'
 				? services.length
@@ -402,7 +426,9 @@ function _loopCalls(files: string[], language: 'java' | 'ts'): IHit[] {
 							'g'
 						)
 					: null
-				: /\b_\w+(?:Client|Resource|Service)\.\w+\(/g;
+				: fieldTypes.size
+					? /\b(_\w+)\.(\w+)\(/g
+					: null;
 
 		if (!call) {
 			continue;
@@ -448,6 +474,13 @@ function _loopCalls(files: string[], language: 'java' | 'ts'): IHit[] {
 			}
 
 			for (const found of body.matchAll(call)) {
+				if (
+					language === 'java' &&
+					!_isRemoteCall(fieldTypes.get(found[1]), found[2])
+				) {
+					continue;
+				}
+
 				const index = start + found.index;
 
 				if (!seen.has(index)) {
@@ -459,6 +492,243 @@ function _loopCalls(files: string[], language: 'java' | 'ts'): IHit[] {
 	}
 
 	return hits.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line);
+}
+
+/**
+ * The methods that reach a remote system, as Class#method, found once for
+ * every sidecar class.
+ */
+let classFieldTypes: Map<string, Map<string, string>> | undefined;
+let remoteMethods: Set<string> | undefined;
+
+/**
+ * Returns the type of each field that a Java class declares or inherits from
+ * a class in this repository, by field name. A controller can call a remote
+ * service through a field of its parent class.
+ */
+function _classFieldTypes(text: string): Map<string, string> {
+	if (!remoteMethods) {
+		remoteMethods = _remoteMethods();
+	}
+
+	const name = /\bclass\s+(\w+)/.exec(_mask(text))?.[1];
+
+	return (name && classFieldTypes!.get(name)) || _fieldTypes(text);
+}
+
+/**
+ * Returns the type of each field that a Java class declares, by field name.
+ */
+function _fieldTypes(text: string): Map<string, string> {
+	return new Map(
+		[
+			...text.matchAll(
+				/^\t(?:private|protected)\s+(?:static\s+)?(?:final\s+)?(\w+)\s+(_\w+)\s*;/gm
+			),
+		].map((match) => [match[2], match[1]])
+	);
+}
+
+/**
+ * Returns whether calling a method on a field of a type reaches a remote
+ * system. A generated headless client or an HTTP client always does. A
+ * sidecar method does when its body makes an HTTP call, calls an inherited
+ * method of BaseService, or calls another method that reaches a remote
+ * system. A method name counts as remote when any of its overloads does.
+ */
+function _isRemoteCall(type: string | undefined, method: string): boolean {
+	if (!type) {
+		return false;
+	}
+
+	if (/(?:Client|Resource)$/.test(type)) {
+		return true;
+	}
+
+	if (!remoteMethods) {
+		remoteMethods = _remoteMethods();
+	}
+
+	return remoteMethods.has(`${type}#${method}`);
+}
+
+function _remoteMethods(): Set<string> {
+	const classes = new Map<
+		string,
+		{
+			fieldTypes: Map<string, string>;
+			methods: Map<string, string[]>;
+			parent?: string;
+		}
+	>();
+
+	for (const file of JAVA_FILES) {
+		const text = fs.readFileSync(file, 'utf8');
+		const masked = _mask(text);
+
+		const name = /\bclass\s+(\w+)/.exec(masked)?.[1];
+
+		if (!name) {
+			continue;
+		}
+
+		const methods = new Map<string, string[]>();
+
+		for (const match of masked.matchAll(
+			/^\t(?:@\w+\s+)*(?:(?:public|protected|private|static|final|synchronized|abstract)\s+)+[\w<>,.?[\]\s]+?\s(\w+)\s*\(/gm
+		)) {
+			const open = match.index + match[0].length - 1;
+			const end = _close(masked, open);
+			const brace = masked.slice(end).search(/[{;]/);
+
+			if (brace < 0 || masked[end + brace] !== '{') {
+				continue;
+			}
+
+			const start = end + brace;
+
+			methods.set(match[1], [
+				...(methods.get(match[1]) ?? []),
+				masked.slice(start, _close(masked, start)),
+			]);
+		}
+
+		classes.set(name, {
+			fieldTypes: _fieldTypes(text),
+			methods,
+			parent: /\bclass\s+\w+(?:<[^{]*?>)?\s+extends\s+(\w+)/.exec(
+				masked
+			)?.[1],
+		});
+	}
+
+	// Walks a class and the classes it extends in this repository. A chain
+	// that leaves the repository at BaseService inherits its HTTP methods.
+
+	const chain = (name: string) => {
+		const names: string[] = [];
+
+		let current: string | undefined = name;
+
+		while (current && classes.has(current) && !names.includes(current)) {
+			names.push(current);
+			current = classes.get(current)!.parent;
+		}
+
+		return {baseService: current === 'BaseService', names};
+	};
+
+	const declares = (name: string, method: string) =>
+		chain(name).names.find((link) =>
+			classes.get(link)!.methods.has(method)
+		);
+
+	const remote = new Set<string>();
+
+	// A call through a subclass reaches the methods that it inherits, so a
+	// method counts as remote where the class or a parent declares it.
+
+	const reaches = (type: string, method: string) => {
+		const declaring = classes.has(type)
+			? declares(type, method)
+			: undefined;
+
+		return remote.has(`${declaring ?? type}#${method}`);
+	};
+
+	const isRemote = (owner: string, body: string) => {
+		if (
+			/\b(?:HttpClient|HttpRequest|RestTemplate|WebClient)\b/.test(body)
+		) {
+			return true;
+		}
+
+		const {fieldTypes} = classes.get(owner)!;
+
+		for (const match of body.matchAll(/\b(_\w+)\.(\w+)\(/g)) {
+			const type =
+				chain(owner)
+					.names.map((link) =>
+						classes.get(link)!.fieldTypes.get(match[1])
+					)
+					.find(Boolean) ?? fieldTypes.get(match[1]);
+
+			if (
+				type &&
+				(/(?:Client|Resource)$/.test(type) || reaches(type, match[2]))
+			) {
+				return true;
+			}
+		}
+
+		for (const match of body.matchAll(/(?<![\w.])(\w+)\s*\(/g)) {
+			if (
+				/^(?:catch|for|if|new|return|super|switch|synchronized|this|while)$/.test(
+					match[1]
+				)
+			) {
+				continue;
+			}
+
+			const declaring = declares(owner, match[1]);
+
+			if (declaring) {
+				if (remote.has(`${declaring}#${match[1]}`)) {
+					return true;
+				}
+			}
+			else if (chain(owner).baseService && /^[a-z]/.test(match[1])) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	let grew = true;
+
+	while (grew) {
+		grew = false;
+
+		for (const [name, javaClass] of classes) {
+			for (const [method, bodies] of javaClass.methods) {
+				const key = `${name}#${method}`;
+
+				if (
+					!remote.has(key) &&
+					bodies.some((body) => isRemote(name, body))
+				) {
+					remote.add(key);
+					grew = true;
+				}
+			}
+		}
+	}
+
+	// A call through a subclass reaches the methods that it inherits.
+
+	for (const name of classes.keys()) {
+		for (const link of chain(name).names.slice(1)) {
+			for (const method of classes.get(link)!.methods.keys()) {
+				if (remote.has(`${link}#${method}`)) {
+					remote.add(`${name}#${method}`);
+				}
+			}
+		}
+	}
+
+	classFieldTypes = new Map(
+		[...classes.keys()].map((name) => [
+			name,
+			new Map(
+				chain(name)
+					.names.reverse()
+					.flatMap((link) => [...classes.get(link)!.fieldTypes])
+			),
+		])
+	);
+
+	return remote;
 }
 
 /**
