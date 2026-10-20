@@ -25,8 +25,8 @@ In this file, `L<n>` means line `<n>` of `resource-permissions.json`, and a scop
 | 43 | Grants on a custom object: 34 at scope 1 and 9 at scope 3 |
 | 64 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
 | 3 | Self `VIEW` grants on a regular role, so that the role appears in `roleBriefs` |
-| 35 | Custom objects (`C_*`) in the batch |
-| 12 | Custom objects restricted to the account |
+| 34 | Custom objects (`C_*`) in the batch |
+| 13 | Custom objects restricted to the account |
 | 10 | Custom objects with no grant at all. 9 of them are readable only by the owner and an administrator. |
 | 24 | Pages. 10 set their own permissions. 14 keep the Liferay default, which lets a guest view them. |
 | 0 | Service Access Policies in the trees. The portal adds `OBJECT_DEFAULT` itself. |
@@ -161,14 +161,13 @@ An object has two resources, and a grant on the wrong one applies and grants not
 
 ### Object Matrix
 
-Rows are the 35 custom objects and the 6 system objects that the batch extends. Columns are the 10 roles that hold a grant on an object. A cell lists the actions, the scope, and the line: `V` is `VIEW`, `A` is `ADD_OBJECT_ENTRY`, `U` is `UPDATE`, `D` is `DELETE`. An empty cell means no grant. "Restricted By" is the `accountEntryRestrictedObjectFieldName` from batch file `05`.
+Rows are the 34 custom objects and the 6 system objects that the batch extends. Columns are the 10 roles that hold a grant on an object. A cell lists the actions, the scope, and the line: `V` is `VIEW`, `A` is `ADD_OBJECT_ENTRY`, `U` is `UPDATE`, `D` is `DELETE`. An empty cell means no grant. "Restricted By" is the `accountEntryRestrictedObjectFieldName` from batch file `05`.
 
 | Object | Restricted By | Account Administrator | Account Member | Finance Administrator | Guest | Organization User | Project Admin | Project Requester | Provisioning Administrator | Provisioning Member | User |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | AccountInvitation (`C_ACCOUNT_INVITATION`) | — | | | | | | | | V s1 L19 | | |
 | AccountNote (`C_ACCOUNT_NOTE`) | `r_accountEntryToAccountNote_accountEntryId` | | | | | | | | V s1 L28 | | |
 | ActivationKey (`C_ACTIVATION_KEY`) | `r_accountEntryToActivationKey_accountEntryId` | | | | | | | | V s1 L37 | | |
-| AIHubApplication (`C_AI_HUB_APPLICATION`) | `r_accountToAIHubApplication_accountEntryId` | | | | | | | | V s1 L10 | | |
 | AIHubBetaPrivateAccessRequest (`C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST`) | — | | | | | | | | | | |
 | CommonLicenseKey (`C_COMMON_LICENSE_KEY`) | — | | | | | | | | V s1 L46 | | |
 | Contract (`C_CONTRACT`) | `r_accountEntryToContract_accountEntryId` | | | | | | | | V s1 L55 | | |
@@ -534,7 +533,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:187`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
 
-1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant, and the object's REST path is `/o/c/getappinformation`. Each call works only for an administrator.
+1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator.
 
 1. **SSA users cannot open the SSA pages.** The SSA routes live under `/admin` (`adminRoutes.tsx:142`), but the `/admin` page grants `VIEW` only to Finance Administrator, Liferay Staff, and Provisioning Administrator (`05_admin/page.json`). An SSA Administrator or SSA User without one of those roles gets no page. Liferay Staff has the page but no route.
 

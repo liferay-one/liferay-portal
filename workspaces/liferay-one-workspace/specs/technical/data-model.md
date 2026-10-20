@@ -233,7 +233,7 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 
 **Custom fields (other):** `accountOwnerEmailAddress`, `accountOwnerFirstName`, `accountOwnerLastName`, `cloud-provisioning`, `cloudProjectName`, `dossieraProjectKey`, `dsrAnalyticsCloudProject`, `dsrError`, `dsrErrorDate`, `dsrSettings`, `dsrWorkspaceName`, `gsInvolved`, `ldpAnalyticsCloudProject`, `ldpError`, `ldpErrorDate`, `ldpSettings`, `ldpWorkspaceName`, `marketplaceOrderType`, `order-metadata`, `opportunityProductFamily`, `opportunitySoldBy`, `opportunityStageName`, `opportunityTerritory`, `opportunityType`, `parentOpportunityId`, `partnerAccount`, `partnerFirstLineSupport`, `projectDescription`, `projectKey`, `projectSolution`, `renewal`, `salesforceOpportunityId`, `salesforcePricebookId`, `salesforceProjectId`, `trial-end-date`, `trial-error`, `trial-error-date`, `trial-notify-end-date`, `trial-settings`, `trial-start-date`, `trial-virtual-host`. The source is `liferay-one-site-initializer/site-initializer/expando-columns.json`.
 
-**Relationships:** parent of LicenseKey (`commerceOrderToLicenseKey`, disassociate), AIHubApplication (disassociate), and the request objects AIHubBetaPrivateAccessRequest, DSRRequest, DXPFreeActivationKeyRequest, ProductFeedback, and TrialExtensionRequest (cascade). Child of PublisherSalesSummary (`publisherToCommerceOrder`, disassociate).
+**Relationships:** parent of LicenseKey (`commerceOrderToLicenseKey`, disassociate) and of the request objects AIHubBetaPrivateAccessRequest, DSRRequest, DXPFreeActivationKeyRequest, ProductFeedback, and TrialExtensionRequest (cascade). Child of PublisherSalesSummary (`publisherToCommerceOrder`, disassociate).
 
 **Object actions:** `CommerceOrderUpdate` (onAfterUpdate), from the site initializer.
 
@@ -693,12 +693,6 @@ One payout period for a publisher (`quarter`, `paymentStatus`, `paidDate`). Chil
 
 One uploaded version of a publisher's app. Child of the account (cascade; account restricted) and of the Commerce Product (`productEntryToPublisherAsset`, cascade). Parent of PublisherAssetAttachment (cascade), which holds the uploaded file and its `publisherAssetAttachmentType` (`lpkg` · `package` · `sourceCode`).
 
-#### AIHubApplication (`C_AI_HUB_APPLICATION`)
-
-**system:** `false`
-
-An AI Hub tenant bought by an account. Child of the account (`accountToAIHubApplication`, cascade; account restricted) and of the order (`orderToAIHubApplication`, disassociate). `accountEntryId` is the account ID in the external AI Hub, returned by AI Hub provisioning and used to buy quota blocks. It is not the Liferay account.
-
 #### GetAppInformation (`C_GET_APP_INFORMATION`)
 
 **system:** `false`
@@ -736,7 +730,6 @@ Generated from `03-object-definition.batch-engine-data.json` on 2026-10-15.
 
 | Object | ERC | Separator |
 |---|---|---|
-| `AIHubApplication` | `C_AI_HUB_APPLICATION` | `l` |
 | `AIHubBetaPrivateAccessRequest` | `C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST` | `l` |
 | `AccountInvitation` | `C_ACCOUNT_INVITATION` | `l` |
 | `AccountNote` | `C_ACCOUNT_NOTE` | `l` |
