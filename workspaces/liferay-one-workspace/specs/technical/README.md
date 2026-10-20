@@ -18,6 +18,7 @@ Each file holds `TECH-<AREA>-<NNN>` rows, organized by quality attribute.
 
 | File | Area Code | Covers |
 | --- | --- | --- |
+| `integrations/ai-hub.md` | `AIHUB` | AI Hub accounts, the SEO&AEO Studio Beta add on, and prepaid token quota blocks |
 | `integrations/console.md` | `CONSOLE` | Liferay Cloud Console, Analytics Cloud, trial portal instances, the DataOps Metrics API, and the releases feed |
 | `integrations/gcs.md` | `GCS` | Google Cloud Storage for ticket attachments |
 | `integrations/jira.md` | `JIRA` | Jira Service Management issues and the JSM asset schema |

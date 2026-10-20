@@ -93,5 +93,4 @@ Terms used in this file:
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
 | TECH-JIRA-090 | The service escapes the project ERC and each ticket key before it puts them in a JQL query or a REST path. Today it puts both into the query and the path unchanged. | P0 | — | `SVC-JIRAISSUESERVICE` |
-| TECH-JIRA-091 | Each Jira call and each Assets call stops after a fixed time limit. Today the service sets no response timeout, so a slow Jira holds the sync lock with no limit. | P1 | — | — |
 | TECH-JIRA-092 | When a retention search fails, the job fails the run. Today the search returns an empty or partial list. The window is one day, so 2 failed runs in a row leave those attachments in storage. | P0 | — | `CRON-SCHEDULEDCLEANUP` |

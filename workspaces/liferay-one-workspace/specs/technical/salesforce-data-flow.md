@@ -294,7 +294,7 @@ The handler returns at `:87` when the user is already a member of the account. T
 
 ### Project Entitlements Inside an Opportunity
 
-A record can carry a `projectEntitlements` array and a `projectEntitlementLineItems` array. The contract in [`integrations/salesforce.md`](./integrations/salesforce.md) does not list them (TECH-SALESFORCE-010). `service/ProvisioningProjectEntitlementService.java:123` handles each project entitlement that has line items:
+A record can carry a `projectEntitlements` array and a `projectEntitlementLineItems` array. The contract in [`integrations/salesforce.md`](./integrations/salesforce.md) lists them in TECH-SALESFORCE-010. `service/ProvisioningProjectEntitlementService.java:123` handles each project entitlement that has line items:
 
 1. Find the project by `Project__c`. Add a warning and skip the entitlement when the project does not exist (`:365`).
 
@@ -567,8 +567,6 @@ The audit checked the Salesforce path against this change. The commits do not ch
 1. **A duplicate Salesforce opportunity is possible.** `service/CommerceOrderService.java:950` sets the order ERC to the new opportunity ID, but the metadata gets `salesforceOpportunityId` only at `:331`. When `updateOrder` fails between the two, the next attempt reads metadata with no ID (`:917`) and sends a second `POST`. The check could also use the order ERC.
 
 1. **The billing street can end in "null".** `service/SalesforceService.java:180` joins `getStreet1()` and `getStreet2()` with no null check, so an address with one street line sends `Main Street null`.
-
-1. **The contract file is out of date with the code.** `specs/technical/integrations/salesforce.md` TECH-SALESFORCE-010 omits the `projectEntitlements` and `projectEntitlementLineItems` arrays of an opportunity record. TECH-SALESFORCE-012 omits `SBQQ__AmendedContract__c`. TECH-SALESFORCE-004 names a `liferay.one.salesforce.gcf.service.account.key` property, but `service/SalesforceService.java:184` uses application default credentials, with an optional impersonated account in `liferay.one.salesforce.gcf.service.account`. TECH-SALESFORCE-022 does not say that an account or project `delete` upserts.
 
 ## Open Questions
 
