@@ -124,5 +124,32 @@
 			"en-US": "2025 Q4"
 		},
 		"type": "string"
+	},
+	{
+		"externalReferenceCode": "2026Q1",
+		"key": "2026Q1",
+		"name": "2026 Q1",
+		"name_i18n": {
+			"en-US": "2026 Q1"
+		},
+		"type": "string"
+	},
+	{
+		"externalReferenceCode": "2026Q2",
+		"key": "2026Q2",
+		"name": "2026 Q2",
+		"name_i18n": {
+			"en-US": "2026 Q2"
+		},
+		"type": "string"
+	},
+	{
+		"externalReferenceCode": "2026Q3",
+		"key": "2026Q3",
+		"name": "2026 Q3",
+		"name_i18n": {
+			"en-US": "2026 Q3"
+		},
+		"type": "string"
 	}
 ]
