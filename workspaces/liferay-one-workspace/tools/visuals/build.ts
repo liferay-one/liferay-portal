@@ -37,7 +37,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {compose, fill} from './compose.ts';
+import {embed, fill} from './compose.ts';
 import {readJSON} from './lib.ts';
 
 import type {IAction, IExtractContext, IExtraction} from './lib.ts';
@@ -55,13 +55,18 @@ interface ITab {
 	visual: string;
 }
 
+/**
+ * A page of its own, or, with page set, a layer whose tabs show inside that
+ * page.
+ */
 interface IPage {
 	description: string;
-	icon: string;
+	icon?: string;
 	layer?: string;
+	page?: string;
 	tabs?: ITab[];
 	title: string;
-	url: null | string;
+	url?: null | string;
 }
 
 const VISUALS_DIR = import.meta.dirname;
@@ -75,11 +80,7 @@ const HEALTH = 'workspace-health';
  * tell apart.
  */
 const ICONS: Record<string, {color: string; mark: string}> = {
-	'controller': {color: '#c2540a', mark: 'C'},
 	'index': {color: '#16202a', mark: '≡'},
-	'model': {color: '#0d6a6a', mark: 'M'},
-	'test-coverage': {color: '#1d7a3e', mark: 'T'},
-	'view': {color: '#1f5fbf', mark: 'V'},
 	'workspace-health': {color: '#7a4fb0', mark: 'H'},
 };
 
@@ -103,9 +104,13 @@ const knownDefects = readJSON<IKnownDefect[]>(
 	path.join(VISUALS_DIR, 'known-defects.json')
 );
 
-const requested = args.filter(
-	(arg, index) => !arg.startsWith('--') && args[index - 1] !== '--actions'
-);
+// A layer or a section that shows inside a page builds that page.
+
+const requested = args
+	.filter(
+		(arg, index) => !arg.startsWith('--') && args[index - 1] !== '--actions'
+	)
+	.map((name) => registry[name]?.page ?? name);
 
 for (const name of requested) {
 	if (!registry[name]) {
@@ -116,8 +121,15 @@ for (const name of requested) {
 }
 
 const pageNames = Object.keys(registry).filter(
-	(name) => !requested.length || requested.includes(name)
+	(name) =>
+		!registry[name].page && (!requested.length || requested.includes(name))
 );
+
+/**
+ * The layers that show inside each page.
+ */
+const layersOf = (name: string) =>
+	Object.values(registry).filter((page) => page.page === name);
 
 /**
  * Where each visual shows: its page, its tab, and its layer.
@@ -134,7 +146,7 @@ for (const [name, page] of Object.entries(registry)) {
 		if (!places.has(tab.visual)) {
 			places.set(tab.visual, {
 				layer: page.layer ?? 'workspace',
-				page: name,
+				page: page.page ?? name,
 				tab: tab.id || null,
 				title: page.tabs ? `${page.title} · ${tab.label}` : page.title,
 			});
@@ -142,8 +154,10 @@ for (const [name, page] of Object.entries(registry)) {
 	}
 }
 
-const visualsOf = (name: string) =>
-	(registry[name].tabs ?? [{visual: name}]).map((tab) => tab.visual);
+const visualsOf = (name: string) => [
+	...(registry[name].tabs ?? [{visual: name}]).map((tab) => tab.visual),
+	...layersOf(name).flatMap((layer) => layer.tabs!.map((tab) => tab.visual)),
+];
 
 // workspace-health shows the actions of every visual, so it runs last, and
 // building it runs every extractor even when its page was not requested.
@@ -169,7 +183,9 @@ if (!check) {
 			if (
 				(file.endsWith('.html') &&
 					file !== 'index.html' &&
-					!registry[file.replace(/\.html$/, '')]) ||
+					!pageNames.includes(file.replace(/\.html$/, '')) &&
+					(!registry[file.replace(/\.html$/, '')] ||
+						registry[file.replace(/\.html$/, '')].page)) ||
 				(file.endsWith('.data.json') &&
 					!places.has(file.replace(/\.data\.json$/, '')))
 			) {
@@ -293,24 +309,24 @@ if (!check) {
 	for (const name of pageNames) {
 		const page = registry[name];
 
-		let html: string;
+		let html = _theme(fill(_template(name), extractions.get(name)?.data));
 
-		if (page.tabs) {
-			html = compose(
-				name,
-				page,
-				page.tabs.map((tab) => ({
-					data: extractions.get(tab.visual)?.data,
-					id: tab.id,
-					label: tab.label,
-					params: tab.params,
-					template: _template(tab.visual),
-				})),
-				THEME
+		if (layersOf(name).length) {
+			html = embed(
+				html,
+				Object.fromEntries(
+					layersOf(name).map((layer) => [
+						layer.layer!,
+						layer.tabs!.map((tab) => ({
+							data: extractions.get(tab.visual)?.data,
+							id: `${layer.layer}-${tab.id}`,
+							label: tab.label,
+							params: tab.params,
+							template: _template(tab.visual),
+						})),
+					])
+				)
 			);
-		}
-		else {
-			html = _theme(fill(_template(name), extractions.get(name)?.data));
 		}
 
 		fs.writeFileSync(
@@ -359,6 +375,7 @@ if (failed || (check && warnings)) {
 
 function _index(): string {
 	const rows = Object.entries(registry)
+		.filter(([, page]) => !page.page)
 		.filter(([name]) => fs.existsSync(path.join(BUILD_DIR, `${name}.html`)))
 		.map(
 			([name, page]) =>

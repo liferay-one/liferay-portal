@@ -36,7 +36,7 @@ Run `yarn viz:check` again until it exits 0.
 
 ## 3. Publish
 
-Security detail. The Model and Controller pages, and the actions in Workspace Health, show where the audit found exploitable defects. Publish them private, and do not share their links until the S findings in the Go-Live Tasks artifact are fixed.
+Security detail. Workspace Health shows where the audit found exploitable defects, in its actions and in the Model and Controller tabs. Publish it private, and do not share their links until the S findings in the Go-Live Tasks artifact are fixed.
 
 Read `tools/visuals/visuals.json`. For each visual you built:
 
@@ -55,6 +55,6 @@ Give the user one line per visual: its name, its link, and the number of open pr
 
 1. Create `tools/visuals/<name>/template.html`. Put `const DATA = __DATA__;` in its script. Follow the artifact page contract: no `<!doctype>`, `<html>`, `<head>`, or `<body>`, and a `<title>` first. Use the classes and tokens in `tools/visuals/theme.css`, and do not copy its rules.
 
-1. Add the visual as a tab of the Model, View, or Controller page in `tools/visuals/visuals.json`. Add a page of its own, with `url` set to `null`, only when it belongs to no layer.
+1. Add the visual as a tab of the Model, View, or Controller layer in `tools/visuals/visuals.json`. Each layer shows inside Workspace Health, after its actions. A visual that spans the layers, like `test-coverage`, is a tab of an entry whose `layer` is `workspace`, and it shows inside a section of the Workspace tab. Add a page of its own, with `url` set to `null`, only when it belongs inside no tab of Workspace Health.
 
 1. Build, fix the problems, and publish as above.

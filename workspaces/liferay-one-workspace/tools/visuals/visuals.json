@@ -1,8 +1,8 @@
 {
 	"controller": {
 		"description": "How requests are handled: every sidecar endpoint and the routes that call it, the OAuth2 scopes, the event handlers, and the rule checks on the sidecar.",
-		"icon": "api",
 		"layer": "controller",
+		"page": "workspace-health",
 		"tabs": [
 			{
 				"id": "apis",
@@ -23,13 +23,12 @@
 				"visual": "rules"
 			}
 		],
-		"title": "Controller",
-		"url": "https://claude.ai/artifact/9LEKd9nA8cUKpMoStJHPcP"
+		"title": "Controller"
 	},
 	"model": {
 		"description": "The data: every object and relationship, who can read and write each one, how each environment and its configuration differ from the batch files, and the rule checks on the batch files.",
-		"icon": "diagram",
 		"layer": "model",
+		"page": "workspace-health",
 		"tabs": [
 			{
 				"id": "objects",
@@ -55,19 +54,25 @@
 				"visual": "rules"
 			}
 		],
-		"title": "Model",
-		"url": "https://claude.ai/artifact/2E8MZ4P5ixN2DoWz8RkYda"
+		"title": "Model"
 	},
 	"test-coverage": {
 		"description": "Requirement and test plan coverage for each epic, from specs/ and tests/plan.",
-		"icon": "chart",
-		"title": "Test Coverage",
-		"url": "https://claude.ai/artifact/HniATosv7uP2tG4ovV6yMQ"
+		"layer": "workspace",
+		"page": "workspace-health",
+		"tabs": [
+			{
+				"id": "coverage",
+				"label": "Test Coverage",
+				"visual": "test-coverage"
+			}
+		],
+		"title": "Test Coverage"
 	},
 	"view": {
-		"description": "What a visitor sees: the pages and menus, the fragments, the weight and dead code of the custom element, and the rule checks on it.",
-		"icon": "layout",
+		"description": "What a visitor sees: the pages and menus, the fragments, and the rule checks on the custom element.",
 		"layer": "view",
+		"page": "workspace-health",
 		"tabs": [
 			{
 				"id": "pages",
@@ -83,11 +88,6 @@
 				"visual": "pages"
 			},
 			{
-				"id": "bundle-health",
-				"label": "Bundle Health",
-				"visual": "frontend"
-			},
-			{
 				"id": "rules",
 				"label": "Rules",
 				"params": {
@@ -96,11 +96,10 @@
 				"visual": "rules"
 			}
 		],
-		"title": "View",
-		"url": "https://claude.ai/artifact/TsikE3vn5tx1eGKZxdiz1t"
+		"title": "View"
 	},
 	"workspace-health": {
-		"description": "Everything to act on, by layer, with the triage queue, the dependencies, the tests, the change hotspots, and the specs.",
+		"description": "Everything to act on, and what the code is. Overview and Workspace, then a tab for each layer: its actions, then its visuals. Workspace shows the dependencies and the custom element build, the tests and their coverage of the test plan, the change hotspots, and the specs. Model shows the objects, the access, the environments, and the batch file rules. View shows the pages, the fragments, and the custom element rules. Controller shows the APIs, the events, and the sidecar rules.",
 		"icon": "checklist",
 		"title": "Workspace Health",
 		"url": "https://claude.ai/artifact/DDdL84zazbK3HrQiq5wjGR"

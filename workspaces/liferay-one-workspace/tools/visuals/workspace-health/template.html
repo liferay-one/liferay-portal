@@ -1,9 +1,10 @@
 <title>Workspace Health</title>
 
 <style>
-/* Layout: a front desk. An overview with one card per layer and the triage queue, then one tab of actions for each layer, and a workspace tab for what spans the layers. */
+/* Layout: a front desk. An overview with one card per layer and the triage queue, a workspace tab for what spans the layers, then a tab for each layer with its actions and its visuals. */
+html { scrollbar-gutter: stable; }
 :root {
-	--wrap-width: 1280px;
+	--wrap-width: 1760px;
 	--done: var(--ok);
 }
 p { margin: 0; }
@@ -42,7 +43,6 @@ details summary { cursor: pointer; color: var(--accent); font-size: 13px; }
 .spec .name { font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere; }
 .spec .score { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; white-space: nowrap; }
 .spec .score b { color: var(--critical); }
-.spec.clean .score b { color: var(--ok); }
 .refs { border-top: 1px solid var(--line); overflow-x: auto; }
 .refs td.where { color: var(--muted); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; width: 1%; }
 .refs td.ref { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
@@ -60,37 +60,77 @@ details summary { cursor: pointer; color: var(--accent); font-size: 13px; }
 .copy { background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; padding: 2px 8px; }
 .pill.new { color: var(--info); }
 .untracked { color: var(--medium); font-size: 12px; }
-.ws-nav { margin-bottom: 4px; }
+.section-group { display: grid; gap: 20px; }
+.section-nav { margin-bottom: 4px; }
+.layer-actions[hidden] { display: none; }
 a.src { color: var(--accent); font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
 </style>
 
-<div class="wrap">
+<!-- parts:head -->
+
+<div class="wrap" id="page">
 	<header>
 		<div class="eyebrow">Actions by layer · <span id="generated"></span></div>
 
 		<h1>Workspace Health</h1>
 
-		<p>Everything to act on in the workspace. The Model, View, and Controller pages show what the code is. Each problem, known defect, and finding that they report comes here, sorted by layer, with the actions that span the layers: the dependencies, the tests, the change hotspots, and the specs. An action that no ticket or audit ID tracks is in the triage queue.</p>
+		<p>Everything to act on in the workspace. The Model, View, and Controller tabs each start with the actions of their layer, then show what the code is. Each problem, known defect, and finding comes to the tab of its layer, and the Workspace tab holds the actions that span the layers: the dependencies, the bundle health of the custom element, the tests and their coverage of the test plan, the change hotspots, and the specs. An action that no ticket or audit ID tracks is in the triage queue.</p>
 	</header>
 
 	<div aria-label="Sections" class="tabs" id="tabs" role="tablist"></div>
 
 	<section class="panel" id="panel-overview" role="tabpanel"></section>
-	<section class="panel" hidden id="panel-model" role="tabpanel"></section>
-	<section class="panel" hidden id="panel-view" role="tabpanel"></section>
-	<section class="panel" hidden id="panel-controller" role="tabpanel"></section>
 	<section class="panel" hidden id="panel-workspace" role="tabpanel">
-		<div aria-label="Workspace sections" class="seg ws-nav" id="ws-nav" role="group"></div>
+		<div aria-label="Workspace sections" class="section-nav seg" id="ws-nav" role="group"></div>
 		<div id="ws-actions"></div>
-		<div hidden id="ws-dependencies" style="display:grid;gap:20px"></div>
-		<div hidden id="ws-tests" style="display:grid;gap:20px"></div>
+		<div class="section-group" data-section="bundle" hidden id="ws-bundle">
+			<h2>Dependencies</h2>
+
+			<div class="section-group" id="ws-dependencies"></div>
+
+			<h2>Custom Element Build</h2>
+
+			<div class="section-group" id="ws-bundle-build"></div>
+		</div>
+
+		<div class="section-group" data-section="tests" hidden id="ws-tests">
+			<div class="section-group" id="ws-tests-runs"></div>
+
+			<!-- parts:workspace -->
+
+		</div>
+
 		<div hidden id="ws-changes" style="display:grid;gap:20px"></div>
 		<div hidden id="ws-specs" style="display:grid;gap:20px"></div>
 	</section>
 
+	<section class="panel" hidden id="panel-model" role="tabpanel">
+		<div aria-label="Model sections" class="section-nav seg" id="nav-model" role="group"></div>
+		<div class="layer-actions" id="actions-model"></div>
+
+		<!-- parts:model -->
+
+	</section>
+
+	<section class="panel" hidden id="panel-view" role="tabpanel">
+		<div aria-label="View sections" class="section-nav seg" id="nav-view" role="group"></div>
+		<div class="layer-actions" id="actions-view"></div>
+
+		<!-- parts:view -->
+
+	</section>
+
+	<section class="panel" hidden id="panel-controller" role="tabpanel">
+		<div aria-label="Controller sections" class="section-nav seg" id="nav-controller" role="group"></div>
+		<div class="layer-actions" id="actions-controller"></div>
+
+		<!-- parts:controller -->
+
+	</section>
+
 	<footer>
 		<p>Generated by <code>tools/visuals/workspace-health</code>. A problem fails <code>yarn viz:check</code>. A known defect is listed in <code>known-defects.json</code> with its ticket or audit ID. A finding comes from a visual's own input or scan. An action is tracked when a known defect gives its reason, or when its text names a ticket or a Go-Live Tasks ID.</p>
-		<p>The dependency section reads the <code>package.json</code> files, <code>yarn.lock</code>, and the <code>build.gradle</code> of each client extension, and the snapshot that <code>yarn viz:deps</code> writes. The tests section reads the test sources and the run history that <code>yarn viz:tests</code> records. The changes section reads <code>git log</code>. The specs section checks the names in backticks in <code>specs/</code> against the code. <code>yarn viz:diff</code> marks the actions that the current branch adds to its base.</p>
+		<p>The dependency section reads the <code>package.json</code> files, <code>yarn.lock</code>, and the <code>build.gradle</code> of each client extension, and the snapshot that <code>yarn viz:deps</code> writes. The bundle health section reads the source, the last build, and the language files of <code>liferay-one-custom-element</code>. A language key that no source file names can still be reached through <code>translateLabel</code>, which turns a label from the server into a key. The tests section reads the test sources and the run history that <code>yarn viz:tests</code> records. The changes section reads <code>git log</code>. The specs section checks the names in backticks in <code>specs/</code> against the code. <code>yarn viz:diff</code> marks the actions that the current branch adds to its base.</p>
 	</footer>
 </div>
 
@@ -114,10 +154,10 @@ const SEVERITY_ORDER = ["critical", "high", "medium", "low", "info"];
 const SEVERITY_CLASS = {critical: "sev-Critical", high: "sev-High", medium: "sev-Medium", low: "sev-Low"};
 const KIND_LABEL = {problem: "Problem", defect: "Known defect", finding: "Finding"};
 const LAYERS = [
+	{id: "workspace", label: "Workspace"},
 	{id: "model", label: "Model"},
 	{id: "view", label: "View"},
 	{id: "controller", label: "Controller"},
-	{id: "workspace", label: "Workspace"},
 ];
 
 const keyOf = a => `${a.visual}\u0000${a.title.replace(/\d+/g, "#")}`;
@@ -128,19 +168,19 @@ const ACTIONS = DATA.actions
 const open = a => a.severity !== "info";
 const triage = ACTIONS.filter(a => open(a) && !a.tracked);
 
-// Where an action came from, as a link to the generated page, tab, and
-// section that show it. Links stay among the generated pages.
-const WS_SECTION = a => /vulnerab|Gradle|latest\.release/.test(a.title) ? "dependencies" : /test/i.test(a.title) ? "tests" : /\.md is out of date/.test(a.title) ? "specs" : "actions";
+// Where an action came from, as a link to the tab and section that show it.
+// A visual is a section of its layer's tab, and anchor and item name the
+// place inside it to highlight. An action of Workspace Health itself names
+// its section of the Workspace tab.
 function placeLink(a) {
-	if (a.visual === "workspace-health" || DATA.places[a.visual]?.page === "workspace-health") {
-		const section = WS_SECTION(a);
+	if (a.visual === "workspace-health") {
+		const section = a.section ?? "actions";
 		const item = a.item ?? (section === "actions" ? a.title.replace(/`/g, "") : "");
-		return `<a class="jump" data-item="${esc(item)}" data-tab="workspace" data-ws="${section}">Workspace · ${section[0].toUpperCase() + section.slice(1)}</a>`;
+		return `<a class="jump" data-item="${esc(item)}" data-tab="workspace" data-ws="${section}">Workspace · ${WS.find(([k]) => k === section)[1]}</a>`;
 	}
-	const place = a.visual === "rules" ? {page: a.layer, tab: "rules", title: `${LAYERS.find(l => l.id === a.layer)?.label ?? a.layer} · Rules`} : DATA.places[a.visual];
+	const place = a.visual === "rules" ? {layer: a.layer, page: "workspace-health", tab: "rules", title: `${LAYERS.find(l => l.id === a.layer)?.label ?? a.layer} · Rules`} : DATA.places[a.visual];
 	if (!place) return esc(a.visual);
-	const hash = place.tab ? `#${place.tab}${a.anchor ? "." + a.anchor : ""}${a.item ? "~" + vizEncode(a.item) : ""}` : "";
-	return `<a href="${esc(place.page)}.html${esc(hash)}" style="color:var(--accent)">${esc(place.title)}</a>`;
+	return `<a class="jump" data-anchor="${esc(a.anchor ?? "")}" data-item="${esc(a.item ?? "")}" data-sub="${esc(place.layer + "-" + place.tab)}" data-tab="${esc(place.layer)}">${esc(place.title)}</a>`;
 }
 
 // A link to the code an action names, on GitHub.
@@ -202,8 +242,6 @@ function actionTable(layer) {
 	</div>`;
 }
 
-const PAGE_FOR = {model: "model", view: "view", controller: "controller"};
-
 function renderOverview() {
 	const staleDays = 7;
 	const fresh = DATA.freshness.map(s => {
@@ -214,14 +252,12 @@ function renderOverview() {
 		const list = ACTIONS.filter(a => a.layer === l.id && open(a));
 		const severe = list.filter(a => a.severity === "critical" || a.severity === "high").length;
 		const color = list.some(a => a.kind === "problem") || severe ? "var(--critical)" : list.length ? "var(--medium)" : "var(--ok)";
-		const page = PAGE_FOR[l.id];
-		const url = page ? `${page}.html` : null;
 		return `<div class="layer-card">
 			<h3><span class="status-dot" style="background:${color}"></span>${l.label}</h3>
 
 			<div class="counts"><div><b>${severe}</b><span>critical or high</span></div><div><b>${list.filter(a => a.severity === "medium").length}</b><span>medium</span></div><div><b>${list.filter(a => a.severity === "low").length}</b><span>low</span></div></div>
 			<div class="muted" style="font-size:13px">${list.filter(a => !a.tracked).length} not tracked${DATA.diff ? ` · ${list.filter(a => a.isNew).length} new on this branch` : ""}</div>
-			<div class="links"><a class="jump" data-tab="${l.id}">Open the ${l.label.toLowerCase()} actions</a>${url ? `<a href="${esc(url)}" style="color:var(--accent)">${l.label} page</a>` : ""}</div>
+			<div class="links"><a class="jump" data-sub="${l.id === "workspace" ? "" : "actions"}" data-tab="${l.id}">Open the ${l.label.toLowerCase()} actions</a></div>
 		</div>`;
 	}).join("");
 	$("panel-overview").innerHTML = `
@@ -236,11 +272,13 @@ function renderOverview() {
 		</div>`;
 }
 
-// Workspace tab: its actions, then the dependencies, the tests, the change hotspots, and the specs.
-const WS = [["actions", "Actions"], ["dependencies", "Dependencies"], ["tests", "Tests"], ["changes", "Changes"], ["specs", "Specs"]];
+// Workspace tab: its actions, then the bundle (the dependencies and the
+// custom element build), the tests with their coverage of the test plan,
+// the change hotspots, and the specs.
+const WS = [["actions", "Actions"], ["bundle", "Bundle"], ["tests", "Tests"], ["changes", "Changes"], ["specs", "Specs"]];
 let ws = "actions";
 
-// Dependencies tab.
+// Dependencies, the first half of the Bundle section.
 function renderDependencies() {
 	const list = deps.dependencies.map(d => {
 		const latest = snap?.latest[`${d.ecosystem}:${d.name}`] ?? null;
@@ -284,7 +322,36 @@ function renderDependencies() {
 		<div class="card"><h3>Declared Dependencies</h3><div class="table-wrap"><table><thead><tr><th>Name</th><th>Ecosystem</th><th>Kind</th><th>Declared</th><th>Latest</th><th></th></tr></thead><tbody>${depRows}</tbody></table></div></div>`;
 }
 
-// Changes tab.
+// Custom element build, the second half of the Bundle section: the weight
+// and the dead code of the custom element.
+function renderBundle() {
+	const {build, files, languageKeys: keys} = DATA.bundle;
+	const total = build ? build.files.reduce((s, f) => s + f.size, 0) : 0;
+	const gzip = build ? build.files.reduce((s, f) => s + f.gzip, 0) : 0;
+	const tiles = [
+		[build ? kb(total) : "—", build ? `built output, ${kb(gzip)} compressed` : "no build: run yarn build in the custom element", build ? "" : "warn"],
+		[files.unreachable.length, "source files that no import reaches", files.unreachable.length ? "warn" : "good"],
+		[files.testOnly.length, "source files that only a test reaches", files.testOnly.length ? "warn" : ""],
+		[`${files.app}/${files.sources}`, "source files, not counting tests, that the app reaches", ""],
+	];
+	if (keys) {
+		tiles.push([keys.unused.length, `language keys of ${keys.keys} that no source file names`, ""]);
+		for (const l of keys.locales) tiles.push([l.missing, `keys with no ${l.locale} translation`, l.missing ? "warn" : "good"]);
+	}
+	const list = items => items.length ? `<div class="chips">${items.map(i => `<span>${esc(i)}</span>`).join("")}</div>` : `<p class="muted">None.</p>`;
+	$("ws-bundle-build").innerHTML = `
+		<p class="muted" style="max-width:80ch;margin:0">The weight and the dead code of <code>liferay-one-custom-element</code>: the size of the last build, the source files that no import reaches, and the language keys that no source file names or no locale translates.</p>
+
+		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
+		${build ? `<div class="card"><div class="card-head"><h3>Built Output</h3><span class="muted">built ${esc(build.built.slice(0, 10))}</span></div><div class="table-wrap"><table><thead><tr><th>File</th><th style="text-align:right">Size</th><th style="text-align:right">Compressed</th></tr></thead><tbody>${build.files.slice(0, 15).map(f => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(f.file)}</td><td class="num">${kb(f.size)}</td><td class="num">${kb(f.gzip)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
+		<div class="two">
+			<div class="card"><h3>Unreachable Source Files</h3><p class="muted">No import from <code>src/main.tsx</code> or from a test reaches these files.</p>${list(files.unreachable)}</div>
+			<div class="card"><h3>Test Only Source Files</h3><p class="muted">Only a test imports these files, so the app does not use them.</p>${list(files.testOnly)}</div>
+		</div>
+		${keys ? `<div class="card"><div class="card-head"><h3>Language Keys No Source File Names</h3><span class="muted">${keys.unused.length} of ${keys.keys}</span></div><p class="muted">Check each key before you delete it. <code>translateLabel</code> can reach a key from a label that the server sends.</p><details><summary>Show the keys</summary>${list(keys.unused)}</details></div>` : ""}`;
+}
+
+// Changes section.
 function renderChanges() {
 	const h = DATA.hotspots;
 	$("ws-changes").innerHTML = `
@@ -293,7 +360,7 @@ function renderChanges() {
 		<div class="card"><div class="table-wrap"><table><thead><tr><th>File</th><th style="text-align:right">Commits</th><th style="text-align:right">Authors</th><th style="text-align:right">Lines</th></tr></thead><tbody>${h.files.map(f => `<tr><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(f.file.replace("client-extensions/", ""))}</td><td class="num">${f.commits}</td><td class="num">${f.authors}</td><td class="num">${f.lines}</td></tr>`).join("") || `<tr><td class="muted">No history.</td></tr>`}</tbody></table></div></div>`;
 }
 
-// Tests tab.
+// Tests section.
 function renderTests() {
 	const t = DATA.tests;
 	const count = k => t.markers.filter(m => m.kind === k).length;
@@ -307,7 +374,7 @@ function renderTests() {
 		[t.runs.length, "recorded runs", ""],
 	];
 	const markers = t.markers.filter(m => m.kind !== "conditional");
-	$("ws-tests").innerHTML = `
+	$("ws-tests-runs").innerHTML = `
 		<div class="tiles">${tiles.map(([n, l, c]) => `<div class="tile ${c || ""}"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join("")}</div>
 		${t.runs.length ? "" : `<div class="card empty">No recorded runs. After a test run, run <code>yarn viz:tests</code> to add its JUnit results to the history, then <code>yarn viz workspace-health</code>. A flaky test shows up once the history has at least three runs of it, and it passed in the latest one after a failure.</div>`}
 		${markers.length ? `<div class="card"><h3>Skipped and Focused Tests</h3><div class="table-wrap"><table><tbody>${markers.map(m => `<tr><td><span class="pill ${m.kind === "only" ? "sev-High" : "sev-Low"}">${esc(m.kind)}</span></td><td class="id" style="white-space:normal;overflow-wrap:anywhere">${esc(m.file)}:${m.line}</td><td class="id" style="white-space:normal">${esc(m.text)}</td></tr>`).join("")}</tbody></table></div></div>` : ""}
@@ -332,10 +399,60 @@ function renderWorkspace() {
 	$("ws-nav").innerHTML = WS.map(([k, l]) => `<button aria-pressed="${ws === k}" data-ws="${k}" type="button">${l}</button>`).join("");
 	for (const [k] of WS) $("ws-" + k).hidden = ws !== k;
 	if (ws === "actions") $("ws-actions").innerHTML = actionTable("workspace");
-	if (ws === "dependencies") renderDependencies();
+	if (ws === "bundle") { renderDependencies(); renderBundle(); }
 	if (ws === "tests") renderTests();
+
+	// A visual inside a section, such as the test coverage under the tests,
+	// shows with its section and mounts the first time the section shows.
+
+	for (const panel of $("ws-" + ws).querySelectorAll(".layer-panel")) {
+		panel.hidden = false;
+		if (!mounted.has(panel.dataset.part)) {
+			mounted.add(panel.dataset.part);
+			mountPart(panel.dataset.part, panel);
+		}
+	}
 	if (ws === "changes") renderChanges();
 	if (ws === "specs") renderSpecs();
+}
+
+// Layer tabs: the actions of the layer, then a section for each of its
+// visuals. A section mounts the first time it shows, so a diagram measures
+// itself while it is visible.
+const SUBS = {};
+const sub = {};
+const mounted = new Set();
+for (const l of LAYERS) {
+	if (l.id === "workspace") continue;
+	SUBS[l.id] = [["actions", "Actions"], ...[...document.querySelectorAll(`#panel-${l.id} > .layer-panel`)].map(p => [p.dataset.part, p.dataset.label])];
+	sub[l.id] = "actions";
+}
+try { Object.assign(sub, JSON.parse(localStorage.getItem("workspace-health-sections") || "{}")); } catch {}
+
+function partPanel(id) {
+	return document.querySelector(`.layer-panel[data-part="${CSS.escape(id)}"]`);
+}
+
+function renderLayer(layer) {
+	if (!SUBS[layer].some(([k]) => k === sub[layer])) sub[layer] = "actions";
+	const current = sub[layer];
+	$("nav-" + layer).innerHTML = SUBS[layer].map(([k, l]) => `<button aria-pressed="${current === k}" data-layer="${layer}" data-sub="${k}" type="button">${esc(l)}</button>`).join("");
+	$("actions-" + layer).hidden = current !== "actions";
+	if (current === "actions") $("actions-" + layer).innerHTML = actionTable(layer);
+	for (const panel of document.querySelectorAll(`#panel-${layer} > .layer-panel`)) panel.hidden = panel.dataset.part !== current;
+	if (current !== "actions" && !mounted.has(current)) {
+		mounted.add(current);
+		mountPart(current, partPanel(current));
+	}
+}
+
+// Opens a section and highlights the place an action names in it.
+function reveal(id, anchor, item) {
+	const panel = partPanel(id);
+	if (!panel) return;
+	const section = anchor ? panel.querySelector("#" + CSS.escape(anchor)) : null;
+	if (item) vizHighlight(section ?? panel, item).then(found => { if (!found && section) vizHighlight(section, ""); });
+	else if (section) vizHighlight(section, "");
 }
 
 // Tabs.
@@ -350,30 +467,37 @@ if (!TABS.some(t => t.id === tab)) tab = "overview";
 function render() {
 	$("tabs").innerHTML = TABS.map(t => `<button aria-selected="${t.id === tab}" data-tab="${t.id}" role="tab" type="button">${t.label}${t.n !== null ? `<span>${t.n}</span>` : ""}</button>`).join("");
 	for (const t of TABS) $("panel-" + t.id).hidden = t.id !== tab;
+	if (tab !== "overview" && tab !== "workspace") renderLayer(tab);
 	if (tab === "overview") renderOverview();
 	else if (tab === "workspace") renderWorkspace();
-	else $("panel-" + tab).innerHTML = actionTable(tab);
 }
 
+// A section handles its own clicks and input.
 document.addEventListener("click", ev => {
-	const t = ev.target.closest("[data-tab],[data-ws],[data-kind],[data-tracked],[data-fresh],[data-copy-all],[data-copy-one],[data-copy-triage]");
+	if (ev.target.closest(".layer-panel")) return;
+	const t = ev.target.closest("[data-tab],[data-ws],[data-sub],[data-kind],[data-tracked],[data-fresh],[data-copy-all],[data-copy-one],[data-copy-triage]");
 	if (!t) return;
 	if (t.dataset.copyAll) { copy(markdown(window.__shown[t.dataset.copyAll] ?? []), t); return; }
 	if (t.dataset.copyOne) { const [layer, i] = t.dataset.copyOne.split(":"); copy(markdown([window.__shown[layer][Number(i)]]), t); return; }
 	if (t.dataset.copyTriage !== undefined) { copy(markdown(triage), t); return; }
 	ev.preventDefault();
-	if (t.dataset.tab) { tab = t.dataset.tab; if (t.dataset.ws) ws = t.dataset.ws; try { localStorage.setItem("workspace-health-tab", tab); } catch {} }
+	if (t.dataset.tab) { tab = t.dataset.tab; if (t.dataset.ws) ws = t.dataset.ws; if (t.dataset.sub && sub[tab]) sub[tab] = t.dataset.sub; if (t.dataset.sub && tab === "workspace") ws = partPanel(t.dataset.sub)?.closest("[data-section]")?.dataset.section ?? ws; try { localStorage.setItem("workspace-health-tab", tab); } catch {} }
 	else if (t.dataset.ws) ws = t.dataset.ws;
+	else if (t.dataset.sub) sub[t.dataset.layer] = t.dataset.sub;
 	else {
 		const f = filterOf(t.dataset.layer);
 		if (t.dataset.kind) f.kind.has(t.dataset.kind) ? f.kind.delete(t.dataset.kind) : f.kind.add(t.dataset.kind);
 		if (t.dataset.tracked) f.tracked = t.dataset.tracked;
 		if (t.dataset.fresh !== undefined) f.fresh = !f.fresh;
 	}
+	try { localStorage.setItem("workspace-health-sections", JSON.stringify(sub)); } catch {}
 	render();
-	if (t.dataset.item) vizHighlight($("ws-" + ws), t.dataset.item);
+	if (t.dataset.tab && sub[tab] && sub[tab] !== "actions") reveal(sub[tab], t.dataset.anchor, t.dataset.item);
+	else if (tab === "workspace" && t.dataset.sub && partPanel(t.dataset.sub)) reveal(t.dataset.sub, t.dataset.anchor, t.dataset.item);
+	else if (t.dataset.item && t.dataset.ws) vizHighlight($("ws-" + ws), t.dataset.item);
 });
 document.addEventListener("input", ev => {
+	if (ev.target.closest(".layer-panel")) return;
 	const t = ev.target.closest("[data-query]");
 	if (!t) return;
 	filterOf(t.dataset.layer).query = t.value.trim().toLowerCase();
