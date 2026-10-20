@@ -1474,47 +1474,6 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private LicenseKeyGenerateFormService _toLicenseKeyGenerateFormService(
-			String productExternalReferenceCode, Map<String, Sku> skus)
-		throws Exception {
-
-		CommerceProductService commerceProductService = Mockito.mock(
-			CommerceProductService.class);
-		CommerceSkuService commerceSkuService = Mockito.mock(
-			CommerceSkuService.class);
-
-		Product product = new Product();
-
-		product.setExternalReferenceCode(productExternalReferenceCode);
-		product.setProductId(1L);
-
-		Mockito.when(
-			commerceProductService.fetchProduct(1L)
-		).thenReturn(
-			product
-		);
-
-		for (Map.Entry<String, Sku> entry : skus.entrySet()) {
-			Mockito.when(
-				commerceSkuService.fetchSku(entry.getKey())
-			).thenReturn(
-				entry.getValue()
-			);
-		}
-
-		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			new LicenseKeyGenerateFormService();
-
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_commerceProductService",
-			commerceProductService);
-		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_commerceSkuService",
-			commerceSkuService);
-
-		return licenseKeyGenerateFormService;
-	}
-
-	private LicenseKeyGenerateFormService _toLicenseKeyGenerateFormService(
 			ProductVersion... productVersions)
 		throws Exception {
 
@@ -1551,6 +1510,47 @@ public class LicenseKeyGenerateFormServiceTest {
 		ReflectionTestUtils.setField(
 			licenseKeyGenerateFormService, "_productVersionService",
 			productVersionService);
+
+		return licenseKeyGenerateFormService;
+	}
+
+	private LicenseKeyGenerateFormService _toLicenseKeyGenerateFormService(
+			String productExternalReferenceCode, Map<String, Sku> skus)
+		throws Exception {
+
+		CommerceProductService commerceProductService = Mockito.mock(
+			CommerceProductService.class);
+		CommerceSkuService commerceSkuService = Mockito.mock(
+			CommerceSkuService.class);
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode(productExternalReferenceCode);
+		product.setProductId(1L);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(1L)
+		).thenReturn(
+			product
+		);
+
+		for (Map.Entry<String, Sku> entry : skus.entrySet()) {
+			Mockito.when(
+				commerceSkuService.fetchSku(entry.getKey())
+			).thenReturn(
+				entry.getValue()
+			);
+		}
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceProductService",
+			commerceProductService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceSkuService",
+			commerceSkuService);
 
 		return licenseKeyGenerateFormService;
 	}
