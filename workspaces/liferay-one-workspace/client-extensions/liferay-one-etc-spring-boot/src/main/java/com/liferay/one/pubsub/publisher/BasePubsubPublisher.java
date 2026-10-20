@@ -40,6 +40,8 @@ public abstract class BasePubsubPublisher extends BasePubsubClient {
 			doPublish(message);
 		}
 		catch (Exception exception) {
+			_resumePublish(message);
+
 			if ((exception instanceof ExecutionException) &&
 				(exception.getCause() instanceof Exception)) {
 
@@ -134,6 +136,14 @@ public abstract class BasePubsubPublisher extends BasePubsubClient {
 		}
 
 		return builder.build();
+	}
+
+	private void _resumePublish(Message message) {
+		Publisher publisher = _publisherMap.get(message.getTopic());
+
+		if (publisher != null) {
+			publisher.resumePublish(getOrderingKey(message));
+		}
 	}
 
 	private static final Log _log = LogFactory.getLog(
