@@ -129,6 +129,27 @@ function get_gradle_property {
 	echo "${value}"
 }
 
+# A script has one EXIT trap, so a second trap command replaces the first. Add
+# each cleanup with _add_exit_command instead. The trap runs every added command
+# once, in the order the script added them.
+
+_EXIT_COMMANDS=()
+
+function _add_exit_command {
+	local command="${1}"
+
+	local exit_command
+
+	for exit_command in ${_EXIT_COMMANDS[@]+"${_EXIT_COMMANDS[@]}"}
+	do
+		[[ ${exit_command} == "${command}" ]] && return 0
+	done
+
+	_EXIT_COMMANDS+=("${command}")
+
+	trap _run_exit_commands EXIT
+}
+
 # Mints the OAuth2 client-credentials token used by every _curl call and caches
 # it in _OAUTH_TOKEN. Call it once, at the top level of the sourcing script (the
 # first statement of main, or at source time in the teardown common), so a
@@ -214,7 +235,7 @@ function _lock_batch_import {
 		# _unlock removes only a lock this process holds.
 		#
 
-		trap '_unlock' EXIT
+		_add_exit_command "_unlock"
 
 		_lock
 	fi
@@ -314,6 +335,15 @@ function _require_local_seed_target {
 	_warn "The seed creates persona users whose password is \"test\". Set LIFERAY_SEED_REMOTE=true to seed it anyway."
 
 	exit 1
+}
+
+function _run_exit_commands {
+	local exit_command
+
+	for exit_command in ${_EXIT_COMMANDS[@]+"${_EXIT_COMMANDS[@]}"}
+	do
+		"${exit_command}" || true
+	done
 }
 
 function _unlock_batch_import {
