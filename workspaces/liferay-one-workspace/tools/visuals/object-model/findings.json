@@ -5,14 +5,22 @@
 			"entitlementToLicenseKey",
 			"SOFT_C_LICENSE_KEY_entitlementId"
 		],
-		"nodes": ["C_LICENSE_KEY", "C_ENTITLEMENT"],
+		"nodes": [
+			"C_LICENSE_KEY",
+			"C_ENTITLEMENT"
+		],
 		"sev": "high",
 		"title": "LicenseKey entitlement link is split between a field and a relationship"
 	},
 	{
 		"body": "publisherToCommerceOrder is disassociate, so deleting a Publisher Sales Summary keeps its Commerce Orders (Go-Live Tasks D1, T2.1).",
-		"edges": ["publisherToCommerceOrder"],
-		"nodes": ["C_PUBLISHER_SALES_SUMMARY", "L_COMMERCE_ORDER"],
+		"edges": [
+			"publisherToCommerceOrder"
+		],
+		"nodes": [
+			"C_PUBLISHER_SALES_SUMMARY",
+			"L_COMMERCE_ORDER"
+		],
 		"sev": "fixed",
 		"title": "Deleting a Publisher Sales Summary deletes its Commerce Orders",
 		"verify": {
@@ -23,8 +31,13 @@
 	},
 	{
 		"body": "entitlementDefinitionToEntitlement is prevent, so a definition with entitlements cannot be deleted. Set active: false to retire a definition (Go-Live Tasks D2, T2.1).",
-		"edges": ["entitlementDefinitionToEntitlement"],
-		"nodes": ["C_ENTITLEMENT_DEFINITION", "C_ENTITLEMENT"],
+		"edges": [
+			"entitlementDefinitionToEntitlement"
+		],
+		"nodes": [
+			"C_ENTITLEMENT_DEFINITION",
+			"C_ENTITLEMENT"
+		],
 		"sev": "fixed",
 		"title": "Deleting an Entitlement Definition deletes its entitlements",
 		"verify": {
@@ -35,8 +48,15 @@
 	},
 	{
 		"body": "contractToEnvironment and contractToEntitlement are disassociate, like the account and project links, and teardown_records.sh deletes environments itself (Go-Live Tasks D3, T2.1).",
-		"edges": ["contractToEnvironment", "contractToEntitlement"],
-		"nodes": ["C_CONTRACT", "C_ENVIRONMENT", "C_ENTITLEMENT"],
+		"edges": [
+			"contractToEnvironment",
+			"contractToEntitlement"
+		],
+		"nodes": [
+			"C_CONTRACT",
+			"C_ENVIRONMENT",
+			"C_ENTITLEMENT"
+		],
 		"sev": "fixed",
 		"title": "Deleting a Contract deletes its Environments and Entitlements",
 		"verify": {
@@ -48,8 +68,14 @@
 	},
 	{
 		"body": "The code stores the order in the text field LicenseKey.orderId and never writes or reads the relationship. Remove the relationship or move the order link to it.",
-		"edges": ["commerceOrderToLicenseKey", "SOFT_C_LICENSE_KEY_orderId"],
-		"nodes": ["C_LICENSE_KEY", "L_COMMERCE_ORDER"],
+		"edges": [
+			"commerceOrderToLicenseKey",
+			"SOFT_C_LICENSE_KEY_orderId"
+		],
+		"nodes": [
+			"C_LICENSE_KEY",
+			"L_COMMERCE_ORDER"
+		],
 		"sev": "medium",
 		"title": "commerceOrderToLicenseKey is unused"
 	},
@@ -59,7 +85,11 @@
 			"SOFT_L_COMMERCE_ORDER_projectName",
 			"SOFT_L_COMMERCE_ORDER_contractId"
 		],
-		"nodes": ["L_COMMERCE_ORDER", "C_PROJECT", "C_CONTRACT"],
+		"nodes": [
+			"L_COMMERCE_ORDER",
+			"C_PROJECT",
+			"C_CONTRACT"
+		],
 		"sev": "medium",
 		"title": "Orders find their project by project name"
 	},
@@ -90,21 +120,30 @@
 	},
 	{
 		"body": "Property, SubscriptionEntry, and UsageReport point to any record with a class name and a primary key. Nothing deletes them when the target is deleted.",
-		"edges": [],
-		"nodes": ["C_PROPERTY", "C_SUBSCRIPTION_ENTRY", "C_USAGE_REPORT"],
+		"edges": [
+		],
+		"nodes": [
+			"C_PROPERTY",
+			"C_SUBSCRIPTION_ENTRY",
+			"C_USAGE_REPORT"
+		],
 		"sev": "medium",
 		"title": "Polymorphic targets have no clean up"
 	},
 	{
 		"body": "LT_ACCOUNT_FLAG_CODE, LT_ACCOUNT_FLAG_VALUE, LT_ACCOUNT_REGION, LT_ACCOUNT_STATUS, LT_ACCOUNT_TIER, LT_ENTITLEMENT_RULE_TYPE, LT_ENTITLEMENT_STATUS, LT_ENVIRONMENT_PRIMARY_REGION, and LT_PRODUCT_TYPE. The accountTier custom field is plain text.",
-		"edges": [],
-		"nodes": ["L_ACCOUNT"],
+		"edges": [
+		],
+		"nodes": [
+			"L_ACCOUNT"
+		],
 		"sev": "low",
 		"title": "9 picklists are not used by a field"
 	},
 	{
 		"body": "No code reads or writes AIHubBetaPrivateAccessRequest or SalesRequest. AccountNote appears only in resource-permissions.json. The sibling scripts checkout was not searched.",
-		"edges": [],
+		"edges": [
+		],
 		"nodes": [
 			"C_AI_HUB_BETA_PRIVATE_ACCESS_REQUEST",
 			"C_SALES_REQUEST",
@@ -115,7 +154,8 @@
 	},
 	{
 		"body": "grantType, unit, Environment type, offering, activationMode, activationStatus, aggregationType, period, and targetType accept any text, so a typo saves with no error.",
-		"edges": [],
+		"edges": [
+		],
 		"nodes": [
 			"C_ENTITLEMENT",
 			"C_ENTITLEMENT_DEFINITION",
@@ -145,14 +185,20 @@
 	},
 	{
 		"body": "It is a system object field in 02-system-object-field and a custom field in expando-columns.json. Keep one.",
-		"edges": ["SOFT_L_ORGANIZATION_accountEntryId"],
-		"nodes": ["L_ORGANIZATION", "L_ACCOUNT"],
+		"edges": [
+			"SOFT_L_ORGANIZATION_accountEntryId"
+		],
+		"nodes": [
+			"L_ORGANIZATION",
+			"L_ACCOUNT"
+		],
 		"sev": "low",
 		"title": "Organization.accountEntryId has two definitions"
 	},
 	{
 		"body": "Wrong fields corrected, the 20 missing objects described, and the ERC and friendly URL table regenerated.",
-		"edges": [],
+		"edges": [
+		],
 		"nodes": [
 			"C_ACCOUNT_NOTE",
 			"C_CONTRACT",
