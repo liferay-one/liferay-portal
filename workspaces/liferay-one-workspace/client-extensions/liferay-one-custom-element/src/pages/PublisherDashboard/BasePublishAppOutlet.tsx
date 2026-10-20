@@ -156,7 +156,7 @@ const BasePublishAppOutlet = <TContext extends PublishFlowContext>({
 
 							<span>
 								<span className="app-review-page-agreement-highlight">
-									{'Attention: this cannot be undone. '}
+									{'Attention: This cannot be undone. '}
 								</span>
 								I am aware I cannot edit any data or information
 								regarding this app submission until Liferay
@@ -169,6 +169,7 @@ const BasePublishAppOutlet = <TContext extends PublishFlowContext>({
 								<ExternalLink href="https://www.liferay.com/privacy-policy">
 									privacy
 								</ExternalLink>
+								.
 							</span>
 						</div>
 					)}

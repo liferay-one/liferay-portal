@@ -27,8 +27,10 @@
 }
 
 .app-review-page-agreement {
+	align-items: flex-start;
 	display: flex;
 	font-size: 13px;
+	gap: 12px;
 }
 
 .app-review-page-agreement-highlight {
