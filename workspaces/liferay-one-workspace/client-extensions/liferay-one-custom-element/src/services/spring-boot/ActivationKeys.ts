@@ -25,6 +25,7 @@ export type GenerateFormKeyType = {
 	licenseEntryType: string;
 	productKey: string;
 	subscriptions: GenerateFormSubscription[];
+	virtualCluster: boolean;
 };
 
 export type GenerateFormSubscription = {
@@ -83,12 +84,14 @@ export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	description?: string;
 	environmentName: string;
 	keyType: string;
+	maxClusterNodes?: number;
 	purpose?: string;
 	renewedActivationKeyExternalReferenceCode?: string;
 	servers: ActivationKeyServer[];
 	startDate?: string;
 	subscriptionEntitlementId: number;
 	version: string;
+	virtualCluster?: boolean;
 	workspaceName?: string;
 	workspaceOwnerEmail?: string;
 };

@@ -5,6 +5,7 @@
 
 package com.liferay.one.license;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Objects;
@@ -23,14 +24,15 @@ public enum LicenseKeyType {
 	NON_PRODUCTION(null, "non-production", "Non-Production", "production"),
 	OEM(null, "oem", null, "oem"),
 	PRODUCTION("Non-Production", "production", "Production", "production"),
-	UAT(null, "uat", null, null),
-	VIRTUAL_CLUSTER(null, "virtual-cluster", null, "virtual-cluster");
+	UAT(null, "uat", null, null);
 
 	public static LicenseKeyType fetchLicenseKeyType(
 		LicenseEntry licenseEntry) {
 
 		for (LicenseKeyType licenseKeyType : values()) {
-			if (licenseKeyType.matches(licenseEntry)) {
+			if (licenseKeyType.matches(licenseEntry, false) ||
+				licenseKeyType.matches(licenseEntry, true)) {
+
 				return licenseKeyType;
 			}
 		}
@@ -56,26 +58,36 @@ public enum LicenseKeyType {
 		return Validator.isNotNull(_type);
 	}
 
-	public boolean matches(LicenseEntry licenseEntry) {
+	public boolean isVirtualClusterSupported() {
+		if (Objects.equals(_type, _TYPE_PRODUCTION) &&
+			Validator.isNotNull(_nameSuffix)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean matches(LicenseEntry licenseEntry, boolean virtualCluster) {
+		if (virtualCluster) {
+			if (!isVirtualClusterSupported() ||
+				!Objects.equals(
+					_TYPE_VIRTUAL_CLUSTER, licenseEntry.getType())) {
+
+				return false;
+			}
+
+			return _matchesName(
+				licenseEntry.getName(), _NAME_SUFFIX_VIRTUAL_CLUSTER);
+		}
+
 		if (Validator.isNull(_type) ||
 			!Objects.equals(_type, licenseEntry.getType())) {
 
 			return false;
 		}
 
-		String name = licenseEntry.getName();
-
-		if (Validator.isNotNull(_excludedNameSuffix) &&
-			name.endsWith(_excludedNameSuffix)) {
-
-			return false;
-		}
-
-		if (Validator.isNotNull(_nameSuffix) && !name.endsWith(_nameSuffix)) {
-			return false;
-		}
-
-		return true;
+		return _matchesName(licenseEntry.getName(), StringPool.BLANK);
 	}
 
 	private LicenseKeyType(
@@ -86,6 +98,29 @@ public enum LicenseKeyType {
 		_nameSuffix = nameSuffix;
 		_type = type;
 	}
+
+	private boolean _matchesName(String name, String suffix) {
+		if (Validator.isNotNull(_excludedNameSuffix) &&
+			name.endsWith(_excludedNameSuffix + suffix)) {
+
+			return false;
+		}
+
+		if (Validator.isNotNull(_nameSuffix) &&
+			!name.endsWith(_nameSuffix + suffix)) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private static final String _NAME_SUFFIX_VIRTUAL_CLUSTER =
+		" (Virtual Cluster)";
+
+	private static final String _TYPE_PRODUCTION = "production";
+
+	private static final String _TYPE_VIRTUAL_CLUSTER = "virtual-cluster";
 
 	private final String _excludedNameSuffix;
 	private final String _key;

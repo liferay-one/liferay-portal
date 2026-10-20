@@ -319,6 +319,9 @@ export default {
 	'cloud-provisioning': 'Cloud Provisioning',
 	'cloud-upload': 'Cloud Upload',
 	'cluster': 'Cluster',
+	'cluster-nodes': 'Cluster Nodes',
+	'cluster-nodes-may-not-exceed-the-maximum-number-of-x':
+		'Cluster nodes may not exceed the maximum number of {0}.',
 	'cluster-size': 'Cluster Size',
 	'cne-environment-token': 'CNE Environment Token',
 	'collaboration': 'Collaboration',

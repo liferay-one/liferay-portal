@@ -10,17 +10,19 @@ import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {GenerateForm} from '~/services/spring-boot/ActivationKeys';
 
 import {GenerateActivationKeyServer} from '../types';
-import {getLicenseKeyFamilyRank} from '../utils';
+import {getLicenseKeyFamilyRank, toVirtualClusterKeyType} from '../utils';
 
 export type RenewSource = {
 	bundleEntitlementIds: number[];
 	description: string;
 	environmentName: string;
 	keyType: string;
+	maxClusterNodes: number;
 	productExternalReferenceCode: string;
 	servers: GenerateActivationKeyServer[];
 	subscriptionEntitlementId: number;
 	version: string;
+	virtualCluster: boolean;
 };
 
 export function useRenewSource(
@@ -76,6 +78,20 @@ export function useRenewSource(
 
 		const [leadingLicenseKey] = orderedLicenseKeys;
 
+		const virtualCluster = activationKey.type === 'virtual-cluster';
+
+		let keyType = activationKey.type;
+
+		if (virtualCluster) {
+			keyType = toVirtualClusterKeyType(
+				leadingLicenseKey?.productName ?? ''
+			);
+
+			if (!keyType) {
+				return undefined;
+			}
+		}
+
 		const licenseKeyFamily =
 			activationKey.licenseKeyFamily ||
 			leadingLicenseKey?.licenseKeyFamily ||
@@ -97,7 +113,10 @@ export function useRenewSource(
 			bundleEntitlementIds: [...entitlementIds],
 			description: leadingLicenseKey?.description ?? '',
 			environmentName: leadingLicenseKey?.name ?? '',
-			keyType: activationKey.type,
+			keyType,
+			maxClusterNodes: virtualCluster
+				? Number(leadingLicenseKey?.clusterSize) || 0
+				: 0,
 			productExternalReferenceCode: product?.externalReferenceCode ?? '',
 			servers: [...servers.values()],
 			subscriptionEntitlementId:
@@ -105,6 +124,7 @@ export function useRenewSource(
 				product?.entitlementId ||
 				0,
 			version: leadingLicenseKey?.productVersion ?? '',
+			virtualCluster,
 		};
 	}, [activationKey, generateForm, licenseKeys]);
 

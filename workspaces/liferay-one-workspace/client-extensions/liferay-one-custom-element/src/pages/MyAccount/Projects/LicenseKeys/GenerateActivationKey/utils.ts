@@ -213,6 +213,22 @@ export function toServerField(
 	);
 }
 
+export function toVirtualClusterKeyType(productName: string): string {
+	if (productName.endsWith('Non-Production')) {
+		return NON_PRODUCTION_KEY_TYPE;
+	}
+
+	if (productName.endsWith('Production')) {
+		return 'production';
+	}
+
+	if (productName.endsWith('Backup')) {
+		return 'backup';
+	}
+
+	return '';
+}
+
 export function getLicenseKeyFamilyLabel(licenseKeyFamily: string): string {
 	return LEADING_LICENSE_KEY_FAMILY_LABELS[licenseKeyFamily] ?? '';
 }

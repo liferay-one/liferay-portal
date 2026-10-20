@@ -111,6 +111,7 @@ export default function GenerateActivationKey() {
 			description: '',
 			environmentName: '',
 			keyType: '',
+			maxClusterNodes: 0,
 			notify: true,
 			offlineActivated: false,
 			offlineEnvironment: null,
@@ -124,6 +125,7 @@ export default function GenerateActivationKey() {
 			startDate: format(new Date(), 'yyyy-MM-dd'),
 			subscriptionEntitlementId: 0,
 			version: '',
+			virtualCluster: false,
 			workspaceName: '',
 			workspaceOwnerEmail: Liferay.ThemeDisplay.getUserEmailAddress(),
 		},
@@ -138,6 +140,7 @@ export default function GenerateActivationKey() {
 	const complimentary = !unassigned && isComplimentaryKeyType(keyType);
 	const developer = !unassigned && isDeveloperKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
+	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
 	const version = watch('version');
 
 	const preselectedExternalReferenceCode = searchParams.get('new');
@@ -222,6 +225,9 @@ export default function GenerateActivationKey() {
 			setValue('keyType', renewSource.keyType);
 		}
 
+		setValue('maxClusterNodes', renewSource.maxClusterNodes);
+		setValue('virtualCluster', renewSource.virtualCluster);
+
 		if (renewSource.productExternalReferenceCode) {
 			setValue(
 				'productExternalReferenceCode',
@@ -304,6 +310,48 @@ export default function GenerateActivationKey() {
 			),
 		[generateForm, productExternalReferenceCode]
 	);
+
+	const virtualClusterAvailable =
+		!unassigned &&
+		Boolean(
+			product?.keyTypes.find((current) => current.key === keyType)
+				?.virtualCluster
+		);
+
+	const virtualCluster = virtualClusterAvailable && watch('virtualCluster');
+
+	const availableClusterNodes = useMemo(() => {
+		const subscription = product?.keyTypes
+			.find((current) => current.key === keyType)
+			?.subscriptions.find(
+				(current) => current.entitlementId === subscriptionEntitlementId
+			);
+
+		if (!generateForm || !subscription) {
+			return 0;
+		}
+
+		return Math.min(
+			subscription.availableCount,
+			...getBundleProducts(
+				developer,
+				generateForm,
+				productExternalReferenceCode
+			)
+				.filter((bundleProduct) =>
+					bundleEntitlementIds.includes(bundleProduct.entitlementId)
+				)
+				.map((bundleProduct) => bundleProduct.availableCount)
+		);
+	}, [
+		bundleEntitlementIds,
+		developer,
+		generateForm,
+		keyType,
+		product,
+		productExternalReferenceCode,
+		subscriptionEntitlementId,
+	]);
 
 	const cloudNative = isCloudNativeProduct(product);
 
@@ -565,6 +613,9 @@ export default function GenerateActivationKey() {
 				description: values.description || undefined,
 				environmentName: values.environmentName,
 				keyType: values.keyType,
+				maxClusterNodes: virtualCluster
+					? values.maxClusterNodes
+					: undefined,
 				purpose: complimentary
 					? getComplimentaryPurpose(
 							values.purpose,
@@ -573,13 +624,14 @@ export default function GenerateActivationKey() {
 					: undefined,
 				renewedActivationKeyExternalReferenceCode:
 					renewExternalReferenceCode ?? undefined,
-				servers: values.servers,
+				servers: virtualCluster ? [] : values.servers,
 				startDate:
 					complimentary && !startsToday
 						? toISODate(values.startDate)
 						: undefined,
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
 				version: values.version,
+				virtualCluster: virtualCluster || undefined,
 				workspaceName: values.workspaceName || undefined,
 				workspaceOwnerEmail: values.workspaceOwnerEmail || undefined,
 				...scope,
@@ -793,6 +845,7 @@ export default function GenerateActivationKey() {
 
 					{step === 'environment' && (
 						<EnvironmentStep
+							availableClusterNodes={availableClusterNodes}
 							form={form}
 							generated={generated}
 							onClickBack={() =>
@@ -809,6 +862,8 @@ export default function GenerateActivationKey() {
 							onClickGenerate={onClickGenerate}
 							renewing={renewing}
 							submitting={submitting}
+							virtualCluster={virtualCluster}
+							virtualClusterAvailable={virtualClusterAvailable}
 						/>
 					)}
 				</ProductPurchase.Body>

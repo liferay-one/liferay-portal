@@ -32,6 +32,7 @@ export type GenerateActivationKeyForm = {
 	description: string;
 	environmentName: string;
 	keyType: string;
+	maxClusterNodes: number;
 	notify: boolean;
 	offlineActivated: boolean;
 	offlineEnvironment: GenerateActivationKeyOfflineEnvironment | null;
@@ -45,6 +46,7 @@ export type GenerateActivationKeyForm = {
 	startDate: string;
 	subscriptionEntitlementId: number;
 	version: string;
+	virtualCluster: boolean;
 	workspaceName: string;
 	workspaceOwnerEmail: string;
 };

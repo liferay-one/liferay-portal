@@ -313,6 +313,9 @@ export default {
 	'cloud-provisioning': 'Aprovisionamiento en la nube',
 	'cloud-upload': 'Carga en la nube',
 	'cluster': 'Clúster',
+	'cluster-nodes': 'Nodos del clúster',
+	'cluster-nodes-may-not-exceed-the-maximum-number-of-x':
+		'El número de nodos del clúster no puede superar el máximo de {0}.',
 	'cluster-size': 'Tamaño del clúster',
 	'collaboration': 'Colaboración',
 	'collaboration-knowledge-sharing':

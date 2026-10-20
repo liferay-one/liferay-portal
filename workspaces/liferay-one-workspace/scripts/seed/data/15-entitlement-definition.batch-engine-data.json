@@ -553,19 +553,6 @@
 		},
 		{
 			"active": true,
-			"defaultQuantity": 5,
-			"displayName": "Liferay DXP Virtual Cluster",
-			"externalReferenceCode": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyFamily": "DXP",
-			"licenseKeyType": "virtual-cluster",
-			"maxQuantity": 5,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Enterprise Search",
 			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH",
@@ -924,19 +911,6 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "production",
-			"maxQuantity": 5,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 5,
-			"displayName": "Portal Virtual Cluster",
-			"externalReferenceCode": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyFamily": "Portal",
-			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
 			"unit": "boolean"
@@ -1559,19 +1533,6 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "production",
-			"maxQuantity": 5,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 5,
-			"displayName": "Liferay Self-Hosted Virtual Cluster",
-			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyFamily": "DXP",
-			"licenseKeyType": "virtual-cluster",
 			"maxQuantity": 5,
 			"name": "licenseGeneration",
 			"unit": "boolean"

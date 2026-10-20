@@ -16,6 +16,7 @@ import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
+import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
@@ -166,17 +167,19 @@ public class LicenseKeyGenerationService {
 		public GenerateRequest(
 			List<Long> bundleEntitlementIds, String dataCenterLocation,
 			String description, String environmentName, String keyType,
-			Project project, String purpose,
+			int maxClusterNodes, Project project, String purpose,
 			String renewedActivationKeyExternalReferenceCode,
 			List<Server> servers, Date startDate,
 			long subscriptionEntitlementId, String version,
-			String workspaceName, String workspaceOwnerEmail) {
+			boolean virtualCluster, String workspaceName,
+			String workspaceOwnerEmail) {
 
 			_bundleEntitlementIds = bundleEntitlementIds;
 			_dataCenterLocation = dataCenterLocation;
 			_description = description;
 			_environmentName = environmentName;
 			_keyType = keyType;
+			_maxClusterNodes = maxClusterNodes;
 			_project = project;
 			_purpose = purpose;
 			_renewedActivationKeyExternalReferenceCode =
@@ -185,6 +188,7 @@ public class LicenseKeyGenerationService {
 			_startDate = startDate;
 			_subscriptionEntitlementId = subscriptionEntitlementId;
 			_version = version;
+			_virtualCluster = virtualCluster;
 			_workspaceName = workspaceName;
 			_workspaceOwnerEmail = workspaceOwnerEmail;
 		}
@@ -207,6 +211,10 @@ public class LicenseKeyGenerationService {
 
 		public String getKeyType() {
 			return _keyType;
+		}
+
+		public int getMaxClusterNodes() {
+			return _maxClusterNodes;
 		}
 
 		public Project getProject() {
@@ -245,6 +253,10 @@ public class LicenseKeyGenerationService {
 			return _workspaceOwnerEmail;
 		}
 
+		public boolean isVirtualCluster() {
+			return _virtualCluster;
+		}
+
 		public static class Server {
 
 			public Server(
@@ -278,6 +290,7 @@ public class LicenseKeyGenerationService {
 		private final String _description;
 		private final String _environmentName;
 		private final String _keyType;
+		private final int _maxClusterNodes;
 		private final Project _project;
 		private final String _purpose;
 		private final String _renewedActivationKeyExternalReferenceCode;
@@ -285,6 +298,7 @@ public class LicenseKeyGenerationService {
 		private final Date _startDate;
 		private final long _subscriptionEntitlementId;
 		private final String _version;
+		private final boolean _virtualCluster;
 		private final String _workspaceName;
 		private final String _workspaceOwnerEmail;
 
@@ -296,11 +310,17 @@ public class LicenseKeyGenerationService {
 			Date startDate)
 		throws Exception {
 
+		String type = generateRequest.getKeyType();
+
+		if (_isVirtualCluster(generateRequest)) {
+			type = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
+		}
+
 		return _activationKeyService.addActivationKey(
 			activationKeyScope.getAccountId(), true, expirationDate,
 			licenseKeyFamily,
 			activationKeyScope.getProjectExternalReferenceCode(), startDate,
-			generateRequest.getKeyType());
+			type);
 	}
 
 	private LicenseKey _addLicenseKey(
@@ -330,8 +350,10 @@ public class LicenseKeyGenerationService {
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			licenseEntry.getName(), licenseEntry.getType(),
 			LicenseVersion.getLicenseVersion(productName, version),
-			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()), 0, 0, 0,
-			0, 0, generateRequest.getEnvironmentName(), null,
+			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()),
+			LicenseKeyGenerationConstants.getMaxClusterNodes(
+				licenseEntry.getType(), generateRequest.getMaxClusterNodes()),
+			0, 0, 0, 0, generateRequest.getEnvironmentName(), null,
 			generateRequest.getEnvironmentName(),
 			LicenseConstants.PRODUCT_ID_PORTAL, productName, version,
 			activationKeyScope.getProjectExternalReferenceCode(),
@@ -417,9 +439,7 @@ public class LicenseKeyGenerationService {
 			List<Entitlement> entitlements, GenerateRequest generateRequest)
 		throws Exception {
 
-		List<GenerateRequest.Server> servers = generateRequest.getServers();
-
-		int requestedCount = servers.size();
+		int requestedCount = _getRequestedCount(generateRequest);
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -481,7 +501,7 @@ public class LicenseKeyGenerationService {
 		return _licenseKeyGenerateFormService.fetchLicenseEntry(
 			generateRequest.getKeyType(),
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
-			generateRequest.getVersion());
+			generateRequest.getVersion(), _isVirtualCluster(generateRequest));
 	}
 
 	private ActivationKey _fetchRenewedActivationKey(
@@ -561,7 +581,25 @@ public class LicenseKeyGenerationService {
 				"No product was selected for this bundle");
 		}
 
-		if (ListUtil.isEmpty(generateRequest.getServers())) {
+		if (_isVirtualCluster(generateRequest)) {
+			LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
+				generateRequest.getKeyType());
+
+			if ((licenseKeyType == null) ||
+				!licenseKeyType.isVirtualClusterSupported()) {
+
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"A ", generateRequest.getKeyType(),
+						" key cannot be a virtual cluster key"));
+			}
+
+			if (generateRequest.getMaxClusterNodes() < 1) {
+				throw new LicenseKeyEntitlementException(
+					"No cluster nodes were given for the virtual cluster key");
+			}
+		}
+		else if (ListUtil.isEmpty(generateRequest.getServers())) {
 			throw new LicenseKeyEntitlementException(
 				"No server was given for the activation keys");
 		}
@@ -737,7 +775,7 @@ public class LicenseKeyGenerationService {
 		List<Entitlement> startedEntitlements = new ArrayList<>();
 
 		try {
-			for (GenerateRequest.Server server : generateRequest.getServers()) {
+			for (GenerateRequest.Server server : _getServers(generateRequest)) {
 				for (Entitlement entitlement : bundleEntitlements) {
 					_addLicenseKey(
 						activationKey, activationKeyScope, complimentary,
@@ -1005,6 +1043,16 @@ public class LicenseKeyGenerationService {
 		return Collections.singletonList(activationKey.getActivationKeyId());
 	}
 
+	private int _getRequestedCount(GenerateRequest generateRequest) {
+		if (_isVirtualCluster(generateRequest)) {
+			return generateRequest.getMaxClusterNodes();
+		}
+
+		List<GenerateRequest.Server> servers = generateRequest.getServers();
+
+		return servers.size();
+	}
+
 	/**
 	 * Returns the subscription entitlement that the order of the add-on
 	 * entitlements in the bundle created. An account that holds more than one
@@ -1087,6 +1135,18 @@ public class LicenseKeyGenerationService {
 		return subscriptionEntitlement;
 	}
 
+	private List<GenerateRequest.Server> _getServers(
+		GenerateRequest generateRequest) {
+
+		if (_isVirtualCluster(generateRequest)) {
+			return Collections.singletonList(
+				new GenerateRequest.Server(
+					StringPool.BLANK, StringPool.BLANK, StringPool.BLANK));
+		}
+
+		return generateRequest.getServers();
+	}
+
 	private String _getSizing(GenerateRequest generateRequest) {
 		if (_isComplimentary(generateRequest)) {
 			return _SIZING_COMPLIMENTARY;
@@ -1103,6 +1163,10 @@ public class LicenseKeyGenerationService {
 		return Objects.equals(
 			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
 			generateRequest.getKeyType());
+	}
+
+	private boolean _isVirtualCluster(GenerateRequest generateRequest) {
+		return generateRequest.isVirtualCluster();
 	}
 
 	/**
@@ -1228,7 +1292,7 @@ public class LicenseKeyGenerationService {
 			_licenseKeyGenerateFormService.fetchLicenseEntry(
 				keyType,
 				LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
-				version);
+				version, false);
 
 		if (licenseEntry != null) {
 			description = licenseEntry.getName();
@@ -1275,6 +1339,8 @@ public class LicenseKeyGenerationService {
 			productName, generateRequest.getVersion());
 		String macAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getMacAddresses());
+		int maxClusterNodes = LicenseKeyGenerationConstants.getMaxClusterNodes(
+			licenseEntry.getType(), generateRequest.getMaxClusterNodes());
 		int maxServers = LicenseKeyGenerationConstants.getMaxServers(
 			licenseEntry.getType(), 0);
 		String sizing = _getSizing(generateRequest);
@@ -1283,16 +1349,16 @@ public class LicenseKeyGenerationService {
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, maxServers, 0, 0, 0, sizing,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			StringPool.BLANK, startDate, expirationDate);
+			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
+			sizing, description, StringPool.BLANK, hostName, ipAddresses,
+			macAddresses, StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			version, environmentName, 0, maxServers, 0, 0, 0, sizing,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			StringPool.BLANK, startDate, expirationDate);
+			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
+			sizing, description, StringPool.BLANK, hostName, ipAddresses,
+			macAddresses, StringPool.BLANK, startDate, expirationDate);
 	}
 
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";

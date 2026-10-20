@@ -10,6 +10,7 @@ import RadioCard from '~/components/RadioCard/RadioCard';
 import {Word, translate} from '~/i18n';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
+import ClusterNodesField from '../components/ClusterNodesField/ClusterNodesField';
 import ServerFieldGroup from '../components/ServerFieldGroup/ServerFieldGroup';
 import {
 	GenerateActivationKeyForm,
@@ -30,6 +31,7 @@ const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
 };
 
 type EnvironmentStepProps = {
+	availableClusterNodes: number;
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	generated: boolean;
 	onClickBack: () => void;
@@ -38,9 +40,12 @@ type EnvironmentStepProps = {
 	onClickGenerate: () => void;
 	renewing: boolean;
 	submitting: boolean;
+	virtualCluster: boolean;
+	virtualClusterAvailable: boolean;
 };
 
 export default function EnvironmentStep({
+	availableClusterNodes,
 	form,
 	generated,
 	onClickBack,
@@ -49,6 +54,8 @@ export default function EnvironmentStep({
 	onClickGenerate,
 	renewing,
 	submitting,
+	virtualCluster,
+	virtualClusterAvailable,
 }: EnvironmentStepProps) {
 	const {
 		control,
@@ -63,6 +70,7 @@ export default function EnvironmentStep({
 
 	const environmentName = watch('environmentName');
 	const keyType = watch('keyType');
+	const maxClusterNodes = watch('maxClusterNodes');
 	const notify = watch('notify');
 	const servers = watch('servers');
 	const serverField = watch('serverField');
@@ -70,15 +78,17 @@ export default function EnvironmentStep({
 
 	const complimentary = isComplimentaryKeyType(keyType);
 
+	const hasNodesOrServers = virtualCluster
+		? maxClusterNodes > 0
+		: hasServerInfo(servers, serverField) &&
+			!(complimentary && servers.length > 1);
+
 	const canGenerate = Boolean(
-		environmentName.trim() &&
-			version &&
-			hasServerInfo(servers, serverField) &&
-			!(complimentary && servers.length > 1)
+		environmentName.trim() && version && hasNodesOrServers
 	);
 
 	async function onClickValidateAndGenerate() {
-		if (!(await trigger('servers'))) {
+		if (!virtualCluster && !(await trigger('servers'))) {
 			return;
 		}
 
@@ -87,6 +97,7 @@ export default function EnvironmentStep({
 
 	function onChangeServerField(value: GenerateActivationKeyServerField) {
 		setValue('serverField', value);
+		setValue('virtualCluster', false);
 
 		servers.forEach((server, index) => {
 			SERVER_FIELDS.forEach((current) => {
@@ -125,42 +136,73 @@ export default function EnvironmentStep({
 
 			<div className="mb-4 mt-4 row">
 				{SERVER_FIELDS.map((current) => (
-					<div className="col-md-4" key={current}>
+					<div
+						className={
+							virtualClusterAvailable ? 'col-md-3' : 'col-md-4'
+						}
+						key={current}
+					>
 						<RadioCard
 							className="generate-activation-key-server-field"
 							disabled={renewing}
 							onChange={() => onChangeServerField(current)}
-							selected={serverField === current}
+							selected={
+								!virtualCluster && serverField === current
+							}
 							title={translate(SERVER_FIELD_LABELS[current])}
 						/>
 					</div>
 				))}
+
+				{virtualClusterAvailable && (
+					<div className="col-md-3">
+						<RadioCard
+							className="generate-activation-key-server-field"
+							disabled={renewing}
+							onChange={() => setValue('virtualCluster', true)}
+							selected={virtualCluster}
+							title={translate('virtual-cluster')}
+						/>
+					</div>
+				)}
 			</div>
 
-			{fields.map((field, index) => (
-				<ServerFieldGroup
+			{virtualCluster && (
+				<ClusterNodesField
+					availableCount={availableClusterNodes}
 					disabled={renewing}
-					errorMessage={
-						errors.servers?.[index]?.[serverField]?.message
-					}
-					index={index}
-					key={field.id}
-					onClickAdd={
-						!renewing &&
-						!complimentary &&
-						index === fields.length - 1
-							? () => append(buildEmptyServer())
-							: undefined
-					}
-					onClickRemove={
-						!renewing && fields.length > 1
-							? () => remove(index)
-							: undefined
-					}
-					register={register}
-					serverField={serverField}
+					form={form}
 				/>
-			))}
+			)}
+
+			{!virtualCluster && (
+				<>
+					{fields.map((field, index) => (
+						<ServerFieldGroup
+							disabled={renewing}
+							errorMessage={
+								errors.servers?.[index]?.[serverField]?.message
+							}
+							index={index}
+							key={field.id}
+							onClickAdd={
+								!renewing &&
+								!complimentary &&
+								index === fields.length - 1
+									? () => append(buildEmptyServer())
+									: undefined
+							}
+							onClickRemove={
+								!renewing && fields.length > 1
+									? () => remove(index)
+									: undefined
+							}
+							register={register}
+							serverField={serverField}
+						/>
+					))}
+				</>
+			)}
 
 			<ClayCheckbox
 				checked={notify}

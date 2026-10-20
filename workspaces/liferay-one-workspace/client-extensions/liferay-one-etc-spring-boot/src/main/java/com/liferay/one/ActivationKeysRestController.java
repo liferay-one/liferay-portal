@@ -321,7 +321,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			Account account = _getAccount(
 				jsonObject.optString("accountExternalReferenceCode"), jwt);
 
-			_checkKeyType(jsonObject.optString("keyType"), jwt);
+			_checkKeyType(jsonObject, jwt);
 
 			LicenseKeyGenerationService.GenerateRequest generateRequest =
 				_toGenerateRequest(jsonObject, null);
@@ -355,7 +355,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		_environmentActivationPermission.checkSelfProvisioning(
 			project.getAccountId(), jwt);
 
-		_checkKeyType(jsonObject.optString("keyType"), jwt);
+		_checkKeyType(jsonObject, jwt);
 
 		String renewedActivationKeyExternalReferenceCode = jsonObject.optString(
 			"renewedActivationKeyExternalReferenceCode", null);
@@ -387,9 +387,17 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
-	private void _checkKeyType(String keyType, Jwt jwt) throws Exception {
+	private void _checkKeyType(JSONObject jsonObject, Jwt jwt)
+		throws Exception {
+
+		if (jsonObject.optBoolean("virtualCluster")) {
+			_adminPermission.check(jwt);
+
+			return;
+		}
+
 		LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
-			keyType);
+			jsonObject.optString("keyType"));
 
 		if ((licenseKeyType != null) &&
 			_licenseKeyTypeService.isAdminType(licenseKeyType)) {
@@ -617,7 +625,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			jsonObject.optString("dataCenterLocation"),
 			jsonObject.optString("description"),
 			jsonObject.optString("environmentName"),
-			jsonObject.optString("keyType"), project,
+			jsonObject.optString("keyType"),
+			jsonObject.optInt("maxClusterNodes"), project,
 			jsonObject.optString("purpose", null),
 			jsonObject.optString(
 				"renewedActivationKeyExternalReferenceCode", null),
@@ -625,6 +634,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			_toDate(jsonObject, "startDate"),
 			jsonObject.optLong("subscriptionEntitlementId"),
 			jsonObject.optString("version"),
+			jsonObject.optBoolean("virtualCluster"),
 			jsonObject.optString("workspaceName"),
 			jsonObject.optString("workspaceOwnerEmail"));
 	}

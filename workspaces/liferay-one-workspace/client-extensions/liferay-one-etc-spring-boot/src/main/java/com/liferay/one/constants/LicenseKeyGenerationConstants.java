@@ -58,6 +58,31 @@ public class LicenseKeyGenerationConstants {
 			LICENSE_KEY_FAMILY_DXP, "Liferay DXP", LICENSE_KEY_FAMILY_PORTAL,
 			"Liferay Portal");
 
+	public static int getActivationCount(
+		String licenseType, int maxClusterNodes) {
+
+		if (Objects.equals(
+				licenseType, LicenseConstants.TYPE_VIRTUAL_CLUSTER)) {
+
+			return Math.max(1, maxClusterNodes);
+		}
+
+		return 1;
+	}
+
+	public static int getMaxClusterNodes(
+		String licenseType, int maxClusterNodes) {
+
+		if (Objects.equals(licenseType, LicenseConstants.TYPE_FREE) ||
+			Objects.equals(
+				licenseType, LicenseConstants.TYPE_VIRTUAL_CLUSTER)) {
+
+			return maxClusterNodes;
+		}
+
+		return 0;
+	}
+
 	public static int getMaxServers(String licenseType, int maxServers) {
 		if (Objects.equals(licenseType, LicenseConstants.TYPE_CLUSTER)) {
 			return maxServers;

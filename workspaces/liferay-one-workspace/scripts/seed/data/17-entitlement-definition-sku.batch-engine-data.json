@@ -251,11 +251,6 @@
 			"skuExternalReferenceCode": "PRDCT-DXP-TRIAL"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER_PRDCT-DXP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_VIRTUAL_CLUSTER",
-			"skuExternalReferenceCode": "PRDCT-DXP"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S_01t0g00000UvVqAAAV",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DYNATRACE_PAAS_S",
 			"skuExternalReferenceCode": "01t0g00000UvVqAAAV"
@@ -476,11 +471,6 @@
 			"skuExternalReferenceCode": "01t70000002ljneAAA"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER_01t70000002ljneAAA",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
-			"skuExternalReferenceCode": "01t70000002ljneAAA"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT_01t4u00000dkXqyAAE",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT",
 			"skuExternalReferenceCode": "01t4u00000dkXqyAAE"
@@ -698,11 +688,6 @@
 		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_PRODUCTION_01t0g00000c8fFYAAY",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_PRODUCTION",
-			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER_01t0g00000c8fFYAAY",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER",
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{

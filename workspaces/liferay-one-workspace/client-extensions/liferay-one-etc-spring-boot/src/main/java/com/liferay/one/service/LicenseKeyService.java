@@ -833,7 +833,11 @@ public class LicenseKeyService extends OneBaseService {
 				licenseKey.isPermanent()) {
 
 				permanentLicenseKeyCounts.merge(
-					entitlementDefinitionId, 1, Integer::sum);
+					entitlementDefinitionId,
+					LicenseKeyGenerationConstants.getActivationCount(
+						licenseKey.getLicenseType(),
+						licenseKey.getMaxClusterNodes()),
+					Integer::sum);
 
 				continue;
 			}
@@ -842,7 +846,12 @@ public class LicenseKeyService extends OneBaseService {
 				continue;
 			}
 
-			counts.merge(entitlementId, 1, Integer::sum);
+			counts.merge(
+				entitlementId,
+				LicenseKeyGenerationConstants.getActivationCount(
+					licenseKey.getLicenseType(),
+					licenseKey.getMaxClusterNodes()),
+				Integer::sum);
 		}
 
 		return counts;
@@ -914,7 +923,8 @@ public class LicenseKeyService extends OneBaseService {
 
 	private static final String _FIELDS_ACTIVE_LICENSE_KEY_COUNT =
 		"active,customExpirationDate,entitlementDefinitionId,entitlementId," +
-			"id,r_activationKeyToLicenseKey_c_activationKeyId,startDate";
+			"id,licenseType,maxClusterNodes," +
+				"r_activationKeyToLicenseKey_c_activationKeyId,startDate";
 
 	private static final int _FREE_TIER_DURATION_MONTHS = 12;
 

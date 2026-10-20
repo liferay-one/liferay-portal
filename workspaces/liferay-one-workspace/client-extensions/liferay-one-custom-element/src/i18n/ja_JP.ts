@@ -310,6 +310,9 @@ export default {
 	'cloud-provisioning': 'クラウドプロビジョニング',
 	'cloud-upload': 'クラウドアップロード',
 	'cluster': 'クラスター',
+	'cluster-nodes': 'クラスターノード',
+	'cluster-nodes-may-not-exceed-the-maximum-number-of-x':
+		'クラスターノードは最大数 {0} を超えてはなりません。',
 	'cluster-size': 'クラスターサイズ',
 	'collaboration': 'コラボレーション',
 	'collaboration-knowledge-sharing': 'コラボレーションとナレッジ共有',

@@ -203,7 +203,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public LicenseEntry fetchLicenseEntry(
-		String keyTypeKey, String licenseKeyFamily, String version) {
+		String keyTypeKey, String licenseKeyFamily, String version,
+		boolean virtualCluster) {
 
 		if (Validator.isNull(keyTypeKey)) {
 			return null;
@@ -216,11 +217,13 @@ public class LicenseKeyGenerateFormService {
 				_getLicenseEntries(licenseKeyFamily, version)) {
 
 			if (licenseKeyType == null) {
-				if (Objects.equals(keyTypeKey, licenseEntry.getName())) {
+				if (!virtualCluster &&
+					Objects.equals(keyTypeKey, licenseEntry.getName())) {
+
 					return licenseEntry;
 				}
 			}
-			else if (licenseKeyType.matches(licenseEntry)) {
+			else if (licenseKeyType.matches(licenseEntry, virtualCluster)) {
 				return licenseEntry;
 			}
 		}
@@ -328,7 +331,7 @@ public class LicenseKeyGenerateFormService {
 
 	private LicenseEntry _fetchLicenseEntry(
 		String licenseKeyFamily, LicenseKeyType licenseKeyType,
-		List<ProductVersion> productVersions) {
+		List<ProductVersion> productVersions, boolean virtualCluster) {
 
 		licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
 			toLicenseEntryKeyType(licenseKeyType.getKey()));
@@ -343,7 +346,7 @@ public class LicenseKeyGenerateFormService {
 						licenseKeyFamily,
 						productVersion.getProductGroupVersion())) {
 
-				if (licenseKeyType.matches(licenseEntry)) {
+				if (licenseKeyType.matches(licenseEntry, virtualCluster)) {
 					return licenseEntry;
 				}
 			}
@@ -741,12 +744,25 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
-				licenseKeyFamily, licenseKeyType, productVersions);
+				licenseKeyFamily, licenseKeyType, productVersions, false);
 
 			if ((licenseEntry == null) && hasLicenseEntries &&
 				licenseKeyType.isLicenseEntryBacked()) {
 
 				continue;
+			}
+
+			boolean virtualCluster = false;
+
+			if (admin && !complimentary &&
+				licenseKeyType.isVirtualClusterSupported()) {
+
+				LicenseEntry virtualClusterLicenseEntry = _fetchLicenseEntry(
+					licenseKeyFamily, licenseKeyType, productVersions, true);
+
+				if (virtualClusterLicenseEntry != null) {
+					virtualCluster = true;
+				}
 			}
 
 			String licenseEntryType = StringPool.BLANK;
@@ -775,6 +791,8 @@ public class LicenseKeyGenerateFormService {
 						licenseEntry.getProductKey()
 				).put(
 					"subscriptions", subscriptionsJSONArray
+				).put(
+					"virtualCluster", virtualCluster
 				));
 		}
 
