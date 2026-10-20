@@ -32,12 +32,7 @@ const Submit = () => {
 
 	return (
 		<div className="app-review-container">
-			<Section
-				disabled
-				label={i18n.translate('app-submission')}
-				tooltip={i18n.translate('more-info')}
-				tooltipText={i18n.translate('more-info')}
-			>
+			<Section disabled label={i18n.translate('app-submission')}>
 				<hr />
 			</Section>
 

@@ -95,12 +95,6 @@ const BuildContent = () => {
 						: 'upload-zip-files'
 				)}
 				required
-				tooltip={i18n.translate(
-					appType === ProductType.DXP
-						? 'only-jar-war-files-are-allowed-max-file-size-is-500mb'
-						: 'you-can-upload-one-or-many-zip-files-max-total-size-is-500-mb'
-				)}
-				tooltipText={i18n.translate('more-info')}
 			>
 				<hr />
 
@@ -228,11 +222,7 @@ const Build = () => {
 
 	return (
 		<div className="new-app-form-build">
-			<Section
-				label={i18n.translate('app-type')}
-				required
-				tooltipText={i18n.translate('more-info')}
-			>
+			<Section label={i18n.translate('app-type')} required>
 				<div className="provide-app-build-page-cloud-compatible-container">
 					<ClayDropDown
 						active={

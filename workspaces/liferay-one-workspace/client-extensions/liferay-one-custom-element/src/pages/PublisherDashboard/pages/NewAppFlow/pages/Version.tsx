@@ -27,11 +27,7 @@ const Version = () => {
 	);
 
 	return (
-		<Section
-			label="App Version"
-			tooltip="When adding app versions, you can use your own numbering system, but be sure it is consistent and understandable by the customer."
-			tooltipText="More Info"
-		>
+		<Section label="App Version">
 			<Input
 				helpMessage={
 					publishedVersion

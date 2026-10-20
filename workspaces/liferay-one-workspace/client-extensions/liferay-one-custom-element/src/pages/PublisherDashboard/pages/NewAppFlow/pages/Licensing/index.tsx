@@ -25,12 +25,7 @@ const Licensing = () => {
 
 	return (
 		<div>
-			<Section
-				label="App License"
-				required
-				tooltip="More Info"
-				tooltipText="More Info"
-			>
+			<Section label="App License" required>
 				{LICENSING_OPTIONS.map(({value, ...licensingOption}, index) => {
 					const disabled = licensingOption.disabled(
 						priceModel as ProductPriceModel
@@ -56,12 +51,7 @@ const Licensing = () => {
 				})}
 			</Section>
 
-			<Section
-				label="30-day Trial"
-				required
-				tooltip="Trials can be offered to users for 30 days.  After this time, they will be notified of their pending trial expiration and given the opportunity to purchase the app at full price."
-				tooltipText="More Info"
-			>
+			<Section label="30-day Trial" required>
 				<div className="informing-licensing-terms-page-day-trial-container">
 					{LICENSING_30_DAYS_TRIAL_OPTIONS.map(
 						({value, ...licensingOption}, index) => {

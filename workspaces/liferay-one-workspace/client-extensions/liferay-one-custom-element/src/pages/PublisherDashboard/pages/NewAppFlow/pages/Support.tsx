@@ -20,13 +20,7 @@ const Support = () => {
 	const isPaidApp = priceModel === 'Paid';
 
 	return (
-		<Section
-			label={i18n.translate('app-support-and-help')}
-			tooltip={i18n.translate(
-				'define-the-support-and-help-references-users-can-access-these-resources-pre-and-post-purchase-to-find-out-more-information-about-your-app-or-solution'
-			)}
-			tooltipText={i18n.translate('more-info')}
-		>
+		<Section label={i18n.translate('app-support-and-help')}>
 			<Input
 				label={i18n.translate('support-url')}
 				onChange={(event) =>
