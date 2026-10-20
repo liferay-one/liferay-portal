@@ -7,9 +7,12 @@ package com.liferay.one;
 
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.EmailAddressValidatorService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +27,11 @@ public class ContactsRestController extends OneBaseRestController {
 
 	@GetMapping("/{contactEmailAddress}/validate")
 	public boolean getContactsValidate(
-			@PathVariable("contactEmailAddress") String contactEmailAddress)
+			@PathVariable("contactEmailAddress") String contactEmailAddress,
+			@AuthenticationPrincipal Jwt jwt)
 		throws Exception {
+
+		_adminPermission.check(jwt);
 
 		OktaUser oktaUser = _oktaService.fetchContactByEmailAddress(
 			contactEmailAddress);
@@ -39,6 +45,9 @@ public class ContactsRestController extends OneBaseRestController {
 
 		return true;
 	}
+
+	@Autowired
+	private AdminPermission _adminPermission;
 
 	@Autowired
 	private EmailAddressValidatorService _emailAddressValidatorService;
