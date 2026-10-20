@@ -42,7 +42,7 @@ The action decides which resource name to grant on. Getting this wrong applies c
 
 | Resource | Actions | Guest may hold |
 | --- | --- | --- |
-| `com.liferay.object.model.ObjectEntry#<id>` — what `[$OBJECT_DEFINITION_CLASS_NAME:<Name>$]` resolves to | `VIEW`, `UPDATE`, `DELETE`, `PERMISSIONS` | `VIEW` |
+| `com.liferay.object.model.ObjectDefinition#<suffix>`, the class name of the object definition, which `[$OBJECT_DEFINITION_CLASS_NAME:<Name>$]` resolves to | `VIEW`, `UPDATE`, `DELETE`, `PERMISSIONS` | `VIEW` |
 | `com.liferay.object#<id>` — write as `com.liferay.object#[$OBJECT_DEFINITION_ID:<Name>$]` | `ADD_OBJECT_ENTRY`, `PERMISSIONS` | `ADD_OBJECT_ENTRY` |
 
 `UPDATE`, `DELETE`, and `PERMISSIONS` are `guest-unsupported` — ungrantable to Guest at any scope.

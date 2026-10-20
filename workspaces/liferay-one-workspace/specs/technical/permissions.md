@@ -551,7 +551,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **`POST /accounts` has no limit.** Any signed in user can create any number of accounts and becomes the Account Administrator of each (`AccountsRestController.java:247`).
 
-1. **The guest access card names the wrong entry resource.** `.agents/rules/guest-access.md` says that `[$OBJECT_DEFINITION_CLASS_NAME:<Name>$]` resolves to `com.liferay.object.model.ObjectEntry#<id>`. The portal prefix is `com.liferay.object.model.ObjectDefinition#` (`ObjectDefinitionConstants.java:14` in `modules/apps/object/object-api`). `.agents/rules/site-initializer-format.md` presents scope 3 as a trap in general. It is a trap only for a regular role.
+1. **The guest access card named the wrong entry resource.** `.agents/rules/guest-access.md` said that `[$OBJECT_DEFINITION_CLASS_NAME:<Name>$]` resolves to `com.liferay.object.model.ObjectEntry#<id>`. The portal prefix is `com.liferay.object.model.ObjectDefinition#` (`ObjectDefinitionConstants.java:14` in `modules/apps/object/object-api`). Fixed on 2026-10-20 (Go-Live Tasks T6.3). `.agents/rules/site-initializer-format.md` presents scope 3 as a trap in general. It is a trap only for a regular role.
 
 1. **Two pages read objects that do not exist.** `utils/apiUtils.ts:79` reads `/o/c/licensetypesdescriptions` and `utils/apiUtils.ts:108` reads `/o/c/contactsaleses`. No batch file defines either object.
 
