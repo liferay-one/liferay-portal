@@ -6,6 +6,7 @@
 package com.liferay.one.service;
 
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
+import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 
@@ -197,20 +198,25 @@ public class ConsoleService extends BaseService {
 
 	@Override
 	protected ExchangeFilterFunction getWebClientExchangeFilterFunction() {
-		return (clientRequest, exchangeFunction) -> exchangeFunction.exchange(
-			clientRequest
-		).retryWhen(
-			Retry.fixedDelay(
-				3, Duration.ofSeconds(5)
-			).doBeforeRetry(
-				retrySignal -> {
-					if (_log.isInfoEnabled()) {
-						_log.info(
-							StringBundler.concat(
-								"Retrying ", clientRequest.url(),
-								retrySignal.totalRetries() + 1));
+		ExchangeFilterFunction exchangeFilterFunction =
+			HTTPTimeoutUtil.getExchangeFilterFunction();
+
+		return exchangeFilterFunction.andThen(
+			(clientRequest, exchangeFunction) -> exchangeFunction.exchange(
+				clientRequest
+			).retryWhen(
+				Retry.fixedDelay(
+					3, Duration.ofSeconds(5)
+				).doBeforeRetry(
+					retrySignal -> {
+						if (_log.isInfoEnabled()) {
+							_log.info(
+								StringBundler.concat(
+									"Retrying ", clientRequest.url(),
+									retrySignal.totalRetries() + 1));
+						}
 					}
-				}
+				)
 			)
 		);
 	}

@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.ClientExtensionUtilSpringBootComponentScan;
+import com.liferay.one.util.HTTPTimeoutUtil;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -25,6 +26,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class OneSpringBootApplication {
 
 	public static void main(String[] args) {
+		HTTPTimeoutUtil.setURLConnectionTimeouts();
+
 		SpringApplication.run(OneSpringBootApplication.class, args);
 	}
 

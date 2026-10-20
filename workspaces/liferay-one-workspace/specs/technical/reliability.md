@@ -10,6 +10,7 @@ This area covers the technical rules that keep the browser and the Spring Boot s
 | TECH-RELIABILITY-002 | A value that the system cannot fetch is unknown, never empty. The system does not try to fetch it again during the same run. | P1 | — | `CLS-MEMOIZEDVALUE` |
 | TECH-RELIABILITY-003 | A failure in a startup task is logged. It does not stop the service from starting. | P1 | — | `LSN-ORPHANEDASSIGNMENTRECONCILER-ONAPPLICATIONREADY`, `LSN-PRODUCTVERSIONSERVICE-ONAPPLICATIONREADY` |
 | TECH-RELIABILITY-004 | The browser sends the GraphQL queries of one page as one request. When that request fails, the browser sends each query alone, so one bad query does not stop the others. | P1 | — | `CLIENT-GRAPHQL-GRAPHQL`, `CLIENT-HEADLESS-GRAPHQL` |
+| TECH-RELIABILITY-005 | Every outbound HTTP call that the Spring Boot service connects itself has a read timeout of five minutes between two reads of a response and a connect timeout of ten seconds. A call through the shared BaseService has no read timeout and keeps the Netty connect timeout of 30 seconds. | P1 | — | `CLS-HTTPTIMEOUTUTIL` |
 
 ## Concurrency
 
