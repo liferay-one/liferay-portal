@@ -277,11 +277,11 @@ public class AppLicenseKeyGenerationServiceTest {
 				_account,
 				new LicenseKeyGenerationService.GenerateRequest(
 					Collections.emptyList(), null, null, "Staging",
-					"production", null, null, "ACTVK-1",
+					"production", 0, null, null, "ACTVK-1",
 					Arrays.asList(
 						new LicenseKeyGenerationService.GenerateRequest.Server(
 							"host", null, null)),
-					null, 1L, null, null, null),
+					null, 1L, null, false, null, null),
 				"owner@liferay.com"));
 
 		Mockito.verifyNoInteractions(_entitlementService);
@@ -608,8 +608,8 @@ public class AppLicenseKeyGenerationServiceTest {
 		}
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Collections.emptyList(), null, null, "Staging", keyType, null, null,
-			null, servers, null, entitlementId, null, null, null);
+			Collections.emptyList(), null, null, "Staging", keyType, 0, null,
+			null, null, servers, null, entitlementId, null, false, null, null);
 	}
 
 	private Product _toProduct(

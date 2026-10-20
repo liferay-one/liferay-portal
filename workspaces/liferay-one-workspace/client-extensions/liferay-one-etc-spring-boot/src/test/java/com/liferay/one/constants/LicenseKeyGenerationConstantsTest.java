@@ -18,6 +18,38 @@ import org.junit.jupiter.api.Test;
 public class LicenseKeyGenerationConstantsTest {
 
 	@Test
+	public void testGetActivationCount() {
+		Assertions.assertEquals(
+			1,
+			LicenseKeyGenerationConstants.getActivationCount(
+				LicenseConstants.TYPE_PRODUCTION, 0));
+		Assertions.assertEquals(
+			1,
+			LicenseKeyGenerationConstants.getActivationCount(
+				LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0));
+		Assertions.assertEquals(
+			3,
+			LicenseKeyGenerationConstants.getActivationCount(
+				LicenseConstants.TYPE_VIRTUAL_CLUSTER, 3));
+	}
+
+	@Test
+	public void testGetMaxClusterNodes() {
+		Assertions.assertEquals(
+			4,
+			LicenseKeyGenerationConstants.getMaxClusterNodes(
+				LicenseConstants.TYPE_FREE, 4));
+		Assertions.assertEquals(
+			0,
+			LicenseKeyGenerationConstants.getMaxClusterNodes(
+				LicenseConstants.TYPE_PRODUCTION, 3));
+		Assertions.assertEquals(
+			3,
+			LicenseKeyGenerationConstants.getMaxClusterNodes(
+				LicenseConstants.TYPE_VIRTUAL_CLUSTER, 3));
+	}
+
+	@Test
 	public void testGetMaxServers() {
 		Assertions.assertEquals(
 			3,

@@ -275,6 +275,45 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsCountsTheNodesOfAVirtualClusterKey()
+		throws Exception {
+
+		Mockito.doReturn(
+			Arrays.asList(
+				new LicenseKey(
+					new JSONObject(
+					).put(
+						"active", true
+					).put(
+						"customExpirationDate", "2027-01-01T00:00:00Z"
+					).put(
+						"entitlementId", 10L
+					).put(
+						"id", 1L
+					).put(
+						"licenseType", "virtual-cluster"
+					).put(
+						"maxClusterNodes", 3
+					).put(
+						"r_activationKeyToLicenseKey_c_activationKeyId", 1L
+					).put(
+						"startDate", "2026-01-01T00:00:00Z"
+					)),
+				_createLicenseKey(2L, true, false, 10L, 2L))
+		).when(
+			_licenseKeyService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(4, counts.get(10L));
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsProjectsOnlyTalliedFields()
 		throws Exception {
 
@@ -286,7 +325,7 @@ public class LicenseKeyServiceTest {
 
 		Assertions.assertEquals(
 			"active,customExpirationDate,entitlementDefinitionId," +
-				"entitlementId,id," +
+				"entitlementId,id,licenseType,maxClusterNodes," +
 					"r_activationKeyToLicenseKey_c_activationKeyId,startDate",
 			_fieldsCaptor.getValue());
 		Assertions.assertEquals(

@@ -1101,7 +1101,7 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyTypeService.isAdminType(LicenseKeyType.VIRTUAL_CLUSTER)
+			_licenseKeyTypeService.isAdminType(LicenseKeyType.OEM)
 		).thenReturn(
 			true
 		);
@@ -1117,7 +1117,7 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> activationKeysRestController.postActivationKeysGenerate(
-				null, _toGenerateJSON("virtual-cluster")));
+				null, _toGenerateJSON("oem")));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
@@ -1557,6 +1557,41 @@ public class ActivationKeysRestControllerTest {
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 		Assertions.assertEquals(
 			"Invalid \"startDate\"", responseStatusException.getReason());
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateVirtualClusterNeedsAnAdmin()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null,
+				new JSONObject(
+					_toGenerateJSON("production")
+				).put(
+					"virtualCluster", true
+				).toString()));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}

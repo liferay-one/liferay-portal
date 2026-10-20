@@ -219,11 +219,61 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			description: '',
 			environmentName: '',
 			keyType: 'production',
+			maxClusterNodes: 0,
 			productExternalReferenceCode: '',
 			servers: [],
 			subscriptionEntitlementId: 0,
 			version: '',
+			virtualCluster: false,
 		});
+	});
+
+	it('renews a virtual cluster key for the environment its license keys are named after', () => {
+		mocks.activationKeys = [
+			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'virtual-cluster'},
+		];
+		mocks.licenseKeys = [
+			licenseKey({
+				clusterSize: '4',
+				entitlementId: 31,
+				hostName: '',
+				ipAddresses: '',
+				licenseKeyFamily: 'DXP',
+				macAddresses: '',
+				productName: 'DXP Non-Production',
+			}),
+		];
+
+		const {result} = renderHook(() =>
+			useRenewSource('KEY-1', generateForm)
+		);
+
+		expect(result.current.renewSource).toMatchObject({
+			keyType: 'non-production',
+			maxClusterNodes: 4,
+			subscriptionEntitlementId: 31,
+			virtualCluster: true,
+		});
+	});
+
+	it('returns undefined for a virtual cluster key whose environment is unknown', () => {
+		mocks.activationKeys = [
+			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'virtual-cluster'},
+		];
+		mocks.licenseKeys = [
+			licenseKey({
+				clusterSize: '4',
+				entitlementId: 31,
+				licenseKeyFamily: 'DXP',
+				productName: 'Liferay DXP',
+			}),
+		];
+
+		const {result} = renderHook(() =>
+			useRenewSource('KEY-1', generateForm)
+		);
+
+		expect(result.current.renewSource).toBeUndefined();
 	});
 
 	it('returns undefined when the activation key is missing', () => {

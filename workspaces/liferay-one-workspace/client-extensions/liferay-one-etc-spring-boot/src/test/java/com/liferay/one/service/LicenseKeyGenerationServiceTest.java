@@ -297,9 +297,9 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Arrays.asList(1L, 2L), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), "Load testing",
-				null, _toServers(1), null, 1L, "DXP 7.4", "Workspace One",
-				"owner@example.com"));
+				"Environment", "complimentary", 0, _toProject(), "Load testing",
+				null, _toServers(1), null, 1L, "DXP 7.4", false,
+				"Workspace One", "owner@example.com"));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
@@ -474,9 +474,9 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.singletonList(1L), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), "Load testing",
-				null, _toServers(1), null, 1L, "DXP 7.4", "Workspace One",
-				"owner@example.com"));
+				"Environment", "complimentary", 0, _toProject(), "Load testing",
+				null, _toServers(1), null, 1L, "DXP 7.4", false,
+				"Workspace One", "owner@example.com"));
 
 		ArgumentCaptor<Date> expirationDateArgumentCaptor =
 			ArgumentCaptor.forClass(Date.class);
@@ -894,9 +894,10 @@ public class LicenseKeyGenerationServiceTest {
 				() -> _licenseKeyGenerationService.generateActivationKey(
 					new LicenseKeyGenerationService.GenerateRequest(
 						Collections.singletonList(1L), "us-east-1",
-						"Description", "Environment", "complimentary",
+						"Description", "Environment", "complimentary", 0,
 						_toProject(), "Load testing", null, _toServers(1), null,
-						1L, "DXP 7.4", "Workspace One", "owner@example.com")));
+						1L, "DXP 7.4", false, "Workspace One",
+						"owner@example.com")));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -987,9 +988,9 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.emptyList(), "us-east-1", "Description",
-				"Environment", "complimentary", _toProject(), "Load testing",
-				null, _toServers(1), null, 1L, "DXP 7.4", "Workspace One",
-				"owner@example.com"));
+				"Environment", "complimentary", 0, _toProject(), "Load testing",
+				null, _toServers(1), null, 1L, "DXP 7.4", false,
+				"Workspace One", "owner@example.com"));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
@@ -1548,6 +1549,49 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyGivesAVirtualClusterKeyItsClusterNodes()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlementOfKeyType(1L, 5.0, "production"));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				Mockito.eq("production"), Mockito.any(), Mockito.any(),
+				Mockito.eq(true))
+		).thenReturn(
+			new LicenseEntry(
+				"portal", "DXP Production (Virtual Cluster)", "virtual-cluster",
+				"7.0", null)
+		);
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toVirtualClusterGenerateRequest(
+				Arrays.asList(1L), "production", 3, 1L));
+
+		Assertions.assertEquals(
+			Collections.singletonList(""),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 12));
+		Assertions.assertEquals(
+			Collections.singletonList(3),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 20));
+		Assertions.assertEquals(
+			Collections.singletonList(3),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 9));
+		Assertions.assertEquals(
+			Collections.singletonList(3),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 8));
+		Assertions.assertEquals(
+			Collections.singletonList("virtual-cluster"),
+			_getInvocationArguments(
+				_activationKeyService, "addActivationKey", 6));
+	}
+
+	@Test
 	public void testGenerateActivationKeyIgnoresPurposeAndStartDateOfOtherKeyTypes()
 		throws Exception {
 
@@ -1562,8 +1606,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.singletonList(1L), "us-east-1", "Description",
-				"Environment", "DXP Backup", _toProject(), "Load testing", null,
-				_toServers(1), _toDateDaysAgo(10), 1L, "DXP 7.4",
+				"Environment", "DXP Backup", 0, _toProject(), "Load testing",
+				null, _toServers(1), _toDateDaysAgo(10), 1L, "DXP 7.4", false,
 				"Workspace One", "owner@example.com"));
 
 		Assertions.assertEquals(
@@ -1689,6 +1733,66 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyRejectsAVirtualClusterDeveloperKey()
+		throws Exception {
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toVirtualClusterGenerateRequest(
+						Arrays.asList(1L), "developer", 3, 1L)));
+
+		Assertions.assertEquals(
+			"A developer key cannot be a virtual cluster key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
+	public void testGenerateActivationKeyRejectsAVirtualClusterKeyWithoutClusterNodes()
+		throws Exception {
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toVirtualClusterGenerateRequest(
+						Arrays.asList(1L), "production", 0, 1L)));
+
+		Assertions.assertEquals(
+			"No cluster nodes were given for the virtual cluster key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
+	public void testGenerateActivationKeyRejectsMoreClusterNodesThanActivationsLeft()
+		throws Exception {
+
+		_stubEntitlements(_toEntitlementOfKeyType(1L, 2.0, "production"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toVirtualClusterGenerateRequest(
+						Arrays.asList(1L), "production", 3, 1L)));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).endsWith(
+				"has 2 activations left, but 3 were requested"
+			));
+
+		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
 	public void testGenerateActivationKeyRenewalDiscountsAndRetires()
 		throws Exception {
 
@@ -1717,8 +1821,8 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
 				Collections.singletonList(1L), "us-east-1", "Description",
-				"Environment", "DXP Backup", _toProject(), null, "ACTVK-9",
-				_toServers(1), null, 1L, "DXP 7.4", "Workspace One",
+				"Environment", "DXP Backup", 0, _toProject(), null, "ACTVK-9",
+				_toServers(1), null, 1L, "DXP 7.4", false, "Workspace One",
 				"owner@example.com"));
 
 		Mockito.verify(
@@ -1759,9 +1863,10 @@ public class LicenseKeyGenerationServiceTest {
 				() -> _licenseKeyGenerationService.generateActivationKey(
 					new LicenseKeyGenerationService.GenerateRequest(
 						Collections.singletonList(1L), "us-east-1",
-						"Description", "Environment", "DXP Backup",
+						"Description", "Environment", "DXP Backup", 0,
 						_toProject(), null, "ACTVK-9", _toServers(1), null, 1L,
-						"DXP 7.4", "Workspace One", "owner@example.com")));
+						"DXP 7.4", false, "Workspace One",
+						"owner@example.com")));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -1939,7 +2044,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.fetchLicenseEntry(
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean())
 		).thenAnswer(
 			invocation -> {
 				if (!Objects.equals(invocation.getArgument(1), "DXP")) {
@@ -2481,7 +2587,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.fetchLicenseEntry(
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean())
 		).thenAnswer(
 			invocation -> {
 				if (!Objects.equals(invocation.getArgument(1), "DXP")) {
@@ -2552,7 +2659,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.fetchLicenseEntry(
-				Mockito.any(), Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean())
 		).thenReturn(
 			new LicenseEntry("portal", "DXP Backup", "production", "7.4", "7.4")
 		);
@@ -2619,8 +2727,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			bundleEntitlementIds, "us-east-1", "Description", "Environment",
-			keyType, null, null, renewedActivationKeyExternalReferenceCode,
-			_toServers(1), null, subscriptionEntitlementId, "DXP 7.4",
+			keyType, 0, null, null, renewedActivationKeyExternalReferenceCode,
+			_toServers(1), null, subscriptionEntitlementId, "DXP 7.4", false,
 			"Workspace One", "owner@example.com");
 	}
 
@@ -2644,9 +2752,9 @@ public class LicenseKeyGenerationServiceTest {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			Collections.emptyList(), "us-east-1", "Description", "Environment",
-			"complimentary", _toProject(), purpose, null,
-			_toServers(serverCount), startDate, 1L, "DXP 7.4", "Workspace One",
-			"owner@example.com");
+			"complimentary", 0, _toProject(), purpose, null,
+			_toServers(serverCount), startDate, 1L, "DXP 7.4", false,
+			"Workspace One", "owner@example.com");
 	}
 
 	private Date _toDateDaysAgo(int days) {
@@ -2787,8 +2895,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			bundleEntitlementIds, "us-east-1", "Description", "Environment",
-			"DXP Backup", _toProject(), null, null, _toServers(serverCount),
-			null, subscriptionEntitlementId, "DXP 7.4", "Workspace One",
+			"DXP Backup", 0, _toProject(), null, null, _toServers(serverCount),
+			null, subscriptionEntitlementId, "DXP 7.4", false, "Workspace One",
 			"owner@example.com");
 	}
 
@@ -2886,6 +2994,18 @@ public class LicenseKeyGenerationServiceTest {
 		}
 
 		return jsonObject;
+	}
+
+	private LicenseKeyGenerationService.GenerateRequest
+		_toVirtualClusterGenerateRequest(
+			List<Long> bundleEntitlementIds, String keyType,
+			int maxClusterNodes, long subscriptionEntitlementId) {
+
+		return new LicenseKeyGenerationService.GenerateRequest(
+			bundleEntitlementIds, "us-east-1", "Description", "Environment",
+			keyType, maxClusterNodes, _toProject(), null, null,
+			Collections.emptyList(), null, subscriptionEntitlementId, "DXP 7.4",
+			true, "Workspace One", "owner@example.com");
 	}
 
 	private void _verifyNoActivationKeyAdded() throws Exception {

@@ -86,6 +86,7 @@ function toGenerateForm(licenseKeyDurationDays: number): GenerateForm {
 								totalCount: 1,
 							},
 						],
+						virtualCluster: false,
 					},
 				],
 				licenseKeyFamily: 'DXP',

@@ -54,6 +54,7 @@ function toGenerateForm(licenseKeyExpirationDate?: string): GenerateForm {
 								licenseKeyExpirationDate
 							),
 						],
+						virtualCluster: false,
 					},
 					{
 						entitlementId: COMPLIMENTARY_ENTITLEMENT_ID,
@@ -63,6 +64,7 @@ function toGenerateForm(licenseKeyExpirationDate?: string): GenerateForm {
 						subscriptions: [
 							toSubscription(COMPLIMENTARY_ENTITLEMENT_ID),
 						],
+						virtualCluster: false,
 					},
 				],
 				licenseKeyFamily: 'dxp',

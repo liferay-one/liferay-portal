@@ -32,6 +32,7 @@ import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -689,6 +690,38 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesOffersVirtualClusterOnlyToAnAdministrator() {
+		JSONArray jsonArray = _getVirtualClusterKeyTypesJSONArray(true);
+
+		Assertions.assertEquals(2, jsonArray.length());
+
+		JSONObject productionJSONObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"production", productionJSONObject.getString("key"));
+		Assertions.assertTrue(
+			productionJSONObject.getBoolean("virtualCluster"));
+
+		JSONObject developerJSONObject = jsonArray.getJSONObject(1);
+
+		Assertions.assertEquals(
+			"developer", developerJSONObject.getString("key"));
+		Assertions.assertFalse(
+			developerJSONObject.getBoolean("virtualCluster"));
+
+		jsonArray = _getVirtualClusterKeyTypesJSONArray(false);
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			Assertions.assertFalse(
+				jsonArray.getJSONObject(
+					i
+				).getBoolean(
+					"virtualCluster"
+				));
+		}
+	}
+
+	@Test
 	public void testGetKeyTypesSkipsComplimentaryWhenNotAllowed() {
 		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(false, false);
 
@@ -1335,6 +1368,41 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return externalReferenceCodes;
+	}
+
+	private JSONArray _getVirtualClusterKeyTypesJSONArray(boolean admin) {
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Arrays.asList(LicenseKeyType.PRODUCTION, LicenseKeyType.DEVELOPER)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			new LicenseEntryService());
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		return ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", admin,
+			false, false, false, true, new HashMap<Long, Integer>(), "DXP",
+			HashMapBuilder.<String, Map<String, Entitlement>>put(
+				"DXP",
+				(Map<String, Entitlement>)HashMapBuilder.put(
+					"developer", _toEntitlement(5.0)
+				).put(
+					"production", _toEntitlement(5.0)
+				).build()
+			).build(),
+			Collections.singletonList(_toProductVersion("7.4", "DXP 7.4")),
+			true);
 	}
 
 	private boolean _isGeneratable(

@@ -96,6 +96,26 @@ public class LicenseKeyTypeTest {
 	}
 
 	@Test
+	public void testFetchLicenseKeyTypeOfVirtualClusterEntry() {
+		Assertions.assertEquals(
+			LicenseKeyType.BACKUP,
+			LicenseKeyType.fetchLicenseKeyType(
+				_toLicenseEntry(
+					"DXP Backup (Virtual Cluster)", "virtual-cluster")));
+		Assertions.assertEquals(
+			LicenseKeyType.NON_PRODUCTION,
+			LicenseKeyType.fetchLicenseKeyType(
+				_toLicenseEntry(
+					"DXP Non-Production (Virtual Cluster)",
+					"virtual-cluster")));
+		Assertions.assertEquals(
+			LicenseKeyType.PRODUCTION,
+			LicenseKeyType.fetchLicenseKeyType(
+				_toLicenseEntry(
+					"DXP Production (Virtual Cluster)", "virtual-cluster")));
+	}
+
+	@Test
 	public void testFetchLicenseKeyTypeWithAdditionalJVMName() {
 		Assertions.assertNull(
 			LicenseKeyType.fetchLicenseKeyType(
@@ -140,6 +160,24 @@ public class LicenseKeyTypeTest {
 	}
 
 	@Test
+	public void testIsVirtualClusterSupported() {
+		Assertions.assertTrue(
+			LicenseKeyType.BACKUP.isVirtualClusterSupported());
+		Assertions.assertTrue(
+			LicenseKeyType.NON_PRODUCTION.isVirtualClusterSupported());
+		Assertions.assertTrue(
+			LicenseKeyType.PRODUCTION.isVirtualClusterSupported());
+
+		Assertions.assertFalse(
+			LicenseKeyType.COMPLIMENTARY.isVirtualClusterSupported());
+		Assertions.assertFalse(
+			LicenseKeyType.DEVELOPER.isVirtualClusterSupported());
+		Assertions.assertFalse(
+			LicenseKeyType.DEVELOPER_CLUSTER.isVirtualClusterSupported());
+		Assertions.assertFalse(LicenseKeyType.FREE.isVirtualClusterSupported());
+	}
+
+	@Test
 	public void testMatchesDistinguishesNonproductionFromProduction() {
 		LicenseEntry licenseEntry = _toLicenseEntry(
 			"DXP Non-Production", "production");
@@ -177,6 +215,39 @@ public class LicenseKeyTypeTest {
 	}
 
 	@Test
+	public void testMatchesOnlyItsOwnVirtualClusterEntry() {
+		LicenseEntry backupLicenseEntry = _toLicenseEntry(
+			"DXP Backup (Virtual Cluster)", "virtual-cluster");
+		LicenseEntry nonproductionLicenseEntry = _toLicenseEntry(
+			"DXP Non-Production (Virtual Cluster)", "virtual-cluster");
+		LicenseEntry productionLicenseEntry = _toLicenseEntry(
+			"DXP Production (Virtual Cluster)", "virtual-cluster");
+
+		Assertions.assertTrue(
+			LicenseKeyType.BACKUP.matches(backupLicenseEntry, true));
+		Assertions.assertFalse(
+			LicenseKeyType.BACKUP.matches(nonproductionLicenseEntry, true));
+		Assertions.assertFalse(
+			LicenseKeyType.BACKUP.matches(productionLicenseEntry, true));
+
+		Assertions.assertFalse(
+			LicenseKeyType.NON_PRODUCTION.matches(backupLicenseEntry, true));
+		Assertions.assertTrue(
+			LicenseKeyType.NON_PRODUCTION.matches(
+				nonproductionLicenseEntry, true));
+		Assertions.assertFalse(
+			LicenseKeyType.NON_PRODUCTION.matches(
+				productionLicenseEntry, true));
+
+		Assertions.assertFalse(
+			LicenseKeyType.PRODUCTION.matches(backupLicenseEntry, true));
+		Assertions.assertFalse(
+			LicenseKeyType.PRODUCTION.matches(nonproductionLicenseEntry, true));
+		Assertions.assertTrue(
+			LicenseKeyType.PRODUCTION.matches(productionLicenseEntry, true));
+	}
+
+	@Test
 	public void testMatchesRenamedDeveloperAndEnterpriseNames() {
 		Assertions.assertEquals(
 			LicenseKeyType.DEVELOPER,
@@ -190,23 +261,23 @@ public class LicenseKeyTypeTest {
 	}
 
 	@Test
-	public void testMatchesVirtualClusterName() {
+	public void testMatchesVirtualClusterEntryOnlyAsVirtualCluster() {
+		LicenseEntry licenseEntry = _toLicenseEntry(
+			"DXP Production (Virtual Cluster)", "virtual-cluster");
 
-		// Virtual cluster entries are recognised so an administrator can issue
-		// one; the key type itself is what is withheld from customers.
+		Assertions.assertFalse(
+			LicenseKeyType.PRODUCTION.matches(licenseEntry, false));
 
-		Assertions.assertEquals(
-			LicenseKeyType.VIRTUAL_CLUSTER,
-			LicenseKeyType.fetchLicenseKeyType(
-				_toLicenseEntry(
-					"DXP Production (Virtual Cluster)", "virtual-cluster")));
+		Assertions.assertFalse(
+			LicenseKeyType.PRODUCTION.matches(
+				_toLicenseEntry("DXP Production", "production"), true));
 	}
 
 	@Test
 	public void testUATMatchesNoLicenseEntry() {
 		Assertions.assertFalse(
 			LicenseKeyType.UAT.matches(
-				_toLicenseEntry("Cloud Native UAT", "production")));
+				_toLicenseEntry("Cloud Native UAT", "production"), false));
 	}
 
 	private void _setTypes(String types) {
