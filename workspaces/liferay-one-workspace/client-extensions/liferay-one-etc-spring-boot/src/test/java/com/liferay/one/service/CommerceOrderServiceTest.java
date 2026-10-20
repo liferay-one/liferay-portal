@@ -16,6 +16,8 @@ import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.BillingAddress;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.headless.commerce.admin.order.client.pagination.Page;
+import com.liferay.headless.commerce.admin.order.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.EntitlementConstants;
@@ -30,6 +32,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.math.BigDecimal;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -2243,6 +2246,32 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testGetLatestOrdersSkipsDuplicateOrders() throws Exception {
+		List<Order> orders = _getLatestOrders(
+			10, _createOrdersPage(4, 1L, 2L), _createOrdersPage(4, 2L, 3L));
+
+		Assertions.assertEquals(
+			List.of(1L, 2L, 3L),
+			orders.stream(
+			).map(
+				Order::getId
+			).toList());
+	}
+
+	@Test
+	public void testGetLatestOrdersStopsAtTheMaximum() throws Exception {
+		List<Order> orders = _getLatestOrders(
+			1, _createOrdersPage(6, 1L, 2L), _createOrdersPage(6, 3L, 4L));
+
+		Assertions.assertEquals(
+			List.of(1L),
+			orders.stream(
+			).map(
+				Order::getId
+			).toList());
+	}
+
+	@Test
 	public void testGetOrderTypeExternalReferenceCodeFromSolutionType()
 		throws Exception {
 
@@ -2939,6 +2968,26 @@ public class CommerceOrderServiceTest {
 		return orderItem;
 	}
 
+	private Page<Order> _createOrdersPage(long totalCount, Long... orderIds) {
+		Page<Order> page = new Page<>();
+
+		List<Order> orders = new ArrayList<>();
+
+		for (Long orderId : orderIds) {
+			Order order = new Order();
+
+			order.setId(orderId);
+
+			orders.add(order);
+		}
+
+		page.setItems(orders);
+		page.setPageSize(orderIds.length);
+		page.setTotalCount(totalCount);
+
+		return page;
+	}
+
 	private Product _createProduct(String solutionType) {
 		Product product = new Product();
 
@@ -3037,6 +3086,56 @@ public class CommerceOrderServiceTest {
 		order.setSubtotalAmount(100D);
 
 		return order;
+	}
+
+	private List<Order> _getLatestOrders(
+			int maxCount, Page<Order> firstPage, Page<Order> secondPage)
+		throws Exception {
+
+		OrderResource orderResource = Mockito.mock(OrderResource.class);
+
+		Mockito.when(
+			orderResource.getOrdersPage(
+				ArgumentMatchers.isNull(), ArgumentMatchers.eq("status eq 0"),
+				ArgumentMatchers.any(Pagination.class),
+				ArgumentMatchers.eq("createDate:desc"))
+		).thenReturn(
+			firstPage, secondPage
+		);
+
+		OrderResource.Builder builder = Mockito.mock(
+			OrderResource.Builder.class, Mockito.RETURNS_SELF);
+
+		Mockito.when(
+			builder.build()
+		).thenReturn(
+			orderResource
+		);
+
+		Mockito.doReturn(
+			"Bearer token"
+		).when(
+			_commerceOrderService
+		).getAuthorization();
+
+		Mockito.doReturn(
+			"localhost:8080"
+		).when(
+			_commerceOrderService
+		).getDXPEndpointAddress();
+
+		try (MockedStatic<OrderResource> orderResourceMockedStatic =
+				Mockito.mockStatic(OrderResource.class)) {
+
+			orderResourceMockedStatic.when(
+				OrderResource::builder
+			).thenReturn(
+				builder
+			);
+
+			return _commerceOrderService.getLatestOrders(
+				"status eq 0", maxCount);
+		}
 	}
 
 	private OrderResource _mockOrderResource(
