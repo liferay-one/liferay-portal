@@ -486,7 +486,7 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 
 ### Object Action Handlers
 
-Liferay calls the 16 handlers under `/object/action/**` when an object action fires. No handler checks the caller. Each one trusts the `classPK` and the model in the request body, and acts with the service token. A handler cannot tell a call from Liferay apart from a call from a browser, because both carry a token of a trusted application.
+Liferay calls the 17 handlers under `/object/action/**` when an object action fires. No handler checks the caller. Each one trusts the `classPK` and the model in the request body, and acts with the service token. A handler cannot tell a call from Liferay apart from a call from a browser, because both carry a token of a trusted application.
 
 | Handler | What It Does With the Body | Source |
 | --- | --- | --- |
