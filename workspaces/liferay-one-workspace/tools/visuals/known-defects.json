@@ -10,11 +10,6 @@
 		"visual": "events"
 	},
 	{
-		"match": "GET /contacts/{contactEmailAddress}/validate (",
-		"reason": "Go-Live Tasks S9",
-		"visual": "apis"
-	},
-	{
 		"match": "GET /orders/export",
 		"reason": "Go-Live Tasks I6",
 		"visual": "apis"
