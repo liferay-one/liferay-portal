@@ -2,7 +2,7 @@
 
 Every liferay-one-etc-spring-boot REST endpoint. A unit test at the controller level (JUnit MockMvc) covers the contract, status codes, validation, and error handling of each endpoint. The plan tracks real integration coverage as journeys in flows.md. These journeys run through the OAuth2 proxy and against external systems.
 
-> Autoscaffolded from the code surface (131 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
+> Autoscaffolded from the code surface (130 items). Edit the Requirement, Type, Priority, and Status columns freely. `scaffoldPlan` preserves them on rerun. Do not edit the ID column. When the code anchor of a row changes, edit its Source column so that the row keeps its ID.
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -77,6 +77,7 @@ Every liferay-one-etc-spring-boot REST endpoint. A unit test at the controller l
 | REST-POST-APP-LICENSE-KEYS | Creates an app license key; admin only, and a payload whose product or owner details are missing is rejected with 400 before any key is minted | unit | P0 | planned | rest:POST:/app-license-keys |
 | REST-POST-CLOUD-ENVIRONMENTS-ACTIVATION-REQUEST | Records a request to activate an environment, resolving the project through the environment activation permission check; the handlers map an unknown offering, an already-requested environment, and a failed validation onto 409, 422, and 400 rather than a 500 | unit | P0 | planned | rest:POST:/cloud/environments/activation-request |
 | REST-POST-CLOUD-ENVIRONMENTS-OFFLINE-ACTIVATION | Activates an environment from an uploaded offline payload, mapping the same conflict and unprocessable cases as the online request | unit | P0 | planned | rest:POST:/cloud/environments/offline-activation |
+| REST-POST-CLOUD-ENVIRONMENTS-OFFLINE-ACTIVATION-TOKEN-VALIDATION | POST /cloud/environments/offline-activation/token-validation — 200 when the token signature verifies, 400 when the token does not parse, fails the signature, or has no environment ID, and 410 when it has expired; whitespace in the token is ignored | unit | P1 | planned | rest:POST:/cloud/environments/offline-activation/token-validation |
 | REST-POST-CLOUD-ENVIRONMENTS-ENVIRONMENTID-ACTIVATION | Activates an environment without authentication, which is why the exclude list and the activation key itself are the only things gating it | unit | P0 | planned | rest:POST:/cloud/environments/{environmentId}/activation |
 | REST-POST-CLOUD-ENVIRONMENTS-ENVIRONMENTID-MANIFEST | Returns the environment's manifest for an unauthenticated activation client, answering 400 when the submitted payload does not identify a known environment | unit | P1 | planned | rest:POST:/cloud/environments/{environmentId}/manifest |
 | REST-POST-CLOUD-ENVIRONMENTS-ENVIRONMENTID-OFFLINE-ACTIVATION-BUNDLE | Builds the offline activation bundle for an environment, for a caller that cannot reach the activation service directly | unit | P1 | planned | rest:POST:/cloud/environments/{environmentId}/offline-activation-bundle |
