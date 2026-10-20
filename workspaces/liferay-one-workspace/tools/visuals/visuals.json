@@ -27,7 +27,7 @@
 		"url": "https://claude.ai/artifact/9LEKd9nA8cUKpMoStJHPcP"
 	},
 	"model": {
-		"description": "The data: every object and relationship, who can read and write each one, and how each environment and its configuration differ from the batch files.",
+		"description": "The data: every object and relationship, who can read and write each one, how each environment and its configuration differ from the batch files, and the rule checks on the batch files.",
 		"icon": "diagram",
 		"layer": "model",
 		"tabs": [
@@ -45,6 +45,14 @@
 				"id": "environments",
 				"label": "Environments",
 				"visual": "environment-drift"
+			},
+			{
+				"id": "rules",
+				"label": "Rules",
+				"params": {
+					"layer": "model"
+				},
+				"visual": "rules"
 			}
 		],
 		"title": "Model",
@@ -57,7 +65,7 @@
 		"url": "https://claude.ai/artifact/HniATosv7uP2tG4ovV6yMQ"
 	},
 	"view": {
-		"description": "What a visitor sees: the pages, menus, and fragments, the weight and dead code of the custom element, and the rule checks on it.",
+		"description": "What a visitor sees: the pages and menus, the fragments, the weight and dead code of the custom element, and the rule checks on it.",
 		"icon": "layout",
 		"layer": "view",
 		"tabs": [
@@ -67,8 +75,16 @@
 				"visual": "pages"
 			},
 			{
-				"id": "front-end",
-				"label": "Front End",
+				"id": "components",
+				"label": "Components",
+				"params": {
+					"view": "components"
+				},
+				"visual": "pages"
+			},
+			{
+				"id": "bundle-health",
+				"label": "Bundle Health",
 				"visual": "frontend"
 			},
 			{
