@@ -285,28 +285,6 @@ public class AccountPermissionTest {
 	}
 
 	@Test
-	public void testContainsRejectsAccountRequesterToAssignMembers()
-		throws Exception {
-
-		Assertions.assertFalse(
-			_accountPermission.contains(
-				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
-				_createUserAccount(
-					_EXTERNAL_REFERENCE_CODE,
-					RoleConstants.NAME_ACCOUNT_REQUESTER)));
-	}
-
-	@Test
-	public void testContainsRejectsAccountRequesterToUpdate() throws Exception {
-		Assertions.assertFalse(
-			_accountPermission.contains(
-				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
-				_createUserAccount(
-					_EXTERNAL_REFERENCE_CODE,
-					RoleConstants.NAME_ACCOUNT_REQUESTER)));
-	}
-
-	@Test
 	public void testContainsRejectsOrganizationMemberToAssignMembers()
 		throws Exception {
 

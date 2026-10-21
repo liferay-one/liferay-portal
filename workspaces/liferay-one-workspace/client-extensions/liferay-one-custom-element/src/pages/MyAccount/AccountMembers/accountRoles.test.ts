@@ -189,7 +189,7 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 
 		it('denies a user without a manageable role', () => {
 			expect(
-				canAccessOrders(toUserAccountModel(['Account Requester']))
+				canAccessOrders(toUserAccountModel(['Primary Contact']))
 			).toBe(false);
 			expect(canAccessOrders(undefined)).toBe(false);
 		});

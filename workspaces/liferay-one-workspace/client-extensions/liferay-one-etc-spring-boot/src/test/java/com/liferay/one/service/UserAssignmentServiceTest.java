@@ -173,7 +173,7 @@ public class UserAssignmentServiceTest {
 	public void testAssignAccountRoleAddsMembershipWhenMissing()
 		throws Exception {
 
-		AccountRole accountRole = _createAccountRole("Support Administrator");
+		AccountRole accountRole = _createAccountRole("Account Buyer");
 
 		_userAssignmentService.assignAccountRole(
 			_account, accountRole, _USER_ID);
@@ -259,10 +259,10 @@ public class UserAssignmentServiceTest {
 
 	@Test
 	public void testAssignAccountRoleSkipsHeldRole() throws Exception {
-		_addAccountBrief("Support Administrator");
+		_addAccountBrief("Account Buyer");
 
 		_userAssignmentService.assignAccountRole(
-			_account, _createAccountRole("Support Administrator"), _USER_ID);
+			_account, _createAccountRole("Account Buyer"), _USER_ID);
 
 		Mockito.verifyNoInteractions(
 			_accountService, _accountUserAccountSynchronizer, _oktaService,
@@ -331,7 +331,7 @@ public class UserAssignmentServiceTest {
 	@Test
 	public void testAssignAccountRoleSyncsUserGroups() throws Exception {
 		_userAssignmentService.assignAccountRole(
-			_account, _createAccountRole("Support Administrator"), _USER_ID);
+			_account, _createAccountRole("Account Buyer"), _USER_ID);
 
 		Mockito.verify(
 			_userGroupService
@@ -816,10 +816,10 @@ public class UserAssignmentServiceTest {
 	public void testUnassignAccountRoleRemovesRoleAndSyncsToJSM()
 		throws Exception {
 
-		_addAccountBrief("Support Administrator");
+		_addAccountBrief("Account Buyer");
 
 		_userAssignmentService.unassignAccountRole(
-			_account, _createAccountRole("Support Administrator"), _USER_ID);
+			_account, _createAccountRole("Account Buyer"), _USER_ID);
 
 		Mockito.verify(
 			_accountService
@@ -846,7 +846,7 @@ public class UserAssignmentServiceTest {
 		_addAccountBrief("Account Member");
 
 		_userAssignmentService.unassignAccountRole(
-			_account, _createAccountRole("Support Administrator"), _USER_ID);
+			_account, _createAccountRole("Account Buyer"), _USER_ID);
 
 		Mockito.verifyNoInteractions(
 			_accountService, _accountUserAccountRoleSynchronizer,
@@ -855,10 +855,10 @@ public class UserAssignmentServiceTest {
 
 	@Test
 	public void testUnassignAccountRoleSyncsUserGroups() throws Exception {
-		_addAccountBrief("Support Administrator");
+		_addAccountBrief("Account Buyer");
 
 		_userAssignmentService.unassignAccountRole(
-			_account, _createAccountRole("Support Administrator"), _USER_ID);
+			_account, _createAccountRole("Account Buyer"), _USER_ID);
 
 		Mockito.verify(
 			_userGroupService

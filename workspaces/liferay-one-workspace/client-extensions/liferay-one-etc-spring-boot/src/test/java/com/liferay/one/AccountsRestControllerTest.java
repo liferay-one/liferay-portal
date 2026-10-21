@@ -1640,7 +1640,7 @@ public class AccountsRestControllerTest {
 		Account account = _mockAccount();
 
 		AccountRole accountRole = _mockAccountRole(
-			_ACCOUNT_ROLE_ID, "Support Administrator");
+			_ACCOUNT_ROLE_ID, "Account Buyer");
 
 		Mockito.when(
 			_userAccountService.addUserAccount(_EMAIL_ADDRESS, "Doe", "Jane")
@@ -1860,7 +1860,7 @@ public class AccountsRestControllerTest {
 		Account account = _mockAccount();
 
 		AccountRole accountRole = _mockAccountRole(
-			_ACCOUNT_ROLE_ID, "Support Administrator");
+			_ACCOUNT_ROLE_ID, "Account Buyer");
 
 		Mockito.when(
 			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
@@ -1905,7 +1905,7 @@ public class AccountsRestControllerTest {
 		AccountsRestController accountsRestController = _createController();
 
 		_mockAccount();
-		_mockAccountRole(_ACCOUNT_ROLE_ID, "Support Administrator");
+		_mockAccountRole(_ACCOUNT_ROLE_ID, "Account Buyer");
 		_mockPartnerEntitlement();
 
 		UserAccount userAccount = _createUserAccount(
@@ -1972,12 +1972,12 @@ public class AccountsRestControllerTest {
 		Account account = _mockAccount();
 
 		AccountRole addedAccountRole = _mockAccountRole(
-			_ACCOUNT_ROLE_ID, "Support Administrator");
+			_ACCOUNT_ROLE_ID, "Account Buyer");
 		AccountRole removedAccountRole = _mockAccountRole(
 			_OTHER_ACCOUNT_ROLE_ID, "Support User");
 
 		UserAccount userAccount = _createUserAccount(
-			_ACCOUNT_ID, "Support Administrator");
+			_ACCOUNT_ID, "Account Buyer");
 
 		AccountBrief accountBrief = userAccount.getAccountBriefs()[0];
 
