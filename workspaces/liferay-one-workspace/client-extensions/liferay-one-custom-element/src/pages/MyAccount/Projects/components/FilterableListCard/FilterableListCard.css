@@ -188,25 +188,6 @@
 	}
 }
 
-.list-card-name {
-	align-items: center;
-	display: flex;
-	gap: 12px;
-}
-
-.list-card-icon {
-	align-items: center;
-	border-radius: 8px;
-	color: #fff;
-	display: inline-flex;
-	flex-shrink: 0;
-	font-size: 14px;
-	font-weight: 600;
-	height: 32px;
-	justify-content: center;
-	width: 32px;
-}
-
 .list-card-name-text {
 	display: flex;
 	flex-direction: column;
@@ -231,13 +212,6 @@
 	display: block;
 	height: 12px;
 	width: 100%;
-}
-
-.list-card-skeleton-icon {
-	border-radius: 8px;
-	flex-shrink: 0;
-	height: 32px;
-	width: 32px;
 }
 
 .list-card-skeleton-label {

@@ -439,14 +439,10 @@ export default function FilterableListCard<T>({
 										style={{width: column.width}}
 									>
 										{column.expanded ? (
-											<span className="list-card-name">
-												<span className="list-card-skeleton list-card-skeleton-icon" />
+											<span className="list-card-name-text w-100">
+												<span className="list-card-skeleton list-card-skeleton-label" />
 
-												<span className="list-card-name-text w-100">
-													<span className="list-card-skeleton list-card-skeleton-label" />
-
-													<span className="list-card-skeleton list-card-skeleton-subtext" />
-												</span>
+												<span className="list-card-skeleton list-card-skeleton-subtext" />
 											</span>
 										) : (
 											<span className="list-card-skeleton" />

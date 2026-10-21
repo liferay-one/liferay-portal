@@ -18,7 +18,6 @@ import ProductListPage, {
 	statusColumn,
 	statusFilter,
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
-import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import DeliveryOrderModel from '~/services/models/DeliveryOrderModel';
 
 export default function Applications() {
@@ -119,20 +118,7 @@ export default function Applications() {
 			heading: 'name',
 			key: 'name',
 			render: (application) => (
-				<span className="list-card-name">
-					<span
-						className="list-card-icon"
-						style={{
-							backgroundColor: getLogoColor(application.name),
-						}}
-					>
-						{application.name.charAt(0)}
-					</span>
-
-					<span className="list-card-name-label">
-						{application.name}
-					</span>
-				</span>
+				<span className="list-card-name-label">{application.name}</span>
 			),
 		},
 		{

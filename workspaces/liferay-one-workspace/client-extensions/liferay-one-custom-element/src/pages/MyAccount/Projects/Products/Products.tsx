@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayIcon from '@clayui/icon';
 import {useMemo} from 'react';
 import {useNavigate} from 'react-router';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
@@ -18,8 +17,6 @@ import ProductListPage, {
 	statusColumn,
 	statusFilter,
 } from '~/pages/MyAccount/Projects/components/ProductListPage/ProductListPage';
-import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
-import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isFreeActivationKeyProduct} from '~/pages/MyAccount/Projects/utils/isFreeActivationKeyProduct';
 
 export default function Products() {
@@ -58,22 +55,11 @@ export default function Products() {
 			heading: 'name',
 			key: 'name',
 			render: (product) => (
-				<span className="list-card-name">
-					<span
-						className="list-card-icon"
-						style={{backgroundColor: getLogoColor(product.name)}}
-					>
-						<ClayIcon symbol={getProductIcon(product.type)} />
-					</span>
+				<span className="list-card-name-text">
+					<span className="list-card-name-label">{product.name}</span>
 
-					<span className="list-card-name-text">
-						<span className="list-card-name-label">
-							{product.name}
-						</span>
-
-						<span className="list-card-subtext">
-							{i18n.sub('by-x', product.publisher)}
-						</span>
+					<span className="list-card-subtext">
+						{i18n.sub('by-x', product.publisher)}
 					</span>
 				</span>
 			),
