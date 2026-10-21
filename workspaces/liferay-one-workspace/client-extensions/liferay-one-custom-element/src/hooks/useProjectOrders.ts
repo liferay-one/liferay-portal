@@ -42,7 +42,6 @@ const RESTRICTED_ORDER_FIELDS = [
 	'placedOrderItems.parentOrderItemId',
 	'placedOrderItems.price',
 	'placedOrderItems.productURLs',
-	'placedOrderItems.quantity',
 	'placedOrderItems.replacedSku',
 	'placedOrderItems.settings',
 	'placedOrderItems.shippingAddressId',
