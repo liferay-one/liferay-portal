@@ -16,8 +16,8 @@ const InstallAlertModal = ({modal}: InstallAlertModalProps) => (
 	<Modal
 		first={
 			<ClayButton
-				className="ml-2 rounded-lg"
-				displayType="unstyled"
+				className="rounded-lg"
+				displayType="secondary"
 				key="install-cancel-footer"
 				onClick={modal.onClose}
 				size="sm"
