@@ -132,14 +132,14 @@ public class AIHubService extends OneBaseService {
 						if (_log.isInfoEnabled()) {
 							_log.info(
 								StringBundler.concat(
-									"Retrying ", clientRequest.url(), " (attempt ",
+									"Retrying ", clientRequest.url(),
+									" (attempt ",
 									retrySignal.totalRetries() + 1, "/",
 									_RETRY_MAX_ATTEMPTS, ")"));
 						}
 					}
 				)
-			)
-		);
+			));
 	}
 
 	private static final long _RETRY_MAX_ATTEMPTS = 3;

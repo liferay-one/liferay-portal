@@ -242,12 +242,13 @@ public class ProvisioningContactService {
 		return false;
 	}
 
+	private static final Log _log = LogFactory.getLog(
+		ProvisioningContactService.class);
+
 	private static final Map<String, String>
 		_contactRoleExternalReferenceCodes = Map.of(
 			RoleConstants.NAME_SECURITY_INCIDENT_CONTACT,
 			RoleConstants.ERC_SECURITY_INCIDENT_CONTACT);
-	private static final Log _log = LogFactory.getLog(
-		ProvisioningContactService.class);
 
 	@Autowired
 	private AccountRoleService _accountRoleService;
