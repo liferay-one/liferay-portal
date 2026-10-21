@@ -127,7 +127,7 @@ export default function Trials() {
 					/>
 				</div>
 
-				<div className="border d-flex flex-column justify-content-center p-6 rounded-lg">
+				<div className="border d-flex flex-column justify-content-center p-4 rounded-lg">
 					<TrialTable
 						items={
 							(orderTableData?.items as unknown as Order[]) || []

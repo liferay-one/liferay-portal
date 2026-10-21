@@ -209,7 +209,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 								const createDate = value as string | undefined;
 
 								return (
-									<span className="ml-2 text-capitalize text-nowrap">
+									<span className="text-capitalize">
 										{createDate &&
 											formatDistance(
 												new Date(createDate),
@@ -230,7 +230,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 								>;
 
 								return (
-									<span className="ml-2 text-capitalize text-nowrap">
+									<span className="text-capitalize">
 										{customFields['trial-start-date'] &&
 											formatDistance(
 												new Date(
@@ -255,7 +255,7 @@ const TrialTable: React.FC<TrialTableProps> = ({items, revalidate}) => {
 								>;
 
 								return (
-									<span className="ml-2 text-capitalize text-nowrap">
+									<span className="text-capitalize">
 										{customFields['trial-end-date'] &&
 											formatDistance(
 												new Date(
