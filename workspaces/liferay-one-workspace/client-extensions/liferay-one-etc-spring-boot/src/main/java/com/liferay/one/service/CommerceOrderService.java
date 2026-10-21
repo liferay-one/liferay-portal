@@ -1015,6 +1015,8 @@ public class CommerceOrderService extends OneBaseService {
 			Order order, String salesforceProjectId)
 		throws Exception {
 
+		JSONObject aiHubOrderMetadataJSONObject = null;
+
 		List<Order> aiHubOrders = getOrders(
 			StringBundler.concat(
 				"accountId/any(x:x eq ", order.getAccountId(),
@@ -1022,7 +1024,6 @@ public class CommerceOrderService extends OneBaseService {
 				CommerceOrderConstants.ORDER_STATUS_COMPLETED,
 				") and orderTypeExternalReferenceCode eq 'AI_HUB'"));
 
-		JSONObject aiHubOrderMetadataJSONObject = null;
 		long aiHubOrderId = 0;
 
 		for (Order aiHubOrder : aiHubOrders) {
