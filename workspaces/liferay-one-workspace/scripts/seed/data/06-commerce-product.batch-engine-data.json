@@ -1889,6 +1889,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_SECURITY_INCIDENT_CONTACT"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
