@@ -9,6 +9,7 @@ export default {
 	'1-data-source': '1 fonte de dados',
 	'1-ticket': '1 Ticket',
 	'7-days-trials': 'Avaliações de 7 dias',
+	'30-day-trial': 'Avaliação de 30 dias',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'Uma solicitação será enviada para desativar a chave de ativação selecionada. A partir de agora, ela ficará oculta e não será mais visível.',
 	'a-role-is-required': 'Uma função é necessária.',
@@ -157,7 +158,9 @@ export default {
 	'app-installation-and-uninstallation-guide-url':
 		'URL do guia de instalação e desinstalação do aplicativo',
 	'app-installation-guide-url': 'URL do guia de instalação do aplicativo',
+	'app-license': 'Licença do aplicativo',
 	'app-name': 'Nome do aplicativo',
+	'app-price': 'Preço do aplicativo',
 	'app-provisioning': 'Provisionamento de aplicativo',
 	'app-publisher': 'Publicador do aplicativo',
 	'app-storefront-images': 'Imagens da vitrine do aplicativo',
@@ -214,6 +217,7 @@ export default {
 	'attachment': 'Anexo',
 	'attachment-already-exists': 'O anexo já existe',
 	'attachment-deleted-successfully': 'Anexo excluído com sucesso.',
+	'attention-this-cannot-be-undone': 'Atenção: isso não pode ser desfeito.',
 	'attributes': 'Atributos',
 	'authenticated-logins-malus': 'Login Autenticado (MALU)',
 	'automation': 'Automação',
@@ -702,6 +706,8 @@ export default {
 		'O quanto o produto é útil para seu fluxo de trabalho?',
 	'i-agree-to-the-processing-of-my-personal-data-for-the-purpose-of-evaluating-my-beta-access-request-in-accordance-with':
 		'Concordo com o processamento dos meus dados pessoais para fins de avaliação da minha solicitação de acesso beta de acordo com',
+	'i-am-aware-i-cannot-edit-any-data-or-information-regarding-this-app-submission-until-liferay-completes-its-review-process-and-i-agree-with-the-liferay-marketplace':
+		'Estou ciente de que não posso editar nenhum dado ou informação referente a este envio de aplicativo até que a Liferay conclua seu processo de revisão e concordo com os',
 	'i-certify-that-the-instances-activated-with-the-selected-activation-keys-have-been-shut-down-and-that-there-is-no-liferay-software-installed-deployed-used-or-executed-that-is-activated-with-the-selected-activation-key':
 		'Certifico que as instâncias ativadas com as chaves de ativação selecionadas foram desligadas e que não há software Liferay instalado, implantado, usado ou executado que esteja ativado com a chave de ativação selecionada.',
 	'i-have-read-and-agree-to-the': 'Li e concordo com os',
@@ -1195,6 +1201,7 @@ export default {
 	'primary-contact': 'Contato principal',
 	'primary-data-center-region': 'Região principal da central de dados',
 	'primary-region': 'Região primária',
+	'privacy': 'privacidade',
 	'privacy-breach-contacts': 'Contatos para violações de privacidade',
 	'privacy-policy': 'Política de privacidade',
 	'private-information': 'Informações privadas',
@@ -1548,7 +1555,7 @@ export default {
 		'Parceria de tecnologia com integrações',
 	'telecommunications': 'Telecomunicações',
 	'term': 'Termo',
-	'terms': 'Termos',
+	'terms': 'termos',
 	'terms-of-service': 'Termos de serviço',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':
 		'Termos, privacidade, devoluções ou contato com suporte. Todos os custos estão em dólares americanos',

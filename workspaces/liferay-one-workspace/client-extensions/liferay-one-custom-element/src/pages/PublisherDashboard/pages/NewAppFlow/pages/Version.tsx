@@ -27,7 +27,7 @@ const Version = () => {
 	);
 
 	return (
-		<Section label="App Version">
+		<Section label={i18n.translate('app-version')}>
 			<Input
 				helpMessage={
 					publishedVersion

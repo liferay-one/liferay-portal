@@ -9,6 +9,7 @@ export default {
 	'1-data-source': '1 データソース',
 	'1-ticket': '1 チケット',
 	'7-days-trials': '7日間トライアル',
+	'30-day-trial': '30日間トライアル',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'選択したアクティベーションキーを無効化するリクエストが送信されます。以降は非表示となり、表示されなくなります。',
 	'a-role-is-required': 'ロールが必要です。',
@@ -156,7 +157,9 @@ export default {
 	'app-installation-and-uninstallation-guide-url':
 		'アプリのインストールおよびアンインストールガイドURL',
 	'app-installation-guide-url': 'アプリインストールガイドURL',
+	'app-license': 'アプリライセンス',
 	'app-name': 'アプリ名',
+	'app-price': 'アプリ価格',
 	'app-provisioning': 'アプリのプロビジョニング',
 	'app-publisher': 'アプリのパブリッシャー',
 	'app-storefront-images': 'アプリのストアフロント画像',
@@ -213,6 +216,7 @@ export default {
 	'attachment': '添付ファイル',
 	'attachment-already-exists': '添付ファイルは既に存在します',
 	'attachment-deleted-successfully': '添付ファイルは正常に削除されました。',
+	'attention-this-cannot-be-undone': '注意：元に戻すことはできません。',
 	'attributes': '属性',
 	'authenticated-logins-malus': '認証ログイン（MALU）',
 	'automation': '自動化',
@@ -695,6 +699,8 @@ export default {
 		'製品はワークフローにどれくらい役立っていますか？',
 	'i-agree-to-the-processing-of-my-personal-data-for-the-purpose-of-evaluating-my-beta-access-request-in-accordance-with':
 		'以下に従ってベータアクセスのリクエストを評価する目的で、個人データの処理に同意します: ',
+	'i-am-aware-i-cannot-edit-any-data-or-information-regarding-this-app-submission-until-liferay-completes-its-review-process-and-i-agree-with-the-liferay-marketplace':
+		'Liferayが審査プロセスを完了するまで、このアプリの提出に関するデータや情報を編集できないことを認識しており、Liferay Marketplaceの',
 	'i-certify-that-the-instances-activated-with-the-selected-activation-keys-have-been-shut-down-and-that-there-is-no-liferay-software-installed-deployed-used-or-executed-that-is-activated-with-the-selected-activation-key':
 		'選択したアクティベーションキーでアクティベートされたインスタンスがシャットダウンされており、選択したアクティベーションキーでアクティベートされたLiferayソフトウェアがインストール、デプロイ、使用、または実行されていないことを証明します。',
 	'i-have-read-and-agree-to-the': '以下を読んで同意しました: ',
@@ -1179,6 +1185,7 @@ export default {
 	'primary-contact': 'メイン連絡先',
 	'primary-data-center-region': 'プライマリデータセンターのリージョン',
 	'primary-region': 'プライマリリージョン',
+	'privacy': 'プライバシー',
 	'privacy-breach-contacts': 'プライバシー侵害の連絡先',
 	'privacy-policy': 'プライバシーポリシー',
 	'private-information': '非公開情報',
@@ -1531,7 +1538,7 @@ export default {
 		'統合によるテクノロジーパートナーシップ',
 	'telecommunications': '電気通信',
 	'term': '条件',
-	'terms': '用語',
+	'terms': '利用規約',
 	'terms-of-service': '利用規約',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':
 		'規約、プライバシー、返品、またはサポートへのお問い合わせ。すべての費用は米ドル建てです',

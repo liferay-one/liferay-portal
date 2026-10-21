@@ -24,15 +24,11 @@ import LicensePriceCard from './LicensePriceCard';
 
 const licensePrices = [
 	{
-		description:
-			'Standard licenses cover the following DXP environments: production, non-production (UAT) and backup (DR) for both standalone and virtual cluster servers.',
-		label: 'Standard License Prices',
+		label: i18n.translate('standard-license-prices'),
 		required: true,
 		type: ProductLicenseTier.STANDARD,
 	},
 	{
-		description:
-			'Developer licenses are limited to 5 unique addresses and should not be used for full scale production deployments.',
 		label: i18n.translate('developer-license-prices'),
 		required: false,
 		type: ProductLicenseTier.DEVELOPER,

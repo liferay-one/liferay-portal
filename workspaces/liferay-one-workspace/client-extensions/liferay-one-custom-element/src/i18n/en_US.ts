@@ -9,6 +9,7 @@ export default {
 	'1-data-source': '1 Data Source',
 	'1-ticket': '1 Ticket',
 	'7-days-trials': '7 Days Trials',
+	'30-day-trial': '30-day Trial',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'A request will be sent to deactivate the selected activation key. From now on, it will be hidden and no longer visible.',
 	'a-role-is-required': 'A role is required.',
@@ -163,7 +164,9 @@ export default {
 	'app-installation-and-uninstallation-guide-url':
 		'App Installation and Uninstallation Guide URL',
 	'app-installation-guide-url': 'App Installation Guide URL',
+	'app-license': 'App License',
 	'app-name': 'App Name',
+	'app-price': 'App Price',
 	'app-provisioning': 'App Provisioning',
 	'app-publisher': 'App Publisher',
 	'app-storefront-images': 'App Storefront Images',
@@ -219,6 +222,7 @@ export default {
 	'attachment': 'Attachment',
 	'attachment-already-exists': 'Attachment Already Exists',
 	'attachment-deleted-successfully': 'Attachment deleted successfully.',
+	'attention-this-cannot-be-undone': 'Attention: This cannot be undone.',
 	'attributes': 'Attributes',
 	'authenticated-logins-malus': 'Authenticated Logins (MALUs)',
 	'automation': 'Automation',
@@ -730,6 +734,8 @@ export default {
 		'How useful is the product for your workflow?',
 	'i-agree-to-the-processing-of-my-personal-data-for-the-purpose-of-evaluating-my-beta-access-request-in-accordance-with':
 		'I agree to the processing of my personal data for the purpose of evaluating my beta access request in accordance with',
+	'i-am-aware-i-cannot-edit-any-data-or-information-regarding-this-app-submission-until-liferay-completes-its-review-process-and-i-agree-with-the-liferay-marketplace':
+		'I am aware I cannot edit any data or information regarding this app submission until Liferay completes its review process and I agree with the Liferay Marketplace',
 	'i-certify-that-the-instances-activated-with-the-selected-activation-keys-have-been-shut-down-and-that-there-is-no-liferay-software-installed-deployed-used-or-executed-that-is-activated-with-the-selected-activation-key':
 		'I certify that the instances activated with the selected activation keys have been shut down and that there is no Liferay software installed, deployed, used or executed that is activated with the selected activation key.',
 	'i-have-read-and-agree-to-the': 'I have read and agree to the',
@@ -1245,6 +1251,7 @@ export default {
 	'primary-contact': 'Primary Contact',
 	'primary-data-center-region': 'Primary Data Center Region',
 	'primary-region': 'Primary Region',
+	'privacy': 'privacy',
 	'privacy-breach-contacts': 'Privacy Breach Contacts',
 	'privacy-policy': 'Privacy Policy',
 	'private-information': 'Private Information',
@@ -1619,7 +1626,7 @@ export default {
 		'Technology Partnership With Integrations',
 	'telecommunications': 'Telecommunications',
 	'term': 'Term',
-	'terms': 'Terms',
+	'terms': 'terms',
 	'terms-of-service': 'Terms of Service',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':
 		'Terms, privacy, returns, or contact support. All costs are in US Dollars',

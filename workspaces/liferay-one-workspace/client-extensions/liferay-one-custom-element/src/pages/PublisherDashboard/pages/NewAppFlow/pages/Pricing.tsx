@@ -6,6 +6,7 @@
 import {RadioCard} from '~/components/RadioCard/RadioCard';
 import {Section} from '~/components/Section/Section';
 import {NewAppTypes, useNewAppContext} from '~/context/NewAppContextProvider';
+import i18n from '~/i18n';
 import {ProductWorkflowStatusCode} from '~/utils/productUtils';
 
 import {PRICING_OPTIONS} from '../constants';
@@ -27,7 +28,7 @@ const Pricing = () => {
 	const isDisabled = !isSaveAsDraft && !!_product.id;
 
 	return (
-		<Section className="mt-4" label="App Price" required>
+		<Section className="mt-4" label={i18n.translate('app-price')} required>
 			{PRICING_OPTIONS.map((pricingOption, index) => (
 				<RadioCard
 					{...pricingOption}

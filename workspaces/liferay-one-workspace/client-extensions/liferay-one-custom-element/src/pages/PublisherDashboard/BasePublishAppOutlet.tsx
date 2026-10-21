@@ -156,18 +156,19 @@ const BasePublishAppOutlet = <TContext extends PublishFlowContext>({
 
 							<span>
 								<span className="app-review-page-agreement-highlight">
-									{'Attention: This cannot be undone. '}
+									{i18n.translate(
+										'attention-this-cannot-be-undone'
+									)}{' '}
 								</span>
-								I am aware I cannot edit any data or information
-								regarding this app submission until Liferay
-								completes its review process and I agree with
-								the Liferay Marketplace{' '}
+								{i18n.translate(
+									'i-am-aware-i-cannot-edit-any-data-or-information-regarding-this-app-submission-until-liferay-completes-its-review-process-and-i-agree-with-the-liferay-marketplace'
+								)}{' '}
 								<ExternalLink href="https://www.liferay.com/legal/marketplace-terms-of-service">
-									terms
-								</ExternalLink>
-								{' and '}
+									{i18n.translate('terms')}
+								</ExternalLink>{' '}
+								{i18n.translate('and')}{' '}
 								<ExternalLink href="https://www.liferay.com/privacy-policy">
-									privacy
+									{i18n.translate('privacy')}
 								</ExternalLink>
 								.
 							</span>

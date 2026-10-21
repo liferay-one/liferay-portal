@@ -6,6 +6,7 @@
 import {RadioCard} from '~/components/RadioCard/RadioCard';
 import {Section} from '~/components/Section/Section';
 import {NewAppTypes, useNewAppContext} from '~/context/NewAppContextProvider';
+import i18n from '~/i18n';
 
 import {
 	LICENSING_30_DAYS_TRIAL_OPTIONS,
@@ -25,7 +26,7 @@ const Licensing = () => {
 
 	return (
 		<div>
-			<Section label="App License" required>
+			<Section label={i18n.translate('app-license')} required>
 				{LICENSING_OPTIONS.map(({value, ...licensingOption}, index) => {
 					const disabled = licensingOption.disabled(
 						priceModel as ProductPriceModel
@@ -51,7 +52,7 @@ const Licensing = () => {
 				})}
 			</Section>
 
-			<Section label="30-day Trial" required>
+			<Section label={i18n.translate('30-day-trial')} required>
 				<div className="informing-licensing-terms-page-day-trial-container">
 					{LICENSING_30_DAYS_TRIAL_OPTIONS.map(
 						({value, ...licensingOption}, index) => {
