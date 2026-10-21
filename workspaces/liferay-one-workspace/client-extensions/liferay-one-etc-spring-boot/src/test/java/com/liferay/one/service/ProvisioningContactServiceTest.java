@@ -10,6 +10,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Project;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
@@ -42,6 +43,8 @@ public class ProvisioningContactServiceTest {
 		_accountRoleService = Mockito.mock(AccountRoleService.class);
 		_emailAddressValidatorService = Mockito.mock(
 			EmailAddressValidatorService.class);
+		_projectMembershipService = Mockito.mock(
+			ProjectMembershipService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 		_userAccountService = Mockito.mock(UserAccountService.class);
 		_userAssignmentService = Mockito.mock(UserAssignmentService.class);
@@ -64,6 +67,9 @@ public class ProvisioningContactServiceTest {
 		ReflectionTestUtils.setField(
 			_provisioningContactService, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
+		ReflectionTestUtils.setField(
+			_provisioningContactService, "_projectMembershipService",
+			_projectMembershipService);
 		ReflectionTestUtils.setField(
 			_provisioningContactService, "_projectService", _projectService);
 		ReflectionTestUtils.setField(
@@ -102,6 +108,89 @@ public class ProvisioningContactServiceTest {
 		).assignProjectRole(
 			project, RoleConstants.ERC_PROJECT_USER, _USER_ID
 		);
+	}
+
+	@Test
+	public void testAddProjectContactsAssignsSecurityIncidentContactAsProjectMembership()
+		throws Exception {
+
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+
+		Project project = _mockProject();
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningContactService.addProjectContacts(
+			_account,
+			List.of(
+				_createContactRole(
+					RoleConstants.NAME_SECURITY_INCIDENT_CONTACT)),
+			_createSalesforceProject(), warningMessages);
+
+		Assertions.assertTrue(warningMessages.isEmpty());
+
+		Mockito.verify(
+			_accountRoleService, Mockito.never()
+		).fetchAccountRoleByName(
+			RoleConstants.NAME_SECURITY_INCIDENT_CONTACT
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignAccount(
+			_account, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignAccountRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, RoleConstants.ERC_PROJECT_USER, _USER_ID
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, RoleConstants.ERC_SECURITY_INCIDENT_CONTACT, _USER_ID
+		);
+	}
+
+	@Test
+	public void testAddProjectContactsAssignsSecurityIncidentContactToExistingMember()
+		throws Exception {
+
+		_mockExistingMember();
+
+		Project project = _mockProject();
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				"SF-PROJ-1", _USER_ID)
+		).thenReturn(
+			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_ADMIN))
+		);
+
+		List<Long> userIds = _provisioningContactService.addProjectContacts(
+			_account,
+			List.of(
+				_createContactRole(
+					RoleConstants.NAME_SECURITY_INCIDENT_CONTACT)),
+			_createSalesforceProject(), new ArrayList<>());
+
+		Assertions.assertTrue(userIds.isEmpty());
+
+		Mockito.verify(
+			_userAssignmentService
+		).assignProjectRole(
+			project, RoleConstants.ERC_SECURITY_INCIDENT_CONTACT, _USER_ID
+		);
+
+		Mockito.verifyNoMoreInteractions(_userAssignmentService);
 	}
 
 	@Test
@@ -304,6 +393,36 @@ public class ProvisioningContactServiceTest {
 	}
 
 	@Test
+	public void testAddProjectContactsWarnsOnSecurityIncidentContactWithoutProject()
+		throws Exception {
+
+		_mockNewUserAccount(_EMAIL_ADDRESS, _USER_ID);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningContactService.addProjectContacts(
+			_account,
+			List.of(
+				_createContactRole(
+					RoleConstants.NAME_SECURITY_INCIDENT_CONTACT)),
+			null, warningMessages);
+
+		Assertions.assertEquals(1, warningMessages.size());
+		Assertions.assertTrue(
+			warningMessages.get(
+				0
+			).contains(
+				RoleConstants.ERC_SECURITY_INCIDENT_CONTACT
+			));
+
+		Mockito.verify(
+			_userAssignmentService, Mockito.never()
+		).assignProjectRole(
+			Mockito.any(), Mockito.any(), Mockito.anyLong()
+		);
+	}
+
+	@Test
 	public void testAddProjectContactsWarnsOnUnknownContactRole()
 		throws Exception {
 
@@ -429,6 +548,16 @@ public class ProvisioningContactServiceTest {
 		return new SalesforceProjectContactRole(jsonObject);
 	}
 
+	private ProjectMembership _createProjectMembership(
+		String roleExternalReferenceCode) {
+
+		return new ProjectMembership(
+			new JSONObject(
+			).put(
+				"roleExternalReferenceCode", roleExternalReferenceCode
+			));
+	}
+
 	private SalesforceProject _createSalesforceProject() {
 		return new SalesforceProject(
 			new JSONObject(
@@ -459,6 +588,24 @@ public class ProvisioningContactServiceTest {
 		);
 	}
 
+	private void _mockExistingMember() throws Exception {
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setId(_USER_ID);
+
+		Mockito.when(
+			_userAccountService.fetchUserAccountByEmailAddress(_EMAIL_ADDRESS)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_userAccountService.hasAccountUserAccount(_ACCOUNT_ID, _USER_ID)
+		).thenReturn(
+			true
+		);
+	}
+
 	private void _mockNewUserAccount(String emailAddress, long userId)
 		throws Exception {
 
@@ -472,6 +619,22 @@ public class ProvisioningContactServiceTest {
 		).thenReturn(
 			userAccount
 		);
+	}
+
+	private Project _mockProject() throws Exception {
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", "SF-PROJ-1"
+			));
+
+		Mockito.when(
+			_projectService.fetchProject("SF-PROJ-1")
+		).thenReturn(
+			project
+		);
+
+		return project;
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
@@ -501,6 +664,7 @@ public class ProvisioningContactServiceTest {
 	private AccountRole _accountRole;
 	private AccountRoleService _accountRoleService;
 	private EmailAddressValidatorService _emailAddressValidatorService;
+	private ProjectMembershipService _projectMembershipService;
 	private ProjectService _projectService;
 	private ProvisioningContactService _provisioningContactService;
 	private UserAccountService _userAccountService;
