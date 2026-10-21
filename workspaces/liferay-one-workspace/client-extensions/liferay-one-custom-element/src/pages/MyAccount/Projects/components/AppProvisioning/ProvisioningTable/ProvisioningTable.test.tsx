@@ -69,7 +69,11 @@ function renderTable(
 ) {
 	render(
 		<ProvisioningTable
-			mutateOrder={vi.fn() as unknown as ProvisioningData['mutateOrder']}
+			mutateOrder={
+				vi.fn(() =>
+					Promise.resolve()
+				) as ProvisioningData['mutateOrder']
+			}
 			order={order}
 			provisioningTableData={[row(status)]}
 			resourceRequirements={
@@ -135,12 +139,18 @@ describe('[COMPONENT-MYACCOUNT-PROJECTS-APPPROVISIONING-PROVISIONINGTABLE] Provi
 		expect(mocks.onOpenModal).not.toHaveBeenCalled();
 	});
 
-	it('does nothing on install while the cloud projects load', async () => {
+	it('disables install while the cloud projects load', async () => {
 		renderTable('ready-to-install', {isLoading: true});
 
 		await openActionsMenu();
-		await userEvent.click(screen.getByRole('menuitem', {name: 'Install'}));
 
+		const install = screen.getByRole('menuitem', {name: 'Install'});
+
+		expect(install).toHaveAttribute('aria-disabled', 'true');
+
+		await userEvent.click(install);
+
+		expect(screen.getByRole('menuitem', {name: 'Install'})).toBeVisible();
 		expect(mocks.navigate).not.toHaveBeenCalled();
 		expect(
 			screen.queryByText('No Cloud Projects Available')
