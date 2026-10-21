@@ -64,13 +64,14 @@ export default function SubscriptionStep({
 		[generateForm.products, productExternalReferenceCode]
 	);
 
+	const app = Boolean(product?.app);
 	const cloudNative = isCloudNativeProduct(product);
 	const complimentary = isComplimentaryKeyType(keyType);
 	const developer = isDeveloperKeyType(keyType);
 	const free = keyType === FREE_KEY_TYPE;
 
 	const requiresContractTerm =
-		!cloudNative && !complimentary && !developer && !free;
+		!app && !cloudNative && !complimentary && !developer && !free;
 
 	const keyTypes = useMemo(() => product?.keyTypes ?? [], [product]);
 
@@ -100,6 +101,21 @@ export default function SubscriptionStep({
 			return;
 		}
 
+		if (app) {
+			const subscription =
+				subscriptions.find((current) => current.availableCount > 0) ??
+				subscriptions[0];
+
+			if (subscription) {
+				setValue(
+					'subscriptionEntitlementId',
+					subscription.entitlementId
+				);
+			}
+
+			return;
+		}
+
 		if (!requiresContractTerm) {
 			const selectedKeyType = keyTypes.find(
 				(current) => current.key === keyType
@@ -125,6 +141,7 @@ export default function SubscriptionStep({
 			setValue('subscriptionEntitlementId', 0);
 		}
 	}, [
+		app,
 		keyType,
 		keyTypes,
 		renewing,
@@ -196,6 +213,20 @@ export default function SubscriptionStep({
 			: subscriptions.every(
 					(subscription) => subscription.availableCount <= 0
 				));
+
+	const noActivationsAlert = (
+		<ClayAlert
+			className="generate-activation-key-subscription-alert"
+			displayType="warning"
+			role={null}
+			spritemap={getIconSpriteMap()}
+			symbol="warning-full"
+		>
+			{translate(
+				'there-are-no-key-activations-available-deactivate-a-key-or-contact-the-provisioning-team'
+			)}
+		</ClayAlert>
+	);
 
 	const canContinue = Boolean(
 		productExternalReferenceCode &&
@@ -346,6 +377,8 @@ export default function SubscriptionStep({
 				</ClayAlert>
 			)}
 
+			{app && noActivationsAvailable && noActivationsAlert}
+
 			{requiresContractTerm && (
 				<div className="form-group">
 					<label className="ml-0">{translate('contract-term')}</label>
@@ -368,19 +401,7 @@ export default function SubscriptionStep({
 						}
 					/>
 
-					{noActivationsAvailable && (
-						<ClayAlert
-							className="generate-activation-key-subscription-alert"
-							displayType="warning"
-							role={null}
-							spritemap={getIconSpriteMap()}
-							symbol="warning-full"
-						>
-							{translate(
-								'there-are-no-key-activations-available-deactivate-a-key-or-contact-the-provisioning-team'
-							)}
-						</ClayAlert>
-					)}
+					{noActivationsAvailable && noActivationsAlert}
 
 					{selectedSubscription && !noActivationsAvailable && (
 						<ClayAlert
