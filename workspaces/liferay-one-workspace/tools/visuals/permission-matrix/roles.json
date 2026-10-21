@@ -238,7 +238,7 @@
 		},
 		"Security Incident Contact": {
 			"group": "contact",
-			"purpose": "The contact for a security incident on the project."
+			"purpose": "The contact for a security incident on the project. Salesforce sends it as a contact role, and the sidecar stores it as a project membership, not as an account role."
 		},
 		"Site Content Reviewer": {
 			"group": "staff",

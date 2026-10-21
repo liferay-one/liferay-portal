@@ -279,16 +279,17 @@ The opportunity path builds the account from the `account` block and takes the a
 
 ### Project Contact Roles to Users and Memberships
 
-`service/ProvisioningContactService.java:32` handles each entry in `projectContactRoles`. It skips a blank email address and an email address on a Liferay domain (`:72`).
+`service/ProvisioningContactService.java:35` handles each entry in `projectContactRoles`. It skips a blank email address and an email address on a Liferay domain (`:76`).
 
 | Salesforce Field | Transform | Liferay Target | Required | Missing Value | Source |
 | --- | --- | --- | --- | --- | --- |
-| `Contact__r.Email` | Matches a user by email address. Adds a user when none matches. | `User` | Yes | Entry skipped | `service/ProvisioningContactService.java:78` |
-| `Contact__r.FirstName`, `Contact__r.LastName` | New user only | `User.givenName`, `User.familyName` | No | Used only at create | `service/ProvisioningContactService.java:82` |
-| `Contact_Role__c` | Account role with the same name, assigned on the account | Account role assignment | No | Warning, and no account role | `service/ProvisioningContactService.java:96`, `:111` |
-| `Contact_Role__c` = `Account Administrator` on any entry | Turns off the automatic administrator | none | No | The first new user of an account with no users becomes `Account Administrator` | `service/ProvisioningContactService.java:116`, `:158` |
+| `Contact__r.Email` | Matches a user by email address. Adds a user when none matches. | `User` | Yes | Entry skipped | `service/ProvisioningContactService.java:82` |
+| `Contact__r.FirstName`, `Contact__r.LastName` | New user only | `User.givenName`, `User.familyName` | No | Used only at create | `service/ProvisioningContactService.java:86` |
+| `Contact_Role__c` | Account role with the same name, assigned on the account | Account role assignment | No | Warning, and no account role | `service/ProvisioningContactService.java:114`, `:118` |
+| `Contact_Role__c` = `Security Incident Contact` | A contact designation, not an account role. Project membership `C_SECURITY_INCIDENT_CONTACT` on the project of the record, also for a user who is already in the account. The user gets `C_PROJECT_USER` first when the user has no project role there. | `C_PROJECT_MEMBERSHIP` | No | Warning, and no designation, when the project is missing | `service/ProvisioningContactService.java:90`, `:166`, `:245` |
+| `Contact_Role__c` = `Account Administrator` on any entry | Turns off the automatic administrator | none | No | The first new user of an account with no users becomes `Account Administrator` | `service/ProvisioningContactService.java:130`, `:206` |
 | `Project__c` | Not read. Every entry goes to the project block of the record. | none | No | none | `salesforce/model/SalesforceProjectContactRole.java:20` |
-| (project block) | Project role `C_PROJECT_USER` on the project of the record | `C_PROJECT_MEMBERSHIP` | No | No membership | `service/ProvisioningContactService.java:134` |
+| (project block) | Project role `C_PROJECT_USER` on the project of the record, when the user has no project role there | `C_PROJECT_MEMBERSHIP` | No | No membership | `service/ProvisioningContactService.java:192` |
 
 The handler returns at `:87` when the user is already a member of the account. That user gets no account role, no project membership on the new project, and no welcome email. See finding 3.
 
@@ -532,15 +533,15 @@ sequenceDiagram
 
 LPD-108526 (commits `b09149352b094` and `d1fd7259138e4`) moved a contact designation, such as Critical Incident Contact, from an account role to a project membership of one project. The commits add the contact role endpoints in `ProjectRestController`, a list of the allowed contact roles in `service/ProjectContactRoleService.java`, a contact role step in the account invitation acceptance, and seed data that puts `C_CRITICAL_INCIDENT_CONTACT` on `PRJCT-013`. Commit `51db54e4526f5` (LPD-109991) later made `ProjectContactRoleService` read the SKU of the entitlement in place of the SKU of the entitlement definition.
 
-The audit checked the Salesforce path against this change. The commits do not change `service/ProvisioningContactService.java`. That service still assigns `Contact_Role__c` as an account role with the same name (`:96`, `:111`). So a Salesforce contact with the role "Critical Incident Contact" still gets the account role `Critical Incident Contact`, on every project of the account, which is the behavior that LPD-108526 removed from the user interface. The new model also gives no path from Salesforce to a contact role membership: the service assigns only `C_PROJECT_USER` (`:139`). See finding 1.
+The audit checked the Salesforce path against this change. Salesforce contact roles are account roles by design, and `service/ProvisioningContactService.java` assigns `Contact_Role__c` as an account role with the same name. The one exception is Security Incident Contact, which Salesforce sends and which is a designation on one project. The service now writes it as a `C_SECURITY_INCIDENT_CONTACT` project membership on the project of the record (`:166`). See finding 1.
 
 ## Findings
 
-1. **Salesforce contact roles still become account roles after LPD-108526.** `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/service/ProvisioningContactService.java:96` and `:111` assign `Contact_Role__c` as an account role. A designation such as Critical Incident Contact that comes from Salesforce applies to every project of the account, and the Project Members page, which now reads designations from project memberships, does not show it as a designation of the project.
+1. **Resolved. The Salesforce Security Incident Contact is a project membership.** `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/service/ProvisioningContactService.java:114` and `:118` still assign every other `Contact_Role__c` as an account role, which is the intended model. Security Incident Contact is the one designation that Salesforce sends, and it was assigned as an account role on every project of the account. It is now a `C_SECURITY_INCIDENT_CONTACT` membership on the project of the record (`:166`), so the Project Members page shows it.
 
 1. **Delete actions for Account, Project__c, and Contract upsert the record.** `salesforce/pubsub/SalesforceObjectPubsubSubscriber.java:74`, `:77`, and `:88` do not pass the action to the account and project handlers, and `service/ContractService.java:358` sends every action that is not `update` to the create path. A deleted contract is written again as `initial` or `renewal`.
 
-1. **An existing account member gets no access to a new project.** `service/ProvisioningContactService.java:87` returns when the user is already in the account. The user gets no `C_PROJECT_USER` membership on the project of the opportunity, no account role, and no welcome email.
+1. **An existing account member gets no access to a new project.** `service/ProvisioningContactService.java:95` returns when the user is already in the account. The user gets no `C_PROJECT_USER` membership on the project of the opportunity, no account role, and no welcome email. The one exception is a Security Incident Contact, who gets the designation and a project role.
 
 1. **An account that the object path creates never gets its licensing settings.** `service/AccountService.java:379` writes no licensing custom fields, and `:697` returns null on the `PATCH`, so a later opportunity does not write them either (`:391`). `allowComplimentary` has no default in `expando-columns.json`, and the "sold by" and country rules never apply to that account.
 

@@ -78,7 +78,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 
 | Role | ERC | Type | Line | Assigned By |
 | --- | --- | --- | --- | --- |
-| Account Administrator | `L_ACCOUNT_ADMINISTRATOR` | account | 228 | The creator of an account (`AccountsRestController.java:311`). The first Salesforce contact of an account that has no designated administrator (`ProvisioningContactService.java:118`). An accepted invitation (`AccountInvitationAcceptanceService.java:93`). An account manager (`AccountsRestController.java:538`). |
+| Account Administrator | `L_ACCOUNT_ADMINISTRATOR` | account | 228 | The creator of an account (`AccountsRestController.java:311`). The first Salesforce contact of an account that has no designated administrator (`ProvisioningContactService.java:136`). An accepted invitation (`AccountInvitationAcceptanceService.java:93`). An account manager (`AccountsRestController.java:538`). |
 | Account Buyer | `C_ACCOUNT_BUYER` | account | 13 | An account manager or an invitation |
 | Account Member | `L_ACCOUNT_MEMBER` | account | 233 | An account manager or an invitation |
 | Account Solution Publisher | `C_ACCOUNT_SOLUTION_PUBLISHER` | account | 18 | Manual |
@@ -88,7 +88,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:112`). |
 | Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:298`) or an invitation |
 | Customer | `C_CUSTOMER` | regular | 43 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
-| Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:112`) |
+| Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
 | Dashboard Viewer | `C_DASHBOARD_VIEWER` | regular | 53 | Manual. No code reads it. |
 | Data Breach Contact | `C_DATA_BREACH_CONTACT` | account | 58 | A project contact designation |
 | Documentation Administrator | `C_DOCUMENTATION_ADMIN` | site | 63 | Manual |
@@ -110,7 +110,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Privacy Breach Contact | `C_PRIVACY_BREACH_CONTACT` | account | 143 | A project contact designation |
 | Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:266`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
 | Project Requester | `C_PROJECT_REQUESTER` | account | 153 | The same as Project Admin |
-| Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:140`). |
+| Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
 | Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 163 | Manual |
 | Provisioning Contact Worker | `C_PROVISIONING_CONTACT_WORKER` | regular | 168 | Manual. No code reads it. |
 | Provisioning Member | `C_PROVISIONING_MEMBER` | regular | 173 | Manual |
@@ -122,11 +122,11 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | SSA User | `C_SSA_USER` | account | 223 | The SSA dashboard, in the SSA account |
 | Secondary Contact | `C_SECONDARY_CONTACT` | account | 193 | A Salesforce contact role |
 | Security Breach Contact | `C_SECURITY_BREACH_CONTACT` | account | 198 | A project contact designation |
-| Security Incident Contact | `C_SECURITY_INCIDENT_CONTACT` | account | 203 | A project contact designation |
+| Security Incident Contact | `C_SECURITY_INCIDENT_CONTACT` | account | 203 | A project contact designation, or the Salesforce contact role Security Incident Contact on the project of the record (`ProvisioningContactService.java:166`). It is never an account role. |
 | Site Content Reviewer | `L_SITE_CONTENT_REVIEWER` | site | 243 | Manual |
 | Solution Architect | `C_SOLUTION_ARCHITECT` | account | 208 | A Salesforce contact role |
 
-The Salesforce contact role is the `Contact_Role__c` value, matched to an account role by name (`ProvisioningContactService.java:96`). The table lists the 5 roles that `EmployeeRoles.java:19` names as Liferay workers; Salesforce can send any account role name.
+The Salesforce contact role is the `Contact_Role__c` value, matched to an account role by name (`ProvisioningContactService.java:114`). Security Incident Contact is the exception: it becomes a project membership, not an account role. The table lists the 5 roles that `EmployeeRoles.java:19` names as Liferay workers; Salesforce can send any account role name.
 
 ### Built In Roles That the Trees Use
 
