@@ -11,21 +11,19 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.PropertyConstants;
-import com.liferay.one.model.Property;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.service.AccountService;
-import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
-import com.liferay.portal.kernel.model.Organization;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -51,7 +49,7 @@ public class OktaUsersPubsubSubscriberTest {
 
 		_accountService = Mockito.mock(AccountService.class);
 		_oktaService = Mockito.mock(OktaService.class);
-		_propertyService = Mockito.mock(PropertyService.class);
+		_organizationService = Mockito.mock(OrganizationService.class);
 		_provisioningEmailService = Mockito.mock(
 			ProvisioningEmailService.class);
 		_userAccountService = Mockito.mock(UserAccountService.class);
@@ -60,9 +58,9 @@ public class OktaUsersPubsubSubscriberTest {
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
 		ReflectionTestUtils.setField(_subscriber, "_oktaService", _oktaService);
-		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
 		ReflectionTestUtils.setField(
-			_subscriber, "_propertyService", _propertyService);
+			_subscriber, "_organizationService", _organizationService);
+		ReflectionTestUtils.setField(_subscriber, "_projectId", "test-project");
 		ReflectionTestUtils.setField(
 			_subscriber, "_provisioningEmailService",
 			_provisioningEmailService);
@@ -709,7 +707,7 @@ public class OktaUsersPubsubSubscriberTest {
 			_OTHER_ORGANIZATION_ID, _USER_ID
 		);
 
-		Mockito.verifyNoInteractions(_propertyService);
+		Mockito.verifyNoInteractions(_organizationService);
 	}
 
 	@Test
@@ -812,18 +810,9 @@ public class OktaUsersPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_propertyService.getProperties(
-				Organization.class.getName(), PropertyConstants.NAME_OKTA_GROUP,
-				groupId)
+			_organizationService.getOktaGroupIds()
 		).thenReturn(
-			List.of(
-				new Property(
-					new JSONObject(
-					).put(
-						"classPK", organizationId
-					).put(
-						"id", organizationId
-					)))
+			Map.of(_OTHER_ORGANIZATION_ID, "00g-other", organizationId, groupId)
 		);
 	}
 
@@ -894,7 +883,7 @@ public class OktaUsersPubsubSubscriberTest {
 
 	private AccountService _accountService;
 	private OktaService _oktaService;
-	private PropertyService _propertyService;
+	private OrganizationService _organizationService;
 	private ProvisioningEmailService _provisioningEmailService;
 	private OktaUsersPubsubSubscriber _subscriber;
 	private UserAccountService _userAccountService;

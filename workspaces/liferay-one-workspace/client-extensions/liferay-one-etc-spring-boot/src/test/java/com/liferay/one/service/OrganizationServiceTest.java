@@ -5,13 +5,17 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.resource.v1_0.OrganizationResource;
+import com.liferay.one.constants.CustomFieldConstants;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -119,6 +123,35 @@ public class OrganizationServiceTest {
 	}
 
 	@Test
+	public void testGetOktaGroupIdReadsTheCustomField() throws Exception {
+		Mockito.when(
+			_organizationResource.getOrganization("10")
+		).thenReturn(
+			_createOrganization("A", "10", "00g-a")
+		);
+
+		Assertions.assertEquals(
+			"00g-a", _organizationService.getOktaGroupId(10L));
+	}
+
+	@Test
+	public void testGetOktaGroupIdsSkipsOrganizationsWithoutAGroup()
+		throws Exception {
+
+		_whenGetOrganizationsPage(
+			1,
+			_createPage(
+				2, _createOrganization("A", "10", "00g-a"),
+				_createOrganization("B", "11", null)));
+		_whenGetOrganizationsPage(
+			2, _createPage(2, _createOrganization("C", "12", "00g-c")));
+
+		Assertions.assertEquals(
+			Map.of(10L, "00g-a", 12L, "00g-c"),
+			_organizationService.getOktaGroupIds());
+	}
+
+	@Test
 	public void testGetOrganizationRequestsAccountBriefs() throws Exception {
 		Organization organization = _createOrganization("A");
 
@@ -160,6 +193,29 @@ public class OrganizationServiceTest {
 		return organization;
 	}
 
+	private Organization _createOrganization(
+		String name, String id, String oktaGroupId) {
+
+		Organization organization = _createOrganization(name);
+
+		if (oktaGroupId != null) {
+			CustomValue customValue = new CustomValue();
+
+			customValue.setData(oktaGroupId);
+
+			CustomField customField = new CustomField();
+
+			customField.setCustomValue(customValue);
+			customField.setName(CustomFieldConstants.NAME_OKTA_GROUP_ID);
+
+			organization.setCustomFields(new CustomField[] {customField});
+		}
+
+		organization.setId(id);
+
+		return organization;
+	}
+
 	private Page<Organization> _createPage(
 		long lastPage, Organization... organizations) {
 
@@ -187,6 +243,24 @@ public class OrganizationServiceTest {
 		Mockito.when(
 			_organizationResource.getAccountOrganizationsPage(
 				ArgumentMatchers.anyLong(), ArgumentMatchers.isNull(),
+				ArgumentMatchers.isNull(),
+				ArgumentMatchers.argThat(
+					pagination ->
+						(pagination != null) &&
+						(pagination.getPage() == pageNumber)),
+				ArgumentMatchers.isNull())
+		).thenReturn(
+			page
+		);
+	}
+
+	private void _whenGetOrganizationsPage(
+			int pageNumber, Page<Organization> page)
+		throws Exception {
+
+		Mockito.when(
+			_organizationResource.getOrganizationsPage(
+				ArgumentMatchers.eq(true), ArgumentMatchers.isNull(),
 				ArgumentMatchers.isNull(),
 				ArgumentMatchers.argThat(
 					pagination ->

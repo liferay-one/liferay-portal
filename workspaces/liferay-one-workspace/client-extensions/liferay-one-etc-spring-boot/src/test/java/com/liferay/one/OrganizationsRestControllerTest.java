@@ -6,8 +6,8 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
@@ -15,10 +15,8 @@ import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.OrganizationService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
-import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.util.Arrays;
@@ -364,8 +362,7 @@ public class OrganizationsRestControllerTest {
 		OrganizationsRestController organizationsRestController =
 			_createController();
 
-		com.liferay.headless.admin.user.client.dto.v1_0.Organization
-			organization = _setUpOrganization();
+		Organization organization = _setUpOrganization();
 
 		organizationsRestController.postSyncToJSM(null, _ORGANIZATION_ID);
 
@@ -412,8 +409,6 @@ public class OrganizationsRestControllerTest {
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_organizationSynchronizer",
 			_organizationSynchronizer);
-		ReflectionTestUtils.setField(
-			organizationsRestController, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			organizationsRestController, "_userAccountService",
 			_userAccountService);
@@ -471,9 +466,7 @@ public class OrganizationsRestControllerTest {
 
 	private void _setUpOktaGroup(String... emailAddresses) throws Exception {
 		Mockito.when(
-			_propertyService.getPropertyValue(
-				Organization.class.getName(), _ORGANIZATION_ID,
-				PropertyConstants.NAME_OKTA_GROUP)
+			_organizationService.getOktaGroupId(_ORGANIZATION_ID)
 		).thenReturn(
 			_OKTA_GROUP_ID
 		);
@@ -491,14 +484,8 @@ public class OrganizationsRestControllerTest {
 		);
 	}
 
-	private com.liferay.headless.admin.user.client.dto.v1_0.Organization
-			_setUpOrganization()
-		throws Exception {
-
-		com.liferay.headless.admin.user.client.dto.v1_0.Organization
-			organization =
-				new com.liferay.headless.admin.user.client.dto.v1_0.
-					Organization();
+	private Organization _setUpOrganization() throws Exception {
+		Organization organization = new Organization();
 
 		organization.setExternalReferenceCode(_ORGANIZATION_ERC);
 
@@ -547,8 +534,6 @@ public class OrganizationsRestControllerTest {
 		OrganizationService.class);
 	private final OrganizationSynchronizer _organizationSynchronizer =
 		Mockito.mock(OrganizationSynchronizer.class);
-	private final PropertyService _propertyService = Mockito.mock(
-		PropertyService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 	private final UserAssignmentService _userAssignmentService = Mockito.mock(

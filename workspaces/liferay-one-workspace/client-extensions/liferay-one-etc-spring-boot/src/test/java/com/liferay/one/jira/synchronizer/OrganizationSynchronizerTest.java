@@ -10,11 +10,9 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
-import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 
@@ -56,14 +54,6 @@ public class OrganizationSynchronizerTest {
 			null
 		);
 
-		_propertyService = Mockito.mock(PropertyService.class);
-
-		Mockito.when(
-			_propertyService.getOrganizationProperties(Mockito.anyLong())
-		).thenReturn(
-			Collections.emptyList()
-		);
-
 		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
 
 		TeamConverter teamConverter = Mockito.mock(TeamConverter.class);
@@ -97,9 +87,6 @@ public class OrganizationSynchronizerTest {
 			_organizationSynchronizer, "_contactConverter",
 			Mockito.mock(ContactConverter.class));
 		ReflectionTestUtils.setField(
-			_organizationSynchronizer, "_externalLinkConverter",
-			Mockito.mock(ExternalLinkConverter.class));
-		ReflectionTestUtils.setField(
 			_organizationSynchronizer, "_jiraAssetService", _jiraAssetService);
 		ReflectionTestUtils.setField(
 			_organizationSynchronizer, "_keyedLock", new KeyedLock());
@@ -107,8 +94,6 @@ public class OrganizationSynchronizerTest {
 			_organizationSynchronizer,
 			"_organizationUserAccountRoleSynchronizer",
 			_organizationUserAccountRoleSynchronizer);
-		ReflectionTestUtils.setField(
-			_organizationSynchronizer, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_organizationSynchronizer, "_teamConverter", teamConverter);
 		ReflectionTestUtils.setField(
@@ -251,19 +236,6 @@ public class OrganizationSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncOrganizationSkipsExternalLinksWhenPropertyFails()
-		throws Exception {
-
-		Mockito.when(
-			_propertyService.getOrganizationProperties(Mockito.anyLong())
-		).thenThrow(
-			new RuntimeException()
-		);
-
-		_assertSkipsAttribute(TeamConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS);
-	}
-
-	@Test
 	public void testSyncOrganizationUserAccountsUpsertsUserAccountReferences()
 		throws Exception {
 
@@ -329,7 +301,6 @@ public class OrganizationSynchronizerTest {
 	private OrganizationSynchronizer _organizationSynchronizer;
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
-	private PropertyService _propertyService;
 	private UserAccountService _userAccountService;
 
 }
