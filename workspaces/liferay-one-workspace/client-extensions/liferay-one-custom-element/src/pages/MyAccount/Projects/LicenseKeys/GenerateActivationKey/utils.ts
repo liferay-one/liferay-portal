@@ -239,6 +239,24 @@ export function getLicenseKeyFamilyRank(licenseKeyFamily: string): number {
 	return index === -1 ? LEADING_LICENSE_KEY_FAMILIES.length : index;
 }
 
+export function getLeadingProducts(
+	products: GenerateFormProduct[]
+): GenerateFormProduct[] {
+	let leadingProduct: GenerateFormProduct | undefined;
+	let leadingRank = LEADING_LICENSE_KEY_FAMILIES.length;
+
+	for (const product of products) {
+		const rank = getLicenseKeyFamilyRank(product.licenseKeyFamily);
+
+		if (rank < leadingRank) {
+			leadingProduct = product;
+			leadingRank = rank;
+		}
+	}
+
+	return leadingProduct ? [leadingProduct] : products;
+}
+
 export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
 	return keyType.subscriptions.some(
 		(subscription) => subscription.availableCount > 0
