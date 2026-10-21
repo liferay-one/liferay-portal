@@ -53,7 +53,7 @@ const orderRows = [
 	['Purchased by', 'Jane Doe'],
 ];
 
-describe('[MOD-MYACCOUNT-PROJECTS-BUILDDETAILSSECTIONS] buildDetailsSections', () => {
+describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 	it('shows the tier, the purchased quantity, and the contract for analytics', () => {
 		expect(getRows('analytics')).toEqual([
 			['Tier Name', 'Liferay Analytics Cloud Subscription - Business'],
