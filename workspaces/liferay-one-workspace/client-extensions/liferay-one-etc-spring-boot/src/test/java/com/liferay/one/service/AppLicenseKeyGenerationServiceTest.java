@@ -661,15 +661,6 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	private Entitlement _toEntitlement(
-		long entitlementId, String licenseKeyType, Double quantity,
-		String skuExternalReferenceCode, String startDate) {
-
-		return _toEntitlement(
-			entitlementId, null, licenseKeyType, quantity,
-			skuExternalReferenceCode, startDate);
-	}
-
-	private Entitlement _toEntitlement(
 		long entitlementId, long commerceOrderItemId, String licenseKeyFamily,
 		String licenseKeyType, Double quantity, String skuExternalReferenceCode,
 		String startDate) {
@@ -704,6 +695,15 @@ public class AppLicenseKeyGenerationServiceTest {
 		);
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, String licenseKeyType, Double quantity,
+		String skuExternalReferenceCode, String startDate) {
+
+		return _toEntitlement(
+			entitlementId, null, licenseKeyType, quantity,
+			skuExternalReferenceCode, startDate);
 	}
 
 	private Entitlement _toEntitlement(
