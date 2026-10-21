@@ -13,14 +13,12 @@ import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
-import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.ProjectMembershipService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeRunnable;
 
@@ -75,14 +73,6 @@ public class UserAccountSynchronizerTest {
 		_projectMembershipService = Mockito.mock(
 			ProjectMembershipService.class);
 
-		_propertyService = Mockito.mock(PropertyService.class);
-
-		Mockito.when(
-			_propertyService.getUserAccountProperties(Mockito.anyLong())
-		).thenReturn(
-			Collections.emptyList()
-		);
-
 		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
 
 		Mockito.when(
@@ -102,9 +92,6 @@ public class UserAccountSynchronizerTest {
 			_userAccountSynchronizer, "_contactRoleConverter",
 			Mockito.mock(ContactRoleConverter.class));
 		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_externalLinkConverter",
-			Mockito.mock(ExternalLinkConverter.class));
-		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_jiraAssetService", _jiraAssetService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_keyedLock", new KeyedLock());
@@ -118,8 +105,6 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_projectMembershipService",
 			_projectMembershipService);
-		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_propertyService", _propertyService);
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_teamConverter",
 			Mockito.mock(TeamConverter.class));
@@ -318,19 +303,6 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncUserAccountSkipsExternalLinksWhenPropertyFails()
-		throws Exception {
-
-		Mockito.when(
-			_propertyService.getUserAccountProperties(Mockito.anyLong())
-		).thenThrow(
-			new RuntimeException()
-		);
-
-		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS);
-	}
-
-	@Test
 	public void testSyncUserAccountUpsertsProjectReferences() throws Exception {
 		_whenProjectMembership();
 
@@ -474,7 +446,6 @@ public class UserAccountSynchronizerTest {
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
 	private ProjectMembershipService _projectMembershipService;
-	private PropertyService _propertyService;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }

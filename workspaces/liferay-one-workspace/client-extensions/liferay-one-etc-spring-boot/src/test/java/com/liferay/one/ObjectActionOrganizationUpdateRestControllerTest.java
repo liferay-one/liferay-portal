@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -51,7 +52,14 @@ public class ObjectActionOrganizationUpdateRestControllerTest {
 
 		_objectActionOrganizationUpdateRestController.post(_createJSON());
 
-		Mockito.verify(
+		InOrder inOrder = Mockito.inOrder(
+			_organizationService, _organizationSynchronizer);
+
+		inOrder.verify(
+			_organizationService
+		).evictOktaGroupIds();
+
+		inOrder.verify(
 			_organizationSynchronizer
 		).syncOrganization(
 			organization

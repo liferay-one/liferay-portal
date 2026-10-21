@@ -24,10 +24,10 @@ import com.liferay.one.jira.synchronizer.OrganizationUserAccountSynchronizer;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
-import com.liferay.one.model.Property;
 import com.liferay.one.okta.service.OktaService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -701,13 +701,11 @@ public class UserAssignmentServiceTest {
 		);
 
 		Mockito.when(
-			_propertyService.getProperties(
-				com.liferay.portal.kernel.model.Organization.class.getName(),
-				PropertyConstants.NAME_OKTA_GROUP)
+			_organizationService.getOktaGroupIds()
 		).thenReturn(
-			List.of(
-				_createProperty(_ORGANIZATION_ID, _OKTA_GROUP_ID),
-				_createProperty(_OTHER_ORGANIZATION_ID, "00g-other"))
+			Map.of(
+				_ORGANIZATION_ID, _OKTA_GROUP_ID, _OTHER_ORGANIZATION_ID,
+				"00g-other")
 		);
 
 		_userAssignmentService.syncOktaGroupOrganizations(_USER_ID);
@@ -1126,20 +1124,6 @@ public class UserAssignmentServiceTest {
 				"r_userToProjectMembership_userId", _USER_ID
 			).put(
 				"roleExternalReferenceCode", roleExternalReferenceCode
-			));
-	}
-
-	private Property _createProperty(long classPK, String value) {
-		return new Property(
-			new JSONObject(
-			).put(
-				"classPK", classPK
-			).put(
-				"id", classPK
-			).put(
-				"name", PropertyConstants.NAME_OKTA_GROUP
-			).put(
-				"value", value
 			));
 	}
 

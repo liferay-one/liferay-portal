@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
+import com.liferay.one.service.OrganizationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -28,6 +30,9 @@ public class ObjectActionOrganizationDeleteRestControllerTest {
 		_objectActionOrganizationDeleteRestController =
 			new ObjectActionOrganizationDeleteRestController();
 
+		ReflectionTestUtils.setField(
+			_objectActionOrganizationDeleteRestController,
+			"_organizationService", _organizationService);
 		ReflectionTestUtils.setField(
 			_objectActionOrganizationDeleteRestController,
 			"_organizationSynchronizer", _organizationSynchronizer);
@@ -47,7 +52,14 @@ public class ObjectActionOrganizationDeleteRestControllerTest {
 				)
 			).toString());
 
-		Mockito.verify(
+		InOrder inOrder = Mockito.inOrder(
+			_organizationService, _organizationSynchronizer);
+
+		inOrder.verify(
+			_organizationService
+		).evictOktaGroupIds();
+
+		inOrder.verify(
 			_organizationSynchronizer
 		).deleteOrganization(
 			_EXTERNAL_REFERENCE_CODE
@@ -90,6 +102,8 @@ public class ObjectActionOrganizationDeleteRestControllerTest {
 
 	private ObjectActionOrganizationDeleteRestController
 		_objectActionOrganizationDeleteRestController;
+	private final OrganizationService _organizationService = Mockito.mock(
+		OrganizationService.class);
 	private final OrganizationSynchronizer _organizationSynchronizer =
 		Mockito.mock(OrganizationSynchronizer.class);
 
