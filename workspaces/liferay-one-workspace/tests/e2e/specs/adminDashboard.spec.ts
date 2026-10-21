@@ -6,7 +6,12 @@
 import {Page} from '@playwright/test';
 
 import {expect, oneTest as test} from '../fixtures/oneTest';
-import {HeadlessPage} from '../utils/HeadlessAPI';
+import HeadlessAPI, {HeadlessPage} from '../utils/HeadlessAPI';
+import {
+	escapeRegExp,
+	readCurrentAccountId,
+	selectCurrentAccount,
+} from '../utils/accountUtils';
 import {
 	adminApp,
 	applyCheckboxFilter,
@@ -18,13 +23,70 @@ import {
 	searchList,
 	tableRows,
 } from '../utils/adminUtils';
+import {ACCOUNT_ERC, PUBLISHER_ACCOUNT_ERC} from '../utils/environmentUtils';
 
 const PAGINATION_RESULTS = /Showing (\d+) to (\d+) of (\d+)/;
+
+type AccountOrder = {
+	id: number;
+	orderItems: {productId: number}[];
+};
+
+function accountSelector(page: Page) {
+	return page.locator('liferay-one-custom-element[route="account-selector"]');
+}
 
 function columnHeader(page: Page, name: string) {
 	return adminApp(page)
 		.locator('main table thead')
 		.getByText(name, {exact: true});
+}
+
+async function getLatestAccountOrder(
+	adminAPI: HeadlessAPI,
+	accountId: number
+): Promise<AccountOrder> {
+	const {items} = await adminAPI.get<HeadlessPage<AccountOrder>>(
+		`/o/headless-commerce-admin-order/v1.0/orders?${new URLSearchParams({
+			filter: `accountId in (${accountId}) and orderStatus in (0)`,
+			nestedFields: 'orderItems',
+			pageSize: '1',
+			sort: 'createDate:desc',
+		})}`
+	);
+
+	expect(
+		items,
+		`expected account ${accountId} to have a completed order`
+	).toHaveLength(1);
+
+	return items[0];
+}
+
+async function openOrderAction(
+	page: Page,
+	orderId: number,
+	actionName: string
+): Promise<void> {
+	await gotoAdmin(page, 'mp-orders');
+
+	await searchList(page, String(orderId));
+
+	const row = tableRows(page).filter({
+		has: page.getByRole('cell', {exact: true, name: String(orderId)}),
+	});
+
+	await expect(row).toHaveCount(1);
+
+	const menuItem = page.getByRole('menuitem', {name: actionName});
+
+	await expect(async () => {
+		await row.getByRole('button', {name: /^actions$/i}).click();
+
+		await expect(menuItem).toBeVisible({timeout: 2000});
+	}).toPass({timeout: 30000});
+
+	await menuItem.click();
 }
 
 test.beforeEach(async ({signIn}) => {
@@ -310,18 +372,6 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace orders', () => {
 		await popup.close();
 	});
 
-	test('[FLOW-ADMIN-DASHBOARD] [ROUTE-ADMIN-MP-ORDERS] Customer Dashboard opens the order project in My Account', async ({
-		page,
-	}) => {
-		await gotoAdmin(page, 'mp-orders');
-
-		await clickRowAction(tableRows(page).first(), 'Customer Dashboard');
-
-		await expect(page).toHaveURL(/\/my-account#\/project\//, {
-			timeout: 30000,
-		});
-	});
-
 	test('[FLOW-ADMIN-DASHBOARD] [ROUTE-ADMIN-MP-ORDERS] Export downloads the filtered orders as a CSV file', async ({
 		page,
 	}) => {
@@ -350,6 +400,76 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace orders', () => {
 		const download = await downloadPromise;
 
 		expect(download.suggestedFilename()).toBe('orders.csv');
+	});
+});
+
+test.describe('[FLOW-ADMIN-DASHBOARD] order dashboards', () => {
+	test.describe.configure({mode: 'default'});
+
+	test('[FLOW-ADMIN-DASHBOARD] [ROUTE-ADMIN-MP-ORDERS] Customer Dashboard loads My Account with the account that placed the order', async ({
+		adminAPI,
+		page,
+	}) => {
+		const account = await adminAPI.getAccountByERC(ACCOUNT_ERC);
+
+		const order = await getLatestAccountOrder(adminAPI, account.id);
+
+		expect(PUBLISHER_ACCOUNT_ERC).not.toBe(ACCOUNT_ERC);
+
+		await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+
+		await openOrderAction(page, order.id, 'Customer Dashboard');
+
+		await expect(page).toHaveURL(
+			new RegExp(`/my-account#/${escapeRegExp(ACCOUNT_ERC)}/project/`),
+			{timeout: 30000}
+		);
+
+		await expect(accountSelector(page)).toContainText(account.name);
+
+		await expect
+			.poll(() => readCurrentAccountId(page))
+			.toBe(String(account.id));
+	});
+
+	test('[FLOW-ADMIN-DASHBOARD] [ROUTE-ADMIN-MP-ORDERS] Publisher Dashboard loads with the account that owns the product catalog', async ({
+		adminAPI,
+		page,
+	}) => {
+		const account = await adminAPI.getAccountByERC(ACCOUNT_ERC);
+
+		const order = await getLatestAccountOrder(adminAPI, account.id);
+
+		expect(
+			order.orderItems,
+			`expected order ${order.id} to have an item`
+		).not.toHaveLength(0);
+
+		const product = await adminAPI.get<{catalog: {accountId: number}}>(
+			`/o/headless-commerce-admin-catalog/v1.0/products/${order.orderItems[0].productId}?nestedFields=catalog`
+		);
+
+		const publisherAccount = await adminAPI.get<{id: number; name: string}>(
+			`/o/headless-admin-user/v1.0/accounts/${product.catalog.accountId}`
+		);
+
+		expect(publisherAccount.id).not.toBe(account.id);
+
+		await selectCurrentAccount(page, ACCOUNT_ERC);
+
+		await openOrderAction(page, order.id, 'Publisher Dashboard');
+
+		await expect(page).toHaveURL(/\/my-account\/publisher-dashboard/, {
+			timeout: 30000,
+		});
+
+		await expect(accountSelector(page)).toContainText(
+			publisherAccount.name
+		);
+
+		await expect
+			.poll(() => readCurrentAccountId(page))
+			.toBe(String(publisherAccount.id));
 	});
 });
 
