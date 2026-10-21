@@ -274,8 +274,13 @@ export function getProductOrderInfo(
 
 	const customFields = order.customFields ?? {};
 
-	const placedOrderItem = (order.placedOrderItems ?? []).find(
+	const placedOrderItems = (order.placedOrderItems ?? []).filter(
 		(item) => item.productId === productId
+	);
+
+	const quantity = placedOrderItems.reduce(
+		(total, item) => total + (item.quantity ?? 0),
+		0
 	);
 
 	const ldpAnalyticsCloudProject = safeJSONParse<Partial<AnalyticsProject>>(
@@ -291,15 +296,13 @@ export function getProductOrderInfo(
 				ldpAnalyticsCloudProject.dataSourceAccessToken ?? '',
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
-		itemName: placedOrderItem?.name ?? '',
+		itemName: placedOrderItems[0]?.name ?? '',
 		orderDate: formatDate(order.createDate),
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy: order.author ?? '',
-		quantity: placedOrderItem?.quantity
-			? String(placedOrderItem.quantity)
-			: '',
+		quantity: quantity ? String(quantity) : '',
 		status: getOrderStatusToken(order),
 	};
 }
