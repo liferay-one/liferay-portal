@@ -22,6 +22,7 @@ import type {PlacedOrder} from '~/types/orders';
 import type {ProvisioningData, ProvisioningRow} from './useProvisioningData';
 
 export type ProvisioningAction = {
+	disabled?: boolean;
 	label: Word;
 	onClick: (provisioningRow: ProvisioningRow) => void;
 	show: (provisioningRow: ProvisioningRow) => boolean;
@@ -178,6 +179,7 @@ const useProvisioningActions = ({
 
 	const actions: ProvisioningAction[] = [
 		{
+			disabled: resourceRequirements.isLoading,
 			label: 'install',
 			onClick: (provisioningRow) => onClickInstall(provisioningRow),
 			show: (provisioningRow) =>

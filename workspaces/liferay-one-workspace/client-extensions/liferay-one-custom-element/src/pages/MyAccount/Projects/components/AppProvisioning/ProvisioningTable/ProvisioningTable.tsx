@@ -60,6 +60,7 @@ const ProvisioningTable: React.FC<ProvisioningTableProps> = ({
 									action.show(provisioningRow)
 								)
 								.map((action) => ({
+									disabled: action.disabled,
 									label: action.label,
 									onClick: () =>
 										action.onClick(provisioningRow),
