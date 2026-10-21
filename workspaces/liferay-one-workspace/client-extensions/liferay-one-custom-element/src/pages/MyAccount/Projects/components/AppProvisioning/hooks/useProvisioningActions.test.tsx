@@ -9,6 +9,7 @@ import {Liferay} from '~/services/liferay/liferay';
 
 import useProvisioningActions from './useProvisioningActions';
 
+import type {Word} from '~/i18n';
 import type {PlacedOrder} from '~/types/orders';
 
 import type {ProvisioningData, ProvisioningRow} from './useProvisioningData';
@@ -95,12 +96,12 @@ function renderActions({
 
 function findAction(
 	actions: ReturnType<typeof useProvisioningActions>['actions'],
-	title: string
+	label: Word
 ) {
-	const action = actions.find((current) => current.title === title);
+	const action = actions.find((current) => current.label === label);
 
 	if (!action) {
-		throw new Error(`Missing action ${title}`);
+		throw new Error(`Missing action ${label}`);
 	}
 
 	return action;
@@ -122,7 +123,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 		const {result} = renderActions({isLoading: true});
 
 		act(() => {
-			findAction(result.current.actions, 'Install').action(
+			findAction(result.current.actions, 'install').onClick(
 				row('ready-to-install')
 			);
 		});
@@ -138,7 +139,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 		const {result} = renderActions();
 
 		act(() => {
-			findAction(result.current.actions, 'Install').action(
+			findAction(result.current.actions, 'install').onClick(
 				row('ready-to-install')
 			);
 		});
@@ -150,7 +151,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 	it('opens the cloud console for the project of the row', () => {
 		const {result} = renderActions();
 
-		findAction(result.current.actions, 'Go to Cloud Console').action(
+		findAction(result.current.actions, 'go-to-cloud-console').onClick(
 			row('installed')
 		);
 
@@ -167,7 +168,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 		const {installAlertModal} = result.current;
 
 		act(() => {
-			findAction(result.current.actions, 'Install').action(
+			findAction(result.current.actions, 'install').onClick(
 				row('ready-to-install')
 			);
 		});
@@ -179,7 +180,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 	it('opens the details modal for any row', () => {
 		const {result} = renderActions();
 
-		findAction(result.current.actions, 'View Details').action(
+		findAction(result.current.actions, 'view-details').onClick(
 			row('installed')
 		);
 
@@ -194,7 +195,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 		const {uninstallModal} = result.current;
 
 		act(() => {
-			findAction(result.current.actions, 'Uninstall').action(
+			findAction(result.current.actions, 'uninstall').onClick(
 				row('installed')
 			);
 		});
@@ -208,22 +209,22 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 	it('shows install only for ready rows and uninstall and console only for installed rows', () => {
 		const {result} = renderActions();
 
-		const visibleTitles = (status: ProvisioningRow['status']) =>
+		const visibleLabels = (status: ProvisioningRow['status']) =>
 			result.current.actions
 				.filter((action) => action.show(row(status)))
-				.map(({title}) => title);
+				.map(({label}) => label);
 
-		expect(visibleTitles('ready-to-install')).toEqual([
-			'Install',
-			'View Details',
+		expect(visibleLabels('ready-to-install')).toEqual([
+			'install',
+			'view-details',
 		]);
-		expect(visibleTitles('installed')).toEqual([
-			'View Details',
-			'Go to Cloud Console',
-			'Uninstall',
+		expect(visibleLabels('installed')).toEqual([
+			'view-details',
+			'go-to-cloud-console',
+			'uninstall',
 		]);
-		expect(visibleTitles('in-progress')).toEqual(['View Details']);
-		expect(visibleTitles('expired')).toEqual(['View Details']);
+		expect(visibleLabels('in-progress')).toEqual(['view-details']);
+		expect(visibleLabels('expired')).toEqual(['view-details']);
 	});
 
 	it('toasts danger and clears loading when uninstall fails', async () => {
