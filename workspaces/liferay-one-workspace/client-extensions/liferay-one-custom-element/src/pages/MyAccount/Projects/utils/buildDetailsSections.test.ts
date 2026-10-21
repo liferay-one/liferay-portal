@@ -45,6 +45,14 @@ const contractRows = [
 	['Status', 'Active'],
 ];
 
+const orderRows = [
+	['Order ID', '11'],
+	['Order Date', 'Mar 15, 2026'],
+	['Purchase Number', 'PO-1'],
+	['Customer Account', 'Acme'],
+	['Purchased by', 'Jane Doe'],
+];
+
 describe('[MOD-MYACCOUNT-PROJECTS-BUILDDETAILSSECTIONS] buildDetailsSections', () => {
 	it('shows the tier, the purchased quantity, and the contract for analytics', () => {
 		expect(getRows('analytics')).toEqual([
@@ -74,12 +82,12 @@ describe('[MOD-MYACCOUNT-PROJECTS-BUILDDETAILSSECTIONS] buildDetailsSections', (
 	});
 
 	it('shows the order for basic', () => {
-		expect(getRows('basic')).toEqual([
-			['Order ID', '11'],
-			['Order Date', 'Mar 15, 2026'],
-			['Purchase Number', 'PO-1'],
-			['Customer Account', 'Acme'],
-			['Purchased by', 'Jane Doe'],
-		]);
+		expect(getRows('basic')).toEqual(orderRows);
+	});
+
+	it('shows the order and the incident report contacts for basic incident', () => {
+		expect(
+			getRows('basic-incident', {incidentReportContacts: ['Ana', 'Cy']})
+		).toEqual([...orderRows, ['Incident Report Contacts', 'Ana, Cy']]);
 	});
 });

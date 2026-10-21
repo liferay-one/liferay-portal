@@ -16,6 +16,7 @@ import type {DetailsProfile} from './resolveDetailsProfile';
 type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
+	incidentReportContacts?: string[];
 	orderInfo: {
 		itemName: string;
 		orderDate: string;
@@ -95,7 +96,17 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		},
 	],
 	'basic': (context) => [{rows: orderRows(context)}],
-	'basic-incident': (context) => [{rows: orderRows(context)}],
+	'basic-incident': (context) => [
+		{
+			rows: [
+				...orderRows(context),
+				{
+					label: i18n.translate('incident-report-contacts'),
+					value: (context.incidentReportContacts ?? []).join(', '),
+				},
+			],
+		},
+	],
 	'dates-status': (context) => [{rows: contractRows(context.contract)}],
 	'env-commerce': (context) => [
 		{rows: [...orderRows(context), ...contractRows(context.contract)]},
