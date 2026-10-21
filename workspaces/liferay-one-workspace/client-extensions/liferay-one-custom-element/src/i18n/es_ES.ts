@@ -1409,6 +1409,7 @@ export default {
 	'section-that-shows-the-payments': 'Sección que muestra los pagos.',
 	'security': 'Seguridad',
 	'security-breach-contacts': 'Contactos para brechas de seguridad',
+	'security-incident-contact': 'Contacto para incidentes de seguridad',
 	'see-the-privacy-policy-for-details':
 		'Consulta la política de privacidad para más detalles.',
 	'select-a-dxp-version': 'Selecciona una versión de DXP',

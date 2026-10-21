@@ -6,11 +6,11 @@
 import type {Designation} from '~/pages/MyAccount/ProjectMembers/types';
 import type {DeliveryProductSpecification} from '~/types/product';
 
-export const INCIDENT_REPORT_CONTACT_ERC = 'C_SECURITY_INCIDENT_CONTACT';
-
 export const PROJECT_ADMIN_ERC = 'C_PROJECT_ADMIN';
 export const PROJECT_REQUESTER_ERC = 'C_PROJECT_REQUESTER';
 export const PROJECT_USER_ERC = 'C_PROJECT_USER';
+
+export const SECURITY_INCIDENT_CONTACT_ERC = 'C_SECURITY_INCIDENT_CONTACT';
 
 export const PROJECT_ROLE_ERCS = [
 	PROJECT_ADMIN_ERC,

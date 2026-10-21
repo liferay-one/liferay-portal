@@ -1460,6 +1460,7 @@ export default {
 	'section-that-shows-the-payments': 'Section that shows the payments.',
 	'security': 'Security',
 	'security-breach-contacts': 'Security Breach Contacts',
+	'security-incident-contact': 'Security Incident Contact',
 	'see-the-privacy-policy-for-details': 'See the privacy policy for details.',
 	'select-a-dxp-version': 'Select a DXP Version',
 	'select-a-file': 'Select a File',
