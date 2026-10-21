@@ -1,4 +1,4 @@
-.admin-layout .tr-table {
+.admin-layout .table {
 	& :is(td),
 	& th {
 		padding-left: var(--spacer-2);
