@@ -64,10 +64,6 @@
 			"group": "customer",
 			"purpose": "The basic role of a user in an account. It shows the account and its navigation."
 		},
-		"Account Requester": {
-			"group": "customer",
-			"purpose": "A customer role. It changes which welcome email a new user gets."
-		},
 		"Account Solution Publisher": {
 			"group": "marketplace",
 			"purpose": "Publishes solutions in the marketplace for the account."
@@ -251,10 +247,6 @@
 		"Solution Architect": {
 			"group": "employee",
 			"purpose": "The Liferay solution architect of the account."
-		},
-		"Support Administrator": {
-			"group": "customer",
-			"purpose": "A customer role that manages the license keys of the account. It also changes which welcome email a new user gets."
 		},
 		"User": {
 			"group": "portal",

@@ -13,7 +13,6 @@ import {useOneContext} from '~/context/OneContextProvider';
 import {useProject} from '~/context/ProjectContext';
 import {useProperties} from '~/context/PropertiesContext';
 import {sub, translate} from '~/i18n';
-import {ACCOUNT_REQUESTER} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import CommonLicenseKeys, {
@@ -132,9 +131,8 @@ export default function ActivationKeyDownload({
 		}
 	};
 
-	const isRequesterOrAdministrator = Boolean(
-		userAccountModel?.isAccountAdministrator ||
-			userAccountModel?.hasAccountRoleName(ACCOUNT_REQUESTER)
+	const isAccountAdministrator = Boolean(
+		userAccountModel?.isAccountAdministrator
 	);
 
 	return (
@@ -234,7 +232,7 @@ export default function ActivationKeyDownload({
 								)}
 							</span>
 
-							{isRequesterOrAdministrator ? (
+							{isAccountAdministrator ? (
 								<>
 									{sub(
 										'for-more-information-about-the-availability-of-your-x-activation-keys-please',

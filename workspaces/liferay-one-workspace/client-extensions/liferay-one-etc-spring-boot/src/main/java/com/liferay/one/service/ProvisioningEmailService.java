@@ -321,9 +321,7 @@ public class ProvisioningEmailService extends OneBaseService {
 
 		if (accountRoleNames.contains(
 				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
-			accountRoleNames.contains(RoleConstants.NAME_PARTNER_MANAGER) ||
-			accountRoleNames.contains(
-				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+			accountRoleNames.contains(RoleConstants.NAME_PARTNER_MANAGER)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -333,9 +331,7 @@ public class ProvisioningEmailService extends OneBaseService {
 		}
 
 		if (accountRoleNames.contains(
-				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
-			accountRoleNames.contains(
-				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)) {
 
 			sb.append("<li>");
 			sb.append(
@@ -345,7 +341,6 @@ public class ProvisioningEmailService extends OneBaseService {
 		}
 
 		if (accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_MEMBER) ||
-			accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_REQUESTER) ||
 			accountRoleNames.contains(
 				RoleConstants.NAME_PARTNER_MARKETING_USER) ||
 			accountRoleNames.contains(RoleConstants.NAME_PARTNER_MEMBER) ||
@@ -373,10 +368,7 @@ public class ProvisioningEmailService extends OneBaseService {
 		sb.append("</li>");
 
 		if (accountRoleNames.contains(
-				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR) ||
-			accountRoleNames.contains(RoleConstants.NAME_ACCOUNT_REQUESTER) ||
-			accountRoleNames.contains(
-				RoleConstants.NAME_SUPPORT_ADMINISTRATOR)) {
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)) {
 
 			sb.append("<li>");
 			sb.append(

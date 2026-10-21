@@ -26,8 +26,6 @@ public class RoleConstants {
 
 	public static final String NAME_ACCOUNT_MEMBER = "Account Member";
 
-	public static final String NAME_ACCOUNT_REQUESTER = "Account Requester";
-
 	public static final String NAME_ADMINISTRATOR = "Administrator";
 
 	public static final String NAME_CLOUD_NATIVE_CONTACT =
@@ -59,9 +57,6 @@ public class RoleConstants {
 
 	public static final String NAME_SSA_ADMIN = "SSA Administrator";
 
-	public static final String NAME_SUPPORT_ADMINISTRATOR =
-		"Support Administrator";
-
 	public static final List<String> ercsSupportProject =
 		Collections.unmodifiableList(
 			Arrays.asList(
@@ -74,14 +69,10 @@ public class RoleConstants {
 			Arrays.asList(NAME_ACCOUNT_ADMINISTRATOR, NAME_SSA_ADMIN));
 	public static final List<String> namesCustomerAccountRoles =
 		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER,
-				NAME_ACCOUNT_REQUESTER, NAME_SUPPORT_ADMINISTRATOR));
+			Arrays.asList(NAME_ACCOUNT_ADMINISTRATOR, NAME_ACCOUNT_MEMBER));
 	public static final List<String> namesManageLicenseKeys =
 		Collections.unmodifiableList(
-			Arrays.asList(
-				NAME_LIFERAY_SALES, NAME_PARTNER_MANAGER,
-				NAME_SUPPORT_ADMINISTRATOR));
+			Arrays.asList(NAME_LIFERAY_SALES, NAME_PARTNER_MANAGER));
 	public static final List<String> namesPartnerAccountManager =
 		Collections.unmodifiableList(
 			Arrays.asList(NAME_PARTNER_ACCOUNT_ADMIN, NAME_PARTNER_MANAGER));

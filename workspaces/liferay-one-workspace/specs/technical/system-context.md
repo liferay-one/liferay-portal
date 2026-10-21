@@ -33,7 +33,7 @@ When this file and the code disagree, the code is correct. The integration contr
 
 | Person | Description | Main Entry |
 | --- | --- | --- |
-| Administrator | A Liferay employee with a staff role such as Liferay Staff, Provisioning Administrator, SSA Administrator, Finance Administrator, or Support Administrator. Manages trials, provisioning, publishers, and support data. | `layouts/05_admin` and the `pages/Admin` tree |
+| Administrator | A Liferay employee with a staff role such as Liferay Staff, Provisioning Administrator, SSA Administrator, or Finance Administrator. Manages trials, provisioning, publishers, and support data. | `layouts/05_admin` and the `pages/Admin` tree |
 | Customer | A user of a customer account with account roles such as Account Administrator, Account Buyer, or Project Admin. Buys products, manages projects, keys, environments, and support tickets. | `layouts/02_my-account`, `03_support`, `06_product-purchase` |
 | Guest | A visitor with no session. Browses the Marketplace catalog and public pages, and accepts an invitation by its token. | `layouts/01_home`, `04_marketplace`, `08_account-invitation` |
 | Partner | A user of a partner account with roles such as Partner Account Admin, Partner Sales User, or Partner Technical User. The partner classification comes from the `partner-product` commerce specification on entitled products. | Same pages as the customer, with partner roles |
