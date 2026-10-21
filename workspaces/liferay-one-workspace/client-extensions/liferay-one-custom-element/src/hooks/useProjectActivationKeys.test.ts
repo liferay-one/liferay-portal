@@ -388,6 +388,31 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		expect(activationKeys[0].productName).toBe('Liferay DXP');
 	});
 
+	it('names an unaggregated Marketplace app key by the app before its family', () => {
+		const {activationKeys} = renderActivationKeys({
+			licenseKeys: [
+				{
+					active: true,
+					externalReferenceCode: 'LK-APP',
+					licenseKeyFamily: 'DXP',
+					productExternalId: '12345',
+					productName: 'Test Application',
+				},
+				{
+					active: true,
+					externalReferenceCode: 'LK-DXP',
+					licenseKeyFamily: 'DXP',
+					productExternalId: 'Portal',
+					productName: 'Liferay DXP - Free Tier',
+				},
+			],
+		});
+
+		expect(
+			activationKeys.map((activationKey) => activationKey.productName)
+		).toEqual(['Test Application', 'Liferay DXP']);
+	});
+
 	it.each([
 		['an inactive key', {active: false}, 'not-activated'],
 		[
