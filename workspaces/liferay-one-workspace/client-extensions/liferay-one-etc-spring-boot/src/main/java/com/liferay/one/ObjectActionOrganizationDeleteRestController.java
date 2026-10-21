@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
+import com.liferay.one.service.OrganizationService;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,11 +43,16 @@ public class ObjectActionOrganizationDeleteRestController
 					" was deleted, triggering a delete from JSM");
 		}
 
+		_organizationService.evictOktaGroupIds();
+
 		_organizationSynchronizer.deleteOrganization(externalReferenceCode);
 	}
 
 	private static final Log _log = LogFactory.getLog(
 		ObjectActionOrganizationDeleteRestController.class);
+
+	@Autowired
+	private OrganizationService _organizationService;
 
 	@Autowired
 	private OrganizationSynchronizer _organizationSynchronizer;

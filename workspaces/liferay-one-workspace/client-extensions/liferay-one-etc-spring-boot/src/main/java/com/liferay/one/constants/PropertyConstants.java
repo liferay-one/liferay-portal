@@ -18,6 +18,4 @@ public class PropertyConstants {
 
 	public static final String NAME_OKTA_APPLICATION = "okta:application";
 
-	public static final String NAME_OKTA_GROUP = "okta:group";
-
 }

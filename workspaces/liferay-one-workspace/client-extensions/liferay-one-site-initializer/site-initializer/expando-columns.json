@@ -877,6 +877,19 @@
 		}
 	},
 	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.Organization",
+		"name": "oktaGroupId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
 		"dataType": 1,
 		"modelResource": "com.liferay.portal.kernel.model.User",
 		"name": "agreedToContactEvents",

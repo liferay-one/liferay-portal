@@ -24,7 +24,6 @@ import com.liferay.one.jira.synchronizer.OrganizationUserAccountSynchronizer;
 import com.liferay.one.jira.synchronizer.UserAccountSynchronizer;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
-import com.liferay.one.model.Property;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.UserAccountUtil;
@@ -32,6 +31,7 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -207,19 +207,16 @@ public class UserAssignmentService {
 		Set<Long> groupOrganizationIds = new HashSet<>();
 		Set<Long> linkedOrganizationIds = new HashSet<>();
 
-		for (Property property :
-				_propertyService.getProperties(
-					com.liferay.portal.kernel.model.Organization.class.
-						getName(),
-					PropertyConstants.NAME_OKTA_GROUP)) {
+		Map<Long, String> oktaGroupIds = _organizationService.getOktaGroupIds();
 
-			linkedOrganizationIds.add(property.getClassPK());
+		for (Map.Entry<Long, String> entry : oktaGroupIds.entrySet()) {
+			linkedOrganizationIds.add(entry.getKey());
 
-			if (!groupIds.contains(property.getValue())) {
+			if (!groupIds.contains(entry.getValue())) {
 				continue;
 			}
 
-			groupOrganizationIds.add(property.getClassPK());
+			groupOrganizationIds.add(entry.getKey());
 		}
 
 		for (long organizationId : groupOrganizationIds) {

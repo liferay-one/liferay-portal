@@ -8,22 +8,19 @@ package com.liferay.one.okta.pubsub;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.OrganizationBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.PropertyConstants;
-import com.liferay.one.model.Property;
 import com.liferay.one.okta.model.OktaUser;
 import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.service.AccountService;
-import com.liferay.one.service.PropertyService;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.UserAccountUtil;
-import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import org.json.JSONObject;
@@ -148,17 +145,15 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 			return 0;
 		}
 
-		List<Property> properties = _propertyService.getProperties(
-			Organization.class.getName(), PropertyConstants.NAME_OKTA_GROUP,
-			groupId);
+		Map<Long, String> oktaGroupIds = _organizationService.getOktaGroupIds();
 
-		if (properties.isEmpty()) {
-			return 0;
+		for (Map.Entry<Long, String> entry : oktaGroupIds.entrySet()) {
+			if (groupId.equals(entry.getValue())) {
+				return entry.getKey();
+			}
 		}
 
-		Property property = properties.get(0);
-
-		return property.getClassPK();
+		return 0;
 	}
 
 	private void _removeGroupMemberships(
@@ -266,11 +261,11 @@ public class OktaUsersPubsubSubscriber extends BasePubsubSubscriber {
 	@Autowired
 	private OktaService _oktaService;
 
+	@Autowired
+	private OrganizationService _organizationService;
+
 	@Value("${liferay.one.okta.pubsub.project.id}")
 	private String _projectId;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 	@Autowired
 	private ProvisioningEmailService _provisioningEmailService;

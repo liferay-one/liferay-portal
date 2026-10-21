@@ -251,11 +251,10 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 ### Medium: Account Data That Is Not Account Restricted
 
-1. Three objects are children of the account but are not in `05-object-definition-account-entry-restricted`. Only role permissions control who reads them.
+1. Two objects are children of the account but are not in `05-object-definition-account-entry-restricted`. Only role permissions control who reads them.
 
 	- PublisherDetail is the public profile of a publisher, and the Marketplace site shows it to every visitor. Guest and User have company scope VIEW on purpose. Every field, `privateEmail`, `paypalAccount`, and `phone` included, is public information.
 	- PublisherSalesSummary is for administrators only. Only Finance Administrator has a grant, and a publisher cannot see its own summaries, so an account restriction adds nothing.
-	- Property holds account rows and also Organization and User rows keyed by `className` and `classPK`, which have no account. A restriction opens those rows to every signed in user, because a restricted entry whose account field is 0 grants every action. The rename to AccountProperty and the restriction are a separate task.
 
 1. UsageReport has no account relationship. It reaches the account only through Project or Entitlement, so it depends on role permissions only.
 
@@ -549,6 +548,7 @@ Liferay system object `Organization`.
 | --- | --- | --- |
 | `accountEntryId` | LongInteger | object field, soft link to `L_ACCOUNT` |
 | `accountEntryId` | Long | custom field, soft link to `L_ACCOUNT` |
+| `oktaGroupId` | Text | custom field, the ID of the linked Okta group |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |
@@ -738,7 +738,9 @@ Object name `OAuth2DxpAuthorization`. REST `/o/c/oauth2dxpauthorizations`. Title
 
 #### Property (`C_PROPERTY`)
 
-Object name `Property`. REST `/o/c/properties`. Title field `name`.
+Object name `Property`. REST `/o/c/properties`. Title field `name`. Account restricted by `r_accountEntryToProperty_accountEntryId`.
+
+A row is a name and a value for one account. `className` and `classPK` name the record inside the account that the row is about: the account itself, a Project, or a LicenseKey. A row with the name `<domain>:<entityName>` is an external link, and its value is the ID in that system. Organizations and users do not use this object. The Okta group of an organization is in its `oktaGroupId` custom field.
 
 | Field | Type | Notes |
 | --- | --- | --- |

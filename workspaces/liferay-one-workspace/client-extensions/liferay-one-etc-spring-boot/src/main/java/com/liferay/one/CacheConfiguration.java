@@ -124,6 +124,15 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
+			"oktaGroupIds",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
 			"product",
 			Caffeine.newBuilder(
 			).expireAfterWrite(

@@ -8,8 +8,6 @@ package com.liferay.one.service;
 import com.liferay.one.model.Property;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.model.Organization;
-import com.liferay.portal.kernel.model.User;
 
 import java.util.List;
 
@@ -83,37 +81,8 @@ public class PropertyService extends OneBaseService {
 				"') and (name eq '", name, "')"));
 	}
 
-	public List<Property> getOrganizationProperties(long organizationId)
-		throws Exception {
-
-		return getProperties(
-			StringBundler.concat(
-				"(className eq '", Organization.class.getName(),
-				"') and (classPK eq ", organizationId, ")"));
-	}
-
 	public List<Property> getProperties(String filterString) throws Exception {
 		return getAllItems("/o/c/properties", filterString, Property::new);
-	}
-
-	public List<Property> getProperties(String className, String name)
-		throws Exception {
-
-		return getProperties(
-			StringBundler.concat(
-				"(className eq '", escapeODataString(className),
-				"') and (name eq '", escapeODataString(name), "')"));
-	}
-
-	public List<Property> getProperties(
-			String className, String name, String value)
-		throws Exception {
-
-		return getProperties(
-			StringBundler.concat(
-				"(className eq '", escapeODataString(className),
-				"') and (name eq '", escapeODataString(name),
-				"') and (value eq '", escapeODataString(value), "')"));
 	}
 
 	public String getPropertyValue(long accountId, String name)
@@ -128,34 +97,6 @@ public class PropertyService extends OneBaseService {
 		Property property = properties.get(0);
 
 		return property.getValue();
-	}
-
-	public String getPropertyValue(String className, long classPK, String name)
-		throws Exception {
-
-		List<Property> properties = getAllItems(
-			"/o/c/properties",
-			StringBundler.concat(
-				"(className eq '", className, "') and (classPK eq ", classPK,
-				") and (name eq '", name, "')"),
-			Property::new);
-
-		if (properties.isEmpty()) {
-			return null;
-		}
-
-		Property property = properties.get(0);
-
-		return property.getValue();
-	}
-
-	public List<Property> getUserAccountProperties(long userId)
-		throws Exception {
-
-		return getProperties(
-			StringBundler.concat(
-				"(className eq '", User.class.getName(), "') and (classPK eq ",
-				userId, ")"));
 	}
 
 }

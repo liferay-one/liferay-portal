@@ -8,7 +8,6 @@ package com.liferay.one;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.one.constants.PropertyConstants;
 import com.liferay.one.jira.synchronizer.AccountOrganizationSynchronizer;
 import com.liferay.one.jira.synchronizer.OrganizationSynchronizer;
 import com.liferay.one.okta.model.OktaUser;
@@ -16,7 +15,6 @@ import com.liferay.one.okta.service.OktaService;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.OrganizationService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
 import com.liferay.petra.string.StringBundler;
@@ -102,9 +100,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		String oktaGroupId = _propertyService.getPropertyValue(
-			com.liferay.portal.kernel.model.Organization.class.getName(),
-			organizationId, PropertyConstants.NAME_OKTA_GROUP);
+		String oktaGroupId = _organizationService.getOktaGroupId(
+			organizationId);
 
 		if (Validator.isNull(oktaGroupId)) {
 			throw new ResponseStatusException(
@@ -276,9 +273,6 @@ public class OrganizationsRestController extends OneBaseRestController {
 
 	@Autowired
 	private OrganizationSynchronizer _organizationSynchronizer;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 	@Autowired
 	private UserAccountService _userAccountService;

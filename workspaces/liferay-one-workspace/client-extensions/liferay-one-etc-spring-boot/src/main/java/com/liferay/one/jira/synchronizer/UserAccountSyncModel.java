@@ -11,11 +11,8 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Phone;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccountContactInformation;
-import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.model.ProjectMembership;
-import com.liferay.one.model.Property;
 import com.liferay.one.service.ProjectMembershipService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.MemoizedValue;
 import com.liferay.portal.kernel.util.ListUtil;
 
@@ -32,13 +29,10 @@ import org.apache.commons.logging.LogFactory;
 public class UserAccountSyncModel {
 
 	public UserAccountSyncModel(
-		ExternalLinkConverter externalLinkConverter,
 		ProjectMembershipService projectMembershipService,
-		PropertyService propertyService, UserAccount userAccount) {
+		UserAccount userAccount) {
 
-		_externalLinkConverter = externalLinkConverter;
 		_projectMembershipService = projectMembershipService;
-		_propertyService = propertyService;
 		_userAccount = userAccount;
 
 		_accountBriefs = ListUtil.fromArray(userAccount.getAccountBriefs());
@@ -48,9 +42,6 @@ public class UserAccountSyncModel {
 		_accountExternalReferenceCodes = new MemoizedValue<>(
 			"accounts for user account " + externalReferenceCode, _log,
 			this::_toAccountExternalReferenceCodes);
-		_externalLinkProperties = new MemoizedValue<>(
-			"external links for user account " + externalReferenceCode, _log,
-			this::_toExternalLinkProperties);
 
 		_organizationBriefs = ListUtil.fromArray(
 			userAccount.getOrganizationBriefs());
@@ -64,10 +55,6 @@ public class UserAccountSyncModel {
 
 	public List<String> getAccountExternalReferenceCodes() {
 		return _accountExternalReferenceCodes.get();
-	}
-
-	public List<Property> getExternalLinkProperties() {
-		return _externalLinkProperties.get();
 	}
 
 	public String getExternalReferenceCode() {
@@ -108,23 +95,6 @@ public class UserAccountSyncModel {
 		}
 
 		return accountExternalReferenceCodes;
-	}
-
-	private List<Property> _toExternalLinkProperties() throws Exception {
-		List<Property> externalLinkProperties = new ArrayList<>();
-
-		List<Property> properties = _propertyService.getUserAccountProperties(
-			_userAccount.getId());
-
-		for (Property property : properties) {
-			if (!_externalLinkConverter.isExternalLinkProperty(property)) {
-				continue;
-			}
-
-			externalLinkProperties.add(property);
-		}
-
-		return externalLinkProperties;
 	}
 
 	private List<RoleBrief> _toRoleBriefs() {
@@ -171,11 +141,8 @@ public class UserAccountSyncModel {
 
 	private final List<AccountBrief> _accountBriefs;
 	private final MemoizedValue<List<String>> _accountExternalReferenceCodes;
-	private final ExternalLinkConverter _externalLinkConverter;
-	private final MemoizedValue<List<Property>> _externalLinkProperties;
 	private final List<OrganizationBrief> _organizationBriefs;
 	private final ProjectMembershipService _projectMembershipService;
-	private final PropertyService _propertyService;
 	private final List<RoleBrief> _roleBriefs;
 	private final List<Phone> _telephones;
 	private final UserAccount _userAccount;
