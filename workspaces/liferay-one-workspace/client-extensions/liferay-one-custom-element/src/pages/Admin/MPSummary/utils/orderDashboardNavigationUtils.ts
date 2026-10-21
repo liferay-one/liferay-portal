@@ -71,7 +71,9 @@ export async function openCustomerDashboard(order: Order) {
 
 	await setCurrentAccount(String(order.accountId));
 
-	Liferay.Util.navigate(`${getSiteURL()}/my-account#/project/${projectPath}`);
+	window.location.assign(
+		`${getSiteURL()}/my-account#/project/${projectPath}`
+	);
 }
 
 export async function openPublisherDashboard(order: Order) {
@@ -99,5 +101,5 @@ export async function openPublisherDashboard(order: Order) {
 
 	await setCurrentAccount(String(accountId));
 
-	Liferay.Util.navigate(`${getSiteURL()}/my-account/publisher-dashboard`);
+	window.location.assign(`${getSiteURL()}/my-account/publisher-dashboard`);
 }
