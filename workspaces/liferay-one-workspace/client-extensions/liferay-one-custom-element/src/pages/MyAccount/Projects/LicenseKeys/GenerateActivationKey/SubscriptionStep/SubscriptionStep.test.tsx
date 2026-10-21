@@ -75,6 +75,38 @@ function toGenerateForm(licenseKeyExpirationDate?: string): GenerateForm {
 	};
 }
 
+function toAppGenerateForm(availableCounts: number[]): GenerateForm {
+	return {
+		bundleProducts: [],
+		products: [
+			{
+				app: true,
+				developerVersions: [],
+				entitlementId: 11,
+				externalReferenceCode: 'PRDCT-APP',
+				keyTypes: [
+					{
+						entitlementId: 11,
+						key: 'production',
+						licenseEntryType: 'production',
+						productKey: 'PRDCT-APP',
+						subscriptions: availableCounts.map(
+							(availableCount, index) => ({
+								...toSubscription(11 + index),
+								availableCount,
+							})
+						),
+						virtualCluster: false,
+					},
+				],
+				licenseKeyFamily: '',
+				name: 'Test Application',
+				versions: ['1'],
+			},
+		],
+	};
+}
+
 const PRODUCTION_DEFAULT_VALUES: Partial<GenerateActivationKeyForm> = {
 	keyType: 'production',
 	productExternalReferenceCode: 'DXP',
@@ -139,6 +171,47 @@ describe('SubscriptionStep', () => {
 		expect(form?.getValues('subscriptionEntitlementId')).toBe(
 			COMPLIMENTARY_ENTITLEMENT_ID
 		);
+	});
+
+	it('selects the first app purchase with activations left without a contract term', () => {
+		let form: UseFormReturn<GenerateActivationKeyForm> | undefined;
+
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: 'production',
+					productExternalReferenceCode: 'PRDCT-APP',
+				}}
+				generateForm={toAppGenerateForm([0, 2])}
+				onForm={(current) => {
+					form = current;
+				}}
+			/>
+		);
+
+		expect(screen.queryByText('Contract Term')).not.toBeInTheDocument();
+		expect(form?.getValues('subscriptionEntitlementId')).toBe(12);
+		expect(screen.getByRole('button', {name: 'Next'})).toBeEnabled();
+	});
+
+	it('warns that an app has no activations left', () => {
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: 'production',
+					productExternalReferenceCode: 'PRDCT-APP',
+				}}
+				generateForm={toAppGenerateForm([0])}
+			/>
+		);
+
+		expect(screen.queryByText('Contract Term')).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				'There are no key activations available. Deactivate a key or contact the Provisioning team.'
+			)
+		).toBeInTheDocument();
+		expect(screen.getByRole('button', {name: 'Next'})).toBeDisabled();
 	});
 
 	it('shows that a permanent activation key does not expire', () => {
