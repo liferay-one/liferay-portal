@@ -141,7 +141,7 @@
 													"collectionConfig": {
 														"collectionReference": {
 															"className": "com.liferay.asset.list.model.AssetListEntry",
-															"classPK": "[$ASSET_LIST_ENTRY_ID:CUSTOMER PORTAL HELP$]"
+															"classPK": "[$ASSET_LIST_ENTRY_ID:ONE-LIFERAY-HELP$]"
 														},
 														"collectionType": "Collection"
 													},
