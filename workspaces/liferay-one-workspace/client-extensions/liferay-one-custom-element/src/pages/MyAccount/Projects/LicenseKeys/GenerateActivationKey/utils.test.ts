@@ -19,6 +19,7 @@ import {
 	getLeadingProducts,
 	getLicenseKeyFamilyLabel,
 	getLicenseKeyFamilyRank,
+	getSelectableProducts,
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
 	hasAvailableKeyType,
@@ -266,6 +267,40 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			];
 
 			expect(getLeadingProducts(products)).toEqual(products);
+		});
+	});
+
+	describe('getSelectableProducts', () => {
+		const app = {...toProduct('PRDCT-APP'), app: true};
+		const commerce = toProduct('PRDCT-COMMERCE', 'CMP');
+		const dxp = toProduct('PRDCT-DXP', 'DXP');
+		const trial = toProduct('PRDCT-DXP-TRIAL', 'DXP');
+
+		it('offers only the preselected app', () => {
+			expect(
+				getSelectableProducts('PRDCT-APP', [trial, app], false)
+			).toEqual([app]);
+		});
+
+		it('leaves the apps out of a new key without a preselected app', () => {
+			expect(getSelectableProducts(null, [app, trial], false)).toEqual([
+				trial,
+			]);
+			expect(
+				getSelectableProducts('PRDCT-DXP-TRIAL', [app, trial], false)
+			).toEqual([trial]);
+		});
+
+		it('keeps only the leading product of a project', () => {
+			expect(getSelectableProducts(null, [commerce, dxp], true)).toEqual([
+				dxp,
+			]);
+		});
+
+		it('keeps every product of an account', () => {
+			expect(getSelectableProducts(null, [commerce, dxp], false)).toEqual(
+				[commerce, dxp]
+			);
 		});
 	});
 
