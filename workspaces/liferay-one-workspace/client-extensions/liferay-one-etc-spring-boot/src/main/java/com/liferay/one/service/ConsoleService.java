@@ -217,8 +217,7 @@ public class ConsoleService extends BaseService {
 						}
 					}
 				)
-			)
-		);
+			));
 	}
 
 	private void _inviteProject(String emailAddress, String projectId)

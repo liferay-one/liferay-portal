@@ -138,27 +138,6 @@ public class BasePubsubPublisherTest {
 	}
 
 	@Test
-	public void testPublishRethrowsOtherExceptionsAfterHandling()
-		throws Exception {
-
-		TimeoutException timeoutException = new TimeoutException();
-
-		Mockito.when(
-			_apiFuture.get(ArgumentMatchers.anyLong(), ArgumentMatchers.any())
-		).thenThrow(
-			timeoutException
-		);
-
-		TestPubsubPublisher testPubsubPublisher = new TestPubsubPublisher();
-
-		Assertions.assertSame(
-			timeoutException,
-			Assertions.assertThrows(
-				TimeoutException.class,
-				() -> testPubsubPublisher.publish(_createMessage("orders"))));
-	}
-
-	@Test
 	public void testPublishResumesOrderingKeyAfterFailure() throws Exception {
 		Mockito.when(
 			_apiFuture.get(ArgumentMatchers.anyLong(), ArgumentMatchers.any())
@@ -189,6 +168,27 @@ public class BasePubsubPublisherTest {
 		).publish(
 			ArgumentMatchers.any(PubsubMessage.class)
 		);
+	}
+
+	@Test
+	public void testPublishRethrowsOtherExceptionsAfterHandling()
+		throws Exception {
+
+		TimeoutException timeoutException = new TimeoutException();
+
+		Mockito.when(
+			_apiFuture.get(ArgumentMatchers.anyLong(), ArgumentMatchers.any())
+		).thenThrow(
+			timeoutException
+		);
+
+		TestPubsubPublisher testPubsubPublisher = new TestPubsubPublisher();
+
+		Assertions.assertSame(
+			timeoutException,
+			Assertions.assertThrows(
+				TimeoutException.class,
+				() -> testPubsubPublisher.publish(_createMessage("orders"))));
 	}
 
 	@Test
