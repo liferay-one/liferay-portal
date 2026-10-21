@@ -4,6 +4,7 @@
  */
 
 import {useEffect, useState} from 'react';
+import {getLeadingProducts} from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
 import ActivationKeys, {
 	ActivationKeyScope,
 	GenerateForm,
@@ -35,9 +36,18 @@ export function useGenerateActivationKeyForm(
 			renewedActivationKeyExternalReferenceCode ?? undefined
 		)
 			.then((value) => {
-				if (!cancelled) {
-					setGenerateForm(value);
+				if (cancelled) {
+					return;
 				}
+
+				setGenerateForm(
+					renewedActivationKeyExternalReferenceCode
+						? value
+						: {
+								...value,
+								products: getLeadingProducts(value.products),
+							}
+				);
 			})
 			.catch(() => {
 				if (!cancelled) {
