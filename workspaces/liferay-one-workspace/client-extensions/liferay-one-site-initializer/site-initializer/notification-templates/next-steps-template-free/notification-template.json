@@ -1,7 +1,7 @@
 {
 	"description": "",
 	"editorType": "richText",
-	"externalReferenceCode": "MARKETPLACE-ACTION-DXP-FREE-EMAIL-TEMPLATE",
+	"externalReferenceCode": "MARKETPLACE-ACTION-FREE-APP-EMAIL-TEMPLATE",
 	"name": "Next Steps Email Free MarketPlace",
 	"recipientType": "email",
 	"recipients": [

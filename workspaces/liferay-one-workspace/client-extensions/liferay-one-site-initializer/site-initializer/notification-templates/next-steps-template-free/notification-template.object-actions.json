@@ -11,7 +11,7 @@
 		"objectActionTriggerKey": "onAfterAdd",
 		"objectDefinitionId": "[$OBJECT_DEFINITION_ID:GetAppInformation$]",
 		"parameters": {
-			"notificationTemplateExternalReferenceCode": "MARKETPLACE-ACTION-DXP-FREE-EMAIL-TEMPLATE",
+			"notificationTemplateExternalReferenceCode": "MARKETPLACE-ACTION-FREE-APP-EMAIL-TEMPLATE",
 			"type": "email"
 		}
 	}
