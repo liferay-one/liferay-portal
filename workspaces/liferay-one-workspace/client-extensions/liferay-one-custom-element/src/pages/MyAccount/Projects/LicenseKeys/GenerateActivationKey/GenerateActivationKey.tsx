@@ -78,9 +78,12 @@ export default function GenerateActivationKey() {
 		? null
 		: searchParams.get('renew');
 
+	const preselectedExternalReferenceCode = searchParams.get('new');
+
 	const {error, generateForm, loading} = useGenerateActivationKeyForm(
 		scope,
-		renewExternalReferenceCode
+		renewExternalReferenceCode,
+		preselectedExternalReferenceCode
 	);
 	const {
 		hasActivationPermission,
@@ -142,8 +145,6 @@ export default function GenerateActivationKey() {
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
 	const version = watch('version');
-
-	const preselectedExternalReferenceCode = searchParams.get('new');
 
 	const modifyEnvironmentId = searchParams.get('modify');
 

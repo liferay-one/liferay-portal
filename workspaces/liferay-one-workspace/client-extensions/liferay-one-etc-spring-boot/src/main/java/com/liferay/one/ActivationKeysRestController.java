@@ -215,9 +215,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				MediaType.APPLICATION_JSON
 			).body(
 				_toSummaryJSONObject(
-					_appLicenseKeyGenerationService.getSummary(
-						account.getId(), provisionable),
-					_fetchSelfServiceTrialSummaryJSONObject(account, jwt)
+					_fetchSelfServiceTrialSummaryJSONObject(account, jwt),
+					provisionable
 				).toString()
 			);
 		}
@@ -694,18 +693,16 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private JSONObject _toSummaryJSONObject(
-		JSONObject appSummaryJSONObject,
-		JSONObject licenseKeySummaryJSONObject) {
+		JSONObject licenseKeySummaryJSONObject, boolean provisionable) {
 
 		if (licenseKeySummaryJSONObject == null) {
 			return new JSONObject(
 			).put(
 				"cloudNativeKeyTypes", new JSONArray()
 			).put(
-				"generatable", appSummaryJSONObject.getBoolean("generatable")
+				"generatable", false
 			).put(
-				"provisionable",
-				appSummaryJSONObject.getBoolean("provisionable")
+				"provisionable", provisionable
 			);
 		}
 
@@ -714,11 +711,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			"cloudNativeKeyTypes",
 			licenseKeySummaryJSONObject.getJSONArray("cloudNativeKeyTypes")
 		).put(
-			"generatable",
-			appSummaryJSONObject.getBoolean("generatable") ||
-			licenseKeySummaryJSONObject.getBoolean("generatable")
+			"generatable", licenseKeySummaryJSONObject.getBoolean("generatable")
 		).put(
-			"provisionable", appSummaryJSONObject.getBoolean("provisionable")
+			"provisionable", provisionable
 		);
 	}
 

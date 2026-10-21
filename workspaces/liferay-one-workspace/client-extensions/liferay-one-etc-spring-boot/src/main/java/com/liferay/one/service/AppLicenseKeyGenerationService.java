@@ -37,6 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -102,37 +105,6 @@ public class AppLicenseKeyGenerationService {
 			"bundleProducts", new JSONArray()
 		).put(
 			"products", new JSONArray(productJSONObjects.values())
-		);
-	}
-
-	public JSONObject getSummary(long accountEntryId, boolean provisionable)
-		throws Exception {
-
-		boolean generatable = false;
-
-		if (provisionable) {
-			Map<Long, Integer> licenseKeyCounts =
-				_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
-					accountEntryId);
-
-			for (AppEntitlement appEntitlement :
-					_getAppEntitlements(accountEntryId)) {
-
-				if (_getAvailableCount(appEntitlement, licenseKeyCounts) > 0) {
-					generatable = true;
-
-					break;
-				}
-			}
-		}
-
-		return new JSONObject(
-		).put(
-			"cloudNativeKeyTypes", new JSONArray()
-		).put(
-			"generatable", generatable
-		).put(
-			"provisionable", provisionable
 		);
 	}
 
@@ -260,6 +232,7 @@ public class AppLicenseKeyGenerationService {
 
 		List<AppEntitlement> appEntitlements = new ArrayList<>();
 
+		Map<Long, Boolean> completedOrderItems = new HashMap<>();
 		Map<Long, Boolean> completedOrders = new HashMap<>();
 		Map<String, Product> products = new HashMap<>();
 
@@ -293,7 +266,8 @@ public class AppLicenseKeyGenerationService {
 			}
 
 			if (!_isLicensableApp(entitlement, product) ||
-				!_isOrderCompleted(completedOrders, entitlement)) {
+				!_isOrderCompleted(
+					completedOrderItems, completedOrders, entitlement)) {
 
 				continue;
 			}
@@ -423,6 +397,7 @@ public class AppLicenseKeyGenerationService {
 	}
 
 	private boolean _isOrderCompleted(
+			Map<Long, Boolean> completedOrderItems,
 			Map<Long, Boolean> completedOrders, Entitlement entitlement)
 		throws Exception {
 
@@ -432,10 +407,38 @@ public class AppLicenseKeyGenerationService {
 			return true;
 		}
 
+		Boolean completed = completedOrderItems.get(commerceOrderItemId);
+
+		if (completed != null) {
+			return completed;
+		}
+
+		completed = _isOrderItemOrderCompleted(
+			commerceOrderItemId, completedOrders, entitlement);
+
+		completedOrderItems.put(commerceOrderItemId, completed);
+
+		return completed;
+	}
+
+	private boolean _isOrderItemOrderCompleted(
+			long commerceOrderItemId, Map<Long, Boolean> completedOrders,
+			Entitlement entitlement)
+		throws Exception {
+
 		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
 			commerceOrderItemId);
 
 		if ((orderItem == null) || (orderItem.getOrderId() == null)) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to license entitlement ",
+						entitlement.getEntitlementId(),
+						" because its order item ", commerceOrderItemId,
+						" does not exist"));
+			}
+
 			return false;
 		}
 
@@ -448,11 +451,22 @@ public class AppLicenseKeyGenerationService {
 		Order order = _commerceOrderService.fetchCommerceOrder(
 			orderItem.getOrderId());
 
-		completed =
-			(order != null) &&
-			Objects.equals(
+		if (order == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					StringBundler.concat(
+						"Unable to license entitlement ",
+						entitlement.getEntitlementId(), " because its order ",
+						orderItem.getOrderId(), " does not exist"));
+			}
+
+			completed = false;
+		}
+		else {
+			completed = Objects.equals(
 				order.getOrderStatus(),
 				CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+		}
 
 		completedOrders.put(orderItem.getOrderId(), completed);
 
@@ -463,6 +477,8 @@ public class AppLicenseKeyGenerationService {
 		Entitlement entitlement = appEntitlement._getEntitlement();
 
 		return new JSONObject(
+		).put(
+			"app", true
 		).put(
 			"developerVersions", new JSONArray()
 		).put(
@@ -512,6 +528,9 @@ public class AppLicenseKeyGenerationService {
 	}
 
 	private static final int _INSTANCE_SIZE_DEFAULT = 1;
+
+	private static final Log _log = LogFactory.getLog(
+		AppLicenseKeyGenerationService.class);
 
 	private static final int _LICENSE_VERSION = 3;
 
