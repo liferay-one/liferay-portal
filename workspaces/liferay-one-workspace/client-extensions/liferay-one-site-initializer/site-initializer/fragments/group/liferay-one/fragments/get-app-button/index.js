@@ -92,7 +92,7 @@ const customizeGetAppButton = async (product) => {
 const getCommerceProduct = async (channelId) => {
 	try {
 		const response = await Liferay.Util.fetch(
-			`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=productSpecifications,skus&accountId=-1&skus.accountId=-1&skus.currencyCode=${Liferay.CommerceContext.currency.currencyCode}`
+			`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=productSpecifications,skus&accountId=-1&productSpecifications.page=1&productSpecifications.pageSize=200&skus.accountId=-1&skus.currencyCode=${Liferay.CommerceContext.currency.currencyCode}`
 		);
 
 		const product = await response.json();
