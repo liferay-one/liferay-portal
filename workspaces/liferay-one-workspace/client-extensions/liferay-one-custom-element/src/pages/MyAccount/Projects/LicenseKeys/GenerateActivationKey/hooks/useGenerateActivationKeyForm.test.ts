@@ -26,6 +26,21 @@ function deferred<T>() {
 	return {promise, resolve};
 }
 
+const PRODUCT_COMMERCE = {
+	externalReferenceCode: 'PRDCT-COMMERCE',
+	licenseKeyFamily: 'CMP',
+};
+
+const PRODUCT_DXP = {
+	externalReferenceCode: 'PRDCT-DXP',
+	licenseKeyFamily: 'DXP',
+};
+
+const PRODUCT_PORTAL = {
+	externalReferenceCode: 'PRDCT-PORTAL',
+	licenseKeyFamily: 'Portal',
+};
+
 const PROJECT_1 = {projectExternalReferenceCode: 'PRJCT-1'};
 
 const PROJECT_2 = {projectExternalReferenceCode: 'PRJCT-2'};
@@ -66,7 +81,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 	});
 
 	it('passes undefined when the renewed key external reference code is null', async () => {
-		mocks.getGenerateForm.mockResolvedValue({});
+		mocks.getGenerateForm.mockResolvedValue({products: []});
 
 		const {result} = renderHook(() =>
 			useGenerateActivationKeyForm(PROJECT_1, null)
@@ -78,6 +93,35 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 			PROJECT_1,
 			undefined
 		);
+	});
+
+	it('keeps only the leading product of a new key', async () => {
+		mocks.getGenerateForm.mockResolvedValue({
+			bundleProducts: [],
+			products: [PRODUCT_COMMERCE, PRODUCT_PORTAL, PRODUCT_DXP],
+		});
+
+		const {result} = renderHook(() =>
+			useGenerateActivationKeyForm(PROJECT_1)
+		);
+
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(result.current.generateForm?.products).toEqual([PRODUCT_DXP]);
+	});
+
+	it('keeps every product of a renewed key', async () => {
+		const products = [PRODUCT_COMMERCE, PRODUCT_PORTAL, PRODUCT_DXP];
+
+		mocks.getGenerateForm.mockResolvedValue({bundleProducts: [], products});
+
+		const {result} = renderHook(() =>
+			useGenerateActivationKeyForm(PROJECT_1, 'KEY-1')
+		);
+
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(result.current.generateForm?.products).toEqual(products);
 	});
 
 	it('sets the error when the request fails', async () => {
@@ -121,14 +165,17 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		rerender({scope: PROJECT_2});
 
 		await act(async () => {
-			second.resolve({name: 'second'});
+			second.resolve({name: 'second', products: []});
 		});
 
 		await act(async () => {
-			first.resolve({name: 'first'});
+			first.resolve({name: 'first', products: []});
 		});
 
-		expect(result.current.generateForm).toEqual({name: 'second'});
+		expect(result.current.generateForm).toEqual({
+			name: 'second',
+			products: [],
+		});
 		expect(result.current.loading).toBe(false);
 	});
 });
