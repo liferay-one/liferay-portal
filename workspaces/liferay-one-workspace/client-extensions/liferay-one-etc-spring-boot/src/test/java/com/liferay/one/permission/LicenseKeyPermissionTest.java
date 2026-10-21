@@ -93,7 +93,7 @@ public class LicenseKeyPermissionTest {
 				new String[0],
 				_createAccountBrief(
 					_ACCOUNT_ID + 1,
-					new String[] {RoleConstants.NAME_SUPPORT_ADMINISTRATOR})));
+					new String[] {RoleConstants.NAME_LIFERAY_SALES})));
 
 		Assertions.assertThrows(
 			PrincipalException.class,

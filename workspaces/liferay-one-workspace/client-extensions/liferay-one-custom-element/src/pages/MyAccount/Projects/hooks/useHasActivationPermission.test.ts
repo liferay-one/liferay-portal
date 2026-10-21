@@ -10,7 +10,6 @@ import {useFetch} from '~/hooks/useFetch';
 import {
 	LIFERAY_SALES,
 	PARTNER_MANAGER,
-	SUPPORT_ADMINISTRATOR,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {useActivationKeySummary} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary';
@@ -295,7 +294,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 	});
 
 	it('denies a license key manager account role on a project', () => {
-		mockContext({accountRoleNames: [SUPPORT_ADMINISTRATOR]});
+		mockContext({accountRoleNames: [LIFERAY_SALES]});
 
 		const {result} = renderHook(() =>
 			useHasLicenseKeyPermission('PRJCT-1')

@@ -105,7 +105,7 @@ public class EnvironmentActivationPermissionTest {
 
 		UserAccount userAccount = _createUserAccount(
 			new String[0], _ACCOUNT_ERC,
-			new String[] {RoleConstants.NAME_SUPPORT_ADMINISTRATOR});
+			new String[] {RoleConstants.NAME_LIFERAY_SALES});
 
 		Mockito.when(
 			_licenseKeyPermission.contains(

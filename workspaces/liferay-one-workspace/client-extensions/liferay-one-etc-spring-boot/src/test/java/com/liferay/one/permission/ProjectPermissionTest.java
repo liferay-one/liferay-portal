@@ -162,24 +162,10 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
-	public void testCheckUpdateRejectsAccountRequester() throws Exception {
-		_mockAccountRoles(true, RoleConstants.NAME_ACCOUNT_REQUESTER);
-
-		ProjectPermission projectPermission = _createPermission(List.of());
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> projectPermission.check(
-				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
-	}
-
-	@Test
-	public void testCheckUpdateRejectsPartnerManagerAndAccountRequesterOfNonpartnerAccount()
+	public void testCheckUpdateRejectsPartnerManagerOfNonpartnerAccount()
 		throws Exception {
 
-		_mockAccountRoles(
-			false, RoleConstants.NAME_ACCOUNT_REQUESTER,
-			RoleConstants.NAME_PARTNER_MANAGER);
+		_mockAccountRoles(false, RoleConstants.NAME_PARTNER_MANAGER);
 
 		Mockito.when(
 			_accountPermission.contains(
