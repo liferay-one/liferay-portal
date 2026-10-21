@@ -4,7 +4,7 @@
  */
 
 import {useEffect, useState} from 'react';
-import {getLeadingProducts} from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
+import {getSelectableProducts} from '~/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils';
 import ActivationKeys, {
 	ActivationKeyScope,
 	GenerateForm,
@@ -12,7 +12,8 @@ import ActivationKeys, {
 
 export function useGenerateActivationKeyForm(
 	scope?: ActivationKeyScope,
-	renewedActivationKeyExternalReferenceCode?: string | null
+	renewedActivationKeyExternalReferenceCode?: string | null,
+	preselectedExternalReferenceCode?: string | null
 ) {
 	const [error, setError] = useState(false);
 	const [generateForm, setGenerateForm] = useState<GenerateForm>();
@@ -45,7 +46,11 @@ export function useGenerateActivationKeyForm(
 						? value
 						: {
 								...value,
-								products: getLeadingProducts(value.products),
+								products: getSelectableProducts(
+									preselectedExternalReferenceCode,
+									value.products,
+									'projectExternalReferenceCode' in scope
+								),
 							}
 				);
 			})
@@ -63,7 +68,11 @@ export function useGenerateActivationKeyForm(
 		return () => {
 			cancelled = true;
 		};
-	}, [renewedActivationKeyExternalReferenceCode, scope]);
+	}, [
+		preselectedExternalReferenceCode,
+		renewedActivationKeyExternalReferenceCode,
+		scope,
+	]);
 
 	return {error, generateForm, loading};
 }

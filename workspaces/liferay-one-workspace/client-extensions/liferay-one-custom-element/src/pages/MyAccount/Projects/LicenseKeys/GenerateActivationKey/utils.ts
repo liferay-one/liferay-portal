@@ -257,6 +257,25 @@ export function getLeadingProducts(
 	return leadingProduct ? [leadingProduct] : products;
 }
 
+export function getSelectableProducts(
+	preselectedExternalReferenceCode: string | null | undefined,
+	products: GenerateFormProduct[],
+	project: boolean
+): GenerateFormProduct[] {
+	const preselectedProduct = products.find(
+		(product) =>
+			product.externalReferenceCode === preselectedExternalReferenceCode
+	);
+
+	if (preselectedProduct?.app) {
+		return [preselectedProduct];
+	}
+
+	const nonAppProducts = products.filter((product) => !product.app);
+
+	return project ? getLeadingProducts(nonAppProducts) : nonAppProducts;
+}
+
 export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
 	return keyType.subscriptions.some(
 		(subscription) => subscription.availableCount > 0
