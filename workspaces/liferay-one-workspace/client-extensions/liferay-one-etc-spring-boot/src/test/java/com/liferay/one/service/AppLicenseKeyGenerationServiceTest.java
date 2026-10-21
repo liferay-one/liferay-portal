@@ -8,6 +8,9 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
@@ -59,6 +62,12 @@ public class AppLicenseKeyGenerationServiceTest {
 		ReflectionTestUtils.setField(
 			_appLicenseKeyGenerationService, "_activationKeyService",
 			_activationKeyService);
+		ReflectionTestUtils.setField(
+			_appLicenseKeyGenerationService, "_commerceOrderItemService",
+			_commerceOrderItemService);
+		ReflectionTestUtils.setField(
+			_appLicenseKeyGenerationService, "_commerceOrderService",
+			_commerceOrderService);
 		ReflectionTestUtils.setField(
 			_appLicenseKeyGenerationService, "_entitlementService",
 			_entitlementService);
@@ -220,6 +229,24 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyRejectsAnUncompletedOrder()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null));
+		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_PENDING);
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> _appLicenseKeyGenerationService.generateActivationKey(
+				_account, _toGenerateRequest(1L, "production", 1),
+				"owner@liferay.com"));
+
+		Mockito.verifyNoInteractions(_activationKeyService);
+	}
+
+	@Test
 	public void testGenerateActivationKeyRejectsAnUnknownEntitlement()
 		throws Exception {
 
@@ -327,6 +354,43 @@ public class AppLicenseKeyGenerationServiceTest {
 			).getInt(
 				"totalCount"
 			));
+	}
+
+	@Test
+	public void testGetGenerateFormListsOnlyAppsOfCompletedOrders()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP-1", null),
+			_toEntitlement(2L, 502L, null, null, 1.0, "SKU-APP-2", null),
+			_toEntitlement(3L, 503L, null, null, 1.0, "SKU-APP-3", null),
+			_toEntitlement(4L, null, 1.0, "SKU-APP-4", null));
+		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+		_stubOrder(502L, 602L, CommerceOrderConstants.ORDER_STATUS_PENDING);
+		_stubProduct("SKU-APP-1", _toApp("PRDCT-APP-1", null, null));
+		_stubProduct("SKU-APP-2", _toApp("PRDCT-APP-2", null, null));
+		_stubProduct("SKU-APP-3", _toApp("PRDCT-APP-3", null, null));
+		_stubProduct("SKU-APP-4", _toApp("PRDCT-APP-4", null, null));
+
+		JSONArray productsJSONArray =
+			_appLicenseKeyGenerationService.getGenerateForm(
+				_ACCOUNT_ID
+			).getJSONArray(
+				"products"
+			);
+
+		List<String> externalReferenceCodes = new ArrayList<>();
+
+		for (int i = 0; i < productsJSONArray.length(); i++) {
+			JSONObject productJSONObject = productsJSONArray.getJSONObject(i);
+
+			externalReferenceCodes.add(
+				productJSONObject.getString("externalReferenceCode"));
+		}
+
+		Assertions.assertEquals(
+			Arrays.asList("PRDCT-APP-1", "PRDCT-APP-4"),
+			externalReferenceCodes);
 	}
 
 	@Test
@@ -450,6 +514,23 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGetSummaryIsNotGeneratableBeforeTheOrderIsCompleted()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null));
+		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_PENDING);
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		Assertions.assertFalse(
+			_appLicenseKeyGenerationService.getSummary(
+				_ACCOUNT_ID, true
+			).getBoolean(
+				"generatable"
+			));
+	}
+
+	@Test
 	public void testGetSummaryIsNotGeneratableWithoutSelfProvisioning()
 		throws Exception {
 
@@ -529,6 +610,32 @@ public class AppLicenseKeyGenerationServiceTest {
 		);
 	}
 
+	private void _stubOrder(
+			long commerceOrderItemId, long orderId, int orderStatus)
+		throws Exception {
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setOrderId(orderId);
+
+		Mockito.when(
+			_commerceOrderItemService.fetchCommerceOrderItem(
+				commerceOrderItemId)
+		).thenReturn(
+			orderItem
+		);
+
+		Order order = new Order();
+
+		order.setOrderStatus(orderStatus);
+
+		Mockito.when(
+			_commerceOrderService.fetchCommerceOrder(orderId)
+		).thenReturn(
+			order
+		);
+	}
+
 	private void _stubProduct(String skuExternalReferenceCode, Product product)
 		throws Exception {
 
@@ -563,8 +670,9 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	private Entitlement _toEntitlement(
-		long entitlementId, String licenseKeyFamily, String licenseKeyType,
-		Double quantity, String skuExternalReferenceCode, String startDate) {
+		long entitlementId, long commerceOrderItemId, String licenseKeyFamily,
+		String licenseKeyType, Double quantity, String skuExternalReferenceCode,
+		String startDate) {
 
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -584,6 +692,9 @@ public class AppLicenseKeyGenerationServiceTest {
 		).put(
 			"quantity", quantity
 		).put(
+			"r_commerceOrderItemToEntitlement_commerceOrderItemId",
+			commerceOrderItemId
+		).put(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId",
 			100 + entitlementId
 		).put(
@@ -593,6 +704,15 @@ public class AppLicenseKeyGenerationServiceTest {
 		);
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, String licenseKeyFamily, String licenseKeyType,
+		Double quantity, String skuExternalReferenceCode, String startDate) {
+
+		return _toEntitlement(
+			entitlementId, 0, licenseKeyFamily, licenseKeyType, quantity,
+			skuExternalReferenceCode, startDate);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
@@ -649,6 +769,10 @@ public class AppLicenseKeyGenerationServiceTest {
 	private final ActivationKeyService _activationKeyService = Mockito.mock(
 		ActivationKeyService.class);
 	private AppLicenseKeyGenerationService _appLicenseKeyGenerationService;
+	private final CommerceOrderItemService _commerceOrderItemService =
+		Mockito.mock(CommerceOrderItemService.class);
+	private final CommerceOrderService _commerceOrderService = Mockito.mock(
+		CommerceOrderService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private final Map<Long, Integer> _licenseKeyCounts = new HashMap<>();
