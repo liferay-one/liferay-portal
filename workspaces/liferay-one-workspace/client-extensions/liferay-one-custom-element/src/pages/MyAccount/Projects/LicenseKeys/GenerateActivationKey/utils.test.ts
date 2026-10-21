@@ -16,6 +16,7 @@ import {
 	getComplimentaryPurpose,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
+	getLeadingProducts,
 	getLicenseKeyFamilyLabel,
 	getLicenseKeyFamilyRank,
 	getStepAfterSubscription,
@@ -241,6 +242,30 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				hasServerInfo([server, buildEmptyServer()], 'hostName')
 			).toBe(false);
+		});
+	});
+
+	describe('getLeadingProducts', () => {
+		it('keeps only the highest ranked leading product', () => {
+			const portal = toProduct('PRDCT-PORTAL', 'Portal');
+			const dxp = toProduct('PRDCT-DXP', 'DXP');
+
+			expect(
+				getLeadingProducts([
+					toProduct('PRDCT-COMMERCE', 'CMP'),
+					portal,
+					dxp,
+				])
+			).toEqual([dxp]);
+		});
+
+		it('keeps every product when none has a leading family', () => {
+			const products = [
+				toProduct('PRDCT-TEST-APP'),
+				toProduct('PRDCT-COMMERCE', 'CMP'),
+			];
+
+			expect(getLeadingProducts(products)).toEqual(products);
 		});
 	});
 
