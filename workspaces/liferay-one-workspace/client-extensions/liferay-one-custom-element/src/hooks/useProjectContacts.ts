@@ -12,6 +12,11 @@ import {Liferay} from '~/services/liferay/liferay';
 import type {UserAccount} from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
 
+export type ProjectContact = {
+	emailAddress: string;
+	name: string;
+};
+
 type ProjectMembershipNode = {
 	r_userToProjectMembership_userId: number;
 	roleExternalReferenceCode: string;
@@ -84,14 +89,20 @@ export function useProjectContacts(
 		enabled && contactUserIds.size
 			? `/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
 			: null,
-		{params: {fields: 'id,name', pageSize: -1, sort: 'givenName:asc'}}
+		{
+			params: {
+				fields: 'emailAddress,id,name',
+				pageSize: -1,
+				sort: 'givenName:asc',
+			},
+		}
 	);
 
-	const contacts = useMemo(
+	const contacts = useMemo<ProjectContact[]>(
 		() =>
 			(userAccountData?.items ?? [])
 				.filter((userAccount) => contactUserIds.has(userAccount.id))
-				.map((userAccount) => userAccount.name),
+				.map(({emailAddress, name}) => ({emailAddress, name})),
 		[contactUserIds, userAccountData]
 	);
 

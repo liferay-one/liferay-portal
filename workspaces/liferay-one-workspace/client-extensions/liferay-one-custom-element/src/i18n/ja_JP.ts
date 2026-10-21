@@ -1382,6 +1382,7 @@ export default {
 	'section-that-shows-the-payments': '支払いを表示するセクション。',
 	'security': 'セキュリティ',
 	'security-breach-contacts': 'セキュリティ侵害の連絡先',
+	'security-incident-contact': 'セキュリティインシデントの連絡先',
 	'see-the-privacy-policy-for-details':
 		'詳細はプライバシーポリシーをご覧ください。',
 	'select-a-dxp-version': 'DXPバージョンを選択',

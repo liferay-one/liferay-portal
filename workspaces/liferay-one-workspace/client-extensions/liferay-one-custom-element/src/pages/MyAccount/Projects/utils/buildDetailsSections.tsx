@@ -4,19 +4,20 @@
  */
 
 import {format} from 'date-fns';
+import {Fragment} from 'react';
 import i18n, {Word} from '~/i18n';
 
 import {DetailsRow} from '../components/DetailsCard/DetailsCard';
 import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetailsCard';
 
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
+import type {ProjectContact} from '~/hooks/useProjectContacts';
 
 import type {DetailsProfile} from './resolveDetailsProfile';
 
 type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
-	incidentReportContacts?: string[];
 	orderInfo: {
 		itemName: string;
 		orderDate: string;
@@ -26,6 +27,7 @@ type DetailsContext = {
 		quantity: string;
 	};
 	productName: string;
+	securityIncidentContacts?: ProjectContact[];
 };
 
 function formatDate(value?: string): string {
@@ -73,6 +75,21 @@ function purchasedRow(context: DetailsContext): DetailsRow {
 	};
 }
 
+function securityIncidentContactRow(context: DetailsContext): DetailsRow {
+	return {
+		label: i18n.translate('security-incident-contact'),
+		value: (context.securityIncidentContacts ?? []).map(
+			({emailAddress, name}, index) => (
+				<Fragment key={emailAddress}>
+					{index > 0 && ', '}
+
+					<a href={`mailto:${emailAddress}`}>{name}</a>
+				</Fragment>
+			)
+		),
+	};
+}
+
 function tierRow(context: DetailsContext): DetailsRow {
 	const {orderInfo, productName} = context;
 
@@ -98,13 +115,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 	'basic': (context) => [{rows: orderRows(context)}],
 	'basic-incident': (context) => [
 		{
-			rows: [
-				...orderRows(context),
-				{
-					label: i18n.translate('incident-report-contacts'),
-					value: (context.incidentReportContacts ?? []).join(', '),
-				},
-			],
+			rows: [...orderRows(context), securityIncidentContactRow(context)],
 		},
 	],
 	'dates-status': (context) => [{rows: contractRows(context.contract)}],

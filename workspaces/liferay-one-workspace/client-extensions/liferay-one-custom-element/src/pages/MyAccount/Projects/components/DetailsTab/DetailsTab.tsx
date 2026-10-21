@@ -5,7 +5,7 @@
 
 import {useProject} from '~/context/ProjectContext';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
-import {INCIDENT_REPORT_CONTACT_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {SECURITY_INCIDENT_CONTACT_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {buildDetailsSections} from '~/pages/MyAccount/Projects/utils/buildDetailsSections';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
@@ -31,19 +31,19 @@ export default function DetailsTab({
 }: DetailsTabProps) {
 	const {projectId} = useProject();
 
-	const {contacts: incidentReportContacts} = useProjectContacts(
+	const {contacts: securityIncidentContacts} = useProjectContacts(
 		profile === 'basic-incident' && !isUnassignedProject(projectId)
 			? projectId
 			: '',
-		INCIDENT_REPORT_CONTACT_ERC
+		SECURITY_INCIDENT_CONTACT_ERC
 	);
 
 	const sections = buildDetailsSections(profile, {
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',
 		contract,
-		incidentReportContacts,
 		orderInfo,
 		productName,
+		securityIncidentContacts,
 	});
 
 	return <SectionedDetailsCard sections={sections} />;
