@@ -25,6 +25,7 @@ import DetailsCard, {
 import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 
@@ -149,13 +150,14 @@ function LicenseKeyDetailsContent({
 				fullWidth
 				headerActions={
 					<div className="d-flex" style={{gap: 'var(--spacer-3)'}}>
-						<ClayButton
-							disabled={!activationKey.active}
-							displayType="secondary"
-							onClick={onDownload}
-						>
-							{translate('download')}
-						</ClayButton>
+						{isDownloadableKey(activationKey) && (
+							<ClayButton
+								displayType="secondary"
+								onClick={onDownload}
+							>
+								{translate('download')}
+							</ClayButton>
+						)}
 
 						{hasActivationPermission &&
 							!activationKey.complimentary &&
