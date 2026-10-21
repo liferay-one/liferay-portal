@@ -19,6 +19,7 @@ import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import i18n, {Word, translate} from '~/i18n';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
@@ -201,12 +202,11 @@ function KebabActions({
 					{translate('view')}
 				</ClayDropDown.Item>
 
-				<ClayDropDown.Item
-					disabled={!row.active}
-					onClick={stopAnd(onDownload)}
-				>
-					{translate('download')}
-				</ClayDropDown.Item>
+				{isDownloadableKey(row) && (
+					<ClayDropDown.Item onClick={stopAnd(onDownload)}>
+						{translate('download')}
+					</ClayDropDown.Item>
+				)}
 
 				{hasActivationPermission &&
 					renewable &&
