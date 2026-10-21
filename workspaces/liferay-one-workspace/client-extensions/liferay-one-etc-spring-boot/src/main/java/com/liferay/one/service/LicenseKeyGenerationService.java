@@ -332,6 +332,7 @@ public class LicenseKeyGenerationService {
 		throws Exception {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
+		String productId = licensedProduct._getProductId();
 		String productName = licensedProduct._getProductName();
 		String version = generateRequest.getVersion();
 
@@ -349,13 +350,13 @@ public class LicenseKeyGenerationService {
 				generateRequest, licensedProduct, server, startDate),
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			licenseEntry.getName(), licenseEntry.getType(),
-			LicenseVersion.getLicenseVersion(productName, version),
+			_getLicenseVersion(productId, productName, version),
 			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()),
 			LicenseKeyGenerationConstants.getMaxClusterNodes(
 				licenseEntry.getType(), generateRequest.getMaxClusterNodes()),
 			0, 0, 0, 0, generateRequest.getEnvironmentName(), null,
-			generateRequest.getEnvironmentName(),
-			licensedProduct._getProductId(), productName, version,
+			generateRequest.getEnvironmentName(), productId, productName,
+			_getProductVersion(productId, version),
 			activationKeyScope.getProjectExternalReferenceCode(),
 			StringPool.BLANK, _getSizing(generateRequest), startDate,
 			generateRequest.getWorkspaceName(),
@@ -976,6 +977,16 @@ public class LicenseKeyGenerationService {
 		return Date.from(endDateInstant);
 	}
 
+	private int _getLicenseVersion(
+		String productId, String productName, String version) {
+
+		if (Objects.equals(productId, LicenseConstants.PRODUCT_ID_PORTAL)) {
+			return LicenseVersion.getLicenseVersion(productName, version);
+		}
+
+		return LicenseVersion.getAppLicenseVersion();
+	}
+
 	private Map<Long, LicensedProduct> _getLicensedProducts(
 			List<Entitlement> bundleEntitlements,
 			GenerateRequest generateRequest,
@@ -1152,6 +1163,14 @@ public class LicenseKeyGenerationService {
 			_licenseKeyGenerateFormService.fetchProduct(entitlement));
 	}
 
+	private String _getProductVersion(String productId, String version) {
+		if (Objects.equals(productId, LicenseConstants.PRODUCT_ID_PORTAL)) {
+			return version;
+		}
+
+		return LicenseKeyGenerationConstants.APP_PRODUCT_VERSION;
+	}
+
 	private List<GenerateRequest.Server> _getServers(
 		GenerateRequest generateRequest) {
 
@@ -1316,13 +1335,15 @@ public class LicenseKeyGenerationService {
 			productName = licenseEntry.getProductName();
 		}
 
-		int licenseVersion = LicenseVersion.getLicenseVersion(
-			productName, version);
 		String productId = _getProductId(entitlement);
+
+		int licenseVersion = _getLicenseVersion(
+			productId, productName, version);
+		String productVersion = _getProductVersion(productId, version);
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, description, keyType, licenseVersion, productName,
-			productId, version, accountName, 0, 0,
+			productId, productVersion, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
 			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
@@ -1330,7 +1351,7 @@ public class LicenseKeyGenerationService {
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, description, keyType, licenseVersion, productName,
-			productId, version, accountName, 0, 0,
+			productId, productVersion, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
 			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
@@ -1346,6 +1367,7 @@ public class LicenseKeyGenerationService {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
 
+		String productId = licensedProduct._getProductId();
 		String productName = licensedProduct._getProductName();
 
 		String accountName = activationKeyScope.getName();
@@ -1353,30 +1375,31 @@ public class LicenseKeyGenerationService {
 		String hostName = ServerInfoUtil.toCommaSeparated(server.getHostName());
 		String ipAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getIpAddresses());
-		int licenseVersion = LicenseVersion.getLicenseVersion(
-			productName, generateRequest.getVersion());
+		int licenseVersion = _getLicenseVersion(
+			productId, productName, generateRequest.getVersion());
 		String macAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getMacAddresses());
 		int maxClusterNodes = LicenseKeyGenerationConstants.getMaxClusterNodes(
 			licenseEntry.getType(), generateRequest.getMaxClusterNodes());
 		int maxServers = LicenseKeyGenerationConstants.getMaxServers(
 			licenseEntry.getType(), 0);
+		String productVersion = _getProductVersion(
+			productId, generateRequest.getVersion());
 		String sizing = _getSizing(generateRequest);
-		String version = generateRequest.getVersion();
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, licensedProduct._getProductId(),
-			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
-			sizing, description, StringPool.BLANK, hostName, ipAddresses,
-			macAddresses, StringPool.BLANK, startDate, expirationDate);
+			licenseVersion, productName, productId, productVersion,
+			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
+			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, licensedProduct._getProductId(),
-			version, environmentName, maxClusterNodes, maxServers, 0, 0, 0,
-			sizing, description, StringPool.BLANK, hostName, ipAddresses,
-			macAddresses, StringPool.BLANK, startDate, expirationDate);
+			licenseVersion, productName, productId, productVersion,
+			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
+			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
+			StringPool.BLANK, startDate, expirationDate);
 	}
 
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";

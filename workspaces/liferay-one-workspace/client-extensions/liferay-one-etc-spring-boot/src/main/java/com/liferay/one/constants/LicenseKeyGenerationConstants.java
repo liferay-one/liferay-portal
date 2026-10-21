@@ -18,6 +18,8 @@ import java.util.Objects;
  */
 public class LicenseKeyGenerationConstants {
 
+	public static final String APP_PRODUCT_VERSION = "1";
+
 	public static final int COMPLIMENTARY_DURATION_DAYS = 30;
 
 	public static final int COMPLIMENTARY_PURPOSE_MAX_LENGTH = 255;
