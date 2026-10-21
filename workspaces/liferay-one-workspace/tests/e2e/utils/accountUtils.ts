@@ -15,11 +15,11 @@ type LiferayWindow = {
 	};
 };
 
-function escapeRegExp(value: string): string {
+export function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function readCurrentAccountId(page: Page): Promise<string> {
+export function readCurrentAccountId(page: Page): Promise<string> {
 	return page
 		.evaluate(() => {
 			const {Liferay} = window as unknown as LiferayWindow;
