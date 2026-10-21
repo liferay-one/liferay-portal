@@ -21,6 +21,9 @@ public class RoleConstants {
 
 	public static final String ERC_PROJECT_USER = "C_PROJECT_USER";
 
+	public static final String ERC_SECURITY_INCIDENT_CONTACT =
+		"C_SECURITY_INCIDENT_CONTACT";
+
 	public static final String NAME_ACCOUNT_ADMINISTRATOR =
 		"Account Administrator";
 
@@ -54,6 +57,9 @@ public class RoleConstants {
 		"Provisioning Administrator";
 
 	public static final String NAME_PROVISIONING_MEMBER = "Provisioning Member";
+
+	public static final String NAME_SECURITY_INCIDENT_CONTACT =
+		"Security Incident Contact";
 
 	public static final String NAME_SSA_ADMIN = "SSA Administrator";
 
