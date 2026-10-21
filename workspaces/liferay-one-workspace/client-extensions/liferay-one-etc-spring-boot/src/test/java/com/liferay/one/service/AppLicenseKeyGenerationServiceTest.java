@@ -357,6 +357,29 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGetGenerateFormFetchesEachOrderItemOnce() throws Exception {
+		_stubEntitlements(
+			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null),
+			_toEntitlement(2L, 501L, null, null, 1.0, "SKU-APP", null));
+		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).fetchCommerceOrderItem(
+			501L
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			601L
+		);
+	}
+
+	@Test
 	public void testGetGenerateFormListsOnlyAppsOfCompletedOrders()
 		throws Exception {
 
@@ -470,6 +493,23 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGetGenerateFormMarksTheProductsAsApps() throws Exception {
+		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		JSONArray productsJSONArray =
+			_appLicenseKeyGenerationService.getGenerateForm(
+				_ACCOUNT_ID
+			).getJSONArray(
+				"products"
+			);
+
+		JSONObject productJSONObject = productsJSONArray.getJSONObject(0);
+
+		Assertions.assertTrue(productJSONObject.getBoolean("app"));
+	}
+
+	@Test
 	public void testGetGenerateFormUsesTheDefinitionKeyType() throws Exception {
 		_stubEntitlements(
 			_toEntitlement(1L, "developer", 1.0, "SKU-APP", null));
@@ -489,79 +529,6 @@ public class AppLicenseKeyGenerationServiceTest {
 			);
 
 		Assertions.assertEquals("developer", keyTypeJSONObject.get("key"));
-	}
-
-	@Test
-	public void testGetSummaryIsGeneratableWhileAKeyIsLeft() throws Exception {
-		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
-		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
-
-		Assertions.assertTrue(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, true
-			).getBoolean(
-				"generatable"
-			));
-
-		_licenseKeyCounts.put(1L, 1);
-
-		Assertions.assertFalse(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, true
-			).getBoolean(
-				"generatable"
-			));
-	}
-
-	@Test
-	public void testGetSummaryIsNotGeneratableBeforeTheOrderIsCompleted()
-		throws Exception {
-
-		_stubEntitlements(
-			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null));
-		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_PENDING);
-		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
-
-		Assertions.assertFalse(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, true
-			).getBoolean(
-				"generatable"
-			));
-	}
-
-	@Test
-	public void testGetSummaryIsNotGeneratableWithoutSelfProvisioning()
-		throws Exception {
-
-		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
-		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
-
-		Assertions.assertFalse(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, false
-			).getBoolean(
-				"generatable"
-			));
-	}
-
-	@Test
-	public void testGetSummaryReportsProvisionable() throws Exception {
-		_stubEntitlements(_toEntitlement(1L, null, 1.0, "SKU-APP", null));
-		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
-
-		Assertions.assertFalse(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, false
-			).getBoolean(
-				"provisionable"
-			));
-		Assertions.assertTrue(
-			_appLicenseKeyGenerationService.getSummary(
-				_ACCOUNT_ID, true
-			).getBoolean(
-				"provisionable"
-			));
 	}
 
 	private void _addProductSpecification(

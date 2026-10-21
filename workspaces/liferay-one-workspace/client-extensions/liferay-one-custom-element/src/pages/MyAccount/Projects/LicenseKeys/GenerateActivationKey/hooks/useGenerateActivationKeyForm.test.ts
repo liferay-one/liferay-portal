@@ -26,6 +26,8 @@ function deferred<T>() {
 	return {promise, resolve};
 }
 
+const ACCOUNT_1 = {accountExternalReferenceCode: 'ACCNT-1'};
+
 const PRODUCT_COMMERCE = {
 	externalReferenceCode: 'PRDCT-COMMERCE',
 	licenseKeyFamily: 'CMP',
@@ -108,6 +110,53 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
 		expect(result.current.generateForm?.products).toEqual([PRODUCT_DXP]);
+	});
+
+	it('keeps every product of the account form', async () => {
+		const products = [PRODUCT_COMMERCE, PRODUCT_PORTAL, PRODUCT_DXP];
+
+		mocks.getGenerateForm.mockResolvedValue({bundleProducts: [], products});
+
+		const {result} = renderHook(() =>
+			useGenerateActivationKeyForm(ACCOUNT_1)
+		);
+
+		await waitFor(() => expect(result.current.loading).toBe(false));
+
+		expect(result.current.generateForm?.products).toEqual(products);
+	});
+
+	it('leaves the apps out of the account form unless one is preselected', async () => {
+		const app = {
+			app: true,
+			externalReferenceCode: 'PRDCT-APP',
+			licenseKeyFamily: '',
+		};
+
+		mocks.getGenerateForm.mockResolvedValue({
+			bundleProducts: [],
+			products: [app, PRODUCT_DXP],
+		});
+
+		const {result: newKeyResult} = renderHook(() =>
+			useGenerateActivationKeyForm(ACCOUNT_1)
+		);
+
+		await waitFor(() => expect(newKeyResult.current.loading).toBe(false));
+
+		expect(newKeyResult.current.generateForm?.products).toEqual([
+			PRODUCT_DXP,
+		]);
+
+		const {result: preselectedResult} = renderHook(() =>
+			useGenerateActivationKeyForm(ACCOUNT_1, null, 'PRDCT-APP')
+		);
+
+		await waitFor(() =>
+			expect(preselectedResult.current.loading).toBe(false)
+		);
+
+		expect(preselectedResult.current.generateForm?.products).toEqual([app]);
 	});
 
 	it('keeps every product of a renewed key', async () => {

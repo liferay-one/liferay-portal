@@ -674,28 +674,21 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetActivationKeysSummaryForAccountIsGeneratableByTheApps()
-		throws Exception {
-
-		_assertGetActivationKeysSummaryForAccount(true, false);
-	}
-
-	@Test
 	public void testGetActivationKeysSummaryForAccountIsGeneratableByTheLicenseKeys()
 		throws Exception {
 
-		_assertGetActivationKeysSummaryForAccount(false, true);
+		_assertGetActivationKeysSummaryForAccount(true);
 	}
 
 	@Test
 	public void testGetActivationKeysSummaryForAccountIsNotGeneratable()
 		throws Exception {
 
-		_assertGetActivationKeysSummaryForAccount(false, false);
+		_assertGetActivationKeysSummaryForAccount(false);
 	}
 
 	@Test
-	public void testGetActivationKeysSummaryForAccountKeepsTheAppsWithoutTheTrials()
+	public void testGetActivationKeysSummaryForAccountWithoutTheTrialsIsNotGeneratable()
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
@@ -708,19 +701,6 @@ public class ActivationKeysRestControllerTest {
 				_ACCOUNT_ID, null)
 		).thenReturn(
 			true
-		);
-
-		Mockito.when(
-			_appLicenseKeyGenerationService.getSummary(_ACCOUNT_ID, true)
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"cloudNativeKeyTypes", new JSONArray()
-			).put(
-				"generatable", true
-			).put(
-				"provisionable", true
-			)
 		);
 
 		Mockito.when(
@@ -742,7 +722,7 @@ public class ActivationKeysRestControllerTest {
 			jsonObject.getJSONArray(
 				"cloudNativeKeyTypes"
 			).length());
-		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+		Assertions.assertFalse(jsonObject.getBoolean("generatable"));
 		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
 	}
 
@@ -754,19 +734,6 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Account account = _stubAccount();
-
-		Mockito.when(
-			_appLicenseKeyGenerationService.getSummary(_ACCOUNT_ID, false)
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"cloudNativeKeyTypes", new JSONArray()
-			).put(
-				"generatable", false
-			).put(
-				"provisionable", false
-			)
-		);
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.getSummary(false, account, true)
@@ -1644,7 +1611,7 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	private void _assertGetActivationKeysSummaryForAccount(
-			boolean appGeneratable, boolean licenseKeyGeneratable)
+			boolean licenseKeyGeneratable)
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
@@ -1657,19 +1624,6 @@ public class ActivationKeysRestControllerTest {
 				_ACCOUNT_ID, null)
 		).thenReturn(
 			true
-		);
-
-		Mockito.when(
-			_appLicenseKeyGenerationService.getSummary(_ACCOUNT_ID, true)
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"cloudNativeKeyTypes", new JSONArray()
-			).put(
-				"generatable", appGeneratable
-			).put(
-				"provisionable", true
-			)
 		);
 
 		Mockito.when(
@@ -1699,8 +1653,7 @@ public class ActivationKeysRestControllerTest {
 				"cloudNativeKeyTypes"
 			).toString());
 		Assertions.assertEquals(
-			appGeneratable || licenseKeyGeneratable,
-			jsonObject.getBoolean("generatable"));
+			licenseKeyGeneratable, jsonObject.getBoolean("generatable"));
 		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
 	}
 
