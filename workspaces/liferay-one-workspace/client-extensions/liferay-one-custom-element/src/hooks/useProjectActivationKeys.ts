@@ -72,6 +72,8 @@ const COMPLIMENTARY_KEY_TYPE = 'complimentary';
 
 const NEW_KEY_WINDOW_DAYS = 15;
 
+const PORTAL_PRODUCT_EXTERNAL_ID = 'Portal';
+
 const PROJECT_LICENSE_KEY_FIELDS = [
 	'active',
 	'complimentary',
@@ -83,6 +85,7 @@ const PROJECT_LICENSE_KEY_FIELDS = [
 	'licenseKeyFamily',
 	'licenseType',
 	'name',
+	'productExternalId',
 	'productName',
 	'productVersion',
 	'r_activationKeyToLicenseKey_c_activationKeyId',
@@ -159,6 +162,22 @@ function getDateValue(value?: string): string {
 	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
 }
 
+function getUnaggregatedProductName(node: LicenseKeyNode): string {
+	const app =
+		Boolean(node.productExternalId) &&
+		node.productExternalId !== PORTAL_PRODUCT_EXTERNAL_ID;
+
+	if (app && node.productName) {
+		return node.productName;
+	}
+
+	return (
+		getLicenseKeyFamilyLabel(node.licenseKeyFamily ?? '') ||
+		node.productName ||
+		''
+	);
+}
+
 function toUnaggregatedActivationKey(
 	node: LicenseKeyNode
 ): ProjectActivationKey {
@@ -183,10 +202,7 @@ function toUnaggregatedActivationKey(
 		licenseKeyFamily: node.licenseKeyFamily ?? '',
 		licenseKeyId: node.id ? String(node.id) : '',
 		name: node.name ?? '',
-		productName:
-			getLicenseKeyFamilyLabel(node.licenseKeyFamily ?? '') ||
-			node.productName ||
-			'',
+		productName: getUnaggregatedProductName(node),
 		productVersion: node.productVersion ?? '',
 		startDate: formatDate(node.startDate),
 		startDateValue: getDateValue(node.startDate),

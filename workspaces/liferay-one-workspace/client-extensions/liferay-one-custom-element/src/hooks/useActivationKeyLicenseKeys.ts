@@ -62,6 +62,7 @@ export type LicenseKeyNode = {
 	name?: string;
 	orderId?: string;
 	owner?: string;
+	productExternalId?: string;
 	productName?: string;
 	productVersion?: string;
 	r_activationKeyToLicenseKey_c_activationKeyId?: number;
