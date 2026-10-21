@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayDropDown from '@clayui/drop-down';
-import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import Loading from '~/components/Loading/Loading';
+import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import Table from '~/components/Table/Table';
 import i18n, {Word} from '~/i18n';
 
@@ -55,33 +54,17 @@ const ProvisioningTable: React.FC<ProvisioningTableProps> = ({
 					const provisioningRow = row as unknown as ProvisioningRow;
 
 					return (
-						<ClayDropDown
-							trigger={
-								<ButtonWithIcon
-									aria-label={i18n.translate('actions')}
-									displayType={null}
-									symbol="ellipsis-v"
-									title={i18n.translate('actions')}
-								/>
-							}
-						>
-							<ClayDropDown.ItemList>
-								{actions
-									.filter((action) =>
-										action.show(provisioningRow)
-									)
-									.map((action, index) => (
-										<ClayDropDown.Item
-											key={index}
-											onClick={() =>
-												action.action(provisioningRow)
-											}
-										>
-											{action.title}
-										</ClayDropDown.Item>
-									))}
-							</ClayDropDown.ItemList>
-						</ClayDropDown>
+						<RowActionsMenu
+							actions={actions
+								.filter((action) =>
+									action.show(provisioningRow)
+								)
+								.map((action) => ({
+									label: action.label,
+									onClick: () =>
+										action.onClick(provisioningRow),
+								}))}
+						/>
 					);
 				}}
 				className="mt-4"

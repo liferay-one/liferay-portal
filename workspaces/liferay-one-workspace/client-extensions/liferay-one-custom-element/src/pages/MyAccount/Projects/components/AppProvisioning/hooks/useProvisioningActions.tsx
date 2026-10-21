@@ -9,7 +9,7 @@ import {useState} from 'react';
 import {useNavigate} from 'react-router';
 import {useProperties} from '~/context/PropertiesContext';
 import useModalContext from '~/hooks/useModalContext';
-import i18n from '~/i18n';
+import i18n, {Word} from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 import Console from '~/services/spring-boot/Console';
 
@@ -20,6 +20,12 @@ import type {Account} from '~/types/accounts';
 import type {PlacedOrder} from '~/types/orders';
 
 import type {ProvisioningData, ProvisioningRow} from './useProvisioningData';
+
+export type ProvisioningAction = {
+	label: Word;
+	onClick: (provisioningRow: ProvisioningRow) => void;
+	show: (provisioningRow: ProvisioningRow) => boolean;
+};
 
 type UseProvisioningActionsProps = {
 	mutateOrder: ProvisioningData['mutateOrder'];
@@ -170,40 +176,37 @@ const useProvisioningActions = ({
 		});
 	};
 
-	const actions = [
+	const actions: ProvisioningAction[] = [
 		{
-			action: (provisioningRow: ProvisioningRow) =>
-				onClickInstall(provisioningRow),
-			show: (provisioningRow: ProvisioningRow) =>
+			label: 'install',
+			onClick: (provisioningRow) => onClickInstall(provisioningRow),
+			show: (provisioningRow) =>
 				provisioningRow.status === InstallStatus.READY_TO_INSTALL,
-			title: i18n.translate('install'),
 		},
 		{
-			action: (provisioningRow: ProvisioningRow) =>
-				onOpenDetailsModal(provisioningRow),
+			label: 'view-details',
+			onClick: (provisioningRow) => onOpenDetailsModal(provisioningRow),
 			show: () => true,
-			title: i18n.translate('view-details'),
 		},
 		{
-			action: (provisioningRow: ProvisioningRow) =>
+			label: 'go-to-cloud-console',
+			onClick: (provisioningRow) =>
 				window.open(
 					`${cloudConsoleURL}/projects/${provisioningRow.projectId}/services`,
 					'_blank',
 					'noopener,noreferrer'
 				),
-			show: (provisioningRow: ProvisioningRow) =>
+			show: (provisioningRow) =>
 				provisioningRow.status === InstallStatus.INSTALLED,
-			title: i18n.translate('go-to-cloud-console'),
 		},
 		{
-			action: (provisioningRow: ProvisioningRow) =>
-				openUninstallModal(provisioningRow),
-			show: (provisioningRow: ProvisioningRow) => {
+			label: 'uninstall',
+			onClick: (provisioningRow) => openUninstallModal(provisioningRow),
+			show: (provisioningRow) => {
 				const {isInstalled} = getProvisioningStatus(provisioningRow);
 
 				return isInstalled;
 			},
-			title: i18n.translate('uninstall'),
 		},
 	];
 
