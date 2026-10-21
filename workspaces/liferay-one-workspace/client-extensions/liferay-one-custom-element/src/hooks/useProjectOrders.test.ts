@@ -288,6 +288,22 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		});
 	});
 
+	it('adds the quantities of every order item for the product', () => {
+		const order = placedOrder({
+			id: 12,
+			placedOrderItems: [
+				{name: 'Analytics Cloud - Business', productId: 7, quantity: 3},
+				{name: 'Other Product', productId: 9, quantity: 1},
+				{name: 'Analytics Cloud - Business', productId: 7, quantity: 2},
+			],
+		});
+
+		expect(getProductOrderInfo([order], 7)).toMatchObject({
+			itemName: 'Analytics Cloud - Business',
+			quantity: '5',
+		});
+	});
+
 	it('returns blank product order info when no order matches', () => {
 		expect(
 			getProductOrderInfo(
