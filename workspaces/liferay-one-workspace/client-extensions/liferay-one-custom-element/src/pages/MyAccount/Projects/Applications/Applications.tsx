@@ -37,7 +37,7 @@ export default function Applications() {
 				matches: (application, values) =>
 					values.includes(application.saleType),
 				options: saleTypes.map((saleType) => ({
-					label: saleType,
+					label: saleType || translate('none'),
 					value: saleType,
 				})),
 			},

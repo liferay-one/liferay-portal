@@ -33,7 +33,10 @@ export default function Products() {
 				key: 'type',
 				label: 'type',
 				matches: (product, values) => values.includes(product.type),
-				options: types.map((type) => ({label: type, value: type})),
+				options: types.map((type) => ({
+					label: type || i18n.translate('none'),
+					value: type,
+				})),
 			},
 			statusFilter(products),
 		];
