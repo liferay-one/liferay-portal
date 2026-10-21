@@ -7,6 +7,9 @@ package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
@@ -257,6 +260,7 @@ public class AppLicenseKeyGenerationService {
 
 		List<AppEntitlement> appEntitlements = new ArrayList<>();
 
+		Map<Long, Boolean> completedOrders = new HashMap<>();
 		Map<String, Product> products = new HashMap<>();
 
 		for (Entitlement entitlement :
@@ -288,7 +292,9 @@ public class AppLicenseKeyGenerationService {
 				products.put(skuExternalReferenceCode, product);
 			}
 
-			if (!_isLicensableApp(entitlement, product)) {
+			if (!_isLicensableApp(entitlement, product) ||
+				!_isOrderCompleted(completedOrders, entitlement)) {
+
 				continue;
 			}
 
@@ -416,6 +422,43 @@ public class AppLicenseKeyGenerationService {
 				product, ProductSpecificationConstants.KEY_TYPE));
 	}
 
+	private boolean _isOrderCompleted(
+			Map<Long, Boolean> completedOrders, Entitlement entitlement)
+		throws Exception {
+
+		long commerceOrderItemId = entitlement.getCommerceOrderItemId();
+
+		if (commerceOrderItemId == 0) {
+			return true;
+		}
+
+		OrderItem orderItem = _commerceOrderItemService.fetchCommerceOrderItem(
+			commerceOrderItemId);
+
+		if ((orderItem == null) || (orderItem.getOrderId() == null)) {
+			return false;
+		}
+
+		Boolean completed = completedOrders.get(orderItem.getOrderId());
+
+		if (completed != null) {
+			return completed;
+		}
+
+		Order order = _commerceOrderService.fetchCommerceOrder(
+			orderItem.getOrderId());
+
+		completed =
+			(order != null) &&
+			Objects.equals(
+				order.getOrderStatus(),
+				CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		completedOrders.put(orderItem.getOrderId(), completed);
+
+		return completed;
+	}
+
 	private JSONObject _toProductJSONObject(AppEntitlement appEntitlement) {
 		Entitlement entitlement = appEntitlement._getEntitlement();
 
@@ -480,6 +523,12 @@ public class AppLicenseKeyGenerationService {
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;
+
+	@Autowired
+	private CommerceOrderItemService _commerceOrderItemService;
+
+	@Autowired
+	private CommerceOrderService _commerceOrderService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
