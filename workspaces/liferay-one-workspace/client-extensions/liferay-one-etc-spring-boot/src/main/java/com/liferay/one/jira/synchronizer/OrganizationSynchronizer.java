@@ -11,12 +11,9 @@ import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
-import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
-import com.liferay.one.model.Property;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
@@ -114,13 +111,6 @@ public class OrganizationSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_TEAM_ROLES, teamRoleObjectIds);
 		jiraAssetObject.setAttributeValue(
-			TeamConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
-			_jiraAssetService.getOrCreateReferenceObjectIds(
-				_externalLinkConverter,
-				organizationSyncModel.getExternalLinkProperties(),
-				Property::getExternalReferenceCode,
-				_externalLinkConverter::toAssetObject));
-		jiraAssetObject.setAttributeValue(
 			TeamConstants.ATTRIBUTE_NAME_CONTACTS,
 			_getContactObjectIds(organizationSyncModel));
 
@@ -153,9 +143,7 @@ public class OrganizationSynchronizer {
 	private OrganizationSyncModel _createOrganizationSyncModel(
 		Organization organization) {
 
-		return new OrganizationSyncModel(
-			_externalLinkConverter, organization, _propertyService,
-			_userAccountService);
+		return new OrganizationSyncModel(organization, _userAccountService);
 	}
 
 	private List<String> _getContactObjectIds(
@@ -200,9 +188,6 @@ public class OrganizationSynchronizer {
 	private ContactConverter _contactConverter;
 
 	@Autowired
-	private ExternalLinkConverter _externalLinkConverter;
-
-	@Autowired
 	private JiraAssetService _jiraAssetService;
 
 	@Autowired
@@ -211,9 +196,6 @@ public class OrganizationSynchronizer {
 	@Autowired
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 	@Autowired
 	private TeamConverter _teamConverter;

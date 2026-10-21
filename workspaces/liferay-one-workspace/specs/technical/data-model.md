@@ -75,6 +75,7 @@ Liferay system Organization, migrated from support.liferay for FLS (First Line S
 | PK `organizationId` | long | |
 | `name` | string | Copied from Support Organization name |
 | `accountEntryId` | long | Custom field — owning account, e.g. Accenture FLS → Accenture account. Must be a plain field, not a relationship: Liferay forbids object relationships between two system objects (`L_ACCOUNT` and `L_ORGANIZATION` are both system). |
+| `oktaGroupId` | string | Custom field. The ID of the Okta group whose members belong to this organization |
 
 **Relationships:**
 
@@ -564,11 +565,11 @@ Children: EnvironmentAdmin and UsageEvent, both `cascade`.
 
 | Field | Type | Notes |
 |---|---|---|
-| FK `accountEntryId` | long | `accountEntryToProperty`, cascade. Not account restricted |
-| `classNameId` | long | e.g. classNameId of CommerceOrderItem, AccountEntry |
-| `className` | string | Denormalized, e.g. `CommerceOrderItem` |
-| `classPK` | long | PK of the target entity instance |
-| `name` | string | e.g. `koroneikiAccountKey`, `nonProductionSubscriptionUuid` |
+| FK `accountEntryId` | long | `accountEntryToProperty`, cascade. Account restricted by `r_accountEntryToProperty_accountEntryId`, so every row must have an account |
+| `classNameId` | long | classNameId of the record in the account that the row is about: AccountEntry, Project, or LicenseKey |
+| `className` | string | Denormalized class name of that record |
+| `classPK` | long | PK of that record |
+| `name` | string | e.g. `koroneikiAccountKey`, `okta:application`, `cloud-native:subdomain`, `originalLicenseKeyId` |
 | `value` | string | e.g. `12345-abcde` |
 | `metadataJson` | text | JSON metadata blob |
 
@@ -587,7 +588,7 @@ One link between an EntitlementDefinition and a SKU that sells it. Before this o
 | `externalReferenceCode` | string | `<definition ERC>_<SKU ERC>` |
 | `skuExternalReferenceCode` | string | ERC of the SKU |
 
-> External system references (formerly `ExternalLink`) are stored as Property rows: `name = '{domain}:{entityName}'`, `value = entityId`.
+> External system references (formerly `ExternalLink`) of an account are stored as Property rows: `name = '{domain}:{entityName}'`, `value = entityId`. Organizations and users have no external links.
 
 ---
 

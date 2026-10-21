@@ -11,7 +11,7 @@ Terms used in this file:
 - **Project role**: the role of a project membership. It is Project Admin, Project Requester, or Project User.
 - **Shared organization**: an organization that a user belongs to and that an account is also linked to.
 - **Trusted application**: one of the six OAuth2 applications whose access tokens the Spring Boot service accepts.
-- **Okta group**: a group in Okta that an organization is linked to through an organization property.
+- **Okta group**: a group in Okta that an organization is linked to through its `oktaGroupId` custom field.
 - **Support Customers group**: the user group `C_SUPPORT_CUSTOMERS`. It holds the users who have access to a support level agreement.
 - **Partners group**: the user group `C_PARTNERS`. It holds the users who have access to a partner entitlement.
 

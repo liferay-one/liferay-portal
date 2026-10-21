@@ -57,6 +57,11 @@
 		},
 		{
 			"accountEntryRestricted": true,
+			"accountEntryRestrictedObjectFieldName": "r_accountEntryToProperty_accountEntryId",
+			"externalReferenceCode": "C_PROPERTY"
+		},
+		{
+			"accountEntryRestricted": true,
 			"accountEntryRestrictedObjectFieldName": "r_accountEntryToPublisherAsset_accountEntryId",
 			"externalReferenceCode": "C_PUBLISHER_ASSET"
 		},

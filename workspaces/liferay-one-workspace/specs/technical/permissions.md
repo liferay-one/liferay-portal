@@ -26,7 +26,7 @@ In this file, `L<n>` means line `<n>` of `resource-permissions.json`, and a scop
 | 64 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
 | 3 | Self `VIEW` grants on a regular role, so that the role appears in `roleBriefs` |
 | 34 | Custom objects (`C_*`) in the batch |
-| 13 | Custom objects restricted to the account |
+| 14 | Custom objects restricted to the account |
 | 10 | Custom objects with no grant at all. 9 of them are readable only by the owner and an administrator. |
 | 24 | Pages. 10 set their own permissions. 14 keep the Liferay default, which lets a guest view them. |
 | 0 | Service Access Policies in the trees. The portal adds `OBJECT_DEFAULT` itself. |
@@ -185,7 +185,7 @@ Rows are the 34 custom objects and the 6 system objects that the batch extends. 
 | ProductVersion (`C_PRODUCT_VERSION`) | — | | | | | | | | V s1 L118 | | V s1 L127 |
 | Project (`C_PROJECT`) | `r_accountEntryToProject_accountEntryId` | | | | | | | | V s1 L136 | | |
 | ProjectMembership (`C_PROJECT_MEMBERSHIP`) | `r_accountEntryToProjectMembership_accountEntryId` | | | | | | | | V s1 L145 | | |
-| Property (`C_PROPERTY`) | — | | | | | | | | V s1 L154 | | |
+| Property (`C_PROPERTY`) | `r_accountEntryToProperty_accountEntryId` | | | | | | | | V s1 L154 | | |
 | PublisherAccountRequest (`C_PUBLISHER_ACCOUNT_REQUEST`) | — | | | | | | | | | | |
 | PublisherAsset (`C_PUBLISHER_ASSET`) | `r_accountEntryToPublisherAsset_accountEntryId` | | | | | | | | | | |
 | PublisherAssetAttachment (`C_PUBLISHER_ASSET_ATTACHMENT`) | — | | | | | | | | | | |

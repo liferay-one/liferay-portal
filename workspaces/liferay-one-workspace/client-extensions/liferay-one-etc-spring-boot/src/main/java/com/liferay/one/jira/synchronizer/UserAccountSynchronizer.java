@@ -14,14 +14,11 @@ import com.liferay.one.jira.constants.ContactConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
 import com.liferay.one.jira.converter.ContactRoleConverter;
-import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
-import com.liferay.one.model.Property;
 import com.liferay.one.service.ProjectMembershipService;
-import com.liferay.one.service.PropertyService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
@@ -165,9 +162,7 @@ public class UserAccountSynchronizer {
 	private UserAccountSyncModel _createUserAccountSyncModel(
 		UserAccount userAccount) {
 
-		return new UserAccountSyncModel(
-			_externalLinkConverter, _projectMembershipService, _propertyService,
-			userAccount);
+		return new UserAccountSyncModel(_projectMembershipService, userAccount);
 	}
 
 	private List<String> _getAccountObjectIds(
@@ -264,13 +259,6 @@ public class UserAccountSynchronizer {
 				_contactRoleConverter, userAccountSyncModel.getRoleBriefs(),
 				RoleBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
-			ContactConstants.ATTRIBUTE_NAME_EXTERNAL_LINKS,
-			_jiraAssetService.getOrCreateReferenceObjectIds(
-				_externalLinkConverter,
-				userAccountSyncModel.getExternalLinkProperties(),
-				Property::getExternalReferenceCode,
-				_externalLinkConverter::toAssetObject));
-		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_TEAMS,
 			_jiraAssetService.fetchReferenceObjectIds(
 				_teamConverter, userAccountSyncModel.getOrganizationBriefs(),
@@ -304,9 +292,6 @@ public class UserAccountSynchronizer {
 	private ContactRoleConverter _contactRoleConverter;
 
 	@Autowired
-	private ExternalLinkConverter _externalLinkConverter;
-
-	@Autowired
 	private JiraAssetService _jiraAssetService;
 
 	@Autowired
@@ -321,9 +306,6 @@ public class UserAccountSynchronizer {
 
 	@Autowired
 	private ProjectMembershipService _projectMembershipService;
-
-	@Autowired
-	private PropertyService _propertyService;
 
 	@Autowired
 	private TeamConverter _teamConverter;

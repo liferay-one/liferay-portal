@@ -39,6 +39,8 @@ public class ObjectActionOrganizationCreateRestController
 					" was created, triggering a sync to JSM");
 		}
 
+		_organizationService.evictOktaGroupIds();
+
 		_organizationSynchronizer.syncOrganization(
 			_organizationService.getOrganization(classPK));
 	}

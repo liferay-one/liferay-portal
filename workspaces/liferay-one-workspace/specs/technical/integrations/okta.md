@@ -9,7 +9,7 @@ Terms used in this file:
 - **Contact**: an Okta user. Liferay One finds a contact by its email address, which is the Okta login.
 - **Okta event**: a Pub/Sub message that reports a change in Okta, for example a new user or a group membership change.
 - **Okta command**: a Pub/Sub message that Liferay One sends so that the Okta side changes a user or an application.
-- **Okta group link**: the organization property `okta:group`, which holds the ID of one Okta group.
+- **Okta group link**: the organization custom field `oktaGroupId`, which holds the ID of one Okta group. The service reads every link at once and keeps the result for one hour. It clears the result when an organization is created, updated, or deleted.
 - **Cloud Native application**: an Okta application for one account. The account property `okta:application` holds its ID.
 
 ## Connection and Configuration

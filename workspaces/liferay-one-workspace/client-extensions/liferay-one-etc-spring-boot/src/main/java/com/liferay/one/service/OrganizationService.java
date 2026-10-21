@@ -9,10 +9,18 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.resource.v1_0.OrganizationResource;
+import com.liferay.one.constants.CustomFieldConstants;
+import com.liferay.one.util.CustomFieldUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -61,12 +69,67 @@ public class OrganizationService extends OneBaseService {
 		return organizations;
 	}
 
+	@CacheEvict(allEntries = true, value = "oktaGroupIds")
+	public void evictOktaGroupIds() {
+	}
+
+	public String getOktaGroupId(long organizationId) throws Exception {
+		Organization organization = getOrganization(organizationId);
+
+		return CustomFieldUtil.getString(
+			organization.getCustomFields(),
+			CustomFieldConstants.NAME_OKTA_GROUP_ID);
+	}
+
+	@Cacheable("oktaGroupIds")
+	public Map<Long, String> getOktaGroupIds() throws Exception {
+		Map<Long, String> oktaGroupIds = new LinkedHashMap<>();
+
+		for (Organization organization : getOrganizations()) {
+			String oktaGroupId = CustomFieldUtil.getString(
+				organization.getCustomFields(),
+				CustomFieldConstants.NAME_OKTA_GROUP_ID);
+
+			if (oktaGroupId != null) {
+				oktaGroupIds.put(
+					GetterUtil.getLong(organization.getId()), oktaGroupId);
+			}
+		}
+
+		return Collections.unmodifiableMap(oktaGroupIds);
+	}
+
 	public Organization getOrganization(long organizationId) throws Exception {
 		OrganizationResource organizationResource = _buildOrganizationResource(
 			"nestedFields", "accountBriefs");
 
 		return organizationResource.getOrganization(
 			String.valueOf(organizationId));
+	}
+
+	public List<Organization> getOrganizations() throws Exception {
+		List<Organization> organizations = new ArrayList<>();
+
+		OrganizationResource organizationResource =
+			_buildOrganizationResource();
+
+		int page = 1;
+
+		while (true) {
+			Page<Organization> organizationsPage =
+				organizationResource.getOrganizationsPage(
+					true, null, null, Pagination.of(page, _PAGE_SIZE), null);
+
+			organizations.addAll(organizationsPage.getItems());
+
+			if (page >= organizationsPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return organizations;
 	}
 
 	public void removeOrganizationUserAccountByEmailAddress(
