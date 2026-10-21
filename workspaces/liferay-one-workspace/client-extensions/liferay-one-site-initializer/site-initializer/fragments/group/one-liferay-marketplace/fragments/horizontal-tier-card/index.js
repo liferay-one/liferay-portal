@@ -38,7 +38,7 @@ if (/^\d+$/.test(productId) && skuExternalReferenceCode) {
 			const channelId = Liferay.CommerceContext?.commerceChannelId;
 
 			const response = await Liferay.Util.fetch(
-				`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=skus&accountId=-1`
+				`/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?nestedFields=skus&accountId=-1&skus.accountId=-1`
 			);
 
 			if (!response.ok) {
