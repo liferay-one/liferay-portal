@@ -2,7 +2,7 @@
 
 This area covers who a user is and what that user can reach. It includes sign in, the authentication of calls to the Spring Boot service, the wizard that connects a Liferay DXP to a Liferay One account, the Okta identity sync, the role catalog, the permission checks for accounts, projects, and orders, the account and project role matrix, the pages that need a project, and what a guest can read.
 
-The actors are a guest, a signed in user, the account roles (Account Administrator, Account Member, Account Requester, Account Buyer, and the six partner roles), the project roles (Project Admin, Project Requester, and Project User), the global roles (Administrator, Provisioning Administrator, Provisioning Member, Finance Administrator, and Liferay Staff), and Okta, which sends identity events.
+The actors are a guest, a signed in user, the account roles (Account Administrator, Account Member, Account Buyer, and the six partner roles), the project roles (Project Admin, Project Requester, and Project User), the global roles (Administrator, Provisioning Administrator, Provisioning Member, Finance Administrator, and Liferay Staff), and Okta, which sends identity events.
 
 Terms used in this file:
 
@@ -95,7 +95,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-ACCESS-060 | An account role grants access only to the account where the user holds it. A role in another account grants nothing. | P0 | — | `PERM-ACCOUNTPERMISSION`, `CLS-USERACCOUNTUTIL` |
 | REQ-ACCESS-061 | Only an Account Administrator, a Partner Account Admin, or an SSA Administrator of the account can manage the members of the account. Membership in a shared organization does not grant this. | P0 | — | `PERM-ACCOUNTPERMISSION`, `REST-PUT-ACCOUNTS-EXTERNALREFERENCECODE-USER-ACCOUNTS-USERID-ACCOUNT-ROLES` |
-| REQ-ACCESS-062 | An Account Administrator, an Account Member, and an Account Requester can view the account. An Account Administrator and an Account Requester can also change its support data. | P0 | — | `PERM-ACCOUNTPERMISSION` |
+| REQ-ACCESS-062 | An Account Administrator and an Account Member can view the account. An Account Administrator can also change its support data. | P0 | — | `PERM-ACCOUNTPERMISSION` |
 | REQ-ACCESS-063 | A member of a shared organization can view and change the account, but cannot manage its members. | P0 | — | `PERM-ACCOUNTPERMISSION`, `PERM-PROJECTPERMISSION` |
 | REQ-ACCESS-064 | A user can see an order only when the order belongs to an account of the user. The system refuses an order that does not exist or that has no account. | P0 | — | `PERM-COMMERCEORDERPERMISSION` |
 
@@ -140,7 +140,7 @@ Terms used in this file:
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
 | REQ-ACCESS-120 | An entitlement is active when its start date is not after the current time and its end date is not before the current time. An entitlement without a start date or an end date has no limit on that side. | P0 | LPD-108683 | `SVC-ENTITLEMENTSERVICE` |
-| REQ-ACCESS-121 | A user is in the Support Customers group when the user holds an account role from the customer roles on an account with an active support level agreement, or has a project membership on a project with an active support level agreement. The rule uses the roles Account Administrator, Account Member, Account Requester, and Support Administrator. | P0 | LPD-108683 | `SVC-USERGROUPSERVICE` |
+| REQ-ACCESS-121 | A user is in the Support Customers group when the user holds an account role from the customer roles on an account with an active support level agreement, or has a project membership on a project with an active support level agreement. The rule uses the roles Account Administrator and Account Member. | P0 | LPD-108683 | `SVC-USERGROUPSERVICE` |
 | REQ-ACCESS-122 | A user is in the Partners group when the user holds a partner account role on an account with an active Partner entitlement. The partner account roles are Partner Manager, Partner Marketing User, Partner Member, Partner Sales User, and Partner Technical User. A customer role on an account that has a Partner entitlement and no support level agreement does not add the user to the Support Customers group. | P0 | LPD-108683 | `SVC-USERGROUPSERVICE` |
 | REQ-ACCESS-123 | Each account assignment, account role assignment, and project role assignment, and each unassignment of the same, evaluates the user again and adds the user to or removes the user from both groups. When this evaluation fails, the system logs the failure and the assignment still succeeds. | P0 | LPD-108683 | `SVC-USERASSIGNMENTSERVICE`, `SVC-USERGROUPSERVICE` |
 | REQ-ACCESS-124 | When a project membership is created or deleted, the system evaluates the member again and adds the member to or removes the member from both groups. When this evaluation fails, the object action fails and the system logs the error. When the member no longer exists, the delete action does nothing. | P0 | LPD-108683 | `REST-POST-OBJECT-ACTION-PROJECT-MEMBERSHIP-USER-GROUP-ADD`, `REST-POST-OBJECT-ACTION-PROJECT-MEMBERSHIP-USER-GROUP-REMOVE`, `SVC-USERGROUPSERVICE` |

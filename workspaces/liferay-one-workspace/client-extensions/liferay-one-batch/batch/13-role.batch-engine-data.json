@@ -16,11 +16,6 @@
 			"roleType": "account"
 		},
 		{
-			"externalReferenceCode": "C_ACCOUNT_REQUESTER",
-			"name": "Account Requester",
-			"roleType": "account"
-		},
-		{
 			"externalReferenceCode": "C_ACCOUNT_SOLUTION_PUBLISHER",
 			"name": "Account Solution Publisher",
 			"roleType": "account"
@@ -228,11 +223,6 @@
 		{
 			"externalReferenceCode": "C_SSA_USER",
 			"name": "SSA User",
-			"roleType": "account"
-		},
-		{
-			"externalReferenceCode": "C_SUPPORT_ADMIN",
-			"name": "Support Administrator",
 			"roleType": "account"
 		},
 		{

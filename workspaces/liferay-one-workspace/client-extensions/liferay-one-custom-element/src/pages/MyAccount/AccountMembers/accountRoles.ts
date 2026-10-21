@@ -11,7 +11,6 @@ import type {RoleBrief, UserAccount} from '~/types/accounts';
 export const ACCOUNT_ADMINISTRATOR = 'Account Administrator';
 export const ACCOUNT_BUYER = 'Account Buyer';
 export const ACCOUNT_MEMBER = 'Account Member';
-export const ACCOUNT_REQUESTER = 'Account Requester';
 export const LIFERAY_SALES = 'Liferay Sales';
 export const PARTNER_ACCOUNT_ADMIN = 'Partner Account Admin';
 export const PARTNER_MANAGER = 'Partner Manager';
@@ -20,7 +19,6 @@ export const PARTNER_MEMBER = 'Partner Member';
 export const PARTNER_SALES_USER = 'Partner Sales User';
 export const PARTNER_TECHNICAL_USER = 'Partner Technical User';
 export const PRIMARY_CONTACT = 'Primary Contact';
-export const SUPPORT_ADMINISTRATOR = 'Support Administrator';
 
 export const STANDARD_ACCOUNT_ROLES = [
 	ACCOUNT_ADMINISTRATOR,

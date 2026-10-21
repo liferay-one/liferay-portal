@@ -8,7 +8,6 @@ import {useFetch} from '~/hooks/useFetch';
 import {
 	LIFERAY_SALES,
 	PARTNER_MANAGER,
-	SUPPORT_ADMINISTRATOR,
 } from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {PROJECT_ADMIN_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {useActivationKeyScope} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeyScope';
@@ -33,11 +32,7 @@ type ProjectMembershipAPIItem = {
 	roleExternalReferenceCode: string;
 };
 
-const LICENSE_KEY_MANAGER_ROLES = [
-	LIFERAY_SALES,
-	PARTNER_MANAGER,
-	SUPPORT_ADMINISTRATOR,
-];
+const LICENSE_KEY_MANAGER_ROLES = [LIFERAY_SALES, PARTNER_MANAGER];
 
 function useProjectAdminPermission(
 	hasElevatedRole: boolean,

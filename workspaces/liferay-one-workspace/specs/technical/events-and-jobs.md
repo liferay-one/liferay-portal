@@ -267,7 +267,7 @@ The site initializer creates 31 templates from `client-extensions/liferay-one-si
 | `MARKETPLACE-WELCOME-SOLUTIONS-TRIAL` | `welcome-solutions-trial` | email | None | None |
 | `PROJECT-INVITATION` | `project-invitation` | email | None | `…/one/constants/AccountInvitationConstants.java:18` |
 | `PROVISIONING-PARTNER-USER-UPDATE` | `provisioning-partner-user-update` | email | None | `…/one/service/ProvisioningEmailService.java:108` |
-| `PROVISIONING-WELCOME` | `provisioning-welcome` | email | None | `…/one/service/ProvisioningEmailService.java:478` |
+| `PROVISIONING-WELCOME` | `provisioning-welcome` | email | None | `…/one/service/ProvisioningEmailService.java:476` |
 | `SETUP-ANALYTICS-CLOUD-ENVIRONMENT` | `setup-analytics-cloud-environment` | email | None | `…/one/service/CloudActivationRequestService.java:433` |
 | `SETUP-PAAS-ENVIRONMENT` | `setup-paas-environment` | email | None | `…/one/service/CloudActivationRequestService.java:435` |
 | `SETUP-SAAS-ENVIRONMENT` | `setup-saas-environment` | email | None | `…/one/service/CloudActivationRequestService.java:437` |
