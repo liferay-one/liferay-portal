@@ -55,7 +55,13 @@ function getRequestedSearchParams() {
 }
 
 describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavigationUtils', () => {
+	let assign: ReturnType<typeof vi.fn>;
+
 	beforeEach(() => {
+		assign = vi.fn();
+
+		vi.stubGlobal('location', {...window.location, assign});
+
 		mocks.fetcher.mockReset();
 		mocks.getProduct.mockReset();
 		mocks.setCurrentAccount.mockReset();
@@ -64,6 +70,7 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.unstubAllGlobals();
 	});
 
 	describe('getOrderProductId', () => {
@@ -143,33 +150,28 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 	});
 
 	describe('openCustomerDashboard', () => {
-		it('switches to the customer account before navigating to the project section', async () => {
-			const navigate = vi.spyOn(Liferay.Util, 'navigate');
-
+		it('switches to the customer account before loading the project section', async () => {
 			await openCustomerDashboard(buildOrder());
 
 			expect(mocks.setCurrentAccount).toHaveBeenCalledWith('43720');
-			expect(navigate).toHaveBeenCalledWith(
+			expect(assign).toHaveBeenCalledWith(
 				'/web/one/my-account#/project/one-time-purchases/applications'
 			);
 			expect(
 				mocks.setCurrentAccount.mock.invocationCallOrder[0]
-			).toBeLessThan(navigate.mock.invocationCallOrder[0]);
+			).toBeLessThan(assign.mock.invocationCallOrder[0]);
 		});
 	});
 
 	describe('openPublisherDashboard', () => {
 		it('does nothing when the order has no product', async () => {
-			const navigate = vi.spyOn(Liferay.Util, 'navigate');
-
 			await openPublisherDashboard(buildOrder({orderItems: []}));
 
 			expect(mocks.getProduct).not.toHaveBeenCalled();
-			expect(navigate).not.toHaveBeenCalled();
+			expect(assign).not.toHaveBeenCalled();
 		});
 
 		it('warns instead of navigating when the catalog has no account', async () => {
-			const navigate = vi.spyOn(Liferay.Util, 'navigate');
 			const openToast = vi.spyOn(Liferay.Util, 'openToast');
 
 			mocks.getProduct.mockResolvedValue({catalog: {}});
@@ -180,12 +182,10 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 				expect.objectContaining({type: 'warning'})
 			);
 			expect(mocks.setCurrentAccount).not.toHaveBeenCalled();
-			expect(navigate).not.toHaveBeenCalled();
+			expect(assign).not.toHaveBeenCalled();
 		});
 
 		it('switches to the catalog account before opening the publisher dashboard', async () => {
-			const navigate = vi.spyOn(Liferay.Util, 'navigate');
-
 			mocks.getProduct.mockResolvedValue({catalog: {accountId: 65905}});
 
 			await openPublisherDashboard(buildOrder());
@@ -195,7 +195,7 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 				expect.any(URLSearchParams)
 			);
 			expect(mocks.setCurrentAccount).toHaveBeenCalledWith('65905');
-			expect(navigate).toHaveBeenCalledWith(
+			expect(assign).toHaveBeenCalledWith(
 				'/web/one/my-account/publisher-dashboard'
 			);
 		});
