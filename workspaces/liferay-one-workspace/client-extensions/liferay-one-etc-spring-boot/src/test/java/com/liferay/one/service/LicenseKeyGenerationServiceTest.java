@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyDateException;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
@@ -1631,7 +1632,7 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyLicensesAnAddOnUnderItsAppEntryUuid()
+	public void testGenerateActivationKeyLicensesAnAddOnAsItsApp()
 		throws Exception {
 
 		Entitlement leadingEntitlement = _toEntitlement(1L, 5.0, "PRDCT-DXP");
@@ -1671,6 +1672,26 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			productIds,
 			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 28));
+
+		List<Object> licenseVersions = _getInvocationArguments(
+			_licenseKeyGenerator, "generateKey", 3);
+
+		Assertions.assertEquals(
+			LicenseVersion.getAppLicenseVersion(), licenseVersions.get(1));
+
+		List<Object> productVersions = _getInvocationArguments(
+			_licenseKeyGenerator, "generateKey", 6);
+
+		Assertions.assertEquals(
+			LicenseKeyGenerationConstants.APP_PRODUCT_VERSION,
+			productVersions.get(1));
+
+		List<Object> licenseKeyProductVersions = _getInvocationArguments(
+			_licenseKeyService, "addLicenseKey", 30);
+
+		Assertions.assertEquals(
+			LicenseKeyGenerationConstants.APP_PRODUCT_VERSION,
+			licenseKeyProductVersions.get(1));
 	}
 
 	@Test
@@ -2209,7 +2230,7 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateDeveloperLicenseXMLLicensesAnAddOnUnderItsAppEntryUuid()
+	public void testGenerateDeveloperLicenseXMLLicensesAnAddOnAsItsApp()
 		throws Exception {
 
 		_stubEntitlements(
@@ -2248,6 +2269,11 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			productIds,
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 6));
+
+		Assertions.assertEquals(
+			Arrays.asList(
+				"7.4", LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
 	}
 
 	@Test
