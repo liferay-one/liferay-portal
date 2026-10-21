@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {render} from '@testing-library/react';
+import {Fragment, createElement} from 'react';
 import {describe, expect, it} from 'vitest';
 
 import buildDetailsSections from './buildDetailsSections';
@@ -85,9 +87,30 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		expect(getRows('basic')).toEqual(orderRows);
 	});
 
-	it('shows the order and the incident report contacts for basic incident', () => {
+	it('shows the order and the security incident contacts as email links for basic incident', () => {
+		const rows = getRows('basic-incident', {
+			securityIncidentContacts: [
+				{emailAddress: 'ana@example.com', name: 'Ana'},
+				{emailAddress: 'cy@example.com', name: 'Cy'},
+			],
+		});
+
+		const [label, value] = rows.at(-1)!;
+
+		expect(rows.slice(0, -1)).toEqual(orderRows);
+		expect(label).toBe('Security Incident Contact');
+
+		const {container} = render(createElement(Fragment, null, value));
+
+		expect(container.textContent).toBe('Ana, Cy');
 		expect(
-			getRows('basic-incident', {incidentReportContacts: ['Ana', 'Cy']})
-		).toEqual([...orderRows, ['Incident Report Contacts', 'Ana, Cy']]);
+			[...container.querySelectorAll('a')].map((link) => [
+				link.textContent,
+				link.getAttribute('href'),
+			])
+		).toEqual([
+			['Ana', 'mailto:ana@example.com'],
+			['Cy', 'mailto:cy@example.com'],
+		]);
 	});
 });

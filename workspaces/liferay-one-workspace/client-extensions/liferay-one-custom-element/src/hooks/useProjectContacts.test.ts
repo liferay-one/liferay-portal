@@ -25,9 +25,9 @@ function membership(userId: number, roleExternalReferenceCode: string) {
 function mockResponses(
 	memberships: ReturnType<typeof membership>[],
 	userAccounts = [
-		{id: 1, name: 'Ana'},
-		{id: 2, name: 'Bo'},
-		{id: 3, name: 'Cy'},
+		{emailAddress: 'ana@example.com', id: 1, name: 'Ana'},
+		{emailAddress: 'bo@example.com', id: 2, name: 'Bo'},
+		{emailAddress: 'cy@example.com', id: 3, name: 'Cy'},
 	]
 ) {
 	useFetchMock.mockImplementation((url: string | null) => ({
@@ -86,7 +86,7 @@ describe('[HOOK-USEPROJECTCONTACTS] useProjectContacts', () => {
 		expect(result.current.contacts).toEqual([]);
 	});
 
-	it('returns the names of the project members with the role', () => {
+	it('returns the names and email addresses of the project members with the role', () => {
 		mockResponses([
 			membership(1, 'C_PROJECT_ADMIN'),
 			membership(1, CONTACT_ROLE),
@@ -101,7 +101,10 @@ describe('[HOOK-USEPROJECTCONTACTS] useProjectContacts', () => {
 		expect(useFetchMock.mock.calls.at(-1)?.[0]).toBe(
 			'/o/headless-admin-user/v1.0/accounts/42/user-accounts'
 		);
-		expect(result.current.contacts).toEqual(['Ana', 'Cy']);
+		expect(result.current.contacts).toEqual([
+			{emailAddress: 'ana@example.com', name: 'Ana'},
+			{emailAddress: 'cy@example.com', name: 'Cy'},
+		]);
 	});
 
 	it('leaves out a contact who no longer holds a project role', () => {
@@ -115,6 +118,8 @@ describe('[HOOK-USEPROJECTCONTACTS] useProjectContacts', () => {
 			useProjectContacts('PRJCT-1', CONTACT_ROLE)
 		);
 
-		expect(result.current.contacts).toEqual(['Ana']);
+		expect(result.current.contacts).toEqual([
+			{emailAddress: 'ana@example.com', name: 'Ana'},
+		]);
 	});
 });
