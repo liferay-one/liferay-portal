@@ -1534,6 +1534,7 @@ export default {
 	'support-phone-number': 'Número de telefone de suporte',
 	'support-url': 'URL de suporte',
 	'supported-version': 'Versão suportada',
+	'suspended': 'Suspenso',
 	'sydney-australia': 'Sydney, Australia',
 	'sync-to-jsm': 'Sincronizar com JSM',
 	'syncing-to-jsm': 'Sincronizando com JSM...',
@@ -1554,6 +1555,7 @@ export default {
 		'Parceria de tecnologia com integrações',
 	'telecommunications': 'Telecomunicações',
 	'term': 'Termo',
+	'terminated': 'Encerrado',
 	'terms': 'termos',
 	'terms-of-service': 'Termos de serviço',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':

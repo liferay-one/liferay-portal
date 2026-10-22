@@ -238,6 +238,16 @@ export function toSlashDateUTC(date: Date): string {
 	return `${month}/${day}/${year}`;
 }
 
+export function toUTCCalendarDate(value: string): Date {
+	const date = new Date(value);
+
+	return new Date(
+		date.getUTCFullYear(),
+		date.getUTCMonth(),
+		date.getUTCDate()
+	);
+}
+
 export function toUTCDateString(date: Date): string {
 	return date.toISOString().slice(0, 'yyyy-MM-dd'.length);
 }

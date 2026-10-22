@@ -9,25 +9,43 @@ import {useFetch} from '~/hooks/useFetch';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 
+import type {Word} from '~/i18n';
 import type {APIResponse} from '~/types/api';
 
 export type EnvironmentEntitlement = {
 	endDate: string;
 	environment: string;
-	provisionedCount: number;
+	provisionedCount?: number;
 	quantity: number;
 	startDate: string;
+	terminationStatus: string;
 };
 
 type EntitlementNode = {
 	endDate?: string;
 	entitlementDefinitionToEntitlement?: {
+		generatesActivationKey?: boolean;
 		licenseKeyType?: string;
+		unit?: string;
 	};
 	id: number;
 	quantity?: number;
 	startDate?: string;
+	terminationStatus?: string;
 };
+
+export const ENVIRONMENTS: Word[] = ['production', 'non-production'];
+
+const ENTITLEMENT_FIELDS = [
+	'endDate',
+	'entitlementDefinitionToEntitlement.generatesActivationKey',
+	'entitlementDefinitionToEntitlement.licenseKeyType',
+	'entitlementDefinitionToEntitlement.unit',
+	'id',
+	'quantity',
+	'startDate',
+	'terminationStatus',
+].join(',');
 
 function countLicenseKeys(entitlementId: number) {
 	return queryGraphQL<{licenseKeys: {totalCount: number}}>(
@@ -35,24 +53,39 @@ function countLicenseKeys(entitlementId: number) {
 			new SearchBuilder()
 				.eq('active', true)
 				.and()
-				.eq(
-					'r_entitlementToLicenseKey_c_entitlementId',
-					String(entitlementId)
-				)
+				.eq('entitlementId', String(entitlementId))
 				.build()
 		)}, pageSize: 1) { totalCount } }`
 	).then((data) => data.licenseKeys.totalCount);
 }
 
+function isEnvironmentEntitlement(
+	entitlementNode: EntitlementNode,
+	activationKeys: boolean
+) {
+	const {generatesActivationKey, licenseKeyType, unit} =
+		entitlementNode.entitlementDefinitionToEntitlement ?? {};
+
+	if (licenseKeyType && !ENVIRONMENTS.includes(licenseKeyType as Word)) {
+		return false;
+	}
+
+	if (activationKeys) {
+		return Boolean(generatesActivationKey);
+	}
+
+	return unit === 'boolean';
+}
+
 export function useProductEnvironmentEntitlements(
 	orderItemIds: number[],
-	countsProvisionedKeys: boolean
+	activationKeys: boolean
 ) {
 	const {data: entitlementData, isLoading: entitlementsLoading} = useFetch<
 		APIResponse<EntitlementNode>
 	>(orderItemIds.length ? '/o/c/entitlements' : null, {
 		params: {
-			fields: 'endDate,entitlementDefinitionToEntitlement.licenseKeyType,id,quantity,startDate',
+			fields: ENTITLEMENT_FIELDS,
 			filter: SearchBuilder.in(
 				'r_commerceOrderItemToEntitlement_commerceOrderItemId',
 				orderItemIds.map(String)
@@ -63,8 +96,11 @@ export function useProductEnvironmentEntitlements(
 	});
 
 	const entitlementNodes = useMemo(
-		() => entitlementData?.items ?? [],
-		[entitlementData]
+		() =>
+			(entitlementData?.items ?? []).filter((entitlementNode) =>
+				isEnvironmentEntitlement(entitlementNode, activationKeys)
+			),
+		[activationKeys, entitlementData]
 	);
 
 	const entitlementIds = entitlementNodes.map(
@@ -75,7 +111,7 @@ export function useProductEnvironmentEntitlements(
 		useDataQuery({
 			fetcher: () => Promise.all(entitlementIds.map(countLicenseKeys)),
 			key:
-				countsProvisionedKeys && entitlementIds.length
+				activationKeys && entitlementIds.length
 					? `/license-key-counts/${entitlementIds.join(',')}`
 					: null,
 		});
@@ -87,9 +123,10 @@ export function useProductEnvironmentEntitlements(
 				environment:
 					entitlementNode.entitlementDefinitionToEntitlement
 						?.licenseKeyType ?? '',
-				provisionedCount: provisionedCounts?.[index] ?? 0,
+				provisionedCount: provisionedCounts?.[index],
 				quantity: entitlementNode.quantity ?? 0,
 				startDate: entitlementNode.startDate ?? '',
+				terminationStatus: entitlementNode.terminationStatus ?? '',
 			})),
 		[entitlementNodes, provisionedCounts]
 	);

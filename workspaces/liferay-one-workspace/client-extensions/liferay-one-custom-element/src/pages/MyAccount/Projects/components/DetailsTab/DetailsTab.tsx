@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {useProductEnvironmentEntitlements} from '~/hooks/useProductEnvironmentEntitlements';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
@@ -36,10 +37,11 @@ export default function DetailsTab({
 }: DetailsTabProps) {
 	const {projectId} = useProject();
 
-	const {environmentEntitlements} = useProductEnvironmentEntitlements(
-		ENVIRONMENT_PROFILES.includes(profile) ? orderItemIds : [],
-		profile === 'env-instance'
-	);
+	const {environmentEntitlements, loading} =
+		useProductEnvironmentEntitlements(
+			ENVIRONMENT_PROFILES.includes(profile) ? orderItemIds : [],
+			profile === 'env-instance'
+		);
 
 	const {contacts: securityIncidentContacts} = useProjectContacts(
 		profile === 'basic-incident' && !isUnassignedProject(projectId)
@@ -47,6 +49,10 @@ export default function DetailsTab({
 			: '',
 		SECURITY_INCIDENT_CONTACT_ERC
 	);
+
+	if (loading) {
+		return <Loading.Page />;
+	}
 
 	const sections = buildDetailsSections(profile, {
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',

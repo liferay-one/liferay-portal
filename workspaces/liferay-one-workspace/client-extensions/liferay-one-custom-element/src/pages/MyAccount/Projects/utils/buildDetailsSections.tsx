@@ -3,9 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
+import {format, startOfToday} from 'date-fns';
 import {Fragment} from 'react';
+import {ENVIRONMENTS} from '~/hooks/useProductEnvironmentEntitlements';
 import i18n, {Word} from '~/i18n';
+import {toUTCCalendarDate} from '~/utils/dateUtils';
 
 import {DetailsRow} from '../components/DetailsCard/DetailsCard';
 import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetailsCard';
@@ -32,78 +34,157 @@ type DetailsContext = {
 	securityIncidentContacts?: ProjectContact[];
 };
 
-const ENVIRONMENTS: Word[] = ['production', 'non-production'];
+const ENTITLEMENT_STATUSES: Word[] = [
+	'active',
+	'not-activated',
+	'suspended',
+	'expired',
+	'terminated',
+];
+
+type EnvironmentSummary = {
+	endDate: string;
+	environment: string;
+	provisionedCount?: number;
+	quantity: number;
+	startDate: string;
+	status: Word;
+};
 
 function formatDate(value?: string): string {
-	if (!value) {
-		return '';
-	}
-
-	const date = new Date(value);
-
-	return format(
-		new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
-		'MMM d, yyyy'
-	);
+	return value ? format(toUTCCalendarDate(value), 'MMM d, yyyy') : '';
 }
 
-function getStatus(startDate: string, endDate: string): Word {
-	const now = new Date();
+function getStatus({
+	endDate,
+	startDate,
+	terminationStatus,
+}: EnvironmentEntitlement): Word {
+	if (
+		terminationStatus === 'suspended' ||
+		terminationStatus === 'terminated'
+	) {
+		return terminationStatus;
+	}
 
-	if (startDate && now < new Date(startDate)) {
+	const today = startOfToday();
+
+	if (startDate && today < toUTCCalendarDate(startDate)) {
 		return 'not-activated';
 	}
 
-	if (endDate && now > new Date(endDate)) {
+	if (endDate && today >= toUTCCalendarDate(endDate)) {
 		return 'expired';
 	}
 
 	return 'active';
 }
 
+function sortDates(values: string[]): string[] {
+	return values
+		.filter(Boolean)
+		.sort(
+			(value1, value2) =>
+				new Date(value1).getTime() - new Date(value2).getTime()
+		);
+}
+
+function selectTerm(environmentEntitlements: EnvironmentEntitlement[]) {
+	const statuses = environmentEntitlements.map(getStatus);
+
+	const status =
+		ENTITLEMENT_STATUSES.find((entitlementStatus) =>
+			statuses.includes(entitlementStatus)
+		) ?? 'active';
+
+	const term = environmentEntitlements.filter(
+		(environmentEntitlement, index) => statuses[index] === status
+	);
+
+	if (status === 'active') {
+		return {status, term};
+	}
+
+	if (status === 'not-activated') {
+		const [startDate] = sortDates(term.map(({startDate}) => startDate));
+
+		return {
+			status,
+			term: term.filter(
+				(environmentEntitlement) =>
+					environmentEntitlement.startDate === startDate
+			),
+		};
+	}
+
+	const endDate = sortDates(term.map(({endDate}) => endDate)).at(-1);
+
+	return {
+		status,
+		term: term.filter(
+			(environmentEntitlement) =>
+				environmentEntitlement.endDate === endDate
+		),
+	};
+}
+
+function summarizeEnvironment(
+	environment: string,
+	environmentEntitlements: EnvironmentEntitlement[]
+): EnvironmentSummary {
+	const {status, term} = selectTerm(environmentEntitlements);
+
+	const provisionedCounted = term.every(
+		({provisionedCount}) => provisionedCount !== undefined
+	);
+
+	return {
+		endDate: sortDates(term.map(({endDate}) => endDate)).at(-1) ?? '',
+		environment,
+		provisionedCount: provisionedCounted
+			? term.reduce(
+					(total, {provisionedCount}) =>
+						total + (provisionedCount ?? 0),
+					0
+				)
+			: undefined,
+		quantity: term.reduce((total, {quantity}) => total + quantity, 0),
+		startDate: sortDates(term.map(({startDate}) => startDate))[0] ?? '',
+		status,
+	};
+}
+
 function summarizeEnvironments(
 	environmentEntitlements: EnvironmentEntitlement[]
-): EnvironmentEntitlement[] {
-	const environmentSummaries = new Map<string, EnvironmentEntitlement>();
+): EnvironmentSummary[] {
+	const entitlementsByEnvironment = new Map<
+		string,
+		EnvironmentEntitlement[]
+	>();
 
 	for (const environmentEntitlement of environmentEntitlements) {
 		const {environment} = environmentEntitlement;
 
-		if (environment && !ENVIRONMENTS.includes(environment as Word)) {
-			continue;
-		}
-
-		const environmentSummary = environmentSummaries.get(environment);
-
-		if (!environmentSummary) {
-			environmentSummaries.set(environment, {...environmentEntitlement});
-
-			continue;
-		}
-
-		environmentSummary.provisionedCount +=
-			environmentEntitlement.provisionedCount;
-		environmentSummary.quantity += environmentEntitlement.quantity;
-
-		if (environmentEntitlement.startDate < environmentSummary.startDate) {
-			environmentSummary.startDate = environmentEntitlement.startDate;
-		}
-
-		if (environmentEntitlement.endDate > environmentSummary.endDate) {
-			environmentSummary.endDate = environmentEntitlement.endDate;
-		}
+		entitlementsByEnvironment.set(environment, [
+			...(entitlementsByEnvironment.get(environment) ?? []),
+			environmentEntitlement,
+		]);
 	}
 
-	return [...environmentSummaries.values()].sort(
-		(environmentSummary1, environmentSummary2) =>
-			ENVIRONMENTS.indexOf(environmentSummary1.environment as Word) -
-			ENVIRONMENTS.indexOf(environmentSummary2.environment as Word)
-	);
+	return [...entitlementsByEnvironment]
+		.map(([environment, entitlements]) =>
+			summarizeEnvironment(environment, entitlements)
+		)
+		.sort(
+			(environmentSummary1, environmentSummary2) =>
+				ENVIRONMENTS.indexOf(environmentSummary1.environment as Word) -
+				ENVIRONMENTS.indexOf(environmentSummary2.environment as Word)
+		);
 }
 
 function environmentSections(
 	context: DetailsContext,
-	toRows: (environmentSummary: EnvironmentEntitlement) => DetailsRow[]
+	toRows: (environmentSummary: EnvironmentSummary) => DetailsRow[]
 ): DetailsSection[] {
 	const environmentSummaries = summarizeEnvironments(
 		context.environmentEntitlements ?? []
@@ -125,18 +206,25 @@ function environmentSections(
 }
 
 function environmentDateRows(
-	environmentSummary: EnvironmentEntitlement
+	environmentSummary: EnvironmentSummary
 ): DetailsRow[] {
-	const {endDate, startDate} = environmentSummary;
+	const {endDate, startDate, status} = environmentSummary;
 
 	return [
 		{label: i18n.translate('start-date'), value: formatDate(startDate)},
 		{label: i18n.translate('expiration-date'), value: formatDate(endDate)},
-		{
-			label: i18n.translate('status'),
-			value: i18n.translate(getStatus(startDate, endDate)),
-		},
+		{label: i18n.translate('status'), value: i18n.translate(status)},
 	];
+}
+
+function keysProvisioned(environmentSummary: EnvironmentSummary): string {
+	const {provisionedCount, quantity} = environmentSummary;
+
+	if (provisionedCount === undefined) {
+		return '-';
+	}
+
+	return i18n.sub('x-of-x', [String(provisionedCount), String(quantity)]);
 }
 
 function orderRows(context: DetailsContext): DetailsRow[] {
@@ -236,10 +324,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		environmentSections(context, (environmentSummary) => [
 			{
 				label: i18n.translate('keys-provisioned'),
-				value: i18n.sub('x-of-x', [
-					String(environmentSummary.provisionedCount),
-					String(environmentSummary.quantity),
-				]),
+				value: keysProvisioned(environmentSummary),
 			},
 			...environmentDateRows(environmentSummary),
 		]),
