@@ -8,11 +8,11 @@ import {ReactNode} from 'react';
 import {useParams} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
-import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
 import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
+	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
@@ -24,8 +24,6 @@ vi.mock('react-router', () => ({useParams: vi.fn()}));
 
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
-vi.mock('~/hooks/useDeliveryProduct', () => ({useDeliveryProduct: vi.fn()}));
-
 vi.mock('~/hooks/useDeliveryProductByExternalReferenceCode', () => ({
 	useDeliveryProductByExternalReferenceCode: vi.fn(),
 }));
@@ -33,6 +31,7 @@ vi.mock('~/hooks/useDeliveryProductByExternalReferenceCode', () => ({
 vi.mock('~/hooks/useProjectCommerce', () => ({
 	useHasActiveExperienceOffering: vi.fn(),
 	useProjectCommerce: vi.fn(),
+	useProjectProducts: vi.fn(),
 }));
 
 vi.mock('~/hooks/useProjectItems', () => ({useProjectItems: vi.fn()}));
@@ -83,16 +82,20 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			products: [{externalReferenceCode: 'PRDCT-1', id: '101'}],
 		} as unknown as ReturnType<typeof useProjectItems>);
 
-		vi.mocked(useDeliveryProduct).mockReturnValue({
+		vi.mocked(useProjectProducts).mockReturnValue({
 			data: {
-				catalogName: 'Liferay',
-				description: `<p>${PRODUCT_DESCRIPTION}</p>`,
-				name: 'Liferay DXP',
-				productId: 101,
-				productSpecifications: [],
+				items: [
+					{
+						catalogName: 'Liferay',
+						description: `<p>${PRODUCT_DESCRIPTION}</p>`,
+						name: 'Liferay DXP',
+						productId: 101,
+						productSpecifications: [],
+					},
+				],
 			},
 			isLoading: false,
-		} as unknown as ReturnType<typeof useDeliveryProduct>);
+		} as unknown as ReturnType<typeof useProjectProducts>);
 
 		vi.mocked(useProjectOrders).mockReturnValue({
 			loading: false,

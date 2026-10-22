@@ -20,6 +20,8 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductR
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.exception.NoSuchProductException;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -61,6 +63,12 @@ public class CommerceProductServiceTest {
 		).when(
 			_commerceProductService
 		).buildProductResource();
+
+		Mockito.doReturn(
+			_productResource
+		).when(
+			_commerceProductService
+		).buildProductSkusResource();
 
 		Mockito.doReturn(
 			_productOptionResource
@@ -146,6 +154,61 @@ public class CommerceProductServiceTest {
 		Assertions.assertThrows(
 			NoSuchProductException.class,
 			() -> _commerceProductService.getProduct(_PRODUCT_ID));
+	}
+
+	@Test
+	public void testGetProductsFiltersByProductIdsInBatches() throws Exception {
+		List<Long> productIds = new ArrayList<>();
+
+		for (long i = 1; i <= 21; i++) {
+			productIds.add(i);
+		}
+
+		Product product = new Product();
+
+		Mockito.when(
+			_productResource.getProductsPage(
+				Mockito.isNull(), Mockito.anyString(), Mockito.any(),
+				Mockito.isNull())
+		).thenReturn(
+			_toPage(product)
+		);
+
+		Assertions.assertEquals(
+			List.of(product, product),
+			_commerceProductService.getProducts(productIds));
+
+		ArgumentCaptor<String> filterArgumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			_productResource, Mockito.times(2)
+		).getProductsPage(
+			Mockito.isNull(), filterArgumentCaptor.capture(), Mockito.any(),
+			Mockito.isNull()
+		);
+
+		List<String> filters = filterArgumentCaptor.getAllValues();
+
+		Assertions.assertTrue(
+			filters.get(
+				0
+			).startsWith(
+				"productId eq 1 or productId eq 2 or "
+			));
+		Assertions.assertEquals("productId eq 21", filters.get(1));
+	}
+
+	@Test
+	public void testGetProductsReturnsNothingWithoutProductIds()
+		throws Exception {
+
+		Assertions.assertTrue(
+			_commerceProductService.getProducts(
+				Collections.emptyList()
+			).isEmpty());
+
+		Mockito.verifyNoInteractions(_productResource);
 	}
 
 	@Test

@@ -506,7 +506,9 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace apps', () => {
 		adminAPI,
 		page,
 	}) => {
-		const product = await adminAPI.getProductByERC('PRDCT-DYNATRACE-APM');
+		const product = await adminAPI.getProductByERC(
+			'salesforce-product-dynatrace-apm'
+		);
 
 		await gotoAdmin(page, 'mp-apps');
 

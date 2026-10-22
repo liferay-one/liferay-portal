@@ -6,6 +6,7 @@
 import {Page} from '@playwright/test';
 
 import {expect, oneTest as test} from '../fixtures/oneTest';
+import SpringBootStub from '../utils/SpringBootStub';
 import {
 	ACCOUNT_ERC,
 	PROJECT_ERC,
@@ -15,7 +16,48 @@ import {
 } from '../utils/environmentUtils';
 import {expectSettled, gotoMyAccount, tableRow} from '../utils/myAccountUtils';
 
+const PAAS_EXPERIENCE_PRODUCT_ERC =
+	'salesforce-product-liferay-paas-experience';
+
 const PROJECT_PATH = `${ACCOUNT_ERC}/project/${PROJECT_ERC}`;
+
+type ProjectProduct = {
+	externalReferenceCode: string;
+	productSpecifications?: {specificationKey: string; value: string}[];
+};
+
+async function stubExperienceDashboardProfile(springBoot: SpringBootStub) {
+	await springBoot.on(
+		'GET',
+		'/accounts/:externalReferenceCode/products',
+		async ({request}) => {
+			const response = await fetch(request.url(), {
+				headers: await request.allHeaders(),
+			});
+
+			const productsPage = (await response.json()) as {
+				items: ProjectProduct[];
+			};
+
+			for (const product of productsPage.items) {
+				if (
+					product.externalReferenceCode ===
+					PAAS_EXPERIENCE_PRODUCT_ERC
+				) {
+					product.productSpecifications = [
+						...(product.productSpecifications ?? []),
+						{
+							specificationKey: 'project-utilization-profile',
+							value: 'experience-dashboard',
+						},
+					];
+				}
+			}
+
+			return {body: productsPage, contentType: 'application/json'};
+		}
+	);
+}
 
 function escapeRegExp(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -253,13 +295,15 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] products', () => {
 			'Asserts the usage the stub serves; live usage depends on DataOps data.'
 		);
 
+		await stubExperienceDashboardProfile(springBoot);
+
 		await springBoot.on('GET', '/projects/:projectERC/usage', {
 			body: {metrics: USAGE_METRICS, usageDataAvailable: true},
 		});
 
 		await gotoMyAccount(
 			page,
-			`${PROJECT_PATH}/products/PRDCT-PAAS?tab=utilization`
+			`${PROJECT_PATH}/products/${PAAS_EXPERIENCE_PRODUCT_ERC}?tab=utilization`
 		);
 
 		await expect(page.getByText('Project Usage Metrics')).toBeVisible();
@@ -284,13 +328,15 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] products', () => {
 			'Asserts the unavailable state the stub serves.'
 		);
 
+		await stubExperienceDashboardProfile(springBoot);
+
 		await springBoot.on('GET', '/projects/:projectERC/usage', {
 			body: {metrics: USAGE_METRICS, usageDataAvailable: false},
 		});
 
 		await gotoMyAccount(
 			page,
-			`${PROJECT_PATH}/products/PRDCT-PAAS?tab=utilization`
+			`${PROJECT_PATH}/products/${PAAS_EXPERIENCE_PRODUCT_ERC}?tab=utilization`
 		);
 
 		await expect(page.getByText('Usage Data Not Loaded')).toBeVisible();

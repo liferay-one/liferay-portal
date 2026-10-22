@@ -9,7 +9,6 @@ const {liferay, preloadDataQuery} = vi.hoisted(() => ({
 	liferay: {
 		CommerceContext: {} as {
 			account?: {accountId?: number};
-			commerceChannelId?: number;
 		},
 		ThemeDisplay: {isSignedIn: (): boolean => true},
 	},
@@ -29,14 +28,14 @@ vi.mock('~/hooks/useProjectCommerce', () => ({
 	accountLevelContractsQuery: (accountId: number) => ({
 		key: `accountLevelContracts:${accountId}`,
 	}),
-	channelProductsQuery: (channelId: number) => ({
-		key: `channelProducts:${channelId}`,
-	}),
 	projectContractsQuery: (projectERC: string) => ({
 		key: `projectContracts:${projectERC}`,
 	}),
 	projectEntitlementsQuery: (projectERC: string) => ({
 		key: `projectEntitlements:${projectERC}`,
+	}),
+	projectProductsQuery: (accountERC: string) => ({
+		key: `projectProducts:${accountERC}`,
 	}),
 }));
 
@@ -75,10 +74,14 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 	beforeEach(() => {
 		liferay.CommerceContext = {
 			account: {accountId: 101},
-			commerceChannelId: 7,
 		};
 		liferay.ThemeDisplay.isSignedIn = () => true;
-		preloadDataQuery.mockClear();
+		preloadDataQuery.mockReset();
+		preloadDataQuery.mockImplementation(({key}: {key: string}) =>
+			key === 'currentAccount:101'
+				? Promise.resolve({externalReferenceCode: 'ACCNT-001'})
+				: undefined
+		);
 		window.location.hash = '';
 	});
 
@@ -133,17 +136,19 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 
 		preloadAppData('my-account');
 
-		expect(getPreloadedKeys()).toEqual([
-			'/my-user-account',
-			'currentAccount:101',
-			'accounts:101',
-			'userProjects:101',
-			'accountLevelContracts:101',
-			'projectContracts:PRJCT-001',
-			'projectEntitlements:PRJCT-001',
-			'channelProducts:7',
-			'projectOrders:101',
-		]);
+		await vi.waitFor(() =>
+			expect(getPreloadedKeys()).toEqual([
+				'/my-user-account',
+				'currentAccount:101',
+				'accounts:101',
+				'userProjects:101',
+				'accountLevelContracts:101',
+				'projectContracts:PRJCT-001',
+				'projectEntitlements:PRJCT-001',
+				'projectOrders:101',
+				'projectProducts:ACCNT-001',
+			])
+		);
 	});
 
 	it('scopes the entitlements to the project only on the products tab or the project root', async () => {
@@ -164,6 +169,40 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 
 		expect(getPreloadedKeys()).toContain('projectContracts:PRJCT-001');
 		expect(getPreloadedKeys()).toContain('projectEntitlements:');
+	});
+
+	it('skips the product query when the current account preload fails', async () => {
+		preloadDataQuery.mockImplementation(({key}: {key: string}) =>
+			key === 'currentAccount:101'
+				? Promise.reject(new Error('Unable to get account'))
+				: undefined
+		);
+
+		const preloadAppData = await loadPreloadAppData();
+
+		preloadAppData('my-account');
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(getPreloadedKeys()).not.toContain('projectProducts:ACCNT-001');
+	});
+
+	it('skips the product query when the current account has no ERC', async () => {
+		preloadDataQuery.mockImplementation(({key}: {key: string}) =>
+			key === 'currentAccount:101' ? Promise.resolve({}) : undefined
+		);
+
+		const preloadAppData = await loadPreloadAppData();
+
+		preloadAppData('my-account');
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(
+			getPreloadedKeys().filter((key) =>
+				key.startsWith('projectProducts')
+			)
+		).toEqual([]);
 	});
 
 	it('uses an empty project ERC when the hash is not a project path', async () => {
