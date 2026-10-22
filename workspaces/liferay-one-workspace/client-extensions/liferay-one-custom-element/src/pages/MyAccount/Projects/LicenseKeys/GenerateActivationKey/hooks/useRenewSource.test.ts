@@ -217,6 +217,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		expect(result.current.renewSource).toEqual({
 			bundleEntitlementIds: [],
 			description: '',
+			domain: '',
 			environmentName: '',
 			keyType: 'production',
 			maxClusterNodes: 0,

@@ -6,9 +6,11 @@
 package com.liferay.one.service;
 
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 
 import java.net.URI;
 
@@ -18,8 +20,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
@@ -70,59 +74,29 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testAddLicenseKeyTypeFreeKeepsLocalhostOnce() throws Exception {
+		List<String> bodies = new ArrayList<>();
+
+		LicenseKeyService licenseKeyService = _toFreeTierLicenseKeyService(
+			bodies, Mockito.mock(LicenseKeyGenerator.class));
+
+		_addLicenseKeyTypeFree("localhost", licenseKeyService);
+
+		JSONObject jsonObject = new JSONObject(bodies.get(0));
+
+		Assertions.assertEquals("localhost", jsonObject.getString("domains"));
+	}
+
+	@Test
 	public void testAddLicenseKeyTypeFreeLinksTheAccountAndTheOrder()
 		throws Exception {
 
 		List<String> bodies = new ArrayList<>();
 
-		LicenseKeyService licenseKeyService = new LicenseKeyService() {
+		LicenseKeyService licenseKeyService = _toFreeTierLicenseKeyService(
+			bodies, Mockito.mock(LicenseKeyGenerator.class));
 
-			@Override
-			protected String getAuthorization() {
-				return "Bearer test";
-			}
-
-			@Override
-			protected String post(String authorization, String body, URI uri) {
-				bodies.add(body);
-
-				return "{\"id\": 1}";
-			}
-
-		};
-
-		LicenseKeyGenerator licenseKeyGenerator = Mockito.mock(
-			LicenseKeyGenerator.class);
-
-		Mockito.when(
-			licenseKeyGenerator.generateKey(
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
-				Mockito.anyLong(), Mockito.anyLong(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any())
-		).thenReturn(
-			"key"
-		);
-
-		ReflectionTestUtils.setField(
-			licenseKeyService, "_licenseKeyGenerator", licenseKeyGenerator);
-
-		ProductVersionService productVersionService = Mockito.mock(
-			ProductVersionService.class);
-
-		Mockito.when(
-			productVersionService.getFreeTierProductVersion()
-		).thenReturn(
-			"2025.q1"
-		);
-
-		ReflectionTestUtils.setField(
-			licenseKeyService, "_productVersionService", productVersionService);
-
-		licenseKeyService.addLicenseKeyTypeFree(
-			555L, "example.com", "999", "owner@example.com");
+		_addLicenseKeyTypeFree("example.com", licenseKeyService);
 
 		JSONObject jsonObject = new JSONObject(bodies.get(0));
 
@@ -134,6 +108,153 @@ public class LicenseKeyServiceTest {
 			555L,
 			jsonObject.getLong("r_accountEntryToLicenseKey_accountEntryId"));
 		Assertions.assertEquals("999", jsonObject.getString("orderId"));
+	}
+
+	@Test
+	public void testAddLicenseKeyTypeFreeMatchesTheLegacyKey()
+		throws Exception {
+
+		List<String> bodies = new ArrayList<>();
+
+		LicenseKeyGenerator licenseKeyGenerator = Mockito.mock(
+			LicenseKeyGenerator.class);
+
+		LicenseKeyService licenseKeyService = _toFreeTierLicenseKeyService(
+			bodies, licenseKeyGenerator);
+
+		_addLicenseKeyTypeFree(" example.com , other.com", licenseKeyService);
+
+		Mockito.verify(
+			licenseKeyGenerator
+		).generateKey(
+			Mockito.eq("Liferay Free Activation Key"),
+			Mockito.eq("DXP Production"), Mockito.eq("free"), Mockito.eq(6),
+			Mockito.eq("DXP Production"),
+			Mockito.eq(LicenseConstants.PRODUCT_ID_PORTAL),
+			Mockito.eq("2026.Q3"), Mockito.eq("owner@example.com"),
+			Mockito.eq(3), Mockito.eq(0), Mockito.eq(0), Mockito.eq(0L),
+			Mockito.eq(0L), Mockito.eq("Sizing 4"),
+			Mockito.eq("Liferay Free Activation Key"),
+			Mockito.eq("example.com,localhost"), Mockito.eq(""), Mockito.eq(""),
+			Mockito.eq(""), Mockito.eq(""), Mockito.any(), Mockito.any()
+		);
+
+		JSONObject jsonObject = new JSONObject(bodies.get(0));
+
+		Assertions.assertEquals(
+			"Liferay Free Activation Key", jsonObject.getString("accountName"));
+		Assertions.assertFalse(jsonObject.getBoolean("complimentary"));
+		Assertions.assertEquals(
+			"Liferay Free Activation Key", jsonObject.getString("description"));
+		Assertions.assertEquals(
+			"example.com,localhost", jsonObject.getString("domains"));
+		Assertions.assertEquals(
+			"DXP Production", jsonObject.getString("licenseName"));
+		Assertions.assertEquals("free", jsonObject.getString("licenseType"));
+		Assertions.assertEquals(6, jsonObject.getInt("licenseVersion"));
+		Assertions.assertEquals(3, jsonObject.getInt("maxClusterNodes"));
+		Assertions.assertEquals(
+			"Liferay Free Activation Key", jsonObject.getString("name"));
+		Assertions.assertEquals(
+			"DXP Production", jsonObject.getString("productName"));
+		Assertions.assertEquals(
+			"2026.Q3", jsonObject.getString("productVersion"));
+		Assertions.assertEquals("Sizing 4", jsonObject.getString("sizing"));
+		Assertions.assertEquals(
+			365,
+			ChronoUnit.DAYS.between(
+				Instant.parse(jsonObject.getString("startDate")),
+				Instant.parse(jsonObject.getString("customExpirationDate"))));
+	}
+
+	@Test
+	public void testAddLicenseKeyTypeFreeStoresTheActivationKey()
+		throws Exception {
+
+		List<String> bodies = new ArrayList<>();
+
+		LicenseKeyService licenseKeyService = _toFreeTierLicenseKeyService(
+			bodies, Mockito.mock(LicenseKeyGenerator.class));
+
+		licenseKeyService.addLicenseKeyTypeFree(
+			555L, 7L, "example.com", 11L, 12L,
+			Date.from(Instant.parse("2027-01-01T00:00:00Z")), "Environment",
+			null, "owner@example.com", "2026.Q2", "PRJCT-1",
+			Date.from(Instant.parse("2026-01-01T00:00:00Z")));
+
+		JSONObject jsonObject = new JSONObject(bodies.get(0));
+
+		Assertions.assertEquals(
+			"Liferay Free Activation Key", jsonObject.getString("accountName"));
+		Assertions.assertEquals(
+			"Liferay Free Activation Key", jsonObject.getString("description"));
+		Assertions.assertEquals(
+			"example.com,localhost", jsonObject.getString("domains"));
+		Assertions.assertEquals(
+			11L, jsonObject.getLong("entitlementDefinitionId"));
+		Assertions.assertEquals(12L, jsonObject.getLong("entitlementId"));
+		Assertions.assertEquals("Environment", jsonObject.getString("name"));
+		Assertions.assertEquals(
+			"2026.Q2", jsonObject.getString("productVersion"));
+		Assertions.assertEquals(
+			7L,
+			jsonObject.getLong(
+				"r_activationKeyToLicenseKey_c_activationKeyId"));
+		Assertions.assertEquals(
+			"PRJCT-1",
+			jsonObject.getString("r_projectToLicenseKey_c_projectERC"));
+	}
+
+	@Test
+	public void testFetchLicenseKeyTypeFreeFilter() throws Exception {
+		Assertions.assertNull(
+			_licenseKeyService.fetchLicenseKeyTypeFree(
+				"example.com, other.com", "owner@example.com"));
+
+		Assertions.assertEquals(
+			"(domains eq 'example.com,localhost') and (licenseType eq " +
+				"'free') and (owner eq 'owner@example.com')",
+			_filterCaptor.getValue());
+	}
+
+	@Test
+	public void testFetchLicenseKeyTypeFreePrefersTheActiveKey()
+		throws Exception {
+
+		LicenseKey activeLicenseKey = _freeLicenseKey(true, 2L);
+
+		Mockito.doReturn(
+			List.of(_freeLicenseKey(false, 1L), activeLicenseKey)
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.anyString(), Mockito.any()
+		);
+
+		Assertions.assertSame(
+			activeLicenseKey,
+			_licenseKeyService.fetchLicenseKeyTypeFree(
+				"example.com", "owner@example.com"));
+	}
+
+	@Test
+	public void testFetchLicenseKeyTypeFreeReturnsAnInactiveKeyThatExpiresSoon()
+		throws Exception {
+
+		LicenseKey licenseKey = _freeLicenseKey(false, 1L);
+
+		Mockito.doReturn(
+			List.of(licenseKey)
+		).when(
+			_licenseKeyService
+		).getAllItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.anyString(), Mockito.any()
+		);
+
+		Assertions.assertSame(
+			licenseKey,
+			_licenseKeyService.fetchLicenseKeyTypeFree(
+				"example.com", "owner@example.com"));
 	}
 
 	@Test
@@ -464,7 +585,8 @@ public class LicenseKeyServiceTest {
 		);
 
 		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(77L);
+			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+				77L, Collections.emptyList());
 
 		Assertions.assertEquals(2, counts.get(10L));
 
@@ -563,64 +685,6 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testHasValidLicenseKeyTypeFreeFilter() throws Exception {
-		Assertions.assertFalse(
-			_licenseKeyService.hasValidLicenseKeyTypeFree(
-				"example.com", "owner@example.com"));
-
-		Assertions.assertEquals(
-			"(domains eq 'example.com') and (licenseType eq 'free') and " +
-				"(owner eq 'owner@example.com')",
-			_filterCaptor.getValue());
-	}
-
-	@Test
-	public void testHasValidLicenseKeyTypeFreeReturnsFalseWithinRenewalWindow()
-		throws Exception {
-
-		LicenseKey licenseKey = _freeLicenseKey(
-			Instant.now(
-			).plus(
-				10, ChronoUnit.DAYS
-			));
-
-		Mockito.doReturn(
-			List.of(licenseKey)
-		).when(
-			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.anyString(), Mockito.any()
-		);
-
-		Assertions.assertFalse(
-			_licenseKeyService.hasValidLicenseKeyTypeFree(
-				"example.com", "owner@example.com"));
-	}
-
-	@Test
-	public void testHasValidLicenseKeyTypeFreeReturnsTrueBeyondRenewalWindow()
-		throws Exception {
-
-		LicenseKey licenseKey = _freeLicenseKey(
-			Instant.now(
-			).plus(
-				200, ChronoUnit.DAYS
-			));
-
-		Mockito.doReturn(
-			List.of(licenseKey)
-		).when(
-			_licenseKeyService
-		).getAllItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.anyString(), Mockito.any()
-		);
-
-		Assertions.assertTrue(
-			_licenseKeyService.hasValidLicenseKeyTypeFree(
-				"example.com", "owner@example.com"));
-	}
-
-	@Test
 	public void testSearchBuildsFilterAndSkipsNulls() throws Exception {
 		_licenseKeyService.search(
 			Boolean.TRUE, null, null, null, "enterprise", null, null, null,
@@ -647,6 +711,19 @@ public class LicenseKeyServiceTest {
 			null, null, null, null, null, null, null, null, null, null);
 
 		Assertions.assertNull(_filterCaptor.getValue());
+	}
+
+	private void _addLicenseKeyTypeFree(
+			String domains, LicenseKeyService licenseKeyService)
+		throws Exception {
+
+		Date startDate = new Date();
+
+		licenseKeyService.addLicenseKeyTypeFree(
+			555L, 7L, domains, 11L, 12L,
+			new Date(startDate.getTime() + TimeUnit.DAYS.toMillis(365)),
+			"Liferay Free Activation Key", "999", "owner@example.com",
+			"2026.Q3", null, startDate);
 	}
 
 	private Entitlement _createEntitlement(
@@ -714,18 +791,52 @@ public class LicenseKeyServiceTest {
 			));
 	}
 
-	private LicenseKey _freeLicenseKey(Instant customExpirationDateInstant) {
+	private LicenseKey _freeLicenseKey(boolean active, long id) {
 		return new LicenseKey(
 			new JSONObject(
 			).put(
-				"customExpirationDate", customExpirationDateInstant.toString()
+				"active", active
 			).put(
-				"id", 1L
+				"customExpirationDate",
+				Instant.now(
+				).plus(
+					10, ChronoUnit.DAYS
+				).toString()
+			).put(
+				"id", id
 			).put(
 				"startDate",
 				Instant.now(
 				).toString()
 			));
+	}
+
+	private LicenseKeyService _toFreeTierLicenseKeyService(
+		List<String> bodies, LicenseKeyGenerator licenseKeyGenerator) {
+
+		LicenseKeyService licenseKeyService = new LicenseKeyService() {
+
+			@Override
+			protected String getAuthorization() {
+				return "Bearer test";
+			}
+
+			@Override
+			protected String post(String authorization, String body, URI uri) {
+				bodies.add(body);
+
+				return "{\"id\": 1}";
+			}
+
+		};
+
+		ReflectionTestUtils.setField(
+			licenseKeyService, "_licenseEntryService",
+			new LicenseEntryService());
+		ReflectionTestUtils.setField(
+			licenseKeyService, "_licenseKeyGenerator", licenseKeyGenerator);
+
+		return licenseKeyService;
 	}
 
 	private void _whenGetAllProjectedItems(LicenseKey... licenseKeys)

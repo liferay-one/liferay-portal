@@ -37,25 +37,6 @@ async function triggerCron(
 	expect(response.ok(), await response.text()).toBeTruthy();
 }
 
-test.describe.fixme('[FLOW-LICENSE-GENERATION] license generation', () => {
-	test('[FLOW-LICENSE-GENERATION] produces a signed license key tied to the subscription', async ({
-		api,
-	}) => {
-		const {items} = await licenseKeysForSubscription(api);
-
-		expect(items.length).toBeGreaterThan(0);
-
-		for (const licenseKey of items) {
-			expect(licenseKey.subscriptionExternalReferenceCode).toBe(
-				subscriptionERC
-			);
-
-			expect(licenseKey.signature).toBeTruthy();
-			expect(licenseKey.key).toBeTruthy();
-		}
-	});
-});
-
 test.describe.fixme(
 	'[FLOW-LICENSE-EXPIRATION-EMAIL] expiring license key reminders',
 	() => {

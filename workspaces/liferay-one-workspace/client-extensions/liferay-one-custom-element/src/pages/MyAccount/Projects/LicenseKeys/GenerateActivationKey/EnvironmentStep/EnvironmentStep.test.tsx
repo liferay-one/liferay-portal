@@ -25,15 +25,18 @@ vi.mock('../../../CloudAppInstall/WizardFooter/WizardFooter', () => ({
 }));
 
 function Harness({
+	keyType = 'production',
 	virtualClusterAvailable = false,
 }: {
+	keyType?: string;
 	virtualClusterAvailable?: boolean;
 }) {
 	const form = useForm<GenerateActivationKeyForm>({
 		defaultValues: {
 			description: '',
+			domain: '',
 			environmentName: 'Cluster',
-			keyType: 'production',
+			keyType,
 			maxClusterNodes: 0,
 			notify: true,
 			serverField: 'hostName',
@@ -72,6 +75,26 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 
 		expect(screen.getByLabelText(translate('host-name'))).toBeTruthy();
 		expect(screen.queryByLabelText(translate('cluster-nodes'))).toBeNull();
+	});
+
+	it('asks a free key for its domain instead of its servers', () => {
+		render(<Harness keyType="free" />);
+
+		expect(screen.getByLabelText(translate('domain'))).toBeTruthy();
+		expect(screen.queryByLabelText(translate('description'))).toBeNull();
+		expect(screen.queryByLabelText(translate('host-name'))).toBeNull();
+	});
+
+	it('generates a free key once a domain is entered', () => {
+		render(<Harness keyType="free" />);
+
+		expect(getNextButton().disabled).toBe(true);
+
+		fireEvent.change(screen.getByLabelText(translate('domain')), {
+			target: {value: 'example.com'},
+		});
+
+		expect(getNextButton().disabled).toBe(false);
 	});
 
 	it('offers a virtual cluster only when the key type allows it', () => {

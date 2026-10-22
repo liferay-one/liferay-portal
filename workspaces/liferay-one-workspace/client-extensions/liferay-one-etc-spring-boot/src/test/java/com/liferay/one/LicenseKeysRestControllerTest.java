@@ -5,8 +5,8 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
@@ -16,6 +16,8 @@ import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.model.ActivationKey;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
@@ -23,9 +25,12 @@ import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
@@ -36,9 +41,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.json.JSONObject;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.http.HttpHeaders;
@@ -789,68 +797,14 @@ public class LicenseKeysRestControllerTest {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
 
-		Mockito.when(
-			_licenseKeyService.hasValidLicenseKeyTypeFree(
-				"example.com", "owner@example.com")
-		).thenReturn(
-			false
-		);
-
-		Account account = Mockito.mock(Account.class);
-
-		Mockito.when(
-			account.getId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Order order = Mockito.mock(Order.class);
-
-		Mockito.when(
-			order.getAccount()
-		).thenReturn(
-			account
-		);
-
-		Mockito.when(
-			order.getId()
-		).thenReturn(
-			999L
-		);
-
-		OrderItem orderItem = Mockito.mock(OrderItem.class);
-
-		Mockito.when(
-			orderItem.getProductId()
-		).thenReturn(
-			_C_PRODUCT_ID
-		);
-
-		Mockito.when(
-			order.getOrderItems()
-		).thenReturn(
-			new OrderItem[] {orderItem}
-		);
-
-		Mockito.when(
-			order.getOrderStatus()
-		).thenReturn(
-			CommerceOrderConstants.ORDER_STATUS_OPEN
-		);
-
-		Mockito.when(
-			_commerceOrderService.getCommerceOrder(999L)
-		).thenReturn(
-			order
-		);
+		_stubTypeFreeOrder(_toFreeEntitlement());
 
 		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
 
 		Mockito.when(
-			_licenseKeyService.addLicenseKeyTypeFree(
-				_ACCOUNT_ID, "example.com", "999", "owner@example.com")
+			_licenseKeyService.getLicenseKeysByActivationKeyId(7L)
 		).thenReturn(
-			licenseKey
+			Collections.singletonList(licenseKey)
 		);
 
 		Assertions.assertSame(
@@ -865,6 +819,41 @@ public class LicenseKeysRestControllerTest {
 		).completeOrder(
 			999L, CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
 		);
+
+		Mockito.verify(
+			_entitlementService
+		).generateOrderEntitlements(
+			999L
+		);
+
+		ArgumentCaptor<LicenseKeyGenerationService.GenerateRequest>
+			generateRequestArgumentCaptor = ArgumentCaptor.forClass(
+				LicenseKeyGenerationService.GenerateRequest.class);
+
+		Mockito.verify(
+			_licenseKeyGenerationService
+		).generateActivationKey(
+			Mockito.eq(_account), generateRequestArgumentCaptor.capture()
+		);
+
+		LicenseKeyGenerationService.GenerateRequest generateRequest =
+			generateRequestArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			Collections.singletonList(_FREE_ENTITLEMENT_ID),
+			generateRequest.getBundleEntitlementIds());
+		Assertions.assertEquals("example.com", generateRequest.getDomains());
+		Assertions.assertEquals(
+			"Liferay Free Activation Key",
+			generateRequest.getEnvironmentName());
+		Assertions.assertEquals("free", generateRequest.getKeyType());
+		Assertions.assertEquals("999", generateRequest.getOrderId());
+		Assertions.assertEquals(
+			"owner@example.com", generateRequest.getOwner());
+		Assertions.assertEquals(
+			_FREE_ENTITLEMENT_ID,
+			generateRequest.getSubscriptionEntitlementId());
+		Assertions.assertEquals("2026.Q3", generateRequest.getVersion());
 	}
 
 	@Test
@@ -879,7 +868,7 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.verify(
 			_licenseKeyService
-		).hasValidLicenseKeyTypeFree(
+		).fetchLicenseKeyTypeFree(
 			"example.com", "owner@example.com"
 		);
 	}
@@ -892,10 +881,10 @@ public class LicenseKeysRestControllerTest {
 			_createController();
 
 		Mockito.when(
-			_licenseKeyService.hasValidLicenseKeyTypeFree(
+			_licenseKeyService.fetchLicenseKeyTypeFree(
 				"example.com", "owner@example.com")
 		).thenReturn(
-			true
+			Mockito.mock(LicenseKey.class)
 		);
 
 		ResponseStatusException responseStatusException =
@@ -909,6 +898,74 @@ public class LicenseKeysRestControllerTest {
 
 		Assertions.assertEquals(
 			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPostLicenseKeysTypeFreeRefusesAnOrderWithoutAFreeEntitlement()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_stubTypeFreeOrder();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> licenseKeysRestController.postLicenseKeysTypeFree(
+					_jwt,
+					"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
+						"\"owner\": \"owner@example.com\"}"));
+
+		Assertions.assertEquals(
+			"Order 999 grants no free key",
+			licenseKeyEntitlementException.getMessage());
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostLicenseKeysTypeFreeRefusesTheDomainOfAnotherOrder()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_stubTypeFreeOrder(_toFreeEntitlement());
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getOrderId()
+		).thenReturn(
+			"998"
+		);
+
+		Mockito.when(
+			_licenseKeyService.fetchLicenseKeyTypeFree(
+				"example.com", "owner@example.com")
+		).thenReturn(
+			licenseKey
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> licenseKeysRestController.postLicenseKeysTypeFree(
+					_jwt,
+					"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
+						"\"owner\": \"owner@example.com\"}"));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
 
 	@Test
@@ -968,12 +1025,41 @@ public class LicenseKeysRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
 
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).addLicenseKeyTypeFree(
-			Mockito.anyLong(), Mockito.anyString(), Mockito.anyString(),
-			Mockito.anyString()
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostLicenseKeysTypeFreeReturnsTheKeyOfTheSameOrder()
+		throws Exception {
+
+		LicenseKeysRestController licenseKeysRestController =
+			_createController();
+
+		_stubTypeFreeOrder();
+
+		LicenseKey licenseKey = Mockito.mock(LicenseKey.class);
+
+		Mockito.when(
+			licenseKey.getOrderId()
+		).thenReturn(
+			"999"
 		);
+
+		Mockito.when(
+			_licenseKeyService.fetchLicenseKeyTypeFree(
+				"example.com", "owner@example.com")
+		).thenReturn(
+			licenseKey
+		);
+
+		Assertions.assertSame(
+			licenseKey,
+			licenseKeysRestController.postLicenseKeysTypeFree(
+				_jwt,
+				"{\"domains\": \"example.com\", \"orderId\": \"999\", " +
+					"\"owner\": \"owner@example.com\"}"));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
 	}
 
 	@Test
@@ -1094,11 +1180,17 @@ public class LicenseKeysRestControllerTest {
 		);
 
 		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_commerceOrderPermission",
 			_commerceOrderPermission);
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_commerceOrderService",
 			_commerceOrderService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_entitlementService",
+			_entitlementService);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_environmentActivationPermission",
@@ -1119,6 +1211,10 @@ public class LicenseKeysRestControllerTest {
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_licenseKeyService",
 			_licenseKeyService);
+
+		ReflectionTestUtils.setField(
+			licenseKeysRestController, "_productVersionService",
+			_productVersionService);
 
 		ReflectionTestUtils.setField(
 			licenseKeysRestController, "_projectPermission",
@@ -1176,6 +1272,101 @@ public class LicenseKeysRestControllerTest {
 		);
 	}
 
+	private void _stubTypeFreeOrder(Entitlement... entitlements)
+		throws Exception {
+
+		Order order = Mockito.mock(Order.class);
+
+		Mockito.when(
+			order.getAccountId()
+		).thenReturn(
+			_ACCOUNT_ID
+		);
+
+		Mockito.when(
+			order.getId()
+		).thenReturn(
+			999L
+		);
+
+		OrderItem orderItem = Mockito.mock(OrderItem.class);
+
+		Mockito.when(
+			orderItem.getId()
+		).thenReturn(
+			_ORDER_ITEM_ID
+		);
+
+		Mockito.when(
+			orderItem.getProductId()
+		).thenReturn(
+			_C_PRODUCT_ID
+		);
+
+		Mockito.when(
+			order.getOrderItems()
+		).thenReturn(
+			new OrderItem[] {orderItem}
+		);
+
+		Mockito.when(
+			order.getOrderStatus()
+		).thenReturn(
+			CommerceOrderConstants.ORDER_STATUS_OPEN
+		);
+
+		Mockito.when(
+			_commerceOrderService.getCommerceOrder(999L)
+		).thenReturn(
+			order
+		);
+
+		Mockito.when(
+			_accountService.getAccount(_ACCOUNT_ID)
+		).thenReturn(
+			_account
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(_ORDER_ITEM_ID)
+		).thenReturn(
+			Arrays.asList(entitlements)
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateActivationKey(
+				Mockito.eq(_account), Mockito.any())
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 7L
+				))
+		);
+
+		Mockito.when(
+			_productVersionService.getFreeTierProductVersion()
+		).thenReturn(
+			"2026.Q3"
+		);
+	}
+
+	private Entitlement _toFreeEntitlement() {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", 3L
+				).put(
+					"licenseKeyType", "free"
+				)
+			).put(
+				"id", _FREE_ENTITLEMENT_ID
+			));
+	}
+
 	private void _verifyNeverUpdatedLicenseKeyActive() throws Exception {
 		Mockito.verify(
 			_licenseKeyService, Mockito.never()
@@ -1188,16 +1379,25 @@ public class LicenseKeysRestControllerTest {
 
 	private static final long _C_PRODUCT_ID = 35729766L;
 
+	private static final long _FREE_ENTITLEMENT_ID = 31L;
+
+	private static final long _ORDER_ITEM_ID = 1001L;
+
 	private static final long _OTHER_ACCOUNT_ID = 556L;
 
 	private static final String _PROJECT_ERC = "PROJ-1";
 
 	private static final long _USER_ID = 123L;
 
+	private final Account _account = Mockito.mock(Account.class);
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final CommerceOrderPermission _commerceOrderPermission =
 		Mockito.mock(CommerceOrderPermission.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
+	private final EntitlementService _entitlementService = Mockito.mock(
+		EntitlementService.class);
 	private final EnvironmentActivationPermission
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);
@@ -1210,6 +1410,8 @@ public class LicenseKeysRestControllerTest {
 		LicenseKeyPermission.class);
 	private final LicenseKeyService _licenseKeyService = Mockito.mock(
 		LicenseKeyService.class);
+	private final ProductVersionService _productVersionService = Mockito.mock(
+		ProductVersionService.class);
 	private final ProjectPermission _projectPermission = Mockito.mock(
 		ProjectPermission.class);
 	private final ProjectService _projectService = Mockito.mock(

@@ -9,6 +9,14 @@ import isRenewableKey from './isRenewableKey';
 
 import type {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 
+function toDaysFromNow(days: number) {
+	const date = new Date();
+
+	date.setDate(date.getDate() + days);
+
+	return date.toISOString();
+}
+
 function toActivationKey(activationKey: Partial<ProjectActivationKey>) {
 	return {
 		expirationDateValue: '2027-01-01',
@@ -21,6 +29,58 @@ function toActivationKey(activationKey: Partial<ProjectActivationKey>) {
 describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 	it('is true for an aggregated, expiring, non virtual cluster key', () => {
 		expect(isRenewableKey(toActivationKey({}))).toBe(true);
+	});
+
+	it('is true for a free key only from 90 days before it expires', () => {
+		expect(
+			isRenewableKey(
+				toActivationKey({
+					expirationDateValue: toDaysFromNow(30),
+					type: 'free',
+				})
+			)
+		).toBe(true);
+		expect(
+			isRenewableKey(
+				toActivationKey({
+					expirationDateValue: toDaysFromNow(-1),
+					type: 'free',
+				})
+			)
+		).toBe(true);
+		expect(
+			isRenewableKey(
+				toActivationKey({
+					expirationDateValue: toDaysFromNow(120),
+					type: 'free',
+				})
+			)
+		).toBe(false);
+	});
+
+	it('is true without a project only for a free key of the account', () => {
+		expect(isRenewableKey(toActivationKey({}), false, true)).toBe(false);
+		expect(
+			isRenewableKey(
+				toActivationKey({
+					expirationDateValue: toDaysFromNow(30),
+					type: 'free',
+				}),
+				false,
+				true
+			)
+		).toBe(true);
+		expect(
+			isRenewableKey(
+				toActivationKey({
+					expirationDateValue: toDaysFromNow(30),
+					projectExternalReferenceCode: 'PRJCT-001',
+					type: 'free',
+				}),
+				false,
+				true
+			)
+		).toBe(false);
 	});
 
 	it('is false for an unaggregated key', () => {

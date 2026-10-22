@@ -365,6 +365,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			cloudNative: false,
 			complimentary: false,
 			developer: false,
+			free: false,
 			unassigned: false,
 		};
 
@@ -385,8 +386,23 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				getStepBeforeEnvironment({
 					complimentary: false,
+					free: false,
 					needsDSRStep: false,
 					unassigned: true,
+				})
+			).toBe('subscription');
+		});
+
+		it('goes from the subscription straight to the environment of a free key', () => {
+			expect(getStepAfterSubscription({...route, free: true})).toBe(
+				'environment'
+			);
+			expect(
+				getStepBeforeEnvironment({
+					complimentary: false,
+					free: true,
+					needsDSRStep: false,
+					unassigned: false,
 				})
 			).toBe('subscription');
 		});
@@ -395,6 +411,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				getStepBeforeEnvironment({
 					complimentary: false,
+					free: false,
 					needsDSRStep: false,
 					unassigned: false,
 				})
@@ -402,6 +419,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				getStepBeforeEnvironment({
 					complimentary: false,
+					free: false,
 					needsDSRStep: true,
 					unassigned: false,
 				})
@@ -409,6 +427,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				getStepBeforeEnvironment({
 					complimentary: true,
+					free: false,
 					needsDSRStep: false,
 					unassigned: false,
 				})

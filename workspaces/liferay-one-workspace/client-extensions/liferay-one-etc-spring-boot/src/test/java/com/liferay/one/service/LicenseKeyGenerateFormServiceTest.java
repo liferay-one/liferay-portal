@@ -19,6 +19,7 @@ import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyType;
 import com.liferay.one.license.LicenseKeyTypeService;
+import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
@@ -515,7 +516,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Mockito.verify(
 			licenseKeyService
 		).getActiveUnassignedLicenseKeyCounts(
-			1L
+			1L, Collections.emptyList()
 		);
 
 		Mockito.verify(
@@ -532,6 +533,135 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Mockito.verifyNoInteractions(accountService);
 		Mockito.verifyNoInteractions(activationKeyService);
+	}
+
+	@Test
+	public void testGetGenerateFormForAccountOffersTheEntitlementOfTheRenewedKey()
+		throws Exception {
+
+		Account account = new Account();
+
+		account.setId(1L);
+
+		ActivationKeyService activationKeyService = Mockito.mock(
+			ActivationKeyService.class);
+
+		Mockito.when(
+			activationKeyService.fetchActivationKey("ACTVK-2")
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 9L
+				))
+		);
+
+		CommerceProductService commerceProductService = Mockito.mock(
+			CommerceProductService.class);
+
+		Mockito.when(
+			commerceProductService.fetchProduct(1L)
+		).thenReturn(
+			_toProduct(1L, "PRDCT-DXP")
+		);
+
+		CommerceSkuService commerceSkuService = Mockito.mock(
+			CommerceSkuService.class);
+
+		Mockito.when(
+			commerceSkuService.fetchSku("PRDCT-DXP")
+		).thenReturn(
+			_toSku(1L, null)
+		);
+
+		EntitlementService entitlementService = Mockito.mock(
+			EntitlementService.class);
+
+		Mockito.when(
+			entitlementService.getActiveEntitlements(
+				Mockito.any(ActivationKeyScope.class))
+		).thenCallRealMethod();
+
+		Mockito.when(
+			entitlementService.getActiveUnassignedEntitlements(1L)
+		).thenReturn(
+			Arrays.asList(
+				_toLicenseGenerationEntitlement(
+					1L, true, "DXP", "free", "PRDCT-DXP"),
+				_toLicenseGenerationEntitlement(
+					2L, true, "DXP", "free", "PRDCT-DXP"))
+		);
+
+		LicenseKeyService licenseKeyService = Mockito.mock(
+			LicenseKeyService.class);
+
+		Mockito.when(
+			licenseKeyService.getActiveLicenseKeyCounts(
+				Mockito.any(ActivationKeyScope.class), Mockito.anyList(),
+				Mockito.anyCollection())
+		).thenCallRealMethod();
+
+		Mockito.when(
+			licenseKeyService.getLicenseKeysByActivationKeyId(9L)
+		).thenReturn(
+			Collections.singletonList(
+				new LicenseKey(
+					new JSONObject(
+					).put(
+						"entitlementId", 2L
+					).put(
+						"id", 5L
+					)))
+		);
+
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Collections.singletonList(LicenseKeyType.FREE)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_activationKeyService",
+			activationKeyService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceProductService",
+			commerceProductService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceSkuService",
+			commerceSkuService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_entitlementService",
+			entitlementService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyService",
+			licenseKeyService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_productVersionService",
+			Mockito.mock(ProductVersionService.class));
+
+		JSONObject generateFormJSONObject =
+			licenseKeyGenerateFormService.getGenerateForm(
+				false, account, true, null);
+
+		Assertions.assertTrue(
+			generateFormJSONObject.getJSONArray(
+				"products"
+			).isEmpty());
+
+		Assertions.assertEquals(
+			2L,
+			_getKeyTypeEntitlementId(
+				licenseKeyGenerateFormService.getGenerateForm(
+					false, account, true, "ACTVK-2")));
 	}
 
 	@Test
@@ -1396,6 +1526,20 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return externalReferenceCodes;
+	}
+
+	private long _getKeyTypeEntitlementId(JSONObject jsonObject) {
+		return jsonObject.getJSONArray(
+			"products"
+		).getJSONObject(
+			0
+		).getJSONArray(
+			"keyTypes"
+		).getJSONObject(
+			0
+		).getLong(
+			"entitlementId"
+		);
 	}
 
 	private JSONArray _getVirtualClusterKeyTypesJSONArray(boolean admin) {

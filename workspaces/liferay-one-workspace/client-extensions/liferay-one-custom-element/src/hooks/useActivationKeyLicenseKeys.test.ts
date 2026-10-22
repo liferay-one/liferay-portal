@@ -173,6 +173,40 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 		});
 	});
 
+	describe('useActivationKeyLicenseKeys rerenders', () => {
+		it('keeps the same license keys until the fetched data changes', () => {
+			const data = {items: [{active: true, id: 5}]};
+
+			useFetchMock.mockReturnValue({
+				data,
+				error: undefined,
+				isLoading: false,
+				revalidate: vi.fn(),
+			});
+
+			const {rerender, result} = renderHook(() =>
+				useActivationKeyLicenseKeys('1')
+			);
+
+			const {licenseKeys} = result.current;
+
+			rerender();
+
+			expect(result.current.licenseKeys).toBe(licenseKeys);
+
+			useFetchMock.mockReturnValue({
+				data: {items: [{active: true, id: 6}]},
+				error: undefined,
+				isLoading: false,
+				revalidate: vi.fn(),
+			});
+
+			rerender();
+
+			expect(result.current.licenseKeys).not.toBe(licenseKeys);
+		});
+	});
+
 	describe('useUnaggregatedLicenseKey', () => {
 		it('does not fetch and returns no license key without an ERC', () => {
 			const {result} = renderHook(() => useUnaggregatedLicenseKey());

@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
@@ -12,6 +13,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.OveragePricing;
@@ -972,6 +974,44 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGetActiveEntitlementsForAccountAddsTheFreeEntitlements()
+		throws Exception {
+
+		Mockito.doReturn(
+			List.of(_toEntitlementOfKeyType(1L, "non-production"))
+		).when(
+			_entitlementService
+		).getActiveSelfServiceTrialEntitlements(
+			_ACCOUNT_ID
+		);
+
+		Mockito.doReturn(
+			List.of(
+				_toEntitlementOfKeyType(2L, "free"),
+				_toEntitlementOfKeyType(3L, "production"))
+		).when(
+			_entitlementService
+		).getActiveUnassignedEntitlements(
+			_ACCOUNT_ID
+		);
+
+		Account account = new Account();
+
+		account.setId(_ACCOUNT_ID);
+
+		List<Long> entitlementIds = new ArrayList<>();
+
+		for (Entitlement entitlement :
+				_entitlementService.getActiveEntitlements(
+					ActivationKeyScope.of(account))) {
+
+			entitlementIds.add(entitlement.getEntitlementId());
+		}
+
+		Assertions.assertEquals(Arrays.asList(1L, 2L), entitlementIds);
+	}
+
+	@Test
 	public void testGetActiveSelfServiceTrialEntitlementsKeepsEntitlementsWithADuration()
 		throws Exception {
 
@@ -1712,6 +1752,24 @@ public class EntitlementServiceTest {
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
+	}
+
+	private Entitlement _toEntitlementOfKeyType(
+		long entitlementId, String licenseKeyType) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", entitlementId
+				).put(
+					"licenseKeyType", licenseKeyType
+				)
+			).put(
+				"id", entitlementId
+			));
 	}
 
 	private void _verifyAddEntitlement(int licenseKeyDurationDays)

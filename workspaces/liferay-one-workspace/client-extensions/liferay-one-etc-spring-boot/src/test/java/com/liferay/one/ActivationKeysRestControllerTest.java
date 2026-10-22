@@ -404,7 +404,8 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(false, account, true)
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, account, true, null)
 		).thenThrow(
 			new RuntimeException("Unavailable")
 		);
@@ -468,7 +469,8 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(false, account, true)
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, account, true, null)
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -532,6 +534,46 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetActivationKeysGenerateFormForAccountRefusesARenewalOfAPaidKey()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		_stubRenewedActivationKey("production");
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.getActivationKeysGenerateForm(
+				_ACCOUNT_ERC, null, null, "ACTVK-5"));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormForAccountRenewsAFreeKey()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Account account = _stubAccount();
+
+		_stubRenewedActivationKey("free");
+
+		activationKeysRestController.getActivationKeysGenerateForm(
+			_ACCOUNT_ERC, null, null, "ACTVK-5");
+
+		Mockito.verify(
+			_licenseKeyGenerateFormService
+		).getGenerateForm(
+			false, account, true, "ACTVK-5"
+		);
+	}
+
+	@Test
 	public void testGetActivationKeysGenerateFormForAccountWithoutSelfProvisioningKeepsTheTrials()
 		throws Exception {
 
@@ -541,7 +583,8 @@ public class ActivationKeysRestControllerTest {
 		Account account = _stubAccount();
 
 		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(false, account, true)
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, account, true, null)
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -973,6 +1016,60 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPatchActivationKeysActiveFreeWithoutProjectChangedByAnAdmin()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubFreeActivationKey();
+
+		activationKeysRestController.patchActivationKeysActive(
+			null, 79L, "{\"active\": false}");
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			null
+		);
+
+		Mockito.verify(
+			_activationKeyService, Mockito.times(1)
+		).updateActivationKeyActive(
+			79L, false
+		);
+	}
+
+	@Test
+	public void testPatchActivationKeysActiveFreeWithoutProjectNeedsAnAdmin()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubFreeActivationKey();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.patchActivationKeysActive(
+				null, 79L, "{\"active\": false}"));
+
+		Mockito.verify(
+			_activationKeyService, Mockito.never()
+		).updateActivationKeyActive(
+			Mockito.anyLong(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
 	public void testPatchActivationKeysActiveWithoutProjectChecksTheAccount()
 		throws Exception {
 
@@ -1178,6 +1275,103 @@ public class ActivationKeysRestControllerTest {
 			PrincipalException.class,
 			() -> activationKeysRestController.postActivationKeysGenerate(
 				null, generateJSONObject.toString()));
+
+		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateForAccountRefusesAFreeKeyWithoutARenewal()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null,
+				_toAccountGenerateJSON(
+					"free"
+				).put(
+					"domains", "example.com"
+				).toString()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateForAccountRefusesARenewalOfAPaidKey()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		_stubRenewedActivationKey("production");
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null,
+				_toAccountGenerateJSON(
+					"free"
+				).put(
+					"renewedActivationKeyExternalReferenceCode", "ACTVK-5"
+				).toString()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateForAccountRenewsAFreeKeyWithTheUserAsOwner()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Account account = _stubAccount();
+
+		_stubRenewedActivationKey("free");
+
+		ArgumentCaptor<LicenseKeyGenerationService.GenerateRequest>
+			generateRequestCaptor = ArgumentCaptor.forClass(
+				LicenseKeyGenerationService.GenerateRequest.class);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateActivationKey(
+				Mockito.eq(account), generateRequestCaptor.capture())
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "ACTVK-3"
+				).put(
+					"id", 9L
+				))
+		);
+
+		activationKeysRestController.postActivationKeysGenerate(
+			null,
+			_toAccountGenerateJSON(
+				"free"
+			).put(
+				"domains", "example.com"
+			).put(
+				"renewedActivationKeyExternalReferenceCode", "ACTVK-5"
+			).toString());
+
+		LicenseKeyGenerationService.GenerateRequest generateRequest =
+			generateRequestCaptor.getValue();
+
+		Assertions.assertEquals("example.com", generateRequest.getDomains());
+		Assertions.assertEquals("free", generateRequest.getKeyType());
+		Assertions.assertEquals(_EMAIL_ADDRESS, generateRequest.getOwner());
+		Assertions.assertEquals(
+			"ACTVK-5",
+			generateRequest.getRenewedActivationKeyExternalReferenceCode());
 
 		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
 	}
@@ -1828,6 +2022,32 @@ public class ActivationKeysRestControllerTest {
 		);
 	}
 
+	private void _stubFreeActivationKey() throws Exception {
+		ActivationKey activationKey = _stubActivationKey(79L);
+
+		Mockito.when(
+			activationKey.getType()
+		).thenReturn(
+			"free"
+		);
+	}
+
+	private void _stubRenewedActivationKey(String type) throws Exception {
+		Mockito.when(
+			_activationKeyService.fetchActivationKey("ACTVK-5")
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 5L
+				).put(
+					"r_accountEntryToActivationKey_accountEntryId", _ACCOUNT_ID
+				).put(
+					"type", type
+				))
+		);
+	}
+
 	private String _toAccountGenerateJSON() {
 		JSONObject generateJSONObject = new JSONObject(_toGenerateJSON());
 
@@ -1838,6 +2058,19 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		return generateJSONObject.toString();
+	}
+
+	private JSONObject _toAccountGenerateJSON(String keyType) {
+		JSONObject generateJSONObject = new JSONObject(
+			_toGenerateJSON(keyType));
+
+		generateJSONObject.put(
+			"accountExternalReferenceCode", _ACCOUNT_ERC
+		).remove(
+			"projectExternalReferenceCode"
+		);
+
+		return generateJSONObject;
 	}
 
 	private String _toGenerateJSON() {

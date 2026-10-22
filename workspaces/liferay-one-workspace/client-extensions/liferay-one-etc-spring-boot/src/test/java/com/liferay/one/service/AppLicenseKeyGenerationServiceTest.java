@@ -107,7 +107,8 @@ public class AppLicenseKeyGenerationServiceTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(_ACCOUNT_ID)
+			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+				_ACCOUNT_ID, Collections.emptyList())
 		).thenReturn(
 			_licenseKeyCounts
 		);
@@ -303,8 +304,8 @@ public class AppLicenseKeyGenerationServiceTest {
 			() -> _appLicenseKeyGenerationService.generateActivationKey(
 				_account,
 				new LicenseKeyGenerationService.GenerateRequest(
-					Collections.emptyList(), null, null, "Staging",
-					"production", 0, null, null, "ACTVK-1",
+					Collections.emptyList(), null, null, null, "Staging",
+					"production", 0, null, null, null, null, "ACTVK-1",
 					Arrays.asList(
 						new LicenseKeyGenerationService.GenerateRequest.Server(
 							"host", null, null)),
@@ -695,8 +696,9 @@ public class AppLicenseKeyGenerationServiceTest {
 		}
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Collections.emptyList(), null, null, "Staging", keyType, 0, null,
-			null, null, servers, null, entitlementId, null, false, null, null);
+			Collections.emptyList(), null, null, null, "Staging", keyType, 0,
+			null, null, null, null, null, servers, null, entitlementId, null,
+			false, null, null);
 	}
 
 	private Product _toProduct(
