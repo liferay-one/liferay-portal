@@ -197,6 +197,8 @@ public class EntitlementDefinitionService extends OneBaseService {
 		).put(
 			"displayName", name
 		).put(
+			"maxQuantity", 1
+		).put(
 			"name", name
 		);
 
@@ -466,6 +468,26 @@ public class EntitlementDefinitionService extends OneBaseService {
 						"Deactivated the entitlement definition \"",
 						generatedEntitlementDefinition.getName(), "\" for SKU ",
 						skuExternalReferenceCode));
+			}
+		}
+
+		Double maxQuantity = generatedEntitlementDefinition.getMaxQuantity();
+
+		if ((maxQuantity == null) || (maxQuantity <= 0)) {
+			_patchEntitlementDefinition(
+				new JSONObject(
+				).put(
+					"maxQuantity", 1
+				),
+				skuExternalReferenceCode);
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Set the maximum quantity of the entitlement ",
+						"definition \"",
+						generatedEntitlementDefinition.getName(), "\" for SKU ",
+						skuExternalReferenceCode, " to 1"));
 			}
 		}
 		else if (trial &&

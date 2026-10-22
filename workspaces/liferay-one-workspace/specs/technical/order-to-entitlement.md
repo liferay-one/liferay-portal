@@ -282,7 +282,7 @@ Every source ends when an order item is added or changed. The object actions are
 | --- | --- | --- | --- | --- | --- |
 | `CommerceOrderItemUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/update` | When a PaaS Experience item becomes Canceled and the account has no other active PaaS Experience item, deletes the account's Okta application and its property (`…/one/ObjectActionCommerceOrderItemUpdateRestController.java`). Nothing else. |
 | `CommerceOrderUpdate` | `L_COMMERCE_ORDER` | `onAfterUpdate` | None | `/object/action/commerce/order/update` | When the order is completed, generates the missing entitlements of every order item (`EntitlementService.generateOrderEntitlements`). A failure is logged and does not stop the rest. Then sets the default currency. `AI_HUB` in pending: creates the Salesforce opportunity. `SEO_STUDIO`: provisions SEO Studio. Other types: `completeSettledOrder` (`CommerceOrderService.java:340`). |
-| `CommerceProductDefinitionUpdate` | `L_COMMERCE_PRODUCT_DEFINITION` | `onAfterUpdate` | `status == 0` | `/object/action/commerce/product/definition/update` | For an approved paid App product, upserts one entitlement definition per SKU that has a license usage type option (`EntitlementDefinitionService.generateEntitlementDefinition`). |
+| `CommerceProductDefinitionUpdate` | `L_COMMERCE_PRODUCT_DEFINITION` | `onAfterUpdate` | `status == 0` | `/object/action/commerce/product/definition/update` | For an approved paid App product, upserts one entitlement definition per SKU that has a license usage type option (`EntitlementDefinitionService.generateEntitlementDefinition`). The definition has a default quantity and a maximum quantity of 1, so each purchased unit allows one app key. |
 | `EntitlementGeneration` | `L_COMMERCE_ORDER_ITEM` | `onAfterAdd` | None | `/object/action/commerce/order/item/entitlement/generation` | When the order is completed, creates one entitlement for each active matching entitlement definition that the item does not have yet. Skips an item of an order in any other status. |
 | `EntitlementUpdate` | `L_COMMERCE_ORDER_ITEM` | `onAfterUpdate` | None | `/object/action/commerce/order/item/entitlement/update` | Updates start date, end date, quantity, and max quantity of the item's existing entitlements. |
 | `UsageReportApproved` | `C_USAGE_REPORT` | `onAfterUpdate` | None | `/object/action/usage/report/approved` (`ObjectActionUsageReportApprovedRestController`) | Nothing, only a warning in the log for an approved report. See Findings. |
@@ -365,7 +365,7 @@ It does not look at `customStatus`. A Canceled item keeps its entitlements until
 | Source | Name convention | ERC | Code |
 | --- | --- | --- | --- |
 | Seed and manual definitions for Liferay products | Machine key, for example `licenseGeneration`, `disasterRecovery`, `production-pods`. Many definitions share `licenseGeneration`, and `displayName` tells them apart. | Chosen by the author | `scripts/seed/data/15-entitlement-definition.batch-engine-data.json` |
-| Generated definitions for paid App SKUs | Display label `<product name> - <SKU>`, used for both `name` and `displayName` | The SKU ERC | `EntitlementDefinitionService._syncEntitlementDefinition` (`…/one/service/EntitlementDefinitionService.java:378`) |
+| Generated definitions for paid App SKUs | Display label `<product name> - <SKU>`, used for both `name` and `displayName` | The SKU ERC | `EntitlementDefinitionService._syncEntitlementDefinition` (`…/one/service/EntitlementDefinitionService.java:380`) |
 
 The sidecar checks entitlements by machine key from `EntitlementConstants` (for example `NAME_DISASTER_RECOVERY` in `CloudRestController.java:187` and `CloudActivationRequestService.java:73`, and `namesSLAs` and `NAME_PARTNER` in `ProvisioningEmailService.java:407`). So `Entitlement.name` is a key for Liferay products and a label for marketplace apps. Code that matches on `name` must know which kind it expects.
 
@@ -477,7 +477,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 | `EntitlementGeneration` on a deleted item | Not applicable | Logged and skipped |
 | `EntitlementUpdate` | Writes only the fields that differ | An exception answers 500. The next item update tries again. |
 | Contract reconcile | Every 15 minutes. Writes only links that are empty or differ. | Each opportunity is in its own `try` |
-| Entitlement definition reconcile | Daily. Upserts by SKU ERC. Deactivates generated definitions whose SKU no longer exists. | Each product and SKU is in its own `try` |
+| Entitlement definition reconcile | Daily. Upserts by SKU ERC, and sets the maximum quantity of a generated definition to 1 when it is empty or 0. Deactivates generated definitions whose SKU no longer exists. | Each product and SKU is in its own `try` |
 | Settled order completion | Daily, and on each order update. An in memory set stops two threads from completing the same order. | Each order is in its own `try` |
 | Usage report generation | Skips a report whose ERC exists | Each project is in its own `try` |
 | Self service checkout | A second click is blocked in the page. A cart that fails checkout throws. | The order stays open, so its items have no entitlements |
