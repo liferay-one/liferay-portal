@@ -7,9 +7,9 @@ import {accountsQuery, currentAccountQuery} from '~/hooks/useAccounts';
 import {preloadDataQuery} from '~/hooks/useDataQuery';
 import {
 	accountLevelContractsQuery,
-	channelProductsQuery,
 	projectContractsQuery,
 	projectEntitlementsQuery,
+	projectProductsQuery,
 } from '~/hooks/useProjectCommerce';
 import {projectOrdersQuery} from '~/hooks/useProjectOrders';
 import {userProjectsQuery} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
@@ -59,7 +59,7 @@ export default function preloadAppData(route: string) {
 		fetcher: HeadlessAdminUser.getMyUserAccount,
 		key: MY_USER_ACCOUNT_URL,
 	});
-	preloadDataQuery(currentAccountQuery(accountId));
+	const currentAccount = preloadDataQuery(currentAccountQuery(accountId));
 	preloadDataQuery(accountsQuery(accountId));
 
 	if (route !== MY_ACCOUNT_ROUTE) {
@@ -74,8 +74,14 @@ export default function preloadAppData(route: string) {
 			getContractScopedProjectExternalReferenceCode()
 		)
 	);
-	preloadDataQuery(
-		channelProductsQuery(Liferay.CommerceContext.commerceChannelId)
-	);
+	currentAccount
+		?.then((account) => {
+			if (account?.externalReferenceCode) {
+				preloadDataQuery(
+					projectProductsQuery(account.externalReferenceCode)
+				);
+			}
+		})
+		.catch(() => undefined);
 	preloadDataQuery(projectOrdersQuery(accountId));
 }

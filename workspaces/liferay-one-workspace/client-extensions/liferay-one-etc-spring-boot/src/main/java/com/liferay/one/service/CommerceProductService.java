@@ -27,6 +27,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -90,6 +91,35 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return product;
+	}
+
+	public List<Product> getProducts(Collection<Long> productIds)
+		throws Exception {
+
+		List<Long> productIdsList = new ArrayList<>(productIds);
+
+		List<Product> products = new ArrayList<>();
+
+		ProductResource productResource = buildProductSkusResource();
+
+		for (int i = 0; i < productIdsList.size(); i += _FILTER_CLAUSES_MAX) {
+			List<Long> productIdsSubList = productIdsList.subList(
+				i, Math.min(i + _FILTER_CLAUSES_MAX, productIdsList.size()));
+
+			List<String> statements = new ArrayList<>();
+
+			for (Long productId : productIdsSubList) {
+				statements.add("productId eq " + productId);
+			}
+
+			Page<Product> productsPage = productResource.getProductsPage(
+				null, StringUtil.merge(statements, " or "),
+				Pagination.of(1, productIdsSubList.size()), null);
+
+			products.addAll(productsPage.getItems());
+		}
+
+		return products;
 	}
 
 	@CacheEvict(allEntries = true, cacheNames = "product")
@@ -159,6 +189,21 @@ public class CommerceProductService extends OneBaseService {
 			"nestedFields", "productSpecifications"
 		).parameter(
 			"productSpecifications.pageSize", "-1"
+		).build();
+	}
+
+	protected ProductResource buildProductSkusResource() {
+		return ProductResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameter(
+			"nestedFields", "catalog,productSpecifications,skus"
+		).parameter(
+			"productSpecifications.pageSize", "-1"
+		).parameter(
+			"skus.pageSize", "-1"
 		).build();
 	}
 
@@ -551,6 +596,8 @@ public class CommerceProductService extends OneBaseService {
 	}
 
 	private static final String _FIELD_TYPE_SELECT = "select";
+
+	private static final int _FILTER_CLAUSES_MAX = 20;
 
 	private static final String _LANGUAGE_ID_DEFAULT = "en_US";
 

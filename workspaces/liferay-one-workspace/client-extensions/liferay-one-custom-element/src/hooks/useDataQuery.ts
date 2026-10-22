@@ -9,7 +9,7 @@ import type {DataQuery} from '~/types/api';
 
 export function preloadDataQuery<Data>({fetcher, key}: DataQuery<Data>) {
 	if (key) {
-		preload(key, fetcher);
+		return preload(key, fetcher);
 	}
 }
 

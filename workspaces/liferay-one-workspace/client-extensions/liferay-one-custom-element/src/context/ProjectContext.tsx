@@ -14,7 +14,7 @@ import {
 import {useNavigate, useParams} from 'react-router';
 import {useAccount} from '~/context/AccountContext';
 import {
-	useChannelProducts,
+	useProjectProducts,
 	useUnassignedCommerce,
 } from '~/hooks/useProjectCommerce';
 import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
@@ -59,20 +59,20 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const {loading: ordersLoading, placedOrders} = useProjectOrders();
 
-	const {data: channelProducts, isLoading: channelProductsLoading} =
-		useChannelProducts();
+	const {data: projectProducts, isLoading: projectProductsLoading} =
+		useProjectProducts();
 
 	const hasUnassignedItems = useMemo(() => {
 		const itemsByProjectItemType = toProjectItemsByType(
 			placedOrders.filter((order) => !hasProject(order)),
-			toProductsByProductId(channelProducts?.items ?? [])
+			toProductsByProductId(projectProducts?.items ?? [])
 		);
 
 		return Boolean(
 			itemsByProjectItemType.application.size ||
 				itemsByProjectItemType.product.size
 		);
-	}, [channelProducts, placedOrders]);
+	}, [projectProducts, placedOrders]);
 
 	const projects = useMemo<UserProject[]>(() => {
 		if (!hasUnassignedItems && !hasUnassignedEntitlements) {
@@ -92,7 +92,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const loading =
 		accountLoading ||
-		channelProductsLoading ||
+		projectProductsLoading ||
 		ordersLoading ||
 		projectsLoading;
 

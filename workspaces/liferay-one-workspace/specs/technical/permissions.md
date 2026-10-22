@@ -378,6 +378,7 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `GET /accounts/{externalReferenceCode}/jira/object-key` | AccountPermission (VIEW) | yes | `AccountsRestController.java:152` |
 | `GET /accounts/{externalReferenceCode}/license-keys` | LicenseKeyPermission (VIEW) | yes | `AccountsRestController.java:165` |
 | `GET /accounts/{externalReferenceCode}/license-keys/export` | LicenseKeyPermission (VIEW) | yes | `AccountsRestController.java:180` |
+| `GET /accounts/{externalReferenceCode}/products` | AccountPermission (VIEW) | yes | `AccountsRestController.java:257` |
 | `POST /accounts/{externalReferenceCode}/sync-to-jsm` | AdminPermission | yes | `AccountsRestController.java:447` |
 | `POST /accounts/{externalReferenceCode}/user-accounts/by-email-address` | AdminPermission | yes | `AccountsRestController.java:461` |
 | `DELETE /accounts/{externalReferenceCode}/user-accounts/{userId}` | AccountPermission (ASSIGN_MEMBERS) | yes | `AccountsRestController.java:110` |

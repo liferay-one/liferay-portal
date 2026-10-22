@@ -10,11 +10,11 @@ import Button from '~/components/Button/Button';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {ProductExternalReferenceCode} from '~/enums/Product';
-import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
 import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
+	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
@@ -80,7 +80,12 @@ export default function ProjectItemDetails({
 			(item) => item.externalReferenceCode === itemERC
 		)?.id ?? '';
 
-	const {data: product, isLoading} = useDeliveryProduct(productId);
+	const {data: projectProducts, isLoading} = useProjectProducts();
+
+	const product = projectProducts?.items.find(
+		(projectProduct) => String(projectProduct.productId) === productId
+	);
+
 	const {loading: ordersLoading, placedOrders} =
 		useProjectOrders(orderProject);
 	const {data: lrTokensProduct} = useDeliveryProductByExternalReferenceCode(

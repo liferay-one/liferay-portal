@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -470,6 +471,30 @@ public class EntitlementService extends OneBaseService {
 		return getAllItems(
 			"/o/c/entitlements", filterString, Entitlement::new,
 			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
+	}
+
+	public Set<String> getSkuExternalReferenceCodes(
+			long accountEntryId, List<Long> contractIds)
+		throws Exception {
+
+		Set<String> skuExternalReferenceCodes = new TreeSet<>(
+			_getSkuExternalReferenceCodes(
+				StringBundler.concat(
+					"r_accountEntryToEntitlement_accountEntryId eq '",
+					accountEntryId, "'")));
+
+		for (int i = 0; i < contractIds.size(); i += _FILTER_BATCH_SIZE) {
+			List<Long> batchContractIds = contractIds.subList(
+				i, Math.min(i + _FILTER_BATCH_SIZE, contractIds.size()));
+
+			skuExternalReferenceCodes.addAll(
+				_getSkuExternalReferenceCodes(
+					StringBundler.concat(
+						"r_contractToEntitlement_c_contractId in ('",
+						StringUtil.merge(batchContractIds, "','"), "')")));
+		}
+
+		return skuExternalReferenceCodes;
 	}
 
 	public String getSubscriptionState(long accountEntryId) throws Exception {
@@ -1060,6 +1085,28 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return GetterUtil.getString(customFields.get("salesforceProjectId"));
+	}
+
+	private List<String> _getSkuExternalReferenceCodes(String filterString)
+		throws Exception {
+
+		List<String> skuExternalReferenceCodes = new ArrayList<>();
+
+		for (String skuExternalReferenceCode :
+				getAllProjectedItems(
+					"/o/c/entitlements", "skuExternalReferenceCode",
+					filterString,
+					jsonObject -> jsonObject.optString(
+						"skuExternalReferenceCode"))) {
+
+			if (Validator.isNull(skuExternalReferenceCode)) {
+				continue;
+			}
+
+			skuExternalReferenceCodes.add(skuExternalReferenceCode);
+		}
+
+		return skuExternalReferenceCodes;
 	}
 
 	private int _getStateRank(String state) {

@@ -6,9 +6,9 @@
 import {useMemo} from 'react';
 import {useProject} from '~/context/ProjectContext';
 import {
-	useChannelProducts,
 	useProjectCommerce,
 	useProjectEntitlements,
+	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
 import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
@@ -28,10 +28,10 @@ export function useProjectItems() {
 	const orderProject = isUnassignedProject(projectId) ? undefined : project;
 
 	const {
-		data: channelProducts,
+		data: projectProducts,
 		error: productsError,
 		isLoading: productsLoading,
-	} = useChannelProducts();
+	} = useProjectProducts();
 	const {
 		error: ordersError,
 		loading: ordersLoading,
@@ -47,8 +47,8 @@ export function useProjectItems() {
 	);
 
 	const productsByProductId = useMemo(
-		() => toProductsByProductId(channelProducts?.items ?? []),
-		[channelProducts]
+		() => toProductsByProductId(projectProducts?.items ?? []),
+		[projectProducts]
 	);
 
 	const {applications, products} = useMemo(() => {
@@ -124,7 +124,7 @@ export function useProjectContractItems() {
 
 	const projectItems = useProjectItems();
 
-	const {data: channelProducts} = useChannelProducts();
+	const {data: projectProducts} = useProjectProducts();
 
 	const {
 		loading: contractsLoading,
@@ -144,7 +144,7 @@ export function useProjectContractItems() {
 	const contractProductExternalReferenceCodes = useMemo(() => {
 		const productExternalReferenceCodes =
 			toProductExternalReferenceCodesByEntitledExternalReferenceCode(
-				channelProducts?.items ?? []
+				projectProducts?.items ?? []
 			);
 
 		const entitled = new Set<string>();
@@ -177,7 +177,7 @@ export function useProjectContractItems() {
 
 		return {entitled, entitledUnderAnyContract};
 	}, [
-		channelProducts,
+		projectProducts,
 		entitlements,
 		projectContractIds,
 		resolvedContractERC,
