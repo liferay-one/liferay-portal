@@ -1923,6 +1923,7 @@ export default {
 	'x-items': '{0} elementos',
 	'x-me': '{0} (yo)',
 	'x-more': '+{0} más',
+	'x-of-x': '{0} de {1}',
 	'x-of-x-available': '{0} de {1} disponibles',
 	'x-of-x-invitations-were-sent': 'Se enviaron {0} de {1} invitaciones.',
 	'x-result-for-x': '{0} Resultado de "{1}"',

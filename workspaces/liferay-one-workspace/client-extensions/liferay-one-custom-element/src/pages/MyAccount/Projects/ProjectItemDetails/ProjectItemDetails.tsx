@@ -20,6 +20,7 @@ import {useProjectItems} from '~/hooks/useProjectItems';
 import {
 	getProductOrder,
 	getProductOrderInfo,
+	getProductOrderItemIds,
 	getProductVirtualItems,
 	useProjectOrders,
 } from '~/hooks/useProjectOrders';
@@ -167,6 +168,10 @@ export default function ProjectItemDetails({
 				<DetailsTab
 					contract={contract}
 					orderInfo={orderInfo}
+					orderItemIds={getProductOrderItemIds(
+						placedOrders,
+						product.productId
+					)}
 					productName={product.name}
 					profile={detailsProfile}
 				/>

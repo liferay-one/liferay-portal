@@ -13,6 +13,7 @@ import './SectionedDetailsCard.css';
 export type DetailsSection = {
 	id?: string;
 	rows: DetailsRow[];
+	title?: string;
 };
 
 type SectionedDetailsCardProps = {
@@ -40,6 +41,12 @@ export default function SectionedDetailsCard({
 						className="sectioned-details-card-section"
 						key={section.id ?? String(index)}
 					>
+						{section.title && (
+							<span className="sectioned-details-card-section-title">
+								{section.title}
+							</span>
+						)}
+
 						{section.rows.map((row) => (
 							<div
 								className="sectioned-details-card-row"
