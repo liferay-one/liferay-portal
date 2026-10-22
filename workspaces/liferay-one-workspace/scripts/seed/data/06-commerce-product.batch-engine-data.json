@@ -1790,7 +1790,7 @@
 				{
 					"specificationKey": "project-details-profile",
 					"value": {
-						"en_US": "basic"
+						"en_US": "env-instance"
 					}
 				},
 				{
