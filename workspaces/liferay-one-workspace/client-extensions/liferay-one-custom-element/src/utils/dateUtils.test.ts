@@ -22,6 +22,7 @@ import {
 	shiftUTCMonths,
 	toISODate,
 	toSlashDateUTC,
+	toUTCCalendarDate,
 	toUTCDateString,
 } from './dateUtils';
 
@@ -134,6 +135,15 @@ describe('[MOD-DATEUTILS] dateUtils', () => {
 		expect(new Date(isoDate).getDate()).toBe(15);
 		expect(toISODate(undefined)).toBeUndefined();
 		expect(toISODate('')).toBeUndefined();
+	});
+
+	it('toUTCCalendarDate keeps the UTC calendar day in the local zone', () => {
+		const date = toUTCCalendarDate('2026-08-09T00:00:00.000Z');
+
+		expect([date.getFullYear(), date.getMonth(), date.getDate()]).toEqual([
+			2026, 7, 9,
+		]);
+		expect([date.getHours(), date.getMinutes()]).toEqual([0, 0]);
 	});
 
 	it('converts between Date and UTC day strings', () => {

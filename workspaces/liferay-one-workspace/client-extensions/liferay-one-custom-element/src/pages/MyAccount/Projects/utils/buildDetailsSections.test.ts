@@ -5,7 +5,7 @@
 
 import {render} from '@testing-library/react';
 import {Fragment, createElement} from 'react';
-import {describe, expect, it} from 'vitest';
+import {describe, expect, it, vi} from 'vitest';
 
 import buildDetailsSections from './buildDetailsSections';
 
@@ -63,6 +63,7 @@ const environmentEntitlement = {
 	provisionedCount: 1,
 	quantity: 2,
 	startDate: '2026-08-09T12:00:00Z',
+	terminationStatus: '',
 };
 
 const environmentRows = [
@@ -177,7 +178,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([['Production', [['Purchased', '2'], ...environmentRows]]]);
 	});
 
-	it('adds up the entitlements of one environment', () => {
+	it('adds up the active entitlements of one environment', () => {
 		expect(
 			getSections('env-instance', {
 				environmentEntitlements: [
@@ -187,7 +188,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 						endDate: '2100-08-09T12:00:00Z',
 						provisionedCount: 2,
 						quantity: 3,
-						startDate: '2027-08-09T12:00:00Z',
+						startDate: '2025-08-09T12:00:00Z',
 					},
 				],
 			})
@@ -196,7 +197,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 				'Production',
 				[
 					['Keys Provisioned', '3 of 5'],
-					['Start Date', 'Aug 9, 2026'],
+					['Start Date', 'Aug 9, 2025'],
 					['Expiration Date', 'Aug 9, 2100'],
 					['Status', 'Active'],
 				],
@@ -204,15 +205,93 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		]);
 	});
 
-	it('leaves out the entitlements of other environments', () => {
+	it('leaves out the other terms of an environment while one is active', () => {
 		expect(
 			getSections('env-instance', {
 				environmentEntitlements: [
-					{...environmentEntitlement, environment: 'developer'},
+					{
+						...environmentEntitlement,
+						endDate: '2021-08-09T12:00:00Z',
+						provisionedCount: 4,
+						quantity: 4,
+						startDate: '2020-08-09T12:00:00Z',
+					},
 					environmentEntitlement,
+					{
+						...environmentEntitlement,
+						endDate: '2101-08-09T12:00:00Z',
+						provisionedCount: 0,
+						quantity: 6,
+						startDate: '2099-08-09T12:00:00Z',
+					},
 				],
-			}).map(([title]) => title)
-		).toEqual(['Production']);
+			})
+		).toEqual([
+			[
+				'Production',
+				[['Keys Provisioned', '1 of 2'], ...environmentRows],
+			],
+		]);
+	});
+
+	it('shows the next term of an environment when no term is active', () => {
+		expect(
+			getSections('env-commerce', {
+				environmentEntitlements: [
+					{
+						...environmentEntitlement,
+						endDate: '2021-08-09T12:00:00Z',
+						startDate: '2020-08-09T12:00:00Z',
+					},
+					{
+						...environmentEntitlement,
+						endDate: '2101-08-09T12:00:00Z',
+						quantity: 6,
+						startDate: '2099-08-09T12:00:00Z',
+					},
+				],
+			})
+		).toEqual([
+			[
+				'Production',
+				[
+					['Purchased', '6'],
+					['Start Date', 'Aug 9, 2099'],
+					['Expiration Date', 'Aug 9, 2101'],
+					['Status', 'Not Activated'],
+				],
+			],
+		]);
+	});
+
+	it('shows the latest term of an environment when every term ended', () => {
+		expect(
+			getSections('env-commerce', {
+				environmentEntitlements: [
+					{
+						...environmentEntitlement,
+						endDate: '2021-08-09T12:00:00Z',
+						quantity: 4,
+						startDate: '2020-08-09T12:00:00Z',
+					},
+					{
+						...environmentEntitlement,
+						endDate: '2022-08-09T12:00:00Z',
+						startDate: '2021-08-09T12:00:00Z',
+					},
+				],
+			})
+		).toEqual([
+			[
+				'Production',
+				[
+					['Purchased', '2'],
+					['Start Date', 'Aug 9, 2021'],
+					['Expiration Date', 'Aug 9, 2022'],
+					['Status', 'Expired'],
+				],
+			],
+		]);
 	});
 
 	it('shows an untitled section for entitlements without an environment', () => {
@@ -225,20 +304,81 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([[undefined, [['Purchased', '2'], ...environmentRows]]]);
 	});
 
-	it('shows the status from the entitlement dates', () => {
+	it('shows the status from the entitlement dates and termination status', () => {
 		const statuses = [
-			['2020-01-01T12:00:00Z', '2021-01-01T12:00:00Z'],
-			['2099-01-01T12:00:00Z', '2100-01-01T12:00:00Z'],
+			['2020-01-01T12:00:00Z', '2021-01-01T12:00:00Z', ''],
+			['2099-01-01T12:00:00Z', '2100-01-01T12:00:00Z', ''],
+			['2026-01-01T12:00:00Z', '2099-01-01T12:00:00Z', 'suspended'],
+			['2026-01-01T12:00:00Z', '2099-01-01T12:00:00Z', 'terminated'],
 		].map(
-			([startDate, endDate]) =>
+			([startDate, endDate, terminationStatus]) =>
 				getRows('env-commerce', {
 					environmentEntitlements: [
-						{...environmentEntitlement, endDate, startDate},
+						{
+							...environmentEntitlement,
+							endDate,
+							startDate,
+							terminationStatus,
+						},
 					],
 				}).at(-1)?.[1]
 		);
 
-		expect(statuses).toEqual(['Expired', 'Not Activated']);
+		expect(statuses).toEqual([
+			'Expired',
+			'Not Activated',
+			'Suspended',
+			'Terminated',
+		]);
+	});
+
+	it('shows an entitlement as expired on its expiration date', () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date(2026, 7, 9, 12));
+
+		try {
+			const statuses = [
+				'2026-08-09T00:00:00.000Z',
+				'2026-08-10T00:00:00.000Z',
+			].map(
+				(endDate) =>
+					getRows('env-commerce', {
+						environmentEntitlements: [
+							{
+								...environmentEntitlement,
+								endDate,
+								startDate: '2025-08-09T00:00:00.000Z',
+							},
+						],
+					}).at(-1)?.[1]
+			);
+
+			expect(statuses).toEqual(['Expired', 'Active']);
+		}
+		finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it('shows a dash for keys that were not counted', () => {
+		expect(
+			getRows('env-instance', {
+				environmentEntitlements: [
+					{...environmentEntitlement, provisionedCount: undefined},
+				],
+			})[0]
+		).toEqual(['Keys Provisioned', '-']);
+	});
+
+	it('takes the start date from the entitlements that have one', () => {
+		expect(
+			getRows('env-commerce', {
+				environmentEntitlements: [
+					{...environmentEntitlement, startDate: ''},
+					environmentEntitlement,
+				],
+			})[1]
+		).toEqual(['Start Date', 'Aug 9, 2026']);
 	});
 
 	it('falls back to the order and the contract without entitlements', () => {
