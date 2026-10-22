@@ -112,7 +112,7 @@ sequenceDiagram
     Form->>DXP: Count active license keys for each entitlement
     Form-->>SB: generatable = any key type with availableCount > 0
     SB-->>CE: {generatable, provisionable, cloudNativeKeyTypes}
-    CE-->>User: Show New Key when hasGeneratePermission and generatable
+    CE-->>User: Enable New Key when hasGeneratePermission and generatable
 ```
 
 The fields of the entitlement definition decide `generatable` as follows:

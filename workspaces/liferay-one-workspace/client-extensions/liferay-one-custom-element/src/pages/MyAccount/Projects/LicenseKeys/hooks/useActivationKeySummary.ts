@@ -9,11 +9,13 @@ import ActivationKeys, {
 	ActivationKeySummary,
 } from '~/services/spring-boot/ActivationKeys';
 
-export function useActivationKeySummary(
+import type {DataQuery} from '~/types/api';
+
+export function activationKeySummaryQuery(
 	scope?: ActivationKeyScope,
 	enabled = true
-) {
-	const {data, error, isLoading} = useDataQuery<ActivationKeySummary>({
+): DataQuery<ActivationKeySummary> {
+	return {
 		fetcher: () =>
 			scope
 				? ActivationKeys.getSummary(scope)
@@ -22,7 +24,16 @@ export function useActivationKeySummary(
 			enabled && scope
 				? `/activation-keys/summary?${new URLSearchParams(scope)}`
 				: null,
-	});
+	};
+}
+
+export function useActivationKeySummary(
+	scope?: ActivationKeyScope,
+	enabled = true
+) {
+	const {data, error, isLoading} = useDataQuery<ActivationKeySummary>(
+		activationKeySummaryQuery(scope, enabled)
+	);
 
 	return {error, loading: isLoading, summary: data};
 }
