@@ -60,7 +60,7 @@ describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
 
 		const nameElement = screen.getByText('Sample App');
 		expect(nameElement).toBeInTheDocument();
-		expect(screen.getByText('Liferay')).toBeInTheDocument();
+		expect(screen.queryByText('Liferay')).toBeNull();
 
 		const nameCell = nameElement.closest('td');
 		expect(nameCell?.querySelector('.list-card-icon')).toBeNull();

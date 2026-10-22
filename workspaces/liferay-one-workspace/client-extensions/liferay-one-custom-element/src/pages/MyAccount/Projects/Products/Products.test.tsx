@@ -59,7 +59,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTS] Products', () => {
 
 		const nameElement = screen.getByText('Subscription Portal EE - Gold');
 		expect(nameElement).toBeInTheDocument();
-		expect(screen.getByText('By Liferay')).toBeInTheDocument();
+		expect(screen.queryByText('By Liferay')).toBeNull();
 
 		const nameCell = nameElement.closest('td');
 		expect(nameCell?.querySelector('.list-card-icon')).toBeNull();
