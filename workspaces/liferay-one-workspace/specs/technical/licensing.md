@@ -63,6 +63,8 @@ AI Hub tiers are not license keys. `getAiHubTier` (`ce/utils/productUtils.ts:292
 
 Virtual cluster is not a key type. An administrator delivers a `backup`, `non-production`, or `production` key as a virtual cluster, for a number of cluster nodes instead of a list of servers. The request carries `virtualCluster`, and the key uses the license entry of type `virtual-cluster` whose name ends with the suffix of its key type followed by ` (Virtual Cluster)`, such as `DXP Non-Production (Virtual Cluster)`. The activation key stores the type `virtual-cluster`, and its license keys carry the product name of the environment, such as `DXP Non-Production` (`sb/license/LicenseKeyType.java`).
 
+An `enterprise` or `oem` key has no server, as in the legacy provisioning system (`LicenseServerId` and `noServerIdTypes` there). The generate form shows no server fields for it, and `LicenseKeyGenerationService` makes one license key with empty host names, IP addresses, and MAC addresses and the server ID `Enterprise` or `OEM` (`sb/service/LicenseKeyGenerationService.java`). The shared `KeyGenerator` signs servers only for `limited`, `per-user`, and `production` entries, so the server ID appears on the stored license key and not in the license file.
+
 Two configuration keys set the last two columns: `liferay.one.license.key.types` and `liferay.one.license.key.admin-types` (`client-extensions/liferay-one-etc-spring-boot/src/main/resources/application-default.properties:117`). `LicenseKeyTypeService` reads them (`sb/license/LicenseKeyTypeService.java:185`).
 
 ### License Key Families

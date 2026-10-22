@@ -52,6 +52,8 @@ const LEADING_LICENSE_KEY_FAMILIES = Object.keys(
 
 export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
+const SERVERLESS_KEY_TYPES = ['enterprise', 'oem'];
+
 export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
 	'hostName',
 	'ipAddresses',
@@ -202,6 +204,10 @@ export function isDeveloperKeyType(keyType: string): boolean {
 
 export function isFreeKeyType(keyType: string): boolean {
 	return keyType === FREE_KEY_TYPE;
+}
+
+export function isServerlessKeyType(keyType: string): boolean {
+	return SERVERLESS_KEY_TYPES.includes(keyType);
 }
 
 export function hasServerInfo(

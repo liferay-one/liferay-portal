@@ -60,6 +60,7 @@ import {
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
 	isFreeKeyType,
+	isServerlessKeyType,
 	toServerField,
 } from './utils';
 
@@ -629,7 +630,12 @@ export default function GenerateActivationKey() {
 					: undefined,
 				renewedActivationKeyExternalReferenceCode:
 					renewExternalReferenceCode ?? undefined,
-				servers: free || virtualCluster ? [] : values.servers,
+				servers:
+					free ||
+					isServerlessKeyType(values.keyType) ||
+					virtualCluster
+						? []
+						: values.servers,
 				startDate:
 					complimentary && !startsToday
 						? toISODate(values.startDate)

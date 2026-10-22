@@ -29,6 +29,7 @@ import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -406,8 +407,8 @@ public class LicenseKeyGenerationService {
 			generateRequest.getEnvironmentName(), productId, productName,
 			_getProductVersion(productId, version),
 			activationKeyScope.getProjectExternalReferenceCode(),
-			StringPool.BLANK, _getSizing(generateRequest), startDate,
-			generateRequest.getWorkspaceName(),
+			_getServerId(generateRequest), _getSizing(generateRequest),
+			startDate, generateRequest.getWorkspaceName(),
 			generateRequest.getWorkspaceOwnerEmail());
 	}
 
@@ -721,7 +722,9 @@ public class LicenseKeyGenerationService {
 					"No domain was given for the free key");
 			}
 		}
-		else if (ListUtil.isEmpty(generateRequest.getServers())) {
+		else if (!_isServerless(generateRequest) &&
+				 ListUtil.isEmpty(generateRequest.getServers())) {
+
 			throw new LicenseKeyEntitlementException(
 				"No server was given for the activation keys");
 		}
@@ -1236,7 +1239,7 @@ public class LicenseKeyGenerationService {
 	}
 
 	private int _getRequestedCount(GenerateRequest generateRequest) {
-		if (_isFree(generateRequest)) {
+		if (_isFree(generateRequest) || _isServerless(generateRequest)) {
 			return 1;
 		}
 
@@ -1331,10 +1334,17 @@ public class LicenseKeyGenerationService {
 		return subscriptionEntitlement;
 	}
 
+	private String _getServerId(GenerateRequest generateRequest) {
+		return _serverIds.getOrDefault(
+			generateRequest.getKeyType(), StringPool.BLANK);
+	}
+
 	private List<GenerateRequest.Server> _getServers(
 		GenerateRequest generateRequest) {
 
-		if (_isVirtualCluster(generateRequest)) {
+		if (_isServerless(generateRequest) ||
+			_isVirtualCluster(generateRequest)) {
+
 			return Collections.singletonList(
 				new GenerateRequest.Server(
 					StringPool.BLANK, StringPool.BLANK, StringPool.BLANK));
@@ -1364,6 +1374,10 @@ public class LicenseKeyGenerationService {
 	private boolean _isFree(GenerateRequest generateRequest) {
 		return Objects.equals(
 			LicenseConstants.TYPE_FREE, generateRequest.getKeyType());
+	}
+
+	private boolean _isServerless(GenerateRequest generateRequest) {
+		return _serverIds.containsKey(generateRequest.getKeyType());
 	}
 
 	private boolean _isVirtualCluster(GenerateRequest generateRequest) {
@@ -1550,6 +1564,7 @@ public class LicenseKeyGenerationService {
 			licenseEntry.getType(), 0);
 		String productVersion = _getProductVersion(
 			productId, generateRequest.getVersion());
+		String serverId = _getServerId(generateRequest);
 		String sizing = _getSizing(generateRequest);
 
 		String key = _licenseKeyGenerator.generateKey(
@@ -1557,14 +1572,14 @@ public class LicenseKeyGenerationService {
 			licenseVersion, productName, productId, productVersion,
 			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
 			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			StringPool.BLANK, startDate, expirationDate);
+			serverId, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
 			licenseVersion, productName, productId, productVersion,
 			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
 			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			StringPool.BLANK, startDate, expirationDate);
+			serverId, startDate, expirationDate);
 	}
 
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";
@@ -1573,6 +1588,12 @@ public class LicenseKeyGenerationService {
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerationService.class);
+
+	private static final Map<String, String> _serverIds = HashMapBuilder.put(
+		LicenseConstants.TYPE_ENTERPRISE, "Enterprise"
+	).put(
+		LicenseConstants.TYPE_OEM, "OEM"
+	).build();
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

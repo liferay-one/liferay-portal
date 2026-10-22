@@ -23,6 +23,7 @@ import {
 	hasServerInfo,
 	isComplimentaryKeyType,
 	isFreeKeyType,
+	isServerlessKeyType,
 } from '../utils';
 
 const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
@@ -80,6 +81,7 @@ export default function EnvironmentStep({
 
 	const complimentary = isComplimentaryKeyType(keyType);
 	const free = isFreeKeyType(keyType);
+	const serverless = isServerlessKeyType(keyType);
 
 	let hasTarget =
 		hasServerInfo(servers, serverField) &&
@@ -88,6 +90,9 @@ export default function EnvironmentStep({
 	if (free) {
 		hasTarget = Boolean(domain.trim());
 	}
+	else if (serverless) {
+		hasTarget = true;
+	}
 	else if (virtualCluster) {
 		hasTarget = maxClusterNodes > 0;
 	}
@@ -95,7 +100,12 @@ export default function EnvironmentStep({
 	const canGenerate = Boolean(environmentName.trim() && version && hasTarget);
 
 	async function onClickValidateAndGenerate() {
-		if (!free && !virtualCluster && !(await trigger('servers'))) {
+		if (
+			!free &&
+			!serverless &&
+			!virtualCluster &&
+			!(await trigger('servers'))
+		) {
 			return;
 		}
 
@@ -154,7 +164,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{!free && (
+			{!free && !serverless && (
 				<div className="mb-4 mt-4 row">
 					{SERVER_FIELDS.map((current) => (
 						<div
@@ -193,7 +203,7 @@ export default function EnvironmentStep({
 				</div>
 			)}
 
-			{!free && virtualCluster && (
+			{!free && !serverless && virtualCluster && (
 				<ClusterNodesField
 					availableCount={availableClusterNodes}
 					disabled={renewing}
@@ -201,7 +211,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{!free && !virtualCluster && (
+			{!free && !serverless && !virtualCluster && (
 				<>
 					{fields.map((field, index) => (
 						<ServerFieldGroup
