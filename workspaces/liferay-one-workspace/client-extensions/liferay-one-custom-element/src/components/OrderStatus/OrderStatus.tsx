@@ -6,12 +6,7 @@
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
 import {Word, translate} from '~/i18n';
-import {
-	OrderWorkflowStatusCode,
-	getOrderStatusLabel,
-	getOrderStatusToken,
-	orderWorkflowStatusCodeLabels,
-} from '~/utils/orderUtils';
+import {OrderWorkflowStatusCode, getOrderStatusToken} from '~/utils/orderUtils';
 
 import './OrderStatus.css';
 
@@ -22,8 +17,6 @@ type OrderStatusProps = {
 };
 
 const OrderStatus = ({placedOrder}: OrderStatusProps) => {
-	const orderStatusLabel = getOrderStatusLabel(placedOrder);
-
 	const getOrderStatusClassName = () => {
 		const orderStatus = placedOrder.orderStatusInfo.code;
 
@@ -36,17 +29,21 @@ const OrderStatus = ({placedOrder}: OrderStatusProps) => {
 		}
 
 		if (
-			orderStatusLabel ===
-				orderWorkflowStatusCodeLabels[
-					OrderWorkflowStatusCode.PENDING_PAYMENT
-				] ||
-			OrderWorkflowStatusCode.PENDING === orderStatus
+			OrderWorkflowStatusCode.PENDING === orderStatus ||
+			OrderWorkflowStatusCode.PENDING_PAYMENT === orderStatus
 		) {
 			return 'order-status-icon-pending';
 		}
 
-		if (OrderWorkflowStatusCode.COMPLETED === orderStatus) {
+		if (
+			OrderWorkflowStatusCode.COMPLETED === orderStatus ||
+			OrderWorkflowStatusCode.IN_PROGRESS === orderStatus
+		) {
 			return 'order-status-icon-completed';
+		}
+
+		if (OrderWorkflowStatusCode.CANCELLED === orderStatus) {
+			return 'order-status-icon-canceled';
 		}
 
 		return 'order-status-icon-processing';

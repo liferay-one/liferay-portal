@@ -163,16 +163,6 @@ export const orderWorkflowDisplayType = {
 	[OrderWorkflowStatusCode.PROCESSING]: 'secondary',
 } as const;
 
-export const orderWorkflowStatusCodeLabels = {
-	[OrderWorkflowStatusCode.CANCELLED]: 'Cancelled',
-	[OrderWorkflowStatusCode.COMPLETED]: 'Completed',
-	[OrderWorkflowStatusCode.IN_PROGRESS]: 'In Progress',
-	[OrderWorkflowStatusCode.ON_HOLD]: 'On Hold',
-	[OrderWorkflowStatusCode.PENDING]: 'Pending',
-	[OrderWorkflowStatusCode.PENDING_PAYMENT]: 'Pending Payment',
-	[OrderWorkflowStatusCode.PROCESSING]: 'Processing',
-} as const;
-
 export const paymentStatusLabels = {
 	[PaymentStatus.CANCELED]: 'canceled',
 	[PaymentStatus.FAILED]: 'failed',
@@ -232,73 +222,20 @@ export function hasProvisionedAIHubOrder(
 }
 
 export function getOrderStatusLabel(order: PlacedOrder) {
-	const statusLabel =
-		order.orderStatusInfo?.label ||
-		order.workflowStatusInfo?.label_i18n ||
-		order.workflowStatusInfo?.label ||
-		'';
-
-	const expirableOrderTypes: OrderTypes[] = [
-		'ADDONS',
-		'CMP',
-		'CMP_BETA',
-		'CMP_TRIAL',
-		'DSR',
-		'DSR_TRIAL',
-		'DXP',
-		'SALESFORCE',
-	];
+	const orderStatusCode = order.orderStatusInfo?.code;
 
 	if (
-		expirableOrderTypes.includes(
-			order.orderTypeExternalReferenceCode as OrderTypes
-		)
+		orderStatusCode === OrderWorkflowStatusCode.COMPLETED ||
+		orderStatusCode === OrderWorkflowStatusCode.IN_PROGRESS
 	) {
-		return (
-			{
-				[OrderWorkflowStatusCode.CANCELLED]: 'Expired',
-				[OrderWorkflowStatusCode.COMPLETED]: 'Active',
-				[OrderWorkflowStatusCode.IN_PROGRESS]: 'Active',
-				[OrderWorkflowStatusCode.ON_HOLD]: 'Pending',
-				[OrderWorkflowStatusCode.PENDING]: 'Pending',
-				[OrderWorkflowStatusCode.PROCESSING]: 'Pending',
-			}[order.orderStatusInfo.code] || statusLabel
-		);
+		return 'Completed';
 	}
 
-	if (
-		APP_ORDER_TYPES.includes(
-			order.orderTypeExternalReferenceCode as OrderTypes
-		)
-	) {
-		return order.orderStatusInfo?.code === OrderWorkflowStatusCode.COMPLETED
-			? 'Completed'
-			: 'Pending';
+	if (orderStatusCode === OrderWorkflowStatusCode.CANCELLED) {
+		return 'Cancelled';
 	}
 
-	if (order.orderTypeExternalReferenceCode === 'AI_HUB') {
-		return (
-			{
-				[OrderWorkflowStatusCode.ON_HOLD]: 'Pending',
-				[OrderWorkflowStatusCode.PENDING]: 'Pending',
-				[OrderWorkflowStatusCode.PROCESSING]: 'Pending',
-			}[order.orderStatusInfo.code] || statusLabel
-		);
-	}
-
-	if (order.orderTypeExternalReferenceCode === 'SEO_STUDIO') {
-		if (order.orderStatusInfo.code === OrderWorkflowStatusCode.CANCELLED) {
-			return 'Cancelled';
-		}
-
-		if (order.orderStatusInfo.code !== OrderWorkflowStatusCode.COMPLETED) {
-			return 'Pending';
-		}
-
-		return 'Active';
-	}
-
-	return statusLabel;
+	return 'Pending';
 }
 
 const STATUS_TOKEN_ALIASES: {[token: string]: string} = {

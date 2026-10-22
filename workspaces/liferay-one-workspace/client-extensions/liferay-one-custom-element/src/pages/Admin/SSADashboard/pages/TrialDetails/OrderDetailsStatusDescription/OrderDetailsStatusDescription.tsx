@@ -6,7 +6,7 @@
 import ClayLabel from '@clayui/label';
 import classNames from 'classnames';
 import purchasedAppIcon from '~/assets/icons/purchased_app_icon.svg';
-import OrderStatus from '~/pages/Admin/SSADashboard/pages/TrialDetails/OrderStatus/OrderStatus';
+import OrderStatus from '~/components/OrderStatus/OrderStatus';
 
 import type {PlacedOrder} from '~/types/orders';
 
