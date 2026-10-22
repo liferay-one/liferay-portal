@@ -122,17 +122,10 @@ export default function Applications() {
 			),
 		},
 		{
-			heading: 'provided-by',
-			key: 'provided-by',
-			render: (application) => (
-				<span className="d-flex flex-column">
-					<span>{application.publisher}</span>
-
-					<span className="list-card-subtext">
-						{application.startDate}
-					</span>
-				</span>
-			),
+			heading: 'start-date',
+			key: 'start-date',
+			noWrap: true,
+			render: (application) => application.startDate,
 			width: '1%',
 		},
 		{

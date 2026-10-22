@@ -1262,7 +1262,6 @@ export default {
 		'Proporcionar detalles del perfil de la empresa',
 	'provide-contact-us-details': 'Proporcionar detalles de contacto',
 	'provide-version-details': 'Proporcionar detalles de la versión',
-	'provided-by': 'Proporcionado por',
 	'provisioning': 'Aprovisionamiento',
 	'provisioning-details': 'Detalles de aprovisionamiento',
 	'provisioning-is-complete-and-your-subscription-is-now-active-access-your-hub-via-the-url-below-to-start-using-your-monthly-token-allowance':

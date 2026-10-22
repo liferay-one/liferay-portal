@@ -1235,7 +1235,6 @@ export default {
 	'provide-company-profile-details': '会社プロフィールの詳細を入力',
 	'provide-contact-us-details': 'お問い合わせの詳細を入力',
 	'provide-version-details': 'バージョンの詳細を入力',
-	'provided-by': '提供元',
 	'provisioning': 'プロビジョニング',
 	'provisioning-details': 'プロビジョニングの詳細',
 	'provisioning-is-complete-and-your-subscription-is-now-active-access-your-hub-via-the-url-below-to-start-using-your-monthly-token-allowance':

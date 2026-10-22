@@ -58,13 +58,7 @@ export default function Products() {
 			heading: 'name',
 			key: 'name',
 			render: (product) => (
-				<span className="list-card-name-text">
-					<span className="list-card-name-label">{product.name}</span>
-
-					<span className="list-card-subtext">
-						{i18n.sub('by-x', product.publisher)}
-					</span>
-				</span>
+				<span className="list-card-name-label">{product.name}</span>
 			),
 		},
 		{

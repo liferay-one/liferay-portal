@@ -1303,7 +1303,6 @@ export default {
 	'provide-company-profile-details': 'Provide Company Profile Details',
 	'provide-contact-us-details': 'Provide Contact Us Details',
 	'provide-version-details': 'Provide Version Details',
-	'provided-by': 'Provided By',
 	'provisioning': 'Provisioning',
 	'provisioning-details': 'Provisioning Details',
 	'provisioning-is-complete-and-your-subscription-is-now-active-access-your-hub-via-the-url-below-to-start-using-your-monthly-token-allowance':
