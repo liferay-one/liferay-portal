@@ -40,8 +40,10 @@ export function SectionWithControllers({
 					<div className="arrow-container ml-4">
 						<ButtonWithIcon
 							aria-label="arrow-up"
+							className="text-neutral-7"
 							disabled={index === 0}
 							displayType="unstyled"
+							iconProps={{className: ''}}
 							onClick={() =>
 								onArrowClick(BlockDirections.MOVE_UP)
 							}
@@ -51,8 +53,10 @@ export function SectionWithControllers({
 
 						<ButtonWithIcon
 							aria-label="arrow-down"
+							className="text-neutral-7"
 							disabled={index === position - 1}
 							displayType="unstyled"
+							iconProps={{className: ''}}
 							onClick={() =>
 								onArrowClick(BlockDirections.MOVE_DOWN)
 							}
@@ -70,7 +74,9 @@ export function SectionWithControllers({
 						trigger={
 							<ButtonWithIcon
 								aria-label="Menu"
-								displayType={null}
+								borderless
+								className="text-neutral-7"
+								displayType="unstyled"
 								symbol="ellipsis-v"
 								title="Menu"
 							/>
@@ -91,8 +97,9 @@ export function SectionWithControllers({
 
 					<ButtonWithIcon
 						aria-labelledby="angle-right"
-						className="align-self-end d-flex"
+						className="align-self-center d-flex mr-3 text-neutral-7"
 						displayType="unstyled"
+						iconProps={{className: ''}}
 						onClick={() => setCollapsed(!collapsed)}
 						symbol={collapsed ? 'angle-down' : 'angle-right'}
 					/>
