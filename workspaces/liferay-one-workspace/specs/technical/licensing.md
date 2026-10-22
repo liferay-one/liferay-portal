@@ -340,6 +340,8 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A Marketplace app key uses a paid, licensable app entitlement of the account outside any project | App path | `sb/service/AppLicenseKeyGenerationService.java:401` |
 | A Marketplace app key type equals the key type of the entitlement | App path | `sb/service/AppLicenseKeyGenerationService.java:186` |
 | A Marketplace app key ends on the entitlement end date, or 100 years after it starts | App path | `sb/service/AppLicenseKeyGenerationService.java:314` |
+| A Marketplace app key has the product version 1, as in the legacy Marketplace, which DXP compares with the `product-version-id` of the app | App path | `sb/service/AppLicenseKeyGenerationService.java:538` |
+| A Marketplace app entitlement allows its `maxQuantity`, or its `quantity` when `maxQuantity` is empty or 0 | App path | `sb/service/AppLicenseKeyGenerationService.java:367` |
 | A project has at most one active complimentary activation key | Project path | `sb/service/LicenseKeyGenerationService.java:334` |
 | A renewal names an activation key of the same project, not complimentary | Project path | `sb/ActivationKeysRestController.java:371`, `sb/service/LicenseKeyGenerationService.java:488` |
 | An admin key type (none by default) or a virtual cluster key needs Administrator or Provisioning Administrator | Both paths | `sb/ActivationKeysRestController.java:390` |

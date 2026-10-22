@@ -214,9 +214,8 @@ public class AppLicenseKeyGenerationService {
 					ServerInfoUtil.toCommaSeparated(server.getMacAddresses()),
 					0, 0, 0, 0, 0, name, null, owner,
 					appEntitlement._getProductExternalId(),
-					appEntitlement._getProductName(),
-					appEntitlement._getProductVersion(), null, StringPool.BLANK,
-					StringPool.BLANK, startDate, null, null);
+					appEntitlement._getProductName(), _PRODUCT_VERSION, null,
+					StringPool.BLANK, StringPool.BLANK, startDate, null, null);
 			}
 		}
 		catch (Exception exception) {
@@ -368,7 +367,7 @@ public class AppLicenseKeyGenerationService {
 	private int _getTotalCount(Entitlement entitlement) {
 		Double count = entitlement.getMaxQuantity();
 
-		if (count == null) {
+		if ((count == null) || (count <= 0)) {
 			count = entitlement.getQuantity();
 		}
 
@@ -497,7 +496,7 @@ public class AppLicenseKeyGenerationService {
 			"versions",
 			new JSONArray(
 			).put(
-				appEntitlement._getProductVersion()
+				_PRODUCT_VERSION
 			)
 		);
 	}
@@ -536,7 +535,7 @@ public class AppLicenseKeyGenerationService {
 
 	private static final int _PERPETUAL_YEARS = 100;
 
-	private static final String _PRODUCT_VERSION_DEFAULT = "1";
+	private static final String _PRODUCT_VERSION = "1";
 
 	private static final Log _log = LogFactory.getLog(
 		AppLicenseKeyGenerationService.class);
@@ -597,17 +596,6 @@ public class AppLicenseKeyGenerationService {
 
 		private String _getProductName() {
 			return CommerceProductUtil.getName(_product);
-		}
-
-		private String _getProductVersion() {
-			String latestVersion = CommerceProductUtil.getSpecificationValue(
-				_product, ProductSpecificationConstants.KEY_LATEST_VERSION);
-
-			if (Validator.isNotNull(latestVersion)) {
-				return latestVersion;
-			}
-
-			return _PRODUCT_VERSION_DEFAULT;
 		}
 
 		private final Entitlement _entitlement;
