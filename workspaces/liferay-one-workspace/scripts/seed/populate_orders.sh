@@ -191,7 +191,7 @@ with open('${file}') as file:
 # kept in the file for readability and dropped here. The order item custom
 # fields and final price are sent on create, in the list shape the endpoint
 # takes rather than the plain object the file authors. A later order item PATCH
-# fails with "The product is no longer available" whenever the product is not
+# fails with 'The product is no longer available' whenever the product is not
 # approved, which is the state of every product in the
 # liferay-one-salesforce-product-batch client extension, while the create
 # accepts them.
@@ -989,22 +989,28 @@ function _verify_batch_import {
 
 	local missing
 
+	# The items are read from a file descriptor rather than an argument, because
+	# the entitlements alone exceed the 128 KB that Linux allows for a single
+	# argument. Passed as one, Python never starts, nothing is reported missing,
+	# and the check passes without having run.
+
 	missing=$(python3 -c "
 import json
 import sys
 
-expected = [
-	item['externalReferenceCode']
-	for item in json.loads(sys.argv[1])
-	if item.get('externalReferenceCode')
-]
+with open(sys.argv[1]) as file:
+	expected = [
+		item['externalReferenceCode']
+		for item in json.load(file)
+		if item.get('externalReferenceCode')
+	]
 
 found = set(sys.stdin.read().split())
 
 for external_reference_code in expected:
 	if external_reference_code not in found:
 		print(external_reference_code)
-" "${items}" <<< "${found}")
+" <(echo "${items}") <<< "${found}")
 
 	if [[ -z ${missing} ]]
 	then

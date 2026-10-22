@@ -43,9 +43,9 @@ function renderApplications(applications: ProjectProduct[]) {
 	);
 }
 
-async function openSaleTypeFilter(user: ReturnType<typeof userEvent.setup>) {
+async function openTypeFilter(user: ReturnType<typeof userEvent.setup>) {
 	await user.click(screen.getByRole('button', {name: 'Filter'}));
-	await user.click(screen.getByRole('button', {name: 'Sale Type'}));
+	await user.click(screen.getByRole('button', {name: 'Type'}));
 }
 
 describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
@@ -68,7 +68,7 @@ describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
 		expect(container.querySelector('.list-card-icon')).toBeNull();
 	});
 
-	it('labels the option for applications with no sale type as None', async () => {
+	it('labels the option for applications with no type as None', async () => {
 		const user = userEvent.setup();
 
 		renderApplications([
@@ -76,7 +76,7 @@ describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
 			application('Beta', ''),
 		]);
 
-		await openSaleTypeFilter(user);
+		await openTypeFilter(user);
 
 		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
 		expect(screen.getByRole('checkbox', {name: 'Paid'})).toBeTruthy();
@@ -86,10 +86,10 @@ describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
 
 		expect(screen.getByText('Beta')).toBeTruthy();
 		expect(screen.queryByText('Alpha')).toBeNull();
-		expect(screen.getByText('Sale Type: None')).toBeTruthy();
+		expect(screen.getByText('Type: None')).toBeTruthy();
 	});
 
-	it('does not list None when every application has a sale type', async () => {
+	it('does not list None when every application has a type', async () => {
 		const user = userEvent.setup();
 
 		renderApplications([
@@ -97,7 +97,7 @@ describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] Applications', () => {
 			application('Gamma', 'Free'),
 		]);
 
-		await openSaleTypeFilter(user);
+		await openTypeFilter(user);
 
 		expect(screen.getAllByRole('checkbox')).toHaveLength(2);
 		expect(screen.queryByRole('checkbox', {name: 'None'})).toBeNull();
