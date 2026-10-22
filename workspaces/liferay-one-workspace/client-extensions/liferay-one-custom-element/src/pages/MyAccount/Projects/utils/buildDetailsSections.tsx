@@ -35,7 +35,16 @@ type DetailsContext = {
 const ENVIRONMENTS: Word[] = ['production', 'non-production'];
 
 function formatDate(value?: string): string {
-	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+	if (!value) {
+		return '';
+	}
+
+	const date = new Date(value);
+
+	return format(
+		new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+		'MMM d, yyyy'
+	);
 }
 
 function getStatus(startDate: string, endDate: string): Word {
