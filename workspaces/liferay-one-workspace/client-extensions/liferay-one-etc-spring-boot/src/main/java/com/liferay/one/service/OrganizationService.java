@@ -41,6 +41,10 @@ public class OrganizationService extends OneBaseService {
 			String.valueOf(organizationId), emailAddress);
 	}
 
+	@CacheEvict(allEntries = true, value = "oktaGroupIds")
+	public void evictOktaGroupIds() {
+	}
+
 	public List<Organization> getAccountOrganizations(long accountId)
 		throws Exception {
 
@@ -69,10 +73,6 @@ public class OrganizationService extends OneBaseService {
 		return organizations;
 	}
 
-	@CacheEvict(allEntries = true, value = "oktaGroupIds")
-	public void evictOktaGroupIds() {
-	}
-
 	public String getOktaGroupId(long organizationId) throws Exception {
 		Organization organization = getOrganization(organizationId);
 
@@ -90,10 +90,12 @@ public class OrganizationService extends OneBaseService {
 				organization.getCustomFields(),
 				CustomFieldConstants.NAME_OKTA_GROUP_ID);
 
-			if (oktaGroupId != null) {
-				oktaGroupIds.put(
-					GetterUtil.getLong(organization.getId()), oktaGroupId);
+			if (oktaGroupId == null) {
+				continue;
 			}
+
+			oktaGroupIds.put(
+				GetterUtil.getLong(organization.getId()), oktaGroupId);
 		}
 
 		return Collections.unmodifiableMap(oktaGroupIds);

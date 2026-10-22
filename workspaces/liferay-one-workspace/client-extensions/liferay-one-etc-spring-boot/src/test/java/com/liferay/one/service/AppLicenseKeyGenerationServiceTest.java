@@ -315,6 +315,29 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGetGenerateFormFetchesEachOrderItemOnce() throws Exception {
+		_stubEntitlements(
+			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null),
+			_toEntitlement(2L, 501L, null, null, 1.0, "SKU-APP", null));
+		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
+
+		_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).fetchCommerceOrderItem(
+			501L
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			601L
+		);
+	}
+
+	@Test
 	public void testGetGenerateFormGroupsTheEntitlementsOfOneApp()
 		throws Exception {
 
@@ -354,29 +377,6 @@ public class AppLicenseKeyGenerationServiceTest {
 			).getInt(
 				"totalCount"
 			));
-	}
-
-	@Test
-	public void testGetGenerateFormFetchesEachOrderItemOnce() throws Exception {
-		_stubEntitlements(
-			_toEntitlement(1L, 501L, null, null, 1.0, "SKU-APP", null),
-			_toEntitlement(2L, 501L, null, null, 1.0, "SKU-APP", null));
-		_stubOrder(501L, 601L, CommerceOrderConstants.ORDER_STATUS_COMPLETED);
-		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, null));
-
-		_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID);
-
-		Mockito.verify(
-			_commerceOrderItemService
-		).fetchCommerceOrderItem(
-			501L
-		);
-
-		Mockito.verify(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			601L
-		);
 	}
 
 	@Test

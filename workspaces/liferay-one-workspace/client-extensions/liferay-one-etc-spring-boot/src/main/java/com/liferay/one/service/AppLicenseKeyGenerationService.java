@@ -529,9 +529,6 @@ public class AppLicenseKeyGenerationService {
 
 	private static final int _INSTANCE_SIZE_DEFAULT = 1;
 
-	private static final Log _log = LogFactory.getLog(
-		AppLicenseKeyGenerationService.class);
-
 	private static final int _LICENSE_VERSION = 3;
 
 	private static final String _LOCK_KEY_PREFIX = "account-";
@@ -539,6 +536,9 @@ public class AppLicenseKeyGenerationService {
 	private static final int _PERPETUAL_YEARS = 100;
 
 	private static final String _PRODUCT_VERSION_DEFAULT = "1";
+
+	private static final Log _log = LogFactory.getLog(
+		AppLicenseKeyGenerationService.class);
 
 	@Autowired
 	private ActivationKeyService _activationKeyService;

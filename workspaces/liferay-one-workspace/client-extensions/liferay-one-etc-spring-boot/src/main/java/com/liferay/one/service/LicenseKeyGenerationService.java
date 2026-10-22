@@ -1044,6 +1044,27 @@ public class LicenseKeyGenerationService {
 		return licensedProducts;
 	}
 
+	private String _getProductId(Entitlement entitlement) throws Exception {
+		if (LicenseKeyGenerateFormService.isLeadingLicenseKeyFamily(
+				LicenseKeyGenerateFormService.getLicenseKeyFamily(
+					entitlement))) {
+
+			return LicenseConstants.PRODUCT_ID_PORTAL;
+		}
+
+		return LicenseKeyGenerateFormService.getProductId(
+			entitlement,
+			_licenseKeyGenerateFormService.fetchProduct(entitlement));
+	}
+
+	private String _getProductVersion(String productId, String version) {
+		if (Objects.equals(productId, LicenseConstants.PRODUCT_ID_PORTAL)) {
+			return version;
+		}
+
+		return LicenseKeyGenerationConstants.APP_PRODUCT_VERSION;
+	}
+
 	private List<Long> _getRenewedActivationKeyIds(
 			GenerateRequest generateRequest)
 		throws Exception {
@@ -1148,27 +1169,6 @@ public class LicenseKeyGenerationService {
 		}
 
 		return subscriptionEntitlement;
-	}
-
-	private String _getProductId(Entitlement entitlement) throws Exception {
-		if (LicenseKeyGenerateFormService.isLeadingLicenseKeyFamily(
-				LicenseKeyGenerateFormService.getLicenseKeyFamily(
-					entitlement))) {
-
-			return LicenseConstants.PRODUCT_ID_PORTAL;
-		}
-
-		return LicenseKeyGenerateFormService.getProductId(
-			entitlement,
-			_licenseKeyGenerateFormService.fetchProduct(entitlement));
-	}
-
-	private String _getProductVersion(String productId, String version) {
-		if (Objects.equals(productId, LicenseConstants.PRODUCT_ID_PORTAL)) {
-			return version;
-		}
-
-		return LicenseKeyGenerationConstants.APP_PRODUCT_VERSION;
 	}
 
 	private List<GenerateRequest.Server> _getServers(

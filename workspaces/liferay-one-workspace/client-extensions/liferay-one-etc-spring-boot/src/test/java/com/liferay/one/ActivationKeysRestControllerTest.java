@@ -688,6 +688,38 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetActivationKeysSummaryForAccountWithoutSelfProvisioningIsGeneratableByTheTrials()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Account account = _stubAccount();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getSummary(false, account, true)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"cloudNativeKeyTypes", new JSONArray()
+			).put(
+				"generatable", true
+			).put(
+				"provisionable", true
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysSummary(
+				_ACCOUNT_ERC, null, null);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
+		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
+	}
+
+	@Test
 	public void testGetActivationKeysSummaryForAccountWithoutTheTrialsIsNotGeneratable()
 		throws Exception {
 
@@ -724,38 +756,6 @@ public class ActivationKeysRestControllerTest {
 			).length());
 		Assertions.assertFalse(jsonObject.getBoolean("generatable"));
 		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
-	}
-
-	@Test
-	public void testGetActivationKeysSummaryForAccountWithoutSelfProvisioningIsGeneratableByTheTrials()
-		throws Exception {
-
-		ActivationKeysRestController activationKeysRestController =
-			_createController();
-
-		Account account = _stubAccount();
-
-		Mockito.when(
-			_licenseKeyGenerateFormService.getSummary(false, account, true)
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"cloudNativeKeyTypes", new JSONArray()
-			).put(
-				"generatable", true
-			).put(
-				"provisionable", true
-			)
-		);
-
-		ResponseEntity<String> responseEntity =
-			activationKeysRestController.getActivationKeysSummary(
-				_ACCOUNT_ERC, null, null);
-
-		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-
-		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
-		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
 	}
 
 	@Test
