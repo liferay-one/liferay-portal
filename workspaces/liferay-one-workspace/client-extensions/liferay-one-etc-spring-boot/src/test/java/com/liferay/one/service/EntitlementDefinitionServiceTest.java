@@ -138,6 +138,7 @@ public class EntitlementDefinitionServiceTest {
 
 		Assertions.assertTrue(jsonObject.getBoolean("active"));
 		Assertions.assertEquals(1, jsonObject.getInt("defaultQuantity"));
+		Assertions.assertEquals(1, jsonObject.getInt("maxQuantity"));
 		Assertions.assertEquals(
 			"Test App - Large", jsonObject.getString("name"));
 		Assertions.assertFalse(jsonObject.has("licenseKeyDurationDays"));
@@ -312,6 +313,34 @@ public class EntitlementDefinitionServiceTest {
 		Assertions.assertTrue(jsonObject.getBoolean("active"));
 		Assertions.assertEquals(
 			"Test App - Small", jsonObject.getString("name"));
+	}
+
+	@Test
+	public void testGenerateEntitlementDefinitionSetsAMaxQuantityOfOne()
+		throws Exception {
+
+		_setUpProduct(_createSku("SKU-SMALL", true, "Small"));
+		_setUpExistingEntitlementDefinitions(
+			_createEntitlementDefinitionJSONObject(
+				true, "SKU-SMALL", "Test App - Small", "SKU-SMALL"
+			).put(
+				"maxQuantity", 0
+			));
+
+		_entitlementDefinitionService.generateEntitlementDefinition(
+			_C_PRODUCT_ID);
+
+		Assertions.assertTrue(
+			_entitlementDefinitionService.putBodies.isEmpty());
+		Assertions.assertEquals(
+			List.of("SKU-SMALL"),
+			_getExternalReferenceCodes(
+				_entitlementDefinitionService.patchURIs));
+
+		JSONObject jsonObject = new JSONObject(
+			_entitlementDefinitionService.patchBodies.get(0));
+
+		Assertions.assertEquals(1, jsonObject.getInt("maxQuantity"));
 	}
 
 	@Test
@@ -693,6 +722,8 @@ public class EntitlementDefinitionServiceTest {
 			"id", ++_entitlementDefinitionId
 		).put(
 			"licenseKeyDurationDays", licenseKeyDurationDays
+		).put(
+			"maxQuantity", 1
 		).put(
 			"name", name
 		);
