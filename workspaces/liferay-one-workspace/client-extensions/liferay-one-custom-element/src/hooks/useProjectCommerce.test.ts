@@ -49,12 +49,14 @@ const LONG_AGO = new Date(Date.now() - 400 * DAY).toISOString();
 type QueryData = {
 	accountContracts?: unknown[];
 	entitlements?: unknown[];
+	products?: unknown[];
 	projectContracts?: unknown[];
 };
 
 function mockQueries({
 	accountContracts = [],
 	entitlements = [],
+	products = [],
 	projectContracts = [],
 }: QueryData) {
 	vi.mocked(useDataQuery).mockImplementation((({
@@ -76,6 +78,9 @@ function mockQueries({
 		}
 		else if (key.startsWith('/project-entitlements')) {
 			items = entitlements;
+		}
+		else if (key.startsWith('/project-products')) {
+			items = products;
 		}
 
 		return {
@@ -100,6 +105,12 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			}
 		).CommerceContext.account = {accountId: 7};
 
+		vi.mocked(useCurrentAccount).mockReturnValue({
+			data: {externalReferenceCode: 'ACCNT-1'},
+			error: undefined,
+			isLoading: false,
+		} as unknown as ReturnType<typeof useCurrentAccount>);
+
 		vi.mocked(useUserProjects).mockReturnValue({
 			loading: false,
 			projects: [{externalReferenceCode: 'PRJCT-1', name: 'Project One'}],
@@ -122,6 +133,137 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 		expect(result.resolvedContractERC).toBe('C_ACCOUNT');
 		expect(result.resolvedContractId).toBe(10);
 		expect(result.projectName).toBe('Project One');
+	});
+
+	it('defaults to the costliest contract that holds a primary product', () => {
+		mockQueries({
+			entitlements: [
+				{
+					externalReferenceCode: 'E_ADD_ON',
+					r_contractToEntitlement_c_contractId: 30,
+					skuExternalReferenceCode: 'SKU-ADD-ON',
+				},
+				{
+					externalReferenceCode: 'E_PRIMARY_SMALL',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'SKU-PRIMARY',
+				},
+				{
+					externalReferenceCode: 'E_PRIMARY_LARGE',
+					r_contractToEntitlement_c_contractId: 25,
+					skuExternalReferenceCode: 'SKU-PRIMARY',
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-ADD-ON',
+					productSpecifications: [
+						{specificationKey: 'product-type', value: 'addOn'},
+					],
+					skus: [{externalReferenceCode: 'SKU-ADD-ON'}],
+				},
+				{
+					externalReferenceCode: 'PRDCT-PRIMARY',
+					productSpecifications: [
+						{specificationKey: 'product-type', value: 'primary'},
+					],
+					skus: [{externalReferenceCode: 'SKU-PRIMARY'}],
+				},
+			],
+			projectContracts: [
+				{externalReferenceCode: 'C_SMALL', id: 20, spendLimit: 5},
+				{externalReferenceCode: 'C_LARGE', id: 25, spendLimit: 10},
+				{externalReferenceCode: 'C_ADD_ON', id: 30, spendLimit: 50},
+			],
+		});
+
+		expect(renderProjectCommerce().resolvedContractERC).toBe('C_LARGE');
+	});
+
+	it('counts a primary product entitled by its product ERC', () => {
+		mockQueries({
+			entitlements: [
+				{
+					externalReferenceCode: 'E_PRIMARY',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'PRDCT-PRIMARY',
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-PRIMARY',
+					productSpecifications: [
+						{specificationKey: 'product-type', value: 'primary'},
+					],
+					skus: [{externalReferenceCode: 'SKU-PRIMARY'}],
+				},
+			],
+			projectContracts: [
+				{externalReferenceCode: 'C_SMALL', id: 20, spendLimit: 5},
+				{externalReferenceCode: 'C_LARGE', id: 30, spendLimit: 50},
+			],
+		});
+
+		expect(renderProjectCommerce().resolvedContractERC).toBe('C_SMALL');
+	});
+
+	it('maps each entitled product to the contracts that entitle it', () => {
+		mockQueries({
+			entitlements: [
+				{
+					externalReferenceCode: 'E_1',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'SKU-A',
+				},
+				{
+					externalReferenceCode: 'E_2',
+					r_contractToEntitlement_c_contractId: 30,
+					skuExternalReferenceCode: 'PRDCT-A',
+				},
+				{
+					externalReferenceCode: 'E_3',
+					r_contractToEntitlement_c_contractId: 99,
+					skuExternalReferenceCode: 'SKU-B',
+				},
+				{
+					externalReferenceCode: 'E_4',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'SKU-UNKNOWN',
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-A',
+					skus: [{externalReferenceCode: 'SKU-A'}],
+				},
+				{
+					externalReferenceCode: 'PRDCT-B',
+					skus: [{externalReferenceCode: 'SKU-B'}],
+				},
+			],
+			projectContracts: [
+				{externalReferenceCode: 'C_20', id: 20},
+				{externalReferenceCode: 'C_30', id: 30},
+			],
+		});
+
+		expect(renderProjectCommerce().contractERCsByProductERC).toEqual(
+			new Map([
+				['PRDCT-A', new Set(['C_20', 'C_30'])],
+				['PRDCT-B', new Set([ONE_TIME_PURCHASES])],
+			])
+		);
+	});
+
+	it('defaults to the costliest contract when no contract holds a primary product', () => {
+		mockQueries({
+			projectContracts: [
+				{externalReferenceCode: 'C_SMALL', id: 20, spendLimit: 5},
+				{externalReferenceCode: 'C_LARGE', id: 30, spendLimit: 50},
+			],
+		});
+
+		expect(renderProjectCommerce().resolvedContractERC).toBe('C_LARGE');
 	});
 
 	it('prefers project contracts over account contracts', () => {
@@ -297,7 +439,7 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 describe('[HOOK-USEPROJECTCOMMERCE] resolveDefaultContractERC', () => {
 	it('picks the costliest contract when none are active', () => {
 		expect(
-			resolveDefaultContractERC([
+			resolveDefaultContractERC(new Set(), [
 				{
 					externalReferenceCode: 'A',
 					name: 'A',
@@ -314,8 +456,52 @@ describe('[HOOK-USEPROJECTCOMMERCE] resolveDefaultContractERC', () => {
 		).toBe('B');
 	});
 
+	it('picks the costliest base contract over a costlier contract without a base product', () => {
+		expect(
+			resolveDefaultContractERC(new Set(['A', 'B']), [
+				{
+					externalReferenceCode: 'A',
+					name: 'A',
+					spendLimit: 1,
+					status: 'active',
+				},
+				{
+					externalReferenceCode: 'B',
+					name: 'B',
+					spendLimit: 3,
+					status: 'active',
+				},
+				{
+					externalReferenceCode: 'C',
+					name: 'C',
+					spendLimit: 9,
+					status: 'active',
+				},
+			])
+		).toBe('B');
+	});
+
+	it('ignores a base contract that is not active when an active contract exists', () => {
+		expect(
+			resolveDefaultContractERC(new Set(['A']), [
+				{
+					externalReferenceCode: 'A',
+					name: 'A',
+					spendLimit: 9,
+					status: 'expired',
+				},
+				{
+					externalReferenceCode: 'B',
+					name: 'B',
+					spendLimit: 1,
+					status: 'active',
+				},
+			])
+		).toBe('B');
+	});
+
 	it('returns undefined without contracts', () => {
-		expect(resolveDefaultContractERC([])).toBeUndefined();
+		expect(resolveDefaultContractERC(new Set(), [])).toBeUndefined();
 	});
 });
 

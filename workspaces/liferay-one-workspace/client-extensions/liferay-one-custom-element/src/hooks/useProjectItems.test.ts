@@ -4,6 +4,8 @@
  */
 
 import {renderHook} from '@testing-library/react';
+import {createElement} from 'react';
+import {MemoryRouter, Route, Routes} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
 import {
@@ -14,11 +16,16 @@ import {
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 
-import {useProjectContractItems, useProjectItems} from './useProjectItems';
+import {
+	useProjectContractERC,
+	useProjectContractItems,
+	useProjectItems,
+} from './useProjectItems';
 
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
-vi.mock('~/hooks/useProjectCommerce', () => ({
+vi.mock('~/hooks/useProjectCommerce', async (importOriginal) => ({
+	...(await importOriginal<typeof import('~/hooks/useProjectCommerce')>()),
 	useProjectCommerce: vi.fn(),
 	useProjectEntitlements: vi.fn(),
 	useProjectProducts: vi.fn(),
@@ -285,5 +292,153 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 
 		expect(useProjectCommerce).toHaveBeenCalledWith('', 'CONTRACT-10');
 		expect(useProjectEntitlements).toHaveBeenCalledWith('');
+	});
+});
+
+describe('[HOOK-USEPROJECTITEMS] useProjectContractERC', () => {
+	const contracts = [
+		{externalReferenceCode: 'CONTRACT-10'},
+		{externalReferenceCode: 'CONTRACT-20'},
+		{externalReferenceCode: ONE_TIME_PURCHASES},
+	];
+
+	function renderAt(pathname: string) {
+		return renderHook(() => useProjectContractERC(), {
+			wrapper: ({children}) =>
+				createElement(
+					MemoryRouter,
+					{initialEntries: [pathname]},
+					createElement(
+						Routes,
+						null,
+						createElement(Route, {
+							element: children,
+							path: '/:accountERC/project/:projectERC/contract/:contractERC/products/:productERC?',
+						}),
+						createElement(Route, {
+							element: children,
+							path: '/:accountERC/project/:projectERC/products/:productERC?',
+						})
+					)
+				),
+		});
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks();
+
+		mockProject({projectId: 'PRJCT-A'});
+		mockProjectCommerce({
+			contractERCsByProductERC: new Map([
+				['PRDCT-A', new Set(['CONTRACT-10'])],
+				['PRDCT-B', new Set(['CONTRACT-20'])],
+				['PRDCT-C', new Set(['CONTRACT-20', 'CONTRACT-10'])],
+				['PRDCT-D', new Set(['CONTRACT-30'])],
+			]),
+			contracts,
+			resolvedContractERC: 'CONTRACT-10',
+		});
+	});
+
+	it('keeps a requested contract that the project has', () => {
+		const {result} = renderAt(
+			'/ACCNT-1/project/PRJCT-A/contract/CONTRACT-20/products/PRDCT-A'
+		);
+
+		expect(result.current.contractERC).toBe('CONTRACT-20');
+	});
+
+	it('resolves the default contract when no contract is requested', () => {
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products');
+
+		expect(result.current.contractERC).toBe('CONTRACT-10');
+	});
+
+	it('resolves the default contract for an unknown requested contract', () => {
+		const {result} = renderAt(
+			'/ACCNT-1/project/PRJCT-A/contract/CONTRACT-99/products'
+		);
+
+		expect(result.current.contractERC).toBe('CONTRACT-10');
+	});
+
+	it('resolves the contract that entitles the requested product', () => {
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products/PRDCT-B');
+
+		expect(result.current.contractERC).toBe('CONTRACT-20');
+	});
+
+	it('prefers the default contract when it entitles the requested product', () => {
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products/PRDCT-C');
+
+		expect(result.current.contractERC).toBe('CONTRACT-10');
+	});
+
+	it('skips an entitling contract that the project does not list', () => {
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products/PRDCT-D');
+
+		expect(result.current.contractERC).toBe('CONTRACT-10');
+	});
+
+	it('resolves One Time Purchases for a product with no entitlement', () => {
+		const {result} = renderAt(
+			'/ACCNT-1/project/PRJCT-A/products/PRDCT-NONE'
+		);
+
+		expect(result.current.contractERC).toBe(ONE_TIME_PURCHASES);
+	});
+
+	it('resolves the default contract for a product under the account fallback', () => {
+		mockProjectCommerce({
+			contractERCsByProductERC: new Map([
+				['PRDCT-B', new Set(['CONTRACT-20'])],
+			]),
+			contracts,
+			resolvedContractERC: 'CONTRACT-10',
+			usingAccountFallback: true,
+		});
+
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products/PRDCT-B');
+
+		expect(result.current.contractERC).toBe('CONTRACT-10');
+	});
+
+	it('resolves no contract when the project has none', () => {
+		mockProjectCommerce({
+			contractERCsByProductERC: new Map(),
+			contracts: [],
+			resolvedContractERC: undefined,
+		});
+
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products/PRDCT-B');
+
+		expect(result.current.contractERC).toBeUndefined();
+	});
+
+	it('reports the commerce error and loading state', () => {
+		const error = new Error('Unable to load contracts');
+
+		mockProjectCommerce({
+			contractERCsByProductERC: new Map(),
+			contracts: [],
+			error,
+			loading: true,
+		});
+
+		const {result} = renderAt('/ACCNT-1/project/PRJCT-A/products');
+
+		expect(result.current.error).toBe(error);
+		expect(result.current.loading).toBe(true);
+	});
+
+	it('scopes commerce lookups to no project for the unassigned project', () => {
+		mockProject({
+			projectId: ONE_TIME_PURCHASES,
+			selectedContractERC: 'CONTRACT-10',
+		});
+
+		renderAt(`/ACCNT-1/project/${ONE_TIME_PURCHASES}/products`);
+
+		expect(useProjectCommerce).toHaveBeenCalledWith('', 'CONTRACT-10');
 	});
 });

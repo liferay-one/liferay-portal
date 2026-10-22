@@ -53,6 +53,11 @@ vi.mock('./Projects/ProjectItemDetails/ProjectItemDetails', () => ({
 	default: ({itemType}: {itemType: string}) =>
 		`ProjectItemDetails ${itemType}`,
 }));
+vi.mock('./Projects/components/ContractRedirect/ContractRedirect', async () => {
+	const {Outlet} = await import('react-router');
+
+	return {default: Outlet};
+});
 vi.mock(
 	'./Projects/components/ProjectSectionRedirect/ProjectSectionRedirect',
 	() => ({default: () => 'ProjectSectionRedirect'})
@@ -182,6 +187,58 @@ describe('myAccountRoutes', () => {
 					await screen.findByText('ProjectItemDetails product')
 				).toBeInTheDocument();
 			});
+		});
+
+		describe('[ROUTE-MY-ACCOUNT-CONTRACT-CONTRACTERC] contract/:contractERC', () => {
+			it('nests the products branch under the contract', () => {
+				const contractRoute = findRoute(
+					projectDetailRoutes,
+					'contract/:contractERC'
+				);
+
+				expect(childPaths(contractRoute)).toEqual([
+					'index',
+					'products',
+					'*',
+				]);
+				expect(
+					childPaths(
+						findRoute(contractRoute?.children ?? [], 'products')
+					)
+				).toEqual(
+					childPaths(findRoute(projectDetailRoutes, 'products'))
+				);
+			});
+
+			it('renders the Products list under the contract', async () => {
+				renderAt('/contract/C_10/products', projectDetailRoutes);
+
+				expect(
+					await screen.findByText('Products page')
+				).toBeInTheDocument();
+			});
+
+			it('renders ProjectItemDetails with kind product under the contract', async () => {
+				renderAt(
+					'/contract/C_10/products/PRDCT-001',
+					projectDetailRoutes
+				);
+
+				expect(
+					await screen.findByText('ProjectItemDetails product')
+				).toBeInTheDocument();
+			});
+
+			it.each(['/contract/C_10', '/contract/C_10/unknown'])(
+				'redirects %s to the Products list of the contract',
+				async (pathname) => {
+					renderAt(pathname, projectDetailRoutes);
+
+					expect(
+						await screen.findByText('Products page')
+					).toBeInTheDocument();
+				}
+			);
 		});
 
 		describe('[ROUTE-MY-ACCOUNT-APPLICATIONS] applications', () => {

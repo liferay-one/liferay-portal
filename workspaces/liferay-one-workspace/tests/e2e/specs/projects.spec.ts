@@ -16,6 +16,8 @@ import {
 } from '../utils/environmentUtils';
 import {expectSettled, gotoMyAccount, tableRow} from '../utils/myAccountUtils';
 
+const CONTRACT_SEGMENT = '(/contract/[^/]+)?';
+
 const PAAS_EXPERIENCE_PRODUCT_ERC =
 	'salesforce-product-liferay-paas-experience';
 
@@ -111,7 +113,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] project navigation', () => {
 
 		await expect(page).toHaveURL(
 			new RegExp(
-				`#/${ACCOUNT_ERC}/project/[^/]+/(products|applications)$`
+				`#/${ACCOUNT_ERC}/project/[^/]+${CONTRACT_SEGMENT}/(products|applications)$`
 			)
 		);
 
@@ -231,7 +233,9 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] products', () => {
 		await openItem(page, 'Liferay DXP - Free Tier');
 
 		await expect(page).toHaveURL(
-			new RegExp(`#/${PROJECT_PATH}/products/PRDCT-DXP`)
+			new RegExp(
+				`#/${PROJECT_PATH}${CONTRACT_SEGMENT}/products/PRDCT-DXP`
+			)
 		);
 
 		for (const tab of [
@@ -279,7 +283,9 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] products', () => {
 
 		await page.getByRole('link', {name: /Back to Project/}).click();
 
-		await expect(page).toHaveURL(new RegExp(`#/${PROJECT_PATH}/products`));
+		await expect(page).toHaveURL(
+			new RegExp(`#/${PROJECT_PATH}${CONTRACT_SEGMENT}/products`)
+		);
 
 		await expect(
 			page.getByText('Manage the products within your project')

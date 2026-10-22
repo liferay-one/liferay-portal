@@ -113,8 +113,11 @@ function renderProvider(path: string) {
 							<ProjectConsumer />
 						</ProjectProvider>
 					}
-					path="/:accountERC/project/:projectERC"
-				/>
+					path="/:accountERC/project"
+				>
+					<Route path=":projectERC/*" />
+					<Route path=":projectERC/contract/:contractERC/*" />
+				</Route>
 			</Routes>
 		</MemoryRouter>
 	);
@@ -262,14 +265,75 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 		expect(projectValue.loading).toBe(true);
 	});
 
-	it('clears the selected contract when the project changes', () => {
-		renderProvider('/ACCNT-1/project/PRJCT-ALPHA');
+	it('reads the selected contract from the route', () => {
+		renderProvider(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-1/products'
+		);
+
+		expect(projectValue.selectedContractERC).toBe('CONTRACT-1');
+	});
+
+	it('keeps the remembered contract of the project on a section without a contract', () => {
+		renderProvider(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-1/products'
+		);
 
 		act(() => {
-			projectValue.setSelectedContractERC('CONTRACT-1');
+			projectValue.rememberContractERC('CONTRACT-1');
+		});
+
+		act(() => {
+			navigateTo('/ACCNT-1/project/PRJCT-ALPHA/applications');
 		});
 
 		expect(projectValue.selectedContractERC).toBe('CONTRACT-1');
+	});
+
+	it('does not remember a contract that only the route names', () => {
+		renderProvider(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-99/products'
+		);
+
+		act(() => {
+			navigateTo('/ACCNT-1/project/PRJCT-ALPHA/applications');
+		});
+
+		expect(projectValue.selectedContractERC).toBeUndefined();
+	});
+
+	it('forgets the remembered contract when the project changes', () => {
+		renderProvider('/ACCNT-1/project/PRJCT-ALPHA/applications');
+
+		act(() => {
+			projectValue.rememberContractERC('CONTRACT-1');
+		});
+
+		act(() => {
+			navigateTo('/ACCNT-1/project/PRJCT-BETA/applications');
+		});
+
+		expect(projectValue.selectedContractERC).toBeUndefined();
+	});
+
+	it('navigates to the products of the selected contract', () => {
+		renderProvider(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-1/products/PRDCT-1'
+		);
+
+		act(() => {
+			projectValue.setSelectedContractERC('CONTRACT-2');
+		});
+
+		expect(screen.getByTestId('location')).toHaveTextContent(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-2/products'
+		);
+		expect(projectValue.selectedContractERC).toBe('CONTRACT-2');
+	});
+
+	it('clears the selected contract when the project changes', () => {
+		renderProvider(
+			'/ACCNT-1/project/PRJCT-ALPHA/contract/CONTRACT-1/products'
+		);
 
 		act(() => {
 			navigateTo('/ACCNT-1/project/PRJCT-BETA');

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen} from '@testing-library/react';
-import {MemoryRouter} from 'react-router';
+import {fireEvent, render, screen} from '@testing-library/react';
+import {MemoryRouter, Route, Routes} from 'react-router';
 import {afterEach, describe, expect, it, vi} from 'vitest';
+import {ProductSpecificationKey, SolutionTypes} from '~/enums/Product';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {useProjectContractItems} from '~/hooks/useProjectItems';
 
@@ -59,5 +60,49 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTS] Products', () => {
 		expect(nameCell?.querySelector('.list-card-icon')).toBeNull();
 		expect(nameCell?.querySelector('svg')).toBeNull();
 		expect(container.querySelector('.list-card-icon')).toBeNull();
+	});
+
+	it('opens the project Activation page from a contract scoped list', async () => {
+		vi.mocked(useProjectContractItems).mockReturnValue({
+			error: undefined,
+			loading: false,
+			products: [
+				{
+					...product('Liferay DXP - Free Tier', 'Platform'),
+					specifications: [
+						{
+							specificationKey:
+								ProductSpecificationKey.SOLUTION_TYPE,
+							value: SolutionTypes.DXP,
+						},
+					],
+				} as ProjectProduct,
+			],
+		} as ReturnType<typeof useProjectContractItems>);
+
+		render(
+			<MemoryRouter
+				initialEntries={[
+					'/ACCNT-1/project/PRJCT-1/contract/C_1/products',
+				]}
+			>
+				<Routes>
+					<Route path="/:accountERC/project/:projectERC">
+						<Route element="Activation page" path="activation" />
+						<Route path="contract/:contractERC">
+							<Route path="products">
+								<Route element={<Products />} index />
+							</Route>
+						</Route>
+					</Route>
+				</Routes>
+			</MemoryRouter>
+		);
+
+		fireEvent.click(screen.getByRole('button', {name: 'Actions'}));
+
+		fireEvent.click(await screen.findByText('View Activation Key'));
+
+		expect(await screen.findByText('Activation page')).toBeInTheDocument();
 	});
 });
