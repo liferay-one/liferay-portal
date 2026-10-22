@@ -166,7 +166,7 @@ public class AppLicenseKeyGenerationServiceTest {
 		Assertions.assertEquals("owner@liferay.com", arguments[27]);
 		Assertions.assertEquals("app-uuid-1", arguments[28]);
 		Assertions.assertEquals("Acme App", arguments[29]);
-		Assertions.assertEquals("2.1.0", arguments[30]);
+		Assertions.assertEquals("1", arguments[30]);
 		Assertions.assertNull(arguments[31]);
 		Assertions.assertEquals(startDate, arguments[34]);
 
@@ -313,6 +313,53 @@ public class AppLicenseKeyGenerationServiceTest {
 				"owner@liferay.com"));
 
 		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testGetGenerateFormCountsTheQuantityWithoutAMaxQuantity()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 0.0, 2.0), _toEntitlement(2L, 1.0, 3.0));
+		_stubProduct("SKU-APP", _toApp("PRDCT-APP", null, "2.1.0"));
+
+		JSONObject productJSONObject =
+			_appLicenseKeyGenerationService.getGenerateForm(
+				_ACCOUNT_ID
+			).getJSONArray(
+				"products"
+			).getJSONObject(
+				0
+			);
+
+		Assertions.assertEquals(
+			"[\"1\"]",
+			productJSONObject.getJSONArray(
+				"versions"
+			).toString());
+
+		JSONArray subscriptionsJSONArray = productJSONObject.getJSONArray(
+			"keyTypes"
+		).getJSONObject(
+			0
+		).getJSONArray(
+			"subscriptions"
+		);
+
+		Assertions.assertEquals(
+			2,
+			subscriptionsJSONArray.getJSONObject(
+				0
+			).getInt(
+				"totalCount"
+			));
+		Assertions.assertEquals(
+			1,
+			subscriptionsJSONArray.getJSONObject(
+				1
+			).getInt(
+				"totalCount"
+			));
 	}
 
 	@Test
@@ -629,11 +676,51 @@ public class AppLicenseKeyGenerationServiceTest {
 	}
 
 	private Entitlement _toEntitlement(
+		long entitlementId, Double maxQuantity, Double quantity) {
+
+		return new Entitlement(
+			_toEntitlementJSONObject(
+				entitlementId, 0, null, null, quantity, "SKU-APP", null
+			).put(
+				"maxQuantity", maxQuantity
+			));
+	}
+
+	private Entitlement _toEntitlement(
 		long entitlementId, long commerceOrderItemId, String licenseKeyFamily,
 		String licenseKeyType, Double quantity, String skuExternalReferenceCode,
 		String startDate) {
 
-		JSONObject jsonObject = new JSONObject(
+		return new Entitlement(
+			_toEntitlementJSONObject(
+				entitlementId, commerceOrderItemId, licenseKeyFamily,
+				licenseKeyType, quantity, skuExternalReferenceCode, startDate));
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, String licenseKeyType, Double quantity,
+		String skuExternalReferenceCode, String startDate) {
+
+		return _toEntitlement(
+			entitlementId, null, licenseKeyType, quantity,
+			skuExternalReferenceCode, startDate);
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, String licenseKeyFamily, String licenseKeyType,
+		Double quantity, String skuExternalReferenceCode, String startDate) {
+
+		return _toEntitlement(
+			entitlementId, 0, licenseKeyFamily, licenseKeyType, quantity,
+			skuExternalReferenceCode, startDate);
+	}
+
+	private JSONObject _toEntitlementJSONObject(
+		long entitlementId, long commerceOrderItemId, String licenseKeyFamily,
+		String licenseKeyType, Double quantity, String skuExternalReferenceCode,
+		String startDate) {
+
+		return new JSONObject(
 		).put(
 			"entitlementDefinitionToEntitlement",
 			new JSONObject(
@@ -661,26 +748,6 @@ public class AppLicenseKeyGenerationServiceTest {
 		).put(
 			"startDate", startDate
 		);
-
-		return new Entitlement(jsonObject);
-	}
-
-	private Entitlement _toEntitlement(
-		long entitlementId, String licenseKeyType, Double quantity,
-		String skuExternalReferenceCode, String startDate) {
-
-		return _toEntitlement(
-			entitlementId, null, licenseKeyType, quantity,
-			skuExternalReferenceCode, startDate);
-	}
-
-	private Entitlement _toEntitlement(
-		long entitlementId, String licenseKeyFamily, String licenseKeyType,
-		Double quantity, String skuExternalReferenceCode, String startDate) {
-
-		return _toEntitlement(
-			entitlementId, 0, licenseKeyFamily, licenseKeyType, quantity,
-			skuExternalReferenceCode, startDate);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
