@@ -12,7 +12,7 @@ The migration scripts are not in this repository. The Related Repos section of `
 
 | Count | Item |
 | --- | --- |
-| 6 | Client extensions that bootstrap deploys, in a fixed order |
+| 7 | Client extensions that bootstrap deploys, in a fixed order |
 | 18 | Batch files in `liferay-one-batch`, numbered `00` to `17` with no `11` and two `05` files |
 | 407 | Items in the batch files |
 | 10 | Dependency edges between batch files. The file order respects all 10. |
@@ -71,8 +71,8 @@ flowchart TD
 | Build | Runs `gradlew clean`, extracts the hotfix and the license, builds the portal image, and tags it `liferay:local`. | `scripts/bootstrap.sh:44-57` |
 | Containers | Starts `database`, `liferay`, and `liferay-one-etc-spring-boot`. The sidecar shares the network of the `liferay` container. | `scripts/bootstrap.sh:60`, `docker-compose.yaml` |
 | Liferay ready | Polls `/c/portal/status` every 10 seconds with no limit. | `scripts/bootstrap.sh:63-67` |
-| Client extensions | Deploys six client extensions in a fixed order. It sleeps 10 seconds after each light one, waits for the batch log to go quiet for 20 seconds, and waits for the `Initialized One for group` log line. | `scripts/bootstrap/deploy_client_extensions.sh:26-48`, `:88-140`, `:145-150` |
-| OAuth applications | Each client extension deploy creates its own OAuth2 applications: `liferay-one-batch-oahs`, `liferay-one-site-initializer-oahs`, and the `oahs`, `oaua`, and `oaci` applications of the Spring Boot client extension. | `client-extensions/*/client-extension.yaml` |
+| Client extensions | Deploys seven client extensions in a fixed order. It sleeps 10 seconds after each light one, waits for the batch log to go quiet for 20 seconds, and waits for the `Initialized One for group` log line. | `scripts/bootstrap/deploy_client_extensions.sh:26-48`, `:88-140`, `:145-150` |
+| OAuth applications | Each client extension deploy creates its own OAuth2 applications: `liferay-one-batch-oahs`, `liferay-one-salesforce-product-batch-oahs`, `liferay-one-site-initializer-oahs`, and the `oahs`, `oaua`, and `oaci` applications of the Spring Boot client extension. | `client-extensions/*/client-extension.yaml` |
 | Instance settings | Four `instanceSettings` entries. Three are scoped to the site by `siteExternalReferenceCode: LIFERAY_ONE`. Liferay matches that code when it reads the configuration, so the site does not have to exist at deploy time. | `client-extensions/liferay-one-instance-settings/client-extension.yaml`, `modules/apps/configuration-admin/.../ConfigurationFilterStringUtil.java:51-73` |
 | Batch import | Imports 18 files, one at a time, in natural file name order. | `modules/apps/batch-engine/.../BatchEngineUnitReaderImpl.java:111-112`, `BatchEngineUnitProcessorImpl.java:540-561` |
 | Site initializer | Creates or updates the `LIFERAY_ONE` site through `putSiteByExternalReferenceCode` in one transaction. | `modules/apps/site-initializer/.../SiteInitializerClientExtension.java:168-229` |
@@ -91,9 +91,9 @@ Each target deploys the client extensions in a different order. The batch must c
 
 | Target | Order | Waits for the Batch Import | Source |
 | --- | --- | --- | --- |
-| Local Docker | global CSS, instance settings, custom element, batch, Spring Boot, site initializer | Yes, log quiet for 20 seconds | `scripts/bootstrap/deploy_client_extensions.sh:26-48` |
-| Partitioned instance | global CSS, instance settings, custom element, batch, site initializer, then Spring Boot in `_set_up` | Yes, reads import tasks from the partition | `scripts/instance.sh:25-31`, `:161-233`, `:531-553` |
-| UAT and production | batch, site initializer, then the others. Only the client extensions that changed since a base commit. | No. `lcp deploy` returns when the upload finishes. | `scripts/deploy.sh:16-19`, `:63-69`, `:161-176` |
+| Local Docker | global CSS, instance settings, custom element, batch, Salesforce product batch, Spring Boot, site initializer | Yes, log quiet for 20 seconds, after each batch | `scripts/bootstrap/deploy_client_extensions.sh:26-48` |
+| Partitioned instance | global CSS, instance settings, custom element, batch, Salesforce product batch, site initializer, then Spring Boot in `_set_up` | Yes, reads import tasks from the partition, after each batch | `scripts/instance.sh:25-31`, `:161-233`, `:531-553` |
+| UAT and production | batch, site initializer, then the others. Only the client extensions that changed since a base commit. The Salesforce product batch never deploys there, because its `LCP.json` sets `deploy` to `false`. | No. `lcp deploy` returns when the upload finishes. | `scripts/deploy.sh:16-19`, `:63-69`, `:161-176` |
 
 An object action whose executor key names a client extension entry that does not exist yet is allowed: Liferay logs it at debug level and saves the action (`modules/apps/object/.../ObjectActionLocalServiceImpl.java:726-740`). So the batch can define actions before the Spring Boot client extension deploys.
 
@@ -200,7 +200,7 @@ The file order respects all 10 edges. No file references an entity that a later 
 
 1. `02` and `03` name 16 Spring Boot object action entries as `function#<entry>`. 15 of them exist (see finding 6). The Spring Boot client extension deploys after the batch. Liferay accepts an executor key that is not registered yet, so the order works.
 
-1. The commerce products that use the 55 specifications, the 3 options, and the 128 categories are not in the batch. They are in `scripts/seed/data/06-commerce-product.batch-engine-data.json` and in the migration. All 36 specification keys and all 26 category codes that the seed products use exist in `10` and `15`. The earlier rule "import `10-commerce-specification` before `06-commerce-product`" now holds across layers: the batch runs before the seed.
+1. The commerce products that use the 55 specifications, the 3 options, and the 128 categories are not in the batch. The 48 Salesforce products of UAT are in `client-extensions/liferay-one-salesforce-product-batch`, as draft products with unpublished SKUs, the way UAT holds them. The other products are in `scripts/seed/data/06-commerce-product.batch-engine-data.json` and in the migration. All 36 specification keys and all 26 category codes that the seed products use exist in `10` and `15`. The earlier rule "import `10-commerce-specification` before `06-commerce-product`" now holds across layers: the batch runs before the seed.
 
 ### Seed Files
 

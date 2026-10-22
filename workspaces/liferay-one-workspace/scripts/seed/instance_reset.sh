@@ -74,6 +74,15 @@ function main {
 
 	_wait_for_batch_imports
 
+	echo "Redeploying the Salesforce product batch import."
+	SINCE="$(date +%s)"
+
+	./gradlew ":client-extensions:liferay-one-salesforce-product-batch:clean" \
+		":client-extensions:liferay-one-salesforce-product-batch:deploy" \
+		-Ddeploy.docker.container.id="${container_id}"
+
+	_wait_for_batch_imports
+
 	echo "Redeploying the site initializer."
 	./gradlew ":client-extensions:liferay-one-site-initializer:clean" \
 		":client-extensions:liferay-one-site-initializer:deploy" \

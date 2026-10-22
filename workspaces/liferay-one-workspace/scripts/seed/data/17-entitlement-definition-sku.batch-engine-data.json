@@ -691,9 +691,9 @@
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL_01tVO000000jLLGYA2",
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL_PRDCT-SSA-TRIAL",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SSA_TRIAL",
-			"skuExternalReferenceCode": "01tVO000000jLLGYA2"
+			"skuExternalReferenceCode": "PRDCT-SSA-TRIAL"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_TEST_APP_PRDCT-TEST-APP",

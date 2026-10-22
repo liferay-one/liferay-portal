@@ -18,6 +18,7 @@ Pure Liferay SaaS client-extension workspace — no OSGi modules, no Ant. Client
 - `liferay-one-etc-spring-boot/` — custom REST, Salesforce Pub/Sub subscriber, crons, integration clients.
 - `liferay-one-global-css/` — shared styles.
 - `liferay-one-instance-settings/` — global Liferay instance configs.
+- `liferay-one-salesforce-product-batch/` — the Salesforce products of UAT, as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. Local only.
 - `liferay-one-site-initializer/` — single site, all Object definitions + roles + fragments.
 
 ## Related Repos

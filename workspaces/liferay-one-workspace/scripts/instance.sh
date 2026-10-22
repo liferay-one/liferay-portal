@@ -28,6 +28,7 @@ DEFAULT_CLIENT_EXTENSIONS=(
 	liferay-one-instance-settings
 	liferay-one-custom-element
 	liferay-one-batch
+	liferay-one-salesforce-product-batch
 	liferay-one-site-initializer
 )
 INSTANCE_DOMAIN="${LIFERAY_INSTANCE_DOMAIN:-localhost}"
@@ -185,7 +186,9 @@ function _deploy {
 
 		local imports="false"
 
-		if [ "${client_extension}" == "liferay-one-batch" ] || [ "${client_extension}" == "liferay-one-site-initializer" ]
+		if [ "${client_extension}" == "liferay-one-batch" ] ||
+		   [ "${client_extension}" == "liferay-one-salesforce-product-batch" ] ||
+		   [ "${client_extension}" == "liferay-one-site-initializer" ]
 		then
 			imports="true"
 
@@ -205,7 +208,8 @@ function _deploy {
 			-Pliferay.virtual.instance.id="${web_id}" \
 			--quiet || { _unlock; return 1; }
 
-		if [ "${client_extension}" == "liferay-one-batch" ]
+		if [ "${client_extension}" == "liferay-one-batch" ] ||
+		   [ "${client_extension}" == "liferay-one-salesforce-product-batch" ]
 		then
 			_wait_for_batch_imports "${web_id}" || { _unlock; return 1; }
 		elif [ "${client_extension}" == "liferay-one-site-initializer" ]

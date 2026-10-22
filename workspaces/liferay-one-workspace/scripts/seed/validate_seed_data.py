@@ -844,7 +844,7 @@ def _check_unique(report, scope):
 
 	sku_counts = Counter()
 
-	for product in scope["products"]:
+	for product in scope["catalog_products"]:
 		for sku in product.get("skus", []):
 			sku_counts[sku["externalReferenceCode"]] += 1
 
@@ -890,6 +890,18 @@ def main():
 		os.path.join(batch, "12-commerce-order-type.batch-engine-data.json")
 	)["items"]
 	roles = load(os.path.join(batch, "13-role.batch-engine-data.json"))["items"]
+
+	salesforce_products = load(
+		os.path.join(
+			WORKSPACE_ROOT,
+			"client-extensions",
+			"liferay-one-salesforce-product-batch",
+			"batch",
+			"02-commerce-product.batch-engine-data.json",
+		)
+	)["items"]
+
+	catalog_products = products + salesforce_products
 
 	orders = []
 	order_items = []
@@ -942,7 +954,7 @@ def main():
 
 	skus = {}
 
-	for product in products:
+	for product in catalog_products:
 		for sku in product.get("skus", []):
 			skus[sku["externalReferenceCode"]] = product["externalReferenceCode"]
 
@@ -956,7 +968,7 @@ def main():
 		"order": ercs(orders),
 		"order item": ercs(order_items),
 		"order type": ercs(order_types),
-		"product": ercs(products),
+		"product": ercs(catalog_products),
 		"project": ercs(projects),
 		"publisher sales summary": ercs(sales_summaries),
 		"role": ercs(roles),
