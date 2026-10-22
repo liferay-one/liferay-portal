@@ -50,6 +50,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -440,6 +441,45 @@ public class CommerceOrderService extends OneBaseService {
 
 			throw problemException;
 		}
+	}
+
+	public List<OrderItem> getAccountOrderItems(long accountId)
+		throws Exception {
+
+		OrderResource orderResource = OrderResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"fields", _FIELDS_ORDER_ITEMS, "nestedFields", "orderItems"
+		).build();
+
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		int page = 1;
+
+		while (true) {
+			Page<Order> ordersPage = orderResource.getOrdersPage(
+				null, "accountId/any(x:x eq " + accountId + ")",
+				Pagination.of(page, _PAGE_SIZE), null);
+
+			for (Order order : ordersPage.getItems()) {
+				if (order.getOrderItems() == null) {
+					continue;
+				}
+
+				Collections.addAll(orderItems, order.getOrderItems());
+			}
+
+			if (page >= ordersPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return orderItems;
 	}
 
 	public List<Order> getAccountOrders(long accountId) throws Exception {
@@ -2064,6 +2104,9 @@ public class CommerceOrderService extends OneBaseService {
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
+
+	private static final String _FIELDS_ORDER_ITEMS =
+		"id,orderItems.productId,orderItems.skuExternalReferenceCode";
 
 	private static final int _PAGE_SIZE = 500;
 

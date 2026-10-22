@@ -6,6 +6,7 @@
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES} from '~/enums/Product';
+import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
@@ -17,16 +18,14 @@ import {
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
-import HeadlessCommerceDeliveryCatalog from '~/services/headless/HeadlessCommerceDeliveryCatalog';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {
 	DeliveryProduct,
 	DeliveryProductSpecification,
 } from '~/types/product';
-
-const CHANNEL_PRODUCTS_DEDUPING_INTERVAL = 60000;
 
 const FILTER_VALUE_REGEXP = /^[A-Za-z0-9_-]+$/;
 
@@ -35,58 +34,6 @@ const MAX_FILTER_CLAUSES = 50;
 const MAX_PAGES = 20;
 
 const PAGE_SIZE = 100;
-
-const RESTRICTED_PRODUCT_FIELDS = [
-	'attachments',
-	'catalogName',
-	'createDate',
-	'customFields',
-	'expando',
-	'images',
-	'metaDescription',
-	'metaKeyword',
-	'metaTitle',
-	'modifiedDate',
-	'productConfiguration',
-	'productSpecifications.id',
-	'productSpecifications.optionCategoryId',
-	'productSpecifications.priority',
-	'productSpecifications.productId',
-	'productSpecifications.specificationGroupKey',
-	'productSpecifications.specificationGroupTitle',
-	'productSpecifications.specificationId',
-	'productSpecifications.specificationPriority',
-	'productSpecifications.specificationTitle',
-	'productType',
-	'shortDescription',
-	'skus.availability',
-	'skus.backOrderAllowed',
-	'skus.customFields',
-	'skus.depth',
-	'skus.discontinued',
-	'skus.displayDate',
-	'skus.displayDiscountLevels',
-	'skus.gtin',
-	'skus.height',
-	'skus.id',
-	'skus.incomingQuantityLabel',
-	'skus.manufacturerPartNumber',
-	'skus.price',
-	'skus.productConfiguration',
-	'skus.productId',
-	'skus.published',
-	'skus.purchasable',
-	'skus.sku',
-	'skus.skuOptions',
-	'skus.skuUnitOfMeasures',
-	'skus.tierPrices',
-	'skus.weight',
-	'skus.width',
-	'slug',
-	'tags',
-	'urlImage',
-	'urls',
-].join(',');
 
 export type ProjectContract = {
 	endDate?: string;
@@ -250,59 +197,35 @@ function toProductsBySkuExternalReferenceCode(
 	return productsBySkuExternalReferenceCode;
 }
 
-export function channelProductsQuery(
-	channelId: number | string
+export function projectProductsQuery(
+	accountExternalReferenceCode?: string
 ): DataQuery<APIResponse<DeliveryProduct>> {
 	return {
-		fetcher: async () => {
-			const getPage = (page: number) =>
-				HeadlessCommerceDeliveryCatalog.getProductsPage(
-					channelId,
-					new URLSearchParams({
-						'accountId': '-1',
-						'nestedFields': 'productSpecifications,skus',
-						'page': page.toString(),
-						'pageSize': PAGE_SIZE.toString(),
-						'productSpecifications.pageSize': '-1',
-						'restrictFields': RESTRICTED_PRODUCT_FIELDS,
-						'skus.accountId': '-1',
-						'skus.currencyCode':
-							Liferay.CommerceContext.currency.currencyCode,
-					})
-				);
-
-			const response = await getPage(1);
-
-			const items = [...response.items];
-
-			if (response.totalCount > items.length) {
-				const lastPage = Math.min(
-					Math.ceil(response.totalCount / PAGE_SIZE),
-					MAX_PAGES
-				);
-
-				const remainingPages = await Promise.all(
-					Array.from({length: lastPage - 1}, (_, index) =>
-						getPage(index + 2)
-					)
-				);
-
-				remainingPages.forEach((remainingPage) =>
-					items.push(...remainingPage.items)
-				);
-			}
-
-			return {...response, items};
-		},
-		key: `/project-channel-products/${channelId}`,
+		fetcher: () =>
+			Accounts.getProducts(accountExternalReferenceCode as string),
+		key: accountExternalReferenceCode
+			? `/project-products/${accountExternalReferenceCode}`
+			: null,
 	};
 }
 
-export function useChannelProducts() {
-	return useDataQuery(
-		channelProductsQuery(Liferay.CommerceContext.commerceChannelId),
-		{dedupingInterval: CHANNEL_PRODUCTS_DEDUPING_INTERVAL}
+export function useProjectProducts() {
+	const {
+		data: account,
+		error: accountError,
+		isLoading: accountLoading,
+	} = useCurrentAccount();
+
+	const {data, error, isLoading, mutate} = useDataQuery(
+		projectProductsQuery(account?.externalReferenceCode)
 	);
+
+	return {
+		data,
+		error: error ?? accountError,
+		isLoading: isLoading || accountLoading,
+		mutate,
+	};
 }
 
 export function useProjectCommerce(
@@ -606,7 +529,7 @@ export function useAccountProducts() {
 		useAccountContractsWithEntitlements();
 
 	const {data: productsData, isLoading: productsLoading} =
-		useChannelProducts();
+		useProjectProducts();
 
 	const products = useMemo<DeliveryProduct[]>(() => {
 		const productsBySkuExternalReferenceCode =
@@ -648,7 +571,7 @@ export function useHasActiveExperienceOffering() {
 		data: productsData,
 		error: productsError,
 		isLoading: productsLoading,
-	} = useChannelProducts();
+	} = useProjectProducts();
 
 	const hasActiveExperienceOffering = useMemo(() => {
 		const productsBySkuExternalReferenceCode =
@@ -685,7 +608,7 @@ export function useAccountProjectContactRoles() {
 		useAccountContractsWithEntitlements();
 
 	const {data: productsData, isLoading: productsLoading} =
-		useChannelProducts();
+		useProjectProducts();
 
 	const contactRoleExternalReferenceCodesByProjectId = useMemo(() => {
 		const productsBySkuExternalReferenceCode =

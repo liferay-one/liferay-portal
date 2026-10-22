@@ -8,6 +8,8 @@ import zodSchema, {z} from '~/schemas/zodSchema';
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
 import type {Account} from '~/types/accounts';
+import type {APIResponse} from '~/types/api';
+import type {DeliveryProduct} from '~/types/product';
 
 import type {AccountInvitation} from './types';
 
@@ -42,6 +44,12 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 	async getInvitations(accountExternalReferenceCode: string) {
 		return this.get<AccountInvitation[]>(
 			`/${accountExternalReferenceCode}/invitations`
+		);
+	}
+
+	async getProducts(accountExternalReferenceCode: string) {
+		return this.get<APIResponse<DeliveryProduct>>(
+			`/${accountExternalReferenceCode}/products`
 		);
 	}
 

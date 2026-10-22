@@ -153,6 +153,17 @@ public class ContractService extends OneBaseService {
 		return new Contract(jsonArray.getJSONObject(0));
 	}
 
+	public List<Long> getAccountContractIds(long accountEntryId)
+		throws Exception {
+
+		return getAllProjectedItems(
+			"/o/c/contracts", "id",
+			StringBundler.concat(
+				"r_accountEntryToContract_accountEntryId eq '", accountEntryId,
+				"'"),
+			jsonObject -> jsonObject.getLong("id"));
+	}
+
 	public List<Contract> getProjectContracts(
 			String projectExternalReferenceCode)
 		throws Exception {

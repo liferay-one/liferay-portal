@@ -11,6 +11,9 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.service.AccountAssetService;
@@ -30,6 +33,10 @@ import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.CommerceProductService;
+import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
@@ -39,6 +46,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
+import com.liferay.one.util.DeliveryProductUtil;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
@@ -56,10 +64,12 @@ import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -241,6 +251,85 @@ public class AccountsRestController extends OneBaseRestController {
 			MediaType.APPLICATION_JSON
 		).body(
 			_getProductUsageJSON(account, entitlements)
+		);
+	}
+
+	@GetMapping("/{externalReferenceCode}/products")
+	public ResponseEntity<String> getProducts(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			Locale locale)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		Set<Long> productIds = new TreeSet<>();
+		Set<String> orderedSkuExternalReferenceCodes = new TreeSet<>();
+
+		for (OrderItem orderItem :
+				_commerceOrderService.getAccountOrderItems(account.getId())) {
+
+			if (orderItem.getProductId() == null) {
+				continue;
+			}
+
+			productIds.add(orderItem.getProductId());
+
+			if (Validator.isNull(orderItem.getSkuExternalReferenceCode())) {
+				continue;
+			}
+
+			orderedSkuExternalReferenceCodes.add(
+				orderItem.getSkuExternalReferenceCode());
+		}
+
+		for (String skuExternalReferenceCode :
+				_entitlementService.getSkuExternalReferenceCodes(
+					account.getId(),
+					_contractService.getAccountContractIds(account.getId()))) {
+
+			if (orderedSkuExternalReferenceCodes.contains(
+					skuExternalReferenceCode)) {
+
+				continue;
+			}
+
+			Sku sku = _commerceSkuService.fetchSku(skuExternalReferenceCode);
+
+			if ((sku == null) || (sku.getProductId() == null)) {
+				continue;
+			}
+
+			productIds.add(sku.getProductId());
+		}
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (Product product :
+				_commerceProductService.getProducts(productIds)) {
+
+			jsonArray.put(DeliveryProductUtil.toJSONObject(locale, product));
+		}
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			new JSONObject(
+			).put(
+				"items", jsonArray
+			).put(
+				"lastPage", 1
+			).put(
+				"page", 1
+			).put(
+				"pageSize", jsonArray.length()
+			).put(
+				"totalCount", jsonArray.length()
+			).toString()
 		);
 	}
 
@@ -1008,6 +1097,18 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private AdminPermission _adminPermission;
+
+	@Autowired
+	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private CommerceProductService _commerceProductService;
+
+	@Autowired
+	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private ContractService _contractService;
 
 	@Autowired
 	private EmailAddressValidatorService _emailAddressValidatorService;

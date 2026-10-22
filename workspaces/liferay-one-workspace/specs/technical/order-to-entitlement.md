@@ -413,7 +413,7 @@ The consequences:
 
 The list reads orders and the detail reads orders too. The detail does not read entitlements, except in the Utilization tab. The join from an entitlement to a product goes through `Entitlement.skuExternalReferenceCode`, not through the entitlement definition.
 
-The delivery catalog query (`channelProductsQuery`, `useProjectCommerce.ts:253`) fetches pages of 100 and stops at 20 pages, so it sees at most 2000 products. Placed orders are fetched in pages of 200 with no page cap (`useProjectOrders.ts:18`). A product past the catalog cap drops out of both lists with no error.
+The project views read their products from the Spring Boot endpoint `GET /accounts/{externalReferenceCode}/products` (`projectProductsQuery` in `useProjectCommerce.ts`), not from the delivery catalog. The endpoint returns the products of the account's order items and of the SKUs on its entitlements, read through the admin catalog, so a draft product and an unpublished SKU are included and there is no page cap. Placed orders are fetched in pages of 200 with no page cap (`useProjectOrders.ts:18`).
 
 ## States
 
