@@ -133,7 +133,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		expect(itemsByType.product.get('PRDCT-DXP')?.startDate).toBe('');
 	});
 
-	it('falls back to the active status when the order has no status label', () => {
+	it('shows a completed order of any type as completed', () => {
 		const itemsByType = toProjectItemsByType(
 			[
 				toOrder(
@@ -147,10 +147,10 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 			productsByProductId
 		);
 
-		expect(itemsByType.product.get('PRDCT-DXP')?.status).toBe('active');
+		expect(itemsByType.product.get('PRDCT-DXP')?.status).toBe('completed');
 	});
 
-	it('shows a completed application order as completed and any other application order as pending', () => {
+	it('shows an application order as completed, pending, or canceled', () => {
 		const toApplicationStatus = (code: number, label: string) =>
 			toProjectItemsByType(
 				[
@@ -172,7 +172,8 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		expect(toApplicationStatus(0, '')).toBe('completed');
 		expect(toApplicationStatus(1, 'pending')).toBe('pending');
 		expect(toApplicationStatus(5, '')).toBe('pending');
-		expect(toApplicationStatus(8, 'cancelled')).toBe('pending');
+		expect(toApplicationStatus(6, '')).toBe('completed');
+		expect(toApplicationStatus(8, 'cancelled')).toBe('canceled');
 	});
 
 	it('uses the price model as the type without a categories specification', () => {

@@ -75,100 +75,69 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 	});
 
 	describe('getOrderStatusLabel', () => {
-		it('remaps statuses for expirable order types', () => {
-			expect(getOrderStatusLabel(toPlacedOrder('DXP', 8))).toBe(
-				'Expired'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('ADDONS', 0))).toBe(
-				'Active'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('CMP', 6))).toBe('Active');
-			expect(getOrderStatusLabel(toPlacedOrder('DSR', 1))).toBe(
-				'Pending'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('SALESFORCE', 99))).toBe(
-				'Workflow Label'
-			);
-		});
+		const orderTypes = [
+			'ADDONS',
+			'AI_HUB',
+			'CMP',
+			'CMP_TRIAL',
+			'DSR',
+			'DXP',
+			'DXP_APP',
+			'SALESFORCE',
+			'SEO_STUDIO',
+			'SSA_SAAS',
+		];
 
-		it('remaps statuses for the self service trials', () => {
-			expect(getOrderStatusLabel(toPlacedOrder('CMP_TRIAL', 0))).toBe(
-				'Active'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('DSR_TRIAL', 8))).toBe(
-				'Expired'
-			);
-		});
-
-		it('remaps only the pending statuses for AI Hub', () => {
-			expect(getOrderStatusLabel(toPlacedOrder('AI_HUB', 20))).toBe(
-				'Pending'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('AI_HUB', 8))).toBe(
-				'Workflow Label'
-			);
-		});
-
-		it('labels SEO Studio orders as active, cancelled, or pending', () => {
-			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 0))).toBe(
-				'Active'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 8))).toBe(
-				'Cancelled'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 1))).toBe(
-				'Pending'
-			);
-			expect(getOrderStatusLabel(toPlacedOrder('SEO_STUDIO', 20))).toBe(
-				'Pending'
-			);
-		});
-
-		it('maps application orders to completed or pending', () => {
-			for (const orderTypeExternalReferenceCode of [
-				'CLIENT_EXTENSION',
-				'CLOUD_APP',
-				'CLOUDAPP',
-				'COMPOSITE_APP',
-				'DXP_APP',
-				'LOW_CODE_CONFIGURATION',
-				'OTHER',
-			]) {
-				expect(
-					getOrderStatusLabel(
-						toPlacedOrder(orderTypeExternalReferenceCode, 0)
-					)
-				).toBe('Completed');
-			}
-
-			for (const code of [1, 5, 6, 8, 10, 20, 99]) {
-				expect(
-					getOrderStatusLabel(toPlacedOrder('DXP_APP', code))
-				).toBe('Pending');
+		it('shows a completed order as completed for every order type', () => {
+			for (const orderType of orderTypes) {
+				expect(getOrderStatusLabel(toPlacedOrder(orderType, 0))).toBe(
+					'Completed'
+				);
 			}
 		});
 
-		it('maps a completed application order without an order status label to completed', () => {
-			expect(
-				getOrderStatusLabel({
-					...toPlacedOrder('DXP_APP', 0, ''),
-					workflowStatusInfo: {
-						code: 0,
-						label: 'approved',
-						label_i18n: 'Approved',
-					},
-				})
-			).toBe('Completed');
+		it('shows an in progress order as completed for every order type', () => {
+			for (const orderType of orderTypes) {
+				expect(getOrderStatusLabel(toPlacedOrder(orderType, 6))).toBe(
+					'Completed'
+				);
+			}
 		});
 
-		it('falls back to the workflow status label', () => {
+		it('shows a cancelled order as cancelled for every order type', () => {
+			for (const orderType of orderTypes) {
+				expect(getOrderStatusLabel(toPlacedOrder(orderType, 8))).toBe(
+					'Cancelled'
+				);
+			}
+		});
+
+		it('shows every other order status as pending for every order type', () => {
+			for (const orderType of orderTypes) {
+				for (const code of [1, 10, 20, 99]) {
+					expect(
+						getOrderStatusLabel(toPlacedOrder(orderType, code))
+					).toBe('Pending');
+				}
+			}
+		});
+
+		it('shows an order without an order status as pending', () => {
 			expect(
 				getOrderStatusLabel({
-					orderStatusInfo: {code: 0, label: '', label_i18n: ''},
+					orderTypeExternalReferenceCode: 'DXP',
+				} as unknown as PlacedOrder)
+			).toBe('Pending');
+		});
+
+		it('ignores the order status label and the workflow status label', () => {
+			expect(
+				getOrderStatusLabel({
+					orderStatusInfo: {code: 0, label: 'Active', label_i18n: ''},
 					orderTypeExternalReferenceCode: 'SSA_SAAS',
 					workflowStatusInfo: {label: 'approved', label_i18n: ''},
 				} as unknown as PlacedOrder)
-			).toBe('approved');
+			).toBe('Completed');
 		});
 	});
 
@@ -184,6 +153,9 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 		it('tokenizes the order status label', () => {
 			expect(getOrderStatusToken(toPlacedOrder('DXP', 1))).toBe(
 				'pending'
+			);
+			expect(getOrderStatusToken(toPlacedOrder('DXP', 8))).toBe(
+				'canceled'
 			);
 		});
 	});
