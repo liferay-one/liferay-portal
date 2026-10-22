@@ -21,7 +21,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {batchItems, readJSON} from '../lib.ts';
+import {batchItems, inputFile, readJSON} from '../lib.ts';
 import {readConfig} from './config.ts';
 
 import type {IExtraction} from '../lib.ts';
@@ -65,11 +65,11 @@ const SNAPSHOTS_DIR = path.join(import.meta.dirname, 'snapshots');
 
 export function extract(): IExtraction {
 	const accepted = readJSON<IAccepted[]>(
-		path.join(import.meta.dirname, 'accepted.json')
+		inputFile(import.meta.dirname, 'accepted.json')
 	);
 
 	const environments = Object.keys(
-		readJSON(path.join(import.meta.dirname, 'environments.json'))
+		readJSON(inputFile(import.meta.dirname, 'environments.json'))
 	);
 
 	const problems: string[] = [];

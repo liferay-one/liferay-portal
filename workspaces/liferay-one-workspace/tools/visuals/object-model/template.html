@@ -61,6 +61,14 @@ svg.focus .edge.on path.vis { opacity: 1; stroke-width: 2.2; }
 svg.focus .edge.on text { display: block; }
 svg.focus .dom-title { opacity: 0.5; }
 .hidden-kind { display: none; }
+.node.chg-added rect.card { stroke: var(--ok); stroke-width: 2.5; }
+.node.chg-changed rect.card { stroke: var(--info); stroke-width: 2.5; }
+.node.ctx { opacity: 0.55; }
+.node .chgmark { font-family: var(--font-body); font-size: 10.5px; font-weight: 600; text-anchor: end; }
+.node.chg-added .chgmark { fill: var(--ok); }
+.node.chg-changed .chgmark { fill: var(--info); }
+.edge.chg-added path.vis, .edge.chg-changed path.vis { opacity: 1; stroke-width: 2.6; }
+.edge.chg-added text, .edge.chg-changed text { display: block; }
 
 aside.inspector { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; max-height: 80vh; overflow: auto; min-width: 0; }
 .inspector .empty { color: var(--muted); }
@@ -179,6 +187,25 @@ function el(tag, attrs = {}, parent) {
 }
 
 const ALL = LAYOUT.flatMap(([, members]) => members);
+
+// A comparison marks the objects and links that it adds or changes. With
+// Only changed on, the diagram shows the changed objects, the objects at the
+// other end of a changed link, and, dimmed, their direct neighbors.
+const CHANGES = DATA.__changes;
+const objectChange = erc => vizChange(CHANGES, `object:${erc}`);
+const edgeChange = id => vizChange(CHANGES, `relationship:${id}`);
+const changedObjects = new Set(ALL.filter(erc => objectChange(erc)));
+DATA.edges.filter(e => edgeChange(e.id)).forEach(e => { changedObjects.add(e.from); changedObjects.add(e.to); });
+
+function shownObjects() {
+	if (!CHANGES || !vizOnlyChanged(document)) return visible;
+	const shown = new Set(changedObjects);
+	DATA.edges.forEach(e => {
+		if (changedObjects.has(e.from)) shown.add(e.to);
+		if (changedObjects.has(e.to)) shown.add(e.from);
+	});
+	return shown;
+}
 const STORE_KEY = "object-model-visible-v1";
 let visible = new Set(ALL);
 try {
@@ -210,7 +237,9 @@ function fit(textEl, max) {
 const kindOn = k => document.getElementById(`k-${k}`).getAttribute("aria-pressed") === "true";
 
 function draw() {
-	const layout = LAYOUT.map(([dom, members]) => [dom, members.filter(erc => visible.has(erc))]).filter(([, members]) => members.length);
+	const shown = shownObjects();
+	const onlyChanged = shown !== visible;
+	const layout = LAYOUT.map(([dom, members]) => [dom, members.filter(erc => shown.has(erc))]).filter(([, members]) => members.length);
 	gDom.replaceChildren();
 	gEdges.replaceChildren();
 	gNodes.replaceChildren();
@@ -239,8 +268,14 @@ function draw() {
 
 	for (const erc of Object.keys(pos)) {
 		const n = N[erc], p = pos[erc];
-		const g = el("g", {class: `node ${n.kind}`, transform: `translate(${p.x},${p.y})`, tabindex: "0", role: "button", "aria-label": n.label}, gNodes);
+		const change = objectChange(erc);
+		const g = el("g", {class: `node ${n.kind}${change ? ` chg-${change.status}` : ""}${onlyChanged && !changedObjects.has(erc) ? " ctx" : ""}`, transform: `translate(${p.x},${p.y})`, tabindex: "0", role: "button", "aria-label": n.label}, gNodes);
+		if (change) g.dataset.change = change.status;
 		el("rect", {class: "card", width: CW, height: CH, rx: 7}, g);
+		if (change) {
+			const mark = el("text", {class: "chgmark", x: CW, y: -5}, g);
+			mark.textContent = change.status === "added" ? "new" : `changed: ${(change.fields ?? []).join(", ")}`;
+		}
 		el("rect", {x: 0, y: 8, width: 3, height: CH - 16, rx: 1.5, fill: `var(--d-${n.domain})`}, g);
 		const fc = el("text", {class: "cnt", x: CW - 10, y: 20}, g);
 		fc.textContent = n.fields.length ? `${n.fields.length} f` : "";
@@ -296,7 +331,8 @@ function draw() {
 			mx = (x1 + x2) / 2; my = (y1 + y2) / 2;
 		}
 		const kind = e.kind === "soft" ? "soft" : e.deletion;
-		const g = el("g", {class: `edge ${kind}${kindOn(kind) ? "" : " hidden-kind"}`}, gEdges);
+		const change = edgeChange(e.id);
+		const g = el("g", {class: `edge ${kind}${kindOn(kind) ? "" : " hidden-kind"}${change ? ` chg-${change.status}` : ""}`}, gEdges);
 		el("path", {class: "vis", d, "marker-end": `url(#m-${kind})`}, g);
 		el("path", {class: "hit", d}, g);
 		const t = el("text", {x: mx, y: my - 4, "text-anchor": "middle"}, g);
@@ -333,7 +369,7 @@ function selectNode(erc) {
 	const softByField = Object.fromEntries(out.filter(e => e.kind === "soft").map(e => [e.name, e]));
 	const kindText = {custom: "Custom object", system: "Liferay system object", virtual: "Liferay entity, no object definition"}[n.kind];
 	let h = `<div class="dom-pill"><i style="background:var(--d-${n.domain})"></i>${esc(domLabel[n.domain])}</div>
-		<h3 style="font-family:var(--font-display);font-size:20px">${esc(n.label)}</h3>
+		<h3 style="font-family:var(--font-display);font-size:20px">${esc(n.label)}${vizChangeBadge(CHANGES, `object:${erc}`)}</h3>
 
 		<dl class="kv"><dt>Type</dt><dd>${kindText}</dd>
 		<dt>Name</dt><dd><code>${esc(n.name)}</code></dd>
@@ -344,11 +380,11 @@ function selectNode(erc) {
 	const rels = [...out.map(e => ({e, other: e.to, dir: "parent of"})), ...inc.map(e => ({e, other: e.from, dir: "child of"}))].filter(r => r.e.kind === "relationship" || r.dir === "child of");
 	if (rels.length) {
 		h += `<div><div class="eyebrow">Links (${rels.length})</div><table><thead><tr><th>Link</th><th>Other side</th><th>Delete</th></tr></thead><tbody>` +
-			rels.map(({e, other, dir}) => `<tr><td><code>${esc(e.name)}</code>${e.kind === "soft" ? ` <span class="tag soft">soft</span>` : ""}</td><td>${e.from === e.to ? "itself" : `${dir} ${jump(other)}`}</td><td><span class="del ${e.kind === "soft" ? "soft" : e.deletion}">${e.kind === "soft" ? "none" : e.deletion}</span></td></tr>`).join("") + `</tbody></table></div>`;
+			rels.map(({e, other, dir}) => `<tr${edgeChange(e.id) ? ` data-change="${edgeChange(e.id).status}"` : ""}><td><code>${esc(e.name)}</code>${e.kind === "soft" ? ` <span class="tag soft">soft</span>` : ""}${vizChangeBadge(CHANGES, `relationship:${e.id}`)}</td><td>${e.from === e.to ? "itself" : `${dir} ${jump(other)}`}</td><td><span class="del ${e.kind === "soft" ? "soft" : e.deletion}">${e.kind === "soft" ? "none" : e.deletion}</span></td></tr>`).join("") + `</tbody></table></div>`;
 	}
 	if (n.fields.length) {
 		h += `<div><div class="eyebrow">Fields (${n.fields.length})</div><table><thead><tr><th>Field</th><th>Type</th></tr></thead><tbody>` +
-			n.fields.map(f => `<tr><td><code>${esc(f.name)}</code> ${f.required ? `<span class="tag req">required</span>` : ""}${f.state ? `<span class="tag">state</span>` : ""}${f.origin ? `<span class="tag">${esc(f.origin)}</span>` : ""}${softByField[f.name] ? `<span class="tag soft">→ ${esc(N[softByField[f.name].to].label)}</span>` : ""}</td><td>${esc(f.type)}${f.picklist ? `<br /><code style="font-size:11px;color:var(--muted)">${esc(f.picklist)}</code>` : ""}</td></tr>`).join("") + `</tbody></table></div>`;
+			n.fields.map(f => `<tr${vizChange(CHANGES, `field:${n.erc}.${f.name}`) ? ` data-change="${vizChange(CHANGES, `field:${n.erc}.${f.name}`).status}"` : ""}><td><code>${esc(f.name)}</code>${vizChangeBadge(CHANGES, `field:${n.erc}.${f.name}`)} ${f.required ? `<span class="tag req">required</span>` : ""}${f.state ? `<span class="tag">state</span>` : ""}${f.origin ? `<span class="tag">${esc(f.origin)}</span>` : ""}${softByField[f.name] ? `<span class="tag soft">→ ${esc(N[softByField[f.name].to].label)}</span>` : ""}</td><td>${esc(f.type)}${f.picklist ? `<br /><code style="font-size:11px;color:var(--muted)">${esc(f.picklist)}</code>` : ""}</td></tr>`).join("") + `</tbody></table></div>`;
 	}
 	if (n.actions.length) {
 		h += `<div><div class="eyebrow">Object actions</div><table><tbody>` + n.actions.map(a => `<tr><td><code>${esc(a.name)}</code></td><td>${esc(a.trigger)}<br /><span style="color:var(--muted);font-size:11.5px">${esc(a.executor)}</span></td></tr>`).join("") + `</tbody></table></div>`;
@@ -363,7 +399,7 @@ function selectEdge(id) {
 	highlight(new Set(), new Set([id]));
 	const kind = e.kind === "soft" ? "soft" : e.deletion;
 	inspector.innerHTML = `<div class="eyebrow">${e.kind === "soft" ? "Soft link" : "Relationship, one to many"}</div>
-		<h3 style="font-family:var(--font-display);font-size:20px;overflow-wrap:anywhere">${esc(e.name)}</h3>
+		<h3 style="font-family:var(--font-display);font-size:20px;overflow-wrap:anywhere">${esc(e.name)}${vizChangeBadge(CHANGES, `relationship:${e.id}`)}</h3>
 
 		<dl class="kv"><dt>${e.kind === "soft" ? "Field on" : "Parent"}</dt><dd>${jump(e.from)}</dd>
 		<dt>${e.kind === "soft" ? "Points to" : "Child"}</dt><dd>${jump(e.to)}</dd>
@@ -376,7 +412,15 @@ function emptyInspector() {
 	inspector.innerHTML = `<div class="empty"><h3 style="color:var(--fg)">Select an object</h3>
 		<p style="margin:6px 0 0">The Account has 16 relationships and is the center of the model. Most customer data is a child of the Account and of a Project.</p>
 
-		<ul><li>Arrows point from parent to child.</li><li>Line color is the deletion type.</li><li>The lock marks the ${restricted} account restricted objects.</li></ul></div>`;
+		<ul><li>Arrows point from parent to child.</li><li>Line color is the deletion type.</li><li>The lock marks the ${restricted} account restricted objects.</li></ul></div>${changedList()}`;
+}
+
+function changedList() {
+	if (!CHANGES) return "";
+	const objects = ALL.filter(erc => objectChange(erc));
+	const edges = DATA.edges.filter(e => edgeChange(e.id));
+	if (!objects.length && !edges.length) return "";
+	return `<div><div class="eyebrow">Changed in this comparison</div><table><tbody>${objects.map(erc => `<tr data-change="${objectChange(erc).status}"><td>${jump(erc)}${vizChangeBadge(CHANGES, `object:${erc}`)}</td></tr>`).join("")}${edges.map(e => `<tr data-change="${edgeChange(e.id).status}"><td><code>${esc(e.name)}</code>${vizChangeBadge(CHANGES, `relationship:${e.id}`)}<br /><span style="color:var(--muted);font-size:11.5px">${esc(N[e.from]?.label ?? e.from)} → ${esc(N[e.to]?.label ?? e.to)}</span></td></tr>`).join("")}</tbody></table></div>`;
 }
 
 inspector.addEventListener("click", ev => {
@@ -478,7 +522,7 @@ function renderPicker() {
 		</fieldset>`;
 	}).join("") : `<div class="picker-empty">No object matches.</div>`;
 	pickerList.querySelectorAll("[data-mixed]").forEach(i => { i.indeterminate = true; });
-	pickerSummary.textContent = visible.size === ALL.length ? `Objects: all ${ALL.length}` : `Objects: ${visible.size} of ${ALL.length}`;
+	pickerSummary.textContent = shownObjects() !== visible ? `Objects: changed and linked` : visible.size === ALL.length ? `Objects: all ${ALL.length}` : `Objects: ${visible.size} of ${ALL.length}`;
 }
 
 function applyVisible() {
@@ -499,6 +543,15 @@ pickerList.addEventListener("change", ev => {
 	applyVisible();
 });
 pickerFilter.addEventListener("input", renderPicker);
+document.addEventListener("viz-only-changed", () => {
+	selection = null;
+	draw();
+	clearHighlight();
+	emptyInspector();
+	sizeCanvas();
+	fitAll();
+	renderPicker();
+});
 document.getElementById("pick-all").addEventListener("click", () => { visible = new Set(ALL); applyVisible(); });
 document.getElementById("pick-none").addEventListener("click", () => { visible = new Set(); applyVisible(); });
 document.getElementById("pick-linked").addEventListener("click", () => {

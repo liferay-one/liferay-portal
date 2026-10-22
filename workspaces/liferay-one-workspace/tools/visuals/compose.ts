@@ -19,7 +19,16 @@
  *
  * A section mounts the first time it shows, so a diagram measures itself
  * while it is visible.
+ *
+ * In a comparison, a section whose data has __changes starts with a change
+ * bar: the counts of the added, changed, and removed items, the removed
+ * items, and an Only Changed switch. The switch sends a viz-only-changed
+ * event to the section, and the template reads it with vizOnlyChanged.
  */
+
+import {forLayer} from './changes.ts';
+
+import type {IChanges} from './lib.ts';
 
 export interface IPart {
 	data: unknown;
@@ -65,6 +74,16 @@ function scopedDocument(panel) {
 function scopedAddEventListener(panel) {
 	return (type, listener, options) => window.addEventListener(type, event => { if (!panel.closest("[hidden]")) listener(event); }, options);
 }
+
+document.addEventListener("click", event => {
+	const button = event.target.closest("[data-viz-only-changed]");
+	if (!button) return;
+	const bar = button.closest(".viz-changes");
+	const on = bar.dataset.on !== "true";
+	bar.dataset.on = String(on);
+	button.setAttribute("aria-pressed", String(on));
+	bar.dispatchEvent(new CustomEvent("viz-only-changed", {bubbles: true, detail: on}));
+});
 
 function mountPart(id, panel) {
 	try { MOUNTS[id](scopedDocument(panel), scopedAddEventListener(panel)); }
@@ -259,7 +278,7 @@ function _render(parts: IPart[]) {
 
 		styles.push(scopeCSS(style, `[data-part="${part.id}"]`));
 		panels.push(
-			`<section class="layer-panel" data-label="${part.label.replace(/"/g, '&quot;')}" data-part="${part.id}" hidden>${markup}</section>`
+			`<section class="layer-panel" data-label="${part.label.replace(/"/g, '&quot;')}" data-part="${part.id}" hidden>${_changesBar(part.data, part.params?.layer as string | undefined)}${markup}</section>`
 		);
 		mounts.push(
 			`${JSON.stringify(part.id)}: function (document, addEventListener) {${script}}`
@@ -267,4 +286,60 @@ function _render(parts: IPart[]) {
 	}
 
 	return {mounts: mounts.join(',\n'), panels, styles: styles.join('\n')};
+}
+
+/**
+ * Returns the change bar of a section in a comparison, or nothing at a point
+ * in time. Null changes mean that the extractor failed at the base. A section
+ * of a layer counts only the items of that layer.
+ */
+function _changesBar(data: unknown, layer?: string): string {
+	if (!data || typeof data !== 'object' || !('__changes' in data)) {
+		return '';
+	}
+
+	const allChanges = (data as {__changes: IChanges | null}).__changes;
+
+	const changes =
+		allChanges && layer ? forLayer(allChanges, layer) : allChanges;
+
+	if (!changes) {
+		return '<div class="viz-changes" data-on="false"><b>This comparison</b><span class="muted">The extractor failed at the base, so this section shows the head with no changes marked.</span></div>';
+	}
+
+	const {added, changed, removed} = changes.counts;
+
+	const esc = (text: string) =>
+		text.replace(/[&<>"]/g, (character) => `&#${character.charCodeAt(0)};`);
+
+	if (!added && !changed && !removed) {
+		return '<div class="viz-changes" data-on="false"><b>This comparison</b><span class="muted">No item in this section changed.</span></div>';
+	}
+
+	const on = added + changed > 0;
+
+	const kinds = Object.entries(changes.kinds)
+		.sort(([a], [b]) => a.localeCompare(b))
+		.map(
+			([kind, count]) =>
+				`${esc(kind)}: ${[
+					count.added && `${count.added} new`,
+					count.changed && `${count.changed} changed`,
+					count.removed && `${count.removed} removed`,
+				]
+					.filter(Boolean)
+					.join(', ')}`
+		)
+		.join(' · ');
+
+	return `<div class="viz-changes" data-on="${on}"><b>This comparison</b><span><span class="chg chg-added">${added} new</span><span class="chg chg-changed">${changed} changed</span><span class="chg chg-removed">${removed} removed</span></span><span class="muted">${kinds}</span>${on ? `<button aria-pressed="true" class="btn" data-viz-only-changed type="button">Only changed</button>` : ''}${
+		changes.removed.length
+			? `<details><summary>${removed} removed</summary><div class="chips">${changes.removed
+					.map(
+						(item) =>
+							`<span title="${esc(`${item.kind}: ${item.label}`)}">${esc(item.label.length > 90 ? `${item.label.slice(0, 89)}…` : item.label)}</span>`
+					)
+					.join('')}</div></details>`
+			: ''
+	}</div>`;
 }

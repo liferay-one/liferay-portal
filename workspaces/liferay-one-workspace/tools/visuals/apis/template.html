@@ -161,6 +161,20 @@ routes.forEach(r => {
 });
 const groupInfo = Object.fromEntries(DATA.groups.map(g => [g.id, g]));
 
+// In a comparison, the key of each item that apis/changes.ts gives it, and
+// whether the reader shows only the changed items.
+const CHANGES = DATA.__changes;
+const KEYS = {
+	endpoint: e => `endpoint:${e.key}`,
+	module: m => `module:${m.file}`,
+	route: r => `route:${r.group} ${r.path}`,
+	scope: r => `scope:${r.scope}`,
+};
+const changeOf = (type, item) => vizChange(CHANGES, KEYS[type](item));
+const badge = (type, item) => vizChangeBadge(CHANGES, KEYS[type](item));
+const changeAttr = (type, item) => { const c = changeOf(type, item); return c ? ` data-change="${c.status}"` : ""; };
+const onlyChanged = () => Boolean(CHANGES) && vizOnlyChanged(document);
+
 const state = {sel: null, search: "", group: "", kinds: new Set(KIND_ORDER), focus: null};
 
 const $ = id => document.getElementById(id);
@@ -249,6 +263,7 @@ function render() {
 		let list = routes.filter(r => r.group === g.id);
 		list = list.filter(r => matches(`${g.id} ${r.path} ${r.components.map(c => c.name + " " + c.file).join(" ")}`));
 		if (focus) list = list.filter(r => r.calls.some(c => focus.call(calls[c])));
+		if (onlyChanged()) list = list.filter(r => changeOf("route", r));
 		if (rel && state.sel.type !== "route") list.sort((a, b) => rel.routes.has(b.id) - rel.routes.has(a.id));
 		if (!list.length) continue;
 		const where = g.id === SHELL ? "every placement" : (g.pages.map(p => p.url).filter(Boolean).join(", ") || "not placed on a page");
@@ -262,7 +277,7 @@ function render() {
 			if (r.missing) badges.push(`<span class="tag missing" title="Reaches a call with no controller">no controller</span>`);
 			if (r.unchecked) badges.push(`<span class="tag high" title="Reaches an endpoint that takes no Jwt and reaches no permission check">unchecked</span>`);
 			badges.push(`<span class="tag" title="${r.sidecar} sidecar, ${r.liferay} Liferay">${r.calls.length}</span>`);
-			routeHTML.push(`<button class="${cls.join(" ")}" type="button" data-route="${r.id}"><span class="main">${esc(r.path)}</span><span class="badges">${badges.join("")}</span><span class="sub">${esc(r.components.map(c => c.name).join(", "))}${r.gate ? ` · <span class="tag gate">${esc(r.gate)}</span>` : ""}</span></button>`);
+			routeHTML.push(`<button class="${cls.join(" ")}"${changeAttr("route", r)} type="button" data-route="${r.id}"><span class="main">${esc(r.path)}${badge("route", r)}</span><span class="badges">${badges.join("")}</span><span class="sub">${esc(r.components.map(c => c.name).join(", "))}${r.gate ? ` · <span class="tag gate">${esc(r.gate)}</span>` : ""}</span></button>`);
 		}
 	}
 	$("routes").innerHTML = routeHTML.join("") || `<div class="empty-note">No route matches.</div>`;
@@ -278,6 +293,7 @@ function render() {
 		let list = modules.filter(m => m.kind === k && matches(m.file));
 		if (groupRoutes) list = list.filter(m => m.calls.some(c => groupRoutes.has(c)));
 		if (focus) list = list.filter(m => m.calls.some(c => focus.call(calls[c])));
+		if (onlyChanged()) list = list.filter(m => changeOf("module", m));
 		if (rel) list.sort((a, b) => rel.modules.has(b.file) - rel.modules.has(a.file));
 		if (!list.length) continue;
 		modHTML.push(`<div class="grp"><span>${kindLabel[k]}</span><span>${list.length}</span></div>`);
@@ -293,7 +309,7 @@ function render() {
 			if (miss) badges.push(`<span class="tag missing">no controller</span>`);
 			if (!reached) badges.push(`<span class="tag quiet">no route</span>`);
 			badges.push(`<span class="tag">${m.calls.length}</span>`);
-			modHTML.push(`<button class="${cls.join(" ")}" type="button" data-module="${esc(m.file)}"><span class="main">${esc(base(m.file))}</span><span class="badges">${badges.join("")}</span><span class="sub mono">${esc(dir(m.file))}</span></button>`);
+			modHTML.push(`<button class="${cls.join(" ")}"${changeAttr("module", m)} type="button" data-module="${esc(m.file)}"><span class="main">${esc(base(m.file))}${badge("module", m)}</span><span class="badges">${badges.join("")}</span><span class="sub mono">${esc(dir(m.file))}</span></button>`);
 		}
 	}
 	$("modules").innerHTML = modHTML.join("") || `<div class="empty-note">No module matches.</div>`;
@@ -307,6 +323,7 @@ function render() {
 		let list = endpoints.filter(e => e.kind === k && matches(`${e.method} ${e.path} ${e.controller ?? ""} ${e.handler ?? ""} ${e.auth?.checks.join(" ") ?? ""}`));
 		if (groupRoutes) list = list.filter(e => e.calls.some(c => groupRoutes.has(c)));
 		if (focus) list = list.filter(focus.endpoint);
+		if (onlyChanged()) list = list.filter(e => changeOf("endpoint", e));
 		if (!list.length) continue;
 		// Group sidecar endpoints by controller and Liferay endpoints by API.
 		const sub = {};
@@ -331,7 +348,7 @@ function render() {
 				if (e.kind === "sidecar" && !e.routes.length) badges.push(e.category === "objectAction" ? `<span class="tag quiet">object action</span>` : `<span class="tag quiet">no route calls it</span>`);
 				if (e.routes.length) badges.push(`<span class="tag">${e.routes.length}</span>`);
 				const subline = e.kind === "sidecar" ? `${e.controller}.${e.handler}` : e.kind === "missing" ? "No sidecar controller maps this path" : "";
-				epHTML.push(`<button class="${cls.join(" ")}" type="button" data-endpoint="${esc(e.key)}"><span class="main">${method(e.method)}${esc(e.path)}</span><span class="badges">${badges.join("")}</span>${subline ? `<span class="sub">${esc(subline)}</span>` : ""}</button>`);
+				epHTML.push(`<button class="${cls.join(" ")}"${changeAttr("endpoint", e)} type="button" data-endpoint="${esc(e.key)}"><span class="main">${method(e.method)}${esc(e.path)}${badge("endpoint", e)}</span><span class="badges">${badges.join("")}</span>${subline ? `<span class="sub">${esc(subline)}</span>` : ""}</button>`);
 			}
 		}
 	}
@@ -422,7 +439,7 @@ document.addEventListener("click", ev => {
 });
 $("search").addEventListener("input", ev => { state.search = ev.target.value.trim().toLowerCase(); render(); });
 
-// A link from Workspace Health names an endpoint that the search or the route
+// A link from Workspace Report names an endpoint that the search or the route
 // group can hide. Clear both, so the highlight can find it.
 document.addEventListener("viz-find", () => {
 	if (!state.search && !state.group) return;
@@ -436,5 +453,13 @@ document.addEventListener("keydown", ev => { if (ev.key === "Escape") { state.se
 render();
 
 // OAuth2 scopes.
-$("scopes").innerHTML = `<table><thead><tr><th>Scope</th><th>Status</th><th>Declared by</th><th>Called from</th></tr></thead><tbody>${DATA.scopes.map(r => `<tr><td class="scope">${esc(r.scope)}${r.readOnly && r.status !== "missing" ? ` <span class="tag">read only</span>` : ""}</td><td>${r.status === "covered" ? `<span class="tag">declared</span>` : r.status === "missing" ? `<span class="tag high">not declared</span>` : `<span class="tag quiet">unused</span>`}</td><td class="mono" style="font-size:12px">${r.declaredBy.map(n => `<span title="${esc(n)}">${esc(n.replace("liferay-one-etc-spring-boot-", ""))}</span>`).join(", ") || "—"}</td><td class="mono" style="font-size:12px;overflow-wrap:anywhere">${r.files.map(f => esc(f.split("/").pop())).join(", ") || "—"}</td></tr>`).join("")}</tbody></table>`;
+function renderScopes() {
+	const list = onlyChanged() ? DATA.scopes.filter(r => changeOf("scope", r)) : DATA.scopes;
+	$("scopes").innerHTML = `<table><thead><tr><th>Scope</th><th>Status</th><th>Declared by</th><th>Called from</th></tr></thead><tbody>${list.map(r => `<tr${changeAttr("scope", r)}><td class="scope">${esc(r.scope)}${badge("scope", r)}${r.readOnly && r.status !== "missing" ? ` <span class="tag">read only</span>` : ""}</td><td>${r.status === "covered" ? `<span class="tag">declared</span>` : r.status === "missing" ? `<span class="tag high">not declared</span>` : `<span class="tag quiet">unused</span>`}</td><td class="mono" style="font-size:12px">${r.declaredBy.map(n => `<span title="${esc(n)}">${esc(n.replace("liferay-one-etc-spring-boot-", ""))}</span>`).join(", ") || "—"}</td><td class="mono" style="font-size:12px;overflow-wrap:anywhere">${r.files.map(f => esc(f.split("/").pop())).join(", ") || "—"}</td></tr>`).join("")}</tbody></table>`;
+	if (!list.length) $("scopes").innerHTML = `<div class="empty-note">No scope changed.</div>`;
+}
+
+renderScopes();
+
+document.addEventListener("viz-only-changed", () => { render(); renderScopes(); });
 </script>

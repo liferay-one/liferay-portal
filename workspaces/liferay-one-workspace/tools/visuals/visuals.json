@@ -99,9 +99,9 @@
 		"title": "View"
 	},
 	"workspace-health": {
-		"description": "Everything to act on, and what the code is. Overview and Workspace, then a tab for each layer: its actions, then its visuals. Workspace shows the dependencies and the custom element build, the tests and their coverage of the test plan, the change hotspots, and the specs. Model shows the objects, the access, the environments, and the batch file rules. View shows the pages, the fragments, and the custom element rules. Controller shows the APIs, the events, and the sidecar rules.",
+		"description": "Everything to act on, and what the code is, as a snapshot of one commit or a comparison of two refs. Overview and Workspace, then a tab for each layer: its actions, then its visuals. In a comparison, every tab marks what each tab adds, changes, and removes, and, for a feature branch, Overview ends with the lifecycle: the artifact of each phase of the change. Workspace shows the dependencies and the custom element build, the tests and their coverage of the test plan, the change hotspots, and the specs. Model shows the objects, the access, the environments, and the batch file rules. View shows the pages, the fragments, and the custom element rules. Controller shows the APIs, the events, and the sidecar rules.",
 		"icon": "checklist",
-		"title": "Workspace Health",
+		"title": "Workspace Report",
 		"url": "https://claude.ai/artifact/DDdL84zazbK3HrQiq5wjGR"
 	}
 }

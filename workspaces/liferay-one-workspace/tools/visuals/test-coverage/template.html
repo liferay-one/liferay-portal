@@ -137,6 +137,13 @@ const TIER_LABEL = Object.fromEntries(TIERS);
 const NO_EPIC = "No epic";
 
 const itemById = new Map(DATA.items.map(i => [i.id, i]));
+
+// In a comparison, each requirement and plan item shows whether the head
+// added it or changed its coverage, and Only Changed keeps only those.
+const CHANGES = DATA.__changes;
+const reqKey = r => `requirement:${r.id}`;
+const itemKey = i => `test:${i.id}`;
+const changedOnly = (key, x) => !vizOnlyChanged(document) || Boolean(vizChange(CHANGES, key(x)));
 const state = {mode: "area", status: new Set(KLASSES), reqStatus: new Set(REQ_KLASSES), tiers: new Set(TIERS.map(t => t[0])), query: "", selected: null};
 
 const $ = id => document.getElementById(id);
@@ -175,12 +182,12 @@ function matches(text) {
 }
 
 function visibleItems() {
-	return DATA.items.filter(i => state.status.has(i.klass) && state.tiers.has(i.tier) && matches(`${i.id} ${i.requirement}`));
+	return DATA.items.filter(i => state.status.has(i.klass) && state.tiers.has(i.tier) && matches(`${i.id} ${i.requirement}`) && changedOnly(itemKey, i));
 }
 
 function visibleRequirements() {
 	return DATA.requirements.filter(r => {
-		if (!state.reqStatus.has(r.klass) || !matches(`${r.id} ${r.text}`)) return false;
+		if (!state.reqStatus.has(r.klass) || !matches(`${r.id} ${r.text}`) || !changedOnly(reqKey, r)) return false;
 		const cited = r.verifiedBy.map(id => itemById.get(id)).filter(Boolean);
 		return !cited.length || cited.some(i => state.tiers.has(i.tier));
 	});
@@ -207,6 +214,7 @@ function groups() {
 		g.counts = Object.fromEntries(keys.map(k => [k, g.members.filter(m => m.klass === k).length]));
 		g.gap = gapKeys.reduce((s, k) => s + g.counts[k], 0);
 		g.total = g.members.length;
+		g.changed = CHANGES ? g.members.filter(m => vizChange(CHANGES, state.mode === "area" ? reqKey(m) : itemKey(m))).length : 0;
 		return g;
 	});
 	return list.sort((a, b) => (a.key === NO_EPIC) - (b.key === NO_EPIC) || b.gap - a.gap || b.total - a.total || a.key.localeCompare(b.key));
@@ -222,11 +230,11 @@ function render() {
 	$("rows").innerHTML = list.length ? list.map(g => {
 		const segs = keys.filter(k => g.counts[k]).map(k => `<i class="s-${k}" style="flex:${g.counts[k]}" data-tip="${esc(`${g.key}: ${MARK[k]} ${g.counts[k]} ${LABEL[k].toLowerCase()} of ${g.total} ${noun}`)}"></i>`).join("");
 		return `<div class="row${g.key === state.selected ? " sel" : ""}" role="option" tabindex="0" aria-selected="${g.key === state.selected}" data-key="${esc(g.key)}">
-			<div class="name"><b>${esc(g.key)}</b><small>${esc(g.sub || `${g.total} ${noun}`)}</small></div>
+			<div class="name"><b>${esc(g.key)}</b><small>${esc(g.sub || `${g.total} ${noun}`)}${g.changed ? ` · ${g.changed} changed` : ""}</small></div>
 			<div class="track"><div class="bar">${segs}</div></div>
 			<div class="gap"><b>${g.gap}</b> open of ${g.total}</div>
 		</div>`;
-	}).join("") : `<p class="empty">Nothing matches these filters. Turn a status or tier back on, or clear the search.</p>`;
+	}).join("") : `<p class="empty">${vizOnlyChanged(document) ? "No requirement or plan item that matches these filters changed. Turn off Only changed to see them all." : "Nothing matches these filters. Turn a status or tier back on, or clear the search."}</p>`;
 	drill(list.find(g => g.key === state.selected));
 	tiers();
 }
@@ -245,14 +253,14 @@ function drill(g) {
 	const rank = {uncovered: 0, pending: 1, real: 2, deferred: 3, unverified: 0, partial: 1, verified: 2};
 	const members = [...g.members].sort((a, b) => rank[a.klass] - rank[b.klass] || a.id.localeCompare(b.id));
 	const body = state.mode === "area"
-		? members.map(r => `<div class="entry">
-			<div class="entry-top">${pill(r.klass)}<code>${esc(r.id)}</code><span class="tag">${esc(r.priority)}</span>${r.tickets ? `<span class="tag">${esc(r.tickets)}</span>` : ""}</div>
+		? members.map(r => `<div class="entry"${vizChange(CHANGES, reqKey(r)) ? ` data-change="${vizChange(CHANGES, reqKey(r)).status}"` : ""}>
+			<div class="entry-top">${pill(r.klass)}<code>${esc(r.id)}</code>${vizChangeBadge(CHANGES, reqKey(r))}<span class="tag">${esc(r.priority)}</span>${r.tickets ? `<span class="tag">${esc(r.tickets)}</span>` : ""}</div>
 			<p>${esc(r.text)}</p>
 			<div class="cites">${r.verifiedBy.length ? r.verifiedBy.map(id => { const i = itemById.get(id); return `<span title="${esc(i ? `${LABEL[i.klass]} · ${TIER_LABEL[i.tier]} · ${i.requirement}` : "Not a plan item")}"><i class="key k-${i ? i.klass : "deferred"}"></i>${esc(id)}</span>`; }).join("") : `<span class="empty">Cites no plan item</span>`}</div>
 			<div class="meta">${r.real} of ${r.verifiedBy.length} cited items real · ${esc(r.file)}</div>
 		</div>`).join("")
-		: members.map(i => `<div class="entry">
-			<div class="entry-top">${pill(i.klass)}<code>${esc(i.id)}</code><span class="tag">${esc(TIER_LABEL[i.tier])}</span><span class="tag">${esc(i.priority)}</span></div>
+		: members.map(i => `<div class="entry"${vizChange(CHANGES, itemKey(i)) ? ` data-change="${vizChange(CHANGES, itemKey(i)).status}"` : ""}>
+			<div class="entry-top">${pill(i.klass)}<code>${esc(i.id)}</code>${vizChangeBadge(CHANGES, itemKey(i))}<span class="tag">${esc(TIER_LABEL[i.tier])}</span><span class="tag">${esc(i.priority)}</span></div>
 			<p>${esc(i.requirement)}</p>
 			<div class="meta">${tests(i)}</div>
 			<div class="meta">${i.requirements.length ? `Cited by ${i.requirements.map(esc).join(", ")}` : (i.traceable ? "No requirement cites it" : "")} · tests/plan/${esc(i.file)}.md:${i.line}</div>
@@ -337,6 +345,8 @@ document.addEventListener("pointermove", e => {
 	tip.style.top = `${y}px`;
 });
 document.addEventListener("pointerleave", () => { tip.hidden = true; });
+
+document.addEventListener("viz-only-changed", () => { state.selected = null; render(); });
 
 tiles();
 chips();

@@ -16,6 +16,7 @@
 .hits { border-top: 1px solid var(--line); overflow-x: auto; }
 .hits td.where { color: var(--muted); font-family: var(--font-mono); font-size: 12px; white-space: nowrap; width: 1%; }
 .hits td.code { font-family: var(--font-mono); font-size: 12px; overflow-wrap: anywhere; }
+.hits tr.gone td.code { color: var(--muted); text-decoration: line-through; }
 .rules { display: grid; gap: 10px; }
 .tile.zero b { color: var(--ok); }
 </style>
@@ -46,6 +47,22 @@
 const DATA = __DATA__;
 const PARAMS = __PARAMS__;
 
+// In a comparison, each match has the key that rules/changes.ts gives it:
+// its rule, its file, and its code with the spaces collapsed, numbered after
+// a # when the same code repeats in a file. The keys are built before the
+// layer filter, because changes.ts numbers the matches of every layer.
+
+const CHANGES = DATA.__changes;
+for (const r of DATA.rules) {
+	const seen = new Map();
+	for (const h of r.hits) {
+		const key = `hit:${r.id}|${h.file}|${h.text.replace(/\s+/g, " ").trim()}`;
+		const count = (seen.get(key) ?? 0) + 1;
+		seen.set(key, count);
+		h.key = count > 1 ? `${key}\u0001${count}` : key;
+	}
+}
+
 // On a layer page, the tab shows the rules that apply to that layer, with
 // the matches in its code only.
 
@@ -72,15 +89,41 @@ $("tiles").innerHTML = DATA.rules.map(r => `<div class="tile${r.hits.length ? ""
 const open = new Set();
 let query = "";
 
+// A rule changed in a comparison when a match was added or removed, or when
+// its text changed. The head has no removed match, so each one comes from
+// the change bar's list, by the kind that names this layer. With Only
+// Changed, the tab shows the rules with a new or removed match in this
+// layer, or whose text changed, and only those matches.
+
+const LAYER_KIND = {controller: "sidecar rule matches", model: "batch file rule matches", view: "custom element rule matches"}[PARAMS.layer];
+
+function removedHits(r) {
+	return (CHANGES?.removed ?? [])
+		.filter(item => item.key.startsWith(`hit:${r.id}|`) && (!LAYER_KIND || item.kind === LAYER_KIND))
+		.map(item => {
+			const [, file, ...text] = item.key.replace(/\u0001\d+$/, "").split("|");
+			return {file, text: text.join("|")};
+		});
+}
+
+function ruleChanged(r) {
+	const change = vizChange(CHANGES, `rule:${r.id}`);
+	return r.hits.some(h => vizChange(CHANGES, h.key)) || removedHits(r).length > 0 || change?.status === "added" || (change?.fields ?? []).some(f => f !== "hits");
+}
+
 function render() {
 	const q = query.toLowerCase();
-	$("rules").innerHTML = DATA.rules.map(r => {
-		const hits = r.hits.filter(h => !q || `${h.file} ${h.text}`.toLowerCase().includes(q));
-		return `<details class="rule" data-rule="${r.id}" id="rule-${r.id}" ${open.has(r.id) || (q && hits.length) ? "open" : ""}>
-			<summary><h3>${esc(r.title)}</h3><span class="count${r.hits.length ? "" : " zero"}">${q ? `${hits.length}/` : ""}${r.hits.length}</span><p>${esc(r.description)}</p><span class="meta">${r.rule.endsWith(".md") ? ".agents/rules/" + esc(r.rule) : esc(r.rule)}${r.tracked ? ` · tracked as ${esc(r.tracked)}` : ""}</span></summary>
-			${hits.length ? `<div class="hits"><table><tbody>${hits.map(h => `<tr><td class="where">${esc(short(h.file))}:${h.line}</td><td class="code">${esc(h.text)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0 14px 12px">No match.</p>`}
+	const only = CHANGES && vizOnlyChanged(document);
+	const rules = only ? DATA.rules.filter(ruleChanged) : DATA.rules;
+	$("rules").innerHTML = rules.map(r => {
+		const fresh = r.hits.filter(h => vizChange(CHANGES, h.key));
+		const gone = removedHits(r).filter(h => !q || `${h.file} ${h.text}`.toLowerCase().includes(q));
+		const hits = (only ? fresh : r.hits).filter(h => !q || `${h.file} ${h.text}`.toLowerCase().includes(q));
+		return `<details class="rule" data-rule="${r.id}" id="rule-${r.id}" ${open.has(r.id) || (q && hits.length) || (only && hits.length + gone.length) ? "open" : ""}>
+			<summary><h3>${esc(r.title)}${vizChangeBadge(CHANGES, `rule:${r.id}`)}${fresh.length ? ` <span class="chg chg-added">${fresh.length} new ${fresh.length === 1 ? "match" : "matches"}</span>` : ""}${gone.length ? ` <span class="chg chg-removed">${gone.length} removed</span>` : ""}</h3><span class="count${r.hits.length ? "" : " zero"}">${q ? `${hits.length}/` : ""}${r.hits.length}</span><p>${esc(r.description)}</p><span class="meta">${r.rule.endsWith(".md") ? ".agents/rules/" + esc(r.rule) : esc(r.rule)}${r.tracked ? ` · tracked as ${esc(r.tracked)}` : ""}</span></summary>
+			${hits.length + gone.length ? `<div class="hits"><table><tbody>${hits.map(h => `<tr${vizChange(CHANGES, h.key) ? ` data-change="${vizChange(CHANGES, h.key).status}"` : ""}><td class="where">${esc(short(h.file))}:${h.line}${vizChangeBadge(CHANGES, h.key)}</td><td class="code">${esc(h.text)}</td></tr>`).join("")}${gone.map(h => `<tr class="gone" data-change="removed"><td class="where">${esc(short(h.file))}<span class="chg chg-removed">removed</span></td><td class="code">${esc(h.text)}</td></tr>`).join("")}</tbody></table></div>` : `<p class="muted" style="margin:0 14px 12px">No match.</p>`}
 		</details>`;
-	}).join("");
+	}).join("") || (only ? `<p class="muted">No rule in this layer changed.</p>` : "");
 }
 
 document.addEventListener("toggle", ev => {
@@ -89,6 +132,7 @@ document.addEventListener("toggle", ev => {
 	d.open ? open.add(d.dataset.rule) : open.delete(d.dataset.rule);
 }, true);
 $("search").addEventListener("input", ev => { query = ev.target.value.trim(); render(); });
+document.addEventListener("viz-only-changed", render);
 
 render();
 </script>

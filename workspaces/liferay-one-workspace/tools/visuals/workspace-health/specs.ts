@@ -24,6 +24,7 @@ import {
 	SITE_INITIALIZER_DIR,
 	SPRING_BOOT_DIR,
 	WORKSPACE_ROOT,
+	inputFile,
 	listFiles,
 	readJSON,
 	relative,
@@ -62,7 +63,7 @@ const JDK_CLASSES = new Set([
  * The paths that the specs name on other hosts, each with the reason.
  */
 const EXTERNAL_PATHS = readJSON<Record<string, string>>(
-	path.join(import.meta.dirname, 'external-paths.json')
+	inputFile(import.meta.dirname, 'external-paths.json')
 );
 
 const FILE = /^[\w./-]+\.(java|json|md|properties|sh|ts|tsx|yaml|yml)$/;

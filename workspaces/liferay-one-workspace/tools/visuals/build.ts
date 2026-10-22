@@ -20,7 +20,8 @@
  *
  * Usage:
  *
- *   node tools/visuals/build.ts [--check] [--actions <file>] [page ...]
+ *   node tools/visuals/build.ts [--check] [--data <file>] [--ref <ref>]
+ *       [--base <ref>] [page ...]
  *
  * A problem is either hand-maintained input in tools/visuals/<visual>/ that
  * no longer matches the code, or a defect in the code that an extractor can
@@ -30,17 +31,40 @@
  * known-defects.json does not list, or on an entry in known-defects.json that
  * no longer matches a problem, because the defect it records is fixed.
  *
- * --actions writes every action of every visual to a JSON file. diff.ts uses
- * it to compare two checkouts.
+ * --data runs every extractor and writes their data and actions to a JSON
+ * file, and writes no page. A comparison uses it to read its base.
+ *
+ * --ref reads the workspace at a branch, a tag, or a commit hash instead of
+ * the working tree. The current extractors and templates read that ref's
+ * source and its own hand-maintained input.
+ *
+ * Without --base, the build shows a point in time: the workspace as it is
+ * at the head. With --base, it shows a comparison: what the head adds to the
+ * base, from their merge base, as on a GitHub compare page. The build reads
+ * the merge base with --data, and gives each visual that lists its items in
+ * <visual>/changes.ts the items that the head adds, changes, and removes.
+ * workspace-health then shows the Lifecycle tab and the new and resolved
+ * actions.
  */
 
+import {execFileSync, spawnSync} from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
+import {compareItems} from './changes.ts';
+import {resolveBase, resolveCommit, withCheckout} from './checkout.ts';
 import {embed, fill} from './compose.ts';
-import {readJSON} from './lib.ts';
+import {WORKSPACE_ROOT, inputFile, readJSON} from './lib.ts';
 
-import type {IAction, IExtractContext, IExtraction} from './lib.ts';
+import type {
+	IAction,
+	IChangeItem,
+	IChanges,
+	IComparison,
+	IExtractContext,
+	IExtraction,
+} from './lib.ts';
 
 interface IKnownDefect {
 	match: string;
@@ -71,7 +95,11 @@ interface IPage {
 
 const VISUALS_DIR = import.meta.dirname;
 
-const BUILD_DIR = path.join(VISUALS_DIR, 'build');
+/**
+ * VIZ_BUILD_DIR writes the pages somewhere else, so that two builds can run
+ * at the same time.
+ */
+const BUILD_DIR = process.env.VIZ_BUILD_DIR ?? path.join(VISUALS_DIR, 'build');
 
 const HEALTH = 'workspace-health';
 
@@ -92,23 +120,72 @@ const args = process.argv.slice(2);
 
 const check = args.includes('--check');
 
-const actionsFile = args.includes('--actions')
-	? args[args.indexOf('--actions') + 1]
-	: null;
+const VALUE_OPTIONS = ['--base', '--data', '--ref'];
+
+const option = (name: string) =>
+	args.includes(name) ? args[args.indexOf(name) + 1] : null;
+
+const dataFile = option('--data');
+
+const base = option('--base');
+
+const ref = option('--ref');
+
+if (base) {
+	resolveCommit(base);
+}
+
+// A ref is read from its own checkout. The build runs again with
+// VIZ_WORKSPACE_ROOT set to that checkout, because every extractor reads the
+// root when it loads.
+
+if (ref && !process.env.VIZ_WORKSPACE_ROOT) {
+	const commit = resolveCommit(ref);
+
+	const status = withCheckout(
+		commit,
+		(root) =>
+			spawnSync(
+				process.execPath,
+				[
+					import.meta.filename,
+					...args.filter(
+						(arg, index) =>
+							arg !== '--ref' && args[index - 1] !== '--ref'
+					),
+				],
+				{
+					env: {
+						...process.env,
+						VIZ_REF: ref,
+						VIZ_WORKSPACE_ROOT: root,
+					},
+					stdio: 'inherit',
+				}
+			).status
+	);
+
+	process.exit(status ?? 1);
+}
+
+const comparison = base ? _comparison(base) : null;
+
+const baseExtraction = comparison ? _baseExtraction(comparison) : null;
 
 const registry = readJSON<Record<string, IPage>>(
 	path.join(VISUALS_DIR, 'visuals.json')
 );
 
 const knownDefects = readJSON<IKnownDefect[]>(
-	path.join(VISUALS_DIR, 'known-defects.json')
+	inputFile(VISUALS_DIR, 'known-defects.json')
 );
 
 // A layer or a section that shows inside a page builds that page.
 
 const requested = args
 	.filter(
-		(arg, index) => !arg.startsWith('--') && args[index - 1] !== '--actions'
+		(arg, index) =>
+			!arg.startsWith('--') && !VALUE_OPTIONS.includes(args[index - 1])
 	)
 	.map((name) => registry[name]?.page ?? name);
 
@@ -164,7 +241,7 @@ const visualsOf = (name: string) => [
 
 const extractVisuals = [
 	...new Set(
-		pageNames.includes(HEALTH) || actionsFile
+		pageNames.includes(HEALTH) || dataFile
 			? [...places.keys()]
 			: pageNames.flatMap(visualsOf)
 	),
@@ -172,7 +249,9 @@ const extractVisuals = [
 
 const loudVisuals = new Set(pageNames.flatMap(visualsOf));
 
-if (!check) {
+const writePages = !check && !dataFile;
+
+if (writePages) {
 	fs.mkdirSync(path.join(BUILD_DIR, 'artifact'), {recursive: true});
 
 	// A page or a visual that visuals.json no longer lists stays in build/
@@ -205,6 +284,8 @@ const actions: IAction[] = [];
 
 const extractions = new Map<string, IExtraction>();
 
+const changes: Record<string, IChanges | null> = {};
+
 for (const visual of extractVisuals) {
 	const quiet = !loudVisuals.has(visual);
 
@@ -221,6 +302,9 @@ for (const visual of extractVisuals) {
 	try {
 		extraction = await extract({
 			actions,
+			base: baseExtraction,
+			changes,
+			comparison,
 			places: Object.fromEntries(places),
 			visuals: Object.fromEntries(
 				Object.entries(registry).map(([name, page]) => [
@@ -243,6 +327,13 @@ for (const visual of extractVisuals) {
 	}
 
 	extractions.set(visual, extraction);
+
+	if (comparison && fs.existsSync(path.join(visualDir, 'changes.ts'))) {
+		changes[visual] = await _changes(extraction.data, visual);
+
+		(extraction.data as Record<string, unknown>).__changes =
+			changes[visual];
+	}
 
 	const place = places.get(visual)!;
 
@@ -301,11 +392,22 @@ for (const visual of extractVisuals) {
 	}
 }
 
-if (actionsFile) {
-	fs.writeFileSync(actionsFile, JSON.stringify(actions, null, '\t'));
+if (dataFile) {
+	fs.writeFileSync(
+		dataFile,
+		JSON.stringify({
+			actions,
+			data: Object.fromEntries(
+				[...extractions].map(([visual, extraction]) => [
+					visual,
+					extraction.data,
+				])
+			),
+		})
+	);
 }
 
-if (!check) {
+if (writePages) {
 	for (const name of pageNames) {
 		const page = registry[name];
 
@@ -339,7 +441,7 @@ if (!check) {
 		);
 
 		console.log(
-			`${name.padEnd(24)} ${(html.length / 1024).toFixed(0).padStart(5)} KB  build/${name}.html`
+			`${name.padEnd(24)} ${(html.length / 1024).toFixed(0).padStart(5)} KB  ${path.relative(process.cwd(), path.join(BUILD_DIR, `${name}.html`))}`
 		);
 	}
 
@@ -371,6 +473,94 @@ if (warnings) {
 
 if (failed || (check && warnings)) {
 	process.exit(1);
+}
+
+/**
+ * Reads every visual at the merge base of a comparison. A build of that
+ * commit with --data runs the current extractors against it.
+ */
+function _baseExtraction(comparison: IComparison): {
+	actions: IAction[];
+	data: Record<string, unknown>;
+} {
+	const file = path.join(
+		fs.mkdtempSync(path.join(os.tmpdir(), 'viz-base-')),
+		'base.json'
+	);
+
+	const env: NodeJS.ProcessEnv = {...process.env};
+
+	delete env.VIZ_REF;
+	delete env.VIZ_WORKSPACE_ROOT;
+
+	try {
+		const result = spawnSync(
+			process.execPath,
+			[
+				import.meta.filename,
+				'--data',
+				file,
+				'--ref',
+				comparison.mergeBase,
+			],
+			{encoding: 'utf8', env}
+		);
+
+		if (!fs.existsSync(file)) {
+			console.error(
+				`Unable to read the base ${comparison.base.ref}:\n${result.stderr}`
+			);
+
+			process.exit(1);
+		}
+
+		return readJSON(file);
+	}
+	finally {
+		fs.rmSync(path.dirname(file), {force: true, recursive: true});
+	}
+}
+
+/**
+ * Compares the items of a visual at the merge base and at the head. Null
+ * means that the base has no data for the visual, because its extractor
+ * failed there, or that the base data has a shape that changes.ts cannot
+ * read.
+ */
+async function _changes(
+	data: unknown,
+	visual: string
+): Promise<IChanges | null> {
+	const baseData = baseExtraction?.data[visual];
+
+	if (baseData === undefined) {
+		return null;
+	}
+
+	const {changeItems} = (await import(
+		path.join(VISUALS_DIR, visual, 'changes.ts')
+	)) as {changeItems: (data: any) => IChangeItem[]};
+
+	try {
+		return compareItems(changeItems(baseData), changeItems(data));
+	}
+	catch (error) {
+		console.error(`${visual}: unable to compare with the base: ${error}`);
+
+		return null;
+	}
+}
+
+function _comparison(base: string): IComparison {
+	const head = execFileSync('git', ['rev-parse', 'HEAD'], {
+		cwd: WORKSPACE_ROOT,
+		encoding: 'utf8',
+	}).trim();
+
+	return {
+		base: {ref: base, sha: resolveCommit(base)},
+		mergeBase: resolveBase(base, head)!.sha,
+	};
 }
 
 function _index(): string {

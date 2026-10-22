@@ -54,6 +54,8 @@ table.matrix { border-collapse: separate; border-spacing: 0; font-size: 13px; }
 .cell:hover { background: var(--accent-soft); }
 .cell.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
 .cell .g { display: inline-flex; align-items: center; gap: 2px; }
+.cell[data-change="added"] { box-shadow: inset 0 0 0 2px var(--ok); }
+.cell[data-change="changed"] { box-shadow: inset 0 0 0 2px var(--info); }
 .mark { width: 9px; height: 9px; display: inline-block; flex: none; }
 .mark.s1 { background: var(--fg); }
 .mark.s2 { background: linear-gradient(135deg, var(--fg) 50%, transparent 50%); border: 1.5px solid var(--fg); }
@@ -187,6 +189,16 @@ const KIND_TEXT = {
 const ABBR = {VIEW: "V", ADD_OBJECT_ENTRY: "A", UPDATE: "U", DELETE: "D", PERMISSIONS: "P"};
 const TYPES = ["regular", "account", "site", "organization"];
 
+// In a comparison, a grant and a role have the keys that
+// permission-matrix/changes.ts gives them.
+const CHANGES = DATA.__changes;
+const grantKey = g => `grant:${g.role}|${g.resource}|${g.scope}|${g.primKey ?? ""}`;
+const roleKey = r => `role:${r.erc || r.name}`;
+const grantChange = g => vizChange(CHANGES, grantKey(g));
+const onlyChanged = () => Boolean(CHANGES) && vizOnlyChanged(document);
+// A cell shows the strongest change among its grants.
+const cellChange = list => list.some(g => grantChange(g)?.status === "added") ? "added" : list.some(grantChange) ? "changed" : null;
+
 const roles = Object.fromEntries(DATA.roles.map(r => [r.name, r]));
 const resources = Object.fromEntries(DATA.resources.map(r => [r.id, r]));
 const objects = Object.fromEntries(DATA.objects.map(o => [o.name, o]));
@@ -203,8 +215,10 @@ const $ = id => document.getElementById(id);
 $("generated").textContent = DATA.generated;
 
 function visibleGrants() {
+	const only = onlyChanged();
 	return DATA.grants.filter(g => {
 		const role = roles[g.role], res = resources[g.resource];
+		if (only && !grantChange(g)) return false;
 		if (!state.types.has(role.type)) return false;
 		if (state.action && !g.actions.includes(state.action)) return false;
 		if (state.objectsOnly && res.group !== "Objects") return false;
@@ -220,10 +234,10 @@ function render() {
 	const colSet = new Set(grants.map(g => g.role));
 	let rows = DATA.resources.filter(r => {
 		if (state.objectsOnly && r.group !== "Objects") return false;
-		if (!rowSet.has(r.id) && !(state.emptyRows && r.group === "Objects" && r.kind !== "object-admin" && !state.action)) return false;
+		if (!rowSet.has(r.id) && !(state.emptyRows && !onlyChanged() && r.group === "Objects" && r.kind !== "object-admin" && !state.action)) return false;
 		return true;
 	});
-	let cols = DATA.roles.filter(r => state.types.has(r.type) && (state.allRoles || colSet.has(r.name)));
+	let cols = DATA.roles.filter(r => state.types.has(r.type) && ((state.allRoles && !onlyChanged()) || colSet.has(r.name)));
 	cols.sort((a, b) => TYPES.indexOf(a.type) - TYPES.indexOf(b.type) || Number(b.broad) - Number(a.broad) || a.name.localeCompare(b.name));
 	if (state.q) {
 		const roleHits = cols.filter(r => matches(r.name));
@@ -264,12 +278,13 @@ function render() {
 			const label = actions.length === 1 ? (ABBR[actions[0]] || actions[0].slice(0, 1)) : actions.length;
 			const scopes = [...new Set(list.map(g => g.scope))];
 			const sel = selection?.type === "cell" && selection.role === role.name && selection.resource === res.id;
-			const title = `${role.name} on ${res.label} (${KIND[res.kind]}): ${actions.join(", ")} · ${scopes.map(s => SCOPE[s][0]).join(", ")} scope`;
-			h += `<td class="${colSel ? "colsel" : ""}"><button class="cell${sel ? " sel" : ""}" data-cell="${esc(res.id)}" data-role="${esc(role.name)}" title="${esc(title)}" aria-label="${esc(title)}"><span class="g">${scopes.map(s => `<i class="mark s${s}"></i>`).join("")}${label}</span></button></td>`;
+			const change = cellChange(list);
+			const title = `${role.name} on ${res.label} (${KIND[res.kind]}): ${actions.join(", ")} · ${scopes.map(s => SCOPE[s][0]).join(", ")} scope${change ? ` · ${change === "added" ? "new" : "changed"} in this comparison` : ""}`;
+			h += `<td class="${colSel ? "colsel" : ""}"><button class="cell${sel ? " sel" : ""}"${change ? ` data-change="${change}"` : ""} data-cell="${esc(res.id)}" data-role="${esc(role.name)}" title="${esc(title)}" aria-label="${esc(title)}"><span class="g">${scopes.map(s => `<i class="mark s${s}"></i>`).join("")}${label}</span></button></td>`;
 		}
 		h += "</tr>";
 	}
-	if (!rows.length) h += `<tr><th scope="row" style="color:var(--muted)">No grants match these filters.</th></tr>`;
+	if (!rows.length) h += `<tr><th scope="row" style="color:var(--muted)">${onlyChanged() ? "No grant changed in this comparison." : "No grants match these filters."}</th></tr>`;
 	h += "</tbody>";
 	$("matrix").innerHTML = h;
 }
@@ -280,7 +295,7 @@ function grantRows(list, show) {
 		const cells = {
 			Role: `<button class="jump" data-goto-role="${esc(g.role)}">${esc(g.role)}</button>`,
 			Resource: `<button class="jump" data-goto-resource="${esc(g.resource)}">${esc(res.label)}</button> <span class="tag">${KIND[res.kind]}</span>`,
-			Actions: `<div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}</div>`,
+			Actions: `<div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}${vizChangeBadge(CHANGES, grantKey(g))}</div>`,
 			Scope: `<span style="display:inline-flex;gap:5px;align-items:center"><i class="mark s${g.scope}"></i>${SCOPE[g.scope][0]}</span>`
 		};
 		return `<tr>${show.map(c => `<td>${cells[c]}</td>`).join("")}</tr>`;
@@ -298,14 +313,14 @@ function renderDetail() {
 		const res = resources[selection.resource], role = roles[selection.role];
 		const list = byCell[res.id + "\u0000" + role.name] || [];
 		d.innerHTML = `<div><div class="eyebrow">Grant</div><h3>${esc(role.name)} on ${esc(res.label)}</h3></div>
-			${list.map(g => `<dl class="kv"><dt>Actions</dt><dd><div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}</div></dd><dt>Scope</dt><dd><b>${g.scope} · ${SCOPE[g.scope][0]}.</b> ${SCOPE[g.scope][1]}</dd>${g.primKey ? `<dt>Record</dt><dd class="mono">${esc(g.primKey)}</dd>` : ""}<dt>Resource</dt><dd class="mono">${esc(res.raw)}</dd><dt>Source</dt><dd class="mono">${esc(g.source)}</dd></dl>`).join("")}
+			${list.map(g => `<dl class="kv"><dt>Actions</dt><dd><div class="acts">${g.actions.map(a => `<code>${esc(a)}</code>`).join("")}${vizChangeBadge(CHANGES, grantKey(g))}</div></dd><dt>Scope</dt><dd><b>${g.scope} · ${SCOPE[g.scope][0]}.</b> ${SCOPE[g.scope][1]}</dd>${g.primKey ? `<dt>Record</dt><dd class="mono">${esc(g.primKey)}</dd>` : ""}<dt>Resource</dt><dd class="mono">${esc(res.raw)}</dd><dt>Source</dt><dd class="mono">${esc(g.source)}</dd></dl>`).join("")}
 			<p><button class="jump" data-goto-role="${esc(role.name)}">Everything ${esc(role.name)} holds</button> · <button class="jump" data-goto-resource="${esc(res.id)}">Every role on ${esc(res.label)}</button></p>`;
 		return;
 	}
 	if (selection.type === "role") {
 		const role = roles[selection.role];
 		const list = DATA.grants.filter(g => g.role === role.name);
-		d.innerHTML = `<div><div class="eyebrow">Role</div><h3>${esc(role.name)}</h3></div>
+		d.innerHTML = `<div><div class="eyebrow">Role</div><h3>${esc(role.name)}${vizChangeBadge(CHANGES, roleKey(role))}</h3></div>
 			<dl class="kv"><dt>Type</dt><dd>${role.type}${role.builtin ? ", Liferay built in" : ""}</dd>${role.erc ? `<dt>ERC</dt><dd class="mono">${esc(role.erc)}</dd>` : ""}<dt>Held by</dt><dd>${role.broad ? "Every user or visitor" : role.admin ? "Administrators" : "Users assigned the role"}</dd><dt>Grants</dt><dd>${list.length}</dd></dl>
 			${list.length ? grantRows(list, ["Resource", "Actions", "Scope"]) : `<p>The site initializer grants this role nothing. Its permissions, if any, come from somewhere else, such as the role definition in the Control Panel.</p>`}`;
 		return;
@@ -339,7 +354,8 @@ function heldFilter(role) { return role.heldOn === "contact" ? "project" : role.
 
 function renderRoles() {
 	const q = roleState.q;
-	const list = DATA.roles.filter(r => roleState.held.has(heldFilter(r)) && (!q || (r.name + " " + (r.erc || "") + " " + (r.purpose || "")).toLowerCase().includes(q)));
+	const only = onlyChanged();
+	const list = DATA.roles.filter(r => roleState.held.has(heldFilter(r)) && (!only || vizChange(CHANGES, roleKey(r))) && (!q || (r.name + " " + (r.erc || "") + " " + (r.purpose || "")).toLowerCase().includes(q)));
 	let h = `<table><thead><tr><th>Role</th><th>Held On</th><th>Purpose</th><th>Grants</th><th>Products</th><th>Code</th></tr></thead><tbody>`;
 	for (const group of DATA.groups) {
 		const rows = list.filter(r => r.group === group.id).sort((a, b) => a.name.localeCompare(b.name));
@@ -347,7 +363,8 @@ function renderRoles() {
 		h += `<tr class="grp"><td colspan="6"><b>${esc(group.label)}</b><span>${esc(group.text)}</span></td></tr>`;
 		for (const r of rows) {
 			const [held, heldText] = HELD[r.heldOn];
-			h += `<tr><td class="nm"><button class="jump" data-goto-role="${esc(r.name)}">${esc(r.name)}</button>${r.erc ? `<span class="erc">${esc(r.erc)}</span>` : ""}</td>
+			const change = vizChange(CHANGES, roleKey(r));
+			h += `<tr${change ? ` data-change="${change.status}"` : ""}><td class="nm"><button class="jump" data-goto-role="${esc(r.name)}">${esc(r.name)}</button>${vizChangeBadge(CHANGES, roleKey(r))}${r.erc ? `<span class="erc">${esc(r.erc)}</span>` : ""}</td>
 				<td><span class="tag held ${r.heldOn}" title="${esc(heldText)}">${held}</span></td>
 				<td>${esc(r.purpose || "")}</td>
 				<td class="num">${grantCount[r.name] || ""}</td>
@@ -355,7 +372,7 @@ function renderRoles() {
 				<td>${r.references.length ? `<details><summary>${r.references.length} ${r.references.length === 1 ? "file" : "files"}</summary><ul>${r.references.map(p => `<li>${esc(p)}</li>`).join("")}</ul></details>` : ""}</td></tr>`;
 		}
 	}
-	if (!list.length) h += `<tr><td colspan="6" style="color:var(--muted)">No role matches these filters.</td></tr>`;
+	if (!list.length) h += `<tr><td colspan="6" style="color:var(--muted)">${only ? "No role changed in this comparison." : "No role matches these filters."}</td></tr>`;
 	$("roles").innerHTML = h + "</tbody></table>";
 }
 
@@ -435,8 +452,9 @@ function setup() {
 	});
 	$("role-search").addEventListener("input", e => { roleState.q = e.target.value.trim().toLowerCase(); renderRoles(); });
 	document.addEventListener("keydown", e => { if (e.key === "Escape") select(null); });
+	document.addEventListener("viz-only-changed", () => { render(); renderRoles(); });
 
-	// A link from Workspace Health names an object that a filter can hide.
+	// A link from Workspace Report names an object that a filter can hide.
 	// Show its row and select it, so the highlight can find it.
 	document.addEventListener("viz-find", e => {
 		const res = Object.values(resources).find(r => r.label === e.detail);

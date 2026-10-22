@@ -6,7 +6,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {BATCH_DIR, SITE_INITIALIZER_DIR, batchItems, readJSON} from '../lib.ts';
+import {
+	BATCH_DIR,
+	SITE_INITIALIZER_DIR,
+	batchItems,
+	inputFile,
+	readJSON,
+} from '../lib.ts';
 
 import type {IExtraction} from '../lib.ts';
 
@@ -133,10 +139,10 @@ const SYSTEM_OBJECTS: Record<string, {label: string; name: string}> = {
 
 export function extract(): IExtraction {
 	const config = readJSON<IConfig>(
-		path.join(import.meta.dirname, 'config.json')
+		inputFile(import.meta.dirname, 'config.json')
 	);
 	const findings = readJSON<IFinding[]>(
-		path.join(import.meta.dirname, 'findings.json')
+		inputFile(import.meta.dirname, 'findings.json')
 	);
 
 	const problems: string[] = [];

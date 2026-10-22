@@ -5,7 +5,7 @@
 
 /**
  * Finds the element that shows an item and highlights it. A link from
- * Workspace Health names the item of an action, such as an endpoint or a
+ * Workspace Report names the item of an action, such as an endpoint or a
  * variable, and the page that opens calls vizHighlight with it. build.ts
  * puts this script on every page, after theme.css.
  *
@@ -88,6 +88,7 @@ function vizFind(root, item) {
  */
 function vizHighlight(root, item) {
 	return new Promise((resolve) => {
+		let onlyChanged = null;
 		let tries = 0;
 
 		const attempt = () => {
@@ -107,6 +108,19 @@ function vizHighlight(root, item) {
 					);
 				}
 
+				// In a comparison, Only Changed can hide an item that did not
+				// change, so the search turns it off after a first miss.
+
+				if (tries === 3) {
+					onlyChanged = (
+						root.closest('.layer-panel') ?? root
+					).querySelector('.viz-changes[data-on="true"]');
+
+					onlyChanged
+						?.querySelector('[data-viz-only-changed]')
+						?.click();
+				}
+
 				setTimeout(attempt, 100);
 
 				return;
@@ -114,6 +128,13 @@ function vizHighlight(root, item) {
 
 			if (element) {
 				vizMark(element);
+			}
+			else {
+
+				// The item is not on the page at all, so the reader's choice
+				// comes back.
+
+				onlyChanged?.querySelector('[data-viz-only-changed]')?.click();
 			}
 
 			resolve(element);
@@ -159,4 +180,38 @@ function vizNormalize(text) {
 	return String(text ?? '')
 		.replace(/\s+/g, '')
 		.toLowerCase();
+}
+
+/**
+ * The change helpers of a comparison. A visual's DATA.__changes holds what
+ * the comparison found in it, and is undefined at a point in time. Each item
+ * of the visual has the key that its changes.ts gives it.
+ */
+
+function vizChange(changes, key) {
+	return changes?.items?.[key] ?? null;
+}
+
+function vizChangeBadge(changes, key) {
+	const change = vizChange(changes, key);
+
+	if (!change) {
+		return '';
+	}
+
+	const title =
+		change.status === 'added'
+			? 'Added in this comparison'
+			: `Changed in this comparison: ${(change.fields ?? []).join(', ')}`;
+
+	return `<span class="chg chg-${change.status}" title="${title.replace(/"/g, '&quot;')}">${change.status === 'added' ? 'new' : 'changed'}</span>`;
+}
+
+/**
+ * Returns whether the reader chose to see only the changed items. The
+ * change bar at the top of the section holds the choice, and it sends a
+ * viz-only-changed event when the choice changes.
+ */
+function vizOnlyChanged(root) {
+	return root.querySelector('.viz-changes')?.dataset.on === 'true';
 }

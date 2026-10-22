@@ -36,7 +36,7 @@ Run `yarn viz:check` again until it exits 0.
 
 ## 3. Publish
 
-Security detail. Workspace Health shows where the audit found exploitable defects, in its actions and in the Model and Controller tabs. Publish it private, and do not share their links until the S findings in the Go-Live Tasks artifact are fixed.
+Security detail. Workspace Report shows where the audit found exploitable defects, in its actions and in the Model and Controller tabs. Publish it private, and do not share their links until the S findings in the Go-Live Tasks artifact are fixed.
 
 Read `tools/visuals/visuals.json`. For each visual you built:
 
@@ -51,10 +51,10 @@ Give the user one line per visual: its name, its link, and the number of open pr
 
 ## Add a Visual
 
-1. Create `tools/visuals/<name>/extract.ts`. Export `extract()`, which returns `{data, problems, actions}`. Show only the current state in `data`. Return what needs attention in `actions`, which go to Workspace Health. Read the source of truth with the helpers in `tools/visuals/lib.ts`.
+1. Create `tools/visuals/<name>/extract.ts`. Export `extract()`, which returns `{data, problems, actions}`. Show only the current state in `data`. Return what needs attention in `actions`, which go to Workspace Report. Read the source of truth with the helpers in `tools/visuals/lib.ts`.
 
 1. Create `tools/visuals/<name>/template.html`. Put `const DATA = __DATA__;` in its script. Follow the artifact page contract: no `<!doctype>`, `<html>`, `<head>`, or `<body>`, and a `<title>` first. Use the classes and tokens in `tools/visuals/theme.css`, and do not copy its rules.
 
-1. Add the visual as a tab of the Model, View, or Controller layer in `tools/visuals/visuals.json`. Each layer shows inside Workspace Health, after its actions. A visual that spans the layers, like `test-coverage`, is a tab of an entry whose `layer` is `workspace`, and it shows inside a section of the Workspace tab. Add a page of its own, with `url` set to `null`, only when it belongs inside no tab of Workspace Health.
+1. Add the visual as a tab of the Model, View, or Controller layer in `tools/visuals/visuals.json`. Each layer shows inside Workspace Report, after its actions. A visual that spans the layers, like `test-coverage`, is a tab of an entry whose `layer` is `workspace`, and it shows inside a section of the Workspace tab. Add a page of its own, with `url` set to `null`, only when it belongs inside no tab of Workspace Report.
 
 1. Build, fix the problems, and publish as above.

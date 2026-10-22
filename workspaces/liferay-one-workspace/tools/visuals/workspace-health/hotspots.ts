@@ -7,6 +7,7 @@
  * Ranks the source files of the workspace that change most often, weighted
  * by their size: a large file that many commits touch is where a change is
  * most likely to break something, and where knowledge is most concentrated.
+ * At a ref, the window ends at that ref's commit.
  */
 
 import {execFileSync} from 'child_process';
@@ -23,11 +24,24 @@ export function readHotspots() {
 	let log = '';
 
 	try {
+
+		// A report at a ref counts the days before that ref's commit, so an
+		// old tag still has its history.
+
+		const until = process.env.VIZ_REF
+			? Date.parse(
+					execFileSync('git', ['log', '-1', '--format=%cI', 'HEAD'], {
+						cwd: WORKSPACE_ROOT,
+						encoding: 'utf8',
+					}).trim()
+				)
+			: Date.now();
+
 		log = execFileSync(
 			'git',
 			[
 				'log',
-				`--since=${DAYS}.days`,
+				`--since=${new Date(until - DAYS * 86400000).toISOString()}`,
 				'--format=%x00%ae',
 				'--name-only',
 				'--relative',

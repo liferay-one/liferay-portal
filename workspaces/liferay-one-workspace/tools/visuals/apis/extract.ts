@@ -10,6 +10,7 @@ import {
 	CUSTOM_ELEMENT_DIR,
 	SITE_INITIALIZER_DIR,
 	SPRING_BOOT_DIR,
+	inputFile,
 	listFiles,
 	readJSON,
 	relative,
@@ -62,7 +63,7 @@ const APP_SHELL = 'app-shell';
 
 export function extract(): IExtraction {
 	const config = readJSON<IConfig>(
-		path.join(import.meta.dirname, 'config.json')
+		inputFile(import.meta.dirname, 'config.json')
 	);
 
 	const problems: string[] = [];

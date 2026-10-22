@@ -23,6 +23,7 @@ import {
 	CUSTOM_ELEMENT_DIR,
 	SPRING_BOOT_DIR,
 	batchItems,
+	inputFile,
 	listFiles,
 	readJSON,
 	relative,
@@ -902,7 +903,7 @@ function _model() {
 			externalReferenceCode: string;
 			reason: string;
 		}[];
-	}>(path.join(import.meta.dirname, 'config.json'));
+	}>(inputFile(import.meta.dirname, 'config.json'));
 
 	const definitions = batchItems(path.basename(definitionsFile));
 	const relationships = batchItems(path.basename(relationshipsFile));

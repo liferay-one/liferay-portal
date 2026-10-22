@@ -9,8 +9,10 @@
  * visuals of their layer after the actions. This page adds the actions that
  * span the layers: the dependencies, the bundle health of the custom
  * element, the tests, and the specs. It also shows where each action is
- * tracked, how old each snapshot is, and, after `yarn viz:diff`, which
- * actions the current branch adds.
+ * tracked and how old each snapshot is. In a comparison, built with --base,
+ * it also marks the actions that the head adds and lists the ones it
+ * resolves, reads the deltas of its own sections from the base, and shows
+ * the Lifecycle tab: the artifact of each phase of the change.
  *
  * The problems are a pinned resolution with no reason, a reason with no
  * pin, and an accepted advisory that no locked package has any more. The
@@ -21,24 +23,22 @@ import {execFileSync} from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {CUSTOM_ELEMENT_DIR, WORKSPACE_ROOT, readJSON} from '../lib.ts';
+import {forLayer} from '../changes.ts';
+import {
+	CUSTOM_ELEMENT_DIR,
+	WORKSPACE_ROOT,
+	actionKey,
+	inputFile,
+	readJSON,
+} from '../lib.ts';
 import {readBundle} from './bundle.ts';
 import {readDependencies} from './dependencies.ts';
 import {readHotspots} from './hotspots.ts';
+import {readHead, readLifecycle} from './lifecycle.ts';
 import {readSpecs} from './specs.ts';
 import {HISTORY_FILE, readTests} from './tests.ts';
 
-import type {IAction, IExtractContext, IExtraction} from '../lib.ts';
-
-interface IDiff {
-	added: string[];
-	base: string;
-	date: string;
-	head: string;
-	resolved: string[];
-}
-
-const DIFF_FILE = path.join(import.meta.dirname, '..', 'build', 'diff.json');
+import type {IAction, IChanges, IExtractContext, IExtraction} from '../lib.ts';
 
 const ENVIRONMENT_SNAPSHOTS_DIR = path.join(
 	import.meta.dirname,
@@ -52,7 +52,7 @@ const ENVIRONMENT_SNAPSHOTS_DIR = path.join(
  * advisory is not an action.
  */
 const ACCEPTED_VULNERABILITIES = readJSON<Record<string, string>>(
-	path.join(import.meta.dirname, 'vulnerabilities.json')
+	inputFile(import.meta.dirname, 'vulnerabilities.json')
 );
 
 /**
@@ -105,22 +105,216 @@ export function extract(context?: IExtractContext): IExtraction {
 			null,
 	}));
 
+	const comparison = context?.comparison ?? null;
+
+	const head = readHead();
+
+	const lifecycle = readLifecycle(comparison, head);
+
+	const baseHealth = context?.base?.data['workspace-health'] as
+		| undefined
+		| {
+				actions: IAction[];
+				dependencies: typeof dependencies;
+				specs: typeof specs.specs;
+				tests: typeof tests;
+		  };
+
 	return {
 		data: {
 			actions,
 			bundle,
+			changes: _changeCounts(context?.changes ?? {}),
+			comparison: comparison && {
+				...comparison,
+				deltas: {
+					dependencies: _dependencyDelta(
+						baseHealth?.dependencies ?? null,
+						dependencies
+					),
+					markers: _markerDelta(baseHealth?.tests ?? null, tests),
+					specs: _specDelta(baseHealth?.specs ?? null, specs.specs),
+				},
+				diff: _actionDiff(
+					baseHealth?.actions ?? context?.base?.actions ?? [],
+					actions
+				),
+			},
 			dependencies,
-			diff: _diff(),
 			freshness: _freshness(dependencies.snapshot?.fetched ?? null),
 			generated: new Date().toISOString().slice(0, 10),
-			github: _github(),
+			github: _github(head),
+			head,
 			hotspots: readHotspots(),
+			lifecycle,
+			mode: comparison ? 'diff' : 'snapshot',
 			places: context?.places ?? {},
 			specs: specs.specs,
 			tests,
 			visuals: context?.visuals ?? {},
 		},
 		problems,
+	};
+}
+
+/**
+ * The actions that the head adds to the base, by key, and the ones that it
+ * resolves.
+ */
+function _actionDiff(baseActions: IAction[], headActions: IAction[]) {
+	const baseKeys = new Set(baseActions.map(actionKey));
+	const headKeys = new Set(headActions.map(actionKey));
+
+	return {
+		added: [
+			...new Set(
+				headActions
+					.filter((action) => !baseKeys.has(actionKey(action)))
+					.map(actionKey)
+			),
+		],
+		resolved: [
+			...new Map(
+				baseActions
+					.filter((action) => !headKeys.has(actionKey(action)))
+					.map((action) => [actionKey(action), action])
+			).values(),
+		].map((action) => ({
+			layer: action.layer,
+			severity: action.severity,
+			title: action.title,
+			visual: action.visual,
+		})),
+	};
+}
+
+/**
+ * The added, changed, and removed counts of each visual that a comparison
+ * marks, in all and for each layer, because a visual such as the rules
+ * shows in a tab of each layer. Null means that the extractor failed at the
+ * base.
+ */
+function _changeCounts(changes: Record<string, IChanges | null>) {
+	return Object.fromEntries(
+		Object.entries(changes).map(([visual, change]) => [
+			visual,
+			change && {
+				...change.counts,
+				layers: Object.fromEntries(
+					['controller', 'model', 'view'].map((layer) => [
+						layer,
+						forLayer(change, layer).counts,
+					])
+				),
+			},
+		])
+	);
+}
+
+/**
+ * The dependencies that the head adds, removes, or declares or locks at
+ * another version.
+ */
+function _dependencyDelta(
+	base: null | ReturnType<typeof readDependencies>,
+	head: ReturnType<typeof readDependencies>
+) {
+	if (!base) {
+		return null;
+	}
+
+	const key = (dependency: {ecosystem: string; name: string}) =>
+		`${dependency.ecosystem}:${dependency.name}`;
+
+	const before = new Map(
+		base.dependencies.map((dependency) => [key(dependency), dependency])
+	);
+	const after = new Map(
+		head.dependencies.map((dependency) => [key(dependency), dependency])
+	);
+
+	const describe = (dependency?: {declared: string; version?: string}) =>
+		dependency ? dependency.version ?? dependency.declared : null;
+
+	return [
+		...[...after].map(([name, dependency]) => ({
+			after: describe(dependency),
+			before: describe(before.get(name)),
+			ecosystem: dependency.ecosystem,
+			kind: dependency.kind,
+			name: dependency.name,
+		})),
+		...[...before]
+			.filter(([name]) => !after.has(name))
+			.map(([, dependency]) => ({
+				after: null,
+				before: describe(dependency),
+				ecosystem: dependency.ecosystem,
+				kind: dependency.kind,
+				name: dependency.name,
+			})),
+	]
+		.filter((dependency) => dependency.before !== dependency.after)
+		.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The tests that the head newly skips or focuses, and the ones it enables
+ * again. A marker is the same at two refs when its file, kind, and text are.
+ */
+function _markerDelta(
+	base: null | ReturnType<typeof readTests>,
+	head: ReturnType<typeof readTests>
+) {
+	if (!base) {
+		return null;
+	}
+
+	const key = (marker: {file: string; kind: string; text: string}) =>
+		`${marker.file}\u0000${marker.kind}\u0000${marker.text}`;
+
+	const baseKeys = new Set(base.markers.map(key));
+	const headKeys = new Set(head.markers.map(key));
+
+	return {
+		added: head.markers.filter((marker) => !baseKeys.has(key(marker))),
+		removed: base.markers.filter((marker) => !headKeys.has(key(marker))),
+	};
+}
+
+/**
+ * The names in backticks that each spec newly misses, and the ones it no
+ * longer misses, because the code or the spec changed.
+ */
+function _specDelta(
+	base: null | ReturnType<typeof readSpecs>['specs'],
+	head: ReturnType<typeof readSpecs>['specs']
+) {
+	if (!base) {
+		return null;
+	}
+
+	const missing = (specs: typeof head) =>
+		new Set(
+			specs.flatMap((spec) =>
+				spec.references
+					.filter((reference) => !reference.ok)
+					.map((reference) => `${spec.file}\u0000${reference.name}`)
+			)
+		);
+
+	const before = missing(base);
+	const after = missing(head);
+
+	const split = (key: string) => {
+		const [file, name] = key.split('\u0000');
+
+		return {file, name};
+	};
+
+	return {
+		fixed: [...before].filter((key) => !after.has(key)).map(split),
+		stale: [...after].filter((key) => !before.has(key)).map(split),
 	};
 }
 
@@ -224,31 +418,6 @@ function _dependencyActions(
 }
 
 /**
- * Returns the comparison that `yarn viz:diff` wrote, when it was made at the
- * current HEAD. A comparison from another commit names the wrong base and
- * the wrong new actions, so it is left out.
- */
-function _diff(): IDiff | null {
-	if (!fs.existsSync(DIFF_FILE)) {
-		return null;
-	}
-
-	const diff = readJSON<IDiff>(DIFF_FILE);
-
-	try {
-		const head = execFileSync('git', ['rev-parse', 'HEAD'], {
-			cwd: WORKSPACE_ROOT,
-			encoding: 'utf8',
-		}).trim();
-
-		return diff.head === head ? diff : null;
-	}
-	catch {
-		return null;
-	}
-}
-
-/**
  * Returns the age of each snapshot that a page reads, and the command that
  * refreshes it.
  */
@@ -299,10 +468,11 @@ function _freshness(dependenciesFetched: null | string) {
 
 /**
  * Returns the base URL of the workspace on GitHub, so that an action can
- * link to its source. VIZ_GITHUB_REF sets the branch, which is master-temp
- * on the liferay-one fork by default.
+ * link to its source. VIZ_GITHUB_REF sets the branch. A report at a ref
+ * links to that commit, and a report of the working tree to master-temp on
+ * the liferay-one fork by default.
  */
-function _github(): null | string {
+function _github(head: {sha: string; worktree: boolean}): null | string {
 	try {
 		const run = (...args: string[]) =>
 			execFileSync('git', args, {
@@ -326,7 +496,11 @@ function _github(): null | string {
 
 		const ref =
 			process.env.VIZ_GITHUB_REF ??
-			(remote === 'liferay-one' ? 'master-temp' : 'master');
+			(!head.worktree
+				? head.sha
+				: remote === 'liferay-one'
+					? 'master-temp'
+					: 'master');
 
 		return slug
 			? `https://github.com/${slug}/blob/${ref}/${run('rev-parse', '--show-prefix')}`

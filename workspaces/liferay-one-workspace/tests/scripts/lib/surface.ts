@@ -6,12 +6,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export const WORKSPACE_ROOT = path.resolve(
-	import.meta.dirname,
-	'..',
-	'..',
-	'..'
-);
+export const WORKSPACE_ROOT =
+	process.env.VIZ_WORKSPACE_ROOT ??
+	path.resolve(import.meta.dirname, '..', '..', '..');
 
 export const CUSTOM_ELEMENT_SRC = path.join(
 	WORKSPACE_ROOT,

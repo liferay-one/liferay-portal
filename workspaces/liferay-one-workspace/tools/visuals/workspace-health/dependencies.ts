@@ -14,7 +14,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {WORKSPACE_ROOT, listFiles, readJSON, relative} from '../lib.ts';
+import {
+	WORKSPACE_ROOT,
+	inputFile,
+	listFiles,
+	readJSON,
+	relative,
+} from '../lib.ts';
 
 export interface IDependency {
 	declared: string;
@@ -57,7 +63,7 @@ export const SNAPSHOT_FILE = path.join(
 export function readDependencies(problems: string[]) {
 	const lock = readLockfile();
 	const pins = readJSON<Record<string, string>>(
-		path.join(import.meta.dirname, 'pins.json')
+		inputFile(import.meta.dirname, 'pins.json')
 	);
 
 	const dependencies = new Map<string, IDependency>();

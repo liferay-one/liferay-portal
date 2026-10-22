@@ -12,6 +12,7 @@ import {
 	SPRING_BOOT_DIR,
 	WORKSPACE_ROOT,
 	batchItems,
+	inputFile,
 	listFiles,
 	readJSON,
 	relative,
@@ -150,7 +151,7 @@ const SCOPES: Scope[] = ['1', '2', '3', '4'];
 
 export function extract(): IExtraction {
 	const config = readJSON<IConfig>(
-		path.join(import.meta.dirname, 'config.json')
+		inputFile(import.meta.dirname, 'config.json')
 	);
 
 	const problems: string[] = [];
@@ -229,7 +230,7 @@ export function extract(): IExtraction {
 	const grants: IGrant[] = [];
 
 	const roleCatalog = readJSON<IRoleCatalog>(
-		path.join(import.meta.dirname, 'roles.json')
+		inputFile(import.meta.dirname, 'roles.json')
 	);
 
 	_describeRoles(
@@ -471,7 +472,8 @@ function _describeRoles(
 			role.purpose = description.purpose;
 		}
 
-		role.products = role.erc ? (productNames.get(role.erc) ?? []) : [];
+		role.products = role.erc ? productNames.get(role.erc) ?? [] : [];
+
 		// A Liferay role with no ERC has a common word as its name, such as
 		// User, so a search for the name finds labels, not the role.
 
@@ -535,7 +537,7 @@ function _contactRoleProductNames(): Map<string, string[]> {
 			const value =
 				typeof specification.value === 'string'
 					? specification.value
-					: (specification.value?.en_US ?? '');
+					: specification.value?.en_US ?? '';
 
 			for (const erc of value.split(',')) {
 				const trimmedERC = erc.trim();

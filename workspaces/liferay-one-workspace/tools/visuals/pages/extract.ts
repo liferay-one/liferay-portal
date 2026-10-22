@@ -9,8 +9,13 @@
  * element route groups placed on it; the navigation menus; and the fragment
  * collections. It reuses the APIs extractor for the routes and the caller
  * check of each endpoint that a route calls.
+ *
+ * Each page and fragment has a hash of its source files, so that a
+ * comparison finds a page whose composition changed or a fragment whose
+ * markup, style, or script changed, which no other field shows.
  */
 
+import {createHash} from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -21,6 +26,7 @@ interface IPage {
 	dir: string;
 	fragments: string[];
 	guest: boolean;
+	hash: string;
 	hidden: boolean;
 	master: null | string;
 	menus: string[];
@@ -115,6 +121,7 @@ export function extract() {
 					),
 				].sort(),
 				guest,
+				hash: _hash([file, definitionFile]),
 				hidden: Boolean(page.hidden),
 				master:
 					/"masterPage":\s*\{\s*"key":\s*"([\w-]+)"/.exec(
@@ -266,6 +273,7 @@ function _fragments(pages: IPage[]) {
 				? fs.readdirSync(dir).map((key) => ({
 						collection,
 						dir: relative(path.join(dir, key)),
+						hash: _hash(listFiles(path.join(dir, key), () => true)),
 						key,
 					}))
 				: [];
@@ -297,6 +305,23 @@ function _fragments(pages: IPage[]) {
 				a.collection.localeCompare(b.collection) ||
 				a.key.localeCompare(b.key)
 		);
+}
+
+/**
+ * Returns a short hash of the contents of the files that exist, in order.
+ * It names each file by its base name only, because a page directory carries
+ * an order prefix that a reorder changes.
+ */
+function _hash(files: string[]): string {
+	const hash = createHash('sha1');
+
+	for (const file of files.filter((file) => fs.existsSync(file))) {
+		hash.update(path.basename(file))
+			.update('\u0000')
+			.update(fs.readFileSync(file));
+	}
+
+	return hash.digest('hex').slice(0, 12);
 }
 
 function _menus(): {

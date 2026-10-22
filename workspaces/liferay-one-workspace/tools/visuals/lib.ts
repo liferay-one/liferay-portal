@@ -103,10 +103,94 @@ export interface IExtraction<T = unknown> {
 }
 
 /**
+ * One item of a visual that a comparison can find added, changed, or
+ * removed, such as an object, an endpoint, or a grant. A visual lists its
+ * items in <visual>/changes.ts. The key names the same item at both refs,
+ * so it holds no line number. The value is what the comparison checks: two
+ * values that differ make the item changed.
+ */
+export interface IChangeItem {
+	key: string;
+	kind: string;
+	label: string;
+
+	/**
+	 * The layers whose tab shows the item, for a visual that shows in a tab
+	 * of each layer. The change bar of a tab counts only the items of its
+	 * layer. An item with no layers counts in every tab.
+	 */
+	layers?: string[];
+	value: unknown;
+}
+
+/**
+ * What a comparison found in one visual. The build puts it into the
+ * visual's data as __changes, and only in a comparison, so a template that
+ * finds no __changes shows a point in time.
+ */
+export interface IChanges {
+	counts: {added: number; changed: number; removed: number};
+
+	/**
+	 * Each added or changed item. A changed item names the top-level fields
+	 * of its value that differ.
+	 */
+	items: Record<
+		string,
+		{
+			fields?: string[];
+			kind: string;
+			layers?: string[];
+			status: 'added' | 'changed';
+		}
+	>;
+
+	/**
+	 * The counts of each kind of item, such as endpoints and routes.
+	 */
+	kinds: Record<string, {added: number; changed: number; removed: number}>;
+
+	/**
+	 * The items that only the base has. The head cannot show them, so the
+	 * section lists them.
+	 */
+	removed: {key: string; kind: string; label: string; layers?: string[]}[];
+}
+
+/**
+ * The two refs of a comparison.
+ */
+export interface IComparison {
+	base: {ref: string; sha: string};
+
+	/**
+	 * The commit that the comparison starts from: the merge base of the base
+	 * and the head.
+	 */
+	mergeBase: string;
+}
+
+/**
  * What the build passes to an extractor. Only workspace-health reads it.
  */
 export interface IExtractContext {
 	actions: IAction[];
+
+	/**
+	 * The base of a comparison: its actions and the data of each visual at
+	 * the merge base. Null at a point in time.
+	 */
+	base?: {
+		actions: IAction[];
+		data: Record<string, unknown>;
+	} | null;
+
+	/**
+	 * What the comparison found in each visual that lists its items.
+	 */
+	changes?: Record<string, IChanges | null>;
+
+	comparison?: IComparison | null;
 
 	/**
 	 * Where each visual shows: its page, its tab, its layer, and its title.
@@ -122,8 +206,34 @@ export interface IExtractContext {
 	visuals: Record<string, {layer: string; title: string}>;
 }
 
+/**
+ * The same action at two refs has the same visual and title, apart from the
+ * numbers in the title, so a count that grows is not a new action.
+ */
+export function actionKey(action: {title: string; visual: string}): string {
+	return `${action.visual}\u0000${action.title.replace(/\d+/g, '#')}`;
+}
+
 export function batchItems<T = any>(fileName: string): T[] {
 	return readJSON<{items: T[]}>(path.join(BATCH_DIR, fileName)).items;
+}
+
+/**
+ * Returns the hand-maintained input of a visual, such as its config.json or
+ * findings.json, from the workspace that the extractors read. A report at a
+ * ref then checks that ref's code against that ref's own input. The input
+ * of the current checkout is the fallback, for a ref that predates the file.
+ */
+export function inputFile(dir: string, fileName: string): string {
+	const filePath = path.join(dir, fileName);
+
+	const refFilePath = path.join(
+		WORKSPACE_ROOT,
+		'tools/visuals',
+		path.relative(import.meta.dirname, filePath)
+	);
+
+	return fs.existsSync(refFilePath) ? refFilePath : filePath;
 }
 
 export function listFiles(

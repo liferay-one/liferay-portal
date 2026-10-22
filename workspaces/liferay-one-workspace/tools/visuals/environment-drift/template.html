@@ -187,14 +187,33 @@ document.addEventListener("click", ev => {
 $("search").addEventListener("input", ev => { state.search = ev.target.value.trim().toLowerCase(); render(); });
 $("show-accepted").addEventListener("change", ev => { state.showAccepted = ev.target.checked; render(); });
 
-// Configuration.
+// Configuration. A comparison marks each variable, flag, property, OSGi
+// configuration, and host that it adds or changes, and Only changed shows
+// just those rows. The drift table comes from the environment snapshots,
+// which are the same at both refs, so a comparison does not mark it.
 const C = DATA.config;
+const CHANGES = DATA.__changes;
 const mark = v => v ? `<span class="yes">set</span>` : `<span class="no">—</span>`;
-$("variables").innerHTML = `${C.localEnv ? "" : `<p class="muted" style="margin:0 0 8px">The <code>.env</code> and <code>.env.local</code> of this checkout set none of these variables, so they were not pulled. Run <code>/one-env-pull</code> to fill the local columns.</p>`}<table><thead><tr><th>Variable</th><th>Default</th>${C.sources.map(s => `<th>${esc(s)}</th>`).join("")}<th>Read by code</th></tr></thead><tbody>${C.variables.map(v => `<tr><td class="name">${esc(v.variable)}<br /><span class="muted">${esc(v.property)}</span></td><td class="name">${v.required ? `<span class="tag">required</span>` : esc(v.default === "" ? "(empty)" : v.default)}</td>${C.sources.map(s => `<td>${mark(v.setIn.includes(s))}</td>`).join("")}<td>${v.used ? `<span class="yes">yes</span>` : `<span class="tag value">unused</span>`}</td></tr>`).join("")}</tbody></table>`;
-const folders = [...new Set([...C.flags, ...C.properties].flatMap(p => p.folders))].sort();
-$("properties").innerHTML = `<table><thead><tr><th>Key</th>${folders.map(f => `<th>configs/${esc(f)}</th>`).join("")}</tr></thead><tbody>${[...C.flags, ...C.properties].map(p => `<tr><td class="name">${esc(p.key)}</td>${folders.map(f => `<td>${mark(p.folders.includes(f))}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
-$("hosts").innerHTML = C.crossEnvironment.length ? `<table><thead><tr><th>UAT Host</th><th>File</th></tr></thead><tbody>${C.crossEnvironment.map(h => `<tr><td class="name">${esc(h.host)}</td><td class="name">${esc(h.file)}:${h.line}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">No client extension that deploys to production names a UAT host.</p>`;
-$("osgi").innerHTML = C.osgi.length ? `<table><thead><tr><th>PID</th><th>Folder</th></tr></thead><tbody>${C.osgi.map(o => `<tr><td class="name">${esc(o.pid)}</td><td>configs/${esc(o.folder)}</td></tr>`).join("")}</tbody></table>` : `<p class="muted">None.</p>`;
+const changeAttr = key => vizChange(CHANGES, key) ? ` data-change="${vizChange(CHANGES, key).status}"` : "";
+const filtering = () => Boolean(CHANGES) && vizOnlyChanged(document);
+const keep = key => !filtering() || vizChange(CHANGES, key);
+const none = `<p class="muted">No changed item.</p>`;
 
+function renderConfig() {
+	const variables = C.variables.filter(v => keep(`variable:${v.variable}`));
+	$("variables").innerHTML = `${C.localEnv ? "" : `<p class="muted" style="margin:0 0 8px">The <code>.env</code> and <code>.env.local</code> of this checkout set none of these variables, so they were not pulled. Run <code>/one-env-pull</code> to fill the local columns.</p>`}${variables.length || !filtering() ? `<table><thead><tr><th>Variable</th><th>Default</th>${C.sources.map(s => `<th>${esc(s)}</th>`).join("")}<th>Read by code</th></tr></thead><tbody>${variables.map(v => `<tr${changeAttr(`variable:${v.variable}`)}><td class="name">${esc(v.variable)}${vizChangeBadge(CHANGES, `variable:${v.variable}`)}<br /><span class="muted">${esc(v.property)}</span></td><td class="name">${v.required ? `<span class="tag">required</span>` : esc(v.default === "" ? "(empty)" : v.default)}</td>${C.sources.map(s => `<td>${mark(v.setIn.includes(s))}</td>`).join("")}<td>${v.used ? `<span class="yes">yes</span>` : `<span class="tag value">unused</span>`}</td></tr>`).join("")}</tbody></table>` : none}`;
+	const keyed = [...C.flags.map(p => ({...p, change: `flag:${p.key}`})), ...C.properties.map(p => ({...p, change: `property:${p.key}`}))];
+	const folders = [...new Set(keyed.flatMap(p => p.folders))].sort();
+	const properties = keyed.filter(p => keep(p.change));
+	$("properties").innerHTML = properties.length || !filtering() ? `<table><thead><tr><th>Key</th>${folders.map(f => `<th>configs/${esc(f)}</th>`).join("")}</tr></thead><tbody>${properties.map(p => `<tr${changeAttr(p.change)}><td class="name">${esc(p.key)}${vizChangeBadge(CHANGES, p.change)}</td>${folders.map(f => `<td>${mark(p.folders.includes(f))}</td>`).join("")}</tr>`).join("")}</tbody></table>` : none;
+	const hosts = C.crossEnvironment.filter(h => keep(`host:${h.host}@${h.file}`));
+	$("hosts").innerHTML = hosts.length ? `<table><thead><tr><th>UAT Host</th><th>File</th></tr></thead><tbody>${hosts.map(h => `<tr${changeAttr(`host:${h.host}@${h.file}`)}><td class="name">${esc(h.host)}${vizChangeBadge(CHANGES, `host:${h.host}@${h.file}`)}</td><td class="name">${esc(h.file)}:${h.line}</td></tr>`).join("")}</tbody></table>` : filtering() && C.crossEnvironment.length ? none : `<p class="muted">No client extension that deploys to production names a UAT host.</p>`;
+	const osgi = C.osgi.filter(o => keep(`osgi:${o.folder}/${o.pid}`));
+	$("osgi").innerHTML = osgi.length ? `<table><thead><tr><th>PID</th><th>Folder</th></tr></thead><tbody>${osgi.map(o => `<tr${changeAttr(`osgi:${o.folder}/${o.pid}`)}><td class="name">${esc(o.pid)}${vizChangeBadge(CHANGES, `osgi:${o.folder}/${o.pid}`)}</td><td>configs/${esc(o.folder)}</td></tr>`).join("")}</tbody></table>` : filtering() && C.osgi.length ? none : `<p class="muted">None.</p>`;
+}
+
+document.addEventListener("viz-only-changed", renderConfig);
+
+renderConfig();
 render();
 </script>

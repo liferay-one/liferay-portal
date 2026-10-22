@@ -79,6 +79,10 @@ const STATUS_LABEL = {ok: "Handled", broken: "Broken", disabled: "Off by default
 
 const handlersById = Object.fromEntries(DATA.handlers.map(h => [h.id, h]));
 
+// In a comparison, the key that events/changes.ts gives each handler.
+const CHANGES = DATA.__changes;
+const changeKey = h => `handler:${h.id}`;
+
 function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"}[c])); }
 function shortFile(f) { return f.startsWith(SB) ? "sb/" + f.slice(SB.length) : f; }
 function loc(l) { return l ? `${shortFile(l.file)}:${l.line}` : ""; }
@@ -104,12 +108,14 @@ function renderRows() {
 	const list = DATA.handlers.filter(h =>
 		(kind === "all" || h.kind === kind) &&
 		(!attention || h.status === "broken" || h.status === "disabled") &&
+		(!CHANGES || !vizOnlyChanged(document) || vizChange(CHANGES, changeKey(h))) &&
 		(!q || [h.name, h.object, h.objectLabel, h.location?.symbol, h.executor, h.trigger].some(v => v && v.toLowerCase().includes(q)))
 	);
 	if (!list.length) { rowsEl.innerHTML = `<tr><td colspan="7" class="empty">No handler matches the filter.</td></tr>`; return; }
 	rowsEl.innerHTML = list.map(h => {
 		const what = h.kind === "action" ? `${esc(h.objectLabel)}<br /><span class="loc">${esc(h.object)}</span>` : h.schedule ? `<code>${esc(h.schedule)}</code>` : esc(h.source);
-		const row = `<tr class="row${open.has(h.id) ? " open" : ""}" data-id="${esc(h.id)}" tabindex="0" aria-expanded="${open.has(h.id)}"><td>${KIND_LABEL[h.kind]}</td><td><b>${esc(h.name)}</b></td><td>${what}</td><td>${h.trigger ? `<code>${esc(h.trigger)}</code>` : ""}</td><td><span class="status ${h.status}">${STATUS_LABEL[h.status]}</span></td><td>${h.location ? `<code>${esc(h.location.symbol)}</code><br /><span class="loc">${esc(loc(h.location))}</span>` : esc(h.notes[0] || "")}</td><td>${h.writes.map(t => `<span class="tag w">${esc(t.erc)}</span>`).join("")}</td></tr>`;
+		const change = vizChange(CHANGES, changeKey(h));
+		const row = `<tr class="row${open.has(h.id) ? " open" : ""}"${change ? ` data-change="${change.status}"` : ""} data-id="${esc(h.id)}" tabindex="0" aria-expanded="${open.has(h.id)}"><td>${KIND_LABEL[h.kind]}</td><td><b>${esc(h.name)}</b>${vizChangeBadge(CHANGES, changeKey(h))}</td><td>${what}</td><td>${h.trigger ? `<code>${esc(h.trigger)}</code>` : ""}</td><td><span class="status ${h.status}">${STATUS_LABEL[h.status]}</span></td><td>${h.location ? `<code>${esc(h.location.symbol)}</code><br /><span class="loc">${esc(loc(h.location))}</span>` : esc(h.notes[0] || "")}</td><td>${h.writes.map(t => `<span class="tag w">${esc(t.erc)}</span>`).join("")}</td></tr>`;
 		return open.has(h.id) ? row + `<tr class="detail"><td colspan="7">${handlerDetail(h)}</td></tr>` : row;
 	}).join("");
 	rowsEl.querySelectorAll("tr.row").forEach(tr => {
@@ -130,6 +136,7 @@ document.getElementById("attention").addEventListener("click", e => {
 	renderRows();
 });
 document.getElementById("filter").addEventListener("input", e => { query = e.target.value; renderRows(); });
+document.addEventListener("viz-only-changed", renderRows);
 
 renderRows();
 </script>
