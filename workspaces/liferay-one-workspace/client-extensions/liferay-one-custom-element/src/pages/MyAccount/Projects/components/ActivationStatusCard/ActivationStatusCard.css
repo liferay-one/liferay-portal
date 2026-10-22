@@ -18,3 +18,17 @@
 		width: 40px;
 	}
 }
+
+.cloud-activation-modal {
+	.cloud-activation-form-admins-label {
+		padding-bottom: 10px;
+	}
+
+	.modal-subtitle {
+		font-size: 14px;
+	}
+
+	.modal-subtitle-section {
+		padding: 10px 24px;
+	}
+}

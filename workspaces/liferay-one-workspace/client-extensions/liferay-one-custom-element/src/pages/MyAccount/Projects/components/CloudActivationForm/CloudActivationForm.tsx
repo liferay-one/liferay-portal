@@ -398,7 +398,9 @@ export default function CloudActivationForm({
 
 	const renderAdmins = (field: CloudActivationField) => (
 		<div className="form-group" key={field.environmentField}>
-			<label className="ml-0">{translate(field.label)}</label>
+			<label className="cloud-activation-form-admins-label ml-0">
+				{translate(field.label)}
+			</label>
 
 			{adminFields.map((adminField, index) => (
 				<div
