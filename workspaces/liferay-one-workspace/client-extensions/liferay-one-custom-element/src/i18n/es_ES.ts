@@ -1547,6 +1547,7 @@ export default {
 	'support-phone-number': 'Número de teléfono de soporte',
 	'support-url': 'URL de soporte',
 	'supported-version': 'Versión admitida',
+	'suspended': 'Suspendido',
 	'sydney-australia': 'Sídney, Australia',
 	'sync-to-jsm': 'Sincronizar con JSM',
 	'syncing-to-jsm': 'Sincronizando con JSM...',
@@ -1567,6 +1568,7 @@ export default {
 		'Asociación tecnológica con integraciones',
 	'telecommunications': 'Telecomunicaciones',
 	'term': 'Término',
+	'terminated': 'Terminado',
 	'terms': 'términos',
 	'terms-of-service': 'Condiciones del servicio',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':

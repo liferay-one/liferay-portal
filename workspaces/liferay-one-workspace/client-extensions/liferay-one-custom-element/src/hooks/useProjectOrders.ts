@@ -252,11 +252,16 @@ export function getProductOrderItemIds(
 	placedOrders: PlacedOrder[],
 	productId: number
 ): number[] {
-	return placedOrders.flatMap((placedOrder) =>
-		(placedOrder.placedOrderItems ?? [])
-			.filter((item) => item.productId === productId)
-			.map((item) => item.id)
-	);
+	return placedOrders
+		.filter(
+			(placedOrder) =>
+				placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN'
+		)
+		.flatMap((placedOrder) =>
+			(placedOrder.placedOrderItems ?? [])
+				.filter((item) => item.productId === productId)
+				.map((item) => item.id)
+		);
 }
 
 export function getProductOrderInfo(

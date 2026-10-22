@@ -1517,6 +1517,7 @@ export default {
 	'support-phone-number': 'サポート電話番号',
 	'support-url': 'サポートURL',
 	'supported-version': 'サポートされているバージョン',
+	'suspended': '一時停止',
 	'sydney-australia': 'シドニー、オーストラリア',
 	'sync-to-jsm': 'JSMに同期',
 	'syncing-to-jsm': 'JSMに同期中...',
@@ -1537,6 +1538,7 @@ export default {
 		'統合によるテクノロジーパートナーシップ',
 	'telecommunications': '電気通信',
 	'term': '条件',
+	'terminated': '終了',
 	'terms': '利用規約',
 	'terms-of-service': '利用規約',
 	'terms-privacy-returns-or-contact-support-all-costs-are-in-us-dollars':
