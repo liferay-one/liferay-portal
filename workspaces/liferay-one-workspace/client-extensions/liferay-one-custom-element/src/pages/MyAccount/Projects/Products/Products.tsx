@@ -4,7 +4,7 @@
  */
 
 import {useMemo} from 'react';
-import {useNavigate} from 'react-router';
+import {useNavigate, useParams} from 'react-router';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {useProjectContractItems} from '~/hooks/useProjectItems';
@@ -19,6 +19,7 @@ import ProductListPage, {
 import {isFreeActivationKeyProduct} from '~/pages/MyAccount/Projects/utils/isFreeActivationKeyProduct';
 
 export default function Products() {
+	const {accountERC, projectERC} = useParams();
 	const navigate = useNavigate();
 	const {error, loading, products} = useProjectContractItems();
 
@@ -32,7 +33,10 @@ export default function Products() {
 			? [
 					{
 						label: 'view-activation-key',
-						onClick: () => navigate('../activation'),
+						onClick: () =>
+							navigate(
+								`/${accountERC}/project/${projectERC}/activation`
+							),
 					},
 				]
 			: [];

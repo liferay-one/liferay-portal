@@ -6,6 +6,7 @@
 import {
 	ReactNode,
 	createContext,
+	useCallback,
 	useContext,
 	useEffect,
 	useMemo,
@@ -36,6 +37,7 @@ type ProjectContextValue = {
 	project?: UserProject;
 	projectId: string;
 	projects: UserProject[];
+	rememberContractERC: (contractERC: string) => void;
 	resolvingProjects: boolean;
 	selectedContractERC?: string;
 	setSelectedContractERC: (contractERC: string) => void;
@@ -46,7 +48,7 @@ const ProjectContext = createContext<ProjectContextValue>(
 );
 
 export function ProjectProvider({children}: {children: ReactNode}) {
-	const {accountERC, projectERC} = useParams();
+	const {accountERC, contractERC, projectERC} = useParams();
 	const navigate = useNavigate();
 
 	const {loading: accountLoading} = useAccount();
@@ -105,11 +107,30 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 		[projectId, projects]
 	);
 
-	const [selectedContractERC, setSelectedContractERC] = useState<string>();
+	const [lastContract, setLastContract] = useState<{
+		contractERC: string;
+		projectId: string;
+	}>();
 
-	useEffect(() => {
-		setSelectedContractERC(undefined);
-	}, [projectId]);
+	const rememberContractERC = useCallback(
+		(validContractERC: string) =>
+			setLastContract({contractERC: validContractERC, projectId}),
+		[projectId]
+	);
+
+	const selectedContractERC =
+		contractERC ??
+		(lastContract?.projectId === projectId
+			? lastContract.contractERC
+			: undefined);
+
+	const setSelectedContractERC = useCallback(
+		(nextContractERC: string) =>
+			navigate(
+				`/${accountERC}/project/${projectId}/contract/${nextContractERC}/products`
+			),
+		[accountERC, navigate, projectId]
+	);
 
 	const accessible = projects.some(
 		(project) => project.externalReferenceCode === projectId
@@ -144,6 +165,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 				project,
 				projectId,
 				projects,
+				rememberContractERC,
 				resolvingProjects,
 				selectedContractERC,
 				setSelectedContractERC,

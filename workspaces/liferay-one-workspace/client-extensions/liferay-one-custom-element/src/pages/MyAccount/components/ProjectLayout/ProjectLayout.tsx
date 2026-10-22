@@ -19,7 +19,8 @@ import {projectDetailRoutes} from '../../myAccountRoutes';
 
 export default function ProjectLayout() {
 	const {accountERC} = useParams();
-	const {projectId, projects, resolvingProjects} = useProject();
+	const {projectId, projects, resolvingProjects, selectedContractERC} =
+		useProject();
 
 	const navigate = useNavigate();
 
@@ -29,13 +30,21 @@ export default function ProjectLayout() {
 		}
 	}
 
-	const navItems = useMemo(
-		() =>
-			buildNavItems(
-				projectDetailRoutes,
-				`/${accountERC}/project/${projectId}`
-			),
-		[accountERC, projectId]
+	const navItems = useMemo(() => {
+		const projectPath = `/${accountERC}/project/${projectId}`;
+
+		return buildNavItems(projectDetailRoutes, projectPath).map((item) =>
+			selectedContractERC && item.path === `${projectPath}/products`
+				? {
+						...item,
+						path: `${projectPath}/contract/${selectedContractERC}/products`,
+					}
+				: item
+		);
+	}, [accountERC, projectId, selectedContractERC]);
+
+	const contractProductsMatch = useMatch(
+		'/:accountERC/project/:projectId/contract/:contractERC/products/*'
 	);
 
 	const productsMatch = useMatch(
@@ -47,7 +56,8 @@ export default function ProjectLayout() {
 	);
 
 	const contentHeader =
-		!isUnassignedProject(projectId) && productsMatch ? (
+		!isUnassignedProject(projectId) &&
+		(contractProductsMatch || productsMatch) ? (
 			<ProjectHeader />
 		) : undefined;
 

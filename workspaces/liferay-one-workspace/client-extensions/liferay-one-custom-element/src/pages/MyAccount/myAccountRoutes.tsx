@@ -10,6 +10,7 @@ import {AppRoute} from '~/utils/routeUtils';
 
 import Applications from './Projects/Applications/Applications';
 import Products from './Projects/Products/Products';
+import ContractRedirect from './Projects/components/ContractRedirect/ContractRedirect';
 import ProjectSectionRedirect from './Projects/components/ProjectSectionRedirect/ProjectSectionRedirect';
 import AccountTabsLayout from './components/AccountTabsLayout/AccountTabsLayout';
 
@@ -36,19 +37,31 @@ const ProjectItemDetails = lazy(
 );
 const ProjectMembers = lazy(() => import('./ProjectMembers/ProjectMembers'));
 
+const productRoutes: AppRoute[] = [
+	{element: <Products />, index: true},
+	{
+		element: <ProjectItemDetails itemType="product" />,
+		path: ':productERC',
+	},
+	{element: <Navigate replace to=".." />, path: '*'},
+];
+
 export const projectDetailRoutes: AppRoute[] = [
 	{element: <ProjectSectionRedirect />, index: true},
 	{
-		children: [
-			{element: <Products />, index: true},
-			{
-				element: <ProjectItemDetails itemType="product" />,
-				path: ':productERC',
-			},
-			{element: <Navigate replace to=".." />, path: '*'},
-		],
+		children: productRoutes,
+		element: <ContractRedirect />,
 		nav: {icon: 'products', label: i18n.translate('products')},
 		path: 'products',
+	},
+	{
+		children: [
+			{element: <Navigate replace to="products" />, index: true},
+			{children: productRoutes, path: 'products'},
+			{element: <Navigate replace to="../products" />, path: '*'},
+		],
+		element: <ContractRedirect />,
+		path: 'contract/:contractERC',
 	},
 	{
 		children: [

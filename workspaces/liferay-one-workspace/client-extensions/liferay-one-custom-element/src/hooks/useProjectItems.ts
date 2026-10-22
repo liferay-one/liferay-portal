@@ -4,8 +4,10 @@
  */
 
 import {useMemo} from 'react';
+import {useParams} from 'react-router';
 import {useProject} from '~/context/ProjectContext';
 import {
+	toProductsByEntitledExternalReferenceCode,
 	useProjectCommerce,
 	useProjectEntitlements,
 	useProjectProducts,
@@ -20,7 +22,6 @@ import {
 
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {PlacedOrder} from '~/types/orders';
-import type {DeliveryProduct} from '~/types/product';
 
 export function useProjectItems() {
 	const {loading: projectLoading, project, projectId} = useProject();
@@ -95,30 +96,6 @@ export function useProjectItems() {
 
 export default useProjectItems;
 
-function toProductExternalReferenceCodesByEntitledExternalReferenceCode(
-	products: DeliveryProduct[]
-) {
-	const productExternalReferenceCodes = new Map<string, string>();
-
-	for (const product of products) {
-		productExternalReferenceCodes.set(
-			product.externalReferenceCode,
-			product.externalReferenceCode
-		);
-	}
-
-	for (const product of products) {
-		for (const sku of product.skus ?? []) {
-			productExternalReferenceCodes.set(
-				sku.externalReferenceCode,
-				product.externalReferenceCode
-			);
-		}
-	}
-
-	return productExternalReferenceCodes;
-}
-
 export function useProjectContractItems() {
 	const {projectId, selectedContractERC} = useProject();
 
@@ -142,8 +119,8 @@ export function useProjectContractItems() {
 	);
 
 	const contractProductExternalReferenceCodes = useMemo(() => {
-		const productExternalReferenceCodes =
-			toProductExternalReferenceCodesByEntitledExternalReferenceCode(
+		const productsByEntitledExternalReferenceCode =
+			toProductsByEntitledExternalReferenceCode(
 				projectProducts?.items ?? []
 			);
 
@@ -151,9 +128,10 @@ export function useProjectContractItems() {
 		const entitledUnderAnyContract = new Set<string>();
 
 		for (const entitlement of entitlements) {
-			const externalReferenceCode = productExternalReferenceCodes.get(
-				entitlement.skuExternalReferenceCode ?? ''
-			);
+			const externalReferenceCode =
+				productsByEntitledExternalReferenceCode.get(
+					entitlement.skuExternalReferenceCode ?? ''
+				)?.externalReferenceCode;
 
 			if (!externalReferenceCode) {
 				continue;
@@ -214,5 +192,52 @@ export function useProjectContractItems() {
 		...scoped,
 		loading:
 			projectItems.loading || contractsLoading || entitlementsLoading,
+	};
+}
+
+export function useProjectContractERC() {
+	const {contractERC: requestedContractERC, productERC} = useParams();
+
+	const {projectId, selectedContractERC} = useProject();
+
+	const {
+		contractERCsByProductERC,
+		contracts,
+		error,
+		loading,
+		resolvedContractERC,
+		usingAccountFallback,
+	} = useProjectCommerce(
+		isUnassignedProject(projectId) ? '' : projectId,
+		selectedContractERC
+	);
+
+	const contractExists = (contractERC?: string) =>
+		contracts.some(
+			(contract) => contract.externalReferenceCode === contractERC
+		);
+
+	if (contractExists(requestedContractERC)) {
+		return {contractERC: requestedContractERC, error, loading};
+	}
+
+	const productContractERCs =
+		productERC && !usingAccountFallback
+			? [
+					...(contractERCsByProductERC.get(productERC) ?? [
+						ONE_TIME_PURCHASES,
+					]),
+				].filter(contractExists)
+			: [];
+
+	const productContractERC =
+		resolvedContractERC && productContractERCs.includes(resolvedContractERC)
+			? resolvedContractERC
+			: productContractERCs[0];
+
+	return {
+		contractERC: productContractERC ?? resolvedContractERC,
+		error,
+		loading,
 	};
 }

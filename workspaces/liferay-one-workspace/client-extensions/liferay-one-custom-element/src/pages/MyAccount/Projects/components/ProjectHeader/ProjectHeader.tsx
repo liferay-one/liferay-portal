@@ -9,10 +9,7 @@ import EntitySelector, {
 	SelectorItem,
 } from '~/components/EntitySelector/EntitySelector';
 import {useProject} from '~/context/ProjectContext';
-import {
-	resolveDefaultContractERC,
-	useProjectCommerce,
-} from '~/hooks/useProjectCommerce';
+import {useProjectCommerce} from '~/hooks/useProjectCommerce';
 import i18n from '~/i18n';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import {formatTermRange} from '~/utils/dateUtils';
@@ -21,17 +18,12 @@ export default function ProjectHeader() {
 	const {projectId, selectedContractERC, setSelectedContractERC} =
 		useProject();
 
-	const {contracts, loading} = useProjectCommerce(projectId);
-
-	const [searchValue, setSearchValue] = useState('');
-
-	const selectedContractExists = contracts.some(
-		(contract) => contract.externalReferenceCode === selectedContractERC
+	const {contracts, loading, resolvedContractERC} = useProjectCommerce(
+		projectId,
+		selectedContractERC
 	);
 
-	const resolvedContractERC = selectedContractExists
-		? selectedContractERC
-		: resolveDefaultContractERC(contracts);
+	const [searchValue, setSearchValue] = useState('');
 
 	const selectedContract = contracts.find(
 		(contract) => contract.externalReferenceCode === resolvedContractERC

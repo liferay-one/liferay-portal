@@ -20,12 +20,15 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
+import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {
 	DeliveryProduct,
 	DeliveryProductSpecification,
 } from '~/types/product';
+
+const BASE_PRODUCT_TYPE = 'primary';
 
 const FILTER_VALUE_REGEXP = /^[A-Za-z0-9_-]+$/;
 
@@ -122,7 +125,16 @@ function toProjectContract(contractNode: ContractNode): ProjectContract {
 	};
 }
 
+function isBaseProduct(product?: DeliveryProduct): boolean {
+	return (
+		!!product &&
+		getProductSpecificationValue('product-type', product) ===
+			BASE_PRODUCT_TYPE
+	);
+}
+
 export function resolveDefaultContractERC(
+	baseContractERCs: Set<string>,
 	contracts: ProjectContract[]
 ): string | undefined {
 	const activeContracts = contracts.filter(
@@ -133,11 +145,19 @@ export function resolveDefaultContractERC(
 		? activeContracts
 		: contracts;
 
-	if (!selectableContracts.length) {
+	const baseContracts = selectableContracts.filter((contract) =>
+		baseContractERCs.has(contract.externalReferenceCode)
+	);
+
+	const candidateContracts = baseContracts.length
+		? baseContracts
+		: selectableContracts;
+
+	if (!candidateContracts.length) {
 		return undefined;
 	}
 
-	return selectableContracts.reduce((costliest, contract) =>
+	return candidateContracts.reduce((costliest, contract) =>
 		(contract.spendLimit ?? 0) > (costliest.spendLimit ?? 0)
 			? contract
 			: costliest
@@ -175,6 +195,24 @@ function toProductEntitlements(
 			skuExternalReferenceCode: entitlement.skuExternalReferenceCode,
 		}))
 		.filter((entitlement) => entitlement.skuExternalReferenceCode);
+}
+
+export function toProductsByEntitledExternalReferenceCode(
+	products: DeliveryProduct[]
+): Map<string, DeliveryProduct> {
+	const productsByEntitledExternalReferenceCode = new Map(
+		products.map((product) => [product.externalReferenceCode, product])
+	);
+
+	toProductsBySkuExternalReferenceCode(products).forEach(
+		(product, skuExternalReferenceCode) =>
+			productsByEntitledExternalReferenceCode.set(
+				skuExternalReferenceCode,
+				product
+			)
+	);
+
+	return productsByEntitledExternalReferenceCode;
 }
 
 function toProductsBySkuExternalReferenceCode(
@@ -251,9 +289,15 @@ export function useProjectCommerce(
 		isLoading: accountLoading,
 	} = useAccountLevelContracts(Boolean(projectExternalReferenceCode));
 
-	const projectContractNodes = projectContractData?.items ?? [];
+	const projectContractNodes = useMemo(
+		() => projectContractData?.items ?? [],
+		[projectContractData]
+	);
 
-	const accountContractNodes = accountContractData?.items ?? [];
+	const accountContractNodes = useMemo(
+		() => accountContractData?.items ?? [],
+		[accountContractData]
+	);
 
 	const usingAccountFallback = !projectContractNodes.length;
 
@@ -264,12 +308,18 @@ export function useProjectCommerce(
 	const countsOneTimeEntitlements =
 		!usingAccountFallback || !contractNodes.length;
 
-	const {entitlements, loading: entitlementsLoading} = useProjectEntitlements(
-		projectExternalReferenceCode
-	);
+	const {
+		entitlements,
+		error: entitlementsError,
+		loading: entitlementsLoading,
+	} = useProjectEntitlements(projectExternalReferenceCode);
 
-	const projectContractIds = new Set(
-		projectContractNodes.map((node) => node.id)
+	const {data: productsData, isLoading: productsLoading} =
+		useProjectProducts();
+
+	const projectContractIds = useMemo(
+		() => new Set(projectContractNodes.map((node) => node.id)),
+		[projectContractNodes]
 	);
 
 	const hasOneTimeEntitlements =
@@ -281,17 +331,81 @@ export function useProjectCommerce(
 				)
 		);
 
-	const contracts = [
-		...contractNodes.map(toProjectContract),
-		...(hasOneTimeEntitlements
-			? [
-					{
-						externalReferenceCode: ONE_TIME_PURCHASES,
-						name: i18n.translate('one-time-purchases'),
-					},
-				]
-			: []),
-	];
+	const contracts = useMemo<ProjectContract[]>(
+		() => [
+			...contractNodes.map(toProjectContract),
+			...(hasOneTimeEntitlements
+				? [
+						{
+							externalReferenceCode: ONE_TIME_PURCHASES,
+							name: i18n.translate('one-time-purchases'),
+						},
+					]
+				: []),
+		],
+		[contractNodes, hasOneTimeEntitlements]
+	);
+
+	const productsByEntitledExternalReferenceCode = useMemo(
+		() =>
+			toProductsByEntitledExternalReferenceCode(
+				productsData?.items ?? []
+			),
+		[productsData]
+	);
+
+	const contractERCsByProductERC = useMemo(() => {
+		const contractERCsById = new Map(
+			contractNodes.map((node) => [node.id, node.externalReferenceCode])
+		);
+
+		const contractERCsByProductERC = new Map<string, Set<string>>();
+
+		for (const entitlement of entitlements) {
+			const product = productsByEntitledExternalReferenceCode.get(
+				entitlement.skuExternalReferenceCode ?? ''
+			);
+
+			if (!product) {
+				continue;
+			}
+
+			const contractERCs =
+				contractERCsByProductERC.get(product.externalReferenceCode) ??
+				new Set<string>();
+
+			contractERCs.add(
+				contractERCsById.get(
+					entitlement.r_contractToEntitlement_c_contractId ?? 0
+				) ?? ONE_TIME_PURCHASES
+			);
+
+			contractERCsByProductERC.set(
+				product.externalReferenceCode,
+				contractERCs
+			);
+		}
+
+		return contractERCsByProductERC;
+	}, [contractNodes, entitlements, productsByEntitledExternalReferenceCode]);
+
+	const baseContractERCs = useMemo(() => {
+		const baseContractERCs = new Set<string>();
+
+		contractERCsByProductERC.forEach((contractERCs, productERC) => {
+			if (
+				isBaseProduct(
+					productsByEntitledExternalReferenceCode.get(productERC)
+				)
+			) {
+				contractERCs.forEach((contractERC) =>
+					baseContractERCs.add(contractERC)
+				);
+			}
+		});
+
+		return baseContractERCs;
+	}, [contractERCsByProductERC, productsByEntitledExternalReferenceCode]);
 
 	const selectedContractExists = contracts.some(
 		(contract) =>
@@ -300,7 +414,7 @@ export function useProjectCommerce(
 
 	const resolvedContractERC = selectedContractExists
 		? contractExternalReferenceCode
-		: resolveDefaultContractERC(contracts);
+		: resolveDefaultContractERC(baseContractERCs, contracts);
 
 	const oneTimeSelected = resolvedContractERC === ONE_TIME_PURCHASES;
 
@@ -314,11 +428,13 @@ export function useProjectCommerce(
 
 	return {
 		contract,
+		contractERCsByProductERC,
 		contracts,
-		error: error ?? projectContractError,
+		error: error ?? projectContractError ?? entitlementsError,
 		loading:
 			accountLoading ||
 			entitlementsLoading ||
+			productsLoading ||
 			projectContractsLoading ||
 			projectsLoading,
 		projectContractIds,
@@ -384,8 +500,10 @@ export function useProjectEntitlements(projectExternalReferenceCode: string) {
 		projectEntitlementsQuery(projectExternalReferenceCode)
 	);
 
+	const entitlements = useMemo(() => data?.items ?? [], [data]);
+
 	return {
-		entitlements: data?.items ?? [],
+		entitlements,
 		error,
 		loading: isLoading,
 	};
