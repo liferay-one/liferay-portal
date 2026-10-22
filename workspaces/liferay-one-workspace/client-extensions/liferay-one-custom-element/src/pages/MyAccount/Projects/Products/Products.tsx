@@ -8,7 +8,6 @@ import {useNavigate} from 'react-router';
 import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {useProjectContractItems} from '~/hooks/useProjectItems';
-import i18n from '~/i18n';
 import {
 	ListColumn,
 	ListFilter,
@@ -23,24 +22,10 @@ export default function Products() {
 	const navigate = useNavigate();
 	const {error, loading, products} = useProjectContractItems();
 
-	const filters = useMemo<ListFilter<ProjectProduct>[]>(() => {
-		const types = Array.from(
-			new Set(products.map((product) => product.type))
-		).sort();
-
-		return [
-			{
-				key: 'type',
-				label: 'type',
-				matches: (product, values) => values.includes(product.type),
-				options: types.map((type) => ({
-					label: type || i18n.translate('none'),
-					value: type,
-				})),
-			},
-			statusFilter(products),
-		];
-	}, [products]);
+	const filters = useMemo<ListFilter<ProjectProduct>[]>(
+		() => [statusFilter(products)],
+		[products]
+	);
 
 	const renderExtraActions = (product: ProjectProduct): RowAction[] =>
 		isFreeActivationKeyProduct(product.specifications)
@@ -60,12 +45,6 @@ export default function Products() {
 			render: (product) => (
 				<span className="list-card-name-label">{product.name}</span>
 			),
-		},
-		{
-			heading: 'type',
-			key: 'type',
-			render: (product) => product.type,
-			width: '1%',
 		},
 		{
 			heading: 'start-date',

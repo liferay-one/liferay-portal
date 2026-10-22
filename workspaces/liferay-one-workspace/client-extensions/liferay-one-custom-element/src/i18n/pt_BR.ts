@@ -1377,7 +1377,6 @@ export default {
 	'saas-demos': 'Demos de SaaS',
 	'saas-environments': 'Ambientes SaaS',
 	'saas-trials': 'Avaliações de SaaS',
-	'sale-type': 'Tipo de venda',
 	'sales-email': 'E-mail de vendas',
 	'save': 'Salvar',
 	'save-as-a-draft-exit': 'Salvar como rascunho e sair',

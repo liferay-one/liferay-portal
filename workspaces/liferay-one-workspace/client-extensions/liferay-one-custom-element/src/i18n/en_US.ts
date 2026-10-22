@@ -1439,7 +1439,6 @@ export default {
 	'saas-demos': 'SaaS Demos',
 	'saas-environments': 'SaaS Environments',
 	'saas-trials': 'SaaS Trials',
-	'sale-type': 'Sale Type',
 	'sales-email': 'Sales Email',
 	'save': 'Save',
 	'save-and-download-package': 'Save and Download Package',

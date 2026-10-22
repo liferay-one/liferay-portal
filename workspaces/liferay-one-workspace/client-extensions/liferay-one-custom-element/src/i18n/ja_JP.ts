@@ -1362,7 +1362,6 @@ export default {
 	'saas-demos': 'SaaSデモ',
 	'saas-environments': 'SaaS環境',
 	'saas-trials': 'SaaSトライアル',
-	'sale-type': '販売タイプ',
 	'sales-email': '営業メールアドレス',
 	'save': '保存',
 	'save-as-a-draft-exit': '下書きとして保存して終了',

@@ -32,8 +32,8 @@ export default function Applications() {
 
 		return [
 			{
-				key: 'sale-type',
-				label: 'sale-type',
+				key: 'type',
+				label: 'type',
 				matches: (application, values) =>
 					values.includes(application.saleType),
 				options: saleTypes.map((saleType) => ({
@@ -122,25 +122,16 @@ export default function Applications() {
 			),
 		},
 		{
-			heading: 'start-date',
-			key: 'start-date',
-			noWrap: true,
-			render: (application) => application.startDate,
-			width: '1%',
-		},
-		{
-			heading: 'sale-type',
-			key: 'sale-type',
+			heading: 'type',
+			key: 'type',
 			render: (application) => application.saleType,
 			width: '1%',
 		},
 		{
-			heading: 'order-id',
-			key: 'order-id',
-			render: (application) =>
-				orderByProductExternalReferenceCode
-					.get(application.externalReferenceCode)
-					?.id.toString() ?? '-',
+			heading: 'start-date',
+			key: 'start-date',
+			noWrap: true,
+			render: (application) => application.startDate,
 			width: '1%',
 		},
 		statusColumn(),
