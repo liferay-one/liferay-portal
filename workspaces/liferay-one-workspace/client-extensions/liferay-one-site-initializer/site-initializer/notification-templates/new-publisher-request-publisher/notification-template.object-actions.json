@@ -1,0 +1,16 @@
+[
+	{
+		"active": true,
+		"conditionExpression": "",
+		"externalReferenceCode": "OA_PUBLISHER_ACCOUNT_REQUEST_CREATE",
+		"label": {
+			"en_US": "Publisher Account Request Create"
+		},
+		"name": "PublisherAccountRequestCreate",
+		"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-publisher-account-request-create",
+		"objectActionTriggerKey": "onAfterAdd",
+		"objectDefinitionId": "[$OBJECT_DEFINITION_ID:PublisherAccountRequest$]",
+		"parameters": {
+		}
+	}
+]

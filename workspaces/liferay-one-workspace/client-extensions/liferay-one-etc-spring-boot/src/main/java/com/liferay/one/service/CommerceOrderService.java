@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.address.client.dto.v1_0.Country;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Currency;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.channel.client.dto.v1_0.Channel;
@@ -47,10 +48,13 @@ import com.liferay.portal.kernel.util.Validator;
 import java.math.BigDecimal;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -373,6 +377,8 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		_assignDefaultCurrency(order);
+
+		_sendInvoiceNotification(order);
 
 		if (Objects.equals(
 				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
@@ -2101,12 +2107,338 @@ public class CommerceOrderService extends OneBaseService {
 		return orderResource.postOrder(order);
 	}
 
+	private String _formatBillingAddress(BillingAddress billingAddress) {
+		if (billingAddress == null) {
+			return "";
+		}
+
+		List<String> addressParts = new ArrayList<>();
+
+		if (Validator.isNotNull(billingAddress.getStreet1())) {
+			addressParts.add(billingAddress.getStreet1());
+		}
+
+		if (Validator.isNotNull(billingAddress.getCity())) {
+			addressParts.add(billingAddress.getCity());
+		}
+
+		if (Validator.isNotNull(billingAddress.getRegionISOCode())) {
+			addressParts.add(billingAddress.getRegionISOCode());
+		}
+
+		if (Validator.isNotNull(billingAddress.getCountryISOCode())) {
+			addressParts.add(billingAddress.getCountryISOCode());
+		}
+
+		return String.join(", ", addressParts);
+	}
+
+	private String _formatDate(Date date) {
+		if (date == null) {
+			return "";
+		}
+
+		return date.toInstant(
+		).atZone(
+			ZoneId.of("UTC")
+		).format(
+			DateTimeFormatter.ofPattern("MMMM d, yyyy")
+		);
+	}
+
+	private Map<String, String> _getAccountPlaceholders(Order order) {
+		Account account = order.getAccount();
+		BillingAddress billingAddress = order.getBillingAddress();
+
+		String taxId =
+			(account == null) ? "" : GetterUtil.getString(account.getTaxId());
+
+		return HashMapBuilder.put(
+			"ACCOUNT_ID",
+			(account == null) ? "" : GetterUtil.getString(account.getId())
+		).put(
+			"ACCOUNT_NAME",
+			(account == null) ? "" : GetterUtil.getString(account.getName())
+		).put(
+			"BILLING_ADDRESS_FORMATTED", _formatBillingAddress(billingAddress)
+		).put(
+			"BILLING_ADDRESS_NAME",
+			(billingAddress == null) ? "" :
+				GetterUtil.getString(billingAddress.getName())
+		).put(
+			"BILLING_ADDRESS_PHONE",
+			(billingAddress == null) ? "" :
+				GetterUtil.getString(billingAddress.getPhoneNumber())
+		).put(
+			"TAX_ID", taxId
+		).put(
+			"VAT_NUMBER", taxId
+		).build();
+	}
+
+	private String _getCatalogName(Product product) {
+		if (product == null) {
+			return "";
+		}
+
+		Catalog catalog = product.getCatalog();
+
+		if (catalog == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(catalog.getName());
+	}
+
+	private Map<String, String> _getInvoiceOrderPlaceholders(
+			Order order, JSONObject orderMetadataJSONObject)
+		throws Exception {
+
+		Map<String, String> productPlaceholders = _getProductPlaceholders(
+			order.getOrderItems());
+
+		return HashMapBuilder.putAll(
+			_getAccountPlaceholders(order)
+		).putAll(
+			_getOrderPaymentPlaceholders(
+				productPlaceholders.getOrDefault("LICENSE_TYPE", ""), order,
+				orderMetadataJSONObject)
+		).putAll(
+			productPlaceholders
+		).build();
+	}
+
+	private Map<String, String> _getOrderPaymentPlaceholders(
+		String licenseType, Order order, JSONObject orderMetadataJSONObject) {
+
+		String exchangeRate = "Not applicable";
+
+		if (!Objects.equals(order.getCurrencyCode(), "USD") &&
+			orderMetadataJSONObject.has("exchangeRate")) {
+
+			exchangeRate = orderMetadataJSONObject.optString("exchangeRate");
+		}
+
+		String orderStatus = "Completed";
+
+		if (Objects.equals(
+				order.getOrderStatus(),
+				CommerceOrderConstants.ORDER_STATUS_PENDING)) {
+
+			orderStatus = "Pending";
+		}
+		else if (Objects.equals(
+					order.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_PROCESSING)) {
+
+			orderStatus = "Processing";
+		}
+
+		String paymentMethod = "PayPal";
+
+		if (Objects.equals(order.getPaymentMethod(), "money-order")) {
+			paymentMethod = "Money Order / Wire";
+		}
+
+		String paymentTerms = GetterUtil.getString(
+			order.getPaymentTermDescription());
+
+		return HashMapBuilder.put(
+			"EMAIL_ADDRESS",
+			GetterUtil.getString(order.getCreatorEmailAddress())
+		).put(
+			"EXCHANGE_RATE", exchangeRate
+		).put(
+			"NET_PRICE_FORMATTED",
+			GetterUtil.getString(order.getSubtotalFormatted())
+		).put(
+			"ORDER_DATE", _formatDate(order.getCreateDate())
+		).put(
+			"ORDER_ID", String.valueOf(order.getId())
+		).put(
+			"ORDER_PAYMENT_METHOD", paymentMethod
+		).put(
+			"ORDER_STATUS", orderStatus
+		).put(
+			"PAYMENT_TERM_DESCRIPTION", paymentTerms
+		).put(
+			"PAYMENT_TERMS", paymentTerms
+		).put(
+			"SUBSCRIPTION_EXPIRATION_DATE",
+			_formatDate(
+				CommerceOrderUtil.getOrderPurchaseEndDate(licenseType, null))
+		).put(
+			"SUBSCRIPTION_STARTING_DATE", _formatDate(new Date())
+		).put(
+			"SUBTOTAL_FORMATTED",
+			GetterUtil.getString(order.getSubtotalFormatted())
+		).put(
+			"TAX_AMOUNT_FORMATTED",
+			GetterUtil.getString(order.getTaxAmountFormatted())
+		).put(
+			"TOTAL_FORMATTED", GetterUtil.getString(order.getTotalFormatted())
+		).put(
+			"VAT_FORMATTED", GetterUtil.getString(order.getTaxAmountFormatted())
+		).build();
+	}
+
+	private String _getProductName(OrderItem orderItem, Product product) {
+		if (product != null) {
+			String productName = CommerceProductUtil.getName(product);
+
+			if (Validator.isNotNull(productName)) {
+				return productName;
+			}
+		}
+
+		if (orderItem.getName() != null) {
+			return GetterUtil.getString(
+				orderItem.getName(
+				).get(
+					"en_US"
+				));
+		}
+
+		return "";
+	}
+
+	private Map<String, String> _getProductPlaceholders(OrderItem[] orderItems)
+		throws Exception {
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			return Collections.emptyMap();
+		}
+
+		OrderItem orderItem = orderItems[0];
+
+		Product product = null;
+
+		if (orderItem.getProductId() != null) {
+			product = _commerceProductService.fetchProduct(
+				orderItem.getProductId());
+		}
+
+		return HashMapBuilder.put(
+			"CATALOG_NAME", _getCatalogName(product)
+		).put(
+			"LICENSE_TYPE", _getSpecificationValue(product, "license-type")
+		).put(
+			"PRODUCT_NAME", _getProductName(orderItem, product)
+		).put(
+			"PRODUCT_THUMBNAIL", _getProductThumbnail(product)
+		).put(
+			"PRODUCT_TYPE", _getSpecificationValue(product, "type")
+		).build();
+	}
+
+	private String _getProductThumbnail(Product product) {
+		if (product == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(product.getThumbnail());
+	}
+
+	private String _getSpecificationValue(Product product, String key) {
+		if (product == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(
+			CommerceProductUtil.getSpecificationValue(product, key));
+	}
+
+	private void _sendInvoiceNotification(Order order) {
+		String paymentMethod = order.getPaymentMethod();
+		Integer paymentStatus = order.getPaymentStatus();
+
+		if ((paymentMethod == null) || (paymentStatus == null)) {
+			return;
+		}
+
+		boolean moneyOrderPending = false;
+
+		if (StringUtil.equalsIgnoreCase(paymentMethod, "money-order") &&
+			(paymentStatus ==
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING)) {
+
+			moneyOrderPending = true;
+		}
+
+		boolean payPalCompleted = false;
+
+		if ((StringUtil.equalsIgnoreCase(paymentMethod, "paypal") ||
+			 StringUtil.equalsIgnoreCase(
+				 paymentMethod, "paypal-integration")) &&
+			(paymentStatus ==
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED)) {
+
+			payPalCompleted = true;
+		}
+
+		if (!moneyOrderPending && !payPalCompleted) {
+			return;
+		}
+
+		long orderId = order.getId();
+
+		if (!_inFlightInvoiceOrderIds.add(orderId)) {
+			return;
+		}
+
+		try {
+			JSONObject orderMetadataJSONObject =
+				CommerceOrderUtil.getOrderMetadataJSONObject(order);
+
+			if (orderMetadataJSONObject.optBoolean(
+					"invoiceNotificationSent", false)) {
+
+				return;
+			}
+
+			Map<String, String> placeholders = _getInvoiceOrderPlaceholders(
+				order, orderMetadataJSONObject);
+
+			JSONObject processedTemplateJSONObject =
+				_notificationTemplateService.getAndProcessTemplateJSONObject(
+					"MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE",
+					_LANGUAGE_ID_DEFAULT, placeholders);
+
+			_notificationQueueEntryService.addNotificationQueueEntry(
+				processedTemplateJSONObject.optString(
+					"from", "do-not-reply@liferay.com"),
+				processedTemplateJSONObject.optString(
+					"fromName", "One Liferay"),
+				processedTemplateJSONObject.optString(
+					"to", "accounts-receivables-intl@liferay.com"),
+				processedTemplateJSONObject.getString("subject"),
+				processedTemplateJSONObject.getString("body"));
+
+			orderMetadataJSONObject.put("invoiceNotificationSent", true);
+
+			patchOrderCustomFields(
+				orderId,
+				Collections.singletonMap(
+					"order-metadata", orderMetadataJSONObject.toString()));
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to send invoice notification for order " + orderId,
+				exception);
+		}
+		finally {
+			_inFlightInvoiceOrderIds.remove(orderId);
+		}
+	}
+
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
 
 	private static final String _FIELDS_ORDER_ITEMS =
 		"id,orderItems.productId,orderItems.skuExternalReferenceCode";
+
+	private static final String _LANGUAGE_ID_DEFAULT = "en_US";
 
 	private static final int _PAGE_SIZE = 500;
 
@@ -2177,7 +2509,15 @@ public class CommerceOrderService extends OneBaseService {
 
 	private final Set<Long> _inFlightAIHubOpportunityOrderIds =
 		ConcurrentHashMap.newKeySet();
+	private final Set<Long> _inFlightInvoiceOrderIds =
+		ConcurrentHashMap.newKeySet();
 	private final Set<Long> _inFlightOrderIds = ConcurrentHashMap.newKeySet();
+
+	@Autowired
+	private NotificationQueueEntryService _notificationQueueEntryService;
+
+	@Autowired
+	private NotificationTemplateService _notificationTemplateService;
 
 	@Autowired
 	private PostalAddressService _postalAddressService;

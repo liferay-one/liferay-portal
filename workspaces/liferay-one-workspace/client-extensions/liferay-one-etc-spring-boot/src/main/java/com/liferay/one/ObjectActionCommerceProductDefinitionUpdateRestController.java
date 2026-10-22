@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -50,12 +51,18 @@ public class ObjectActionCommerceProductDefinitionUpdateRestController
 			return;
 		}
 
-		_entitlementDefinitionService.generateEntitlementDefinition(
-			modelCPDefinitionJSONObject.getLong("CProductId"));
+		long cProductId = modelCPDefinitionJSONObject.getLong("CProductId");
+
+		_entitlementDefinitionService.generateEntitlementDefinition(cProductId);
+
+		_commerceProductService.sendNewAppApprovedNotification(cProductId);
 	}
 
 	private static final Log _log = LogFactory.getLog(
 		ObjectActionCommerceProductDefinitionUpdateRestController.class);
+
+	@Autowired
+	private CommerceProductService _commerceProductService;
 
 	@Autowired
 	private EntitlementDefinitionService _entitlementDefinitionService;

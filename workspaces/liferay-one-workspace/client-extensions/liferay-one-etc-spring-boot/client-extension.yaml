@@ -95,6 +95,11 @@ liferay-one-etc-spring-boot-object-action-commerce-order-update:
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/commerce/order/update
     type: objectAction
+liferay-one-etc-spring-boot-object-action-commerce-product-definition-create:
+    name: Liferay One Etc Spring Boot Object Action Commerce Product Definition Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/commerce/product/definition/create
+    type: objectAction
 liferay-one-etc-spring-boot-object-action-commerce-product-definition-update:
     name: Liferay One Etc Spring Boot Object Action Commerce Product Definition Update
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
@@ -129,6 +134,16 @@ liferay-one-etc-spring-boot-object-action-project-membership-user-group-remove:
     name: Liferay One Etc Spring Boot Object Action Project Membership User Group Remove
     oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
     resourcePath: /object/action/project/membership/user/group/remove
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-publisher-account-request-create:
+    name: Liferay One Etc Spring Boot Object Action Publisher Account Request Create
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/publisher/account/request/create
+    type: objectAction
+liferay-one-etc-spring-boot-object-action-publisher-account-request-update:
+    name: Liferay One Etc Spring Boot Object Action Publisher Account Request Update
+    oAuth2ApplicationExternalReferenceCode: liferay-one-etc-spring-boot-oaua
+    resourcePath: /object/action/publisher/account/request/update
     type: objectAction
 liferay-one-etc-spring-boot-object-action-usage-report-approved:
     name: Liferay One Etc Spring Boot Object Action Usage Report Approved

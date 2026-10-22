@@ -75,6 +75,10 @@ public class CommerceOrderServiceTest {
 		_entitlementDefinitionService = Mockito.mock(
 			EntitlementDefinitionService.class);
 		_environmentService = Mockito.mock(EnvironmentService.class);
+		_notificationQueueEntryService = Mockito.mock(
+			NotificationQueueEntryService.class);
+		_notificationTemplateService = Mockito.mock(
+			NotificationTemplateService.class);
 		_postalAddressService = Mockito.mock(PostalAddressService.class);
 		_projectService = Mockito.mock(ProjectService.class);
 		_salesforceService = Mockito.mock(SalesforceService.class);
@@ -107,6 +111,12 @@ public class CommerceOrderServiceTest {
 			_entitlementDefinitionService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_environmentService", _environmentService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_notificationQueueEntryService",
+			_notificationQueueEntryService);
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "_notificationTemplateService",
+			_notificationTemplateService);
 		ReflectionTestUtils.setField(
 			_commerceOrderService, "_postalAddressService",
 			_postalAddressService);
@@ -2849,6 +2859,191 @@ public class CommerceOrderServiceTest {
 			"006-PURCHASING", customFields.get("salesforceOpportunityId"));
 	}
 
+	@Test
+	public void testDispatchOrderUpdateSendsInvoiceNotificationForMoneyOrderPending()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
+
+		order.setPaymentMethod("money-order");
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.anyLong(), Mockito.anyMap()
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Invoice Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - Invoice Order"
+		).put(
+			"to", "accounts-receivables-intl@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"accounts-receivables-intl@liferay.com",
+			"One Liferay - Invoice Order", "Test Invoice Body"
+		);
+
+		ArgumentCaptor<Map<String, ?>> customFieldsCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.eq(_ORDER_ID), customFieldsCaptor.capture()
+		);
+
+		Map<String, ?> captured = customFieldsCaptor.getValue();
+
+		JSONObject metadataJSONObject = new JSONObject(
+			(String)captured.get("order-metadata"));
+
+		Assertions.assertTrue(
+			metadataJSONObject.getBoolean("invoiceNotificationSent"));
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSendsInvoiceNotificationForPayPalCompleted()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setPaymentMethod("paypal");
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.anyLong(), Mockito.anyMap()
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Invoice Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - Invoice Order"
+		).put(
+			"to", "accounts-receivables-intl@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"accounts-receivables-intl@liferay.com",
+			"One Liferay - Invoice Order", "Test Invoice Body"
+		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsInvoiceNotificationWhenAlreadySent()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
+
+		order.setPaymentMethod("money-order");
+		order.setCustomFields(
+			HashMapBuilder.put(
+				"order-metadata",
+				new JSONObject(
+				).put(
+					"invoiceNotificationSent", true
+				).toString()
+			).build());
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
 	private OrderResource _calculateTax(Order order) throws Exception {
 		OrderResource orderResource = Mockito.mock(OrderResource.class);
 
@@ -3600,6 +3795,8 @@ public class CommerceOrderServiceTest {
 	private CountryService _countryService;
 	private EntitlementDefinitionService _entitlementDefinitionService;
 	private EnvironmentService _environmentService;
+	private NotificationQueueEntryService _notificationQueueEntryService;
+	private NotificationTemplateService _notificationTemplateService;
 	private PostalAddressService _postalAddressService;
 	private ProjectService _projectService;
 	private SalesforceService _salesforceService;

@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.EntitlementDefinitionService;
 
 import org.json.JSONObject;
@@ -28,6 +29,9 @@ public class ObjectActionCommerceProductDefinitionUpdateRestControllerTest {
 
 		ReflectionTestUtils.setField(
 			_objectActionCommerceProductDefinitionUpdateRestController,
+			"_commerceProductService", _commerceProductService);
+		ReflectionTestUtils.setField(
+			_objectActionCommerceProductDefinitionUpdateRestController,
 			"_entitlementDefinitionService", _entitlementDefinitionService);
 	}
 
@@ -41,6 +45,12 @@ public class ObjectActionCommerceProductDefinitionUpdateRestControllerTest {
 		Mockito.verify(
 			_entitlementDefinitionService
 		).generateEntitlementDefinition(
+			_C_PRODUCT_ID
+		);
+
+		Mockito.verify(
+			_commerceProductService
+		).sendNewAppApprovedNotification(
 			_C_PRODUCT_ID
 		);
 	}
@@ -83,6 +93,8 @@ public class ObjectActionCommerceProductDefinitionUpdateRestControllerTest {
 
 	private static final long _C_PRODUCT_ID = 3000L;
 
+	private final CommerceProductService _commerceProductService = Mockito.mock(
+		CommerceProductService.class);
 	private final EntitlementDefinitionService _entitlementDefinitionService =
 		Mockito.mock(EntitlementDefinitionService.class);
 	private ObjectActionCommerceProductDefinitionUpdateRestController

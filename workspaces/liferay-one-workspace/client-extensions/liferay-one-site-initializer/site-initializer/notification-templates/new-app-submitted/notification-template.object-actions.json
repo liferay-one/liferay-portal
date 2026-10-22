@@ -1,0 +1,16 @@
+[
+	{
+		"active": true,
+		"conditionExpression": "",
+		"externalReferenceCode": "OA_COMMERCE_PRODUCT_DEFINITION_CREATE",
+		"label": {
+			"en_US": "Commerce Product Definition Create"
+		},
+		"name": "CommerceProductDefinitionCreate",
+		"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-commerce-product-definition-create",
+		"objectActionTriggerKey": "onAfterAdd",
+		"objectDefinitionId": "[$OBJECT_DEFINITION_ID:CPDefinition$]",
+		"parameters": {
+		}
+	}
+]

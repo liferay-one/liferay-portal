@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Option;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
@@ -22,8 +23,11 @@ import com.liferay.one.exception.NoSuchProductException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,6 +55,15 @@ public class CommerceProductServiceTest {
 		ReflectionTestUtils.setField(
 			_commerceProductService, "_commerceSkuService",
 			_commerceSkuService);
+		ReflectionTestUtils.setField(
+			_commerceProductService, "_notificationQueueEntryService",
+			_notificationQueueEntryService);
+		ReflectionTestUtils.setField(
+			_commerceProductService, "_notificationTemplateService",
+			_notificationTemplateService);
+		ReflectionTestUtils.setField(
+			_commerceProductService, "_userAccountService",
+			_userAccountService);
 
 		Mockito.doReturn(
 			_optionResource
@@ -808,6 +821,205 @@ public class CommerceProductServiceTest {
 		return page;
 	}
 
+	@Test
+	public void testSendNewAppSubmittedNotification() throws Exception {
+		Product product = new Product();
+
+		Catalog catalog = new Catalog();
+
+		catalog.setAccountId(() -> _ACCOUNT_ID);
+		catalog.setName(() -> "Test Catalog");
+
+		product.setCatalog(() -> catalog);
+
+		product.setCreateDate(() -> new Date());
+		product.setId(() -> _PRODUCT_ID);
+		product.setName(() -> Map.of("en_US", "Test App"));
+		product.setProductId(() -> _PRODUCT_ID);
+		product.setThumbnail(() -> "/documents/thumb.png");
+
+		Mockito.doReturn(
+			product
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			_PRODUCT_ID
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> "publisher@example.com");
+
+		Mockito.doReturn(
+			List.of(userAccount)
+		).when(
+			_userAccountService
+		).getAccountUserAccounts(
+			_ACCOUNT_ID
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Submitted"
+		).put(
+			"to", "marketplace-admin@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-PRODUCT-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		JSONObject publisherJSONObject = new JSONObject(
+		).put(
+			"body", "Test Publisher Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Submitted Publisher"
+		);
+
+		Mockito.doReturn(
+			publisherJSONObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-NEW-APP-SUBMITTED-PUBLISHER"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceProductService.sendNewAppSubmittedNotification(_PRODUCT_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"marketplace-admin@liferay.com", "One Liferay - New App Submitted",
+			"Test Body"
+		);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
+			"One Liferay - New App Submitted Publisher", "Test Publisher Body"
+		);
+	}
+
+	@Test
+	public void testSendNewAppApprovedNotification() throws Exception {
+		Product product = new Product();
+
+		Catalog catalog = new Catalog();
+
+		catalog.setAccountId(() -> _ACCOUNT_ID);
+		catalog.setName(() -> "Test Catalog");
+
+		product.setCatalog(() -> catalog);
+
+		product.setId(() -> _PRODUCT_ID);
+		product.setName(() -> Map.of("en_US", "Test App"));
+		product.setProductId(() -> _PRODUCT_ID);
+		product.setThumbnail(() -> "/documents/thumb.png");
+
+		Mockito.doReturn(
+			product
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			_PRODUCT_ID
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> "publisher@example.com");
+
+		Mockito.doReturn(
+			List.of(userAccount)
+		).when(
+			_userAccountService
+		).getAccountUserAccounts(
+			_ACCOUNT_ID
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Approved Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Approved and Published"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-NEW-APP-APPROVED-AND-PUBLISHED"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceProductService.sendNewAppApprovedNotification(_PRODUCT_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
+			"One Liferay - New App Approved and Published", "Test Approved Body"
+		);
+	}
+
+	@Test
+	public void testSendNewAppApprovedNotificationProductNotFound()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			999L
+		);
+
+		_commerceProductService.sendNewAppApprovedNotification(999L);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
+	@Test
+	public void testSendNewAppSubmittedNotificationProductNotFound()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			999L
+		);
+
+		_commerceProductService.sendNewAppSubmittedNotification(999L);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
+	private static final long _ACCOUNT_ID = 123L;
+
 	private static final long _CATALOG_ID = 55;
 
 	private static final String _PRODUCT_GROUP = "PRDCT-AI-HUB";
@@ -825,6 +1037,10 @@ public class CommerceProductServiceTest {
 	private CommerceProductService _commerceProductService;
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
 		CommerceSkuService.class);
+	private final NotificationQueueEntryService _notificationQueueEntryService =
+		Mockito.mock(NotificationQueueEntryService.class);
+	private final NotificationTemplateService _notificationTemplateService =
+		Mockito.mock(NotificationTemplateService.class);
 	private final OptionResource _optionResource = Mockito.mock(
 		OptionResource.class);
 	private final ProductOptionResource _productOptionResource = Mockito.mock(
@@ -833,5 +1049,7 @@ public class CommerceProductServiceTest {
 		Mockito.mock(ProductOptionValueResource.class);
 	private final ProductResource _productResource = Mockito.mock(
 		ProductResource.class);
+	private final UserAccountService _userAccountService = Mockito.mock(
+		UserAccountService.class);
 
 }

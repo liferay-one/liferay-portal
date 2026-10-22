@@ -1,0 +1,16 @@
+[
+	{
+		"active": true,
+		"conditionExpression": "requestStatus == \"completed\"",
+		"externalReferenceCode": "OA_PUBLISHER_ACCOUNT_REQUEST_UPDATE",
+		"label": {
+			"en_US": "Publisher Account Request Update"
+		},
+		"name": "PublisherAccountRequestUpdate",
+		"objectActionExecutorKey": "function#liferay-one-etc-spring-boot-object-action-publisher-account-request-update",
+		"objectActionTriggerKey": "onAfterUpdate",
+		"objectDefinitionId": "[$OBJECT_DEFINITION_ID:PublisherAccountRequest$]",
+		"parameters": {
+		}
+	}
+]

@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Catalog;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Option;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
@@ -22,13 +23,20 @@ import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductR
 import com.liferay.one.constants.CommerceCatalogConstants;
 import com.liferay.one.constants.CommerceProductConstants;
 import com.liferay.one.exception.NoSuchProductException;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,6 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -120,6 +130,164 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return products;
+	}
+
+	public void sendNewAppApprovedNotification(long cProductId)
+		throws Exception {
+
+		Product product = fetchProduct(cProductId);
+
+		if (product == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to find commerce product for ID " + cProductId);
+			}
+
+			return;
+		}
+
+		String publisherEmailAddress = _getPublisherEmailAddress(product);
+
+		if (Validator.isNull(publisherEmailAddress)) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to find publisher email address for product ID " +
+						cProductId);
+			}
+
+			return;
+		}
+
+		String productType = GetterUtil.getString(
+			CommerceProductUtil.getSpecificationValue(product, "type"));
+
+		JSONObject processedTemplateJSONObject =
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				"MARKETPLACE-NEW-APP-APPROVED-AND-PUBLISHED",
+				_LANGUAGE_ID_DEFAULT,
+				HashMapBuilder.put(
+					"APP_NAME", CommerceProductUtil.getName(product)
+				).put(
+					"APP_TYPE", productType
+				).put(
+					"CATALOG_NAME", _getCatalogName(product)
+				).put(
+					"CPDEFINITION_PRODUCTID",
+					String.valueOf(product.getProductId())
+				).put(
+					"PRODUCT_THUMBNAIL",
+					GetterUtil.getString(product.getThumbnail())
+				).build());
+
+		_notificationQueueEntryService.addNotificationQueueEntry(
+			processedTemplateJSONObject.optString(
+				"from", "do-not-reply@liferay.com"),
+			processedTemplateJSONObject.optString("fromName", "One Liferay"),
+			publisherEmailAddress,
+			processedTemplateJSONObject.getString("subject"),
+			processedTemplateJSONObject.getString("body"));
+	}
+
+	public void sendNewAppSubmittedNotification(long cProductId)
+		throws Exception {
+
+		Product product = fetchProduct(cProductId);
+
+		if (product == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to find commerce product for ID " + cProductId);
+			}
+
+			return;
+		}
+
+		String dashboardURL = StringBundler.concat(
+			lxcDXPServerProtocol, "://", lxcDXPMainDomain,
+			"/web/one/administrator-dashboard#/apps/", product.getProductId());
+
+		JSONObject processedTemplateJSONObject =
+			_notificationTemplateService.getAndProcessTemplateJSONObject(
+				"MARKETPLACE-PRODUCT-SUBMIT-TEMPLATE", _LANGUAGE_ID_DEFAULT,
+				HashMapBuilder.put(
+					"APP_NAME", CommerceProductUtil.getName(product)
+				).put(
+					"APP_TYPE",
+					GetterUtil.getString(
+						CommerceProductUtil.getSpecificationValue(
+							product, "type"))
+				).put(
+					"CATALOG_NAME", _getCatalogName(product)
+				).put(
+					"CPDEFINITION_CREATE_DATE",
+					_formatDate(product.getCreateDate())
+				).put(
+					"CPDEFINITION_CREATEDATE",
+					_formatDate(product.getCreateDate())
+				).put(
+					"CPDEFINITION_DEVELOPER_NAME", _getCatalogName(product)
+				).put(
+					"CPDEFINITION_NAME", CommerceProductUtil.getName(product)
+				).put(
+					"CPDEFINITION_THUMBNAIL",
+					GetterUtil.getString(product.getThumbnail())
+				).put(
+					"CPDEFINITION_URL", dashboardURL
+				).put(
+					"CREATE_DATE", _formatDate(product.getCreateDate())
+				).put(
+					"DASHBOARD_URL", dashboardURL
+				).put(
+					"DEVELOPER_NAME", _getCatalogName(product)
+				).put(
+					"PRODUCT_NAME", CommerceProductUtil.getName(product)
+				).put(
+					"PRODUCT_THUMBNAIL",
+					GetterUtil.getString(product.getThumbnail())
+				).build());
+
+		_notificationQueueEntryService.addNotificationQueueEntry(
+			processedTemplateJSONObject.optString(
+				"from", "do-not-reply@liferay.com"),
+			processedTemplateJSONObject.optString("fromName", "One Liferay"),
+			processedTemplateJSONObject.optString(
+				"to", "marketplace-admin@liferay.com"),
+			processedTemplateJSONObject.getString("subject"),
+			processedTemplateJSONObject.getString("body"));
+
+		String publisherEmailAddress = _getPublisherEmailAddress(product);
+
+		if (Validator.isNotNull(publisherEmailAddress)) {
+			String productType = GetterUtil.getString(
+				CommerceProductUtil.getSpecificationValue(product, "type"));
+
+			JSONObject publisherProcessedTemplateJSONObject =
+				_notificationTemplateService.getAndProcessTemplateJSONObject(
+					"MARKETPLACE-NEW-APP-SUBMITTED-PUBLISHER",
+					_LANGUAGE_ID_DEFAULT,
+					HashMapBuilder.put(
+						"APP_NAME", CommerceProductUtil.getName(product)
+					).put(
+						"APP_TYPE", productType
+					).put(
+						"CATALOG_NAME", _getCatalogName(product)
+					).put(
+						"CPDEFINITION_PRODUCTID",
+						String.valueOf(product.getProductId())
+					).put(
+						"PRODUCT_THUMBNAIL",
+						GetterUtil.getString(product.getThumbnail())
+					).build());
+
+			_notificationQueueEntryService.addNotificationQueueEntry(
+				publisherProcessedTemplateJSONObject.optString(
+					"from", "do-not-reply@liferay.com"),
+				publisherProcessedTemplateJSONObject.optString(
+					"fromName", "One Liferay"),
+				publisherEmailAddress,
+				publisherProcessedTemplateJSONObject.getString("subject"),
+				publisherProcessedTemplateJSONObject.getString("body"));
+		}
 	}
 
 	@CacheEvict(allEntries = true, cacheNames = "product")
@@ -595,6 +763,55 @@ public class CommerceProductService extends OneBaseService {
 		return _commerceSkuService.patchSku(salesforceProductId, sku);
 	}
 
+	private String _formatDate(Date date) {
+		if (date == null) {
+			return "";
+		}
+
+		return date.toInstant(
+		).atZone(
+			ZoneId.of("UTC")
+		).format(
+			DateTimeFormatter.ofPattern("MMMM d, yyyy")
+		);
+	}
+
+	private String _getCatalogName(Product product) {
+		Catalog catalog = product.getCatalog();
+
+		if (catalog == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(catalog.getName());
+	}
+
+	private String _getPublisherEmailAddress(Product product) {
+		Catalog catalog = product.getCatalog();
+
+		if ((catalog != null) && (catalog.getAccountId() != null)) {
+			try {
+				List<UserAccount> userAccounts =
+					_userAccountService.getAccountUserAccounts(
+						catalog.getAccountId());
+
+				if ((userAccounts != null) && !userAccounts.isEmpty()) {
+					return userAccounts.get(
+						0
+					).getEmailAddress();
+				}
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get publisher user accounts for account ID " +
+						catalog.getAccountId(),
+					exception);
+			}
+		}
+
+		return "";
+	}
+
 	private static final String _FIELD_TYPE_SELECT = "select";
 
 	private static final int _FILTER_CLAUSES_MAX = 20;
@@ -618,6 +835,15 @@ public class CommerceProductService extends OneBaseService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private NotificationQueueEntryService _notificationQueueEntryService;
+
+	@Autowired
+	private NotificationTemplateService _notificationTemplateService;
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 	private final Map<String, Object> _productGroupLocks =
 		new ConcurrentHashMap<>();
