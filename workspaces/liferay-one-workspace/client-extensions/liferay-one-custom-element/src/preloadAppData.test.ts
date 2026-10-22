@@ -45,6 +45,25 @@ vi.mock('~/hooks/useProjectOrders', () => ({
 	}),
 }));
 
+vi.mock(
+	'~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary',
+	() => ({
+		activationKeySummaryQuery: (scope?: {
+			accountExternalReferenceCode?: string;
+			projectExternalReferenceCode?: string;
+		}) => ({
+			key:
+				scope?.projectExternalReferenceCode ||
+				scope?.accountExternalReferenceCode
+					? `activationKeySummary:${
+							scope?.projectExternalReferenceCode ??
+							scope?.accountExternalReferenceCode
+						}`
+					: null,
+		}),
+	})
+);
+
 vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
 	userProjectsQuery: (accountId: number) => ({
 		key: `userProjects:${accountId}`,
@@ -145,10 +164,21 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'accountLevelContracts:101',
 				'projectContracts:PRJCT-001',
 				'projectEntitlements:PRJCT-001',
+				'activationKeySummary:PRJCT-001',
 				'projectOrders:101',
 				'projectProducts:ACCNT-001',
 			])
 		);
+	});
+
+	it('preloads the activation key summary on a project activation route', async () => {
+		window.location.hash = '#/ACCNT-001/project/PRJCT-001/activation';
+
+		const preloadAppData = await loadPreloadAppData();
+
+		preloadAppData('my-account');
+
+		expect(getPreloadedKeys()).toContain('activationKeySummary:PRJCT-001');
 	});
 
 	it('scopes the entitlements to the project only on the products tab or the project root', async () => {
@@ -214,5 +244,8 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 
 		expect(getPreloadedKeys()).toContain('projectContracts:');
 		expect(getPreloadedKeys()).toContain('projectEntitlements:');
+		expect(getPreloadedKeys()).not.toContain(
+			'activationKeySummary:PRJCT-001'
+		);
 	});
 });

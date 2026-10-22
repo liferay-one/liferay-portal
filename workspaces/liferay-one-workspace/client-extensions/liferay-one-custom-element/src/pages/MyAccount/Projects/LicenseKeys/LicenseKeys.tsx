@@ -293,7 +293,10 @@ export default function LicenseKeys() {
 		useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
 	const scope = useActivationKeyScope();
-	const {summary} = useActivationKeySummary(scope, hasGeneratePermission);
+	const {loading: loadingSummary, summary} = useActivationKeySummary(
+		scope,
+		hasGeneratePermission
+	);
 
 	const cloudNativeKeyTypes = useMemo(
 		() => summary?.cloudNativeKeyTypes ?? [],
@@ -510,13 +513,28 @@ export default function LicenseKeys() {
 		>
 			<FilterableListCard
 				action={
-					hasGeneratePermission && summary?.generatable ? (
-						<Button
-							displayType="primary"
-							onClick={() => handleNewKey()}
-						>
-							{translate('new-key')}
-						</Button>
+					hasGeneratePermission ? (
+						<ClayTooltipProvider>
+							<span
+								data-tooltip-align="top"
+								title={
+									!loadingSummary && !summary?.generatable
+										? translate('no-licenses-available')
+										: undefined
+								}
+							>
+								<Button
+									disabled={
+										loadingSummary || !summary?.generatable
+									}
+									displayType="primary"
+									isLoading={loadingSummary}
+									onClick={() => handleNewKey()}
+								>
+									{translate('new-key')}
+								</Button>
+							</span>
+						</ClayTooltipProvider>
 					) : undefined
 				}
 				className="license-keys"

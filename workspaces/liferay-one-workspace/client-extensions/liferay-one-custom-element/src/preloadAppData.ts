@@ -12,7 +12,9 @@ import {
 	projectProductsQuery,
 } from '~/hooks/useProjectCommerce';
 import {projectOrdersQuery} from '~/hooks/useProjectOrders';
+import {activationKeySummaryQuery} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary';
 import {userProjectsQuery} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
+import {toActivationKeyScope} from '~/pages/MyAccount/Projects/utils/toActivationKeyScope';
 import HeadlessAdminUser, {
 	MY_USER_ACCOUNT_URL,
 } from '~/services/headless/HeadlessAdminUser';
@@ -21,6 +23,14 @@ import {Liferay} from '~/services/liferay/liferay';
 const MY_ACCOUNT_ROUTE = 'my-account';
 
 const preloadedRoutes = new Set<string>();
+
+function getAccountExternalReferenceCode(): string {
+	const [accountExternalReferenceCode = ''] = window.location.hash
+		.replace(/^#\/?/, '')
+		.split('/');
+
+	return accountExternalReferenceCode;
+}
 
 function getProjectExternalReferenceCode(): string {
 	const [, section, projectExternalReferenceCode = ''] = window.location.hash
@@ -83,5 +93,15 @@ export default function preloadAppData(route: string) {
 			}
 		})
 		.catch(() => undefined);
+
+	const activationKeyScope = toActivationKeyScope(
+		getAccountExternalReferenceCode(),
+		getProjectExternalReferenceCode()
+	);
+
+	if (activationKeyScope) {
+		preloadDataQuery(activationKeySummaryQuery(activationKeyScope));
+	}
+
 	preloadDataQuery(projectOrdersQuery(accountId));
 }
