@@ -13,7 +13,7 @@
 		{
 			"externalReferenceCode": "MACHINE_TYPE",
 			"fieldType": "select",
-			"key": "machineType",
+			"key": "machinetype",
 			"name": {
 				"en_US": "Machine Type"
 			},

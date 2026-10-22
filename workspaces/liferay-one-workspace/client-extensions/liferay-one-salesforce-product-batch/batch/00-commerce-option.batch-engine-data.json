@@ -1,0 +1,667 @@
+{
+	"configuration": {
+		"className": "com.liferay.headless.commerce.admin.catalog.dto.v1_0.Option",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "DEFAULT",
+			"updateStrategy": "PARTIAL_UPDATE"
+		}
+	},
+	"items": [
+		{
+			"externalReferenceCode": "MACHINE_TYPE",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "machinetype",
+			"name": {
+				"en_US": "Machine Type"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "MACHINE_TYPE_HIGH",
+					"key": "high",
+					"name": {
+						"en_US": "High"
+					},
+					"priority": 1
+				},
+				{
+					"externalReferenceCode": "MACHINE_TYPE_STANDARD",
+					"key": "standard",
+					"name": {
+						"en_US": "Standard"
+					},
+					"priority": 2
+				}
+			],
+			"required": false,
+			"skuContributor": false
+		},
+		{
+			"externalReferenceCode": "salesforce-product-cdn-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "cdn",
+			"name": {
+				"en_US": "CDN"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-commerce-ai-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "commerce-ai",
+			"name": {
+				"en_US": "Commerce AI"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-consulting-packages-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "consulting-packages",
+			"name": {
+				"en_US": "Consulting Packages"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-consulting-services-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "consulting-services",
+			"name": {
+				"en_US": "Consulting Services"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-content-management-system-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "content-management-system",
+			"name": {
+				"en_US": "Content Management System"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-digital-asset-management-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "digital-asset-management",
+			"name": {
+				"en_US": "Digital Asset Management"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-dynatrace-apm-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "dynatrace-apm",
+			"name": {
+				"en_US": "Dynatrace APM"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-elastic-autoscaling-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "elastic-autoscaling",
+			"name": {
+				"en_US": "Elastic & Autoscaling"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-extended-support-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "extended-support",
+			"name": {
+				"en_US": "Extended Support"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-fees-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "fees",
+			"name": {
+				"en_US": "Fees"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-indemnification-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "indemnification",
+			"name": {
+				"en_US": "Indemnification"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-analytics-cloud-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-analytics-cloud",
+			"name": {
+				"en_US": "Liferay Analytics Cloud"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-cloud-native-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-cloud-native",
+			"name": {
+				"en_US": "Liferay Cloud Native"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-commerce-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-commerce",
+			"name": {
+				"en_US": "Liferay Commerce"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-connector-to-punchout2go-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-connector-to-punchout2go",
+			"name": {
+				"en_US": "Liferay Connector to PunchOut2Go"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-connector-to-salesforce-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-connector-to-salesforce",
+			"name": {
+				"en_US": "Liferay Connector to Salesforce"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-connector-to-sap-erp-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-connector-to-sap-erp",
+			"name": {
+				"en_US": "Liferay Connector to SAP ERP"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-enterprise-search-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-enterprise-search",
+			"name": {
+				"en_US": "Liferay Enterprise Search"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-loop-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-loop",
+			"name": {
+				"en_US": "Liferay Loop"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-paas-add-ons-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-paas-add-ons",
+			"name": {
+				"en_US": "Liferay PaaS - Add-ons"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-paas-environments-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-paas-environments",
+			"name": {
+				"en_US": "Liferay PaaS - Environments"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-paas-experience-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-paas-experience",
+			"name": {
+				"en_US": "Liferay PaaS Experience"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-paas-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-paas",
+			"name": {
+				"en_US": "Liferay PaaS"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-platform-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-platform",
+			"name": {
+				"en_US": "Liferay Platform"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-portal-ee-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-portal-ee",
+			"name": {
+				"en_US": "Liferay Portal EE"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-add-ons-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas-add-ons",
+			"name": {
+				"en_US": "Liferay SaaS - Add-ons"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-experience-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas-experience",
+			"name": {
+				"en_US": "Liferay SaaS Experience"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas",
+			"name": {
+				"en_US": "Liferay SaaS"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-user-traffic-tiers-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas-user-traffic-tiers",
+			"name": {
+				"en_US": "Liferay SaaS - User & Traffic Tiers"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-self-hosted-academic-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-self-hosted-academic",
+			"name": {
+				"en_US": "Liferay Self-Hosted - Academic"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-self-hosted-enterprise-wide-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-self-hosted-enterprise-wide",
+			"name": {
+				"en_US": "Liferay Self-Hosted - Enterprise-Wide"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-self-hosted-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-self-hosted",
+			"name": {
+				"en_US": "Liferay Self-Hosted"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-social-office-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-social-office",
+			"name": {
+				"en_US": "Liferay Social Office"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-symposium-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-symposium",
+			"name": {
+				"en_US": "Liferay Symposium"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-liferay-university-passport-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-university-passport",
+			"name": {
+				"en_US": "Liferay University Passport"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-lr-tokens-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "lr-tokens",
+			"name": {
+				"en_US": "LR Tokens"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-managed-services-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "managed-services",
+			"name": {
+				"en_US": "Managed Services"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-oem-subscription-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "oem-subscription",
+			"name": {
+				"en_US": "OEM Subscription"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-overage-charges-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "overage-charges",
+			"name": {
+				"en_US": "Overage Charges"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-paas-saas-experience-infrastructure-sizing-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "paas-saas-experience-infrastructure-sizing",
+			"name": {
+				"en_US": "PaaS & SaaS Experience - Infrastructure & Sizing"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-partner-program-fees-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "partner-program-fees",
+			"name": {
+				"en_US": "Partner Program Fees"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-pay-as-you-go-usage-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "pay-as-you-go-usage",
+			"name": {
+				"en_US": "Pay-as-you-go Usage"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-premium-security-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "premium-security",
+			"name": {
+				"en_US": "Premium Security"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-private-training-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "private-training",
+			"name": {
+				"en_US": "Private Training"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-public-online-training-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "public-online-training",
+			"name": {
+				"en_US": "Public & Online Training"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-support-plans-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "support-plans",
+			"name": {
+				"en_US": "Support Plans"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-technical-account-management-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "technical-account-management",
+			"name": {
+				"en_US": "Technical Account Management"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "salesforce-product-usage-commitments-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "usage-commitments",
+			"name": {
+				"en_US": "Usage Commitments"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		}
+	]
+}

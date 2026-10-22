@@ -143,7 +143,7 @@
 		{
 			"accountName": "Enterprise Plan Test Account",
 			"active": true,
-			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-LIFERAY-SAAS\", \"name\": \"Liferay DXP - Free Tier\", \"sizing\": \"16\"}]}",
+			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"salesforce-product-liferay-saas\", \"name\": \"Liferay DXP - Free Tier\", \"sizing\": \"16\"}]}",
 			"complimentary": false,
 			"customExpirationDate": "2027-08-09T00:00:00Z",
 			"description": "Enterprise production cluster",
@@ -293,7 +293,7 @@
 		{
 			"accountName": "Portal Test Account",
 			"active": true,
-			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-PORTAL\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"4\"}]}",
+			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"salesforce-product-liferay-portal-ee\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"4\"}]}",
 			"complimentary": false,
 			"customExpirationDate": "2026-01-15T00:00:00Z",
 			"description": "Old portal instance",
@@ -315,7 +315,7 @@
 		{
 			"accountName": "Portal Test Account",
 			"active": true,
-			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-PORTAL\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"16\"}]}",
+			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"salesforce-product-liferay-portal-ee\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"16\"}]}",
 			"complimentary": false,
 			"customExpirationDate": "2026-08-23T00:00:00Z",
 			"description": "Portal staging instance",
@@ -337,7 +337,7 @@
 		{
 			"accountName": "Portal Test Account",
 			"active": true,
-			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"PRDCT-PORTAL\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"8\"}]}",
+			"additionalInfo": "{\"products\": [{\"externalReferenceCode\": \"salesforce-product-liferay-portal-ee\", \"name\": \"Portal EE 6.x License (Production)\", \"sizing\": \"8\"}]}",
 			"complimentary": false,
 			"customExpirationDate": "2027-08-09T00:00:00Z",
 			"description": "Portal production instance",

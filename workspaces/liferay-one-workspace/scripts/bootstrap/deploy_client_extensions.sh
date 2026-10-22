@@ -39,6 +39,12 @@ function main {
 
 	wait_for_batch_imports
 
+	SINCE="$(date +%s)"
+
+	deploy_client_extension "liferay-one-salesforce-product-batch"
+
+	wait_for_batch_imports
+
 	deploy_client_extension "liferay-one-etc-spring-boot"
 
 	settle "liferay-one-etc-spring-boot"

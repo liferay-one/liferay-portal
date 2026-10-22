@@ -189,8 +189,12 @@ with open('${file}') as file:
 # is denormalized
 # from the SKU on create -- sending it rejects the nested mapping -- so it is
 # kept in the file for readability and dropped here. The order item custom
-# fields take a different shape from the plain object the file authors and are
-# applied per item afterward (see _set_order_items), so they are dropped too.
+# fields and final price are sent on create, in the list shape the endpoint
+# takes rather than the plain object the file authors. A later order item PATCH
+# fails with "The product is no longer available" whenever the product is not
+# approved, which is the state of every product in the
+# liferay-one-salesforce-product-batch client extension, while the create
+# accepts them.
 
 order.pop('channelExternalReferenceCode', None)
 order.pop('contractExternalReferenceCode', None)
@@ -221,8 +225,21 @@ if publisher_sales_summary_id:
 		publisher_sales_summary_id)
 
 for order_item in order.get('orderItems', []):
-	order_item.pop('customFields', None)
 	order_item.pop('name', None)
+
+	order_item_custom_fields = order_item.pop('customFields', None) or {}
+
+	if order_item_custom_fields:
+		order_item['customFields'] = [
+			{'customValue': {'data': data}, 'name': name}
+			for name, data in sorted(order_item_custom_fields.items())
+		]
+
+	final_price = order_item.get('unitPrice', 0) * order_item.get('quantity', 1)
+
+	if final_price:
+		order_item['finalPrice'] = final_price
+		order_item['finalPriceWithTaxAmount'] = final_price
 
 print(json.dumps(order))
 "
@@ -457,7 +474,7 @@ function _populate_order {
 	order_id=$(echo "${response}" | sed '$d' | _read_field "id")
 
 	_set_order_fields "${file}" "${order_id}" "${project_name}"
-	_set_order_items "${file}" "${order_id}"
+	_set_order_prices "${file}" "${order_id}"
 	_complete_payment "${file}" "${order_id}"
 }
 
@@ -521,7 +538,7 @@ print('|'.join((
 # API expects. No tax is configured on the seeded channel, so the price with tax
 # is the price.
 
-function _read_order_items {
+function _read_order_total {
 	local file="${1}"
 
 	python3 -c "
@@ -530,35 +547,11 @@ import json
 with open('${file}') as file:
 	order = json.load(file)['order']
 
-lines = []
-total = 0
-
-for order_item in order.get('orderItems', []):
-	final_price = order_item.get('unitPrice', 0) * order_item.get('quantity', 1)
-
-	total += final_price
-
-	body = {'externalReferenceCode': order_item['externalReferenceCode']}
-
-	custom_fields = order_item.get('customFields') or {}
-
-	if custom_fields:
-		body['customFields'] = [
-			{'customValue': {'data': data}, 'name': name}
-			for name, data in sorted(custom_fields.items())
-		]
-
-	if final_price:
-		body['finalPrice'] = final_price
-		body['finalPriceWithTaxAmount'] = final_price
-
-	lines.append(
-		'{}\t{}'.format(
-			order_item['externalReferenceCode'],
-			json.dumps(body, separators=(',', ':'), sort_keys=True)))
+total = sum(
+	order_item.get('unitPrice', 0) * order_item.get('quantity', 1)
+	for order_item in order.get('orderItems', []))
 
 print('{:.2f}'.format(total))
-print('\n'.join(lines))
 "
 }
 
@@ -919,70 +912,36 @@ print(json.dumps(patch))
 	fi
 }
 
-function _set_order_item {
-	local external_reference_code="${1}"
-	local payload="${2}"
-
-	local status
-
-	status=$(_curl \
-		--data "${payload}" \
-		--header "Content-Type: application/json" \
-		--output /dev/null \
-		--request PATCH \
-		--write-out "%{http_code}" \
-		"${LIFERAY_URL}/o/headless-commerce-admin-order/v1.0/orderItems/by-externalReferenceCode/${external_reference_code}" || true)
-
-	if [[ ${status} != 2* ]]
-	then
-		echo "Unable to set fields for order item ${external_reference_code}." >&2
-	fi
-}
-
-# Applies everything an order item needs that the order placement payload does not
-# accept, in one PATCH per item.
+# Sets the order level subtotal and total.
 #
 # The entitlement generator reads an order item's term from its startDate and
 # endDate custom fields and gates on customStatus (see OrderItemUtil), so a
 # seeded item has to carry them or the runtime and the seed would disagree about
-# when a grant runs and every item would read as unapproved.
+# when a grant runs and every item would read as unapproved. They are sent with
+# the item on create (see _build_order_payload).
 #
 # Commerce also prices an order from the channel price list when it is placed, so
 # the unitPrice an order item carries lands on the item but leaves the item's
 # final price and the order's total at zero. A seeded marketplace sale needs a
 # real total -- the Marketplace Finance Orders page lists only orders that have
-# one, and the Marketplace Payments page totals them per publisher -- so the
-# prices ride along in the same PATCH. Only the order level total is skipped for
-# an order whose items are all priced at zero.
+# one, and the Marketplace Payments page totals them per publisher. The item's
+# final price is sent on create, and this PATCH sets the order total. It is
+# skipped for an order whose items are all priced at zero.
 
-function _set_order_items {
+function _set_order_prices {
 	local file="${1}"
 	local order_id="${2}"
 
-	local lines
+	local total
 
-	mapfile -t lines < <(_read_order_items "${file}")
+	total=$(_read_order_total "${file}")
 
-	((${#lines[@]} == 0)) && return 0
-
-	local line
-
-	for line in "${lines[@]:1}"
-	do
-		local external_reference_code
-		local payload
-
-		IFS=$'\t' read -r external_reference_code payload <<< "${line}"
-
-		_set_order_item "${external_reference_code}" "${payload}"
-	done
-
-	[[ ${lines[0]} == "0.00" ]] && return 0
+	[[ ${total} == "0.00" ]] && return 0
 
 	local status
 
 	status=$(_curl \
-		--data "{\"subtotal\": ${lines[0]}, \"total\": ${lines[0]}}" \
+		--data "{\"subtotal\": ${total}, \"total\": ${total}}" \
 		--header "Content-Type: application/json" \
 		--output /dev/null \
 		--request PATCH \

@@ -21,8 +21,8 @@ export type ProductEditionOption =
 
 export const ProductExternalReferenceCode = {
 	LR_TOKENS: 'PRDCT-LR-TOKENS',
-	PAAS_EXPERIENCE: 'PRDCT-PAAS',
-	SAAS_EXPERIENCE: 'PRDCT-SAAS',
+	PAAS_EXPERIENCE: 'salesforce-product-liferay-paas-experience',
+	SAAS_EXPERIENCE: 'salesforce-product-liferay-saas-experience',
 } as const;
 
 export type ProductExternalReferenceCode =
