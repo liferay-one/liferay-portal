@@ -37,21 +37,24 @@ const DEFINITION_ERCS: Record<string, string> = {
 const SERVER_KEY_TYPES = [
 	{keyType: 'backup', licenseName: 'DXP Backup', licenseType: 'production'},
 	{
-		keyType: 'enterprise',
-		licenseName: 'DXP Unlimited Enterprise-Wide',
-		licenseType: 'enterprise',
-	},
-	{
 		keyType: 'non-production',
 		licenseName: 'DXP Non-Production',
 		licenseType: 'production',
 	},
-	{keyType: 'oem', licenseName: 'DXP OEM', licenseType: 'oem'},
 	{
 		keyType: 'production',
 		licenseName: 'DXP Production',
 		licenseType: 'production',
 	},
+];
+
+const SERVERLESS_KEY_TYPES = [
+	{
+		keyType: 'enterprise',
+		licenseName: 'DXP Unlimited Enterprise-Wide',
+		serverId: 'Enterprise',
+	},
+	{keyType: 'oem', licenseName: 'DXP OEM', serverId: 'OEM'},
 ];
 
 const TEST_DEFINITION_KEY_TYPES = ['enterprise', 'oem'];
@@ -77,6 +80,7 @@ interface ILicenseKey {
 	licenseVersion: number;
 	maxClusterNodes: number;
 	owner: string;
+	serverId: string;
 	sizing: string;
 	startDate: string;
 }
@@ -419,6 +423,33 @@ test.describe('[FLOW-LICENSE-GENERATION] license key generation for each key typ
 			expect(await getActivationKeyXML(activationKeyId)).toContain(
 				`<license-type>${licenseType}</license-type>`
 			);
+		});
+	}
+
+	for (const {keyType, licenseName, serverId} of SERVERLESS_KEY_TYPES) {
+		test(`[FLOW-LICENSE-GENERATION] generates a ${keyType} key with no server`, async () => {
+			const activationKeyId = await generateActivationKey(
+				toGenerateRequest(keyType, {servers: []})
+			);
+
+			const licenseKeys = await getLicenseKeys(activationKeyId);
+
+			expect(licenseKeys).toHaveLength(1);
+
+			const [licenseKey] = licenseKeys;
+
+			expect(licenseKey.entitlementId).toBe(entitlementIds[keyType]);
+			expect(licenseKey.hostName ?? '').toBe('');
+			expect(licenseKey.licenseName).toBe(licenseName);
+			expect(licenseKey.licenseType).toBe(keyType);
+			expect(licenseKey.serverId).toBe(serverId);
+
+			const activationKeyXML = await getActivationKeyXML(activationKeyId);
+
+			expect(activationKeyXML).toContain(
+				`<license-type>${keyType}</license-type>`
+			);
+			expect(activationKeyXML).not.toContain('<host-name>');
 		});
 	}
 

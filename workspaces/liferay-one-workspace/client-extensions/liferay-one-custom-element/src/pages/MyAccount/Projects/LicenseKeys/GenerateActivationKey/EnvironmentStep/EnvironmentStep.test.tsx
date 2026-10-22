@@ -97,6 +97,20 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 		expect(getNextButton().disabled).toBe(false);
 	});
 
+	it.each(['enterprise', 'oem'])(
+		'asks an %s key for no server and generates it with only a name',
+		(keyType) => {
+			render(<Harness keyType={keyType} virtualClusterAvailable />);
+
+			expect(
+				screen.getByLabelText(translate('description'))
+			).toBeTruthy();
+			expect(screen.queryByLabelText(translate('host-name'))).toBeNull();
+			expect(screen.queryByText(translate('virtual-cluster'))).toBeNull();
+			expect(getNextButton().disabled).toBe(false);
+		}
+	);
+
 	it('offers a virtual cluster only when the key type allows it', () => {
 		render(<Harness />);
 

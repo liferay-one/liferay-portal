@@ -1788,6 +1788,21 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyGivesAnEnterpriseKeyNoServer()
+		throws Exception {
+
+		_assertServerlessKey(
+			"enterprise", "DXP Unlimited Enterprise-Wide", "Enterprise");
+	}
+
+	@Test
+	public void testGenerateActivationKeyGivesAnOEMKeyNoServer()
+		throws Exception {
+
+		_assertServerlessKey("oem", "DXP OEM", "OEM");
+	}
+
+	@Test
 	public void testGenerateActivationKeyIgnoresPurposeAndStartDateOfOtherKeyTypes()
 		throws Exception {
 
@@ -2807,6 +2822,49 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"not entitled to Liferay DXP"
 			));
+	}
+
+	private void _assertServerlessKey(
+			String keyType, String licenseEntryName, String serverId)
+		throws Exception {
+
+		_stubEntitlements(_toEntitlementOfKeyType(1L, 1.0, keyType));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				Mockito.eq(keyType), Mockito.any(), Mockito.any(),
+				Mockito.eq(false))
+		).thenReturn(
+			new LicenseEntry("portal", licenseEntryName, keyType, "7.4", "7.4")
+		);
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Arrays.asList(1L), null, "Description", null, "Environment",
+				keyType, 0, null, null, _toProject(), null, null,
+				Collections.emptyList(), null, 1L, "2026.Q3", false, null,
+				null));
+
+		Assertions.assertEquals(
+			Collections.singletonList(""),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 12));
+		Assertions.assertEquals(
+			Collections.singletonList(serverId),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 32));
+		Assertions.assertEquals(
+			Collections.singletonList(""),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 16));
+		Assertions.assertEquals(
+			Collections.singletonList(serverId),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 19));
+		Assertions.assertEquals(
+			Collections.singletonList(serverId),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 20));
 	}
 
 	private long _getComplimentaryTermMillis() {

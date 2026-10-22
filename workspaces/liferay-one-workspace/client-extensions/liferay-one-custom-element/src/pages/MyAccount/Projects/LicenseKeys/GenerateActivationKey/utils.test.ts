@@ -28,6 +28,7 @@ import {
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
 	isLicensedForVersion,
+	isServerlessKeyType,
 	toServerField,
 } from './utils';
 
@@ -234,6 +235,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 		it('defaults to hostName when no field is filled', () => {
 			expect(toServerField(buildEmptyServer())).toBe('hostName');
+		});
+
+		it('needs no server for an enterprise or OEM key', () => {
+			expect(isServerlessKeyType('enterprise')).toBe(true);
+			expect(isServerlessKeyType('oem')).toBe(true);
+			expect(isServerlessKeyType('production')).toBe(false);
+			expect(isServerlessKeyType('free')).toBe(false);
 		});
 
 		it('requires the field on every server for hasServerInfo', () => {
