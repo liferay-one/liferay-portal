@@ -4,6 +4,7 @@
  */
 
 import {useProject} from '~/context/ProjectContext';
+import {useProductEnvironmentEntitlements} from '~/hooks/useProductEnvironmentEntitlements';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
 import {SECURITY_INCIDENT_CONTACT_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {buildDetailsSections} from '~/pages/MyAccount/Projects/utils/buildDetailsSections';
@@ -19,17 +20,26 @@ import type {DetailsProfile} from '~/pages/MyAccount/Projects/utils/resolveDetai
 type DetailsTabProps = {
 	contract?: ProjectContract;
 	orderInfo: ProductOrderInfo;
+	orderItemIds: number[];
 	productName: string;
 	profile: DetailsProfile;
 };
 
+const ENVIRONMENT_PROFILES: DetailsProfile[] = ['env-commerce', 'env-instance'];
+
 export default function DetailsTab({
 	contract,
 	orderInfo,
+	orderItemIds,
 	productName,
 	profile,
 }: DetailsTabProps) {
 	const {projectId} = useProject();
+
+	const {environmentEntitlements} = useProductEnvironmentEntitlements(
+		ENVIRONMENT_PROFILES.includes(profile) ? orderItemIds : [],
+		profile === 'env-instance'
+	);
 
 	const {contacts: securityIncidentContacts} = useProjectContacts(
 		profile === 'basic-incident' && !isUnassignedProject(projectId)
@@ -41,6 +51,7 @@ export default function DetailsTab({
 	const sections = buildDetailsSections(profile, {
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',
 		contract,
+		environmentEntitlements,
 		orderInfo,
 		productName,
 		securityIncidentContacts,

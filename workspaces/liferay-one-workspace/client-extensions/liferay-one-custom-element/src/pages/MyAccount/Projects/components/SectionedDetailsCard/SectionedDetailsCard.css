@@ -12,6 +12,11 @@
 	gap: var(--spacer-3);
 }
 
+.sectioned-details-card-section-title {
+	color: var(--color-neutral-10);
+	font-weight: 700;
+}
+
 .sectioned-details-card-row {
 	align-items: baseline;
 	display: flex;

@@ -1889,6 +1889,7 @@ export default {
 	'x-items': '{0} 項目',
 	'x-me': '{0}（自分）',
 	'x-more': '他+{0}件',
+	'x-of-x': '{0} / {1}',
 	'x-of-x-available': '{0} / {1} 件を使用可能',
 	'x-of-x-invitations-were-sent': '{0} / {1}件の招待が送信されました。',
 	'x-result-for-x': '{0} 件の結果（"{1}"）',

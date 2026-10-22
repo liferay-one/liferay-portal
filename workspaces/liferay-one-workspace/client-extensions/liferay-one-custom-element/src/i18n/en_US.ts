@@ -2008,6 +2008,7 @@ export default {
 	'x-items': '{0} Items',
 	'x-me': '{0} (me)',
 	'x-more': '+{0} more',
+	'x-of-x': '{0} of {1}',
 	'x-of-x-available': '{0} of {1} available',
 	'x-of-x-invitations-were-sent': '{0} of {1} invitations were sent.',
 	'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed':

@@ -10,6 +10,7 @@ import i18n, {Word} from '~/i18n';
 import {DetailsRow} from '../components/DetailsCard/DetailsCard';
 import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetailsCard';
 
+import type {EnvironmentEntitlement} from '~/hooks/useProductEnvironmentEntitlements';
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
 import type {ProjectContact} from '~/hooks/useProjectContacts';
 
@@ -18,6 +19,7 @@ import type {DetailsProfile} from './resolveDetailsProfile';
 type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
+	environmentEntitlements?: EnvironmentEntitlement[];
 	orderInfo: {
 		itemName: string;
 		orderDate: string;
@@ -30,8 +32,102 @@ type DetailsContext = {
 	securityIncidentContacts?: ProjectContact[];
 };
 
+const ENVIRONMENTS: Word[] = ['production', 'non-production'];
+
 function formatDate(value?: string): string {
 	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+}
+
+function getStatus(startDate: string, endDate: string): Word {
+	const now = new Date();
+
+	if (startDate && now < new Date(startDate)) {
+		return 'not-activated';
+	}
+
+	if (endDate && now > new Date(endDate)) {
+		return 'expired';
+	}
+
+	return 'active';
+}
+
+function summarizeEnvironments(
+	environmentEntitlements: EnvironmentEntitlement[]
+): EnvironmentEntitlement[] {
+	const environmentSummaries = new Map<string, EnvironmentEntitlement>();
+
+	for (const environmentEntitlement of environmentEntitlements) {
+		const {environment} = environmentEntitlement;
+
+		if (environment && !ENVIRONMENTS.includes(environment as Word)) {
+			continue;
+		}
+
+		const environmentSummary = environmentSummaries.get(environment);
+
+		if (!environmentSummary) {
+			environmentSummaries.set(environment, {...environmentEntitlement});
+
+			continue;
+		}
+
+		environmentSummary.provisionedCount +=
+			environmentEntitlement.provisionedCount;
+		environmentSummary.quantity += environmentEntitlement.quantity;
+
+		if (environmentEntitlement.startDate < environmentSummary.startDate) {
+			environmentSummary.startDate = environmentEntitlement.startDate;
+		}
+
+		if (environmentEntitlement.endDate > environmentSummary.endDate) {
+			environmentSummary.endDate = environmentEntitlement.endDate;
+		}
+	}
+
+	return [...environmentSummaries.values()].sort(
+		(environmentSummary1, environmentSummary2) =>
+			ENVIRONMENTS.indexOf(environmentSummary1.environment as Word) -
+			ENVIRONMENTS.indexOf(environmentSummary2.environment as Word)
+	);
+}
+
+function environmentSections(
+	context: DetailsContext,
+	toRows: (environmentSummary: EnvironmentEntitlement) => DetailsRow[]
+): DetailsSection[] {
+	const environmentSummaries = summarizeEnvironments(
+		context.environmentEntitlements ?? []
+	);
+
+	if (!environmentSummaries.length) {
+		return [
+			{rows: [...orderRows(context), ...contractRows(context.contract)]},
+		];
+	}
+
+	return environmentSummaries.map((environmentSummary) => ({
+		id: environmentSummary.environment,
+		rows: toRows(environmentSummary),
+		title: environmentSummary.environment
+			? i18n.translate(environmentSummary.environment as Word)
+			: undefined,
+	}));
+}
+
+function environmentDateRows(
+	environmentSummary: EnvironmentEntitlement
+): DetailsRow[] {
+	const {endDate, startDate} = environmentSummary;
+
+	return [
+		{label: i18n.translate('start-date'), value: formatDate(startDate)},
+		{label: i18n.translate('expiration-date'), value: formatDate(endDate)},
+		{
+			label: i18n.translate('status'),
+			value: i18n.translate(getStatus(startDate, endDate)),
+		},
+	];
 }
 
 function orderRows(context: DetailsContext): DetailsRow[] {
@@ -119,12 +215,25 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		},
 	],
 	'dates-status': (context) => [{rows: contractRows(context.contract)}],
-	'env-commerce': (context) => [
-		{rows: [...orderRows(context), ...contractRows(context.contract)]},
-	],
-	'env-instance': (context) => [
-		{rows: [...orderRows(context), ...contractRows(context.contract)]},
-	],
+	'env-commerce': (context) =>
+		environmentSections(context, (environmentSummary) => [
+			{
+				label: i18n.translate('purchased'),
+				value: String(environmentSummary.quantity),
+			},
+			...environmentDateRows(environmentSummary),
+		]),
+	'env-instance': (context) =>
+		environmentSections(context, (environmentSummary) => [
+			{
+				label: i18n.translate('keys-provisioned'),
+				value: i18n.sub('x-of-x', [
+					String(environmentSummary.provisionedCount),
+					String(environmentSummary.quantity),
+				]),
+			},
+			...environmentDateRows(environmentSummary),
+		]),
 	'paas': (context) => [
 		{rows: [tierRow(context), ...contractRows(context.contract)]},
 	],

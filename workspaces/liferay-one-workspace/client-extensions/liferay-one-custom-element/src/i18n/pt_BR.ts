@@ -1906,6 +1906,7 @@ export default {
 	'x-items': '{0} itens',
 	'x-me': '{0} (eu)',
 	'x-more': '+{0} mais',
+	'x-of-x': '{0} de {1}',
 	'x-of-x-available': '{0} de {1} disponíveis',
 	'x-of-x-invitations-were-sent': '{0} de {1} convites foram enviados.',
 	'x-result-for-x': '{0} Resultado para "{1}"',
