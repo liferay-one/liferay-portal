@@ -5,14 +5,25 @@
 
 import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import {
+	projectProductsQuery,
 	resolveDefaultContractERC,
 	useProjectCommerce,
+	useProjectProducts,
 } from './useProjectCommerce';
+
+import type {APIResponse} from '~/types/api';
+import type {DeliveryProduct} from '~/types/product';
+
+vi.mock('~/hooks/useAccounts', () => ({
+	useCurrentAccount: vi.fn(),
+}));
 
 vi.mock('~/hooks/useDataQuery', () => ({
 	preloadDataQuery: vi.fn(),
@@ -21,6 +32,10 @@ vi.mock('~/hooks/useDataQuery', () => ({
 
 vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
 	useUserProjects: vi.fn(),
+}));
+
+vi.mock('~/services/spring-boot/Accounts', () => ({
+	default: {getProducts: vi.fn()},
 }));
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -301,5 +316,115 @@ describe('[HOOK-USEPROJECTCOMMERCE] resolveDefaultContractERC', () => {
 
 	it('returns undefined without contracts', () => {
 		expect(resolveDefaultContractERC([])).toBeUndefined();
+	});
+});
+
+describe('[HOOK-USEPROJECTCOMMERCE] projectProductsQuery', () => {
+	it('has no key without an account ERC', () => {
+		expect(projectProductsQuery(undefined).key).toBeNull();
+	});
+
+	it('fetches the products of the account from Spring Boot', async () => {
+		const products: APIResponse<DeliveryProduct> = {
+			actions: {},
+			facets: [],
+			items: [],
+			lastPage: 1,
+			page: 1,
+			pageSize: 0,
+			results: [],
+			totalCount: 0,
+		};
+
+		vi.mocked(Accounts.getProducts).mockResolvedValue(products);
+
+		const query = projectProductsQuery('ACCNT-001');
+
+		expect(query.key).toBe('/project-products/ACCNT-001');
+		await expect(query.fetcher()).resolves.toBe(products);
+		expect(Accounts.getProducts).toHaveBeenCalledWith('ACCNT-001');
+	});
+});
+
+describe('[HOOK-USEPROJECTCOMMERCE] useProjectProducts', () => {
+	function mockCurrentAccount(
+		currentAccount: Partial<ReturnType<typeof useCurrentAccount>>
+	) {
+		vi.mocked(useCurrentAccount).mockReturnValue({
+			data: undefined,
+			error: undefined,
+			isLoading: false,
+			...currentAccount,
+		} as ReturnType<typeof useCurrentAccount>);
+	}
+
+	function mockProjectProducts(
+		projectProducts: Partial<ReturnType<typeof useDataQuery>>
+	) {
+		vi.mocked(useDataQuery).mockReturnValue({
+			data: undefined,
+			error: undefined,
+			isLoading: false,
+			mutate: vi.fn(),
+			...projectProducts,
+		} as ReturnType<typeof useDataQuery>);
+	}
+
+	it('reports loading while the current account loads', () => {
+		mockCurrentAccount({isLoading: true});
+		mockProjectProducts({});
+
+		const {result} = renderHook(() => useProjectProducts());
+
+		expect(result.current.isLoading).toBe(true);
+	});
+
+	it('reports the current account error as the products error', () => {
+		const error = new Error('Unable to get account');
+
+		mockCurrentAccount({error});
+		mockProjectProducts({});
+
+		const {result} = renderHook(() => useProjectProducts());
+
+		expect(result.current.error).toBe(error);
+		expect(result.current.isLoading).toBe(false);
+	});
+
+	it('prefers the products error over the account error', () => {
+		const productsError = new Error('Unable to get products');
+
+		mockCurrentAccount({error: new Error('Unable to get account')});
+		mockProjectProducts({error: productsError});
+
+		const {result} = renderHook(() => useProjectProducts());
+
+		expect(result.current.error).toBe(productsError);
+	});
+
+	it('returns the products once the account and products load', () => {
+		const products: APIResponse<DeliveryProduct> = {
+			actions: {},
+			facets: [],
+			items: [],
+			lastPage: 1,
+			page: 1,
+			pageSize: 0,
+			results: [],
+			totalCount: 0,
+		};
+
+		mockCurrentAccount({
+			data: {externalReferenceCode: 'ACCNT-001'},
+		} as Partial<ReturnType<typeof useCurrentAccount>>);
+		mockProjectProducts({data: products});
+
+		const {result} = renderHook(() => useProjectProducts());
+
+		expect(result.current.data).toBe(products);
+		expect(result.current.isLoading).toBe(false);
+		expect(vi.mocked(useDataQuery).mock.calls.at(-1)?.[0].key).toBe(
+			'/project-products/ACCNT-001'
+		);
 	});
 });

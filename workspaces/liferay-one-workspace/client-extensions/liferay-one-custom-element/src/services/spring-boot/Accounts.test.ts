@@ -124,12 +124,13 @@ describe('[CLIENT-SPRING-BOOT-ACCOUNTS] Accounts', () => {
 		expect(postalAddress.streetAddressLine2).toBe('Suite 200');
 	});
 
-	it('uses fixed paths for invitations, user accounts, roles, and the JSM sync', async () => {
+	it('uses fixed paths for invitations, products, user accounts, roles, and the JSM sync', async () => {
 		oAuth2Fetch.mockImplementation(() => Promise.resolve(jsonResponse([])));
 
 		await Accounts.deleteInvitations('ACCNT-1', 5);
 		await Accounts.deleteUserAccounts('ACCNT-1', 6);
 		await Accounts.getInvitations('ACCNT-1');
+		await Accounts.getProducts('ACCNT-1');
 		await Accounts.postInvitations('ACCNT-1', {
 			emailAddress: 'user@acme.com',
 			familyName: 'User',
@@ -144,6 +145,7 @@ describe('[CLIENT-SPRING-BOOT-ACCOUNTS] Accounts', () => {
 			['/accounts/ACCNT-1/invitations/5', {method: 'DELETE'}],
 			['/accounts/ACCNT-1/user-accounts/6', {method: 'DELETE'}],
 			['/accounts/ACCNT-1/invitations', undefined],
+			['/accounts/ACCNT-1/products', undefined],
 			[
 				'/accounts/ACCNT-1/invitations',
 				{

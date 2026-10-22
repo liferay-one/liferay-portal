@@ -12,6 +12,10 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DuplicateAccountException;
@@ -31,6 +35,10 @@ import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
 import com.liferay.one.service.AccountService;
+import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.CommerceProductService;
+import com.liferay.one.service.CommerceSkuService;
+import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
@@ -39,6 +47,7 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningEmailService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
+import com.liferay.one.util.LocaleUtil;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -50,7 +59,11 @@ import java.time.Instant;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -678,6 +691,169 @@ public class AccountsRestControllerTest {
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
 		Mockito.verifyNoInteractions(_entitlementDefinitionService);
+	}
+
+	@Test
+	public void testGetProductsChecksViewPermission() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getProducts(
+				null, _EXTERNAL_REFERENCE_CODE, LocaleUtil.US));
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderService, _commerceProductService, _commerceSkuService,
+			_contractService);
+	}
+
+	@Test
+	public void testGetProductsReadsDraftProductsOfOrdersAndEntitlements()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setProductId(_PRODUCT_ID);
+		orderItem.setSkuExternalReferenceCode(
+			_ORDERED_SKU_EXTERNAL_REFERENCE_CODE);
+
+		OrderItem productlessOrderItem = new OrderItem();
+
+		productlessOrderItem.setSkuExternalReferenceCode("01tVO00000QYrl5YAD");
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrderItems(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(orderItem, productlessOrderItem)
+		);
+
+		Mockito.when(
+			_contractService.getAccountContractIds(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(_CONTRACT_ID)
+		);
+
+		Mockito.when(
+			_entitlementService.getSkuExternalReferenceCodes(
+				_ACCOUNT_ID, List.of(_CONTRACT_ID))
+		).thenReturn(
+			new TreeSet<>(
+				List.of(
+					_MISSING_SKU_EXTERNAL_REFERENCE_CODE,
+					_ORDERED_SKU_EXTERNAL_REFERENCE_CODE,
+					_SKU_EXTERNAL_REFERENCE_CODE))
+		);
+
+		Sku sku = new Sku();
+
+		sku.setProductId(_ENTITLED_PRODUCT_ID);
+
+		Mockito.when(
+			_commerceSkuService.fetchSku(_SKU_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			sku
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchSku(_MISSING_SKU_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			null
+		);
+
+		Mockito.when(
+			_commerceProductService.getProducts(
+				Set.of(_ENTITLED_PRODUCT_ID, _PRODUCT_ID))
+		).thenReturn(
+			List.of(_createProduct())
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getProducts(
+				null, _EXTERNAL_REFERENCE_CODE, Locale.forLanguageTag("es-ES"));
+
+		Mockito.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Mockito.verify(
+			_commerceSkuService, Mockito.never()
+		).fetchSku(
+			_ORDERED_SKU_EXTERNAL_REFERENCE_CODE
+		);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(1, jsonObject.getInt("totalCount"));
+
+		JSONObject productJSONObject = jsonObject.getJSONArray(
+			"items"
+		).getJSONObject(
+			0
+		);
+
+		Assertions.assertEquals(
+			"Liferay Cloud Native (es)", productJSONObject.getString("name"));
+		Assertions.assertEquals(
+			_PRODUCT_ID, productJSONObject.getLong("productId"));
+		Assertions.assertEquals(2, productJSONObject.getInt("productStatus"));
+	}
+
+	@Test
+	public void testGetProductsReturnsNothingWithoutOrdersOrEntitlements()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrderItems(_ACCOUNT_ID)
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		Mockito.when(
+			_contractService.getAccountContractIds(_ACCOUNT_ID)
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		Mockito.when(
+			_entitlementService.getSkuExternalReferenceCodes(
+				_ACCOUNT_ID, Collections.emptyList())
+		).thenReturn(
+			Collections.emptySet()
+		);
+
+		Mockito.when(
+			_commerceProductService.getProducts(Collections.emptySet())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getProducts(
+				null, _EXTERNAL_REFERENCE_CODE, LocaleUtil.US);
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(0, jsonObject.getInt("totalCount"));
+
+		Mockito.verifyNoInteractions(_commerceSkuService);
 	}
 
 	@Test
@@ -2148,6 +2324,16 @@ public class AccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountsRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_commerceOrderService",
+			_commerceOrderService);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_commerceProductService",
+			_commerceProductService);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_commerceSkuService", _commerceSkuService);
+		ReflectionTestUtils.setField(
+			accountsRestController, "_contractService", _contractService);
+		ReflectionTestUtils.setField(
 			accountsRestController, "_emailAddressValidatorService",
 			_emailAddressValidatorService);
 		ReflectionTestUtils.setField(
@@ -2201,6 +2387,36 @@ public class AccountsRestControllerTest {
 		userAccount.setName("Inviter Name");
 
 		return userAccount;
+	}
+
+	private Product _createProduct() {
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey("project-item-type");
+		productSpecification.setValue(Map.of("en_US", "product"));
+
+		Sku sku = new Sku();
+
+		sku.setExternalReferenceCode(_SKU_EXTERNAL_REFERENCE_CODE);
+		sku.setPublished(false);
+		sku.setSku(_SKU_EXTERNAL_REFERENCE_CODE);
+
+		Product product = new Product();
+
+		product.setExternalReferenceCode(
+			"salesforce-product-liferay-cloud-native");
+		product.setId(_PRODUCT_ID - 1);
+		product.setName(
+			Map.of(
+				"en_US", "Liferay Cloud Native", "es_ES",
+				"Liferay Cloud Native (es)"));
+		product.setProductId(_PRODUCT_ID);
+		product.setProductSpecifications(
+			new ProductSpecification[] {productSpecification});
+		product.setProductStatus(2);
+		product.setSkus(new Sku[] {sku});
+
+		return product;
 	}
 
 	private Project _createProject(String accountExternalReferenceCode) {
@@ -2311,17 +2527,32 @@ public class AccountsRestControllerTest {
 
 	private static final long _ACCOUNT_ROLE_ID = 33333;
 
+	private static final long _CONTRACT_ID = 66666;
+
 	private static final String _EMAIL_ADDRESS = "jane@example.com";
 
+	private static final long _ENTITLED_PRODUCT_ID = 55556;
+
 	private static final String _EXTERNAL_REFERENCE_CODE = "ACC-1";
+
+	private static final String _MISSING_SKU_EXTERNAL_REFERENCE_CODE =
+		"01tVO00000QYrl7YAD";
+
+	private static final String _ORDERED_SKU_EXTERNAL_REFERENCE_CODE =
+		"01tVO00000QYrl3YAD";
 
 	private static final long _OTHER_ACCOUNT_ROLE_ID = 33334;
 
 	private static final long _POSTAL_ADDRESS_ID = 77L;
 
+	private static final long _PRODUCT_ID = 55555;
+
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
 	private static final String _PROJECT_ROLE_ERC = "C_PROJECT_ADMIN";
+
+	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
+		"01tVO00000QYrl1YAD";
 
 	private static final long _USER_ID = 22222;
 
@@ -2341,6 +2572,14 @@ public class AccountsRestControllerTest {
 		AccountSynchronizer.class);
 	private final AdminPermission _adminPermission = Mockito.mock(
 		AdminPermission.class);
+	private final CommerceOrderService _commerceOrderService = Mockito.mock(
+		CommerceOrderService.class);
+	private final CommerceProductService _commerceProductService = Mockito.mock(
+		CommerceProductService.class);
+	private final CommerceSkuService _commerceSkuService = Mockito.mock(
+		CommerceSkuService.class);
+	private final ContractService _contractService = Mockito.mock(
+		ContractService.class);
 	private final EmailAddressValidatorService _emailAddressValidatorService =
 		Mockito.mock(EmailAddressValidatorService.class);
 	private final EntitlementDefinitionService _entitlementDefinitionService =

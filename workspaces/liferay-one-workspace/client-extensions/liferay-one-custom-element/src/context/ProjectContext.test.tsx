@@ -16,7 +16,7 @@ import {
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useAccount} from '~/context/AccountContext';
 import {
-	useChannelProducts,
+	useProjectProducts,
 	useUnassignedCommerce,
 } from '~/hooks/useProjectCommerce';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
@@ -33,7 +33,7 @@ vi.mock('~/context/AccountContext', () => ({
 }));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
-	useChannelProducts: vi.fn(),
+	useProjectProducts: vi.fn(),
 	useUnassignedCommerce: vi.fn(),
 }));
 
@@ -85,10 +85,10 @@ function mockState({
 	unassignedLoading = false,
 } = {}) {
 	vi.mocked(useAccount).mockReturnValue({loading: accountLoading});
-	vi.mocked(useChannelProducts).mockReturnValue({
+	vi.mocked(useProjectProducts).mockReturnValue({
 		data: {items: [applicationProduct]},
 		isLoading: false,
-	} as unknown as ReturnType<typeof useChannelProducts>);
+	} as unknown as ReturnType<typeof useProjectProducts>);
 	vi.mocked(useProjectOrders).mockReturnValue({
 		loading: false,
 		placedOrders,

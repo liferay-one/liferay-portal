@@ -7,9 +7,9 @@ import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
 import {
-	useChannelProducts,
 	useProjectCommerce,
 	useProjectEntitlements,
+	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
@@ -19,9 +19,9 @@ import {useProjectContractItems, useProjectItems} from './useProjectItems';
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
-	useChannelProducts: vi.fn(),
 	useProjectCommerce: vi.fn(),
 	useProjectEntitlements: vi.fn(),
+	useProjectProducts: vi.fn(),
 }));
 
 vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
@@ -74,12 +74,12 @@ function toOrder(
 	};
 }
 
-function mockChannelProducts(items: unknown[]) {
-	vi.mocked(useChannelProducts).mockReturnValue({
+function mockProjectProducts(items: unknown[]) {
+	vi.mocked(useProjectProducts).mockReturnValue({
 		data: {items},
 		error: undefined,
 		isLoading: false,
-	} as unknown as ReturnType<typeof useChannelProducts>);
+	} as unknown as ReturnType<typeof useProjectProducts>);
 }
 
 function mockOrders(placedOrders: unknown[]) {
@@ -128,7 +128,7 @@ describe('[HOOK-USEPROJECTITEMS] useProjectItems', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		mockChannelProducts([APPLICATION, PRODUCT_A, PRODUCT_B]);
+		mockProjectProducts([APPLICATION, PRODUCT_A, PRODUCT_B]);
 	});
 
 	it('keeps only orders with no project for the unassigned project', () => {
@@ -202,7 +202,7 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
-		mockChannelProducts([APPLICATION, PRODUCT_A, PRODUCT_B]);
+		mockProjectProducts([APPLICATION, PRODUCT_A, PRODUCT_B]);
 		mockOrders([toOrder(1, [1, 2, 3], 'Project A')]);
 	});
 

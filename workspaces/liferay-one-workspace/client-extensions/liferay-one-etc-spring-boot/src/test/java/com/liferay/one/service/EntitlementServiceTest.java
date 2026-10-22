@@ -1073,6 +1073,41 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGetSkuExternalReferenceCodesReadsAccountAndContractEntitlements()
+		throws Exception {
+
+		Mockito.doReturn(
+			List.of("", "01tVO00000QYrl1YAD")
+		).when(
+			_entitlementService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/entitlements"),
+			Mockito.eq("skuExternalReferenceCode"),
+			Mockito.eq(
+				"r_accountEntryToEntitlement_accountEntryId eq '" +
+					_ACCOUNT_ID + "'"),
+			Mockito.any()
+		);
+
+		Mockito.doReturn(
+			List.of("01tVO00000QYrl1YAD", "01tVO00000QYrkpYAD")
+		).when(
+			_entitlementService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/entitlements"),
+			Mockito.eq("skuExternalReferenceCode"),
+			Mockito.eq("r_contractToEntitlement_c_contractId in ('11','12')"),
+			Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			List.of("01tVO00000QYrkpYAD", "01tVO00000QYrl1YAD"),
+			new ArrayList<>(
+				_entitlementService.getSkuExternalReferenceCodes(
+					_ACCOUNT_ID, List.of(11L, 12L))));
+	}
+
+	@Test
 	public void testIsCustomerFiltersActiveAccountEntitlements()
 		throws Exception {
 
