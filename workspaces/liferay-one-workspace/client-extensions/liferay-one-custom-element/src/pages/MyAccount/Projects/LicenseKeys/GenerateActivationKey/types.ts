@@ -30,6 +30,7 @@ export type GenerateActivationKeyForm = {
 	bundleEntitlementIds: number[];
 	dataCenterLocation: string;
 	description: string;
+	domain: string;
 	environmentName: string;
 	keyType: string;
 	maxClusterNodes: number;

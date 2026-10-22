@@ -19,6 +19,7 @@ import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.ActivationKeyScope;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
+import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.AccountUtil;
@@ -29,6 +30,7 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
@@ -262,8 +264,17 @@ public class LicenseKeyGenerateFormService {
 			boolean admin, Account account, boolean provisionable)
 		throws Exception {
 
+		return getGenerateForm(admin, account, provisionable, null);
+	}
+
+	public JSONObject getGenerateForm(
+			boolean admin, Account account, boolean provisionable,
+			String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
 		return _getGenerateFormJSONObject(
-			admin, ActivationKeyScope.of(account), provisionable, null);
+			admin, ActivationKeyScope.of(account), provisionable,
+			renewedActivationKeyExternalReferenceCode);
 	}
 
 	public JSONObject getGenerateForm(
@@ -555,6 +566,16 @@ public class LicenseKeyGenerateFormService {
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(activationKeyScope);
 
+		if (!activationKeyScope.isProject() &&
+			Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
+
+			entitlements = ListUtil.filter(
+				entitlements,
+				entitlement -> !Objects.equals(
+					LicenseConstants.TYPE_FREE,
+					getLicenseKeyType(entitlement)));
+		}
+
 		if (entitlements.isEmpty()) {
 			return new JSONObject(
 			).put(
@@ -575,14 +596,18 @@ public class LicenseKeyGenerateFormService {
 			_getDisasterRecoveryExternalReferenceCodes(entitlements),
 			entitlements, resolvedProducts);
 
+		List<Long> renewedActivationKeyIds = _getRenewedActivationKeyIds(
+			renewedActivationKeyExternalReferenceCode);
+
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
-			_getLicenseKeyTypeEntitlements(entitlements, resolvedProducts);
+			_getLicenseKeyTypeEntitlements(
+				entitlements,
+				_getRenewedEntitlementIds(renewedActivationKeyIds),
+				resolvedProducts);
 
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				activationKeyScope, entitlements,
-				_getRenewedActivationKeyIds(
-					renewedActivationKeyExternalReferenceCode));
+				activationKeyScope, entitlements, renewedActivationKeyIds);
 
 		List<ProductVersion> productVersions = _getProductVersions();
 
@@ -842,7 +867,7 @@ public class LicenseKeyGenerateFormService {
 
 	private Map<String, Map<String, Entitlement>>
 		_getLicenseKeyTypeEntitlements(
-			List<Entitlement> entitlements,
+			List<Entitlement> entitlements, Set<Long> renewedEntitlementIds,
 			Map<Long, ResolvedProduct> resolvedProducts) {
 
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
@@ -872,7 +897,14 @@ public class LicenseKeyGenerateFormService {
 				licenseKeyTypeEntitlements.computeIfAbsent(
 					licenseKeyFamily, key -> new HashMap<>());
 
-			entitlementsMap.putIfAbsent(licenseKeyType, entitlement);
+			if (renewedEntitlementIds.contains(
+					entitlement.getEntitlementId())) {
+
+				entitlementsMap.put(licenseKeyType, entitlement);
+			}
+			else {
+				entitlementsMap.putIfAbsent(licenseKeyType, entitlement);
+			}
 		}
 
 		return licenseKeyTypeEntitlements;
@@ -930,6 +962,28 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return Collections.singletonList(activationKey.getActivationKeyId());
+	}
+
+	private Set<Long> _getRenewedEntitlementIds(
+			List<Long> renewedActivationKeyIds)
+		throws Exception {
+
+		Set<Long> renewedEntitlementIds = new HashSet<>();
+
+		for (long renewedActivationKeyId : renewedActivationKeyIds) {
+			for (LicenseKey licenseKey :
+					_licenseKeyService.getLicenseKeysByActivationKeyId(
+						renewedActivationKeyId)) {
+
+				if (licenseKey.getEntitlementId() <= 0) {
+					continue;
+				}
+
+				renewedEntitlementIds.add(licenseKey.getEntitlementId());
+			}
+		}
+
+		return renewedEntitlementIds;
 	}
 
 	private Map<Long, ResolvedProduct> _getResolvedProducts(

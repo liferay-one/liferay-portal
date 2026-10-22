@@ -59,6 +59,7 @@ import {
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
+	isFreeKeyType,
 	toServerField,
 } from './utils';
 
@@ -74,9 +75,7 @@ export default function GenerateActivationKey() {
 	const scope = useActivationKeyScope();
 	const unassigned = isUnassignedProject(projectId);
 
-	const renewExternalReferenceCode = unassigned
-		? null
-		: searchParams.get('renew');
+	const renewExternalReferenceCode = searchParams.get('renew');
 
 	const preselectedExternalReferenceCode = searchParams.get('new');
 
@@ -112,6 +111,7 @@ export default function GenerateActivationKey() {
 			bundleEntitlementIds: [],
 			dataCenterLocation: '',
 			description: '',
+			domain: '',
 			environmentName: '',
 			keyType: '',
 			maxClusterNodes: 0,
@@ -142,6 +142,7 @@ export default function GenerateActivationKey() {
 
 	const complimentary = !unassigned && isComplimentaryKeyType(keyType);
 	const developer = !unassigned && isDeveloperKeyType(keyType);
+	const free = isFreeKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
 	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
 	const version = watch('version');
@@ -219,6 +220,7 @@ export default function GenerateActivationKey() {
 		}
 
 		setValue('description', renewSource.description);
+		setValue('domain', renewSource.domain);
 		setValue('environmentName', renewSource.environmentName);
 		setValue('version', renewSource.version);
 
@@ -469,6 +471,7 @@ export default function GenerateActivationKey() {
 				cloudNative,
 				complimentary,
 				developer,
+				free,
 				unassigned,
 			})
 		);
@@ -612,6 +615,7 @@ export default function GenerateActivationKey() {
 				bundleEntitlementIds: values.bundleEntitlementIds,
 				dataCenterLocation: values.dataCenterLocation || undefined,
 				description: values.description || undefined,
+				domains: free ? values.domain.trim() : undefined,
 				environmentName: values.environmentName,
 				keyType: values.keyType,
 				maxClusterNodes: virtualCluster
@@ -625,7 +629,7 @@ export default function GenerateActivationKey() {
 					: undefined,
 				renewedActivationKeyExternalReferenceCode:
 					renewExternalReferenceCode ?? undefined,
-				servers: virtualCluster ? [] : values.servers,
+				servers: free || virtualCluster ? [] : values.servers,
 				startDate:
 					complimentary && !startsToday
 						? toISODate(values.startDate)
@@ -853,6 +857,7 @@ export default function GenerateActivationKey() {
 								goTo(
 									getStepBeforeEnvironment({
 										complimentary,
+										free,
 										needsDSRStep,
 										unassigned,
 									})

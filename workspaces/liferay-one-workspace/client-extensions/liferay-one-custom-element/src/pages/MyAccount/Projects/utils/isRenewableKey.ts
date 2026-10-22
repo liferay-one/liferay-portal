@@ -7,10 +7,42 @@ import {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 
 import {isPermanentKey} from './isPermanentKey';
 
+const FREE_KEY_RENEWAL_THRESHOLD_DAYS = 90;
+
+const FREE_KEY_TYPE = 'free';
+
+function isInFreeKeyRenewalWindow(expirationDate?: string): boolean {
+	if (!expirationDate) {
+		return false;
+	}
+
+	const renewalStart = new Date(expirationDate);
+
+	if (Number.isNaN(renewalStart.getTime())) {
+		return false;
+	}
+
+	renewalStart.setDate(
+		renewalStart.getDate() - FREE_KEY_RENEWAL_THRESHOLD_DAYS
+	);
+
+	return renewalStart <= new Date();
+}
+
 export function isRenewableKey(
 	activationKey: ProjectActivationKey,
-	admin = false
+	admin = false,
+	unassigned = false
 ): boolean {
+	const free = activationKey.type === FREE_KEY_TYPE;
+
+	if (
+		(unassigned && (!free || activationKey.projectExternalReferenceCode)) ||
+		(free && !isInFreeKeyRenewalWindow(activationKey.expirationDateValue))
+	) {
+		return false;
+	}
+
 	return (
 		!activationKey.unaggregated &&
 		(admin || activationKey.type !== 'virtual-cluster') &&

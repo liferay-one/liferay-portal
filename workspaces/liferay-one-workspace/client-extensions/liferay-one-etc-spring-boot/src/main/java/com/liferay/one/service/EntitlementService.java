@@ -21,6 +21,7 @@ import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -283,8 +284,20 @@ public class EntitlementService extends OneBaseService {
 				activationKeyScope.getProjectExternalReferenceCode());
 		}
 
-		return getActiveSelfServiceTrialEntitlements(
-			activationKeyScope.getAccountId());
+		List<Entitlement> entitlements = new ArrayList<>(
+			getActiveSelfServiceTrialEntitlements(
+				activationKeyScope.getAccountId()));
+
+		entitlements.addAll(
+			ListUtil.filter(
+				getActiveUnassignedEntitlements(
+					activationKeyScope.getAccountId()),
+				entitlement -> Objects.equals(
+					LicenseConstants.TYPE_FREE,
+					LicenseKeyGenerateFormService.getLicenseKeyType(
+						entitlement))));
+
+		return entitlements;
 	}
 
 	public List<Entitlement> getActiveEntitlements(

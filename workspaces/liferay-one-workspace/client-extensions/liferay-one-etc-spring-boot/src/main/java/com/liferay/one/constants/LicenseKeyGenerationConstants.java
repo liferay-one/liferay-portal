@@ -31,6 +31,12 @@ public class LicenseKeyGenerationConstants {
 	public static final String ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION =
 		"licenseGeneration";
 
+	public static final int FREE_TIER_DURATION_DAYS = 365;
+
+	public static final String FREE_TIER_NAME = "Liferay Free Activation Key";
+
+	public static final int FREE_TIER_RENEWAL_THRESHOLD_DAYS = 90;
+
 	public static final String KEY_TYPE_COMPLIMENTARY = "complimentary";
 
 	public static final String KEY_TYPE_PRODUCTION = "production";

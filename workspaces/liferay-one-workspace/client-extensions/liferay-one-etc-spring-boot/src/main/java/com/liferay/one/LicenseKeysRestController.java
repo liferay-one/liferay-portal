@@ -6,14 +6,17 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
-import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.license.LicenseKeyExporter;
+import com.liferay.one.model.ActivationKey;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
@@ -21,11 +24,16 @@ import com.liferay.one.permission.CommerceOrderPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
+import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
+import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -35,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -252,18 +261,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		JSONObject jsonObject = new JSONObject(json);
 
-		String domains = jsonObject.optString("domains");
 		long orderId = jsonObject.optLong("orderId");
-		String owner = jsonObject.optString("owner");
 
 		_commerceOrderPermission.check(orderId, jwt);
-
-		if (_licenseKeyService.hasValidLicenseKeyTypeFree(domains, owner)) {
-			throw new ResponseStatusException(
-				HttpStatus.CONFLICT,
-				"A license key was already provisioned for the owner with " +
-					"this domain");
-		}
 
 		Order order = _commerceOrderService.getCommerceOrder(orderId);
 
@@ -273,22 +273,51 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				"Order " + orderId + " has no order items");
 		}
 
-		Account account = order.getAccount();
+		String domains = jsonObject.optString("domains");
+		String owner = jsonObject.optString("owner");
 
-		LicenseKey licenseKey = _licenseKeyService.addLicenseKeyTypeFree(
-			account.getId(), domains, String.valueOf(orderId), owner);
+		LicenseKey licenseKey = _licenseKeyService.fetchLicenseKeyTypeFree(
+			domains, owner);
 
-		Integer orderStatus = order.getOrderStatus();
+		if (licenseKey != null) {
+			if (!Objects.equals(
+					String.valueOf(orderId), licenseKey.getOrderId())) {
 
-		if ((orderStatus == null) ||
-			(orderStatus != CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+				throw _toLicenseKeyTypeFreeConflictException();
+			}
 
-			_commerceOrderService.completeOrder(
-				order.getId(),
-				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+			return licenseKey;
 		}
 
-		return licenseKey;
+		_completeOrder(order);
+
+		_entitlementService.generateOrderEntitlements(orderId);
+
+		Entitlement entitlement = _fetchFreeEntitlement(order);
+
+		if (entitlement == null) {
+			throw new LicenseKeyEntitlementException(
+				"Order " + orderId + " grants no free key");
+		}
+
+		ActivationKey activationKey =
+			_licenseKeyGenerationService.generateActivationKey(
+				_accountService.getAccount(order.getAccountId()),
+				new LicenseKeyGenerationService.GenerateRequest(
+					Collections.singletonList(entitlement.getEntitlementId()),
+					null, null, domains,
+					LicenseKeyGenerationConstants.FREE_TIER_NAME,
+					LicenseConstants.TYPE_FREE, 0, String.valueOf(orderId),
+					owner, null, null, null, Collections.emptyList(), null,
+					entitlement.getEntitlementId(),
+					_productVersionService.getFreeTierProductVersion(), false,
+					null, null));
+
+		List<LicenseKey> licenseKeys =
+			_licenseKeyService.getLicenseKeysByActivationKeyId(
+				activationKey.getActivationKeyId());
+
+		return licenseKeys.get(0);
 	}
 
 	@PostMapping("/type-free-domains-check")
@@ -297,14 +326,11 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		JSONObject jsonObject = new JSONObject(json);
 
-		if (_licenseKeyService.hasValidLicenseKeyTypeFree(
-				jsonObject.optString("domains"),
-				jsonObject.optString("owner"))) {
+		LicenseKey licenseKey = _licenseKeyService.fetchLicenseKeyTypeFree(
+			jsonObject.optString("domains"), jsonObject.optString("owner"));
 
-			throw new ResponseStatusException(
-				HttpStatus.CONFLICT,
-				"A license key was already provisioned for the owner with " +
-					"this domain");
+		if (licenseKey != null) {
+			throw _toLicenseKeyTypeFreeConflictException();
 		}
 	}
 
@@ -353,6 +379,36 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				"No more than " + _MAX_LICENSE_KEY_IDS +
 					" license keys may be requested at once");
 		}
+	}
+
+	private void _completeOrder(Order order) throws Exception {
+		Integer orderStatus = order.getOrderStatus();
+
+		if ((orderStatus == null) ||
+			(orderStatus != CommerceOrderConstants.ORDER_STATUS_COMPLETED)) {
+
+			_commerceOrderService.completeOrder(
+				order.getId(),
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED);
+		}
+	}
+
+	private Entitlement _fetchFreeEntitlement(Order order) throws Exception {
+		for (OrderItem orderItem : order.getOrderItems()) {
+			for (Entitlement entitlement :
+					_entitlementService.getEntitlements(orderItem.getId())) {
+
+				if (Objects.equals(
+						LicenseConstants.TYPE_FREE,
+						LicenseKeyGenerateFormService.getLicenseKeyType(
+							entitlement))) {
+
+					return entitlement;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private List<LicenseKey> _getActiveLicenseKeys(
@@ -408,13 +464,26 @@ public class LicenseKeysRestController extends OneBaseRestController {
 		return longs;
 	}
 
+	private ResponseStatusException _toLicenseKeyTypeFreeConflictException() {
+		return new ResponseStatusException(
+			HttpStatus.CONFLICT,
+			"A license key was already provisioned for the owner with this " +
+				"domain");
+	}
+
 	private static final int _MAX_LICENSE_KEY_IDS = 100;
+
+	@Autowired
+	private AccountService _accountService;
 
 	@Autowired
 	private CommerceOrderPermission _commerceOrderPermission;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
 
 	@Autowired
 	private EnvironmentActivationPermission _environmentActivationPermission;
@@ -430,6 +499,9 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyService _licenseKeyService;
+
+	@Autowired
+	private ProductVersionService _productVersionService;
 
 	@Autowired
 	private ProjectPermission _projectPermission;

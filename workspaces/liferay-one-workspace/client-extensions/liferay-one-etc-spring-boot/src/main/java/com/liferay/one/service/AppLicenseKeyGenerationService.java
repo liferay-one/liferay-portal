@@ -30,6 +30,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -79,7 +80,7 @@ public class AppLicenseKeyGenerationService {
 	public JSONObject getGenerateForm(long accountEntryId) throws Exception {
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
-				accountEntryId);
+				accountEntryId, Collections.emptyList());
 
 		Map<String, JSONObject> productJSONObjects = new LinkedHashMap<>();
 
@@ -116,7 +117,7 @@ public class AppLicenseKeyGenerationService {
 		int availableCount = _getAvailableCount(
 			appEntitlement,
 			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
-				accountEntryId));
+				accountEntryId, Collections.emptyList()));
 
 		if (requestedCount > availableCount) {
 			Entitlement entitlement = appEntitlement._getEntitlement();

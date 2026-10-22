@@ -6,8 +6,11 @@
 package com.liferay.one.service;
 
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
+import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
+import com.liferay.one.license.LicenseEntry;
+import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.license.LicenseKeyValidator;
 import com.liferay.one.model.ActivationKeyScope;
@@ -21,11 +24,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +40,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -180,32 +178,35 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public LicenseKey addLicenseKeyTypeFree(
-			long accountEntryId, String domains, String orderId, String owner)
+			long accountEntryId, long activationKeyId, String domains,
+			long entitlementDefinitionId, long entitlementId,
+			Date expirationDate, String name, String orderId, String owner,
+			String productVersion, String projectExternalReferenceCode,
+			Date startDate)
 		throws Exception {
 
-		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+		domains = _toFreeTierDomains(domains);
 
-		calendar.set(Calendar.MILLISECOND, 0);
+		LicenseEntry licenseEntry = _licenseEntryService.getLicenseEntry(
+			_FREE_TIER_PRODUCT_KEY, LicenseConstants.TYPE_FREE);
 
-		Date startDate = calendar.getTime();
+		String productName = licenseEntry.getProductName();
 
-		calendar.add(Calendar.MONTH, _FREE_TIER_DURATION_MONTHS);
-
-		Date expirationDate = calendar.getTime();
-
-		String productVersion =
-			_productVersionService.getFreeTierProductVersion();
+		int licenseVersion = LicenseVersion.getLicenseVersion(
+			productName, productVersion);
 
 		String key = _licenseKeyGenerator.generateKey(
-			StringPool.BLANK, _FREE_TIER_LICENSE_NAME,
-			LicenseConstants.TYPE_FREE, _FREE_TIER_LICENSE_VERSION,
-			_FREE_TIER_PRODUCT_NAME, LicenseConstants.PRODUCT_ID_PORTAL,
-			productVersion, owner, _FREE_TIER_MAX_CLUSTER_NODES, 0, 0, 0L, 0L,
-			StringPool.BLANK, StringPool.BLANK, domains, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
-			expirationDate);
+			LicenseKeyGenerationConstants.FREE_TIER_NAME,
+			licenseEntry.getName(), LicenseConstants.TYPE_FREE, licenseVersion,
+			productName, LicenseConstants.PRODUCT_ID_PORTAL, productVersion,
+			owner, _FREE_TIER_MAX_CLUSTER_NODES, 0, 0, 0L, 0L,
+			_FREE_TIER_SIZING, LicenseKeyGenerationConstants.FREE_TIER_NAME,
+			domains, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, startDate, expirationDate);
 
 		JSONObject jsonObject = new JSONObject(
+		).put(
+			"accountName", LicenseKeyGenerationConstants.FREE_TIER_NAME
 		).put(
 			"active", true
 		).put(
@@ -213,22 +214,28 @@ public class LicenseKeyService extends OneBaseService {
 		).put(
 			"customExpirationDate", _toISO8601(expirationDate)
 		).put(
+			"description", LicenseKeyGenerationConstants.FREE_TIER_NAME
+		).put(
 			"domains", domains
+		).put(
+			"entitlementDefinitionId", entitlementDefinitionId
+		).put(
+			"entitlementId", entitlementId
 		).put(
 			"key", key
 		).put(
 			"licenseKeyFamily",
 			LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP
 		).put(
-			"licenseName", _FREE_TIER_LICENSE_NAME
+			"licenseName", licenseEntry.getName()
 		).put(
 			"licenseType", LicenseConstants.TYPE_FREE
 		).put(
-			"licenseVersion", _FREE_TIER_LICENSE_VERSION
+			"licenseVersion", licenseVersion
 		).put(
 			"maxClusterNodes", _FREE_TIER_MAX_CLUSTER_NODES
 		).put(
-			"name", _FREE_TIER_LICENSE_NAME
+			"name", name
 		).put(
 			"orderId", orderId
 		).put(
@@ -236,11 +243,17 @@ public class LicenseKeyService extends OneBaseService {
 		).put(
 			"productExternalId", LicenseConstants.PRODUCT_ID_PORTAL
 		).put(
-			"productName", _FREE_TIER_PRODUCT_NAME
+			"productName", productName
 		).put(
 			"productVersion", productVersion
 		).put(
 			"r_accountEntryToLicenseKey_accountEntryId", accountEntryId
+		).put(
+			"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
+		).put(
+			"r_projectToLicenseKey_c_projectERC", projectExternalReferenceCode
+		).put(
+			"sizing", _FREE_TIER_SIZING
 		).put(
 			"startDate", _toISO8601(startDate)
 		);
@@ -253,6 +266,25 @@ public class LicenseKeyService extends OneBaseService {
 			).toUri());
 
 		return new LicenseKey(new JSONObject(response));
+	}
+
+	public LicenseKey fetchLicenseKeyTypeFree(String domains, String owner)
+		throws Exception {
+
+		List<LicenseKey> licenseKeys = getLicenseKeys(
+			_toFreeTierDomains(domains), LicenseConstants.TYPE_FREE, owner);
+
+		if (licenseKeys.isEmpty()) {
+			return null;
+		}
+
+		for (LicenseKey licenseKey : licenseKeys) {
+			if (licenseKey.isActive()) {
+				return licenseKey;
+			}
+		}
+
+		return licenseKeys.get(0);
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
@@ -268,7 +300,7 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		return getActiveUnassignedLicenseKeyCounts(
-			activationKeyScope.getAccountId());
+			activationKeyScope.getAccountId(), excludedActivationKeyIds);
 	}
 
 	public Map<Long, Integer> getActiveLicenseKeyCounts(
@@ -310,11 +342,11 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	public Map<Long, Integer> getActiveUnassignedLicenseKeyCounts(
-			long accountEntryId)
+			long accountEntryId, Collection<Long> excludedActivationKeyIds)
 		throws Exception {
 
 		return _getActiveLicenseKeyCounts(
-			Collections.emptySet(), Collections.emptyList(),
+			Collections.emptySet(), excludedActivationKeyIds,
 			StringBundler.concat(
 				"(r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId,
@@ -537,30 +569,6 @@ public class LicenseKeyService extends OneBaseService {
 				"(active eq ", active, ") and (productName eq '",
 				escapeODataString(productName), "') and (serverId eq '",
 				escapeODataString(serverId), "')"));
-	}
-
-	public boolean hasValidLicenseKeyTypeFree(String domains, String owner)
-		throws Exception {
-
-		Instant renewalThreshold = Instant.now(
-		).plus(
-			_FREE_TIER_RENEWAL_THRESHOLD_DAYS, ChronoUnit.DAYS
-		);
-
-		for (LicenseKey licenseKey :
-				getLicenseKeys(domains, LicenseConstants.TYPE_FREE, owner)) {
-
-			Instant customExpirationDateInstant =
-				licenseKey.getCustomExpirationDateInstant();
-
-			if ((customExpirationDateInstant != null) &&
-				customExpirationDateInstant.isAfter(renewalThreshold)) {
-
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	public LicenseKey replaceLicenseKey(
@@ -892,6 +900,18 @@ public class LicenseKeyService extends OneBaseService {
 			escapeODataString(projectExternalReferenceCode) + "'";
 	}
 
+	private String _toFreeTierDomains(String domains) {
+		String[] domainsArray = domains.split(StringPool.COMMA);
+
+		String domain = domainsArray[0].trim();
+
+		if (domain.equals(_FREE_TIER_DOMAIN_LOCALHOST)) {
+			return domain;
+		}
+
+		return domain + StringPool.COMMA + _FREE_TIER_DOMAIN_LOCALHOST;
+	}
+
 	private String _toISO8601(Date date) {
 		if (date == null) {
 			return null;
@@ -926,28 +946,21 @@ public class LicenseKeyService extends OneBaseService {
 			"id,licenseType,maxClusterNodes," +
 				"r_activationKeyToLicenseKey_c_activationKeyId,startDate";
 
-	private static final int _FREE_TIER_DURATION_MONTHS = 12;
+	private static final String _FREE_TIER_DOMAIN_LOCALHOST = "localhost";
 
-	private static final String _FREE_TIER_LICENSE_NAME =
-		"Liferay DXP - Free Tier";
+	private static final int _FREE_TIER_MAX_CLUSTER_NODES = 3;
 
-	private static final int _FREE_TIER_LICENSE_VERSION = 3;
+	private static final String _FREE_TIER_PRODUCT_KEY = "KOR-36354";
 
-	private static final int _FREE_TIER_MAX_CLUSTER_NODES = 1;
+	private static final String _FREE_TIER_SIZING = "Sizing 4";
 
-	private static final String _FREE_TIER_PRODUCT_NAME =
-		"Liferay DXP - Free Tier";
-
-	private static final int _FREE_TIER_RENEWAL_THRESHOLD_DAYS = 90;
+	@Autowired
+	private LicenseEntryService _licenseEntryService;
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;
 
 	@Autowired
 	private LicenseKeyValidator _licenseKeyValidator;
-
-	@Autowired
-	@Lazy
-	private ProductVersionService _productVersionService;
 
 }

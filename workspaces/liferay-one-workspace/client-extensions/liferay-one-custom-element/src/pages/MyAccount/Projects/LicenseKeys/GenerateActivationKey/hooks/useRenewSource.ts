@@ -15,6 +15,7 @@ import {getLicenseKeyFamilyRank, toVirtualClusterKeyType} from '../utils';
 export type RenewSource = {
 	bundleEntitlementIds: number[];
 	description: string;
+	domain: string;
 	environmentName: string;
 	keyType: string;
 	maxClusterNodes: number;
@@ -112,6 +113,7 @@ export function useRenewSource(
 		return {
 			bundleEntitlementIds: [...entitlementIds],
 			description: leadingLicenseKey?.description ?? '',
+			domain: (leadingLicenseKey?.domains ?? '').split(',')[0],
 			environmentName: leadingLicenseKey?.name ?? '',
 			keyType,
 			maxClusterNodes: virtualCluster

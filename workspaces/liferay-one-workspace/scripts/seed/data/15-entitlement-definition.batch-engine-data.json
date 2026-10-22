@@ -500,14 +500,14 @@
 		},
 		{
 			"active": true,
-			"defaultQuantity": 5,
+			"defaultQuantity": 1,
 			"displayName": "Liferay DXP Free",
 			"externalReferenceCode": "C_ENT_DEF_DXP_FREE",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "free",
-			"maxQuantity": 5,
+			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"unit": "boolean"
 		},

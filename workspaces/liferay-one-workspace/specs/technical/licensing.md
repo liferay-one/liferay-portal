@@ -37,7 +37,7 @@ The citations in this file use two prefixes. Every path is relative to the works
 | Common license key | A license file that an administrator uploads once for a product family (Commerce or Enterprise Search). Every entitled customer downloads the same file. Liferay One does not sign it. | `sb/CommonLicenseKeysRestController.java:102` | `C_COMMON_LICENSE_KEY` |
 | Complimentary key | A short free key for one server, against an entitlement whose definition has `licenseKeyType` `complimentary`. | `sb/service/LicenseKeyGenerationService.java:536` | `C_LICENSE_KEY` with `complimentary` true, under an activation key of type `complimentary` |
 | Developer key | A developer or developer cluster key for DXP 7.4 and later. The server signs it on download and does not store it. | `sb/service/LicenseKeyGenerationService.java:79` | Not stored |
-| DXP free key | A one year `free` key for `Liferay DXP - Free Tier`, issued against a commerce order from the free DXP purchase flow. | `sb/service/LicenseKeyService.java:178` | `C_LICENSE_KEY` with `licenseType` `free`, no project, no activation key |
+| DXP free key | A 365 day `free` key from the `free` license entry of `DXP Production` (`KOR-36354`), generated against an entitlement of key type `free`: the one that the free DXP purchase grants to the account, or one that staff grant to a project for New Key. On the account with no project, a free entitlement is offered only for a renewal (`sb/service/LicenseKeyGenerateFormService.java:569`). It matches the key of the legacy provisioning server: 3 cluster nodes, sizing `Sizing 4`, the name `Liferay Free Activation Key`, and the domains `<first domain>,localhost`. It is renewed from 90 days before it expires, and the renewal keeps its domains, owner, and order. | `sb/service/LicenseKeyService.java:183` | `C_LICENSE_KEY` with `licenseType` `free`, under an activation key of type `free`, on the project or on the account with no project. A key from the purchase flow before LPD-111041 has no activation key. |
 | License key | One signed license file for one product and one server. | `sb/service/LicenseKeyService.java:57` | `C_LICENSE_KEY` |
 
 A trial issues no license key. `TrialRestController` provisions a portal instance and a console project for a trial order. See [Trial Order](#d-trial-order).
@@ -203,17 +203,21 @@ sequenceDiagram
 
     Buyer->>CE: Fill the activation key form (domain, business email)
     CE->>SB: POST /license-keys/type-free-domains-check {domains, owner}
-    SB->>LKS: hasValidLicenseKeyTypeFree
-    SB-->>CE: 409 when a free key for the owner and domain ends more than 90 days from now
+    SB->>LKS: fetchLicenseKeyTypeFree
+    SB-->>CE: 409 when the owner has a free key for the domain
     CE->>DXP: Create the order (order type DXP)
     CE->>SB: POST /license-keys/type-free {domains, orderId, owner}
-    SB->>LKS: hasValidLicenseKeyTypeFree (same check)
     SB->>COS: getCommerceOrder(orderId) as the service account
     SB->>SB: Refuse an order with no items
-    SB->>LKS: addLicenseKeyTypeFree(order account, domains, orderId, owner)
-    LKS->>LKS: KeyGenerator, 12 months, version 3, latest DXP product group version
-    LKS->>DXP: POST /o/c/licensekeys (licenseType free, family DXP)
+    SB->>LKS: fetchLicenseKeyTypeFree (same check)
+    SB-->>CE: The existing LicenseKey when it belongs to this order, otherwise 409 before the order is completed
     SB->>COS: completeOrder(orderId, payment not required) unless already completed
+    SB->>SB: EntitlementService.generateOrderEntitlements(orderId), then find the order's free entitlement
+    SB-->>CE: 409 when the order grants no free entitlement
+    SB->>SB: LicenseKeyGenerationService.generateActivationKey(order account, free, entitlement, domains, orderId, owner)
+    SB->>DXP: POST /o/c/activationkeys (type free, account, no project)
+    SB->>LKS: addLicenseKeyTypeFree, 365 days, free entry of DXP Production, 3 cluster nodes, latest DXP product group version
+    LKS->>DXP: POST /o/c/licensekeys (licenseType free, family DXP, activation key, entitlement)
     SB-->>CE: LicenseKey
     CE->>DXP: POST /o/c/dxpfreeactivationkeyrequests (form data, order link)
 ```
@@ -326,7 +330,9 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A developer key needs a `licenseGeneration` entitlement whose type equals the requested key type | Developer download | `sb/service/LicenseKeyGenerationService.java:429` |
 | A developer key ends after `licenseKeyDurationDays`, or on the entitlement end date. With neither, the download is refused. | Developer download | `sb/service/LicenseKeyGenerationService.java:780` |
 | A developer key does not bundle an app, another leading family, or an add on that has no license entry for the version | Developer download | `sb/service/LicenseKeyGenerationService.java:728`, `:744`, `:755` |
-| A free key is refused when one for the same owner and domain ends more than 90 days from now | Free key | `sb/service/LicenseKeyService.java:522` |
+| A free key is refused when the owner has a free key for the domain on any account, at any date, unless that key belongs to the same order | Free key | `sb/service/LicenseKeyService.java:555`, `sb/LicenseKeysRestController.java:286` |
+| A free key on the account with no project is generated only as a renewal | Free key | `sb/ActivationKeysRestController.java:478` |
+| Only an administrator deactivates or reactivates a free key on the account with no project | Free key | `sb/ActivationKeysRestController.java:311` |
 | A free key needs an order with at least one item | Free key | `sb/LicenseKeysRestController.java:266` |
 | A Marketplace app key is not renewed | App path | `sb/service/AppLicenseKeyGenerationService.java:60` |
 | A Marketplace app key uses a paid, licensable app entitlement of the account outside any project | App path | `sb/service/AppLicenseKeyGenerationService.java:401` |
@@ -416,14 +422,14 @@ erDiagram
 | Endpoint | Caller Check | Ownership Checked Against the Caller |
 | --- | --- | --- |
 | `DELETE /common-license-keys/{id}` | Administrator or Provisioning Administrator | Not applicable |
-| `DELETE /trial/{orderId}`, `POST /trial/expire/{orderId}`, `POST /trial/provisioning/{orderId}`, `POST /trial/extend/{id}` | A valid token only | No. See Finding 6. |
+| `DELETE /trial/{orderId}`, `POST /trial/expire/{orderId}`, `POST /trial/provisioning/{orderId}`, `POST /trial/extend/{id}` | A valid token only | No. See Finding 5. |
 | `GET /activation-keys/{id}`, `/download`, `/subscriptions` | `LicenseKeyPermission` VIEW on the key's account | Yes, by account |
 | `GET /activation-keys/generate-form`, `/summary` | `ProjectPermission` VIEW, or the account check of `checkAccountLicenseKeyActivation` | Yes, by project or account |
 | `GET /app-license-keys/{id}`, `/download`, `POST /app-license-keys`, `PUT /activate`, `PUT /deactivate` | Administrator or Provisioning Administrator | Not applicable |
 | `GET /common-license-keys`, `/{id}/download` | A global administrator role, or an active Commerce or Enterprise Search entitlement definition on any account of the user | By entitlement, not by account |
 | `GET /license-keys/{id}/download`, `GET /download`, `GET /subscriptions`, `PUT /subscriptions` | `LicenseKeyPermission` VIEW on each key's account; at most 100 IDs | Yes, by account |
 | `GET /license-keys/developer-download` | `ProjectPermission` VIEW | Yes, by project. No self provisioning check and no quota, by design (REQ-LICENSING-004, REQ-LICENSING-060). |
-| `PATCH /activation-keys/{id}/active` | Project: account administrator, Partner Manager, project administrator, or global role. No project: account administrator, Partner Manager, or an account role that manages license keys. Plus self provisioning. A complimentary key needs an administrator. | Yes, but no quota check. See Finding 5. |
+| `PATCH /activation-keys/{id}/active` | Project: account administrator, Partner Manager, project administrator, or global role. No project: account administrator, Partner Manager, or an account role that manages license keys. Plus self provisioning. A complimentary key, or a free key with no project, needs an administrator. | Yes, but no quota check. See Finding 4. |
 | `PATCH /license-keys/{id}/active` | Refused for a key under an activation key. Otherwise the same as above, or `LicenseKeyPermission` UPDATE. | Yes, but no quota check |
 | `POST /activation-keys/generate` | `checkLicenseKeyActivation` (project) or `checkAccountLicenseKeyActivation` (account), self provisioning (not for a self service trial entitlement), admin key types | Yes. Entitlements are read from the project or the account, so a caller cannot name another project's entitlement. |
 | `POST /cloud/environments/{id}/activation` | None (no OAuth). The activation code and a self signed JWT. | No. See Finding 1. |
@@ -439,8 +445,6 @@ erDiagram
 
 1. **The free key endpoint trusts any order ID.** `sb/LicenseKeysRestController.java:247` takes no `Jwt` and checks no permission. It reads the order with the service account, creates a free key on the order's account, and completes the order with payment status "not required" (`:279`). It does not check the order type or the product. `CommerceOrderService.completeOrder` also provisions AI Hub when the order type is `AI_HUB` (`sb/service/CommerceOrderService.java:146`). Any holder of a token from the six accepted OAuth applications, including `external-dxp`, can complete another customer's unpaid order.
 
-1. **The project path does not match the key type to the entitlement.** `sb/service/LicenseKeyGenerationService.java:519` finds the subscription entitlement by ID, and `:592` resolves the license entry from the requested `keyType`. Nothing compares `keyType` to the entitlement's `licenseKeyType`, except for complimentary keys. The app path does compare them (`sb/service/AppLicenseKeyGenerationService.java:186`). A project administrator can charge a production key, which can be permanent, to a backup, non-production, or UAT entitlement.
-
 1. **Bundle entitlements are not limited to license grants.** `sb/service/LicenseKeyGenerationService.java:659` accepts any active project entitlement as a bundle entitlement. Unlike the form (`sb/service/LicenseKeyGenerateFormService.java:848`) and the developer path (`:709`), it does not call `grantsLicense`. An entitlement for vCPU or seats, with a SKU and a `maxQuantity`, can become extra license keys that use the leading license entry.
 
 1. **Reactivation skips the quota.** `sb/ActivationKeysRestController.java:245` and `sb/LicenseKeysRestController.java:207` set `active` true with no activation count. A user can deactivate a key, generate new keys in the freed activations, and reactivate the old key. A user can also reactivate the key that a renewal retired, which breaks REQ-LICENSING-020.
@@ -448,8 +452,6 @@ erDiagram
 1. **Trial endpoints have no ownership check.** `TrialRestController` extends `BaseRestController` and reads no `Jwt` (`sb/TrialRestController.java:67`). The browser calls `DELETE /trial/{orderId}`, `POST /trial/expire/{orderId}`, and `POST /trial/provisioning/{orderId}` with the user token (`ce/services/spring-boot/Trial.ts:21`). Any signed in user can delete or expire another user's trial, or provision any order as a trial.
 
 1. **A Cloud Native JWT has no maximum lifetime.** `sb/util/CloudNativeSignatureValidator.java:55` checks only that `exp` exists and is in the future. The environment chooses `exp`, so a captured manifest request can be replayed until that date.
-
-1. **A free key can be issued again within 90 days of its expiration.** `sb/service/LicenseKeyService.java:525` treats a free key as valid only when it ends more than 90 days from now. REQ-LICENSING-070 says one free key for each owner and domain.
 
 1. **A failed generation leaves records behind.** The activation key is created before `LicenseKeyValidator` runs (`sb/service/LicenseKeyGenerationService.java:614`, `sb/service/LicenseKeyService.java:73`). On failure, `deactivatePartialActivationKey` deactivates the records and does not delete them (`sb/service/ActivationKeyService.java:74`). If that call also fails, it only logs, and the partial keys stay active.
 
@@ -464,8 +466,6 @@ erDiagram
 ## Open Questions
 
 1. Can Liferay Staff change keys? `EnvironmentActivationPermission` treats Liferay Staff as a global role for generate, activate, and deactivate (`sb/permission/EnvironmentActivationPermission.java:210`). REQ-LICENSING-001 says Liferay Staff can see keys but cannot change them. REQ-LICENSING-004 and REQ-LICENSING-003 say Liferay Staff can generate.
-
-1. Is a production subscription meant to grant backup and non-production keys from the same activations? The seed data has one definition for each key type, which suggests no, but the server accepts any key type against any `licenseGeneration` entitlement (Finding 3).
 
 1. Should the free key endpoint accept only orders of type `DXP` that the caller placed, and should it be callable by the `external-dxp` application at all?
 

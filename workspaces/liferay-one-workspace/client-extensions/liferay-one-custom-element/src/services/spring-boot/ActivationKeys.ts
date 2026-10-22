@@ -83,6 +83,7 @@ export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	bundleEntitlementIds: number[];
 	dataCenterLocation?: string;
 	description?: string;
+	domains?: string;
 	environmentName: string;
 	keyType: string;
 	maxClusterNodes?: number;

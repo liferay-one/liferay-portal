@@ -32,6 +32,7 @@ import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.Validator;
@@ -151,6 +152,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		if (Validator.isNull(projectExternalReferenceCode)) {
 			Account account = _getAccount(accountExternalReferenceCode, jwt);
 
+			_checkRenewedActivationKey(
+				account, renewedActivationKeyExternalReferenceCode);
+
 			JSONObject appGenerateFormJSONObject = null;
 
 			if (_environmentActivationPermission.containsSelfProvisioning(
@@ -167,7 +171,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			).body(
 				_toGenerateFormJSONObject(
 					appGenerateFormJSONObject,
-					_fetchSelfServiceTrialGenerateFormJSONObject(account, jwt)
+					_fetchSelfServiceTrialGenerateFormJSONObject(
+						account, jwt, renewedActivationKeyExternalReferenceCode)
 				).toString()
 			);
 		}
@@ -301,6 +306,12 @@ public class ActivationKeysRestController extends OneBaseRestController {
 					"A complimentary activation key cannot be reactivated");
 			}
 		}
+		else if (Validator.isNull(projectExternalReferenceCode) &&
+				 Objects.equals(
+					 LicenseConstants.TYPE_FREE, activationKey.getType())) {
+
+			_adminPermission.check(jwt);
+		}
 
 		_activationKeyService.updateActivationKeyActive(
 			activationKeyId, active);
@@ -322,8 +333,26 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 			_checkKeyType(jsonObject, jwt);
 
+			if (Objects.equals(
+					LicenseConstants.TYPE_FREE,
+					jsonObject.optString("keyType"))) {
+
+				_checkRenewedFreeActivationKey(
+					account,
+					jsonObject.optString(
+						"renewedActivationKeyExternalReferenceCode", null));
+
+				UserAccount userAccount = getMyUserAccount(jwt);
+
+				return _toResponseEntity(
+					_licenseKeyGenerationService.generateActivationKey(
+						account,
+						_toGenerateRequest(
+							jsonObject, userAccount.getEmailAddress(), null)));
+			}
+
 			LicenseKeyGenerationService.GenerateRequest generateRequest =
-				_toGenerateRequest(jsonObject, null);
+				_toGenerateRequest(jsonObject, null, null);
 
 			if (_isSelfServiceTrialEntitlement(
 					account, generateRequest.getSubscriptionEntitlementId())) {
@@ -362,9 +391,12 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
 
+		UserAccount userAccount = getMyUserAccount(jwt);
+
 		return _toResponseEntity(
 			_licenseKeyGenerationService.generateActivationKey(
-				_toGenerateRequest(jsonObject, project)));
+				_toGenerateRequest(
+					jsonObject, userAccount.getEmailAddress(), project)));
 	}
 
 	@PutMapping("/subscriptions")
@@ -406,6 +438,31 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private void _checkRenewedActivationKey(
+			Account account, String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
+		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
+			return;
+		}
+
+		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
+			renewedActivationKeyExternalReferenceCode);
+
+		if (activationKey == null) {
+			return;
+		}
+
+		if ((activationKey.getAccountEntryId() != account.getId()) ||
+			Validator.isNotNull(
+				activationKey.getProjectExternalReferenceCode()) ||
+			!Objects.equals(
+				LicenseConstants.TYPE_FREE, activationKey.getType())) {
+
+			throw new PrincipalException();
+		}
+	}
+
+	private void _checkRenewedActivationKey(
 			Jwt jwt, Project project,
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
@@ -438,6 +495,26 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
+	private void _checkRenewedFreeActivationKey(
+			Account account, String renewedActivationKeyExternalReferenceCode)
+		throws Exception {
+
+		ActivationKey activationKey = null;
+
+		if (Validator.isNotNull(renewedActivationKeyExternalReferenceCode)) {
+			activationKey = _activationKeyService.fetchActivationKey(
+				renewedActivationKeyExternalReferenceCode);
+		}
+
+		if (activationKey == null) {
+			throw new LicenseKeyEntitlementException(
+				"A free key with no project can only be renewed");
+		}
+
+		_checkRenewedActivationKey(
+			account, renewedActivationKeyExternalReferenceCode);
+	}
+
 	/**
 	 * Returns the generate form of the self service trial entitlements, or
 	 * <code>null</code> when it cannot be read, so the app keys of the account
@@ -446,11 +523,13 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	 * apply to its keys.
 	 */
 	private JSONObject _fetchSelfServiceTrialGenerateFormJSONObject(
-		Account account, Jwt jwt) {
+		Account account, Jwt jwt,
+		String renewedActivationKeyExternalReferenceCode) {
 
 		try {
 			return _licenseKeyGenerateFormService.getGenerateForm(
-				_adminPermission.contains(jwt), account, true);
+				_adminPermission.contains(jwt), account, true,
+				renewedActivationKeyExternalReferenceCode);
 		}
 		catch (Exception exception) {
 			_log.error(
@@ -617,15 +696,16 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
-		JSONObject jsonObject, Project project) {
+		JSONObject jsonObject, String owner, Project project) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
 			jsonObject.optString("dataCenterLocation"),
 			jsonObject.optString("description"),
+			jsonObject.optString("domains"),
 			jsonObject.optString("environmentName"),
 			jsonObject.optString("keyType"),
-			jsonObject.optInt("maxClusterNodes"), project,
+			jsonObject.optInt("maxClusterNodes"), null, owner, project,
 			jsonObject.optString("purpose", null),
 			jsonObject.optString(
 				"renewedActivationKeyExternalReferenceCode", null),

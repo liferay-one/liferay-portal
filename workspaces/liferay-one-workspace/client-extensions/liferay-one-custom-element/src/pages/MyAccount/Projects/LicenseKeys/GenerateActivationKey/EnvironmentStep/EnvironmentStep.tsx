@@ -22,6 +22,7 @@ import {
 	getGenerateButtonLabel,
 	hasServerInfo,
 	isComplimentaryKeyType,
+	isFreeKeyType,
 } from '../utils';
 
 const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
@@ -68,6 +69,7 @@ export default function EnvironmentStep({
 
 	const {append, fields, remove} = useFieldArray({control, name: 'servers'});
 
+	const domain = watch('domain');
 	const environmentName = watch('environmentName');
 	const keyType = watch('keyType');
 	const maxClusterNodes = watch('maxClusterNodes');
@@ -77,18 +79,23 @@ export default function EnvironmentStep({
 	const version = watch('version');
 
 	const complimentary = isComplimentaryKeyType(keyType);
+	const free = isFreeKeyType(keyType);
 
-	const hasNodesOrServers = virtualCluster
-		? maxClusterNodes > 0
-		: hasServerInfo(servers, serverField) &&
-			!(complimentary && servers.length > 1);
+	let hasTarget =
+		hasServerInfo(servers, serverField) &&
+		!(complimentary && servers.length > 1);
 
-	const canGenerate = Boolean(
-		environmentName.trim() && version && hasNodesOrServers
-	);
+	if (free) {
+		hasTarget = Boolean(domain.trim());
+	}
+	else if (virtualCluster) {
+		hasTarget = maxClusterNodes > 0;
+	}
+
+	const canGenerate = Boolean(environmentName.trim() && version && hasTarget);
 
 	async function onClickValidateAndGenerate() {
-		if (!virtualCluster && !(await trigger('servers'))) {
+		if (!free && !virtualCluster && !(await trigger('servers'))) {
 			return;
 		}
 
@@ -122,52 +129,71 @@ export default function EnvironmentStep({
 				required
 			/>
 
-			<Input
-				{...register('description')}
-				disabled={renewing}
-				helpMessage={translate(
-					'include-a-description-to-uniquely-identify-this-environment-this-cannot-be-edited-later'
-				)}
-				label={translate('description')}
-				placeholder={translate(
-					'e-g-liferay-dev-environment-ecom-dxp-7-2'
-				)}
-			/>
+			{free ? (
+				<Input
+					{...register('domain')}
+					disabled={renewing}
+					helpMessage={translate(
+						'input-one-domain-name-per-instance'
+					)}
+					label={translate('domain')}
+					placeholder={translate('enter-domain-here')}
+					required
+				/>
+			) : (
+				<Input
+					{...register('description')}
+					disabled={renewing}
+					helpMessage={translate(
+						'include-a-description-to-uniquely-identify-this-environment-this-cannot-be-edited-later'
+					)}
+					label={translate('description')}
+					placeholder={translate(
+						'e-g-liferay-dev-environment-ecom-dxp-7-2'
+					)}
+				/>
+			)}
 
-			<div className="mb-4 mt-4 row">
-				{SERVER_FIELDS.map((current) => (
-					<div
-						className={
-							virtualClusterAvailable ? 'col-md-3' : 'col-md-4'
-						}
-						key={current}
-					>
-						<RadioCard
-							className="generate-activation-key-server-field"
-							disabled={renewing}
-							onChange={() => onChangeServerField(current)}
-							selected={
-								!virtualCluster && serverField === current
+			{!free && (
+				<div className="mb-4 mt-4 row">
+					{SERVER_FIELDS.map((current) => (
+						<div
+							className={
+								virtualClusterAvailable
+									? 'col-md-3'
+									: 'col-md-4'
 							}
-							title={translate(SERVER_FIELD_LABELS[current])}
-						/>
-					</div>
-				))}
+							key={current}
+						>
+							<RadioCard
+								className="generate-activation-key-server-field"
+								disabled={renewing}
+								onChange={() => onChangeServerField(current)}
+								selected={
+									!virtualCluster && serverField === current
+								}
+								title={translate(SERVER_FIELD_LABELS[current])}
+							/>
+						</div>
+					))}
 
-				{virtualClusterAvailable && (
-					<div className="col-md-3">
-						<RadioCard
-							className="generate-activation-key-server-field"
-							disabled={renewing}
-							onChange={() => setValue('virtualCluster', true)}
-							selected={virtualCluster}
-							title={translate('virtual-cluster')}
-						/>
-					</div>
-				)}
-			</div>
+					{virtualClusterAvailable && (
+						<div className="col-md-3">
+							<RadioCard
+								className="generate-activation-key-server-field"
+								disabled={renewing}
+								onChange={() =>
+									setValue('virtualCluster', true)
+								}
+								selected={virtualCluster}
+								title={translate('virtual-cluster')}
+							/>
+						</div>
+					)}
+				</div>
+			)}
 
-			{virtualCluster && (
+			{!free && virtualCluster && (
 				<ClusterNodesField
 					availableCount={availableClusterNodes}
 					disabled={renewing}
@@ -175,7 +201,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{!virtualCluster && (
+			{!free && !virtualCluster && (
 				<>
 					{fields.map((field, index) => (
 						<ServerFieldGroup

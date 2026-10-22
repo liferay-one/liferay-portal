@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useMemo} from 'react';
 import {useFetch} from '~/hooks/useFetch';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import escapeODataString from '~/utils/escapeODataString';
@@ -155,8 +156,9 @@ export function useActivationKeyLicenseKeys(activationKeyId?: string) {
 		}
 	);
 
-	const licenseKeys: ActivationKeyLicenseKey[] = (data?.items ?? []).map(
-		toActivationKeyLicenseKey
+	const licenseKeys: ActivationKeyLicenseKey[] = useMemo(
+		() => (data?.items ?? []).map(toActivationKeyLicenseKey),
+		[data]
 	);
 
 	return {error, licenseKeys, loading, revalidate};

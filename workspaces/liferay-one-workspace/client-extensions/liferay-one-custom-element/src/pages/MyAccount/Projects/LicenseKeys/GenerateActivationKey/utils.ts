@@ -128,18 +128,20 @@ export function getStepAfterSubscription({
 	cloudNative,
 	complimentary,
 	developer,
+	free,
 	unassigned,
 }: {
 	cloudNative: boolean;
 	complimentary: boolean;
 	developer: boolean;
+	free: boolean;
 	unassigned: boolean;
 }): GenerateActivationKeyStep {
 	if (complimentary) {
 		return 'complimentary';
 	}
 
-	if (unassigned) {
+	if (free || unassigned) {
 		return 'environment';
 	}
 
@@ -152,10 +154,12 @@ export function getStepAfterSubscription({
 
 export function getStepBeforeEnvironment({
 	complimentary,
+	free,
 	needsDSRStep,
 	unassigned,
 }: {
 	complimentary: boolean;
+	free: boolean;
 	needsDSRStep: boolean;
 	unassigned: boolean;
 }): GenerateActivationKeyStep {
@@ -163,7 +167,7 @@ export function getStepBeforeEnvironment({
 		return 'complimentary';
 	}
 
-	if (unassigned) {
+	if (free || unassigned) {
 		return 'subscription';
 	}
 
@@ -194,6 +198,10 @@ export function isComplimentaryKeyType(keyType: string): boolean {
 
 export function isDeveloperKeyType(keyType: string): boolean {
 	return DEVELOPER_KEY_TYPES.includes(keyType);
+}
+
+export function isFreeKeyType(keyType: string): boolean {
+	return keyType === FREE_KEY_TYPE;
 }
 
 export function hasServerInfo(

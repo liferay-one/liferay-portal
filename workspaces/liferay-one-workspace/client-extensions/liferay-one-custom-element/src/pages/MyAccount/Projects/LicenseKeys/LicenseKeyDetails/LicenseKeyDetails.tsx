@@ -26,8 +26,10 @@ import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHa
 import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
+import {isFreeAccountKey} from '~/pages/MyAccount/Projects/utils/isFreeAccountKey';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
+import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 import useActivationKeyActions from '../hooks/useActivationKeyActions';
 import useKeySubscription from '../hooks/useKeySubscription';
@@ -76,6 +78,7 @@ export default function LicenseKeyDetails() {
 					onDownload={() => handleDownload(activationKey)}
 					onReactivate={() => handleReactivate(activationKey)}
 					onRenew={() => handleRenew(activationKey)}
+					unassigned={isUnassignedProject(projectId)}
 				/>
 			) : (
 				<div className="p-4 text-neutral-7">
@@ -95,6 +98,7 @@ type LicenseKeyDetailsContentProps = {
 	onDownload: () => void;
 	onReactivate: () => void;
 	onRenew: () => void;
+	unassigned: boolean;
 };
 
 function LicenseKeyDetailsContent({
@@ -106,7 +110,12 @@ function LicenseKeyDetailsContent({
 	onDownload,
 	onReactivate,
 	onRenew,
+	unassigned,
 }: LicenseKeyDetailsContentProps) {
+	const activationChangeable = isFreeAccountKey(activationKey)
+		? admin
+		: hasActivationPermission;
+
 	const detailsRows: DetailsRow[] = [
 		{
 			label: translate('type'),
@@ -161,7 +170,11 @@ function LicenseKeyDetailsContent({
 
 						{hasActivationPermission &&
 							!activationKey.complimentary &&
-							isRenewableKey(activationKey, admin) && (
+							isRenewableKey(
+								activationKey,
+								admin,
+								unassigned
+							) && (
 								<ClayButton
 									displayType="secondary"
 									onClick={onRenew}
@@ -180,7 +193,7 @@ function LicenseKeyDetailsContent({
 										{translate('deactivate')}
 									</ClayButton>
 								)
-							: hasActivationPermission &&
+							: activationChangeable &&
 								(activationKey.active ? (
 									<ClayButton
 										displayType="danger"

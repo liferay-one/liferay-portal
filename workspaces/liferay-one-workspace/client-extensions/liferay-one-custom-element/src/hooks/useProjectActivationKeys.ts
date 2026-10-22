@@ -39,6 +39,7 @@ export type ProjectActivationKey = {
 	offlineActivated?: boolean;
 	productName: string;
 	productVersion: string;
+	projectExternalReferenceCode?: string;
 	startDate: string;
 	startDateValue: string;
 	status: Word;
@@ -53,6 +54,7 @@ type ActivationKeyNode = {
 	externalReferenceCode: string;
 	id?: number;
 	licenseKeyFamily?: string;
+	r_projectToActivationKey_c_projectERC?: string;
 	startDate?: string;
 	type?: string;
 };
@@ -64,6 +66,7 @@ const ACTIVATION_KEY_FIELDS = [
 	'externalReferenceCode',
 	'id',
 	'licenseKeyFamily',
+	'r_projectToActivationKey_c_projectERC',
 	'startDate',
 	'type',
 ].join(',');
@@ -323,6 +326,8 @@ export function useProjectActivationKeys() {
 					leadingLicenseKey?.productName ||
 					'',
 				productVersion: licenseKey?.productVersion ?? '',
+				projectExternalReferenceCode:
+					node.r_projectToActivationKey_c_projectERC || undefined,
 				startDate: formatDate(node.startDate),
 				startDateValue: getDateValue(node.startDate),
 				status: getStatus(node),

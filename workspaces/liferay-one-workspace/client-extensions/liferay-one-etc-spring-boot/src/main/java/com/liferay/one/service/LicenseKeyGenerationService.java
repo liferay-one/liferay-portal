@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -71,7 +72,8 @@ public class LicenseKeyGenerationService {
 				"A complimentary key requires a project");
 		}
 
-		if (Validator.isNotNull(
+		if (!_isFree(generateRequest) &&
+			Validator.isNotNull(
 				generateRequest.
 					getRenewedActivationKeyExternalReferenceCode())) {
 
@@ -166,8 +168,9 @@ public class LicenseKeyGenerationService {
 
 		public GenerateRequest(
 			List<Long> bundleEntitlementIds, String dataCenterLocation,
-			String description, String environmentName, String keyType,
-			int maxClusterNodes, Project project, String purpose,
+			String description, String domains, String environmentName,
+			String keyType, int maxClusterNodes, String orderId, String owner,
+			Project project, String purpose,
 			String renewedActivationKeyExternalReferenceCode,
 			List<Server> servers, Date startDate,
 			long subscriptionEntitlementId, String version,
@@ -177,9 +180,12 @@ public class LicenseKeyGenerationService {
 			_bundleEntitlementIds = bundleEntitlementIds;
 			_dataCenterLocation = dataCenterLocation;
 			_description = description;
+			_domains = domains;
 			_environmentName = environmentName;
 			_keyType = keyType;
 			_maxClusterNodes = maxClusterNodes;
+			_orderId = orderId;
+			_owner = owner;
 			_project = project;
 			_purpose = purpose;
 			_renewedActivationKeyExternalReferenceCode =
@@ -205,6 +211,10 @@ public class LicenseKeyGenerationService {
 			return _description;
 		}
 
+		public String getDomains() {
+			return _domains;
+		}
+
 		public String getEnvironmentName() {
 			return _environmentName;
 		}
@@ -215,6 +225,14 @@ public class LicenseKeyGenerationService {
 
 		public int getMaxClusterNodes() {
 			return _maxClusterNodes;
+		}
+
+		public String getOrderId() {
+			return _orderId;
+		}
+
+		public String getOwner() {
+			return _owner;
 		}
 
 		public Project getProject() {
@@ -288,9 +306,12 @@ public class LicenseKeyGenerationService {
 		private final List<Long> _bundleEntitlementIds;
 		private final String _dataCenterLocation;
 		private final String _description;
+		private final String _domains;
 		private final String _environmentName;
 		private final String _keyType;
 		private final int _maxClusterNodes;
+		private final String _orderId;
+		private final String _owner;
 		private final Project _project;
 		private final String _purpose;
 		private final String _renewedActivationKeyExternalReferenceCode;
@@ -321,6 +342,33 @@ public class LicenseKeyGenerationService {
 			licenseKeyFamily,
 			activationKeyScope.getProjectExternalReferenceCode(), startDate,
 			type);
+	}
+
+	private LicenseKey _addFreeLicenseKey(
+			ActivationKey activationKey, ActivationKeyScope activationKeyScope,
+			Date expirationDate, GenerateRequest generateRequest,
+			LicenseKey renewedFreeLicenseKey, Date startDate,
+			Entitlement subscriptionEntitlement)
+		throws Exception {
+
+		String domains = generateRequest.getDomains();
+		String orderId = generateRequest.getOrderId();
+		String owner = generateRequest.getOwner();
+
+		if (renewedFreeLicenseKey != null) {
+			domains = renewedFreeLicenseKey.getDomains();
+			orderId = renewedFreeLicenseKey.getOrderId();
+			owner = renewedFreeLicenseKey.getOwner();
+		}
+
+		return _licenseKeyService.addLicenseKeyTypeFree(
+			activationKeyScope.getAccountId(),
+			activationKey.getActivationKeyId(), domains,
+			subscriptionEntitlement.getEntitlementDefinitionId(),
+			subscriptionEntitlement.getEntitlementId(), expirationDate,
+			generateRequest.getEnvironmentName(), orderId, owner,
+			generateRequest.getVersion(),
+			activationKeyScope.getProjectExternalReferenceCode(), startDate);
 	}
 
 	private LicenseKey _addLicenseKey(
@@ -385,20 +433,13 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
-	private void _checkComplimentaryEntitlement(
-			boolean complimentary, Entitlement entitlement)
+	private void _checkComplimentaryEntitlement(Entitlement entitlement)
 		throws Exception {
 
-		boolean complimentaryGrant = Objects.equals(
-			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
-			LicenseKeyGenerateFormService.getLicenseKeyType(entitlement));
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
+				LicenseKeyGenerateFormService.getLicenseKeyType(entitlement))) {
 
-		if (complimentary && !complimentaryGrant) {
-			throw new LicenseKeyEntitlementException(
-				"The selected entitlement does not grant a complimentary key");
-		}
-
-		if (!complimentary && complimentaryGrant) {
 			throw new LicenseKeyEntitlementException(
 				"The selected entitlement grants only complimentary keys");
 		}
@@ -434,6 +475,23 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
+	private void _checkLicenseKeyType(
+			GenerateRequest generateRequest, Entitlement entitlement)
+		throws Exception {
+
+		String keyType = generateRequest.getKeyType();
+
+		if (!Objects.equals(
+				keyType,
+				LicenseKeyGenerateFormService.getLicenseKeyType(entitlement))) {
+
+			throw new LicenseKeyEntitlementException(
+				StringBundler.concat(
+					"The selected entitlement does not grant a ", keyType,
+					" key"));
+		}
+	}
+
 	private void _checkQuota(
 			ActivationKeyScope activationKeyScope,
 			List<Entitlement> bundleEntitlements,
@@ -445,7 +503,8 @@ public class LicenseKeyGenerationService {
 		Map<Long, Integer> licenseKeyCounts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
 				activationKeyScope, entitlements,
-				_getRenewedActivationKeyIds(generateRequest));
+				_getRenewedActivationKeyIds(
+					activationKeyScope, generateRequest));
 
 		for (Entitlement entitlement : bundleEntitlements) {
 			int totalCount = LicenseKeyGenerateFormService.getTotalCount(
@@ -506,6 +565,7 @@ public class LicenseKeyGenerationService {
 	}
 
 	private ActivationKey _fetchRenewedActivationKey(
+			ActivationKeyScope activationKeyScope,
 			GenerateRequest generateRequest)
 		throws Exception {
 
@@ -523,17 +583,72 @@ public class LicenseKeyGenerationService {
 			return null;
 		}
 
-		Project project = generateRequest.getProject();
+		if (activationKeyScope.isProject()) {
+			if (!Objects.equals(
+					activationKeyScope.getProjectExternalReferenceCode(),
+					activationKey.getProjectExternalReferenceCode())) {
 
-		if (!Objects.equals(
-				project.getExternalReferenceCode(),
-				activationKey.getProjectExternalReferenceCode())) {
+				throw new LicenseKeyEntitlementException(
+					"The activation key being renewed belongs to another " +
+						"project");
+			}
+		}
+		else if ((activationKey.getAccountEntryId() !=
+					activationKeyScope.getAccountId()) ||
+				 Validator.isNotNull(
+					 activationKey.getProjectExternalReferenceCode())) {
 
 			throw new LicenseKeyEntitlementException(
-				"The activation key being renewed belongs to another project");
+				"The activation key being renewed belongs to another account");
 		}
 
 		return activationKey;
+	}
+
+	private LicenseKey _fetchRenewedFreeLicenseKey(
+			ActivationKeyScope activationKeyScope,
+			GenerateRequest generateRequest)
+		throws Exception {
+
+		ActivationKey activationKey = _fetchRenewedActivationKey(
+			activationKeyScope, generateRequest);
+
+		if (activationKey == null) {
+			return null;
+		}
+
+		Instant endDateInstant = activationKey.getEndDateInstant();
+
+		if ((endDateInstant == null) ||
+			endDateInstant.isAfter(
+				Instant.now(
+				).plus(
+					LicenseKeyGenerationConstants.
+						FREE_TIER_RENEWAL_THRESHOLD_DAYS,
+					ChronoUnit.DAYS
+				))) {
+
+			throw new LicenseKeyEntitlementException(
+				StringBundler.concat(
+					"A free key is renewed from ",
+					LicenseKeyGenerationConstants.
+						FREE_TIER_RENEWAL_THRESHOLD_DAYS,
+					" days before it expires"));
+		}
+
+		for (LicenseKey licenseKey :
+				_licenseKeyService.getLicenseKeysByActivationKeyId(
+					activationKey.getActivationKeyId())) {
+
+			if (Objects.equals(
+					LicenseConstants.TYPE_FREE, licenseKey.getLicenseType())) {
+
+				return licenseKey;
+			}
+		}
+
+		throw new LicenseKeyEntitlementException(
+			"The activation key being renewed has no free key");
 	}
 
 	private Entitlement _fetchStartedEntitlement(
@@ -600,6 +715,12 @@ public class LicenseKeyGenerationService {
 					"No cluster nodes were given for the virtual cluster key");
 			}
 		}
+		else if (_isFree(generateRequest)) {
+			if (Validator.isNull(generateRequest.getDomains())) {
+				throw new LicenseKeyValidationException(
+					"No domain was given for the free key");
+			}
+		}
 		else if (ListUtil.isEmpty(generateRequest.getServers())) {
 			throw new LicenseKeyEntitlementException(
 				"No server was given for the activation keys");
@@ -639,7 +760,11 @@ public class LicenseKeyGenerationService {
 					bundleEntitlements, entitlements, subscriptionEntitlement);
 		}
 
+		_checkLicenseKeyType(generateRequest, subscriptionEntitlement);
+
 		boolean complimentary = _isComplimentary(generateRequest);
+		boolean free = _isFree(generateRequest);
+		LicenseKey renewedFreeLicenseKey = null;
 
 		Date expirationDate = _toDate(
 			subscriptionEntitlement.getEndDateInstant());
@@ -649,7 +774,6 @@ public class LicenseKeyGenerationService {
 
 		if (complimentary) {
 			_checkComplimentary(activationKeyScope);
-			_checkComplimentaryEntitlement(true, subscriptionEntitlement);
 			_checkComplimentaryRequest(generateRequest);
 
 			Calendar calendar = Calendar.getInstance(
@@ -692,12 +816,32 @@ public class LicenseKeyGenerationService {
 			bundleEntitlements = Collections.singletonList(
 				subscriptionEntitlement);
 		}
+		else if (free) {
+			renewedFreeLicenseKey = _fetchRenewedFreeLicenseKey(
+				activationKeyScope, generateRequest);
+
+			Calendar calendar = Calendar.getInstance(
+				TimeZone.getTimeZone("UTC"));
+
+			calendar.set(Calendar.MILLISECOND, 0);
+
+			startDate = calendar.getTime();
+
+			calendar.add(
+				Calendar.DATE,
+				LicenseKeyGenerationConstants.FREE_TIER_DURATION_DAYS);
+
+			expirationDate = calendar.getTime();
+
+			bundleEntitlements = Collections.singletonList(
+				subscriptionEntitlement);
+		}
 		else {
 			bundleEntitlements = _toBundleEntitlements(
 				bundleEntitlements, subscriptionEntitlement);
 
 			for (Entitlement entitlement : bundleEntitlements) {
-				_checkComplimentaryEntitlement(false, entitlement);
+				_checkComplimentaryEntitlement(entitlement);
 			}
 
 			startsLicenseKeyDuration = _startsLicenseKeyDuration(
@@ -741,7 +885,7 @@ public class LicenseKeyGenerationService {
 		Map<Long, LicensedProduct> licensedProducts = _getLicensedProducts(
 			bundleEntitlements, generateRequest, subscriptionEntitlement);
 
-		if (!complimentary && !startsLicenseKeyDuration) {
+		if (!complimentary && !free && !startsLicenseKeyDuration) {
 			LicensedProduct licensedProduct = licensedProducts.get(
 				subscriptionEntitlement.getEntitlementId());
 
@@ -776,14 +920,25 @@ public class LicenseKeyGenerationService {
 		List<Entitlement> startedEntitlements = new ArrayList<>();
 
 		try {
-			for (GenerateRequest.Server server : _getServers(generateRequest)) {
-				for (Entitlement entitlement : bundleEntitlements) {
-					_addLicenseKey(
-						activationKey, activationKeyScope, complimentary,
-						description, entitlement, expirationDate,
-						generateRequest,
-						licensedProducts.get(entitlement.getEntitlementId()),
-						server, startDate);
+			if (free) {
+				_addFreeLicenseKey(
+					activationKey, activationKeyScope, expirationDate,
+					generateRequest, renewedFreeLicenseKey, startDate,
+					subscriptionEntitlement);
+			}
+			else {
+				for (GenerateRequest.Server server :
+						_getServers(generateRequest)) {
+
+					for (Entitlement entitlement : bundleEntitlements) {
+						_addLicenseKey(
+							activationKey, activationKeyScope, complimentary,
+							description, entitlement, expirationDate,
+							generateRequest,
+							licensedProducts.get(
+								entitlement.getEntitlementId()),
+							server, startDate);
+					}
 				}
 			}
 
@@ -794,7 +949,7 @@ public class LicenseKeyGenerationService {
 			}
 
 			ActivationKey renewedActivationKey = _fetchRenewedActivationKey(
-				generateRequest);
+				activationKeyScope, generateRequest);
 
 			if (renewedActivationKey != null) {
 				_activationKeyService.updateActivationKeyActive(
@@ -1066,11 +1221,12 @@ public class LicenseKeyGenerationService {
 	}
 
 	private List<Long> _getRenewedActivationKeyIds(
+			ActivationKeyScope activationKeyScope,
 			GenerateRequest generateRequest)
 		throws Exception {
 
 		ActivationKey activationKey = _fetchRenewedActivationKey(
-			generateRequest);
+			activationKeyScope, generateRequest);
 
 		if (activationKey == null) {
 			return Collections.emptyList();
@@ -1080,6 +1236,10 @@ public class LicenseKeyGenerationService {
 	}
 
 	private int _getRequestedCount(GenerateRequest generateRequest) {
+		if (_isFree(generateRequest)) {
+			return 1;
+		}
+
 		if (_isVirtualCluster(generateRequest)) {
 			return generateRequest.getMaxClusterNodes();
 		}
@@ -1199,6 +1359,11 @@ public class LicenseKeyGenerationService {
 		return Objects.equals(
 			LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY,
 			generateRequest.getKeyType());
+	}
+
+	private boolean _isFree(GenerateRequest generateRequest) {
+		return Objects.equals(
+			LicenseConstants.TYPE_FREE, generateRequest.getKeyType());
 	}
 
 	private boolean _isVirtualCluster(GenerateRequest generateRequest) {

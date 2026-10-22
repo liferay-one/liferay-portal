@@ -20,6 +20,7 @@ import i18n, {Word, translate} from '~/i18n';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
+import {isFreeAccountKey} from '~/pages/MyAccount/Projects/utils/isFreeAccountKey';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
@@ -170,8 +171,8 @@ type KebabActionsProps = {
 	onReactivate: () => void;
 	onRenew: () => void;
 	onView: () => void;
-	renewable: boolean;
 	row: ProjectActivationKey;
+	unassigned: boolean;
 };
 
 function KebabActions({
@@ -182,9 +183,13 @@ function KebabActions({
 	onReactivate,
 	onRenew,
 	onView,
-	renewable,
 	row,
+	unassigned,
 }: KebabActionsProps) {
+	const activationChangeable = isFreeAccountKey(row)
+		? admin
+		: hasActivationPermission;
+
 	return (
 		<ClayDropDown
 			trigger={
@@ -209,9 +214,8 @@ function KebabActions({
 				)}
 
 				{hasActivationPermission &&
-					renewable &&
 					!row.complimentary &&
-					isRenewableKey(row, admin) && (
+					isRenewableKey(row, admin, unassigned) && (
 						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
 							{translate('renew')}
 						</ClayDropDown.Item>
@@ -227,7 +231,7 @@ function KebabActions({
 								{translate('deactivate')}
 							</ClayDropDown.Item>
 						)
-					: hasActivationPermission &&
+					: activationChangeable &&
 						(row.active ? (
 							<ClayDropDown.Item
 								className="text-danger"
@@ -428,8 +432,8 @@ export default function LicenseKeys() {
 						onReactivate={() => handleReactivate(row)}
 						onRenew={() => handleRenew(row)}
 						onView={() => navigate(row.id)}
-						renewable={!isUnassignedProject(projectId)}
 						row={row}
+						unassigned={isUnassignedProject(projectId)}
 					/>
 				);
 			},
