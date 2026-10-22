@@ -249,4 +249,21 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 			rows
 		);
 	});
+
+	it('shows the calendar day of dates at midnight UTC', () => {
+		expect(
+			getRows('env-commerce', {
+				environmentEntitlements: [
+					{
+						...environmentEntitlement,
+						endDate: '2099-08-09T00:00:00.000Z',
+						startDate: '2026-08-09T00:00:00.000Z',
+					},
+				],
+			}).slice(1, 3)
+		).toEqual([
+			['Start Date', 'Aug 9, 2026'],
+			['Expiration Date', 'Aug 9, 2099'],
+		]);
+	});
 });
