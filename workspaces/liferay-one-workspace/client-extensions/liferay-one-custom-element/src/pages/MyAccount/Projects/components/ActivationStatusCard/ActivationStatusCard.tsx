@@ -222,6 +222,7 @@ export default function ActivationStatusCard({
 				)}
 
 			<Modal
+				className="cloud-activation-modal"
 				observer={observer}
 				subtitle={translate(MODAL_SUBTITLE_BY_PROFILE[copyProfile])}
 				title={translate(MODAL_TITLE_BY_PROFILE[copyProfile])}
