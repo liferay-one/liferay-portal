@@ -136,6 +136,30 @@ describe('[HOOK-USEOBJECTITEMS] useObjectItems', () => {
 		expect(response.totalCount).toBe(1000);
 	});
 
+	it('fails the read when any remaining page fails', async () => {
+		vi.mocked(fetcher).mockImplementation(async (url) => {
+			const pageNumber = Number(
+				new URL(url as string, 'http://localhost').searchParams.get(
+					'page'
+				)
+			);
+
+			if (pageNumber === 2) {
+				throw new Error('Failed');
+			}
+
+			return page([pageNumber], 3);
+		});
+
+		renderHook(() => useObjectItems('/o/c/projects', {pageSize: 1}));
+
+		const [url, swrFetcher] = getSWRCall();
+
+		await expect(swrFetcher(url as string)).rejects.toThrow(
+			'Unable to fetch every page'
+		);
+	});
+
 	it('exposes the items and totalCount and revalidates through mutate', () => {
 		mockSWR(page([1, 2], 2));
 

@@ -6,6 +6,8 @@ Every SPA route in the custom element. The `route` attribute of the host widget 
 
 | ID | Requirement | Type | Priority | Status | Source |
 | --- | --- | --- | --- | --- | --- |
+| ROUTE-ADMIN-ACCOUNT-INSPECTOR | Admin route table wires `account-inspector` to the Account Inspector list page with its nav entry, for an Administrator only | unit | P1 | planned | route:admin:account-inspector |
+| ROUTE-ADMIN-ACCOUNT-INSPECTOR-ACCOUNTID | Admin route table wires `account-inspector/:accountId` to the Account Inspector detail page (no nav entry, param driven detail), for an Administrator only | unit | P2 | planned | route:admin:account-inspector/:accountId |
 | ROUTE-ADMIN-ACTIVATION-KEY-UPLOADS | Admin route table wires `activation-key-uploads` to the LicenseKeyUploads page with its nav entry | unit | P1 | planned | route:admin:activation-key-uploads |
 | ROUTE-ADMIN-DETAILS-ORDERID | Admin route table wires `details/:orderId` to the TrialDetails page (no nav entry, param-driven detail) | unit | P2 | planned | route:admin:details/:orderId |
 | ROUTE-ADMIN-MANAGE-SSA-SAAS-USERS | Admin route table wires `manage-ssa-saas-users` to the ManageSsaSaasUsers page with its nav entry | unit | P1 | planned | route:admin:manage-ssa-saas-users |
