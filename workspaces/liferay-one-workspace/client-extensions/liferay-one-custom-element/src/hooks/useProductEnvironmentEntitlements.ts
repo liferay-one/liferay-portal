@@ -8,13 +8,16 @@ import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
+import {getEnvironment, getInstanceSize} from '~/utils/orderItemOptionUtils';
 
+import type {ProductOrderItem} from '~/hooks/useProjectOrders';
 import type {Word} from '~/i18n';
 import type {APIResponse} from '~/types/api';
 
 export type EnvironmentEntitlement = {
 	endDate: string;
 	environment: string;
+	instanceSize: string;
 	provisionedCount?: number;
 	quantity: number;
 	startDate: string;
@@ -30,6 +33,7 @@ type EntitlementNode = {
 	};
 	id: number;
 	quantity?: number;
+	r_commerceOrderItemToEntitlement_commerceOrderItemId?: number;
 	startDate?: string;
 	terminationStatus?: string;
 };
@@ -43,6 +47,7 @@ const ENTITLEMENT_FIELDS = [
 	'entitlementDefinitionToEntitlement.unit',
 	'id',
 	'quantity',
+	'r_commerceOrderItemToEntitlement_commerceOrderItemId',
 	'startDate',
 	'terminationStatus',
 ].join(',');
@@ -78,9 +83,11 @@ function isEnvironmentEntitlement(
 }
 
 export function useProductEnvironmentEntitlements(
-	orderItemIds: number[],
+	orderItems: ProductOrderItem[],
 	activationKeys: boolean
 ) {
+	const orderItemIds = orderItems.map((orderItem) => orderItem.id);
+
 	const {data: entitlementData, isLoading: entitlementsLoading} = useFetch<
 		APIResponse<EntitlementNode>
 	>(orderItemIds.length ? '/o/c/entitlements' : null, {
@@ -116,20 +123,34 @@ export function useProductEnvironmentEntitlements(
 					: null,
 		});
 
-	const environmentEntitlements: EnvironmentEntitlement[] = useMemo(
-		() =>
-			entitlementNodes.map((entitlementNode, index) => ({
+	const environmentEntitlements: EnvironmentEntitlement[] = useMemo(() => {
+		const optionValueNamesByOrderItemId = new Map(
+			orderItems.map((orderItem) => [
+				orderItem.id,
+				orderItem.optionValueNames,
+			])
+		);
+
+		return entitlementNodes.map((entitlementNode, index) => {
+			const optionValueNames =
+				optionValueNamesByOrderItemId.get(
+					entitlementNode.r_commerceOrderItemToEntitlement_commerceOrderItemId ??
+						0
+				) ?? [];
+
+			return {
 				endDate: entitlementNode.endDate ?? '',
 				environment:
 					entitlementNode.entitlementDefinitionToEntitlement
-						?.licenseKeyType ?? '',
+						?.licenseKeyType || getEnvironment(optionValueNames),
+				instanceSize: getInstanceSize(optionValueNames),
 				provisionedCount: provisionedCounts?.[index],
 				quantity: entitlementNode.quantity ?? 0,
 				startDate: entitlementNode.startDate ?? '',
 				terminationStatus: entitlementNode.terminationStatus ?? '',
-			})),
-		[entitlementNodes, provisionedCounts]
-	);
+			};
+		});
+	}, [entitlementNodes, orderItems, provisionedCounts]);
 
 	return {
 		environmentEntitlements,
