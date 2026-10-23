@@ -5,7 +5,10 @@
 
 import {format} from 'date-fns';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {getProductStatusToken} from '~/utils/orderUtils';
+import {
+	getPlacedOrderItemDate,
+	getProductStatusToken,
+} from '~/utils/orderUtils';
 import {
 	getProductSpecificationValue,
 	getProductSpecificationValues,
@@ -27,6 +30,26 @@ export function toProductsByProductId(products: DeliveryProduct[]) {
 	return new Map(products.map((product) => [product.productId, product]));
 }
 
+function formatStartDate(
+	order: PlacedOrder,
+	placedOrderItems: PlacedOrderItems[]
+): string {
+	const [startDate] = placedOrderItems
+		.map((placedOrderItem) =>
+			getPlacedOrderItemDate(placedOrderItem, 'startDate')
+		)
+		.filter((date): date is Date => date !== undefined)
+		.sort((date1, date2) => date1.getTime() - date2.getTime());
+
+	if (startDate) {
+		return format(startDate, 'MMM d, yyyy');
+	}
+
+	return order.createDate
+		? format(new Date(order.createDate), 'MMM d, yyyy')
+		: '';
+}
+
 function toProjectProduct(
 	order: PlacedOrder,
 	placedOrderItems: PlacedOrderItems[],
@@ -39,9 +62,7 @@ function toProjectProduct(
 		publisher: getProductSpecificationValue('publisher-name', product),
 		saleType: getProductSpecificationValue('price-model', product),
 		specifications: product.productSpecifications ?? [],
-		startDate: order.createDate
-			? format(new Date(order.createDate), 'MMM d, yyyy')
-			: '',
+		startDate: formatStartDate(order, placedOrderItems),
 		status: getProductStatusToken(order, placedOrderItems) || 'active',
 		type:
 			getProductSpecificationValues(
