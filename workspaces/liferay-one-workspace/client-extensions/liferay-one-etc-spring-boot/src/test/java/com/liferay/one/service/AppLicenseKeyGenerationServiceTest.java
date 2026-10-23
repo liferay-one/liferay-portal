@@ -154,23 +154,23 @@ public class AppLicenseKeyGenerationServiceTest {
 		Assertions.assertEquals("Acme", arguments[1]);
 		Assertions.assertEquals(_ACTIVATION_KEY_ID, arguments[2]);
 		Assertions.assertEquals(false, arguments[5]);
-		Assertions.assertEquals("Staging", arguments[7]);
-		Assertions.assertEquals(1L, arguments[10]);
-		Assertions.assertEquals(expirationDate, arguments[11]);
-		Assertions.assertEquals("host-0", arguments[12]);
-		Assertions.assertNull(arguments[14]);
-		Assertions.assertEquals(StringPool.BLANK, arguments[15]);
-		Assertions.assertEquals("production", arguments[17]);
-		Assertions.assertEquals(3, arguments[18]);
-		Assertions.assertEquals("Staging", arguments[25]);
-		Assertions.assertEquals("owner@liferay.com", arguments[27]);
-		Assertions.assertEquals("app-uuid-1", arguments[28]);
-		Assertions.assertEquals("Acme App", arguments[29]);
-		Assertions.assertEquals("1", arguments[30]);
-		Assertions.assertNull(arguments[31]);
-		Assertions.assertEquals(startDate, arguments[34]);
+		Assertions.assertEquals("Staging", arguments[6]);
+		Assertions.assertEquals(1L, arguments[9]);
+		Assertions.assertEquals(expirationDate, arguments[10]);
+		Assertions.assertEquals("host-0", arguments[11]);
+		Assertions.assertNull(arguments[13]);
+		Assertions.assertEquals(StringPool.BLANK, arguments[14]);
+		Assertions.assertEquals("production", arguments[16]);
+		Assertions.assertEquals(3, arguments[17]);
+		Assertions.assertEquals("Staging", arguments[24]);
+		Assertions.assertEquals("owner@liferay.com", arguments[26]);
+		Assertions.assertEquals("app-uuid-1", arguments[27]);
+		Assertions.assertEquals("Acme App", arguments[28]);
+		Assertions.assertEquals("1", arguments[29]);
+		Assertions.assertNull(arguments[30]);
+		Assertions.assertEquals(startDate, arguments[33]);
 
-		Assertions.assertEquals("host-1", addLicenseKeyArguments.get(1)[12]);
+		Assertions.assertEquals("host-1", addLicenseKeyArguments.get(1)[11]);
 	}
 
 	@Test
@@ -184,15 +184,14 @@ public class AppLicenseKeyGenerationServiceTest {
 			_licenseKeyService.addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.any(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenThrow(
 			new IllegalStateException()
 		);
@@ -225,8 +224,8 @@ public class AppLicenseKeyGenerationServiceTest {
 
 		Object[] arguments = _getAddLicenseKeyArguments().get(0);
 
-		Assertions.assertEquals("PRDCT-APP", arguments[28]);
-		Assertions.assertEquals("1", arguments[30]);
+		Assertions.assertEquals("PRDCT-APP", arguments[27]);
+		Assertions.assertEquals("1", arguments[29]);
 	}
 
 	@Test
@@ -304,12 +303,12 @@ public class AppLicenseKeyGenerationServiceTest {
 			() -> _appLicenseKeyGenerationService.generateActivationKey(
 				_account,
 				new LicenseKeyGenerationService.GenerateRequest(
-					Collections.emptyList(), null, null, null, "Staging",
+					Collections.emptyList(), null, null, "Staging",
 					"production", 0, null, null, null, null, "ACTVK-1",
 					Arrays.asList(
 						new LicenseKeyGenerationService.GenerateRequest.Server(
 							"host", null, null)),
-					null, 1L, null, false, null, null),
+					null, 1L, null, false),
 				"owner@liferay.com"));
 
 		Mockito.verifyNoInteractions(_entitlementService);
@@ -763,9 +762,8 @@ public class AppLicenseKeyGenerationServiceTest {
 		}
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Collections.emptyList(), null, null, null, "Staging", keyType, 0,
-			null, null, null, null, null, servers, null, entitlementId, null,
-			false, null, null);
+			Collections.emptyList(), null, null, "Staging", keyType, 0, null,
+			null, null, null, null, servers, null, entitlementId, null, false);
 	}
 
 	private Product _toProduct(

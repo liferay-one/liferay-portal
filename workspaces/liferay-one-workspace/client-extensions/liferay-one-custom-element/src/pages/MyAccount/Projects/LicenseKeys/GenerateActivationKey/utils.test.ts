@@ -342,7 +342,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 		const bundleProduct = {
 			app: false,
 			availableCount: 1,
-			disasterRecovery: false,
 			entitlementId: 1,
 			externalReferenceCode: 'PRDCT-SEARCH',
 			licensable: true,
@@ -395,7 +394,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				getStepBeforeEnvironment({
 					complimentary: false,
 					free: false,
-					needsDSRStep: false,
 					unassigned: true,
 				})
 			).toBe('subscription');
@@ -409,7 +407,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				getStepBeforeEnvironment({
 					complimentary: false,
 					free: true,
-					needsDSRStep: false,
 					unassigned: false,
 				})
 			).toBe('subscription');
@@ -420,23 +417,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				getStepBeforeEnvironment({
 					complimentary: false,
 					free: false,
-					needsDSRStep: false,
 					unassigned: false,
 				})
 			).toBe('add-ons');
 			expect(
 				getStepBeforeEnvironment({
-					complimentary: false,
-					free: false,
-					needsDSRStep: true,
-					unassigned: false,
-				})
-			).toBe('dsr');
-			expect(
-				getStepBeforeEnvironment({
 					complimentary: true,
 					free: false,
-					needsDSRStep: false,
 					unassigned: false,
 				})
 			).toBe('complimentary');

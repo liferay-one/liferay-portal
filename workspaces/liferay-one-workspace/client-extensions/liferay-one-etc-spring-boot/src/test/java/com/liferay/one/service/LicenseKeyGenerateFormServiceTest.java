@@ -12,7 +12,6 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
-import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
@@ -37,7 +36,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -225,50 +223,6 @@ public class LicenseKeyGenerateFormServiceTest {
 			new JSONArray());
 
 		Assertions.assertTrue(bundleProductJSONObject.getBoolean("app"));
-	}
-
-	@Test
-	public void testGetEntitledProductsMarksDisasterRecovery()
-		throws Exception {
-
-		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			_toLicenseKeyGenerateFormService(
-				"PRDCT-SAAS-ADD-ONS",
-				HashMapBuilder.put(
-					"DISASTER-RECOVERY", _toSku(1L, null)
-				).put(
-					"STORAGE", _toSku(1L, null)
-				).build());
-
-		List<Entitlement> entitlements = Arrays.asList(
-			_toLicenseGenerationEntitlement(1L, true, "DXP", null, "STORAGE"),
-			new Entitlement(
-				new JSONObject(
-				).put(
-					"entitlementDefinitionToEntitlement",
-					new JSONObject(
-					).put(
-						"id", 2L
-					).put(
-						"name", EntitlementConstants.NAME_DISASTER_RECOVERY
-					)
-				).put(
-					"id", 2L
-				).put(
-					"name", EntitlementConstants.NAME_DISASTER_RECOVERY
-				).put(
-					"skuExternalReferenceCode", "DISASTER-RECOVERY"
-				)));
-
-		List<Object> entitledProducts = _getEntitledProducts(
-			entitlements, licenseKeyGenerateFormService);
-
-		Assertions.assertEquals(1, entitledProducts.size());
-
-		boolean disasterRecovery = ReflectionTestUtils.invokeMethod(
-			entitledProducts.get(0), "isDisasterRecovery");
-
-		Assertions.assertTrue(disasterRecovery);
 	}
 
 	@Test
@@ -1504,14 +1458,8 @@ public class LicenseKeyGenerateFormServiceTest {
 			licenseKeyGenerateFormService, "_getResolvedProducts",
 			entitlements);
 
-		Set<String> disasterRecoveryExternalReferenceCodes =
-			ReflectionTestUtils.invokeMethod(
-				licenseKeyGenerateFormService,
-				"_getDisasterRecoveryExternalReferenceCodes", entitlements);
-
 		return ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getEntitledProducts",
-			disasterRecoveryExternalReferenceCodes, entitlements,
+			licenseKeyGenerateFormService, "_getEntitledProducts", entitlements,
 			resolvedProducts);
 	}
 

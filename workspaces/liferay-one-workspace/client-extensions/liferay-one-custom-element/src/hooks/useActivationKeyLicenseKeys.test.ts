@@ -54,7 +54,6 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				active: true,
 				clusterSize: '',
 				complimentary: false,
-				dataCenterLocation: '',
 				description: '',
 				domains: '',
 				entitlementId: 0,
@@ -74,8 +73,6 @@ describe('[HOOK-USEACTIVATIONKEYLICENSEKEYS] useActivationKeyLicenseKeys', () =>
 				productVersion: '',
 				sizing: '',
 				startDate: '',
-				workspaceName: '',
-				workspaceOwnerEmail: '',
 			});
 		});
 

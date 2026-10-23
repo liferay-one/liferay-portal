@@ -136,15 +136,14 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyService.addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.any(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
@@ -159,15 +158,14 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.eq(7L),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 
 		for (long entitlementId : new long[] {1L, 2L}) {
@@ -176,7 +174,7 @@ public class LicenseKeyGenerationServiceTest {
 			).addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.any(), Mockito.any(), Mockito.anyLong(),
 				Mockito.eq(entitlementId), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.anyInt(), Mockito.any(),
@@ -184,13 +182,13 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyInt(), Mockito.anyLong(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any()
+				Mockito.any()
 			);
 		}
 
 		Assertions.assertEquals(
 			Collections.nCopies(6, "Sizing 1"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 33));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 32));
 	}
 
 	@Test
@@ -242,7 +240,7 @@ public class LicenseKeyGenerationServiceTest {
 				_activationKeyService, "addActivationKey", 3));
 		Assertions.assertEquals(
 			Arrays.asList("DXP", "DSR"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 15));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 14));
 	}
 
 	@Test
@@ -271,15 +269,14 @@ public class LicenseKeyGenerationServiceTest {
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(),
 			entitlementIdArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Assertions.assertEquals(
@@ -299,25 +296,23 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Arrays.asList(1L, 2L), "us-east-1", "Description", null,
-				"Environment", "complimentary", 0, null, null, _toProject(),
-				"Load testing", null, _toServers(1), null, 1L, "DXP 7.4", false,
-				"Workspace One", "owner@example.com"));
+				Arrays.asList(1L, 2L), "Description", null, "Environment",
+				"complimentary", 0, null, null, _toProject(), "Load testing",
+				null, _toServers(1), null, 1L, "DXP 7.4", false));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
-			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.eq(1L),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -476,10 +471,10 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Collections.singletonList(1L), "us-east-1", "Description", null,
+				Collections.singletonList(1L), "Description", null,
 				"Environment", "complimentary", 0, null, null, _toProject(),
-				"Load testing", null, _toServers(1), null, 1L, "DXP 7.4", false,
-				"Workspace One", "owner@example.com"));
+				"Load testing", null, _toServers(1), null, 1L, "DXP 7.4",
+				false));
 
 		ArgumentCaptor<Date> expirationDateArgumentCaptor =
 			ArgumentCaptor.forClass(Date.class);
@@ -523,7 +518,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(
 			Collections.singletonList("Sizing 4"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 33));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 32));
 		Assertions.assertEquals(
 			Collections.singletonList("Sizing 4"),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 13));
@@ -548,11 +543,11 @@ public class LicenseKeyGenerationServiceTest {
 			_toComplimentaryGenerateRequest(1));
 
 		List<Object> issuedStartDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 34);
+			_licenseKeyService, "addLicenseKey", 33);
 		List<Object> issuedExpirationDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 11);
+			_licenseKeyService, "addLicenseKey", 10);
 		List<Object> issuedXMLs = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 14);
+			_licenseKeyService, "addLicenseKey", 13);
 
 		_stubEntitlements(
 			_toEntitlementOfKeyType(1L, 1.0, "complimentary", 45, null));
@@ -561,11 +556,11 @@ public class LicenseKeyGenerationServiceTest {
 			_toComplimentaryGenerateRequest(1));
 
 		List<Object> startDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 34);
+			_licenseKeyService, "addLicenseKey", 33);
 		List<Object> expirationDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 11);
+			_licenseKeyService, "addLicenseKey", 10);
 		List<Object> xmls = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 14);
+			_licenseKeyService, "addLicenseKey", 13);
 
 		Date firstExpirationDate = (Date)expirationDates.get(0);
 		Date firstStartDate = (Date)startDates.get(0);
@@ -896,11 +891,10 @@ public class LicenseKeyGenerationServiceTest {
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateActivationKey(
 					new LicenseKeyGenerationService.GenerateRequest(
-						Collections.singletonList(1L), "us-east-1",
-						"Description", null, "Environment", "complimentary", 0,
-						null, null, _toProject(), "Load testing", null,
-						_toServers(1), null, 1L, "DXP 7.4", false,
-						"Workspace One", "owner@example.com")));
+						Collections.singletonList(1L), "Description", null,
+						"Environment", "complimentary", 0, null, null,
+						_toProject(), "Load testing", null, _toServers(1), null,
+						1L, "DXP 7.4", false)));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -951,15 +945,14 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyService.addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.any(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenThrow(
 			new RuntimeException("The license key could not be added")
 		);
@@ -990,25 +983,23 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Collections.emptyList(), "us-east-1", "Description", null,
-				"Environment", "complimentary", 0, null, null, _toProject(),
-				"Load testing", null, _toServers(1), null, 1L, "DXP 7.4", false,
-				"Workspace One", "owner@example.com"));
+				Collections.emptyList(), "Description", null, "Environment",
+				"complimentary", 0, null, null, _toProject(), "Load testing",
+				null, _toServers(1), null, 1L, "DXP 7.4", false));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
 		).addLicenseKey(
 			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.eq(true),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyLong(),
+			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyLong(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -1419,7 +1410,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(
 			Arrays.asList(expirationDate, expirationDate),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 11));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 10));
 	}
 
 	@Test
@@ -1612,7 +1603,7 @@ public class LicenseKeyGenerationServiceTest {
 			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 1));
 		Assertions.assertEquals(
 			Arrays.asList(null, null),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 31));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 30));
 	}
 
 	@Test
@@ -1771,10 +1762,10 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(
 			Collections.singletonList(""),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 12));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 11));
 		Assertions.assertEquals(
 			Collections.singletonList(3),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 20));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 19));
 		Assertions.assertEquals(
 			Collections.singletonList(3),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 9));
@@ -1816,10 +1807,10 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Collections.singletonList(1L), "us-east-1", "Description", null,
+				Collections.singletonList(1L), "Description", null,
 				"Environment", "backup", 0, null, null, _toProject(),
 				"Load testing", null, _toServers(1), _toDateDaysAgo(10), 1L,
-				"DXP 7.4", false, "Workspace One", "owner@example.com"));
+				"DXP 7.4", false));
 
 		Assertions.assertEquals(
 			Collections.singletonList(null),
@@ -1879,7 +1870,7 @@ public class LicenseKeyGenerationServiceTest {
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 6));
 		Assertions.assertEquals(
 			productIds,
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 28));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 27));
 
 		List<Object> licenseVersions = _getInvocationArguments(
 			_licenseKeyGenerator, "generateKey", 3);
@@ -1895,7 +1886,7 @@ public class LicenseKeyGenerationServiceTest {
 			productVersions.get(1));
 
 		List<Object> licenseKeyProductVersions = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 30);
+			_licenseKeyService, "addLicenseKey", 29);
 
 		Assertions.assertEquals(
 			LicenseKeyGenerationConstants.APP_PRODUCT_VERSION,
@@ -1955,7 +1946,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Assertions.assertEquals(
 			Collections.singletonList(expirationDate),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 11));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 10));
 	}
 
 	@Test
@@ -2113,10 +2104,9 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Collections.singletonList(1L), "us-east-1", "Description", null,
+				Collections.singletonList(1L), "Description", null,
 				"Environment", "backup", 0, null, null, _toProject(), null,
-				"ACTVK-9", _toServers(1), null, 1L, "DXP 7.4", false,
-				"Workspace One", "owner@example.com"));
+				"ACTVK-9", _toServers(1), null, 1L, "DXP 7.4", false));
 
 		Mockito.verify(
 			_licenseKeyService, Mockito.times(1)
@@ -2155,11 +2145,10 @@ public class LicenseKeyGenerationServiceTest {
 				LicenseKeyEntitlementException.class,
 				() -> _licenseKeyGenerationService.generateActivationKey(
 					new LicenseKeyGenerationService.GenerateRequest(
-						Collections.singletonList(1L), "us-east-1",
-						"Description", null, "Environment", "backup", 0, null,
-						null, _toProject(), null, "ACTVK-9", _toServers(1),
-						null, 1L, "DXP 7.4", false, "Workspace One",
-						"owner@example.com")));
+						Collections.singletonList(1L), "Description", null,
+						"Environment", "backup", 0, null, null, _toProject(),
+						null, "ACTVK-9", _toServers(1), null, 1L, "DXP 7.4",
+						false)));
 
 		Assertions.assertTrue(
 			licenseKeyEntitlementException.getMessage(
@@ -2845,17 +2834,16 @@ public class LicenseKeyGenerationServiceTest {
 
 		_licenseKeyGenerationService.generateActivationKey(
 			new LicenseKeyGenerationService.GenerateRequest(
-				Arrays.asList(1L), null, "Description", null, "Environment",
-				keyType, 0, null, null, _toProject(), null, null,
-				Collections.emptyList(), null, 1L, "2026.Q3", false, null,
-				null));
+				Arrays.asList(1L), "Description", null, "Environment", keyType,
+				0, null, null, _toProject(), null, null,
+				Collections.emptyList(), null, 1L, "2026.Q3", false));
 
 		Assertions.assertEquals(
 			Collections.singletonList(""),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 12));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 11));
 		Assertions.assertEquals(
 			Collections.singletonList(serverId),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 32));
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 31));
 		Assertions.assertEquals(
 			Collections.singletonList(""),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 16));
@@ -2927,15 +2915,14 @@ public class LicenseKeyGenerationServiceTest {
 			_licenseKeyService.addLicenseKey(
 				Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyLong(),
+				Mockito.any(), Mockito.any(), Mockito.anyLong(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
 				Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
 				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			Mockito.mock(LicenseKey.class)
 		);
@@ -3161,10 +3148,10 @@ public class LicenseKeyGenerationServiceTest {
 			String renewedActivationKeyExternalReferenceCode) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Collections.singletonList(1L), null, null, "example.com",
-			"Environment", "free", 0, "999", "owner@example.com", null, null,
+			Collections.singletonList(1L), null, "example.com", "Environment",
+			"free", 0, "999", "owner@example.com", null, null,
 			renewedActivationKeyExternalReferenceCode, Collections.emptyList(),
-			null, 1L, "2026.Q3", false, null, null);
+			null, 1L, "2026.Q3", false);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest
@@ -3174,11 +3161,10 @@ public class LicenseKeyGenerationServiceTest {
 			long subscriptionEntitlementId) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			bundleEntitlementIds, "us-east-1", "Description", null,
-			"Environment", keyType, 0, null, null, null, null,
+			bundleEntitlementIds, "Description", null, "Environment", keyType,
+			0, null, null, null, null,
 			renewedActivationKeyExternalReferenceCode, _toServers(1), null,
-			subscriptionEntitlementId, "DXP 7.4", false, "Workspace One",
-			"owner@example.com");
+			subscriptionEntitlementId, "DXP 7.4", false);
 	}
 
 	private Entitlement _toComplimentaryEntitlement(
@@ -3200,10 +3186,9 @@ public class LicenseKeyGenerationServiceTest {
 			String purpose, int serverCount, Date startDate) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Collections.emptyList(), "us-east-1", "Description", null,
-			"Environment", "complimentary", 0, null, null, _toProject(),
-			purpose, null, _toServers(serverCount), startDate, 1L, "DXP 7.4",
-			false, "Workspace One", "owner@example.com");
+			Collections.emptyList(), "Description", null, "Environment",
+			"complimentary", 0, null, null, _toProject(), purpose, null,
+			_toServers(serverCount), startDate, 1L, "DXP 7.4", false);
 	}
 
 	private Date _toDateDaysAgo(int days) {
@@ -3343,9 +3328,9 @@ public class LicenseKeyGenerationServiceTest {
 		String domains) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			Arrays.asList(1L, 2L), null, null, domains, "Environment", "free",
-			0, null, "owner@example.com", _toProject(), null, null,
-			Collections.emptyList(), null, 1L, "2026.Q3", false, null, null);
+			Arrays.asList(1L, 2L), null, domains, "Environment", "free", 0,
+			null, "owner@example.com", _toProject(), null, null,
+			Collections.emptyList(), null, 1L, "2026.Q3", false);
 	}
 
 	private LicenseKeyGenerationService.GenerateRequest _toGenerateRequest(
@@ -3360,10 +3345,9 @@ public class LicenseKeyGenerationServiceTest {
 		int serverCount) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			bundleEntitlementIds, "us-east-1", "Description", null,
-			"Environment", "backup", 0, null, null, _toProject(), null, null,
-			_toServers(serverCount), null, subscriptionEntitlementId, "DXP 7.4",
-			false, "Workspace One", "owner@example.com");
+			bundleEntitlementIds, "Description", null, "Environment", "backup",
+			0, null, null, _toProject(), null, null, _toServers(serverCount),
+			null, subscriptionEntitlementId, "DXP 7.4", false);
 	}
 
 	private Product _toProduct(String name, String externalReferenceCode) {
@@ -3490,11 +3474,10 @@ public class LicenseKeyGenerationServiceTest {
 			int maxClusterNodes, long subscriptionEntitlementId) {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
-			bundleEntitlementIds, "us-east-1", "Description", null,
-			"Environment", keyType, maxClusterNodes, null, null, _toProject(),
-			null, null, Collections.emptyList(), null,
-			subscriptionEntitlementId, "DXP 7.4", true, "Workspace One",
-			"owner@example.com");
+			bundleEntitlementIds, "Description", null, "Environment", keyType,
+			maxClusterNodes, null, null, _toProject(), null, null,
+			Collections.emptyList(), null, subscriptionEntitlementId, "DXP 7.4",
+			true);
 	}
 
 	private void _verifyNoActivationKeyAdded() throws Exception {
