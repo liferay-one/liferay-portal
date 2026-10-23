@@ -8,14 +8,17 @@ import {describe, expect, it} from 'vitest';
 import {
 	getOrderStatusLabel,
 	getOrderStatusToken,
+	getPlacedOrderItemDate,
+	getProductStatusToken,
 	getTotalByOrderKey,
 	hasAIHubOrder,
 	hasProvisionedAIHubOrder,
 	isBetaOrder,
+	isTermExpired,
 	toStatusToken,
 } from './orderUtils';
 
-import type {Order, PlacedOrder} from '~/types/orders';
+import type {Order, PlacedOrder, PlacedOrderItems} from '~/types/orders';
 
 function toOrder(currencyCode: string, totalAmount?: number) {
 	return {currencyCode, totalAmount} as unknown as Order;
@@ -30,6 +33,10 @@ function toPlacedOrder(
 		orderStatusInfo: {code, label, label_i18n: ''},
 		orderTypeExternalReferenceCode,
 	} as unknown as PlacedOrder;
+}
+
+function toPlacedOrderItem(endDate?: string, startDate?: string) {
+	return {customFields: {endDate, startDate}} as unknown as PlacedOrderItems;
 }
 
 function toPlacedOrderWithOptions(...optionsList: (string | undefined)[]) {
@@ -267,6 +274,88 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 				)
 			).toBe(false);
 			expect(hasProvisionedAIHubOrder(undefined, 'PRJCT-1')).toBe(false);
+		});
+	});
+
+	describe('getPlacedOrderItemDate', () => {
+		it('reads the calendar day of the custom field', () => {
+			expect(
+				getPlacedOrderItemDate(
+					toPlacedOrderItem('2017-04-14T00:00:00Z'),
+					'endDate'
+				)
+			).toEqual(new Date(2017, 3, 14));
+		});
+
+		it('treats a missing or 1970 date as no date', () => {
+			expect(
+				getPlacedOrderItemDate(toPlacedOrderItem(), 'endDate')
+			).toBeUndefined();
+			expect(
+				getPlacedOrderItemDate(
+					toPlacedOrderItem('1970-01-01T00:00:00Z'),
+					'endDate'
+				)
+			).toBeUndefined();
+		});
+	});
+
+	describe('isTermExpired', () => {
+		it('is true when every order item ended', () => {
+			expect(
+				isTermExpired([
+					toPlacedOrderItem('2017-04-14T00:00:00Z'),
+					toPlacedOrderItem('2018-04-14T00:00:00Z'),
+				])
+			).toBe(true);
+		});
+
+		it('is false when one order item has not ended or has no end date', () => {
+			expect(
+				isTermExpired([
+					toPlacedOrderItem('2017-04-14T00:00:00Z'),
+					toPlacedOrderItem('2999-01-01T00:00:00Z'),
+				])
+			).toBe(false);
+			expect(
+				isTermExpired([
+					toPlacedOrderItem('2017-04-14T00:00:00Z'),
+					toPlacedOrderItem('1970-01-01T00:00:00Z'),
+				])
+			).toBe(false);
+			expect(isTermExpired([])).toBe(false);
+		});
+	});
+
+	describe('getProductStatusToken', () => {
+		const expiredPlacedOrderItems = [
+			toPlacedOrderItem('2017-04-14T00:00:00Z'),
+		];
+
+		it('shows a completed Salesforce order as expired when its terms ended', () => {
+			expect(
+				getProductStatusToken(
+					toPlacedOrder('SALESFORCE', 0),
+					expiredPlacedOrderItems
+				)
+			).toBe('expired');
+		});
+
+		it('keeps the order status while a term is current', () => {
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [
+					toPlacedOrderItem('2999-01-01T00:00:00Z'),
+				])
+			).toBe('active');
+		});
+
+		it('keeps a status other than active', () => {
+			expect(
+				getProductStatusToken(
+					toPlacedOrder('SALESFORCE', 1),
+					expiredPlacedOrderItems
+				)
+			).toBe('pending');
 		});
 	});
 });

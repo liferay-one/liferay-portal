@@ -183,4 +183,24 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 
 		expect(itemsByType.product.get('PRDCT-DXP')?.type).toBe('Subscription');
 	});
+
+	it('shows a product as expired only when the terms of all its orders ended', () => {
+		const toSalesforceOrder = (endDate: string) =>
+			({
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+				orderTypeExternalReferenceCode: 'SALESFORCE',
+				placedOrderItems: [{customFields: {endDate}, productId: 2}],
+			}) as unknown as PlacedOrder;
+
+		const toStatus = (endDates: string[]) =>
+			toProjectItemsByType(
+				endDates.map(toSalesforceOrder),
+				productsByProductId
+			).product.get('PRDCT-DXP')?.status;
+
+		expect(toStatus(['2017-04-14T00:00:00Z'])).toBe('expired');
+		expect(toStatus(['2017-04-14T00:00:00Z', '2999-01-01T00:00:00Z'])).toBe(
+			'active'
+		);
+	});
 });
