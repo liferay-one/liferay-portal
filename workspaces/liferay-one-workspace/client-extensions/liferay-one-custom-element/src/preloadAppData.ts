@@ -20,36 +20,53 @@ import HeadlessAdminUser, {
 } from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
 
+const ACTIVATION_SECTION = 'activation';
+
 const MY_ACCOUNT_ROUTE = 'my-account';
 
 const preloadedRoutes = new Set<string>();
 
-function getAccountExternalReferenceCode(): string {
-	const [accountExternalReferenceCode = ''] = window.location.hash
-		.replace(/^#\/?/, '')
-		.split('/');
+function parseHash() {
+	const [
+		accountExternalReferenceCode = '',
+		section = '',
+		projectExternalReferenceCode = '',
+		projectSection = '',
+	] = window.location.hash.replace(/^#\/?/, '').split('/');
 
-	return accountExternalReferenceCode;
-}
-
-function getProjectExternalReferenceCode(): string {
-	const [, section, projectExternalReferenceCode = ''] = window.location.hash
-		.replace(/^#\/?/, '')
-		.split('/');
-
-	return section === 'project' ? projectExternalReferenceCode : '';
+	return {
+		accountExternalReferenceCode,
+		projectExternalReferenceCode:
+			section === 'project' ? projectExternalReferenceCode : '',
+		projectSection,
+	};
 }
 
 function getContractScopedProjectExternalReferenceCode(): string {
-	const [, , , projectSection = ''] = window.location.hash
-		.replace(/^#\/?/, '')
-		.split('/');
+	const {projectExternalReferenceCode, projectSection} = parseHash();
 
 	if (projectSection && projectSection !== 'products') {
 		return '';
 	}
 
-	return getProjectExternalReferenceCode();
+	return projectExternalReferenceCode;
+}
+
+function getActivationKeyScope() {
+	const {
+		accountExternalReferenceCode,
+		projectExternalReferenceCode,
+		projectSection,
+	} = parseHash();
+
+	if (projectSection !== ACTIVATION_SECTION) {
+		return undefined;
+	}
+
+	return toActivationKeyScope(
+		accountExternalReferenceCode,
+		projectExternalReferenceCode
+	);
 }
 
 export default function preloadAppData(route: string) {
@@ -78,7 +95,9 @@ export default function preloadAppData(route: string) {
 
 	preloadDataQuery(userProjectsQuery(accountId));
 	preloadDataQuery(accountLevelContractsQuery(accountId));
-	preloadDataQuery(projectContractsQuery(getProjectExternalReferenceCode()));
+	preloadDataQuery(
+		projectContractsQuery(parseHash().projectExternalReferenceCode)
+	);
 	preloadDataQuery(
 		projectEntitlementsQuery(
 			getContractScopedProjectExternalReferenceCode()
@@ -94,10 +113,7 @@ export default function preloadAppData(route: string) {
 		})
 		.catch(() => undefined);
 
-	const activationKeyScope = toActivationKeyScope(
-		getAccountExternalReferenceCode(),
-		getProjectExternalReferenceCode()
-	);
+	const activationKeyScope = getActivationKeyScope();
 
 	if (activationKeyScope) {
 		preloadDataQuery(activationKeySummaryQuery(activationKeyScope));
