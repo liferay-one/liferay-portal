@@ -118,6 +118,18 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		expect(getRows('basic')).toEqual(orderRows);
 	});
 
+	it('shows the order date of the order as its calendar day', () => {
+		expect(
+			getRows('basic', {orderDate: '2023-09-30T00:00:00Z'})[1]
+		).toEqual(['Order Date', 'Sep 30, 2023']);
+	});
+
+	it('leaves out the purchaser when the order has none', () => {
+		expect(
+			getRows('basic', {orderInfo: {...orderInfo, purchasedBy: ''}})
+		).toEqual(orderRows.slice(0, 4));
+	});
+
 	it('shows the order and the security incident contacts as email links for basic incident', () => {
 		const rows = getRows('basic-incident', {
 			securityIncidentContacts: [
