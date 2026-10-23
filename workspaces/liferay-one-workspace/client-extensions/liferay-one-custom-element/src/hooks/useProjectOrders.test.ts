@@ -316,6 +316,30 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		expect(getProductOrderInfo([order], 7).purchasedBy).toBe('');
 	});
 
+	it('leaves token orders out of the term status of the product', () => {
+		const toOrder = (
+			id: number,
+			orderTypeExternalReferenceCode: string,
+			endDate?: string
+		) =>
+			placedOrder({
+				id,
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+				orderTypeExternalReferenceCode,
+				placedOrderItems: [{customFields: {endDate}, productId: 7}],
+			});
+
+		expect(
+			getProductOrderInfo(
+				[
+					toOrder(15, 'DXP', '2017-04-14T00:00:00Z'),
+					toOrder(16, 'AI_HUB_TOKEN'),
+				],
+				7
+			).status
+		).toBe('expired');
+	});
+
 	it('names the tier after the SKU option value of each order item', () => {
 		const toOption = (key: string, skuOptionValueName: string) =>
 			JSON.stringify([
