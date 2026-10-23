@@ -57,6 +57,7 @@ export function isBillingAddress(address: {type?: number}) {
 export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',
+	CONTRACT_ID: 'contractId',
 	KORONEIKI_PROJECT: 'koroneiki-project',
 	LDP_ANALYTICS_CLOUD_PROJECT: 'ldpAnalyticsCloudProject',
 	ORDER_METADATA: 'order-metadata',
