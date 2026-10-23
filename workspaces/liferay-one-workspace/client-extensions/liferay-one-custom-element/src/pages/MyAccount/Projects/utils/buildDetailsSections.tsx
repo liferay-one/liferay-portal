@@ -22,6 +22,7 @@ type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
 	environmentEntitlements?: EnvironmentEntitlement[];
+	orderDate?: string;
 	orderInfo: {
 		itemName: string;
 		orderDate: string;
@@ -228,17 +229,27 @@ function keysProvisioned(environmentSummary: EnvironmentSummary): string {
 }
 
 function orderRows(context: DetailsContext): DetailsRow[] {
-	const {accountName, orderInfo} = context;
+	const {accountName, orderDate, orderInfo} = context;
 
 	return [
 		{label: i18n.translate('order-id'), value: orderInfo.orderId},
-		{label: i18n.translate('order-date'), value: orderInfo.orderDate},
+		{
+			label: i18n.translate('order-date'),
+			value: orderDate ? formatDate(orderDate) : orderInfo.orderDate,
+		},
 		{
 			label: i18n.translate('purchase-number'),
 			value: orderInfo.purchaseNumber,
 		},
 		{label: i18n.translate('customer-account'), value: accountName},
-		{label: i18n.translate('purchased-by'), value: orderInfo.purchasedBy},
+		...(orderInfo.purchasedBy
+			? [
+					{
+						label: i18n.translate('purchased-by'),
+						value: orderInfo.purchasedBy,
+					},
+				]
+			: []),
 	];
 }
 

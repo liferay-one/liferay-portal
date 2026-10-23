@@ -358,7 +358,10 @@ export function getProductOrderInfo(
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
-		purchasedBy: order.author ?? '',
+		purchasedBy:
+			order.orderTypeExternalReferenceCode === 'SALESFORCE'
+				? ''
+				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
 		status: getProductStatusToken(
 			order,
