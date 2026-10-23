@@ -60,6 +60,7 @@ function getSections(
 const environmentEntitlement = {
 	endDate: '2099-08-09T12:00:00Z',
 	environment: 'production',
+	instanceSize: '',
 	provisionedCount: 1,
 	quantity: 2,
 	startDate: '2026-08-09T12:00:00Z',
@@ -173,12 +174,67 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([
 			[
 				'Production',
-				[['Keys Provisioned', '1 of 2'], ...environmentRows],
+				[
+					['Instance Size', '-'],
+					['Keys Provisioned', '1 of 2'],
+					...environmentRows,
+				],
 			],
 			[
 				'Non-Production',
-				[['Keys Provisioned', '0 of 3'], ...environmentRows],
+				[
+					['Instance Size', '-'],
+					['Keys Provisioned', '0 of 3'],
+					...environmentRows,
+				],
 			],
+		]);
+	});
+
+	it('shows the instance sizes of the current term for env instance', () => {
+		expect(
+			getSections('env-instance', {
+				environmentEntitlements: [
+					{...environmentEntitlement, instanceSize: '2'},
+					{...environmentEntitlement, instanceSize: '1'},
+					{...environmentEntitlement, instanceSize: '2'},
+					{
+						...environmentEntitlement,
+						endDate: '2021-08-09T12:00:00Z',
+						instanceSize: '4',
+						startDate: '2020-08-09T12:00:00Z',
+					},
+				],
+			})
+		).toEqual([
+			[
+				'Production',
+				[
+					['Instance Size', '2, 1'],
+					['Keys Provisioned', '3 of 6'],
+					...environmentRows,
+				],
+			],
+		]);
+	});
+
+	it('orders the backup and limited environments after the others', () => {
+		expect(
+			getSections('env-commerce', {
+				environmentEntitlements: [
+					{...environmentEntitlement, environment: 'limited'},
+					{...environmentEntitlement, environment: ''},
+					{...environmentEntitlement, environment: 'backup'},
+					{...environmentEntitlement, environment: 'non-production'},
+					environmentEntitlement,
+				],
+			}).map(([title]) => title)
+		).toEqual([
+			'Production',
+			'Non-Production',
+			'Backup',
+			'Limited',
+			undefined,
 		]);
 	});
 
@@ -208,6 +264,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 			[
 				'Production',
 				[
+					['Instance Size', '-'],
 					['Keys Provisioned', '3 of 5'],
 					['Start Date', 'Aug 9, 2025'],
 					['Expiration Date', 'Aug 9, 2100'],
@@ -241,7 +298,11 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([
 			[
 				'Production',
-				[['Keys Provisioned', '1 of 2'], ...environmentRows],
+				[
+					['Instance Size', '-'],
+					['Keys Provisioned', '1 of 2'],
+					...environmentRows,
+				],
 			],
 		]);
 	});
@@ -378,7 +439,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 				environmentEntitlements: [
 					{...environmentEntitlement, provisionedCount: undefined},
 				],
-			})[0]
+			})[1]
 		).toEqual(['Keys Provisioned', '-']);
 	});
 

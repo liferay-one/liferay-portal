@@ -45,7 +45,7 @@ function renderDetailsTab() {
 	return render(
 		<DetailsTab
 			orderInfo={orderInfo}
-			orderItemIds={[]}
+			orderItems={[]}
 			productName="Liferay Self-Hosted"
 			profile="basic"
 		/>
