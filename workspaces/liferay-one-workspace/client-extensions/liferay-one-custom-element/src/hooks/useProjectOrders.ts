@@ -7,6 +7,7 @@ import {format} from 'date-fns';
 import {useMemo} from 'react';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
+import {OrderTypes} from '~/types/orders';
 import {
 	OrderCustomFields,
 	getOrderStatusToken,
@@ -273,7 +274,8 @@ function getProductOrderItems(
 	return placedOrders
 		.filter(
 			(placedOrder) =>
-				placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN'
+				placedOrder.orderTypeExternalReferenceCode !==
+				OrderTypes.AI_HUB_TOKEN
 		)
 		.flatMap((placedOrder) =>
 			(placedOrder.placedOrderItems ?? []).filter(
@@ -343,7 +345,7 @@ export function getProductOrderInfo(
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy:
-			order.orderTypeExternalReferenceCode === 'SALESFORCE'
+			order.orderTypeExternalReferenceCode === OrderTypes.SALESFORCE
 				? ''
 				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
