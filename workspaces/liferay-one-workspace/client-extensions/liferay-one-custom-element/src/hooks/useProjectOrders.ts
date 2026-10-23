@@ -253,29 +253,6 @@ export function useProjectOrders(project?: OrderProject, productId?: number) {
 	return {error, loading: isLoading, orders, placedOrders};
 }
 
-export function getContractProductOrders(
-	placedOrders: PlacedOrder[],
-	productId: number,
-	contractId?: number
-): PlacedOrder[] {
-	const productOrders = placedOrders.filter((placedOrder) =>
-		hasProduct(placedOrder, productId)
-	);
-
-	if (!contractId) {
-		return productOrders;
-	}
-
-	const contractOrders = productOrders.filter(
-		(placedOrder) =>
-			Number(
-				placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
-			) === contractId
-	);
-
-	return contractOrders.length ? contractOrders : productOrders;
-}
-
 export function getProductOrder(
 	placedOrders: PlacedOrder[],
 	productId: number

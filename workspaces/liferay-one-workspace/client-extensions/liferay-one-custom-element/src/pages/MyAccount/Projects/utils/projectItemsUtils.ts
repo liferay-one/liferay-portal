@@ -6,6 +6,7 @@
 import {format} from 'date-fns';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
 import {
+	getContractProductOrders,
 	getPlacedOrderItemDate,
 	getProductStatusToken,
 } from '~/utils/orderUtils';
@@ -74,57 +75,68 @@ function toProjectProduct(
 
 export function toProjectItemsByType(
 	orders: PlacedOrder[],
-	productsByProductId: ReturnType<typeof toProductsByProductId>
+	productsByProductId: ReturnType<typeof toProductsByProductId>,
+	contractId?: number
 ): ProjectItemsByType {
 	const itemsByProjectItemType: ProjectItemsByType = {
 		application: new Map(),
 		product: new Map(),
 	};
 
-	const placedOrderItemsByProductId = new Map<number, PlacedOrderItems[]>();
+	const ordersByProductId = new Map<number, PlacedOrder[]>();
 
 	for (const order of orders) {
-		for (const placedOrderItem of order.placedOrderItems ?? []) {
-			placedOrderItemsByProductId.set(placedOrderItem.productId, [
-				...(placedOrderItemsByProductId.get(
-					placedOrderItem.productId
-				) ?? []),
-				placedOrderItem,
-			]);
+		for (const {productId} of order.placedOrderItems ?? []) {
+			const productOrders = ordersByProductId.get(productId) ?? [];
+
+			if (productOrders.at(-1) !== order) {
+				productOrders.push(order);
+			}
+
+			ordersByProductId.set(productId, productOrders);
 		}
 	}
 
-	for (const order of orders) {
-		for (const placedOrderItem of order.placedOrderItems ?? []) {
-			const product = productsByProductId.get(placedOrderItem.productId);
+	for (const [productId, productOrders] of ordersByProductId) {
+		const product = productsByProductId.get(productId);
 
-			if (!product) {
-				continue;
-			}
-
-			const projectItemType = resolveProjectItemType(
-				product.productSpecifications ?? []
-			);
-
-			if (!projectItemType) {
-				continue;
-			}
-
-			const items = itemsByProjectItemType[projectItemType];
-
-			if (!items.has(product.externalReferenceCode)) {
-				items.set(
-					product.externalReferenceCode,
-					toProjectProduct(
-						order,
-						placedOrderItemsByProductId.get(
-							placedOrderItem.productId
-						) ?? [],
-						product
-					)
-				);
-			}
+		if (!product) {
+			continue;
 		}
+
+		const projectItemType = resolveProjectItemType(
+			product.productSpecifications ?? []
+		);
+
+		if (!projectItemType) {
+			continue;
+		}
+
+		const items = itemsByProjectItemType[projectItemType];
+
+		if (items.has(product.externalReferenceCode)) {
+			continue;
+		}
+
+		const contractOrders = getContractProductOrders(
+			productOrders,
+			productId,
+			contractId
+		);
+
+		items.set(
+			product.externalReferenceCode,
+			toProjectProduct(
+				contractOrders[0],
+				contractOrders.flatMap((order) =>
+					(order.placedOrderItems ?? []).filter(
+						(placedOrderItem) =>
+							placedOrderItem.productId === productId
+					)
+				),
+				product
+			)
+		);
 	}
 
 	return itemsByProjectItemType;

@@ -311,6 +311,31 @@ export function toStatusToken(label: string): string {
 	return STATUS_TOKEN_ALIASES[token] ?? token;
 }
 
+export function getContractProductOrders(
+	placedOrders: PlacedOrder[],
+	productId: number,
+	contractId?: number
+): PlacedOrder[] {
+	const productOrders = placedOrders.filter((placedOrder) =>
+		(placedOrder.placedOrderItems ?? []).some(
+			(placedOrderItem) => placedOrderItem.productId === productId
+		)
+	);
+
+	if (!contractId) {
+		return productOrders;
+	}
+
+	const contractOrders = productOrders.filter(
+		(placedOrder) =>
+			Number(
+				placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
+			) === contractId
+	);
+
+	return contractOrders.length ? contractOrders : productOrders;
+}
+
 export function getOrderStatusToken(order: PlacedOrder): string {
 	return toStatusToken(getOrderStatusLabel(order));
 }
