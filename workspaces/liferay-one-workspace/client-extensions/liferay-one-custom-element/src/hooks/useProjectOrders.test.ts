@@ -305,6 +305,42 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		});
 	});
 
+	it('names the tier after the SKU option value of each order item', () => {
+		const toOption = (key: string, skuOptionValueName: string) =>
+			JSON.stringify([
+				{
+					key,
+					skuOptionName: key,
+					skuOptionValueNames: [skuOptionValueName],
+				},
+			]);
+
+		const order = placedOrder({
+			id: 13,
+			placedOrderItems: [
+				{
+					name: 'Support Plans',
+					options: toOption('support-plans', 'Global 24/7 Support'),
+					productId: 7,
+				},
+				{
+					name: 'Support Plans',
+					options: toOption('support-plans', 'Global 24/7 Support'),
+					productId: 7,
+				},
+				{
+					name: 'Support Plans',
+					options: toOption('machinetype', 'standard'),
+					productId: 7,
+				},
+			],
+		});
+
+		expect(getProductOrderInfo([order], 7).itemName).toBe(
+			'Global 24/7 Support, Support Plans'
+		);
+	});
+
 	it('returns blank product order info when no order matches', () => {
 		expect(
 			getProductOrderInfo(
