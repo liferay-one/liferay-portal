@@ -223,6 +223,30 @@ public class CommonLicenseKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetCommonLicenseKeysWhenTermHasOffset() throws Exception {
+		JSONObject pageJSONObject = new JSONObject(
+		).put(
+			"totalCount", 2
+		);
+
+		Mockito.when(
+			_commonLicenseKeyService.getCommonLicenseKeysPage(
+				Instant.parse("2027-08-21T22:00:00Z"), 1, 20,
+				"ENTERPRISE_SEARCH", null)
+		).thenReturn(
+			pageJSONObject
+		);
+
+		ResponseEntity<String> responseEntity =
+			_commonLicenseKeysRestController.getCommonLicenseKeys(
+				null, "2027-08-22T00:00:00+02:00", 1, 20, "ENTERPRISE_SEARCH",
+				null);
+
+		Assertions.assertEquals(
+			pageJSONObject.toString(), responseEntity.getBody());
+	}
+
+	@Test
 	public void testGetCommonLicenseKeysWhenTermIsSet() throws Exception {
 		JSONObject pageJSONObject = new JSONObject(
 		).put(
