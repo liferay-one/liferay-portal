@@ -11,7 +11,6 @@ import {getOrderStatusToken} from '~/utils/orderUtils';
 
 import {usePlacedOrders} from './usePlacedOrder';
 import {
-	getContractProductOrders,
 	getProductOrderInfo,
 	getProductVirtualItems,
 	getProjectExternalReferenceCode,
@@ -410,43 +409,5 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			)
 		).toEqual([]);
 		expect(getProductVirtualItems([], 7)).toEqual([]);
-	});
-
-	describe('getContractProductOrders', () => {
-		const toContractOrder = (id: number, contractId: number) =>
-			placedOrder({
-				customFields: {contractId},
-				id,
-				placedOrderItems: [{productId: 7}],
-			});
-
-		const currentOrder = toContractOrder(1, 38227564);
-		const legacyOrder = toContractOrder(2, 0);
-		const otherProductOrder = placedOrder({
-			customFields: {contractId: 38227564},
-			id: 3,
-			placedOrderItems: [{productId: 8}],
-		});
-
-		const placedOrders = [legacyOrder, currentOrder, otherProductOrder];
-
-		it('keeps the product orders of the selected contract', () => {
-			expect(getContractProductOrders(placedOrders, 7, 38227564)).toEqual(
-				[currentOrder]
-			);
-		});
-
-		it('keeps every product order when no order names the contract', () => {
-			expect(getContractProductOrders(placedOrders, 7, 34353392)).toEqual(
-				[legacyOrder, currentOrder]
-			);
-		});
-
-		it('keeps every product order without a selected contract', () => {
-			expect(getContractProductOrders(placedOrders, 7)).toEqual([
-				legacyOrder,
-				currentOrder,
-			]);
-		});
 	});
 });

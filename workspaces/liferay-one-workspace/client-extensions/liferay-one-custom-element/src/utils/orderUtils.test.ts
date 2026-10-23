@@ -6,6 +6,7 @@
 import {describe, expect, it} from 'vitest';
 
 import {
+	getContractProductOrders,
 	getOrderStatusLabel,
 	getOrderStatusToken,
 	getPlacedOrderItemDate,
@@ -33,6 +34,10 @@ function toPlacedOrder(
 		orderStatusInfo: {code, label, label_i18n: ''},
 		orderTypeExternalReferenceCode,
 	} as unknown as PlacedOrder;
+}
+
+function toContractPlacedOrder(order: Record<string, unknown>) {
+	return order as unknown as PlacedOrder;
 }
 
 function toPlacedOrderItem(endDate?: string, startDate?: string) {
@@ -356,6 +361,44 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 					expiredPlacedOrderItems
 				)
 			).toBe('pending');
+		});
+	});
+
+	describe('getContractProductOrders', () => {
+		const toContractOrder = (id: number, contractId: number) =>
+			toContractPlacedOrder({
+				customFields: {contractId},
+				id,
+				placedOrderItems: [{productId: 7}],
+			});
+
+		const currentOrder = toContractOrder(1, 38227564);
+		const legacyOrder = toContractOrder(2, 0);
+		const otherProductOrder = toContractPlacedOrder({
+			customFields: {contractId: 38227564},
+			id: 3,
+			placedOrderItems: [{productId: 8}],
+		});
+
+		const placedOrders = [legacyOrder, currentOrder, otherProductOrder];
+
+		it('keeps the product orders of the selected contract', () => {
+			expect(getContractProductOrders(placedOrders, 7, 38227564)).toEqual(
+				[currentOrder]
+			);
+		});
+
+		it('keeps every product order when no order names the contract', () => {
+			expect(getContractProductOrders(placedOrders, 7, 34353392)).toEqual(
+				[legacyOrder, currentOrder]
+			);
+		});
+
+		it('keeps every product order without a selected contract', () => {
+			expect(getContractProductOrders(placedOrders, 7)).toEqual([
+				legacyOrder,
+				currentOrder,
+			]);
 		});
 	});
 });

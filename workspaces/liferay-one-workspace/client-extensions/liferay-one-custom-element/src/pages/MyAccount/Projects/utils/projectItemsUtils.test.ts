@@ -230,4 +230,45 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		).toBe('Sep 29, 2023');
 		expect(toStartDate(['1970-01-01T00:00:00Z'])).toBe('Oct 22, 2026');
 	});
+
+	it('reads the status and start date from the orders of the selected contract', () => {
+		const toContractOrder = (
+			contractId: number,
+			endDate: string,
+			startDate: string
+		) =>
+			({
+				customFields: {contractId},
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+				orderTypeExternalReferenceCode: 'SALESFORCE',
+				placedOrderItems: [
+					{customFields: {endDate, startDate}, productId: 2},
+				],
+			}) as unknown as PlacedOrder;
+
+		const orders = [
+			toContractOrder(1, '2017-04-14T00:00:00Z', '2016-04-15T00:00:00Z'),
+			toContractOrder(2, '2999-01-01T00:00:00Z', '2026-08-23T00:00:00Z'),
+		];
+
+		const toProduct = (contractId?: number) =>
+			toProjectItemsByType(
+				orders,
+				productsByProductId,
+				contractId
+			).product.get('PRDCT-DXP');
+
+		expect(toProduct(1)).toMatchObject({
+			startDate: 'Apr 15, 2016',
+			status: 'expired',
+		});
+		expect(toProduct(2)).toMatchObject({
+			startDate: 'Aug 23, 2026',
+			status: 'active',
+		});
+		expect(toProduct(3)).toMatchObject({
+			startDate: 'Apr 15, 2016',
+			status: 'active',
+		});
+	});
 });
