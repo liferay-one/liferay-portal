@@ -6,6 +6,7 @@
 import {useMemo} from 'react';
 import {useActivationKeyLicenseKeys} from '~/hooks/useActivationKeyLicenseKeys';
 import {useProjectActivationKeys} from '~/hooks/useProjectActivationKeys';
+import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
 import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {GenerateForm} from '~/services/spring-boot/ActivationKeys';
 
@@ -30,6 +31,7 @@ export function useRenewSource(
 	activationKeyExternalReferenceCode: string | null,
 	generateForm?: GenerateForm
 ) {
+	const admin = useHasAdminPermission();
 	const {activationKeys, loading: loadingActivationKeys} =
 		useProjectActivationKeys();
 
@@ -43,7 +45,7 @@ export function useRenewSource(
 		useActivationKeyLicenseKeys(activationKey?.activationKeyId);
 
 	const renewSource = useMemo<RenewSource | undefined>(() => {
-		if (!activationKey || !isRenewableKey(activationKey)) {
+		if (!activationKey || !isRenewableKey(activationKey, admin)) {
 			return undefined;
 		}
 
@@ -128,7 +130,7 @@ export function useRenewSource(
 			version: leadingLicenseKey?.productVersion ?? '',
 			virtualCluster,
 		};
-	}, [activationKey, generateForm, licenseKeys]);
+	}, [activationKey, admin, generateForm, licenseKeys]);
 
 	return {
 		loading: loadingActivationKeys || loadingLicenseKeys,
