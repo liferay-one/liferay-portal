@@ -266,20 +266,27 @@ export function getProductOrder(
 	);
 }
 
-export function getProductOrderItemIds(
+function getProductOrderItems(
 	placedOrders: PlacedOrder[],
 	productId: number
-): number[] {
+): PlacedOrderItems[] {
 	return placedOrders
 		.filter(
 			(placedOrder) =>
 				placedOrder.orderTypeExternalReferenceCode !== 'AI_HUB_TOKEN'
 		)
 		.flatMap((placedOrder) =>
-			(placedOrder.placedOrderItems ?? [])
-				.filter((item) => item.productId === productId)
-				.map((item) => item.id)
+			(placedOrder.placedOrderItems ?? []).filter(
+				(item) => item.productId === productId
+			)
 		);
+}
+
+export function getProductOrderItemIds(
+	placedOrders: PlacedOrder[],
+	productId: number
+): number[] {
+	return getProductOrderItems(placedOrders, productId).map((item) => item.id);
 }
 
 export function getProductOrderInfo(
@@ -342,11 +349,7 @@ export function getProductOrderInfo(
 		quantity: quantity ? String(quantity) : '',
 		status: getProductStatusToken(
 			order,
-			placedOrders.flatMap((placedOrder) =>
-				(placedOrder.placedOrderItems ?? []).filter(
-					(item) => item.productId === productId
-				)
-			)
+			getProductOrderItems(placedOrders, productId)
 		),
 	};
 }
