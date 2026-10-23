@@ -37,6 +37,7 @@ vi.mock('~/hooks/useProjectCommerce', () => ({
 vi.mock('~/hooks/useProjectItems', () => ({useProjectItems: vi.fn()}));
 
 vi.mock('~/hooks/useProjectOrders', () => ({
+	getContractProductOrders: vi.fn(() => []),
 	getProductOrder: vi.fn(),
 	getProductOrderInfo: vi.fn(() => ({status: 'active'})),
 	getProductVirtualItems: vi.fn(() => []),
