@@ -305,6 +305,18 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		});
 	});
 
+	it('leaves the purchaser of a Salesforce order empty', () => {
+		const order = placedOrder({
+			author: 'Ryan Schuhler',
+			id: 14,
+			orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+			orderTypeExternalReferenceCode: 'SALESFORCE',
+			placedOrderItems: [{productId: 7}],
+		});
+
+		expect(getProductOrderInfo([order], 7).purchasedBy).toBe('');
+	});
+
 	it('names the tier after the SKU option value of each order item', () => {
 		const toOption = (key: string, skuOptionValueName: string) =>
 			JSON.stringify([
