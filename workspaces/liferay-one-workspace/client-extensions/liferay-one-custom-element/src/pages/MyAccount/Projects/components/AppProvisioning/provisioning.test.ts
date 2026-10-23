@@ -9,6 +9,7 @@ import {
 	getCloudProvisioning,
 	getDeploymentsByOrderItemId,
 	hasDeploymentInProgress,
+	isInstallUnavailable,
 } from './provisioning';
 
 import type {PlacedOrder} from '~/types/orders';
@@ -74,5 +75,17 @@ describe('[MOD-MYACCOUNT-PROJECTS-APPPROVISIONING-PROVISIONING] provisioning', (
 			)
 		).toBe(true);
 		expect(hasDeploymentInProgress()).toBe(false);
+	});
+
+	it('reports install as unavailable while loading or after an error', () => {
+		expect(isInstallUnavailable({error: undefined, isLoading: true})).toBe(
+			true
+		);
+		expect(
+			isInstallUnavailable({error: new Error('boom'), isLoading: false})
+		).toBe(true);
+		expect(isInstallUnavailable({error: undefined, isLoading: false})).toBe(
+			false
+		);
 	});
 });

@@ -57,17 +57,17 @@ function row(status: ProvisioningRow['status']): ProvisioningRow {
 	};
 }
 
-function renderTable(
+type TableOptions = {
+	error?: Error;
+	isLoading?: boolean;
+	userProjects?: unknown[];
+};
+
+function tableOf(
 	status: ProvisioningRow['status'],
-	{
-		isLoading = false,
-		userProjects = [{}],
-	}: {
-		isLoading?: boolean;
-		userProjects?: unknown[];
-	} = {}
+	{error, isLoading = false, userProjects = [{}]}: TableOptions = {}
 ) {
-	render(
+	return (
 		<ProvisioningTable
 			mutateOrder={
 				vi.fn(() =>
@@ -78,12 +78,20 @@ function renderTable(
 			provisioningTableData={[row(status)]}
 			resourceRequirements={
 				{
+					error,
 					isLoading,
 					projectsUsage: {userProjects},
 				} as ProvisioningData['resourceRequirements']
 			}
 		/>
 	);
+}
+
+function renderTable(
+	status: ProvisioningRow['status'],
+	options: TableOptions = {}
+) {
+	return render(tableOf(status, options));
 }
 
 async function openActionsMenu() {
@@ -155,6 +163,41 @@ describe('[COMPONENT-MYACCOUNT-PROJECTS-APPPROVISIONING-PROVISIONINGTABLE] Provi
 		expect(
 			screen.queryByText('No Cloud Projects Available')
 		).not.toBeInTheDocument();
+	});
+
+	it('disables install after the cloud projects fail to load', async () => {
+		renderTable('ready-to-install', {
+			error: new Error('boom'),
+			userProjects: [],
+		});
+
+		await openActionsMenu();
+		await userEvent.click(screen.getByRole('menuitem', {name: 'Install'}));
+
+		expect(screen.getByRole('menuitem', {name: 'Install'})).toHaveAttribute(
+			'aria-disabled',
+			'true'
+		);
+		expect(
+			screen.queryByText('No Cloud Projects Available')
+		).not.toBeInTheDocument();
+	});
+
+	it('keeps the actions menu open and enables install when the cloud projects finish loading', async () => {
+		const {rerender} = renderTable('ready-to-install', {isLoading: true});
+
+		await openActionsMenu();
+
+		rerender(tableOf('ready-to-install'));
+
+		const install = screen.getByRole('menuitem', {name: 'Install'});
+
+		expect(install.closest('.dropdown-menu')).toHaveClass('show');
+		expect(install).not.toHaveAttribute('aria-disabled', 'true');
+
+		await userEvent.click(install);
+
+		expect(mocks.navigate).toHaveBeenCalledWith('install/77?orderItemId=5');
 	});
 
 	it('shows the no cloud projects modal with visible buttons when the user has no cloud project', async () => {
