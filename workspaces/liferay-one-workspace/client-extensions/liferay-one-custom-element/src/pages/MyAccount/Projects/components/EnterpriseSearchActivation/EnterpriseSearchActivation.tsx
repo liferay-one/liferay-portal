@@ -5,9 +5,18 @@
 
 import ActivationKeyDownload from '~/pages/MyAccount/Projects/components/ActivationKeyDownload/ActivationKeyDownload';
 
-export default function EnterpriseSearchActivation() {
+import type {ProjectContract} from '~/hooks/useProjectCommerce';
+
+type EnterpriseSearchActivationProps = {
+	contract?: ProjectContract;
+};
+
+export default function EnterpriseSearchActivation({
+	contract,
+}: EnterpriseSearchActivationProps) {
 	return (
 		<ActivationKeyDownload
+			contract={contract}
 			productGroup="ENTERPRISE_SEARCH"
 			productTitle="Enterprise Search"
 		/>

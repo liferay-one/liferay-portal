@@ -94,6 +94,7 @@ Terms used in this file:
 | REQ-LICENSING-081 | An upload stops at the first bad file. A file name that already exists is a conflict, and a file that is not a valid license names the file in the error. | P0 | LPD-89421 | `REST-POST-COMMON-LICENSE-KEYS` |
 | REQ-LICENSING-082 | A user can list or download the common license keys of a product family only with a global administrator role, or with an active entitlement to that family on one of the user's accounts. | P0 | — | `PERM-COMMONLICENSEKEYPERMISSION`, `REST-GET-COMMON-LICENSE-KEYS`, `REST-GET-COMMON-LICENSE-KEYS-COMMONLICENSEKEYID-DOWNLOAD` |
 | REQ-LICENSING-083 | Only an administrator can delete a common license key. | P0 | — | `REST-DELETE-COMMON-LICENSE-KEYS-COMMONLICENSEKEYID` |
+| REQ-LICENSING-084 | The activation keys of a product show only the common license keys whose validity overlaps the term of the selected contract. Without a contract, they show every key of the product family. | P1 | LPD-92145 | `REST-GET-COMMON-LICENSE-KEYS`, `SVC-COMMONLICENSEKEYSERVICE`, `CLIENT-SPRING-BOOT-COMMONLICENSEKEYS` |
 
 ## App License Keys
 

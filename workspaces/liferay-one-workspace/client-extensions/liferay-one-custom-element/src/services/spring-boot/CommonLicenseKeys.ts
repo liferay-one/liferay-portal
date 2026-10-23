@@ -37,19 +37,28 @@ class CommonLicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 	}
 
 	getCommonLicenseKeys({
+		endDate,
 		page,
 		pageSize,
 		productGroup,
+		startDate,
 	}: {
+		endDate?: string;
 		page: number;
 		pageSize: number;
 		productGroup: ProductGroup;
+		startDate?: string;
 	}): Promise<APIResponse<CommonLicenseKey>> {
 		const searchParams = new URLSearchParams({
 			page: String(page),
 			pageSize: String(pageSize),
 			productGroup,
 		});
+
+		if (endDate && startDate) {
+			searchParams.set('endDate', endDate);
+			searchParams.set('startDate', startDate);
+		}
 
 		return this.get(`?${searchParams}`);
 	}

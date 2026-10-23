@@ -40,9 +40,11 @@ const ACTIVATION_CONTENT_BY_PROFILE: Record<
 	'app-provisioning': ({orderId}) =>
 		orderId ? <AppProvisioning orderId={orderId} /> : null,
 	'cloud-native': () => <CloudNativeActivation />,
-	'commerce': () => <CommerceActivation />,
+	'commerce': ({contract}) => <CommerceActivation contract={contract} />,
 	'dxp-portal': () => null,
-	'enterprise-search': () => <EnterpriseSearchActivation />,
+	'enterprise-search': ({contract}) => (
+		<EnterpriseSearchActivation contract={contract} />
+	),
 	'keys-list': () => null,
 	'licenses': () => null,
 	'none': () => null,
