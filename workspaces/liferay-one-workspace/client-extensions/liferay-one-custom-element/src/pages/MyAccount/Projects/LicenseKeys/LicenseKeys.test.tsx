@@ -54,7 +54,39 @@ vi.mock('~/hooks/useProjectEnvironments', () => ({
 	useProjectEnvironments: () => mocks.useProjectEnvironments(),
 }));
 
-describe('[ROUTE-MY-ACCOUNT-PROJECTS-ACTIVATION] LicenseKeys', () => {
+function mockGeneratePermission(hasGeneratePermission: boolean) {
+	mocks.useHasLicenseKeyPermission.mockReturnValue({
+		hasActivationPermission: hasGeneratePermission,
+		hasGeneratePermission,
+		loading: false,
+	});
+}
+
+function mockSummary({
+	error,
+	generatable,
+	loading = false,
+}: {
+	error?: Error;
+	generatable?: boolean;
+	loading?: boolean;
+}) {
+	mocks.useActivationKeySummary.mockReturnValue({
+		error,
+		loading,
+		summary: generatable === undefined ? undefined : {generatable},
+	});
+}
+
+function renderLicenseKeys() {
+	render(
+		<MemoryRouter>
+			<LicenseKeys />
+		</MemoryRouter>
+	);
+}
+
+describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 
@@ -82,22 +114,21 @@ describe('[ROUTE-MY-ACCOUNT-PROJECTS-ACTIVATION] LicenseKeys', () => {
 	});
 
 	it('does not render the New Key button when the user lacks generate permission', () => {
-		mocks.useHasLicenseKeyPermission.mockReturnValue({
-			hasActivationPermission: false,
-			hasGeneratePermission: false,
-			loading: false,
-		});
-		mocks.useActivationKeySummary.mockReturnValue({
-			error: undefined,
-			loading: false,
-			summary: {generatable: true},
-		});
+		mockGeneratePermission(false);
+		mockSummary({generatable: true});
 
-		render(
-			<MemoryRouter>
-				<LicenseKeys />
-			</MemoryRouter>
-		);
+		renderLicenseKeys();
+
+		expect(
+			screen.queryByRole('button', {name: /New Key/i})
+		).not.toBeInTheDocument();
+	});
+
+	it('does not render the New Key button when the summary fails to load', () => {
+		mockGeneratePermission(true);
+		mockSummary({error: new Error('Unable to get summary')});
+
+		renderLicenseKeys();
 
 		expect(
 			screen.queryByRole('button', {name: /New Key/i})
@@ -105,51 +136,30 @@ describe('[ROUTE-MY-ACCOUNT-PROJECTS-ACTIVATION] LicenseKeys', () => {
 	});
 
 	it('renders the New Key button as disabled with a loading indicator while summary is loading', () => {
-		mocks.useHasLicenseKeyPermission.mockReturnValue({
-			hasActivationPermission: true,
-			hasGeneratePermission: true,
-			loading: false,
-		});
-		mocks.useActivationKeySummary.mockReturnValue({
-			error: undefined,
-			loading: true,
-			summary: undefined,
-		});
+		mockGeneratePermission(true);
+		mockSummary({loading: true});
 
-		render(
-			<MemoryRouter>
-				<LicenseKeys />
-			</MemoryRouter>
-		);
+		renderLicenseKeys();
 
 		const button = screen.getByRole('button', {name: /New Key/i});
-		expect(button).toBeInTheDocument();
+
 		expect(button).toBeDisabled();
 		expect(button.querySelector('.loading-inline')).toBeInTheDocument();
+		expect(
+			button.closest('span[data-tooltip-align="top"]')
+		).not.toHaveAttribute('title');
 	});
 
 	it('renders the New Key button as enabled when generatable is true', async () => {
 		const user = userEvent.setup();
 
-		mocks.useHasLicenseKeyPermission.mockReturnValue({
-			hasActivationPermission: true,
-			hasGeneratePermission: true,
-			loading: false,
-		});
-		mocks.useActivationKeySummary.mockReturnValue({
-			error: undefined,
-			loading: false,
-			summary: {generatable: true},
-		});
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
 
-		render(
-			<MemoryRouter>
-				<LicenseKeys />
-			</MemoryRouter>
-		);
+		renderLicenseKeys();
 
 		const button = screen.getByRole('button', {name: /New Key/i});
-		expect(button).toBeInTheDocument();
+
 		expect(button).toBeEnabled();
 
 		await user.click(button);
@@ -158,32 +168,16 @@ describe('[ROUTE-MY-ACCOUNT-PROJECTS-ACTIVATION] LicenseKeys', () => {
 	});
 
 	it('renders the New Key button as disabled with a tooltip when generatable is false', () => {
-		mocks.useHasLicenseKeyPermission.mockReturnValue({
-			hasActivationPermission: true,
-			hasGeneratePermission: true,
-			loading: false,
-		});
-		mocks.useActivationKeySummary.mockReturnValue({
-			error: undefined,
-			loading: false,
-			summary: {generatable: false},
-		});
+		mockGeneratePermission(true);
+		mockSummary({generatable: false});
 
-		render(
-			<MemoryRouter>
-				<LicenseKeys />
-			</MemoryRouter>
-		);
+		renderLicenseKeys();
 
 		const button = screen.getByRole('button', {name: /New Key/i});
-		expect(button).toBeInTheDocument();
-		expect(button).toBeDisabled();
 
-		const tooltipWrapper = button.closest('span[data-tooltip-align="top"]');
-		expect(tooltipWrapper).toBeInTheDocument();
-		expect(tooltipWrapper).toHaveAttribute(
-			'title',
-			'No licenses available'
-		);
+		expect(button).toBeDisabled();
+		expect(
+			button.closest('span[data-tooltip-align="top"]')
+		).toHaveAttribute('title', 'No licenses available');
 	});
 });
