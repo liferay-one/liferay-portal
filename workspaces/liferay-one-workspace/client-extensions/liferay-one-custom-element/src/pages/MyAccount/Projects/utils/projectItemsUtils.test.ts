@@ -203,4 +203,31 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 			'active'
 		);
 	});
+
+	it('starts a product at the earliest term start of its order items', () => {
+		const toStartDate = (startDates: string[]) =>
+			toProjectItemsByType(
+				[
+					{
+						createDate: '2026-10-22T23:37:27Z',
+						orderStatusInfo: {
+							code: 0,
+							label: 'Completed',
+							label_i18n: '',
+						},
+						orderTypeExternalReferenceCode: 'SALESFORCE',
+						placedOrderItems: startDates.map((startDate) => ({
+							customFields: {startDate},
+							productId: 2,
+						})),
+					} as unknown as PlacedOrder,
+				],
+				productsByProductId
+			).product.get('PRDCT-DXP')?.startDate;
+
+		expect(
+			toStartDate(['2024-08-23T00:00:00Z', '2023-09-29T00:00:00Z'])
+		).toBe('Sep 29, 2023');
+		expect(toStartDate(['1970-01-01T00:00:00Z'])).toBe('Oct 22, 2026');
+	});
 });
