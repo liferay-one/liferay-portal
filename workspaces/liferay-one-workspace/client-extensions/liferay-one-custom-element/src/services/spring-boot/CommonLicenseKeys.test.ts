@@ -71,6 +71,38 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 		);
 	});
 
+	it('lists the keys of a term when both of its dates are given', async () => {
+		oAuth2Fetch.mockImplementation(
+			async () => new Response(JSON.stringify({items: []}), {status: 200})
+		);
+
+		await CommonLicenseKeys.getCommonLicenseKeys({
+			endDate: '2027-08-22T00:00:00.000Z',
+			page: 1,
+			pageSize: 100,
+			productGroup: 'ENTERPRISE_SEARCH',
+			startDate: '2026-08-23T00:00:00.000Z',
+		});
+
+		await CommonLicenseKeys.getCommonLicenseKeys({
+			endDate: '2027-08-22T00:00:00.000Z',
+			page: 1,
+			pageSize: 100,
+			productGroup: 'ENTERPRISE_SEARCH',
+		});
+
+		expect(oAuth2Fetch).toHaveBeenNthCalledWith(
+			1,
+			'/common-license-keys?page=1&pageSize=100&productGroup=ENTERPRISE_SEARCH&endDate=2027-08-22T00%3A00%3A00.000Z&startDate=2026-08-23T00%3A00%3A00.000Z',
+			undefined
+		);
+		expect(oAuth2Fetch).toHaveBeenNthCalledWith(
+			2,
+			'/common-license-keys?page=1&pageSize=100&productGroup=ENTERPRISE_SEARCH',
+			undefined
+		);
+	});
+
 	it('throws the parsed error before saving the blob on a non ok download', async () => {
 		oAuth2Fetch.mockResolvedValue(
 			new Response(JSON.stringify({title: 'Not found'}), {status: 404})
