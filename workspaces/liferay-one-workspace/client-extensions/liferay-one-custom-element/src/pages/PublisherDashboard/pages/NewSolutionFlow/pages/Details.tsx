@@ -10,6 +10,7 @@ import ClayModal, {useModal} from '@clayui/modal';
 import {useState} from 'react';
 import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
 import Form from '~/components/MarketplaceForm/MarketplaceForm';
+import {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import TextAndImages from '~/components/TextAndImages/TextAndImages';
 import TextAndVideo from '~/components/TextAndVideo/TextAndVideo';
 import TextBlock from '~/components/TextBlock/TextBlock';
@@ -104,32 +105,32 @@ const Details = () => {
 						type: SolutionTypes.SET_BLOCK_MOVE,
 					});
 
-				const dropdownItems = [
+				const dropdownItems: RowAction[] = [
 					{
 						disabled: index === 0,
-						name: i18n.translate('move-to-top'),
+						label: 'move-to-top',
 						onClick: () =>
 							onMoveOrDelete(BlockDirections.MOVE_TO_TOP),
 					},
 					{
 						disabled: index === 0,
-						name: i18n.translate('move-up'),
+						label: 'move-up',
 						onClick: () => onMoveOrDelete(BlockDirections.MOVE_UP),
 					},
 					{
 						disabled: index === blocks.length - 1,
-						name: i18n.translate('move-down'),
+						label: 'move-down',
 						onClick: () =>
 							onMoveOrDelete(BlockDirections.MOVE_DOWN),
 					},
 					{
 						disabled: index === blocks.length - 1,
-						name: i18n.translate('move-to-bottom'),
+						label: 'move-to-bottom',
 						onClick: () =>
 							onMoveOrDelete(BlockDirections.MOVE_TO_BOTTOM),
 					},
 					{
-						name: i18n.translate('delete'),
+						label: 'delete',
 						onClick: () => onMoveOrDelete(BlockDirections.DELETE),
 					},
 				];

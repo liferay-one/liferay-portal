@@ -3,19 +3,17 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ButtonWithIcon from '~/components/ButtonWithIcon/ButtonWithIcon';
-
 import '~/components/MarketplaceForm/MarketplaceForm.css';
-import ClayDropDown from '@clayui/drop-down';
+import ClayButton from '@clayui/button';
+import ClayIcon from '@clayui/icon';
 import {HTMLAttributes, useState} from 'react';
+import RowActionsMenu, {
+	RowAction,
+} from '~/components/RowActionsMenu/RowActionsMenu';
 import {BlockDirections} from '~/context/SolutionContextProvider';
 
 interface ISectionWithControllersProps extends HTMLAttributes<HTMLDivElement> {
-	dropdownItems: {
-		disabled?: boolean;
-		name: string;
-		onClick?: () => void;
-	}[];
+	dropdownItems: RowAction[];
 	index: number;
 	name: string;
 	onArrowClick: (direction: BlockDirections) => void;
@@ -38,71 +36,49 @@ export function SectionWithControllers({
 			<div className="controllers d-flex justify-content-between">
 				<div className="d-flex inline-item justify-content-start">
 					<div className="arrow-container ml-4">
-						<ButtonWithIcon
+						<ClayButton
 							aria-label="arrow-up"
 							className="text-neutral-7"
 							disabled={index === 0}
 							displayType="unstyled"
-							iconProps={{className: ''}}
 							onClick={() =>
 								onArrowClick(BlockDirections.MOVE_UP)
 							}
 							size="sm"
-							symbol="order-arrow-up"
-						/>
+						>
+							<ClayIcon symbol="order-arrow-up" />
+						</ClayButton>
 
-						<ButtonWithIcon
+						<ClayButton
 							aria-label="arrow-down"
 							className="text-neutral-7"
 							disabled={index === position - 1}
 							displayType="unstyled"
-							iconProps={{className: ''}}
 							onClick={() =>
 								onArrowClick(BlockDirections.MOVE_DOWN)
 							}
 							size="sm"
-							symbol="order-arrow-down"
-						/>
+						>
+							<ClayIcon symbol="order-arrow-down" />
+						</ClayButton>
 					</div>
 
 					<b className="ml-4">{name}</b>
 				</div>
 
 				<div className="align-self-center d-flex justify-content-end">
-					<ClayDropDown
-						closeOnClick
-						trigger={
-							<ButtonWithIcon
-								aria-label="Menu"
-								borderless
-								className="text-neutral-7"
-								displayType="unstyled"
-								symbol="ellipsis-v"
-								title="Menu"
-							/>
-						}
-					>
-						<ClayDropDown.ItemList>
-							{dropdownItems.map((dropDownItem, index) => (
-								<ClayDropDown.Item
-									disabled={dropDownItem.disabled}
-									key={index}
-									onClick={dropDownItem.onClick}
-								>
-									{dropDownItem.name}
-								</ClayDropDown.Item>
-							))}
-						</ClayDropDown.ItemList>
-					</ClayDropDown>
+					<RowActionsMenu actions={dropdownItems} />
 
-					<ButtonWithIcon
+					<ClayButton
 						aria-labelledby="angle-right"
 						className="align-self-center d-flex mr-3 text-neutral-7"
 						displayType="unstyled"
-						iconProps={{className: ''}}
 						onClick={() => setCollapsed(!collapsed)}
-						symbol={collapsed ? 'angle-down' : 'angle-right'}
-					/>
+					>
+						<ClayIcon
+							symbol={collapsed ? 'angle-down' : 'angle-right'}
+						/>
+					</ClayButton>
 				</div>
 			</div>
 
