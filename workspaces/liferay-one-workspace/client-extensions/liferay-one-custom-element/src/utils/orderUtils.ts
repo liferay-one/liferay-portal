@@ -340,7 +340,7 @@ export function getOrderStatusToken(order: PlacedOrder): string {
 	return toStatusToken(getOrderStatusLabel(order));
 }
 
-const UNSET_DATE_YEAR = 1970;
+const MIGRATION_PLACEHOLDER_YEAR = 1970;
 
 export function getPlacedOrderItemDate(
 	placedOrderItem: PlacedOrderItems,
@@ -354,7 +354,7 @@ export function getPlacedOrderItemDate(
 
 	const date = toUTCCalendarDate(value);
 
-	return date.getFullYear() > UNSET_DATE_YEAR ? date : undefined;
+	return date.getFullYear() > MIGRATION_PLACEHOLDER_YEAR ? date : undefined;
 }
 
 export function isTermExpired(placedOrderItems: PlacedOrderItems[]): boolean {

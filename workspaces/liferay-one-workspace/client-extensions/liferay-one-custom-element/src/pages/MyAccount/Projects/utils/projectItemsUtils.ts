@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
+import {formatShortDate} from '~/utils/dateUtils';
 import {
 	getContractProductOrders,
 	getPlacedOrderItemDate,
@@ -43,12 +43,10 @@ function formatStartDate(
 		.sort((date1, date2) => date1.getTime() - date2.getTime());
 
 	if (startDate) {
-		return format(startDate, 'MMM d, yyyy');
+		return formatShortDate(startDate);
 	}
 
-	return order.createDate
-		? format(new Date(order.createDate), 'MMM d, yyyy')
-		: '';
+	return order.createDate ? formatShortDate(new Date(order.createDate)) : '';
 }
 
 function toProjectProduct(
