@@ -5,7 +5,7 @@
 
 import {format} from 'date-fns';
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {getOrderStatusToken} from '~/utils/orderUtils';
+import {getProductStatusToken} from '~/utils/orderUtils';
 import {
 	getProductSpecificationValue,
 	getProductSpecificationValues,
@@ -13,7 +13,7 @@ import {
 
 import {resolveProjectItemType} from './resolveProjectItemType';
 
-import type {PlacedOrder} from '~/types/orders';
+import type {PlacedOrder, PlacedOrderItems} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 import type {ProjectItemType} from '../types';
@@ -29,6 +29,7 @@ export function toProductsByProductId(products: DeliveryProduct[]) {
 
 function toProjectProduct(
 	order: PlacedOrder,
+	placedOrderItems: PlacedOrderItems[],
 	product: DeliveryProduct
 ): ProjectProduct {
 	return {
@@ -41,7 +42,7 @@ function toProjectProduct(
 		startDate: order.createDate
 			? format(new Date(order.createDate), 'MMM d, yyyy')
 			: '',
-		status: getOrderStatusToken(order) || 'active',
+		status: getProductStatusToken(order, placedOrderItems) || 'active',
 		type:
 			getProductSpecificationValues(
 				'liferay-products-categories',
@@ -58,6 +59,19 @@ export function toProjectItemsByType(
 		application: new Map(),
 		product: new Map(),
 	};
+
+	const placedOrderItemsByProductId = new Map<number, PlacedOrderItems[]>();
+
+	for (const order of orders) {
+		for (const placedOrderItem of order.placedOrderItems ?? []) {
+			placedOrderItemsByProductId.set(placedOrderItem.productId, [
+				...(placedOrderItemsByProductId.get(
+					placedOrderItem.productId
+				) ?? []),
+				placedOrderItem,
+			]);
+		}
+	}
 
 	for (const order of orders) {
 		for (const placedOrderItem of order.placedOrderItems ?? []) {
@@ -80,7 +94,13 @@ export function toProjectItemsByType(
 			if (!items.has(product.externalReferenceCode)) {
 				items.set(
 					product.externalReferenceCode,
-					toProjectProduct(order, product)
+					toProjectProduct(
+						order,
+						placedOrderItemsByProductId.get(
+							placedOrderItem.productId
+						) ?? [],
+						product
+					)
 				);
 			}
 		}
