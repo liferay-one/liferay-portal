@@ -23,7 +23,7 @@ import {
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {PlacedOrder} from '~/types/orders';
 
-export function useProjectItems() {
+export function useProjectItems(contractId?: number) {
 	const {loading: projectLoading, project, projectId} = useProject();
 
 	const orderProject = isUnassignedProject(projectId) ? undefined : project;
@@ -55,14 +55,15 @@ export function useProjectItems() {
 	const {applications, products} = useMemo(() => {
 		const itemsByProjectItemType = toProjectItemsByType(
 			scopedOrders,
-			productsByProductId
+			productsByProductId,
+			contractId
 		);
 
 		return {
 			applications: [...itemsByProjectItemType.application.values()],
 			products: [...itemsByProjectItemType.product.values()],
 		};
-	}, [productsByProductId, scopedOrders]);
+	}, [contractId, productsByProductId, scopedOrders]);
 
 	const orderByProductExternalReferenceCode = useMemo(() => {
 		const orders = new Map<string, PlacedOrder>();
@@ -99,8 +100,6 @@ export default useProjectItems;
 export function useProjectContractItems() {
 	const {projectId, selectedContractERC} = useProject();
 
-	const projectItems = useProjectItems();
-
 	const {data: projectProducts} = useProjectProducts();
 
 	const {
@@ -113,6 +112,8 @@ export function useProjectContractItems() {
 		isUnassignedProject(projectId) ? '' : projectId,
 		selectedContractERC
 	);
+
+	const projectItems = useProjectItems(resolvedContractId);
 
 	const {entitlements, loading: entitlementsLoading} = useProjectEntitlements(
 		isUnassignedProject(projectId) ? '' : projectId

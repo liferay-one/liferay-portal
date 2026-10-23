@@ -18,7 +18,6 @@ import {
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
-	getContractProductOrders,
 	getProductOrder,
 	getProductOrderInfo,
 	getProductOrderItemIds,
@@ -47,6 +46,7 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 import {resolveEnvironmentProfile} from '~/pages/MyAccount/Projects/utils/resolveEnvironmentProfile';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
+import {getContractProductOrders} from '~/utils/orderUtils';
 import {
 	getProductSpecificationValue,
 	getProductSpecificationValues,
