@@ -116,21 +116,27 @@ public class CommonLicenseKeyService extends OneBaseService {
 			Instant startDate)
 		throws Exception {
 
-		String filterString =
-			"productFamily eq '" +
-				CommonLicenseKeyConstants.toProductFamily(productGroup) + "'";
+		StringBundler sb = new StringBundler(7);
 
-		if ((endDate != null) && (startDate != null)) {
-			filterString = StringBundler.concat(
-				filterString, " and startDate le ", endDate, " and endDate ge ",
-				startDate);
+		sb.append("productFamily eq '");
+		sb.append(CommonLicenseKeyConstants.toProductFamily(productGroup));
+		sb.append("'");
+
+		if (endDate != null) {
+			sb.append(" and startDate le ");
+			sb.append(endDate);
+		}
+
+		if (startDate != null) {
+			sb.append(" and endDate ge ");
+			sb.append(startDate);
 		}
 
 		String response = getCommonLicenseKeys(
 			UriComponentsBuilder.fromPath(
 				"/o/c/commonlicensekeys"
 			).queryParam(
-				"filter", filterString
+				"filter", sb.toString()
 			).queryParam(
 				"page", page
 			).queryParam(

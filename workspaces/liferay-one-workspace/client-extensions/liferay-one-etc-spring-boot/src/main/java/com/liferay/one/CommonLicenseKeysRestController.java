@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.util.Validator;
 import java.nio.charset.StandardCharsets;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 
 import org.json.JSONObject;
@@ -159,11 +160,13 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 		}
 
 		try {
-			return Instant.parse(date);
+			OffsetDateTime offsetDateTime = OffsetDateTime.parse(date);
+
+			return offsetDateTime.toInstant();
 		}
 		catch (DateTimeParseException dateTimeParseException) {
 			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST, "Unable to parse the date " + date,
+				HttpStatus.BAD_REQUEST, "Unable to parse the date",
 				dateTimeParseException);
 		}
 	}

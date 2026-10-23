@@ -55,8 +55,11 @@ class CommonLicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 			productGroup,
 		});
 
-		if (endDate && startDate) {
+		if (endDate) {
 			searchParams.set('endDate', endDate);
+		}
+
+		if (startDate) {
 			searchParams.set('startDate', startDate);
 		}
 
