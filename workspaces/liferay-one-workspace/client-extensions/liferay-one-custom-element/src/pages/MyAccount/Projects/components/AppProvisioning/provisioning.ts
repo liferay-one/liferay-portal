@@ -6,6 +6,7 @@
 import {OrderCustomFields} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
+import type useGetResourceInfo from '~/hooks/useGetResourceInfo';
 import type {PlacedOrder} from '~/types/orders';
 
 import type {Deployment, Provisioning} from './types';
@@ -35,4 +36,11 @@ export function hasDeploymentInProgress(order?: PlacedOrder) {
 	return getCloudProvisioning(order).some((provisioning) =>
 		provisioning.deployments?.some((deployment) => deployment.loading)
 	);
+}
+
+export function isInstallUnavailable({
+	error,
+	isLoading,
+}: Pick<ReturnType<typeof useGetResourceInfo>, 'error' | 'isLoading'>) {
+	return isLoading || Boolean(error);
 }

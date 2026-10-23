@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
 import {useModal} from '@clayui/modal';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {useNavigate} from 'react-router';
 import {useProperties} from '~/context/PropertiesContext';
 import useModalContext from '~/hooks/useModalContext';
@@ -14,6 +13,8 @@ import {Liferay} from '~/services/liferay/liferay';
 import Console from '~/services/spring-boot/Console';
 
 import ProvisioningDetails from '../ProvisioningDetails/ProvisioningDetails';
+import ProvisioningDetailsFooter from '../ProvisioningDetailsFooter/ProvisioningDetailsFooter';
+import {isInstallUnavailable} from '../provisioning';
 import {InstallStatus} from '../types';
 
 import type {Account} from '~/types/accounts';
@@ -35,13 +36,6 @@ type UseProvisioningActionsProps = {
 	selectedAccount?: Account;
 };
 
-const getProvisioningStatus = (provisioningRow: ProvisioningRow) => ({
-	inProgress: provisioningRow.status === InstallStatus.IN_PROGRESS,
-	isExpired: provisioningRow.status === InstallStatus.EXPIRED,
-	isInstalled: provisioningRow.status === InstallStatus.INSTALLED,
-	readyToInstall: provisioningRow.status === InstallStatus.READY_TO_INSTALL,
-});
-
 const useProvisioningActions = ({
 	mutateOrder,
 	order,
@@ -55,16 +49,21 @@ const useProvisioningActions = ({
 		useState<ProvisioningRow>();
 	const installAlertModal = useModal();
 	const navigate = useNavigate();
+	const resourceRequirementsRef = useRef(resourceRequirements);
 	const uninstallModal = useModal();
 
+	resourceRequirementsRef.current = resourceRequirements;
+
 	const onClickInstall = (provisioningRow: ProvisioningRow) => {
-		if (resourceRequirements.isLoading) {
+		const {current} = resourceRequirementsRef;
+
+		if (isInstallUnavailable(current)) {
 			return;
 		}
 
 		setSelectedProvisioningRow(provisioningRow);
 
-		if (!resourceRequirements.projectsUsage?.userProjects?.length) {
+		if (!current.projectsUsage?.userProjects?.length) {
 			return installAlertModal.onOpenChange(true);
 		}
 
@@ -111,9 +110,6 @@ const useProvisioningActions = ({
 	};
 
 	const onOpenDetailsModal = (provisioningRow: ProvisioningRow) => {
-		const {inProgress, isInstalled, readyToInstall} =
-			getProvisioningStatus(provisioningRow);
-
 		onOpenModal({
 			body: (
 				<ProvisioningDetails
@@ -131,47 +127,13 @@ const useProvisioningActions = ({
 			footer: [
 				undefined,
 				undefined,
-				<div key="details-footer-buttons">
-					{readyToInstall && (
-						<ClayButton
-							className="border border-primary ml-2 rounded-lg text-primary"
-							disabled={inProgress}
-							displayType="secondary"
-							onClick={() => {
-								onClose();
-
-								onClickInstall(provisioningRow);
-							}}
-							size="sm"
-						>
-							{i18n.translate('install')}
-						</ClayButton>
-					)}
-
-					{isInstalled && (
-						<ClayButton
-							className="border border-danger ml-2 rounded-lg text-danger"
-							displayType="secondary"
-							onClick={() => {
-								onClose();
-
-								openUninstallModal(provisioningRow);
-							}}
-							size="sm"
-						>
-							{i18n.translate('uninstall')}
-						</ClayButton>
-					)}
-
-					<ClayButton
-						className="ml-2 rounded-lg"
-						displayType="primary"
-						onClick={onClose}
-						size="sm"
-					>
-						{i18n.translate('done')}
-					</ClayButton>
-				</div>,
+				<ProvisioningDetailsFooter
+					key="details-footer-buttons"
+					onClose={onClose}
+					onInstall={onClickInstall}
+					onUninstall={openUninstallModal}
+					provisioningRow={provisioningRow}
+				/>,
 			],
 			size: 'lg',
 		});
@@ -179,7 +141,7 @@ const useProvisioningActions = ({
 
 	const actions: ProvisioningAction[] = [
 		{
-			disabled: resourceRequirements.isLoading,
+			disabled: isInstallUnavailable(resourceRequirements),
 			label: 'install',
 			onClick: (provisioningRow) => onClickInstall(provisioningRow),
 			show: (provisioningRow) =>
@@ -204,11 +166,8 @@ const useProvisioningActions = ({
 		{
 			label: 'uninstall',
 			onClick: (provisioningRow) => openUninstallModal(provisioningRow),
-			show: (provisioningRow) => {
-				const {isInstalled} = getProvisioningStatus(provisioningRow);
-
-				return isInstalled;
-			},
+			show: (provisioningRow) =>
+				provisioningRow.status === InstallStatus.INSTALLED,
 		},
 	];
 
