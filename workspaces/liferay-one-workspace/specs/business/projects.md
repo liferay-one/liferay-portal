@@ -68,6 +68,7 @@ License keys and activation keys on the Activation page belong to [Licensing and
 | REQ-PROJECTS-036 | When a contract arrives, each entitlement of its order with no contract or no project gets the contract and the project. The system refuses a renewal chain that matches more than one contract. | P0 | LPD-92221, LPD-89686 | `SVC-CONTRACTSERVICE`, `CLS-CONTRACT` |
 | REQ-PROJECTS-037 | The project pages read at most 2,000 catalog products. They read at most 50 account level contracts when they look for entitlements with no project. | P1 | LPD-99898 | `HOOK-USEPROJECTCOMMERCE` |
 | REQ-PROJECTS-038 | The URL of the Products page and of a product holds the selected contract after the project. Selecting a contract opens the Products page of that contract. A link to a product with no contract opens the contract that entitles the product. A link to the Products page with no contract opens the default contract. A link with a contract that the project does not have opens the same way. A project with no contract keeps the URL without a contract. | P1 | — | `ROUTE-MY-ACCOUNT-CONTRACT-CONTRACTERC`, `CTX-PROJECTCONTEXT`, `HOOK-USEPROJECTITEMS` |
+| REQ-PROJECTS-039 | The Details, Environment, Activation, and Download tabs of a product read the orders of the selected contract. When no order of the product names that contract, the tabs read every order of the product. | P1 | LPD-92145 | `HOOK-USEPROJECTORDERS` |
 
 ## Products, Applications, and Orders
 

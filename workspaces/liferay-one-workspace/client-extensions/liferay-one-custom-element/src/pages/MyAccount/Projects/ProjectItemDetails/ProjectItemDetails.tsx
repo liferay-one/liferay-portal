@@ -18,6 +18,7 @@ import {
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
+	getContractProductOrders,
 	getProductOrder,
 	getProductOrderInfo,
 	getProductOrderItemIds,
@@ -66,7 +67,11 @@ export default function ProjectItemDetails({
 
 	const orderProject = isUnassignedProject(projectId) ? undefined : project;
 
-	const {contract, loading: contractLoading} = useProjectCommerce(
+	const {
+		contract,
+		loading: contractLoading,
+		resolvedContractId,
+	} = useProjectCommerce(
 		isUnassignedProject(projectId) ? '' : projectId,
 		selectedContractERC
 	);
@@ -122,9 +127,15 @@ export default function ProjectItemDetails({
 			product
 		)[0] ?? getProductSpecificationValue('price-model', product);
 
-	const orderInfo = getProductOrderInfo(placedOrders, product.productId);
-	const virtualItems = getProductVirtualItems(
+	const productOrders = getContractProductOrders(
 		placedOrders,
+		product.productId,
+		resolvedContractId
+	);
+
+	const orderInfo = getProductOrderInfo(productOrders, product.productId);
+	const virtualItems = getProductVirtualItems(
+		productOrders,
 		product.productId
 	);
 
@@ -157,7 +168,7 @@ export default function ProjectItemDetails({
 				return (
 					<SEOStudioDetails
 						placedOrder={getProductOrder(
-							placedOrders,
+							productOrders,
 							product.productId
 						)}
 					/>
@@ -169,7 +180,7 @@ export default function ProjectItemDetails({
 					contract={contract}
 					orderInfo={orderInfo}
 					orderItemIds={getProductOrderItemIds(
-						placedOrders,
+						productOrders,
 						product.productId
 					)}
 					productName={product.name}
