@@ -15,6 +15,7 @@ import type {
 
 const mocks = vi.hoisted(() => ({
 	activationKeys: [] as Record<string, unknown>[],
+	admin: false,
 	isRenewableKey: vi.fn(),
 	licenseKeys: [] as Record<string, unknown>[],
 	loadingActivationKeys: false,
@@ -31,6 +32,10 @@ vi.mock('~/hooks/useProjectActivationKeys', () => ({
 
 vi.mock('~/hooks/useActivationKeyLicenseKeys', () => ({
 	useActivationKeyLicenseKeys: mocks.useActivationKeyLicenseKeys,
+}));
+
+vi.mock('~/pages/MyAccount/Projects/hooks/useHasAdminPermission', () => ({
+	useHasAdminPermission: () => mocks.admin,
 }));
 
 vi.mock('~/pages/MyAccount/Projects/utils/isRenewableKey', () => ({
@@ -81,6 +86,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		mocks.activationKeys = [
 			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'production'},
 		];
+		mocks.admin = false;
 		mocks.isRenewableKey.mockReset();
 		mocks.isRenewableKey.mockReturnValue(true);
 		mocks.licenseKeys = [];
@@ -255,6 +261,42 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			subscriptionEntitlementId: 31,
 			virtualCluster: true,
 		});
+	});
+
+	it('lets an administrator renew a virtual cluster key', async () => {
+		const {isRenewableKey} = await vi.importActual<
+			typeof import('~/pages/MyAccount/Projects/utils/isRenewableKey')
+		>('~/pages/MyAccount/Projects/utils/isRenewableKey');
+
+		mocks.activationKeys = [
+			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'virtual-cluster'},
+		];
+		mocks.admin = true;
+		mocks.isRenewableKey.mockImplementation(isRenewableKey);
+		mocks.licenseKeys = [
+			licenseKey({
+				clusterSize: '2',
+				entitlementId: 31,
+				licenseKeyFamily: 'DXP',
+				productName: 'DXP Non-Production',
+			}),
+		];
+
+		const {rerender, result} = renderHook(() =>
+			useRenewSource('KEY-1', generateForm)
+		);
+
+		expect(result.current.renewSource).toMatchObject({
+			keyType: 'non-production',
+			maxClusterNodes: 2,
+			virtualCluster: true,
+		});
+
+		mocks.admin = false;
+
+		rerender();
+
+		expect(result.current.renewSource).toBeUndefined();
 	});
 
 	it('returns undefined for a virtual cluster key whose environment is unknown', () => {
