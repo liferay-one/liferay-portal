@@ -21,6 +21,8 @@ vi.mock('~/services/graphql/GraphQL', () => ({
 	toGraphQLString: JSON.stringify,
 }));
 
+const orderItems = [{id: 7, optionValueNames: []}];
+
 const entitlementNodes = [
 	{
 		endDate: '2027-08-09T00:00:00.000Z',
@@ -71,7 +73,13 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		useFetchMock.mockReturnValue({data: undefined, isLoading: true});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7, 8], true)
+			useProductEnvironmentEntitlements(
+				[
+					{id: 7, optionValueNames: []},
+					{id: 8, optionValueNames: []},
+				],
+				true
+			)
 		);
 
 		const [[url, {params}]] = useFetchMock.mock.calls;
@@ -107,7 +115,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7], true)
+			useProductEnvironmentEntitlements(orderItems, true)
 		);
 
 		const [[{fetcher, key}]] = useDataQueryMock.mock.calls;
@@ -128,7 +136,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7], true)
+			useProductEnvironmentEntitlements(orderItems, true)
 		);
 
 		expect(
@@ -146,7 +154,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7], false)
+			useProductEnvironmentEntitlements(orderItems, false)
 		);
 
 		expect(useDataQueryMock.mock.calls[0][0].key).toBeNull();
@@ -165,13 +173,14 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7], true)
+			useProductEnvironmentEntitlements(orderItems, true)
 		);
 
 		expect(result.current.environmentEntitlements).toEqual([
 			{
 				endDate: '2027-08-09T00:00:00.000Z',
 				environment: 'production',
+				instanceSize: '',
 				provisionedCount: 1,
 				quantity: 2,
 				startDate: '2026-08-09T00:00:00.000Z',
@@ -180,12 +189,102 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			{
 				endDate: '',
 				environment: '',
+				instanceSize: '',
 				provisionedCount: 0,
 				quantity: 0,
 				startDate: '',
 				terminationStatus: 'terminated',
 			},
 		]);
+	});
+
+	it('reads the environment and the instance size from the order item options', () => {
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
+		useFetchMock.mockReturnValue({
+			data: {
+				items: [
+					{
+						entitlementDefinitionToEntitlement: {unit: 'boolean'},
+						id: 21,
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 7,
+					},
+					{
+						entitlementDefinitionToEntitlement: {unit: 'boolean'},
+						id: 22,
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 8,
+					},
+				],
+			},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(
+				[
+					{
+						id: 7,
+						optionValueNames: [
+							'Liferay Commerce Subscription - Prod Sizing 1',
+						],
+					},
+					{
+						id: 8,
+						optionValueNames: [
+							'Liferay Commerce Subscription - Non-Prod Sizing 2',
+						],
+					},
+				],
+				false
+			)
+		);
+
+		expect(
+			result.current.environmentEntitlements.map(
+				({environment, instanceSize}) => [environment, instanceSize]
+			)
+		).toEqual([
+			['production', '1'],
+			['non-production', '2'],
+		]);
+	});
+
+	it('prefers the license key type of the definition to the order item options', () => {
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
+		useFetchMock.mockReturnValue({
+			data: {
+				items: [
+					{
+						entitlementDefinitionToEntitlement: {
+							licenseKeyType: 'non-production',
+							unit: 'boolean',
+						},
+						id: 21,
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 7,
+					},
+				],
+			},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(
+				[
+					{
+						id: 7,
+						optionValueNames: [
+							'Liferay Self-Hosted Subscription - Gold Prod Sizing 3',
+						],
+					},
+				],
+				false
+			)
+		);
+
+		expect(
+			result.current.environmentEntitlements.map(
+				({environment, instanceSize}) => [environment, instanceSize]
+			)
+		).toEqual([['non-production', '3']]);
 	});
 
 	it('leaves the counts out when they did not load', () => {
@@ -196,7 +295,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		});
 
 		const {result} = renderHook(() =>
-			useProductEnvironmentEntitlements([7], true)
+			useProductEnvironmentEntitlements(orderItems, true)
 		);
 
 		expect(
