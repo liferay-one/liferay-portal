@@ -8,6 +8,7 @@ import {describe, expect, it} from 'vitest';
 import {
 	formatDate,
 	formatDateTime,
+	formatShortDate,
 	formatTermRange,
 	formatUTCMonthShort,
 	formatUTCMonthYear,
@@ -189,5 +190,9 @@ describe('[MOD-DATEUTILS] dateUtils', () => {
 			'T',
 			'F',
 		]);
+	});
+
+	it('formats a short date as the month, day, and year', () => {
+		expect(formatShortDate(new Date(2023, 8, 30))).toBe('Sep 30, 2023');
 	});
 });
