@@ -8,6 +8,7 @@ import {useMemo} from 'react';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
+import {getOptionValueNames} from '~/utils/orderItemOptionUtils';
 import {
 	OrderCustomFields,
 	getOrderStatusToken,
@@ -103,6 +104,11 @@ export type ProductOrderInfo = {
 	purchasedBy: string;
 	quantity: string;
 	status: string;
+};
+
+export type ProductOrderItem = {
+	id: number;
+	optionValueNames: string[];
 };
 
 export type ProductEnvironmentInfo = {
@@ -287,11 +293,14 @@ function getProductOrderItems(
 		);
 }
 
-export function getProductOrderItemIds(
+export function getProductEnvironmentOrderItems(
 	placedOrders: PlacedOrder[],
 	productId: number
-): number[] {
-	return getProductOrderItems(placedOrders, productId).map((item) => item.id);
+): ProductOrderItem[] {
+	return getProductOrderItems(placedOrders, productId).map((item) => ({
+		id: item.id,
+		optionValueNames: getOptionValueNames(item.options),
+	}));
 }
 
 export function getProductOrderInfo(

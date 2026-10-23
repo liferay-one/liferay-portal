@@ -18,9 +18,9 @@ import {
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
+	getProductEnvironmentOrderItems,
 	getProductOrder,
 	getProductOrderInfo,
-	getProductOrderItemIds,
 	getProductVirtualItems,
 	useProjectOrders,
 } from '~/hooks/useProjectOrders';
@@ -181,7 +181,7 @@ export default function ProjectItemDetails({
 				<DetailsTab
 					contract={contract}
 					orderInfo={orderInfo}
-					orderItemIds={getProductOrderItemIds(
+					orderItems={getProductEnvironmentOrderItems(
 						productOrders,
 						product.productId
 					)}

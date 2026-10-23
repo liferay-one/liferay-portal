@@ -979,6 +979,7 @@ export default {
 		'Liferay Tokens was purchased successfully',
 	'liferay-version': 'Liferay Version',
 	'limit-reached': 'Limit Reached',
+	'limited': 'Limited',
 	'list-with-latest-published-apps': 'List with latest published apps',
 	'loading': 'Loading…',
 	'login-as-a-user-that-has-access-to-a-project-or-contact-your-project-administrator-to-add-you-to-a-project.':

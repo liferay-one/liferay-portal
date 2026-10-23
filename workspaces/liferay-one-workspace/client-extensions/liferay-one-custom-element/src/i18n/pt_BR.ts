@@ -853,6 +853,7 @@ export default {
 		'Os Liferay Tokens foram comprados com sucesso',
 	'liferay-version': 'Versão do Liferay',
 	'limit-reached': 'Limite atingido',
+	'limited': 'Limitado',
 	'list-with-latest-published-apps':
 		'Lista com os aplicativos publicados mais recentes',
 	'loading': 'Carregando',

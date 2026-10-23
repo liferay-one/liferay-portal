@@ -16,13 +16,16 @@ import {Liferay} from '~/services/liferay/liferay';
 import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
-import type {ProductOrderInfo} from '~/hooks/useProjectOrders';
+import type {
+	ProductOrderInfo,
+	ProductOrderItem,
+} from '~/hooks/useProjectOrders';
 import type {DetailsProfile} from '~/pages/MyAccount/Projects/utils/resolveDetailsProfile';
 
 type DetailsTabProps = {
 	contract?: ProjectContract;
 	orderInfo: ProductOrderInfo;
-	orderItemIds: number[];
+	orderItems: ProductOrderItem[];
 	productName: string;
 	profile: DetailsProfile;
 };
@@ -32,7 +35,7 @@ const ENVIRONMENT_PROFILES: DetailsProfile[] = ['env-commerce', 'env-instance'];
 export default function DetailsTab({
 	contract,
 	orderInfo,
-	orderItemIds,
+	orderItems,
 	productName,
 	profile,
 }: DetailsTabProps) {
@@ -40,7 +43,7 @@ export default function DetailsTab({
 
 	const {environmentEntitlements, loading} =
 		useProductEnvironmentEntitlements(
-			ENVIRONMENT_PROFILES.includes(profile) ? orderItemIds : [],
+			ENVIRONMENT_PROFILES.includes(profile) ? orderItems : [],
 			profile === 'env-instance'
 		);
 

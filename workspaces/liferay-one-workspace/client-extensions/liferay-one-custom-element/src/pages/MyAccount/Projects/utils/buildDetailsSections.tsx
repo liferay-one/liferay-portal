@@ -35,6 +35,8 @@ type DetailsContext = {
 	securityIncidentContacts?: ProjectContact[];
 };
 
+const ENVIRONMENT_ORDER: Word[] = [...ENVIRONMENTS, 'backup', 'limited'];
+
 const ENTITLEMENT_STATUSES: Word[] = [
 	'active',
 	'not-activated',
@@ -46,6 +48,7 @@ const ENTITLEMENT_STATUSES: Word[] = [
 type EnvironmentSummary = {
 	endDate: string;
 	environment: string;
+	instanceSizes: string[];
 	provisionedCount?: number;
 	quantity: number;
 	startDate: string;
@@ -142,6 +145,9 @@ function summarizeEnvironment(
 	return {
 		endDate: sortDates(term.map(({endDate}) => endDate)).at(-1) ?? '',
 		environment,
+		instanceSizes: [
+			...new Set(term.map(({instanceSize}) => instanceSize)),
+		].filter(Boolean),
 		provisionedCount: provisionedCounted
 			? term.reduce(
 					(total, {provisionedCount}) =>
@@ -153,6 +159,12 @@ function summarizeEnvironment(
 		startDate: sortDates(term.map(({startDate}) => startDate))[0] ?? '',
 		status,
 	};
+}
+
+function getEnvironmentRank(environment: string): number {
+	const index = ENVIRONMENT_ORDER.indexOf(environment as Word);
+
+	return index === -1 ? ENVIRONMENT_ORDER.length : index;
 }
 
 function summarizeEnvironments(
@@ -178,8 +190,8 @@ function summarizeEnvironments(
 		)
 		.sort(
 			(environmentSummary1, environmentSummary2) =>
-				ENVIRONMENTS.indexOf(environmentSummary1.environment as Word) -
-				ENVIRONMENTS.indexOf(environmentSummary2.environment as Word)
+				getEnvironmentRank(environmentSummary1.environment) -
+				getEnvironmentRank(environmentSummary2.environment)
 		);
 }
 
@@ -216,6 +228,13 @@ function environmentDateRows(
 		{label: i18n.translate('expiration-date'), value: formatDate(endDate)},
 		{label: i18n.translate('status'), value: i18n.translate(status)},
 	];
+}
+
+function instanceSizeRow(environmentSummary: EnvironmentSummary): DetailsRow {
+	return {
+		label: i18n.translate('instance-size'),
+		value: environmentSummary.instanceSizes.join(', ') || '-',
+	};
 }
 
 function keysProvisioned(environmentSummary: EnvironmentSummary): string {
@@ -333,6 +352,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		]),
 	'env-instance': (context) =>
 		environmentSections(context, (environmentSummary) => [
+			instanceSizeRow(environmentSummary),
 			{
 				label: i18n.translate('keys-provisioned'),
 				value: keysProvisioned(environmentSummary),
