@@ -200,6 +200,7 @@ export type PlacedOrder = {
 };
 
 export type PlacedOrderItems = {
+	customFields?: {[key: string]: number | string};
 	id: number;
 	name: string;
 	options: string;

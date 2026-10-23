@@ -7,7 +7,11 @@ import {format} from 'date-fns';
 import {useMemo} from 'react';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
-import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
+import {
+	OrderCustomFields,
+	getOrderStatusToken,
+	getProductStatusToken,
+} from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
@@ -34,7 +38,6 @@ const RESTRICTED_ORDER_FIELDS = [
 	'paymentStatusLabel',
 	'placedOrderBillingAddressId',
 	'placedOrderItems.adaptiveMediaImageHTMLTag',
-	'placedOrderItems.customFields',
 	'placedOrderItems.deliveryGroup',
 	'placedOrderItems.deliveryGroupName',
 	'placedOrderItems.externalReferenceCode',
@@ -319,7 +322,14 @@ export function getProductOrderInfo(
 		purchaseNumber: order.purchaseOrderNumber ?? '',
 		purchasedBy: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
-		status: getOrderStatusToken(order),
+		status: getProductStatusToken(
+			order,
+			placedOrders.flatMap((placedOrder) =>
+				(placedOrder.placedOrderItems ?? []).filter(
+					(item) => item.productId === productId
+				)
+			)
+		),
 	};
 }
 

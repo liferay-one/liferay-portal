@@ -3,10 +3,17 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {startOfToday} from 'date-fns';
+import {toUTCCalendarDate} from '~/utils/dateUtils';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
-import type {Order, OrderTypes, PlacedOrder} from '~/types/orders';
+import type {
+	Order,
+	OrderTypes,
+	PlacedOrder,
+	PlacedOrderItems,
+} from '~/types/orders';
 
 type NumericKeys<T> = {
 	[K in keyof T]: T[K] extends number | undefined ? K : never;
@@ -305,6 +312,47 @@ export function toStatusToken(label: string): string {
 
 export function getOrderStatusToken(order: PlacedOrder): string {
 	return toStatusToken(getOrderStatusLabel(order));
+}
+
+const UNSET_DATE_YEAR = 1970;
+
+export function getPlacedOrderItemDate(
+	placedOrderItem: PlacedOrderItems,
+	customFieldName: 'endDate' | 'startDate'
+): Date | undefined {
+	const value = placedOrderItem.customFields?.[customFieldName];
+
+	if (typeof value !== 'string' || !value) {
+		return undefined;
+	}
+
+	const date = toUTCCalendarDate(value);
+
+	return date.getFullYear() > UNSET_DATE_YEAR ? date : undefined;
+}
+
+export function isTermExpired(placedOrderItems: PlacedOrderItems[]): boolean {
+	const today = startOfToday();
+
+	return (
+		!!placedOrderItems.length &&
+		placedOrderItems.every((placedOrderItem) => {
+			const endDate = getPlacedOrderItemDate(placedOrderItem, 'endDate');
+
+			return endDate !== undefined && today >= endDate;
+		})
+	);
+}
+
+export function getProductStatusToken(
+	order: PlacedOrder,
+	placedOrderItems: PlacedOrderItems[]
+): string {
+	const statusToken = getOrderStatusToken(order);
+
+	return statusToken === 'active' && isTermExpired(placedOrderItems)
+		? 'expired'
+		: statusToken;
 }
 
 const BETA_SKU_OPTION_VALUE_KEYS = ['beta', 'open-beta', 'private-beta'];
