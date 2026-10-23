@@ -4,6 +4,7 @@
  */
 
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 
 const {liferay, preloadDataQuery} = vi.hoisted(() => ({
 	liferay: {
@@ -45,25 +46,6 @@ vi.mock('~/hooks/useProjectOrders', () => ({
 	}),
 }));
 
-vi.mock(
-	'~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary',
-	() => ({
-		activationKeySummaryQuery: (scope?: {
-			accountExternalReferenceCode?: string;
-			projectExternalReferenceCode?: string;
-		}) => ({
-			key:
-				scope?.projectExternalReferenceCode ||
-				scope?.accountExternalReferenceCode
-					? `activationKeySummary:${
-							scope?.projectExternalReferenceCode ??
-							scope?.accountExternalReferenceCode
-						}`
-					: null,
-		}),
-	})
-);
-
 vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
 	userProjectsQuery: (accountId: number) => ({
 		key: `userProjects:${accountId}`,
@@ -77,6 +59,10 @@ vi.mock('~/services/headless/HeadlessAdminUser', () => ({
 
 vi.mock('~/services/liferay/liferay', () => ({Liferay: liferay}));
 
+vi.mock('~/services/spring-boot/ActivationKeys', () => ({
+	default: {getSummary: vi.fn()},
+}));
+
 async function loadPreloadAppData() {
 	vi.resetModules();
 
@@ -87,6 +73,12 @@ async function loadPreloadAppData() {
 
 function getPreloadedKeys() {
 	return preloadDataQuery.mock.calls.map(([query]) => query.key);
+}
+
+function getPreloadedSummaryKeys() {
+	return getPreloadedKeys().filter((key) =>
+		key?.startsWith('/activation-keys/summary')
+	);
 }
 
 describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
@@ -164,21 +156,49 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'accountLevelContracts:101',
 				'projectContracts:PRJCT-001',
 				'projectEntitlements:PRJCT-001',
-				'activationKeySummary:PRJCT-001',
 				'projectOrders:101',
 				'projectProducts:ACCNT-001',
 			])
 		);
 	});
 
-	it('preloads the activation key summary on a project activation route', async () => {
+	it('preloads the activation key summary only on the project activation tab', async () => {
 		window.location.hash = '#/ACCNT-001/project/PRJCT-001/activation';
+
+		let preloadAppData = await loadPreloadAppData();
+
+		preloadAppData('my-account');
+
+		expect(getPreloadedSummaryKeys()).toEqual([
+			'/activation-keys/summary?projectExternalReferenceCode=PRJCT-001',
+		]);
+
+		for (const hash of [
+			'#/ACCNT-001/project/PRJCT-001',
+			'#/ACCNT-001/project/PRJCT-001/orders',
+			'#/ACCNT-001/project/PRJCT-001/products',
+		]) {
+			preloadDataQuery.mockClear();
+			window.location.hash = hash;
+
+			preloadAppData = await loadPreloadAppData();
+
+			preloadAppData('my-account');
+
+			expect(getPreloadedSummaryKeys()).toEqual([]);
+		}
+	});
+
+	it('scopes the activation key summary to the account for one time purchases', async () => {
+		window.location.hash = `#/ACCNT-001/project/${ONE_TIME_PURCHASES}/activation`;
 
 		const preloadAppData = await loadPreloadAppData();
 
 		preloadAppData('my-account');
 
-		expect(getPreloadedKeys()).toContain('activationKeySummary:PRJCT-001');
+		expect(getPreloadedSummaryKeys()).toEqual([
+			'/activation-keys/summary?accountExternalReferenceCode=ACCNT-001',
+		]);
 	});
 
 	it('scopes the entitlements to the project only on the products tab or the project root', async () => {
@@ -244,8 +264,6 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 
 		expect(getPreloadedKeys()).toContain('projectContracts:');
 		expect(getPreloadedKeys()).toContain('projectEntitlements:');
-		expect(getPreloadedKeys()).not.toContain(
-			'activationKeySummary:PRJCT-001'
-		);
+		expect(getPreloadedSummaryKeys()).toEqual([]);
 	});
 });
