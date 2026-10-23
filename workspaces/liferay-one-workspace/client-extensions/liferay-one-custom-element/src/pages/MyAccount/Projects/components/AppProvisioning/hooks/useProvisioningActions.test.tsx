@@ -9,9 +9,11 @@ import {Liferay} from '~/services/liferay/liferay';
 
 import useProvisioningActions from './useProvisioningActions';
 
+import type {ComponentProps, ReactElement} from 'react';
 import type {Word} from '~/i18n';
 import type {PlacedOrder} from '~/types/orders';
 
+import type ProvisioningDetailsFooter from '../ProvisioningDetailsFooter/ProvisioningDetailsFooter';
 import type {ProvisioningData, ProvisioningRow} from './useProvisioningData';
 
 const mocks = vi.hoisted(() => ({
@@ -68,30 +70,50 @@ function row(status: ProvisioningRow['status']): ProvisioningRow {
 	};
 }
 
-function renderActions({
-	isLoading = false,
-	userProjects = [{}],
-}: {
+type ResourceRequirementsOptions = {
+	error?: Error;
 	isLoading?: boolean;
 	userProjects?: unknown[];
-} = {}) {
-	const mutateOrder = vi.fn(() => Promise.resolve());
+};
 
-	const resourceRequirements = {
-		error: undefined,
+function resourceRequirementsOf({
+	error,
+	isLoading = false,
+	userProjects = [{}],
+}: ResourceRequirementsOptions = {}) {
+	return {
+		error,
 		isLoading,
 		projectsUsage: {userProjects},
 	} as ProvisioningData['resourceRequirements'];
+}
 
-	const hook = renderHook(() =>
-		useProvisioningActions({
-			mutateOrder: mutateOrder as ProvisioningData['mutateOrder'],
-			order,
-			resourceRequirements,
-		})
+function renderActions(options: ResourceRequirementsOptions = {}) {
+	const mutateOrder = vi.fn(() => Promise.resolve());
+
+	const hook = renderHook(
+		({resourceRequirements}) =>
+			useProvisioningActions({
+				mutateOrder: mutateOrder as ProvisioningData['mutateOrder'],
+				order,
+				resourceRequirements,
+			}),
+		{initialProps: {resourceRequirements: resourceRequirementsOf(options)}}
 	);
 
 	return {...hook, mutateOrder};
+}
+
+function getDetailsFooter() {
+	const [{footer}] = mocks.onOpenModal.mock.calls.at(-1) as [
+		{
+			footer: ReactElement<
+				ComponentProps<typeof ProvisioningDetailsFooter>
+			>[];
+		},
+	];
+
+	return footer[2];
 }
 
 function findAction(
@@ -133,6 +155,52 @@ describe('[HOOK-MYACCOUNT-PROJECTS-APPPROVISIONING-USEPROVISIONINGACTIONS] usePr
 			result.current.installAlertModal.onOpenChange
 		).not.toHaveBeenCalled();
 		expect(result.current.selectedProvisioningRow).toBeUndefined();
+	});
+
+	it('disables install while resource requirements load or after they fail', () => {
+		const install = (options: ResourceRequirementsOptions) =>
+			findAction(
+				renderActions(options).result.current.actions,
+				'install'
+			);
+
+		expect(install({isLoading: true}).disabled).toBe(true);
+		expect(install({error: new Error('boom')}).disabled).toBe(true);
+		expect(install({}).disabled).toBe(false);
+	});
+
+	it('ignores install after resource requirements fail instead of reporting no projects', () => {
+		const {result} = renderActions({
+			error: new Error('boom'),
+			userProjects: [],
+		});
+
+		act(() => {
+			findAction(result.current.actions, 'install').onClick(
+				row('ready-to-install')
+			);
+		});
+
+		expect(
+			result.current.installAlertModal.onOpenChange
+		).not.toHaveBeenCalled();
+		expect(mocks.navigate).not.toHaveBeenCalled();
+	});
+
+	it('installs from a details modal opened while resource requirements loaded', () => {
+		const {rerender, result} = renderActions({isLoading: true});
+
+		findAction(result.current.actions, 'view-details').onClick(
+			row('ready-to-install')
+		);
+
+		rerender({resourceRequirements: resourceRequirementsOf()});
+
+		act(() => {
+			getDetailsFooter().props.onInstall(row('ready-to-install'));
+		});
+
+		expect(mocks.navigate).toHaveBeenCalledWith('install/77?orderItemId=5');
 	});
 
 	it('navigates to the install route with the order item ID when the user has projects', () => {
