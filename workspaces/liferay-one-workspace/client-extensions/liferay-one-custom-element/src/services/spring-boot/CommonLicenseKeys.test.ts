@@ -71,7 +71,7 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 		);
 	});
 
-	it('lists the keys of a term when both of its dates are given', async () => {
+	it('lists the keys of a term from each date that it has', async () => {
 		oAuth2Fetch.mockImplementation(
 			async () => new Response(JSON.stringify({items: []}), {status: 200})
 		);
@@ -85,10 +85,10 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 		});
 
 		await CommonLicenseKeys.getCommonLicenseKeys({
-			endDate: '2027-08-22T00:00:00.000Z',
 			page: 1,
 			pageSize: 100,
 			productGroup: 'ENTERPRISE_SEARCH',
+			startDate: '2026-08-23T00:00:00.000Z',
 		});
 
 		expect(oAuth2Fetch).toHaveBeenNthCalledWith(
@@ -98,7 +98,7 @@ describe('[CLIENT-SPRING-BOOT-COMMONLICENSEKEYS] CommonLicenseKeys', () => {
 		);
 		expect(oAuth2Fetch).toHaveBeenNthCalledWith(
 			2,
-			'/common-license-keys?page=1&pageSize=100&productGroup=ENTERPRISE_SEARCH',
+			'/common-license-keys?page=1&pageSize=100&productGroup=ENTERPRISE_SEARCH&startDate=2026-08-23T00%3A00%3A00.000Z',
 			undefined
 		);
 	});

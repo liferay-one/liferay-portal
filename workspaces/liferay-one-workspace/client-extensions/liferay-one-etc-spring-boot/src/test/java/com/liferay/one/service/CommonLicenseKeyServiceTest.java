@@ -147,6 +147,18 @@ public class CommonLicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetCommonLicenseKeysPageWhenTermHasNoEndDate()
+		throws Exception {
+
+		Assertions.assertEquals(
+			"productFamily eq 'enterpriseSearch' and endDate ge " +
+				"2026-08-23T00:00:00Z",
+			_captureFilterString(
+				null, "ENTERPRISE_SEARCH",
+				Instant.parse("2026-08-23T00:00:00Z")));
+	}
+
+	@Test
 	public void testHasCommonLicenseKey() throws Exception {
 		Assertions.assertFalse(
 			_commonLicenseKeyService.hasCommonLicenseKey("new.xml"));
