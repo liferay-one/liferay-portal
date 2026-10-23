@@ -9,8 +9,12 @@ import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.CommonLicenseKeyPermission;
 import com.liferay.one.service.CommonLicenseKeyService;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.nio.charset.StandardCharsets;
+
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 
 import org.json.JSONObject;
 
@@ -51,9 +55,13 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 
 	@GetMapping
 	public ResponseEntity<String> getCommonLicenseKeys(
-			@AuthenticationPrincipal Jwt jwt, @RequestParam("page") int page,
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam(required = false, value = "endDate") String endDate,
+			@RequestParam("page") int page,
 			@RequestParam("pageSize") int pageSize,
-			@RequestParam("productGroup") String productGroup)
+			@RequestParam("productGroup") String productGroup,
+			@RequestParam(required = false, value = "startDate") String
+				startDate)
 		throws Exception {
 
 		_commonLicenseKeyPermission.check(
@@ -67,7 +75,8 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 
 		JSONObject jsonObject =
 			_commonLicenseKeyService.getCommonLicenseKeysPage(
-				page, pageSize, productGroup);
+				_toInstant(endDate), page, pageSize, productGroup,
+				_toInstant(startDate));
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -142,6 +151,21 @@ public class CommonLicenseKeysRestController extends OneBaseRestController {
 		}
 
 		return productFamilyJSONObject.optString("key");
+	}
+
+	private Instant _toInstant(String date) {
+		if (Validator.isNull(date)) {
+			return null;
+		}
+
+		try {
+			return Instant.parse(date);
+		}
+		catch (DateTimeParseException dateTimeParseException) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Unable to parse the date " + date,
+				dateTimeParseException);
+		}
 	}
 
 	private static final int _MAX_PAGE_SIZE = 100;

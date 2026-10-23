@@ -23,9 +23,11 @@ import {getFileNameExtension} from '~/utils/downloadFileUtils';
 import getKebabCase from '~/utils/getKebabCase';
 import {toAlphanumericLowerCase} from '~/utils/stringUtils';
 
+import type {ProjectContract} from '~/hooks/useProjectCommerce';
 import type {APIResponse} from '~/types/api';
 
 type ActivationKeyDownloadProps = {
+	contract?: ProjectContract;
 	productGroup: ProductGroup;
 	productTitle: 'Commerce' | 'Enterprise Search';
 };
@@ -45,6 +47,7 @@ function termLabel(key: CommonLicenseKey): string {
 }
 
 export default function ActivationKeyDownload({
+	contract,
 	productGroup,
 	productTitle,
 }: ActivationKeyDownloadProps) {
@@ -58,12 +61,19 @@ export default function ActivationKeyDownload({
 	const kebabProductTitle = getKebabCase(productTitle) ?? '';
 
 	const {data, error} = useSWR<APIResponse<CommonLicenseKey>>(
-		['common-license-keys', productGroup],
+		[
+			'common-license-keys',
+			productGroup,
+			contract?.startDate,
+			contract?.endDate,
+		],
 		() =>
 			CommonLicenseKeys.getCommonLicenseKeys({
+				endDate: contract?.endDate,
 				page: 1,
 				pageSize: 100,
 				productGroup,
+				startDate: contract?.startDate,
 			})
 	);
 

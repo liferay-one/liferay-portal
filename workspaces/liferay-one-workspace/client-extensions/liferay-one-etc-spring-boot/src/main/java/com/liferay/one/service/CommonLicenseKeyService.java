@@ -9,8 +9,13 @@ import com.liferay.one.constants.CommonLicenseKeyConstants;
 import com.liferay.one.constants.UploadProductEnvironmentConstants;
 import com.liferay.one.license.CommonLicenseKeyData;
 import com.liferay.one.license.CommonLicenseKeyParser;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import java.net.URI;
+
+import java.time.Instant;
 
 import java.util.List;
 
@@ -107,18 +112,25 @@ public class CommonLicenseKeyService extends OneBaseService {
 	}
 
 	public JSONObject getCommonLicenseKeysPage(
-			int page, int pageSize, String productGroup)
+			Instant endDate, int page, int pageSize, String productGroup,
+			Instant startDate)
 		throws Exception {
 
-		String response = get(
-			getAuthorization(),
+		String filterString =
+			"productFamily eq '" +
+				CommonLicenseKeyConstants.toProductFamily(productGroup) + "'";
+
+		if ((endDate != null) && (startDate != null)) {
+			filterString = StringBundler.concat(
+				filterString, " and startDate le ", endDate, " and endDate ge ",
+				startDate);
+		}
+
+		String response = getCommonLicenseKeys(
 			UriComponentsBuilder.fromPath(
 				"/o/c/commonlicensekeys"
 			).queryParam(
-				"filter",
-				"productFamily eq '" +
-					CommonLicenseKeyConstants.toProductFamily(productGroup) +
-						"'"
+				"filter", filterString
 			).queryParam(
 				"page", page
 			).queryParam(
@@ -168,6 +180,10 @@ public class CommonLicenseKeyService extends OneBaseService {
 		List<JSONObject> commonLicenseKeys = _getCommonLicenseKeys(fileName);
 
 		return !commonLicenseKeys.isEmpty();
+	}
+
+	protected String getCommonLicenseKeys(URI uri) throws Exception {
+		return get(getAuthorization(), uri);
 	}
 
 	protected void postCommonLicenseKey(JSONObject jsonObject)

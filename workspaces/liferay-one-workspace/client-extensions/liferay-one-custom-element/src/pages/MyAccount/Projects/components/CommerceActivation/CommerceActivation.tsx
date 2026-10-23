@@ -13,6 +13,8 @@ import {Word, translate} from '~/i18n';
 import ActivationKeyDownload from '~/pages/MyAccount/Projects/components/ActivationKeyDownload/ActivationKeyDownload';
 import requiresActivationKey from '~/pages/MyAccount/Projects/utils/requiresActivationKey';
 
+import type {ProjectContract} from '~/hooks/useProjectCommerce';
+
 type CommerceInstructionRow = {
 	detail?: Word;
 	instructions: Word;
@@ -21,7 +23,13 @@ type CommerceInstructionRow = {
 	version: string;
 };
 
-export default function CommerceActivation() {
+type CommerceActivationProps = {
+	contract?: ProjectContract;
+};
+
+export default function CommerceActivation({
+	contract,
+}: CommerceActivationProps) {
 	const {project} = useProject();
 	const {contactSupportURL} = useProperties();
 
@@ -52,6 +60,7 @@ export default function CommerceActivation() {
 	if (requiresActivationKey(project?.liferayVersion)) {
 		return (
 			<ActivationKeyDownload
+				contract={contract}
 				productGroup="COMMERCE"
 				productTitle="Commerce"
 			/>
