@@ -18,7 +18,9 @@ import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
 
 import type {UserProject} from '~/pages/MyAccount/Projects/types';
 import type {AnalyticsProject} from '~/types/analytics';
-import type {PlacedOrder, VirtualItem} from '~/types/orders';
+import type {PlacedOrder, PlacedOrderItems, VirtualItem} from '~/types/orders';
+
+const MACHINE_TYPE_OPTION_KEY = 'machinetype';
 
 const PAGE_SIZE = 200;
 
@@ -41,7 +43,6 @@ const RESTRICTED_ORDER_FIELDS = [
 	'placedOrderItems.deliveryGroup',
 	'placedOrderItems.deliveryGroupName',
 	'placedOrderItems.externalReferenceCode',
-	'placedOrderItems.options',
 	'placedOrderItems.parentOrderItemId',
 	'placedOrderItems.price',
 	'placedOrderItems.productURLs',
@@ -179,6 +180,20 @@ function getOrderTotal(order: PlacedOrder): string {
 	};
 
 	return summary?.totalFormatted ?? totalFormatted ?? '$0.00';
+}
+
+function getTierName(placedOrderItem: PlacedOrderItems): string {
+	const options = safeJSONParse<
+		{key?: string; skuOptionValueNames?: string[]}[]
+	>(placedOrderItem.options || null, []);
+
+	const skuOption = (Array.isArray(options) ? options : []).find(
+		(option) =>
+			option.key !== MACHINE_TYPE_OPTION_KEY &&
+			option.skuOptionValueNames?.length
+	);
+
+	return skuOption?.skuOptionValueNames?.[0] ?? placedOrderItem.name;
 }
 
 function formatDate(value?: string): string {
@@ -338,7 +353,7 @@ export function getProductOrderInfo(
 				ldpAnalyticsCloudProject.dataSourceAccessToken ?? '',
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
-		itemName: placedOrderItems[0]?.name ?? '',
+		itemName: [...new Set(placedOrderItems.map(getTierName))].join(', '),
 		orderDate: formatDate(order.createDate),
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
