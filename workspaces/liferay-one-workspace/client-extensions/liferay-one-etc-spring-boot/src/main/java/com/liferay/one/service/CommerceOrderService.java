@@ -2147,28 +2147,39 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private Map<String, String> _getAccountPlaceholders(Order order) {
+		String accountId = "";
+		String accountName = "";
+		String taxId = "";
+
 		Account account = order.getAccount();
+
+		if (account != null) {
+			accountId = GetterUtil.getString(account.getId());
+			accountName = GetterUtil.getString(account.getName());
+			taxId = GetterUtil.getString(account.getTaxId());
+		}
+
+		String billingAddressName = "";
+		String billingAddressPhone = "";
+
 		BillingAddress billingAddress = order.getBillingAddress();
 
-		String taxId =
-			(account == null) ? "" : GetterUtil.getString(account.getTaxId());
+		if (billingAddress != null) {
+			billingAddressName = GetterUtil.getString(billingAddress.getName());
+			billingAddressPhone = GetterUtil.getString(
+				billingAddress.getPhoneNumber());
+		}
 
 		return HashMapBuilder.put(
-			"ACCOUNT_ID",
-			(account == null) ? "" : GetterUtil.getString(account.getId())
+			"ACCOUNT_ID", accountId
 		).put(
-			"ACCOUNT_NAME",
-			(account == null) ? "" : GetterUtil.getString(account.getName())
+			"ACCOUNT_NAME", accountName
 		).put(
 			"BILLING_ADDRESS_FORMATTED", _formatBillingAddress(billingAddress)
 		).put(
-			"BILLING_ADDRESS_NAME",
-			(billingAddress == null) ? "" :
-				GetterUtil.getString(billingAddress.getName())
+			"BILLING_ADDRESS_NAME", billingAddressName
 		).put(
-			"BILLING_ADDRESS_PHONE",
-			(billingAddress == null) ? "" :
-				GetterUtil.getString(billingAddress.getPhoneNumber())
+			"BILLING_ADDRESS_PHONE", billingAddressPhone
 		).put(
 			"TAX_ID", taxId
 		).put(
