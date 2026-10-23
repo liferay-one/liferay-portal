@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useCallback, useRef} from 'react';
 import Loading from '~/components/Loading/Loading';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import Table from '~/components/Table/Table';
@@ -47,27 +48,30 @@ const ProvisioningTable: React.FC<ProvisioningTableProps> = ({
 		selectedAccount,
 	});
 
+	const actionsRef = useRef(actions);
+
+	actionsRef.current = actions;
+
+	const Actions = useCallback(({row}: {row: Record<string, unknown>}) => {
+		const provisioningRow = row as unknown as ProvisioningRow;
+
+		return (
+			<RowActionsMenu
+				actions={actionsRef.current
+					.filter((action) => action.show(provisioningRow))
+					.map((action) => ({
+						disabled: action.disabled,
+						label: action.label,
+						onClick: () => action.onClick(provisioningRow),
+					}))}
+			/>
+		);
+	}, []);
+
 	return (
 		<>
 			<Table
-				Actions={({row}) => {
-					const provisioningRow = row as unknown as ProvisioningRow;
-
-					return (
-						<RowActionsMenu
-							actions={actions
-								.filter((action) =>
-									action.show(provisioningRow)
-								)
-								.map((action) => ({
-									disabled: action.disabled,
-									label: action.label,
-									onClick: () =>
-										action.onClick(provisioningRow),
-								}))}
-						/>
-					);
-				}}
+				Actions={Actions}
 				className="mt-4"
 				columns={[
 					{
