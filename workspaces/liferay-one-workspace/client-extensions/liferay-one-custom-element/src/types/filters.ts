@@ -118,6 +118,18 @@ export function overrides(
 }
 
 export const filterSchema: FilterSchemas = {
+	administratorAccounts: {
+		fields: [
+			overrides(baseFilters.type, {
+				label: i18n.translate('account-type'),
+				options: ['business', 'guest', 'person', 'supplier'],
+			}),
+			overrides(baseFilters.dateCreated, {
+				name: 'dateCreated',
+			}),
+		],
+		name: 'administratorAccounts',
+	},
 	administratorApps: {
 		fields: [
 			overrides(baseFilters.type, {

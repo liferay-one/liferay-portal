@@ -20,13 +20,17 @@ export default {
 	'ability-to-publish-dxp-and-cloud-free-or-charged':
 		'Ability to publish DXP and Cloud - Free or Charged',
 	'accelerator': 'Accelerator',
+	'accepted': 'Accepted',
 	'access-required': 'Access required.',
 	'access-token': 'Access Token',
 	'account': 'Account',
 	'account-details': 'Account Details',
 	'account-id': 'Account ID',
+	'account-inspector': 'Account Inspector',
+	'account-invitations': 'Account Invitations',
 	'account-members': 'Account Members',
 	'account-name': 'Account Name',
+	'account-notes': 'Account Notes',
 	'account-permissions': 'Account Permissions',
 	'account-roles': 'Account Roles',
 	'account-selected': 'Account Selected',
@@ -52,6 +56,8 @@ export default {
 	'activation-key-will-be-valid': 'Activation key will be valid',
 	'activation-keys': 'Activation Keys',
 	'activation-keys-list': 'Activation Keys List',
+	'activation-keys-reference-projects-outside-the-account':
+		'Activation keys reference a project that is not in this account.',
 	'activation-keys-uploaded-successfully':
 		'Activation keys uploaded successfully.',
 	'activation-mode': 'Activation Mode',
@@ -88,6 +94,7 @@ export default {
 	'additional-apps-requested': 'Additional Apps Requested',
 	'address': 'Address',
 	'address-name': 'Address Name',
+	'addresses': 'Addresses',
 	'administration-email': 'Administration Email',
 	'administrator': 'Administrator',
 	'administrator-dashboard': 'Administrator Dashboard',
@@ -230,6 +237,7 @@ export default {
 	'available-license-tiers-x': 'Available license tiers: {0}',
 	'awaiting-signature': 'Awaiting Signature',
 	'back': 'Back',
+	'back-to-accounts': 'Back to Accounts',
 	'back-to-apps': 'Back to Apps',
 	'back-to-business-events': 'Back to Business Events',
 	'back-to-finance-orders': 'Back to Finance Orders',
@@ -253,6 +261,7 @@ export default {
 	'billing-period': 'Billing Period',
 	'branding': 'Branding',
 	'breadcrumb': 'Breadcrumb',
+	'broken-links': 'Broken Links',
 	'browse-catalog': 'Browse Catalog',
 	'browse-products': 'Browse Products',
 	'build': 'Build',
@@ -286,6 +295,7 @@ export default {
 	'cannot-edit-canceled-or-completed-events':
 		'Cannot edit canceled or completed events.',
 	'cash': 'Cash',
+	'catalog': 'Catalog',
 	'categories': 'Categories',
 	'category': 'Category',
 	'change': 'Change',
@@ -304,6 +314,7 @@ export default {
 		'Choose the Marketplace category that most accurately describes what your solution does. Users looking for specific types of solutions will often browse categories by searching for a specific category name on the main Marketplace home page. Having your solution listed under the appropriate category will help them find it.',
 	'citizen-portal': 'Citizen Portal',
 	'city': 'City',
+	'class-name': 'Class Name',
 	'clear': 'Clear',
 	'clear-all-filters': 'Clear All Filters',
 	'click-here': 'click here',
@@ -330,6 +341,7 @@ export default {
 	'cne-environment-token': 'CNE Environment Token',
 	'collaboration': 'Collaboration',
 	'collaboration-knowledge-sharing': 'Collaboration and Knowledge Sharing',
+	'collapse': 'Collapse',
 	'columns': 'Columns',
 	'comment': 'Comment',
 	'comments': 'Comments',
@@ -350,6 +362,8 @@ export default {
 	'compatible-versions': 'Compatible Versions',
 	'complete-publisher-account-request': 'Complete Publisher Account Request',
 	'completed': 'Completed',
+	'completed-orders-have-items-with-no-entitlements':
+		'Completed orders have items with no entitlement. Make sure that the SKU of each item has an active entitlement definition.',
 	'complimentary': 'Complimentary',
 	'composite-app': 'Composite App',
 	'confirm': 'Confirm',
@@ -365,6 +379,7 @@ export default {
 	'connect-your-liferay-data-platform': 'Connect Your Liferay Data Platform',
 	'connect-your-liferay-dsr': 'Connect Your Liferay DSR',
 	'connection-date': 'Connection Date',
+	'connection-source': 'Connection Source',
 	'connectors': 'Connectors',
 	'consumer-products': 'Consumer Products',
 	'contact': 'Contact',
@@ -376,6 +391,7 @@ export default {
 	'contact-your-administrator-to-become-part-of-an-account':
 		'Contact your administrator to become part of an account.',
 	'contacts': 'Contacts',
+	'content': 'Content',
 	'content-management-operations': 'Content Management Operations',
 	'content-media-type': 'Content Media Type',
 	'content-policy': 'Content Policy',
@@ -385,8 +401,16 @@ export default {
 	'contract': 'Contract',
 	'contract-selection': 'Contract Selection',
 	'contract-term': 'Contract Term',
+	'contracts': 'Contracts',
+	'contracts-end-before-they-start':
+		'Contracts have an end date before their start date.',
+	'contracts-reference-projects-outside-the-account':
+		'Contracts reference a project that is not in this account.',
+	'copied-to-the-clipboard': 'Copied to the clipboard.',
 	'copied-x-to-the-clipboard': 'Copied {0} to the clipboard.',
 	'copy': 'Copy',
+	'copy-external-reference-code': 'Copy External Reference Code',
+	'copy-id': 'Copy ID',
 	'copy-this-token-to-your-liferay-dxp-instance':
 		'Copy this token to your Liferay DXP Instance',
 	'could-not-find-ssa-account': 'Could not find SSA account',
@@ -450,6 +474,8 @@ export default {
 	'date': 'Date',
 	'date-added': 'Date Added',
 	'date-created': 'Date Created',
+	'date-from': 'Date From',
+	'date-to': 'Date To',
 	'day': 'Day',
 	'deactivate': 'Deactivate',
 	'deactivate-activation-key': 'Deactivate Activation Key',
@@ -459,6 +485,7 @@ export default {
 	'dear-x-based-on-our-records-you-have-already-completed-a-trial-therefore-currently-we-are-unable-to-start-your-trial-please-contact-our-sales-department-via-email':
 		'Dear {0}, based on our records, you have already completed a trial. Therefore currently we are unable to start your trial. Please contact our sales department via email',
 	'decline': 'Decline',
+	'default-billing-address': 'Default Billing Address',
 	'define-company-profile-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront':
 		'Define company profile information for your solution. This will inform users about this version’s updates on the storefront.',
 	'define-contact-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront':
@@ -518,6 +545,7 @@ export default {
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
 	'drag-and-drop-to-upload-or': 'Drag and drop to upload or',
+	'duration': 'Duration',
 	'duration-days': 'Duration (days)',
 	'duration-of-the-extension': 'Duration of the Extension',
 	'dxp-app': 'DXP App',
@@ -584,6 +612,20 @@ export default {
 		'Entering an actual event date will close this business event. No further edits will be possible.',
 	'enterprise': 'Enterprise',
 	'enterprise-search': 'Enterprise Search',
+	'entitlement': 'Entitlement',
+	'entitlement-definition': 'Entitlement Definition',
+	'entitlements': 'Entitlements',
+	'entitlements-end-before-they-start':
+		'Entitlements have an end date before their start date.',
+	'entitlements-have-no-entitlement-definition':
+		'Entitlements have no entitlement definition.',
+	'entitlements-have-no-order-item': 'Entitlements have no order item.',
+	'entitlements-reference-contracts-outside-the-account':
+		'Entitlements reference a contract that is not in this account.',
+	'entitlements-reference-order-items-outside-the-account':
+		'Entitlements reference an order item that is not in an order of this account.',
+	'entitlements-reference-projects-outside-the-account':
+		'Entitlements reference a project that is not in this account.',
 	'entity-type': 'Entity Type',
 	'environment': 'Environment',
 	'environment-details': 'Environment Details',
@@ -592,6 +634,10 @@ export default {
 	'environment-selection': 'Environment Selection',
 	'environment-type': 'Environment Type',
 	'environments': 'Environments',
+	'environments-reference-contracts-outside-the-account':
+		'Environments reference a contract that is not in this account.',
+	'environments-reference-projects-outside-the-account':
+		'Environments reference a project that is not in this account.',
 	'error': 'Error',
 	'error-details': 'Error Details',
 	'error-downloading-attachment': 'Error downloading attachment.',
@@ -616,6 +662,7 @@ export default {
 	'exit': 'Exit',
 	'exit-from-providing-app-build': 'Exit from providing app build',
 	'exp-date': 'Exp. Date',
+	'expand': 'Expand',
 	'experience-management': 'Experience Management',
 	'expiration-date': 'Expiration Date',
 	'expiration-notifications': 'Expiration Notifications',
@@ -654,11 +701,14 @@ export default {
 	'filter': 'Filter',
 	'filter-by': 'Filter By',
 	'filters': 'Filters',
+	'filters-x': 'Filters: {0}',
 	'finance-dashboard': 'Finance Dashboard',
 	'financial-portal': 'Financial Portal',
+	'findings': 'Findings',
 	'finish-activation': 'Finish Activation',
 	'finish-online-activation': 'Finish Online Activation',
 	'first-name': 'First Name',
+	'flagged-only': 'Flagged Only',
 	'for-businesses-with-a-vat-tax-number-this-account-type-support-multiple-users':
 		'For businesses with a VAT/Tax number; this account type support multiple users.',
 	'for-businesses-with-a-vat-tax-number-this-account-type-support-multiple-users-it-also-possible-to-join-an-already-existing-business-account':
@@ -698,6 +748,7 @@ export default {
 	'github-username': 'GitHub Username',
 	'go-back-to-marketplace': 'Go Back to Marketplace',
 	'go-live': 'Go Live',
+	'go-to-account': 'Go to Account',
 	'go-to-analytics-cloud': 'Go to Analytics Cloud',
 	'go-to-app-provisioning': 'Go to App Provisioning',
 	'go-to-attachments': 'Go to Attachments',
@@ -721,6 +772,7 @@ export default {
 	'healthcare': 'Healthcare',
 	'help-and-support': 'Help & Support',
 	'help-page': 'help page',
+	'hide-json': 'Hide JSON',
 	'higher-education': 'Higher Education',
 	'hold-tight-we-re-preparing-your-environment-so-you-can-start-using-your-liferay-data-platform-this-will-only-take-a-moment':
 		'Hold tight. We’re preparing your environment so you can start using your Liferay Data Platform. This will only take a moment!',
@@ -747,6 +799,7 @@ export default {
 	'identity': 'Identity',
 	'identity-management-and-governance': 'Identity Management and Governance',
 	'identity-management-governance': 'Identity Management and Governance',
+	'ids-x': 'IDs: {0}',
 	'if-the-app-is-compatible-with-different-updates-of-74-please-upload-multiple-packages-for-each-update-or-update-the-compatibility-range':
 		'If the app is compatible with different updates of 7.4, please upload multiple packages for each update or update the compatibility range.',
 	'if-there-is-no-project-admin-on-this-project-to-add-or-manage-team-members-contact-your-account-admin':
@@ -779,6 +832,7 @@ export default {
 	'income': 'Income',
 	'incomplete': 'Incomplete',
 	'industry': 'Industry',
+	'info': 'Info',
 	'information': 'Information',
 	'input-one-domain-name-per-instance': 'Input one domain name per instance',
 	'input-one-host-name-per-instance': 'Input one Host name per instance.',
@@ -822,6 +876,8 @@ export default {
 	'ip-addresses': 'IP Addresses',
 	'it-looks-like-this-project-does-not-have-any-contracts-yet-please-contact-your-administrator-or-liferay-sales-to-set-one-up-before-purchasing':
 		'It looks like this project does not have any contracts yet. Please contact your administrator or Liferay sales to set one up before purchasing.',
+	'items': 'Items',
+	'jira-issue-key': 'Jira Issue Key',
 	'job-title': 'Job Title',
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
 		'Join an existing business account (e.g., your company) and gain full access.',
@@ -850,7 +906,12 @@ export default {
 	'license': 'License',
 	'license-key': 'License Key',
 	'license-key-details': 'License Key Details',
+	'license-key-family': 'License Key Family',
 	'license-keys': 'License Keys',
+	'license-keys-reference-entitlements-outside-the-account':
+		'License keys reference an entitlement that is not in this account.',
+	'license-keys-reference-orders-outside-the-account':
+		'License keys reference an order that is not in this account.',
 	'license-name': 'License Name',
 	'license-price': 'License Price',
 	'license-prices': 'License Prices',
@@ -1059,14 +1120,19 @@ export default {
 		'No license is available for this product.',
 	'no-licenses-available': 'No licenses available',
 	'no-licenses-yet': 'No Licenses Yet',
+	'no-matching-records': 'No matching records.',
 	'no-orders-yet': 'No Orders Yet',
+	'no-problems-were-found-for-this-account':
+		'No problems were found for this account.',
 	'no-products-yet': 'No Products Yet',
+	'no-project-account-level': 'No Project (Account Level)',
 	'no-project-linked': 'No Project Linked',
 	'no-projects-available-for-x': 'No projects available for {0}',
 	'no-projects-were-found': 'No projects were found.',
 	'no-projects-yet': 'No Projects Yet',
 	'no-publisher-catalog-found': 'No Publisher Catalog Found',
 	'no-publisher-profile-to-update': 'There is no publisher profile to update',
+	'no-records': 'No records.',
 	'no-results-found': 'No Results Found',
 	'no-role': 'No Role',
 	'no-support-tickets-were-found': 'No support tickets were found.',
@@ -1092,6 +1158,7 @@ export default {
 	'number-of-cpus': 'Number of CPUs',
 	'number-of-purchases': 'Number of purchases',
 	'number-of-sites': 'Number of Sites',
+	'number-of-users': 'Number of Users',
 	'object-action': 'Object Action',
 	'object-definition': 'Object Definition',
 	'objective': 'Objective',
@@ -1099,6 +1166,7 @@ export default {
 	'of-service': 'of Service.',
 	'of-target': 'of target',
 	'of-x': 'of {0}',
+	'offering': 'Offering',
 	'offline': 'Offline',
 	'offline-activation': 'Offline Activation',
 	'offline-payment': 'Offline Payment',
@@ -1127,33 +1195,52 @@ export default {
 		'Only JAR and WAR files are allowed. Max file size is 500MB.',
 	'only-jar-zip-files-are-allowed-max-file-size-is-500mb':
 		'Only JAR and ZIP files are allowed. Max file size is 500MB.',
+	'only-part-of-the-records-could-be-loaded':
+		'Only part of the records could be loaded. The checks that compare these records with other collections did not run.',
+	'only-x-of-x-records-could-be-loaded':
+		'Only {0} of {1} records could be loaded. The checks that compare these records with other collections did not run.',
 	'only-zip-files-are-allowed-max-file-size-is-500mb':
 		'Only ZIP files are allowed. Max file size is 500MB.',
 	'oops-something-went-wrong': 'Oops! Something went wrong.',
 	'open': 'Open',
 	'open-a-support-ticket': 'open a support ticket',
+	'open-account-members': 'Open Account Members',
+	'open-api-response': 'Open API Response',
+	'open-contract': 'Open Contract',
 	'open-in-marketplace': 'Open in Marketplace',
+	'open-license-key': 'Open License Key',
+	'open-order': 'Open Order',
+	'open-project': 'Open Project',
+	'open-project-members': 'Open Project Members',
+	'order': 'Order',
 	'order-confirmation': 'Order Confirmation',
 	'order-date': 'Order Date',
 	'order-details': 'Order Details',
 	'order-form': 'Order Form',
 	'order-id': 'Order ID',
 	'order-info': 'Order Info',
+	'order-item': 'Order Item',
 	'order-items': 'Order Items',
 	'order-marked-as-paid': 'Order marked as paid.',
 	'order-received': 'Order Received',
 	'order-received-awaiting-signature': 'Order Received: Awaiting Signature',
 	'order-status': 'Order Status',
 	'order-summary': 'Order Summary',
+	'order-type': 'Order Type',
 	'orders': 'Orders',
 	'orders-and-fulfillment': 'Orders and Fulfillment',
 	'orders-list': 'Orders List',
+	'orders-name-a-project-that-the-account-does-not-have':
+		'Orders name a project that is not in this account. The project name of an order must match the name of a project exactly.',
+	'orders-reference-contracts-outside-the-account':
+		'Orders reference a contract that is not in this account.',
 	'oregon-usa': 'Oregon, USA',
 	'organization': 'Organization',
 	'osaka-japan': 'Osaka, Japan',
 	'other': 'Other',
 	'other-event': 'Other Event',
 	'other-please-specify': 'Other, please specify',
+	'overage-quantity': 'Overage Quantity',
 	'overall-experience': 'Overall Experience',
 	'overdue': 'Overdue',
 	'owner': 'Owner',
@@ -1251,6 +1338,7 @@ export default {
 	'primary-contact': 'Primary Contact',
 	'primary-data-center-region': 'Primary Data Center Region',
 	'primary-region': 'Primary Region',
+	'priority': 'Priority',
 	'privacy': 'privacy',
 	'privacy-breach-contacts': 'Privacy Breach Contacts',
 	'privacy-policy': 'Privacy Policy',
@@ -1287,6 +1375,14 @@ export default {
 	'project-members': 'Project Members',
 	'project-members-successfully-updated':
 		'Project members successfully updated.',
+	'project-memberships': 'Project Memberships',
+	'project-memberships-are-duplicated':
+		'Project memberships repeat the same user and project.',
+	'project-memberships-have-no-role': 'Project memberships have no role.',
+	'project-memberships-reference-projects-outside-the-account':
+		'Project memberships reference a project that is not in this account.',
+	'project-memberships-reference-users-outside-the-account':
+		'Project memberships reference a user who is not a member of this account. These rows show as empty member chips.',
 	'project-metrics-are-available-for-liferay-saas-customers-on-liferays-latest-usage-based-model':
 		"Project Metrics are available for Liferay SaaS customers on Liferay's latest usage-based model. Reach out to your Account Manager to learn more about how you can track resource usage, site users, and storage capacity.",
 	'project-name': 'Project Name',
@@ -1298,7 +1394,11 @@ export default {
 	'project-usage-metrics': 'Project Usage Metrics',
 	'projects': 'Projects',
 	'projects-and-resources': 'Projects and Resources',
+	'projects-have-no-members': 'Projects have no members.',
+	'projects-share-a-name':
+		'Projects share a name. An order that names one of these projects cannot be matched to a project.',
 	'prompt': 'Prompt',
+	'properties': 'Properties',
 	'provide-app-build': 'Provide App Build',
 	'provide-company-profile-details': 'Provide Company Profile Details',
 	'provide-contact-us-details': 'Provide Contact Us Details',
@@ -1326,6 +1426,7 @@ export default {
 	'publisher': 'Publisher',
 	'publisher-account-request': 'Publisher Account Request',
 	'publisher-accounts': 'Publisher Accounts',
+	'publisher-assets': 'Publisher Assets',
 	'publisher-dashboard': 'Publisher Dashboard',
 	'publisher-details': 'Publisher Details',
 	'publisher-id': 'Publisher ID',
@@ -1333,6 +1434,7 @@ export default {
 	'publisher-payout': 'Publisher Payout',
 	'publisher-profile': 'Publisher Profile',
 	'publisher-requests': 'Publisher Requests',
+	'publisher-sales-summaries': 'Publisher Sales Summaries',
 	'publisher-type': 'Publisher Type',
 	'publisher-website': 'Publisher Website',
 	'publisher-website-url': 'Publisher Website URL',
@@ -1378,6 +1480,9 @@ export default {
 	'region': 'Region',
 	'reimbursement': 'Reimbursement',
 	'reject-request': 'Reject Request',
+	'related-records': 'Related Records',
+	'relationship-tree': 'Relationship Tree',
+	'reload': 'Reload',
 	'remove': 'Remove',
 	'remove-all-roles': 'Remove all roles',
 	'remove-member': 'Remove Member',
@@ -1392,6 +1497,7 @@ export default {
 	'renew-key': 'Renew Key',
 	'renew-x-key': 'Renew {0} Key',
 	'renew-x-keys': 'Renew {0} Keys',
+	'renewal-state': 'Renewal State',
 	'renewal-will-be-available-3-months-before-your-activation-key-expires':
 		'Renewal will be available 3 months before your activation key expires.',
 	'renews-in-1-day': 'Renews in 1 day',
@@ -1428,6 +1534,7 @@ export default {
 		'Review and accept the legal agreement between you and Liferay before proceeding. You are about to create a new solution submission.',
 	'review-and-submit-app': 'Review and Submit App',
 	'review-and-submit-solution': 'Review and Submit Solution',
+	'review-status': 'Review Status',
 	'review-the-information-published-for-this-app':
 		'Review the information published for this app.',
 	'review-the-new-publisher-info-and-the-liferay-marketplace-terms-before-proceeding':
@@ -1452,6 +1559,8 @@ export default {
 	'scroll-to-top': 'Scroll to Top',
 	'search': 'Search',
 	'search-event-name': 'Search Event Name',
+	'search-for-an-account-to-see-its-records-and-the-problems-found-in-them':
+		'Search for an account to see its records and the problems found in them.',
 	'search-for-support-tickets': 'Search for Support Tickets',
 	'section-that-shows-the-latest-sales-made':
 		'Section that shows the latest sales made.',
@@ -1533,6 +1642,7 @@ export default {
 	'share-your-feedback': 'Share Your Feedback',
 	'shared-investigator-platform': 'Shared Investigator Platform',
 	'show-less': 'Show Less',
+	'showing-x-of-x': 'Showing {0} of {1}',
 	'showing-x-to-x-of-x': 'Showing {0} to {1} of {2}',
 	'sign-in': 'Sign In',
 	'sign-in-with-a-different-account': 'Sign in with a Different Account',
@@ -1647,6 +1757,11 @@ export default {
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
 	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
+	'the-account-has-no-account-administrator':
+		'The account has no user with the Account Administrator role.',
+	'the-account-has-no-account-type': 'The account has no account type.',
+	'the-account-has-no-users': 'The account has no users.',
+	'the-account-is-not-active': 'The account is not active.',
 	'the-account-was-successfully-synced-to-jsm':
 		'The account was successfully synced to JSM.',
 	'the-activation-code-was-not-found': 'The activation code was not found.',
@@ -1695,6 +1810,8 @@ export default {
 	'the-order-must-be-completed-before-licensing-this-app.':
 		'The order must be completed before licensing this app.',
 	'the-published-version-is-x': 'The published version is {0}.',
+	'the-records-could-not-be-loaded':
+		'The records could not be loaded. The object definition can be missing on this environment.',
 	'the-requested-activation-key-exceeds-the-purchased-subscriptions-for-this-liferay-project-in-case-of-unauthorized-use-liferay-can-request-financial-compensation-for-breach-of-use':
 		'The requested activation key exceeds the purchased subscriptions for this Liferay project. In case of unauthorized use, Liferay can request financial compensation for breach of use. For more information, please reach out to your Liferay contact or sales@liferay.com.',
 	'the-requested-activation-key-is-not-yet-available':
@@ -1845,6 +1962,7 @@ export default {
 		'Trial extension approved successfully.',
 	'trial-extension-rejected-successfully':
 		'Trial extension rejected successfully.',
+	'trial-extension-requests': 'Trial Extension Requests',
 	'trial-info': 'Trial Info',
 	'trial-not-available': 'Trial Not Available',
 	'trial-resources': 'Trial Resources',
@@ -1861,6 +1979,7 @@ export default {
 	'unable-to-accept-the-invitation': 'Unable to accept the invitation.',
 	'unable-to-assign-roles': 'Unable to assign roles',
 	'unable-to-connect-to-file-server': 'Unable to connect to file server.',
+	'unable-to-copy-to-the-clipboard': 'Unable to copy to the clipboard.',
 	'unable-to-delete-attachment': 'Unable to delete attachment.',
 	'unable-to-download-the-activation-key':
 		'Unable to download the activation key.',
@@ -1903,6 +2022,7 @@ export default {
 	'usage-data-is-temporarily-unavailable-please-try-again-later':
 		'Usage data is temporarily unavailable. Please try again later.',
 	'usage-data-not-loaded': 'Usage Data Not Loaded',
+	'usage-reports': 'Usage Reports',
 	'use-any-build-from-any-available-liferay-experience-cloud-account-requires-lxc-account':
 		'Use any build from any available Liferay SaaS account (requires Liferay SaaS account) ',
 	'use-any-build-from-your-computer-connecting-with-a-github-provider':
@@ -1918,9 +2038,11 @@ export default {
 	'user-information': 'User Information',
 	'user-name': 'User Name',
 	'user-roles-successfully-updated': 'User roles successfully updated',
+	'users': 'Users',
 	'users-requests-to-become-a-publisher':
 		'Users requests to become a publisher',
 	'utilization': 'Utilization',
+	'value': 'Value',
 	'value-between-1-and-60': 'Value between 1 and 60.',
 	'vat': 'VAT',
 	'vat-id': 'VAT ID',
@@ -1940,6 +2062,7 @@ export default {
 	'view-all-account-orders': 'View All Account Orders',
 	'view-app-in-cloud': 'View App in Cloud',
 	'view-details': 'View Details',
+	'view-json': 'View JSON',
 	'view-less': 'View Less',
 	'view-license-details': 'View License Details',
 	'view-more': 'View More',
@@ -1991,6 +2114,7 @@ export default {
 	'workspace-name': 'Workspace Name',
 	'workspace-owner-email': 'Workspace Owner Email',
 	'workspace-timezone': 'Workspace Timezone',
+	'x-and-x-more': '{0} and {1} more',
 	'x-apps-available': '{0} apps available',
 	'x-apps-x-solutions': '{0} Apps · {1} Solutions',
 	'x-available-for-you': `{0} available for <b>${Liferay.ThemeDisplay.getUserEmailAddress()}</b> (you)`,
@@ -1999,6 +2123,7 @@ export default {
 	'x-data-sources': '{0} Data Sources',
 	'x-environments-x-cpus-x-gb-ram': '{0} Environments, {1} CPUs, {2} GB RAM',
 	'x-events': '/ {0} events',
+	'x-flagged': '{0} Flagged',
 	'x-in-use': '{0} in use',
 	'x-is-a-member-of-x-on-this-account-removing-them-from-the-account-will-also-remove-their-access-to-these-projects-are-you-sure-you-want-to-proceed':
 		'{0} is a member of {1} on this account. Removing them from the account will also remove their access to these projects. Are you sure you want to proceed?',

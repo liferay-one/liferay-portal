@@ -9,6 +9,15 @@ import i18n from '~/i18n';
 import {UserAccountModel} from '~/services/models/UserAccountModel';
 import {AppRoute} from '~/utils/routeUtils';
 
+const AccountInspector = lazy(
+	() => import('./AccountInspector/AccountInspector')
+);
+const AccountInspectorDetail = lazy(
+	() =>
+		import(
+			'./AccountInspector/AccountInspectorDetail/AccountInspectorDetail'
+		)
+);
 const AppDetail = lazy(() => import('./Apps/AppDetail/AppDetail'));
 const Apps = lazy(() => import('./Apps/Apps'));
 const Environments = lazy(() => import('./Environments/Environments'));
@@ -88,6 +97,17 @@ export const adminRoutes: AppRoute[] = [
 		canAccess: canAccessAdmin,
 		element: <SolutionDetail />,
 		path: 'mp-solutions/:productId',
+	},
+	{
+		canAccess: canAccessAdmin,
+		element: <AccountInspector />,
+		nav: {icon: 'search', label: i18n.translate('account-inspector')},
+		path: 'account-inspector',
+	},
+	{
+		canAccess: canAccessAdmin,
+		element: <AccountInspectorDetail />,
+		path: 'account-inspector/:accountId',
 	},
 	{
 		canAccess: canAccessFinance,

@@ -5,13 +5,11 @@
 
 import {useCallback} from 'react';
 import useSWR from 'swr';
-import fetcher from '~/services/fetcher/fetcher';
-
-import type {APIResponse} from '~/types/api';
-
-const MAX_PAGES = 20;
-
-const OBJECT_ITEMS_PAGE_SIZE = 500;
+import FetcherError from '~/services/fetcher/FetcherError';
+import fetchAllPages, {
+	DEFAULT_PAGE_SIZE,
+	toPageURL,
+} from '~/services/fetcher/fetchAllPages';
 
 type ObjectItemsOptions = {
 	fields?: string;
@@ -20,71 +18,28 @@ type ObjectItemsOptions = {
 	sort?: string;
 };
 
-function toURL(
-	path: string,
-	page: number,
+export function useObjectItems<Item>(
+	path: string | null,
 	{
 		fields,
 		filter,
-		pageSize = OBJECT_ITEMS_PAGE_SIZE,
+		pageSize = DEFAULT_PAGE_SIZE,
 		sort,
-	}: ObjectItemsOptions
+	}: ObjectItemsOptions = {}
 ) {
-	const searchParams = new URLSearchParams({
-		page: String(page),
-		pageSize: String(pageSize),
-	});
+	const parameters = {fields, filter, sort};
 
-	if (fields) {
-		searchParams.set('fields', fields);
-	}
+	const {data, error, isLoading, mutate} = useSWR(
+		path ? toPageURL(path, 1, pageSize, parameters) : null,
+		async () => {
+			const {failedPageCount, items, totalCount} =
+				await fetchAllPages<Item>(path as string, parameters, pageSize);
 
-	if (filter) {
-		searchParams.set('filter', filter);
-	}
-
-	if (sort) {
-		searchParams.set('sort', sort);
-	}
-
-	return `${path}?${searchParams}`;
-}
-
-export function useObjectItems<Item>(
-	path: string | null,
-	options: ObjectItemsOptions = {}
-) {
-	const {pageSize = OBJECT_ITEMS_PAGE_SIZE} = options;
-
-	const {data, error, isLoading, mutate} = useSWR<APIResponse<Item>>(
-		path ? toURL(path, 1, options) : null,
-		async (url: string) => {
-			const firstPage = await fetcher<APIResponse<Item>>(url);
-
-			const items = [...firstPage.items];
-
-			if (firstPage.totalCount <= items.length) {
-				return {...firstPage, items};
+			if (failedPageCount) {
+				throw new FetcherError('Unable to fetch every page');
 			}
 
-			const lastPage = Math.min(
-				Math.ceil(firstPage.totalCount / pageSize),
-				MAX_PAGES
-			);
-
-			const remainingPages = await Promise.all(
-				Array.from({length: lastPage - 1}, (_, index) =>
-					fetcher<APIResponse<Item>>(
-						toURL(path as string, index + 2, options)
-					)
-				)
-			);
-
-			remainingPages.forEach((remainingPage) =>
-				items.push(...remainingPage.items)
-			);
-
-			return {...firstPage, items};
+			return {items, totalCount};
 		}
 	);
 

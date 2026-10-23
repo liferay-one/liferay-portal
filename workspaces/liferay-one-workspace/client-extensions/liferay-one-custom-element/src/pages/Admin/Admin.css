@@ -1,3 +1,163 @@
+.account-inspector .account-inspector-table {
+	table-layout: fixed;
+	width: 100%;
+
+	& .account-inspector-json-cell {
+		white-space: normal;
+	}
+
+	& td,
+	& th {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		width: auto;
+	}
+
+	& td.account-inspector-actions-cell,
+	& th.account-inspector-actions-cell {
+		overflow: visible;
+		width: 3.5rem;
+	}
+}
+
+.account-inspector .btn-unstyled {
+	--btn-active-color: var(--gray-900, #272833);
+	--btn-default-color: var(--gray-900, #272833);
+	--btn-focus-color: var(--gray-900, #272833);
+	--btn-hover-color: var(--primary, #0b5fff);
+}
+
+.account-inspector .label {
+	align-items: center;
+	line-height: 1rem;
+	padding: 0.125rem 0.375rem;
+
+	& .label-item-expand {
+		min-width: 0;
+	}
+}
+
+.account-inspector .table {
+	--table-row-background-color-hover: var(--gray-100, #f1f2f5);
+}
+
+.account-inspector-badges {
+	align-items: center;
+	display: inline-flex;
+	gap: var(--spacer-2, 0.5rem);
+
+	& .label {
+		margin: 0;
+	}
+}
+
+.account-inspector-columns-button .lexicon-icon {
+	transform: rotate(90deg);
+}
+
+.account-inspector-finding {
+	background-color: var(--white, #fff);
+}
+
+.account-inspector-flagged-row {
+	--table-row-background-color-hover: var(--warning-l1, #ffe9b3);
+
+	background-color: var(--warning-l2, #fff8e1);
+}
+
+.account-inspector-focused-row {
+	box-shadow: inset 4px 0 0 var(--primary, #0b5fff);
+}
+
+.account-inspector-json {
+	background-color: var(--light, #f7f8f9);
+	border-radius: var(--border-radius-sm, 4px);
+	font-size: 0.75rem;
+	max-height: 400px;
+	overflow: auto;
+	padding: var(--spacer-2);
+	white-space: pre-wrap;
+}
+
+.account-inspector-menu .custom-control-label-text {
+	color: var(--gray-900, #272833);
+}
+
+.account-inspector-panel .panel-title {
+	width: 100%;
+}
+
+.account-inspector-toolbar {
+	--account-inspector-control-border-color: #999aa3;
+	--account-inspector-control-color: #2b3a4b;
+	--account-inspector-control-radius: 0.5rem;
+	--account-inspector-control-size: 2rem;
+
+	gap: var(--spacer-1, 0.25rem);
+}
+
+.account-inspector-toolbar .account-inspector-toolbar-button {
+	align-items: center;
+	background-color: var(--white, #fff);
+	border: 1px solid var(--account-inspector-control-border-color);
+	border-radius: var(--account-inspector-control-radius);
+	color: var(--account-inspector-control-color);
+	display: inline-flex;
+	height: var(--account-inspector-control-size);
+	justify-content: center;
+	min-height: 0;
+	min-width: 0;
+	padding: 0;
+	width: var(--account-inspector-control-size);
+
+	&.active {
+		border-color: var(--primary, #0b5fff);
+		color: var(--primary, #0b5fff);
+	}
+}
+
+.account-inspector-toolbar-search {
+	animation: account-inspector-search-expand 0.2s ease-out;
+	position: relative;
+	width: 240px;
+
+	& .form-control {
+		border: 1px solid var(--account-inspector-control-border-color);
+		border-radius: var(--account-inspector-control-radius);
+		height: var(--account-inspector-control-size);
+		padding-right: var(--account-inspector-control-size);
+	}
+}
+
+.account-inspector-toolbar-search-icon {
+	color: var(--account-inspector-control-color);
+	pointer-events: none;
+	position: absolute;
+	right: 0.625rem;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.account-inspector-tree-label {
+	max-width: 480px;
+	padding: 0 var(--spacer-1, 0.25rem);
+}
+
+.account-inspector-tree-row {
+	min-height: 1.75rem;
+
+	&:hover {
+		background-color: var(--light, #f7f8f9);
+	}
+}
+
+.account-inspector-tree-toggle {
+	display: inline-flex;
+	justify-content: center;
+	width: 1.25rem;
+}
+
 .admin-layout .table {
 	& :is(td),
 	& th {
@@ -28,5 +188,15 @@
 	& th {
 		padding-bottom: var(--spacer-2);
 		padding-top: var(--spacer-2);
+	}
+}
+
+@keyframes account-inspector-search-expand {
+	from {
+		width: var(--account-inspector-control-size);
+	}
+
+	to {
+		width: 240px;
 	}
 }
