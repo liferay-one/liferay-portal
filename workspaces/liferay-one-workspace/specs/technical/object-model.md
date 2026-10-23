@@ -1019,7 +1019,6 @@ Object name `LicenseKey`. REST `/o/c/licensekeys`. Title field `name`. Account r
 | `clusterId` | LongInteger | |
 | `complimentary` | Boolean | |
 | `customExpirationDate` | DateTime | |
-| `dataCenterLocation` | Text | |
 | `description` | Text | |
 | `domains` | LongText | |
 | `entitlementDefinitionId` | LongInteger | soft link to `C_ENTITLEMENT_DEFINITION` |
@@ -1047,8 +1046,6 @@ Object name `LicenseKey`. REST `/o/c/licensekeys`. Title field `name`. Account r
 | `serverId` | LongText | |
 | `sizing` | Text | |
 | `startDate` | DateTime | |
-| `workspaceName` | Text | |
-| `workspaceOwnerEmail` | Text | |
 
 | Relationship | Direction | Other side | Deletion |
 | --- | --- | --- | --- |

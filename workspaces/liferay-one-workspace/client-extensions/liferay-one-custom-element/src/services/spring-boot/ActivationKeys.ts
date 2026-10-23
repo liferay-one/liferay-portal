@@ -10,7 +10,6 @@ import {OneSpringBootOAuth2} from './OAuth2Client';
 export type GenerateFormBundleProduct = {
 	app: boolean;
 	availableCount: number;
-	disasterRecovery: boolean;
 	entitlementId: number;
 	externalReferenceCode: string;
 	licensable: boolean;
@@ -81,7 +80,6 @@ export type ActivationKeySummary = {
 
 export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	bundleEntitlementIds: number[];
-	dataCenterLocation?: string;
 	description?: string;
 	domains?: string;
 	environmentName: string;
@@ -94,8 +92,6 @@ export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	subscriptionEntitlementId: number;
 	version: string;
 	virtualCluster?: boolean;
-	workspaceName?: string;
-	workspaceOwnerEmail?: string;
 };
 
 export type GeneratedActivationKey = {

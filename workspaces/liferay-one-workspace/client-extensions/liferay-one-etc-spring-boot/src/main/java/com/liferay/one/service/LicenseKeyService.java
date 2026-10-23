@@ -56,17 +56,16 @@ public class LicenseKeyService extends OneBaseService {
 	public LicenseKey addLicenseKey(
 			long accountEntryId, String accountName, long activationKeyId,
 			boolean active, String additionalInfo, boolean complimentary,
-			String dataCenterLocation, String description, String domains,
-			long entitlementDefinitionId, long entitlementId,
-			Date expirationDate, String hostName, String ipAddresses,
-			String key, String licenseKeyFamily, String licenseName,
-			String licenseType, int licenseVersion, String macAddresses,
-			int maxClusterNodes, long maxConcurrentUsers, int maxHttpSessions,
-			int maxServers, long maxUsers, String name, String orderId,
-			String owner, String productExternalId, String productName,
-			String productVersion, String projectExternalReferenceCode,
-			String serverId, String sizing, Date startDate,
-			String workspaceName, String workspaceOwnerEmail)
+			String description, String domains, long entitlementDefinitionId,
+			long entitlementId, Date expirationDate, String hostName,
+			String ipAddresses, String key, String licenseKeyFamily,
+			String licenseName, String licenseType, int licenseVersion,
+			String macAddresses, int maxClusterNodes, long maxConcurrentUsers,
+			int maxHttpSessions, int maxServers, long maxUsers, String name,
+			String orderId, String owner, String productExternalId,
+			String productName, String productVersion,
+			String projectExternalReferenceCode, String serverId, String sizing,
+			Date startDate)
 		throws Exception {
 
 		_licenseKeyValidator.validateMetadata(
@@ -101,8 +100,6 @@ public class LicenseKeyService extends OneBaseService {
 			"complimentary", complimentary
 		).put(
 			"customExpirationDate", _toISO8601(expirationDate)
-		).put(
-			"dataCenterLocation", dataCenterLocation
 		).put(
 			"description", description
 		).put(
@@ -161,10 +158,6 @@ public class LicenseKeyService extends OneBaseService {
 			"sizing", sizing
 		).put(
 			"startDate", _toISO8601(startDate)
-		).put(
-			"workspaceName", workspaceName
-		).put(
-			"workspaceOwnerEmail", workspaceOwnerEmail
 		);
 
 		String response = post(
@@ -782,8 +775,8 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getAccountEntryId(), licenseKey.getAccountName(),
 			licenseKey.getActivationKeyId(), true,
 			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
-			licenseKey.getDataCenterLocation(), licenseKey.getDescription(),
-			licenseKey.getDomains(), licenseKey.getEntitlementDefinitionId(),
+			licenseKey.getDescription(), licenseKey.getDomains(),
+			licenseKey.getEntitlementDefinitionId(),
 			licenseKey.getEntitlementId(), expirationDate,
 			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
 			licenseKey.getLicenseKeyFamily(), licenseKey.getLicenseName(),
@@ -795,8 +788,7 @@ public class LicenseKeyService extends OneBaseService {
 			licenseKey.getOwner(), licenseKey.getProductExternalId(),
 			licenseKey.getProductName(), licenseKey.getProductVersion(),
 			licenseKey.getProjectExternalReferenceCode(),
-			licenseKey.getServerId(), licenseKey.getSizing(), startDate,
-			licenseKey.getWorkspaceName(), licenseKey.getWorkspaceOwnerEmail());
+			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
 	}
 
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(

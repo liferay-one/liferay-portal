@@ -35,7 +35,6 @@ public final class LicenseKey {
 		_additionalInfo = jsonObject.optString("additionalInfo");
 		_clusterId = jsonObject.optLong("clusterId");
 		_complimentary = jsonObject.optBoolean("complimentary");
-		_dataCenterLocation = jsonObject.optString("dataCenterLocation");
 		_customExpirationDateInstant = _toInstant(
 			jsonObject.optString("customExpirationDate"));
 		_description = jsonObject.optString("description");
@@ -67,8 +66,6 @@ public final class LicenseKey {
 		_projectExternalReferenceCode = jsonObject.optString(
 			"r_projectToLicenseKey_c_projectERC");
 		_serverId = jsonObject.optString("serverId");
-		_workspaceName = jsonObject.optString("workspaceName");
-		_workspaceOwnerEmail = jsonObject.optString("workspaceOwnerEmail");
 		_sizing = jsonObject.optString("sizing");
 		_startDateInstant = _toInstant(jsonObject.optString("startDate"));
 	}
@@ -95,10 +92,6 @@ public final class LicenseKey {
 
 	public Instant getCustomExpirationDateInstant() {
 		return _customExpirationDateInstant;
-	}
-
-	public String getDataCenterLocation() {
-		return _dataCenterLocation;
 	}
 
 	public String getDescription() {
@@ -218,14 +211,6 @@ public final class LicenseKey {
 		return _startDateInstant;
 	}
 
-	public String getWorkspaceName() {
-		return _workspaceName;
-	}
-
-	public String getWorkspaceOwnerEmail() {
-		return _workspaceOwnerEmail;
-	}
-
 	public boolean isActive() {
 		return _active;
 	}
@@ -276,7 +261,6 @@ public final class LicenseKey {
 	private final long _clusterId;
 	private final boolean _complimentary;
 	private final Instant _customExpirationDateInstant;
-	private final String _dataCenterLocation;
 	private final String _description;
 	private final String _domains;
 	private final long _entitlementDefinitionId;
@@ -306,7 +290,5 @@ public final class LicenseKey {
 	private final String _serverId;
 	private final String _sizing;
 	private final Instant _startDateInstant;
-	private final String _workspaceName;
-	private final String _workspaceOwnerEmail;
 
 }

@@ -168,18 +168,15 @@ public class LicenseKeyGenerationService {
 	public static class GenerateRequest {
 
 		public GenerateRequest(
-			List<Long> bundleEntitlementIds, String dataCenterLocation,
-			String description, String domains, String environmentName,
-			String keyType, int maxClusterNodes, String orderId, String owner,
-			Project project, String purpose,
+			List<Long> bundleEntitlementIds, String description, String domains,
+			String environmentName, String keyType, int maxClusterNodes,
+			String orderId, String owner, Project project, String purpose,
 			String renewedActivationKeyExternalReferenceCode,
 			List<Server> servers, Date startDate,
 			long subscriptionEntitlementId, String version,
-			boolean virtualCluster, String workspaceName,
-			String workspaceOwnerEmail) {
+			boolean virtualCluster) {
 
 			_bundleEntitlementIds = bundleEntitlementIds;
-			_dataCenterLocation = dataCenterLocation;
 			_description = description;
 			_domains = domains;
 			_environmentName = environmentName;
@@ -196,16 +193,10 @@ public class LicenseKeyGenerationService {
 			_subscriptionEntitlementId = subscriptionEntitlementId;
 			_version = version;
 			_virtualCluster = virtualCluster;
-			_workspaceName = workspaceName;
-			_workspaceOwnerEmail = workspaceOwnerEmail;
 		}
 
 		public List<Long> getBundleEntitlementIds() {
 			return _bundleEntitlementIds;
-		}
-
-		public String getDataCenterLocation() {
-			return _dataCenterLocation;
 		}
 
 		public String getDescription() {
@@ -264,14 +255,6 @@ public class LicenseKeyGenerationService {
 			return _version;
 		}
 
-		public String getWorkspaceName() {
-			return _workspaceName;
-		}
-
-		public String getWorkspaceOwnerEmail() {
-			return _workspaceOwnerEmail;
-		}
-
 		public boolean isVirtualCluster() {
 			return _virtualCluster;
 		}
@@ -305,7 +288,6 @@ public class LicenseKeyGenerationService {
 		}
 
 		private final List<Long> _bundleEntitlementIds;
-		private final String _dataCenterLocation;
 		private final String _description;
 		private final String _domains;
 		private final String _environmentName;
@@ -321,8 +303,6 @@ public class LicenseKeyGenerationService {
 		private final long _subscriptionEntitlementId;
 		private final String _version;
 		private final boolean _virtualCluster;
-		private final String _workspaceName;
-		private final String _workspaceOwnerEmail;
 
 	}
 
@@ -388,8 +368,7 @@ public class LicenseKeyGenerationService {
 		return _licenseKeyService.addLicenseKey(
 			activationKeyScope.getAccountId(), activationKeyScope.getName(),
 			activationKey.getActivationKeyId(), true,
-			_getAdditionalInfo(generateRequest), complimentary,
-			generateRequest.getDataCenterLocation(), description,
+			_getAdditionalInfo(generateRequest), complimentary, description,
 			StringPool.BLANK, entitlement.getEntitlementDefinitionId(),
 			entitlement.getEntitlementId(), expirationDate,
 			ServerInfoUtil.toCommaSeparated(server.getHostName()),
@@ -408,8 +387,7 @@ public class LicenseKeyGenerationService {
 			_getProductVersion(productId, version),
 			activationKeyScope.getProjectExternalReferenceCode(),
 			_getServerId(generateRequest), _getSizing(generateRequest),
-			startDate, generateRequest.getWorkspaceName(),
-			generateRequest.getWorkspaceOwnerEmail());
+			startDate);
 	}
 
 	private void _checkComplimentary(ActivationKeyScope activationKeyScope)

@@ -20,7 +20,6 @@ import {
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
 import FetcherError from '~/services/fetcher/FetcherError';
-import {Liferay} from '~/services/liferay/liferay';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import Cloud from '~/services/spring-boot/Cloud';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
@@ -32,14 +31,12 @@ import {useActivationKeyScope} from '../hooks/useActivationKeyScope';
 import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
 import ComplimentaryStep from './ComplimentaryStep/ComplimentaryStep';
-import DSRStep from './DSRStep/DSRStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
 import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
 import OfflineTokenStep from './OfflineTokenStep/OfflineTokenStep';
 import SubscriptionStep from './SubscriptionStep/SubscriptionStep';
 import useCloudNativeOfflineEnvironments from './hooks/useCloudNativeOfflineEnvironments';
 import useGenerateActivationKeyForm from './hooks/useGenerateActivationKeyForm';
-import useHasWorkspace from './hooks/useHasWorkspace';
 import useRenewSource from './hooks/useRenewSource';
 import {
 	GenerateActivationKeyForm,
@@ -90,7 +87,6 @@ export default function GenerateActivationKey() {
 		hasGeneratePermission,
 		loading: permissionLoading,
 	} = useHasLicenseKeyPermission(projectId);
-	const {hasWorkspace} = useHasWorkspace(projectId);
 	const {loading: renewLoading, renewSource} = useRenewSource(
 		renewExternalReferenceCode,
 		generateForm
@@ -110,7 +106,6 @@ export default function GenerateActivationKey() {
 		defaultValues: {
 			activationToken: '',
 			bundleEntitlementIds: [],
-			dataCenterLocation: '',
 			description: '',
 			domain: '',
 			environmentName: '',
@@ -130,8 +125,6 @@ export default function GenerateActivationKey() {
 			subscriptionEntitlementId: 0,
 			version: '',
 			virtualCluster: false,
-			workspaceName: '',
-			workspaceOwnerEmail: Liferay.ThemeDisplay.getUserEmailAddress(),
 		},
 	});
 
@@ -281,29 +274,6 @@ export default function GenerateActivationKey() {
 		productExternalReferenceCode,
 		setValue,
 	]);
-
-	const includesDSR = useMemo(() => {
-		if (!generateForm) {
-			return false;
-		}
-
-		return getBundleProducts(
-			developer,
-			generateForm,
-			productExternalReferenceCode
-		).some(
-			(bundleProduct) =>
-				bundleEntitlementIds.includes(bundleProduct.entitlementId) &&
-				bundleProduct.disasterRecovery
-		);
-	}, [
-		bundleEntitlementIds,
-		developer,
-		generateForm,
-		productExternalReferenceCode,
-	]);
-
-	const needsDSRStep = includesDSR && !hasWorkspace;
 
 	const product = useMemo(
 		() =>
@@ -614,7 +584,6 @@ export default function GenerateActivationKey() {
 		try {
 			({activationKeyId} = await ActivationKeys.generateActivationKey({
 				bundleEntitlementIds: values.bundleEntitlementIds,
-				dataCenterLocation: values.dataCenterLocation || undefined,
 				description: values.description || undefined,
 				domains: free ? values.domain.trim() : undefined,
 				environmentName: values.environmentName,
@@ -643,8 +612,6 @@ export default function GenerateActivationKey() {
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
 				version: values.version,
 				virtualCluster: virtualCluster || undefined,
-				workspaceName: values.workspaceName || undefined,
-				workspaceOwnerEmail: values.workspaceOwnerEmail || undefined,
 				...scope,
 			}));
 		}
@@ -729,7 +696,6 @@ export default function GenerateActivationKey() {
 			'select-the-items-you-would-like-to-include-in-the-activation-key',
 		'complimentary':
 			'select-the-subscription-and-key-type-you-would-like-to-generate',
-		'dsr': 'fill-out-the-information-required-to-generate-the-activation-key',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
 		'offline-package':
@@ -790,7 +756,7 @@ export default function GenerateActivationKey() {
 							onClickContinue={() =>
 								developer
 									? onClickDownload()
-									: goTo(needsDSRStep ? 'dsr' : 'environment')
+									: goTo('environment')
 							}
 							renewing={renewing}
 							submitting={submitting}
@@ -845,15 +811,6 @@ export default function GenerateActivationKey() {
 						/>
 					)}
 
-					{step === 'dsr' && (
-						<DSRStep
-							form={form}
-							onClickBack={() => goTo('add-ons')}
-							onClickCancel={onClickCancel}
-							onClickContinue={() => goTo('environment')}
-						/>
-					)}
-
 					{step === 'environment' && (
 						<EnvironmentStep
 							availableClusterNodes={availableClusterNodes}
@@ -864,7 +821,6 @@ export default function GenerateActivationKey() {
 									getStepBeforeEnvironment({
 										complimentary,
 										free,
-										needsDSRStep,
 										unassigned,
 									})
 								)

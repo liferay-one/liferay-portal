@@ -8,7 +8,6 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
-import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.license.LicenseEntry;
@@ -475,40 +474,7 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private Set<String> _getDisasterRecoveryExternalReferenceCodes(
-			List<Entitlement> entitlements)
-		throws Exception {
-
-		Set<String> externalReferenceCodes = new HashSet<>();
-
-		for (Entitlement entitlement : entitlements) {
-			if (!Objects.equals(
-					EntitlementConstants.NAME_DISASTER_RECOVERY,
-					entitlement.getName())) {
-
-				continue;
-			}
-
-			String skuExternalReferenceCode =
-				entitlement.getSkuExternalReferenceCode();
-
-			Product product = _fetchProduct(
-				entitlement,
-				_commerceSkuService.fetchSku(skuExternalReferenceCode),
-				skuExternalReferenceCode);
-
-			if (product == null) {
-				continue;
-			}
-
-			externalReferenceCodes.add(product.getExternalReferenceCode());
-		}
-
-		return externalReferenceCodes;
-	}
-
 	private List<EntitledProduct> _getEntitledProducts(
-		Set<String> disasterRecoveryExternalReferenceCodes,
 		List<Entitlement> entitlements,
 		Map<Long, ResolvedProduct> resolvedProducts) {
 
@@ -545,10 +511,8 @@ public class LicenseKeyGenerateFormService {
 
 			entitledProducts.add(
 				new EntitledProduct(
-					CommerceProductUtil.isApp(product),
-					disasterRecoveryExternalReferenceCodes.contains(
-						externalReferenceCode),
-					entitlement, externalReferenceCode,
+					CommerceProductUtil.isApp(product), entitlement,
+					externalReferenceCode,
 					generatesActivationKeyExternalReferenceCodes.contains(
 						externalReferenceCode),
 					licenseKeyFamily, getProductName(entitlement, product)));
@@ -593,7 +557,6 @@ public class LicenseKeyGenerateFormService {
 			entitlements);
 
 		List<EntitledProduct> entitledProducts = _getEntitledProducts(
-			_getDisasterRecoveryExternalReferenceCodes(entitlements),
 			entitlements, resolvedProducts);
 
 		List<Long> renewedActivationKeyIds = _getRenewedActivationKeyIds(
@@ -1184,8 +1147,6 @@ public class LicenseKeyGenerateFormService {
 			"availableCount",
 			Math.max(0, getTotalCount(entitlement) - usedCount)
 		).put(
-			"disasterRecovery", entitledProduct.isDisasterRecovery()
-		).put(
 			"entitlementId", entitlement.getEntitlementId()
 		).put(
 			"externalReferenceCode", entitledProduct.getExternalReferenceCode()
@@ -1334,12 +1295,11 @@ public class LicenseKeyGenerateFormService {
 	private static class EntitledProduct {
 
 		public EntitledProduct(
-			boolean app, boolean disasterRecovery, Entitlement entitlement,
-			String externalReferenceCode, boolean generatesActivationKey,
-			String licenseKeyFamily, String name) {
+			boolean app, Entitlement entitlement, String externalReferenceCode,
+			boolean generatesActivationKey, String licenseKeyFamily,
+			String name) {
 
 			_app = app;
-			_disasterRecovery = disasterRecovery;
 			_entitlement = entitlement;
 			_externalReferenceCode = externalReferenceCode;
 			_generatesActivationKey = generatesActivationKey;
@@ -1367,16 +1327,11 @@ public class LicenseKeyGenerateFormService {
 			return _app;
 		}
 
-		public boolean isDisasterRecovery() {
-			return _disasterRecovery;
-		}
-
 		public boolean isGeneratesActivationKey() {
 			return _generatesActivationKey;
 		}
 
 		private final boolean _app;
-		private final boolean _disasterRecovery;
 		private final Entitlement _entitlement;
 		private final String _externalReferenceCode;
 		private final boolean _generatesActivationKey;

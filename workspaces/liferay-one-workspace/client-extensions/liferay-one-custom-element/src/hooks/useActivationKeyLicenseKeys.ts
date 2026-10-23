@@ -17,7 +17,6 @@ export type ActivationKeyLicenseKey = {
 	active: boolean;
 	clusterSize: string;
 	complimentary: boolean;
-	dataCenterLocation: string;
 	description: string;
 	domains: string;
 	entitlementId: number;
@@ -37,15 +36,12 @@ export type ActivationKeyLicenseKey = {
 	productVersion: string;
 	sizing: string;
 	startDate: string;
-	workspaceName: string;
-	workspaceOwnerEmail: string;
 };
 
 export type LicenseKeyNode = {
 	active: boolean;
 	complimentary?: boolean;
 	customExpirationDate?: string;
-	dataCenterLocation?: string;
 	dateCreated?: string;
 	description?: string;
 	domains?: string;
@@ -69,8 +65,6 @@ export type LicenseKeyNode = {
 	r_activationKeyToLicenseKey_c_activationKeyId?: number;
 	sizing?: string;
 	startDate?: string;
-	workspaceName?: string;
-	workspaceOwnerEmail?: string;
 };
 
 function getClusterSize(node: LicenseKeyNode): string {
@@ -94,7 +88,6 @@ export function toActivationKeyLicenseKey(
 		active: node.active,
 		clusterSize: getClusterSize(node),
 		complimentary: node.complimentary ?? false,
-		dataCenterLocation: node.dataCenterLocation ?? '',
 		description: node.description ?? '',
 		domains: node.domains ?? '',
 		entitlementId: node.entitlementId ?? 0,
@@ -114,8 +107,6 @@ export function toActivationKeyLicenseKey(
 		productVersion: node.productVersion ?? '',
 		sizing: node.sizing ?? '',
 		startDate: node.startDate ?? '',
-		workspaceName: node.workspaceName ?? '',
-		workspaceOwnerEmail: node.workspaceOwnerEmail ?? '',
 	};
 }
 

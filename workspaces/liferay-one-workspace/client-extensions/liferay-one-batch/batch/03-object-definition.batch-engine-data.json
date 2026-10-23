@@ -4046,24 +4046,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_LICENSE_KEY_DATA_CENTER_LOCATION",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Data Center Location"
-					},
-					"name": "dataCenterLocation",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_LICENSE_KEY_DESCRIPTION",
 					"indexed": true,
 					"indexedAsKeyword": false,
@@ -4550,42 +4532,6 @@
 					"state": false,
 					"system": false,
 					"type": "Date"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_LICENSE_KEY_WORKSPACE_NAME",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Workspace Name"
-					},
-					"name": "workspaceName",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
-					"externalReferenceCode": "C_LICENSE_KEY_WORKSPACE_OWNER_EMAIL",
-					"indexed": true,
-					"indexedAsKeyword": false,
-					"indexedLanguageId": "en_US",
-					"label": {
-						"en_US": "Workspace Owner Email"
-					},
-					"name": "workspaceOwnerEmail",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
 				}
 			],
 			"objectFolderExternalReferenceCode": "C_LIFERAY_ONE_FOLDER",

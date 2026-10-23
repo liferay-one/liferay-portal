@@ -548,7 +548,6 @@ Children: EnvironmentAdmin and UsageEvent, both `cascade`.
 | `description` | string | |
 | `key` | longtext | The actual license XML/key payload |
 | `hostName`, `domains`, `ipAddresses`, `macAddresses`, `serverId` | string, longtext | The server the key is bound to |
-| `dataCenterLocation`, `workspaceName`, `workspaceOwnerEmail` | string | Cloud keys |
 | `startDate` | datetime | |
 | `customExpirationDate` | datetime | |
 | `additionalInfo` | longtext | |

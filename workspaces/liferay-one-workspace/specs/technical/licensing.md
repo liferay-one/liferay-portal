@@ -184,7 +184,7 @@ The inputs of one license key are:
 | Cluster or instance size | Not taken from the request. `maxClusterNodes`, `maxServers`, `maxHttpSessions`, `maxUsers`, and `maxConcurrentUsers` are 0. The form always sends `instanceSize` 1. Sizing is `Sizing 1`, or `Sizing 4` for a complimentary key. `sb/service/LicenseKeyGenerationService.java:997`, `:1009`, `sb/service/LicenseKeyGenerateFormService.java:1110` |
 | Dates | The start date is the subscription start date. A complimentary key starts on the requested date. The end date follows the rules table below. `sb/service/LicenseKeyGenerationService.java:529` |
 | Entitlement | `subscriptionEntitlementId` and `bundleEntitlementIds`, each found among the active entitlements of the project. `sb/service/LicenseKeyGenerationService.java:519`, `:659` |
-| Environment | `environmentName`, `dataCenterLocation`, `workspaceName`, `workspaceOwnerEmail` from the request. No `C_ENVIRONMENT` record is read or written. |
+| Environment | `environmentName` from the request. No `C_ENVIRONMENT` record is read or written. |
 | License entry | `LicenseEntryService` reads `license-entries.csv` and matches the family prefix, the version, and the key type. An add-on without an entry uses the entry of the leading product. `sb/service/LicenseKeyGenerationService.java:811` |
 | License version | `LicenseVersion.getLicenseVersion(productName, version)`. `sb/constants/LicenseVersion.java` |
 | Product version | `version` from the request, one of the supported `dxp` product versions on the form. `sb/service/LicenseKeyGenerateFormService.java:816` |

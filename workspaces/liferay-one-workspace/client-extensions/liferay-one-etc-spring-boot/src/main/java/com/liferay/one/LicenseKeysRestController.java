@@ -305,13 +305,11 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				_accountService.getAccount(order.getAccountId()),
 				new LicenseKeyGenerationService.GenerateRequest(
 					Collections.singletonList(entitlement.getEntitlementId()),
-					null, null, domains,
-					LicenseKeyGenerationConstants.FREE_TIER_NAME,
+					null, domains, LicenseKeyGenerationConstants.FREE_TIER_NAME,
 					LicenseConstants.TYPE_FREE, 0, String.valueOf(orderId),
 					owner, null, null, null, Collections.emptyList(), null,
 					entitlement.getEntitlementId(),
-					_productVersionService.getFreeTierProductVersion(), false,
-					null, null));
+					_productVersionService.getFreeTierProductVersion(), false));
 
 		List<LicenseKey> licenseKeys =
 			_licenseKeyService.getLicenseKeysByActivationKeyId(

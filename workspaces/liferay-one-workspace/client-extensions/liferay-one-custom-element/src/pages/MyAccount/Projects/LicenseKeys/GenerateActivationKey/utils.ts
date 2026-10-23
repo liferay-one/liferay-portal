@@ -157,12 +157,10 @@ export function getStepAfterSubscription({
 export function getStepBeforeEnvironment({
 	complimentary,
 	free,
-	needsDSRStep,
 	unassigned,
 }: {
 	complimentary: boolean;
 	free: boolean;
-	needsDSRStep: boolean;
 	unassigned: boolean;
 }): GenerateActivationKeyStep {
 	if (complimentary) {
@@ -173,7 +171,7 @@ export function getStepBeforeEnvironment({
 		return 'subscription';
 	}
 
-	return needsDSRStep ? 'dsr' : 'add-ons';
+	return 'add-ons';
 }
 
 export function getGenerateButtonLabel(renewing: boolean): Word {

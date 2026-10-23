@@ -28,7 +28,6 @@ export type GenerateActivationKeyServerField =
 export type GenerateActivationKeyForm = {
 	activationToken: string;
 	bundleEntitlementIds: number[];
-	dataCenterLocation: string;
 	description: string;
 	domain: string;
 	environmentName: string;
@@ -48,15 +47,12 @@ export type GenerateActivationKeyForm = {
 	subscriptionEntitlementId: number;
 	version: string;
 	virtualCluster: boolean;
-	workspaceName: string;
-	workspaceOwnerEmail: string;
 };
 
 export type GenerateActivationKeyStep =
 	| 'activation-codes'
 	| 'add-ons'
 	| 'complimentary'
-	| 'dsr'
 	| 'environment'
 	| 'offline-package'
 	| 'offline-token'

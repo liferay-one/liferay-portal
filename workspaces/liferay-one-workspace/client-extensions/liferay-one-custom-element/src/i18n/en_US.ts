@@ -525,7 +525,6 @@ export default {
 		'Disaster Recovery Data Center Location',
 	'disaster-recovery-data-center-region':
 		'Disaster Recovery Data Center Region',
-	'disaster-recovery-details': 'Disaster Recovery Details',
 	'do-not-close-this-window': 'DO NOT CLOSE THIS WINDOW',
 	'documentation': 'Documentation',
 	'does-not-expire': 'Does Not Expire',

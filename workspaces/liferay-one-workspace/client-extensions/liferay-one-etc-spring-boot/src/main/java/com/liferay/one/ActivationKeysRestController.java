@@ -700,7 +700,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 		return new LicenseKeyGenerationService.GenerateRequest(
 			_toLongs(jsonObject.optJSONArray("bundleEntitlementIds")),
-			jsonObject.optString("dataCenterLocation"),
 			jsonObject.optString("description"),
 			jsonObject.optString("domains"),
 			jsonObject.optString("environmentName"),
@@ -713,9 +712,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			_toDate(jsonObject, "startDate"),
 			jsonObject.optLong("subscriptionEntitlementId"),
 			jsonObject.optString("version"),
-			jsonObject.optBoolean("virtualCluster"),
-			jsonObject.optString("workspaceName"),
-			jsonObject.optString("workspaceOwnerEmail"));
+			jsonObject.optBoolean("virtualCluster"));
 	}
 
 	private List<Long> _toLongs(JSONArray jsonArray) {

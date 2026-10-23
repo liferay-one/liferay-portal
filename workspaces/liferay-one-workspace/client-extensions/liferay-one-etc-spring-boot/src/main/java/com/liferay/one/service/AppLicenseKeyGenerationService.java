@@ -203,7 +203,7 @@ public class AppLicenseKeyGenerationService {
 
 				_licenseKeyService.addLicenseKey(
 					accountEntryId, account.getName(),
-					activationKey.getActivationKeyId(), true, null, false, null,
+					activationKey.getActivationKeyId(), true, null, false,
 					description, StringPool.BLANK,
 					entitlement.getEntitlementDefinitionId(),
 					entitlement.getEntitlementId(), expirationDate,
@@ -215,7 +215,7 @@ public class AppLicenseKeyGenerationService {
 					0, 0, 0, 0, 0, name, null, owner,
 					appEntitlement._getProductExternalId(),
 					appEntitlement._getProductName(), _PRODUCT_VERSION, null,
-					StringPool.BLANK, StringPool.BLANK, startDate, null, null);
+					StringPool.BLANK, StringPool.BLANK, startDate);
 			}
 		}
 		catch (Exception exception) {
