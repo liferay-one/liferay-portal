@@ -8,6 +8,11 @@ package com.liferay.one.service;
 import com.liferay.one.license.CommonLicenseKeyData;
 import com.liferay.one.license.CommonLicenseKeyParser;
 
+import java.net.URI;
+import java.net.URLDecoder;
+
+import java.nio.charset.StandardCharsets;
+
 import java.time.Instant;
 
 import java.util.Collections;
@@ -125,6 +130,23 @@ public class CommonLicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetCommonLicenseKeysPage() throws Exception {
+		Assertions.assertEquals(
+			"productFamily eq 'enterpriseSearch'",
+			_captureFilterString(null, "ENTERPRISE_SEARCH", null));
+	}
+
+	@Test
+	public void testGetCommonLicenseKeysPageWhenTermIsSet() throws Exception {
+		Assertions.assertEquals(
+			"productFamily eq 'enterpriseSearch' and startDate le " +
+				"2027-08-22T00:00:00Z and endDate ge 2026-08-23T00:00:00Z",
+			_captureFilterString(
+				Instant.parse("2027-08-22T00:00:00Z"), "ENTERPRISE_SEARCH",
+				Instant.parse("2026-08-23T00:00:00Z")));
+	}
+
+	@Test
 	public void testHasCommonLicenseKey() throws Exception {
 		Assertions.assertFalse(
 			_commonLicenseKeyService.hasCommonLicenseKey("new.xml"));
@@ -140,6 +162,40 @@ public class CommonLicenseKeyServiceTest {
 
 		Assertions.assertTrue(
 			_commonLicenseKeyService.hasCommonLicenseKey("dup.xml"));
+	}
+
+	private String _captureFilterString(
+			Instant endDate, String productGroup, Instant startDate)
+		throws Exception {
+
+		ArgumentCaptor<URI> argumentCaptor = ArgumentCaptor.forClass(URI.class);
+
+		Mockito.doReturn(
+			"{\"items\": []}"
+		).when(
+			_commonLicenseKeyService
+		).getCommonLicenseKeys(
+			argumentCaptor.capture()
+		);
+
+		_commonLicenseKeyService.getCommonLicenseKeysPage(
+			endDate, 1, 20, productGroup, startDate);
+
+		URI uri = argumentCaptor.getValue();
+
+		for (String parameter :
+				uri.getRawQuery(
+				).split(
+					"&"
+				)) {
+
+			if (parameter.startsWith("filter=")) {
+				return URLDecoder.decode(
+					parameter.substring(7), StandardCharsets.UTF_8);
+			}
+		}
+
+		return null;
 	}
 
 	private JSONObject _capturePostBody(

@@ -12,6 +12,8 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import java.nio.charset.StandardCharsets;
 
+import java.time.Instant;
+
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -73,14 +75,15 @@ public class CommonLicenseKeysRestControllerTest {
 		);
 
 		Mockito.when(
-			_commonLicenseKeyService.getCommonLicenseKeysPage(1, 20, "COMMERCE")
+			_commonLicenseKeyService.getCommonLicenseKeysPage(
+				null, 1, 20, "COMMERCE", null)
 		).thenReturn(
 			pageJSONObject
 		);
 
 		ResponseEntity<String> responseEntity =
 			_commonLicenseKeysRestController.getCommonLicenseKeys(
-				null, 1, 20, "COMMERCE");
+				null, null, 1, 20, "COMMERCE", null);
 
 		Assertions.assertEquals(
 			pageJSONObject.toString(), responseEntity.getBody());
@@ -184,7 +187,7 @@ public class CommonLicenseKeysRestControllerTest {
 			Assertions.assertThrows(
 				ResponseStatusException.class,
 				() -> _commonLicenseKeysRestController.getCommonLicenseKeys(
-					null, 1, 101, "COMMERCE"));
+					null, null, 1, 101, "COMMERCE", null));
 
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
@@ -192,8 +195,55 @@ public class CommonLicenseKeysRestControllerTest {
 		Mockito.verify(
 			_commonLicenseKeyService, Mockito.never()
 		).getCommonLicenseKeysPage(
-			Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString()
+			Mockito.any(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyString(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGetCommonLicenseKeysRejectsUnparsableDate()
+		throws Exception {
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _commonLicenseKeysRestController.getCommonLicenseKeys(
+					null, "2027-08-22' or 1 eq 1", 1, 20, "ENTERPRISE_SEARCH",
+					"2026-08-23T00:00:00.000Z"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_commonLicenseKeyService, Mockito.never()
+		).getCommonLicenseKeysPage(
+			Mockito.any(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyString(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testGetCommonLicenseKeysWhenTermIsSet() throws Exception {
+		JSONObject pageJSONObject = new JSONObject(
+		).put(
+			"totalCount", 3
+		);
+
+		Mockito.when(
+			_commonLicenseKeyService.getCommonLicenseKeysPage(
+				Instant.parse("2027-08-22T00:00:00Z"), 1, 20,
+				"ENTERPRISE_SEARCH", Instant.parse("2026-08-23T00:00:00Z"))
+		).thenReturn(
+			pageJSONObject
+		);
+
+		ResponseEntity<String> responseEntity =
+			_commonLicenseKeysRestController.getCommonLicenseKeys(
+				null, "2027-08-22T00:00:00.000Z", 1, 20, "ENTERPRISE_SEARCH",
+				"2026-08-23T00:00:00.000Z");
+
+		Assertions.assertEquals(
+			pageJSONObject.toString(), responseEntity.getBody());
 	}
 
 	@Test
