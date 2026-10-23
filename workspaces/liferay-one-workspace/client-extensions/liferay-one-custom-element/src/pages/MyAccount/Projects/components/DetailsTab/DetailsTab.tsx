@@ -51,11 +51,9 @@ export default function DetailsTab({
 		SECURITY_INCIDENT_CONTACT_ERC
 	);
 
-	const {loading: orderDateLoading, orderDate} = useOrderDate(
-		orderInfo.orderId
-	);
+	const {orderDate} = useOrderDate(orderInfo.orderId);
 
-	if (loading || orderDateLoading) {
+	if (loading) {
 		return <Loading.Page />;
 	}
 
