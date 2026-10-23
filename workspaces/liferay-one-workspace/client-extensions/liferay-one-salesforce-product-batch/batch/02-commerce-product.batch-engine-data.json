@@ -3986,6 +3986,12 @@
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "commerce"
+					}
+				},
+				{
 					"specificationKey": "project-details-profile",
 					"value": {
 						"en_US": "env-commerce"
@@ -5552,6 +5558,12 @@
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "enterprise-search"
 					}
 				},
 				{
